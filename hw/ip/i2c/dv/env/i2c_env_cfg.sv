@@ -92,9 +92,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   virtual function void reset_seq_cfg();
     seq_cfg.en_rx_overflow      = 1'b0;
     seq_cfg.en_rx_threshold     = 1'b0;
-    seq_cfg.en_sda_unstable     = 1'b0;
-    seq_cfg.en_scl_interference = 1'b0;
-    seq_cfg.en_sda_interference = 1'b0;
 
     // target mode cfg params.
     slow_acq = 0;

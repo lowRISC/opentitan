@@ -24,10 +24,10 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   // see (https://cs.opensource.google/opentitan/opentitan/+/master:
   // hw/dv/sv/i2c_agent/i2c_driver.sv;drc=95fba940c08451445fac85b1aac4a8117cee452b;
   // l=107)
-  constraint t_timeout_c { t_timeout == 5; }
+  constraint t_timeout_c { tcc.tc.tTimeout == 5; }
 
   // timeout is always enabled so stretch_timeout irq is aggressively asserted
-  constraint e_timeout_c { e_timeout == 1; }
+  constraint e_timeout_c { tcc.tc.eTimeout == 1; }
 
   local uint cnt_wr_stretch;
   local uint cnt_rd_stretch;
@@ -36,7 +36,7 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
     `uvm_info(`gfn, "\n--> start of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
-    cfg.m_i2c_agent_cfg.host_stretch_test_mode = 1;
+    tcc.host_stretch_test_mode = 1;
 
     initialization();
     for (int i = 1; i <= num_trans; i++) begin

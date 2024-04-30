@@ -36,11 +36,6 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       begin
         complete_program_fmt_fifo = 1'b0;
         for (uint cur_tran = 1; cur_tran <= max_trans; cur_tran++) begin
-          // randomize knobs for error interrupts
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_sda_unstable)
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_sda_interference)
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_scl_interference)
-
           // re-programming timing registers for the first transaction
           // or when the previous transaction is completed
           if (fmt_item.stop || cur_tran == 1) begin
@@ -49,8 +44,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             // otherwise, rw_bit is randomized
             rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
                      ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
-            get_timing_values();
-            program_registers();
+            update_timing_parameters();
           end
 
           // if trans_type is provided, then rw_bit is overridden

@@ -5,30 +5,36 @@
 // targetmode performance test vseq
 class i2c_target_perf_vseq extends i2c_target_smoke_vseq;
   `uvm_object_utils(i2c_target_perf_vseq)
-  `uvm_object_new
 
-  // Fast timing values programmed to registers
-  // See constraint minimum in i2c_target_smoke_vseq
-  constraint timing_val_c {
-    t_r       == 1;
-    t_f       == 1;
-    thd_sta   == 3;
-    tsu_sto   == 1;
-    tsu_dat   == 1;
-    thd_dat   == 1;
-    t_timeout == 1;
-    e_timeout == 1;
-    tsu_sta   == 1;
+  class target_perf_timing_cfg extends i2c_timing_cfg;
+    // Fast timing values programmed to registers
+    constraint target_perf_c {
+      tc.t_r      == 1;
+      tc.t_f      == 1;
+      tc.thd_sta  == 3;
+      tc.tsu_sto  == 1;
+      tc.tsu_dat  == 1;
+      tc.thd_dat  == 1;
+      tc.tTimeout == 1;
+      tc.eTimeout == 1;
+      tc.tsu_sta  == 1;
 
-    thigh     == 3;
-    tlow      == 8;
-    // tHoldStop must be at least 2 cycles which implies, t_r + t_buf - tsu_sta >= 2
-    // in order for stop condition to propogate to internal FSM via prim flop
-    t_buf     >= tsu_sta - t_r + 2;
-    // In addition, t_buf > thd_dat + 1 to satisfy the Start/Stop decoder,
-    // which rejects decoding Start/Stop symbols if SCL changes after SDA within
-    // thd_dat cycles (+1 for CDC skew)
-    t_buf     == thd_dat + 2;
-  }
+      tc.thigh    == 4;
+      tc.tlow     == 8;
+    }
+  endclass : target_perf_timing_cfg
+
+  function new (string name="");
+    target_perf_timing_cfg tptc = new;
+    super.new(name);
+    `downcast(tcc, tptc);
+    // Disable the baseclass constraints, as it would conflict.
+    tcc.timing_val_minmax_c.constraint_mode(0);
+    tcc.tsu_sta_minmax_c.constraint_mode(0);
+    tcc.implementation_c.constraint_mode(0);
+    tcc.agent_c.constraint_mode(0);
+    tcc.error_stimulus_c.constraint_mode(0); // No errors
+    tcc.t_timeout_c.constraint_mode(0);
+  endfunction : new
 
 endclass

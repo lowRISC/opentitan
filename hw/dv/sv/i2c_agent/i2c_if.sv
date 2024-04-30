@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import i2c_agent_pkg::*;
+import i2c_timing_pkg::*;
 import uvm_pkg::*;
 
 interface i2c_if(
