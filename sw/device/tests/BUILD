@@ -3567,24 +3567,12 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_sleep_sram_ret_contents_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_scramble_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
-    ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        timeout = "long",
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
