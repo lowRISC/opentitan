@@ -4446,6 +4446,15 @@ test_suite(
     ],
 )
 
+_RV_DM_TAP_SEL_LC_STATES = get_lc_items(
+    CONST.LCV.TEST_UNLOCKED1,
+    CONST.LCV.TEST_LOCKED0,
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+    CONST.LCV.RMA,
+)
+
 [
     opentitan_test(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
@@ -4466,7 +4475,7 @@ test_suite(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    for lc_state, _ in _RV_DM_TAP_SEL_LC_STATES
 ]
 
 test_suite(
@@ -4474,7 +4483,7 @@ test_suite(
     tags = ["manual"],
     tests = [
         ":rv_dm_jtag_tap_sel_{}".format(lc_state)
-        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+        for lc_state, _ in _RV_DM_TAP_SEL_LC_STATES
     ],
 )
 
