@@ -29,7 +29,7 @@ void nonce_new(nonce_t *nonce);
  * @param b Nonce to compare.
  * @return bool true if equal, false otherwise.
  */
-inline bool nonce_equal(nonce_t *a, nonce_t *b) {
+inline bool nonce_equal(const nonce_t *a, const nonce_t *b) {
   return a->value[0] == b->value[0] && a->value[1] == b->value[1];
 }
 
