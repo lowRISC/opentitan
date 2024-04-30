@@ -547,7 +547,7 @@
                 '''
         }
         { bits: "13",
-          name: "CS_MAIN_SM_ALERT",
+          name: "CMD_STAGE_INVALID_ACMD_ALERT",
           desc: '''
                 This bit is set when an unsupported/illegal CSRNG command is received by the
                 main state machine.
@@ -556,7 +556,7 @@
                 '''
         }
         { bits: "14",
-          name: "CS_MAIN_SM_INVALID_CMD_SEQ",
+          name: "CMD_STAGE_INVALID_CMD_SEQ_ALERT",
           desc: '''
                 This bit is set when an out of order command is received by the main state machine.
                 This happens when an instantiate command is sent for a state that was already

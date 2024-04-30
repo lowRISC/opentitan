@@ -342,12 +342,12 @@ typedef enum dif_csrng_recoverable_alert {
    * Indicates an unsupported CSRNG command was issued.
    */
   kDifCsrngRecoverableAlertBadCsrngCmd =
-      1U << CSRNG_RECOV_ALERT_STS_CS_MAIN_SM_ALERT_BIT,
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_ACMD_ALERT_BIT,
   /**
    * Indicates a supported CSRNG command was issued out of sequence.
    */
   kDifCsrngRecoverableAlertBadCsrngCmdSeq =
-      1U << CSRNG_RECOV_ALERT_STS_CS_MAIN_SM_INVALID_CMD_SEQ_BIT,
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_CMD_SEQ_ALERT_BIT,
   /**
    * Indicates that too many generate commands were issued in a row.
    */

@@ -198,11 +198,11 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cs_main_sm_alert;
+    } cmd_stage_invalid_acmd_alert;
     struct packed {
       logic        d;
       logic        de;
-    } cs_main_sm_invalid_cmd_seq;
+    } cmd_stage_invalid_cmd_seq_alert;
     struct packed {
       logic        d;
       logic        de;

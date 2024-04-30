@@ -168,12 +168,14 @@ package csrng_env_pkg;
   } err_code_bit_e;
 
   typedef enum int {
-    ENABLE_FIELD_ALERT         = 0,
-    SW_APP_ENABLE_FIELD_ALERT  = 1,
-    READ_INT_STATE_FIELD_ALERT = 2,
-    ACMD_FLAG0_FIELD_ALERT     = 3,
-    CS_BUS_CMP_ALERT           = 12,
-    CS_MAIN_SM_ALERT           = 13
+    ENABLE_FIELD_ALERT              = 0,
+    SW_APP_ENABLE_FIELD_ALERT       = 1,
+    READ_INT_STATE_FIELD_ALERT      = 2,
+    ACMD_FLAG0_FIELD_ALERT          = 3,
+    CS_BUS_CMP_ALERT                = 12,
+    CMD_STAGE_INVALID_ACMD_ALERT    = 13,
+    CMD_STAGE_INVALID_CMD_SEQ_ALERT = 14,
+    CMD_STAGE_RESEED_CNT_ALERT      = 15
   } recov_alert_bit_e;
 
   typedef enum int {

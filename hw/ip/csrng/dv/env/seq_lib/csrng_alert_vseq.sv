@@ -23,7 +23,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
 
-    // Values for the cs_main_sm_alert test.
+    // Values for the CMD_STAGE_INVALID_ACMD_ALERT test.
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(illegal_command, illegal_command inside {INV, GENB,
                                                                                    GENU};)
     // For clen we just care about 0, 1 and the max value (coverage).
@@ -205,10 +205,11 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
-    `uvm_info(`gfn, $sformatf("Testing cs_main_sm_alert for app %d", cfg.which_app_err_alert), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Testing CMD_STAGE_INVALID_ACMD_ALERT for app %d",
+        cfg.which_app_err_alert), UVM_MEDIUM)
 
-    // Here we send an illegal command to CSRNG to check that cs_main_sm_alert is triggered.
-    // Sending an illegal command does not get a response from CSRNG.
+    // Here we send an illegal command to CSRNG to check that CMD_STAGE_INVALID_ACMD_ALERT is
+    // triggered. Sending an illegal command does not get a response from CSRNG.
     cs_item.acmd  = illegal_command;
     cs_item.clen  = clen;
     cs_item.flags = get_rand_mubi4_val(.t_weight(4), .f_weight(4), .other_weight(0));
@@ -220,7 +221,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;
-    exp_recov_alert_sts[ral.recov_alert_sts.cs_main_sm_alert.get_lsb_pos()] = 1;
+    exp_recov_alert_sts[ral.recov_alert_sts.cmd_stage_invalid_acmd_alert.get_lsb_pos()] = 1;
     csr_spinwait(.ptr(ral.recov_alert_sts), .exp_data(exp_recov_alert_sts));
     // Since we already did a backdoor check, sampling with this value is sufficient.
     cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
