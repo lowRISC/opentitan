@@ -35,6 +35,7 @@
              "xbar_peri_bind"]
 
   top_dv_path: "{proj_root}/hw/top_earlgrey/dv"
+  top_autogen_path: "{proj_root}/hw/top_earlgrey/ip_autogen"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -72,7 +73,7 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_dv_path}/autogen/rstmgr_tgl_excl.cfg+{top_dv_path}/cov/clkmgr_tgl_excl.cfg+{top_dv_path}/cov/pwrmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_autogen_path}/rstmgr/dv/cov/rstmgr_tgl_excl.cfg+{top_autogen_path}/clkmgr/dv/cov/clkmgr_tgl_excl.cfg+{top_autogen_path}/pwrmgr/dv/cov/pwrmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
