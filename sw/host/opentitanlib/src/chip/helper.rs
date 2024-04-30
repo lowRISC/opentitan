@@ -11,7 +11,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-#[derive(Debug, Args)]
+#[derive(Debug, Default, Args)]
 pub struct OwnershipUnlockParams {
     #[arg(long, value_enum, help = "Requested unlock mode")]
     pub mode: Option<UnlockMode>,
@@ -63,7 +63,7 @@ impl OwnershipUnlockParams {
     }
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Default, Args)]
 pub struct OwnershipActivateParams {
     #[arg(long, value_parser = u64::from_str, help="Current ROM_EXT nonce")]
     pub nonce: Option<u64>,
