@@ -1,87 +1,82 @@
 # Registers
 
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/csrng/data/csrng.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/edn/data/edn.hjson -->
 ## Summary
 
-| Name                                        | Offset   |   Length | Description                                            |
-|:--------------------------------------------|:---------|---------:|:-------------------------------------------------------|
-| csrng.[`INTR_STATE`](#intr_state)           | 0x0      |        4 | Interrupt State Register                               |
-| csrng.[`INTR_ENABLE`](#intr_enable)         | 0x4      |        4 | Interrupt Enable Register                              |
-| csrng.[`INTR_TEST`](#intr_test)             | 0x8      |        4 | Interrupt Test Register                                |
-| csrng.[`ALERT_TEST`](#alert_test)           | 0xc      |        4 | Alert Test Register                                    |
-| csrng.[`REGWEN`](#regwen)                   | 0x10     |        4 | Register write enable for all control registers        |
-| csrng.[`CTRL`](#ctrl)                       | 0x14     |        4 | Control register                                       |
-| csrng.[`CMD_REQ`](#cmd_req)                 | 0x18     |        4 | Command request register                               |
-| csrng.[`SW_CMD_STS`](#sw_cmd_sts)           | 0x1c     |        4 | Application interface command status register          |
-| csrng.[`GENBITS_VLD`](#genbits_vld)         | 0x20     |        4 | Generate bits returned valid register                  |
-| csrng.[`GENBITS`](#genbits)                 | 0x24     |        4 | Generate bits returned register                        |
-| csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x28     |        4 | Internal state number register                         |
-| csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x2c     |        4 | Internal state read access register                    |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x30     |        4 | Hardware instance exception status register            |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x34     |        4 | Recoverable alert status register                      |
-| csrng.[`ERR_CODE`](#err_code)               | 0x38     |        4 | Hardware detection of error conditions status register |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x3c     |        4 | Test error conditions register                         |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x40     |        4 | Main state machine state debug register                |
+| Name                                                                | Offset   |   Length | Description                                                  |
+|:--------------------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------|
+| edn.[`INTR_STATE`](#intr_state)                                     | 0x0      |        4 | Interrupt State Register                                     |
+| edn.[`INTR_ENABLE`](#intr_enable)                                   | 0x4      |        4 | Interrupt Enable Register                                    |
+| edn.[`INTR_TEST`](#intr_test)                                       | 0x8      |        4 | Interrupt Test Register                                      |
+| edn.[`ALERT_TEST`](#alert_test)                                     | 0xc      |        4 | Alert Test Register                                          |
+| edn.[`REGWEN`](#regwen)                                             | 0x10     |        4 | Register write enable for all control registers              |
+| edn.[`CTRL`](#ctrl)                                                 | 0x14     |        4 | EDN control register                                         |
+| edn.[`BOOT_INS_CMD`](#boot_ins_cmd)                                 | 0x18     |        4 | EDN boot instantiate command register                        |
+| edn.[`BOOT_GEN_CMD`](#boot_gen_cmd)                                 | 0x1c     |        4 | EDN boot generate command register                           |
+| edn.[`SW_CMD_REQ`](#sw_cmd_req)                                     | 0x20     |        4 | EDN csrng app command request register                       |
+| edn.[`SW_CMD_STS`](#sw_cmd_sts)                                     | 0x24     |        4 | EDN software command status register                         |
+| edn.[`HW_CMD_STS`](#hw_cmd_sts)                                     | 0x28     |        4 | EDN hardware command status register                         |
+| edn.[`RESEED_CMD`](#reseed_cmd)                                     | 0x2c     |        4 | EDN csrng reseed command register                            |
+| edn.[`GENERATE_CMD`](#generate_cmd)                                 | 0x30     |        4 | EDN csrng generate command register                          |
+| edn.[`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) | 0x34     |        4 | EDN maximum number of requests between reseeds register      |
+| edn.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x38     |        4 | Recoverable alert status register                            |
+| edn.[`ERR_CODE`](#err_code)                                         | 0x3c     |        4 | Hardware detection of fatal error conditions status register |
+| edn.[`ERR_CODE_TEST`](#err_code_test)                               | 0x40     |        4 | Test error conditions register                               |
+| edn.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x44     |        4 | Main state machine state observation register                |
 
 ## INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "cs_cmd_req_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cs_entropy_req", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cs_hw_inst_exc", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cs_fatal_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "edn_cmd_req_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "edn_fatal_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                                                                             |
-|:------:|:------:|:-------:|:----------------|:------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |                 | Reserved                                                                                                                |
-|   3    |  rw1c  |   0x0   | cs_fatal_err    | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](#err_code) register to get more information. |
-|   2    |  rw1c  |   0x0   | cs_hw_inst_exc  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                         |
-|   1    |  rw1c  |   0x0   | cs_entropy_req  | Asserted when a request for entropy has been made.                                                                      |
-|   0    |  rw1c  |   0x0   | cs_cmd_req_done | Asserted when a command request is completed.                                                                           |
+|  Bits  |  Type  |  Reset  | Name             | Description                                           |
+|:------:|:------:|:-------:|:-----------------|:------------------------------------------------------|
+|  31:2  |        |         |                  | Reserved                                              |
+|   1    |  rw1c  |   0x0   | edn_fatal_err    | Asserted when a FIFO error occurs.                    |
+|   0    |  rw1c  |   0x0   | edn_cmd_req_done | Asserted when a software CSRNG request has completed. |
 
 ## INTR_ENABLE
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "cs_cmd_req_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cs_entropy_req", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cs_hw_inst_exc", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cs_fatal_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "edn_cmd_req_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "edn_fatal_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                               |
-|:------:|:------:|:-------:|:----------------|:--------------------------------------------------------------------------|
-|  31:4  |        |         |                 | Reserved                                                                  |
-|   3    |   rw   |   0x0   | cs_fatal_err    | Enable interrupt when [`INTR_STATE.cs_fatal_err`](#intr_state) is set.    |
-|   2    |   rw   |   0x0   | cs_hw_inst_exc  | Enable interrupt when [`INTR_STATE.cs_hw_inst_exc`](#intr_state) is set.  |
-|   1    |   rw   |   0x0   | cs_entropy_req  | Enable interrupt when [`INTR_STATE.cs_entropy_req`](#intr_state) is set.  |
-|   0    |   rw   |   0x0   | cs_cmd_req_done | Enable interrupt when [`INTR_STATE.cs_cmd_req_done`](#intr_state) is set. |
+|  Bits  |  Type  |  Reset  | Name             | Description                                                                |
+|:------:|:------:|:-------:|:-----------------|:---------------------------------------------------------------------------|
+|  31:2  |        |         |                  | Reserved                                                                   |
+|   1    |   rw   |   0x0   | edn_fatal_err    | Enable interrupt when [`INTR_STATE.edn_fatal_err`](#intr_state) is set.    |
+|   0    |   rw   |   0x0   | edn_cmd_req_done | Enable interrupt when [`INTR_STATE.edn_cmd_req_done`](#intr_state) is set. |
 
 ## INTR_TEST
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "cs_cmd_req_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cs_entropy_req", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cs_hw_inst_exc", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cs_fatal_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "edn_cmd_req_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "edn_fatal_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                        |
-|:------:|:------:|:-------:|:----------------|:-------------------------------------------------------------------|
-|  31:4  |        |         |                 | Reserved                                                           |
-|   3    |   wo   |   0x0   | cs_fatal_err    | Write 1 to force [`INTR_STATE.cs_fatal_err`](#intr_state) to 1.    |
-|   2    |   wo   |   0x0   | cs_hw_inst_exc  | Write 1 to force [`INTR_STATE.cs_hw_inst_exc`](#intr_state) to 1.  |
-|   1    |   wo   |   0x0   | cs_entropy_req  | Write 1 to force [`INTR_STATE.cs_entropy_req`](#intr_state) to 1.  |
-|   0    |   wo   |   0x0   | cs_cmd_req_done | Write 1 to force [`INTR_STATE.cs_cmd_req_done`](#intr_state) to 1. |
+|  Bits  |  Type  |  Reset  | Name             | Description                                                         |
+|:------:|:------:|:-------:|:-----------------|:--------------------------------------------------------------------|
+|  31:2  |        |         |                  | Reserved                                                            |
+|   1    |   wo   |   0x0   | edn_fatal_err    | Write 1 to force [`INTR_STATE.edn_fatal_err`](#intr_state) to 1.    |
+|   0    |   wo   |   0x0   | edn_cmd_req_done | Write 1 to force [`INTR_STATE.edn_cmd_req_done`](#intr_state) to 1. |
 
 ## ALERT_TEST
 Alert Test Register
@@ -113,170 +108,218 @@ Register write enable for all control registers
 {"reg": [{"name": "REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                               |
-|   0    |  rw0c  |   0x1   | REGWEN | When true, all writeable registers can be modified. When false, they become read-only. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                       |
+|   0    |  rw0c  |   0x1   | REGWEN | When true, the CTRL can be written by software. When false, this field read-only. Defaults true, write zero to clear. Note that this needs to be cleared after initial configuration at boot in order to lock in the listed register settings. |
 
 ## CTRL
-Control register
+EDN control register
 - Offset: `0x14`
-- Reset default: `0x999`
-- Reset mask: `0xfff`
+- Reset default: `0x9999`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SW_APP_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "READ_INT_STATE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "EDN_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "BOOT_REQ_MODE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "AUTO_REQ_MODE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "CMD_FIFO_RST", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                                                                                           |
-|:------:|:------:|:-------:|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |                | Reserved                                                                                                                                                                                                                                                              |
-|  11:8  |   rw   |   0x9   | READ_INT_STATE | Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register. Reading the internal state of the enable instances will be enabled only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding. |
-|  7:4   |   rw   |   0x9   | SW_APP_ENABLE  | Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register. This application interface for software (register based) will be enabled only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.       |
-|  3:0   |   rw   |   0x9   | ENABLE         | Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules of the entropy complex may only be enabled and disabled in a specific order, see Programmers Guide for details.                                                                    |
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+| 31:16  |        |         | Reserved                              |
+| 15:12  |   rw   |   0x9   | [CMD_FIFO_RST](#ctrl--cmd_fifo_rst)   |
+|  11:8  |   rw   |   0x9   | [AUTO_REQ_MODE](#ctrl--auto_req_mode) |
+|  7:4   |   rw   |   0x9   | [BOOT_REQ_MODE](#ctrl--boot_req_mode) |
+|  3:0   |   rw   |   0x9   | [EDN_ENABLE](#ctrl--edn_enable)       |
 
-## CMD_REQ
-Command request register
+### CTRL . CMD_FIFO_RST
+Setting this field to kMultiBitBool4True clears the two command FIFOs: the
+RESEED_CMD FIFO and the GENERATE_CMD FIFO. This field must be
+set to the reset state by software before any further commands can be issued to
+these FIFOs.
+
+### CTRL . AUTO_REQ_MODE
+Setting this field to kMultiBitBool4True will enable the EDN block to automatically
+send another request to CSRNG application interface. It is assumed that a CSRNG
+instantiate command will be issued using the [`SW_CMD_REQ`](#sw_cmd_req) register interface.
+When this command has an command ack returned from CSRNG, a
+new generate command will be send out again without software intervention. It is
+expected that the generate command will be sent repeatedly so that a continuous
+supply of entropy can be delivered to the endpoints. Reseed commands will be sent
+on a programmable basic between generate commands.
+The [`GENERATE_CMD`](#generate_cmd), [`RESEED_CMD`](#reseed_cmd), and [`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) registers must
+set up before the [`SW_CMD_REQ`](#sw_cmd_req) register command is issued.
+
+### CTRL . BOOT_REQ_MODE
+Setting this field to kMultiBitBool4True will enable the feature where the EDN block
+will automatically send a boot-time request to the CSRNG application interface.
+The purpose of this feature is to request entropy as fast as possible after reset,
+and during chip boot-time.
+
+### CTRL . EDN_ENABLE
+Setting this field to kMultiBitBool4True enables the EDN module. The modules of the
+entropy complex may only be enabled and disabled in a specific order, see
+Programmers Guide for details.
+
+## BOOT_INS_CMD
+EDN boot instantiate command register
 - Offset: `0x18`
+- Reset default: `0x901`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "BOOT_INS_CMD", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description                                                           |
+|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------|
+|  31:0  |   rw   |  0x901  | BOOT_INS_CMD | This field is used as the value for Instantiate command at boot time. |
+
+## BOOT_GEN_CMD
+EDN boot generate command register
+- Offset: `0x1c`
+- Reset default: `0xfff003`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "BOOT_GEN_CMD", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset   | Name         | Description                                                        |
+|:------:|:------:|:--------:|:-------------|:-------------------------------------------------------------------|
+|  31:0  |   rw   | 0xfff003 | BOOT_GEN_CMD | This field is used as the value for generate command at boot time. |
+
+## SW_CMD_REQ
+EDN csrng app command request register
+- Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CMD_REQ", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "SW_CMD_REQ", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                         |
-|:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   wo   |   0x0   | CMD_REQ | Writing this request with defined CSRNG commands will initiate all possible CSRNG actions. The application interface must wait for the "ack" to return before issuing new commands. |
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:0  |   wo   |    x    | [SW_CMD_REQ](#sw_cmd_req--sw_cmd_req) |
+
+### SW_CMD_REQ . SW_CMD_REQ
+Any CSRNG action can be initiated by writing a CSRNG command to this
+register. The application interface must wait for the "ack" to
+return before issuing new commands. This interface is intended
+to be controlled solely by software.
+
+If [`CTRL.AUTO_REQ_MODE`](#ctrl) is set, only the first instantiate command has any
+effect.  After that command has been processed, writes to this register
+register will have no effect on operation.
+Note that CSRNG command format details can be found
+in the CSRNG documentation.
 
 ## SW_CMD_STS
-Application interface command status register
-- Offset: `0x1c`
+EDN software command status register
+- Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x1e`
+- Reset mask: `0x1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "CMD_REG_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                            |
-|:------:|:------:|:-------:|:--------------------------------|
-|  31:5  |        |         | Reserved                        |
-|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
-|   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack) |
-|   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy) |
+|  Bits  |  Type  |  Reset  | Name                                    |
+|:------:|:------:|:-------:|:----------------------------------------|
+|  31:5  |        |         | Reserved                                |
+|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts)         |
+|   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack)         |
+|   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy)         |
+|   0    |   ro   |   0x0   | [CMD_REG_RDY](#sw_cmd_sts--cmd_reg_rdy) |
 
 ### SW_CMD_STS . CMD_STS
-This field represents the status code returned with the application command ack.
-It is updated each time a command ack is asserted on the internal application
-interface for software use.
-To check whether a command was succesful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state) or
+This field represents the status code returned with the CSRNG application command ack.
+It is updated each time a SW command is acknowledged by CSRNG.
+To check whether a command was successful, wait for [`INTR_STATE.EDN_CMD_REQ_DONE`](#intr_state) or
 [`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
-0x0: Request completed successfully.
-0x1: Request completed with an invalid application command error.
-     This error indicates that the issued application command doesn't represent a valid operation.
-     If this error appears, the main state machine will hang and the entropy complex has to be restarted.
-0x2: Request completed with an invalid counter drbg generation command error.
-     This error indicates that CSRNG entropy was generated for a command that is not a generate command.
-     In this case the entropy should not be considered as valid.
-0x3: This error indicates that the last command was issued out of sequence.
-     This happens when a command other than instantiate was issued without sending an instantiate command first.
-     This can also happen when an uninstantiate command is sent without instantiating first.
+A description of the command status types can be found [here](../../csrng/doc/registers.md#sw_cmd_sts--cmd_sts).
 
 ### SW_CMD_STS . CMD_ACK
 This one bit field indicates when a SW command has been acknowledged by the CSRNG.
-It is set to low each time a new command is written to [`CMD_REQ.`](#cmd_req)
+It is set to low each time a new command is written to [`SW_CMD_REQ.`](#sw_cmd_req)
 The field is set to high once a SW command request has been acknowledged by the CSRNG.
 0b0: The last SW command has not been acknowledged yet.
 0b1: The last SW command has been acknowledged.
 
 ### SW_CMD_STS . CMD_RDY
-This bit indicates when the command interface is ready to accept commands.
+This bit indicates when the EDN is ready to accept the next command.
 Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this field needs to be polled.
-0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
-0b1: CSRNG is ready to accept the next command.
+0b0: The EDN is not ready to accept commands or the last command hasn't been acked yet.
+0b1: The EDN is ready to accept the next command.
 
-## GENBITS_VLD
-Generate bits returned valid register
-- Offset: `0x20`
-- Reset default: `0x0`
-- Reset mask: `0x3`
+### SW_CMD_STS . CMD_REG_RDY
+This bit indicates when [`SW_CMD_REQ`](#sw_cmd_req) is ready to accept the next word.
+This bit has to be polled before each word of a command is written to [`SW_CMD_REQ.`](#sw_cmd_req)
+0b0: The EDN is not ready to accept the next word yet.
+0b1: The EDN is ready to accept the next word.
 
-### Fields
-
-```wavejson
-{"reg": [{"name": "GENBITS_VLD", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GENBITS_FIPS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                                                               |
-|:------:|:------:|:-------:|:-------------|:--------------------------------------------------------------------------|
-|  31:2  |        |         |              | Reserved                                                                  |
-|   1    |   ro   |    x    | GENBITS_FIPS | This bit is set when genbits are FIPS/CC compliant.                       |
-|   0    |   ro   |    x    | GENBITS_VLD  | This bit is set when genbits are available on this application interface. |
-
-## GENBITS
-Generate bits returned register
-- Offset: `0x24`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "GENBITS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                         |
-|:------:|:------:|:-------:|:-----------------------------|
-|  31:0  |   ro   |    x    | [GENBITS](#genbits--genbits) |
-
-### GENBITS . GENBITS
-Reading this register will get the generated bits that were requested with
-the generate request. This register must be read four times for each request
-made. For example, an application command generate request with
-a `clen` value of 4 requires this register to be read 16 times to get all
-of the data out of the FIFO path.
-Note that for [`GENBITS`](#genbits) to be able to deliver random numbers, also [`CTRL.SW_APP_ENABLE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
-Otherwise, the register reads as 0.
-
-## INT_STATE_NUM
-Internal state number register
+## HW_CMD_STS
+EDN hardware command status register
 - Offset: `0x28`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INT_STATE_NUM", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "BOOT_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AUTO_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_TYPE", "bits": 4, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                           |
-|:------:|:------:|:-------:|:-----------------------------------------------|
-|  31:4  |        |         | Reserved                                       |
-|  3:0   |   rw   |   0x0   | [INT_STATE_NUM](#int_state_num--int_state_num) |
+|  Bits  |  Type  |  Reset  | Name                                |
+|:------:|:------:|:-------:|:------------------------------------|
+|  31:9  |        |         | Reserved                            |
+|  8:7   |   ro   |   0x0   | [CMD_STS](#hw_cmd_sts--cmd_sts)     |
+|   6    |   ro   |   0x0   | [CMD_ACK](#hw_cmd_sts--cmd_ack)     |
+|  5:2   |   ro   |   0x0   | [CMD_TYPE](#hw_cmd_sts--cmd_type)   |
+|   1    |   ro   |   0x0   | [AUTO_MODE](#hw_cmd_sts--auto_mode) |
+|   0    |   ro   |   0x0   | [BOOT_MODE](#hw_cmd_sts--boot_mode) |
 
-### INT_STATE_NUM . INT_STATE_NUM
-Setting this field will set the number for which internal state can be
-selected for a read access. Up to 16 internal state values can be chosen
-from this register. The actual number of valid internal state fields
-is set by parameter NHwApps plus 1 software app. For those selections that point
-to reserved locations (greater than NHwApps plus 1), the returned value
-will be zero. Writing this register will also reset the internal read
-pointer for the [`INT_STATE_VAL`](#int_state_val) register.
-Note: This register should be read back after being written to ensure
-that the [`INT_STATE_VAL`](#int_state_val) read back is accurate.
+### HW_CMD_STS . CMD_STS
+This field represents the status code returned with the CSRNG application command ack.
+It is updated each time a HW command is acknowledged by CSRNG.
+A description of the command status types can be found [here](../../csrng/doc/registers.md#sw_cmd_sts--cmd_sts).
 
-## INT_STATE_VAL
-Internal state read access register
+### HW_CMD_STS . CMD_ACK
+This one bit field indicates when a HW command has been acknowledged by the CSRNG.
+It is set to low each time a new command is sent to the CSRNG.
+The field is set to high once a HW command request has been acknowledged by the CSRNG.
+0b0: The last HW command has not been acknowledged yet.
+0b1: The last HW command has been acknowledged.
+
+### HW_CMD_STS . CMD_TYPE
+This field contains the application command type of the hardware controlled command issued last.
+The application command selects one of five operations to perform.
+A description of the application command types can be found [here](../../csrng/doc/theory_of_operation.md#command-description).
+
+### HW_CMD_STS . AUTO_MODE
+This one bit field indicates whether the EDN is in the hardware controlled part of auto mode.
+The instantiate command is issued via SW interface and is thus not part of the hardware controlled part of auto mode.
+0b0: The EDN is not in the hardware controlled part of auto mode.
+0b1: The EDN is in the hardware controlled part of auto mode.
+
+### HW_CMD_STS . BOOT_MODE
+This one bit field indicates whether the EDN is in the hardware controlled boot mode.
+0b0: The EDN is not in boot mode.
+0b1: The EDN is in boot mode.
+
+## RESEED_CMD
+EDN csrng reseed command register
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -284,319 +327,170 @@ Internal state read access register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INT_STATE_VAL", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                                           |
-|:------:|:------:|:-------:|:-----------------------------------------------|
-|  31:0  |   ro   |    x    | [INT_STATE_VAL](#int_state_val--int_state_val) |
-
-### INT_STATE_VAL . INT_STATE_VAL
-Reading this register will dump out the contents of the selected internal state field.
-Since the internal state field is 448 bits wide, it will require 14 reads from this
-register to gather the entire field. Once 14 reads have been done, the internal read
-pointer (selects 32 bits of the 448 bit field) will reset to zero. The [`INT_STATE_NUM`](#int_state_num)
-can be re-written at this time (internal read pointer is also reset), and then
-another internal state field can be read.
-Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
-Otherwise, the register reads as 0.
-
-## HW_EXC_STS
-Hardware instance exception status register
-- Offset: `0x30`
-- Reset default: `0x0`
-- Reset mask: `0xffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "HW_EXC_STS", "bits": 16, "attr": ["rw0c"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "RESEED_CMD", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                  |
 |:------:|:------:|:-------:|:--------------------------------------|
-| 31:16  |        |         | Reserved                              |
-|  15:0  |  rw0c  |   0x0   | [HW_EXC_STS](#hw_exc_sts--hw_exc_sts) |
+|  31:0  |   wo   |    x    | [RESEED_CMD](#reseed_cmd--reseed_cmd) |
 
-### HW_EXC_STS . HW_EXC_STS
-Reading this register indicates whether one of the CSRNG HW instances has
-encountered an exception.  Each bit corresponds to a particular hardware
-instance, with bit 0 corresponding to instance HW0, bit 1 corresponding
-to instance HW1, and so forth. (To monitor the status of requests made
-to the SW instance, check the [`SW_CMD_STS`](#sw_cmd_sts) register). Writing a zero to this register
-resets the status bits.
+### RESEED_CMD . RESEED_CMD
+Writing this register will fill a FIFO with up to 13 command words (32b words).
+This FIFO will be used to automatically send out a reseed command to the CSRNG
+application interface when in [`CTRL.AUTO_REQ_MODE.`](#ctrl) This command will be sent only after
+the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero.
+
+If more than 13 entires are written to the FIFO, the design will automatically generate
+a fatal alert.
+
+Note that CSRNG command format details can be found
+in the CSRNG documentation.
+
+## GENERATE_CMD
+EDN csrng generate command register
+- Offset: `0x30`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "GENERATE_CMD", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                        |
+|:------:|:------:|:-------:|:--------------------------------------------|
+|  31:0  |   wo   |    x    | [GENERATE_CMD](#generate_cmd--generate_cmd) |
+
+### GENERATE_CMD . GENERATE_CMD
+Writing this register will fill a FIFO with up to 13 command words (32b words).
+This FIFO will be used to automatically send out a generate command to the CSRNG
+appl interface when in [`CTRL.AUTO_REQ_MODE.`](#ctrl) This command will be sent only after
+receiving a command ack from the previous command.
+
+If more than 13 entires are written to the FIFO, the design will automatically generate
+a fatal alert.
+
+Note that CSRNG command format details can be found
+in the CSRNG documentation.
+
+## MAX_NUM_REQS_BETWEEN_RESEEDS
+EDN maximum number of requests between reseeds register
+- Offset: `0x34`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "MAX_NUM_REQS_BETWEEN_RESEEDS", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                                                                        |
+|:------:|:------:|:-------:|:--------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | [MAX_NUM_REQS_BETWEEN_RESEEDS](#max_num_reqs_between_reseeds--max_num_reqs_between_reseeds) |
+
+### MAX_NUM_REQS_BETWEEN_RESEEDS . MAX_NUM_REQS_BETWEEN_RESEEDS
+Setting this field will set the number of generate requests that can be made
+to CSRNG before a reseed request is made. This value only has meaning when in
+[`CTRL.AUTO_REQ_MODE.`](#ctrl) This register supports a maximum of 2^32 requests between reseeds.
+This register will be used by a counter that counts down, triggering an
+automatic reseed when it reaches zero.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x34`
-- Reset default: `0x0`
-- Reset mask: `0x700f`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_INVALID_CMD_SEQ", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                                                                       |
-|:------:|:------:|:-------:|:---------------------------------------------------------------------------|
-| 31:15  |        |         | Reserved                                                                   |
-|   14   |  rw0c  |   0x0   | [CS_MAIN_SM_INVALID_CMD_SEQ](#recov_alert_sts--cs_main_sm_invalid_cmd_seq) |
-|   13   |  rw0c  |   0x0   | [CS_MAIN_SM_ALERT](#recov_alert_sts--cs_main_sm_alert)                     |
-|   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                     |
-|  11:4  |        |         | Reserved                                                                   |
-|   3    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)         |
-|   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert) |
-|   1    |  rw0c  |   0x0   | [SW_APP_ENABLE_FIELD_ALERT](#recov_alert_sts--sw_app_enable_field_alert)   |
-|   0    |  rw0c  |   0x0   | [ENABLE_FIELD_ALERT](#recov_alert_sts--enable_field_alert)                 |
-
-### RECOV_ALERT_STS . CS_MAIN_SM_INVALID_CMD_SEQ
-This bit is set when an out of order command is received by the main state machine.
-This happens when an instantiate command is sent for a state that was already
-instantiated or when any command other than instantiate is sent for a state that
-wasn't instantiated yet.
-The invalid command is ignored and CSRNG continues to operate.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . CS_MAIN_SM_ALERT
-This bit is set when an unsupported/illegal CSRNG command is received by the
-main state machine.
-The invalid command is ignored and CSRNG continues to operate.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . CS_BUS_CMP_ALERT
-This bit is set when the software application port genbits bus value is equal
-to the prior valid value on the bus, indicating a possible attack.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . ACMD_FLAG0_FIELD_ALERT
-This bit is set when the FLAG0 field in the Application Command is set to
-a value other than kMultiBitBool4True or kMultiBitBool4False.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . READ_INT_STATE_FIELD_ALERT
-This bit is set when the READ_INT_STATE field in the [`CTRL`](#ctrl) register is set to
-a value other than kMultiBitBool4True or kMultiBitBool4False.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . SW_APP_ENABLE_FIELD_ALERT
-This bit is set when the SW_APP_ENABLE field in the [`CTRL`](#ctrl) register is set to
-a value other than kMultiBitBool4True or kMultiBitBool4False.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . ENABLE_FIELD_ALERT
-This bit is set when the ENABLE field in the [`CTRL`](#ctrl) register is set to
-a value other than kMultiBitBool4True or kMultiBitBool4False.
-Writing a zero resets this status bit.
-
-## ERR_CODE
-Hardware detection of error conditions status register
 - Offset: `0x38`
 - Reset default: `0x0`
-- Reset mask: `0x77f0ffff`
+- Reset mask: `0x300f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SFIFO_CMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_CMDREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_RCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_KEYVRC_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_UPDREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_BENCREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_BENCACK_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_PDATA_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_FINAL_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GBENCACK_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GRCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GADSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_BLKENC_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "CMD_STAGE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_GEN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDBE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDOB_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AES_CIPHER_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_GEN_CNT_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "EDN_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BOOT_REQ_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "AUTO_REQ_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_FIFO_RST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "EDN_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CSRNG_ACK_ERR", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                |
-|:------:|:------:|:-------:|:----------------------------------------------------|
-|   31   |        |         | Reserved                                            |
-|   30   |   ro   |   0x0   | [FIFO_STATE_ERR](#err_code--fifo_state_err)         |
-|   29   |   ro   |   0x0   | [FIFO_READ_ERR](#err_code--fifo_read_err)           |
-|   28   |   ro   |   0x0   | [FIFO_WRITE_ERR](#err_code--fifo_write_err)         |
-|   27   |        |         | Reserved                                            |
-|   26   |   ro   |   0x0   | [CMD_GEN_CNT_ERR](#err_code--cmd_gen_cnt_err)       |
-|   25   |   ro   |   0x0   | [AES_CIPHER_SM_ERR](#err_code--aes_cipher_sm_err)   |
-|   24   |   ro   |   0x0   | [DRBG_UPDOB_SM_ERR](#err_code--drbg_updob_sm_err)   |
-|   23   |   ro   |   0x0   | [DRBG_UPDBE_SM_ERR](#err_code--drbg_updbe_sm_err)   |
-|   22   |   ro   |   0x0   | [DRBG_GEN_SM_ERR](#err_code--drbg_gen_sm_err)       |
-|   21   |   ro   |   0x0   | [MAIN_SM_ERR](#err_code--main_sm_err)               |
-|   20   |   ro   |   0x0   | [CMD_STAGE_SM_ERR](#err_code--cmd_stage_sm_err)     |
-| 19:16  |        |         | Reserved                                            |
-|   15   |   ro   |   0x0   | [SFIFO_BLKENC_ERR](#err_code--sfifo_blkenc_err)     |
-|   14   |   ro   |   0x0   | [SFIFO_GGENBITS_ERR](#err_code--sfifo_ggenbits_err) |
-|   13   |   ro   |   0x0   | [SFIFO_GADSTAGE_ERR](#err_code--sfifo_gadstage_err) |
-|   12   |   ro   |   0x0   | [SFIFO_GGENREQ_ERR](#err_code--sfifo_ggenreq_err)   |
-|   11   |   ro   |   0x0   | [SFIFO_GRCSTAGE_ERR](#err_code--sfifo_grcstage_err) |
-|   10   |   ro   |   0x0   | [SFIFO_GBENCACK_ERR](#err_code--sfifo_gbencack_err) |
-|   9    |   ro   |   0x0   | [SFIFO_FINAL_ERR](#err_code--sfifo_final_err)       |
-|   8    |   ro   |   0x0   | [SFIFO_PDATA_ERR](#err_code--sfifo_pdata_err)       |
-|   7    |   ro   |   0x0   | [SFIFO_BENCACK_ERR](#err_code--sfifo_bencack_err)   |
-|   6    |   ro   |   0x0   | [SFIFO_BENCREQ_ERR](#err_code--sfifo_bencreq_err)   |
-|   5    |   ro   |   0x0   | [SFIFO_UPDREQ_ERR](#err_code--sfifo_updreq_err)     |
-|   4    |   ro   |   0x0   | [SFIFO_KEYVRC_ERR](#err_code--sfifo_keyvrc_err)     |
-|   3    |   ro   |   0x0   | [SFIFO_RCSTAGE_ERR](#err_code--sfifo_rcstage_err)   |
-|   2    |   ro   |   0x0   | [SFIFO_CMDREQ_ERR](#err_code--sfifo_cmdreq_err)     |
-|   1    |   ro   |   0x0   | [SFIFO_GENBITS_ERR](#err_code--sfifo_genbits_err)   |
-|   0    |   ro   |   0x0   | [SFIFO_CMD_ERR](#err_code--sfifo_cmd_err)           |
+|  Bits  |  Type  |  Reset  | Name                      | Description                                                                                                                                                                                     |
+|:------:|:------:|:-------:|:--------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:14  |        |         |                           | Reserved                                                                                                                                                                                        |
+|   13   |  rw0c  |   0x0   | CSRNG_ACK_ERR             | This bit is set when the CSRNG returns an acknowledgement where the status signal is high. Writing a zero resets this status bit.                                                               |
+|   12   |  rw0c  |   0x0   | EDN_BUS_CMP_ALERT         | This bit is set when the interal entropy bus value is equal to the prior valid value on the bus, indicating a possible attack. Writing a zero resets this status bit.                           |
+|  11:4  |        |         |                           | Reserved                                                                                                                                                                                        |
+|   3    |  rw0c  |   0x0   | CMD_FIFO_RST_FIELD_ALERT  | This bit is set when the CMD_FIFO_RST field is set to an illegal value, something other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.                  |
+|   2    |  rw0c  |   0x0   | AUTO_REQ_MODE_FIELD_ALERT | This bit is set when the [`CTRL.AUTO_REQ_MODE`](#ctrl) field is set to an illegal value, something other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit. |
+|   1    |  rw0c  |   0x0   | BOOT_REQ_MODE_FIELD_ALERT | This bit is set when the BOOT_REQ_MODE field is set to an illegal value, something other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.                 |
+|   0    |  rw0c  |   0x0   | EDN_ENABLE_FIELD_ALERT    | This bit is set when the EDN_ENABLE field is set to an illegal value, something other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.                    |
+
+## ERR_CODE
+Hardware detection of fatal error conditions status register
+- Offset: `0x3c`
+- Reset default: `0x0`
+- Reset mask: `0x70700003`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SFIFO_RESCMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENCMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 18}, {"name": "EDN_ACK_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EDN_MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EDN_CNTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 5}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                            |
+|:------:|:------:|:-------:|:------------------------------------------------|
+|   31   |        |         | Reserved                                        |
+|   30   |   ro   |   0x0   | [FIFO_STATE_ERR](#err_code--fifo_state_err)     |
+|   29   |   ro   |   0x0   | [FIFO_READ_ERR](#err_code--fifo_read_err)       |
+|   28   |   ro   |   0x0   | [FIFO_WRITE_ERR](#err_code--fifo_write_err)     |
+| 27:23  |        |         | Reserved                                        |
+|   22   |   ro   |   0x0   | [EDN_CNTR_ERR](#err_code--edn_cntr_err)         |
+|   21   |   ro   |   0x0   | [EDN_MAIN_SM_ERR](#err_code--edn_main_sm_err)   |
+|   20   |   ro   |   0x0   | [EDN_ACK_SM_ERR](#err_code--edn_ack_sm_err)     |
+|  19:2  |        |         | Reserved                                        |
+|   1    |   ro   |   0x0   | [SFIFO_GENCMD_ERR](#err_code--sfifo_gencmd_err) |
+|   0    |   ro   |   0x0   | [SFIFO_RESCMD_ERR](#err_code--sfifo_rescmd_err) |
 
 ### ERR_CODE . FIFO_STATE_ERR
-This bit will be set to one when any of the source bits (bits 0 through 15 of this
-this register) are asserted as a result of an error pulse generated from
-any FIFO where both the empty and full status bits are set.
+This bit will be set to one when any of the source bits (bits 0 through 1 of this register) are asserted as a result of an error pulse generated from any FIFO where both the empty and full status bits are set or in case of error conditions inside the hardened counters.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . FIFO_READ_ERR
-This bit will be set to one when any of the source bits (bits 0 through 15 of this
-this register) are asserted as a result of an error pulse generated from
-any empty FIFO that has recieved a read pulse.
+This bit will be set to one when any of the source bits (bits 0 through 1 of this register) are asserted as a result of an error pulse generated from any empty FIFO that has received a read pulse.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . FIFO_WRITE_ERR
-This bit will be set to one when any of the source bits (bits 0 through 15 of this
-this register) are asserted as a result of an error pulse generated from
-any full FIFO that has been recieved a write pulse.
+This bit will be set to one when any of the source bits (bits 0 through 1 of this register) are asserted as a result of an error pulse generated from any full FIFO that has received a write pulse.
 This bit will stay set until the next reset.
 
-### ERR_CODE . CMD_GEN_CNT_ERR
-This bit will be set to one when a mismatch in any of the hardened counters
-has been detected.
-This error will signal a fatal alert, and also
-an interrupt if enabled.
+### ERR_CODE . EDN_CNTR_ERR
+This bit will be set to one when a hardened counter has detected an error
+condition. This error will signal a fatal alert.
 This bit will stay set until the next reset.
 
-### ERR_CODE . AES_CIPHER_SM_ERR
-This bit will be set to one when an AES fatal error has been detected.
-This error will signal a fatal alert, and also
-an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . DRBG_UPDOB_SM_ERR
+### ERR_CODE . EDN_MAIN_SM_ERR
 This bit will be set to one when an illegal state has been detected for the
-ctr_drbg update out block state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
+EDN main stage state machine. This error will signal a fatal alert.
 This bit will stay set until the next reset.
 
-### ERR_CODE . DRBG_UPDBE_SM_ERR
+### ERR_CODE . EDN_ACK_SM_ERR
 This bit will be set to one when an illegal state has been detected for the
-ctr_drbg update block encode state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
+EDN ack stage state machine. This error will signal a fatal alert.
 This bit will stay set until the next reset.
 
-### ERR_CODE . DRBG_GEN_SM_ERR
-This bit will be set to one when an illegal state has been detected for the
-ctr_drbg gen state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . MAIN_SM_ERR
-This bit will be set to one when an illegal state has been detected for the
-main state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . CMD_STAGE_SM_ERR
-This bit will be set to one when an illegal state has been detected for the
-command stage state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_BLKENC_ERR
+### ERR_CODE . SFIFO_GENCMD_ERR
 This bit will be set to one when an error has been detected for the
-blkenc FIFO. The type of error is reflected in the type status
+generate command FIFO. The type of error is reflected in the type status
 bits (bits 28 through 30 of this register).
+When this bit is set, a fatal error condition will result.
 This bit will stay set until the next reset.
 
-### ERR_CODE . SFIFO_GGENBITS_ERR
+### ERR_CODE . SFIFO_RESCMD_ERR
 This bit will be set to one when an error has been detected for the
-ggenbits FIFO. The type of error is reflected in the type status
+reseed command FIFO. The type of error is reflected in the type status
 bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GADSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-gadstage FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GGENREQ_ERR
-This bit will be set to one when an error has been detected for the
-ggenreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GRCSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-grcstage FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GBENCACK_ERR
-This bit will be set to one when an error has been detected for the
-gbencack FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_FINAL_ERR
-This bit will be set to one when an error has been detected for the
-final FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_PDATA_ERR
-This bit will be set to one when an error has been detected for the
-pdata FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_BENCACK_ERR
-This bit will be set to one when an error has been detected for the
-bencack FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_BENCREQ_ERR
-This bit will be set to one when an error has been detected for the
-bencreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_UPDREQ_ERR
-This bit will be set to one when an error has been detected for the
-updreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_KEYVRC_ERR
-This bit will be set to one when an error has been detected for the
-keyvrc FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_RCSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-rcstage FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_CMDREQ_ERR
-This bit will be set to one when an error has been detected for the
-cmdreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GENBITS_ERR
-This bit will be set to one when an error has been detected for the
-command stage genbits FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_CMD_ERR
-This bit will be set to one when an error has been detected for the
-command stage command FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
+When this bit is set, a fatal error condition will result.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x3c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
-- Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
@@ -618,21 +512,21 @@ register is to test that any error properly propagates to either
 an interrupt or an alert.
 
 ## MAIN_SM_STATE
-Main state machine state debug register
-- Offset: `0x40`
-- Reset default: `0x4e`
-- Reset mask: `0xff`
+Main state machine state observation register
+- Offset: `0x44`
+- Reset default: `0xc1`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MAIN_SM_STATE", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MAIN_SM_STATE", "bits": 9, "attr": ["ro"], "rotate": 0}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                        |
-|:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |               | Reserved                                                                                                           |
-|  7:0   |   ro   |  0x4e   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                    |
+|:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------------------------------|
+|  31:9  |        |         |               | Reserved                                                                                                       |
+|  8:0   |   ro   |  0xc1   | MAIN_SM_STATE | This is the state of the EDN main state machine. See the RTL file `edn_main_sm` for the meaning of the values. |
 
 
 <!-- END CMDGEN -->
