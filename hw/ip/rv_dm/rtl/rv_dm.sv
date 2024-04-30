@@ -32,9 +32,9 @@ module rv_dm
   // SEC_CM: LC_DFT_EN.INTERSIG.MUBI
   // HW DFT lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
-  // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (latched version from pinmux, only used for JTAG/TAP gating)
   input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
+  // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
   // Late debug enable disablement signal coming from the OTP HW_CFG1 partition.
   input  prim_mubi_pkg::mubi8_t otp_dis_rv_dm_late_debug_i,
   input  prim_mubi_pkg::mubi4_t scanmode_i,
