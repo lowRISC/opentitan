@@ -38,7 +38,7 @@
  *
  * WOTS+ hash address flexible fields:
  * +---------+------------------+----------+
- * | 16 bits | key pair address | 160..191 |
+ * | 32 bits | key pair address | 160..191 |
  * +---------+------------------+----------+
  * | 8 bits  | chain address    | 192..223 |
  * +---------+------------------+----------+
@@ -47,7 +47,7 @@
  *
  * WOTS+ public key compression flexible fields:
  * +---------+-------------------+----------+
- * | 16 bits | key pair address  | 160..191 |
+ * | 32 bits | key pair address  | 160..191 |
  * +---------+-------------------+----------+
  * | 64 bits | unused (always 0) | 192..255 |
  * +---------+-------------------+----------+
@@ -63,7 +63,7 @@
  *
  * FORS hash address flexible fields:
  * +---------+------------------+----------+
- * | 16 bits | key pair address | 160..191 |
+ * | 32 bits | key pair address | 160..191 |
  * +---------+------------------+----------+
  * | 8 bits  | tree height      | 192..223 |
  * +---------+------------------+----------+
@@ -72,7 +72,7 @@
  *
  * FORS tree root compression flexible fields:
  * +---------+-------------------+----------+
- * | 16 bits | key pair address  | 160..191 |
+ * | 32 bits | key pair address  | 160..191 |
  * +---------+-------------------+----------+
  * | 64 bits | unused (always 0) | 192..255 |
  * +---------+-------------------+----------+

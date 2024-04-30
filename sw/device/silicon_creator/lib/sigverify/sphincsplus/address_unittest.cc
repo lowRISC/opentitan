@@ -53,6 +53,19 @@ class SpxAddrTest : public rom_test::RomTest {
   }
 
   /**
+   * Get the 32-bit `keypair_addr` field from the address.
+   *
+   * @param addr Key pair address.
+   * @return Value of the `keypair_addr` field.
+   */
+  uint32_t KeypairAddrGet(const spx_addr_t *addr) {
+    unsigned char *buf = (unsigned char *)addr->addr;
+    uint32_t keypair_addr = 0;
+    memcpy(&keypair_addr, buf + kSpxOffsetKpAddr, sizeof(uint32_t));
+    return keypair_addr;
+  }
+
+  /**
    * Checks if the given byte is the same in two addresses.
    *
    * @param addr1 First address.
@@ -91,8 +104,6 @@ class SpxAddrTest : public rom_test::RomTest {
       buf[i] = UINT8_MAX - i;
     }
   }
-
-  bool two_byte_keypair_ = (kSpxFullHeight / kSpxD) > 8;
 };
 
 TEST_F(SpxAddrTest, LayerSetTest) {
@@ -144,14 +155,13 @@ TEST_F(SpxAddrTest, SubtreeCopyTest) {
   ExpectByteEq(&dest_addr, &src_addr, kSpxOffsetLayer);
   EXPECT_EQ(TreeGet(&dest_addr), TreeGet(&src_addr));
 
-  // Other fields be unmodified.
+  // Other fields should be unmodified.
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetType);
-  ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetKpAddr2);
-  ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetKpAddr1);
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetChainAddr);
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetHashAddr);
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetTreeHeight);
   EXPECT_EQ(TreeIndexGet(&dest_addr), TreeIndexGet(&dest_addr_orig));
+  EXPECT_EQ(KeypairAddrGet(&dest_addr), KeypairAddrGet(&dest_addr_orig));
 }
 
 TEST_F(SpxAddrTest, SubtreeCopySelf) {
@@ -174,13 +184,10 @@ TEST_F(SpxAddrTest, KeypairSetTest) {
   TestAddrInit(&test_addr);
 
   // Set keypair.
-  spx_addr_keypair_set(&test_addr, 0xffaa);
+  spx_addr_keypair_set(&test_addr, 0xddeeffaa);
 
-  // Check result.
-  EXPECT_EQ(ByteGet(&test_addr, kSpxOffsetKpAddr1), 0xaa);
-  if (two_byte_keypair_) {
-    EXPECT_EQ(ByteGet(&test_addr, kSpxOffsetKpAddr2), 0xff);
-  }
+  // Check result (bytes should be reversed for a big-endian representation).
+  EXPECT_EQ(0xaaffeedd, KeypairAddrGet(&test_addr));
 }
 
 TEST_F(SpxAddrTest, ChainSetTest) {
@@ -219,13 +226,10 @@ TEST_F(SpxAddrTest, KeypairCopyTest) {
   ExpectByteEq(&dest_addr, &src_addr, kSpxOffsetLayer);
   EXPECT_EQ(TreeGet(&dest_addr), TreeGet(&src_addr));
 
-  // After copying, the 1-2 keypair bytes should match.
-  ExpectByteEq(&dest_addr, &src_addr, kSpxOffsetKpAddr1);
-  if (two_byte_keypair_) {
-    ExpectByteEq(&dest_addr, &src_addr, kSpxOffsetKpAddr2);
-  }
+  // After copying, the keypair address should match.
+  EXPECT_EQ(KeypairAddrGet(&dest_addr), KeypairAddrGet(&src_addr));
 
-  // Other fields be unmodified.
+  // Other fields should be unmodified.
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetType);
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetChainAddr);
   ExpectByteEq(&dest_addr, &dest_addr_orig, kSpxOffsetHashAddr);
