@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
@@ -63,6 +64,11 @@ static manuf_tpm_tbs_certs_t tpm_certs = {
     .tpm_cik_tbs_certificate_size = kTpmCikMaxTbsSizeBytes,
 };
 static manuf_endorsed_tpm_certs_t endorsed_tpm_certs;
+static const unsigned char *kEndorsedTpmCerts[] = {
+    endorsed_tpm_certs.tpm_ek_certificate,
+    endorsed_tpm_certs.tpm_cek_certificate,
+    endorsed_tpm_certs.tpm_cik_certificate,
+};
 
 /**
  * Keymgr binding values.
@@ -110,6 +116,80 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   memcpy(attestation_binding_value.data, combined_measurements.digest,
          kDiceMeasurementSizeInBytes);
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
+}
+
+/**
+ * Read a certificate from the passed in location in a flash INFO page and hash
+ * its contents on the existing sha256 hashing stream. Determine the actual
+ * certificate size from its ASN1 header.
+ *
+ * If the caller passed a pointer, save there the certificate size.
+ */
+static status_t hash_certificate(const flash_ctrl_info_page_t *page,
+                                 size_t offset, size_t *size) {
+  uint8_t buffer[1024];  // 1K should be enough for the largest certificate.
+  uint32_t cert_size;
+  uint32_t bytes_read;
+
+  // Read the first word of the certificate which contains it's size.
+  TRY(flash_ctrl_info_read(page, offset, 1, buffer));
+  bytes_read = sizeof(uint32_t);
+  cert_size = get_cert_size(buffer);
+  if (cert_size == 0) {
+    LOG_ERROR("Inconsistent certificate header %02x %02x page %x:%x", buffer[0],
+              buffer[1], page->base_addr, offset);
+    return DATA_LOSS();
+  }
+  if (cert_size > sizeof(buffer)) {
+    LOG_ERROR("Bad certificate size %d page %x:%x", cert_size, page->base_addr,
+              offset);
+    return DATA_LOSS();
+  }
+  if ((cert_size + offset) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+    LOG_ERROR("Cert size overflow (%d + %d) page %x:%x", cert_size, offset,
+              page->base_addr, offset);
+    return DATA_LOSS();
+  }
+
+  offset += bytes_read;
+  TRY(flash_ctrl_info_read(page, offset, size_to_words(cert_size - bytes_read),
+                           buffer + bytes_read));
+  hmac_sha256_update(buffer, cert_size);
+
+  if (size) {
+    *size = cert_size;
+  }
+
+  return OK_STATUS();
+}
+
+static status_t log_hash_of_all_certs(ujson_t *uj) {
+  uint32_t cert_size;
+  uint32_t page_offset = 0;
+  serdes_sha256_hash_t hash;
+  hmac_sha256_init();
+
+  // Push DICE certificates into the hash (each resides on a separate page).
+  TRY(hash_certificate(&kFlashCtrlInfoPageUdsCertificate, 0, NULL));
+  TRY(hash_certificate(&kFlashCtrlInfoPageCdi0Certificate, 0, NULL));
+  TRY(hash_certificate(&kFlashCtrlInfoPageCdi1Certificate, 0, NULL));
+
+  // Push TPM certificates into the hash (all reside on the same page).
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts);
+       i++) {  // There are three TPM certificates on the page.
+    TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
+    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
+    page_offset = round_up_to(page_offset, 3);
+  }
+
+  // Log the final hash of all certificates to the host and console.
+  hmac_sha256_final((hmac_digest_t *)&hash);
+  RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &hash);
+  LOG_INFO("SHA256 hash of all certificates: %08x%08x%08x%08x%08x%08x%08x%08x",
+           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
+           hash.data[2], hash.data[1], hash.data[0]);
+
+  return OK_STATUS();
 }
 
 /**
@@ -186,23 +266,19 @@ static status_t personalize(ujson_t *uj) {
 
   // Write the endorsed certificates to flash and ack to host.
   uint32_t page_offset = 0;
-  const unsigned char *tpm_certs[] = {
-      endorsed_tpm_certs.tpm_ek_certificate,
-      endorsed_tpm_certs.tpm_cek_certificate,
-      endorsed_tpm_certs.tpm_cik_certificate,
-  };
-  for (size_t i = 0; i < ARRAYSIZE(tpm_certs); i++) {
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     const char *names[] = {"EK", "CEK", "CIK"};
     // Number of words necessary for certificate storage.
-    uint32_t cert_size_words = size_to_words(get_cert_size(tpm_certs[i]));
+    uint32_t cert_size_words =
+        size_to_words(get_cert_size(kEndorsedTpmCerts[i]));
     uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
 
     if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
-      LOG_ERROR("TPM %s Certificate did not fit into the info page.", names[i]);
+      LOG_ERROR("TPM %s certificate did not fit into the info page.", names[i]);
       return OUT_OF_RANGE();
     }
     TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageTpmCerts, page_offset,
-                              cert_size_words, tpm_certs[i]));
+                              cert_size_words, kEndorsedTpmCerts[i]));
     LOG_INFO("Imported TPM %s certificate.", names[i]);
     page_offset += cert_size_bytes;
 
@@ -213,6 +289,7 @@ static status_t personalize(ujson_t *uj) {
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Finished importing certificates.");
+
   return OK_STATUS();
 }
 
@@ -221,6 +298,7 @@ bool test_main(void) {
 
   log_self_hash();
   CHECK_STATUS_OK(personalize(&uj));
+  CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
 
   return true;
 }
