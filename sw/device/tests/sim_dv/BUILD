@@ -456,21 +456,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "pwrmgr_usbdev_smoketest",
-    srcs = ["pwrmgr_usbdev_smoketest.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:usbdev",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "rom_ctrl_integrity_check_test",
     srcs = ["rom_ctrl_integrity_check_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},

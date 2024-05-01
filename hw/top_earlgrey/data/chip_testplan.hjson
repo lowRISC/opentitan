@@ -534,7 +534,7 @@
         "//sw/device/tests:rstmgr_smoketest",
         "//sw/device/tests:rv_plic_smoketest",
         "//sw/device/tests:rv_timer_smoketest",
-        "//sw/device/tests:sim_dv/pwrmgr_usbdev_smoketest",
+        "//sw/device/tests:pwrmgr_usbdev_smoketest",
         "//sw/device/tests:spi_host_smoketest",
         "//sw/device/tests:sram_ctrl_smoketest",
         "//sw/device/tests:uart_smoketest",
