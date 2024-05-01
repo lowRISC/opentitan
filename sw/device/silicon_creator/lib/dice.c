@@ -346,19 +346,18 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
-                                   attestation_public_key_t *tpm_ek_pubkey,
-                                   hmac_digest_t *pubkey_id,
-                                   uint8_t *tpm_ek_tbs,
-                                   size_t *tpm_ek_tbs_size) {
+rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                       attestation_public_key_t *tpm_ek_pubkey,
+                                       uint8_t *tpm_ek_tbs,
+                                       size_t *tpm_ek_tbs_size) {
   tpm_ek_tbs_values_t tpm_ek_tbs_params = {
-      .auth_key_key_id = inputs->auth_key_key_id,
+      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_ek_pub_key_ec_x = (unsigned char *)tpm_ek_pubkey->x,
       .tpm_ek_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
       .tpm_ek_pub_key_ec_y = (unsigned char *)tpm_ek_pubkey->y,
       .tpm_ek_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-      .tpm_ek_pub_key_id = (unsigned char *)pubkey_id->digest,
+      .tpm_ek_pub_key_id = (unsigned char *)key_ids->cert,
       .tpm_ek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_version = "0.0.1",
       .tpm_version_len = 5,
@@ -374,19 +373,17 @@ rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
-                                    attestation_public_key_t *tpm_cek_pubkey,
-                                    hmac_digest_t *pubkey_id,
-                                    uint8_t *tpm_cek_tbs,
-                                    size_t *tpm_cek_tbs_size) {
+rom_error_t dice_tpm_cek_tbs_cert_build(
+    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cek_pubkey,
+    uint8_t *tpm_cek_tbs, size_t *tpm_cek_tbs_size) {
   tpm_cek_tbs_values_t tpm_cek_tbs_params = {
-      .auth_key_key_id = inputs->auth_key_key_id,
+      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_cek_pub_key_ec_x = (unsigned char *)tpm_cek_pubkey->x,
       .tpm_cek_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
       .tpm_cek_pub_key_ec_y = (unsigned char *)tpm_cek_pubkey->y,
       .tpm_cek_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-      .tpm_cek_pub_key_id = (unsigned char *)pubkey_id->digest,
+      .tpm_cek_pub_key_id = (unsigned char *)key_ids->cert,
       .tpm_cek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
   };
 
@@ -396,19 +393,17 @@ rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_cik_cert_build(manuf_certgen_inputs_t *inputs,
-                                    attestation_public_key_t *tpm_cik_pubkey,
-                                    hmac_digest_t *pubkey_id,
-                                    uint8_t *tpm_cik_tbs,
-                                    size_t *tpm_cik_tbs_size) {
+rom_error_t dice_tpm_cik_tbs_cert_build(
+    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cik_pubkey,
+    uint8_t *tpm_cik_tbs, size_t *tpm_cik_tbs_size) {
   tpm_cik_tbs_values_t tpm_cik_tbs_params = {
-      .auth_key_key_id = inputs->auth_key_key_id,
+      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_cik_pub_key_ec_x = (unsigned char *)tpm_cik_pubkey->x,
       .tpm_cik_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
       .tpm_cik_pub_key_ec_y = (unsigned char *)tpm_cik_pubkey->y,
       .tpm_cik_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-      .tpm_cik_pub_key_id = (unsigned char *)pubkey_id->digest,
+      .tpm_cik_pub_key_id = (unsigned char *)key_ids->cert,
       .tpm_cik_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
   };
 
