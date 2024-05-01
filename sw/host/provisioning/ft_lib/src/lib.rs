@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use arrayvec::ArrayVec;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::{PublicKey, SecretKey};
 use num_bigint_dig::BigUint;
 use p256::ecdsa::SigningKey;
 use p256::NistP256;
+use zerocopy::AsBytes;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::crypto::sha256::sha256;
@@ -28,7 +30,7 @@ use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
     EccP256PublicKey, ManufCertgenInputs, ManufCerts, ManufEndorsedCerts, ManufFtIndividualizeData,
-    WrappedRmaUnlockToken,
+    SerdesSha256Hash, WrappedRmaUnlockToken,
 };
 
 pub fn test_unlock(
@@ -290,6 +292,27 @@ pub fn run_ft_personalize(
     log::info!("TPM CIK Cert: {}", hex::encode(tpm_cik_cert_bytes.clone()));
     let _ = parse_certificate(&tpm_cik_cert_bytes)?;
 
+    // Hash all certificates' contents.
+    let mut hasher = Sha256::new();
+    let all_certs: [&Vec<u8>; 6] = [
+        &uds_cert_bytes,
+        &cdi_0_cert_bytes,
+        &cdi_1_cert_bytes,
+        &tpm_ek_cert_bytes,
+        &tpm_cek_cert_bytes,
+        &tpm_cik_cert_bytes,
+    ];
+    for cert in all_certs {
+        // Do not hash trailing bytes present in the certificate vectors, use
+        let size = (u16::from_be_bytes([cert[2], cert[3]]) + 4) as usize;
+        let mut cert_clone = cert.clone();
+        if cert_clone.len() > size {
+            cert_clone.truncate(size);
+        }
+        hasher.update(cert_clone);
+        log::info!("Running hash {:?}", hex::encode(hasher.clone().finalize()));
+    }
+
     // Send endorsed certificates back to the device.
     let endorsed_certs = ManufEndorsedCerts {
         uds_certificate: uds_cert_bytes.clone().into_iter().collect(),
@@ -303,9 +326,29 @@ pub fn run_ft_personalize(
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;
     endorsed_certs.send(&*uart)?;
+    let _ = UartConsole::wait_for(&*uart, r"Final hash:", timeout)?;
+    let received_hash = SerdesSha256Hash::recv(&*uart, timeout, false)?;
     let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
 
-    Ok(())
+    // Compare host and device generated certificates' hash values. Note that
+    // the dev calculated hash is represented as a number with different
+    // endiannes.
+    if received_hash
+        .data
+        .as_bytes()
+        .iter()
+        .rev()
+        .zip(hasher.finalize().iter())
+        .all(|(a, b)| a == b)
+    {
+        Ok(())
+    } else {
+        log::error!(
+            "Hash received from device: {:x?}",
+            received_hash.data.as_bytes()
+        );
+        Err(anyhow!("Host vs Device certs hash mismatch"))
+    }
 }
 
 fn parse_and_endorse_x509_cert(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
