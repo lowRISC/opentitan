@@ -31,25 +31,26 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
+#include "hw/ip/flash_ctrl/data/flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static_assert(kUdsMaxTbsSizeBytes == 712,
+static_assert(kUdsMaxTbsSizeBytes == 775,
               "The `uds_tbs_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
-static_assert(kUdsMaxCertSizeBytes == 803,
+static_assert(kUdsMaxCertSizeBytes == 866,
               "The `uds_tbs_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
 static_assert(kCdi0MaxCertSizeBytes == 580,
               "The `cdi_0_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kCdi0MaxCertSizeBytes`.");
 static_assert(kCdi1MaxCertSizeBytes == 629,
               "The `cdi_1_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kCdi1MaxCertSizeBytes`.");
 
 /**
@@ -93,13 +94,19 @@ static dice_cert_key_id_pair_t cdi_1_key_ids = {
     .cert = &cdi_1_pubkey_id,
 };
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static manuf_dice_certs_t dice_certs = {
+static manuf_certs_t dice_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
     .cdi_0_certificate = {0},
     .cdi_0_certificate_size = kCdi0MaxCertSizeBytes,
     .cdi_1_certificate = {0},
     .cdi_1_certificate_size = kCdi1MaxCertSizeBytes,
+    .tpm_ek_tbs_certificate = {0},
+    .tpm_ek_tbs_certificate_size = kUdsMaxCertSizeBytes,
+    .tpm_cek_tbs_certificate = {0},
+    .tpm_cek_tbs_certificate_size = kUdsMaxCertSizeBytes,
+    .tpm_cik_tbs_certificate = {0},
+    .tpm_cik_tbs_certificate_size = kUdsMaxCertSizeBytes,
 };
 static manuf_endorsed_certs_t endorsed_certs;
 
@@ -138,6 +145,8 @@ static status_t config_and_erase_certificate_flash_pages(void) {
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageTpmCerts,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }
@@ -206,6 +215,36 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
 }
 
 /**
+ *  A helper function to round up the passed in value to get it aligned to the
+ *  requested number of bits.
+ */
+static uint32_t round_up_to(uint32_t input, uint32_t align_bits) {
+  uint32_t mask = (1 << align_bits) - 1;
+
+  return (input + mask) & ~mask;
+}
+
+/**
+ *  Calculate the number of 4 byte words necessary to fit the passed in number
+ *  of bytes.
+ */
+static uint32_t size_to_words(uint32_t bytes) {
+  return round_up_to(bytes, 2) / sizeof(uint32_t);
+}
+
+/**
+ * Retrieve the certificate size from the passed in pointer to its ASN1 header.
+ * Perform some basic sanity checks.
+ */
+static uint32_t get_cert_size(const uint8_t *header) {
+  if (header[0] != 0x30 || header[1] != 0x82) {
+    return 0;
+  }
+
+  return (((uint32_t)header[2]) << 8) + header[3] + 4 /* size of the header */;
+}
+
+/**
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_dice_certificates(ujson_t *uj) {
@@ -214,6 +253,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(otbn_boot_app_load());
 
   // Retrieve certificate provisioning data.
+  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+  // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Waiting for DICE certificate inputs ...");
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
 
@@ -257,7 +298,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       dice_certs.cdi_0_certificate, &dice_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
-      /*offset=*/0, dice_certs.cdi_0_certificate_size / sizeof(uint32_t),
+      /*offset=*/0, size_to_words(get_cert_size(dice_certs.cdi_0_certificate)),
       dice_certs.cdi_0_certificate));
   LOG_INFO("Generated CDI_0 certificate.");
 
@@ -274,25 +315,84 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       dice_certs.cdi_1_certificate, &dice_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
-      /*offset=*/0, dice_certs.cdi_1_certificate_size / sizeof(uint32_t),
+      /*offset=*/0, size_to_words(get_cert_size(dice_certs.cdi_1_certificate)),
       dice_certs.cdi_1_certificate));
   LOG_INFO("Generated CDI_1 certificate.");
 
+  hmac_digest_t pubkey_id;
+  // One structure used for all TPM certs.
+  dice_cert_key_id_pair_t tpm_key_ids = {.endorsement = &uds_endorsement_key_id,
+                                         .cert = &pubkey_id};
+
+  // Generate TPM EK keys and TBS.
+  TRY(dice_attestation_keygen(kDiceKeyTpmEk, &pubkey_id, &curr_pubkey));
+  TRY(dice_tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
+                                 dice_certs.tpm_ek_tbs_certificate,
+                                 &dice_certs.tpm_ek_tbs_certificate_size));
+  LOG_INFO("Generated TPM EK TBS certificate.");
+
+  TRY(dice_attestation_keygen(kDiceKeyTpmCek, &pubkey_id, &curr_pubkey));
+  TRY(dice_tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
+                                  dice_certs.tpm_cek_tbs_certificate,
+                                  &dice_certs.tpm_cek_tbs_certificate_size));
+  LOG_INFO("Generated TPM CEK TBS certificate.");
+
+  TRY(dice_attestation_keygen(kDiceKeyTpmCik, &pubkey_id, &curr_pubkey));
+  TRY(dice_tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
+                                  dice_certs.tpm_cik_tbs_certificate,
+                                  &dice_certs.tpm_cik_tbs_certificate_size));
+  LOG_INFO("Generated TPM CIK TBS certificate.");
+
   // Export the certificates to the provisioning appliance.
-  LOG_INFO("Exporting DICE certificates ...");
-  RESP_OK(ujson_serialize_manuf_dice_certs_t, uj, &dice_certs);
+  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+  // sw/host/provisioning/ft_lib/src/lib.rs
+  LOG_INFO("Exporting DICE and TPM certificates ...");
+  RESP_OK(ujson_serialize_manuf_certs_t, uj, &dice_certs);
 
   // Import endorsed certificates from the provisioning appliance.
-  LOG_INFO("Importing DICE UDS certificate ...");
+  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+  // sw/host/provisioning/ft_lib/src/lib.rs
+  LOG_INFO("Importing endorsed certificates ...");
   TRY(ujson_deserialize_manuf_endorsed_certs_t(uj, &endorsed_certs));
+  LOG_INFO("Deserialized endorsed certificates ...");
 
-  // Write the endorsed UDS certificate to flash and ack to host.
+  // Write the endorsed certificates to flash and ack to host.
   TRY(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageUdsCertificate,
-      /*offset=*/0, endorsed_certs.uds_certificate_size / sizeof(uint32_t),
+      &kFlashCtrlInfoPageUdsCertificate, /*offset=*/0,
+      size_to_words(get_cert_size(endorsed_certs.uds_certificate)),
       endorsed_certs.uds_certificate));
   LOG_INFO("Imported DICE UDS certificate.");
 
+  // Now TPM certificates, get saved in the same flash INFO page.
+  uint32_t page_offset = 0;
+  const unsigned char *tpm_certs[] = {
+      endorsed_certs.tpm_ek_certificate,
+      endorsed_certs.tpm_cek_certificate,
+      endorsed_certs.tpm_cik_certificate,
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE(tpm_certs); i++) {
+    const char *names[] = {"EK", "CEK", "CIK"};
+    // Number of words necessary for certificate storage.
+    uint32_t cert_size_words = size_to_words(get_cert_size(tpm_certs[i]));
+    uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
+
+    if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+      LOG_ERROR("TPM %s Certificate did not fit into the info page.", names[i]);
+      return OUT_OF_RANGE();
+    }
+    TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageTpmCerts, page_offset,
+                              cert_size_words, tpm_certs[i]));
+    LOG_INFO("Imported TPM %s certificate.", names[i]);
+    page_offset += cert_size_bytes;
+
+    // Each certificate must be 8 bytes aligned.
+    page_offset = round_up_to(page_offset, 3);
+  }
+
+  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+  // sw/host/provisioning/ft_lib/src/lib.rs
+  LOG_INFO("Finished importing certificates.");
   return OK_STATUS();
 }
 
