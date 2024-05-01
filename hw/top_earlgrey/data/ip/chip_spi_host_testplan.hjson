@@ -53,6 +53,7 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
+      bazel: []
       tests: []
     }
     {
@@ -72,6 +73,7 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
+      bazel: []
       tests: []
     }
     {
@@ -97,6 +99,7 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
+      bazel: []
       tests: []
       bazel: ["//sw/device/tests:spi_host_irq_test"]
     }

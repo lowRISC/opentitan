@@ -77,6 +77,7 @@
       si_stage: NA
       features: []
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
+      bazel: []
     }
     {
       name: chip_sw_uart_parity

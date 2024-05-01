@@ -38,6 +38,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_keymgr_key_derivation"]
+      bazel: []
     }
     {
       name: chip_sw_kmac_app_lc
@@ -52,6 +53,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_lc_ctrl_transition"]
+      bazel: []
     }
     {
       name: chip_sw_kmac_app_rom
@@ -68,6 +70,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_kmac_app_rom"]
+      bazel: []
     }
     {
       name: chip_sw_kmac_entropy
@@ -96,6 +99,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_kmac_entropy"]
+      bazel: []
     }
     {
       name: chip_sw_kmac_idle

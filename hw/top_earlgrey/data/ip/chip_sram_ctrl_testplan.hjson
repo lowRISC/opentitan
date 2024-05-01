@@ -127,6 +127,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
+      bazel: []
     }
 
     {
