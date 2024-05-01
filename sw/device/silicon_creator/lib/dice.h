@@ -146,9 +146,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 /**
  * Generates an X.509 TBS section of a TPM EK certificate.
  *
- * @param inputs Pointer to the personalization input data payload.
- * @param tpm_ek_pubkey Pointer to the public key in big endian.
- * @param pubkey_id Pointer to the public key ID.
+ * @param key_ids Pointer to the (current and endorsement) public key IDs.
+ * @param tpm_ek_pubkey Pointer to the TPM EK public key in big endian.
  * @param[out] tbs_cert Buffer to hold the generated TBS section.
  * @param[in,out] tbs_cert_size Size of the generated TBS section (input value
  *                              is the size of the allocated cert_buf, output
@@ -156,17 +155,16 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
-                                   attestation_public_key_t *tpm_ek_pubkey,
-                                   hmac_digest_t *pubkey_id, uint8_t *tbs_cert,
-                                   size_t *tbs_cert_size);
+rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                       attestation_public_key_t *tpm_ek_pubkey,
+                                       uint8_t *tbs_cert,
+                                       size_t *tbs_cert_size);
 
 /**
  * Generates an X.509 TBS section of a TPM CEK certificate.
  *
- * @param inputs Pointer to the personalization input data payload.
- * @param tpm_cek_pubkey Pointer to the public key in big endian.
- * @param pubkey_id Pointer to the public key ID.
+ * @param key_ids Pointer to the (current and endorsement) public key IDs.
+ * @param tpm_cek_pubkey Pointer to the TPM CEK public key in big endian.
  * @param[out] tbs_cert Buffer to hold the generated UDS section.
  * @param[in,out] tbs_cert_size Size of the generated TBS section (input value
  *                              is the size of the allocated cert_buf, output
@@ -174,17 +172,15 @@ rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
-                                    attestation_public_key_t *tpm_cek_pubkey,
-                                    hmac_digest_t *pubkey_id, uint8_t *tbs_cert,
-                                    size_t *tbs_cert_size);
+rom_error_t dice_tpm_cek_tbs_cert_build(
+    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cek_pubkey,
+    uint8_t *tbs_cert, size_t *tbs_cert_size);
 
 /**
  * Generates an X.509 TBS section of a TPM CIK certificate.
  *
- * @param inputs Pointer to the personalization input data payload.
- * @param tpm_cik_pubkey Pointer to the public key in big endian.
- * @param pubkey_id Pointer to the public key ID.
+ * @param key_ids Pointer to the (current and endorsement) public key IDs.
+ * @param tpm_cik_pubkey Pointer to the TPM CIK public key in big endian.
  * @param[out] tbs_cert Buffer to hold the generated UDS section.
  * @param[in,out] tbs_cert_size Size of the generated TBS section (input value
  *                              is the size of the allocated cert_buf, output
@@ -192,8 +188,7 @@ rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_tpm_cik_cert_build(manuf_certgen_inputs_t *inputs,
-                                    attestation_public_key_t *tpm_cik_pubkey,
-                                    hmac_digest_t *pubkey_id, uint8_t *tbs_cert,
-                                    size_t *tbs_cert_size);
+rom_error_t dice_tpm_cik_tbs_cert_build(
+    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cik_pubkey,
+    uint8_t *tbs_cert, size_t *tbs_cert_size);
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DICE_H_
