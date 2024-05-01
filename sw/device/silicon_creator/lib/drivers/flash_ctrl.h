@@ -87,7 +87,7 @@ typedef enum flash_ctrl_partition {
   X(kFlashCtrlInfoPageBootData1,       1, 1) \
   X(kFlashCtrlInfoPageOwnerSlot0,      1, 2) \
   X(kFlashCtrlInfoPageOwnerSlot1,      1, 3) \
-  X(kFlashCtrlInfoPageBank1Type0Page4, 1, 4) \
+  X(kFlashCtrlInfoPageTpmCerts,        1, 4) \
   X(kFlashCtrlInfoPageBank1Type0Page5, 1, 5) \
   X(kFlashCtrlInfoPageUdsCertificate,  1, 6) \
   X(kFlashCtrlInfoPageBootServices,    1, 7) \
@@ -166,8 +166,8 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  */
 enum {
   kFlashCtrlSecMmioCreatorInfoPagesLockdown = 18,
-  kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 6,
-  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 3,
+  kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 8,
+  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 4,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
@@ -591,7 +591,7 @@ void flash_ctrl_creator_info_pages_lockdown(void);
  * Number of flash info pages reserved for storing certificates.
  */
 enum {
-  kFlashCtrlNumCertInfoPages = 3,
+  kFlashCtrlNumCertInfoPages = 4,
 };
 
 /**
