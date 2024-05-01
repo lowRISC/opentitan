@@ -734,6 +734,7 @@ const flash_ctrl_info_page_t
         &kFlashCtrlInfoPageUdsCertificate,
         &kFlashCtrlInfoPageCdi0Certificate,
         &kFlashCtrlInfoPageCdi1Certificate,
+        &kFlashCtrlInfoPageTpmCerts,
 };
 const flash_ctrl_cfg_t kCertificateInfoPagesCfg = {
     .scrambling = kMultiBitBool4True,
