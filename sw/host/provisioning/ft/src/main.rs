@@ -90,6 +90,10 @@ struct Opts {
     #[arg(long)]
     third_bootstrap: PathBuf,
 
+    /// Fourth personalization binary to bootstrap.
+    #[arg(long)]
+    fourth_bootstrap: PathBuf,
+
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
@@ -208,6 +212,7 @@ fn main() -> Result<()> {
         &opts.init,
         opts.second_bootstrap,
         opts.third_bootstrap,
+        opts.fourth_bootstrap,
         opts.provisioning_data.host_ecc_sk,
         opts.provisioning_data.cert_endorsement_ecc_sk,
         &_perso_certgen_inputs,

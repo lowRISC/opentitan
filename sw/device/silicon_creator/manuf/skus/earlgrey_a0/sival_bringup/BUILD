@@ -30,6 +30,16 @@ cc_library(
     deps = ["//sw/device/lib/dif:flash_ctrl"],
 )
 
+cc_library(
+    name = "util",
+    srcs = ["util.c"],
+    hdrs = ["util.h"],
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
+    ],
+)
+
 opentitan_binary(
     name = "sram_cp_provision",
     testonly = True,
@@ -269,7 +279,10 @@ opentitan_binary(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
+        ":util",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/json:provisioning_data",
@@ -286,9 +299,46 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
         "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/otbn/crypto:boot",
+    ],
+)
+
+opentitan_binary(
+    name = "ft_personalize_4",
+    testonly = True,
+    srcs = ["ft_personalize_4.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
+    deps = [
+        ":util",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
+        "//sw/device/silicon_creator/lib:dice",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/otbn/crypto:boot",
     ],
 )
@@ -298,6 +348,7 @@ _FT_PROVISIONING_BINARIES = {
     ":ft_personalize_1": "ft_personalize_1",
     ":ft_personalize_2": "ft_personalize_2",
     ":ft_personalize_3": "ft_personalize_3",
+    ":ft_personalize_4": "ft_personalize_4",
 }
 
 _FT_PROVISIONING_CMD_ARGS = """
@@ -305,6 +356,7 @@ _FT_PROVISIONING_CMD_ARGS = """
   --bootstrap={ft_personalize_1}
   --second-bootstrap={ft_personalize_2}
   --third-bootstrap={ft_personalize_3}
+  --fourth-bootstrap={ft_personalize_4}
 """ + FT_PROVISIONING_INPUTS
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
@@ -312,6 +364,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 opentitan_test(
     name = "ft_provision",
     cw310 = cw310_params(
+        timeout = "long",
         binaries = _FT_PROVISIONING_BINARIES,
         changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
@@ -353,6 +406,7 @@ offline_presigning_artifacts(
         ":ft_personalize_1",
         ":ft_personalize_2",
         ":ft_personalize_3",
+        ":ft_personalize_4",
     ],
     manifest = ":manifest",
     rsa_key = {

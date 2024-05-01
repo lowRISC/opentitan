@@ -27,8 +27,8 @@ use opentitanlib::uart::console::UartConsole;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertgenInputs, ManufDiceCerts, ManufEndorsedCerts,
-    ManufFtIndividualizeData, WrappedRmaUnlockToken,
+    EccP256PublicKey, ManufCertgenInputs, ManufDiceCerts, ManufEndorsedDiceCerts,
+    ManufEndorsedTpmCerts, ManufFtIndividualizeData, ManufTpmTbsCerts, WrappedRmaUnlockToken,
 };
 
 pub fn test_unlock(
@@ -163,6 +163,7 @@ pub fn run_ft_personalize(
     init: &InitializeTest,
     second_bootstrap: PathBuf,
     third_bootstrap: PathBuf,
+    fourth_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
     cert_endorsement_ecc_sk: PathBuf,
     perso_certgen_inputs: &ManufCertgenInputs,
@@ -237,53 +238,117 @@ pub fn run_ft_personalize(
     let _ = UartConsole::wait_for(&*uart, r"Waiting for DICE certificate inputs ...", timeout)?;
     perso_certgen_inputs.send(&*uart)?;
 
-    // Wait until device exports the attestation certificates.
+    // Wait until device exports the certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting DICE certificates ...", timeout)?;
-    let certs = ManufDiceCerts::recv(&*uart, timeout, true)?;
+    let dice_certs = ManufDiceCerts::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
-    let uds_tbs_cert_bytes: Vec<u8> = certs
+    let uds_tbs_cert_bytes: Vec<u8> = dice_certs
         .uds_tbs_certificate
         .clone()
         .into_iter()
-        .take(certs.uds_tbs_certificate_size)
+        .take(dice_certs.uds_tbs_certificate_size)
         .collect();
-    let cdi_0_cert_bytes: Vec<u8> = certs
+    let cdi_0_cert_bytes: Vec<u8> = dice_certs
         .cdi_0_certificate
         .clone()
         .into_iter()
-        .take(certs.cdi_0_certificate_size)
+        .take(dice_certs.cdi_0_certificate_size)
         .collect();
-    let cdi_1_cert_bytes: Vec<u8> = certs
+    let cdi_1_cert_bytes: Vec<u8> = dice_certs
         .cdi_1_certificate
         .clone()
         .into_iter()
-        .take(certs.cdi_1_certificate_size)
+        .take(dice_certs.cdi_1_certificate_size)
         .collect();
 
-    // Log certificates to console and check they are parsable with OpenSSL.
+    // Parse, endorse, and log certificates to console.
     let cert_endorsement_sk = SecretKey::<NistP256>::read_pkcs8_der_file(cert_endorsement_ecc_sk)?;
-    let uds_cert_bytes = parse_and_endorse_uds_cert(uds_tbs_cert_bytes, &cert_endorsement_sk)?;
+    let uds_cert_bytes = parse_and_endorse_x509_cert(uds_tbs_cert_bytes, &cert_endorsement_sk)?;
     log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
+    let _ = parse_certificate(&uds_cert_bytes)?;
     log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
+    let _ = parse_certificate(&cdi_0_cert_bytes)?;
     log::info!("CDI_1 Cert: {}", hex::encode(cdi_1_cert_bytes.clone()));
-    let _uds_cert = parse_certificate(&uds_cert_bytes)?;
-    let _cdi_0_cert = parse_certificate(&cdi_0_cert_bytes)?;
-    let _cdi_1_cert = parse_certificate(&cdi_1_cert_bytes)?;
+    let _ = parse_certificate(&cdi_1_cert_bytes)?;
 
     // Send endorsed certificates back to the device.
-    let endorsed_certs = ManufEndorsedCerts {
+    let endorsed_dice_certs = ManufEndorsedDiceCerts {
         uds_certificate: uds_cert_bytes.clone().into_iter().collect(),
         uds_certificate_size: uds_cert_bytes.len(),
     };
-    let _ = UartConsole::wait_for(&*uart, r"Importing certificates ...", timeout)?;
-    endorsed_certs.send(&*uart)?;
-    let _ = UartConsole::wait_for(&*uart, r"Imported UDS certificate", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Importing endorsed DICE certificates ...", timeout)?;
+    endorsed_dice_certs.send(&*uart)?;
+    let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
+
+    // -------------------------------------------------------------------------
+    // FT Personalize 4                                                        |
+    // -------------------------------------------------------------------------
+
+    // Bootstrap fourth personalization binary into flash.
+    uart.clear_rx_buffer()?;
+    init.bootstrap.load(transport, &fourth_bootstrap)?;
+    uart.set_flow_control(true)?;
+
+    // Send attestation TCB measurements for generating certificates.
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for TPM certificate inputs ...", timeout)?;
+    perso_certgen_inputs.send(&*uart)?;
+
+    // Wait until device exports the certificates.
+    let _ = UartConsole::wait_for(&*uart, r"Exporting TPM certificates ...", timeout)?;
+    let tpm_certs = ManufTpmTbsCerts::recv(&*uart, timeout, true)?;
+
+    // Extract certificate byte vectors and trim unused bytes.
+    let tpm_ek_tbs_cert_bytes: Vec<u8> = tpm_certs
+        .tpm_ek_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(tpm_certs.tpm_ek_tbs_certificate_size)
+        .collect();
+    let tpm_cek_tbs_cert_bytes: Vec<u8> = tpm_certs
+        .tpm_cek_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(tpm_certs.tpm_cek_tbs_certificate_size)
+        .collect();
+    let tpm_cik_tbs_cert_bytes: Vec<u8> = tpm_certs
+        .tpm_cik_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(tpm_certs.tpm_cik_tbs_certificate_size)
+        .collect();
+
+    // Log certificates to console and check they are parsable with OpenSSL.
+    let tpm_ek_cert_bytes =
+        parse_and_endorse_x509_cert(tpm_ek_tbs_cert_bytes, &cert_endorsement_sk)?;
+    let tpm_cek_cert_bytes =
+        parse_and_endorse_x509_cert(tpm_cek_tbs_cert_bytes, &cert_endorsement_sk)?;
+    let tpm_cik_cert_bytes =
+        parse_and_endorse_x509_cert(tpm_cik_tbs_cert_bytes, &cert_endorsement_sk)?;
+    log::info!("TPM EK Cert: {}", hex::encode(tpm_ek_cert_bytes.clone()));
+    let _ = parse_certificate(&tpm_ek_cert_bytes)?;
+    log::info!("TPM CEK Cert: {}", hex::encode(tpm_cek_cert_bytes.clone()));
+    let _ = parse_certificate(&tpm_cek_cert_bytes)?;
+    log::info!("TPM CIK Cert: {}", hex::encode(tpm_cik_cert_bytes.clone()));
+    let _ = parse_certificate(&tpm_cik_cert_bytes)?;
+
+    // Send endorsed certificates back to the device.
+    let endorsed_tpm_certs = ManufEndorsedTpmCerts {
+        tpm_ek_certificate: tpm_ek_cert_bytes.clone().into_iter().collect(),
+        tpm_ek_certificate_size: tpm_ek_cert_bytes.len(),
+        tpm_cek_certificate: tpm_cek_cert_bytes.clone().into_iter().collect(),
+        tpm_cek_certificate_size: tpm_cek_cert_bytes.len(),
+        tpm_cik_certificate: tpm_cik_cert_bytes.clone().into_iter().collect(),
+        tpm_cik_certificate_size: tpm_cik_cert_bytes.len(),
+    };
+    let _ = UartConsole::wait_for(&*uart, r"Importing endorsed TPM certificates ...", timeout)?;
+    endorsed_tpm_certs.send(&*uart)?;
+    let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
 
     Ok(())
 }
 
-fn parse_and_endorse_uds_cert(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
+fn parse_and_endorse_x509_cert(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
     let tbs_digest = sha256(&tbs);
     let signing_key = SigningKey::from(ca_sk);
