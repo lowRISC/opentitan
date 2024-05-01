@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -245,6 +246,51 @@ static uint32_t get_cert_size(const uint8_t *header) {
 }
 
 /**
+ *  Read a certificate from the passed in location in a flash INFO page and hash
+ *  its contents on the existing sha256 hashing stream. Determine the actual
+ *  certificate size from its ASN1 header.
+ *
+ * If the caller passed a pointer, save there the certificate size.
+ */
+static status_t hash_certificate(const flash_ctrl_info_page_t *page,
+                                 size_t offset, size_t *size) {
+  uint8_t buffer[1024];  // 1K should be enough for the largest possible
+                         // certificate.
+  uint32_t cert_size;
+  uint32_t bytes_read;  // Number of bytes already read.
+
+  // Read the first word of the certificate.
+  TRY(flash_ctrl_info_read(page, offset, 1, buffer));
+  bytes_read = sizeof(uint32_t);  // One word has been read.
+  cert_size = get_cert_size(buffer);
+  if (cert_size == 0) {
+    LOG_ERROR("Inconsistent certificate header %02x %02x page %x:%x", buffer[0],
+              buffer[1], page->base_addr, offset);
+    return DATA_LOSS();
+  }
+  if (cert_size > sizeof(buffer)) {
+    LOG_ERROR("Bad certificate size %d page %x:%x", cert_size, page->base_addr,
+              offset);
+    return DATA_LOSS();
+  }
+  if ((cert_size + offset) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+    LOG_ERROR("Cert size overflow (%d + %d) page %x:%x", cert_size, offset,
+              page->base_addr, offset);
+    return DATA_LOSS();
+  }
+
+  offset += bytes_read;
+  TRY(flash_ctrl_info_read(page, offset, size_to_words(cert_size - bytes_read),
+                           buffer + bytes_read));
+  hmac_sha256_update(buffer, cert_size);
+
+  if (size) {
+    *size = cert_size;
+  }
+  return OK_STATUS();
+}
+
+/**
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_dice_certificates(ujson_t *uj) {
@@ -320,6 +366,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   LOG_INFO("Generated CDI_1 certificate.");
 
   hmac_digest_t pubkey_id;
+
   // One structure used for all TPM certs.
   dice_cert_key_id_pair_t tpm_key_ids = {.endorsement = &uds_endorsement_key_id,
                                          .cert = &pubkey_id};
@@ -389,6 +436,37 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
     // Each certificate must be 8 bytes aligned.
     page_offset = round_up_to(page_offset, 3);
   }
+
+  uint32_t cert_size;
+  serdes_sha256_hash_t hash;
+
+  hmac_sha256_init();
+  // Dice certificates, each in its own INFO page.
+  TRY(hash_certificate(&kFlashCtrlInfoPageUdsCertificate, 0, NULL));
+  TRY(hash_certificate(&kFlashCtrlInfoPageCdi0Certificate, 0, NULL));
+  TRY(hash_certificate(&kFlashCtrlInfoPageCdi1Certificate, 0, NULL));
+
+  // TPM certificates, all in one INFO page.
+  page_offset = 0;
+  for (size_t i = 0; i < ARRAYSIZE(tpm_certs);
+       i++) {  // There are three TPM certificates on the page.
+    TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
+    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
+    page_offset = round_up_to(page_offset, 3);
+  }
+
+  hmac_sha256_final((hmac_digest_t *)&hash);
+
+  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+  // sw/host/provisioning/ft_lib/src/lib.rs
+  LOG_INFO("Final hash: ");
+  RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &hash);
+
+  // Also print the final hash on the console, first convert it into a hex
+  // string, two bytes per digit plus trailing zero.
+  LOG_INFO("Sha256 hash of Certificates: %08x%08x%08x%08x%08x%08x%08x%08x",
+           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
+           hash.data[2], hash.data[1], hash.data[0]);
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
