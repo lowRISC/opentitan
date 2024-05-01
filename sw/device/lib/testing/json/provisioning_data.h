@@ -80,7 +80,7 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
 // clang-format on
 
 /**
- * Inputs needed to generate certificates during personalization.
+ * Inputs needed to generate DICE & TPM certificates during personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
@@ -99,44 +99,63 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
  * DICE certificates exported during personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_CERTS(field, string) \
-    field(uds_tbs_certificate, uint8_t, 569) \
+#define STRUCT_MANUF_DICE_CERTS(field, string) \
+    field(uds_tbs_certificate, uint8_t, 632) \
     field(uds_tbs_certificate_size, size_t) \
-    field(cdi_0_certificate, uint8_t, 582) \
+    field(cdi_0_certificate, uint8_t, 580) \
     field(cdi_0_certificate_size, size_t) \
-    field(cdi_1_certificate, uint8_t, 631) \
-    field(cdi_1_certificate_size, size_t) \
-    field(tpm_ek_tbs_certificate, uint8_t, 714) \
-    field(tpm_ek_tbs_certificate_size, size_t) \
-    field(tpm_cek_tbs_certificate, uint8_t, 714) \
-    field(tpm_cek_tbs_certificate_size, size_t) \
-    field(tpm_cik_tbs_certificate, uint8_t, 714) \
-    field(tpm_cik_tbs_certificate_size, size_t)
-UJSON_SERDE_STRUCT(ManufCerts, \
-                   manuf_certs_t, \
-                   STRUCT_MANUF_CERTS);
+    field(cdi_1_certificate, uint8_t, 632) \
+    field(cdi_1_certificate_size, size_t)
+UJSON_SERDE_STRUCT(ManufDiceCerts, \
+                   manuf_dice_certs_t, \
+                   STRUCT_MANUF_DICE_CERTS);
 // clang-format on
 
 /**
- * Endorsed certificates imported during personalization.
+ * Endorsed DICE certificates imported during personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
-    field(uds_certificate, uint8_t, 660) \
-    field(uds_certificate_size, size_t) \
-    field(tpm_ek_certificate, uint8_t, 714) \
+#define STRUCT_MANUF_ENDORSED_DICE_CERTS(field, string) \
+    field(uds_certificate, uint8_t, 724) \
+    field(uds_certificate_size, size_t)
+UJSON_SERDE_STRUCT(ManufEndorsedDiceCerts, \
+                   manuf_endorsed_dice_certs_t, \
+                   STRUCT_MANUF_ENDORSED_DICE_CERTS);
+// clang-format on
+
+/**
+ * TPM (TBS) certificates exported during personalization.
+ */
+// clang-format off
+#define STRUCT_MANUF_TPM_TBS_CERTS(field, string) \
+    field(tpm_ek_tbs_certificate, uint8_t, 844) \
+    field(tpm_ek_tbs_certificate_size, size_t) \
+    field(tpm_cek_tbs_certificate, uint8_t, 456) \
+    field(tpm_cek_tbs_certificate_size, size_t) \
+    field(tpm_cik_tbs_certificate, uint8_t, 456) \
+    field(tpm_cik_tbs_certificate_size, size_t)
+UJSON_SERDE_STRUCT(ManufTpmTbsCerts, \
+                   manuf_tpm_tbs_certs_t, \
+                   STRUCT_MANUF_TPM_TBS_CERTS);
+// clang-format on
+
+/**
+ * Endorsed TPM certificates imported during personalization.
+ */
+// clang-format off
+#define STRUCT_MANUF_ENDORSED_TPM_CERTS(field, string) \
+    field(tpm_ek_certificate, uint8_t, 936) \
     field(tpm_ek_certificate_size, size_t) \
-    field(tpm_cek_certificate, uint8_t, 714) \
+    field(tpm_cek_certificate, uint8_t, 548) \
     field(tpm_cek_certificate_size, size_t) \
-    field(tpm_cik_certificate, uint8_t, 714) \
+    field(tpm_cik_certificate, uint8_t, 548) \
     field(tpm_cik_certificate_size, size_t)
-UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
-                   manuf_endorsed_certs_t, \
-                   STRUCT_MANUF_ENDORSED_CERTS);
+UJSON_SERDE_STRUCT(ManufEndorsedTpmCerts, \
+                   manuf_endorsed_tpm_certs_t, \
+                   STRUCT_MANUF_ENDORSED_TPM_CERTS);
 // clang-format on
 
 #undef MODULE_ID
-// clang-format on
 
 #ifdef __cplusplus
 }
