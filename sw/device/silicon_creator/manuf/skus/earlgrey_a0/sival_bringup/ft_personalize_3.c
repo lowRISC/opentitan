@@ -25,21 +25,21 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static_assert(kUdsMaxTbsSizeBytes == 567,
+static_assert(kUdsMaxTbsSizeBytes == 630,
               "The `uds_tbs_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
-static_assert(kUdsMaxCertSizeBytes == 658,
+static_assert(kUdsMaxCertSizeBytes == 721,
               "The `uds_certificate` buffer size in the "
               "`manuf_endorsed_certs_t` struct should match the value of "
               "`kUdsMaxSizeBytes`.");
 static_assert(kCdi0MaxCertSizeBytes == 580,
               "The `cdi_0_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kCdi0MaxCertSizeBytes`.");
 static_assert(kCdi1MaxCertSizeBytes == 629,
               "The `cdi_1_certificate` buffer size in the "
-              "`manuf_dice_certs_t` struct should match the value of "
+              "`manuf_certs_t` struct should match the value of "
               "`kCdi1MaxCertSizeBytes`.");
 
 /**
@@ -63,7 +63,7 @@ static dice_cert_key_id_pair_t cdi_1_key_ids = {
     .cert = &cdi_1_pubkey_id,
 };
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static manuf_dice_certs_t dice_certs = {
+static manuf_certs_t dice_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
     .cdi_0_certificate = {0},
@@ -198,7 +198,7 @@ static status_t personalize(ujson_t *uj) {
 
   // Export the certificates to the provisioning appliance.
   LOG_INFO("Exporting DICE certificates ...");
-  RESP_OK(ujson_serialize_manuf_dice_certs_t, uj, &dice_certs);
+  RESP_OK(ujson_serialize_manuf_certs_t, uj, &dice_certs);
 
   // Import endorsed certificates from the provisioning appliance.
   LOG_INFO("Importing certificates ...");

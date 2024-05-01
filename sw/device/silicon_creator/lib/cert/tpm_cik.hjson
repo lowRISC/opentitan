@@ -44,11 +44,11 @@
     certificate: {
         serial_number: { var: "tpm_cik_pub_key_id", convert: "big-endian" },
         issuer: [
-            { organization: "Google" },
-            { organizational_unit: "Engineering" },
-            { common_name: "ChromeOS OT ICA" },
             { country: "US" },
             { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "Google Engineering ICA" },
         ],
         not_before: "20230101000000Z",
         not_after: "20500101000000Z",
@@ -57,7 +57,7 @@
             { state: "CA" },
             { organization: "Google" },
             { organizational_unit: "Engineering" },
-            { common_name: "ChromeOS OT TPM CIK" },
+            { common_name: "OT Ti50 TPM CIK" },
         ],
         subject_public_key_info: {
             algorithm: "ec-public-key",

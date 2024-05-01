@@ -27,8 +27,8 @@ use opentitanlib::uart::console::UartConsole;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertgenInputs, ManufDiceCerts, ManufEndorsedCerts,
-    ManufFtIndividualizeData, WrappedRmaUnlockToken,
+    EccP256PublicKey, ManufCertgenInputs, ManufCerts, ManufEndorsedCerts, ManufFtIndividualizeData,
+    WrappedRmaUnlockToken,
 };
 
 pub fn test_unlock(
@@ -239,7 +239,7 @@ pub fn run_ft_personalize(
 
     // Wait until device exports the attestation certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting DICE certificates ...", timeout)?;
-    let certs = ManufDiceCerts::recv(&*uart, timeout, true)?;
+    let certs = ManufCerts::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
     let uds_tbs_cert_bytes: Vec<u8> = certs
@@ -260,10 +260,36 @@ pub fn run_ft_personalize(
         .into_iter()
         .take(certs.cdi_1_certificate_size)
         .collect();
+    let tpm_ek_tbs_cert_bytes: Vec<u8> = certs
+        .tpm_ek_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(certs.tpm_ek_tbs_certificate_size)
+        .collect();
+    let tpm_cek_tbs_cert_bytes: Vec<u8> = certs
+        .tpm_cek_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(certs.tpm_cek_tbs_certificate_size)
+        .collect();
+    let tpm_cik_tbs_cert_bytes: Vec<u8> = certs
+        .tpm_cik_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(certs.tpm_cik_tbs_certificate_size)
+        .collect();
 
     // Log certificates to console and check they are parsable with OpenSSL.
     let cert_endorsement_sk = SecretKey::<NistP256>::read_pkcs8_der_file(cert_endorsement_ecc_sk)?;
     let uds_cert_bytes = parse_and_endorse_uds_cert(uds_tbs_cert_bytes, &cert_endorsement_sk)?;
+
+    let tpm_ek_cert_bytes =
+        parse_and_endorse_uds_cert(tpm_ek_tbs_cert_bytes, &cert_endorsement_sk)?;
+    let tpm_cek_cert_bytes =
+        parse_and_endorse_uds_cert(tpm_cek_tbs_cert_bytes, &cert_endorsement_sk)?;
+    let tpm_cik_cert_bytes =
+        parse_and_endorse_uds_cert(tpm_cik_tbs_cert_bytes, &cert_endorsement_sk)?;
+
     log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
     log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
     log::info!("CDI_1 Cert: {}", hex::encode(cdi_1_cert_bytes.clone()));
@@ -275,6 +301,12 @@ pub fn run_ft_personalize(
     let endorsed_certs = ManufEndorsedCerts {
         uds_certificate: uds_cert_bytes.clone().into_iter().collect(),
         uds_certificate_size: uds_cert_bytes.len(),
+        tpm_ek_certificate: tpm_ek_cert_bytes.clone().into_iter().collect(),
+        tpm_ek_certificate_size: tpm_ek_cert_bytes.len(),
+        tpm_cek_certificate: tpm_cek_cert_bytes.clone().into_iter().collect(),
+        tpm_cek_certificate_size: tpm_cek_cert_bytes.len(),
+        tpm_cik_certificate: tpm_cik_cert_bytes.clone().into_iter().collect(),
+        tpm_cik_certificate_size: tpm_cik_cert_bytes.len(),
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing certificates ...", timeout)?;
     endorsed_certs.send(&*uart)?;
