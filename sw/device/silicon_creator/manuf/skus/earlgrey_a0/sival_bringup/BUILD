@@ -271,6 +271,7 @@ opentitan_binary(
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
