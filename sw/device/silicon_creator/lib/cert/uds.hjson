@@ -78,8 +78,11 @@
     certificate: {
         serial_number: { var: "creator_pub_key_id", convert: "big-endian" },
         issuer: [
-            { country: "UK" },
-            { common_name: "lowRISC CIC" },
+            { country: "US" },
+            { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "Google Engineering ICA" },
         ],
         subject: [
             { serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex"} },
