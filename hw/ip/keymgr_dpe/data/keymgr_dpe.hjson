@@ -621,7 +621,7 @@ countermeasures: [
           name: "VAL",
           resval: "0x100"
           desc: '''
-            Number of key manager cycles before the entropy is reseeded
+            Number of internal PRNG updates before a reseed is requested.
           '''
         },
       ]
