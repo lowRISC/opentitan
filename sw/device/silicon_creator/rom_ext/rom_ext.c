@@ -110,6 +110,13 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
   CSR_READ(CSR_REG_MCAUSE, &mcause);
+
+  // TODO(opentitan#22947): Remove this debug print prior to a formal release.
+  uint32_t mepc, mtval;
+  CSR_READ(CSR_REG_MEPC, &mepc);
+  CSR_READ(CSR_REG_MTVAL, &mtval);
+  dbg_printf("MCAUSE=%x MEPC=%x MTVAL=%x\r\n", mcause, mepc, mtval);
+
   // Shuffle the mcause bits into the uppermost byte of the word and report
   // the cause as kErrorRomExtInterrupt.
   // Based on the ibex verilog, it appears that the most significant bit
