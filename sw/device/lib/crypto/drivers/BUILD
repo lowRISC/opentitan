@@ -185,6 +185,18 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "hmac_unittest",
+    srcs = ["hmac_unittest.cc"],
+    deps = [
+        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
