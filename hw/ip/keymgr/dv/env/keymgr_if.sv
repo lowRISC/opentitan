@@ -229,6 +229,7 @@ interface keymgr_if(input clk, input rst_n);
                                               );
     keymgr_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
                                                     key_shares[0][keymgr_pkg::KeyWidth-1:0]};
+    if (state == keymgr_pkg::StInvalid) return;
     case (dest)
       keymgr_pkg::Kmac: begin
         if (kmac_sideload_status != SideLoadClear) begin
