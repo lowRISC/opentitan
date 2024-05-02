@@ -8,3 +8,12 @@ def secver_write_selection():
         "//sw/device/silicon_creator/rom_ext:secver_write_true": True,
         "//sw/device/silicon_creator/rom_ext:secver_write_false": False,
     })
+
+# The ROM_EXT version number to encode into the manifest.
+# NOTE: the version numbers are integers, but have to be encoded as strings
+# because of how the bazel rule accepts attributes.
+ROM_EXT_VERSION = struct(
+    MAJOR = "0",
+    MINOR = "1",
+    SECURITY = "0",
+)
