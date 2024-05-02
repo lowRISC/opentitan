@@ -52,6 +52,12 @@ IBEX_CONFIG         := opentitan
 # Path to DUT used for coverage reports
 DUT_COV_RTL_PATH    := "ibex_top"
 
+export EXTRA_COSIM_CFLAGS ?=
+
+ifeq ($(COSIM_SIGSEGV_WORKAROUND), 1)
+	EXTRA_COSIM_CFLAGS += -DCOSIM_SIGSEGV_WORKAROUND
+endif
+
 ###############################################################################
 
 # Setup the necessary paths for all python scripts to find all other relevant modules.

@@ -1,3 +1,7 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 ibex_pkg.sv
 ibex_alu.sv
 ibex_compressed_decoder.sv

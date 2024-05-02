@@ -1,3 +1,7 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 module ibex_counter #(
   parameter int CounterWidth = 32,
   // When set `counter_val_upd_o` provides an incremented version of the counter value, otherwise

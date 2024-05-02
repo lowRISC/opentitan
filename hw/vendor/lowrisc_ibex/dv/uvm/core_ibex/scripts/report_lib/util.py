@@ -38,10 +38,12 @@ def gen_test_run_result_text(trr: TestRunResult) -> str:
     test_underline = '-' * len(test_name_idx)
     info_lines: List[str] = [test_name_idx, test_underline]
 
-    #  Filter out relevant fields, and print as relative to the dir_test for readability
-    lesskeys = {k: str(v.relative_to(trr.dir_test))  # Improve readability
-                for k, v in dataclasses.asdict(trr).items()
-                if k in ['binary', 'rtl_log', 'rtl_trace', 'iss_cosim_trace']}
+    # Filter out relevant fields, and print as relative to the dir_test for
+    # readability.
+    lesskeys = \
+            {k: str(v.relative_to(trr.dir_test) if v is not None else 'MISSING')
+             for k, v in dataclasses.asdict(trr).items()
+             if k in ['binary', 'rtl_log', 'rtl_trace', 'iss_cosim_trace']}
     strdict = ibex_lib.format_dict_to_printable_dict(lesskeys)
 
     trr_yaml = io.StringIO()

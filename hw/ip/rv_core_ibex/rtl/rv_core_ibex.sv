@@ -366,39 +366,40 @@ module rv_core_ibex
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
-    .PMPEnable                ( PMPEnable                ),
-    .PMPGranularity           ( PMPGranularity           ),
-    .PMPNumRegions            ( PMPNumRegions            ),
-    .MHPMCounterNum           ( MHPMCounterNum           ),
-    .MHPMCounterWidth         ( MHPMCounterWidth         ),
-    .RV32E                    ( RV32E                    ),
-    .RV32M                    ( RV32M                    ),
-    .RV32B                    ( RV32B                    ),
-    .RegFile                  ( RegFile                  ),
-    .BranchTargetALU          ( BranchTargetALU          ),
-    .WritebackStage           ( WritebackStage           ),
-    .ICache                   ( ICache                   ),
+    .PMPEnable                   ( PMPEnable                ),
+    .PMPGranularity              ( PMPGranularity           ),
+    .PMPNumRegions               ( PMPNumRegions            ),
+    .MHPMCounterNum              ( MHPMCounterNum           ),
+    .MHPMCounterWidth            ( MHPMCounterWidth         ),
+    .RV32E                       ( RV32E                    ),
+    .RV32M                       ( RV32M                    ),
+    .RV32B                       ( RV32B                    ),
+    .RegFile                     ( RegFile                  ),
+    .BranchTargetALU             ( BranchTargetALU          ),
+    .WritebackStage              ( WritebackStage           ),
+    .ICache                      ( ICache                   ),
     // Our automatic SEC_CM label check doesn't look at vendored code so the SEC_CM labels need
     // to be mentioned here. The real locations can be found by grepping the vendored code.
     // TODO(#10071): this should be fixed.
     // SEC_CM: ICACHE.MEM.INTEGRITY
-    .ICacheECC                ( ICacheECC                ),
+    .ICacheECC                   ( ICacheECC                ),
     // SEC_CM: ICACHE.MEM.SCRAMBLE, SCRAMBLE.KEY.SIDELOAD
-    .ICacheScramble           ( ICacheScramble           ),
-    .BranchPredictor          ( BranchPredictor          ),
-    .DbgTriggerEn             ( DbgTriggerEn             ),
-    .DbgHwBreakNum            ( DbgHwBreakNum            ),
+    .ICacheScramble              ( ICacheScramble           ),
+    .ICacheScrNumPrinceRoundsHalf( 3                        ),
+    .BranchPredictor             ( BranchPredictor          ),
+    .DbgTriggerEn                ( DbgTriggerEn             ),
+    .DbgHwBreakNum               ( DbgHwBreakNum            ),
     // SEC_CM: LOGIC.SHADOW
     // SEC_CM: PC.CTRL_FLOW.CONSISTENCY, CTRL_FLOW.UNPREDICTABLE, CORE.DATA_REG_SW.SCA
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
     // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
-    .SecureIbex               ( SecureIbex               ),
-    .RndCnstLfsrSeed          ( RndCnstLfsrSeed          ),
-    .RndCnstLfsrPerm          ( RndCnstLfsrPerm          ),
-    .RndCnstIbexKey           ( RndCnstIbexKeyDefault    ),
-    .RndCnstIbexNonce         ( RndCnstIbexNonceDefault  ),
-    .DmHaltAddr               ( DmHaltAddr               ),
-    .DmExceptionAddr          ( DmExceptionAddr          )
+    .SecureIbex                  ( SecureIbex               ),
+    .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
+    .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
+    .RndCnstIbexKey              ( RndCnstIbexKeyDefault    ),
+    .RndCnstIbexNonce            ( RndCnstIbexNonceDefault  ),
+    .DmHaltAddr                  ( DmHaltAddr               ),
+    .DmExceptionAddr             ( DmExceptionAddr          )
   ) u_core (
     .clk_i              (ibex_top_clk_i),
     .rst_ni,

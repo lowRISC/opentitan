@@ -153,6 +153,13 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
 
     super.gen_init_section(hart);
 
+    // RISCV-DV assumes main is immediately after init when riscv_instr_pkg::support_pmp isn't set.
+    // This override of gen_init_section breaks that assumption so add a jump to main here so the
+    // test starts correctly for configurations that don't support PMP.
+    if (!riscv_instr_pkg::support_pmp) begin
+      instr_stream.push_back({indent, "j main"});
+    end
+
     gen_test_end(.result(TEST_PASS), .instr(instr));
     instr_stream = {instr_stream,
                     {format_string("test_done:", LABEL_STR_LEN)},
