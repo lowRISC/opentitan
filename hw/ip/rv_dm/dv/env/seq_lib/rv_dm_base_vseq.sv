@@ -221,11 +221,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // Task to halt the hart.
+  // Tell rv_dm to request a halt, then "acknowledge" its forwarded request as the CPU after a few
+  // cycles (hartsel=0 give a hart ID of 0 as we only have one hart).
   task request_halt();
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, 1)
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     csr_wr(.ptr(tl_mem_ral.halted), .value(0));
   endtask
 
