@@ -7,6 +7,10 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VERSION",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -22,6 +26,9 @@ manifest(d = {
     "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.PRODC),
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MAJOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
     "visibility": ["//visibility:public"],
 })
 
