@@ -72,8 +72,8 @@ package keymgr_env_pkg;
       keymgr_pkg::keymgr_working_state_e current_state);
 
     uint next_state = int'(current_state) + 1;
-    if (next_state >= int'(keymgr_pkg::StDisabled)) begin
-      return keymgr_pkg::StDisabled;
+    if (next_state > int'(keymgr_pkg::StDisabled)) begin
+      return current_state;
     end else begin
       `downcast(get_next_state, next_state, , , msg_id);
     end
