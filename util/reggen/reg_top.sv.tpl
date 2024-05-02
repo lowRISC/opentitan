@@ -756,9 +756,10 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
 
   % if regs_flat:
 <%
-    # We want to signal wr_err if reg_be (the byte enable signal) is true for
-    # any bytes that aren't supported by a register. That's true if a
-    # addr_hit[i] and a bit is set in reg_be but not in *_PERMIT[i].
+    # Although partial writes are possible on the bus, the registers have a single write-enable bit.
+    # As such, all fields in the target register must be completely covered by the bytes being
+    # written. If a bit is high in *_PERMIT[i], this means that the corresponding byte contributes
+    # some field in register i.
 
     wr_addr_hit = 'racl_addr_hit_write' if racl_support else 'addr_hit'
     wr_err_terms = ['({wr_addr_hit}[{idx}] & (|({mod}_PERMIT[{idx}] & ~reg_be)))'
