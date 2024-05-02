@@ -173,7 +173,7 @@ opentitan_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream:mask_rom",
         data = ":otp_img_sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],

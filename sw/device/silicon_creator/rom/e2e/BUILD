@@ -84,7 +84,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_default_otp",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream:mask_rom",
     data = ":otp_img_default",
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
@@ -285,7 +285,7 @@ opentitan_test(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
@@ -308,7 +308,7 @@ opentitan_test(
     name = "rom_e2e_smoke",
     srcs = [":empty_test"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -323,7 +323,7 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     deps = [
         "//sw/device/lib/dif:spi_device",
@@ -335,7 +335,7 @@ opentitan_test(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
@@ -344,7 +344,7 @@ opentitan_test(
     },
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     deps = [
         "//sw/device/lib/dif:hmac",

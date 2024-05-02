@@ -13,7 +13,7 @@ package(default_visibility = ["//visibility:public"])
 
 strap_combinations_test(
     name = "e2e_weak_straps",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_verilator_scr_vmem",
+    rom = "//sw/device/silicon_creator/rom:mask_rom_sim_verilator_scr_vmem",
     tags = [
         "verilator",
     ],

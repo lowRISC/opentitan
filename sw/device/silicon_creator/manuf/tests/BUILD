@@ -74,7 +74,7 @@ _MANUF_TEST_LOCKED_KEY = None
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            bitstream = "//hw/bitstream:mask_rom_otp_{}".format(lc_state.lower()),
             changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
@@ -115,7 +115,7 @@ opentitan_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream:mask_rom_otp_raw",
         changes_otp = True,
         needs_jtag = True,
         tags = ["manuf"],
@@ -137,7 +137,7 @@ opentitan_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream:mask_rom_otp_raw",
         changes_otp = True,
         needs_jtag = True,
         tags = ["manuf"],

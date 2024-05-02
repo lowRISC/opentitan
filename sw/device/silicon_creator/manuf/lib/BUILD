@@ -141,7 +141,7 @@ opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
+        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
@@ -202,7 +202,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
+        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked1",
         changes_otp = True,
         tags = ["manuf"],
         test_cmd = """

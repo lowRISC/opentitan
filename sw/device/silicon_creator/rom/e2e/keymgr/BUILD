@@ -93,7 +93,7 @@ rom_e2e_keymgr_init_configs = [
         dv = dv_params(
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             otp = ":otp_img_keymgr_{}".format(config["name"]),
-            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+            rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -104,7 +104,7 @@ rom_e2e_keymgr_init_configs = [
             timeout = "eternal",
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             otp = ":otp_img_keymgr_{}".format(config["name"]),
-            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+            rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
     )
     for config in rom_e2e_keymgr_init_configs

@@ -150,7 +150,7 @@ WATCHDOG_OTP = {
                 ): "firmware",
             },
             otp = WATCHDOG_OTP[watchdog_config].format(lc_state),
-            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+            rom = "//sw/device/silicon_creator/rom:mask_rom",
             # Test cases that enable the watchdog time out in verilator, cause
             # unknown.
             tags = ["broken"] if WATCHDOG_TEST_CASES[watchdog_config][lc_state] == "enabled" else [],
