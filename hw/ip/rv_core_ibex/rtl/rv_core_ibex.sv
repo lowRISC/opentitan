@@ -385,7 +385,10 @@ module rv_core_ibex
     .ICacheECC                   ( ICacheECC                ),
     // SEC_CM: ICACHE.MEM.SCRAMBLE, SCRAMBLE.KEY.SIDELOAD
     .ICacheScramble              ( ICacheScramble           ),
-    .ICacheScrNumPrinceRoundsHalf( 3                        ),
+    // Reduce the number of PRINCE half rounds to 2 (5 effective rounds) to ease timing. This is
+    // acceptable for the instruction cache, whereas 3 half rounds (7 effective rounds) are used
+    // elsewhere in the design.
+    .ICacheScrNumPrinceRoundsHalf( 2                        ),
     .BranchPredictor             ( BranchPredictor          ),
     .DbgTriggerEn                ( DbgTriggerEn             ),
     .DbgHwBreakNum               ( DbgHwBreakNum            ),
