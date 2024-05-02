@@ -172,6 +172,7 @@ module keymgr_dpe
   // The second case is less sensitive and is applied directly.  If the inputs
   // have more bits than the lfsr output, the lfsr value is simply replicated
 
+  logic lfsr_en;
   logic seed_en;
   logic [LfsrWidth-1:0] seed;
   logic reseed_req;
@@ -188,6 +189,7 @@ module keymgr_dpe
     .reseed_interval_i(reg2hw.reseed_interval_shadowed.q),
     .edn_o,
     .edn_i,
+    .lfsr_en_i(lfsr_en),
     .seed_en_o(seed_en),
     .seed_o(seed),
     .cnt_err_o(reseed_cnt_err)
@@ -195,6 +197,7 @@ module keymgr_dpe
 
   logic [63:0] lfsr;
   logic ctrl_lfsr_en, data_lfsr_en, sideload_lfsr_en;
+  assign lfsr_en = ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en;
 
   prim_lfsr #(
     .LfsrDw(LfsrWidth),
@@ -206,7 +209,7 @@ module keymgr_dpe
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .lfsr_en_i(ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en),
+    .lfsr_en_i(lfsr_en),
     .seed_en_i(seed_en),
     .seed_i(seed),
     .entropy_i('0),

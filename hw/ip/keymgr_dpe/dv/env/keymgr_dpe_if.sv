@@ -38,6 +38,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // connect EDN for assertion check
   wire edn_clk, edn_rst_n, edn_req, edn_ack;
 
+  // connect to PRNG to track PRNG updates for EDN assertion
+  wire lfsr_en;
+
   // keymgr_dpe_en is async, create a sync one for use in scb
   lc_ctrl_pkg::lc_tx_t keymgr_dpe_en_sync1, keymgr_dpe_en_sync2;
 
@@ -74,12 +77,15 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // use this to indicate if it's first or
   // second req. 0: wait for 1st req, 1: for 2nd
   bit edn_req_cnt;
+  bit edn_wait_cnt_incr;
+  bit edn_wait_cnt_clr;
   int edn_wait_cnt;
   int edn_interval;
   // synchronize req/ack from async domain
   bit edn_req_sync;
   bit edn_req_ack_sync;
   bit edn_req_ack_sync_done;
+  bit edn_req_ack_sync_done_qq;
 
   // If we need to wait for internal signal to be certain value, we may not be able to get that
   // when the sim is close to end. Define a cnt and MaxWaitCycle to avoid sim hang
@@ -92,7 +98,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   string msg_id = "keymgr_dpe_if";
 
-  int edn_tolerance_cycs = 20;
+  int edn_tolerance_upd = 20;
 
   // assigned from the keymgr_dpe.keymgr_dpe_ctrl.key_slots_q signal, which should hold the
   // current value of the keyslots in the dut.
@@ -385,8 +391,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
     otbn_sideload_status <= SideLoadClear;
   endfunction
 
-  function automatic void update_edn_toleranc_cycs(int edn_clk, int main_clk);
-    if ((main_clk/edn_clk) * 10 > edn_tolerance_cycs) edn_tolerance_cycs = (main_clk/edn_clk) * 10;
+  function automatic void update_edn_tolerance_upd(int edn_clk, int main_clk);
+    if ((main_clk/edn_clk) * 10 > edn_tolerance_upd) edn_tolerance_upd = (main_clk/edn_clk) * 10;
   endfunction
 
   logic valid_done_window;
@@ -696,13 +702,27 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
   end
 
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      edn_req_ack_sync_done_qq <= 1'b0;
+    end else begin
+      edn_req_ack_sync_done_qq <= edn_req_ack_sync_done;
+    end
+  end
+
+  // Increment the counter for PRNG updates happening unless we're waiting for EDN.
+  assign edn_wait_cnt_incr = lfsr_en && (!edn_req_sync || (edn_req_sync && edn_req_ack_sync));
+
+  // Clear the counter upon rising edges of the synchronized req_ack_done signal.
+  assign edn_wait_cnt_clr = edn_req_ack_sync_done & !edn_req_ack_sync_done_qq;
+
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       edn_wait_cnt <= 0;
-    end else if (!edn_req_sync) begin
-      edn_wait_cnt <= edn_wait_cnt + 1;
-    end else begin
+    end else if (edn_wait_cnt_clr) begin
       edn_wait_cnt <= 0;
+    end else if (edn_wait_cnt_incr) begin
+      edn_wait_cnt <= edn_wait_cnt + 1;
     end
   end
 
@@ -718,16 +738,16 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
   end
 
-  // consider async handshaking and a few cycles to start the req. allow no more than
-  // `edn_tolerance_cycs` tolerance error on the cnt.
-  // `edn_tolerance_cycs` default value is 20, but if the frequency difference between edn and main
+  // consider async handshaking and a few PRNG update requests to start the req. allow no more than
+  // `edn_tolerance_upd` tolerance error on the cnt.
+  // `edn_tolerance_upd` default value is 20, but if the frequency difference between edn and main
   // clock is too big, the testbench will scale it up to a larger value.
   `ASSERT(CheckEdn1stReq, $rose(edn_req_sync) && edn_req_cnt == 0 && start_edn_req |->
-          (edn_wait_cnt > edn_interval) && (edn_wait_cnt - edn_interval < edn_tolerance_cycs),
+          (edn_wait_cnt >= edn_interval) && (edn_wait_cnt - edn_interval < edn_tolerance_upd),
           clk, !rst_n || !en_chk)
 
   `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |->
-          edn_wait_cnt < edn_tolerance_cycs,
+          edn_wait_cnt < edn_tolerance_upd,
           clk, !rst_n || !en_chk)
 
   `undef ASSERT_IFF_KEYMGR_DPE_LEGAL
