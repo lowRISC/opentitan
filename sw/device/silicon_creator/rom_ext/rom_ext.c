@@ -291,10 +291,11 @@ static rom_error_t rom_ext_attestation_keygen(
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
       kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
       kUdsKeymgrDiversifier));
-  curr_cert_valid = kHardenedBoolFalse;
-  HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
-      &kFlashCtrlInfoPageUdsCertificate, uds_pubkey_id.digest,
-      &curr_cert_valid));
+  // TODO(#22921): fix cert updating check and re-enable checks below.
+  curr_cert_valid = kHardenedBoolTrue;
+  /*HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(*/
+  /*&kFlashCtrlInfoPageUdsCertificate, uds_pubkey_id.digest,*/
+  /*&curr_cert_valid));*/
   if (launder32(curr_cert_valid) == kHardenedBoolFalse) {
     // The UDS key ID (and cert itself) should never change unless:
     // 1. there is a hardware issue, or
@@ -320,10 +321,11 @@ static rom_error_t rom_ext_attestation_keygen(
                                   rom_ext_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
       kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_attestation_pubkey));
-  curr_cert_valid = kHardenedBoolFalse;
-  HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
-      &kFlashCtrlInfoPageCdi0Certificate, cdi_0_pubkey_id.digest,
-      &curr_cert_valid));
+  // TODO(#22921): fix cert updating check and re-enable checks below.
+  curr_cert_valid = kHardenedBoolTrue;
+  /*HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(*/
+  /*&kFlashCtrlInfoPageCdi0Certificate, cdi_0_pubkey_id.digest,*/
+  /*&curr_cert_valid));*/
   if (launder32(curr_cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(curr_cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_0 certificate not valid. Updating it ...\r\n");
@@ -348,10 +350,11 @@ static rom_error_t rom_ext_attestation_keygen(
                               owner_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
       kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_attestation_pubkey));
-  curr_cert_valid = kHardenedBoolFalse;
-  HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
-      &kFlashCtrlInfoPageCdi1Certificate, cdi_1_pubkey_id.digest,
-      &curr_cert_valid));
+  // TODO(#22921): fix cert updating check and re-enable checks below.
+  curr_cert_valid = kHardenedBoolTrue;
+  /*HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(*/
+  /*&kFlashCtrlInfoPageCdi1Certificate, cdi_1_pubkey_id.digest,*/
+  /*&curr_cert_valid));*/
   if (launder32(curr_cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(curr_cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
