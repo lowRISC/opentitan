@@ -11,7 +11,123 @@
 #include <string.h>
 
 #include "svdpi.h"
+#include "vendor/ascon_ascon-c/ascon128/crypto_aead.h"
 #include "vendor/ascon_ascon-c/ascon128/round.h"
+
+void c_dpi_aead_encrypt(svOpenArrayHandle ct, svOpenArrayHandle msg,
+                        unsigned int msg_len, svOpenArrayHandle ad,
+                        unsigned int ad_len, svOpenArrayHandle nonce,
+                        svOpenArrayHandle key) {
+  unsigned long long *clen;
+  unsigned long long mlen, alen;
+  mlen = msg_len;
+  alen = ad_len;
+
+  // clen and nsec is accutally not needed, but part of the API
+  clen = (unsigned long long *)malloc(sizeof(unsigned long long));
+  uint8_t *nsec;
+
+  uint8_t *c, *m, *a, *npub, *k;
+  c = (uint8_t *)svGetArrayPtr(ct);
+  a = (uint8_t *)svGetArrayPtr(ad);
+  m = (uint8_t *)svGetArrayPtr(msg);
+  npub = (uint8_t *)svGetArrayPtr(nonce);
+  k = (uint8_t *)svGetArrayPtr(key);
+
+  /*printf("ad length %d\n", ad_len);
+  printf("ad =  ");
+  for (int i = 0; i < ad_len; i++) {
+    printf("%02X", a[i]);
+  }
+  printf("\n");
+
+  printf("msg length %d\n", msg_len);
+  printf("msg = ");
+  for (int i = 0; i < msg_len; i++) {
+    printf("%02X", m[i]);
+  }
+  printf("\n");
+
+  printf("key = ");
+  for (int i = 0; i < 16; i++) {
+    printf("%02X", k[i]);
+  }
+  printf("\n");
+
+  printf("nonce = ");
+  for (int i = 0; i < 16; i++) {
+    printf("%02X", npub[i]);
+  }
+  printf("\n");*/
+
+  crypto_aead_encrypt(c, clen, m, mlen, a, alen, nsec, npub, k);
+  /*printf("ct length %d\n", (int)*clen);
+
+  printf("ct =  ");
+  for (int i = 0; i < *clen; i++) {
+    printf("%02X", c[i]);
+  }
+  printf("\n");*/
+  free(clen);
+  return;
+}
+
+void c_dpi_aead_decrypt(svOpenArrayHandle ct, unsigned int ct_len,
+                        svOpenArrayHandle msg, svOpenArrayHandle ad,
+                        unsigned int ad_len, svOpenArrayHandle nonce,
+                        svOpenArrayHandle key) {
+  unsigned long long *mlen;
+  unsigned long long clen, alen;
+  clen = ct_len;
+  alen = ad_len;
+
+  // mlen and nsec is accutally not needed, but part of the API
+  mlen = (unsigned long long *)malloc(sizeof(unsigned long long));
+  uint8_t *nsec;
+
+  uint8_t *c, *m, *a, *npub, *k;
+  c = (uint8_t *)svGetArrayPtr(ct);
+  a = (uint8_t *)svGetArrayPtr(ad);
+  m = (uint8_t *)svGetArrayPtr(msg);
+  npub = (uint8_t *)svGetArrayPtr(nonce);
+  k = (uint8_t *)svGetArrayPtr(key);
+
+  /*printf("ad length %d\n", ad_len);
+  printf("ad =  ");
+  for (int i = 0; i < ad_len; i++) {
+    printf("%02X", a[i]);
+  }
+  printf("\n");
+
+  printf("ct length %d\n", ct_len);
+  printf("ct = ");
+  for (int i = 0; i < ct_len; i++) {
+    printf("%02X", m[i]);
+  }
+  printf("\n");
+
+  printf("key = ");
+  for (int i = 0; i < 16; i++) {
+    printf("%02X", k[i]);
+  }
+  printf("\n");
+
+  printf("nonce = ");
+  for (int i = 0; i < 16; i++) {
+    printf("%02X", npub[i]);
+  }
+  printf("\n");*/
+  crypto_aead_decrypt(m, mlen, nsec, c, clen, a, alen, npub, k);
+  /*printf("msg length %d\n", (int)*mlen);
+
+  printf("msg =  ");
+  for (int i = 0; i < *mlen; i++) {
+    printf("%02X", c[i]);
+  }
+  printf("\n");*/
+  free(mlen);
+  return;
+}
 
 void c_dpi_ascon_round(const svBitVecVal *data_i, svBit *round_i,
                        svBitVecVal *data_o) {

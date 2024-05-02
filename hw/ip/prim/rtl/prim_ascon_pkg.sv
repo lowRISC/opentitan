@@ -9,8 +9,8 @@ parameter int AsconRoundCountW = 4;
 // Due to Ascon's round constants the current_round
 // contains an offset:
 // for P12 we count: from 0 to 11 = 12 rounds,
-// for P8  we count: from 4 to 11 =  8 rounds, 
-// for P6  we count: from 5 tp 11 =  6 rounds
+// for P8  we count: from 4 to 11 =  8 rounds,
+// for P6  we count: from 5 to 11 =  6 rounds
 
 typedef enum logic [3:0] {
   P12 = 4'b0000,
