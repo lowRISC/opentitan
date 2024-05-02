@@ -442,12 +442,17 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (allow_invalid) valid = $urandom_range(0, 1);
     else valid = 1;
 
+    // Behaviour is unknown if the read pipeline is enabled for non-read commands
+    // Hence we disable the pipeline to avoid modelling 'unknown' behaviour
+    if (!(idx>=5 && idx<=10))
+      info.read_pipeline_mode = 0;
+
     if (valid) begin
       cfg.spi_host_agent_cfg.add_cmd_info(info);
       cfg.spi_device_agent_cfg.add_cmd_info(info);
     end
 
-    `uvm_info(`gfn, $sformatf("Adding to cmd_info slot (%0d) this cmd_info\n%s", idx,
+    `uvm_info(`gfn, $sformatf("Adding to cmd_info slot (%0d) this cmd_info \n%s", idx,
                               info.sprint()), UVM_MEDIUM)
     case (info.num_lanes)
       0: lanes_en = 0;

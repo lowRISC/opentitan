@@ -203,8 +203,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 InternalProcessReadCmd: begin
                   spi_item downstream_item;
                   if (is_opcode_passthrough(item.opcode)) begin
-                    `DV_CHECK_EQ_FATAL(spi_passthrough_downstream_q.size, 1)
-                    downstream_item = spi_passthrough_downstream_q[0];
+                    // if busy, passthrough is blocked
+                    if (!`gmv(ral.flash_status.busy)) begin
+                      `DV_CHECK_EQ_FATAL(spi_passthrough_downstream_q.size, 1)
+                      downstream_item = spi_passthrough_downstream_q[0];
+                    end
+                    else begin
+                      `uvm_info(`gfn, {"flash txn was passthru. However, passtrough gate is closed",
+                                       "due to busy set: ",
+                                       $sformatf("spi_passthrough_downstream_q.size = %0d",
+                                                 spi_passthrough_downstream_q.size)}, UVM_DEBUG)
+                    end
                   end
                   check_read_cmd_data_for_non_read_buffer(item, downstream_item);
                 end
@@ -692,6 +701,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                          // these 2 inputs are for log only
                                          int payload_idx, string msg);
     bit [31:0] addr = get_converted_addr(base_addr + offset);
+    `uvm_info(`gfn, $sformatf("Converted Addr = 0x%0x",addr), UVM_DEBUG)
     `DV_CHECK(spi_mem.addr_exists(addr))
     spi_mem.compare_byte(addr, act_val);
       `uvm_info(`gfn, $sformatf(
@@ -739,18 +749,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           dn_item_payload_size--;
 
         `DV_CHECK_EQ(up_item.payload_q.size, dn_item_payload_size)
-
-
-        //TODO: remove_me
-/* -----\/----- EXCLUDED -----\/-----
-        if (!up_item.read_pipeline_mode ||
-            up_item.payload_q.size == 0) begin //Read terminated before any data was returned
-          `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
-        end
-        else
-          `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size-1)
- -----/\----- EXCLUDED -----/\----- */
-
       end
     end // if (dn_item != null)
 
@@ -760,7 +758,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
       if (cfg.is_in_mailbox_region(cur_addr)) begin
         bit [31:0] offset = cur_addr % MAILBOX_BUFFER_SIZE;
-        `uvm_info(`gfn, $sformatf("Command has been intercepted and is in the MBX region"),
+        `uvm_info(`gfn, {"Command has been intercepted and is in the MBX region",
+                         $sformatf("MAILBOX_START_ADDR = 0x%0x - offset = 0x%0x",MAILBOX_START_ADDR,
+                                   offset)
+                         },
                   UVM_DEBUG)
         compare_mem_byte(MAILBOX_START_ADDR, offset, up_item.payload_q[i], i, "Mailbox");
         if (i == 0) start_at_mailbox = 1;
@@ -872,7 +873,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual function void handle_addr_payload_swap(spi_item item);
     spi_device_reg_cmd_info reg_cmd_info = cfg.get_cmd_info_reg_by_opcode(item.opcode);
     if (reg_cmd_info == null) return;
-
+    `uvm_info(`gfn, $sformatf("Addr/Payload Swap for cmd_info = %s",reg_cmd_info.get_name()),
+              UVM_DEBUG)
     if (`gmv(reg_cmd_info.addr_swap_en)) begin
       bit [TL_DW-1:0] mask = `gmv(ral.addr_swap_mask);
       bit [TL_DW-1:0] data = `gmv(ral.addr_swap_data);
@@ -895,7 +897,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       // swap up to 4 bytes
       int swap_byte_num = item.payload_q.size > 4 ? 4 : item.payload_q.size;
 
-      `uvm_info(`gfn, $sformatf("Swap addr for opcode: 0x%0h, mask/data: 0x%0h/0x%0h, old: %p",
+      `uvm_info(`gfn, $sformatf("Swap Payload for opcode: 0x%0h, mask/data: 0x%0h/0x%0h, old: %p",
           item.opcode, mask, data, item.payload_q[0:swap_byte_num]), UVM_MEDIUM)
       for (int i = 0; i < swap_byte_num; i++) begin
         item.payload_q[i] = (item.payload_q[i] & ~mask[i*8 +: 8]) |
@@ -2198,7 +2200,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 // chance the TB will predict the interrupt quicker than the RTL
                 intr_exp[i] = 1;
                 `DV_CHECK_EQ_FATAL( csr.predict(.value(intr_exp), .kind(UVM_PREDICT_READ)), 1,
-                                    $sformatf("%s.predict did not succeed", csr.get_name())
+                                    $sformatf("%s.predict did not succeed", csr.get_name()))
 
                 `uvm_info(`gfn, $sformatf("updating CSR intr_state with intr_exp[i=%0d]=%0d",i,
                                           intr_exp[i]), UVM_DEBUG)
@@ -2210,8 +2212,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 `uvm_info(`gfn, {"TB hasn't yet updated CSR status in spite of having predicted ",
                                  $sformatf("an interrupt for %s interrupt because the ",intr.name),
                                  "prediction was quicker than the RTL"}, UVM_DEBUG)
-              end
-            end
+              end // else: !if(item.d_data[i])
+            end // else: !if(!intr_trigger_pending[i])
           end // foreach (intr_exp[i])
           // Update local mirror copy of intr_exp
           intr_exp_read_mirrored = `gmv(csr);
@@ -2638,6 +2640,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   endfunction
 
   function void check_phase(uvm_phase phase);
+    bit [TL_DW-1:0]  interrupt_mask = 'hFFFF_FFFF;
     super.check_phase(phase);
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, upstream_spi_host_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, upstream_spi_device_fifo)
@@ -2649,6 +2652,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(upload_cmd_q.size, 0)
     `DV_CHECK_EQ(upload_addr_q.size, 0)
     `DV_CHECK_EQ(tpm_read_sw_q.size, 0)
-    `DV_CHECK_EQ(|intr_trigger_pending, 0)
+    //Checking only event type interrupts
+    interrupt_mask[5] = 0; //TPM header non emtpy is a status interrupt
+    `DV_CHECK_EQ(|(intr_trigger_pending & interrupt_mask) , 0)
   endfunction
 endclass

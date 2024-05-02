@@ -251,13 +251,13 @@ class spi_monitor extends dv_base_monitor#(
                                      item.dummy_cycles, item.read_pipeline_mode);
     `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
     item.terminated_before_dummy_cycles = 1;
-    if(item.read_pipeline_mode>0)
+    if (item.read_pipeline_mode>0)
       item.terminated_before_read_pipeline = 1;
 
     `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling opcode", UVM_DEBUG)
     -> host_item.byte_sampled_ev;
     sample_address(num_addr_bytes, item.address_q);
-    if(item.address_q.size > 0) begin
+    if (item.address_q.size > 0) begin
       `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling address", UVM_DEBUG)
       -> host_item.byte_sampled_ev;
     end
