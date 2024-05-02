@@ -18,7 +18,16 @@ from report_lib.text import output_results_text, gen_summary_line
 from report_lib.html import output_results_html
 from report_lib.junit_xml import output_run_results_junit_xml
 from report_lib.dvsim_json import output_results_dvsim_json
-from report_lib.svg import output_results_svg
+
+try:
+    # SVG requires python 3.7 and above, for environments that don't have python
+    # 3.7 (e.g. CentOS 7) detect failure to import and just skip any svg
+    # generation.
+    import svg
+    from report_lib.svg import output_results_svg
+    SVG_MODULE_PRESENT = True
+except ImportError:
+    SVG_MODULE_PRESENT = False
 
 def main() -> int:
     """Collect all test results into summary files.
@@ -93,10 +102,13 @@ def main() -> int:
             output_results_dvsim_json(md, test_summary_dict, cov_summary_dict,
                                       json_report_file)
 
-        svg_summary_filename = md.dir_run/'summary.svg'
-        with open(svg_summary_filename, 'w') as svg_summary_file:
-            output_results_svg(test_summary_dict, cov_summary_dict,
-                    svg_summary_file)
+        if SVG_MODULE_PRESENT:
+            svg_summary_filename = md.dir_run/'summary.svg'
+            with open(svg_summary_filename, 'w') as svg_summary_file:
+                output_results_svg(test_summary_dict, cov_summary_dict,
+                        svg_summary_file)
+        else:
+            print('WARNING: svg module not available, skipping SVG results output')
 
         # Print a summary line to the terminal
         print(gen_summary_line(passing_tests, failing_tests))

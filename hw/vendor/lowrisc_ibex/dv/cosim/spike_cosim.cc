@@ -48,10 +48,17 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
       std::make_unique<processor_t>(isa_string.c_str(), "MU", DEFAULT_VARCH,
                                     this, 0, false, log_file, std::cerr);
 #else
-  isa_parser = std::make_unique<isa_parser_t>(isa_string.c_str(), "MU");
 
+#ifdef COSIM_SIGSEGV_WORKAROUND
+  isa_parser = new isa_parser_t(isa_string.c_str(), "MU");
+  processor = std::make_unique<processor_t>(isa_parser, DEFAULT_VARCH, this, 0,
+                                            false, log_file, std::cerr);
+#else
+  isa_parser = std::make_unique<isa_parser_t>(isa_string.c_str(), "MU");
   processor = std::make_unique<processor_t>(
       isa_parser.get(), DEFAULT_VARCH, this, 0, false, log_file, std::cerr);
+#endif
+
 #endif
 
   processor->set_pmp_num(pmp_num_regions);

@@ -18,7 +18,7 @@
 # As a result, passing -fno-extended-identifiers tells G++ to pretend that
 # everything is ASCII, preventing strange compilation errors.
 - tool: vcs
-  env_var: IBEX_ROOT
+  env_var: IBEX_ROOT, EXTRA_COSIM_CFLAGS
   compile:
     cmd:
       - >-
@@ -39,6 +39,7 @@
           -xlrm uniq_prior_final
           -CFLAGS '--std=c99 -fno-extended-identifiers'
           -lca -kdb
+          -debug_access+f
           <cmp_opts> <wave_opts> <cov_opts> <cosim_opts>
     cov_opts: >-
       -cm line+tgl+assert+fsm+branch
@@ -51,11 +52,10 @@
     wave_opts: >-
       -debug_access+all
       -ucli
-      -do vcs.tcl
     cosim_opts: >-
       -f <core_ibex>/ibex_dv_cosim_dpi.f
       -LDFLAGS '<ISS_LDFLAGS>'
-      -CFLAGS '<ISS_CFLAGS>'
+      -CFLAGS '<ISS_CFLAGS> <EXTRA_COSIM_CFLAGS>'
       -CFLAGS '-I<IBEX_ROOT>/dv/cosim'
       <ISS_LIBS>
       -lstdc++
@@ -71,6 +71,7 @@
             +bin=<binary>
             +ibex_tracer_file_base=<rtl_trace>
             +cosim_log_file=<iss_cosim_trace>
+            -l <rtl_sim_log>
             <sim_opts> <wave_opts> <cov_opts>
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
@@ -81,7 +82,7 @@
       +enable_ibex_fcov=1
     wave_opts: >
       -ucli
-      -do <cwd>/vcs.tcl
+      -do <core_ibex>/vcs.tcl
 
 
 ############################################################
@@ -224,7 +225,7 @@
 
 ############################################################
 - tool: xlm
-  env_var: dv_root, DUT_TOP, IBEX_ROOT
+  env_var: dv_root, DUT_TOP, IBEX_ROOT, EXTRA_COSIM_CFLAGS
   compile:
     cmd:
       - >-
@@ -254,6 +255,7 @@
       -I<IBEX_ROOT>/dv/cosim
       <ISS_LIBS>
       <ISS_CFLAGS>
+      <EXTRA_COSIM_CFLAGS>
       -Wld,<ISS_LDFLAGS>
       -lstdc++
   sim:

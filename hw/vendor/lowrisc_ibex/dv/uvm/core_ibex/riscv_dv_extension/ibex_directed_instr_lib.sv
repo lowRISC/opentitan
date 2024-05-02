@@ -114,15 +114,15 @@ class ibex_rand_cpuctrlsts_stream extends riscv_directed_instr_stream;
     end
 
     // DIT is Data Independent Timing
-    if (!$value$plusargs("toggle_dit", toggle_dit)) begin
+    if (!$value$plusargs("toggle_dit=%d", toggle_dit)) begin
       toggle_dit = 1'b0;
     end
 
-    if (!$value$plusargs("toggle_dummy_instr", toggle_dummy_instr)) begin
+    if (!$value$plusargs("toggle_dummy_instr=%d", toggle_dummy_instr)) begin
       toggle_dummy_instr = 1'b0;
     end
 
-    if (!$value$plusargs("toggle_icache", toggle_icache)) begin
+    if (!$value$plusargs("toggle_icache=%d", toggle_icache)) begin
       toggle_icache = 1'b0;
     end
 
