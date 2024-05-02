@@ -207,12 +207,7 @@ module keymgr_dpe
     .clk_i,
     .rst_ni,
     .lfsr_en_i(ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en),
-    // The seed update is skipped if there is an ongoing keymgr transaction.
-    // This is not really done for any functional purpose but more to simplify
-    // DV. When an invalid operation is selected, the keymgr just starts transmitting
-    // whatever is at the prng output, however, this may cause a dv protocol violation
-    // if a reseed happens to coincide.
-    .seed_en_i(seed_en & ~reg2hw.start.q),
+    .seed_en_i(seed_en),
     .seed_i(seed),
     .entropy_i('0),
     .state_o(lfsr)
