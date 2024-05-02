@@ -142,7 +142,7 @@ opentitan_test(
     name = "example_test",
     srcs = ["example_test.c"],
     dv = dv_params(
-        rom = "@//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "@//sw/device/silicon_creator/rom:mask_rom",
     ),
     ecdsa_key = ecdsa_key_for_lc_state(
         ECDSA_ONLY_KEY_STRUCTS,
@@ -183,7 +183,7 @@ opentitan_test(
     name = "statically_hooked_opensource_test",
     srcs = ["@//sw/device/tests:example_test_from_flash.c"],
     dv = dv_params(
-        rom = "@//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "@//sw/device/silicon_creator/rom:mask_rom",
     ),
     ecdsa_key = ecdsa_key_for_lc_state(
         ECDSA_ONLY_KEY_STRUCTS,

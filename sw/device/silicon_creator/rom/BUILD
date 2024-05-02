@@ -71,7 +71,7 @@ ld_library(
 )
 
 cc_library(
-    name = "rom_without_keys",
+    name = "mask_rom_lib",
     srcs = [
         "rom_start.S",
     ],
@@ -163,8 +163,7 @@ _ROM_DEVICES = [
 ]
 
 opentitan_binary(
-    name = "rom_with_fake_keys",
-    testonly = True,
+    name = "mask_rom",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -174,37 +173,7 @@ opentitan_binary(
     kind = "rom",
     linker_script = ":linker_script",
     deps = [
-        ":rom_without_keys",
-    ],
-)
-
-# Create the legacy ROM target names so that existing splicing rules can find
-# the rom VMEM files.
-legacy_rom_targets(
-    testonly = True,
-    suffixes = _ROM_DEVICES,
-    target = "rom_with_fake_keys",
-)
-
-filegroup(
-    name = "rom_with_fake_keys_fpga_cw310_elf",
-    testonly = True,
-    srcs = [":rom_with_fake_keys"],
-    output_group = "fpga_cw310_elf",
-)
-
-opentitan_binary(
-    name = "rom_with_real_keys",
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
-    kind = "rom",
-    linker_script = ":linker_script",
-    deps = [
-        ":rom_without_keys",
+        ":mask_rom_lib",
     ],
 )
 
@@ -212,7 +181,7 @@ opentitan_binary(
 # the rom VMEM files.
 legacy_rom_targets(
     suffixes = _ROM_DEVICES,
-    target = "rom_with_real_keys",
+    target = "mask_rom",
 )
 
 cc_library(
@@ -254,7 +223,7 @@ opentitan_test(
         "-Wl,--defsym=rom_test=1",
     ],
     deps = [
-        ":rom_without_keys",
+        ":mask_rom_lib",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -460,10 +429,10 @@ cc_test(
     ],
 )
 
-[output_groups(
-    name = "pre_package_{}".format(authenticity),
-    testonly = testonly,
-    srcs = [":rom_with_{}_keys".format(authenticity)],
+output_groups(
+    name = "pre_package",
+    testonly = True,
+    srcs = [":mask_rom"],
     groups = [
         "fpga_cw310_binary",
         "fpga_cw310_elf",
@@ -481,22 +450,14 @@ cc_test(
         "sim_verilator_rom",
         "sim_verilator_mapfile",
     ],
-) for authenticity, testonly in (
-    ("fake", True),
-    # FIXME: remove testonly after adding the real keys
-    ("real", True),
-)]
+)
 
-[pkg_files(
-    name = "package_{}".format(authenticity),
-    testonly = testonly,
-    srcs = [":pre_package_{}".format(authenticity)],
+pkg_files(
+    name = "package",
+    testonly = True,
+    srcs = [":pre_package"],
     prefix = "earlgrey/rom",
-) for authenticity, testonly in (
-    ("fake", True),
-    # FIXME: remove testonly after adding the real keys
-    ("real", True),
-)]
+)
 
 manual_test(
     name = "manual_test",
@@ -508,8 +469,8 @@ manual_test(
 )
 
 output_groups(
-    name = "rom_with_real_keys_binaries",
-    srcs = [":rom_with_real_keys"],
+    name = "mask_rom_binaries",
+    srcs = [":mask_rom"],
     groups = [
         "fpga_cw310_binary",
         "fpga_cw340_binary",
@@ -522,26 +483,26 @@ genrule(
     name = "rom_hashes",
     testonly = True,
     srcs = [
-        ":rom_with_real_keys_binaries",
+        ":mask_rom_binaries",
     ],
     outs = ["rom_hashes.txt"],
     cmd = """
         echo "SHA256 of rom with real keys" > $@
-	for f in $(locations :rom_with_real_keys_binaries); do
-	    if [[ "$$f" == *bin ]]; then
-	        name=$$(basename $$f)
-		echo $$f >> $@
-		size=$$(stat -L -c %s $$f)
-		full=$$(sha256sum $$f | cut -f1 -d' ')
-		without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
-		code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
+    for f in $(locations :mask_rom_binaries); do
+        if [[ "$$f" == *bin ]]; then
+            name=$$(basename $$f)
+        echo $$f >> $@
+        size=$$(stat -L -c %s $$f)
+        full=$$(sha256sum $$f | cut -f1 -d' ')
+        without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
+        code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
 
-		echo "              size: $$size" >> $@
-		echo "     complete hash: $$full" >> $@
-		echo " without chip_info: $$without_chip_info" >> $@
-		echo "w/o chip_info le32: $$code" >> $@
-		echo >> $@
-	    fi
-	done
+        echo "              size: $$size" >> $@
+        echo "     complete hash: $$full" >> $@
+        echo " without chip_info: $$without_chip_info" >> $@
+        echo "w/o chip_info le32: $$code" >> $@
+        echo >> $@
+        fi
+    done
     """,
 )

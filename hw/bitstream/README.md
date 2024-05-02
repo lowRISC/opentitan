@@ -77,7 +77,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
+        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked0",
         tags = ["manuf"],
     ),
     exec_env = {

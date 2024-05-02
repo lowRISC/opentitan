@@ -52,7 +52,7 @@ package(default_visibility = ["//visibility:public"])
         verilator = verilator_params(
             timeout = "eternal",
             otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
-            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+            rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",

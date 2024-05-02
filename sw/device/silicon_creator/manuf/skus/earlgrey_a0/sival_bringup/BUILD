@@ -145,7 +145,7 @@ opentitan_test(
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
         },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream:mask_rom_otp_raw",
         changes_otp = True,
         needs_jtag = True,
         tags = ["manuf"],

@@ -186,7 +186,7 @@ Configuration:
 
 ```python
 {
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
 }
 ```

@@ -116,7 +116,7 @@ fpga_cw310(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
 )
 
 fpga_cw310(
@@ -138,7 +138,7 @@ fpga_cw310(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
 )
@@ -163,7 +163,7 @@ fpga_cw310(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_mmi = "//hw/bitstream/hyperdebug:rom_mmi",
     test_cmd = """
         --exec="transport init"
@@ -318,7 +318,7 @@ fpga_cw340(
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/cw340:otp_mmi",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_mmi = "//hw/bitstream/cw340:rom_mmi",
     test_cmd = """
         --exec="transport init"
@@ -535,7 +535,7 @@ sim_verilator(
     base = ":sim_verilator",
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_verilator",
+    rom = "//sw/device/silicon_creator/rom:mask_rom_sim_verilator",
 )
 
 ###########################################################################

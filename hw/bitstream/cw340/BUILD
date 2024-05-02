@@ -59,31 +59,27 @@ bitstream_splice(
     update_usr_access = True,
 )
 
-# Build the ROM and splice it into a cached bitstream.
-[
-    bitstream_splice(
-        name = "rom_with_{}_keys".format(authenticity),
-        testonly = True,
-        src = ":bitstream",
-        data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw340_scr_vmem".format(authenticity),
-        meminfo = ":rom_mmi",
-        tags = ["manual"],
-        update_usr_access = True,
-    )
-    for authenticity in KEY_AUTHENTICITY
-]
+# Build the ROM and splice it into a cached bitstream.[
+bitstream_splice(
+    name = "mask_rom",
+    testonly = True,
+    src = ":bitstream",
+    data = "//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_scr_vmem",
+    meminfo = ":rom_mmi",
+    tags = ["manual"],
+    update_usr_access = True,
+)
 
 # Splice OTP images into the locally-spliced ROM bitstream.
 [
     bitstream_splice(
-        name = "rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
+        name = "mask_rom_otp_{}".format(otp_name),
         testonly = True,
-        src = ":rom_with_{}_keys".format(authenticity),
+        src = ":mask_rom",
         data = img_target,
         meminfo = ":otp_mmi",
         tags = ["manual"],
         update_usr_access = True,
     )
     for (otp_name, img_target) in get_otp_images()
-    for authenticity in KEY_AUTHENTICITY
 ]
