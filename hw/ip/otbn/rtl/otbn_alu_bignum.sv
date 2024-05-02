@@ -100,7 +100,9 @@ module otbn_alu_bignum
 
   output logic                        reg_intg_violation_err_o,
 
-  input logic                         sec_wipe_mod_urnd_i,
+  input  logic                        sec_wipe_mod_urnd_i,
+  input  logic                        sec_wipe_running_i,
+  output logic                        sec_wipe_err_o,
 
   input  flags_t                      mac_operation_flags_i,
   input  flags_t                      mac_operation_flags_en_i,
@@ -962,6 +964,9 @@ module otbn_alu_bignum
   // invalid.
   assign reg_intg_violation_err_o = mod_used & |(mod_intg_err);
   `ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
+
+  // Detect and signal unexpected secure wipe signals.
+  assign sec_wipe_err_o = sec_wipe_mod_urnd_i & ~sec_wipe_running_i;
 
   // Blanking Assertions
   // All blanking assertions are reset with predec_error or overall error in the whole system
