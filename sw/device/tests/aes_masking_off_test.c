@@ -93,6 +93,11 @@ status_t execute_test(void) {
   CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
 
+  // Trigger the clearing of the output data registers. After this point, also
+  // the PRNG buffer stage will output an all-zero vector.
+  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+
   // "Convert" plain data byte arrays to `dif_aes_data_t` array.
   enum {
     kAesNumBlocks = 4,
