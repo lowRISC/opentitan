@@ -41,6 +41,7 @@ module tb;
   assign keymgr_dpe_if.edn_rst_n = edn_if[0].rst_n;
   assign keymgr_dpe_if.edn_req   = edn_if[0].req;
   assign keymgr_dpe_if.edn_ack   = edn_if[0].ack;
+  assign keymgr_dpe_if.lfsr_en   = dut.lfsr_en;
 
   // dut
   keymgr_dpe #(
