@@ -714,6 +714,22 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
              self->version_minor);
 
+  const manifest_ext_secver_write_t *secver;
+  rom_error_t error;
+  error = manifest_ext_get_secver_write(self, &secver);
+  if (error == kErrorOk && secver->write == kHardenedBoolFalse) {
+    // If we have the extension and its value is False, then do not write the
+    // secver into the boot data page.  This allows test ROM_EXTs to be built
+    // and signed wihout advancing the minimum security version.
+  } else {
+    if (self->security_version > boot_data->min_security_version_rom_ext) {
+      // If our security version is greater than the minimum security version
+      // advance the minimum version to our version.
+      boot_data->min_security_version_rom_ext = self->security_version;
+      HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
+    }
+  }
+
   // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
@@ -728,7 +744,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(ownership_init());
 
   // Handle any pending boot_svc commands.
-  rom_error_t error;
   error = handle_boot_svc(boot_data);
   if (error == kErrorWriteBootdataThenReboot) {
     // Boot services reports errors by writing a status code into the reply

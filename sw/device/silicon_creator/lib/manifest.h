@@ -399,6 +399,7 @@ enum {
    */
   kManifestExtIdSpxKey = 0x94ac01ec,
   kManifestExtIdSpxSignature = 0xad77f84a,
+  kManifestExtIdSecVerWrite = 0x3f086a41,
   /**
    * ASCII "EXT0.
    */
@@ -407,6 +408,11 @@ enum {
    * ASCII "EXT1.
    */
   kManifestExtNameSpxSignature = 0x31545845,
+  /**
+   * ASCII `SECV`.
+   */
+  kManifestExtNameSecVerWrite = 0x56434553,
+
 };
 
 /**
@@ -438,6 +444,21 @@ typedef struct manifest_ext_spx_signature {
 } manifest_ext_spx_signature_t;
 
 /**
+ * Manifest extension: Write the securty version.
+ */
+typedef struct manifest_ext_secver_write {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * Hardened bool indicating whether or not to write the security version to
+   * boot data.
+   */
+  uint32_t write;
+} manifest_ext_secver_write_t;
+
+/**
  * Table of manifest extensions.
  *
  * Columns: Table index, type name, extenstion name, identifier, signed or not.
@@ -445,7 +466,8 @@ typedef struct manifest_ext_spx_signature {
 // clang-format off
 #define MANIFEST_EXTENSIONS(X) \
   X(0, manifest_ext_spx_key_t,       spx_key,       kManifestExtIdSpxKey,       true ) \
-  X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false)
+  X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false) \
+  X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)
 // clang-format on
 
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)

@@ -120,7 +120,7 @@ def key_ext(ecdsa, rsa, spx):
     else:
         return ".{}".format(name)
 
-def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key, spx_key, basename = None, keyname_in_filenames = False):
+def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key, spx_key, basename = None, keyname_in_filenames = False, secver_write = True):
     """Create the pre-signing artifacts for a given input binary.
 
     Applies the manifest and public components of the keys.  Creates the
@@ -138,6 +138,8 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
         keyname_in_filenames: bool; Whether or not to use the key names to construct filenames.
                               Used in test-signing flows to maintain compatibility with existing
                               naming conventions for DV tests.
+        secver_write: Whether to indicate in the manifest that the security version of this image
+                      should be committed into boot_data.
     Returns:
         struct: A struct containing the pre-signing binary, the digest and spx message files.
     """
@@ -177,6 +179,11 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
     if spx_key:
         spx_args.append("--spx-key={}".format(spx_key.file.path))
         inputs.append(spx_key.file)
+
+    secver_args = []
+    if not secver_write:
+        secver_args.append("--secver-write=false")
+
     ctx.actions.run(
         outputs = [pre],
         inputs = inputs,
@@ -189,7 +196,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
             "--manifest={}".format(manifest.path),
             "--output={}".format(pre.path),
             src.path,
-        ] + ecdsa_or_rsa_args + spx_args,
+        ] + ecdsa_or_rsa_args + spx_args + secver_args,
         executable = opentitantool,
         mnemonic = "PreSigningArtifacts",
     )
@@ -443,6 +450,7 @@ def _offline_presigning_artifacts(ctx):
             ecdsa_key,
             rsa_key,
             spx_key,
+            secver_write = ctx.attr.secver_write,
         )
         bins.append(artifacts.pre)
         digests.append(artifacts.digest)
@@ -481,6 +489,10 @@ offline_presigning_artifacts = rule(
             providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
             doc = "SPX public key to validate this image",
+        ),
+        "secver_write": attr.bool(
+            doc = "Commit the security version to boot_data",
+            default = True,
         ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
@@ -609,6 +621,7 @@ def sign_binary(ctx, opentitantool, **kwargs):
         spx_key: The SPHINCS+ signing key.
         bin: The input binary.
         manifest: The manifest header.
+        secver_write: Indicate in the manifest whether or not to write the security version into boot_data.
         _tool: The signing tool (opentitantool).
     Returns:
         A dict of all of the signing artifacts:
@@ -644,6 +657,7 @@ def sign_binary(ctx, opentitantool, **kwargs):
         rsa_key,
         spx_key,
         keyname_in_filenames = True,
+        secver_write = get_override(ctx, "attr.secver_write", kwargs),
     )
     tool, signing_func, profile = _signing_tool_info(ctx, key_attr, opentitantool)
     ecdsa_sig, rsa_sig, spx_sig = signing_func(
@@ -698,6 +712,10 @@ sign_bin = rv_rule(
             doc = "SPX public key to validate this image",
         ),
         "manifest": attr.label(allow_single_file = True, mandatory = True),
+        "secver_write": attr.bool(
+            doc = "Commit the security version to boot_data",
+            default = True,
+        ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
