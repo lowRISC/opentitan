@@ -112,7 +112,7 @@ def _manifest_impl(ctx):
         mf["extensions"] = [
             "spx_key",
             "spx_signature",
-            None,
+            "secver_write",
             None,
             None,
             None,

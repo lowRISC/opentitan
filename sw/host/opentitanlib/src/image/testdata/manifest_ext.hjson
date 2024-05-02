@@ -8,6 +8,9 @@
       spx_key: "test_spx.pem",
     },
     {
+      secver_write: true,
+    },
+    {
       name: "0xbeef",
       identifier: "0xabcd",
       value: ["0x01", "0x23", "0x45", "0x67"],

@@ -7,9 +7,30 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
+load("//sw/device/silicon_creator/rom_ext:defs.bzl", "secver_write_selection")
 load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
+
+string_flag(
+    name = "secver_write",
+    build_setting_default = "true",
+    values = [
+        "true",
+        "false",
+    ],
+)
+
+config_setting(
+    name = "secver_write_true",
+    flag_values = {":secver_write": "true"},
+)
+
+config_setting(
+    name = "secver_write_false",
+    flag_values = {":secver_write": "false"},
+)
 
 cc_library(
     name = "rom_ext_epmp",
@@ -285,6 +306,7 @@ opentitan_binary(
         "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
     }),
+    secver_write = secver_write_selection(),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",

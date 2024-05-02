@@ -15,6 +15,7 @@ use std::path::{Path, PathBuf};
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
+use opentitanlib::chip::boolean::HardenedBool;
 use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
@@ -127,6 +128,10 @@ pub struct ManifestUpdateCommand {
     /// Passing a private key indicates the key will be used for signing.
     #[arg(long)]
     spx_key: Option<PathBuf>,
+    /// Add the SecVerWrite extension indicating that the security version should be written into
+    /// boot data.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
+    secver_write: bool,
     /// Filename to write the output to instead of updating the input file.
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -227,6 +232,11 @@ impl CommandDispatch for ManifestUpdateCommand {
                 ManifestExtId::spx_signature.into(),
                 std::mem::size_of::<ManifestExtSpxSignature>(),
             )?;
+        }
+
+        if !self.secver_write {
+            let sv_ext = ManifestExtEntry::new_secver_write_entry(HardenedBool::False.into())?;
+            image.add_manifest_extension(sv_ext)?;
         }
 
         // Update the manifest fields that are in the unsigned region.

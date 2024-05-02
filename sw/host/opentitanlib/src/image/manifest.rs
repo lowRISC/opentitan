@@ -36,8 +36,10 @@ pub const CHIP_MANIFEST_EXT_TABLE_COUNT: usize = 15;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const MANIFEST_EXT_ID_SPX_KEY: u32 = 0x94ac01ec;
 pub const MANIFEST_EXT_ID_SPX_SIGNATURE: u32 = 0xad77f84a;
+pub const MANIFEST_EXT_ID_SECVER_WRITE: u32 = 0x3f086a41;
 pub const MANIFEST_EXT_NAME_SPX_KEY: u32 = 0x30545845;
 pub const MANIFEST_EXT_NAME_SPX_SIGNATURE: u32 = 0x31545845;
+pub const MANIFEST_EXT_NAME_SECVER_WRITE: u32 = 0x56434553;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
 pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
@@ -134,6 +136,14 @@ impl Default for SigverifyBuffer {
     fn default() -> Self {
         Self { data: [0; 96usize] }
     }
+}
+
+/// SecVer Write manifest extension
+#[repr(C)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
+pub struct ManifestExtSecVerWrite {
+    pub header: ManifestExtHeader,
+    pub write: u32,
 }
 
 /// A type that holds the 256-bit device identifier.

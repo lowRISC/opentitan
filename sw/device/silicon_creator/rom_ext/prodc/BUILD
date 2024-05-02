@@ -7,6 +7,7 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//sw/device/silicon_creator/rom_ext:defs.bzl", "secver_write_selection")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -113,6 +114,7 @@ offline_presigning_artifacts(
     rsa_key = {
         "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_prod_2",
     },
+    secver_write = secver_write_selection(),
     tags = ["manual"],
 )
 

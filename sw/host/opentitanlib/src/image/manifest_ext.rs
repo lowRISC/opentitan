@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 use zerocopy::AsBytes;
 
+use crate::chip::boolean::HardenedBool;
 use crate::crypto::spx::{self, SpxPublicKeyPart};
 use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
@@ -27,6 +28,7 @@ with_unknown! {
     pub enum ManifestExtId: u32 {
         spx_key = MANIFEST_EXT_ID_SPX_KEY,
         spx_signature = MANIFEST_EXT_ID_SPX_SIGNATURE,
+        secver_write = MANIFEST_EXT_ID_SECVER_WRITE,
     }
 }
 
@@ -61,6 +63,10 @@ pub enum ManifestExtEntrySpec {
         /// spec.
         spx_signature: PathBuf,
     },
+    SecVerWrite {
+        /// Whether or not to write the security version into boot data.
+        secver_write: bool,
+    },
     Raw {
         name: HexEncoded<u32>,
         identifier: HexEncoded<u32>,
@@ -72,6 +78,7 @@ pub enum ManifestExtEntrySpec {
 pub enum ManifestExtEntry {
     SpxKey(ManifestExtSpxKey),
     SpxSignature(Box<ManifestExtSpxSignature>),
+    SecVerWrite(ManifestExtSecVerWrite),
     Raw {
         header: ManifestExtHeader,
         data: Vec<u8>,
@@ -102,6 +109,7 @@ impl ManifestExtEntrySpec {
             ManifestExtEntrySpec::SpxSignature { spx_signature: _ } => {
                 MANIFEST_EXT_ID_SPX_SIGNATURE
             }
+            ManifestExtEntrySpec::SecVerWrite { .. } => MANIFEST_EXT_ID_SECVER_WRITE,
             ManifestExtEntrySpec::Raw {
                 name: _,
                 identifier,
@@ -140,6 +148,16 @@ impl ManifestExtEntry {
         )))
     }
 
+    pub fn new_secver_write_entry(write: u32) -> Result<Self> {
+        Ok(ManifestExtEntry::SecVerWrite(ManifestExtSecVerWrite {
+            header: ManifestExtHeader {
+                identifier: MANIFEST_EXT_ID_SECVER_WRITE,
+                name: MANIFEST_EXT_NAME_SECVER_WRITE,
+            },
+            write,
+        }))
+    }
+
     /// Creates a new manifest extension from a given `spec`.
     ///
     /// For extensions that reference other resources, such as SPHINCS+ keys or signatures, this
@@ -154,6 +172,16 @@ impl ManifestExtEntry {
                 ManifestExtEntry::new_spx_signature_entry(&spx::SpxSignature::read_from_file(
                     &relative_path.join(spx_signature),
                 )?)?
+            }
+            ManifestExtEntrySpec::SecVerWrite { secver_write } => {
+                ManifestExtEntry::new_secver_write_entry(
+                    (if *secver_write {
+                        HardenedBool::True
+                    } else {
+                        HardenedBool::False
+                    })
+                    .into(),
+                )?
             }
             ManifestExtEntrySpec::Raw {
                 name,
@@ -174,6 +202,7 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => &key.header,
             ManifestExtEntry::SpxSignature(sig) => &sig.header,
+            ManifestExtEntry::SecVerWrite(sv) => &sv.header,
             ManifestExtEntry::Raw { header, data: _ } => header,
         }
     }
@@ -183,6 +212,7 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => key.as_bytes().to_vec(),
             ManifestExtEntry::SpxSignature(sig) => sig.as_bytes().to_vec(),
+            ManifestExtEntry::SecVerWrite(sv) => sv.as_bytes().to_vec(),
             ManifestExtEntry::Raw { header, data } => {
                 header.as_bytes().iter().chain(data).copied().collect()
             }
@@ -200,7 +230,7 @@ mod tests {
     fn test_manifest_ext_from_hjson() {
         let spec = ManifestExtSpec::read_from_file(&testdata!("manifest_ext.hjson")).unwrap();
         assert_eq!(spec.source_path(), Some(testdata!().as_path()));
-        assert_eq!(spec.signed_region.len(), 2);
+        assert_eq!(spec.signed_region.len(), 3);
         assert_eq!(
             spec.signed_region[0],
             ManifestExtEntrySpec::SpxKey {
@@ -209,6 +239,10 @@ mod tests {
         );
         assert_eq!(
             spec.signed_region[1],
+            ManifestExtEntrySpec::SecVerWrite { secver_write: true }
+        );
+        assert_eq!(
+            spec.signed_region[2],
             ManifestExtEntrySpec::Raw {
                 name: HexEncoded(0xbeef),
                 identifier: HexEncoded(0xabcd),
