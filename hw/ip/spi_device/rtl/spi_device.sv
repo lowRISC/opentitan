@@ -227,7 +227,7 @@ module spi_device
   sel_datapath_e cmd_dp_sel, cmd_only_dp_sel;
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
-  logic intercept_en;
+  logic intercept_en, intercept_en_out;
 
   logic cfg_mailbox_en;
   logic [31:0] mailbox_addr;
@@ -916,6 +916,7 @@ module spi_device
   logic [3:0] internal_sd_stg1_d, internal_sd_stg1_q;
   logic [3:0] internal_sd_stg2_d, internal_sd_stg2_q;
   logic [3:0] internal_sd_en_stg1, internal_sd_en_stg2;
+  logic intercept_en_stg1, intercept_en_stg2;
   assign internal_sd_stg1_d = internal_sd;
   assign internal_sd_stg2_d = internal_sd_stg1_q;
 
@@ -959,13 +960,35 @@ module spi_device
     .q_o       (internal_sd_en_stg2)
   );
 
+  prim_flop #(
+    .Width         (1),
+    .ResetValue    ('0)
+  ) u_read_intercept_pipe_stg1 (
+    .clk_i     (clk_spi_out_buf),
+    .rst_ni    (rst_spi_n),
+    .d_i       (intercept_en),
+    .q_o       (intercept_en_stg1)
+  );
+
+  prim_flop #(
+    .Width         (1),
+    .ResetValue    ('0)
+  ) u_read_intercept_pipe_stg2 (
+    .clk_i     (clk_spi_out_buf),
+    .rst_ni    (rst_spi_n),
+    .d_i       (intercept_en_stg1),
+    .q_o       (intercept_en_stg2)
+  );
+
   always_comb begin
     if (cmd_read_pipeline_sel) begin
       internal_sd_out = internal_sd_stg2_q;
       internal_sd_en_out = internal_sd_en_stg2;
+      intercept_en_out = intercept_en_stg2;
     end else begin
       internal_sd_out = internal_sd;
       internal_sd_en_out = internal_sd_en;
+      intercept_en_out = intercept_en;
     end
   end
 
@@ -988,7 +1011,7 @@ module spi_device
         end
 
         PassThrough: begin
-          if (intercept_en) begin
+          if (intercept_en_out) begin
             cio_sd_o    = internal_sd_out;
             cio_sd_en_o = internal_sd_en_out;
           end else begin
