@@ -147,6 +147,7 @@ module otbn_controller
   input  logic secure_wipe_ack_i,
   input  logic sec_wipe_zero_i,
   input  logic secure_wipe_running_i,
+  input  logic sec_wipe_err_i,
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
@@ -193,6 +194,7 @@ module otbn_controller
   logic executing;
   logic state_error, state_error_d, state_error_q;
   logic spurious_secure_wipe_ack_q, spurious_secure_wipe_ack_d;
+  logic sec_wipe_err_q, sec_wipe_err_d;
   logic mubi_err_q, mubi_err_d;
 
   logic                     insn_fetch_req_valid_raw;
@@ -348,6 +350,18 @@ module otbn_controller
                                       (secure_wipe_ack_i      &
                                        ~secure_wipe_running_q &
                                        ~secure_wipe_running_i);
+
+  // Detect and latch unexpected secure wipe signals.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sec_wipe_err_q <= 1'b0;
+    end else begin
+      sec_wipe_err_q <= sec_wipe_err_d;
+    end
+  end
+  assign sec_wipe_err_d = sec_wipe_err_q |
+                          sec_wipe_err_i |
+                          (sec_wipe_zero_i & ~secure_wipe_running_i);
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -568,7 +582,7 @@ module otbn_controller
   assign fatal_software_err       = software_err & software_errs_fatal_i;
   assign bad_internal_state_err   = |{state_error_d, loop_hw_err, rf_base_call_stack_hw_err_i,
                                       rf_bignum_spurious_we_err, spurious_secure_wipe_ack_q,
-                                      mubi_err_q};
+                                      sec_wipe_err_q, mubi_err_q};
   assign reg_intg_violation_err   = rf_bignum_intg_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
