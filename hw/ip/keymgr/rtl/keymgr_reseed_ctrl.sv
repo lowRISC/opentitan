@@ -25,6 +25,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   input edn_pkg::edn_rsp_t edn_i,
 
   // interface to lfsr
+  input  logic lfsr_en_i,
   output logic seed_en_o,
   output logic [LfsrWidth-1:0] seed_o,
 
@@ -97,7 +98,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .clr_i(edn_done),
     .set_i('0),
     .set_cnt_i('0),
-    .incr_en_i(cnt_en),
+    .incr_en_i(cnt_en & lfsr_en_i),
     .decr_en_i(1'b0),
     .step_i(16'h1),
     .commit_i(1'b1),

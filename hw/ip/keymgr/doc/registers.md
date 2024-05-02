@@ -306,10 +306,10 @@ Reseed interval for key manager entropy reseed
 {"reg": [{"name": "VAL", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                 |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------|
-| 31:16  |        |         |        | Reserved                                                    |
-|  15:0  |   rw   |  0x100  | VAL    | Number of key manager cycles before the entropy is reseeded |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                   |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------|
+| 31:16  |        |         |        | Reserved                                                      |
+|  15:0  |   rw   |  0x100  | VAL    | Number of internal PRNG updates before a reseed is requested. |
 
 ## SW_BINDING_REGWEN
 Register write enable for SOFTWARE_BINDING
