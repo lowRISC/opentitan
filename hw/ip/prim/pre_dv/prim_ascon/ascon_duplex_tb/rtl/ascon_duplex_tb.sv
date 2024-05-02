@@ -1,0 +1,293 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Ascon duplex testbench
+
+module ascon_duplex_tb (
+  input  logic clk_i,
+  input  logic rst_ni,
+
+  output logic test_done_o,
+  output logic test_passed_o
+);
+
+  import ascon_model_dpi_pkg::*;
+  import prim_duplex_tb_pkg::*;
+  import prim_ascon_pkg::*;
+  import prim_mubi_pkg::*;
+
+  parameter int NUMB_RUNS = 100;
+
+  // TODO:
+  // add Ascon128 DEC
+  // add Ascon128a ENC
+  // add Ascon128a DEC
+
+  parameter duplex_variant_e VARIANT = ASCON_128;
+  localparam int unsigned BLOCKSIZE = VARIANT == ASCON_128 ? 8 : 16;
+
+  parameter int STIMULUS_MSG_LEN = 10;
+  byte unsigned stimulus_msg[STIMULUS_MSG_LEN];
+  assign stimulus_msg = '{'hDE, 'hAD, 'hBE, 'hEF, 'hCA, 'hFE, 'hF0, 'h0D,
+                          'hF0, 'hF0};//, 'hF0, 'hF0, 'hE0, 'hE0,'hE0, 'hE0};
+
+  parameter int STIMULUS_AD_LEN  = 8;
+  byte unsigned  stimulus_ad[STIMULUS_AD_LEN];
+  assign stimulus_ad  = '{'h12, 'h34, 'h56, 'h78, 'h9A, 'hBC, 'hDE, 'hF0};//,
+                         // 'hF0, 'hF0, 'hF0, 'hF0, 'hE0, 'hE0, 'hE0, 'hE0};
+
+  logic [127:0] key;
+  logic [127:0] nonce;
+
+  assign   key = 128'hDEAD_BEEF_CAFE_F00D_0000_0000_0000_0000;
+  assign nonce = 128'h0000_0000_0000_0000_DEAD_BEEF_CAFE_F00D;
+
+  byte unsigned   c_key[16];
+  byte unsigned c_nonce[16];
+
+  // convert logic <=> byte array for c_dpi call
+  for (genvar i=0; i<16;i++) begin : g_key_array
+    assign c_key[i]   =   key[127 - 8*i : 120 - 8*i];
+    assign c_nonce[i] = nonce[127 - 8*i : 120 - 8*i];
+  end
+
+  // in the c modle the tag is part of the ciphertext
+  byte unsigned  expected_ct[STIMULUS_MSG_LEN+16];
+  byte unsigned    actual_ct[STIMULUS_MSG_LEN+16];
+
+  always_comb begin : C_DPI
+    c_dpi_aead_encrypt(expected_ct,
+                      stimulus_msg, STIMULUS_MSG_LEN,
+                      stimulus_ad, STIMULUS_AD_LEN,
+                      c_nonce, c_key);
+  end
+
+  int unsigned ad_count_d, ad_count_q;
+  int unsigned msg_count_d, msg_count_q;
+
+  fsm_tb_state_e tb_state, nxt_tb_state;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      tb_state <= Idle;
+      msg_count_q <= 0;
+      ad_count_q <= 0;
+    end else begin
+      tb_state <= nxt_tb_state;
+      msg_count_q <= msg_count_d;
+      ad_count_q <= ad_count_d;
+    end
+  end
+
+  for (genvar i = 0; i < BLOCKSIZE; i++) begin : g_dut_input
+  // TODO double check for out of bounds: Looks like this is working, but we should add
+  // more information why.
+    assign  dut_input_data_ad[127 - 8*i : 120 - 8*i] =  stimulus_ad[(ad_count_q * BLOCKSIZE) + i];
+    assign dut_input_data_msg[127 - 8*i : 120 - 8*i] = stimulus_msg[(msg_count_q * BLOCKSIZE) + i];
+  end
+
+  for (genvar i = 0; i < BLOCKSIZE; i++) begin : g_dut_response_data
+  // TODO double check for out of bounds: Looks like this is working, but we should add
+  // more information why.
+    always_ff @(posedge clk_i) begin
+      if (dut_response_data_valid) begin
+        actual_ct[(msg_count_q * BLOCKSIZE) + i] <= dut_response_data[127 - 8*i : 120 - 8*i];
+      end
+    end
+  end
+
+  for (genvar i = 0; i < 16; i++) begin : g_dut_response_tag
+    always_ff @(posedge clk_i) begin
+      if (dut_response_tag_valid) begin
+        actual_ct[STIMULUS_MSG_LEN+i] <= dut_response_tag[127 - 8*i : 120 - 8*i];
+      end
+    end
+  end
+
+  always_comb begin
+    nxt_tb_state = tb_state;
+    start = 1'b0;
+    dut_input_valid = 1'b0;
+    dut_last_MSG_block = MuBi4False;
+    dut_last_AD_block = MuBi4False;
+    msg_count_d = msg_count_q;
+    ad_count_d = ad_count_q;
+    fsm_done = 1'b0;
+    dut_input_data = 'h0;
+
+    unique case (tb_state)
+      Idle: begin
+        start = 1'b1;
+        if (STIMULUS_AD_LEN > 0) begin
+          nxt_tb_state = SendAD;
+        end else begin
+          nxt_tb_state = CheckMSGLen;
+        end
+      end
+      SendAD: begin
+        dut_input_valid = 1'b1;
+        dut_input_data = dut_input_data_ad;
+        if ((ad_count_q + 1) * BLOCKSIZE < STIMULUS_AD_LEN) begin
+         dut_valid_bytes = 5'(BLOCKSIZE);
+         dut_last_AD_block = MuBi4False;
+        end else begin
+         dut_valid_bytes = 5'(STIMULUS_AD_LEN - ((ad_count_q) * 8));
+         dut_last_AD_block = MuBi4True;
+        end
+        if (dut_read_data) begin
+          nxt_tb_state = WaitADRead;
+        end
+      end
+      WaitADRead: begin
+        if ((ad_count_q + 1) * BLOCKSIZE < STIMULUS_AD_LEN) begin
+          ad_count_d = ad_count_q +1;
+          nxt_tb_state = SendAD;
+        end else begin
+         nxt_tb_state = CheckMSGLen;
+        end
+      end
+      CheckMSGLen: begin
+        if (STIMULUS_MSG_LEN > 0) begin
+          nxt_tb_state = SendMSG;
+        end else begin
+          nxt_tb_state = ReceiveTag;
+        end
+      end
+      SendMSG: begin
+        dut_input_valid = 1'b1;
+        dut_input_data = dut_input_data_msg;
+        if ((msg_count_q + 1) * BLOCKSIZE < STIMULUS_MSG_LEN) begin
+          dut_valid_bytes = 5'(BLOCKSIZE);
+          dut_last_MSG_block = MuBi4False;
+        end else begin
+          dut_valid_bytes = 5'(STIMULUS_MSG_LEN - (msg_count_q * BLOCKSIZE));
+          dut_last_MSG_block = MuBi4True;
+        end
+        if (dut_read_data) begin
+          nxt_tb_state = WaitMSGRead;
+        end
+      end
+      WaitMSGRead: begin
+        if ((msg_count_q + 1) * 8 < STIMULUS_MSG_LEN) begin
+          msg_count_d = msg_count_q + 1;
+          nxt_tb_state = SendMSG;
+        end else begin
+          nxt_tb_state = ReceiveTag;
+        end
+      end
+      ReceiveTag: begin
+        if (dut_response_tag_valid) begin
+          nxt_tb_state = WaitForEver;
+        end
+      end
+      WaitForEver: begin
+        fsm_done = 1'b1;
+      end
+      default: nxt_tb_state = tb_state;
+    endcase
+  end
+
+
+  //generate the sequential input/output for the DUT:
+
+  logic [127:0] dut_input_data;
+  logic [127:0] dut_input_data_ad;
+  logic [127:0] dut_input_data_msg;
+  logic         dut_input_valid;
+
+  logic  [4:0] dut_valid_bytes;
+  logic        dut_read_data;
+
+  logic [127:0] dut_response_data;
+  logic         dut_response_data_valid;
+
+  logic [127:0] dut_response_tag;
+  logic         dut_response_tag_valid;
+
+  logic dut_no_msg;
+  logic dut_no_ad;
+
+  assign dut_no_msg = STIMULUS_MSG_LEN == 0 ? 1'b1 : 1'b0;
+  assign dut_no_ad  = STIMULUS_AD_LEN  == 0 ? 1'b1 : 1'b0;
+
+  mubi4_t dut_last_AD_block;
+  mubi4_t dut_last_MSG_block;
+
+  logic idle;
+  logic start;
+  logic fsm_done;
+
+
+  // Instantiate Ascon Duplex
+  prim_ascon_duplex ascon_duplex (
+
+  .clk_i(clk_i),
+  .rst_ni(rst_ni),
+
+  .ascon_variant(ASCON_128),
+  .ascon_operation(ASCON_ENC),
+
+  .start_i(start),
+  .idle_o(idle),
+
+  // It is assumed that no_ad, no_msg, key, and nonce are always
+  // valid and constant, when the cipher is triggered by the start command
+  .no_ad(dut_no_ad),
+  .no_msg(dut_no_msg),
+
+  .key_i(key),
+  .iv_i(64'h80400c0600000000),
+  .nonce_i(nonce),
+
+  // Cipher Input Port
+  .data_i(dut_input_data),
+  .valid_bytes_i(dut_valid_bytes),
+  .last_AD_block_i(dut_last_AD_block),
+  .last_MSG_block_i(dut_last_MSG_block),
+  .data_valid_i(dut_input_valid),
+  .data_rd_o(dut_read_data),
+
+  // Cipher Output Port
+  .data_o(dut_response_data),
+  // TODO: Test backpreasure
+  .data_rd_i(1'b1),
+  .data_we_o(dut_response_data_valid),
+
+  .tag_o(dut_response_tag),
+  .tag_we_o(dut_response_tag_valid),
+
+  .err_o()
+  );
+
+  // Generate the runtime counter
+  int count_d, count_q;
+  assign count_d = count_q + 1;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_count
+    if (!rst_ni) begin
+      count_q <= 0;
+    end else begin
+      count_q <= count_d;
+    end
+  end
+
+  initial begin
+    test_done_o   = 1'b0;
+    test_passed_o = 1'b1;
+  end
+
+  // Check responses, signal end of simulation
+  always_ff @(posedge clk_i or negedge rst_ni) begin : tb_ctrl
+    if (rst_ni && fsm_done && (actual_ct != expected_ct)) begin
+      $display("\nERROR: Mismatch between DPI-based Ascon and Implementation found.");
+      test_passed_o <= 1'b0;
+      test_done_o   <= 1'b1;
+    end
+
+    if (count_q == NUMB_RUNS) begin
+      $display("\nSUCCESS: Outputs matches.");
+      test_done_o <= 1'b1;
+    end
+  end
+
+endmodule

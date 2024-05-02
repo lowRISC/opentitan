@@ -9,12 +9,16 @@ filesets:
     depend:
       - lowrisc:ip:prim_ascon
     files:
+      - vendor/ascon_ascon-c/ascon128/api.h: { file_type: cSource, is_include_file: true }
       - vendor/ascon_ascon-c/ascon128/round.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/permutations.h: { file_type: cSource, is_include_file: true }
       - vendor/ascon_ascon-c/ascon128/ascon.h: { file_type: cSource, is_include_file: true }
       - vendor/ascon_ascon-c/ascon128/constants.h: { file_type: cSource, is_include_file: true }
       - vendor/ascon_ascon-c/ascon128/printstate.c: { file_type: cSource}
       - vendor/ascon_ascon-c/ascon128/printstate.h: { file_type: cSource, is_include_file: true }
       - vendor/ascon_ascon-c/ascon128/word.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/crypto_aead.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/aead.c: { file_type: cSource}
       - ascon_model_dpi.c: { file_type: cSource }
       - ascon_model_dpi.h: { file_type: cSource, is_include_file: true }
       - ascon_model_dpi_pkg.sv: { file_type: systemVerilogSource }
