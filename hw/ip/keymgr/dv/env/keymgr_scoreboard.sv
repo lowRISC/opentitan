@@ -121,6 +121,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         wait(cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On);
       end
+      forever begin
+        wait(current_state == keymgr_pkg::StInvalid);
+        // Also wipe keys when moving into Invalid state, except if they have already been wiped
+        // because keymgr has been disabled by LC.
+        if (cfg.en_scb && cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On) wipe_hw_keys();
+        wait(current_state != keymgr_pkg::StInvalid);
+      end
     join_none
   endtask
 
