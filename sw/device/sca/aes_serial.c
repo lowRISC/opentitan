@@ -775,8 +775,13 @@ bool test_main(void) {
     LOG_INFO("Initializing entropy complex.");
     CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
     CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+    bool idle = false;
+    do {
+      CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
+    } while (!idle);
   }
 #endif
+  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
 
   LOG_INFO("Starting simple serial packet handling.");
   while (true) {
