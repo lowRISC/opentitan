@@ -67,7 +67,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
 
-    cfg.keymgr_dpe_vif.update_edn_toleranc_cycs(cfg.edn_clk_freq_mhz, cfg.clk_freq_mhz);
+    cfg.keymgr_dpe_vif.update_edn_tolerance_upd(cfg.edn_clk_freq_mhz, cfg.clk_freq_mhz);
     op_before_enable_keymgr();
 
     cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key);
