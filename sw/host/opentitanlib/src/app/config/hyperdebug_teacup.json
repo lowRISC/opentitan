@@ -238,22 +238,22 @@
       "alias_of": "CN10_10"
     },
     {
-      "name": "SPI1_SCK",
+      "name": "SPI_TPM_SCK",
       "mode": "Input",
       "alias_of": "CN7_15"
     },
     {
-      "name": "SPI1_MOSI",
+      "name": "SPI_TPM_MOSI",
       "mode": "Input",
       "alias_of": "CN7_14"
     },
     {
-      "name": "SPI1_MISO",
+      "name": "SPI_TPM_MISO",
       "mode": "Input",
       "alias_of": "CN7_12"
     },
     {
-      "name": "SPI1_CSB",
+      "name": "SPI_TPM_CSB",
       "mode": "Alternate",
       "pull_mode": "PullUp",
       "alias_of": "IOA7"
@@ -400,19 +400,31 @@
 	  "level": true,
 	},
         {
-          "name": "SPI1_SCK",
+          "name": "SPI_DEV_SCK",
+          "mode": "Input"
+        },
+        {
+          "name": "SPI_DEV_D0",
+          "mode": "Input"
+        },
+        {
+          "name": "SPI_DEV_D1",
+          "mode": "Input"
+        },
+        {
+          "name": "SPI_TPM_SCK",
           "mode": "Alternate"
         },
         {
-          "name": "SPI1_MOSI",
+          "name": "SPI_TPM_MOSI",
           "mode": "Alternate"
         },
         {
-          "name": "SPI1_MISO",
+          "name": "SPI_TPM_MISO",
           "mode": "Alternate"
         },
         {
-          "name": "SPI1_CSB",
+          "name": "SPI_TPM_CSB",
           "mode": "PushPull"
         }
       ]
