@@ -22,6 +22,7 @@ CP_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
 
 FT_PERSONALIZE_KEYS = [
     "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
+    "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
     "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
 ]
 
@@ -36,6 +37,7 @@ FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --uds-auth-key-id="0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
   --rom-ext-security-version="0"
   --owner-security-version="0"
+  --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem)"
 """
 
 FT_PERSONALIZE_SIGNING_KEYS = select({
