@@ -17,7 +17,11 @@ enum {
   /**
    * Offset to the ASN.1 DER encoded serial number of an X.509 certificate.
    */
-  kCertX509Asn1SerialNumberByteOffset = 13,
+  kCertX509Asn1SerialNumberFieldByteOffset = 13,
+  kCertX509Asn1SerialNumberTagByteOffset =
+      kCertX509Asn1SerialNumberFieldByteOffset,
+  kCertX509Asn1SerialNumberLengthByteOffset =
+      kCertX509Asn1SerialNumberTagByteOffset + 1,
 
   /**
    * Sizes of the ASN.1 DER encoded serial number of an X.509 certificate.
@@ -29,12 +33,19 @@ enum {
   /**
    * Number of words/bytes of an X.509 ASN.1 DER encoded certificate up to, and
    * including, the serial number.
+   *
+   * Offset of ASN.1 tag is 13 plus:
+   *  - 1 byte of tag
+   *  - 1 byte of size
+   *  - (potentially) 1 byte of padding
+   *  - 20 bytes of serial number
    */
   kCertX509Asn1FirstBytesWithSerialNumber =
-      kCertX509Asn1SerialNumberByteOffset +
-      kCertX509Asn1SerialNumberSizeInBytes + sizeof(uint32_t) - 1,
+      kCertX509Asn1SerialNumberFieldByteOffset +
+      kCertX509Asn1SerialNumberSizeInBytes + 3,
   kCertX509Asn1FirstWordsWithSerialNumber =
-      kCertX509Asn1FirstBytesWithSerialNumber / sizeof(uint32_t),
+      (kCertX509Asn1FirstBytesWithSerialNumber + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
 };
 
 /**
@@ -42,13 +53,13 @@ enum {
  * and checks if it matches what is expected.
  *
  * @param info_page Pointer to the flash info page the certificate is on.
- * @param expected_sn_words Expected serial number words (in big endian order).
+ * @param expected_sn_bytes Expected serial number bytes (in big endian order).
  * @param[out] matches True if expected serial number found. False otherwise.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t cert_x509_asn1_check_serial_number(
-    const flash_ctrl_info_page_t *info_page, uint32_t *expected_sn_words,
+    const flash_ctrl_info_page_t *info_page, uint8_t *expected_sn_bytes,
     hardened_bool_t *matches);
 
 #ifdef __cplusplus
