@@ -133,6 +133,18 @@ typedef enum dif_alert_handler_class_state {
   kDifAlertHandlerClassStateTimeout,
 
   /**
+   * The "fsm_error" state. This is a terminal state indicating the FSM
+   * has been glitched.
+   */
+  kDifAlertHandlerClassStateFsmError,
+  /**
+   * The terminal state. Most configurations will never reach this state, since
+   * one of the previous phases will use an escalation signal to reset the
+   * device.
+   */
+  kDifAlertHandlerClassStateTerminal,
+
+  /**
    * The zeroth escalation phase.
    */
   kDifAlertHandlerClassStatePhase0,
@@ -148,13 +160,6 @@ typedef enum dif_alert_handler_class_state {
    * The third escalation phase.
    */
   kDifAlertHandlerClassStatePhase3,
-
-  /**
-   * The terminal state. Most configurations will never reach this state, since
-   * one of the previous phases will use an escalation signal to reset the
-   * device.
-   */
-  kDifAlertHandlerClassStateTerminal,
 } dif_alert_handler_class_state_t;
 
 /**
