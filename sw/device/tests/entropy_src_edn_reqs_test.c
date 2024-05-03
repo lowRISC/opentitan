@@ -241,6 +241,8 @@ status_t execute_test(void) {
 bool test_main(void) {
   test_initialize();
 
+  CHECK_STATUS_OK(keymgr_testutils_init_nvm_then_reset());
+
   alert_handler_configure(&alert_handler);
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
