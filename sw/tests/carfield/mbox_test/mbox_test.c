@@ -49,31 +49,33 @@ void external_irq_handler(void)  {
 
   //init pointer to check memory
 
-  p_reg1 = (int *) 0x40000880;
+  p_reg1 = (int *) (0x40000280);
 
   // start of """Interrupt Service Routine"""
 
   plic_check = (int *) 0xC8200004;
-  while(*plic_check != mbox_id);   //check wether the intr is the correct one
+  while(*plic_check != mbox_id); //check wether the intr is the correct one
 
-  p_reg = (int *) 0x40000804;
- *p_reg = 0x00000000;              //clearing the pending interrupt signal
+  p_reg = (int *) (0x40000204);
+ *p_reg = 0x00000000; //clearing the pending interrupt signal
 
-  p_reg = (int *) 0x4000080C;
- *p_reg = 0x00000000;              // disable irq
+  p_reg = (int *) (0x4000020C);
+ *p_reg = 0x00000000; // disable irq
 
-  p_reg = (int *) 0x40000808;
- *p_reg = 0x00000001;              // raise irq completion (mbox side)
+  p_reg = (int *) (0x40000208);
+ *p_reg = 0x00000001; // raise irq completion (mbox side)
 
- *plic_check = mbox_id;            // completing interrupt (plic side)
+ *plic_check = mbox_id; // completing interrupt (plic side)
 
   // check mbox content
   a = *p_reg1;
 
   if( a == 0xBAADC0DE){
-      p_reg = (int *) 0x4000120C; // completion interrupt to ariane agent if msg = expected msg
+      // completion interrupt to ariane agent if msg = expected msg
+      p_reg = (int *) (0x40000D0C);
      *p_reg = 0x00000001;
-      p_reg = (int *) 0x40001204; // completion interrupt to ariane agent if msg = expected msg
+      // completion interrupt to ariane agent if msg = expected msg
+      p_reg = (int *) (0x40000D04);
      *p_reg = 0x00000001;
   }
   return;
