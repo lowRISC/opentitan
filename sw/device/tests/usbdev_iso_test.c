@@ -39,10 +39,8 @@
 #define NUM_STREAMS 4U
 #endif
 
-// This takes about 256s presently with 10MHz CPU in CW310 FPGA and physical
-// USB with randomized packet sizes and the default memcpy implementation;
-// The _MEM_FASTER switch drops the run time to 187s
-#define TRANSFER_BYTES_FPGA (0x10U << 20)
+#define TRANSFER_BYTES_SILICON (0x10U << 20)
+#define TRANSFER_BYTES_FPGA (8U << 16)
 
 // This is appropriate for a Verilator chip simulation with 15 min timeout
 #define TRANSFER_BYTES_VERILATOR 0x2400U
@@ -174,6 +172,7 @@ bool test_main(void) {
       transfer_bytes = TRANSFER_BYTES_DVSIM;
       break;
     case kDeviceSilicon:
+      transfer_bytes = TRANSFER_BYTES_SILICON;
       break;
     case kDeviceFpgaCw340:
       break;
