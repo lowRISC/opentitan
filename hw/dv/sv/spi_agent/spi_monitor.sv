@@ -86,7 +86,7 @@ class spi_monitor extends dv_base_monitor#(
     // write to host_analysis_port
     case (cfg.spi_func_mode)
       SpiModeFlash: begin
-        -> host_item.item_finished_ev; // 
+        -> host_item.item_finished_ev;
         `uvm_info(`gfn, "Triggering 'host_item.item_finished' since CSB just became inactive",
                   UVM_DEBUG)
         if (flash_opcode_received) begin
