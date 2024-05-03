@@ -1106,8 +1106,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
-    .SecKmacCmdDelay(320),
-    .SecKmacIdleAcceptSwMsg(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),
@@ -1148,6 +1146,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .KmacEnMasking(0),
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(0),
+    .SecKmacCmdDelay(320),
+    .SecKmacIdleAcceptSwMsg(1'b1),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),

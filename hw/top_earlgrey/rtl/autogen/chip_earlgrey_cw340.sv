@@ -980,8 +980,6 @@ module chip_earlgrey_cw340 #(
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
-    .SecKmacCmdDelay(320),
-    .SecKmacIdleAcceptSwMsg(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),
