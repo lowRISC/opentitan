@@ -10,6 +10,7 @@ pub mod boolean;
 pub mod boot_log;
 pub mod boot_svc;
 pub mod helper;
+pub mod rom_error;
 
 #[derive(Debug, Error)]
 pub enum ChipDataError {
