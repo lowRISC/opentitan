@@ -82,6 +82,7 @@ rust_library(
         "src/chip/boot_log.rs",
         "src/chip/boot_svc.rs",
         "src/chip/helper.rs",
+        "src/chip/rom_error.rs",
         "src/chip/mod.rs",
         "src/console/mod.rs",
         "src/console/spi.rs",
@@ -258,6 +259,7 @@ rust_library(
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//util/openocd/target:lowrisc-earlgrey.cfg",
         "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+        "//sw/host/opentitanlib/bindgen:rom_error_enum",
     ],
     crate_features = [
         "include_hyperdebug_firmware",
@@ -274,6 +276,7 @@ rust_library(
         "i2c_target": "$(location :i2c_target)",
         "mem": "$(location :mem)",
         "pinmux_config": "$(location :pinmux_config)",
+        "rom_error_enum": "$(location //sw/host/opentitanlib/bindgen:rom_error_enum)",
         "spi_passthru": "$(location :spi_passthru)",
         "ottf": "$(location :ottf)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
