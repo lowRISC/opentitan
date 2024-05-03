@@ -38,6 +38,7 @@ lrzsz
 lsb-release
 make
 ninja-build
+openssl
 perl
 pkgconf
 python3
