@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
-load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_library")
+load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen", "rust_bindgen_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -188,6 +188,43 @@ rust_bindgen_library(
     ],
 )
 
+# We generate the bindgen source for rom_error_t so we can post-process it
+# with the :rom_error_enum rule and build a full enum from all known
+# rom_error_t values.
+rust_bindgen(
+    name = "rom_error",
+    bindgen_flags = [
+        "--allowlist-type=rom_error_t",
+    ],
+    cc_lib = "//sw/device/silicon_creator/lib:error",
+    header = "//sw/device/silicon_creator/lib:error.h",
+)
+
+# Generate a rust source file that contains the enum definition.  This
+# will get textual-included into opentitanlib's `chip::rom_error` module.
+genrule(
+    name = "rom_error_enum",
+    srcs = [":rom_error"],
+    outs = ["rom_error_enum.rs"],
+    cmd = """
+cat >$@ <<HEADER
+with_unknown! {
+    pub enum RomError: u32 [default = Self::Unknown] {
+HEADER
+
+# The sed expression creates enumerators with idiomatic Rust names that
+# refer to the bindgen'ed constants.
+cat $(location :rom_error) \\
+    | grep const \\
+    | sed -E 's/^pub const (rom_error_kError([^:]+)).*$$/        \\2 = bindgen::rom_error::\\1,/g' >>$@
+
+cat >>$@ <<FOOTER
+    }
+}
+FOOTER
+    """,
+)
+
 rust_bindgen_library(
     name = "sram_program",
     bindgen_flags = [
@@ -244,7 +281,10 @@ rust_bindgen_library(
 
 rust_library(
     name = "bindgen",
-    srcs = ["lib.rs"],
+    srcs = [
+        "lib.rs",
+        ":rom_error",
+    ],
     deps = [
         ":alert",
         ":dif",
