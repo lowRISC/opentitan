@@ -586,7 +586,16 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 end
                 void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
               end
-              default: begin // other than StReset and StDisabled
+              keymgr_pkg::StInvalid: begin
+                // No operation is allowed in this state.  Expect a recoverable alert, that the
+                // operation status is *failed*, that the `err_code` CSR has `invalid_op` set, and
+                // that the `op_done` IRQ gets raised.
+                set_exp_alert("recov_operation_err");
+                current_op_status = keymgr_pkg::OpDoneFail;
+                void'(ral.err_code.invalid_op.predict(.value(1'b1)));
+                void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+              end
+              default: begin // other than StReset and StInvalid
                 bit good_key;
                 bit good_data;
 

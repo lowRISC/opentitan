@@ -633,7 +633,7 @@ module keymgr_ctrl
       end
 
       StCtrlInvalid: begin
-        op_req = op_start_i;
+        invalid_op = op_start_i;
         invalid = 1'b1;
       end
 
