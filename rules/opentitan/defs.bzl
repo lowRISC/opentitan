@@ -152,6 +152,7 @@ def opentitan_test(
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
+        data = [],
         **kwargs):
     """Instantiate a test per execution environment.
 
@@ -228,7 +229,7 @@ def opentitan_test(
             post_test_harness = getattr(tparam, "post_test_harness", None),
             test_cmd = tparam.test_cmd,
             param = tparam.param,
-            data = tparam.data,
+            data = data + tparam.data,
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
