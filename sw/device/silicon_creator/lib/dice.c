@@ -159,7 +159,12 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
   curr_pubkey_le_to_be_convert(pubkey);
 
   // Generate the key ID.
+  //
+  // Note: the certificate generation functions expect the digest to be in big
+  // endian form, but the HMAC driver returns the digest in little endian, so we
+  // re-format it.
   hmac_sha256(pubkey, kAttestationPublicKeyCoordBytes * 2, pubkey_id);
+  le_be_buf_format((unsigned char *)pubkey_id, kHmacDigestNumBytes);
 
   return kErrorOk;
 }

@@ -9,10 +9,12 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+static uint8_t actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes] = {0};
+
 rom_error_t cert_x509_asn1_check_serial_number(
-    const flash_ctrl_info_page_t *info_page, uint32_t *expected_sn_words,
+    const flash_ctrl_info_page_t *info_page, uint8_t *expected_sn_bytes,
     hardened_bool_t *matches) {
-  if (info_page == NULL || expected_sn_words == NULL || matches == NULL) {
+  if (info_page == NULL || expected_sn_bytes == NULL || matches == NULL) {
     return kErrorCertInvalidArgument;
   }
   *matches = kHardenedBoolFalse;
@@ -52,38 +54,48 @@ rom_error_t cert_x509_asn1_check_serial_number(
 
   // Extract tag and length.
   unsigned char *cert_bytes = (unsigned char *)cert_words;
-  uint8_t asn1_tag = cert_bytes[kCertX509Asn1SerialNumberByteOffset];
+  uint8_t asn1_tag = cert_bytes[kCertX509Asn1SerialNumberTagByteOffset];
   size_t asn1_integer_length =
-      cert_bytes[kCertX509Asn1SerialNumberByteOffset + 1];
+      cert_bytes[kCertX509Asn1SerialNumberLengthByteOffset];
 
   // Validate tag and length values.
   // Tag should be 0x2 (the ASN.1 tag for an INTEGER).
   HARDENED_CHECK_EQ(asn1_tag, kAsn1TagNumberInteger);
-  // Length should be 20 or 21 bytes (depending on if the MSb of the measurement
-  // is 1 since the value is unsigned), as specified in IETF RFC 5280, and
-  // hardcoded in the certificate HJSON specifications.
-  HARDENED_CHECK_GE(asn1_integer_length, kCertX509Asn1SerialNumberSizeInBytes);
+  // Length should be less than or equal to 21 bytes (if the MSb of the
+  // measurement is 1, a zero is added during ASN.1 encoding since the value is
+  // unsigned), as specified in IETF RFC 5280, and hardcoded in the certificate
+  // HJSON specifications.
   HARDENED_CHECK_LE(asn1_integer_length,
                     kCertX509Asn1SerialNumberSizeInBytes + 1);
 
-  // Check the serial number in the certificate matches what was expected.
-  size_t sn_bytes_offset = kCertX509Asn1SerialNumberByteOffset + 2;
+  // If the length is 21 bytes, we skip the first 0 pad byte.
+  size_t sn_bytes_offset = kCertX509Asn1SerialNumberLengthByteOffset + 1;
   if (launder32(asn1_integer_length) ==
       kCertX509Asn1SerialNumberSizeInBytes + 1) {
     HARDENED_CHECK_EQ(asn1_integer_length,
                       kCertX509Asn1SerialNumberSizeInBytes + 1);
     sn_bytes_offset++;
+    asn1_integer_length--;
   }
-  uint32_t curr_sn_word = 0;
-  for (size_t i = 0; i < kCertX509Asn1SerialNumberSizeIn32BitWords; ++i) {
-    curr_sn_word = 0;
-    for (size_t j = 0; j < sizeof(uint32_t); ++j) {
-      curr_sn_word |=
-          (uint32_t)cert_bytes[sn_bytes_offset + (i * sizeof(uint32_t)) + j]
-          << (8 * j);
-    }
-    if (launder32(curr_sn_word) != expected_sn_words[i]) {
-      HARDENED_CHECK_NE(curr_sn_word, expected_sn_words[i]);
+
+  // Extract serial number bytes from the certificate into a 20-byte array as
+  // this is the full size of the serial number integer.
+  //
+  // We fill the end of the array to ensure we maintain any prefix zero padding.
+  //
+  // We make sure to clear out the staging buffer before copying the actual cert
+  // bytes in case this function was previously called on a cert that had a
+  // larger serial number than currently present.
+  memset(actual_serial_number, 0, kCertX509Asn1SerialNumberSizeInBytes);
+  memcpy(&actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes -
+                               asn1_integer_length],
+         &cert_bytes[sn_bytes_offset], asn1_integer_length);
+
+  // Check the serial number in the certificate matches what was expected.
+  *matches = kHardenedBoolFalse;
+  for (size_t i = 0; i < kCertX509Asn1SerialNumberSizeInBytes; ++i) {
+    if (launder32(actual_serial_number[i]) != expected_sn_bytes[i]) {
+      HARDENED_CHECK_NE(actual_serial_number[i], expected_sn_bytes[i]);
       return kErrorOk;
     }
   }
