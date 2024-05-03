@@ -61,9 +61,8 @@
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
       ]
       tests: ["chip_sw_spi_device_pass_through"]
-      bazel: []
+      bazel: ["//sw/device/tests:spi_passthru_test"]
     }
-
     {
       name: chip_sw_spi_device_pass_through_flash_model
       desc: '''Verify the command filtering mechanism in passthrough mode.
@@ -80,7 +79,7 @@
         "SPI_DEVICE.HW.LANES",
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
       ]
-      tests: []
+      tests: ["//sw/device/tests:spi_passthru_test"]
     }
     {
       name: chip_sw_spi_device_pass_through_collision

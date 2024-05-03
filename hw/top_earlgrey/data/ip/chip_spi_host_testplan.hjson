@@ -53,7 +53,7 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
+      tests: ["//sw/device/tests:spi_passthru_test"]
     }
     {
       name: chip_sw_spi_host_configuration
