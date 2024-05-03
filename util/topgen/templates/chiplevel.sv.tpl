@@ -1106,11 +1106,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
-    .KmacEnMasking(0),
-    .KmacSwKeyMasked(1),
     .SecKmacCmdDelay(320),
     .SecKmacIdleAcceptSwMsg(1'b1),
-    .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),
@@ -1142,6 +1139,15 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
+% endif
+% if target["name"] == "cw340":
+    .KmacEnMasking(1),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(1),
+% elif target["name"] == "cw310":
+    .KmacEnMasking(0),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(0),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
