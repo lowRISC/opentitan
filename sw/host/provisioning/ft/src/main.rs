@@ -69,6 +69,10 @@ pub struct ManufFtProvisioningDataInput {
     /// Security version the Owner image to be loaded onto the device.
     #[arg(long, default_value = "0")]
     pub owner_security_version: u32,
+
+    /// CA certificate to be used for verifying.
+    #[arg(long)]
+    pub ca_certificate: PathBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -202,6 +206,7 @@ fn main() -> Result<()> {
         opts.provisioning_data.cert_endorsement_ecc_sk,
         &_perso_certgen_inputs,
         opts.timeout,
+        opts.provisioning_data.ca_certificate,
     )?;
 
     log::info!("Provisioning Done");
