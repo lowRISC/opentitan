@@ -867,6 +867,12 @@ dif_result_t dif_alert_handler_get_class_state(
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_TIMEOUT:
       *state = kDifAlertHandlerClassStateTimeout;
       break;
+    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_FSMERROR:
+      *state = kDifAlertHandlerClassStateFsmError;
+      break;
+    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_TERMINAL:
+      *state = kDifAlertHandlerClassStateTerminal;
+      break;
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE0:
       *state = kDifAlertHandlerClassStatePhase0;
       break;
@@ -878,9 +884,6 @@ dif_result_t dif_alert_handler_get_class_state(
       break;
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE3:
       *state = kDifAlertHandlerClassStatePhase3;
-      break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_TERMINAL:
-      *state = kDifAlertHandlerClassStateTerminal;
       break;
     default:
       return kDifError;
