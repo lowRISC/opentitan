@@ -3586,6 +3586,15 @@ opentitan_test(
     ],
 )
 
+# Work around https://github.com/bazelbuild/bazel/pull/16381
+# When adding an executable as a data dependency, it expands
+# to multiple locations. This alias forces bazel to only "see"
+# the default output and therefore expand to a single file.
+alias(
+    name = "usbdev_stream_host_harness",
+    actual = "//sw/host/tests/usbdev/usbdev_stream:stream_test",
+)
+
 opentitan_test(
     name = "usbdev_pincfg_test",
     srcs = ["usbdev_pincfg_test.c"],
@@ -3785,12 +3794,27 @@ opentitan_test(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
     cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --exec=$(rootpath :usbdev_stream_host_harness)
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    data = [
+        ":usbdev_stream_host_harness",
+    ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+            --exec=$(rootpath :usbdev_stream_host_harness)
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -3809,12 +3833,27 @@ opentitan_test(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
     cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --exec=$(rootpath :usbdev_stream_host_harness)
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    data = [
+        ":usbdev_stream_host_harness",
+    ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+            --exec=$(rootpath :usbdev_stream_host_harness)
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -3833,12 +3872,27 @@ opentitan_test(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
     cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --exec=$(rootpath :usbdev_stream_host_harness)
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    data = [
+        ":usbdev_stream_host_harness",
+    ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+            --exec=$(rootpath :usbdev_stream_host_harness)
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
