@@ -332,7 +332,7 @@ static int RunTest(USBDevice *dev, const char *in_port, const char *out_port) {
     }
   }
 
-  std::cout << "Streaming...\r" << std::flush;
+  std::cout << "Streaming..." << std::endl;
 
   // Times are in microseconds.
   constexpr uint32_t kRunInterval = 5 * 1000000;  // Running before suspending.
@@ -459,8 +459,8 @@ static int RunTest(USBDevice *dev, const char *in_port, const char *out_port) {
       uint32_t bytes_left =
           (total_sent < total_bytes) ? (total_bytes - total_sent) : 0U;
       std::cout << "Bytes received: 0x" << std::hex << total_recv
-                << " -- Left to send: 0x" << bytes_left << "         \r"
-                << std::dec << std::flush;
+                << " -- Left to send: 0x" << bytes_left << "         "
+                << std::dec << std::endl;
       prev_bytes = total_sent;
     }
   } while (!done);
