@@ -56,7 +56,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
-  bit                                is_sw_share_corrupted;
+  bit [keymgr_pkg::Shares-1:0][keymgr_reg_pkg::NumOutReg-1:0] is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
   key_shares_t current_internal_key[keymgr_cdi_type_e];
@@ -66,7 +66,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     addr_phase_op_status;
   bit                                addr_phase_cfg_regwen;
   keymgr_pkg::keymgr_working_state_e addr_phase_working_state;
-  bit                                addr_phase_is_sw_share_corrupted;
+  bit [keymgr_pkg::Shares-1:0][keymgr_reg_pkg::NumOutReg-1:0] addr_phase_is_sw_share_corrupted;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(kmac_app_item) req_fifo;
@@ -219,6 +219,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             uvm_reg csr = ral.get_reg_by_name(csr_name);
 
             void'(csr.predict(.value(sw_share_output[i][j]), .kind(UVM_PREDICT_DIRECT)));
+            is_sw_share_corrupted[i][j] = 1'b0;
             `uvm_info(`gfn, $sformatf("Predict %0s = 0x%0h", csr_name, sw_share_output[i][j]),
                       UVM_MEDIUM)
           end
@@ -307,7 +308,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       if (op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
         if (adv_cnt != keymgr_pkg::CDIs - 1) begin
           adv_cnt++;
-          is_sw_share_corrupted = 1;
+          is_sw_share_corrupted = '1;
           cfg.keymgr_vif.wipe_sideload_keys();
         end else begin
           adv_cnt = 0;
@@ -394,6 +395,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     dv_base_reg dv_reg;
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
+    bit     do_predict      = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
@@ -732,16 +734,42 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
       default: begin
         if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share
-          // if keymgr isn't On, SW output should be entropy and not match to predict value
+          uint share, idx;
+          `DV_CHECK(sw_share_csr_get_indices(csr.get_name(), share, idx))
+          // The SW output registers (`sw_share{0,1}_output{0..7}`) get their value assigned by
+          // keymgr based on KMAC responses or based on entropy during wiping.  The scoreboard can
+          // predict their value based on observed KMAC responses.  However, the scoreboard cannot
+          // predict their value when they get wiped, but it knows *when* they get wiped (this is
+          // modeled cycle-accurately).  In case of a wipe, `is_sw_share_corrupted` is set.
           if (addr_phase_read) begin
-            addr_phase_is_sw_share_corrupted = is_sw_share_corrupted;
-          end else if (data_phase_read && addr_phase_is_sw_share_corrupted) begin
-            // disable read check outside of the item compare.
-            // it is possible for the returned data when corrupted, to be 0
-            do_read_check = 1'b0;
-            if (item.d_data != 0) begin
-              `DV_CHECK_NE(item.d_data, `gmv(csr))
+            // Track whether a register is corrupted during the address phase and propagate that
+            // information to the data phase.
+            addr_phase_is_sw_share_corrupted[share][idx] = is_sw_share_corrupted[share][idx];
+            // The register is no longer corrupted for the next access because it gets cleared to
+            // zero.
+            is_sw_share_corrupted[share][idx] = 1'b0;
+          end else if (data_phase_read) begin
+            if (addr_phase_is_sw_share_corrupted[share][idx]) begin
+              // Disable read check (for equality) because the scoreboard currently cannot predict
+              // sw_share when its "corrupted" (i.e., wiped with random entropy).
+              do_read_check = 1'b0;
+              // Instead check that the returned sw_share does *not* match our prediction.
+              `DV_CHECK_NE(item.d_data, `gmv(csr), $sformatf("reg name: %0s", csr.get_full_name()))
             end
+            // This CSR gets cleared on read, thus:
+            // - update the predicted/mirrored value to zero
+            fork
+              begin
+                // Update prediction a cycle later so it happens *after* the ongoing access.
+                cfg.clk_rst_vif.wait_clks(1);
+                // Except if it has been again marked as corrupted in the mean time.
+                if (!is_sw_share_corrupted[share][idx]) begin
+                  void'(csr.predict(.value('0)));
+                end
+              end
+            join_none
+            // - skip the "predict what got returned on the bus" below
+            do_predict = 1'b0;
           end
         end else begin // Not sw_share
           // ICEBOX(#18344): explicitly list all the unchecked regs here.
@@ -757,9 +785,20 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(item.d_data, `gmv(csr),
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      if (do_predict) void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  function bit sw_share_csr_get_indices(string csr_name, output uint share, output uint idx);
+    for (share = 0; share < keymgr_pkg::Shares; share++) begin
+      for (idx = 0; idx < keymgr_reg_pkg::NumOutReg; idx++) begin
+        if (csr_name == $sformatf("sw_share%0d_output_%0d", share, idx)) begin
+          return 1'b1;
+        end
+      end
+    end
+    return 1'b0; // No match
+  endfunction
 
   virtual function void latch_otp_key();
     key_shares_t otp_key;
@@ -798,7 +837,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     void'(ral.err_code.predict(err));
 
     if (get_fault_err() || !cfg.keymgr_vif.get_keymgr_en()) begin
-      is_sw_share_corrupted = 1;
+      is_sw_share_corrupted = '1;
       cfg.keymgr_vif.wipe_sideload_keys();
     end
 
@@ -1232,11 +1271,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       begin
-        // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
+        // it takes 1 cycle to wipe sw_share. add one more negedge to avoid race condition
         // corner case
-        cfg.clk_rst_vif.wait_n_clks(3);
+        cfg.clk_rst_vif.wait_n_clks(2);
         cfg.keymgr_vif.wipe_sideload_keys();
-        is_sw_share_corrupted = 1;
+        is_sw_share_corrupted = '1;
+        cfg.clk_rst_vif.wait_n_clks(1);
+        addr_phase_is_sw_share_corrupted = '1;
       end
     join_none
   endfunction
@@ -1248,7 +1289,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     current_op_status     = keymgr_pkg::OpIdle;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
-    is_sw_share_corrupted = 0;
+    is_sw_share_corrupted = '0;
+    addr_phase_is_sw_share_corrupted = '0;
     req_fifo.flush();
     rsp_fifo.flush();
     current_internal_key.delete;
