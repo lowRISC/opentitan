@@ -32,7 +32,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = spx::load_spx_key(&self.key_file)?;
 
         Ok(Some(Box::new(SpxPublicKeyInfo {
@@ -62,7 +62,7 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let private_key = SpxKeypair::generate();
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
@@ -105,7 +105,7 @@ impl CommandDispatch for SpxSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let message = std::fs::read(&self.message)?;
         let keypair = SpxKeypair::read_pem_file(&self.keypair)?;
         let signature = keypair.sign(&message);
@@ -135,7 +135,7 @@ impl CommandDispatch for SpxVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let message = std::fs::read(&self.message)?;
         let keypair = spx::load_spx_key(&self.key_file)?;
         let signature = SpxSignature::read_from_file(&self.signature)?;

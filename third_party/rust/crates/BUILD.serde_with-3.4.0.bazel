@@ -83,6 +83,6 @@ rust_library(
     }),
     version = "3.4.0",
     deps = [
-        "@crate_index__serde-1.0.189//:serde",
+        "@crate_index__serde-1.0.197//:serde",
     ],
 )

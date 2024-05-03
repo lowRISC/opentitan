@@ -30,8 +30,6 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "default",
-        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -79,6 +77,6 @@ rust_library(
     }),
     version = "0.3.31",
     deps = [
-        "@crate_index__serde-1.0.189//:serde",
+        "@crate_index__serde-1.0.197//:serde",
     ],
 )

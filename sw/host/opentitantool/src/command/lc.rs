@@ -9,7 +9,6 @@ use anyhow::{ensure, Result};
 use clap::{Args, Subcommand};
 use hex::decode;
 use humantime::parse_duration;
-use serde_annotate::Annotate;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -86,7 +85,7 @@ impl CommandDispatch for LcStateRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
@@ -130,7 +129,7 @@ impl CommandDispatch for LcRegRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
 
@@ -166,7 +165,7 @@ impl CommandDispatch for LcDeviceIdRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
@@ -221,7 +220,7 @@ impl CommandDispatch for RawUnlock {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
@@ -285,7 +284,7 @@ impl CommandDispatch for Transition {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
@@ -366,7 +365,7 @@ impl CommandDispatch for Status {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
@@ -417,7 +416,7 @@ impl CommandDispatch for TransitionCount {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
@@ -454,7 +453,7 @@ impl CommandDispatch for VolatileRawUnlock {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;

@@ -5,7 +5,7 @@
 use anyhow::{bail, Result};
 use clap::{Args, Subcommand};
 use regex::Regex;
-use serde_annotate::Annotate;
+
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
@@ -65,7 +65,7 @@ impl CommandDispatch for RsaKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
 
         Ok(Some(Box::new(RsaKeyInfo {
@@ -94,7 +94,7 @@ impl CommandDispatch for RsaKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let private_key = RsaPrivateKey::new()?;
         let mut der_file = self.output_dir.to_owned();
         der_file.push(&self.basename);
@@ -179,7 +179,7 @@ impl CommandDispatch for RsaKeyExportCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
 
         let output_path = match &self.output_file {
@@ -280,7 +280,7 @@ impl CommandDispatch for RsaSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
             Sha256Digest::from_le_bytes(bytes)?
@@ -315,7 +315,7 @@ impl CommandDispatch for RsaVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = RsaPublicKey::from_pkcs1_der_file(&self.der_file)?;
         let digest = Sha256Digest::from_str(&self.digest)?;
         let signature = Signature::from_str(&self.signature)?;
