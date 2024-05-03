@@ -50,7 +50,7 @@ class keymgr_sideload_protect_vseq extends keymgr_random_vseq;
       endcase
 
       // Let scb know sw output is random value
-      if (force_hw_key_sel_or_data_en) cfg.scb.is_sw_share_corrupted = 1;
+      if (force_hw_key_sel_or_data_en) cfg.scb.is_sw_share_corrupted = '1;
 
       read_sw_shares(sw_share_output);
       // force on data_sw_en, sw output remains 0
