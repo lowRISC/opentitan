@@ -368,7 +368,6 @@
     - [Device Interface Functions](./sw/device/lib/dif/dif_usbdev.h)
     - [Checklist](./hw/ip/usbdev/doc/checklist.md)
   - [lowRISC Hardware Primitives](./hw/ip/prim/README.md)
-    - [Two Input Clock](./hw/ip/prim/doc/prim_clock_gp_mux2.md)
     - [Flash Wrapper](./hw/ip/prim/doc/prim_flash.md)
     - [Keccak Permutation](./hw/ip/prim/doc/prim_keccak.md)
     - [Linear Feedback Shift Register](./hw/ip/prim/doc/prim_lfsr.md)
