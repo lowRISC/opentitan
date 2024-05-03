@@ -33,8 +33,8 @@ static spx_addr_t kTestAddr = {.addr = {0}};
 //
 // Note: this expected public key is based on the sphincs-shake-128s
 // parameter set and will not work for other parameter sets.
-static uint32_t kExpectedPk[kSpxNWords] = {0xd2c5c792, 0x80d096bd, 0xdb6d692e,
-                                           0xf75f2fe8};
+static uint32_t kExpectedPk[kSpxNWords] = {0x8406e3d8, 0xb2b77248, 0x3a40a819,
+                                           0x7f7e2c8d};
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t pk_from_sig_test(void) {
