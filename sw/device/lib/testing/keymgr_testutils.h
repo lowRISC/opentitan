@@ -133,6 +133,14 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
                                       dif_keymgr_state_t *keymgr_state);
 
 /**
+ * Initialize non-volatile memory (flash and OTP) for keymgr and then reset, so
+ * that the relevant OTP partitions become accessible to keymgr.  After calling
+ * this function, keymgr can be initialized.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_init_nvm_then_reset(void);
+
+/**
  * Programs flash, restarts, and advances keymgr to CreatorRootKey state.
  *
  * This procedure essentially gets the keymgr into the first state where it can
