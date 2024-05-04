@@ -235,7 +235,7 @@ static const entropy_complex_config_t
                 .edn0 =
                     {
                         .base_address = kBaseEdn0,
-                        .reseed_interval = 32,
+                        .reseed_interval = 128,
                         .instantiate =
                             {
                                 .id = kEntropyDrbgOpInstantiate,
