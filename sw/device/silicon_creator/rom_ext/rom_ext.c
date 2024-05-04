@@ -282,6 +282,12 @@ static rom_error_t rom_ext_attestation_keygen(
   HARDENED_RETURN_IF_ERROR((rom_error_t)entropy_complex_init().value);
   HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
+  // Set keymgr reseed interval. Start with the maximum value to avoid
+  // entropy complex contention during the boot process.
+  const uint16_t kKeymgrEntropyReseedInterval = UINT16_MAX;
+  keymgr_entropy_reseed_interval_set(kKeymgrEntropyReseedInterval);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioEntropyReseedIntervalSet);
+
   // ROM sets the SW binding values for the first key stage (CreatorRootKey) but
   // does not initialize the key manager. Advance key manager state twice to
   // transition to the creator root key state.
