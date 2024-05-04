@@ -81,8 +81,8 @@ class jtag_monitor extends dv_base_monitor #(
         JtagUpdateDrState: begin
           jtag_state = `MON_CB.tms ? JtagSelectDrState : JtagIdleState;
 
-          // Send DR packet to analysis port
-          if (cfg.vif.trst_n) begin
+          // Send DR packet to analysis port, so long as the DR length is positive
+          if (cfg.vif.trst_n && counter > 0) begin
             item        = jtag_item::type_id::create("item");
             item.ir_len = 0;
             item.dr_len = counter;
@@ -121,8 +121,8 @@ class jtag_monitor extends dv_base_monitor #(
         JtagUpdateIrState: begin
           jtag_state = `MON_CB.tms ? JtagSelectDrState : JtagIdleState;
 
-          // Send IR packet to analysis port
-          if (cfg.vif.trst_n) begin
+          // Send IR packet to analysis port, so long as the IR length is positive.
+          if (cfg.vif.trst_n && counter > 0) begin
             item        = jtag_item::type_id::create("item");
             item.ir_len = counter;
             item.dr_len = 0;
