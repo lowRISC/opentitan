@@ -310,17 +310,15 @@ opentitan_test(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     verilator = verilator_params(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom:mask_rom",
