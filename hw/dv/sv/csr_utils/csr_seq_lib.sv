@@ -329,7 +329,19 @@ class csr_bit_bash_seq extends csr_base_seq;
   `uvm_object_new
 
   virtual task body();
+    int unsigned total_count = test_csrs.size();
+    int unsigned done_count = 0;
+
+    `uvm_info(`gtn,
+              $sformatf("Running bit bash sequence for %0d registers", total_count),
+              UVM_MEDIUM)
     foreach (test_csrs[i]) begin
+      done_count++;
+      `uvm_info(`gtn,
+                $sformatf("Verifying register bit bash for %0s (register %0d/%0d)",
+                          test_csrs[i].get_full_name(), done_count, total_count),
+                UVM_MEDIUM)
+
       // check if parent block or register is excluded from write
       if (is_excl(test_csrs[i], CsrExclWrite, CsrBitBashTest) ||
           is_excl(test_csrs[i], CsrExclWriteCheck, CsrBitBashTest)) begin
@@ -337,9 +349,6 @@ class csr_bit_bash_seq extends csr_base_seq;
                                   test_csrs[i].get_full_name()), UVM_MEDIUM)
         continue;
       end
-
-      `uvm_info(`gtn, $sformatf("Verifying register bit bash for %0s",
-                test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       begin
         uvm_reg_field   fields[$];
