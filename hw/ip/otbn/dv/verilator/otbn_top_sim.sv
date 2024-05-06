@@ -256,26 +256,29 @@ module otbn_top_sim (
     .EnableParity       ( 0             ),
     .ReplicateKeyStream ( 1             )
   ) u_dmem (
-    .clk_i        ( IO_CLK            ),
-    .rst_ni       ( IO_RST_N          ),
+    .clk_i            ( IO_CLK            ),
+    .rst_ni           ( IO_RST_N          ),
 
-    .key_valid_i  ( 1'b1              ),
-    .key_i        ( TestScrambleKey   ),
-    .nonce_i      ( TestScrambleNonce ),
+    .key_valid_i      ( 1'b1              ),
+    .key_i            ( TestScrambleKey   ),
+    .nonce_i          ( TestScrambleNonce ),
 
-    .req_i        ( dmem_req          ),
-    .gnt_o        (                   ),
-    .write_i      ( dmem_write        ),
-    .addr_i       ( dmem_index        ),
-    .wdata_i      ( dmem_wdata        ),
-    .wmask_i      ( dmem_wmask        ),
-    .intg_error_i ( 1'b0              ),
+    .req_i            ( dmem_req          ),
+    .gnt_o            (                   ),
+    .write_i          ( dmem_write        ),
+    .addr_i           ( dmem_index        ),
+    .wdata_i          ( dmem_wdata        ),
+    .wmask_i          ( dmem_wmask        ),
+    .intg_error_i     ( 1'b0              ),
 
-    .rdata_o      ( dmem_rdata        ),
-    .rvalid_o     ( dmem_rvalid       ),
-    .raddr_o      (                   ),
-    .rerror_o     (                   ),
-    .cfg_i        ( '0                )
+    .rdata_o          ( dmem_rdata        ),
+    .rvalid_o         ( dmem_rvalid       ),
+    .raddr_o          (                   ),
+    .rerror_o         (                   ),
+    .cfg_i            ( '0                ),
+
+    .wr_collision_o   (                   ),
+    .write_pending_o  (                   )
   );
 
   // No integrity errors in Verilator testbench
@@ -296,26 +299,29 @@ module otbn_top_sim (
     .DataBitsPerMask ( 39            ),
     .EnableParity    ( 0             )
   ) u_imem (
-    .clk_i        ( IO_CLK                  ),
-    .rst_ni       ( IO_RST_N                ),
+    .clk_i            ( IO_CLK                  ),
+    .rst_ni           ( IO_RST_N                ),
 
-    .key_valid_i  ( 1'b1                    ),
-    .key_i        ( TestScrambleKey         ),
-    .nonce_i      ( TestScrambleNonce       ),
+    .key_valid_i      ( 1'b1                    ),
+    .key_i            ( TestScrambleKey         ),
+    .nonce_i          ( TestScrambleNonce       ),
 
-    .req_i        ( imem_req                ),
-    .gnt_o        (                         ),
-    .write_i      ( 1'b0                    ),
-    .addr_i       ( imem_index              ),
-    .wdata_i      ( '0                      ),
-    .wmask_i      ( '0                      ),
-    .intg_error_i ( 1'b0                    ),
+    .req_i            ( imem_req                ),
+    .gnt_o            (                         ),
+    .write_i          ( 1'b0                    ),
+    .addr_i           ( imem_index              ),
+    .wdata_i          ( '0                      ),
+    .wmask_i          ( '0                      ),
+    .intg_error_i     ( 1'b0                    ),
 
-    .rdata_o      ( imem_rdata              ),
-    .rvalid_o     ( imem_rvalid             ),
-    .raddr_o      (                         ),
-    .rerror_o     (                         ),
-    .cfg_i        ( '0                      )
+    .rdata_o          ( imem_rdata              ),
+    .rvalid_o         ( imem_rvalid             ),
+    .raddr_o          (                         ),
+    .rerror_o         (                         ),
+    .cfg_i            ( '0                      ),
+
+    .wr_collision_o   (                         ),
+    .write_pending_o  (                         )
   );
 
   // When OTBN is done let a few more cycles run then finish simulation

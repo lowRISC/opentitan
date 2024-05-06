@@ -1638,21 +1638,25 @@ module spi_device
     .clk_i,
     .rst_ni,
 
-    .tl_i             (tl_sram_egress_h2d),
-    .tl_o             (tl_sram_egress_d2h),
-    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-    .req_o            (sys_sram_l2m[SysSramFwEgress].req),
-    .req_type_o       (),
-    .gnt_i            (sys_sram_fw_gnt[SPI_DEVICE_EGRESS_BUFFER_IDX]),
-    .we_o             (sys_sram_l2m[SysSramFwEgress].we),
-    .addr_o           (sys_sram_l2m[SysSramFwEgress].addr),
-    .wdata_o          (sys_sram_l2m[SysSramFwEgress].wdata),
-    .wmask_o          (sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]),  // Not used
-    .intg_error_o     (),
-    .rdata_i          (sys_sram_m2l[SysSramFwEgress].rdata),
-    .rvalid_i         (sys_sram_m2l[SysSramFwEgress].rvalid),
-    .rerror_i         (sys_sram_m2l[SysSramFwEgress].rerror),
-    .rmw_in_progress_o()
+    .tl_i                       (tl_sram_egress_h2d),
+    .tl_o                       (tl_sram_egress_d2h),
+    .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+    .req_o                      (sys_sram_l2m[SysSramFwEgress].req),
+    .req_type_o                 (),
+    .gnt_i                      (sys_sram_fw_gnt[SPI_DEVICE_EGRESS_BUFFER_IDX]),
+    .we_o                       (sys_sram_l2m[SysSramFwEgress].we),
+    .addr_o                     (sys_sram_l2m[SysSramFwEgress].addr),
+    .wdata_o                    (sys_sram_l2m[SysSramFwEgress].wdata),
+    .wmask_o                    (sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]),  // Not used
+    .intg_error_o               (),
+    .rdata_i                    (sys_sram_m2l[SysSramFwEgress].rdata),
+    .rvalid_i                   (sys_sram_m2l[SysSramFwEgress].rvalid),
+    .rerror_i                   (sys_sram_m2l[SysSramFwEgress].rerror),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (1'b0),
+    .write_pending_i            (1'b0)
   );
 
   tlul_adapter_sram #(
@@ -1665,21 +1669,25 @@ module spi_device
     .clk_i,
     .rst_ni,
 
-    .tl_i             (tl_sram_ingress_h2d),
-    .tl_o             (tl_sram_ingress_d2h),
-    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-    .req_o            (sys_sram_l2m[SysSramFwIngress].req),
-    .req_type_o       (),
-    .gnt_i            (sys_sram_fw_gnt[SPI_DEVICE_INGRESS_BUFFER_IDX]),
-    .we_o             (sys_sram_l2m[SysSramFwIngress].we),
-    .addr_o           (sys_sram_l2m[SysSramFwIngress].addr),
-    .wdata_o          (sys_sram_l2m[SysSramFwIngress].wdata),
-    .wmask_o          (sys_sram_l2m_fw_wmask[SPI_DEVICE_INGRESS_BUFFER_IDX]),  // Not used
-    .intg_error_o     (),
-    .rdata_i          (sys_sram_m2l[SysSramFwIngress].rdata),
-    .rvalid_i         (sys_sram_m2l[SysSramFwIngress].rvalid),
-    .rerror_i         (sys_sram_m2l[SysSramFwIngress].rerror),
-    .rmw_in_progress_o()
+    .tl_i                       (tl_sram_ingress_h2d),
+    .tl_o                       (tl_sram_ingress_d2h),
+    .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+    .req_o                      (sys_sram_l2m[SysSramFwIngress].req),
+    .req_type_o                 (),
+    .gnt_i                      (sys_sram_fw_gnt[SPI_DEVICE_INGRESS_BUFFER_IDX]),
+    .we_o                       (sys_sram_l2m[SysSramFwIngress].we),
+    .addr_o                     (sys_sram_l2m[SysSramFwIngress].addr),
+    .wdata_o                    (sys_sram_l2m[SysSramFwIngress].wdata),
+    .wmask_o                    (sys_sram_l2m_fw_wmask[SPI_DEVICE_INGRESS_BUFFER_IDX]),  // Not used
+    .intg_error_o               (),
+    .rdata_i                    (sys_sram_m2l[SysSramFwIngress].rdata),
+    .rvalid_i                   (sys_sram_m2l[SysSramFwIngress].rvalid),
+    .rerror_i                   (sys_sram_m2l[SysSramFwIngress].rerror),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (1'b0),
+    .write_pending_i            (1'b0)
   );
   assign sys_sram_l2m[SysSramFwEgress].wstrb =
     sram_mask2strb(sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]);

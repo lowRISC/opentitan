@@ -34,6 +34,7 @@ module tlul_adapter_sram
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
+  parameter bit EnableReadback    = 0,  // 1: Readback and check written/read data.
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
@@ -60,7 +61,11 @@ module tlul_adapter_sram
   input        [DataOutW-1:0] rdata_i,
   input                       rvalid_i,
   input        [1:0]          rerror_i, // 2 bit error [1]: Uncorrectable, [0]: Correctable
-  output logic                rmw_in_progress_o
+  output logic                compound_txn_in_progress_o,
+  input  mubi4_t              readback_en_i,
+  output logic                readback_error_o,
+  input  logic                wr_collision_i,
+  input  logic                write_pending_i
 );
 
   localparam int SramByte = SramDw/8;
@@ -77,6 +82,31 @@ module tlul_adapter_sram
   logic rsp_fifo_error;
   logic intg_error;
   logic tlul_error;
+  logic readback_error;
+  logic sram_byte_readback_error;
+
+  // readback check
+  logic readback_error_q;
+  if (EnableReadback) begin : gen_cmd_readback_check
+    assign readback_error = sram_byte_readback_error;
+    // permanently latch readback error until reset
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        readback_error_q <= '0;
+      end else if (readback_error) begin
+        readback_error_q <= 1'b1;
+      end
+    end
+  end else begin : gen_no_readback_check
+    logic unused_sram_byte_readback_error;
+    assign unused_sram_byte_readback_error = sram_byte_readback_error;
+    assign readback_error = '0;
+    assign readback_error_q = '0;
+  end
+
+  // readback error output is permanent and should be used for alert generation
+  // or other downstream effects
+  assign readback_error_o = readback_error | readback_error_q;
 
   // integrity check
   if (CmdIntgCheck) begin : gen_cmd_intg_check
@@ -162,7 +192,8 @@ module tlul_adapter_sram
   // byte handling for integrity
   tlul_sram_byte #(
     .EnableIntg(ByteAccess & EnableDataIntgPt & !ErrOnWrite),
-    .Outstanding(Outstanding)
+    .Outstanding(Outstanding),
+    .EnableReadback(EnableReadback)
   ) u_sram_byte (
     .clk_i,
     .rst_ni,
@@ -172,7 +203,11 @@ module tlul_adapter_sram
     .tl_sram_i(tl_o_int),
     .error_i(error_det),
     .error_o(error_internal),
-    .rmw_in_progress_o
+    .alert_o(sram_byte_readback_error),
+    .compound_txn_in_progress_o,
+    .readback_en_i,
+    .wr_collision_i,
+    .write_pending_i
   );
 
   typedef struct packed {

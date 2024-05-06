@@ -12,6 +12,8 @@
 | sram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)         | 0x10     |        4 | Lock register for control register.          |
 | sram_ctrl.[`CTRL`](#ctrl)                       | 0x14     |        4 | SRAM ctrl register.                          |
 | sram_ctrl.[`SCR_KEY_ROTATED`](#scr_key_rotated) | 0x18     |        4 | Clearable SRAM key request status.           |
+| sram_ctrl.[`READBACK_REGWEN`](#readback_regwen) | 0x1c     |        4 | Lock register for readback enable register.  |
+| sram_ctrl.[`READBACK`](#readback)               | 0x20     |        4 | readback enable.                             |
 
 ## ALERT_TEST
 Alert Test Register
@@ -34,23 +36,29 @@ Alert Test Register
 SRAM status register.
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READBACK_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
-|  31:6  |        |         | Reserved                                          |
+|  31:7  |        |         | Reserved                                          |
+|   6    |   ro   |   0x0   | [READBACK_ERROR](#status--readback_error)         |
 |   5    |   ro   |   0x0   | [INIT_DONE](#status--init_done)                   |
 |   4    |   ro   |   0x0   | [SCR_KEY_SEED_VALID](#status--scr_key_seed_valid) |
 |   3    |   ro   |   0x0   | [SCR_KEY_VALID](#status--scr_key_valid)           |
 |   2    |   ro   |   0x0   | [ESCALATED](#status--escalated)                   |
 |   1    |   ro   |   0x0   | [INIT_ERROR](#status--init_error)                 |
 |   0    |   ro   |   0x0   | [BUS_INTEG_ERROR](#status--bus_integ_error)       |
+
+### STATUS . READBACK_ERROR
+This bit is set to 1 if a SRAM readback check failed.
+This error triggers a fatal_error alert.
+This condition is terminal.
 
 ### STATUS . INIT_DONE
 Set to 1 if the hardware initialization triggered via [`CTRL.INIT`](#ctrl) has completed.
@@ -200,6 +208,46 @@ SW can use this for a hardened acknowledgement mechanism where it clears the reg
 
 kMultiBitBool4True indicates that a valid scrambling key has been obtained from OTP.
 Write kMultiBitBool4True to clear.
+
+## READBACK_REGWEN
+Lock register for readback enable register.
+- Offset: `0x1c`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "READBACK_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+```
+
+|  Bits  |  Type  |  Reset  | Name            | Description                                                               |
+|:------:|:------:|:-------:|:----------------|:--------------------------------------------------------------------------|
+|  31:1  |        |         |                 | Reserved                                                                  |
+|   0    |  rw0c  |   0x1   | READBACK_REGWEN | When cleared to zero, [`READBACK`](#readback) can not be written anymore. |
+
+## READBACK
+readback enable.
+- Offset: `0x20`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+- Register enable: [`READBACK_REGWEN`](#readback_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                |
+|:------:|:------:|:-------:|:--------------------|
+|  31:4  |        |         | Reserved            |
+|  3:0   |   rw   |   0x9   | [EN](#readback--en) |
+
+### READBACK . EN
+Write kMultiBitBool4True to this field to enable the readback security feature for the SRAM.
+A readback of each memory write or read request will be performed and a comparison happens.
+Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
 
 This interface does not expose any registers.
 <!-- END CMDGEN -->

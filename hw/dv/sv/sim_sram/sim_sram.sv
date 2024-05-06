@@ -71,16 +71,20 @@ module sim_sram #(
       .tl_i(tl_in_i),
       .tl_o(tl_in_o),
 
-      .req_o            (sram_req),
-      .gnt_i            (1'b1),
-      .we_o             (sram_we),
-      .addr_o           (sram_addr),
-      .wdata_o          (sram_wdata),
-      .wmask_o          (sram_wmask),
-      .rdata_i          (sram_rdata),
-      .rvalid_i         (sram_rvalid),
-      .rerror_i         (2'b00),
-      .rmw_in_progress_o()
+      .req_o                      (sram_req),
+      .gnt_i                      (1'b1),
+      .we_o                       (sram_we),
+      .addr_o                     (sram_addr),
+      .wdata_o                    (sram_wdata),
+      .wmask_o                    (sram_wmask),
+      .rdata_i                    (sram_rdata),
+      .rvalid_i                   (sram_rvalid),
+      .rerror_i                   (2'b00),
+      .compound_txn_in_progress_o (),
+      .readback_en_i              (prim_mubi_pkg::MuBi4False),
+      .readback_error_o           (),
+      .wr_collision_i             (1'b0),
+      .write_pending_i            (1'b0)
     );
 
     prim_ram_1p #(

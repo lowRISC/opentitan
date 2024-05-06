@@ -545,7 +545,7 @@ extern "C" {
  * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
  * `TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x20u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
@@ -851,7 +851,7 @@ extern "C" {
  * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR and
  * `TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x20u
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for ram device on sram_ctrl_main in top earlgrey.

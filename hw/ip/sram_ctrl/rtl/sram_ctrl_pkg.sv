@@ -31,6 +31,4 @@ package sram_ctrl_pkg;
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
     160'h438131ae2cb71ffdd2e4c29a1f412231747cd7b2
   };
-
-
 endpackage : sram_ctrl_pkg

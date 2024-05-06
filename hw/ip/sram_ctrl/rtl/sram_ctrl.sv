@@ -140,8 +140,12 @@ module sram_ctrl
   assign hw2reg.status.init_error.d  = 1'b1;
   assign hw2reg.status.init_error.de = init_error;
 
+  logic readback_error;
+  assign hw2reg.status.readback_error.d  = 1'b1;
+  assign hw2reg.status.readback_error.de = readback_error;
+
   logic alert_req;
-  assign alert_req = (|bus_integ_error) | init_error;
+  assign alert_req = (|bus_integ_error) | init_error | readback_error;
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
@@ -183,15 +187,17 @@ module sram_ctrl
   logic local_esc, local_esc_reg;
   // This signal only aggregates registered escalation signals and is used for transaction
   // blocking further below, which is on a timing-critical path.
-  assign local_esc_reg = reg2hw.status.escalated.q  |
-                         reg2hw.status.init_error.q |
-                         reg2hw.status.bus_integ_error.q;
+  assign local_esc_reg = reg2hw.status.escalated.q       |
+                         reg2hw.status.init_error.q      |
+                         reg2hw.status.bus_integ_error.q |
+                         reg2hw.status.readback_error.q;
   // This signal aggregates all escalation trigger signals, including the ones that are generated in
   // the same cycle such as init_error and bus_integ_error. It is used for countermeasures that are
   // not on the critical path (such as clearing the scrambling keys).
   assign local_esc = escalate           |
                      init_error         |
                      (|bus_integ_error) |
+                     readback_error     |
                      local_esc_reg;
 
   // Convert registered, local escalation sources to a multibit signal and combine this with
@@ -444,8 +450,14 @@ module sram_ctrl
   logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid;
   logic [AddrWidth-1:0] sram_addr;
   logic [DataWidth-1:0] sram_wdata, sram_wmask, sram_rdata;
+  logic                 sram_wpending, sram_wr_collision;
 
-  logic sram_rmw_in_progress;
+  logic sram_compound_txn_in_progress;
+
+
+  // // SEC_CM: MEM.READBACK
+  mubi4_t reg_readback_en;
+  assign reg_readback_en = mubi4_t'(reg2hw.readback.q);
 
   tlul_adapter_sram #(
     .SramAw(AddrWidth),
@@ -456,26 +468,31 @@ module sram_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1), // SEC_CM: MEM.INTEGRITY
-    .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
+    .SecFifoPtr      (1), // SEC_CM: TLUL_FIFO.CTR.REDUN
+    .EnableReadback  (1)  // SEC_CM: MEM.READBACK
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i             (ram_tl_in_gated),
-    .tl_o             (ram_tl_out_gated),
-    .en_ifetch_i      (en_ifetch),
-    .req_o            (tlul_req),
-    .req_type_o       (),
-    .gnt_i            (tlul_gnt),
-    .we_o             (tlul_we),
-    .addr_o           (tlul_addr),
-    .wdata_o          (tlul_wdata),
-    .wmask_o          (tlul_wmask),
+    .tl_i                       (ram_tl_in_gated),
+    .tl_o                       (ram_tl_out_gated),
+    .en_ifetch_i                (en_ifetch),
+    .req_o                      (tlul_req),
+    .req_type_o                 (),
+    .gnt_i                      (tlul_gnt),
+    .we_o                       (tlul_we),
+    .addr_o                     (tlul_addr),
+    .wdata_o                    (tlul_wdata),
+    .wmask_o                    (tlul_wmask),
     // SEC_CM: BUS.INTEGRITY
-    .intg_error_o     (bus_integ_error[1]),
-    .rdata_i          (sram_rdata),
-    .rvalid_i         (sram_rvalid),
-    .rerror_i         ('0),
-    .rmw_in_progress_o(sram_rmw_in_progress)
+    .intg_error_o               (bus_integ_error[1]),
+    .rdata_i                    (sram_rdata),
+    .rvalid_i                   (sram_rvalid),
+    .rerror_i                   ('0),
+    .compound_txn_in_progress_o (sram_compound_txn_in_progress),
+    .readback_en_i              (reg_readback_en),
+    .readback_error_o           (readback_error),
+    .wr_collision_i             (sram_wr_collision),
+    .write_pending_i            (sram_wpending)
   );
 
   logic key_valid;
@@ -500,12 +517,12 @@ module sram_ctrl
   // reset, where the keys are reset to the default netlist constant.
   //
   // If we have escalated, but there is a pending request in the TL gate, we may have a pending
-  // read-modify-write transaction in the SRAM adapter. In that case we force key_valid high to
-  // enable that to complete so it returns a response, the TL gate won't accept any new
+  // read-modify-write transaction or readback in the SRAM adapter. In that case we force key_valid
+  // high to enable that to complete so it returns a response, the TL gate won't accept any new
   // transactions and the SRAM keys have been clobbered already.
   assign key_valid =
     (key_req_pending_q)         ? 1'b0 :
-    (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & sram_rmw_in_progress) : 1'b1;
+    (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & sram_compound_txn_in_progress) : 1'b1;
 
   // SEC_CM: MEM.SCRAMBLE, ADDR.SCRAMBLE
   prim_ram_1p_scr #(
@@ -517,22 +534,24 @@ module sram_ctrl
     .clk_i,
     .rst_ni,
 
-    .key_valid_i (key_valid),
-    .key_i       (key_q),
-    .nonce_i     (nonce_q[NonceWidth-1:0]),
+    .key_valid_i      (key_valid),
+    .key_i            (key_q),
+    .nonce_i          (nonce_q[NonceWidth-1:0]),
 
-    .req_i       (sram_req),
-    .intg_error_i(sram_intg_error),
-    .gnt_o       (sram_gnt),
-    .write_i     (sram_we),
-    .addr_i      (sram_addr),
-    .wdata_i     (sram_wdata),
-    .wmask_i     (sram_wmask),
-    .rdata_o     (sram_rdata),
-    .rvalid_o    (sram_rvalid),
-    .rerror_o    ( ),
-    .raddr_o     ( ),
-    .cfg_i
+    .req_i            (sram_req),
+    .intg_error_i     (sram_intg_error),
+    .gnt_o            (sram_gnt),
+    .write_i          (sram_we),
+    .addr_i           (sram_addr),
+    .wdata_i          (sram_wdata),
+    .wmask_i          (sram_wmask),
+    .rdata_o          (sram_rdata),
+    .rvalid_o         (sram_rvalid),
+    .rerror_o         ( ),
+    .raddr_o          ( ),
+    .cfg_i,
+    .wr_collision_o   (sram_wr_collision),
+    .write_pending_o  (sram_wpending)
   );
 
   logic unused_sram_gnt;
@@ -567,6 +586,10 @@ module sram_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FifoRptrCheck_A,
       u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
+
+  // Alert assertions for sparse FSM.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlSramByteFsm_A,
+      u_tlul_adapter_sram.u_sram_byte.gen_integ_handling.u_state_regs, alert_tx_o[0])
 
   // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that
   // `tlul_gnt` is the same as `sram_gnt` when there's an active `tlul_req` that isn't being ignored

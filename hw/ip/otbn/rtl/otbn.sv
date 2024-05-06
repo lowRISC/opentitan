@@ -234,6 +234,8 @@ module otbn
   logic imem_req;
   logic imem_gnt;
   logic imem_write;
+  logic imem_wr_collision;
+  logic imem_wpending;
   logic [ImemIndexWidth-1:0] imem_index;
   logic [38:0] imem_wdata;
   logic [38:0] imem_wmask;
@@ -353,7 +355,10 @@ module otbn
     .rvalid_o(imem_rvalid),
     .raddr_o (),
     .rerror_o(),
-    .cfg_i   (ram_cfg_i)
+    .cfg_i   (ram_cfg_i),
+
+    .wr_collision_o   (imem_wr_collision),
+    .write_pending_o  (imem_wpending)
   );
 
   // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
@@ -374,22 +379,26 @@ module otbn
     .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram_imem (
     .clk_i,
-    .rst_ni           (rst_n),
-    .tl_i             (tl_win_h2d[TlWinImem]),
-    .tl_o             (tl_win_d2h[TlWinImem]),
-    .en_ifetch_i      (MuBi4False),
-    .req_o            (imem_req_bus),
-    .req_type_o       (),
-    .gnt_i            (imem_gnt_bus),
-    .we_o             (imem_write_bus),
-    .addr_o           (imem_index_bus),
-    .wdata_o          (imem_wdata_bus),
-    .wmask_o          (imem_wmask_bus),
-    .intg_error_o     (imem_bus_intg_violation),
-    .rdata_i          (imem_rdata_bus),
-    .rvalid_i         (imem_rvalid_bus),
-    .rerror_i         (imem_rerror_bus),
-    .rmw_in_progress_o()
+    .rst_ni                     (rst_n),
+    .tl_i                       (tl_win_h2d[TlWinImem]),
+    .tl_o                       (tl_win_d2h[TlWinImem]),
+    .en_ifetch_i                (MuBi4False),
+    .req_o                      (imem_req_bus),
+    .req_type_o                 (),
+    .gnt_i                      (imem_gnt_bus),
+    .we_o                       (imem_write_bus),
+    .addr_o                     (imem_index_bus),
+    .wdata_o                    (imem_wdata_bus),
+    .wmask_o                    (imem_wmask_bus),
+    .intg_error_o               (imem_bus_intg_violation),
+    .rdata_i                    (imem_rdata_bus),
+    .rvalid_i                   (imem_rvalid_bus),
+    .rerror_i                   (imem_rerror_bus),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (imem_wr_collision),
+    .write_pending_i            (imem_wpending)
   );
 
 
@@ -519,6 +528,8 @@ module otbn
   logic [31:0] dmem_wdata_narrow_bus;
   logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
   logic dmem_rvalid_bus;
+  logic dmem_wr_collision;
+  logic dmem_wpending;
   logic [1:0] dmem_rerror_bus;
 
   logic dmem_bus_intg_violation;
@@ -556,7 +567,10 @@ module otbn
     .rvalid_o(dmem_rvalid),
     .raddr_o (),
     .rerror_o(),
-    .cfg_i   (ram_cfg_i)
+    .cfg_i   (ram_cfg_i),
+
+    .wr_collision_o   (dmem_wr_collision),
+    .write_pending_o  (dmem_wpending)
   );
 
   // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
@@ -613,22 +627,26 @@ module otbn
     .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram_dmem (
     .clk_i,
-    .rst_ni           (rst_n),
-    .tl_i             (tl_win_h2d[TlWinDmem]),
-    .tl_o             (tl_win_d2h[TlWinDmem]),
-    .en_ifetch_i      (MuBi4False),
-    .req_o            (dmem_req_bus),
-    .req_type_o       (),
-    .gnt_i            (dmem_gnt_bus),
-    .we_o             (dmem_write_bus),
-    .addr_o           (dmem_index_bus),
-    .wdata_o          (dmem_wdata_bus),
-    .wmask_o          (dmem_wmask_bus),
-    .intg_error_o     (dmem_bus_intg_violation),
-    .rdata_i          (dmem_rdata_bus),
-    .rvalid_i         (dmem_rvalid_bus),
-    .rerror_i         (dmem_rerror_bus),
-    .rmw_in_progress_o()
+    .rst_ni                     (rst_n),
+    .tl_i                       (tl_win_h2d[TlWinDmem]),
+    .tl_o                       (tl_win_d2h[TlWinDmem]),
+    .en_ifetch_i                (MuBi4False),
+    .req_o                      (dmem_req_bus),
+    .req_type_o                 (),
+    .gnt_i                      (dmem_gnt_bus),
+    .we_o                       (dmem_write_bus),
+    .addr_o                     (dmem_index_bus),
+    .wdata_o                    (dmem_wdata_bus),
+    .wmask_o                    (dmem_wmask_bus),
+    .intg_error_o               (dmem_bus_intg_violation),
+    .rdata_i                    (dmem_rdata_bus),
+    .rvalid_i                   (dmem_rvalid_bus),
+    .rerror_i                   (dmem_rerror_bus),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (dmem_wr_collision),
+    .write_pending_i            (dmem_wpending)
   );
 
   // Mux core and bus access into dmem

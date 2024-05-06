@@ -204,6 +204,9 @@
     { name: "MEM.INTEGRITY",
       desc: "End-to-end data/memory integrity scheme."
     }
+    { name: "MEM.READBACK",
+      desc: "Each read and write is checked with a readback."
+    }
     { name: "MEM.SCRAMBLE",
       desc: "Data is scrambled with a keyed reduced-round PRINCE cipher in CTR mode."
     }
@@ -302,6 +305,15 @@
                   ''',
             resval: 0,
           }
+          { bits: "6"
+            name: "READBACK_ERROR"
+            desc: '''
+                  This bit is set to 1 if a SRAM readback check failed.
+                  This error triggers a fatal_error alert.
+                  This condition is terminal.
+                  ''',
+            resval: 0,
+          }
         ]
       }
       { name: "EXEC_REGWEN",
@@ -397,6 +409,41 @@
 
                   kMultiBitBool4True indicates that a valid scrambling key has been obtained from OTP.
                   Write kMultiBitBool4True to clear.
+                  ''',
+            resval: false
+          },
+        ]
+      }
+      { name: "READBACK_REGWEN",
+        desc: "Lock register for readback enable register.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+        fields: [
+          { bits: "0"
+            desc: '''
+                  When cleared to zero, !!READBACK can not be written anymore.
+                  ''',
+            resval: 1
+          }
+        ]
+      }
+      { name: "READBACK",
+        desc: "readback enable.",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "READBACK_REGWEN"
+        tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+        fields: [
+          { bits: "3:0",
+            name: "EN",
+            mubi: true,
+            desc: '''
+                  Write kMultiBitBool4True to this field to enable the readback security feature for the SRAM.
+                  A readback of each memory write or read request will be performed and a comparison happens.
+                  Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
                   ''',
             resval: false
           },

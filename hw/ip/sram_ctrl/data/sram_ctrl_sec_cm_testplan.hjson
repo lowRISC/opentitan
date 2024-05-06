@@ -92,6 +92,15 @@
       tests: ["{name}_passthru_mem_tl_intg_err"]
     }
     {
+      name: sec_cm_mem_readback
+      desc: '''Verify the countermeasure(s) MEM.READBACK.
+
+        Test needs to be implemented, see lowRISC/opentitan#23322.
+      '''
+      stage: V2S
+      tests: ["{name}_smoke"]
+    }
+    {
       name: sec_cm_mem_scramble
       desc: '''Verify the countermeasure(s) MEM.SCRAMBLE.
 
