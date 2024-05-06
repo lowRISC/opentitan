@@ -182,8 +182,16 @@ module prim_diff_decode #(
     // one reg for edge detection
     assign diff_pd = diff_pi;
 
-    // incorrect encoding -> signal integrity issue
-    assign sigint_o = ~(diff_pi ^ diff_ni);
+    // Raise a signal integrity error when the differential signals have equal values.  This is
+    // implemented with a `prim_xnor2` instead of behavioral code to prevent the synthesis tool from
+    // optimizing away combinational logic on the complementary differential signals.
+    prim_xnor2 #(
+      .Width (1)
+    ) u_xnor2_sigint (
+      .in0_i (diff_pi),
+      .in1_i (diff_ni),
+      .out_o (sigint_o)
+    );
 
     assign level_o = (sigint_o) ? level_q : diff_pi;
     assign level_d = level_o;
