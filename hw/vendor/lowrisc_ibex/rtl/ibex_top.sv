@@ -571,24 +571,26 @@ module ibex_top import ibex_pkg::*; #(
           .clk_i,
           .rst_ni,
 
-          .key_valid_i (scramble_key_valid_q),
-          .key_i       (scramble_key_q),
-          .nonce_i     (scramble_nonce_q),
+          .key_valid_i      (scramble_key_valid_q),
+          .key_i            (scramble_key_q),
+          .nonce_i          (scramble_nonce_q),
 
-          .req_i       (ic_tag_req[way]),
+          .req_i            (ic_tag_req[way]),
 
-          .gnt_o       (),
-          .write_i     (ic_tag_write),
-          .addr_i      (ic_tag_addr),
-          .wdata_i     (ic_tag_wdata),
-          .wmask_i     ({TagSizeECC{1'b1}}),
-          .intg_error_i(1'b0),
+          .gnt_o            (),
+          .write_i          (ic_tag_write),
+          .addr_i           (ic_tag_addr),
+          .wdata_i          (ic_tag_wdata),
+          .wmask_i          ({TagSizeECC{1'b1}}),
+          .intg_error_i     (1'b0),
 
-          .rdata_o     (ic_tag_rdata[way]),
-          .rvalid_o    (),
-          .raddr_o     (),
-          .rerror_o    (),
-          .cfg_i       (ram_cfg_i)
+          .rdata_o          (ic_tag_rdata[way]),
+          .rvalid_o         (),
+          .raddr_o          (),
+          .rerror_o         (),
+          .cfg_i            (ram_cfg_i),
+          .wr_collision_o   (),
+          .write_pending_o  ()
         );
 
         // Data RAM instantiation
@@ -604,24 +606,26 @@ module ibex_top import ibex_pkg::*; #(
           .clk_i,
           .rst_ni,
 
-          .key_valid_i (scramble_key_valid_q),
-          .key_i       (scramble_key_q),
-          .nonce_i     (scramble_nonce_q),
+          .key_valid_i      (scramble_key_valid_q),
+          .key_i            (scramble_key_q),
+          .nonce_i          (scramble_nonce_q),
 
-          .req_i       (ic_data_req[way]),
+          .req_i            (ic_data_req[way]),
 
-          .gnt_o       (),
-          .write_i     (ic_data_write),
-          .addr_i      (ic_data_addr),
-          .wdata_i     (ic_data_wdata),
-          .wmask_i     ({LineSizeECC{1'b1}}),
-          .intg_error_i(1'b0),
+          .gnt_o            (),
+          .write_i          (ic_data_write),
+          .addr_i           (ic_data_addr),
+          .wdata_i          (ic_data_wdata),
+          .wmask_i          ({LineSizeECC{1'b1}}),
+          .intg_error_i     (1'b0),
 
-          .rdata_o     (ic_data_rdata[way]),
-          .rvalid_o    (),
-          .raddr_o     (),
-          .rerror_o    (),
-          .cfg_i       (ram_cfg_i)
+          .rdata_o          (ic_data_rdata[way]),
+          .rvalid_o         (),
+          .raddr_o          (),
+          .rerror_o         (),
+          .cfg_i            (ram_cfg_i),
+          .wr_collision_o   (),
+          .write_pending_o  ()
         );
 
         `ifdef INC_ASSERT

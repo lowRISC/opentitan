@@ -299,7 +299,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for regs device on sram_ctrl_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
@@ -469,7 +469,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for regs device on sram_ctrl_main in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for ram device on sram_ctrl_main in top earlgrey.

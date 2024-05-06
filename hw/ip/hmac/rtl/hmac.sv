@@ -579,21 +579,26 @@ module hmac
   ) u_tlul_adapter (
     .clk_i,
     .rst_ni,
-    .tl_i             (tl_win_h2d),
-    .tl_o             (tl_win_d2h),
-    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-    .req_o            (msg_fifo_req   ),
-    .req_type_o       (               ),
-    .gnt_i            (msg_fifo_gnt   ),
-    .we_o             (msg_fifo_we    ),
-    .addr_o           (               ), // Doesn't care the address other than sub-word
-    .wdata_o          (msg_fifo_wdata ),
-    .wmask_o          (msg_fifo_wmask ),
-    .intg_error_o     (               ),
-    .rdata_i          (msg_fifo_rdata ),
-    .rvalid_i         (msg_fifo_rvalid),
-    .rerror_i         (msg_fifo_rerror),
-    .rmw_in_progress_o()
+    .tl_i                       (tl_win_h2d),
+    .tl_o                       (tl_win_d2h),
+    .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+    .req_o                      (msg_fifo_req   ),
+    .req_type_o                 (               ),
+    .gnt_i                      (msg_fifo_gnt   ),
+    .we_o                       (msg_fifo_we    ),
+    .addr_o                     (               ), // Doesn't care the address
+                                                   // other than sub-word
+    .wdata_o                    (msg_fifo_wdata ),
+    .wmask_o                    (msg_fifo_wmask ),
+    .intg_error_o               (               ),
+    .rdata_i                    (msg_fifo_rdata ),
+    .rvalid_i                   (msg_fifo_rvalid),
+    .rerror_i                   (msg_fifo_rerror),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (1'b0),
+    .write_pending_i            (1'b0)
   );
 
   // TL-UL to MSG_FIFO byte write handling

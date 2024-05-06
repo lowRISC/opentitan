@@ -593,7 +593,7 @@
       [
         {
           base_addr: 0x411c0000
-          size_byte: 0x20
+          size_byte: 0x40
         }
       ]
       xbar: false

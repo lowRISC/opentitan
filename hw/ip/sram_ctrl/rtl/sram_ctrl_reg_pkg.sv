@@ -10,7 +10,7 @@ package sram_ctrl_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int RegsAw = 5;
+  parameter int RegsAw = 6;
   parameter int RamAw = 1;
 
   ///////////////////////////////////////////////
@@ -23,6 +23,9 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } readback_error;
     struct packed {
       logic        q;
     } init_done;
@@ -56,6 +59,10 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
+    logic [3:0]  q;
+  } sram_ctrl_reg2hw_readback_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -80,6 +87,10 @@ package sram_ctrl_reg_pkg;
       logic        d;
       logic        de;
     } init_done;
+    struct packed {
+      logic        d;
+      logic        de;
+    } readback_error;
   } sram_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -89,26 +100,29 @@ package sram_ctrl_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [14:13]
-    sram_ctrl_reg2hw_status_reg_t status; // [12:8]
-    sram_ctrl_reg2hw_exec_reg_t exec; // [7:4]
-    sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [3:0]
+    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [19:18]
+    sram_ctrl_reg2hw_status_reg_t status; // [17:12]
+    sram_ctrl_reg2hw_exec_reg_t exec; // [11:8]
+    sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [7:4]
+    sram_ctrl_reg2hw_readback_reg_t readback; // [3:0]
   } sram_ctrl_regs_reg2hw_t;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    sram_ctrl_hw2reg_status_reg_t status; // [16:5]
+    sram_ctrl_hw2reg_status_reg_t status; // [18:5]
     sram_ctrl_hw2reg_scr_key_rotated_reg_t scr_key_rotated; // [4:0]
   } sram_ctrl_regs_hw2reg_t;
 
   // Register offsets for regs interface
-  parameter logic [RegsAw-1:0] SRAM_CTRL_ALERT_TEST_OFFSET = 5'h 0;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_STATUS_OFFSET = 5'h 4;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_REGWEN_OFFSET = 5'h 8;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_OFFSET = 5'h c;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 10;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h 14;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_SCR_KEY_ROTATED_OFFSET = 5'h 18;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_ALERT_TEST_OFFSET = 6'h 0;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_STATUS_OFFSET = 6'h 4;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_REGWEN_OFFSET = 6'h 8;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_OFFSET = 6'h c;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 6'h 10;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 6'h 14;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_SCR_KEY_ROTATED_OFFSET = 6'h 18;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_READBACK_REGWEN_OFFSET = 6'h 1c;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_READBACK_OFFSET = 6'h 20;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
@@ -122,18 +136,22 @@ package sram_ctrl_reg_pkg;
     SRAM_CTRL_EXEC,
     SRAM_CTRL_CTRL_REGWEN,
     SRAM_CTRL_CTRL,
-    SRAM_CTRL_SCR_KEY_ROTATED
+    SRAM_CTRL_SCR_KEY_ROTATED,
+    SRAM_CTRL_READBACK_REGWEN,
+    SRAM_CTRL_READBACK
   } sram_ctrl_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [7] = '{
+  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [9] = '{
     4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST
     4'b 0001, // index[1] SRAM_CTRL_STATUS
     4'b 0001, // index[2] SRAM_CTRL_EXEC_REGWEN
     4'b 0001, // index[3] SRAM_CTRL_EXEC
     4'b 0001, // index[4] SRAM_CTRL_CTRL_REGWEN
     4'b 0001, // index[5] SRAM_CTRL_CTRL
-    4'b 0001  // index[6] SRAM_CTRL_SCR_KEY_ROTATED
+    4'b 0001, // index[6] SRAM_CTRL_SCR_KEY_ROTATED
+    4'b 0001, // index[7] SRAM_CTRL_READBACK_REGWEN
+    4'b 0001  // index[8] SRAM_CTRL_READBACK
   };
 
 endpackage

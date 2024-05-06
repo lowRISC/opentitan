@@ -84,7 +84,11 @@ module spi_host_window (
     .rdata_i('0),
     .rvalid_i('0),
     .rerror_i('0),
-    .rmw_in_progress_o()
+    .compound_txn_in_progress_o(),
+    .readback_en_i(prim_mubi_pkg::MuBi4False),
+    .readback_error_o (),
+    .wr_collision_i(1'b0),
+    .write_pending_i(1'b0)
   );
 
 endmodule : spi_host_window

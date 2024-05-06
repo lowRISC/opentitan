@@ -64,19 +64,23 @@ module kmac_staterd
 
     .tl_i,
     .tl_o,
-    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-    .req_o            (tlram_req),
-    .req_type_o       (),
-    .gnt_i            (tlram_gnt),
-    .we_o             (tlram_we ),
-    .addr_o           (tlram_addr),
-    .wdata_o          (unused_tlram_wdata),
-    .wmask_o          (unused_tlram_wmask),
-    .intg_error_o     (),
-    .rdata_i          (tlram_rdata),
-    .rvalid_i         (tlram_rvalid),
-    .rerror_i         (tlram_rerror),
-    .rmw_in_progress_o()
+    .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+    .req_o                      (tlram_req),
+    .req_type_o                 (),
+    .gnt_i                      (tlram_gnt),
+    .we_o                       (tlram_we ),
+    .addr_o                     (tlram_addr),
+    .wdata_o                    (unused_tlram_wdata),
+    .wmask_o                    (unused_tlram_wmask),
+    .intg_error_o               (),
+    .rdata_i                    (tlram_rdata),
+    .rvalid_i                   (tlram_rvalid),
+    .rerror_i                   (tlram_rerror),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (1'b0),
+    .write_pending_i            (1'b0)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

@@ -11,12 +11,18 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   `uvm_object_param_utils(sram_ctrl_base_vseq#(AddrWidth))
   `uvm_object_new
 
+  rand mubi4_t readback_en;
+
   // various knobs to enable certain routines
   bit do_sram_ctrl_init = 1'b1;
 
   bit stress_pipeline = 1'b0;
 
   int partial_access_pct = 10;
+
+  constraint readback_en_c {
+    soft readback_en inside {MuBi4True, MuBi4False};
+  }
 
   virtual task pre_start();
     super.pre_start();
@@ -29,7 +35,39 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_sram_ctrl_init) sram_ctrl_init();
+    sram_readback_en();
   endtask
+
+  // Enable readback feature only for non-throughput and non-sec_cm tests. The
+  // readback feature is randomly initialized to on/off at the start of the test
+  // and randomly switched during the tests.
+  // TODO(#23321) Adapt the troughput tests to take the delay caused by the
+  // readback feature into account.
+  virtual task sram_readback_en();
+  if (uvm_re_match("*throughput*", get_type_name()) &&
+      uvm_re_match("*sec_cm*", get_type_name()) &&
+      uvm_re_match("*throughput*", common_seq_type) &&
+      uvm_re_match("*sec_cm*", common_seq_type)) begin
+      // Configure the SRAM TLUL agent to wait at least 2 cycles before dropping
+      // a request.
+      cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_min = 2;
+      // Init the readback enable randomly to true or false.
+      csr_wr(.ptr(ral.readback), .value(readback_en));
+      // Randomly toggle the readback enable during the test.
+      fork
+        begin
+          forever begin
+            cfg.clk_rst_vif.wait_clks($urandom_range(10, 10_000));
+            csr_utils_pkg::wait_no_outstanding_access();
+            std::randomize(readback_en) with {
+              readback_en inside {MuBi4True, MuBi4False};};
+            csr_wr(.ptr(ral.readback), .value(readback_en));
+            `uvm_info(`gfn, "Update READBACK Value", UVM_LOW)
+          end
+        end
+      join_none
+    end
+  endtask : sram_readback_en
 
   virtual task apply_reset(string kind = "HARD");
     cfg.lc_vif.init();

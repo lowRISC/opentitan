@@ -83,7 +83,11 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   output logic [31:0]               raddr_o,  // Read address for error reporting.
 
   // config
-  input ram_1p_cfg_t                cfg_i
+  input ram_1p_cfg_t                cfg_i,
+
+  // Write currently pending inside this module.
+  output logic                      wr_collision_o,
+  output logic                      write_pending_o
 );
 
   //////////////////////
@@ -135,6 +139,14 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // New read write collision
   logic rw_collision;
   assign rw_collision = write_en_q & read_en;
+
+  // Write currently processed inside this module. Although we are sending an immediate d_valid
+  // back to the host, the write could take longer due to the scrambling.
+  assign write_pending_o = macro_write | write_en_d;
+
+  // When a read is followed after a write with the same address, we return the data from the
+  // holding register.
+  assign wr_collision_o = addr_collision_q;
 
   ////////////////////////
   // Address Scrambling //

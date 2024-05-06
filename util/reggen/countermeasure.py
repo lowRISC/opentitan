@@ -44,6 +44,7 @@ CM_TYPES = [
     'SHADOW',
     'SCRAMBLE',
     'INTEGRITY',
+    'READBACK',
     'CONSISTENCY',
     'DIGEST',
     'LC_GATED',
