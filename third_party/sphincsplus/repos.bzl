@@ -9,15 +9,12 @@ def sphincsplus_repos(local = None):
     http_archive(
         name = "sphincsplus_kat",
         build_file = Label("//third_party/sphincsplus:BUILD.sphincsplus_common.bazel"),
-        strip_prefix = "NIST-PQ-Submission-SPHINCS-20201001/KAT",
-        sha256 = "798c9ef5a851cd92e52e6c2fcc8403530a5f827bf07bf542e3dfdf98c1916338",
+        sha256 = "95f5c79995ad8a3bc752c760f93ec409763cf2b23d1a7a7404219f26d665f7ab",
         urls = [
-            # Self-hosted GCB ZIP that contains only the 128s/SHAKE256 test
-            # vectors. The original archive hosted at
-            # https://sphincs.org/data/sphincs+-round3-submission-nist.zip
-            # which includes the test vectors for all versions is not included
-            # here because the checksum differs.
-            "https://storage.googleapis.com/ot-crypto-test-vectors/sphincsplus/sphincsplus_shake256_128s_round3.zip ",
+            # Self-hosted GCP ZIP that contains the 128s/SHAKE256 test
+            # vectors for the FIPS-205 Initial Public Draft (fips205-ipd),
+            # which does not have an official NIST-hosted release yet.
+            "https://storage.googleapis.com/ot-crypto-test-vectors/sphincsplus/sphincsplus_shake256_128s_fips205-ipd.zip",
         ],
     )
     http_archive_or_local(
