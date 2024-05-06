@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:xnor2
     files:
       - rtl/prim_diff_decode.sv
     file_type: systemVerilogSource
