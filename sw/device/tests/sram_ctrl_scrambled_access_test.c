@@ -279,23 +279,25 @@ static void check_sram_data(scramble_test_frame *mem_frame) {
       return;
   }
 
-  // Statistically there is always a chance that after changing the scrambling
-  // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
-  // minimum of false positives.
-  // Note: `false_positives` should be incremented across the tests, so we
-  // make it `static`.
-  static int32_t false_positives = 0;
-  LOG_INFO("Checking Ecc %d", reference_frame->ecc_error_counter);
-  CHECK(reference_frame->ecc_error_counter <= kTestBufferSizeWords);
-  false_positives += kTestBufferSizeWords - reference_frame->ecc_error_counter;
+  if (check_ecc_errors) {
+    LOG_INFO("Checking ECC error count of %d",
+             reference_frame->ecc_error_counter);
+    CHECK(reference_frame->ecc_error_counter <= kTestBufferSizeWords);
 
-  if (check_ecc_errors && false_positives > 0) {
+    // Statistically there is always a chance that after changing the scrambling
+    // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
+    // minimum of false positives.
+    uint32_t false_positives =
+        kTestBufferSizeWords - reference_frame->ecc_error_counter;
+
     CHECK(false_positives <= kEccErrorsFalsePositiveFloorLimit,
-          "Failed as it didn't generate enough ECC errors(%d/%d)",
+          "Too many expected ECC errors failed to trigger (%d > %d)",
           false_positives, kEccErrorsFalsePositiveFloorLimit);
 
-    LOG_INFO("Passing with a remark, %d words didn't generate ECC errors",
-             false_positives);
+    if (false_positives > 0) {
+      LOG_INFO("Passing with remark: %d words didn't give expected ECC errors",
+               false_positives);
+    }
   }
 
   if (kDeviceType == kDeviceSimDV) {
