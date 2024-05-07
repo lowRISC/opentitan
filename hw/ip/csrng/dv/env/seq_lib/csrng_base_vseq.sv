@@ -60,12 +60,13 @@ class csrng_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.ctrl));
   endtask
 
-  task wait_cmd_req_done();
+  task wait_cmd_req_done(uint exp_sts=CMD_STS_SUCCESS);
     // Sample while SW app is not ready
     cov_vif.cg_err_code_sample(.err_code(32'b0));
     csr_spinwait_or_edn_rst_n(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
     if (edn_under_reset()) return;
-    csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(CMD_STS_SUCCESS));
+    // TODO(#22219): Move this check to the scoreboard.
+    csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(exp_sts));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
 
@@ -89,7 +90,8 @@ class csrng_base_vseq extends cip_base_vseq #(
     )
   endtask
 
-  task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1);
+  task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1,
+                    csrng_cmd_sts_e exp_sts=CMD_STS_SUCCESS, bit await_genbits=1'b1);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
@@ -113,6 +115,8 @@ class csrng_base_vseq extends cip_base_vseq #(
         // Wait for ack
         if (edn_rst_as_ack) cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack_or_rst_n();
         else cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
+        // TODO(#22219): Move this check to the scoreboard.
+        `DV_CHECK(cfg.m_edn_agent_cfg[app].vif.mon_cb.cmd_rsp.csrng_rsp_sts == exp_sts);
       end
     end
     else begin
@@ -144,27 +148,24 @@ class csrng_base_vseq extends cip_base_vseq #(
           return;
         end
       end
-      if (await_response) begin
-        if (cs_item.acmd != csrng_pkg::GEN) begin
-          wait_cmd_req_done();
-        end
-        else begin
-          for (int i = 0; i < cs_item.glen; i++) begin
-            csr_spinwait_or_edn_rst_n(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
+      if ((cs_item.acmd == csrng_pkg::GEN) && await_genbits) begin
+        for (int i = 0; i < cs_item.glen; i++) begin
+          csr_spinwait_or_edn_rst_n(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
+          if (edn_under_reset()) begin
+            `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+            return;
+          end
+          for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/TL_DW; i++) begin
+            csr_rd(.ptr(ral.genbits.genbits), .value(rdata));
             if (edn_under_reset()) begin
               `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
               return;
             end
-            for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/TL_DW; i++) begin
-              csr_rd(.ptr(ral.genbits.genbits), .value(rdata));
-              if (edn_under_reset()) begin
-                `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
-                return;
-              end
-            end
           end
-          wait_cmd_req_done();
         end
+      end
+      if (await_response) begin
+        wait_cmd_req_done(exp_sts);
       end
     end
   endtask // send_cmd_req
