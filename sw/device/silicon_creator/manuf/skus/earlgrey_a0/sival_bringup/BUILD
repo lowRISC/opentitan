@@ -231,6 +231,7 @@ opentitan_binary(
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:dice",

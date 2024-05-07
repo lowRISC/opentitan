@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -16,6 +15,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
