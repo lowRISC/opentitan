@@ -178,7 +178,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     end
 
     // The next operation is disable, and key will be wiped and changed every cycle.
-    $assertoff(0, "tb.dut.top_earlgrey.u_kmac.u_kmac_core.KeyDataStable_M");
+    $assertoff(0, "tb.dut.top_earlgrey.u_kmac.u_kmac_core.KeyDataStableWhenValid_M");
   endtask
 
   virtual task check_kmac_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
