@@ -3735,6 +3735,7 @@ opentitan_test(
         tags = ["manual"],
         test_cmd = """
             --bootstrap="{firmware}"
+            --wake=reset
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
