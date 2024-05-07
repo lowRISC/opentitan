@@ -619,7 +619,7 @@
               particular endpoint will be ignored.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_disable_endpoint"]
     }
     {
       name: out_trans_nak
