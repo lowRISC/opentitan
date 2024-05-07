@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_sram_ctrl
+  name: sram_ctrl
   testpoints: [
     // SRAM (pre-verified IP) integration tests:
     {
