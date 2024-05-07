@@ -116,7 +116,7 @@ static dice_cert_key_id_pair_t cdi_1_key_ids = {
     .cert = &cdi_1_pubkey_id,
 };
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static manuf_certs_t dice_certs = {
+static manuf_certs_t tbs_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
     .cdi_0_certificate = {0},
@@ -348,8 +348,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
          kDiceCertKeyIdSizeInBytes);
   TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey,
-                              dice_certs.uds_tbs_certificate,
-                              &dice_certs.uds_tbs_certificate_size));
+                              tbs_certs.uds_tbs_certificate,
+                              &tbs_certs.uds_tbs_certificate_size));
 
   LOG_INFO("Generated UDS TBS certificate.");
 
@@ -362,11 +362,11 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(dice_cdi_0_cert_build(
       (hmac_digest_t *)certgen_inputs.rom_ext_measurement,
       certgen_inputs.rom_ext_security_version, &cdi_0_key_ids, &curr_pubkey,
-      dice_certs.cdi_0_certificate, &dice_certs.cdi_0_certificate_size));
+      tbs_certs.cdi_0_certificate, &tbs_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
-      /*offset=*/0, size_to_words(get_cert_size(dice_certs.cdi_0_certificate)),
-      dice_certs.cdi_0_certificate));
+      /*offset=*/0, size_to_words(get_cert_size(tbs_certs.cdi_0_certificate)),
+      tbs_certs.cdi_0_certificate));
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
@@ -379,11 +379,11 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
       certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
-      dice_certs.cdi_1_certificate, &dice_certs.cdi_1_certificate_size));
+      tbs_certs.cdi_1_certificate, &tbs_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
-      /*offset=*/0, size_to_words(get_cert_size(dice_certs.cdi_1_certificate)),
-      dice_certs.cdi_1_certificate));
+      /*offset=*/0, size_to_words(get_cert_size(tbs_certs.cdi_1_certificate)),
+      tbs_certs.cdi_1_certificate));
   LOG_INFO("Generated CDI_1 certificate.");
 
   hmac_digest_t pubkey_id;
@@ -395,27 +395,27 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   // Generate TPM EK keys and TBS.
   TRY(dice_attestation_keygen(kDiceKeyTpmEk, &pubkey_id, &curr_pubkey));
   TRY(dice_tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                 dice_certs.tpm_ek_tbs_certificate,
-                                 &dice_certs.tpm_ek_tbs_certificate_size));
+                                 tbs_certs.tpm_ek_tbs_certificate,
+                                 &tbs_certs.tpm_ek_tbs_certificate_size));
   LOG_INFO("Generated TPM EK TBS certificate.");
 
   TRY(dice_attestation_keygen(kDiceKeyTpmCek, &pubkey_id, &curr_pubkey));
   TRY(dice_tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                  dice_certs.tpm_cek_tbs_certificate,
-                                  &dice_certs.tpm_cek_tbs_certificate_size));
+                                  tbs_certs.tpm_cek_tbs_certificate,
+                                  &tbs_certs.tpm_cek_tbs_certificate_size));
   LOG_INFO("Generated TPM CEK TBS certificate.");
 
   TRY(dice_attestation_keygen(kDiceKeyTpmCik, &pubkey_id, &curr_pubkey));
   TRY(dice_tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                  dice_certs.tpm_cik_tbs_certificate,
-                                  &dice_certs.tpm_cik_tbs_certificate_size));
+                                  tbs_certs.tpm_cik_tbs_certificate,
+                                  &tbs_certs.tpm_cik_tbs_certificate_size));
   LOG_INFO("Generated TPM CIK TBS certificate.");
 
   // Export the certificates to the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Exporting DICE and TPM certificates ...");
-  RESP_OK(ujson_serialize_manuf_certs_t, uj, &dice_certs);
+  RESP_OK(ujson_serialize_manuf_certs_t, uj, &tbs_certs);
 
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
