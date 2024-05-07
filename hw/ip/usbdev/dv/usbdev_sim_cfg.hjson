@@ -61,6 +61,10 @@
       reseed: 1
     }
     {
+      name: usbdev_endpoint_access
+      uvm_test_seq: usbdev_endpoint_access_vseq
+    }
+    {
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
     }
