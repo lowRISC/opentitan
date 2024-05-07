@@ -27,7 +27,7 @@ manifest(d = {
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.SIVAL),
     "version_major": ROM_EXT_VERSION.MAJOR,
-    "version_minor": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
     "security_version": ROM_EXT_VERSION.SECURITY,
     "visibility": ["//visibility:private"],
 })
