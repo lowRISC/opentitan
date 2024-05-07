@@ -860,7 +860,8 @@ module usbdev
       .rdata_o    (mem_rdata),
       .rvalid_o   (mem_rvalid),
       .rerror_o   (mem_rerror),
-      .cfg_i      (ram_cfg_i)
+      .cfg_i      (ram_cfg_i),
+      .alert_o    ()
     );
   end : gen_no_stubbed_memory
 

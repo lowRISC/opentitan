@@ -130,6 +130,7 @@ module sram_ctrl_regs_reg_top (
   logic status_scr_key_seed_valid_qs;
   logic status_init_done_qs;
   logic status_readback_error_qs;
+  logic status_sram_alert_qs;
   logic exec_regwen_we;
   logic exec_regwen_qs;
   logic exec_regwen_wd;
@@ -361,6 +362,33 @@ module sram_ctrl_regs_reg_top (
 
     // to register interface (read)
     .qs     (status_readback_error_qs)
+  );
+
+  //   F[sram_alert]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_sram_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.status.sram_alert.de),
+    .d      (hw2reg.status.sram_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.sram_alert.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_sram_alert_qs)
   );
 
 
@@ -699,6 +727,7 @@ module sram_ctrl_regs_reg_top (
         reg_rdata_next[4] = status_scr_key_seed_valid_qs;
         reg_rdata_next[5] = status_init_done_qs;
         reg_rdata_next[6] = status_readback_error_qs;
+        reg_rdata_next[7] = status_sram_alert_qs;
       end
 
       addr_hit[2]: begin

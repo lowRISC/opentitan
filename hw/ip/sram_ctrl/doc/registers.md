@@ -1,6 +1,3 @@
-# Registers
-
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/sram_ctrl/data/sram_ctrl.hjson -->
 ## Summary of the **`regs`** interface's registers
 
 | Name                                            | Offset   |   Length | Description                                  |
@@ -36,17 +33,18 @@ Alert Test Register
 SRAM status register.
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x7f`
+- Reset mask: `0xff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READBACK_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READBACK_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SRAM_ALERT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
-|  31:7  |        |         | Reserved                                          |
+|  31:8  |        |         | Reserved                                          |
+|   7    |   ro   |   0x0   | [SRAM_ALERT](#status--sram_alert)                 |
 |   6    |   ro   |   0x0   | [READBACK_ERROR](#status--readback_error)         |
 |   5    |   ro   |   0x0   | [INIT_DONE](#status--init_done)                   |
 |   4    |   ro   |   0x0   | [SCR_KEY_SEED_VALID](#status--scr_key_seed_valid) |
@@ -54,6 +52,11 @@ SRAM status register.
 |   2    |   ro   |   0x0   | [ESCALATED](#status--escalated)                   |
 |   1    |   ro   |   0x0   | [INIT_ERROR](#status--init_error)                 |
 |   0    |   ro   |   0x0   | [BUS_INTEG_ERROR](#status--bus_integ_error)       |
+
+### STATUS . SRAM_ALERT
+This bit is set to 1 if a multi bit encoding error has been detected inside the RAM modules.
+This error triggers a fatal_error alert.
+This condition is terminal.
 
 ### STATUS . READBACK_ERROR
 This bit is set to 1 if a SRAM readback check failed.
@@ -250,4 +253,3 @@ A readback of each memory write or read request will be performed and a comparis
 Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
 
 This interface does not expose any registers.
-<!-- END CMDGEN -->

@@ -1,0 +1,79 @@
+commit b44855f44fe5863898cc403d74f980123accd9c0
+Author: Pascal Nasahl <nasahlpa@lowrisc.org>
+Date:   Sun May 26 16:33:55 2024 +0000
+
+    [PATCH] [rtl] Add alerts to RAMs
+    
+    Signed-off-by: Pascal Nasahl <nasahlpa@lowrisc.org>
+
+diff --git a/ibex_top.sv b/ibex_top.sv
+index df1e607ac4..81e49633cb 100644
+--- a/ibex_top.sv
++++ b/ibex_top.sv
+@@ -552,6 +552,9 @@ module ibex_top import ibex_pkg::*; #(
+   // Rams Instantiation //
+   ////////////////////////
+ 
++  logic [IC_NUM_WAYS-1:0] icache_tag_alert;
++  logic [IC_NUM_WAYS-1:0] icache_data_alert;
++
+   if (ICache) begin : gen_rams
+ 
+     for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams_inner
+@@ -590,7 +593,9 @@ module ibex_top import ibex_pkg::*; #(
+           .rerror_o         (),
+           .cfg_i            (ram_cfg_i),
+           .wr_collision_o   (),
+-          .write_pending_o  ()
++          .write_pending_o  (),
++
++          .alert_o          (icache_tag_alert[way])
+         );
+ 
+         // Data RAM instantiation
+@@ -625,7 +630,9 @@ module ibex_top import ibex_pkg::*; #(
+           .rerror_o         (),
+           .cfg_i            (ram_cfg_i),
+           .wr_collision_o   (),
+-          .write_pending_o  ()
++          .write_pending_o  (),
++
++          .alert_o          (icache_data_alert[way])
+         );
+ 
+         `ifdef INC_ASSERT
+@@ -698,6 +705,8 @@ module ibex_top import ibex_pkg::*; #(
+           .cfg_i       (ram_cfg_i)
+         );
+ 
++        assign icache_tag_alert  = '{default:'b0};
++        assign icache_data_alert = '{default:'b0};
+       end
+     end
+ 
+@@ -716,6 +725,8 @@ module ibex_top import ibex_pkg::*; #(
+     assign ic_tag_rdata      = '{default:'b0};
+     assign ic_data_rdata     = '{default:'b0};
+ 
++    assign icache_tag_alert  = '{default:'b0};
++    assign icache_data_alert = '{default:'b0};
+   end
+ 
+   assign data_wdata_o = data_wdata_core[31:0];
+@@ -1086,9 +1097,15 @@ module ibex_top import ibex_pkg::*; #(
+     assign unused_scan = scan_rst_ni;
+   end
+ 
++  // Enable or disable iCache multi bit encoding checking error generation.
++  // If enabled and a MuBi encoding error is detected, raise a major alert.
++  logic icache_alert_major_internal;
++  assign icache_alert_major_internal = (|icache_tag_alert) | (|icache_data_alert);
++
+   assign alert_major_internal_o = core_alert_major_internal |
+                                   lockstep_alert_major_internal |
+-                                  rf_alert_major_internal;
++                                  rf_alert_major_internal |
++                                  icache_alert_major_internal;
+   assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
+   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
+ 

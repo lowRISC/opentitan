@@ -158,7 +158,8 @@ module tb #(
       .rvalid_o    (ram_if.ic_tag_rvalid[way]),
       .raddr_o     (),
       .rerror_o    (),
-      .cfg_i       ('0)
+      .cfg_i       ('0),
+      .alert_o     ()
     );
 
     // Data RAM instantiation
@@ -190,7 +191,8 @@ module tb #(
       .rvalid_o    (ram_if.ic_data_rvalid[way]),
       .raddr_o     (),
       .rerror_o    (),
-      .cfg_i       ('0)
+      .cfg_i       ('0),
+      .alert_o     ()
     );
   end
 

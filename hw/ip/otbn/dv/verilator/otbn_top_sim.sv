@@ -278,7 +278,9 @@ module otbn_top_sim (
     .cfg_i            ( '0                ),
 
     .wr_collision_o   (                   ),
-    .write_pending_o  (                   )
+    .write_pending_o  (                   ),
+
+    .alert_o          (                   )
   );
 
   // No integrity errors in Verilator testbench
@@ -321,7 +323,9 @@ module otbn_top_sim (
     .cfg_i            ( '0                      ),
 
     .wr_collision_o   (                         ),
-    .write_pending_o  (                         )
+    .write_pending_o  (                         ),
+
+    .alert_o          (                         )
   );
 
   // When OTBN is done let a few more cycles run then finish simulation

@@ -87,8 +87,21 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // Write currently pending inside this module.
   output logic                      wr_collision_o,
-  output logic                      write_pending_o
+  output logic                      write_pending_o,
+
+  // When detecting multi-bit encoding errors, raise alert.
+  output logic                      alert_o
 );
+
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_and_hi;
+  import prim_mubi_pkg::mubi4_bool_to_mubi;
+  import prim_mubi_pkg::mubi4_or_hi;
+  import prim_mubi_pkg::mubi4_test_invalid;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4Width;
 
   //////////////////////
   // Parameter Checks //
@@ -112,17 +125,51 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // the data from the write holding register.
 
   // Read / write strobes
-  logic read_en, write_en_d, write_en_q;
+  mubi4_t read_en, read_en_buf;
+  logic   read_en_b;
+  mubi4_t write_en_d, write_en_buf_d, write_en_q;
+  logic   write_en_b;
+  logic [MuBi4Width-1:0] read_en_b_buf, write_en_buf_b_d;
   assign gnt_o = req_i & key_valid_i;
 
-  assign read_en = gnt_o & ~write_i;
-  assign write_en_d = gnt_o & write_i;
+  assign read_en = mubi4_bool_to_mubi(gnt_o & ~write_i);
+  assign write_en_d = mubi4_bool_to_mubi(gnt_o & write_i);
 
-  logic write_pending_q;
-  logic addr_collision_d, addr_collision_q;
+  prim_buf #(
+    .Width(MuBi4Width)
+  ) u_read_en_buf (
+    .in_i (read_en),
+    .out_o(read_en_b_buf)
+  );
+
+  assign read_en_buf = mubi4_t'(read_en_b_buf);
+
+  prim_buf #(
+    .Width(MuBi4Width)
+  ) u_write_en_d_buf (
+    .in_i (write_en_d),
+    .out_o(write_en_buf_b_d)
+  );
+
+  assign write_en_buf_d = mubi4_t'(write_en_buf_b_d);
+
+  mubi4_t write_pending_q;
+  mubi4_t addr_collision_d, addr_collision_q;
   logic [AddrWidth-1:0] addr_scr;
   logic [AddrWidth-1:0] waddr_scr_q;
-  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_scr == waddr_scr_q);
+  mubi4_t addr_match;
+  logic [MuBi4Width-1:0] addr_match_buf;
+
+  assign addr_match = (addr_scr == waddr_scr_q) ? MuBi4True : MuBi4False;
+  prim_buf #(
+    .Width(MuBi4Width)
+  ) u_addr_match_buf (
+    .in_i (addr_match),
+    .out_o(addr_match_buf)
+  );
+
+  assign addr_collision_d = mubi4_and_hi(mubi4_and_hi(mubi4_or_hi(write_en_q,
+      write_pending_q), read_en_buf), mubi4_t'(addr_match_buf));
 
   // Macro requests and write strobe
   // The macro operation is silenced if an integrity error is seen
@@ -132,21 +179,23 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .out_o(intg_error_buf)
   );
   logic macro_req;
-  assign macro_req   = ~intg_error_w_q & ~intg_error_buf & (read_en | write_en_q | write_pending_q);
+  assign macro_req   = ~intg_error_w_q & ~intg_error_buf &
+      mubi4_test_true_loose(mubi4_or_hi(mubi4_or_hi(read_en_buf, write_en_q), write_pending_q));
   // We are allowed to write a pending write transaction to the memory if there is no incoming read.
   logic macro_write;
-  assign macro_write = (write_en_q | write_pending_q) & ~read_en & ~intg_error_w_q;
+  assign macro_write = mubi4_test_true_loose(mubi4_or_hi(write_en_q, write_pending_q)) &
+    ~mubi4_test_true_loose(read_en_buf) & ~intg_error_w_q;
   // New read write collision
   logic rw_collision;
-  assign rw_collision = write_en_q & read_en;
+  assign rw_collision = mubi4_test_true_loose(mubi4_and_hi(write_en_q, read_en_buf));
 
   // Write currently processed inside this module. Although we are sending an immediate d_valid
   // back to the host, the write could take longer due to the scrambling.
-  assign write_pending_o = macro_write | write_en_d;
+  assign write_pending_o = macro_write | mubi4_test_true_loose(write_en_buf_d);
 
   // When a read is followed after a write with the same address, we return the data from the
   // holding register.
-  assign wr_collision_o = addr_collision_q;
+  assign wr_collision_o = mubi4_test_true_loose(addr_collision_q);
 
   ////////////////////////
   // Address Scrambling //
@@ -154,7 +203,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // We only select the pending write address in case there is no incoming read transaction.
   logic [AddrWidth-1:0] addr_mux;
-  assign addr_mux = (read_en) ? addr_scr : waddr_scr_q;
+  assign addr_mux = (mubi4_test_true_loose(read_en_buf)) ? addr_scr : waddr_scr_q;
 
   // This creates a bijective address mapping using a substitution / permutation network.
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
@@ -308,9 +357,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // Clear this if we can write the memory in this cycle. Set only if the current write cannot
   // proceed due to an incoming read operation.
-  logic write_scr_pending_d;
-  assign write_scr_pending_d = (macro_write)  ? 1'b0 :
-                               (rw_collision) ? 1'b1 :
+  mubi4_t write_scr_pending_d;
+  assign write_scr_pending_d = (macro_write)  ? MuBi4False :
+                               (rw_collision) ? MuBi4True :
                                                 write_pending_q;
 
   // Select the correct scrambled word to be written, based on whether the word in the scrambled
@@ -318,20 +367,20 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // combined with the wdata_q register. We don't do that here for timing reasons, since that would
   // require another read data mux to inject the scrambled data into the read descrambling path.
   logic [Width-1:0] wdata_scr;
-  assign wdata_scr = (write_pending_q) ? wdata_scr_q : wdata_scr_d;
+  assign wdata_scr = (mubi4_test_true_loose(write_pending_q)) ? wdata_scr_q : wdata_scr_d;
 
-  logic rvalid_q;
+  mubi4_t rvalid_q;
   logic intg_error_r_q;
   logic [Width-1:0] wmask_q;
   always_comb begin : p_forward_mux
     rdata_o = '0;
     rvalid_o = 1'b0;
     // Kill the read response in case an integrity error was seen.
-    if (!intg_error_r_q && rvalid_q) begin
+    if (!intg_error_r_q && mubi4_test_true_loose(rvalid_q)) begin
       rvalid_o = 1'b1;
       // In case of a collision, we forward the valid bytes of the write data from the unscrambled
       // holding register.
-      if (addr_collision_q) begin
+      if (mubi4_test_true_loose(addr_collision_q)) begin
         for (int k = 0; k < Width; k++) begin
           if (wmask_q[k]) begin
             rdata_o[k] = wdata_q[k];
@@ -350,13 +399,57 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   ///////////////
   // Registers //
   ///////////////
+  logic ram_alert;
+
+  assign alert_o = mubi4_test_invalid(write_en_q) | mubi4_test_invalid(addr_collision_q) |
+                   mubi4_test_invalid(write_pending_q) | mubi4_test_invalid(rvalid_q) |
+                   ram_alert;
+
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_write_en_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(MuBi4Width'(write_en_buf_d)),
+    .q_o({write_en_q})
+  );
+
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_addr_collision_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(MuBi4Width'(addr_collision_d)),
+    .q_o({addr_collision_q})
+  );
+
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_write_pending_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(MuBi4Width'(write_scr_pending_d)),
+    .q_o({write_pending_q})
+  );
+
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_rvalid_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(MuBi4Width'(read_en_buf)),
+    .q_o({rvalid_q})
+  );
+
+  assign read_en_b = mubi4_test_true_loose(read_en_buf);
+  assign write_en_b = mubi4_test_true_loose(write_en_buf_d);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin
-      write_pending_q     <= 1'b0;
-      addr_collision_q    <= 1'b0;
-      rvalid_q            <= 1'b0;
-      write_en_q          <= 1'b0;
       intg_error_r_q      <= 1'b0;
       intg_error_w_q      <= 1'b0;
       raddr_q             <= '0;
@@ -365,16 +458,12 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       wdata_q             <= '0;
       wdata_scr_q         <= '0;
     end else begin
-      write_pending_q     <= write_scr_pending_d;
-      addr_collision_q    <= addr_collision_d;
-      rvalid_q            <= read_en;
-      write_en_q          <= write_en_d;
       intg_error_r_q      <= intg_error_buf;
 
-      if (read_en) begin
+      if (read_en_b) begin
         raddr_q <= addr_i;
       end
-      if (write_en_d) begin
+      if (write_en_b) begin
         waddr_scr_q    <= addr_scr;
         wmask_q        <= wmask_i;
         wdata_q        <= wdata_i;
@@ -409,7 +498,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .rdata_o  ( rdata_scr   ),
     .rvalid_o ( ),
     .rerror_o,
-    .cfg_i
+    .cfg_i,
+    .alert_o  ( ram_alert   )
   );
 
   `include "prim_util_get_scramble_params.svh"
