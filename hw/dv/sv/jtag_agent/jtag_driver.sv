@@ -123,8 +123,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         drive_jtag_ir(req.ir_len,
                       req.ir,
                       req.ir_pause_count,
-                      req.ir_pause_cycle,
-                      req.exit_to_rti_ir);
+                      req.ir_pause_cycle);
       end
     end
     if (req.dr_len) begin
@@ -144,8 +143,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   task drive_jtag_ir(int len,
                      bit [JTAG_DRW-1:0] ir,
                      uint pause_count = 0,
-                     uint pause_cycle = 0,
-                     bit exit_to_rti = 1'b1);
+                     uint pause_cycle = 0);
     logic [JTAG_DRW-1:0] dout;
     `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
     // Assume starting in RTI state
@@ -185,12 +183,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     end
     // UpdateIR
     tms_tdi_step(1, 0);
-    if (exit_to_rti) begin
-      // Go to RTI
-      tms_tdi_step(0, 0);
-    end else begin
-      `uvm_info(`gfn, "drive_ir: skip going to RTI", UVM_MEDIUM)
-    end
+
+    // Go to RTI
+    tms_tdi_step(0, 0);
+
     selected_ir = ir;
     selected_ir_len = len;
   endtask
