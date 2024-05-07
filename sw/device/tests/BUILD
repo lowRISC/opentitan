@@ -535,6 +535,7 @@ opentitan_test(
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
         timeout = "moderate",
