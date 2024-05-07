@@ -112,17 +112,22 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
       REQ req, rsp;
       wait(req_q.size > 0);
       if (out_of_order_rsp) req_q.shuffle();
-      req = req_q[0];  // 'peek' pop_front.
+
+      // peek at the front of the queue, but don't pop it: we want to see it again if the
+      // rsp_completed flag doesn't get set.
+      req = req_q[0];
       `downcast(rsp, req.clone())
+
       randomize_rsp(rsp);
       post_randomize_rsp(rsp);
       update_mem(rsp);
       start_item(rsp);
       finish_item(rsp);
       get_response(rsp);
+
       // Remove from req_q if response is completed.
       if (rsp.rsp_completed) begin
-        req_q = req_q[1:$];
+        void'(req_q.pop_front());
         `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
                                   rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
         rsp_cnt++;
