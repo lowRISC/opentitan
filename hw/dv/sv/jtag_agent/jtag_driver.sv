@@ -218,7 +218,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                      input  uint                 pause_count,
                      input  uint                 pause_cycle,
                      input  bit                  exit_to_rti = 1'b1);
-    bit pause_injected = 0;
+    // A flag that tracks whether we injected a pause on the last iteration of the loop.
+    bit pause_just_injected = 1'b0;
+
     exit_to_rti_dr_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_MEDIUM)
     // assume starting in RTI
@@ -235,11 +237,19 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `HOST_CB.tdi <= 1'b0;
     for(int i = 0; i < len - 1; i++) begin
       @(`HOST_CB);
-      // stay in ShiftDR
+
+      // We're probably currently in ShiftDr and TDO will contain bit i of the output value.
+      // However, this is not true if we injected a pause on the last iteration. In that case, we
+      // prepended TDO to dout as we left ShiftDR in that iteration and we're currently in Exit2DR
+      // (and don't want to read TDO this cycle).
+      if (!pause_just_injected) begin
+        dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+      end
+      pause_just_injected = 1'b0;
+
+      // Move to (or stay in) ShiftDR
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= dr[i];
-      // Skip sampling dout in case of pause, since FSM moves to ShiftDr state in next cycle
-      dout = !pause_injected ? {`HOST_CB.tdo, dout[JTAG_DRW-1:1]} : dout;
       // Move to PauseDR state if pause_count is non-zero
       if (pause_count > 0 && i == pause_cycle) begin
         `uvm_info(`gfn,
@@ -248,9 +258,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                     pause_cycle),
            UVM_MEDIUM)
         jtag_pause(pause_count, dout);
-        pause_injected = 1;
-      end else begin
-        pause_injected = 0;
+        pause_just_injected = 1'b1;
       end
     end
     @(`HOST_CB);
@@ -344,15 +352,22 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     drive_dummy_ir_dr();
   endtask
 
-  // Task to drive TMS such that JTAG state machine moves to
-  // - PauseIR state if current state is ShiftIR
-  // - PauseDR state if current state is ShiftDR
-  // And then move back to ShiftIr/ShiftDr state after pause_count cycles
+  // Move the JTAG FSM from Shift* to Pause* then wait for pause_count cycles before returning.
+  //
+  // This assumes that we are currently in ShiftIR/ShiftDR and finishes in state Exit2Ir/Exit2Dr
+  // with TMS = 0, so that the next clock edge will look like the end of a cycle in
+  // ShiftIR/Shift/DR.
+  //
+  // This also samples the TDO pin just after leaving the Exit1Dr/Exit1Ir state and prepends its
+  // value to dout.
   task jtag_pause(uint pause_count, ref logic [JTAG_DRW-1:0] dout);
     // Move to Exit1Ir/Exit1Dr state
     `HOST_CB.tms <= 1'b1;
     @(`HOST_CB);
+
+    // We have just left ShiftDr/ShiftIr and tdo will contain the bit that was shifted out.
     dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+
     // Remain in PauseIR/PauseDR state for pause_count cycles
     `HOST_CB.tms <= 1'b0;
     repeat(pause_count) begin
