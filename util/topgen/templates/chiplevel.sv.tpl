@@ -870,14 +870,6 @@ module chip_${top["name"]}_${target["name"]} #(
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
 
-  assign manual_out_ast_misc = 1'b0;
-  assign manual_oe_ast_misc = 1'b0;
-  always_comb begin
-    // constantly enable pull-down
-    manual_attr_ast_misc = '0;
-    manual_attr_ast_misc.pull_select = 1'b0;
-    manual_attr_ast_misc.pull_en = 1'b1;
-  end
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 

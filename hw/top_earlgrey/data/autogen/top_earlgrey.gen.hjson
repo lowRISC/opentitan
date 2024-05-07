@@ -12921,17 +12921,7 @@
       {
         remove_ports: []
         remove_pads: []
-        add_pads:
-        [
-          {
-            name: AST_MISC
-            type: InputStd
-            bank: VCC
-            connection: manual
-            desc: Extra infrastructure pad for AST
-            port_type: inout
-          }
-        ]
+        add_pads: []
       }
       pinmux:
       {
