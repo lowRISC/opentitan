@@ -579,8 +579,8 @@ def _offline_signature_attach(ctx):
             ctx,
             tc.tools.opentitantool,
             inputs[f]["bin"],
-            getattr(inputs[f], "ecdsa_sig", None),
-            getattr(inputs[f], "rsa_sig", None),
+            inputs[f].get("ecdsa_sig"),
+            inputs[f].get("rsa_sig"),
             inputs[f].get("spx_sig"),
         )
         outputs.append(out)
