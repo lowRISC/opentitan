@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -40,40 +41,29 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-// Do not update these static asserts without updating the buffer sizes in the
-// following UJSON structs in `sw/device/lib/testing/json/provisioning_data.h`:
-// - manuf_certs_t
-// - manuf_endorsed_certs_t
-static_assert(kUdsMaxTbsSizeBytes == 727,
-              "The `uds_tbs_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kUdsMaxTbsSizeBytes`.");
-static_assert(kCdi0MaxCertSizeBytes == 580,
-              "The `cdi_0_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kCdi0MaxCertSizeBytes`.");
-static_assert(kCdi1MaxCertSizeBytes == 629,
-              "The `cdi_1_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kCdi1MaxCertSizeBytes`.");
-static_assert(kTpmEkMaxTbsSizeBytes == 844,
-              "The `tpm_ek_tbs_certificate` buffer size in the `manuf_certs_t`"
-              "struct should match the value of `kTpmEkMaxTbsSizeBytes`.");
-static_assert(kTpmCekMaxTbsSizeBytes == 456,
-              "The `tpm_cek_tbs_certificate` buffer size in the `manuf_certs_t`"
-              "struct should match the value of `kTpmCekMaxTbsSizeBytes`.");
-static_assert(kTpmCikMaxTbsSizeBytes == 456,
-              "The `tpm_cik_tbs_certificate` buffer size in the `manuf_certs_t`"
-              "struct should match the value of `kTpmCikMaxTbsSizeBytes`.");
-static_assert(kUdsMaxCertSizeBytes == 818,
-              "The `uds_tbs_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kUdsMaxTbsSizeBytes`.");
-static_assert(kTpmEkMaxCertSizeBytes == 935,
-              "The `tpm_ek_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kTpmEkMaxCertSizeBytes`.");
-static_assert(kTpmCekMaxCertSizeBytes == 547,
-              "The `tpm_cek_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kTpmCekMaxCertSizeBytes`.");
-static_assert(kTpmCikMaxCertSizeBytes == 547,
-              "The `tpm_cik_certificate` buffer size in the `manuf_certs_t` "
-              "struct should match the value of `kTpmCikMaxCertSizeBytes`.");
+// Check TBS certificate buffer sizes.
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_certs_t, uds_tbs_certificate,
+                              OT_ALIGN_MEM(kUdsMaxTbsSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_certs_t, tpm_ek_tbs_certificate,
+                              OT_ALIGN_MEM(kTpmEkMaxTbsSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_certs_t, tpm_cek_tbs_certificate,
+                              OT_ALIGN_MEM(kTpmCekMaxTbsSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_certs_t, tpm_cik_tbs_certificate,
+                              OT_ALIGN_MEM(kTpmCikMaxTbsSizeBytes));
+
+// Check endorsed certificate buffer sizes.
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_endorsed_certs_t, uds_certificate,
+                              OT_ALIGN_MEM(kUdsMaxCertSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_certs_t, cdi_0_certificate,
+                              OT_ALIGN_MEM(kCdi0MaxCertSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_certs_t, cdi_1_certificate,
+                              OT_ALIGN_MEM(kCdi1MaxCertSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_endorsed_certs_t, tpm_ek_certificate,
+                              OT_ALIGN_MEM(kTpmEkMaxCertSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_endorsed_certs_t, tpm_cek_certificate,
+                              OT_ALIGN_MEM(kTpmCekMaxCertSizeBytes));
+OT_ASSERT_MEMBER_SIZE_AS_ENUM(manuf_endorsed_certs_t, tpm_cik_certificate,
+                              OT_ALIGN_MEM(kTpmCikMaxCertSizeBytes));
 
 /**
  * Peripheral handles.
