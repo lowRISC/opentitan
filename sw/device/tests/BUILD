@@ -316,7 +316,7 @@ opentitan_test(
     cw310 = cw310_params(
         timeout = "moderate",
     ),
-    exec_env = {
+    exec_env = dicts.add(
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
@@ -324,9 +324,9 @@ opentitan_test(
         # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+        dicts.omit(EARLGREY_TEST_ENVS, ["//hw/top_earlgrey:sim_verilator"]),
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
