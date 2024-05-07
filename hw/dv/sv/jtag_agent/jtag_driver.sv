@@ -186,12 +186,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       tms_tdi_step(0, 0);
       // Go to Exit2IR
       tms_tdi_step(1, 0);
-      // Go to UpdateIR
-      tms_tdi_step(1, 0);
-    end else begin
-      // UpdateIR
-      tms_tdi_step(1, 0);
     end
+    // UpdateIR
+    tms_tdi_step(1, 0);
     if (exit_to_rti) begin
       // Go to RTI
       tms_tdi_step(0, 0);
@@ -248,23 +245,21 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // go to Exit1DR
     dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
     tms_tdi_step(1, dr[len - 1]);
-    // go to RTI either via
-    // - PauseDR -> exit2DR -> UpdateDR -> RTI or
-    // - Exit1DR -> UpdateDR -> RTI
+
+    // Consume final bit of TDO as we enter the Exit1DR state.
+    dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+
+    // Possibly inject two extra steps (PauseDR, Exit2DR) on the way to UpdateDr.
     if (req.exit_via_pause_dr) begin
-      `uvm_info(`gfn, "Exiting via PauseDR", UVM_MEDIUM)
       // Go to PauseDR
-      dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
       tms_tdi_step(0, 0);
       // Go to Exit2DR
       tms_tdi_step(1, 0);
-      // Go to UpdateDR
-      tms_tdi_step(1, 0);
-    end else begin
-      // go to UpdateDR
-      dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-      tms_tdi_step(1, 0);
     end
+
+    // go to UpdateDR
+    tms_tdi_step(1, 0);
+
     if (exit_to_rti) begin
       // go to RTI
       tms_tdi_step(0, 0);
