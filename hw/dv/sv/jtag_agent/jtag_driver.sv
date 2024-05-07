@@ -13,9 +13,11 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   `uvm_component_new
 
-  // If the same IR was already selected earlier, then don't resend IR based on seq item knob.
+  // The most recently selected IR. If a new request has the same IR and has the skip_reselected_ir
+  // flag set then don't bother sending the IR again.
   logic [JTAG_IRW-1:0]  selected_ir;
   uint                  selected_ir_len;
+
   // Variable to save the previous value of exit_to_rti_ir
   bit                   exit_to_rti_ir_past = 1;
   // Variable to save the previous value of exit_to_rti_dr
@@ -29,11 +31,16 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   virtual function void do_reset_signals();
     `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
+    // Set a dummy "previous IR" value with a zero length. Note that we only consider setting IR for
+    // a new request if the length is nonzero, but skip doing so if the value and length match,
+    // which can't happen at the start of time because you'd need the length to be both zero and
+    // nonzero.
+    selected_ir = '{default:0};
+    selected_ir_len = 0;
+
     cfg.vif.tck_en <= 1'b0;
     cfg.vif.tms <= 1'b0;
     cfg.vif.tdi <= 1'b0;
-    selected_ir = '{default:0};
-    selected_ir_len = 0;
     exit_to_rti_ir_past = 1;
     exit_to_rti_dr_past = 1;
   endfunction
