@@ -8,7 +8,3 @@
 // Date: Wed Nov  9 23:56:32 2022
 // ExclMode: default
 //==================================================
-CHECKSUM: "2197777849 3762499237"
-INSTANCE: tb.dut
-ANNOTATION: "[UNR] Tied off."
-Block 8 "4066577564" "manual_attr_ast_misc = '0;"

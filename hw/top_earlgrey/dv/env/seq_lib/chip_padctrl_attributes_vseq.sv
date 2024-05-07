@@ -208,7 +208,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // all tests asserting a reset.
       begin : manual_dio_test
         // Make sure nothing drives these pins before testing the pull values.
-        cfg.chip_vif.ast_misc_if.disconnect();
         cfg.chip_vif.otp_ext_volt_if.disconnect();
         cfg.chip_vif.flash_test_mode_if.disconnect();
         cfg.chip_vif.flash_test_volt_if.disconnect();
@@ -600,12 +599,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   task check_manual_dios_pull();
     string obs_strength;
-// TODO(#18988): this driving strength comparison fails on VCS. Re-enable
-// once this mismatch has been root-caused and fixed.
-`ifdef XCELIUM
-    obs_strength = $sformatf("%v", cfg.chip_vif.ast_misc_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "We0", "on AST_MISC")
-`endif
     obs_strength = $sformatf("%v", cfg.chip_vif.otp_ext_volt_if.pins[0]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on OTP_EXT_VOLT")
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
