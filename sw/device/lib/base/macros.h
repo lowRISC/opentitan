@@ -227,6 +227,20 @@ extern "C++" {
                 "Unexpected size for " #type)
 
 /**
+ * A macro that expands to an assertion for the size of a struct member.
+ *
+ * Identical to `OT_ASSERT_MEMBER_SIZE`, except the size parameter is provided
+ * as an enum constant.
+ *
+ * @param type A struct type.
+ * @param member A member of the struct.
+ * @param size Expected size of the type as an enum constant.
+ */
+#define OT_ASSERT_MEMBER_SIZE_AS_ENUM(type, member, enum_size) \
+  static_assert(sizeof(((type){0}).member) == enum_size,       \
+                "Unexpected size for " #type)
+
+/**
  * A macro that expands to an assertion for the size of a type.
  *
  * @param type A type.
