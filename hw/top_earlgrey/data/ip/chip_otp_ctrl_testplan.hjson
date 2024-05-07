@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_otp_ctrl
+  name: otp_ctrl
   testpoints: [
     // OTP (pre-verified IP) integration tests:
     {

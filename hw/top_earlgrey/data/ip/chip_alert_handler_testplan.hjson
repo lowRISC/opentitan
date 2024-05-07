@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_alert_handler
+  name: alert_handler
   testpoints: [
     // ALERT_HANDLER (pre-verified IP) integration tests:
     {

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_spi_host
+  name: spi_host
   testpoints: [
     // SPI_HOST (pre-verified IP) integration tests:
     {
