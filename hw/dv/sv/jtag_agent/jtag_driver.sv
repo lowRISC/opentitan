@@ -161,8 +161,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // ShiftIR
     `HOST_CB.tms <= 1'b0;
     `HOST_CB.tdi <= 1'b0;
+    @(`HOST_CB);
     for(int i = 0; i < len; i++) begin
-      @(`HOST_CB);
       // ExitIR if end of addr
       `HOST_CB.tms <= (i == len - 1) ? 1'b1 : 1'b0;
       `HOST_CB.tdi <= ir[i];
@@ -175,8 +175,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
            UVM_MEDIUM)
         jtag_pause(pause_count, dout);
       end
+      @(`HOST_CB);
     end
-    @(`HOST_CB);
     // go to RTI either via
     // - PauseIR -> exit2IR -> UpdateIR -> RTI or
     // - Exit1IR -> UpdateIR -> RTI
@@ -235,9 +235,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // go to ShiftDR
     `HOST_CB.tms <= 1'b0;
     `HOST_CB.tdi <= 1'b0;
+    @(`HOST_CB);
     for(int i = 0; i < len - 1; i++) begin
-      @(`HOST_CB);
-
       // We're probably currently in ShiftDr and TDO will contain bit i of the output value.
       // However, this is not true if we injected a pause on the last iteration. In that case, we
       // prepended TDO to dout as we left ShiftDR in that iteration and we're currently in Exit2DR
@@ -260,8 +259,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         jtag_pause(pause_count, dout);
         pause_just_injected = 1'b1;
       end
+      @(`HOST_CB);
     end
-    @(`HOST_CB);
     // go to Exit1DR
     `HOST_CB.tms <= 1'b1;
     `HOST_CB.tdi <= dr[len - 1];
