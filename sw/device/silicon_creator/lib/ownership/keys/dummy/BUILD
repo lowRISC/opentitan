@@ -10,6 +10,11 @@ filegroup(
 )
 
 filegroup(
+    name = "owner_key_pub",
+    srcs = ["owner_ecdsa_p256.pub.der"],
+)
+
+filegroup(
     name = "activate_key",
     srcs = ["activate_ecdsa_p256.der"],
 )
