@@ -382,7 +382,8 @@ module prim_generic_otp
     .rdata_o  ( rdata_ecc              ),
     .rvalid_o ( rvalid                 ),
     .rerror_o (                        ),
-    .cfg_i    ( '0                     )
+    .cfg_i    ( '0                     ),
+    .alert_o  (                        )
   );
 
   // Currently it is assumed that no wrap arounds can occur.

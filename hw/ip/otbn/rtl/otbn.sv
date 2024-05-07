@@ -358,7 +358,9 @@ module otbn
     .cfg_i   (ram_cfg_i),
 
     .wr_collision_o   (imem_wr_collision),
-    .write_pending_o  (imem_wpending)
+    .write_pending_o  (imem_wpending),
+
+    .alert_o ()
   );
 
   // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
@@ -570,7 +572,9 @@ module otbn
     .cfg_i   (ram_cfg_i),
 
     .wr_collision_o   (dmem_wr_collision),
-    .write_pending_o  (dmem_wpending)
+    .write_pending_o  (dmem_wpending),
+
+    .alert_o ()
   );
 
   // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.

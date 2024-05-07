@@ -144,8 +144,12 @@ module sram_ctrl
   assign hw2reg.status.readback_error.d  = 1'b1;
   assign hw2reg.status.readback_error.de = readback_error;
 
+  logic sram_alert;
+  assign hw2reg.status.sram_alert.d  = 1'b1;
+  assign hw2reg.status.sram_alert.de = sram_alert;
+
   logic alert_req;
-  assign alert_req = (|bus_integ_error) | init_error | readback_error;
+  assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert;
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
@@ -187,16 +191,18 @@ module sram_ctrl
   logic local_esc, local_esc_reg;
   // This signal only aggregates registered escalation signals and is used for transaction
   // blocking further below, which is on a timing-critical path.
-  assign local_esc_reg = reg2hw.status.escalated.q       |
-                         reg2hw.status.init_error.q      |
+  assign local_esc_reg = reg2hw.status.escalated.q  |
+                         reg2hw.status.init_error.q |
                          reg2hw.status.bus_integ_error.q |
+                         reg2hw.status.sram_alert.q |
                          reg2hw.status.readback_error.q;
-  // This signal aggregates all escalation trigger signals, including the ones that are generated in
-  // the same cycle such as init_error and bus_integ_error. It is used for countermeasures that are
-  // not on the critical path (such as clearing the scrambling keys).
+  // This signal aggregates all escalation trigger signals, including the ones that are generated
+  // in the same cycle such as init_error, sram alert, and bus_integ_error. It is used for
+  // countermeasures that are not on the critical path (such as clearing the scrambling keys).
   assign local_esc = escalate           |
                      init_error         |
                      (|bus_integ_error) |
+                     sram_alert         |
                      readback_error     |
                      local_esc_reg;
 
@@ -551,7 +557,8 @@ module sram_ctrl
     .raddr_o          ( ),
     .cfg_i,
     .wr_collision_o   (sram_wr_collision),
-    .write_pending_o  (sram_wpending)
+    .write_pending_o  (sram_wpending),
+    .alert_o          (sram_alert)
   );
 
   logic unused_sram_gnt;

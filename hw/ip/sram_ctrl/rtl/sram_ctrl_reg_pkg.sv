@@ -25,6 +25,9 @@ package sram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } sram_alert;
+    struct packed {
+      logic        q;
     } readback_error;
     struct packed {
       logic        q;
@@ -91,6 +94,10 @@ package sram_ctrl_reg_pkg;
       logic        d;
       logic        de;
     } readback_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sram_alert;
   } sram_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -100,8 +107,8 @@ package sram_ctrl_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [19:18]
-    sram_ctrl_reg2hw_status_reg_t status; // [17:12]
+    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [20:19]
+    sram_ctrl_reg2hw_status_reg_t status; // [18:12]
     sram_ctrl_reg2hw_exec_reg_t exec; // [11:8]
     sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [7:4]
     sram_ctrl_reg2hw_readback_reg_t readback; // [3:0]
@@ -109,7 +116,7 @@ package sram_ctrl_reg_pkg;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    sram_ctrl_hw2reg_status_reg_t status; // [18:5]
+    sram_ctrl_hw2reg_status_reg_t status; // [20:5]
     sram_ctrl_hw2reg_scr_key_rotated_reg_t scr_key_rotated; // [4:0]
   } sram_ctrl_regs_hw2reg_t;
 

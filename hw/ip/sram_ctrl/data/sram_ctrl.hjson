@@ -314,6 +314,15 @@
                   ''',
             resval: 0,
           }
+          { bits: "7"
+            name: "SRAM_ALERT"
+            desc: '''
+                  This bit is set to 1 if a multi bit encoding error has been detected inside the RAM modules.
+                  This error triggers a fatal_error alert.
+                  This condition is terminal.
+                  ''',
+            resval: 0,
+          }
         ]
       }
       { name: "EXEC_REGWEN",
