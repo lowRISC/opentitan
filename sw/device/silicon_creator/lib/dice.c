@@ -54,7 +54,6 @@ static_assert(
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_HW_CFG0_SIZE &&
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_HW_CFG1_SIZE,
     "The largest DICE measured OTP partition is no longer the "
     "OwnerSwCfg partition. Update the "
@@ -208,11 +207,13 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
                                     attestation_public_key_t *uds_pubkey,
                                     uint8_t *tbs_cert, size_t *tbs_cert_size) {
   // Measure OTP partitions.
+  //
+  // Note: we do not measure HwCfg0 as this is the Device ID, which is already
+  // mixed into the keyladder directly via hardware channels.
   hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_rot_creator_auth_codesign_measurement = {.digest = {0}};
   hmac_digest_t otp_rot_creator_auth_state_measurement = {.digest = {0}};
-  hmac_digest_t otp_hw_cfg0_measurement = {.digest = {0}};
   hmac_digest_t otp_hw_cfg1_measurement = {.digest = {0}};
   measure_otp_partition(kOtpPartitionCreatorSwCfg,
                         &otp_creator_sw_cfg_measurement);
@@ -221,7 +222,6 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
                         &otp_rot_creator_auth_codesign_measurement);
   measure_otp_partition(kOtpPartitionRotCreatorAuthState,
                         &otp_rot_creator_auth_state_measurement);
-  measure_otp_partition(kOtpPartitionHwCfg0, &otp_hw_cfg0_measurement);
   measure_otp_partition(kOtpPartitionHwCfg1, &otp_hw_cfg1_measurement);
 
   // Generate the TBS certificate.
@@ -238,8 +238,6 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
       .otp_rot_creator_auth_state_hash =
           (unsigned char *)otp_rot_creator_auth_state_measurement.digest,
       .otp_rot_creator_auth_state_hash_size = kHmacDigestNumBytes,
-      .otp_hw_cfg0_hash = (unsigned char *)otp_hw_cfg0_measurement.digest,
-      .otp_hw_cfg0_hash_size = kHmacDigestNumBytes,
       .otp_hw_cfg1_hash = (unsigned char *)otp_hw_cfg1_measurement.digest,
       .otp_hw_cfg1_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),

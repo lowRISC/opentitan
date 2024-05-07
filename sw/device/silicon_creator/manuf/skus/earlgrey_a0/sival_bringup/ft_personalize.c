@@ -19,9 +19,12 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
-#include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/uds.h"    // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_0.h"    // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_1.h"    // Generated.
+#include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/tpm_cik.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/tpm_ek.h"   // Generated.
+#include "sw/device/silicon_creator/lib/cert/uds.h"      // Generated.
 #include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -37,22 +40,40 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static_assert(kUdsMaxTbsSizeBytes == 775,
-              "The `uds_tbs_certificate` buffer size in the "
-              "`manuf_certs_t` struct should match the value of "
-              "`kUdsMaxTbsSizeBytes`.");
-static_assert(kUdsMaxCertSizeBytes == 866,
-              "The `uds_tbs_certificate` buffer size in the "
-              "`manuf_certs_t` struct should match the value of "
-              "`kUdsMaxTbsSizeBytes`.");
+// Do not update these static asserts without updating the buffer sizes in the
+// following UJSON structs in `sw/device/lib/testing/json/provisioning_data.h`:
+// - manuf_certs_t
+// - manuf_endorsed_certs_t
+static_assert(kUdsMaxTbsSizeBytes == 727,
+              "The `uds_tbs_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kUdsMaxTbsSizeBytes`.");
 static_assert(kCdi0MaxCertSizeBytes == 580,
-              "The `cdi_0_certificate` buffer size in the "
-              "`manuf_certs_t` struct should match the value of "
-              "`kCdi0MaxCertSizeBytes`.");
+              "The `cdi_0_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kCdi0MaxCertSizeBytes`.");
 static_assert(kCdi1MaxCertSizeBytes == 629,
-              "The `cdi_1_certificate` buffer size in the "
-              "`manuf_certs_t` struct should match the value of "
-              "`kCdi1MaxCertSizeBytes`.");
+              "The `cdi_1_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kCdi1MaxCertSizeBytes`.");
+static_assert(kTpmEkMaxTbsSizeBytes == 844,
+              "The `tpm_ek_tbs_certificate` buffer size in the `manuf_certs_t`"
+              "struct should match the value of `kTpmEkMaxTbsSizeBytes`.");
+static_assert(kTpmCekMaxTbsSizeBytes == 456,
+              "The `tpm_cek_tbs_certificate` buffer size in the `manuf_certs_t`"
+              "struct should match the value of `kTpmCekMaxTbsSizeBytes`.");
+static_assert(kTpmCikMaxTbsSizeBytes == 456,
+              "The `tpm_cik_tbs_certificate` buffer size in the `manuf_certs_t`"
+              "struct should match the value of `kTpmCikMaxTbsSizeBytes`.");
+static_assert(kUdsMaxCertSizeBytes == 818,
+              "The `uds_tbs_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kUdsMaxTbsSizeBytes`.");
+static_assert(kTpmEkMaxCertSizeBytes == 935,
+              "The `tpm_ek_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kTpmEkMaxCertSizeBytes`.");
+static_assert(kTpmCekMaxCertSizeBytes == 547,
+              "The `tpm_cek_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kTpmCekMaxCertSizeBytes`.");
+static_assert(kTpmCikMaxCertSizeBytes == 547,
+              "The `tpm_cik_certificate` buffer size in the `manuf_certs_t` "
+              "struct should match the value of `kTpmCikMaxCertSizeBytes`.");
 
 /**
  * Peripheral handles.
