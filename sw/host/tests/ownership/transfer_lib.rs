@@ -8,7 +8,6 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_log::BootLog;
 use opentitanlib::chip::boot_svc::{Message, UnlockMode};
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
-use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::crypto::ecdsa::EcdsaPrivateKey;
 use opentitanlib::crypto::rsa::RsaPublicKey;
 use opentitanlib::ownership::{
@@ -47,8 +46,8 @@ pub fn ownership_unlock(
     rescue.ownership_unlock(unlock)?;
     rescue.enter(transport, /*reset=*/ false)?;
     let result = rescue.get_boot_svc()?;
-    match &result.message {
-        Message::OwnershipUnlockResponse(r) if r.status == RomError::Ok => Ok(()),
+    match result.message {
+        Message::OwnershipUnlockResponse(r) => r.status.into(),
         _ => Err(anyhow!("Unexpected response: {result:x?}")),
     }
 }
@@ -82,7 +81,7 @@ pub fn ownership_activate(
     rescue.enter(transport, /*reset=*/ false)?;
     let result = rescue.get_boot_svc()?;
     match &result.message {
-        Message::OwnershipActivateResponse(r) if r.status == RomError::Ok => Ok(()),
+        Message::OwnershipActivateResponse(r) => r.status.into(),
         _ => Err(anyhow!("Unexpected response: {result:x?}")),
     }
 }
@@ -95,6 +94,7 @@ pub fn create_owner(
     activate_key: &Path,
     unlock_key: &Path,
     app_key: &Path,
+    corrupt_signature: bool,
 ) -> Result<()> {
     let owner_key = EcdsaPrivateKey::load(owner_key)?;
     let activate_key = EcdsaPrivateKey::load(activate_key)?;
@@ -113,6 +113,9 @@ pub fn create_owner(
         ..Default::default()
     };
     owner.sign(&owner_key)?;
+    if corrupt_signature {
+        owner.signature.r[0] += 1;
+    }
     let mut owner_config = Vec::new();
     owner.write(&mut owner_config)?;
     rescue.enter(transport, /*reset=*/ true)?;

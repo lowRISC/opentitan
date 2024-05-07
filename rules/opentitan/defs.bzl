@@ -141,6 +141,7 @@ def opentitan_test(
         kind = "flash",
         deps = [],
         copts = [],
+        data = [],
         defines = [],
         local_defines = [],
         includes = [],
@@ -154,7 +155,6 @@ def opentitan_test(
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
-        data = [],
         **kwargs):
     """Instantiate a test per execution environment.
 
