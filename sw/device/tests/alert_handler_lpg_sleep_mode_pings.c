@@ -87,10 +87,15 @@ void wait_enough_for_alert_ping(void) {
       // 2*4*(2**16)*(400ns) = 0.2s
       busy_spin_micros(1000 * 200);
       break;
+    case kDeviceSilicon:
+      // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
+      // 2*4*(2**16)*(42ns) = 22ms
+      busy_spin_micros(1000 * 22);
+      break;
     case kDeviceSimDV:
       // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-      // 2*4*(2**3)*(40ns) = 3us
-      busy_spin_micros(3);
+      // 2*4*(2**16)*(42ns) = 22ms
+      busy_spin_micros(1000 * 22);
       break;
     case kDeviceSimVerilator:
       // Verilator
