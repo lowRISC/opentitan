@@ -17,8 +17,8 @@ from google.auth.exceptions import DefaultCredentialsError
 
 from ot_device import OTDevice
 from update_remote_db import update_remote_db
-from util import (format_hex, confirm, bytes_to_int, parse_hexstring_to_int,
-                  parse_str_to_ascii_bytes, OT_SQL_TABLE_NAME)
+from util import (OT_SQL_TABLE_NAME, bytes_to_int, confirm, format_hex,
+                  parse_hexstring_to_int, parse_str_to_ascii_bytes)
 
 
 def setup_db(db_filename, log_archive_root):
@@ -137,6 +137,7 @@ def main():
                         required=True,
                         type=parse_hexstring_to_int)
     parser.add_argument("--ecc_priv_keyfile", required=True)
+    parser.add_argument("--ca_priv_keyfile", required=True)
     parser.add_argument("--target_lc_state",
                         help="Target mission mode LC state",
                         choices=["dev", "prod"],
@@ -159,10 +160,11 @@ def main():
     parser.add_argument("--log_archive_root",
                         default="logs",
                         help="Root directory to store log files under.")
-    parser.add_argument("--cloud_project",
-                        default=None,
-                        help="Name of Google Cloud project with Firestore database to update. "
-                             "If not provided, entries will be cached locally.")
+    parser.add_argument(
+        "--cloud_project",
+        default=None,
+        help="Name of Google Cloud project with Firestore database to update. "
+        "If not provided, entries will be cached locally.")
     args = parser.parse_args()
 
     db_conn = setup_db(args.db_file, args.log_archive_root)
@@ -181,8 +183,7 @@ def main():
     if len(existing_devices) > 0:
         logging.warning(
             f"Device ID {device_id_str} already exists in the database." +
-            " Database write will fail if you contine."
-        )
+            " Database write will fail if you contine.")
         confirm()
     else:
         logging.debug("Did not find duplicate Device ID in DB. Continuing")
@@ -213,6 +214,9 @@ def main():
           keyfile path: {args.ecc_priv_keyfile}
           > keyfile basename (stored in DB): {ecc_keyfile_basename}
 
+          [CA PRIVATE KEYFILE]
+          keyfile path: {args.ca_priv_keyfile}
+
           [OTHER]
           target_lc_state: {args.target_lc_state}
           sku: {args.sku}
@@ -229,6 +233,7 @@ def main():
                     args.log_archive_root)
     chip.cp_provision(require_confirmation=not args.non_interactive)
     chip.ft_provision(args.ecc_priv_keyfile,
+                      args.ca_priv_keyfile,
                       require_confirmation=not args.non_interactive)
     chip.parse_logs()
     chip.record_device(db_conn, commit_hash, timestamp, ecc_keyfile_basename)
@@ -242,17 +247,20 @@ def main():
             )
         except Exception as e:
             logging.warning(
-                f"Updating remote provisioning database failed: {e}"
-            )
+                f"Updating remote provisioning database failed: {e}")
     else:
-        logging.warning("--cloud_project was not provided. Skipping remote database upload")
+        logging.warning(
+            "--cloud_project was not provided. Skipping remote database upload"
+        )
 
     logging.info("Provisioning complete")
 
     res = db_conn.cursor().execute(f"SELECT * FROM {OT_SQL_TABLE_NAME}")
     rows = res.fetchall()
     if len(rows) == 0:
-        logging.info(f"All local records uploaded! You may safely delete {args.db_file}")
+        logging.info(
+            f"All local records uploaded! You may safely delete {args.db_file}"
+        )
     else:
         logging.warning(f"{len(rows)} record(s) remaining in {args.db_file}")
         logging.warning("Run update_remote_db.py to upload remaining records")
