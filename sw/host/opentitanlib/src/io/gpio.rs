@@ -42,7 +42,7 @@ pub enum GpioError {
     MismatchedDataLength(usize, usize),
     #[error("Bitbang data beyond the {0} least significant bits")]
     InvalidBitbangData(usize),
-    #[error("Bitbang delay of zero, or at end of sequence, not permitted")]
+    #[error("Bitbang delay of zero, immediately preceding `await()`, or at end of sequence, not permitted")]
     InvalidBitbangDelay,
     #[error("Generic error: {0}")]
     Generic(String),
@@ -236,6 +236,10 @@ pub enum BitbangEntry<'rd, 'wr> {
     /// `Delay` between two `Write` blocks, which is also equivalent to concatenating the two into
     /// a single `Write` block.
     Delay(u32),
+    /// Similar to `Delay`, but waits until `(pin_values ^ pattern) & mask` equals zero, that is,
+    /// until the set of pins indicated by ones in `mask` all have the the value indicated in
+    /// `pattern`.
+    Await { mask: u8, pattern: u8 },
 }
 
 /// A trait implemented by transports which support synchronous bit-banging on GPIO pins, similar
