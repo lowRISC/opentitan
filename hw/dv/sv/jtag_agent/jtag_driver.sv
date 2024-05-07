@@ -79,6 +79,13 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     end
   endtask
 
+  // Drive TMS, TDI to the given values and wait for a single edge of TCK.
+  task tms_tdi_step(bit tms, bit tdi);
+    `HOST_CB.tms <= tms;
+    `HOST_CB.tdi <= tdi;
+    @(`HOST_CB);
+  endtask
+
   // Task to drive TMS such that TAP FSM resets to Test-Logic-Reset state
   task drive_jtag_test_logic_reset();
     `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
@@ -88,14 +95,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     @(`HOST_CB);
     // Go to Test Logic Reset
     repeat (JTAG_TEST_LOGIC_RESET_CYCLES) begin
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end
     // Go to Run-Test/Idle
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
   endtask
 
   // drive jtag req and retrieve rsp
@@ -147,26 +150,17 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
     // Assume starting in RTI state
     // SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // SelectIR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // CaptureIR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
     // ShiftIR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
     for(int i = 0; i < len; i++) begin
-      // ExitIR if end of addr
-      `HOST_CB.tms <= (i == len - 1) ? 1'b1 : 1'b0;
       `HOST_CB.tdi <= ir[i];
-      // Move to PauseIR state if pause_count is non-zero
+
+      // Spend some cycles in PauseIR state if pause_count is non-zero
       if (pause_count > 0 && i == pause_cycle) begin
         `uvm_info(`gfn,
            $sformatf("jtag_pause in drive_jtag_ir with pause_count : %0d, pause_cycle:%0d",
@@ -175,7 +169,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
            UVM_MEDIUM)
         jtag_pause(pause_count, dout);
       end
-      @(`HOST_CB);
+
+      // ExitIR if end of addr
+      tms_tdi_step(i == len - 1, ir[i]);
     end
     // go to RTI either via
     // - PauseIR -> exit2IR -> UpdateIR -> RTI or
@@ -183,28 +179,18 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     if (req.exit_via_pause_ir) begin
       `uvm_info(`gfn, "Exiting via PauseIR", UVM_MEDIUM)
       // Go to PauseIR
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
       // Go to Exit2IR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
       // Go to UpdateIR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end else begin
       // UpdateIR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end
     if (exit_to_rti) begin
       // Go to RTI
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
     end else begin
       `uvm_info(`gfn, "drive_ir: skip going to RTI", UVM_MEDIUM)
     end
@@ -225,17 +211,11 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // go to CaptureDR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
     // go to ShiftDR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
     for(int i = 0; i < len - 1; i++) begin
       // We're probably currently in ShiftDr and TDO will contain bit i of the output value.
       // However, this is not true if we injected a pause on the last iteration. In that case, we
@@ -245,11 +225,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
       end
       pause_just_injected = 1'b0;
-
-      // Move to (or stay in) ShiftDR
-      `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= dr[i];
-      // Move to PauseDR state if pause_count is non-zero
+
+      // Spend some cycles in PauseDR state if pause_count is non-zero
       if (pause_count > 0 && i == pause_cycle) begin
         `uvm_info(`gfn,
            $sformatf("jtag_pause in drive_jtag_dr with pause_count : %0d, pause_cycle:%0d",
@@ -259,43 +237,33 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         jtag_pause(pause_count, dout);
         pause_just_injected = 1'b1;
       end
-      @(`HOST_CB);
+
+      // stay in ShiftDR
+      tms_tdi_step(0, dr[i]);
     end
     // go to Exit1DR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= dr[len - 1];
     dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-    @(`HOST_CB);
+    tms_tdi_step(1, dr[len - 1]);
     // go to RTI either via
     // - PauseDR -> exit2DR -> UpdateDR -> RTI or
     // - Exit1DR -> UpdateDR -> RTI
     if (req.exit_via_pause_dr) begin
       `uvm_info(`gfn, "Exiting via PauseDR", UVM_MEDIUM)
       // Go to PauseDR
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
       dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
       // Go to Exit2DR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
       // Go to UpdateDR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end else begin
       // go to UpdateDR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
       dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end
     if (exit_to_rti) begin
       // go to RTI
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
     end else begin
       `uvm_info(`gfn, "drive_dr: skip going to RTI", UVM_MEDIUM)
     end
@@ -303,24 +271,16 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   endtask
 
   // Task to drive tms such that TAP FSM transitions through
-  // CaptureIR/ CaptureDR -> Exit1IR/ Exit1DR -> UpdateIR/ UpdateDR -> RTI
+  // CaptureIR/CaptureDR -> Exit1IR/Exit1DR -> UpdateIR/UpdateDR -> RTI
   task drive_dummy_ir_dr();
-      // go to CaptureDR/ CaptureIR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
-    // go to Exit1DR/ Exit1IR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
-    // go to UpdateDR/ UpdateIR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    // go to CaptureDR/CaptureIR
+    tms_tdi_step(0, 0);
+    // go to Exit1DR/Exit1IR
+    tms_tdi_step(1, 0);
+    // go to UpdateDR/UpdateIR
+    tms_tdi_step(1, 0);
     // go to RTI
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
   endtask
 
   // Task to drive tms such that TAP FSM transitions through
@@ -329,13 +289,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `uvm_info(`gfn, "Introducing dummy IR", UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // go to SelectIR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
+
     drive_dummy_ir_dr();
   endtask
 
@@ -345,9 +302,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `uvm_info(`gfn, "Introducing dummy DR", UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
+
     drive_dummy_ir_dr();
   endtask
 
@@ -375,7 +331,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // Move to Exit2Ir/Exit2Dr state
     `HOST_CB.tms <= 1'b1;
     @(`HOST_CB);
-    // Move to ShiftIr/ShiftDr state
+    // Set up tms so the next clock edge will move us to ShiftIr/ShiftDr state
     `HOST_CB.tms <= 1'b0;
   endtask
 
