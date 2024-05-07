@@ -27,18 +27,15 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // do reset signals (function)
   virtual function void do_reset_signals();
-    if (cfg.if_mode == Host) begin
-      cfg.vif.tck_en <= 1'b0;
-      cfg.vif.tms <= 1'b0;
-      cfg.vif.tdi <= 1'b0;
-      selected_ir = '{default:0};
-      selected_ir_len = 0;
-      exit_to_rti_ir_past = 1;
-      exit_to_rti_dr_past = 1;
-    end
-    else begin
-      cfg.vif.tdo <= 1'b0;
-    end
+    `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
+
+    cfg.vif.tck_en <= 1'b0;
+    cfg.vif.tms <= 1'b0;
+    cfg.vif.tdi <= 1'b0;
+    selected_ir = '{default:0};
+    selected_ir_len = 0;
+    exit_to_rti_ir_past = 1;
+    exit_to_rti_dr_past = 1;
   endfunction
 
   // reset signals task
@@ -53,16 +50,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // drive trans received from sequencer
   virtual task get_and_drive();
-    if (cfg.if_mode == Host) begin
-      get_and_drive_host_mode();
-    end
-    else begin
-      `uvm_fatal(`gfn, "Device mode driver is not supported yet.")
-    end
-  endtask
+    `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
-  // drive trans received from sequencer
-  virtual task get_and_drive_host_mode();
     forever begin
       if (!cfg.vif.trst_n) begin
         `DV_WAIT(cfg.vif.trst_n)
