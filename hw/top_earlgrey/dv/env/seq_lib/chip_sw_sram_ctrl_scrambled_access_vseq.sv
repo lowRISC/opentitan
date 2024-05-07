@@ -149,6 +149,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     int retval;
     bit scr_key_valid;
     int offset = addr - top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+    // `backdoor` comes after `pattern` which is `BACKDOOR_DATA_WORDS` long.
+    offset += BACKDOOR_DATA_WORDS * 4;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_RET_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
@@ -176,6 +178,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     int retval;
     bit scr_key_valid;
     int offset = addr - top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+    // `backdoor` comes after `pattern` which is `BACKDOOR_DATA_WORDS` long.
+    offset += BACKDOOR_DATA_WORDS * 4;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_MAIN_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
