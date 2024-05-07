@@ -114,6 +114,7 @@ pub enum BitbangEntryRequest {
     Write { data: Vec<u8> },
     Both { data: Vec<u8> },
     Delay { clock_ticks: u32 },
+    Await { mask: u8, pattern: u8 },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -121,6 +122,7 @@ pub enum BitbangEntryResponse {
     Write,
     Both { data: Vec<u8> },
     Delay,
+    Await,
 }
 
 #[derive(Serialize, Deserialize)]

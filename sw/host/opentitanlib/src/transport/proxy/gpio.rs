@@ -211,6 +211,10 @@ impl GpioBitbanging for GpioBitbangingImpl {
                 BitbangEntry::Delay(ticks) => req.push(BitbangEntryRequest::Delay {
                     clock_ticks: *ticks,
                 }),
+                BitbangEntry::Await { mask, pattern } => req.push(BitbangEntryRequest::Await {
+                    mask: *mask,
+                    pattern: *pattern,
+                }),
             }
         }
         match self.execute_command(GpioBitRequest::Run {

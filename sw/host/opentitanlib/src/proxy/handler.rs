@@ -148,6 +148,7 @@ impl<'a> TransportCommandHandler<'a> {
                                     data: vec![0; data.len()],
                                 },
                                 BitbangEntryRequest::Delay { .. } => BitbangEntryResponse::Delay,
+                                BitbangEntryRequest::Await { .. } => BitbangEntryResponse::Await,
                             })
                             .collect();
                         // Now carefully craft a proper parameter to the
@@ -170,6 +171,13 @@ impl<'a> TransportCommandHandler<'a> {
                                     BitbangEntryRequest::Delay { clock_ticks },
                                     BitbangEntryResponse::Delay {},
                                 ) => BitbangEntry::Delay(*clock_ticks),
+                                (
+                                    BitbangEntryRequest::Await { mask, pattern },
+                                    BitbangEntryResponse::Await {},
+                                ) => BitbangEntry::Await {
+                                    mask: *mask,
+                                    pattern: *pattern,
+                                },
                                 _ => {
                                     // This can only happen if the logic in this method is
                                     // flawed.  (Never due to network input.)

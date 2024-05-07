@@ -684,6 +684,11 @@ fn encode_waveform(waveform: &[BitbangEntry], num_pins: usize) -> Result<Vec<u8>
             BitbangEntry::Delay(n @ 1..) => {
                 delay += *n;
             }
+            BitbangEntry::Await { mask, pattern } => {
+                ensure!(delay == 0, GpioError::InvalidBitbangDelay);
+                encoded_waveform.extend_from_slice(&[0x80, 0x80, *mask, *pattern]);
+                delay = 0;
+            }
         }
     }
 
@@ -724,6 +729,9 @@ fn decode_waveform(
                 while encoded_response[index] & 0x80 != 0 {
                     index += 1;
                 }
+            }
+            BitbangEntry::Await { .. } => {
+                index += 4;
             }
         }
     }
