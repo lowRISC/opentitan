@@ -354,6 +354,8 @@ static rom_error_t rom_ext_attestation_keygen(
         (hmac_digest_t *)boot_measurements.rom_ext.data,
         rom_ext_manifest->security_version, &cdi_0_key_ids,
         &curr_attestation_pubkey, cdi_0_cert, &cdi_0_cert_size));
+    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
+        &kFlashCtrlInfoPageCdi0Certificate, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
         &kFlashCtrlInfoPageCdi0Certificate,
         /*offset=*/0, cdi_0_cert_size / sizeof(uint32_t), cdi_0_cert));
@@ -387,10 +389,16 @@ static rom_error_t rom_ext_attestation_keygen(
         (hmac_digest_t *)zero_binding_value.data,
         owner_manifest->security_version, &cdi_1_key_ids,
         &curr_attestation_pubkey, cdi_1_cert, &cdi_1_cert_size));
+    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
+        &kFlashCtrlInfoPageCdi1Certificate, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
         &kFlashCtrlInfoPageCdi1Certificate,
         /*offset=*/0, cdi_1_cert_size / sizeof(uint32_t), cdi_1_cert));
   }
+
+  // Remove write and erase access to the certificate pages before handing over
+  // execution to the owner firmware (owner firmware can still read).
+  flash_ctrl_cert_info_pages_owner_restrict();
 
   // TODO: elimiate this call when we've fully programmed keymgr and lock it.
   keymgr_sw_binding_unlock_wait();
