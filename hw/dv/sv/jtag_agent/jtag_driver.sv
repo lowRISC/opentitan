@@ -18,8 +18,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   logic [JTAG_IRW-1:0]  selected_ir;
   uint                  selected_ir_len;
 
-  // Variable to save the previous value of exit_to_rti_ir
-  bit                   exit_to_rti_ir_past = 1;
   // Variable to save the previous value of exit_to_rti_dr
   // Before fetching a new request, `drive_jtag_req` task waits for a clock cycle.
   // Since, in the `drive_ir` task, there is a possibility to introduce TAP reset by consecutively
@@ -41,7 +39,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     cfg.vif.tck_en <= 1'b0;
     cfg.vif.tms <= 1'b0;
     cfg.vif.tdi <= 1'b0;
-    exit_to_rti_ir_past = 1;
     exit_to_rti_dr_past = 1;
   endfunction
 
@@ -150,7 +147,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                      uint pause_cycle = 0,
                      bit exit_to_rti = 1'b1);
     logic [JTAG_DRW-1:0] dout;
-    exit_to_rti_ir_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
     // Assume starting in RTI state
     // SelectDR
