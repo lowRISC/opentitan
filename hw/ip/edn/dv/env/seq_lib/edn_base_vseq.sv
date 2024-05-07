@@ -195,10 +195,13 @@ class edn_base_vseq extends cip_base_vseq #(
           `DV_SPINWAIT_EXIT(
             csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_reg_rdy), .exp_data(1'b1),
                          .spinwait_delay_ns(1000));,
-            wait(cfg.abort_sw_cmd);,
+            wait(cfg.abort_sw_cmd);
+            wait_no_outstanding_access();,
             "Aborted SW command"
           )
-          csr_wr(.ptr(ral.sw_cmd_req), .value(cmd_data));
+          if (!cfg.abort_sw_cmd) begin
+            csr_wr(.ptr(ral.sw_cmd_req), .value(cmd_data));
+          end
           additional_data -= 1;
         end
         else begin
@@ -207,7 +210,8 @@ class edn_base_vseq extends cip_base_vseq #(
           `DV_SPINWAIT_EXIT(
             csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1),
                          .spinwait_delay_ns(1000));,
-            wait(cfg.abort_sw_cmd);,
+            wait(cfg.abort_sw_cmd);
+            wait_no_outstanding_access();,
             "Aborted SW command"
           )
           if (!cfg.abort_sw_cmd) begin
