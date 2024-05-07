@@ -91,8 +91,8 @@ static_assert(kTestBufferSizeWords == 16,
               "computed again");
 
 typedef struct {
-  uint32_t backdoor[kTestBufferSizeWords];
   uint32_t pattern[kTestBufferSizeWords];
+  uint32_t backdoor[kTestBufferSizeWords];
   uint32_t ecc_error_counter;
 } scramble_test_frame;
 
@@ -139,6 +139,15 @@ static const uint8_t kBackdoorExpectedBytes[kTestBufferSizeBytes];
  * which is kept intact across the system reboot.
  */
 static noreturn void main_sram_scramble(void) {
+  // Copy only the reference pattern in most environments.
+  uint32_t copy_len = sizeof(reference_frame->pattern);
+  // Also copy the backdoor in DV sim. The DV-sim testbench magically corrects
+  // the backdoor data so that its ECC is correct. This won't be true on other
+  // platforms and the number of ECC errors will be doubled.
+  if (kDeviceType == kDeviceSimDV) {
+    copy_len += sizeof(reference_frame->backdoor);
+  }
+
   asm volatile(
       // Save the tests frames addresses before the scrambling.
       "lw a2, 0(%[mainFrame])                                        \n"
@@ -158,7 +167,7 @@ static noreturn void main_sram_scramble(void) {
       "sw a3, 0(%[retFrame])                                         \n"
 
       // Copy the backdoor and pattern buffers from main to the retention SRAM.
-      "addi t1, a3,  %[kCopyLen]                                    \n"
+      "add t1, a3, %[kCopyLen]                                      \n"
       ".L_buffer_copy_loop:                                         \n"
       "  lw t0, 0(a2)                                               \n"
       "  sw t0, 0(a3)                                               \n"
@@ -184,8 +193,7 @@ static noreturn void main_sram_scramble(void) {
         [kSramCtrlKeyScrDone] "I"(0x1 << SRAM_CTRL_STATUS_SCR_KEY_VALID_BIT),
 
         [mainFrame] "r"(&scrambling_frame), [retFrame] "r"(&reference_frame),
-        [kCopyLen] "I"(sizeof(reference_frame->pattern) +
-                       sizeof(reference_frame->backdoor)),
+        [kCopyLen] "r"(copy_len),
 
         [kRstMgrRegsBase] "r"(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
         [kRstMgrResetReq] "I"(RSTMGR_RESET_REQ_REG_OFFSET)
