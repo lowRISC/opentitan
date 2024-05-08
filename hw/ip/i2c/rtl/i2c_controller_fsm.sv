@@ -347,6 +347,8 @@ module i2c_controller_fsm import i2c_pkg::*;
     sda_d = 1'b1;
     scl_d = 1'b1;
     transmitting_o = 1'b0;
+    log_start = 1'b0;
+    log_stop = 1'b0;
     fmt_fifo_rready_o = 1'b0;
     rx_fifo_wvalid_o = 1'b0;
     rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
@@ -388,8 +390,10 @@ module i2c_controller_fsm import i2c_pkg::*;
           // a repeated start, the FSM will just go back to Idle and wait for the bus to go free
           // again.
           ctrl_symbol_failed = 1'b1;
+        end else if (tcount_q == 20'd1) begin
+          log_start = 1'b1;
+          event_cmd_complete_o = pend_restart;
         end
-        if (log_start) event_cmd_complete_o = pend_restart;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
@@ -551,6 +555,8 @@ module i2c_controller_fsm import i2c_pkg::*;
         if (!sda_i && !scl_i) begin
           // Failed to issue Stop before some other device could pull SCL low.
           ctrl_symbol_failed = 1'b1;
+        end else if (sda_i) begin
+          log_stop = 1'b1;
         end
       end
       // Active: continue while keeping SCL low
@@ -577,6 +583,8 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b1;
         scl_d = 1'b1;
         transmitting_o = 1'b0;
+        log_start = 1'b0;
+        log_stop = 1'b0;
         event_scl_interference_o = 1'b0;
         ctrl_symbol_failed = 1'b0;
         fmt_fifo_rready_o = 1'b0;
@@ -600,8 +608,6 @@ module i2c_controller_fsm import i2c_pkg::*;
     byte_clr = 1'b0;
     read_byte_clr = 1'b0;
     shift_data_en = 1'b0;
-    log_start = 1'b0;
-    log_stop = 1'b0;
     req_restart = 1'b0;
     auto_stop_d = auto_stop_q;
 
@@ -666,7 +672,6 @@ module i2c_controller_fsm import i2c_pkg::*;
           state_d = HoldStart;
           load_tcount = 1'b1;
           tcount_sel = tHoldStart;
-          log_start = 1'b1;
         end
       end
       // HoldStart: SDA is pulled low, SCL is released
@@ -882,7 +887,6 @@ module i2c_controller_fsm import i2c_pkg::*;
           auto_stop_d = 1'b0;
         end else if (sda_i) begin
           auto_stop_d = 1'b0;
-          log_stop = 1'b1;
           if (auto_stop_q) begin
             // If this Stop symbol was generated automatically, go back to Idle.
             state_d = Idle;
@@ -943,8 +947,6 @@ module i2c_controller_fsm import i2c_pkg::*;
         byte_clr = 1'b0;
         read_byte_clr = 1'b0;
         shift_data_en = 1'b0;
-        log_start = 1'b0;
-        log_stop = 1'b0;
         auto_stop_d = 1'b0;
       end
     endcase // unique case (state_q)
