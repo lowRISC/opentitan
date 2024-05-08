@@ -5,7 +5,7 @@
 use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use opentitanlib::app::TransportWrapper;
@@ -62,6 +62,8 @@ impl UsbOpts {
     // a new device that can be opened is found. If several devices are found
     // at the time that match and can be open, all of them will be returned.
     // On timeout, the function will return an empty list.
+    // This function will regularly retry to open devices that previously failed
+    // but will not display messages when they fail again.
     //
     // This function will return an error on critical failures such as failing to poll
     // the USB bus.
@@ -70,27 +72,33 @@ impl UsbOpts {
         timeout: Duration,
     ) -> Result<Vec<rusb::DeviceHandle<rusb::GlobalContext>>> {
         let start = Instant::now();
-        // Keep a list of devices to not warn against again.
-        let mut warned_desc = HashSet::<DeviceLoc>::new();
-        let mut warned_open = HashSet::<DeviceLoc>::new();
+        // Keep a list of devices that we failed to open and when we last tried to open.
+        let mut failed_dev = HashMap::<DeviceLoc, Instant>::new();
         loop {
             let mut devices = Vec::new();
             for device in rusb::devices().context("USB error")?.iter() {
-                let seen_dev = DeviceLoc::from_device(&device)?;
+                let dev_loc = DeviceLoc::from_device(&device)?;
+                // Do not retry devices that previously failed unless we have reached the retry timeout.
+                let last_seen = failed_dev.get(&dev_loc);
+                match last_seen {
+                    Some(last_try) if last_try.elapsed() < self.usb_poll_delay() => continue,
+                    _ => (),
+                }
                 let descriptor = match device.device_descriptor() {
                     Ok(desc) => desc,
                     Err(e) => {
-                        // Ignore device if we have already seen it.
-                        if !warned_desc.contains(&seen_dev) {
-                            warned_desc.insert(seen_dev);
+                        // Only warned if we haven't done so before.
+                        if last_seen.is_none() {
                             log::warn!("Could not read device descriptor for device at bus={} address={}: {}",
                                 device.bus_number(),
                                 device.address(),
                                 e);
                         }
+                        failed_dev.insert(dev_loc, Instant::now());
                         continue;
                     }
                 };
+                // Ignore devices that do not match.
                 if descriptor.vendor_id() != self.vid {
                     continue;
                 }
@@ -100,9 +108,8 @@ impl UsbOpts {
                 let handle = match device.open() {
                     Ok(handle) => handle,
                     Err(e) => {
-                        // Ignore device if we have already seen it.
-                        if !warned_open.contains(&seen_dev) {
-                            warned_open.insert(seen_dev);
+                        // Only warned if we haven't done so before.
+                        if last_seen.is_none() {
                             log::warn!(
                                 "Could not open device at bus={} address={}: {}",
                                 device.bus_number(),
@@ -110,6 +117,7 @@ impl UsbOpts {
                                 e
                             );
                         }
+                        failed_dev.insert(dev_loc, Instant::now());
                         continue;
                     }
                 };
@@ -120,8 +128,12 @@ impl UsbOpts {
                 return Ok(devices);
             }
             // Wait a bit before polling again.
-            std::thread::sleep(Duration::from_micros(1_000_000u64 / self.usb_poll_freq));
+            std::thread::sleep(self.usb_poll_delay());
         }
+    }
+
+    pub fn usb_poll_delay(&self) -> Duration {
+        Duration::from_micros(1_000_000 / self.usb_poll_freq)
     }
 
     pub fn vbus_control_available(&self) -> bool {
