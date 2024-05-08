@@ -24,13 +24,16 @@ with_unknown! {
         Empty = BootSvcKind::EmptyRequest.0,
         MinBl0SecVerRequest = BootSvcKind::MinBl0SecVerRequest.0,
         NextBl0SlotRequest = BootSvcKind::NextBl0SlotRequest.0,
-        UnlockOwnershipRequest = BootSvcKind::OwnershipUnlockRequest.0,
-        ActivateOwnerRequest = BootSvcKind::OwnershipActivateRequest.0,
-        Rescue = u32::from_le_bytes(*b"RESQ"),
-        GetBootLog = u32::from_le_bytes(*b"BLOG"),
-        BootSvcReq = u32::from_le_bytes(*b"BREQ"),
-        BootSvcRsp = u32::from_le_bytes(*b"BRSP"),
-        OwnerBlock = u32::from_le_bytes(*b"OWNR"),
+        OwnershipUnlockRequest = BootSvcKind::OwnershipUnlockRequest.0,
+        OwnershipActivateRequest =   BootSvcKind::OwnershipActivateRequest.0,
+
+        // The rescue protocol-level commands are represented in big-endian order.
+        Rescue = u32::from_be_bytes(*b"RESQ"),
+        Reboot = u32::from_be_bytes(*b"REBO"),
+        GetBootLog = u32::from_be_bytes(*b"BLOG"),
+        BootSvcReq = u32::from_be_bytes(*b"BREQ"),
+        BootSvcRsp = u32::from_be_bytes(*b"BRSP"),
+        OwnerBlock = u32::from_be_bytes(*b"OWNR"),
     }
 }
 
@@ -107,8 +110,8 @@ impl OwnerRescueConfig {
                 CommandTag::Empty,
                 CommandTag::MinBl0SecVerRequest,
                 CommandTag::NextBl0SlotRequest,
-                CommandTag::UnlockOwnershipRequest,
-                CommandTag::ActivateOwnerRequest,
+                CommandTag::OwnershipUnlockRequest,
+                CommandTag::OwnershipActivateRequest,
                 CommandTag::Rescue,
                 CommandTag::GetBootLog,
                 CommandTag::BootSvcReq,
@@ -128,8 +131,8 @@ mod test {
     const OWNER_RESCUE_CONFIG_BIN: &str = "\
 00000000: 52 45 53 51 38 00 00 00 58 4d 44 4d 20 00 64 00  RESQ8...XMDM .d.\n\
 00000010: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK\n\
-00000020: 41 43 54 56 52 45 53 51 42 4c 4f 47 42 52 45 51  ACTVRESQBLOGBREQ\n\
-00000030: 42 52 53 50 4f 57 4e 52                          BRSPOWNR\n\
+00000020: 41 43 54 56 51 53 45 52 47 4f 4c 42 51 45 52 42  ACTVQSERGOLBQERB\n\
+00000030: 50 53 52 42 52 4e 57 4f                          PSRBRNWO\n\
 ";
     const OWNER_RESCUE_CONFIG_JSON: &str = r#"{
   header: {
@@ -143,8 +146,8 @@ mod test {
     "Empty",
     "MinBl0SecVerRequest",
     "NextBl0SlotRequest",
-    "UnlockOwnershipRequest",
-    "ActivateOwnerRequest",
+    "OwnershipUnlockRequest",
+    "OwnershipActivateRequest",
     "Rescue",
     "GetBootLog",
     "BootSvcReq",
@@ -164,8 +167,8 @@ mod test {
                 CommandTag::Empty,
                 CommandTag::MinBl0SecVerRequest,
                 CommandTag::NextBl0SlotRequest,
-                CommandTag::UnlockOwnershipRequest,
-                CommandTag::ActivateOwnerRequest,
+                CommandTag::OwnershipUnlockRequest,
+                CommandTag::OwnershipActivateRequest,
                 CommandTag::Rescue,
                 CommandTag::GetBootLog,
                 CommandTag::BootSvcReq,
