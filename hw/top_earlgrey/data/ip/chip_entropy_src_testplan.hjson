@@ -76,7 +76,7 @@
         "ENTROPY_SRC.ROUTE_TO_FIRMWARE",
       ]
       stage: V2
-      si_stage: None
+      si_stage: NA
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
       bazel: []
