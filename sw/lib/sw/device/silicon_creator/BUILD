@@ -107,6 +107,7 @@ cc_library(
         "//sw/lib/sw/device/base:hardened_memory",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator:otbn_boot_services",
         "//sw/lib/sw/device/silicon_creator:dbg_print",
         "//sw/lib/sw/device/silicon_creator/sigverify",
     ],
@@ -140,6 +141,27 @@ dual_cc_library(
     ),
 )
 
+cc_library(
+    name = "attestation",
+    hdrs = ["attestation.h"],
+)
+
+cc_library(
+    name = "otbn_boot_services",
+    srcs = ["otbn_boot_services.c"],
+    hdrs = ["otbn_boot_services.h"],
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":attestation",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:otbn",
+        "//sw/otbn/crypto:boot",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
+    ],
+)
+
 exports_files([
     "boot_data.h",
     "boot_data.c",
@@ -155,6 +177,7 @@ exports_files([
     "mock_boot_data.h",
     "mock_manifest.h",
     "mock_shutdown.h",
+    "otbn_boot_services_functest.c",
     "rom_patch.c",
     "rom_patch.h",
     "shutdown.c",

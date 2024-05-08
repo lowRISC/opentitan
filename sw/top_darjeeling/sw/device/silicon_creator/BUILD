@@ -333,3 +333,24 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
+
+opentitan_functest(
+    name = "otbn_boot_services_functest",
+    srcs = ["//sw/lib/sw/device/silicon_creator:otbn_boot_services_functest.c"],
+    targets = [
+        "dv",
+        "verilator",
+    ],
+    test_in_second_rom = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_rom:second_rom_linker_script",
+        "//sw/device/lib/testing/test_rom:test_second_rom_lib",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/lib/sw/device/silicon_creator:otbn_boot_services",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+    ],
+)
