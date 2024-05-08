@@ -171,7 +171,7 @@ static status_t tx_stretch(void) {
   uint8_t rnd_data[kTxSize];
   for (int i = 0; i < sizeof(rnd_data); ++i) {
     uint32_t rand;
-    TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, 1000, &rand));
+    TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, 10000, &rand));
     rnd_data[i] = rand & 0xFF;
   }
   uint8_t write_buffer[kTxSize + 1];
