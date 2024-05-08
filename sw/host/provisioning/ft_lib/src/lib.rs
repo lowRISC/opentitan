@@ -312,11 +312,11 @@ pub fn run_ft_personalize(
     // -------------------------------------------------------------------------
 
     // Send attestation TCB measurements for generating certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for DICE certificate inputs ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for certificate inputs ...", timeout)?;
     perso_certgen_inputs.send(&*uart)?;
 
     // Wait until device exports the attestation certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting DICE and TPM certificates ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Exporting TBS certificates ...", timeout)?;
     let certs = ManufCerts::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
@@ -357,7 +357,7 @@ pub fn run_ft_personalize(
         .take(certs.tpm_cik_tbs_certificate_size)
         .collect();
 
-    // Log certificates to console and check they are parsable with OpenSSL.
+    // Parse, endorse, and log certificates to console.
     let cert_endorsement_sk = SecretKey::<NistP256>::read_pkcs8_der_file(cert_endorsement_ecc_sk)?;
     let uds_cert_bytes = parse_and_endorse_x509_cert(uds_tbs_cert_bytes, &cert_endorsement_sk)?;
     let tpm_ek_cert_bytes =
@@ -366,8 +366,6 @@ pub fn run_ft_personalize(
         parse_and_endorse_x509_cert(tpm_cek_tbs_cert_bytes, &cert_endorsement_sk)?;
     let tpm_cik_cert_bytes =
         parse_and_endorse_x509_cert(tpm_cik_tbs_cert_bytes, &cert_endorsement_sk)?;
-
-    // Print out each certs' contents and verify that they are properly parsable.
     log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
     let _ = parse_certificate(&uds_cert_bytes)?;
     log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
@@ -399,8 +397,8 @@ pub fn run_ft_personalize(
             cert_clone.truncate(size);
         }
         hasher.update(cert_clone);
-        log::info!("Running hash {:?}", hex::encode(hasher.clone().finalize()));
     }
+    let host_computed_certs_hash = hasher.finalize();
 
     // Send endorsed certificates back to the device.
     let endorsed_certs = ManufEndorsedCerts {
@@ -415,26 +413,24 @@ pub fn run_ft_personalize(
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;
     endorsed_certs.send(&*uart)?;
-    let _ = UartConsole::wait_for(&*uart, r"Final hash:", timeout)?;
-    let received_hash = SerdesSha256Hash::recv(&*uart, timeout, false)?;
     let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
 
-    // Compare host and device generated certificates' hash values. Note that
-    // the dev calculated hash is represented as a number with different
-    // endiannes.
-    if !received_hash
+    // Check the integrity of the certificates written to the device's flash by comparing a
+    // SHA256 over all certificates computed on the host and device sides.
+    let device_computed_certs_hash = SerdesSha256Hash::recv(&*uart, timeout, false)?;
+    if !device_computed_certs_hash
         .data
         .as_bytes()
         .iter()
         .rev()
-        .zip(hasher.finalize().iter())
+        .zip(host_computed_certs_hash.iter())
         .all(|(a, b)| a == b)
     {
-        log::error!(
-            "Hash received from device: {:x?}",
-            received_hash.data.as_bytes()
-        );
-        bail!("Host vs Device certs hash mismatch");
+        bail!(
+            "Host ({:x?}) vs Device ({:x?}) certs hash mismatch.",
+            host_computed_certs_hash.as_bytes(),
+            device_computed_certs_hash.data.as_bytes()
+        )
     }
 
     let certs: [&Vec<u8>; 3] = [&tpm_ek_cert_bytes, &tpm_cek_cert_bytes, &tpm_cik_cert_bytes];

@@ -105,6 +105,10 @@ static dice_cert_key_id_pair_t cdi_1_key_ids = {
     .endorsement = &cdi_0_pubkey_id,
     .cert = &cdi_1_pubkey_id,
 };
+static hmac_digest_t tpm_endorsement_key_id;
+static hmac_digest_t tpm_pubkey_id;
+static dice_cert_key_id_pair_t tpm_key_ids = {
+    .endorsement = &tpm_endorsement_key_id, .cert = &tpm_pubkey_id};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static manuf_certs_t tbs_certs = {
     .uds_tbs_certificate = {0},
@@ -114,13 +118,32 @@ static manuf_certs_t tbs_certs = {
     .cdi_1_certificate = {0},
     .cdi_1_certificate_size = kCdi1MaxCertSizeBytes,
     .tpm_ek_tbs_certificate = {0},
-    .tpm_ek_tbs_certificate_size = kUdsMaxCertSizeBytes,
+    .tpm_ek_tbs_certificate_size = kTpmEkMaxTbsSizeBytes,
     .tpm_cek_tbs_certificate = {0},
-    .tpm_cek_tbs_certificate_size = kUdsMaxCertSizeBytes,
+    .tpm_cek_tbs_certificate_size = kTpmCekMaxTbsSizeBytes,
     .tpm_cik_tbs_certificate = {0},
-    .tpm_cik_tbs_certificate_size = kUdsMaxCertSizeBytes,
+    .tpm_cik_tbs_certificate_size = kTpmCikMaxTbsSizeBytes,
 };
 static manuf_endorsed_certs_t endorsed_certs;
+static const unsigned char *kEndorsedTpmCerts[] = {
+    endorsed_certs.tpm_ek_certificate,
+    endorsed_certs.tpm_cek_certificate,
+    endorsed_certs.tpm_cik_certificate,
+};
+
+static void log_self_hash(void) {
+  // clang-format off
+  LOG_INFO("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
+           boot_measurements.rom_ext.data[7],
+           boot_measurements.rom_ext.data[6],
+           boot_measurements.rom_ext.data[5],
+           boot_measurements.rom_ext.data[4],
+           boot_measurements.rom_ext.data[3],
+           boot_measurements.rom_ext.data[2],
+           boot_measurements.rom_ext.data[1],
+           boot_measurements.rom_ext.data[0]);
+  // clang-format on
+}
 
 /**
  * Initializes all DIF handles used in this program.
@@ -237,8 +260,7 @@ static uint32_t round_up_to(uint32_t input, uint32_t align_bits) {
 }
 
 /**
- *  Calculate the number of 4 byte words necessary to fit the passed in number
- *  of bytes.
+ * Calculate the number of 32-bit words necessary to fit the input number bytes.
  */
 static uint32_t size_to_words(uint32_t bytes) {
   return round_up_to(bytes, 2) / sizeof(uint32_t);
@@ -257,22 +279,21 @@ static uint32_t get_cert_size(const uint8_t *header) {
 }
 
 /**
- *  Read a certificate from the passed in location in a flash INFO page and hash
- *  its contents on the existing sha256 hashing stream. Determine the actual
- *  certificate size from its ASN1 header.
+ * Read a certificate from the passed in location in a flash INFO page and hash
+ * its contents on the existing sha256 hashing stream. Determine the actual
+ * certificate size from its ASN1 header.
  *
  * If the caller passed a pointer, save there the certificate size.
  */
 static status_t hash_certificate(const flash_ctrl_info_page_t *page,
                                  size_t offset, size_t *size) {
-  uint8_t buffer[1024];  // 1K should be enough for the largest possible
-                         // certificate.
+  uint8_t buffer[1024];  // 1K should be enough for the largest certificate.
   uint32_t cert_size;
-  uint32_t bytes_read;  // Number of bytes already read.
+  uint32_t bytes_read;
 
-  // Read the first word of the certificate.
+  // Read the first word of the certificate which contains it's size.
   TRY(flash_ctrl_info_read(page, offset, 1, buffer));
-  bytes_read = sizeof(uint32_t);  // One word has been read.
+  bytes_read = sizeof(uint32_t);
   cert_size = get_cert_size(buffer);
   if (cert_size == 0) {
     LOG_ERROR("Inconsistent certificate header %02x %02x page %x:%x", buffer[0],
@@ -301,46 +322,81 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   return OK_STATUS();
 }
 
+static status_t log_hash_of_all_certs(ujson_t *uj) {
+  uint32_t cert_size;
+  uint32_t page_offset = 0;
+  serdes_sha256_hash_t hash;
+  hmac_sha256_init();
+
+  // Push DICE certificates into the hash (each resides on a separate page).
+  TRY(hash_certificate(&kFlashCtrlInfoPageUdsCertificate, 0, NULL));
+  TRY(hash_certificate(&kFlashCtrlInfoPageCdi0Certificate, 0, NULL));
+  TRY(hash_certificate(&kFlashCtrlInfoPageCdi1Certificate, 0, NULL));
+
+  // Push TPM certificates into the hash (all reside on the same page).
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
+    TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
+    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
+    page_offset = round_up_to(page_offset, 3);
+  }
+
+  // Log the final hash of all certificates to the host and console.
+  hmac_sha256_final((hmac_digest_t *)&hash);
+  RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &hash);
+  LOG_INFO("SHA256 hash of all certificates: %08x%08x%08x%08x%08x%08x%08x%08x",
+           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
+           hash.data[2], hash.data[1], hash.data[0]);
+
+  return OK_STATUS();
+}
+
 /**
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_dice_certificates(ujson_t *uj) {
+  /*****************************************************************************
+   * Initialization.
+   ****************************************************************************/
   // Load OTBN attestation keygen program.
   // TODO(#21550): this should already be loaded by the ROM.
   TRY(otbn_boot_app_load());
 
+  // Configure certificate flash info page permissions.
+  TRY(config_and_erase_certificate_flash_pages());
+
   // Retrieve certificate provisioning data.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Waiting for DICE certificate inputs ...");
+  LOG_INFO("Waiting for certificate inputs ...");
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
-
-  // Configure certificate flash info page permissions.
-  TRY(config_and_erase_certificate_flash_pages());
+  // We copy over the TPM/UDS endorsement key ID to an SHA256 digest type, since
+  // this is the format of key IDs generated on-dice.
+  memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
+         kDiceCertKeyIdSizeInBytes);
+  memcpy(tpm_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
+         kDiceCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.
   TRY(entropy_complex_init());
   TRY(kmac_keymgr_configure());
 
-  // Advance keymgr to Initialized state.
+  // Advance keymgr to CreatorRootKey state.
   TRY(sc_keymgr_state_check(kScKeymgrStateReset));
   sc_keymgr_advance_state();
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
-
-  // Generate UDS keys and (TBS) cert.
   sc_keymgr_advance_state();
+
+  /*****************************************************************************
+   * DICE certificates.
+   ****************************************************************************/
+  // Generate UDS keys and (TBS) cert.
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kOtbnBootAttestationKeyTypeDice,
                                      kUdsKeymgrDiversifier));
-  // We copy over the UDS endorsement key ID to an SHA256 digest type, since
-  // this is the format of key IDs generated on-dice.
-  memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
-         kDiceCertKeyIdSizeInBytes);
   TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey,
                               tbs_certs.uds_tbs_certificate,
                               &tbs_certs.uds_tbs_certificate_size));
-
   LOG_INFO("Generated UDS TBS certificate.");
 
   // Generate CDI_0 keys and cert.
@@ -376,35 +432,37 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       tbs_certs.cdi_1_certificate));
   LOG_INFO("Generated CDI_1 certificate.");
 
-  hmac_digest_t pubkey_id;
-
-  // One structure used for all TPM certs.
-  dice_cert_key_id_pair_t tpm_key_ids = {.endorsement = &uds_endorsement_key_id,
-                                         .cert = &pubkey_id};
-
-  // Generate TPM EK keys and TBS.
-  TRY(dice_attestation_keygen(kDiceKeyTpmEk, &pubkey_id, &curr_pubkey));
+  /*****************************************************************************
+   * TPM certificates.
+   ****************************************************************************/
+  // Generate TPM EK keys and (TBS) cert.
+  TRY(dice_attestation_keygen(kDiceKeyTpmEk, &tpm_pubkey_id, &curr_pubkey));
   TRY(dice_tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
                                  tbs_certs.tpm_ek_tbs_certificate,
                                  &tbs_certs.tpm_ek_tbs_certificate_size));
   LOG_INFO("Generated TPM EK TBS certificate.");
 
-  TRY(dice_attestation_keygen(kDiceKeyTpmCek, &pubkey_id, &curr_pubkey));
+  // Generate TPM CEK keys and (TBS) cert.
+  TRY(dice_attestation_keygen(kDiceKeyTpmCek, &tpm_pubkey_id, &curr_pubkey));
   TRY(dice_tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
                                   tbs_certs.tpm_cek_tbs_certificate,
                                   &tbs_certs.tpm_cek_tbs_certificate_size));
   LOG_INFO("Generated TPM CEK TBS certificate.");
 
-  TRY(dice_attestation_keygen(kDiceKeyTpmCik, &pubkey_id, &curr_pubkey));
+  // Generate TPM CIK keys and (TBS) cert.
+  TRY(dice_attestation_keygen(kDiceKeyTpmCik, &tpm_pubkey_id, &curr_pubkey));
   TRY(dice_tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
                                   tbs_certs.tpm_cik_tbs_certificate,
                                   &tbs_certs.tpm_cik_tbs_certificate_size));
   LOG_INFO("Generated TPM CIK TBS certificate.");
 
+  /*****************************************************************************
+   * Certificate Export and Endorsement.
+   ****************************************************************************/
   // Export the certificates to the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Exporting DICE and TPM certificates ...");
+  LOG_INFO("Exporting TBS certificates ...");
   RESP_OK(ujson_serialize_manuf_certs_t, uj, &tbs_certs);
 
   // Import endorsed certificates from the provisioning appliance.
@@ -412,27 +470,24 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Importing endorsed certificates ...");
   TRY(ujson_deserialize_manuf_endorsed_certs_t(uj, &endorsed_certs));
-  LOG_INFO("Deserialized endorsed certificates ...");
 
-  // Write the endorsed certificates to flash and ack to host.
+  /*****************************************************************************
+   * Save Certificates to Flash.
+   ****************************************************************************/
+  // DICE UDS Certificate.
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageUdsCertificate, /*offset=*/0,
       size_to_words(get_cert_size(endorsed_certs.uds_certificate)),
       endorsed_certs.uds_certificate));
   LOG_INFO("Imported DICE UDS certificate.");
 
-  // Now TPM certificates, get saved in the same flash INFO page.
+  // TPM Certificates (all on the same flash INFO page).
   uint32_t page_offset = 0;
-  const unsigned char *tpm_certs[] = {
-      endorsed_certs.tpm_ek_certificate,
-      endorsed_certs.tpm_cek_certificate,
-      endorsed_certs.tpm_cik_certificate,
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE(tpm_certs); i++) {
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     const char *names[] = {"EK", "CEK", "CIK"};
     // Number of words necessary for certificate storage.
-    uint32_t cert_size_words = size_to_words(get_cert_size(tpm_certs[i]));
+    uint32_t cert_size_words =
+        size_to_words(get_cert_size(kEndorsedTpmCerts[i]));
     uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
 
     if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
@@ -440,7 +495,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       return OUT_OF_RANGE();
     }
     TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageTpmCerts, page_offset,
-                              cert_size_words, tpm_certs[i]));
+                              cert_size_words, kEndorsedTpmCerts[i]));
     LOG_INFO("Imported TPM %s certificate.", names[i]);
     page_offset += cert_size_bytes;
 
@@ -448,55 +503,11 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
     page_offset = round_up_to(page_offset, 3);
   }
 
-  uint32_t cert_size;
-  serdes_sha256_hash_t hash;
-
-  hmac_sha256_init();
-  // Dice certificates, each in its own INFO page.
-  TRY(hash_certificate(&kFlashCtrlInfoPageUdsCertificate, 0, NULL));
-  TRY(hash_certificate(&kFlashCtrlInfoPageCdi0Certificate, 0, NULL));
-  TRY(hash_certificate(&kFlashCtrlInfoPageCdi1Certificate, 0, NULL));
-
-  // TPM certificates, all in one INFO page.
-  page_offset = 0;
-  for (size_t i = 0; i < ARRAYSIZE(tpm_certs);
-       i++) {  // There are three TPM certificates on the page.
-    TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
-    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
-    page_offset = round_up_to(page_offset, 3);
-  }
-
-  hmac_sha256_final((hmac_digest_t *)&hash);
-
-  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
-  // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Final hash: ");
-  RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &hash);
-
-  // Also print the final hash on the console, first convert it into a hex
-  // string, two bytes per digit plus trailing zero.
-  LOG_INFO("Sha256 hash of Certificates: %08x%08x%08x%08x%08x%08x%08x%08x",
-           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
-           hash.data[2], hash.data[1], hash.data[0]);
-
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Finished importing certificates.");
-  return OK_STATUS();
-}
 
-static void log_self_hash(void) {
-  // clang-format off
-  LOG_INFO("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
-           boot_measurements.rom_ext.data[7],
-           boot_measurements.rom_ext.data[6],
-           boot_measurements.rom_ext.data[5],
-           boot_measurements.rom_ext.data[4],
-           boot_measurements.rom_ext.data[3],
-           boot_measurements.rom_ext.data[2],
-           boot_measurements.rom_ext.data[1],
-           boot_measurements.rom_ext.data[0]);
-  // clang-format on
+  return OK_STATUS();
 }
 
 bool test_main(void) {
@@ -506,5 +517,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_dice_certificates(&uj));
+  CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
   return true;
 }
