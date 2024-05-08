@@ -30,7 +30,7 @@ assign rcon[ 6] = 'h96;
 assign rcon[ 7] = 'h87;
 assign rcon[ 8] = 'h78;
 assign rcon[ 9] = 'h69;
-assign rcon[10] = 'h58;
+assign rcon[10] = 'h5a;
 assign rcon[11] = 'h4b;
 
 // The versions of Ascon permutation
