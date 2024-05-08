@@ -238,7 +238,7 @@ module hmac
           hw2reg.digest[i].d = conv_endian32(digest[i][31:0], digest_swap);
           // digest SW -> HW
           digest_sw[i]       = {32'h0, conv_endian32(reg2hw.digest[i].q, digest_swap)};
-          digest_sw_we[i]    = reg2hw.digest[i+1].qe;
+          digest_sw_we[i]    = reg2hw.digest[i].qe;
         end else begin
           hw2reg.digest[i].d = '0;
         end
