@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{bail, Context, Result};
 use arrayvec::ArrayVec;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::{PublicKey, SecretKey};
@@ -173,10 +173,9 @@ fn openssl_command(cert_num: usize, args: &[&str]) -> Result<()> {
             "openssl output:\n{}",
             std::str::from_utf8(&o.stderr).unwrap()
         );
-        Err(anyhow!("Cert #{cert_num}: openssl {} failed", args[0]))
-    } else {
-        Ok(())
+        bail!("Cert #{cert_num}: openssl {} failed", args[0]);
     }
+    Ok(())
 }
 
 // Given a u8 blob containing an x509 certificate perform some rudimentary
@@ -186,24 +185,19 @@ fn get_cert_size(cert: &[u8]) -> Result<usize> {
     let len = cert.len();
 
     if len < 4 {
-        return Err(anyhow!("Certificate too short {len}"));
+        bail!("Certificate too short {len}");
     }
 
     if cert[0] != 0x30 || cert[1] != 0x82 {
-        Err(anyhow!(
-            "Corrupted ASN.1 header {:02x}{:02x}",
-            cert[0],
-            cert[1]
-        ))
-    } else {
-        let size = (u16::from_be_bytes([cert[2], cert[3]]) + 4) as usize;
-
-        if size > len {
-            Err(anyhow!("ASN.1 size {} exceeds cert length {}", size, len))
-        } else {
-            Ok(size)
-        }
+        bail!("Corrupted ASN.1 header {:02x}{:02x}", cert[0], cert[1]);
     }
+
+    let size = (u16::from_be_bytes([cert[2], cert[3]]) + 4) as usize;
+
+    if size > len {
+        bail!("ASN.1 size {} exceeds cert length {}", size, len);
+    }
+    Ok(size)
 }
 
 // Validate the passed in certificates using 'openssl verify ...' command.
@@ -440,7 +434,7 @@ pub fn run_ft_personalize(
             "Hash received from device: {:x?}",
             received_hash.data.as_bytes()
         );
-        return Err(anyhow!("Host vs Device certs hash mismatch"));
+        bail!("Host vs Device certs hash mismatch");
     }
 
     let certs: [&Vec<u8>; 3] = [&tpm_ek_cert_bytes, &tpm_cek_cert_bytes, &tpm_cik_cert_bytes];
