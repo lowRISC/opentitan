@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
@@ -12,6 +13,15 @@ load(
 load("//rules:otbn.bzl", "otbn_insn_count_range")
 
 package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "ecdsa_p256_key",
+    srcs = ["ecdsa_p256_key.c"],
+    hdrs = ["ecdsa_p256_key.h"],
+    deps = [
+        "//sw/lib/sw/device/base:macros",
+    ],
+)
 
 cc_library(
     name = "rsa_key",
@@ -29,6 +39,21 @@ cc_library(
     deps = [
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/silicon_creator/sigverify/sphincsplus:params",
+    ],
+)
+
+
+opentitan_functest(
+    name = "ecdsa_p256_verify_functest",
+    srcs = ["ecdsa_p256_verify_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":ecdsa_p256_verify",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -147,6 +172,18 @@ cc_library(
 )
 
 cc_library(
+    name = "ecdsa_p256_verify",
+    srcs = ["ecdsa_p256_verify.c"],
+    hdrs = ["ecdsa_p256_verify.h"],
+    deps = [
+        ":ecdsa_p256_key",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/silicon_creator:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+)
+
+cc_library(
     name = "spx_verify",
     srcs = ["spx_verify.c"],
     hdrs = ["spx_verify.h"],
@@ -187,6 +224,7 @@ cc_library(
     name = "sigverify",
     hdrs = ["sigverify.h"],
     deps = [
+        ":ecdsa_p256_verify",
         ":rsa_verify",
         ":spx_verify",
         ":usage_constraints",
