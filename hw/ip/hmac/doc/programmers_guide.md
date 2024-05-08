@@ -88,14 +88,22 @@ To switch from one message stream to another, set the `CMD.hash_stop` bit, wait 
 
 Here is an example usage pattern of this feature:
 1. Start processing message stream A by configuring HMAC and then setting the `CMD.hash_start` bit.
-2. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
-3. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).
-4. Save the context by reading the `DIGEST_0`..`15` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers. (The values in the `CFG` register must also be preserved, but that is purely SW-controlled so doesn't need to be read from HW.)
-5. Repeat steps 1-4 for message stream B.
-6. Restore the context of message stream A by writing the `CFG`, `DIGEST_0`..`15`, and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
-7. Continue processing message stream A by setting the `CMD.hash_continue` bit.
-8. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
-9. Continue this with as many message blocks and parallel message streams as needed. The final hash for any message stream can be obtained at any time (no need for complete blocks) by setting `CMD.hash_process` and waiting for the `hmac_done` interrupt / status bit, finally reading the digest from the `DIGEST` registers.
+1. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
+1. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).
+1. Save the context by reading the `DIGEST_0`..`15` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
+If the operation is keyed HMAC, then `KEY_0`..`X` registers also need to be stored, where `X` is the last register used for the given key length (e.g. for HMAC-256, `X=7`).
+(The values in the `CFG` register must also be preserved, but that is purely SW-controlled so doesn't need to be read from HW.)
+1. Disable `sha_en` by updating `CFG` register, in order to clear the digest from stream A.
+This is necessary to also prevent leakage of intermediate context of one SW thread to another.
+1. Repeat steps 1-5 for message stream B.
+1. Before restoring context, make sure that `sha_en` in `CFG` remains disabled.
+1. Restore the context of message stream A by writing the `CFG`, `DIGEST_0`..`15`, and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
+In the case of keyed HMAC, `KEY_0`..`X` registers also need to be restored.
+1. Enable `sha_en` of `CFG`, which enables HMAC again and locks down writing to the `DIGEST_0`..`15` registers from SW.
+1. Continue processing message stream A by setting the `CMD.hash_continue` bit.
+1. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
+1. Continue this with as many message blocks and parallel message streams as needed.
+The final hash for any message stream can be obtained at any time (no need for complete blocks) by setting `CMD.hash_process` and waiting for the `hmac_done` interrupt / status bit, finally reading the digest from the `DIGEST` registers.
 
 ## Errors
 
