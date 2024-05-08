@@ -23,7 +23,7 @@
       features: ["FLASH_CTRL.INIT.SCRAMBLING_KEYS", "FLASH_CTRL.INIT.ROOT_SEEDS",
                  "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
       stage: V2
-      si_stage: SV3
+      si_stage: NA
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_init"]
       bazel: ["//sw/device/tests:flash_ctrl_test"]
@@ -138,7 +138,7 @@
             '''
       features: ["FLASH_CTRL.INIT.ROOT_SEEDS", "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
       stage: V2
-      si_stage: SV3
+      si_stage: NA
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_key_derivation"]
     }

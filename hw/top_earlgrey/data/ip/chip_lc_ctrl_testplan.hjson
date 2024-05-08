@@ -78,6 +78,7 @@
             - Ensure that no interrupts or alerts are triggered.
             '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -144,6 +145,7 @@
             - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
             '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_keymgr_key_derivation_prod"]
     }
     {
@@ -178,6 +180,7 @@
               - lc_escalate_en_o (multiple)
             '''
       stage: V2
+      si_stage: NA
       tests: [
         "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
         "chip_tap_straps_dev",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
@@ -215,6 +218,7 @@
             - TBD
             '''
       stage: V3
+      si_stage: NA
       tests: []
     }
     {
