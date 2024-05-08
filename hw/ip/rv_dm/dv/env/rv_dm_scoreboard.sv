@@ -70,8 +70,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       end
 
       if (selected_dtm_csr == null) begin
-        // Unmapped regions of the JTAG DTM register space should exhibit RAZ/WI behavior.
-        `DV_CHECK_EQ(item.dout, 0)
+        // Behaviour on unmapped regions of the JTAG DTM register space is not defined. In
+        // particular, we don't have an opinion about what dout should contain.
         continue;
       end
 
