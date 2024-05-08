@@ -50,14 +50,14 @@ class OTDevice:
 
         elf_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/{}"
         if self.fpga_test:
-            platform_flags = """--interface=cw310 \
+            platform_harness_flags = """--interface=cw310 \
 --clear-bitstream --bitstream=hw/bitstream/rom_with_fake_keys_otp_raw.bit \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/ftdi/olimex-arm-usb-tiny-h.cfg"""
             elf = elf_path.format(
                 "sram_cp_provision_fpga_cw310_rom_with_fake_keys.elf")
         else:
-            platform_flags = """--interface=hyper310 \
+            platform_harness_flags = """--interface=teacup \
 --disable-dft-on-reset \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/cmsis-dap.cfg"""
@@ -66,7 +66,7 @@ class OTDevice:
         # Assemble bazel command
         cmd = f"""bazel run //sw/host/provisioning/cp -- \
 --rcfile= --logging=info \
-{platform_flags} \
+{platform_harness_flags} \
 --elf={elf} \
 --device-id="{format_hex(self.device_id, width=64)}" \
 --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
@@ -93,6 +93,7 @@ class OTDevice:
     def ft_provision(self,
                      ecc_priv_keyfile,
                      ca_priv_keyfile,
+                     ca_certfile,
                      require_confirmation=True):
         """Run the FT provisioning Bazel target."""
         logging.info("Running FT Provisioning")
@@ -113,6 +114,9 @@ class OTDevice:
             bootstrap3 = perso_bin_path.format(
                 "ft_personalize_3_fpga_cw310_rom_with_fake_keys.prod_key_0.signed.bin"
             )
+            bootstrap4 = perso_bin_path.format(
+                "ft_personalize_4_fpga_cw310_rom_with_fake_keys.prod_key_0.signed.bin"
+            )
 
             platform_bazel_flags = ""
             platform_harness_flags = """--interface=cw310 --clear-bitstream \
@@ -132,9 +136,12 @@ class OTDevice:
             bootstrap3 = perso_bin_path.format(
                 "ft_personalize_3_silicon_creator.earlgrey_a0_prod_0.signed.bin"
             )
+            bootstrap4 = perso_bin_path.format(
+                "ft_personalize_4_silicon_creator.earlgrey_a0_prod_0.signed.bin"
+            )
 
             platform_bazel_flags = "--//signing:token=//signing/tokens:nitrokey"
-            platform_harness_flags = """--interface=hyper310 \
+            platform_harness_flags = """--interface=teacup \
 --disable-dft-on-reset \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/cmsis-dap.cfg"""
@@ -146,12 +153,14 @@ class OTDevice:
 --bootstrap={bootstrap} \
 --second-bootstrap={bootstrap2} \
 --third-bootstrap={bootstrap3}  \
+--fourth-bootstrap={bootstrap4}  \
 --device-id="{format_hex(self.device_id, 64)}" \
 --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
 --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
 --target-mission-mode-lc-state="{self.target_lc_state}" \
 --host-ecc-sk={ecc_priv_keyfile} \
 --cert-endorsement-ecc-sk={ca_priv_keyfile} \
+--ca-certificate={ca_certfile} \
 --rom-ext-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-manifest-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \

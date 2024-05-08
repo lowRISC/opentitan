@@ -138,6 +138,7 @@ def main():
                         type=parse_hexstring_to_int)
     parser.add_argument("--ecc_priv_keyfile", required=True)
     parser.add_argument("--ca_priv_keyfile", required=True)
+    parser.add_argument("--ca_certfile", required=True)
     parser.add_argument("--target_lc_state",
                         help="Target mission mode LC state",
                         choices=["dev", "prod"],
@@ -234,6 +235,7 @@ def main():
     chip.cp_provision(require_confirmation=not args.non_interactive)
     chip.ft_provision(args.ecc_priv_keyfile,
                       args.ca_priv_keyfile,
+                      args.ca_certfile,
                       require_confirmation=not args.non_interactive)
     chip.parse_logs()
     chip.record_device(db_conn, commit_hash, timestamp, ecc_keyfile_basename)
