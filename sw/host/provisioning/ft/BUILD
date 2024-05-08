@@ -21,6 +21,7 @@ rust_binary(
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_1_prod_signed",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_2_prod_signed",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_3_prod_signed",
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_4_prod_signed",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",
