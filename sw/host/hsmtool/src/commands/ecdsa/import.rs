@@ -40,14 +40,14 @@ pub struct Import {
 }
 
 impl Import {
-    const PUBLIC_ATTRS: &str = r#"{
+    const PUBLIC_ATTRS: &'static str = r#"{
         "CKA_TOKEN": true,
         "CKA_CLASS": "CKO_PUBLIC_KEY",
         "CKA_KEY_TYPE": "CKK_EC",
         "CKA_VERIFY": true
     }"#;
 
-    const PRIVATE_ATTRS: &str = r#"{
+    const PRIVATE_ATTRS: &'static str = r#"{
         "CKA_TOKEN": true,
         "CKA_PRIVATE": true,
         "CKA_SENSITIVE": true,
