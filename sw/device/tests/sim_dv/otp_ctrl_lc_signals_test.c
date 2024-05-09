@@ -183,9 +183,11 @@ static void run_otp_access_tests(test_mode_t test_mode,
 }
 
 /**
- * Initialize and advance to kDifKeymgrStateCreatorRootKey state.
+ * Try to initialize and advance to kDifKeymgrStateCreatorRootKey state.
+ *
+ * @param expect_init_fail Whether initialization is expected to fail.
  */
-static void keymgr_advance_to_creator_root_key(void) {
+static void keymgr_advance_to_creator_root_key(bool expect_init_fail) {
   // Check the last word of the retention SRAM creator area to determine the
   // type of the ROM.
   bool is_using_test_rom =
@@ -193,17 +195,22 @@ static void keymgr_advance_to_creator_root_key(void) {
           ->creator
           .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
       TEST_ROM_IDENTIFIER;
+
+  // Advance from Reset to Initialized state (or expect it to fail).
   CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
   CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
-  CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized));
-  // Advance to kDifKeymgrStateCreatorRootKey state.
+  const dif_keymgr_state_t exp_state =
+      expect_init_fail ? kDifKeymgrStateInvalid : kDifKeymgrStateInitialized;
+  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, exp_state));
+
+  // Advance to Creator Root Key state (or expect it to fail as well).
   if (is_using_test_rom) {
     LOG_INFO("Using test_rom, setting inputs and advancing state...");
-    CHECK_DIF_OK(dif_keymgr_advance_state(&keymgr, &kCreatorParams));
+    CHECK((kDifOk == dif_keymgr_advance_state(&keymgr, &kCreatorParams)) ^
+          expect_init_fail);
   } else {
     LOG_INFO("Using rom, only advancing state...");
-    CHECK_DIF_OK(dif_keymgr_advance_state_raw(&keymgr));
+    CHECK((kDifOk == dif_keymgr_advance_state_raw(&keymgr)) ^ expect_init_fail);
   }
 }
 
@@ -225,22 +232,16 @@ static void keymgr_check_cannot_advance(void) {
  * manager.
  */
 static void keymgr_check_root_key_is_invalid(void) {
-  dif_keymgr_status_codes_t status;
-  keymgr_advance_to_creator_root_key();
-  LOG_INFO("Check that the Keymgr root key is invalid...");
-  do {
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(&keymgr, &status));
-  } while (status == 0);
-  CHECK(status ==
-            (kDifKeymgrStatusCodeIdle | kDifKeymgrStatusCodeInvalidKmacInput),
-        "Unexpected status: %x", status);
+  LOG_INFO("Trying to advance to Creator Root Key and expecting failure...");
+  keymgr_advance_to_creator_root_key(/*expect_init_fail=*/true);
 }
 
 /**
  * Generate a SW key and store it within the retention SRAM.
  */
 static void keymgr_check_can_generate_key(void) {
-  keymgr_advance_to_creator_root_key();
+  LOG_INFO("Trying to advance to Creator Root Key and expecting success...");
+  keymgr_advance_to_creator_root_key(/*expect_init_fail=*/false);
   LOG_INFO("Check that the Keymgr can generate a key...");
   CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&keymgr));
   CHECK_STATUS_OK(
