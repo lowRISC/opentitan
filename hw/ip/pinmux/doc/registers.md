@@ -966,7 +966,7 @@ Muxed pad attributes.
 This register has WARL behavior since not each pad type may support
 all attributes.
 - Reset default: `0x0`
-- Reset mask: `0xf3007f`
+- Reset mask: `0xf300ff`
 
 ### Instances
 
@@ -1024,7 +1024,7 @@ all attributes.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                            |
@@ -1033,7 +1033,8 @@ all attributes.
 | 23:20  |   rw   |   0x0   | [drive_strength](#mio_pad_attr--drive_strength) |
 | 19:18  |        |         | Reserved                                        |
 | 17:16  |   rw   |   0x0   | [slew_rate](#mio_pad_attr--slew_rate)           |
-|  15:7  |        |         | Reserved                                        |
+|  15:8  |        |         | Reserved                                        |
+|   7    |   rw   |   0x0   | [input_disable](#mio_pad_attr--input_disable)   |
 |   6    |   rw   |   0x0   | [od_en](#mio_pad_attr--od_en)                   |
 |   5    |   rw   |   0x0   | [schmitt_en](#mio_pad_attr--schmitt_en)         |
 |   4    |   rw   |   0x0   | [keeper_en](#mio_pad_attr--keeper_en)           |
@@ -1047,6 +1048,10 @@ Drive strength (0x0: weakest, 0xf: strongest)
 
 ### MIO_PAD_ATTR . slew_rate
 Slew rate (0x0: slowest, 0x3: fastest).
+
+### MIO_PAD_ATTR . input_disable
+Disable input drivers.
+Setting this to 1 for pads that are not used as input can reduce their leakage current.
 
 ### MIO_PAD_ATTR . od_en
 Enable open drain.
@@ -1118,7 +1123,7 @@ Dedicated pad attributes.
 This register has WARL behavior since not each pad type may support
 all attributes.
 - Reset default: `0x0`
-- Reset mask: `0xf3007f`
+- Reset mask: `0xf300ff`
 
 ### Instances
 
@@ -1145,7 +1150,7 @@ all attributes.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                            |
@@ -1154,7 +1159,8 @@ all attributes.
 | 23:20  |   rw   |   0x0   | [drive_strength](#dio_pad_attr--drive_strength) |
 | 19:18  |        |         | Reserved                                        |
 | 17:16  |   rw   |   0x0   | [slew_rate](#dio_pad_attr--slew_rate)           |
-|  15:7  |        |         | Reserved                                        |
+|  15:8  |        |         | Reserved                                        |
+|   7    |   rw   |   0x0   | [input_disable](#dio_pad_attr--input_disable)   |
 |   6    |   rw   |   0x0   | [od_en](#dio_pad_attr--od_en)                   |
 |   5    |   rw   |   0x0   | [schmitt_en](#dio_pad_attr--schmitt_en)         |
 |   4    |   rw   |   0x0   | [keeper_en](#dio_pad_attr--keeper_en)           |
@@ -1168,6 +1174,10 @@ Drive strength (0x0: weakest, 0xf: strongest)
 
 ### DIO_PAD_ATTR . slew_rate
 Slew rate (0x0: slowest, 0x3: fastest).
+
+### DIO_PAD_ATTR . input_disable
+Disable input drivers.
+Setting this to 1 for pads that are not used as input can reduce their leakage current.
 
 ### DIO_PAD_ATTR . od_en
 Enable open drain.

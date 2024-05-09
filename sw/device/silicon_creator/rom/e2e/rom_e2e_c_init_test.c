@@ -81,10 +81,13 @@ static uint32_t pad_attr_mask_get(void) {
   CHECK_EQ(kDeviceType, kDeviceFpgaCw310,
            "This test is only supported for CW310");
 
-  // The only legal attributes on CW310 are `invert` and `virtual_od_en`.
+  // The only legal attributes on CW310 are `invert`, `virtual_od_en`, and
+  // `input_disable`.
   uint32_t mask = 0;
   mask = bitfield_bit32_write(mask, PINMUX_MIO_PAD_ATTR_0_INVERT_0_BIT, true);
   mask = bitfield_bit32_write(mask, PINMUX_MIO_PAD_ATTR_0_VIRTUAL_OD_EN_0_BIT,
+                              true);
+  mask = bitfield_bit32_write(mask, PINMUX_MIO_PAD_ATTR_0_INPUT_DISABLE_0_BIT,
                               true);
 
   // Save the original attributes for pad 0.

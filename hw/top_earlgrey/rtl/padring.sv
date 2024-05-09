@@ -69,6 +69,8 @@ module padring
       // This is currently not dynamically controlled.
       // However, this may change in the future if the
       // need arises (e.g. as part of to power sequencing).
+      // Orthogonal to this pin, the input can be disabled
+      // by setting `attr_i.input_disable` to 1.
       .ie_i       ( 1'b1                     ),
       .out_i      ( dio_out_i[k]             ),
       .oe_i       ( dio_oe_i[k]              ),
@@ -90,6 +92,8 @@ module padring
       // This is currently not dynamically controlled.
       // However, this may change in the future if the
       // need arises (e.g. as part of to power sequencing).
+      // Orthogonal to this pin, the input can be disabled
+      // by setting `attr_i.input_disable` to 1.
       .ie_i       ( 1'b1                     ),
       .out_i      ( mio_out_i[k]             ),
       .oe_i       ( mio_oe_i[k]              ),

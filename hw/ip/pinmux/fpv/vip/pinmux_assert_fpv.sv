@@ -296,6 +296,7 @@ module pinmux_assert_fpv
   assign mio_pad_attr_mask.keep_en = 0;
   assign mio_pad_attr_mask.schmitt_en = 0;
   assign mio_pad_attr_mask.od_en = 0;
+  assign mio_pad_attr_mask.input_disable = 0;
   assign mio_pad_attr_mask.slew_rate = '0;
   assign mio_pad_attr_mask.drive_strength[3:1] = '0;
 
@@ -323,6 +324,7 @@ module pinmux_assert_fpv
   assign dio_pad_attr_mask.keep_en     = 0;
   assign dio_pad_attr_mask.schmitt_en = 0;
   assign dio_pad_attr_mask.od_en = 0;
+  assign dio_pad_attr_mask.input_disable = 0;
   assign dio_pad_attr_mask.slew_rate = '0;
   assign dio_pad_attr_mask.drive_strength[3:1] = '0;
 

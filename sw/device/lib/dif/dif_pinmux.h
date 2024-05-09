@@ -145,6 +145,7 @@ typedef enum dif_pinmux_pad_attr_flags {
   kDifPinmuxPadAttrKeeper = 1 << 4,
   kDifPinmuxPadAttrSchmittTrigger = 1 << 5,
   kDifPinmuxPadAttrOpenDrain = 1 << 6,
+  kDifPinmuxPadAttrInputDisable = 1 << 7,
 } dif_pinmux_pad_attr_flags_t;
 
 /**

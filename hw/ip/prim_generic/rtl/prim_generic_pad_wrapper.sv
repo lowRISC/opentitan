@@ -46,6 +46,10 @@ module prim_generic_pad_wrapper
   //VCS coverage on
   // pragma coverage on
 
+  // Input enable, active-low = input disable, active-high
+  logic ie_n;
+  assign ie_n = ~ie_i | attr_i.input_disable;
+
   if (PadType == InputStd) begin : gen_input_only
     //VCS coverage off
     // pragma coverage off
@@ -57,7 +61,7 @@ module prim_generic_pad_wrapper
     //VCS coverage on
     // pragma coverage on
 
-    assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
+    assign in_raw_o = ie_n ? 1'bz : inout_io;
     // input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
 
@@ -71,7 +75,7 @@ module prim_generic_pad_wrapper
                PadType == BidirOd ||
                PadType == BidirStd) begin : gen_bidir
 
-    assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
+    assign in_raw_o = ie_n ? 1'bz : inout_io;
     // input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
 
@@ -95,13 +99,20 @@ module prim_generic_pad_wrapper
     //VCS coverage off
     // pragma coverage off
     logic unused_ana_sigs;
-    assign unused_ana_sigs = ^{attr_i, out_i, oe_i, ie_i};
+    assign unused_ana_sigs = ^{attr_i.invert,
+                               attr_i.virt_od_en,
+                               attr_i.drive_strength[0],
+                               attr_i.pull_en,
+                               attr_i.pull_select,
+                               out_i,
+                               oe_i,
+                               ie_i};
     //VCS coverage on
     // pragma coverage on
 
     assign inout_io = 1'bz; // explicitly make this tristate to avoid lint errors.
-    assign in_o = inout_io;
-    assign in_raw_o = inout_io;
+    assign in_raw_o = ie_n ? 1'bz : inout_io;
+    assign in_o = in_raw_o;
 
   end else begin : gen_invalid_config
     // this should throw link warnings in elaboration

@@ -19,16 +19,19 @@ module prim_xilinx_ultrascale_pad_attr
   // Input-only:
   //
   // - inversion
+  // - input disable
   //
   // Bidirectional:
   //
   // - inversion
   // - virtual open drain
+  // - input disable
   //
   if (PadType == InputStd) begin : gen_input_only_warl
     always_comb begin : p_attr
       attr_warl_o = '0;
       attr_warl_o.invert = 1'b1;
+      attr_warl_o.input_disable = 1'b1;
     end
   end else if (PadType == BidirStd ||
                PadType == BidirTol ||
@@ -37,12 +40,14 @@ module prim_xilinx_ultrascale_pad_attr
       attr_warl_o = '0;
       attr_warl_o.invert = 1'b1;
       attr_warl_o.virt_od_en = 1'b1;
+      attr_warl_o.input_disable = 1'b1;
     end
   end else if (PadType == AnalogIn0) begin : gen_analog0_warl
     // The analog pad type is basically just a feedthrough,
-    // and does hence not support any of the attributes.
+    // and hence only supports input disable.
     always_comb begin : p_attr
       attr_warl_o = '0;
+      attr_warl_o.input_disable = 1'b1;
     end
   end else begin : gen_invalid_config
     // this should throw link warnings in elaboration

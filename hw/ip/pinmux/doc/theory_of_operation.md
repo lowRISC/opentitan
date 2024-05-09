@@ -208,7 +208,8 @@ Signal               | Direction  | Type        | Description
 `attr_i[4]`          | `input`    | `logic`     | Keeper enable
 `attr_i[5]`          | `input`    | `logic`     | Schmitt trigger enable
 `attr_i[6]`          | `input`    | `logic`     | Open drain enable
-`attr_i[8:7]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
-`attr_i[12:9]`       | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
+`attr_i[7]`          | `input`    | `logic`     | Input disable (0: input enabled, 1: input disabled)
+`attr_i[9:8]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
+`attr_i[13:10]`      | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
 Note that the corresponding pad attribute registers [`MIO_PAD_ATTR_0`](registers.md#mio_pad_attr) and [`DIO_PAD_ATTR_0`](registers.md#dio_pad_attr) have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
