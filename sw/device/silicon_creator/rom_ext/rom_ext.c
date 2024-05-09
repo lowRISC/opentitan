@@ -435,7 +435,8 @@ static rom_error_t rom_ext_attestation_keygen(
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_boot(const manifest_t *manifest) {
+static rom_error_t rom_ext_boot(boot_data_t *boot_data,
+                                const manifest_t *manifest) {
   // Crank the keymgr and validate attestation certificates.
   HARDENED_RETURN_IF_ERROR(rom_ext_attestation_keygen(manifest));
 
@@ -571,6 +572,9 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // Lock the address translation windows.
   ibex_addr_remap_lockdown(0);
   ibex_addr_remap_lockdown(1);
+
+  // Lock the flash according to the ownership configuration.
+  HARDENED_RETURN_IF_ERROR(ownership_flash_lockdown(boot_data, &owner_config));
 
   dbg_print_epmp();
 
@@ -754,7 +758,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(rom_ext_boot(manifests.ordered[i]));
+    RETURN_IF_ERROR(rom_ext_boot(boot_data, manifests.ordered[i]));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;
