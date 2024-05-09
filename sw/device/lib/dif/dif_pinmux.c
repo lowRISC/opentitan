@@ -222,6 +222,10 @@ static dif_pinmux_pad_attr_t dif_pinmux_reg_to_pad_attr(uint32_t reg_value) {
   if (bitfield_bit32_read(reg_value, PINMUX_MIO_PAD_ATTR_0_OD_EN_0_BIT)) {
     pad_attrs.flags |= kDifPinmuxPadAttrOpenDrain;
   }
+  if (bitfield_bit32_read(reg_value,
+                          PINMUX_MIO_PAD_ATTR_0_INPUT_DISABLE_0_BIT)) {
+    pad_attrs.flags |= kDifPinmuxPadAttrInputDisable;
+  }
   return pad_attrs;
 }
 
@@ -285,6 +289,9 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
                            attrs_in.flags & kDifPinmuxPadAttrSchmittTrigger);
   reg_value = bitfield_bit32_write(reg_value, PINMUX_MIO_PAD_ATTR_0_OD_EN_0_BIT,
                                    attrs_in.flags & kDifPinmuxPadAttrOpenDrain);
+  reg_value =
+      bitfield_bit32_write(reg_value, PINMUX_MIO_PAD_ATTR_0_INPUT_DISABLE_0_BIT,
+                           attrs_in.flags & kDifPinmuxPadAttrInputDisable);
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
 
   // Wait for pull enable/disable changes to propagate to the physical pad.

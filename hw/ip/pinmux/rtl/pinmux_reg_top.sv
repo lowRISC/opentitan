@@ -906,6 +906,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_0_schmitt_en_0_wd;
   logic mio_pad_attr_0_od_en_0_qs;
   logic mio_pad_attr_0_od_en_0_wd;
+  logic mio_pad_attr_0_input_disable_0_qs;
+  logic mio_pad_attr_0_input_disable_0_wd;
   logic [1:0] mio_pad_attr_0_slew_rate_0_qs;
   logic [1:0] mio_pad_attr_0_slew_rate_0_wd;
   logic [3:0] mio_pad_attr_0_drive_strength_0_qs;
@@ -926,6 +928,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_1_schmitt_en_1_wd;
   logic mio_pad_attr_1_od_en_1_qs;
   logic mio_pad_attr_1_od_en_1_wd;
+  logic mio_pad_attr_1_input_disable_1_qs;
+  logic mio_pad_attr_1_input_disable_1_wd;
   logic [1:0] mio_pad_attr_1_slew_rate_1_qs;
   logic [1:0] mio_pad_attr_1_slew_rate_1_wd;
   logic [3:0] mio_pad_attr_1_drive_strength_1_qs;
@@ -946,6 +950,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_2_schmitt_en_2_wd;
   logic mio_pad_attr_2_od_en_2_qs;
   logic mio_pad_attr_2_od_en_2_wd;
+  logic mio_pad_attr_2_input_disable_2_qs;
+  logic mio_pad_attr_2_input_disable_2_wd;
   logic [1:0] mio_pad_attr_2_slew_rate_2_qs;
   logic [1:0] mio_pad_attr_2_slew_rate_2_wd;
   logic [3:0] mio_pad_attr_2_drive_strength_2_qs;
@@ -966,6 +972,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_3_schmitt_en_3_wd;
   logic mio_pad_attr_3_od_en_3_qs;
   logic mio_pad_attr_3_od_en_3_wd;
+  logic mio_pad_attr_3_input_disable_3_qs;
+  logic mio_pad_attr_3_input_disable_3_wd;
   logic [1:0] mio_pad_attr_3_slew_rate_3_qs;
   logic [1:0] mio_pad_attr_3_slew_rate_3_wd;
   logic [3:0] mio_pad_attr_3_drive_strength_3_qs;
@@ -986,6 +994,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_4_schmitt_en_4_wd;
   logic mio_pad_attr_4_od_en_4_qs;
   logic mio_pad_attr_4_od_en_4_wd;
+  logic mio_pad_attr_4_input_disable_4_qs;
+  logic mio_pad_attr_4_input_disable_4_wd;
   logic [1:0] mio_pad_attr_4_slew_rate_4_qs;
   logic [1:0] mio_pad_attr_4_slew_rate_4_wd;
   logic [3:0] mio_pad_attr_4_drive_strength_4_qs;
@@ -1006,6 +1016,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_5_schmitt_en_5_wd;
   logic mio_pad_attr_5_od_en_5_qs;
   logic mio_pad_attr_5_od_en_5_wd;
+  logic mio_pad_attr_5_input_disable_5_qs;
+  logic mio_pad_attr_5_input_disable_5_wd;
   logic [1:0] mio_pad_attr_5_slew_rate_5_qs;
   logic [1:0] mio_pad_attr_5_slew_rate_5_wd;
   logic [3:0] mio_pad_attr_5_drive_strength_5_qs;
@@ -1026,6 +1038,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_6_schmitt_en_6_wd;
   logic mio_pad_attr_6_od_en_6_qs;
   logic mio_pad_attr_6_od_en_6_wd;
+  logic mio_pad_attr_6_input_disable_6_qs;
+  logic mio_pad_attr_6_input_disable_6_wd;
   logic [1:0] mio_pad_attr_6_slew_rate_6_qs;
   logic [1:0] mio_pad_attr_6_slew_rate_6_wd;
   logic [3:0] mio_pad_attr_6_drive_strength_6_qs;
@@ -1046,6 +1060,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_7_schmitt_en_7_wd;
   logic mio_pad_attr_7_od_en_7_qs;
   logic mio_pad_attr_7_od_en_7_wd;
+  logic mio_pad_attr_7_input_disable_7_qs;
+  logic mio_pad_attr_7_input_disable_7_wd;
   logic [1:0] mio_pad_attr_7_slew_rate_7_qs;
   logic [1:0] mio_pad_attr_7_slew_rate_7_wd;
   logic [3:0] mio_pad_attr_7_drive_strength_7_qs;
@@ -1066,6 +1082,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_8_schmitt_en_8_wd;
   logic mio_pad_attr_8_od_en_8_qs;
   logic mio_pad_attr_8_od_en_8_wd;
+  logic mio_pad_attr_8_input_disable_8_qs;
+  logic mio_pad_attr_8_input_disable_8_wd;
   logic [1:0] mio_pad_attr_8_slew_rate_8_qs;
   logic [1:0] mio_pad_attr_8_slew_rate_8_wd;
   logic [3:0] mio_pad_attr_8_drive_strength_8_qs;
@@ -1086,6 +1104,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_9_schmitt_en_9_wd;
   logic mio_pad_attr_9_od_en_9_qs;
   logic mio_pad_attr_9_od_en_9_wd;
+  logic mio_pad_attr_9_input_disable_9_qs;
+  logic mio_pad_attr_9_input_disable_9_wd;
   logic [1:0] mio_pad_attr_9_slew_rate_9_qs;
   logic [1:0] mio_pad_attr_9_slew_rate_9_wd;
   logic [3:0] mio_pad_attr_9_drive_strength_9_qs;
@@ -1106,6 +1126,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_10_schmitt_en_10_wd;
   logic mio_pad_attr_10_od_en_10_qs;
   logic mio_pad_attr_10_od_en_10_wd;
+  logic mio_pad_attr_10_input_disable_10_qs;
+  logic mio_pad_attr_10_input_disable_10_wd;
   logic [1:0] mio_pad_attr_10_slew_rate_10_qs;
   logic [1:0] mio_pad_attr_10_slew_rate_10_wd;
   logic [3:0] mio_pad_attr_10_drive_strength_10_qs;
@@ -1126,6 +1148,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_11_schmitt_en_11_wd;
   logic mio_pad_attr_11_od_en_11_qs;
   logic mio_pad_attr_11_od_en_11_wd;
+  logic mio_pad_attr_11_input_disable_11_qs;
+  logic mio_pad_attr_11_input_disable_11_wd;
   logic [1:0] mio_pad_attr_11_slew_rate_11_qs;
   logic [1:0] mio_pad_attr_11_slew_rate_11_wd;
   logic [3:0] mio_pad_attr_11_drive_strength_11_qs;
@@ -1146,6 +1170,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_12_schmitt_en_12_wd;
   logic mio_pad_attr_12_od_en_12_qs;
   logic mio_pad_attr_12_od_en_12_wd;
+  logic mio_pad_attr_12_input_disable_12_qs;
+  logic mio_pad_attr_12_input_disable_12_wd;
   logic [1:0] mio_pad_attr_12_slew_rate_12_qs;
   logic [1:0] mio_pad_attr_12_slew_rate_12_wd;
   logic [3:0] mio_pad_attr_12_drive_strength_12_qs;
@@ -1166,6 +1192,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_13_schmitt_en_13_wd;
   logic mio_pad_attr_13_od_en_13_qs;
   logic mio_pad_attr_13_od_en_13_wd;
+  logic mio_pad_attr_13_input_disable_13_qs;
+  logic mio_pad_attr_13_input_disable_13_wd;
   logic [1:0] mio_pad_attr_13_slew_rate_13_qs;
   logic [1:0] mio_pad_attr_13_slew_rate_13_wd;
   logic [3:0] mio_pad_attr_13_drive_strength_13_qs;
@@ -1186,6 +1214,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_14_schmitt_en_14_wd;
   logic mio_pad_attr_14_od_en_14_qs;
   logic mio_pad_attr_14_od_en_14_wd;
+  logic mio_pad_attr_14_input_disable_14_qs;
+  logic mio_pad_attr_14_input_disable_14_wd;
   logic [1:0] mio_pad_attr_14_slew_rate_14_qs;
   logic [1:0] mio_pad_attr_14_slew_rate_14_wd;
   logic [3:0] mio_pad_attr_14_drive_strength_14_qs;
@@ -1206,6 +1236,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_15_schmitt_en_15_wd;
   logic mio_pad_attr_15_od_en_15_qs;
   logic mio_pad_attr_15_od_en_15_wd;
+  logic mio_pad_attr_15_input_disable_15_qs;
+  logic mio_pad_attr_15_input_disable_15_wd;
   logic [1:0] mio_pad_attr_15_slew_rate_15_qs;
   logic [1:0] mio_pad_attr_15_slew_rate_15_wd;
   logic [3:0] mio_pad_attr_15_drive_strength_15_qs;
@@ -1226,6 +1258,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_16_schmitt_en_16_wd;
   logic mio_pad_attr_16_od_en_16_qs;
   logic mio_pad_attr_16_od_en_16_wd;
+  logic mio_pad_attr_16_input_disable_16_qs;
+  logic mio_pad_attr_16_input_disable_16_wd;
   logic [1:0] mio_pad_attr_16_slew_rate_16_qs;
   logic [1:0] mio_pad_attr_16_slew_rate_16_wd;
   logic [3:0] mio_pad_attr_16_drive_strength_16_qs;
@@ -1246,6 +1280,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_17_schmitt_en_17_wd;
   logic mio_pad_attr_17_od_en_17_qs;
   logic mio_pad_attr_17_od_en_17_wd;
+  logic mio_pad_attr_17_input_disable_17_qs;
+  logic mio_pad_attr_17_input_disable_17_wd;
   logic [1:0] mio_pad_attr_17_slew_rate_17_qs;
   logic [1:0] mio_pad_attr_17_slew_rate_17_wd;
   logic [3:0] mio_pad_attr_17_drive_strength_17_qs;
@@ -1266,6 +1302,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_18_schmitt_en_18_wd;
   logic mio_pad_attr_18_od_en_18_qs;
   logic mio_pad_attr_18_od_en_18_wd;
+  logic mio_pad_attr_18_input_disable_18_qs;
+  logic mio_pad_attr_18_input_disable_18_wd;
   logic [1:0] mio_pad_attr_18_slew_rate_18_qs;
   logic [1:0] mio_pad_attr_18_slew_rate_18_wd;
   logic [3:0] mio_pad_attr_18_drive_strength_18_qs;
@@ -1286,6 +1324,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_19_schmitt_en_19_wd;
   logic mio_pad_attr_19_od_en_19_qs;
   logic mio_pad_attr_19_od_en_19_wd;
+  logic mio_pad_attr_19_input_disable_19_qs;
+  logic mio_pad_attr_19_input_disable_19_wd;
   logic [1:0] mio_pad_attr_19_slew_rate_19_qs;
   logic [1:0] mio_pad_attr_19_slew_rate_19_wd;
   logic [3:0] mio_pad_attr_19_drive_strength_19_qs;
@@ -1306,6 +1346,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_20_schmitt_en_20_wd;
   logic mio_pad_attr_20_od_en_20_qs;
   logic mio_pad_attr_20_od_en_20_wd;
+  logic mio_pad_attr_20_input_disable_20_qs;
+  logic mio_pad_attr_20_input_disable_20_wd;
   logic [1:0] mio_pad_attr_20_slew_rate_20_qs;
   logic [1:0] mio_pad_attr_20_slew_rate_20_wd;
   logic [3:0] mio_pad_attr_20_drive_strength_20_qs;
@@ -1326,6 +1368,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_21_schmitt_en_21_wd;
   logic mio_pad_attr_21_od_en_21_qs;
   logic mio_pad_attr_21_od_en_21_wd;
+  logic mio_pad_attr_21_input_disable_21_qs;
+  logic mio_pad_attr_21_input_disable_21_wd;
   logic [1:0] mio_pad_attr_21_slew_rate_21_qs;
   logic [1:0] mio_pad_attr_21_slew_rate_21_wd;
   logic [3:0] mio_pad_attr_21_drive_strength_21_qs;
@@ -1346,6 +1390,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_22_schmitt_en_22_wd;
   logic mio_pad_attr_22_od_en_22_qs;
   logic mio_pad_attr_22_od_en_22_wd;
+  logic mio_pad_attr_22_input_disable_22_qs;
+  logic mio_pad_attr_22_input_disable_22_wd;
   logic [1:0] mio_pad_attr_22_slew_rate_22_qs;
   logic [1:0] mio_pad_attr_22_slew_rate_22_wd;
   logic [3:0] mio_pad_attr_22_drive_strength_22_qs;
@@ -1366,6 +1412,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_23_schmitt_en_23_wd;
   logic mio_pad_attr_23_od_en_23_qs;
   logic mio_pad_attr_23_od_en_23_wd;
+  logic mio_pad_attr_23_input_disable_23_qs;
+  logic mio_pad_attr_23_input_disable_23_wd;
   logic [1:0] mio_pad_attr_23_slew_rate_23_qs;
   logic [1:0] mio_pad_attr_23_slew_rate_23_wd;
   logic [3:0] mio_pad_attr_23_drive_strength_23_qs;
@@ -1386,6 +1434,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_24_schmitt_en_24_wd;
   logic mio_pad_attr_24_od_en_24_qs;
   logic mio_pad_attr_24_od_en_24_wd;
+  logic mio_pad_attr_24_input_disable_24_qs;
+  logic mio_pad_attr_24_input_disable_24_wd;
   logic [1:0] mio_pad_attr_24_slew_rate_24_qs;
   logic [1:0] mio_pad_attr_24_slew_rate_24_wd;
   logic [3:0] mio_pad_attr_24_drive_strength_24_qs;
@@ -1406,6 +1456,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_25_schmitt_en_25_wd;
   logic mio_pad_attr_25_od_en_25_qs;
   logic mio_pad_attr_25_od_en_25_wd;
+  logic mio_pad_attr_25_input_disable_25_qs;
+  logic mio_pad_attr_25_input_disable_25_wd;
   logic [1:0] mio_pad_attr_25_slew_rate_25_qs;
   logic [1:0] mio_pad_attr_25_slew_rate_25_wd;
   logic [3:0] mio_pad_attr_25_drive_strength_25_qs;
@@ -1426,6 +1478,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_26_schmitt_en_26_wd;
   logic mio_pad_attr_26_od_en_26_qs;
   logic mio_pad_attr_26_od_en_26_wd;
+  logic mio_pad_attr_26_input_disable_26_qs;
+  logic mio_pad_attr_26_input_disable_26_wd;
   logic [1:0] mio_pad_attr_26_slew_rate_26_qs;
   logic [1:0] mio_pad_attr_26_slew_rate_26_wd;
   logic [3:0] mio_pad_attr_26_drive_strength_26_qs;
@@ -1446,6 +1500,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_27_schmitt_en_27_wd;
   logic mio_pad_attr_27_od_en_27_qs;
   logic mio_pad_attr_27_od_en_27_wd;
+  logic mio_pad_attr_27_input_disable_27_qs;
+  logic mio_pad_attr_27_input_disable_27_wd;
   logic [1:0] mio_pad_attr_27_slew_rate_27_qs;
   logic [1:0] mio_pad_attr_27_slew_rate_27_wd;
   logic [3:0] mio_pad_attr_27_drive_strength_27_qs;
@@ -1466,6 +1522,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_28_schmitt_en_28_wd;
   logic mio_pad_attr_28_od_en_28_qs;
   logic mio_pad_attr_28_od_en_28_wd;
+  logic mio_pad_attr_28_input_disable_28_qs;
+  logic mio_pad_attr_28_input_disable_28_wd;
   logic [1:0] mio_pad_attr_28_slew_rate_28_qs;
   logic [1:0] mio_pad_attr_28_slew_rate_28_wd;
   logic [3:0] mio_pad_attr_28_drive_strength_28_qs;
@@ -1486,6 +1544,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_29_schmitt_en_29_wd;
   logic mio_pad_attr_29_od_en_29_qs;
   logic mio_pad_attr_29_od_en_29_wd;
+  logic mio_pad_attr_29_input_disable_29_qs;
+  logic mio_pad_attr_29_input_disable_29_wd;
   logic [1:0] mio_pad_attr_29_slew_rate_29_qs;
   logic [1:0] mio_pad_attr_29_slew_rate_29_wd;
   logic [3:0] mio_pad_attr_29_drive_strength_29_qs;
@@ -1506,6 +1566,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_30_schmitt_en_30_wd;
   logic mio_pad_attr_30_od_en_30_qs;
   logic mio_pad_attr_30_od_en_30_wd;
+  logic mio_pad_attr_30_input_disable_30_qs;
+  logic mio_pad_attr_30_input_disable_30_wd;
   logic [1:0] mio_pad_attr_30_slew_rate_30_qs;
   logic [1:0] mio_pad_attr_30_slew_rate_30_wd;
   logic [3:0] mio_pad_attr_30_drive_strength_30_qs;
@@ -1526,6 +1588,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_31_schmitt_en_31_wd;
   logic mio_pad_attr_31_od_en_31_qs;
   logic mio_pad_attr_31_od_en_31_wd;
+  logic mio_pad_attr_31_input_disable_31_qs;
+  logic mio_pad_attr_31_input_disable_31_wd;
   logic [1:0] mio_pad_attr_31_slew_rate_31_qs;
   logic [1:0] mio_pad_attr_31_slew_rate_31_wd;
   logic [3:0] mio_pad_attr_31_drive_strength_31_qs;
@@ -1546,6 +1610,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_32_schmitt_en_32_wd;
   logic mio_pad_attr_32_od_en_32_qs;
   logic mio_pad_attr_32_od_en_32_wd;
+  logic mio_pad_attr_32_input_disable_32_qs;
+  logic mio_pad_attr_32_input_disable_32_wd;
   logic [1:0] mio_pad_attr_32_slew_rate_32_qs;
   logic [1:0] mio_pad_attr_32_slew_rate_32_wd;
   logic [3:0] mio_pad_attr_32_drive_strength_32_qs;
@@ -1566,6 +1632,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_33_schmitt_en_33_wd;
   logic mio_pad_attr_33_od_en_33_qs;
   logic mio_pad_attr_33_od_en_33_wd;
+  logic mio_pad_attr_33_input_disable_33_qs;
+  logic mio_pad_attr_33_input_disable_33_wd;
   logic [1:0] mio_pad_attr_33_slew_rate_33_qs;
   logic [1:0] mio_pad_attr_33_slew_rate_33_wd;
   logic [3:0] mio_pad_attr_33_drive_strength_33_qs;
@@ -1586,6 +1654,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_34_schmitt_en_34_wd;
   logic mio_pad_attr_34_od_en_34_qs;
   logic mio_pad_attr_34_od_en_34_wd;
+  logic mio_pad_attr_34_input_disable_34_qs;
+  logic mio_pad_attr_34_input_disable_34_wd;
   logic [1:0] mio_pad_attr_34_slew_rate_34_qs;
   logic [1:0] mio_pad_attr_34_slew_rate_34_wd;
   logic [3:0] mio_pad_attr_34_drive_strength_34_qs;
@@ -1606,6 +1676,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_35_schmitt_en_35_wd;
   logic mio_pad_attr_35_od_en_35_qs;
   logic mio_pad_attr_35_od_en_35_wd;
+  logic mio_pad_attr_35_input_disable_35_qs;
+  logic mio_pad_attr_35_input_disable_35_wd;
   logic [1:0] mio_pad_attr_35_slew_rate_35_qs;
   logic [1:0] mio_pad_attr_35_slew_rate_35_wd;
   logic [3:0] mio_pad_attr_35_drive_strength_35_qs;
@@ -1626,6 +1698,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_36_schmitt_en_36_wd;
   logic mio_pad_attr_36_od_en_36_qs;
   logic mio_pad_attr_36_od_en_36_wd;
+  logic mio_pad_attr_36_input_disable_36_qs;
+  logic mio_pad_attr_36_input_disable_36_wd;
   logic [1:0] mio_pad_attr_36_slew_rate_36_qs;
   logic [1:0] mio_pad_attr_36_slew_rate_36_wd;
   logic [3:0] mio_pad_attr_36_drive_strength_36_qs;
@@ -1646,6 +1720,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_37_schmitt_en_37_wd;
   logic mio_pad_attr_37_od_en_37_qs;
   logic mio_pad_attr_37_od_en_37_wd;
+  logic mio_pad_attr_37_input_disable_37_qs;
+  logic mio_pad_attr_37_input_disable_37_wd;
   logic [1:0] mio_pad_attr_37_slew_rate_37_qs;
   logic [1:0] mio_pad_attr_37_slew_rate_37_wd;
   logic [3:0] mio_pad_attr_37_drive_strength_37_qs;
@@ -1666,6 +1742,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_38_schmitt_en_38_wd;
   logic mio_pad_attr_38_od_en_38_qs;
   logic mio_pad_attr_38_od_en_38_wd;
+  logic mio_pad_attr_38_input_disable_38_qs;
+  logic mio_pad_attr_38_input_disable_38_wd;
   logic [1:0] mio_pad_attr_38_slew_rate_38_qs;
   logic [1:0] mio_pad_attr_38_slew_rate_38_wd;
   logic [3:0] mio_pad_attr_38_drive_strength_38_qs;
@@ -1686,6 +1764,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_39_schmitt_en_39_wd;
   logic mio_pad_attr_39_od_en_39_qs;
   logic mio_pad_attr_39_od_en_39_wd;
+  logic mio_pad_attr_39_input_disable_39_qs;
+  logic mio_pad_attr_39_input_disable_39_wd;
   logic [1:0] mio_pad_attr_39_slew_rate_39_qs;
   logic [1:0] mio_pad_attr_39_slew_rate_39_wd;
   logic [3:0] mio_pad_attr_39_drive_strength_39_qs;
@@ -1706,6 +1786,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_40_schmitt_en_40_wd;
   logic mio_pad_attr_40_od_en_40_qs;
   logic mio_pad_attr_40_od_en_40_wd;
+  logic mio_pad_attr_40_input_disable_40_qs;
+  logic mio_pad_attr_40_input_disable_40_wd;
   logic [1:0] mio_pad_attr_40_slew_rate_40_qs;
   logic [1:0] mio_pad_attr_40_slew_rate_40_wd;
   logic [3:0] mio_pad_attr_40_drive_strength_40_qs;
@@ -1726,6 +1808,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_41_schmitt_en_41_wd;
   logic mio_pad_attr_41_od_en_41_qs;
   logic mio_pad_attr_41_od_en_41_wd;
+  logic mio_pad_attr_41_input_disable_41_qs;
+  logic mio_pad_attr_41_input_disable_41_wd;
   logic [1:0] mio_pad_attr_41_slew_rate_41_qs;
   logic [1:0] mio_pad_attr_41_slew_rate_41_wd;
   logic [3:0] mio_pad_attr_41_drive_strength_41_qs;
@@ -1746,6 +1830,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_42_schmitt_en_42_wd;
   logic mio_pad_attr_42_od_en_42_qs;
   logic mio_pad_attr_42_od_en_42_wd;
+  logic mio_pad_attr_42_input_disable_42_qs;
+  logic mio_pad_attr_42_input_disable_42_wd;
   logic [1:0] mio_pad_attr_42_slew_rate_42_qs;
   logic [1:0] mio_pad_attr_42_slew_rate_42_wd;
   logic [3:0] mio_pad_attr_42_drive_strength_42_qs;
@@ -1766,6 +1852,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_43_schmitt_en_43_wd;
   logic mio_pad_attr_43_od_en_43_qs;
   logic mio_pad_attr_43_od_en_43_wd;
+  logic mio_pad_attr_43_input_disable_43_qs;
+  logic mio_pad_attr_43_input_disable_43_wd;
   logic [1:0] mio_pad_attr_43_slew_rate_43_qs;
   logic [1:0] mio_pad_attr_43_slew_rate_43_wd;
   logic [3:0] mio_pad_attr_43_drive_strength_43_qs;
@@ -1786,6 +1874,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_44_schmitt_en_44_wd;
   logic mio_pad_attr_44_od_en_44_qs;
   logic mio_pad_attr_44_od_en_44_wd;
+  logic mio_pad_attr_44_input_disable_44_qs;
+  logic mio_pad_attr_44_input_disable_44_wd;
   logic [1:0] mio_pad_attr_44_slew_rate_44_qs;
   logic [1:0] mio_pad_attr_44_slew_rate_44_wd;
   logic [3:0] mio_pad_attr_44_drive_strength_44_qs;
@@ -1806,6 +1896,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_45_schmitt_en_45_wd;
   logic mio_pad_attr_45_od_en_45_qs;
   logic mio_pad_attr_45_od_en_45_wd;
+  logic mio_pad_attr_45_input_disable_45_qs;
+  logic mio_pad_attr_45_input_disable_45_wd;
   logic [1:0] mio_pad_attr_45_slew_rate_45_qs;
   logic [1:0] mio_pad_attr_45_slew_rate_45_wd;
   logic [3:0] mio_pad_attr_45_drive_strength_45_qs;
@@ -1826,6 +1918,8 @@ module pinmux_reg_top (
   logic mio_pad_attr_46_schmitt_en_46_wd;
   logic mio_pad_attr_46_od_en_46_qs;
   logic mio_pad_attr_46_od_en_46_wd;
+  logic mio_pad_attr_46_input_disable_46_qs;
+  logic mio_pad_attr_46_input_disable_46_wd;
   logic [1:0] mio_pad_attr_46_slew_rate_46_qs;
   logic [1:0] mio_pad_attr_46_slew_rate_46_wd;
   logic [3:0] mio_pad_attr_46_drive_strength_46_qs;
@@ -1894,6 +1988,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_0_schmitt_en_0_wd;
   logic dio_pad_attr_0_od_en_0_qs;
   logic dio_pad_attr_0_od_en_0_wd;
+  logic dio_pad_attr_0_input_disable_0_qs;
+  logic dio_pad_attr_0_input_disable_0_wd;
   logic [1:0] dio_pad_attr_0_slew_rate_0_qs;
   logic [1:0] dio_pad_attr_0_slew_rate_0_wd;
   logic [3:0] dio_pad_attr_0_drive_strength_0_qs;
@@ -1914,6 +2010,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_1_schmitt_en_1_wd;
   logic dio_pad_attr_1_od_en_1_qs;
   logic dio_pad_attr_1_od_en_1_wd;
+  logic dio_pad_attr_1_input_disable_1_qs;
+  logic dio_pad_attr_1_input_disable_1_wd;
   logic [1:0] dio_pad_attr_1_slew_rate_1_qs;
   logic [1:0] dio_pad_attr_1_slew_rate_1_wd;
   logic [3:0] dio_pad_attr_1_drive_strength_1_qs;
@@ -1934,6 +2032,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_2_schmitt_en_2_wd;
   logic dio_pad_attr_2_od_en_2_qs;
   logic dio_pad_attr_2_od_en_2_wd;
+  logic dio_pad_attr_2_input_disable_2_qs;
+  logic dio_pad_attr_2_input_disable_2_wd;
   logic [1:0] dio_pad_attr_2_slew_rate_2_qs;
   logic [1:0] dio_pad_attr_2_slew_rate_2_wd;
   logic [3:0] dio_pad_attr_2_drive_strength_2_qs;
@@ -1954,6 +2054,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_3_schmitt_en_3_wd;
   logic dio_pad_attr_3_od_en_3_qs;
   logic dio_pad_attr_3_od_en_3_wd;
+  logic dio_pad_attr_3_input_disable_3_qs;
+  logic dio_pad_attr_3_input_disable_3_wd;
   logic [1:0] dio_pad_attr_3_slew_rate_3_qs;
   logic [1:0] dio_pad_attr_3_slew_rate_3_wd;
   logic [3:0] dio_pad_attr_3_drive_strength_3_qs;
@@ -1974,6 +2076,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_4_schmitt_en_4_wd;
   logic dio_pad_attr_4_od_en_4_qs;
   logic dio_pad_attr_4_od_en_4_wd;
+  logic dio_pad_attr_4_input_disable_4_qs;
+  logic dio_pad_attr_4_input_disable_4_wd;
   logic [1:0] dio_pad_attr_4_slew_rate_4_qs;
   logic [1:0] dio_pad_attr_4_slew_rate_4_wd;
   logic [3:0] dio_pad_attr_4_drive_strength_4_qs;
@@ -1994,6 +2098,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_5_schmitt_en_5_wd;
   logic dio_pad_attr_5_od_en_5_qs;
   logic dio_pad_attr_5_od_en_5_wd;
+  logic dio_pad_attr_5_input_disable_5_qs;
+  logic dio_pad_attr_5_input_disable_5_wd;
   logic [1:0] dio_pad_attr_5_slew_rate_5_qs;
   logic [1:0] dio_pad_attr_5_slew_rate_5_wd;
   logic [3:0] dio_pad_attr_5_drive_strength_5_qs;
@@ -2014,6 +2120,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_6_schmitt_en_6_wd;
   logic dio_pad_attr_6_od_en_6_qs;
   logic dio_pad_attr_6_od_en_6_wd;
+  logic dio_pad_attr_6_input_disable_6_qs;
+  logic dio_pad_attr_6_input_disable_6_wd;
   logic [1:0] dio_pad_attr_6_slew_rate_6_qs;
   logic [1:0] dio_pad_attr_6_slew_rate_6_wd;
   logic [3:0] dio_pad_attr_6_drive_strength_6_qs;
@@ -2034,6 +2142,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_7_schmitt_en_7_wd;
   logic dio_pad_attr_7_od_en_7_qs;
   logic dio_pad_attr_7_od_en_7_wd;
+  logic dio_pad_attr_7_input_disable_7_qs;
+  logic dio_pad_attr_7_input_disable_7_wd;
   logic [1:0] dio_pad_attr_7_slew_rate_7_qs;
   logic [1:0] dio_pad_attr_7_slew_rate_7_wd;
   logic [3:0] dio_pad_attr_7_drive_strength_7_qs;
@@ -2054,6 +2164,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_8_schmitt_en_8_wd;
   logic dio_pad_attr_8_od_en_8_qs;
   logic dio_pad_attr_8_od_en_8_wd;
+  logic dio_pad_attr_8_input_disable_8_qs;
+  logic dio_pad_attr_8_input_disable_8_wd;
   logic [1:0] dio_pad_attr_8_slew_rate_8_qs;
   logic [1:0] dio_pad_attr_8_slew_rate_8_wd;
   logic [3:0] dio_pad_attr_8_drive_strength_8_qs;
@@ -2074,6 +2186,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_9_schmitt_en_9_wd;
   logic dio_pad_attr_9_od_en_9_qs;
   logic dio_pad_attr_9_od_en_9_wd;
+  logic dio_pad_attr_9_input_disable_9_qs;
+  logic dio_pad_attr_9_input_disable_9_wd;
   logic [1:0] dio_pad_attr_9_slew_rate_9_qs;
   logic [1:0] dio_pad_attr_9_slew_rate_9_wd;
   logic [3:0] dio_pad_attr_9_drive_strength_9_qs;
@@ -2094,6 +2208,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_10_schmitt_en_10_wd;
   logic dio_pad_attr_10_od_en_10_qs;
   logic dio_pad_attr_10_od_en_10_wd;
+  logic dio_pad_attr_10_input_disable_10_qs;
+  logic dio_pad_attr_10_input_disable_10_wd;
   logic [1:0] dio_pad_attr_10_slew_rate_10_qs;
   logic [1:0] dio_pad_attr_10_slew_rate_10_wd;
   logic [3:0] dio_pad_attr_10_drive_strength_10_qs;
@@ -2114,6 +2230,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_11_schmitt_en_11_wd;
   logic dio_pad_attr_11_od_en_11_qs;
   logic dio_pad_attr_11_od_en_11_wd;
+  logic dio_pad_attr_11_input_disable_11_qs;
+  logic dio_pad_attr_11_input_disable_11_wd;
   logic [1:0] dio_pad_attr_11_slew_rate_11_qs;
   logic [1:0] dio_pad_attr_11_slew_rate_11_wd;
   logic [3:0] dio_pad_attr_11_drive_strength_11_qs;
@@ -2134,6 +2252,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_12_schmitt_en_12_wd;
   logic dio_pad_attr_12_od_en_12_qs;
   logic dio_pad_attr_12_od_en_12_wd;
+  logic dio_pad_attr_12_input_disable_12_qs;
+  logic dio_pad_attr_12_input_disable_12_wd;
   logic [1:0] dio_pad_attr_12_slew_rate_12_qs;
   logic [1:0] dio_pad_attr_12_slew_rate_12_wd;
   logic [3:0] dio_pad_attr_12_drive_strength_12_qs;
@@ -2154,6 +2274,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_13_schmitt_en_13_wd;
   logic dio_pad_attr_13_od_en_13_qs;
   logic dio_pad_attr_13_od_en_13_wd;
+  logic dio_pad_attr_13_input_disable_13_qs;
+  logic dio_pad_attr_13_input_disable_13_wd;
   logic [1:0] dio_pad_attr_13_slew_rate_13_qs;
   logic [1:0] dio_pad_attr_13_slew_rate_13_wd;
   logic [3:0] dio_pad_attr_13_drive_strength_13_qs;
@@ -2174,6 +2296,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_14_schmitt_en_14_wd;
   logic dio_pad_attr_14_od_en_14_qs;
   logic dio_pad_attr_14_od_en_14_wd;
+  logic dio_pad_attr_14_input_disable_14_qs;
+  logic dio_pad_attr_14_input_disable_14_wd;
   logic [1:0] dio_pad_attr_14_slew_rate_14_qs;
   logic [1:0] dio_pad_attr_14_slew_rate_14_wd;
   logic [3:0] dio_pad_attr_14_drive_strength_14_qs;
@@ -2194,6 +2318,8 @@ module pinmux_reg_top (
   logic dio_pad_attr_15_schmitt_en_15_wd;
   logic dio_pad_attr_15_od_en_15_qs;
   logic dio_pad_attr_15_od_en_15_wd;
+  logic dio_pad_attr_15_input_disable_15_qs;
+  logic dio_pad_attr_15_input_disable_15_wd;
   logic [1:0] dio_pad_attr_15_slew_rate_15_qs;
   logic [1:0] dio_pad_attr_15_slew_rate_15_wd;
   logic [3:0] dio_pad_attr_15_drive_strength_15_qs;
@@ -11790,7 +11916,7 @@ module pinmux_reg_top (
   // Subregister 0 of Multireg mio_pad_attr
   // R[mio_pad_attr_0]: V(True)
   logic mio_pad_attr_0_qe;
-  logic [8:0] mio_pad_attr_0_flds_we;
+  logic [9:0] mio_pad_attr_0_flds_we;
   assign mio_pad_attr_0_qe = &mio_pad_attr_0_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_0_gated_we;
@@ -11907,6 +12033,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[0].od_en.qe = mio_pad_attr_0_qe;
 
+  //   F[input_disable_0]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_0_input_disable_0 (
+    .re     (mio_pad_attr_0_re),
+    .we     (mio_pad_attr_0_gated_we),
+    .wd     (mio_pad_attr_0_input_disable_0_wd),
+    .d      (hw2reg.mio_pad_attr[0].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_0_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[0].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_0_input_disable_0_qs)
+  );
+  assign reg2hw.mio_pad_attr[0].input_disable.qe = mio_pad_attr_0_qe;
+
   //   F[slew_rate_0]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -11916,7 +12058,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_0_slew_rate_0_wd),
     .d      (hw2reg.mio_pad_attr[0].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_0_flds_we[7]),
+    .qe     (mio_pad_attr_0_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[0].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_0_slew_rate_0_qs)
@@ -11932,7 +12074,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_0_drive_strength_0_wd),
     .d      (hw2reg.mio_pad_attr[0].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_0_flds_we[8]),
+    .qe     (mio_pad_attr_0_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[0].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_0_drive_strength_0_qs)
@@ -11943,7 +12085,7 @@ module pinmux_reg_top (
   // Subregister 1 of Multireg mio_pad_attr
   // R[mio_pad_attr_1]: V(True)
   logic mio_pad_attr_1_qe;
-  logic [8:0] mio_pad_attr_1_flds_we;
+  logic [9:0] mio_pad_attr_1_flds_we;
   assign mio_pad_attr_1_qe = &mio_pad_attr_1_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_1_gated_we;
@@ -12060,6 +12202,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[1].od_en.qe = mio_pad_attr_1_qe;
 
+  //   F[input_disable_1]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_1_input_disable_1 (
+    .re     (mio_pad_attr_1_re),
+    .we     (mio_pad_attr_1_gated_we),
+    .wd     (mio_pad_attr_1_input_disable_1_wd),
+    .d      (hw2reg.mio_pad_attr[1].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_1_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[1].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_1_input_disable_1_qs)
+  );
+  assign reg2hw.mio_pad_attr[1].input_disable.qe = mio_pad_attr_1_qe;
+
   //   F[slew_rate_1]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12069,7 +12227,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_1_slew_rate_1_wd),
     .d      (hw2reg.mio_pad_attr[1].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_1_flds_we[7]),
+    .qe     (mio_pad_attr_1_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[1].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_1_slew_rate_1_qs)
@@ -12085,7 +12243,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_1_drive_strength_1_wd),
     .d      (hw2reg.mio_pad_attr[1].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_1_flds_we[8]),
+    .qe     (mio_pad_attr_1_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[1].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_1_drive_strength_1_qs)
@@ -12096,7 +12254,7 @@ module pinmux_reg_top (
   // Subregister 2 of Multireg mio_pad_attr
   // R[mio_pad_attr_2]: V(True)
   logic mio_pad_attr_2_qe;
-  logic [8:0] mio_pad_attr_2_flds_we;
+  logic [9:0] mio_pad_attr_2_flds_we;
   assign mio_pad_attr_2_qe = &mio_pad_attr_2_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_2_gated_we;
@@ -12213,6 +12371,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[2].od_en.qe = mio_pad_attr_2_qe;
 
+  //   F[input_disable_2]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_2_input_disable_2 (
+    .re     (mio_pad_attr_2_re),
+    .we     (mio_pad_attr_2_gated_we),
+    .wd     (mio_pad_attr_2_input_disable_2_wd),
+    .d      (hw2reg.mio_pad_attr[2].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_2_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[2].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_2_input_disable_2_qs)
+  );
+  assign reg2hw.mio_pad_attr[2].input_disable.qe = mio_pad_attr_2_qe;
+
   //   F[slew_rate_2]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12222,7 +12396,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_2_slew_rate_2_wd),
     .d      (hw2reg.mio_pad_attr[2].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_2_flds_we[7]),
+    .qe     (mio_pad_attr_2_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[2].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_2_slew_rate_2_qs)
@@ -12238,7 +12412,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_2_drive_strength_2_wd),
     .d      (hw2reg.mio_pad_attr[2].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_2_flds_we[8]),
+    .qe     (mio_pad_attr_2_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[2].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_2_drive_strength_2_qs)
@@ -12249,7 +12423,7 @@ module pinmux_reg_top (
   // Subregister 3 of Multireg mio_pad_attr
   // R[mio_pad_attr_3]: V(True)
   logic mio_pad_attr_3_qe;
-  logic [8:0] mio_pad_attr_3_flds_we;
+  logic [9:0] mio_pad_attr_3_flds_we;
   assign mio_pad_attr_3_qe = &mio_pad_attr_3_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_3_gated_we;
@@ -12366,6 +12540,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[3].od_en.qe = mio_pad_attr_3_qe;
 
+  //   F[input_disable_3]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_3_input_disable_3 (
+    .re     (mio_pad_attr_3_re),
+    .we     (mio_pad_attr_3_gated_we),
+    .wd     (mio_pad_attr_3_input_disable_3_wd),
+    .d      (hw2reg.mio_pad_attr[3].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_3_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[3].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_3_input_disable_3_qs)
+  );
+  assign reg2hw.mio_pad_attr[3].input_disable.qe = mio_pad_attr_3_qe;
+
   //   F[slew_rate_3]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12375,7 +12565,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_3_slew_rate_3_wd),
     .d      (hw2reg.mio_pad_attr[3].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_3_flds_we[7]),
+    .qe     (mio_pad_attr_3_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[3].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_3_slew_rate_3_qs)
@@ -12391,7 +12581,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_3_drive_strength_3_wd),
     .d      (hw2reg.mio_pad_attr[3].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_3_flds_we[8]),
+    .qe     (mio_pad_attr_3_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[3].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_3_drive_strength_3_qs)
@@ -12402,7 +12592,7 @@ module pinmux_reg_top (
   // Subregister 4 of Multireg mio_pad_attr
   // R[mio_pad_attr_4]: V(True)
   logic mio_pad_attr_4_qe;
-  logic [8:0] mio_pad_attr_4_flds_we;
+  logic [9:0] mio_pad_attr_4_flds_we;
   assign mio_pad_attr_4_qe = &mio_pad_attr_4_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_4_gated_we;
@@ -12519,6 +12709,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[4].od_en.qe = mio_pad_attr_4_qe;
 
+  //   F[input_disable_4]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_4_input_disable_4 (
+    .re     (mio_pad_attr_4_re),
+    .we     (mio_pad_attr_4_gated_we),
+    .wd     (mio_pad_attr_4_input_disable_4_wd),
+    .d      (hw2reg.mio_pad_attr[4].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_4_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[4].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_4_input_disable_4_qs)
+  );
+  assign reg2hw.mio_pad_attr[4].input_disable.qe = mio_pad_attr_4_qe;
+
   //   F[slew_rate_4]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12528,7 +12734,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_4_slew_rate_4_wd),
     .d      (hw2reg.mio_pad_attr[4].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_4_flds_we[7]),
+    .qe     (mio_pad_attr_4_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[4].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_4_slew_rate_4_qs)
@@ -12544,7 +12750,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_4_drive_strength_4_wd),
     .d      (hw2reg.mio_pad_attr[4].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_4_flds_we[8]),
+    .qe     (mio_pad_attr_4_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[4].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_4_drive_strength_4_qs)
@@ -12555,7 +12761,7 @@ module pinmux_reg_top (
   // Subregister 5 of Multireg mio_pad_attr
   // R[mio_pad_attr_5]: V(True)
   logic mio_pad_attr_5_qe;
-  logic [8:0] mio_pad_attr_5_flds_we;
+  logic [9:0] mio_pad_attr_5_flds_we;
   assign mio_pad_attr_5_qe = &mio_pad_attr_5_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_5_gated_we;
@@ -12672,6 +12878,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[5].od_en.qe = mio_pad_attr_5_qe;
 
+  //   F[input_disable_5]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_5_input_disable_5 (
+    .re     (mio_pad_attr_5_re),
+    .we     (mio_pad_attr_5_gated_we),
+    .wd     (mio_pad_attr_5_input_disable_5_wd),
+    .d      (hw2reg.mio_pad_attr[5].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_5_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[5].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_5_input_disable_5_qs)
+  );
+  assign reg2hw.mio_pad_attr[5].input_disable.qe = mio_pad_attr_5_qe;
+
   //   F[slew_rate_5]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12681,7 +12903,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_5_slew_rate_5_wd),
     .d      (hw2reg.mio_pad_attr[5].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_5_flds_we[7]),
+    .qe     (mio_pad_attr_5_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[5].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_5_slew_rate_5_qs)
@@ -12697,7 +12919,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_5_drive_strength_5_wd),
     .d      (hw2reg.mio_pad_attr[5].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_5_flds_we[8]),
+    .qe     (mio_pad_attr_5_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[5].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_5_drive_strength_5_qs)
@@ -12708,7 +12930,7 @@ module pinmux_reg_top (
   // Subregister 6 of Multireg mio_pad_attr
   // R[mio_pad_attr_6]: V(True)
   logic mio_pad_attr_6_qe;
-  logic [8:0] mio_pad_attr_6_flds_we;
+  logic [9:0] mio_pad_attr_6_flds_we;
   assign mio_pad_attr_6_qe = &mio_pad_attr_6_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_6_gated_we;
@@ -12825,6 +13047,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[6].od_en.qe = mio_pad_attr_6_qe;
 
+  //   F[input_disable_6]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_6_input_disable_6 (
+    .re     (mio_pad_attr_6_re),
+    .we     (mio_pad_attr_6_gated_we),
+    .wd     (mio_pad_attr_6_input_disable_6_wd),
+    .d      (hw2reg.mio_pad_attr[6].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_6_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[6].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_6_input_disable_6_qs)
+  );
+  assign reg2hw.mio_pad_attr[6].input_disable.qe = mio_pad_attr_6_qe;
+
   //   F[slew_rate_6]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12834,7 +13072,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_6_slew_rate_6_wd),
     .d      (hw2reg.mio_pad_attr[6].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_6_flds_we[7]),
+    .qe     (mio_pad_attr_6_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[6].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_6_slew_rate_6_qs)
@@ -12850,7 +13088,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_6_drive_strength_6_wd),
     .d      (hw2reg.mio_pad_attr[6].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_6_flds_we[8]),
+    .qe     (mio_pad_attr_6_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[6].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_6_drive_strength_6_qs)
@@ -12861,7 +13099,7 @@ module pinmux_reg_top (
   // Subregister 7 of Multireg mio_pad_attr
   // R[mio_pad_attr_7]: V(True)
   logic mio_pad_attr_7_qe;
-  logic [8:0] mio_pad_attr_7_flds_we;
+  logic [9:0] mio_pad_attr_7_flds_we;
   assign mio_pad_attr_7_qe = &mio_pad_attr_7_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_7_gated_we;
@@ -12978,6 +13216,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[7].od_en.qe = mio_pad_attr_7_qe;
 
+  //   F[input_disable_7]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_7_input_disable_7 (
+    .re     (mio_pad_attr_7_re),
+    .we     (mio_pad_attr_7_gated_we),
+    .wd     (mio_pad_attr_7_input_disable_7_wd),
+    .d      (hw2reg.mio_pad_attr[7].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_7_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[7].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_7_input_disable_7_qs)
+  );
+  assign reg2hw.mio_pad_attr[7].input_disable.qe = mio_pad_attr_7_qe;
+
   //   F[slew_rate_7]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -12987,7 +13241,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_7_slew_rate_7_wd),
     .d      (hw2reg.mio_pad_attr[7].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_7_flds_we[7]),
+    .qe     (mio_pad_attr_7_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[7].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_7_slew_rate_7_qs)
@@ -13003,7 +13257,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_7_drive_strength_7_wd),
     .d      (hw2reg.mio_pad_attr[7].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_7_flds_we[8]),
+    .qe     (mio_pad_attr_7_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[7].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_7_drive_strength_7_qs)
@@ -13014,7 +13268,7 @@ module pinmux_reg_top (
   // Subregister 8 of Multireg mio_pad_attr
   // R[mio_pad_attr_8]: V(True)
   logic mio_pad_attr_8_qe;
-  logic [8:0] mio_pad_attr_8_flds_we;
+  logic [9:0] mio_pad_attr_8_flds_we;
   assign mio_pad_attr_8_qe = &mio_pad_attr_8_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_8_gated_we;
@@ -13131,6 +13385,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[8].od_en.qe = mio_pad_attr_8_qe;
 
+  //   F[input_disable_8]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_8_input_disable_8 (
+    .re     (mio_pad_attr_8_re),
+    .we     (mio_pad_attr_8_gated_we),
+    .wd     (mio_pad_attr_8_input_disable_8_wd),
+    .d      (hw2reg.mio_pad_attr[8].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_8_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[8].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_8_input_disable_8_qs)
+  );
+  assign reg2hw.mio_pad_attr[8].input_disable.qe = mio_pad_attr_8_qe;
+
   //   F[slew_rate_8]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -13140,7 +13410,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_8_slew_rate_8_wd),
     .d      (hw2reg.mio_pad_attr[8].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_8_flds_we[7]),
+    .qe     (mio_pad_attr_8_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[8].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_8_slew_rate_8_qs)
@@ -13156,7 +13426,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_8_drive_strength_8_wd),
     .d      (hw2reg.mio_pad_attr[8].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_8_flds_we[8]),
+    .qe     (mio_pad_attr_8_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[8].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_8_drive_strength_8_qs)
@@ -13167,7 +13437,7 @@ module pinmux_reg_top (
   // Subregister 9 of Multireg mio_pad_attr
   // R[mio_pad_attr_9]: V(True)
   logic mio_pad_attr_9_qe;
-  logic [8:0] mio_pad_attr_9_flds_we;
+  logic [9:0] mio_pad_attr_9_flds_we;
   assign mio_pad_attr_9_qe = &mio_pad_attr_9_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_9_gated_we;
@@ -13284,6 +13554,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[9].od_en.qe = mio_pad_attr_9_qe;
 
+  //   F[input_disable_9]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_9_input_disable_9 (
+    .re     (mio_pad_attr_9_re),
+    .we     (mio_pad_attr_9_gated_we),
+    .wd     (mio_pad_attr_9_input_disable_9_wd),
+    .d      (hw2reg.mio_pad_attr[9].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_9_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[9].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_9_input_disable_9_qs)
+  );
+  assign reg2hw.mio_pad_attr[9].input_disable.qe = mio_pad_attr_9_qe;
+
   //   F[slew_rate_9]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -13293,7 +13579,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_9_slew_rate_9_wd),
     .d      (hw2reg.mio_pad_attr[9].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_9_flds_we[7]),
+    .qe     (mio_pad_attr_9_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[9].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_9_slew_rate_9_qs)
@@ -13309,7 +13595,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_9_drive_strength_9_wd),
     .d      (hw2reg.mio_pad_attr[9].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_9_flds_we[8]),
+    .qe     (mio_pad_attr_9_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[9].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_9_drive_strength_9_qs)
@@ -13320,7 +13606,7 @@ module pinmux_reg_top (
   // Subregister 10 of Multireg mio_pad_attr
   // R[mio_pad_attr_10]: V(True)
   logic mio_pad_attr_10_qe;
-  logic [8:0] mio_pad_attr_10_flds_we;
+  logic [9:0] mio_pad_attr_10_flds_we;
   assign mio_pad_attr_10_qe = &mio_pad_attr_10_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_10_gated_we;
@@ -13437,6 +13723,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[10].od_en.qe = mio_pad_attr_10_qe;
 
+  //   F[input_disable_10]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_10_input_disable_10 (
+    .re     (mio_pad_attr_10_re),
+    .we     (mio_pad_attr_10_gated_we),
+    .wd     (mio_pad_attr_10_input_disable_10_wd),
+    .d      (hw2reg.mio_pad_attr[10].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_10_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[10].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_10_input_disable_10_qs)
+  );
+  assign reg2hw.mio_pad_attr[10].input_disable.qe = mio_pad_attr_10_qe;
+
   //   F[slew_rate_10]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -13446,7 +13748,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_10_slew_rate_10_wd),
     .d      (hw2reg.mio_pad_attr[10].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_10_flds_we[7]),
+    .qe     (mio_pad_attr_10_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[10].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_10_slew_rate_10_qs)
@@ -13462,7 +13764,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_10_drive_strength_10_wd),
     .d      (hw2reg.mio_pad_attr[10].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_10_flds_we[8]),
+    .qe     (mio_pad_attr_10_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[10].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_10_drive_strength_10_qs)
@@ -13473,7 +13775,7 @@ module pinmux_reg_top (
   // Subregister 11 of Multireg mio_pad_attr
   // R[mio_pad_attr_11]: V(True)
   logic mio_pad_attr_11_qe;
-  logic [8:0] mio_pad_attr_11_flds_we;
+  logic [9:0] mio_pad_attr_11_flds_we;
   assign mio_pad_attr_11_qe = &mio_pad_attr_11_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_11_gated_we;
@@ -13590,6 +13892,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[11].od_en.qe = mio_pad_attr_11_qe;
 
+  //   F[input_disable_11]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_11_input_disable_11 (
+    .re     (mio_pad_attr_11_re),
+    .we     (mio_pad_attr_11_gated_we),
+    .wd     (mio_pad_attr_11_input_disable_11_wd),
+    .d      (hw2reg.mio_pad_attr[11].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_11_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[11].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_11_input_disable_11_qs)
+  );
+  assign reg2hw.mio_pad_attr[11].input_disable.qe = mio_pad_attr_11_qe;
+
   //   F[slew_rate_11]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -13599,7 +13917,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_11_slew_rate_11_wd),
     .d      (hw2reg.mio_pad_attr[11].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_11_flds_we[7]),
+    .qe     (mio_pad_attr_11_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[11].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_11_slew_rate_11_qs)
@@ -13615,7 +13933,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_11_drive_strength_11_wd),
     .d      (hw2reg.mio_pad_attr[11].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_11_flds_we[8]),
+    .qe     (mio_pad_attr_11_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[11].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_11_drive_strength_11_qs)
@@ -13626,7 +13944,7 @@ module pinmux_reg_top (
   // Subregister 12 of Multireg mio_pad_attr
   // R[mio_pad_attr_12]: V(True)
   logic mio_pad_attr_12_qe;
-  logic [8:0] mio_pad_attr_12_flds_we;
+  logic [9:0] mio_pad_attr_12_flds_we;
   assign mio_pad_attr_12_qe = &mio_pad_attr_12_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_12_gated_we;
@@ -13743,6 +14061,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[12].od_en.qe = mio_pad_attr_12_qe;
 
+  //   F[input_disable_12]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_12_input_disable_12 (
+    .re     (mio_pad_attr_12_re),
+    .we     (mio_pad_attr_12_gated_we),
+    .wd     (mio_pad_attr_12_input_disable_12_wd),
+    .d      (hw2reg.mio_pad_attr[12].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_12_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[12].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_12_input_disable_12_qs)
+  );
+  assign reg2hw.mio_pad_attr[12].input_disable.qe = mio_pad_attr_12_qe;
+
   //   F[slew_rate_12]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -13752,7 +14086,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_12_slew_rate_12_wd),
     .d      (hw2reg.mio_pad_attr[12].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_12_flds_we[7]),
+    .qe     (mio_pad_attr_12_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[12].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_12_slew_rate_12_qs)
@@ -13768,7 +14102,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_12_drive_strength_12_wd),
     .d      (hw2reg.mio_pad_attr[12].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_12_flds_we[8]),
+    .qe     (mio_pad_attr_12_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[12].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_12_drive_strength_12_qs)
@@ -13779,7 +14113,7 @@ module pinmux_reg_top (
   // Subregister 13 of Multireg mio_pad_attr
   // R[mio_pad_attr_13]: V(True)
   logic mio_pad_attr_13_qe;
-  logic [8:0] mio_pad_attr_13_flds_we;
+  logic [9:0] mio_pad_attr_13_flds_we;
   assign mio_pad_attr_13_qe = &mio_pad_attr_13_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_13_gated_we;
@@ -13896,6 +14230,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[13].od_en.qe = mio_pad_attr_13_qe;
 
+  //   F[input_disable_13]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_13_input_disable_13 (
+    .re     (mio_pad_attr_13_re),
+    .we     (mio_pad_attr_13_gated_we),
+    .wd     (mio_pad_attr_13_input_disable_13_wd),
+    .d      (hw2reg.mio_pad_attr[13].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_13_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[13].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_13_input_disable_13_qs)
+  );
+  assign reg2hw.mio_pad_attr[13].input_disable.qe = mio_pad_attr_13_qe;
+
   //   F[slew_rate_13]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -13905,7 +14255,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_13_slew_rate_13_wd),
     .d      (hw2reg.mio_pad_attr[13].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_13_flds_we[7]),
+    .qe     (mio_pad_attr_13_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[13].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_13_slew_rate_13_qs)
@@ -13921,7 +14271,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_13_drive_strength_13_wd),
     .d      (hw2reg.mio_pad_attr[13].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_13_flds_we[8]),
+    .qe     (mio_pad_attr_13_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[13].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_13_drive_strength_13_qs)
@@ -13932,7 +14282,7 @@ module pinmux_reg_top (
   // Subregister 14 of Multireg mio_pad_attr
   // R[mio_pad_attr_14]: V(True)
   logic mio_pad_attr_14_qe;
-  logic [8:0] mio_pad_attr_14_flds_we;
+  logic [9:0] mio_pad_attr_14_flds_we;
   assign mio_pad_attr_14_qe = &mio_pad_attr_14_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_14_gated_we;
@@ -14049,6 +14399,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[14].od_en.qe = mio_pad_attr_14_qe;
 
+  //   F[input_disable_14]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_14_input_disable_14 (
+    .re     (mio_pad_attr_14_re),
+    .we     (mio_pad_attr_14_gated_we),
+    .wd     (mio_pad_attr_14_input_disable_14_wd),
+    .d      (hw2reg.mio_pad_attr[14].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_14_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[14].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_14_input_disable_14_qs)
+  );
+  assign reg2hw.mio_pad_attr[14].input_disable.qe = mio_pad_attr_14_qe;
+
   //   F[slew_rate_14]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14058,7 +14424,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_14_slew_rate_14_wd),
     .d      (hw2reg.mio_pad_attr[14].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_14_flds_we[7]),
+    .qe     (mio_pad_attr_14_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[14].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_14_slew_rate_14_qs)
@@ -14074,7 +14440,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_14_drive_strength_14_wd),
     .d      (hw2reg.mio_pad_attr[14].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_14_flds_we[8]),
+    .qe     (mio_pad_attr_14_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[14].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_14_drive_strength_14_qs)
@@ -14085,7 +14451,7 @@ module pinmux_reg_top (
   // Subregister 15 of Multireg mio_pad_attr
   // R[mio_pad_attr_15]: V(True)
   logic mio_pad_attr_15_qe;
-  logic [8:0] mio_pad_attr_15_flds_we;
+  logic [9:0] mio_pad_attr_15_flds_we;
   assign mio_pad_attr_15_qe = &mio_pad_attr_15_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_15_gated_we;
@@ -14202,6 +14568,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[15].od_en.qe = mio_pad_attr_15_qe;
 
+  //   F[input_disable_15]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_15_input_disable_15 (
+    .re     (mio_pad_attr_15_re),
+    .we     (mio_pad_attr_15_gated_we),
+    .wd     (mio_pad_attr_15_input_disable_15_wd),
+    .d      (hw2reg.mio_pad_attr[15].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_15_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[15].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_15_input_disable_15_qs)
+  );
+  assign reg2hw.mio_pad_attr[15].input_disable.qe = mio_pad_attr_15_qe;
+
   //   F[slew_rate_15]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14211,7 +14593,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_15_slew_rate_15_wd),
     .d      (hw2reg.mio_pad_attr[15].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_15_flds_we[7]),
+    .qe     (mio_pad_attr_15_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[15].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_15_slew_rate_15_qs)
@@ -14227,7 +14609,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_15_drive_strength_15_wd),
     .d      (hw2reg.mio_pad_attr[15].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_15_flds_we[8]),
+    .qe     (mio_pad_attr_15_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[15].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_15_drive_strength_15_qs)
@@ -14238,7 +14620,7 @@ module pinmux_reg_top (
   // Subregister 16 of Multireg mio_pad_attr
   // R[mio_pad_attr_16]: V(True)
   logic mio_pad_attr_16_qe;
-  logic [8:0] mio_pad_attr_16_flds_we;
+  logic [9:0] mio_pad_attr_16_flds_we;
   assign mio_pad_attr_16_qe = &mio_pad_attr_16_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_16_gated_we;
@@ -14355,6 +14737,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[16].od_en.qe = mio_pad_attr_16_qe;
 
+  //   F[input_disable_16]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_16_input_disable_16 (
+    .re     (mio_pad_attr_16_re),
+    .we     (mio_pad_attr_16_gated_we),
+    .wd     (mio_pad_attr_16_input_disable_16_wd),
+    .d      (hw2reg.mio_pad_attr[16].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_16_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[16].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_16_input_disable_16_qs)
+  );
+  assign reg2hw.mio_pad_attr[16].input_disable.qe = mio_pad_attr_16_qe;
+
   //   F[slew_rate_16]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14364,7 +14762,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_16_slew_rate_16_wd),
     .d      (hw2reg.mio_pad_attr[16].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_16_flds_we[7]),
+    .qe     (mio_pad_attr_16_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[16].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_16_slew_rate_16_qs)
@@ -14380,7 +14778,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_16_drive_strength_16_wd),
     .d      (hw2reg.mio_pad_attr[16].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_16_flds_we[8]),
+    .qe     (mio_pad_attr_16_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[16].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_16_drive_strength_16_qs)
@@ -14391,7 +14789,7 @@ module pinmux_reg_top (
   // Subregister 17 of Multireg mio_pad_attr
   // R[mio_pad_attr_17]: V(True)
   logic mio_pad_attr_17_qe;
-  logic [8:0] mio_pad_attr_17_flds_we;
+  logic [9:0] mio_pad_attr_17_flds_we;
   assign mio_pad_attr_17_qe = &mio_pad_attr_17_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_17_gated_we;
@@ -14508,6 +14906,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[17].od_en.qe = mio_pad_attr_17_qe;
 
+  //   F[input_disable_17]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_17_input_disable_17 (
+    .re     (mio_pad_attr_17_re),
+    .we     (mio_pad_attr_17_gated_we),
+    .wd     (mio_pad_attr_17_input_disable_17_wd),
+    .d      (hw2reg.mio_pad_attr[17].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_17_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[17].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_17_input_disable_17_qs)
+  );
+  assign reg2hw.mio_pad_attr[17].input_disable.qe = mio_pad_attr_17_qe;
+
   //   F[slew_rate_17]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14517,7 +14931,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_17_slew_rate_17_wd),
     .d      (hw2reg.mio_pad_attr[17].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_17_flds_we[7]),
+    .qe     (mio_pad_attr_17_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[17].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_17_slew_rate_17_qs)
@@ -14533,7 +14947,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_17_drive_strength_17_wd),
     .d      (hw2reg.mio_pad_attr[17].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_17_flds_we[8]),
+    .qe     (mio_pad_attr_17_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[17].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_17_drive_strength_17_qs)
@@ -14544,7 +14958,7 @@ module pinmux_reg_top (
   // Subregister 18 of Multireg mio_pad_attr
   // R[mio_pad_attr_18]: V(True)
   logic mio_pad_attr_18_qe;
-  logic [8:0] mio_pad_attr_18_flds_we;
+  logic [9:0] mio_pad_attr_18_flds_we;
   assign mio_pad_attr_18_qe = &mio_pad_attr_18_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_18_gated_we;
@@ -14661,6 +15075,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[18].od_en.qe = mio_pad_attr_18_qe;
 
+  //   F[input_disable_18]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_18_input_disable_18 (
+    .re     (mio_pad_attr_18_re),
+    .we     (mio_pad_attr_18_gated_we),
+    .wd     (mio_pad_attr_18_input_disable_18_wd),
+    .d      (hw2reg.mio_pad_attr[18].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_18_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[18].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_18_input_disable_18_qs)
+  );
+  assign reg2hw.mio_pad_attr[18].input_disable.qe = mio_pad_attr_18_qe;
+
   //   F[slew_rate_18]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14670,7 +15100,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_18_slew_rate_18_wd),
     .d      (hw2reg.mio_pad_attr[18].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_18_flds_we[7]),
+    .qe     (mio_pad_attr_18_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[18].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_18_slew_rate_18_qs)
@@ -14686,7 +15116,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_18_drive_strength_18_wd),
     .d      (hw2reg.mio_pad_attr[18].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_18_flds_we[8]),
+    .qe     (mio_pad_attr_18_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[18].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_18_drive_strength_18_qs)
@@ -14697,7 +15127,7 @@ module pinmux_reg_top (
   // Subregister 19 of Multireg mio_pad_attr
   // R[mio_pad_attr_19]: V(True)
   logic mio_pad_attr_19_qe;
-  logic [8:0] mio_pad_attr_19_flds_we;
+  logic [9:0] mio_pad_attr_19_flds_we;
   assign mio_pad_attr_19_qe = &mio_pad_attr_19_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_19_gated_we;
@@ -14814,6 +15244,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[19].od_en.qe = mio_pad_attr_19_qe;
 
+  //   F[input_disable_19]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_19_input_disable_19 (
+    .re     (mio_pad_attr_19_re),
+    .we     (mio_pad_attr_19_gated_we),
+    .wd     (mio_pad_attr_19_input_disable_19_wd),
+    .d      (hw2reg.mio_pad_attr[19].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_19_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[19].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_19_input_disable_19_qs)
+  );
+  assign reg2hw.mio_pad_attr[19].input_disable.qe = mio_pad_attr_19_qe;
+
   //   F[slew_rate_19]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14823,7 +15269,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_19_slew_rate_19_wd),
     .d      (hw2reg.mio_pad_attr[19].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_19_flds_we[7]),
+    .qe     (mio_pad_attr_19_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[19].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_19_slew_rate_19_qs)
@@ -14839,7 +15285,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_19_drive_strength_19_wd),
     .d      (hw2reg.mio_pad_attr[19].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_19_flds_we[8]),
+    .qe     (mio_pad_attr_19_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[19].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_19_drive_strength_19_qs)
@@ -14850,7 +15296,7 @@ module pinmux_reg_top (
   // Subregister 20 of Multireg mio_pad_attr
   // R[mio_pad_attr_20]: V(True)
   logic mio_pad_attr_20_qe;
-  logic [8:0] mio_pad_attr_20_flds_we;
+  logic [9:0] mio_pad_attr_20_flds_we;
   assign mio_pad_attr_20_qe = &mio_pad_attr_20_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_20_gated_we;
@@ -14967,6 +15413,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[20].od_en.qe = mio_pad_attr_20_qe;
 
+  //   F[input_disable_20]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_20_input_disable_20 (
+    .re     (mio_pad_attr_20_re),
+    .we     (mio_pad_attr_20_gated_we),
+    .wd     (mio_pad_attr_20_input_disable_20_wd),
+    .d      (hw2reg.mio_pad_attr[20].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_20_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[20].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_20_input_disable_20_qs)
+  );
+  assign reg2hw.mio_pad_attr[20].input_disable.qe = mio_pad_attr_20_qe;
+
   //   F[slew_rate_20]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -14976,7 +15438,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_20_slew_rate_20_wd),
     .d      (hw2reg.mio_pad_attr[20].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_20_flds_we[7]),
+    .qe     (mio_pad_attr_20_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[20].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_20_slew_rate_20_qs)
@@ -14992,7 +15454,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_20_drive_strength_20_wd),
     .d      (hw2reg.mio_pad_attr[20].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_20_flds_we[8]),
+    .qe     (mio_pad_attr_20_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[20].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_20_drive_strength_20_qs)
@@ -15003,7 +15465,7 @@ module pinmux_reg_top (
   // Subregister 21 of Multireg mio_pad_attr
   // R[mio_pad_attr_21]: V(True)
   logic mio_pad_attr_21_qe;
-  logic [8:0] mio_pad_attr_21_flds_we;
+  logic [9:0] mio_pad_attr_21_flds_we;
   assign mio_pad_attr_21_qe = &mio_pad_attr_21_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_21_gated_we;
@@ -15120,6 +15582,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[21].od_en.qe = mio_pad_attr_21_qe;
 
+  //   F[input_disable_21]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_21_input_disable_21 (
+    .re     (mio_pad_attr_21_re),
+    .we     (mio_pad_attr_21_gated_we),
+    .wd     (mio_pad_attr_21_input_disable_21_wd),
+    .d      (hw2reg.mio_pad_attr[21].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_21_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[21].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_21_input_disable_21_qs)
+  );
+  assign reg2hw.mio_pad_attr[21].input_disable.qe = mio_pad_attr_21_qe;
+
   //   F[slew_rate_21]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -15129,7 +15607,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_21_slew_rate_21_wd),
     .d      (hw2reg.mio_pad_attr[21].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_21_flds_we[7]),
+    .qe     (mio_pad_attr_21_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[21].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_21_slew_rate_21_qs)
@@ -15145,7 +15623,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_21_drive_strength_21_wd),
     .d      (hw2reg.mio_pad_attr[21].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_21_flds_we[8]),
+    .qe     (mio_pad_attr_21_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[21].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_21_drive_strength_21_qs)
@@ -15156,7 +15634,7 @@ module pinmux_reg_top (
   // Subregister 22 of Multireg mio_pad_attr
   // R[mio_pad_attr_22]: V(True)
   logic mio_pad_attr_22_qe;
-  logic [8:0] mio_pad_attr_22_flds_we;
+  logic [9:0] mio_pad_attr_22_flds_we;
   assign mio_pad_attr_22_qe = &mio_pad_attr_22_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_22_gated_we;
@@ -15273,6 +15751,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[22].od_en.qe = mio_pad_attr_22_qe;
 
+  //   F[input_disable_22]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_22_input_disable_22 (
+    .re     (mio_pad_attr_22_re),
+    .we     (mio_pad_attr_22_gated_we),
+    .wd     (mio_pad_attr_22_input_disable_22_wd),
+    .d      (hw2reg.mio_pad_attr[22].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_22_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[22].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_22_input_disable_22_qs)
+  );
+  assign reg2hw.mio_pad_attr[22].input_disable.qe = mio_pad_attr_22_qe;
+
   //   F[slew_rate_22]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -15282,7 +15776,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_22_slew_rate_22_wd),
     .d      (hw2reg.mio_pad_attr[22].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_22_flds_we[7]),
+    .qe     (mio_pad_attr_22_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[22].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_22_slew_rate_22_qs)
@@ -15298,7 +15792,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_22_drive_strength_22_wd),
     .d      (hw2reg.mio_pad_attr[22].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_22_flds_we[8]),
+    .qe     (mio_pad_attr_22_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[22].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_22_drive_strength_22_qs)
@@ -15309,7 +15803,7 @@ module pinmux_reg_top (
   // Subregister 23 of Multireg mio_pad_attr
   // R[mio_pad_attr_23]: V(True)
   logic mio_pad_attr_23_qe;
-  logic [8:0] mio_pad_attr_23_flds_we;
+  logic [9:0] mio_pad_attr_23_flds_we;
   assign mio_pad_attr_23_qe = &mio_pad_attr_23_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_23_gated_we;
@@ -15426,6 +15920,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[23].od_en.qe = mio_pad_attr_23_qe;
 
+  //   F[input_disable_23]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_23_input_disable_23 (
+    .re     (mio_pad_attr_23_re),
+    .we     (mio_pad_attr_23_gated_we),
+    .wd     (mio_pad_attr_23_input_disable_23_wd),
+    .d      (hw2reg.mio_pad_attr[23].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_23_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[23].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_23_input_disable_23_qs)
+  );
+  assign reg2hw.mio_pad_attr[23].input_disable.qe = mio_pad_attr_23_qe;
+
   //   F[slew_rate_23]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -15435,7 +15945,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_23_slew_rate_23_wd),
     .d      (hw2reg.mio_pad_attr[23].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_23_flds_we[7]),
+    .qe     (mio_pad_attr_23_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[23].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_23_slew_rate_23_qs)
@@ -15451,7 +15961,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_23_drive_strength_23_wd),
     .d      (hw2reg.mio_pad_attr[23].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_23_flds_we[8]),
+    .qe     (mio_pad_attr_23_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[23].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_23_drive_strength_23_qs)
@@ -15462,7 +15972,7 @@ module pinmux_reg_top (
   // Subregister 24 of Multireg mio_pad_attr
   // R[mio_pad_attr_24]: V(True)
   logic mio_pad_attr_24_qe;
-  logic [8:0] mio_pad_attr_24_flds_we;
+  logic [9:0] mio_pad_attr_24_flds_we;
   assign mio_pad_attr_24_qe = &mio_pad_attr_24_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_24_gated_we;
@@ -15579,6 +16089,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[24].od_en.qe = mio_pad_attr_24_qe;
 
+  //   F[input_disable_24]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_24_input_disable_24 (
+    .re     (mio_pad_attr_24_re),
+    .we     (mio_pad_attr_24_gated_we),
+    .wd     (mio_pad_attr_24_input_disable_24_wd),
+    .d      (hw2reg.mio_pad_attr[24].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_24_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[24].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_24_input_disable_24_qs)
+  );
+  assign reg2hw.mio_pad_attr[24].input_disable.qe = mio_pad_attr_24_qe;
+
   //   F[slew_rate_24]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -15588,7 +16114,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_24_slew_rate_24_wd),
     .d      (hw2reg.mio_pad_attr[24].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_24_flds_we[7]),
+    .qe     (mio_pad_attr_24_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[24].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_24_slew_rate_24_qs)
@@ -15604,7 +16130,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_24_drive_strength_24_wd),
     .d      (hw2reg.mio_pad_attr[24].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_24_flds_we[8]),
+    .qe     (mio_pad_attr_24_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[24].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_24_drive_strength_24_qs)
@@ -15615,7 +16141,7 @@ module pinmux_reg_top (
   // Subregister 25 of Multireg mio_pad_attr
   // R[mio_pad_attr_25]: V(True)
   logic mio_pad_attr_25_qe;
-  logic [8:0] mio_pad_attr_25_flds_we;
+  logic [9:0] mio_pad_attr_25_flds_we;
   assign mio_pad_attr_25_qe = &mio_pad_attr_25_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_25_gated_we;
@@ -15732,6 +16258,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[25].od_en.qe = mio_pad_attr_25_qe;
 
+  //   F[input_disable_25]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_25_input_disable_25 (
+    .re     (mio_pad_attr_25_re),
+    .we     (mio_pad_attr_25_gated_we),
+    .wd     (mio_pad_attr_25_input_disable_25_wd),
+    .d      (hw2reg.mio_pad_attr[25].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_25_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[25].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_25_input_disable_25_qs)
+  );
+  assign reg2hw.mio_pad_attr[25].input_disable.qe = mio_pad_attr_25_qe;
+
   //   F[slew_rate_25]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -15741,7 +16283,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_25_slew_rate_25_wd),
     .d      (hw2reg.mio_pad_attr[25].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_25_flds_we[7]),
+    .qe     (mio_pad_attr_25_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[25].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_25_slew_rate_25_qs)
@@ -15757,7 +16299,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_25_drive_strength_25_wd),
     .d      (hw2reg.mio_pad_attr[25].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_25_flds_we[8]),
+    .qe     (mio_pad_attr_25_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[25].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_25_drive_strength_25_qs)
@@ -15768,7 +16310,7 @@ module pinmux_reg_top (
   // Subregister 26 of Multireg mio_pad_attr
   // R[mio_pad_attr_26]: V(True)
   logic mio_pad_attr_26_qe;
-  logic [8:0] mio_pad_attr_26_flds_we;
+  logic [9:0] mio_pad_attr_26_flds_we;
   assign mio_pad_attr_26_qe = &mio_pad_attr_26_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_26_gated_we;
@@ -15885,6 +16427,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[26].od_en.qe = mio_pad_attr_26_qe;
 
+  //   F[input_disable_26]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_26_input_disable_26 (
+    .re     (mio_pad_attr_26_re),
+    .we     (mio_pad_attr_26_gated_we),
+    .wd     (mio_pad_attr_26_input_disable_26_wd),
+    .d      (hw2reg.mio_pad_attr[26].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_26_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[26].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_26_input_disable_26_qs)
+  );
+  assign reg2hw.mio_pad_attr[26].input_disable.qe = mio_pad_attr_26_qe;
+
   //   F[slew_rate_26]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -15894,7 +16452,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_26_slew_rate_26_wd),
     .d      (hw2reg.mio_pad_attr[26].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_26_flds_we[7]),
+    .qe     (mio_pad_attr_26_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[26].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_26_slew_rate_26_qs)
@@ -15910,7 +16468,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_26_drive_strength_26_wd),
     .d      (hw2reg.mio_pad_attr[26].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_26_flds_we[8]),
+    .qe     (mio_pad_attr_26_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[26].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_26_drive_strength_26_qs)
@@ -15921,7 +16479,7 @@ module pinmux_reg_top (
   // Subregister 27 of Multireg mio_pad_attr
   // R[mio_pad_attr_27]: V(True)
   logic mio_pad_attr_27_qe;
-  logic [8:0] mio_pad_attr_27_flds_we;
+  logic [9:0] mio_pad_attr_27_flds_we;
   assign mio_pad_attr_27_qe = &mio_pad_attr_27_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_27_gated_we;
@@ -16038,6 +16596,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[27].od_en.qe = mio_pad_attr_27_qe;
 
+  //   F[input_disable_27]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_27_input_disable_27 (
+    .re     (mio_pad_attr_27_re),
+    .we     (mio_pad_attr_27_gated_we),
+    .wd     (mio_pad_attr_27_input_disable_27_wd),
+    .d      (hw2reg.mio_pad_attr[27].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_27_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[27].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_27_input_disable_27_qs)
+  );
+  assign reg2hw.mio_pad_attr[27].input_disable.qe = mio_pad_attr_27_qe;
+
   //   F[slew_rate_27]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16047,7 +16621,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_27_slew_rate_27_wd),
     .d      (hw2reg.mio_pad_attr[27].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_27_flds_we[7]),
+    .qe     (mio_pad_attr_27_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[27].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_27_slew_rate_27_qs)
@@ -16063,7 +16637,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_27_drive_strength_27_wd),
     .d      (hw2reg.mio_pad_attr[27].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_27_flds_we[8]),
+    .qe     (mio_pad_attr_27_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[27].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_27_drive_strength_27_qs)
@@ -16074,7 +16648,7 @@ module pinmux_reg_top (
   // Subregister 28 of Multireg mio_pad_attr
   // R[mio_pad_attr_28]: V(True)
   logic mio_pad_attr_28_qe;
-  logic [8:0] mio_pad_attr_28_flds_we;
+  logic [9:0] mio_pad_attr_28_flds_we;
   assign mio_pad_attr_28_qe = &mio_pad_attr_28_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_28_gated_we;
@@ -16191,6 +16765,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[28].od_en.qe = mio_pad_attr_28_qe;
 
+  //   F[input_disable_28]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_28_input_disable_28 (
+    .re     (mio_pad_attr_28_re),
+    .we     (mio_pad_attr_28_gated_we),
+    .wd     (mio_pad_attr_28_input_disable_28_wd),
+    .d      (hw2reg.mio_pad_attr[28].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_28_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[28].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_28_input_disable_28_qs)
+  );
+  assign reg2hw.mio_pad_attr[28].input_disable.qe = mio_pad_attr_28_qe;
+
   //   F[slew_rate_28]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16200,7 +16790,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_28_slew_rate_28_wd),
     .d      (hw2reg.mio_pad_attr[28].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_28_flds_we[7]),
+    .qe     (mio_pad_attr_28_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[28].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_28_slew_rate_28_qs)
@@ -16216,7 +16806,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_28_drive_strength_28_wd),
     .d      (hw2reg.mio_pad_attr[28].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_28_flds_we[8]),
+    .qe     (mio_pad_attr_28_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[28].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_28_drive_strength_28_qs)
@@ -16227,7 +16817,7 @@ module pinmux_reg_top (
   // Subregister 29 of Multireg mio_pad_attr
   // R[mio_pad_attr_29]: V(True)
   logic mio_pad_attr_29_qe;
-  logic [8:0] mio_pad_attr_29_flds_we;
+  logic [9:0] mio_pad_attr_29_flds_we;
   assign mio_pad_attr_29_qe = &mio_pad_attr_29_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_29_gated_we;
@@ -16344,6 +16934,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[29].od_en.qe = mio_pad_attr_29_qe;
 
+  //   F[input_disable_29]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_29_input_disable_29 (
+    .re     (mio_pad_attr_29_re),
+    .we     (mio_pad_attr_29_gated_we),
+    .wd     (mio_pad_attr_29_input_disable_29_wd),
+    .d      (hw2reg.mio_pad_attr[29].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_29_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[29].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_29_input_disable_29_qs)
+  );
+  assign reg2hw.mio_pad_attr[29].input_disable.qe = mio_pad_attr_29_qe;
+
   //   F[slew_rate_29]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16353,7 +16959,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_29_slew_rate_29_wd),
     .d      (hw2reg.mio_pad_attr[29].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_29_flds_we[7]),
+    .qe     (mio_pad_attr_29_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[29].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_29_slew_rate_29_qs)
@@ -16369,7 +16975,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_29_drive_strength_29_wd),
     .d      (hw2reg.mio_pad_attr[29].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_29_flds_we[8]),
+    .qe     (mio_pad_attr_29_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[29].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_29_drive_strength_29_qs)
@@ -16380,7 +16986,7 @@ module pinmux_reg_top (
   // Subregister 30 of Multireg mio_pad_attr
   // R[mio_pad_attr_30]: V(True)
   logic mio_pad_attr_30_qe;
-  logic [8:0] mio_pad_attr_30_flds_we;
+  logic [9:0] mio_pad_attr_30_flds_we;
   assign mio_pad_attr_30_qe = &mio_pad_attr_30_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_30_gated_we;
@@ -16497,6 +17103,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[30].od_en.qe = mio_pad_attr_30_qe;
 
+  //   F[input_disable_30]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_30_input_disable_30 (
+    .re     (mio_pad_attr_30_re),
+    .we     (mio_pad_attr_30_gated_we),
+    .wd     (mio_pad_attr_30_input_disable_30_wd),
+    .d      (hw2reg.mio_pad_attr[30].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_30_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[30].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_30_input_disable_30_qs)
+  );
+  assign reg2hw.mio_pad_attr[30].input_disable.qe = mio_pad_attr_30_qe;
+
   //   F[slew_rate_30]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16506,7 +17128,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_30_slew_rate_30_wd),
     .d      (hw2reg.mio_pad_attr[30].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_30_flds_we[7]),
+    .qe     (mio_pad_attr_30_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[30].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_30_slew_rate_30_qs)
@@ -16522,7 +17144,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_30_drive_strength_30_wd),
     .d      (hw2reg.mio_pad_attr[30].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_30_flds_we[8]),
+    .qe     (mio_pad_attr_30_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[30].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_30_drive_strength_30_qs)
@@ -16533,7 +17155,7 @@ module pinmux_reg_top (
   // Subregister 31 of Multireg mio_pad_attr
   // R[mio_pad_attr_31]: V(True)
   logic mio_pad_attr_31_qe;
-  logic [8:0] mio_pad_attr_31_flds_we;
+  logic [9:0] mio_pad_attr_31_flds_we;
   assign mio_pad_attr_31_qe = &mio_pad_attr_31_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_31_gated_we;
@@ -16650,6 +17272,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[31].od_en.qe = mio_pad_attr_31_qe;
 
+  //   F[input_disable_31]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_31_input_disable_31 (
+    .re     (mio_pad_attr_31_re),
+    .we     (mio_pad_attr_31_gated_we),
+    .wd     (mio_pad_attr_31_input_disable_31_wd),
+    .d      (hw2reg.mio_pad_attr[31].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_31_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[31].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_31_input_disable_31_qs)
+  );
+  assign reg2hw.mio_pad_attr[31].input_disable.qe = mio_pad_attr_31_qe;
+
   //   F[slew_rate_31]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16659,7 +17297,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_31_slew_rate_31_wd),
     .d      (hw2reg.mio_pad_attr[31].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_31_flds_we[7]),
+    .qe     (mio_pad_attr_31_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[31].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_31_slew_rate_31_qs)
@@ -16675,7 +17313,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_31_drive_strength_31_wd),
     .d      (hw2reg.mio_pad_attr[31].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_31_flds_we[8]),
+    .qe     (mio_pad_attr_31_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[31].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_31_drive_strength_31_qs)
@@ -16686,7 +17324,7 @@ module pinmux_reg_top (
   // Subregister 32 of Multireg mio_pad_attr
   // R[mio_pad_attr_32]: V(True)
   logic mio_pad_attr_32_qe;
-  logic [8:0] mio_pad_attr_32_flds_we;
+  logic [9:0] mio_pad_attr_32_flds_we;
   assign mio_pad_attr_32_qe = &mio_pad_attr_32_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_32_gated_we;
@@ -16803,6 +17441,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[32].od_en.qe = mio_pad_attr_32_qe;
 
+  //   F[input_disable_32]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_32_input_disable_32 (
+    .re     (mio_pad_attr_32_re),
+    .we     (mio_pad_attr_32_gated_we),
+    .wd     (mio_pad_attr_32_input_disable_32_wd),
+    .d      (hw2reg.mio_pad_attr[32].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_32_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[32].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_32_input_disable_32_qs)
+  );
+  assign reg2hw.mio_pad_attr[32].input_disable.qe = mio_pad_attr_32_qe;
+
   //   F[slew_rate_32]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16812,7 +17466,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_32_slew_rate_32_wd),
     .d      (hw2reg.mio_pad_attr[32].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_32_flds_we[7]),
+    .qe     (mio_pad_attr_32_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[32].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_32_slew_rate_32_qs)
@@ -16828,7 +17482,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_32_drive_strength_32_wd),
     .d      (hw2reg.mio_pad_attr[32].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_32_flds_we[8]),
+    .qe     (mio_pad_attr_32_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[32].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_32_drive_strength_32_qs)
@@ -16839,7 +17493,7 @@ module pinmux_reg_top (
   // Subregister 33 of Multireg mio_pad_attr
   // R[mio_pad_attr_33]: V(True)
   logic mio_pad_attr_33_qe;
-  logic [8:0] mio_pad_attr_33_flds_we;
+  logic [9:0] mio_pad_attr_33_flds_we;
   assign mio_pad_attr_33_qe = &mio_pad_attr_33_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_33_gated_we;
@@ -16956,6 +17610,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[33].od_en.qe = mio_pad_attr_33_qe;
 
+  //   F[input_disable_33]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_33_input_disable_33 (
+    .re     (mio_pad_attr_33_re),
+    .we     (mio_pad_attr_33_gated_we),
+    .wd     (mio_pad_attr_33_input_disable_33_wd),
+    .d      (hw2reg.mio_pad_attr[33].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_33_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[33].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_33_input_disable_33_qs)
+  );
+  assign reg2hw.mio_pad_attr[33].input_disable.qe = mio_pad_attr_33_qe;
+
   //   F[slew_rate_33]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -16965,7 +17635,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_33_slew_rate_33_wd),
     .d      (hw2reg.mio_pad_attr[33].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_33_flds_we[7]),
+    .qe     (mio_pad_attr_33_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[33].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_33_slew_rate_33_qs)
@@ -16981,7 +17651,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_33_drive_strength_33_wd),
     .d      (hw2reg.mio_pad_attr[33].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_33_flds_we[8]),
+    .qe     (mio_pad_attr_33_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[33].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_33_drive_strength_33_qs)
@@ -16992,7 +17662,7 @@ module pinmux_reg_top (
   // Subregister 34 of Multireg mio_pad_attr
   // R[mio_pad_attr_34]: V(True)
   logic mio_pad_attr_34_qe;
-  logic [8:0] mio_pad_attr_34_flds_we;
+  logic [9:0] mio_pad_attr_34_flds_we;
   assign mio_pad_attr_34_qe = &mio_pad_attr_34_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_34_gated_we;
@@ -17109,6 +17779,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[34].od_en.qe = mio_pad_attr_34_qe;
 
+  //   F[input_disable_34]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_34_input_disable_34 (
+    .re     (mio_pad_attr_34_re),
+    .we     (mio_pad_attr_34_gated_we),
+    .wd     (mio_pad_attr_34_input_disable_34_wd),
+    .d      (hw2reg.mio_pad_attr[34].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_34_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[34].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_34_input_disable_34_qs)
+  );
+  assign reg2hw.mio_pad_attr[34].input_disable.qe = mio_pad_attr_34_qe;
+
   //   F[slew_rate_34]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -17118,7 +17804,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_34_slew_rate_34_wd),
     .d      (hw2reg.mio_pad_attr[34].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_34_flds_we[7]),
+    .qe     (mio_pad_attr_34_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[34].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_34_slew_rate_34_qs)
@@ -17134,7 +17820,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_34_drive_strength_34_wd),
     .d      (hw2reg.mio_pad_attr[34].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_34_flds_we[8]),
+    .qe     (mio_pad_attr_34_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[34].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_34_drive_strength_34_qs)
@@ -17145,7 +17831,7 @@ module pinmux_reg_top (
   // Subregister 35 of Multireg mio_pad_attr
   // R[mio_pad_attr_35]: V(True)
   logic mio_pad_attr_35_qe;
-  logic [8:0] mio_pad_attr_35_flds_we;
+  logic [9:0] mio_pad_attr_35_flds_we;
   assign mio_pad_attr_35_qe = &mio_pad_attr_35_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_35_gated_we;
@@ -17262,6 +17948,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[35].od_en.qe = mio_pad_attr_35_qe;
 
+  //   F[input_disable_35]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_35_input_disable_35 (
+    .re     (mio_pad_attr_35_re),
+    .we     (mio_pad_attr_35_gated_we),
+    .wd     (mio_pad_attr_35_input_disable_35_wd),
+    .d      (hw2reg.mio_pad_attr[35].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_35_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[35].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_35_input_disable_35_qs)
+  );
+  assign reg2hw.mio_pad_attr[35].input_disable.qe = mio_pad_attr_35_qe;
+
   //   F[slew_rate_35]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -17271,7 +17973,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_35_slew_rate_35_wd),
     .d      (hw2reg.mio_pad_attr[35].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_35_flds_we[7]),
+    .qe     (mio_pad_attr_35_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[35].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_35_slew_rate_35_qs)
@@ -17287,7 +17989,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_35_drive_strength_35_wd),
     .d      (hw2reg.mio_pad_attr[35].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_35_flds_we[8]),
+    .qe     (mio_pad_attr_35_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[35].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_35_drive_strength_35_qs)
@@ -17298,7 +18000,7 @@ module pinmux_reg_top (
   // Subregister 36 of Multireg mio_pad_attr
   // R[mio_pad_attr_36]: V(True)
   logic mio_pad_attr_36_qe;
-  logic [8:0] mio_pad_attr_36_flds_we;
+  logic [9:0] mio_pad_attr_36_flds_we;
   assign mio_pad_attr_36_qe = &mio_pad_attr_36_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_36_gated_we;
@@ -17415,6 +18117,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[36].od_en.qe = mio_pad_attr_36_qe;
 
+  //   F[input_disable_36]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_36_input_disable_36 (
+    .re     (mio_pad_attr_36_re),
+    .we     (mio_pad_attr_36_gated_we),
+    .wd     (mio_pad_attr_36_input_disable_36_wd),
+    .d      (hw2reg.mio_pad_attr[36].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_36_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[36].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_36_input_disable_36_qs)
+  );
+  assign reg2hw.mio_pad_attr[36].input_disable.qe = mio_pad_attr_36_qe;
+
   //   F[slew_rate_36]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -17424,7 +18142,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_36_slew_rate_36_wd),
     .d      (hw2reg.mio_pad_attr[36].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_36_flds_we[7]),
+    .qe     (mio_pad_attr_36_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[36].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_36_slew_rate_36_qs)
@@ -17440,7 +18158,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_36_drive_strength_36_wd),
     .d      (hw2reg.mio_pad_attr[36].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_36_flds_we[8]),
+    .qe     (mio_pad_attr_36_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[36].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_36_drive_strength_36_qs)
@@ -17451,7 +18169,7 @@ module pinmux_reg_top (
   // Subregister 37 of Multireg mio_pad_attr
   // R[mio_pad_attr_37]: V(True)
   logic mio_pad_attr_37_qe;
-  logic [8:0] mio_pad_attr_37_flds_we;
+  logic [9:0] mio_pad_attr_37_flds_we;
   assign mio_pad_attr_37_qe = &mio_pad_attr_37_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_37_gated_we;
@@ -17568,6 +18286,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[37].od_en.qe = mio_pad_attr_37_qe;
 
+  //   F[input_disable_37]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_37_input_disable_37 (
+    .re     (mio_pad_attr_37_re),
+    .we     (mio_pad_attr_37_gated_we),
+    .wd     (mio_pad_attr_37_input_disable_37_wd),
+    .d      (hw2reg.mio_pad_attr[37].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_37_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[37].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_37_input_disable_37_qs)
+  );
+  assign reg2hw.mio_pad_attr[37].input_disable.qe = mio_pad_attr_37_qe;
+
   //   F[slew_rate_37]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -17577,7 +18311,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_37_slew_rate_37_wd),
     .d      (hw2reg.mio_pad_attr[37].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_37_flds_we[7]),
+    .qe     (mio_pad_attr_37_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[37].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_37_slew_rate_37_qs)
@@ -17593,7 +18327,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_37_drive_strength_37_wd),
     .d      (hw2reg.mio_pad_attr[37].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_37_flds_we[8]),
+    .qe     (mio_pad_attr_37_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[37].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_37_drive_strength_37_qs)
@@ -17604,7 +18338,7 @@ module pinmux_reg_top (
   // Subregister 38 of Multireg mio_pad_attr
   // R[mio_pad_attr_38]: V(True)
   logic mio_pad_attr_38_qe;
-  logic [8:0] mio_pad_attr_38_flds_we;
+  logic [9:0] mio_pad_attr_38_flds_we;
   assign mio_pad_attr_38_qe = &mio_pad_attr_38_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_38_gated_we;
@@ -17721,6 +18455,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[38].od_en.qe = mio_pad_attr_38_qe;
 
+  //   F[input_disable_38]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_38_input_disable_38 (
+    .re     (mio_pad_attr_38_re),
+    .we     (mio_pad_attr_38_gated_we),
+    .wd     (mio_pad_attr_38_input_disable_38_wd),
+    .d      (hw2reg.mio_pad_attr[38].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_38_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[38].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_38_input_disable_38_qs)
+  );
+  assign reg2hw.mio_pad_attr[38].input_disable.qe = mio_pad_attr_38_qe;
+
   //   F[slew_rate_38]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -17730,7 +18480,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_38_slew_rate_38_wd),
     .d      (hw2reg.mio_pad_attr[38].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_38_flds_we[7]),
+    .qe     (mio_pad_attr_38_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[38].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_38_slew_rate_38_qs)
@@ -17746,7 +18496,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_38_drive_strength_38_wd),
     .d      (hw2reg.mio_pad_attr[38].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_38_flds_we[8]),
+    .qe     (mio_pad_attr_38_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[38].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_38_drive_strength_38_qs)
@@ -17757,7 +18507,7 @@ module pinmux_reg_top (
   // Subregister 39 of Multireg mio_pad_attr
   // R[mio_pad_attr_39]: V(True)
   logic mio_pad_attr_39_qe;
-  logic [8:0] mio_pad_attr_39_flds_we;
+  logic [9:0] mio_pad_attr_39_flds_we;
   assign mio_pad_attr_39_qe = &mio_pad_attr_39_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_39_gated_we;
@@ -17874,6 +18624,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[39].od_en.qe = mio_pad_attr_39_qe;
 
+  //   F[input_disable_39]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_39_input_disable_39 (
+    .re     (mio_pad_attr_39_re),
+    .we     (mio_pad_attr_39_gated_we),
+    .wd     (mio_pad_attr_39_input_disable_39_wd),
+    .d      (hw2reg.mio_pad_attr[39].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_39_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[39].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_39_input_disable_39_qs)
+  );
+  assign reg2hw.mio_pad_attr[39].input_disable.qe = mio_pad_attr_39_qe;
+
   //   F[slew_rate_39]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -17883,7 +18649,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_39_slew_rate_39_wd),
     .d      (hw2reg.mio_pad_attr[39].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_39_flds_we[7]),
+    .qe     (mio_pad_attr_39_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[39].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_39_slew_rate_39_qs)
@@ -17899,7 +18665,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_39_drive_strength_39_wd),
     .d      (hw2reg.mio_pad_attr[39].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_39_flds_we[8]),
+    .qe     (mio_pad_attr_39_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[39].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_39_drive_strength_39_qs)
@@ -17910,7 +18676,7 @@ module pinmux_reg_top (
   // Subregister 40 of Multireg mio_pad_attr
   // R[mio_pad_attr_40]: V(True)
   logic mio_pad_attr_40_qe;
-  logic [8:0] mio_pad_attr_40_flds_we;
+  logic [9:0] mio_pad_attr_40_flds_we;
   assign mio_pad_attr_40_qe = &mio_pad_attr_40_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_40_gated_we;
@@ -18027,6 +18793,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[40].od_en.qe = mio_pad_attr_40_qe;
 
+  //   F[input_disable_40]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_40_input_disable_40 (
+    .re     (mio_pad_attr_40_re),
+    .we     (mio_pad_attr_40_gated_we),
+    .wd     (mio_pad_attr_40_input_disable_40_wd),
+    .d      (hw2reg.mio_pad_attr[40].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_40_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[40].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_40_input_disable_40_qs)
+  );
+  assign reg2hw.mio_pad_attr[40].input_disable.qe = mio_pad_attr_40_qe;
+
   //   F[slew_rate_40]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18036,7 +18818,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_40_slew_rate_40_wd),
     .d      (hw2reg.mio_pad_attr[40].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_40_flds_we[7]),
+    .qe     (mio_pad_attr_40_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[40].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_40_slew_rate_40_qs)
@@ -18052,7 +18834,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_40_drive_strength_40_wd),
     .d      (hw2reg.mio_pad_attr[40].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_40_flds_we[8]),
+    .qe     (mio_pad_attr_40_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[40].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_40_drive_strength_40_qs)
@@ -18063,7 +18845,7 @@ module pinmux_reg_top (
   // Subregister 41 of Multireg mio_pad_attr
   // R[mio_pad_attr_41]: V(True)
   logic mio_pad_attr_41_qe;
-  logic [8:0] mio_pad_attr_41_flds_we;
+  logic [9:0] mio_pad_attr_41_flds_we;
   assign mio_pad_attr_41_qe = &mio_pad_attr_41_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_41_gated_we;
@@ -18180,6 +18962,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[41].od_en.qe = mio_pad_attr_41_qe;
 
+  //   F[input_disable_41]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_41_input_disable_41 (
+    .re     (mio_pad_attr_41_re),
+    .we     (mio_pad_attr_41_gated_we),
+    .wd     (mio_pad_attr_41_input_disable_41_wd),
+    .d      (hw2reg.mio_pad_attr[41].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_41_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[41].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_41_input_disable_41_qs)
+  );
+  assign reg2hw.mio_pad_attr[41].input_disable.qe = mio_pad_attr_41_qe;
+
   //   F[slew_rate_41]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18189,7 +18987,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_41_slew_rate_41_wd),
     .d      (hw2reg.mio_pad_attr[41].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_41_flds_we[7]),
+    .qe     (mio_pad_attr_41_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[41].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_41_slew_rate_41_qs)
@@ -18205,7 +19003,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_41_drive_strength_41_wd),
     .d      (hw2reg.mio_pad_attr[41].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_41_flds_we[8]),
+    .qe     (mio_pad_attr_41_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[41].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_41_drive_strength_41_qs)
@@ -18216,7 +19014,7 @@ module pinmux_reg_top (
   // Subregister 42 of Multireg mio_pad_attr
   // R[mio_pad_attr_42]: V(True)
   logic mio_pad_attr_42_qe;
-  logic [8:0] mio_pad_attr_42_flds_we;
+  logic [9:0] mio_pad_attr_42_flds_we;
   assign mio_pad_attr_42_qe = &mio_pad_attr_42_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_42_gated_we;
@@ -18333,6 +19131,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[42].od_en.qe = mio_pad_attr_42_qe;
 
+  //   F[input_disable_42]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_42_input_disable_42 (
+    .re     (mio_pad_attr_42_re),
+    .we     (mio_pad_attr_42_gated_we),
+    .wd     (mio_pad_attr_42_input_disable_42_wd),
+    .d      (hw2reg.mio_pad_attr[42].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_42_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[42].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_42_input_disable_42_qs)
+  );
+  assign reg2hw.mio_pad_attr[42].input_disable.qe = mio_pad_attr_42_qe;
+
   //   F[slew_rate_42]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18342,7 +19156,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_42_slew_rate_42_wd),
     .d      (hw2reg.mio_pad_attr[42].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_42_flds_we[7]),
+    .qe     (mio_pad_attr_42_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[42].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_42_slew_rate_42_qs)
@@ -18358,7 +19172,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_42_drive_strength_42_wd),
     .d      (hw2reg.mio_pad_attr[42].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_42_flds_we[8]),
+    .qe     (mio_pad_attr_42_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[42].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_42_drive_strength_42_qs)
@@ -18369,7 +19183,7 @@ module pinmux_reg_top (
   // Subregister 43 of Multireg mio_pad_attr
   // R[mio_pad_attr_43]: V(True)
   logic mio_pad_attr_43_qe;
-  logic [8:0] mio_pad_attr_43_flds_we;
+  logic [9:0] mio_pad_attr_43_flds_we;
   assign mio_pad_attr_43_qe = &mio_pad_attr_43_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_43_gated_we;
@@ -18486,6 +19300,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[43].od_en.qe = mio_pad_attr_43_qe;
 
+  //   F[input_disable_43]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_43_input_disable_43 (
+    .re     (mio_pad_attr_43_re),
+    .we     (mio_pad_attr_43_gated_we),
+    .wd     (mio_pad_attr_43_input_disable_43_wd),
+    .d      (hw2reg.mio_pad_attr[43].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_43_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[43].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_43_input_disable_43_qs)
+  );
+  assign reg2hw.mio_pad_attr[43].input_disable.qe = mio_pad_attr_43_qe;
+
   //   F[slew_rate_43]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18495,7 +19325,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_43_slew_rate_43_wd),
     .d      (hw2reg.mio_pad_attr[43].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_43_flds_we[7]),
+    .qe     (mio_pad_attr_43_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[43].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_43_slew_rate_43_qs)
@@ -18511,7 +19341,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_43_drive_strength_43_wd),
     .d      (hw2reg.mio_pad_attr[43].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_43_flds_we[8]),
+    .qe     (mio_pad_attr_43_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[43].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_43_drive_strength_43_qs)
@@ -18522,7 +19352,7 @@ module pinmux_reg_top (
   // Subregister 44 of Multireg mio_pad_attr
   // R[mio_pad_attr_44]: V(True)
   logic mio_pad_attr_44_qe;
-  logic [8:0] mio_pad_attr_44_flds_we;
+  logic [9:0] mio_pad_attr_44_flds_we;
   assign mio_pad_attr_44_qe = &mio_pad_attr_44_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_44_gated_we;
@@ -18639,6 +19469,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[44].od_en.qe = mio_pad_attr_44_qe;
 
+  //   F[input_disable_44]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_44_input_disable_44 (
+    .re     (mio_pad_attr_44_re),
+    .we     (mio_pad_attr_44_gated_we),
+    .wd     (mio_pad_attr_44_input_disable_44_wd),
+    .d      (hw2reg.mio_pad_attr[44].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_44_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[44].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_44_input_disable_44_qs)
+  );
+  assign reg2hw.mio_pad_attr[44].input_disable.qe = mio_pad_attr_44_qe;
+
   //   F[slew_rate_44]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18648,7 +19494,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_44_slew_rate_44_wd),
     .d      (hw2reg.mio_pad_attr[44].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_44_flds_we[7]),
+    .qe     (mio_pad_attr_44_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[44].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_44_slew_rate_44_qs)
@@ -18664,7 +19510,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_44_drive_strength_44_wd),
     .d      (hw2reg.mio_pad_attr[44].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_44_flds_we[8]),
+    .qe     (mio_pad_attr_44_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[44].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_44_drive_strength_44_qs)
@@ -18675,7 +19521,7 @@ module pinmux_reg_top (
   // Subregister 45 of Multireg mio_pad_attr
   // R[mio_pad_attr_45]: V(True)
   logic mio_pad_attr_45_qe;
-  logic [8:0] mio_pad_attr_45_flds_we;
+  logic [9:0] mio_pad_attr_45_flds_we;
   assign mio_pad_attr_45_qe = &mio_pad_attr_45_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_45_gated_we;
@@ -18792,6 +19638,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[45].od_en.qe = mio_pad_attr_45_qe;
 
+  //   F[input_disable_45]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_45_input_disable_45 (
+    .re     (mio_pad_attr_45_re),
+    .we     (mio_pad_attr_45_gated_we),
+    .wd     (mio_pad_attr_45_input_disable_45_wd),
+    .d      (hw2reg.mio_pad_attr[45].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_45_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[45].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_45_input_disable_45_qs)
+  );
+  assign reg2hw.mio_pad_attr[45].input_disable.qe = mio_pad_attr_45_qe;
+
   //   F[slew_rate_45]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18801,7 +19663,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_45_slew_rate_45_wd),
     .d      (hw2reg.mio_pad_attr[45].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_45_flds_we[7]),
+    .qe     (mio_pad_attr_45_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[45].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_45_slew_rate_45_qs)
@@ -18817,7 +19679,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_45_drive_strength_45_wd),
     .d      (hw2reg.mio_pad_attr[45].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_45_flds_we[8]),
+    .qe     (mio_pad_attr_45_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[45].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_45_drive_strength_45_qs)
@@ -18828,7 +19690,7 @@ module pinmux_reg_top (
   // Subregister 46 of Multireg mio_pad_attr
   // R[mio_pad_attr_46]: V(True)
   logic mio_pad_attr_46_qe;
-  logic [8:0] mio_pad_attr_46_flds_we;
+  logic [9:0] mio_pad_attr_46_flds_we;
   assign mio_pad_attr_46_qe = &mio_pad_attr_46_flds_we;
   // Create REGWEN-gated WE signal
   logic mio_pad_attr_46_gated_we;
@@ -18945,6 +19807,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.mio_pad_attr[46].od_en.qe = mio_pad_attr_46_qe;
 
+  //   F[input_disable_46]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_mio_pad_attr_46_input_disable_46 (
+    .re     (mio_pad_attr_46_re),
+    .we     (mio_pad_attr_46_gated_we),
+    .wd     (mio_pad_attr_46_input_disable_46_wd),
+    .d      (hw2reg.mio_pad_attr[46].input_disable.d),
+    .qre    (),
+    .qe     (mio_pad_attr_46_flds_we[7]),
+    .q      (reg2hw.mio_pad_attr[46].input_disable.q),
+    .ds     (),
+    .qs     (mio_pad_attr_46_input_disable_46_qs)
+  );
+  assign reg2hw.mio_pad_attr[46].input_disable.qe = mio_pad_attr_46_qe;
+
   //   F[slew_rate_46]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -18954,7 +19832,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_46_slew_rate_46_wd),
     .d      (hw2reg.mio_pad_attr[46].slew_rate.d),
     .qre    (),
-    .qe     (mio_pad_attr_46_flds_we[7]),
+    .qe     (mio_pad_attr_46_flds_we[8]),
     .q      (reg2hw.mio_pad_attr[46].slew_rate.q),
     .ds     (),
     .qs     (mio_pad_attr_46_slew_rate_46_qs)
@@ -18970,7 +19848,7 @@ module pinmux_reg_top (
     .wd     (mio_pad_attr_46_drive_strength_46_wd),
     .d      (hw2reg.mio_pad_attr[46].drive_strength.d),
     .qre    (),
-    .qe     (mio_pad_attr_46_flds_we[8]),
+    .qe     (mio_pad_attr_46_flds_we[9]),
     .q      (reg2hw.mio_pad_attr[46].drive_strength.q),
     .ds     (),
     .qs     (mio_pad_attr_46_drive_strength_46_qs)
@@ -19445,7 +20323,7 @@ module pinmux_reg_top (
   // Subregister 0 of Multireg dio_pad_attr
   // R[dio_pad_attr_0]: V(True)
   logic dio_pad_attr_0_qe;
-  logic [8:0] dio_pad_attr_0_flds_we;
+  logic [9:0] dio_pad_attr_0_flds_we;
   assign dio_pad_attr_0_qe = &dio_pad_attr_0_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_0_gated_we;
@@ -19562,6 +20440,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[0].od_en.qe = dio_pad_attr_0_qe;
 
+  //   F[input_disable_0]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_0_input_disable_0 (
+    .re     (dio_pad_attr_0_re),
+    .we     (dio_pad_attr_0_gated_we),
+    .wd     (dio_pad_attr_0_input_disable_0_wd),
+    .d      (hw2reg.dio_pad_attr[0].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_0_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[0].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_0_input_disable_0_qs)
+  );
+  assign reg2hw.dio_pad_attr[0].input_disable.qe = dio_pad_attr_0_qe;
+
   //   F[slew_rate_0]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -19571,7 +20465,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_0_slew_rate_0_wd),
     .d      (hw2reg.dio_pad_attr[0].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_0_flds_we[7]),
+    .qe     (dio_pad_attr_0_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[0].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_0_slew_rate_0_qs)
@@ -19587,7 +20481,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_0_drive_strength_0_wd),
     .d      (hw2reg.dio_pad_attr[0].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_0_flds_we[8]),
+    .qe     (dio_pad_attr_0_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[0].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_0_drive_strength_0_qs)
@@ -19598,7 +20492,7 @@ module pinmux_reg_top (
   // Subregister 1 of Multireg dio_pad_attr
   // R[dio_pad_attr_1]: V(True)
   logic dio_pad_attr_1_qe;
-  logic [8:0] dio_pad_attr_1_flds_we;
+  logic [9:0] dio_pad_attr_1_flds_we;
   assign dio_pad_attr_1_qe = &dio_pad_attr_1_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_1_gated_we;
@@ -19715,6 +20609,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[1].od_en.qe = dio_pad_attr_1_qe;
 
+  //   F[input_disable_1]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_1_input_disable_1 (
+    .re     (dio_pad_attr_1_re),
+    .we     (dio_pad_attr_1_gated_we),
+    .wd     (dio_pad_attr_1_input_disable_1_wd),
+    .d      (hw2reg.dio_pad_attr[1].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_1_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[1].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_1_input_disable_1_qs)
+  );
+  assign reg2hw.dio_pad_attr[1].input_disable.qe = dio_pad_attr_1_qe;
+
   //   F[slew_rate_1]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -19724,7 +20634,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_1_slew_rate_1_wd),
     .d      (hw2reg.dio_pad_attr[1].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_1_flds_we[7]),
+    .qe     (dio_pad_attr_1_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[1].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_1_slew_rate_1_qs)
@@ -19740,7 +20650,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_1_drive_strength_1_wd),
     .d      (hw2reg.dio_pad_attr[1].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_1_flds_we[8]),
+    .qe     (dio_pad_attr_1_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[1].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_1_drive_strength_1_qs)
@@ -19751,7 +20661,7 @@ module pinmux_reg_top (
   // Subregister 2 of Multireg dio_pad_attr
   // R[dio_pad_attr_2]: V(True)
   logic dio_pad_attr_2_qe;
-  logic [8:0] dio_pad_attr_2_flds_we;
+  logic [9:0] dio_pad_attr_2_flds_we;
   assign dio_pad_attr_2_qe = &dio_pad_attr_2_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_2_gated_we;
@@ -19868,6 +20778,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[2].od_en.qe = dio_pad_attr_2_qe;
 
+  //   F[input_disable_2]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_2_input_disable_2 (
+    .re     (dio_pad_attr_2_re),
+    .we     (dio_pad_attr_2_gated_we),
+    .wd     (dio_pad_attr_2_input_disable_2_wd),
+    .d      (hw2reg.dio_pad_attr[2].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_2_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[2].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_2_input_disable_2_qs)
+  );
+  assign reg2hw.dio_pad_attr[2].input_disable.qe = dio_pad_attr_2_qe;
+
   //   F[slew_rate_2]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -19877,7 +20803,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_2_slew_rate_2_wd),
     .d      (hw2reg.dio_pad_attr[2].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_2_flds_we[7]),
+    .qe     (dio_pad_attr_2_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[2].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_2_slew_rate_2_qs)
@@ -19893,7 +20819,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_2_drive_strength_2_wd),
     .d      (hw2reg.dio_pad_attr[2].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_2_flds_we[8]),
+    .qe     (dio_pad_attr_2_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[2].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_2_drive_strength_2_qs)
@@ -19904,7 +20830,7 @@ module pinmux_reg_top (
   // Subregister 3 of Multireg dio_pad_attr
   // R[dio_pad_attr_3]: V(True)
   logic dio_pad_attr_3_qe;
-  logic [8:0] dio_pad_attr_3_flds_we;
+  logic [9:0] dio_pad_attr_3_flds_we;
   assign dio_pad_attr_3_qe = &dio_pad_attr_3_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_3_gated_we;
@@ -20021,6 +20947,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[3].od_en.qe = dio_pad_attr_3_qe;
 
+  //   F[input_disable_3]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_3_input_disable_3 (
+    .re     (dio_pad_attr_3_re),
+    .we     (dio_pad_attr_3_gated_we),
+    .wd     (dio_pad_attr_3_input_disable_3_wd),
+    .d      (hw2reg.dio_pad_attr[3].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_3_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[3].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_3_input_disable_3_qs)
+  );
+  assign reg2hw.dio_pad_attr[3].input_disable.qe = dio_pad_attr_3_qe;
+
   //   F[slew_rate_3]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20030,7 +20972,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_3_slew_rate_3_wd),
     .d      (hw2reg.dio_pad_attr[3].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_3_flds_we[7]),
+    .qe     (dio_pad_attr_3_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[3].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_3_slew_rate_3_qs)
@@ -20046,7 +20988,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_3_drive_strength_3_wd),
     .d      (hw2reg.dio_pad_attr[3].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_3_flds_we[8]),
+    .qe     (dio_pad_attr_3_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[3].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_3_drive_strength_3_qs)
@@ -20057,7 +20999,7 @@ module pinmux_reg_top (
   // Subregister 4 of Multireg dio_pad_attr
   // R[dio_pad_attr_4]: V(True)
   logic dio_pad_attr_4_qe;
-  logic [8:0] dio_pad_attr_4_flds_we;
+  logic [9:0] dio_pad_attr_4_flds_we;
   assign dio_pad_attr_4_qe = &dio_pad_attr_4_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_4_gated_we;
@@ -20174,6 +21116,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[4].od_en.qe = dio_pad_attr_4_qe;
 
+  //   F[input_disable_4]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_4_input_disable_4 (
+    .re     (dio_pad_attr_4_re),
+    .we     (dio_pad_attr_4_gated_we),
+    .wd     (dio_pad_attr_4_input_disable_4_wd),
+    .d      (hw2reg.dio_pad_attr[4].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_4_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[4].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_4_input_disable_4_qs)
+  );
+  assign reg2hw.dio_pad_attr[4].input_disable.qe = dio_pad_attr_4_qe;
+
   //   F[slew_rate_4]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20183,7 +21141,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_4_slew_rate_4_wd),
     .d      (hw2reg.dio_pad_attr[4].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_4_flds_we[7]),
+    .qe     (dio_pad_attr_4_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[4].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_4_slew_rate_4_qs)
@@ -20199,7 +21157,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_4_drive_strength_4_wd),
     .d      (hw2reg.dio_pad_attr[4].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_4_flds_we[8]),
+    .qe     (dio_pad_attr_4_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[4].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_4_drive_strength_4_qs)
@@ -20210,7 +21168,7 @@ module pinmux_reg_top (
   // Subregister 5 of Multireg dio_pad_attr
   // R[dio_pad_attr_5]: V(True)
   logic dio_pad_attr_5_qe;
-  logic [8:0] dio_pad_attr_5_flds_we;
+  logic [9:0] dio_pad_attr_5_flds_we;
   assign dio_pad_attr_5_qe = &dio_pad_attr_5_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_5_gated_we;
@@ -20327,6 +21285,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[5].od_en.qe = dio_pad_attr_5_qe;
 
+  //   F[input_disable_5]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_5_input_disable_5 (
+    .re     (dio_pad_attr_5_re),
+    .we     (dio_pad_attr_5_gated_we),
+    .wd     (dio_pad_attr_5_input_disable_5_wd),
+    .d      (hw2reg.dio_pad_attr[5].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_5_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[5].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_5_input_disable_5_qs)
+  );
+  assign reg2hw.dio_pad_attr[5].input_disable.qe = dio_pad_attr_5_qe;
+
   //   F[slew_rate_5]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20336,7 +21310,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_5_slew_rate_5_wd),
     .d      (hw2reg.dio_pad_attr[5].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_5_flds_we[7]),
+    .qe     (dio_pad_attr_5_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[5].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_5_slew_rate_5_qs)
@@ -20352,7 +21326,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_5_drive_strength_5_wd),
     .d      (hw2reg.dio_pad_attr[5].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_5_flds_we[8]),
+    .qe     (dio_pad_attr_5_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[5].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_5_drive_strength_5_qs)
@@ -20363,7 +21337,7 @@ module pinmux_reg_top (
   // Subregister 6 of Multireg dio_pad_attr
   // R[dio_pad_attr_6]: V(True)
   logic dio_pad_attr_6_qe;
-  logic [8:0] dio_pad_attr_6_flds_we;
+  logic [9:0] dio_pad_attr_6_flds_we;
   assign dio_pad_attr_6_qe = &dio_pad_attr_6_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_6_gated_we;
@@ -20480,6 +21454,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[6].od_en.qe = dio_pad_attr_6_qe;
 
+  //   F[input_disable_6]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_6_input_disable_6 (
+    .re     (dio_pad_attr_6_re),
+    .we     (dio_pad_attr_6_gated_we),
+    .wd     (dio_pad_attr_6_input_disable_6_wd),
+    .d      (hw2reg.dio_pad_attr[6].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_6_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[6].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_6_input_disable_6_qs)
+  );
+  assign reg2hw.dio_pad_attr[6].input_disable.qe = dio_pad_attr_6_qe;
+
   //   F[slew_rate_6]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20489,7 +21479,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_6_slew_rate_6_wd),
     .d      (hw2reg.dio_pad_attr[6].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_6_flds_we[7]),
+    .qe     (dio_pad_attr_6_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[6].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_6_slew_rate_6_qs)
@@ -20505,7 +21495,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_6_drive_strength_6_wd),
     .d      (hw2reg.dio_pad_attr[6].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_6_flds_we[8]),
+    .qe     (dio_pad_attr_6_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[6].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_6_drive_strength_6_qs)
@@ -20516,7 +21506,7 @@ module pinmux_reg_top (
   // Subregister 7 of Multireg dio_pad_attr
   // R[dio_pad_attr_7]: V(True)
   logic dio_pad_attr_7_qe;
-  logic [8:0] dio_pad_attr_7_flds_we;
+  logic [9:0] dio_pad_attr_7_flds_we;
   assign dio_pad_attr_7_qe = &dio_pad_attr_7_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_7_gated_we;
@@ -20633,6 +21623,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[7].od_en.qe = dio_pad_attr_7_qe;
 
+  //   F[input_disable_7]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_7_input_disable_7 (
+    .re     (dio_pad_attr_7_re),
+    .we     (dio_pad_attr_7_gated_we),
+    .wd     (dio_pad_attr_7_input_disable_7_wd),
+    .d      (hw2reg.dio_pad_attr[7].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_7_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[7].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_7_input_disable_7_qs)
+  );
+  assign reg2hw.dio_pad_attr[7].input_disable.qe = dio_pad_attr_7_qe;
+
   //   F[slew_rate_7]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20642,7 +21648,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_7_slew_rate_7_wd),
     .d      (hw2reg.dio_pad_attr[7].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_7_flds_we[7]),
+    .qe     (dio_pad_attr_7_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[7].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_7_slew_rate_7_qs)
@@ -20658,7 +21664,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_7_drive_strength_7_wd),
     .d      (hw2reg.dio_pad_attr[7].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_7_flds_we[8]),
+    .qe     (dio_pad_attr_7_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[7].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_7_drive_strength_7_qs)
@@ -20669,7 +21675,7 @@ module pinmux_reg_top (
   // Subregister 8 of Multireg dio_pad_attr
   // R[dio_pad_attr_8]: V(True)
   logic dio_pad_attr_8_qe;
-  logic [8:0] dio_pad_attr_8_flds_we;
+  logic [9:0] dio_pad_attr_8_flds_we;
   assign dio_pad_attr_8_qe = &dio_pad_attr_8_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_8_gated_we;
@@ -20786,6 +21792,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[8].od_en.qe = dio_pad_attr_8_qe;
 
+  //   F[input_disable_8]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_8_input_disable_8 (
+    .re     (dio_pad_attr_8_re),
+    .we     (dio_pad_attr_8_gated_we),
+    .wd     (dio_pad_attr_8_input_disable_8_wd),
+    .d      (hw2reg.dio_pad_attr[8].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_8_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[8].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_8_input_disable_8_qs)
+  );
+  assign reg2hw.dio_pad_attr[8].input_disable.qe = dio_pad_attr_8_qe;
+
   //   F[slew_rate_8]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20795,7 +21817,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_8_slew_rate_8_wd),
     .d      (hw2reg.dio_pad_attr[8].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_8_flds_we[7]),
+    .qe     (dio_pad_attr_8_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[8].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_8_slew_rate_8_qs)
@@ -20811,7 +21833,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_8_drive_strength_8_wd),
     .d      (hw2reg.dio_pad_attr[8].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_8_flds_we[8]),
+    .qe     (dio_pad_attr_8_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[8].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_8_drive_strength_8_qs)
@@ -20822,7 +21844,7 @@ module pinmux_reg_top (
   // Subregister 9 of Multireg dio_pad_attr
   // R[dio_pad_attr_9]: V(True)
   logic dio_pad_attr_9_qe;
-  logic [8:0] dio_pad_attr_9_flds_we;
+  logic [9:0] dio_pad_attr_9_flds_we;
   assign dio_pad_attr_9_qe = &dio_pad_attr_9_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_9_gated_we;
@@ -20939,6 +21961,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[9].od_en.qe = dio_pad_attr_9_qe;
 
+  //   F[input_disable_9]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_9_input_disable_9 (
+    .re     (dio_pad_attr_9_re),
+    .we     (dio_pad_attr_9_gated_we),
+    .wd     (dio_pad_attr_9_input_disable_9_wd),
+    .d      (hw2reg.dio_pad_attr[9].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_9_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[9].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_9_input_disable_9_qs)
+  );
+  assign reg2hw.dio_pad_attr[9].input_disable.qe = dio_pad_attr_9_qe;
+
   //   F[slew_rate_9]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -20948,7 +21986,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_9_slew_rate_9_wd),
     .d      (hw2reg.dio_pad_attr[9].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_9_flds_we[7]),
+    .qe     (dio_pad_attr_9_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[9].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_9_slew_rate_9_qs)
@@ -20964,7 +22002,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_9_drive_strength_9_wd),
     .d      (hw2reg.dio_pad_attr[9].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_9_flds_we[8]),
+    .qe     (dio_pad_attr_9_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[9].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_9_drive_strength_9_qs)
@@ -20975,7 +22013,7 @@ module pinmux_reg_top (
   // Subregister 10 of Multireg dio_pad_attr
   // R[dio_pad_attr_10]: V(True)
   logic dio_pad_attr_10_qe;
-  logic [8:0] dio_pad_attr_10_flds_we;
+  logic [9:0] dio_pad_attr_10_flds_we;
   assign dio_pad_attr_10_qe = &dio_pad_attr_10_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_10_gated_we;
@@ -21092,6 +22130,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[10].od_en.qe = dio_pad_attr_10_qe;
 
+  //   F[input_disable_10]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_10_input_disable_10 (
+    .re     (dio_pad_attr_10_re),
+    .we     (dio_pad_attr_10_gated_we),
+    .wd     (dio_pad_attr_10_input_disable_10_wd),
+    .d      (hw2reg.dio_pad_attr[10].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_10_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[10].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_10_input_disable_10_qs)
+  );
+  assign reg2hw.dio_pad_attr[10].input_disable.qe = dio_pad_attr_10_qe;
+
   //   F[slew_rate_10]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -21101,7 +22155,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_10_slew_rate_10_wd),
     .d      (hw2reg.dio_pad_attr[10].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_10_flds_we[7]),
+    .qe     (dio_pad_attr_10_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[10].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_10_slew_rate_10_qs)
@@ -21117,7 +22171,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_10_drive_strength_10_wd),
     .d      (hw2reg.dio_pad_attr[10].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_10_flds_we[8]),
+    .qe     (dio_pad_attr_10_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[10].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_10_drive_strength_10_qs)
@@ -21128,7 +22182,7 @@ module pinmux_reg_top (
   // Subregister 11 of Multireg dio_pad_attr
   // R[dio_pad_attr_11]: V(True)
   logic dio_pad_attr_11_qe;
-  logic [8:0] dio_pad_attr_11_flds_we;
+  logic [9:0] dio_pad_attr_11_flds_we;
   assign dio_pad_attr_11_qe = &dio_pad_attr_11_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_11_gated_we;
@@ -21245,6 +22299,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[11].od_en.qe = dio_pad_attr_11_qe;
 
+  //   F[input_disable_11]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_11_input_disable_11 (
+    .re     (dio_pad_attr_11_re),
+    .we     (dio_pad_attr_11_gated_we),
+    .wd     (dio_pad_attr_11_input_disable_11_wd),
+    .d      (hw2reg.dio_pad_attr[11].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_11_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[11].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_11_input_disable_11_qs)
+  );
+  assign reg2hw.dio_pad_attr[11].input_disable.qe = dio_pad_attr_11_qe;
+
   //   F[slew_rate_11]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -21254,7 +22324,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_11_slew_rate_11_wd),
     .d      (hw2reg.dio_pad_attr[11].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_11_flds_we[7]),
+    .qe     (dio_pad_attr_11_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[11].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_11_slew_rate_11_qs)
@@ -21270,7 +22340,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_11_drive_strength_11_wd),
     .d      (hw2reg.dio_pad_attr[11].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_11_flds_we[8]),
+    .qe     (dio_pad_attr_11_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[11].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_11_drive_strength_11_qs)
@@ -21281,7 +22351,7 @@ module pinmux_reg_top (
   // Subregister 12 of Multireg dio_pad_attr
   // R[dio_pad_attr_12]: V(True)
   logic dio_pad_attr_12_qe;
-  logic [8:0] dio_pad_attr_12_flds_we;
+  logic [9:0] dio_pad_attr_12_flds_we;
   assign dio_pad_attr_12_qe = &dio_pad_attr_12_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_12_gated_we;
@@ -21398,6 +22468,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[12].od_en.qe = dio_pad_attr_12_qe;
 
+  //   F[input_disable_12]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_input_disable_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_input_disable_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[12].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_input_disable_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].input_disable.qe = dio_pad_attr_12_qe;
+
   //   F[slew_rate_12]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -21407,7 +22493,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_12_slew_rate_12_wd),
     .d      (hw2reg.dio_pad_attr[12].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_12_flds_we[7]),
+    .qe     (dio_pad_attr_12_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[12].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_12_slew_rate_12_qs)
@@ -21423,7 +22509,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_12_drive_strength_12_wd),
     .d      (hw2reg.dio_pad_attr[12].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_12_flds_we[8]),
+    .qe     (dio_pad_attr_12_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[12].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_12_drive_strength_12_qs)
@@ -21434,7 +22520,7 @@ module pinmux_reg_top (
   // Subregister 13 of Multireg dio_pad_attr
   // R[dio_pad_attr_13]: V(True)
   logic dio_pad_attr_13_qe;
-  logic [8:0] dio_pad_attr_13_flds_we;
+  logic [9:0] dio_pad_attr_13_flds_we;
   assign dio_pad_attr_13_qe = &dio_pad_attr_13_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_13_gated_we;
@@ -21551,6 +22637,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[13].od_en.qe = dio_pad_attr_13_qe;
 
+  //   F[input_disable_13]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_input_disable_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_input_disable_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[13].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_input_disable_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].input_disable.qe = dio_pad_attr_13_qe;
+
   //   F[slew_rate_13]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -21560,7 +22662,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_13_slew_rate_13_wd),
     .d      (hw2reg.dio_pad_attr[13].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_13_flds_we[7]),
+    .qe     (dio_pad_attr_13_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[13].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_13_slew_rate_13_qs)
@@ -21576,7 +22678,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_13_drive_strength_13_wd),
     .d      (hw2reg.dio_pad_attr[13].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_13_flds_we[8]),
+    .qe     (dio_pad_attr_13_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[13].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_13_drive_strength_13_qs)
@@ -21587,7 +22689,7 @@ module pinmux_reg_top (
   // Subregister 14 of Multireg dio_pad_attr
   // R[dio_pad_attr_14]: V(True)
   logic dio_pad_attr_14_qe;
-  logic [8:0] dio_pad_attr_14_flds_we;
+  logic [9:0] dio_pad_attr_14_flds_we;
   assign dio_pad_attr_14_qe = &dio_pad_attr_14_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_14_gated_we;
@@ -21704,6 +22806,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[14].od_en.qe = dio_pad_attr_14_qe;
 
+  //   F[input_disable_14]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_input_disable_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_input_disable_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[14].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_input_disable_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].input_disable.qe = dio_pad_attr_14_qe;
+
   //   F[slew_rate_14]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -21713,7 +22831,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_14_slew_rate_14_wd),
     .d      (hw2reg.dio_pad_attr[14].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_14_flds_we[7]),
+    .qe     (dio_pad_attr_14_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[14].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_14_slew_rate_14_qs)
@@ -21729,7 +22847,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_14_drive_strength_14_wd),
     .d      (hw2reg.dio_pad_attr[14].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_14_flds_we[8]),
+    .qe     (dio_pad_attr_14_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[14].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_14_drive_strength_14_qs)
@@ -21740,7 +22858,7 @@ module pinmux_reg_top (
   // Subregister 15 of Multireg dio_pad_attr
   // R[dio_pad_attr_15]: V(True)
   logic dio_pad_attr_15_qe;
-  logic [8:0] dio_pad_attr_15_flds_we;
+  logic [9:0] dio_pad_attr_15_flds_we;
   assign dio_pad_attr_15_qe = &dio_pad_attr_15_flds_we;
   // Create REGWEN-gated WE signal
   logic dio_pad_attr_15_gated_we;
@@ -21857,6 +22975,22 @@ module pinmux_reg_top (
   );
   assign reg2hw.dio_pad_attr[15].od_en.qe = dio_pad_attr_15_qe;
 
+  //   F[input_disable_15]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_input_disable_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_input_disable_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].input_disable.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[15].input_disable.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_input_disable_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].input_disable.qe = dio_pad_attr_15_qe;
+
   //   F[slew_rate_15]: 17:16
   prim_subreg_ext #(
     .DW    (2)
@@ -21866,7 +23000,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_15_slew_rate_15_wd),
     .d      (hw2reg.dio_pad_attr[15].slew_rate.d),
     .qre    (),
-    .qe     (dio_pad_attr_15_flds_we[7]),
+    .qe     (dio_pad_attr_15_flds_we[8]),
     .q      (reg2hw.dio_pad_attr[15].slew_rate.q),
     .ds     (),
     .qs     (dio_pad_attr_15_slew_rate_15_qs)
@@ -21882,7 +23016,7 @@ module pinmux_reg_top (
     .wd     (dio_pad_attr_15_drive_strength_15_wd),
     .d      (hw2reg.dio_pad_attr[15].drive_strength.d),
     .qre    (),
-    .qe     (dio_pad_attr_15_flds_we[8]),
+    .qe     (dio_pad_attr_15_flds_we[9]),
     .q      (reg2hw.dio_pad_attr[15].drive_strength.q),
     .ds     (),
     .qs     (dio_pad_attr_15_drive_strength_15_qs)
@@ -33327,6 +34461,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_0_od_en_0_wd = reg_wdata[6];
 
+  assign mio_pad_attr_0_input_disable_0_wd = reg_wdata[7];
+
   assign mio_pad_attr_0_slew_rate_0_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_0_drive_strength_0_wd = reg_wdata[23:20];
@@ -33346,6 +34482,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_1_schmitt_en_1_wd = reg_wdata[5];
 
   assign mio_pad_attr_1_od_en_1_wd = reg_wdata[6];
+
+  assign mio_pad_attr_1_input_disable_1_wd = reg_wdata[7];
 
   assign mio_pad_attr_1_slew_rate_1_wd = reg_wdata[17:16];
 
@@ -33367,6 +34505,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_2_od_en_2_wd = reg_wdata[6];
 
+  assign mio_pad_attr_2_input_disable_2_wd = reg_wdata[7];
+
   assign mio_pad_attr_2_slew_rate_2_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_2_drive_strength_2_wd = reg_wdata[23:20];
@@ -33386,6 +34526,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_3_schmitt_en_3_wd = reg_wdata[5];
 
   assign mio_pad_attr_3_od_en_3_wd = reg_wdata[6];
+
+  assign mio_pad_attr_3_input_disable_3_wd = reg_wdata[7];
 
   assign mio_pad_attr_3_slew_rate_3_wd = reg_wdata[17:16];
 
@@ -33407,6 +34549,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_4_od_en_4_wd = reg_wdata[6];
 
+  assign mio_pad_attr_4_input_disable_4_wd = reg_wdata[7];
+
   assign mio_pad_attr_4_slew_rate_4_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_4_drive_strength_4_wd = reg_wdata[23:20];
@@ -33426,6 +34570,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_5_schmitt_en_5_wd = reg_wdata[5];
 
   assign mio_pad_attr_5_od_en_5_wd = reg_wdata[6];
+
+  assign mio_pad_attr_5_input_disable_5_wd = reg_wdata[7];
 
   assign mio_pad_attr_5_slew_rate_5_wd = reg_wdata[17:16];
 
@@ -33447,6 +34593,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_6_od_en_6_wd = reg_wdata[6];
 
+  assign mio_pad_attr_6_input_disable_6_wd = reg_wdata[7];
+
   assign mio_pad_attr_6_slew_rate_6_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_6_drive_strength_6_wd = reg_wdata[23:20];
@@ -33466,6 +34614,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_7_schmitt_en_7_wd = reg_wdata[5];
 
   assign mio_pad_attr_7_od_en_7_wd = reg_wdata[6];
+
+  assign mio_pad_attr_7_input_disable_7_wd = reg_wdata[7];
 
   assign mio_pad_attr_7_slew_rate_7_wd = reg_wdata[17:16];
 
@@ -33487,6 +34637,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_8_od_en_8_wd = reg_wdata[6];
 
+  assign mio_pad_attr_8_input_disable_8_wd = reg_wdata[7];
+
   assign mio_pad_attr_8_slew_rate_8_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_8_drive_strength_8_wd = reg_wdata[23:20];
@@ -33506,6 +34658,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_9_schmitt_en_9_wd = reg_wdata[5];
 
   assign mio_pad_attr_9_od_en_9_wd = reg_wdata[6];
+
+  assign mio_pad_attr_9_input_disable_9_wd = reg_wdata[7];
 
   assign mio_pad_attr_9_slew_rate_9_wd = reg_wdata[17:16];
 
@@ -33527,6 +34681,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_10_od_en_10_wd = reg_wdata[6];
 
+  assign mio_pad_attr_10_input_disable_10_wd = reg_wdata[7];
+
   assign mio_pad_attr_10_slew_rate_10_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_10_drive_strength_10_wd = reg_wdata[23:20];
@@ -33546,6 +34702,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_11_schmitt_en_11_wd = reg_wdata[5];
 
   assign mio_pad_attr_11_od_en_11_wd = reg_wdata[6];
+
+  assign mio_pad_attr_11_input_disable_11_wd = reg_wdata[7];
 
   assign mio_pad_attr_11_slew_rate_11_wd = reg_wdata[17:16];
 
@@ -33567,6 +34725,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_12_od_en_12_wd = reg_wdata[6];
 
+  assign mio_pad_attr_12_input_disable_12_wd = reg_wdata[7];
+
   assign mio_pad_attr_12_slew_rate_12_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_12_drive_strength_12_wd = reg_wdata[23:20];
@@ -33586,6 +34746,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_13_schmitt_en_13_wd = reg_wdata[5];
 
   assign mio_pad_attr_13_od_en_13_wd = reg_wdata[6];
+
+  assign mio_pad_attr_13_input_disable_13_wd = reg_wdata[7];
 
   assign mio_pad_attr_13_slew_rate_13_wd = reg_wdata[17:16];
 
@@ -33607,6 +34769,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_14_od_en_14_wd = reg_wdata[6];
 
+  assign mio_pad_attr_14_input_disable_14_wd = reg_wdata[7];
+
   assign mio_pad_attr_14_slew_rate_14_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_14_drive_strength_14_wd = reg_wdata[23:20];
@@ -33626,6 +34790,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_15_schmitt_en_15_wd = reg_wdata[5];
 
   assign mio_pad_attr_15_od_en_15_wd = reg_wdata[6];
+
+  assign mio_pad_attr_15_input_disable_15_wd = reg_wdata[7];
 
   assign mio_pad_attr_15_slew_rate_15_wd = reg_wdata[17:16];
 
@@ -33647,6 +34813,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_16_od_en_16_wd = reg_wdata[6];
 
+  assign mio_pad_attr_16_input_disable_16_wd = reg_wdata[7];
+
   assign mio_pad_attr_16_slew_rate_16_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_16_drive_strength_16_wd = reg_wdata[23:20];
@@ -33666,6 +34834,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_17_schmitt_en_17_wd = reg_wdata[5];
 
   assign mio_pad_attr_17_od_en_17_wd = reg_wdata[6];
+
+  assign mio_pad_attr_17_input_disable_17_wd = reg_wdata[7];
 
   assign mio_pad_attr_17_slew_rate_17_wd = reg_wdata[17:16];
 
@@ -33687,6 +34857,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_18_od_en_18_wd = reg_wdata[6];
 
+  assign mio_pad_attr_18_input_disable_18_wd = reg_wdata[7];
+
   assign mio_pad_attr_18_slew_rate_18_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_18_drive_strength_18_wd = reg_wdata[23:20];
@@ -33706,6 +34878,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_19_schmitt_en_19_wd = reg_wdata[5];
 
   assign mio_pad_attr_19_od_en_19_wd = reg_wdata[6];
+
+  assign mio_pad_attr_19_input_disable_19_wd = reg_wdata[7];
 
   assign mio_pad_attr_19_slew_rate_19_wd = reg_wdata[17:16];
 
@@ -33727,6 +34901,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_20_od_en_20_wd = reg_wdata[6];
 
+  assign mio_pad_attr_20_input_disable_20_wd = reg_wdata[7];
+
   assign mio_pad_attr_20_slew_rate_20_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_20_drive_strength_20_wd = reg_wdata[23:20];
@@ -33746,6 +34922,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_21_schmitt_en_21_wd = reg_wdata[5];
 
   assign mio_pad_attr_21_od_en_21_wd = reg_wdata[6];
+
+  assign mio_pad_attr_21_input_disable_21_wd = reg_wdata[7];
 
   assign mio_pad_attr_21_slew_rate_21_wd = reg_wdata[17:16];
 
@@ -33767,6 +34945,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_22_od_en_22_wd = reg_wdata[6];
 
+  assign mio_pad_attr_22_input_disable_22_wd = reg_wdata[7];
+
   assign mio_pad_attr_22_slew_rate_22_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_22_drive_strength_22_wd = reg_wdata[23:20];
@@ -33786,6 +34966,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_23_schmitt_en_23_wd = reg_wdata[5];
 
   assign mio_pad_attr_23_od_en_23_wd = reg_wdata[6];
+
+  assign mio_pad_attr_23_input_disable_23_wd = reg_wdata[7];
 
   assign mio_pad_attr_23_slew_rate_23_wd = reg_wdata[17:16];
 
@@ -33807,6 +34989,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_24_od_en_24_wd = reg_wdata[6];
 
+  assign mio_pad_attr_24_input_disable_24_wd = reg_wdata[7];
+
   assign mio_pad_attr_24_slew_rate_24_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_24_drive_strength_24_wd = reg_wdata[23:20];
@@ -33826,6 +35010,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_25_schmitt_en_25_wd = reg_wdata[5];
 
   assign mio_pad_attr_25_od_en_25_wd = reg_wdata[6];
+
+  assign mio_pad_attr_25_input_disable_25_wd = reg_wdata[7];
 
   assign mio_pad_attr_25_slew_rate_25_wd = reg_wdata[17:16];
 
@@ -33847,6 +35033,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_26_od_en_26_wd = reg_wdata[6];
 
+  assign mio_pad_attr_26_input_disable_26_wd = reg_wdata[7];
+
   assign mio_pad_attr_26_slew_rate_26_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_26_drive_strength_26_wd = reg_wdata[23:20];
@@ -33866,6 +35054,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_27_schmitt_en_27_wd = reg_wdata[5];
 
   assign mio_pad_attr_27_od_en_27_wd = reg_wdata[6];
+
+  assign mio_pad_attr_27_input_disable_27_wd = reg_wdata[7];
 
   assign mio_pad_attr_27_slew_rate_27_wd = reg_wdata[17:16];
 
@@ -33887,6 +35077,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_28_od_en_28_wd = reg_wdata[6];
 
+  assign mio_pad_attr_28_input_disable_28_wd = reg_wdata[7];
+
   assign mio_pad_attr_28_slew_rate_28_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_28_drive_strength_28_wd = reg_wdata[23:20];
@@ -33906,6 +35098,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_29_schmitt_en_29_wd = reg_wdata[5];
 
   assign mio_pad_attr_29_od_en_29_wd = reg_wdata[6];
+
+  assign mio_pad_attr_29_input_disable_29_wd = reg_wdata[7];
 
   assign mio_pad_attr_29_slew_rate_29_wd = reg_wdata[17:16];
 
@@ -33927,6 +35121,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_30_od_en_30_wd = reg_wdata[6];
 
+  assign mio_pad_attr_30_input_disable_30_wd = reg_wdata[7];
+
   assign mio_pad_attr_30_slew_rate_30_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_30_drive_strength_30_wd = reg_wdata[23:20];
@@ -33946,6 +35142,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_31_schmitt_en_31_wd = reg_wdata[5];
 
   assign mio_pad_attr_31_od_en_31_wd = reg_wdata[6];
+
+  assign mio_pad_attr_31_input_disable_31_wd = reg_wdata[7];
 
   assign mio_pad_attr_31_slew_rate_31_wd = reg_wdata[17:16];
 
@@ -33967,6 +35165,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_32_od_en_32_wd = reg_wdata[6];
 
+  assign mio_pad_attr_32_input_disable_32_wd = reg_wdata[7];
+
   assign mio_pad_attr_32_slew_rate_32_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_32_drive_strength_32_wd = reg_wdata[23:20];
@@ -33986,6 +35186,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_33_schmitt_en_33_wd = reg_wdata[5];
 
   assign mio_pad_attr_33_od_en_33_wd = reg_wdata[6];
+
+  assign mio_pad_attr_33_input_disable_33_wd = reg_wdata[7];
 
   assign mio_pad_attr_33_slew_rate_33_wd = reg_wdata[17:16];
 
@@ -34007,6 +35209,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_34_od_en_34_wd = reg_wdata[6];
 
+  assign mio_pad_attr_34_input_disable_34_wd = reg_wdata[7];
+
   assign mio_pad_attr_34_slew_rate_34_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_34_drive_strength_34_wd = reg_wdata[23:20];
@@ -34026,6 +35230,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_35_schmitt_en_35_wd = reg_wdata[5];
 
   assign mio_pad_attr_35_od_en_35_wd = reg_wdata[6];
+
+  assign mio_pad_attr_35_input_disable_35_wd = reg_wdata[7];
 
   assign mio_pad_attr_35_slew_rate_35_wd = reg_wdata[17:16];
 
@@ -34047,6 +35253,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_36_od_en_36_wd = reg_wdata[6];
 
+  assign mio_pad_attr_36_input_disable_36_wd = reg_wdata[7];
+
   assign mio_pad_attr_36_slew_rate_36_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_36_drive_strength_36_wd = reg_wdata[23:20];
@@ -34066,6 +35274,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_37_schmitt_en_37_wd = reg_wdata[5];
 
   assign mio_pad_attr_37_od_en_37_wd = reg_wdata[6];
+
+  assign mio_pad_attr_37_input_disable_37_wd = reg_wdata[7];
 
   assign mio_pad_attr_37_slew_rate_37_wd = reg_wdata[17:16];
 
@@ -34087,6 +35297,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_38_od_en_38_wd = reg_wdata[6];
 
+  assign mio_pad_attr_38_input_disable_38_wd = reg_wdata[7];
+
   assign mio_pad_attr_38_slew_rate_38_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_38_drive_strength_38_wd = reg_wdata[23:20];
@@ -34106,6 +35318,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_39_schmitt_en_39_wd = reg_wdata[5];
 
   assign mio_pad_attr_39_od_en_39_wd = reg_wdata[6];
+
+  assign mio_pad_attr_39_input_disable_39_wd = reg_wdata[7];
 
   assign mio_pad_attr_39_slew_rate_39_wd = reg_wdata[17:16];
 
@@ -34127,6 +35341,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_40_od_en_40_wd = reg_wdata[6];
 
+  assign mio_pad_attr_40_input_disable_40_wd = reg_wdata[7];
+
   assign mio_pad_attr_40_slew_rate_40_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_40_drive_strength_40_wd = reg_wdata[23:20];
@@ -34146,6 +35362,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_41_schmitt_en_41_wd = reg_wdata[5];
 
   assign mio_pad_attr_41_od_en_41_wd = reg_wdata[6];
+
+  assign mio_pad_attr_41_input_disable_41_wd = reg_wdata[7];
 
   assign mio_pad_attr_41_slew_rate_41_wd = reg_wdata[17:16];
 
@@ -34167,6 +35385,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_42_od_en_42_wd = reg_wdata[6];
 
+  assign mio_pad_attr_42_input_disable_42_wd = reg_wdata[7];
+
   assign mio_pad_attr_42_slew_rate_42_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_42_drive_strength_42_wd = reg_wdata[23:20];
@@ -34186,6 +35406,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_43_schmitt_en_43_wd = reg_wdata[5];
 
   assign mio_pad_attr_43_od_en_43_wd = reg_wdata[6];
+
+  assign mio_pad_attr_43_input_disable_43_wd = reg_wdata[7];
 
   assign mio_pad_attr_43_slew_rate_43_wd = reg_wdata[17:16];
 
@@ -34207,6 +35429,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_44_od_en_44_wd = reg_wdata[6];
 
+  assign mio_pad_attr_44_input_disable_44_wd = reg_wdata[7];
+
   assign mio_pad_attr_44_slew_rate_44_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_44_drive_strength_44_wd = reg_wdata[23:20];
@@ -34227,6 +35451,8 @@ module pinmux_reg_top (
 
   assign mio_pad_attr_45_od_en_45_wd = reg_wdata[6];
 
+  assign mio_pad_attr_45_input_disable_45_wd = reg_wdata[7];
+
   assign mio_pad_attr_45_slew_rate_45_wd = reg_wdata[17:16];
 
   assign mio_pad_attr_45_drive_strength_45_wd = reg_wdata[23:20];
@@ -34246,6 +35472,8 @@ module pinmux_reg_top (
   assign mio_pad_attr_46_schmitt_en_46_wd = reg_wdata[5];
 
   assign mio_pad_attr_46_od_en_46_wd = reg_wdata[6];
+
+  assign mio_pad_attr_46_input_disable_46_wd = reg_wdata[7];
 
   assign mio_pad_attr_46_slew_rate_46_wd = reg_wdata[17:16];
 
@@ -34315,6 +35543,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_0_od_en_0_wd = reg_wdata[6];
 
+  assign dio_pad_attr_0_input_disable_0_wd = reg_wdata[7];
+
   assign dio_pad_attr_0_slew_rate_0_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_0_drive_strength_0_wd = reg_wdata[23:20];
@@ -34334,6 +35564,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_1_schmitt_en_1_wd = reg_wdata[5];
 
   assign dio_pad_attr_1_od_en_1_wd = reg_wdata[6];
+
+  assign dio_pad_attr_1_input_disable_1_wd = reg_wdata[7];
 
   assign dio_pad_attr_1_slew_rate_1_wd = reg_wdata[17:16];
 
@@ -34355,6 +35587,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_2_od_en_2_wd = reg_wdata[6];
 
+  assign dio_pad_attr_2_input_disable_2_wd = reg_wdata[7];
+
   assign dio_pad_attr_2_slew_rate_2_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_2_drive_strength_2_wd = reg_wdata[23:20];
@@ -34374,6 +35608,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_3_schmitt_en_3_wd = reg_wdata[5];
 
   assign dio_pad_attr_3_od_en_3_wd = reg_wdata[6];
+
+  assign dio_pad_attr_3_input_disable_3_wd = reg_wdata[7];
 
   assign dio_pad_attr_3_slew_rate_3_wd = reg_wdata[17:16];
 
@@ -34395,6 +35631,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_4_od_en_4_wd = reg_wdata[6];
 
+  assign dio_pad_attr_4_input_disable_4_wd = reg_wdata[7];
+
   assign dio_pad_attr_4_slew_rate_4_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_4_drive_strength_4_wd = reg_wdata[23:20];
@@ -34414,6 +35652,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_5_schmitt_en_5_wd = reg_wdata[5];
 
   assign dio_pad_attr_5_od_en_5_wd = reg_wdata[6];
+
+  assign dio_pad_attr_5_input_disable_5_wd = reg_wdata[7];
 
   assign dio_pad_attr_5_slew_rate_5_wd = reg_wdata[17:16];
 
@@ -34435,6 +35675,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_6_od_en_6_wd = reg_wdata[6];
 
+  assign dio_pad_attr_6_input_disable_6_wd = reg_wdata[7];
+
   assign dio_pad_attr_6_slew_rate_6_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_6_drive_strength_6_wd = reg_wdata[23:20];
@@ -34454,6 +35696,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_7_schmitt_en_7_wd = reg_wdata[5];
 
   assign dio_pad_attr_7_od_en_7_wd = reg_wdata[6];
+
+  assign dio_pad_attr_7_input_disable_7_wd = reg_wdata[7];
 
   assign dio_pad_attr_7_slew_rate_7_wd = reg_wdata[17:16];
 
@@ -34475,6 +35719,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_8_od_en_8_wd = reg_wdata[6];
 
+  assign dio_pad_attr_8_input_disable_8_wd = reg_wdata[7];
+
   assign dio_pad_attr_8_slew_rate_8_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_8_drive_strength_8_wd = reg_wdata[23:20];
@@ -34494,6 +35740,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_9_schmitt_en_9_wd = reg_wdata[5];
 
   assign dio_pad_attr_9_od_en_9_wd = reg_wdata[6];
+
+  assign dio_pad_attr_9_input_disable_9_wd = reg_wdata[7];
 
   assign dio_pad_attr_9_slew_rate_9_wd = reg_wdata[17:16];
 
@@ -34515,6 +35763,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_10_od_en_10_wd = reg_wdata[6];
 
+  assign dio_pad_attr_10_input_disable_10_wd = reg_wdata[7];
+
   assign dio_pad_attr_10_slew_rate_10_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_10_drive_strength_10_wd = reg_wdata[23:20];
@@ -34534,6 +35784,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_11_schmitt_en_11_wd = reg_wdata[5];
 
   assign dio_pad_attr_11_od_en_11_wd = reg_wdata[6];
+
+  assign dio_pad_attr_11_input_disable_11_wd = reg_wdata[7];
 
   assign dio_pad_attr_11_slew_rate_11_wd = reg_wdata[17:16];
 
@@ -34555,6 +35807,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_12_od_en_12_wd = reg_wdata[6];
 
+  assign dio_pad_attr_12_input_disable_12_wd = reg_wdata[7];
+
   assign dio_pad_attr_12_slew_rate_12_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_12_drive_strength_12_wd = reg_wdata[23:20];
@@ -34574,6 +35828,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_13_schmitt_en_13_wd = reg_wdata[5];
 
   assign dio_pad_attr_13_od_en_13_wd = reg_wdata[6];
+
+  assign dio_pad_attr_13_input_disable_13_wd = reg_wdata[7];
 
   assign dio_pad_attr_13_slew_rate_13_wd = reg_wdata[17:16];
 
@@ -34595,6 +35851,8 @@ module pinmux_reg_top (
 
   assign dio_pad_attr_14_od_en_14_wd = reg_wdata[6];
 
+  assign dio_pad_attr_14_input_disable_14_wd = reg_wdata[7];
+
   assign dio_pad_attr_14_slew_rate_14_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_14_drive_strength_14_wd = reg_wdata[23:20];
@@ -34614,6 +35872,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_15_schmitt_en_15_wd = reg_wdata[5];
 
   assign dio_pad_attr_15_od_en_15_wd = reg_wdata[6];
+
+  assign dio_pad_attr_15_input_disable_15_wd = reg_wdata[7];
 
   assign dio_pad_attr_15_slew_rate_15_wd = reg_wdata[17:16];
 
@@ -37045,6 +38305,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_0_keeper_en_0_qs;
         reg_rdata_next[5] = mio_pad_attr_0_schmitt_en_0_qs;
         reg_rdata_next[6] = mio_pad_attr_0_od_en_0_qs;
+        reg_rdata_next[7] = mio_pad_attr_0_input_disable_0_qs;
         reg_rdata_next[17:16] = mio_pad_attr_0_slew_rate_0_qs;
         reg_rdata_next[23:20] = mio_pad_attr_0_drive_strength_0_qs;
       end
@@ -37057,6 +38318,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_1_keeper_en_1_qs;
         reg_rdata_next[5] = mio_pad_attr_1_schmitt_en_1_qs;
         reg_rdata_next[6] = mio_pad_attr_1_od_en_1_qs;
+        reg_rdata_next[7] = mio_pad_attr_1_input_disable_1_qs;
         reg_rdata_next[17:16] = mio_pad_attr_1_slew_rate_1_qs;
         reg_rdata_next[23:20] = mio_pad_attr_1_drive_strength_1_qs;
       end
@@ -37069,6 +38331,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_2_keeper_en_2_qs;
         reg_rdata_next[5] = mio_pad_attr_2_schmitt_en_2_qs;
         reg_rdata_next[6] = mio_pad_attr_2_od_en_2_qs;
+        reg_rdata_next[7] = mio_pad_attr_2_input_disable_2_qs;
         reg_rdata_next[17:16] = mio_pad_attr_2_slew_rate_2_qs;
         reg_rdata_next[23:20] = mio_pad_attr_2_drive_strength_2_qs;
       end
@@ -37081,6 +38344,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_3_keeper_en_3_qs;
         reg_rdata_next[5] = mio_pad_attr_3_schmitt_en_3_qs;
         reg_rdata_next[6] = mio_pad_attr_3_od_en_3_qs;
+        reg_rdata_next[7] = mio_pad_attr_3_input_disable_3_qs;
         reg_rdata_next[17:16] = mio_pad_attr_3_slew_rate_3_qs;
         reg_rdata_next[23:20] = mio_pad_attr_3_drive_strength_3_qs;
       end
@@ -37093,6 +38357,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_4_keeper_en_4_qs;
         reg_rdata_next[5] = mio_pad_attr_4_schmitt_en_4_qs;
         reg_rdata_next[6] = mio_pad_attr_4_od_en_4_qs;
+        reg_rdata_next[7] = mio_pad_attr_4_input_disable_4_qs;
         reg_rdata_next[17:16] = mio_pad_attr_4_slew_rate_4_qs;
         reg_rdata_next[23:20] = mio_pad_attr_4_drive_strength_4_qs;
       end
@@ -37105,6 +38370,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_5_keeper_en_5_qs;
         reg_rdata_next[5] = mio_pad_attr_5_schmitt_en_5_qs;
         reg_rdata_next[6] = mio_pad_attr_5_od_en_5_qs;
+        reg_rdata_next[7] = mio_pad_attr_5_input_disable_5_qs;
         reg_rdata_next[17:16] = mio_pad_attr_5_slew_rate_5_qs;
         reg_rdata_next[23:20] = mio_pad_attr_5_drive_strength_5_qs;
       end
@@ -37117,6 +38383,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_6_keeper_en_6_qs;
         reg_rdata_next[5] = mio_pad_attr_6_schmitt_en_6_qs;
         reg_rdata_next[6] = mio_pad_attr_6_od_en_6_qs;
+        reg_rdata_next[7] = mio_pad_attr_6_input_disable_6_qs;
         reg_rdata_next[17:16] = mio_pad_attr_6_slew_rate_6_qs;
         reg_rdata_next[23:20] = mio_pad_attr_6_drive_strength_6_qs;
       end
@@ -37129,6 +38396,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_7_keeper_en_7_qs;
         reg_rdata_next[5] = mio_pad_attr_7_schmitt_en_7_qs;
         reg_rdata_next[6] = mio_pad_attr_7_od_en_7_qs;
+        reg_rdata_next[7] = mio_pad_attr_7_input_disable_7_qs;
         reg_rdata_next[17:16] = mio_pad_attr_7_slew_rate_7_qs;
         reg_rdata_next[23:20] = mio_pad_attr_7_drive_strength_7_qs;
       end
@@ -37141,6 +38409,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_8_keeper_en_8_qs;
         reg_rdata_next[5] = mio_pad_attr_8_schmitt_en_8_qs;
         reg_rdata_next[6] = mio_pad_attr_8_od_en_8_qs;
+        reg_rdata_next[7] = mio_pad_attr_8_input_disable_8_qs;
         reg_rdata_next[17:16] = mio_pad_attr_8_slew_rate_8_qs;
         reg_rdata_next[23:20] = mio_pad_attr_8_drive_strength_8_qs;
       end
@@ -37153,6 +38422,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_9_keeper_en_9_qs;
         reg_rdata_next[5] = mio_pad_attr_9_schmitt_en_9_qs;
         reg_rdata_next[6] = mio_pad_attr_9_od_en_9_qs;
+        reg_rdata_next[7] = mio_pad_attr_9_input_disable_9_qs;
         reg_rdata_next[17:16] = mio_pad_attr_9_slew_rate_9_qs;
         reg_rdata_next[23:20] = mio_pad_attr_9_drive_strength_9_qs;
       end
@@ -37165,6 +38435,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_10_keeper_en_10_qs;
         reg_rdata_next[5] = mio_pad_attr_10_schmitt_en_10_qs;
         reg_rdata_next[6] = mio_pad_attr_10_od_en_10_qs;
+        reg_rdata_next[7] = mio_pad_attr_10_input_disable_10_qs;
         reg_rdata_next[17:16] = mio_pad_attr_10_slew_rate_10_qs;
         reg_rdata_next[23:20] = mio_pad_attr_10_drive_strength_10_qs;
       end
@@ -37177,6 +38448,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_11_keeper_en_11_qs;
         reg_rdata_next[5] = mio_pad_attr_11_schmitt_en_11_qs;
         reg_rdata_next[6] = mio_pad_attr_11_od_en_11_qs;
+        reg_rdata_next[7] = mio_pad_attr_11_input_disable_11_qs;
         reg_rdata_next[17:16] = mio_pad_attr_11_slew_rate_11_qs;
         reg_rdata_next[23:20] = mio_pad_attr_11_drive_strength_11_qs;
       end
@@ -37189,6 +38461,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_12_keeper_en_12_qs;
         reg_rdata_next[5] = mio_pad_attr_12_schmitt_en_12_qs;
         reg_rdata_next[6] = mio_pad_attr_12_od_en_12_qs;
+        reg_rdata_next[7] = mio_pad_attr_12_input_disable_12_qs;
         reg_rdata_next[17:16] = mio_pad_attr_12_slew_rate_12_qs;
         reg_rdata_next[23:20] = mio_pad_attr_12_drive_strength_12_qs;
       end
@@ -37201,6 +38474,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_13_keeper_en_13_qs;
         reg_rdata_next[5] = mio_pad_attr_13_schmitt_en_13_qs;
         reg_rdata_next[6] = mio_pad_attr_13_od_en_13_qs;
+        reg_rdata_next[7] = mio_pad_attr_13_input_disable_13_qs;
         reg_rdata_next[17:16] = mio_pad_attr_13_slew_rate_13_qs;
         reg_rdata_next[23:20] = mio_pad_attr_13_drive_strength_13_qs;
       end
@@ -37213,6 +38487,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_14_keeper_en_14_qs;
         reg_rdata_next[5] = mio_pad_attr_14_schmitt_en_14_qs;
         reg_rdata_next[6] = mio_pad_attr_14_od_en_14_qs;
+        reg_rdata_next[7] = mio_pad_attr_14_input_disable_14_qs;
         reg_rdata_next[17:16] = mio_pad_attr_14_slew_rate_14_qs;
         reg_rdata_next[23:20] = mio_pad_attr_14_drive_strength_14_qs;
       end
@@ -37225,6 +38500,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_15_keeper_en_15_qs;
         reg_rdata_next[5] = mio_pad_attr_15_schmitt_en_15_qs;
         reg_rdata_next[6] = mio_pad_attr_15_od_en_15_qs;
+        reg_rdata_next[7] = mio_pad_attr_15_input_disable_15_qs;
         reg_rdata_next[17:16] = mio_pad_attr_15_slew_rate_15_qs;
         reg_rdata_next[23:20] = mio_pad_attr_15_drive_strength_15_qs;
       end
@@ -37237,6 +38513,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_16_keeper_en_16_qs;
         reg_rdata_next[5] = mio_pad_attr_16_schmitt_en_16_qs;
         reg_rdata_next[6] = mio_pad_attr_16_od_en_16_qs;
+        reg_rdata_next[7] = mio_pad_attr_16_input_disable_16_qs;
         reg_rdata_next[17:16] = mio_pad_attr_16_slew_rate_16_qs;
         reg_rdata_next[23:20] = mio_pad_attr_16_drive_strength_16_qs;
       end
@@ -37249,6 +38526,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_17_keeper_en_17_qs;
         reg_rdata_next[5] = mio_pad_attr_17_schmitt_en_17_qs;
         reg_rdata_next[6] = mio_pad_attr_17_od_en_17_qs;
+        reg_rdata_next[7] = mio_pad_attr_17_input_disable_17_qs;
         reg_rdata_next[17:16] = mio_pad_attr_17_slew_rate_17_qs;
         reg_rdata_next[23:20] = mio_pad_attr_17_drive_strength_17_qs;
       end
@@ -37261,6 +38539,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_18_keeper_en_18_qs;
         reg_rdata_next[5] = mio_pad_attr_18_schmitt_en_18_qs;
         reg_rdata_next[6] = mio_pad_attr_18_od_en_18_qs;
+        reg_rdata_next[7] = mio_pad_attr_18_input_disable_18_qs;
         reg_rdata_next[17:16] = mio_pad_attr_18_slew_rate_18_qs;
         reg_rdata_next[23:20] = mio_pad_attr_18_drive_strength_18_qs;
       end
@@ -37273,6 +38552,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_19_keeper_en_19_qs;
         reg_rdata_next[5] = mio_pad_attr_19_schmitt_en_19_qs;
         reg_rdata_next[6] = mio_pad_attr_19_od_en_19_qs;
+        reg_rdata_next[7] = mio_pad_attr_19_input_disable_19_qs;
         reg_rdata_next[17:16] = mio_pad_attr_19_slew_rate_19_qs;
         reg_rdata_next[23:20] = mio_pad_attr_19_drive_strength_19_qs;
       end
@@ -37285,6 +38565,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_20_keeper_en_20_qs;
         reg_rdata_next[5] = mio_pad_attr_20_schmitt_en_20_qs;
         reg_rdata_next[6] = mio_pad_attr_20_od_en_20_qs;
+        reg_rdata_next[7] = mio_pad_attr_20_input_disable_20_qs;
         reg_rdata_next[17:16] = mio_pad_attr_20_slew_rate_20_qs;
         reg_rdata_next[23:20] = mio_pad_attr_20_drive_strength_20_qs;
       end
@@ -37297,6 +38578,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_21_keeper_en_21_qs;
         reg_rdata_next[5] = mio_pad_attr_21_schmitt_en_21_qs;
         reg_rdata_next[6] = mio_pad_attr_21_od_en_21_qs;
+        reg_rdata_next[7] = mio_pad_attr_21_input_disable_21_qs;
         reg_rdata_next[17:16] = mio_pad_attr_21_slew_rate_21_qs;
         reg_rdata_next[23:20] = mio_pad_attr_21_drive_strength_21_qs;
       end
@@ -37309,6 +38591,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_22_keeper_en_22_qs;
         reg_rdata_next[5] = mio_pad_attr_22_schmitt_en_22_qs;
         reg_rdata_next[6] = mio_pad_attr_22_od_en_22_qs;
+        reg_rdata_next[7] = mio_pad_attr_22_input_disable_22_qs;
         reg_rdata_next[17:16] = mio_pad_attr_22_slew_rate_22_qs;
         reg_rdata_next[23:20] = mio_pad_attr_22_drive_strength_22_qs;
       end
@@ -37321,6 +38604,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_23_keeper_en_23_qs;
         reg_rdata_next[5] = mio_pad_attr_23_schmitt_en_23_qs;
         reg_rdata_next[6] = mio_pad_attr_23_od_en_23_qs;
+        reg_rdata_next[7] = mio_pad_attr_23_input_disable_23_qs;
         reg_rdata_next[17:16] = mio_pad_attr_23_slew_rate_23_qs;
         reg_rdata_next[23:20] = mio_pad_attr_23_drive_strength_23_qs;
       end
@@ -37333,6 +38617,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_24_keeper_en_24_qs;
         reg_rdata_next[5] = mio_pad_attr_24_schmitt_en_24_qs;
         reg_rdata_next[6] = mio_pad_attr_24_od_en_24_qs;
+        reg_rdata_next[7] = mio_pad_attr_24_input_disable_24_qs;
         reg_rdata_next[17:16] = mio_pad_attr_24_slew_rate_24_qs;
         reg_rdata_next[23:20] = mio_pad_attr_24_drive_strength_24_qs;
       end
@@ -37345,6 +38630,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_25_keeper_en_25_qs;
         reg_rdata_next[5] = mio_pad_attr_25_schmitt_en_25_qs;
         reg_rdata_next[6] = mio_pad_attr_25_od_en_25_qs;
+        reg_rdata_next[7] = mio_pad_attr_25_input_disable_25_qs;
         reg_rdata_next[17:16] = mio_pad_attr_25_slew_rate_25_qs;
         reg_rdata_next[23:20] = mio_pad_attr_25_drive_strength_25_qs;
       end
@@ -37357,6 +38643,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_26_keeper_en_26_qs;
         reg_rdata_next[5] = mio_pad_attr_26_schmitt_en_26_qs;
         reg_rdata_next[6] = mio_pad_attr_26_od_en_26_qs;
+        reg_rdata_next[7] = mio_pad_attr_26_input_disable_26_qs;
         reg_rdata_next[17:16] = mio_pad_attr_26_slew_rate_26_qs;
         reg_rdata_next[23:20] = mio_pad_attr_26_drive_strength_26_qs;
       end
@@ -37369,6 +38656,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_27_keeper_en_27_qs;
         reg_rdata_next[5] = mio_pad_attr_27_schmitt_en_27_qs;
         reg_rdata_next[6] = mio_pad_attr_27_od_en_27_qs;
+        reg_rdata_next[7] = mio_pad_attr_27_input_disable_27_qs;
         reg_rdata_next[17:16] = mio_pad_attr_27_slew_rate_27_qs;
         reg_rdata_next[23:20] = mio_pad_attr_27_drive_strength_27_qs;
       end
@@ -37381,6 +38669,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_28_keeper_en_28_qs;
         reg_rdata_next[5] = mio_pad_attr_28_schmitt_en_28_qs;
         reg_rdata_next[6] = mio_pad_attr_28_od_en_28_qs;
+        reg_rdata_next[7] = mio_pad_attr_28_input_disable_28_qs;
         reg_rdata_next[17:16] = mio_pad_attr_28_slew_rate_28_qs;
         reg_rdata_next[23:20] = mio_pad_attr_28_drive_strength_28_qs;
       end
@@ -37393,6 +38682,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_29_keeper_en_29_qs;
         reg_rdata_next[5] = mio_pad_attr_29_schmitt_en_29_qs;
         reg_rdata_next[6] = mio_pad_attr_29_od_en_29_qs;
+        reg_rdata_next[7] = mio_pad_attr_29_input_disable_29_qs;
         reg_rdata_next[17:16] = mio_pad_attr_29_slew_rate_29_qs;
         reg_rdata_next[23:20] = mio_pad_attr_29_drive_strength_29_qs;
       end
@@ -37405,6 +38695,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_30_keeper_en_30_qs;
         reg_rdata_next[5] = mio_pad_attr_30_schmitt_en_30_qs;
         reg_rdata_next[6] = mio_pad_attr_30_od_en_30_qs;
+        reg_rdata_next[7] = mio_pad_attr_30_input_disable_30_qs;
         reg_rdata_next[17:16] = mio_pad_attr_30_slew_rate_30_qs;
         reg_rdata_next[23:20] = mio_pad_attr_30_drive_strength_30_qs;
       end
@@ -37417,6 +38708,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_31_keeper_en_31_qs;
         reg_rdata_next[5] = mio_pad_attr_31_schmitt_en_31_qs;
         reg_rdata_next[6] = mio_pad_attr_31_od_en_31_qs;
+        reg_rdata_next[7] = mio_pad_attr_31_input_disable_31_qs;
         reg_rdata_next[17:16] = mio_pad_attr_31_slew_rate_31_qs;
         reg_rdata_next[23:20] = mio_pad_attr_31_drive_strength_31_qs;
       end
@@ -37429,6 +38721,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_32_keeper_en_32_qs;
         reg_rdata_next[5] = mio_pad_attr_32_schmitt_en_32_qs;
         reg_rdata_next[6] = mio_pad_attr_32_od_en_32_qs;
+        reg_rdata_next[7] = mio_pad_attr_32_input_disable_32_qs;
         reg_rdata_next[17:16] = mio_pad_attr_32_slew_rate_32_qs;
         reg_rdata_next[23:20] = mio_pad_attr_32_drive_strength_32_qs;
       end
@@ -37441,6 +38734,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_33_keeper_en_33_qs;
         reg_rdata_next[5] = mio_pad_attr_33_schmitt_en_33_qs;
         reg_rdata_next[6] = mio_pad_attr_33_od_en_33_qs;
+        reg_rdata_next[7] = mio_pad_attr_33_input_disable_33_qs;
         reg_rdata_next[17:16] = mio_pad_attr_33_slew_rate_33_qs;
         reg_rdata_next[23:20] = mio_pad_attr_33_drive_strength_33_qs;
       end
@@ -37453,6 +38747,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_34_keeper_en_34_qs;
         reg_rdata_next[5] = mio_pad_attr_34_schmitt_en_34_qs;
         reg_rdata_next[6] = mio_pad_attr_34_od_en_34_qs;
+        reg_rdata_next[7] = mio_pad_attr_34_input_disable_34_qs;
         reg_rdata_next[17:16] = mio_pad_attr_34_slew_rate_34_qs;
         reg_rdata_next[23:20] = mio_pad_attr_34_drive_strength_34_qs;
       end
@@ -37465,6 +38760,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_35_keeper_en_35_qs;
         reg_rdata_next[5] = mio_pad_attr_35_schmitt_en_35_qs;
         reg_rdata_next[6] = mio_pad_attr_35_od_en_35_qs;
+        reg_rdata_next[7] = mio_pad_attr_35_input_disable_35_qs;
         reg_rdata_next[17:16] = mio_pad_attr_35_slew_rate_35_qs;
         reg_rdata_next[23:20] = mio_pad_attr_35_drive_strength_35_qs;
       end
@@ -37477,6 +38773,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_36_keeper_en_36_qs;
         reg_rdata_next[5] = mio_pad_attr_36_schmitt_en_36_qs;
         reg_rdata_next[6] = mio_pad_attr_36_od_en_36_qs;
+        reg_rdata_next[7] = mio_pad_attr_36_input_disable_36_qs;
         reg_rdata_next[17:16] = mio_pad_attr_36_slew_rate_36_qs;
         reg_rdata_next[23:20] = mio_pad_attr_36_drive_strength_36_qs;
       end
@@ -37489,6 +38786,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_37_keeper_en_37_qs;
         reg_rdata_next[5] = mio_pad_attr_37_schmitt_en_37_qs;
         reg_rdata_next[6] = mio_pad_attr_37_od_en_37_qs;
+        reg_rdata_next[7] = mio_pad_attr_37_input_disable_37_qs;
         reg_rdata_next[17:16] = mio_pad_attr_37_slew_rate_37_qs;
         reg_rdata_next[23:20] = mio_pad_attr_37_drive_strength_37_qs;
       end
@@ -37501,6 +38799,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_38_keeper_en_38_qs;
         reg_rdata_next[5] = mio_pad_attr_38_schmitt_en_38_qs;
         reg_rdata_next[6] = mio_pad_attr_38_od_en_38_qs;
+        reg_rdata_next[7] = mio_pad_attr_38_input_disable_38_qs;
         reg_rdata_next[17:16] = mio_pad_attr_38_slew_rate_38_qs;
         reg_rdata_next[23:20] = mio_pad_attr_38_drive_strength_38_qs;
       end
@@ -37513,6 +38812,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_39_keeper_en_39_qs;
         reg_rdata_next[5] = mio_pad_attr_39_schmitt_en_39_qs;
         reg_rdata_next[6] = mio_pad_attr_39_od_en_39_qs;
+        reg_rdata_next[7] = mio_pad_attr_39_input_disable_39_qs;
         reg_rdata_next[17:16] = mio_pad_attr_39_slew_rate_39_qs;
         reg_rdata_next[23:20] = mio_pad_attr_39_drive_strength_39_qs;
       end
@@ -37525,6 +38825,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_40_keeper_en_40_qs;
         reg_rdata_next[5] = mio_pad_attr_40_schmitt_en_40_qs;
         reg_rdata_next[6] = mio_pad_attr_40_od_en_40_qs;
+        reg_rdata_next[7] = mio_pad_attr_40_input_disable_40_qs;
         reg_rdata_next[17:16] = mio_pad_attr_40_slew_rate_40_qs;
         reg_rdata_next[23:20] = mio_pad_attr_40_drive_strength_40_qs;
       end
@@ -37537,6 +38838,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_41_keeper_en_41_qs;
         reg_rdata_next[5] = mio_pad_attr_41_schmitt_en_41_qs;
         reg_rdata_next[6] = mio_pad_attr_41_od_en_41_qs;
+        reg_rdata_next[7] = mio_pad_attr_41_input_disable_41_qs;
         reg_rdata_next[17:16] = mio_pad_attr_41_slew_rate_41_qs;
         reg_rdata_next[23:20] = mio_pad_attr_41_drive_strength_41_qs;
       end
@@ -37549,6 +38851,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_42_keeper_en_42_qs;
         reg_rdata_next[5] = mio_pad_attr_42_schmitt_en_42_qs;
         reg_rdata_next[6] = mio_pad_attr_42_od_en_42_qs;
+        reg_rdata_next[7] = mio_pad_attr_42_input_disable_42_qs;
         reg_rdata_next[17:16] = mio_pad_attr_42_slew_rate_42_qs;
         reg_rdata_next[23:20] = mio_pad_attr_42_drive_strength_42_qs;
       end
@@ -37561,6 +38864,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_43_keeper_en_43_qs;
         reg_rdata_next[5] = mio_pad_attr_43_schmitt_en_43_qs;
         reg_rdata_next[6] = mio_pad_attr_43_od_en_43_qs;
+        reg_rdata_next[7] = mio_pad_attr_43_input_disable_43_qs;
         reg_rdata_next[17:16] = mio_pad_attr_43_slew_rate_43_qs;
         reg_rdata_next[23:20] = mio_pad_attr_43_drive_strength_43_qs;
       end
@@ -37573,6 +38877,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_44_keeper_en_44_qs;
         reg_rdata_next[5] = mio_pad_attr_44_schmitt_en_44_qs;
         reg_rdata_next[6] = mio_pad_attr_44_od_en_44_qs;
+        reg_rdata_next[7] = mio_pad_attr_44_input_disable_44_qs;
         reg_rdata_next[17:16] = mio_pad_attr_44_slew_rate_44_qs;
         reg_rdata_next[23:20] = mio_pad_attr_44_drive_strength_44_qs;
       end
@@ -37585,6 +38890,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_45_keeper_en_45_qs;
         reg_rdata_next[5] = mio_pad_attr_45_schmitt_en_45_qs;
         reg_rdata_next[6] = mio_pad_attr_45_od_en_45_qs;
+        reg_rdata_next[7] = mio_pad_attr_45_input_disable_45_qs;
         reg_rdata_next[17:16] = mio_pad_attr_45_slew_rate_45_qs;
         reg_rdata_next[23:20] = mio_pad_attr_45_drive_strength_45_qs;
       end
@@ -37597,6 +38903,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = mio_pad_attr_46_keeper_en_46_qs;
         reg_rdata_next[5] = mio_pad_attr_46_schmitt_en_46_qs;
         reg_rdata_next[6] = mio_pad_attr_46_od_en_46_qs;
+        reg_rdata_next[7] = mio_pad_attr_46_input_disable_46_qs;
         reg_rdata_next[17:16] = mio_pad_attr_46_slew_rate_46_qs;
         reg_rdata_next[23:20] = mio_pad_attr_46_drive_strength_46_qs;
       end
@@ -37673,6 +38980,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_0_keeper_en_0_qs;
         reg_rdata_next[5] = dio_pad_attr_0_schmitt_en_0_qs;
         reg_rdata_next[6] = dio_pad_attr_0_od_en_0_qs;
+        reg_rdata_next[7] = dio_pad_attr_0_input_disable_0_qs;
         reg_rdata_next[17:16] = dio_pad_attr_0_slew_rate_0_qs;
         reg_rdata_next[23:20] = dio_pad_attr_0_drive_strength_0_qs;
       end
@@ -37685,6 +38993,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_1_keeper_en_1_qs;
         reg_rdata_next[5] = dio_pad_attr_1_schmitt_en_1_qs;
         reg_rdata_next[6] = dio_pad_attr_1_od_en_1_qs;
+        reg_rdata_next[7] = dio_pad_attr_1_input_disable_1_qs;
         reg_rdata_next[17:16] = dio_pad_attr_1_slew_rate_1_qs;
         reg_rdata_next[23:20] = dio_pad_attr_1_drive_strength_1_qs;
       end
@@ -37697,6 +39006,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_2_keeper_en_2_qs;
         reg_rdata_next[5] = dio_pad_attr_2_schmitt_en_2_qs;
         reg_rdata_next[6] = dio_pad_attr_2_od_en_2_qs;
+        reg_rdata_next[7] = dio_pad_attr_2_input_disable_2_qs;
         reg_rdata_next[17:16] = dio_pad_attr_2_slew_rate_2_qs;
         reg_rdata_next[23:20] = dio_pad_attr_2_drive_strength_2_qs;
       end
@@ -37709,6 +39019,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_3_keeper_en_3_qs;
         reg_rdata_next[5] = dio_pad_attr_3_schmitt_en_3_qs;
         reg_rdata_next[6] = dio_pad_attr_3_od_en_3_qs;
+        reg_rdata_next[7] = dio_pad_attr_3_input_disable_3_qs;
         reg_rdata_next[17:16] = dio_pad_attr_3_slew_rate_3_qs;
         reg_rdata_next[23:20] = dio_pad_attr_3_drive_strength_3_qs;
       end
@@ -37721,6 +39032,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_4_keeper_en_4_qs;
         reg_rdata_next[5] = dio_pad_attr_4_schmitt_en_4_qs;
         reg_rdata_next[6] = dio_pad_attr_4_od_en_4_qs;
+        reg_rdata_next[7] = dio_pad_attr_4_input_disable_4_qs;
         reg_rdata_next[17:16] = dio_pad_attr_4_slew_rate_4_qs;
         reg_rdata_next[23:20] = dio_pad_attr_4_drive_strength_4_qs;
       end
@@ -37733,6 +39045,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_5_keeper_en_5_qs;
         reg_rdata_next[5] = dio_pad_attr_5_schmitt_en_5_qs;
         reg_rdata_next[6] = dio_pad_attr_5_od_en_5_qs;
+        reg_rdata_next[7] = dio_pad_attr_5_input_disable_5_qs;
         reg_rdata_next[17:16] = dio_pad_attr_5_slew_rate_5_qs;
         reg_rdata_next[23:20] = dio_pad_attr_5_drive_strength_5_qs;
       end
@@ -37745,6 +39058,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_6_keeper_en_6_qs;
         reg_rdata_next[5] = dio_pad_attr_6_schmitt_en_6_qs;
         reg_rdata_next[6] = dio_pad_attr_6_od_en_6_qs;
+        reg_rdata_next[7] = dio_pad_attr_6_input_disable_6_qs;
         reg_rdata_next[17:16] = dio_pad_attr_6_slew_rate_6_qs;
         reg_rdata_next[23:20] = dio_pad_attr_6_drive_strength_6_qs;
       end
@@ -37757,6 +39071,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_7_keeper_en_7_qs;
         reg_rdata_next[5] = dio_pad_attr_7_schmitt_en_7_qs;
         reg_rdata_next[6] = dio_pad_attr_7_od_en_7_qs;
+        reg_rdata_next[7] = dio_pad_attr_7_input_disable_7_qs;
         reg_rdata_next[17:16] = dio_pad_attr_7_slew_rate_7_qs;
         reg_rdata_next[23:20] = dio_pad_attr_7_drive_strength_7_qs;
       end
@@ -37769,6 +39084,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_8_keeper_en_8_qs;
         reg_rdata_next[5] = dio_pad_attr_8_schmitt_en_8_qs;
         reg_rdata_next[6] = dio_pad_attr_8_od_en_8_qs;
+        reg_rdata_next[7] = dio_pad_attr_8_input_disable_8_qs;
         reg_rdata_next[17:16] = dio_pad_attr_8_slew_rate_8_qs;
         reg_rdata_next[23:20] = dio_pad_attr_8_drive_strength_8_qs;
       end
@@ -37781,6 +39097,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_9_keeper_en_9_qs;
         reg_rdata_next[5] = dio_pad_attr_9_schmitt_en_9_qs;
         reg_rdata_next[6] = dio_pad_attr_9_od_en_9_qs;
+        reg_rdata_next[7] = dio_pad_attr_9_input_disable_9_qs;
         reg_rdata_next[17:16] = dio_pad_attr_9_slew_rate_9_qs;
         reg_rdata_next[23:20] = dio_pad_attr_9_drive_strength_9_qs;
       end
@@ -37793,6 +39110,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_10_keeper_en_10_qs;
         reg_rdata_next[5] = dio_pad_attr_10_schmitt_en_10_qs;
         reg_rdata_next[6] = dio_pad_attr_10_od_en_10_qs;
+        reg_rdata_next[7] = dio_pad_attr_10_input_disable_10_qs;
         reg_rdata_next[17:16] = dio_pad_attr_10_slew_rate_10_qs;
         reg_rdata_next[23:20] = dio_pad_attr_10_drive_strength_10_qs;
       end
@@ -37805,6 +39123,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_11_keeper_en_11_qs;
         reg_rdata_next[5] = dio_pad_attr_11_schmitt_en_11_qs;
         reg_rdata_next[6] = dio_pad_attr_11_od_en_11_qs;
+        reg_rdata_next[7] = dio_pad_attr_11_input_disable_11_qs;
         reg_rdata_next[17:16] = dio_pad_attr_11_slew_rate_11_qs;
         reg_rdata_next[23:20] = dio_pad_attr_11_drive_strength_11_qs;
       end
@@ -37817,6 +39136,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_12_keeper_en_12_qs;
         reg_rdata_next[5] = dio_pad_attr_12_schmitt_en_12_qs;
         reg_rdata_next[6] = dio_pad_attr_12_od_en_12_qs;
+        reg_rdata_next[7] = dio_pad_attr_12_input_disable_12_qs;
         reg_rdata_next[17:16] = dio_pad_attr_12_slew_rate_12_qs;
         reg_rdata_next[23:20] = dio_pad_attr_12_drive_strength_12_qs;
       end
@@ -37829,6 +39149,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_13_keeper_en_13_qs;
         reg_rdata_next[5] = dio_pad_attr_13_schmitt_en_13_qs;
         reg_rdata_next[6] = dio_pad_attr_13_od_en_13_qs;
+        reg_rdata_next[7] = dio_pad_attr_13_input_disable_13_qs;
         reg_rdata_next[17:16] = dio_pad_attr_13_slew_rate_13_qs;
         reg_rdata_next[23:20] = dio_pad_attr_13_drive_strength_13_qs;
       end
@@ -37841,6 +39162,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_14_keeper_en_14_qs;
         reg_rdata_next[5] = dio_pad_attr_14_schmitt_en_14_qs;
         reg_rdata_next[6] = dio_pad_attr_14_od_en_14_qs;
+        reg_rdata_next[7] = dio_pad_attr_14_input_disable_14_qs;
         reg_rdata_next[17:16] = dio_pad_attr_14_slew_rate_14_qs;
         reg_rdata_next[23:20] = dio_pad_attr_14_drive_strength_14_qs;
       end
@@ -37853,6 +39175,7 @@ module pinmux_reg_top (
         reg_rdata_next[4] = dio_pad_attr_15_keeper_en_15_qs;
         reg_rdata_next[5] = dio_pad_attr_15_schmitt_en_15_qs;
         reg_rdata_next[6] = dio_pad_attr_15_od_en_15_qs;
+        reg_rdata_next[7] = dio_pad_attr_15_input_disable_15_qs;
         reg_rdata_next[17:16] = dio_pad_attr_15_slew_rate_15_qs;
         reg_rdata_next[23:20] = dio_pad_attr_15_drive_strength_15_qs;
       end

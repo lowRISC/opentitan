@@ -171,6 +171,9 @@ module pinmux
         if (reg2hw.dio_pad_attr[kk].slew_rate.qe) begin
           dio_pad_attr_q[kk].slew_rate      <= reg2hw.dio_pad_attr[kk].slew_rate.q;
         end
+        if (reg2hw.dio_pad_attr[kk].input_disable.qe) begin
+          dio_pad_attr_q[kk].input_disable  <= reg2hw.dio_pad_attr[kk].input_disable.q;
+        end
         if (reg2hw.dio_pad_attr[kk].od_en.qe) begin
           dio_pad_attr_q[kk].od_en          <= reg2hw.dio_pad_attr[kk].od_en.q;
         end
@@ -200,6 +203,9 @@ module pinmux
         end
         if (reg2hw.mio_pad_attr[kk].slew_rate.qe) begin
           mio_pad_attr_q[kk].slew_rate      <= reg2hw.mio_pad_attr[kk].slew_rate.q;
+        end
+        if (reg2hw.mio_pad_attr[kk].input_disable.qe) begin
+          mio_pad_attr_q[kk].input_disable  <= reg2hw.mio_pad_attr[kk].input_disable.q;
         end
         if (reg2hw.mio_pad_attr[kk].od_en.qe) begin
           mio_pad_attr_q[kk].od_en          <= reg2hw.mio_pad_attr[kk].od_en.q;
@@ -243,6 +249,7 @@ module pinmux
     assign dio_attr[k]                             = dio_pad_attr_q[k] & warl_mask;
     assign hw2reg.dio_pad_attr[k].drive_strength.d = dio_attr[k].drive_strength;
     assign hw2reg.dio_pad_attr[k].slew_rate.d      = dio_attr[k].slew_rate;
+    assign hw2reg.dio_pad_attr[k].input_disable.d  = dio_attr[k].input_disable;
     assign hw2reg.dio_pad_attr[k].od_en.d          = dio_attr[k].od_en;
     assign hw2reg.dio_pad_attr[k].schmitt_en.d     = dio_attr[k].schmitt_en;
     assign hw2reg.dio_pad_attr[k].keeper_en.d      = dio_attr[k].keep_en;
@@ -265,6 +272,7 @@ module pinmux
     assign mio_attr[k]                             = mio_pad_attr_q[k] & warl_mask;
     assign hw2reg.mio_pad_attr[k].drive_strength.d = mio_attr[k].drive_strength;
     assign hw2reg.mio_pad_attr[k].slew_rate.d      = mio_attr[k].slew_rate;
+    assign hw2reg.mio_pad_attr[k].input_disable.d  = mio_attr[k].input_disable;
     assign hw2reg.mio_pad_attr[k].od_en.d          = mio_attr[k].od_en;
     assign hw2reg.mio_pad_attr[k].schmitt_en.d     = mio_attr[k].schmitt_en;
     assign hw2reg.mio_pad_attr[k].keeper_en.d      = mio_attr[k].keep_en;

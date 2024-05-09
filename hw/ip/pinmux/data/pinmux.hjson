@@ -489,6 +489,13 @@
                       name: "od_en",
                       desc: "Enable open drain."
                     },
+                    { bits: "7",
+                      name: "input_disable",
+                      desc: '''
+                            Disable input drivers.
+                            Setting this to 1 for pads that are not used as input can reduce their leakage current.
+                            '''
+                    },
                     { bits: "17:16",
                       name: "slew_rate",
                       desc: "Slew rate (0x0: slowest, 0x3: fastest)."
@@ -583,6 +590,13 @@
                     { bits: "6",
                       name: "od_en",
                       desc: "Enable open drain."
+                    },
+                    { bits: "7",
+                      name: "input_disable",
+                      desc: '''
+                            Disable input drivers.
+                            Setting this to 1 for pads that are not used as input can reduce their leakage current.
+                            '''
                     },
                     { bits: "17:16",
                       name: "slew_rate",

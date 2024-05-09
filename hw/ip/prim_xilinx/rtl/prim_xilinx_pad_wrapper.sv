@@ -44,6 +44,9 @@ module prim_xilinx_pad_wrapper
                          scanmode_i,
                          pok_i};
 
+  // Input enable, active-low = input disable, active-high
+  logic ie_n;
+  assign ie_n = ~ie_i | attr_i.input_disable;
 
   if (PadType == InputStd) begin : gen_input_only
     logic unused_sigs;
@@ -51,24 +54,25 @@ module prim_xilinx_pad_wrapper
                            oe_i,
                            attr_i.virt_od_en};
 
-    // input inversion
+    // Input buffer with input disable
+    // 7 Series devices feature the `IBUF_IBUFDISABLE` primitive that can disable the input path
+    // through the input buffer.  However, that primitive is not supported for the IOSTANDARDs we
+    // use (LVCMOS18 and LVCMOS33), so the logic below instead emulates its behavior (the disabled
+    // input gets internally driven to 1) without really disabling the input driver.
     logic in;
-    assign in_raw_o = (ie_i) ? in  : 1'bz;
-    assign in_o = attr_i.invert ^ in_raw_o;
-
     IBUF u_ibuf (
       .I ( inout_io ),
       .O ( in       )
     );
+    assign in_raw_o = ie_n ? 1'b1 : in;
+
+    // Input inversion
+    assign in_o = attr_i.invert ^ in_raw_o;
+
   end else if (PadType == BidirTol ||
                PadType == DualBidirTol ||
                PadType == BidirOd ||
                PadType == BidirStd) begin : gen_bidir
-
-    // input inversion
-    logic in;
-    assign in_raw_o = (ie_i) ? in  : 1'bz;
-    assign in_o = attr_i.invert ^ in_raw_o;
 
     // virtual open drain emulation
     logic oe_n, out;
@@ -77,12 +81,24 @@ module prim_xilinx_pad_wrapper
     // oe_n = 1: disable driver
     assign oe_n     = ~oe_i | (out & attr_i.virt_od_en);
 
+    // Input buffer with input disable
+    // TODO(#23094): This should be implemented with an instance of `IOBUF_DCIEN` (for pads in
+    // high-performance banks) or `IOBUF_INTERMDISABLE` (for pads in high-range banks).  This module
+    // currently doesn't know which bank the pad is in, so the logic below instead emulates this
+    // behavior (disabled inputs get internally driven to 1 for 7 Series devices) without really
+    // disabling the input driver.
+    logic in;
     IOBUF u_iobuf (
       .T  ( oe_n     ),
       .I  ( out      ),
       .O  ( in       ),
       .IO ( inout_io )
     );
+    assign in_raw_o = ie_n ? 1'b1 : in;
+
+    // Input inversion
+    assign in_o = attr_i.invert ^ in_raw_o;
+
   end else if (PadType == AnalogIn0 || PadType == AnalogIn1) begin : gen_analog
 
     logic unused_sigs;
@@ -90,13 +106,16 @@ module prim_xilinx_pad_wrapper
                            oe_i,
                            attr_i.invert,
                            attr_i.virt_od_en};
-    // this is currently modeled as a logic feed through.
+
+    // Input buffer with input disable
+    // Input disable emulated in logic due to the limitations documented under `gen_input_only`.
+    logic in;
     IBUF u_ibuf (
       .I ( inout_io ),
-      .O ( in_raw_o )
+      .O ( in       )
     );
-
-    assign in_raw_o = inout_io;
+    assign in_raw_o = ie_n ? 1'b1 : in;
+    assign in_o = in_raw_o;
 
   end else begin : gen_invalid_config
     // this should throw link warnings in elaboration
