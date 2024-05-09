@@ -74,18 +74,35 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
     forever begin
+      // Wait until we either go into reset or we get an item to drive.
+      fork : isolation_fork
+        begin
+          fork
+            wait (! cfg.vif.trst_n);
+            seq_item_port.get_next_item(req);
+          join_any
+          disable fork;
+        end
+      join
+
       if (!cfg.vif.trst_n) begin
         `DV_WAIT(cfg.vif.trst_n)
         cfg.vif.wait_tck(1);
         drive_jtag_test_logic_reset();
+      end else begin
+        // Since trst_n is not 0, the get_next_item() task must have completed and has written the
+        // request to req
+        $cast(rsp, req.clone());
+        rsp.set_id_info(req);
+
+        `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
+        `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
+                          wait (!cfg.vif.trst_n);)
+
+        // Mark the item as having been handled. This passes the response (rsp) back to the
+        // sequencer, and also pops the request that we have been handling.
+        seq_item_port.item_done(rsp);
       end
-      seq_item_port.get_next_item(req);
-      $cast(rsp, req.clone());
-      rsp.set_id_info(req);
-      `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
-      `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
-                        wait (!cfg.vif.trst_n);)
-      seq_item_port.item_done(rsp);
     end
   endtask
 
