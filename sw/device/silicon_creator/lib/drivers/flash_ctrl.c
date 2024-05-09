@@ -587,7 +587,8 @@ static void flash_ctrl_mp_region_cfg_reset(flash_ctrl_region_index_t region) {
 static void flash_ctrl_mp_region_cfg_write(flash_ctrl_region_index_t region,
                                            flash_ctrl_cfg_t cfg,
                                            flash_ctrl_perms_t perms,
-                                           multi_bit_bool_t en) {
+                                           multi_bit_bool_t en,
+                                           hardened_bool_t lock) {
 #define FLASH_CTRL_MP_REGION_CFG_WRITE_(region_macro_arg)                                     \
   case ((region_macro_arg)): {                                                                \
     HARDENED_CHECK_EQ(region, (region_macro_arg));                                            \
@@ -624,6 +625,12 @@ static void flash_ctrl_mp_region_cfg_write(flash_ctrl_region_index_t region,
     sec_mmio_write32(                                                                         \
         kBase + FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,                     \
         mp_region_cfg);                                                                       \
+    if (lock != kHardenedBoolFalse) {                                                         \
+      sec_mmio_write32(                                                                       \
+          kBase +                                                                             \
+              FLASH_CTRL_REGION_CFG_REGWEN_##region_macro_arg##_REG_OFFSET,                   \
+          0);                                                                                 \
+    }                                                                                         \
     return;                                                                                   \
   }
 
@@ -639,7 +646,8 @@ static void flash_ctrl_mp_region_cfg_write(flash_ctrl_region_index_t region,
 void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                     uint32_t page_offset, uint32_t num_pages,
                                     flash_ctrl_perms_t perms,
-                                    flash_ctrl_cfg_t cfg) {
+                                    flash_ctrl_cfg_t cfg,
+                                    hardened_bool_t lock) {
   // Reset the region's configuration via the MP_REGION_CFG_${region} register.
   // This temporarily disables memory protection for the region.
   flash_ctrl_mp_region_cfg_reset(region);
@@ -649,7 +657,7 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
 
   // Write the new value of MP_REGION_CFG_${region}.
   flash_ctrl_mp_region_cfg_write(region, cfg, perms,
-                                 /*en=*/kMultiBitBool4True);
+                                 /*en=*/kMultiBitBool4True, lock);
 }
 
 void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,

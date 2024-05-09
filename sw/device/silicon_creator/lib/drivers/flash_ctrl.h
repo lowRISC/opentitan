@@ -529,11 +529,12 @@ typedef uint32_t flash_ctrl_region_index_t;
  * @param perms The read/write/erase permissions for this region.
  * @param cfg Flash config values that are used to fill in some fields of the
  *            `MP_REGION_CFG_${region}` register.
+ * @param lock Lock the configuration for this region.
  */
 void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                     uint32_t page_offset, uint32_t num_pages,
                                     flash_ctrl_perms_t perms,
-                                    flash_ctrl_cfg_t cfg);
+                                    flash_ctrl_cfg_t cfg, hardened_bool_t lock);
 
 /**
  * Sets configuration settings for an info page.

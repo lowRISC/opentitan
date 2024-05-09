@@ -85,10 +85,11 @@ rom_error_t owner_block_parse(const owner_block_t *block,
 }
 
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
-                                    uint32_t config_side,
-                                    uint32_t primary_side) {
+                                    uint32_t config_side, uint32_t lockdown) {
   if ((hardened_bool_t)flash == kHardenedBoolFalse)
     return kErrorOk;
+  // TODO: Hardening: lockdown should be one of kBootSlotA, kBootSlotB or
+  // kHardenedBoolFalse.
   uint32_t start = config_side == kBootSlotA   ? 0
                    : config_side == kBootSlotB ? kFlashBankSize
                                                : 0xFFFFFFFF;
@@ -118,13 +119,23 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
           .erase = bitfield_field32_read(val, FLASH_CONFIG_ERASE),
       };
 
-      if (config_side == primary_side &&
-          bitfield_field32_read(val, FLASH_CONFIG_PROTECT_WHEN_PRIMARY) !=
-              kMultiBitBool4False) {
-        perm.write = kMultiBitBool4False;
-        perm.erase = kMultiBitBool4False;
+      if (lockdown == config_side) {
+        if (bitfield_field32_read(val, FLASH_CONFIG_PROTECT_WHEN_PRIMARY) !=
+            kMultiBitBool4False) {
+          perm.write = kMultiBitBool4False;
+          perm.erase = kMultiBitBool4False;
+        }
       }
-      flash_ctrl_data_region_protect(i, config->start, config->size, perm, cfg);
+
+      hardened_bool_t lock = kHardenedBoolFalse;
+      if (lockdown != kHardenedBoolFalse) {
+        if (bitfield_field32_read(val, FLASH_CONFIG_LOCK) !=
+            kMultiBitBool4False) {
+          lock = kHardenedBoolTrue;
+        }
+      }
+      flash_ctrl_data_region_protect(i, config->start, config->size, perm, cfg,
+                                     lock);
     }
   }
   return kErrorOk;
