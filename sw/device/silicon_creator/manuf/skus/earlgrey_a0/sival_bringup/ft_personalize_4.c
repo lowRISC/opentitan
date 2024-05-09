@@ -175,8 +175,7 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
   TRY(hash_certificate(&kFlashCtrlInfoPageCdi1Certificate, 0, NULL));
 
   // Push TPM certificates into the hash (all reside on the same page).
-  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts);
-       i++) {  // There are three TPM certificates on the page.
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
     page_offset += size_to_words(cert_size) * sizeof(uint32_t);
     page_offset = round_up_to(page_offset, 3);
