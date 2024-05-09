@@ -122,12 +122,8 @@ class flash_otf_item extends uvm_object;
     bit [71:0]               data_with_icv;
     bit [75:0]               ecc_76;
 
-    if (region == null) begin
-      `uvm_fatal("scramble", "region should be assigned before calling this function")
-    end else begin
-      scr_en = (region.scramble_en == MuBi4True);
-      ecc_en = (region.ecc_en == MuBi4True);
-    end
+    scr_en = (region.scramble_en == MuBi4True);
+    ecc_en = (region.ecc_en == MuBi4True);
 
    raw_fq = dq2fq(this.dq);
     if (raw_fq.size == 0) begin
@@ -181,9 +177,7 @@ class flash_otf_item extends uvm_object;
     data_q_t   tmp_dq;
 
     ecc_err = 'h0;
-    if (region == null && ctrl_rd_region_q.size == 0) begin
-      `uvm_fatal("descramble", "region should be assigned before calling this function")
-    end else if (ctrl_rd_region_q.size == 0) begin
+    if (ctrl_rd_region_q.size == 0) begin
       scr_en = (region.scramble_en == MuBi4True);
       ecc_en = (region.ecc_en == MuBi4True);
       `uvm_info("rd_scr", $sformatf("size:%0d addr:%x scr_en:%0d ecc_en:%0d",
