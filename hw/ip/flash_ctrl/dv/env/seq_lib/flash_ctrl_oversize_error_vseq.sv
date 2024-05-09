@@ -18,30 +18,41 @@ class flash_ctrl_oversize_error_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     cfg.scb_h.do_alert_check = 0;
     cfg.otf_scb_h.comp_off = 0;
+    cfg.seq_cfg.avoid_prog_res_fault = 1'b0;
 
     fork
       begin
         repeat(cfg.otf_num_rw) begin
           if (cfg.stop_transaction_generators()) break;
-          `DV_CHECK_RANDOMIZE_FATAL(this)
-          ctrl = rand_op;
-          bank = rand_op.addr[OTFBankId];
-          if (ctrl.partition == FlashPartData) begin
-            num = ctrl_num;
-          end else begin
-            num = ctrl_info_num;
-          end
-          // If the partition that selected configured as read-only, skip the program
-          sync_otf_wr_ro_part();
           randcase
-            cfg.otf_wr_pct:prog_flash(ctrl, bank, num, fractions);
-            cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
+            cfg.otf_wr_pct: begin
+              `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
+              `uvm_info(`gfn, "Regular prog_flash", UVM_MEDIUM)
+              prog_flash(ctrl, bank, num, fractions);
+            end
+            cfg.otf_rd_pct: begin
+              `DV_CHECK_RANDOMIZE_FATAL(this)
+              ctrl = rand_op;
+              get_bank_and_num(ctrl, bank, num);
+              read_flash(ctrl, bank, num, fractions);
+            end
             cfg.otf_bwr_pct: begin
               `uvm_info("seq", $sformatf("inj:prog_err: %0d", fractions + 16), UVM_MEDIUM)
-              prog_flash(ctrl, bank, 1, fractions + 16);
+              cfg.seq_cfg.trigger_prog_res_fault = 1'b1;
+              `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
+              `uvm_info(`gfn, $sformatf("Bad write prog_flash: fractions=%d", fractions + 16),
+                        UVM_MEDIUM)
+              cfg.seq_cfg.trigger_prog_res_fault = 1'b0;
+              cfg.seq_cfg.avoid_prog_res_fault = 1'b0;
+              `DV_CHECK_GT(fractions, 16)
+              prog_flash(ctrl, bank, 1, fractions);
+              cfg.seq_cfg.avoid_prog_res_fault = 1'b1;
             end
             cfg.otf_brd_pct: begin
               int sz = $urandom_range(1, 16);
+              `DV_CHECK_RANDOMIZE_FATAL(this)
+              ctrl = rand_op;
+              get_bank_and_num(ctrl, bank, num);
               randcase
                 1: begin
                   `uvm_info("seq", $sformatf("inj:overread %0d",sz), UVM_MEDIUM)
@@ -49,7 +60,7 @@ class flash_ctrl_oversize_error_vseq extends flash_ctrl_otf_base_vseq;
                 end
                 4: begin
                   `uvm_info("seq", $sformatf("inj:read_err %0d", fractions + sz), UVM_MEDIUM)
-                  read_flash(ctrl, bank, 1, fractions, sz);
+                  read_flash(ctrl, bank, .num(1), .wd(fractions), .overrd(sz));
                 end
               endcase
              end

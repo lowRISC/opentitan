@@ -19,6 +19,8 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   flash_op_t check_ent_q[$];
   mem_addr_q_t addr_q;
 
+  constraint ctrl_num_c {ctrl_num == 1;}
+
   virtual task body();
     int round;
 
@@ -33,46 +35,13 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
 
     // Initial write to empty locations.
     repeat (100) begin
-      bit ok;
-
-      // Create uniq write address.
-      // Check uniqueness for write location from start address
-      // up to start_address + (num_words * 4) in 8 byte resolution.
-      // Then store flash_op to 'wr_ent_q'.
-      while (!ok) begin
-        bit       redun;
-        mem_addr_q_t laddr_q;
-        `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(rand_op,
-                                              rand_op.op == FlashOpProgram;)
-        // make sure all address are 8 byte aligned.
-        rand_op.addr[2:0] = 'h0;
-        rand_op.otf_addr[2:0] = 'h0;
-
-        // Secret partition is hard coded to scr/ecc enable during init.
-        // Cannot participate this test.
-        if (is_secret_part(rand_op)) continue;
-
-        if (rand_op.num_words % 2) rand_op.num_words++;
-
-        laddr_q = generate_all_addr(rand_op);
-        foreach (laddr_q[i]) begin
-          if (written_addr.exists(laddr_q[i])) begin
-            redun = 1;
-            break;
-          end else begin
-            written_addr[laddr_q[i]] = 1;
-          end
-        end
-        ok = ~redun;
-        if (ok) begin
-          addr_q = {addr_q, laddr_q};
-          my_op = rand_op;
-          wr_ent_q.push_back(my_op);
-          pre_wr_ent_q.push_back(my_op);
-        end
-      end // while (!ok)
-      prog_flash(.flash_op(rand_op), .bank(rand_op.addr[OTFBankId]),
-                 .num(1), .wd(rand_op.num_words), .store_prog_data(1));
+      int num;
+      int bank;
+      `DV_CHECK(try_create_prog_op(my_op, bank, num), "Could not create a prog flash op")
+      addr_q = {addr_q, generate_all_addr(my_op)};
+      wr_ent_q.push_back(my_op);
+      pre_wr_ent_q.push_back(my_op);
+      prog_flash(.flash_op(my_op), .bank(bank), .num(num), .wd(fractions), .store_prog_data(1));
       `uvm_info(`gfn, $sformatf("round:%0d ent:%p addr:size:%0d %p", round++, my_op,
                                 addr_q.size(), addr_q), UVM_HIGH)
     end
@@ -94,7 +63,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     wr_ent_q.shuffle();
     round = 0;
 
-    // Mimicing file system behavior here.
+    // Mimicking file system behavior here.
     // If locations are from 'wr_ent_q', write all zeros.
     // Otherwise write random data.
     repeat (20) begin

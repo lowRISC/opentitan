@@ -7,6 +7,8 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
   `uvm_object_utils(flash_ctrl_derr_detect_vseq)
   `uvm_object_new
 
+  constraint ctrl_info_num_c {ctrl_info_num == ctrl_data_num;}
+
   virtual task body();
     flash_op_t ctrl;
     int num, bank;
@@ -23,19 +25,17 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
       fork
         begin
           repeat(40) begin
-            `DV_CHECK_RANDOMIZE_FATAL(this)
-            ctrl = rand_op;
-            bank = rand_op.addr[OTFBankId];
-            if (ctrl.partition == FlashPartData) begin
-              num = ctrl_num;
-            end else begin
-              num = ctrl_info_num;
-            end
-            // If the partition that selected configured as read-only, skip the program
-            sync_otf_wr_ro_part();
             randcase
-              cfg.otf_wr_pct:prog_flash(ctrl, bank, num, fractions);
-              1:read_flash(ctrl, bank, num, fractions);
+              cfg.otf_wr_pct:begin
+                `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
+                prog_flash(ctrl, bank, num, fractions);
+              end
+              1: begin
+                `DV_CHECK_RANDOMIZE_FATAL(this)
+                ctrl = rand_op;
+                get_bank_and_num(ctrl, bank, num);
+                read_flash(ctrl, bank, num, fractions);
+              end
             endcase
           end
         end

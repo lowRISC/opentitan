@@ -72,6 +72,12 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Avoid creating flash program operations that cross program resolution boundaries of 64 byte.
   bit avoid_prog_res_fault;
 
+  // Trigger program resolution error by using large fractions.
+  bit trigger_prog_res_fault;
+
+  // This is used for ecc faults to choose the target addresses.
+  flash_tgt_prefix_e ecc_err_target = TgtRd;
+
   bit op_readonly_on_info_partition;   // Make info  partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
   bit op_readonly_on_info2_partition;  // Make info2 partition read-only.

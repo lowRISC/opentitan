@@ -10,17 +10,17 @@ class flash_ctrl_access_after_disable_vseq extends flash_ctrl_otf_base_vseq;
   `uvm_object_utils(flash_ctrl_access_after_disable_vseq)
   `uvm_object_new
 
+  constraint op_partition_c {rand_op.partition == FlashPartData;}
+
   virtual task body();
-    int bank;
+    flash_op_t ctrl;
+    int bank, num;
     // Enable ecc for all regions
     flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(OTFCfgTrue));
 
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(this,
-                                   rand_op.partition == FlashPartData;)
-    bank = rand_op.addr[OTFBankId];
-
+    `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
     set_otf_exp_alert("recov_err");
-    prog_flash(.flash_op(rand_op), .bank(bank), .num(1), .in_err(1));
+    prog_flash(.flash_op(ctrl), .bank(bank), .num(1), .in_err(1));
     set_local_escalation();
     flash_access_after_disabled();
   endtask // body
