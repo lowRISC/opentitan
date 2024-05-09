@@ -44,6 +44,17 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
 hardened_bool_t ownership_page1_valid_for_transfer(boot_data_t *bootdata);
 
 /**
+ * Lockdown the flash configuration.
+ *
+ *
+ * @param bootdata The current bootdata.
+ * @param config The current owner configuration.
+ * @return error state.
+ */
+rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
+                                     const owner_config_t *config);
+
+/**
  * Seal an owner page.
  *
  * Calculates and applies the seal to an owner page in RAM.

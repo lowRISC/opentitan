@@ -67,12 +67,13 @@ rom_error_t owner_block_parse(const owner_block_t *block,
  *
  * @param flash A pointer to a flash configuration struct.
  * @param config_side Which side of the flash to configure.
- * @param primary_side Which side of the flash is primary.
+ * @param lockdown Apply any special lockdown configuration to the specified
+ *                 side of the flash.  May use kHardenedBoolFalse to skip
+ *                 lockdown.
  * @return error code.
  */
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
-                                    uint32_t config_side,
-                                    uint32_t primary_side);
+                                    uint32_t config_side, uint32_t lockdown);
 
 /**
  * Apply the flash info configuration parameters from the owner block.

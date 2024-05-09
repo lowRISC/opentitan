@@ -81,9 +81,10 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
 void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                     uint32_t page_offset, uint32_t num_pages,
                                     flash_ctrl_perms_t perms,
-                                    flash_ctrl_cfg_t cfg) {
+                                    flash_ctrl_cfg_t cfg,
+                                    hardened_bool_t lock) {
   MockFlashCtrl::Instance().DataRegionProtect(region, page_offset, num_pages,
-                                              perms, cfg);
+                                              perms, cfg, lock);
 }
 
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
