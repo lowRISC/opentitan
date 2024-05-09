@@ -18,3 +18,8 @@ filegroup(
     name = "ft_personalize_3_prod_signed",
     srcs = ["ft_personalize_3_silicon_creator.earlgrey_a0_prod_0.signed.bin"],
 )
+
+filegroup(
+    name = "ft_personalize_4_prod_signed",
+    srcs = ["ft_personalize_4_silicon_creator.earlgrey_a0_prod_0.signed.bin"],
+)
