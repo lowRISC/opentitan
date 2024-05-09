@@ -4,6 +4,7 @@
 
 #![allow(clippy::bool_assert_comparison)]
 use anyhow::{anyhow, Result};
+use clap::ValueEnum;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_log::BootLog;
 use opentitanlib::chip::boot_svc::{Message, UnlockMode};
@@ -11,8 +12,8 @@ use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams}
 use opentitanlib::crypto::ecdsa::EcdsaPrivateKey;
 use opentitanlib::crypto::rsa::RsaPublicKey;
 use opentitanlib::ownership::{
-    ApplicationKeyDomain, KeyMaterial, OwnerApplicationKey, OwnerBlock, OwnerConfigItem,
-    OwnershipKeyAlg,
+    ApplicationKeyDomain, CommandTag, FlashFlags, KeyMaterial, OwnerApplicationKey, OwnerBlock,
+    OwnerConfigItem, OwnerFlashConfig, OwnerFlashRegion, OwnerRescueConfig, OwnershipKeyAlg,
 };
 use opentitanlib::rescue::serial::RescueSerial;
 
@@ -86,6 +87,31 @@ pub fn ownership_activate(
     }
 }
 
+// These flags request certain features of the ownership configuration.
+// The names like "FLASH1" or "RESCUE1" don't have any special significance
+// other than to give them a distinct name.
+
+// Request to corrupt the owner config block.
+const CFG_CORRUPT: u32 = 0x0000_0001;
+// Request a config with a flash configuration.
+const CFG_FLASH1: u32 = 0x0000_0002;
+// Request a config with a rescue configuration.
+const CFG_RESCUE1: u32 = 0x0000_0004;
+// Request a rescue configuration that restricts the set of allowed commands
+// (e.g. this one removes "SetNextBl0Slot" from the set of allowed commands).
+const CFG_RESCUE_RESTRICT: u32 = 0x0000_0008;
+
+#[repr(u32)]
+#[derive(Debug, Default, Copy, Clone, ValueEnum)]
+pub enum OwnerConfigKind {
+    #[default]
+    Basic = 0,
+    Corrupt = CFG_CORRUPT,
+    WithFlash = CFG_FLASH1 | CFG_RESCUE1,
+    WithRescue = CFG_RESCUE1,
+    WithRescueRestricted = CFG_FLASH1 | CFG_RESCUE1 | CFG_RESCUE_RESTRICT,
+}
+
 /// Prepares an OwnerBlock and sends it to the chip.
 pub fn create_owner(
     transport: &TransportWrapper,
@@ -94,8 +120,9 @@ pub fn create_owner(
     activate_key: &Path,
     unlock_key: &Path,
     app_key: &Path,
-    corrupt_signature: bool,
+    config: OwnerConfigKind,
 ) -> Result<()> {
+    let config = config as u32;
     let owner_key = EcdsaPrivateKey::load(owner_key)?;
     let activate_key = EcdsaPrivateKey::load(activate_key)?;
     let unlock_key = EcdsaPrivateKey::load(unlock_key)?;
@@ -112,8 +139,37 @@ pub fn create_owner(
         })],
         ..Default::default()
     };
+    if config & CFG_FLASH1 != 0 {
+        owner
+            .data
+            .push(OwnerConfigItem::FlashConfig(OwnerFlashConfig {
+                config: vec![
+                    // Side A: 0-64K romext, 64-448K firmware, 448-512K filesystem.
+                    OwnerFlashRegion::new(0, 32, FlashFlags::rom_ext()),
+                    OwnerFlashRegion::new(32, 192, FlashFlags::firmware()),
+                    OwnerFlashRegion::new(224, 32, FlashFlags::filesystem()),
+                    // Side B: 0-64K romext, 64-448K firmware, 448-512K filesystem.
+                    OwnerFlashRegion::new(256, 32, FlashFlags::rom_ext()),
+                    OwnerFlashRegion::new(256 + 32, 192, FlashFlags::firmware()),
+                    OwnerFlashRegion::new(256 + 224, 32, FlashFlags::filesystem()),
+                ],
+                ..Default::default()
+            }));
+    }
+    if config & CFG_RESCUE1 != 0 {
+        let mut rescue = OwnerRescueConfig::all();
+        rescue.start = 32;
+        rescue.size = 192;
+        if config & CFG_RESCUE_RESTRICT != 0 {
+            // Restrict one of the boot_svc commands in "restrict" mode.
+            rescue
+                .command_allow
+                .retain(|t| *t != CommandTag::NextBl0SlotRequest);
+        }
+        owner.data.push(OwnerConfigItem::RescueConfig(rescue));
+    }
     owner.sign(&owner_key)?;
-    if corrupt_signature {
+    if config & CFG_CORRUPT != 0 {
         owner.signature.r[0] += 1;
     }
     let mut owner_config = Vec::new();

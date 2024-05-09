@@ -183,6 +183,8 @@ RUST_TARGETS = [
     "//sw/host/tests/chip/gpio:gpio",
     "//sw/host/tests/chip/power_virus:power_virus",
     "//sw/host/tests/chip/spi_device:spi_passthru",
+    "//sw/host/tests/ownership:rescue_limit_test",
+    "//sw/host/tests/ownership:rescue_permission_test",
     "//sw/host/tests/ownership:transfer_lib",
     "//sw/host/tests/ownership:transfer_test",
     "//sw/host/tests/rom/e2e_bootstrap_disabled:e2e_bootstrap_disabled",
