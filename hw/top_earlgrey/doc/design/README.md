@@ -540,6 +540,21 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 
 <!-- END CMDGEN -->
 
+#### Open drain / virtual open drain
+
+Pads of type **BidirOd** and **BidirStd** support **open drain** and **virtual open drain**, respectively.
+When open drain or virtual open drain is enabled in pinmux's attributes for such a pad, the PMOS transistor that would otherwise drive the output high for a logic 1 is disabled.
+Thus for a logic 1, the impedance of the pad is essentially the output impedance of the CMOS transistor pair (which is specified in the data sheet of the chip).
+
+However, there still exists a parallel connection to the supply rail through a protection circuit.
+Therefore:
+- For **BidirOd** pads in open drain mode, the output protection circuit allows voltages that exceed the supply voltage.
+  The maximum voltage that may be applied in this case is derived from the maximum voltage of the specific pad type (which is specified in the data sheet of the chip).
+- For **BidirStd** pads, the maximum voltage that may be applied is the supply voltage (within tolerance, as specified in the data sheet of the chip).
+
+All other pad types support neither open drain nor virtual open drain.
+
+
 # RTL Implementation Notes
 
 At this time, the top-level netlist for earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
