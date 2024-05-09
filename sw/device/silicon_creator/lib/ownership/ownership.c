@@ -87,10 +87,12 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
     return kErrorOwnershipBadInfoPage;
   }
   HARDENED_RETURN_IF_ERROR(owner_block_parse(&owner_page[0], config, keyring));
-  HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotA,
-                                                   bootdata->primary_bl0_slot));
-  HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotB,
-                                                   bootdata->primary_bl0_slot));
+  HARDENED_RETURN_IF_ERROR(
+      owner_block_flash_apply(config->flash, kBootSlotA,
+                              /*lockdown=*/kHardenedBoolFalse));
+  HARDENED_RETURN_IF_ERROR(
+      owner_block_flash_apply(config->flash, kBootSlotB,
+                              /*lockdown=*/kHardenedBoolFalse));
   HARDENED_RETURN_IF_ERROR(owner_block_info_apply(config->info));
   return kErrorOk;
 }
@@ -150,8 +152,9 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
     // Configure the primary half of the flash as Owner Page 0 requests.
     HARDENED_RETURN_IF_ERROR(
         owner_block_parse(&owner_page[0], config, keyring));
-    HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(
-        config->flash, bootdata->primary_bl0_slot, bootdata->primary_bl0_slot));
+    HARDENED_RETURN_IF_ERROR(
+        owner_block_flash_apply(config->flash, bootdata->primary_bl0_slot,
+                                /*lockdown=*/kHardenedBoolFalse));
   }
 
   if (ownership_page1_valid_for_transfer(bootdata) == kHardenedBoolTrue) {
@@ -160,8 +163,9 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
     HARDENED_RETURN_IF_ERROR(
         owner_block_parse(&owner_page[1], config, keyring));
   }
-  HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, secondary,
-                                                   bootdata->primary_bl0_slot));
+  HARDENED_RETURN_IF_ERROR(
+      owner_block_flash_apply(config->flash, secondary,
+                              /*lockdown=*/kHardenedBoolFalse));
   HARDENED_RETURN_IF_ERROR(owner_block_info_apply(config->info));
   return kErrorOk;
 }
@@ -242,6 +246,21 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
       error = test_owner_init(bootdata, config, keyring);
   }
   return error;
+}
+
+rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
+                                     const owner_config_t *config) {
+  if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
+    HARDENED_RETURN_IF_ERROR(
+        owner_block_flash_apply(config->flash, kBootSlotA,
+                                /*lockdown=*/bootdata->primary_bl0_slot));
+    HARDENED_RETURN_IF_ERROR(
+        owner_block_flash_apply(config->flash, kBootSlotB,
+                                /*lockdown=*/bootdata->primary_bl0_slot));
+  } else {
+    HARDENED_CHECK_NE(bootdata->ownership_state, kOwnershipStateLockedOwner);
+  }
+  return kErrorOk;
 }
 
 void ownership_page_seal(size_t page) {

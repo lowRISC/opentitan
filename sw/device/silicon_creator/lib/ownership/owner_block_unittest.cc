@@ -239,21 +239,24 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
                         FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
                                    kMultiBitBool4True),
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                 kMultiBitBool4False)));
+                                 kMultiBitBool4False),
+                        kHardenedBoolFalse));
   EXPECT_CALL(
       flash_ctrl_,
-      DataRegionProtect(1, 32, 192,
-                        FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
-                                   kMultiBitBool4True),
-                        FlashCfg(kMultiBitBool4True, kMultiBitBool4True,
-                                 kMultiBitBool4False)));
+      DataRegionProtect(
+          1, 32, 192,
+          FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
+                     kMultiBitBool4True),
+          FlashCfg(kMultiBitBool4True, kMultiBitBool4True, kMultiBitBool4False),
+          kHardenedBoolFalse));
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(2, 224, 32,
                         FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
                                    kMultiBitBool4True),
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                 kMultiBitBool4True)));
+                                 kMultiBitBool4True),
+                        kHardenedBoolFalse));
 
   rom_error_t error =
       owner_block_flash_apply(&simple_flash_config, kBootSlotA, 0);
@@ -270,21 +273,24 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideAPrimary) {
                         FlashPerms(kMultiBitBool4True, kMultiBitBool4False,
                                    kMultiBitBool4False),
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                 kMultiBitBool4False)));
+                                 kMultiBitBool4False),
+                        kHardenedBoolFalse));
   EXPECT_CALL(
       flash_ctrl_,
-      DataRegionProtect(1, 32, 192,
-                        FlashPerms(kMultiBitBool4True, kMultiBitBool4False,
-                                   kMultiBitBool4False),
-                        FlashCfg(kMultiBitBool4True, kMultiBitBool4True,
-                                 kMultiBitBool4False)));
+      DataRegionProtect(
+          1, 32, 192,
+          FlashPerms(kMultiBitBool4True, kMultiBitBool4False,
+                     kMultiBitBool4False),
+          FlashCfg(kMultiBitBool4True, kMultiBitBool4True, kMultiBitBool4False),
+          kHardenedBoolFalse));
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(2, 224, 32,
                         FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
                                    kMultiBitBool4True),
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                 kMultiBitBool4True)));
+                                 kMultiBitBool4True),
+                        kHardenedBoolFalse));
 
   rom_error_t error =
       owner_block_flash_apply(&simple_flash_config, kBootSlotA, kBootSlotA);
@@ -299,21 +305,24 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
                         FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
                                    kMultiBitBool4True),
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                 kMultiBitBool4False)));
+                                 kMultiBitBool4False),
+                        kHardenedBoolFalse));
   EXPECT_CALL(
       flash_ctrl_,
-      DataRegionProtect(4, 256 + 32, 192,
-                        FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
-                                   kMultiBitBool4True),
-                        FlashCfg(kMultiBitBool4True, kMultiBitBool4True,
-                                 kMultiBitBool4False)));
+      DataRegionProtect(
+          4, 256 + 32, 192,
+          FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
+                     kMultiBitBool4True),
+          FlashCfg(kMultiBitBool4True, kMultiBitBool4True, kMultiBitBool4False),
+          kHardenedBoolFalse));
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(5, 256 + 224, 32,
                         FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
                                    kMultiBitBool4True),
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                 kMultiBitBool4True)));
+                                 kMultiBitBool4True),
+                        kHardenedBoolFalse));
 
   rom_error_t error =
       owner_block_flash_apply(&simple_flash_config, kBootSlotB, 0);
