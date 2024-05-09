@@ -13,15 +13,42 @@ rust_library(
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:log",
     ],
 )
 
 rust_binary(
     name = "transfer_test",
-    srcs = [
-        "transfer_test.rs",
+    srcs = ["transfer_test.rs"],
+    deps = [
+        ":transfer_lib",
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:regex",
     ],
+)
+
+rust_binary(
+    name = "rescue_limit_test",
+    srcs = ["rescue_limit_test.rs"],
+    deps = [
+        ":transfer_lib",
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:regex",
+    ],
+)
+
+rust_binary(
+    name = "rescue_permission_test",
+    srcs = ["rescue_permission_test.rs"],
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",
