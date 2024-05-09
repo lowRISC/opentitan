@@ -18,7 +18,7 @@
               different seed values.
 
             - This test needs to execute as a boot rom image.
-            - In sival, this will be covered by manuf_ft_provision_rma_token_and_personalization.
+            - In silicon, this will be covered by manuf_ft_provision_rma_token_and_personalization.
             '''
       features: ["FLASH_CTRL.INIT.SCRAMBLING_KEYS", "FLASH_CTRL.INIT.ROOT_SEEDS",
                  "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
@@ -149,11 +149,15 @@
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
+
+            In silicon, we cannot transition the chip or check this signal. The
+            accessibility of the partition should still be checked in each of
+            the relevant LC states.
             '''
       features: ["FLASH_CTRL.INFO.CREATOR_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["PROD"]
+      lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states",
               "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
@@ -177,11 +181,15 @@
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
+
+            In silicon, we cannot transition the chip or check this signal. The
+            accessibility of the partition should still be checked in each of
+            the relevant LC states.
             '''
       features: ["FLASH_CTRL.INFO.OWNER_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
@@ -192,11 +200,15 @@
             - Transition from DEV or PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
+
+            In silicon, we cannot transition the chip or check this signal. The
+            accessibility of the partition should still be checked in each of
+            the relevant LC states.
             '''
       features: ["FLASH_CTRL.INFO.ISOLATED_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["PROD", "PROD_END", "RMA"]
+      lc_states: ["DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
@@ -207,11 +219,15 @@
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
+
+            In silicon, we cannot transition the chip or check this signal. The
+            accessibility of the partition should still be checked in each of
+            the relevant LC states.
             '''
       features: ["FLASH_CTRL.INFO.ISOLATED_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
@@ -223,7 +239,7 @@
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the flash ctrl
               does (or does not) read the creator and owner partitions to fetch the seeds for the
               keymgr.
-            - In sival, this will be covered by manuf_ft_provision_rma_token_and_personalization.
+            - In silicon, this will be covered by manuf_ft_provision_rma_token_and_personalization.
             '''
       features: ["FLASH_CTRL.INIT.ROOT_SEEDS"]
       stage: V2
