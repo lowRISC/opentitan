@@ -43,7 +43,7 @@ struct Opts {
     #[arg(
         long,
         value_enum,
-        default_value = "basic",
+        default_value = "with-rescue",
         help = "Style of Owner Config for this test"
     )]
     config_kind: transfer_lib::OwnerConfigKind,
@@ -54,16 +54,13 @@ struct Opts {
     )]
     rescue_after_activate: Option<PathBuf>,
 
-    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
-    dual_owner_boot_check: bool,
-
     #[arg(long, default_value = "Any", help = "Mode of the unlock operation")]
     unlock_mode: UnlockMode,
     #[arg(long, help = "Expected error condition")]
     expected_error: Option<String>,
 }
 
-fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let rescue = RescueSerial::new(Rc::clone(&uart));
 
@@ -94,29 +91,6 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.config_kind,
     )?;
 
-    let mut transfers0 = 0;
-    if opts.dual_owner_boot_check {
-        log::info!("###### Boot in Dual-Owner Mode ######");
-        // At this point, the device should be unlocked and should have accepted the owner
-        // configuration.  Owner code should run and report the ownership state.
-        transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
-        let capture = UartConsole::wait_for(
-            &*uart,
-            r"(?msR)ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
-            opts.timeout,
-        )?;
-        if capture[0].starts_with("BFV") {
-            return RomError(u32::from_str_radix(&capture[3], 16)?).into();
-        }
-        match opts.unlock_mode {
-            UnlockMode::Any => assert_eq!(capture[1], "UANY"),
-            UnlockMode::Endorsed => assert_eq!(capture[1], "UEND"),
-            UnlockMode::Update => assert_eq!(capture[1], "LUPD"),
-            _ => return Err(anyhow!("Unexpected ownership state: {}", capture[1])),
-        }
-        transfers0 = capture[2].parse::<u32>()?;
-    }
-
     log::info!("###### Get Boot Log (2/2) ######");
     let data = transfer_lib::get_boot_log(transport, &rescue)?;
 
@@ -130,26 +104,40 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             .unwrap_or(&opts.next_activate_key),
     )?;
 
-    if let Some(fw) = &opts.rescue_after_activate {
-        let data = std::fs::read(fw)?;
-        rescue.enter(transport, /*reset_target=*/ true)?;
-        rescue.update_firmware(BootSlot::SlotA, &data)?;
-    }
+    log::info!("###### Rescue Payload of Zeros ######");
+    // We send a 448K payload of all zeros.  The rescue config sets the size
+    // limit of the firmware section to 384K, so we expect to get a "Cancel"
+    // from the target.
+    //
+    // We should get the cancellation at XModem-1K block 386 because the rescue
+    // protocol buffers 2K blocks to write to flash.  After writing the first
+    // 384K, block 385 and 386 will be buffered in RAM and the rescue module
+    // will reject the write request and terminate the upload.
+    let data = vec![0u8; 448 * 1024];
+    rescue.enter(transport, /*reset_target=*/ true)?;
+    let result = rescue.update_firmware(BootSlot::SlotA, &data);
+    assert_eq!(result.unwrap_err().to_string(), "Cancelled");
+    log::info!("Got expected 'Cancel' during upload of too-large payload.");
 
     log::info!("###### Boot After Transfer Complete ######");
-    // After the activate command, the device should report the ownership state as `OWND`.
+    log::info!("Expecting to see 0 before offset 0x70000 and 0xffffffff at/after offset 0x70000.");
+    // The firmware in the target will print the first word of each flash page
+    // in the range [0x10000..0x80000).  We'll capture the last word of the
+    // firmware segment and the first word of the filesystem segment and
+    // verify that the firmware segement is programmed (value 0) and the
+    // filesystem segment remains unprogramed (value ffffffff).
     transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
     let capture = UartConsole::wait_for(
         &*uart,
-        r"(?msR)ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+        r"(?msR)flash 0x2006f800 = (\w+)$.*flash 0x20070000 = (\w+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
+
     if capture[0].starts_with("BFV") {
         return RomError(u32::from_str_radix(&capture[3], 16)?).into();
     }
-    assert_eq!(capture[1], "OWND");
-    let transfers1 = capture[2].parse::<u32>()?;
-    assert_eq!(transfers0 + 1, transfers1);
+    assert_eq!(capture[1], "0");
+    assert_eq!(capture[2], "ffffffff");
     Ok(())
 }
 
@@ -158,7 +146,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    let result = transfer_test(&opts, &transport);
+    let result = flash_limit_test(&opts, &transport);
     if let Some(error) = &opts.expected_error {
         match result {
             Ok(_) => Err(anyhow!("Ok when expecting {error:?}")),
