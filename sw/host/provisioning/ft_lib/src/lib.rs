@@ -383,7 +383,7 @@ pub fn run_ft_personalize(
         Ok(())
     } else {
         bail!(
-            "Host ({:x?}) vs Device ({:x?}) certs hash mismatch",
+            "Host ({:x?}) vs Device ({:x?}) certs hash mismatch.",
             host_computed_certs_hash.as_bytes(),
             device_computed_certs_hash.data.as_bytes()
         )
