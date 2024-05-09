@@ -20,9 +20,6 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
     // Enable interrupt for more visibility
     flash_ctrl_intr_enable(6'h3f);
 
-    // Don't select a partition defined as read-only
-    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
-
     bank = $urandom_range(0, 1);
 
     fork
@@ -30,14 +27,16 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
         rd_cache_t entry;
 
         while (idx < 50 && cfg.flash_ctrl_vif.fatal_err == 0) begin
-          `DV_CHECK_RANDOMIZE_FATAL(this)
-          rand_op.addr[OTFBankId] = bank;
-          ctrl = rand_op;
-
+          int num;
+          `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
+          ctrl.addr[OTFBankId] = bank;
+          `uvm_info(`gfn, $sformatf("Randomize addr 0x%x to addr_q", ctrl.addr), UVM_MEDIUM)
+          `DV_CHECK(ctrl.addr[2] == 0)
           if (evict_start) begin
             addr_q.shuffle();
             entry = addr_q[0];
             ctrl.otf_addr = entry.addr;
+            `uvm_info(`gfn, $sformatf("The address to evict is 0x%x", entry.addr), UVM_MEDIUM)
             ctrl.partition = entry.part;
             init_ctrl = ctrl;
             send_evict(ctrl, bank);
@@ -125,11 +124,11 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
       end
     join
     cfg.seq_cfg.disable_flash_init = 1;
-  endtask
+  endtask : body
 
   virtual task send_evict(flash_op_t ctrl, int bank);
     prog_flash(ctrl, bank, 1, fractions);
-  endtask // send_evict
+  endtask : send_evict
 
 
-endclass // flash_ctrl_rw_evict_vseq
+endclass : flash_ctrl_rw_evict_vseq

@@ -35,6 +35,8 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
     DVStInvalid       = 11
                 } reset_index_e;
 
+  constraint ctrl_data_num_c {ctrl_data_num inside {[1:32]};}
+
   virtual task body();
     flash_op_t ctrl;
     int num, bank, iter;
@@ -53,18 +55,7 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
       fork
         begin
           while (iter < 100) begin
-            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rand_op)
-            ctrl = rand_op;
-            if (ctrl.partition == FlashPartData) begin
-              num = $urandom_range(1, 32);
-            end else begin
-              num = $urandom_range(1, InfoTypeSize[rand_op.partition >> 1]);
-              // Max transfer size of info is 512Byte.
-              if (num * fractions > 128) begin
-                num = 128 / fractions;
-              end
-            end
-            bank = rand_op.addr[OTFBankId];
+            `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
             prog_flash(ctrl, bank, num, fractions);
             iter++;
           end // while (iter < 100)
