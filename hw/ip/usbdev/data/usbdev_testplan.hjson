@@ -128,7 +128,7 @@
             - Verify that the device starts transmitting the J/K pattern continuously.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_phy_config_tx_osc_test_mode"]
     }
     {
       name: phy_config_eop_single_bit_handling
