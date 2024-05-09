@@ -20,7 +20,7 @@ interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
   int unsigned tck_period_ps = JtagDefaultTckPeriodPs;
 
   // Use negedge to drive jtag inputs because design also use posedge clock edge to sample.
-  clocking host_cb @(posedge tck);
+  clocking host_cb @(negedge tck);
     default output #1ns;
     output  tms;
     output  tdi;
