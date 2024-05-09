@@ -12,10 +12,8 @@ use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
-use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -43,19 +41,10 @@ struct Opts {
     #[arg(
         long,
         value_enum,
-        default_value = "basic",
+        default_value = "with-rescue-restricted",
         help = "Style of Owner Config for this test"
     )]
     config_kind: transfer_lib::OwnerConfigKind,
-
-    #[arg(
-        long,
-        help = "Load a firmware payload via rescue after activating ownership"
-    )]
-    rescue_after_activate: Option<PathBuf>,
-
-    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
-    dual_owner_boot_check: bool,
 
     #[arg(long, default_value = "Any", help = "Mode of the unlock operation")]
     unlock_mode: UnlockMode,
@@ -63,7 +52,7 @@ struct Opts {
     expected_error: Option<String>,
 }
 
-fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn rescue_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let rescue = RescueSerial::new(Rc::clone(&uart));
 
@@ -94,29 +83,6 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.config_kind,
     )?;
 
-    let mut transfers0 = 0;
-    if opts.dual_owner_boot_check {
-        log::info!("###### Boot in Dual-Owner Mode ######");
-        // At this point, the device should be unlocked and should have accepted the owner
-        // configuration.  Owner code should run and report the ownership state.
-        transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
-        let capture = UartConsole::wait_for(
-            &*uart,
-            r"(?msR)ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
-            opts.timeout,
-        )?;
-        if capture[0].starts_with("BFV") {
-            return RomError(u32::from_str_radix(&capture[3], 16)?).into();
-        }
-        match opts.unlock_mode {
-            UnlockMode::Any => assert_eq!(capture[1], "UANY"),
-            UnlockMode::Endorsed => assert_eq!(capture[1], "UEND"),
-            UnlockMode::Update => assert_eq!(capture[1], "LUPD"),
-            _ => return Err(anyhow!("Unexpected ownership state: {}", capture[1])),
-        }
-        transfers0 = capture[2].parse::<u32>()?;
-    }
-
     log::info!("###### Get Boot Log (2/2) ######");
     let data = transfer_lib::get_boot_log(transport, &rescue)?;
 
@@ -130,26 +96,19 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             .unwrap_or(&opts.next_activate_key),
     )?;
 
-    if let Some(fw) = &opts.rescue_after_activate {
-        let data = std::fs::read(fw)?;
-        rescue.enter(transport, /*reset_target=*/ true)?;
-        rescue.update_firmware(BootSlot::SlotA, &data)?;
-    }
+    log::info!("###### Check Rescue Dis-Allowed Command ######");
+    // We'll check a boot_svc command that has been removed from the
+    // allowlist when we use the `WithRescueRestricted` configuration.
+    rescue.enter(transport, /*reset_target=*/ true)?;
+    let result = rescue.set_next_bl0_slot(
+        /*primary=*/ BootSlot::Unspecified,
+        /*next=*/ BootSlot::SlotA,
+    );
 
-    log::info!("###### Boot After Transfer Complete ######");
-    // After the activate command, the device should report the ownership state as `OWND`.
-    transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
-    let capture = UartConsole::wait_for(
-        &*uart,
-        r"(?msR)ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
-        opts.timeout,
-    )?;
-    if capture[0].starts_with("BFV") {
-        return RomError(u32::from_str_radix(&capture[3], 16)?).into();
-    }
-    assert_eq!(capture[1], "OWND");
-    let transfers1 = capture[2].parse::<u32>()?;
-    assert_eq!(transfers0 + 1, transfers1);
+    let result = result.unwrap_err().to_string();
+    log::info!("Expecting 'Cancelled' in response to a dis-allowed command");
+    log::info!("set_next_bl0_slot(primary=Unspecified, next=SlotA) -> {result}");
+    assert_eq!(result, "Cancelled");
     Ok(())
 }
 
@@ -158,7 +117,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    let result = transfer_test(&opts, &transport);
+    let result = rescue_permission_test(&opts, &transport);
     if let Some(error) = &opts.expected_error {
         match result {
             Ok(_) => Err(anyhow!("Ok when expecting {error:?}")),
