@@ -5,22 +5,12 @@
 // Description:
 // Clock manager coverage bindings for multi bus input
 module clkmgr_cov_bind;
-  bind clkmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_idle_0_mubi_cov_if (
+% for i in range(len(hint_names)):
+  bind clkmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_idle_${i}_mubi_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (idle_i[0])
+    .mubi   (idle_i[${i}])
   );
-  bind clkmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_idle_1_mubi_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (idle_i[1])
-  );
-  bind clkmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_idle_2_mubi_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (idle_i[2])
-  );
-  bind clkmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_idle_3_mubi_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (idle_i[3])
-  );
+% endfor
 
   bind clkmgr cip_lc_tx_cov_if u_lc_hw_debug_en_mubi_cov_if (
     .rst_ni (rst_ni),
