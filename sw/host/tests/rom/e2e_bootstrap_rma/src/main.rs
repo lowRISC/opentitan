@@ -209,9 +209,12 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     assert_eq!(jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionRegwen)?, 0);
 
-    let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
-    let status = LcCtrlStatus::from_bits(status).context("invalid status bits")?;
-    assert_eq!(status, LcCtrlStatus::INITIALIZED);
+    lc_transition::wait_for_status(
+        &mut *jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED,
+    )
+    .context("failed to wait for LC to report INITIALIZED status")?;
 
     // Poll until status register reports a successful transition.
     lc_transition::wait_for_status(
