@@ -490,7 +490,7 @@
             - Verify that the interrupt pin goes high indicating bitstuff error.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_bitstuff_err"]
     }
     {
       name: link_out_err

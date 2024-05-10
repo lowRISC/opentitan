@@ -55,6 +55,10 @@
       uvm_test_seq: usbdev_av_buffer_vseq
     }
     {
+      name: usbdev_bitstuff_err
+      uvm_test_seq: usbdev_bitstuff_err_vseq
+    }
+    {
       name: usbdev_dpi_config_host
       uvm_test_seq: usbdev_dpi_config_host_vseq
       // Limited use of randomization presently
