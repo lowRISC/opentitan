@@ -280,10 +280,6 @@ static rom_error_t rom_ext_attestation_keygen(
     const manifest_t *owner_manifest) {
   hardened_bool_t curr_cert_valid = kHardenedBoolFalse;
 
-  // Load OTBN attestation keygen program.
-  // TODO(#21550): this should already be loaded by the ROM.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
-
   // Configure certificate flash info pages.
   flash_ctrl_cert_info_pages_creator_cfg();
 
@@ -765,6 +761,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log->rom_ext_nonce = boot_data->nonce;
   boot_log->ownership_state = boot_data->ownership_state;
   boot_log->ownership_transfers = boot_data->ownership_transfers;
+
+  // Load OTBN attestation keygen program.
+  // TODO(#21550): this should already be loaded by the ROM.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
 
   // Initialize the chip ownership state.
   HARDENED_RETURN_IF_ERROR(ownership_init());
