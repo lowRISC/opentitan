@@ -406,7 +406,7 @@
       name: av_empty
       desc: '''
             Verify the functionality of 'av_out_empty' and 'av_setup_empty' interrupts when the
-	    Av OUT/SETUP Buffer FIFO is empty.
+      	    Av OUT/SETUP Buffer FIFO is empty.
 
             - Choose at random whether to test the AV OUT Buffer FIFO or the AV SETUP Buffer FIFO.
             - Enable the interrupt for AV OUT/SETUP empty by setting INTR_ENABLE[7/17] and then send back to back
@@ -569,30 +569,6 @@
             '''
       stage: V2
       tests: ["usbdev_setup_stage"]
-    }
-    {
-      name: in_data_stage
-      desc: '''
-            Verify the IN Transfer with Device Descriptor Data.
-
-            - Issue an IN token to request control data from the device.
-            - Verify that the device should respond with a DATA packet containing the information
-              required by host or a NAK packet if there is no data available.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: out_data_stage
-      desc: '''
-            Verify the OUT Transfer with DEVICE Settings.
-
-            - Send an OUT token followed by a data packet containing control data to the device.
-            - Verify that the device should acknowledge the successful receipt of data by sending
-              an ACK packet or return a NAK if it is still processing previous data.
-            '''
-      stage: V2
-      tests: []
     }
     {
       name: endpoint_access
