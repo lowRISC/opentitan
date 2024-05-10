@@ -388,7 +388,7 @@
             - Verify that the interrupt pin goes high once the link suspended.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_link_suspend"]
     }
     {
       name: link_resume
