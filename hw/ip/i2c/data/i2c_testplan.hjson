@@ -398,11 +398,11 @@
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Send enough read and write requests to acq_fifo
-              - Slow down acq FIFO read process to trigger acq_full interrupt
+              - Slow down acq FIFO read process to trigger 'acq_stretch' interrupt
 
             Checking:
               - Check FIFO full states by reading status register
-              - Whether acq_full interrupt raised
+              - Whether 'acq_stretch' interrupt raised
             '''
       stage: V2
       tests: ["i2c_target_stress_wr", "i2c_target_stress_rd", "i2c_target_intr_stress_wr"]
@@ -410,7 +410,7 @@
     {
       name: target_timeout
       desc: '''
-            Test host_timeout interrupts.
+            Test the 'host_timeout' interrupt.
 
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
@@ -418,7 +418,7 @@
               - Agent stops sending clock during an ongoing transaction
 
             Checking:
-              - Ensure host_timeout is asserted and a correct number is received
+              - Ensure the 'host_timeout' irq is asserted and a correct number is received
 
             '''
       stage: V2
@@ -576,20 +576,28 @@
             such as:
               - NACK when ACQFIFO is full.
               - NACK when TARGET_TIMEOUT_CTRL threshold has elapsed.
-              - ACQDATA.NACK/ACQDATA.NACKSTART is correctly recorded in the ACQFIFO.
+                - The timeout is measured against the cumulative stretching time within a single
+                  transaction. This accumulation resets at the end of the current transaction.
+                - All further bytes are NACK'd unconditionally, awaiting the end of the transaction.
+              - ACQDATA.{NACK,NACKSTART,NACKSTOP} is correctly recorded in the ACQFIFO.
               - TARGET_NACK_COUNT recording the number of NACK'd bytes.
+              - NACK on address-byte from stretch-timeout (CTRL.NACK_ADDR_AFTER_TIMEOUT)
 
             Stimulus
               - Configure DUT/Agent to Target/Host mode respectively.
-              - Do not proactively fill the TXFIFO, to elicit clock stretching
-              - Stimulate transactions that will fill the ACQFIFO
+              - Elicit clock stretching by
+                - Allowing the ACQFIFO to become full
+                - (reads) starving the TXFIFO for data
               - Only read the ACQFIFO when it is full, possibly adding extra delays so
                 that new transactions while full will be automatically NACK'd
 
             Checking:
-              - Check all bytes (except address bytes) are NACK'd when the ACQFIFO is full.
+              - Check *all* bytes are NACK'd when the ACQFIFO is full.
+                - Address bytes are an exception, as they may/may not be be NACK'd depending
+                  on the configuration of CTRL.NACK_ADDR_AFTER_TIMEOUT.
               - Check that NACKs are generated when the clock is stretched past the threshold
-                configured in TARGET_TIMEOUT_CONTROL.
+                configured in TARGET_TIMEOUT_CTRL.
+                - Check that ACQDATA.NACK_STOP is set in this case.
               - Check that ACQDATA.{NACK,NACKSTART} are set correctly when automatic NACKs have
                 space to add a new entry to the ACQFIFO.
               - Check that ACQDATA.ABYTE contains the NACKd byte when automatic NACKs have space
@@ -604,33 +612,328 @@
       name: host_mode_halt_on_nak
       desc: '''
             Test that the Halt-on-NACK feature operates correctly. This functionality is in-effect
-            when a Target NACKs a byte, and the Byte-Formatted FSM halts awaiting software to
-            intervene.
+            when a Target NACKs a byte during a DUT-Controller Write Transfer, and the Byte-Formatted
+            FSM halts awaiting software to intervene.
               - The active transaction should be halted whenever a NACK is observed (except if the
                 FMTFIFO entry had the NAKOK bit set).
-              - Sofware acknowledging the 'nak' interrupt allows the FSM to continue.
+              - Upon halting in response to observing a NACK, the CONTROLLER_EVENTS.NACK bit is set,
+                and the 'controller_halt' interrupt is asserted.
+              - Sofware clearing (W1C) the CONTROLLER_EVENTS CSR also deasserts the 'controller_halt'
+                interrupt, and allows the FSM to continue the transfer.
               - Upon continuation, the next entry from the FMTFIFO is popped.
-              - If the HOST_NACK_HANDLER_TIMEOUT is enabled and expires, hardware will automatically
-                end the transaction, sending a Stop condition and transitioning to Idle/Disabled.
-              - If the transaction ends due to this timeout, the STATUS.HOST_DISABLED_NACK_TIMEOUT
-                bit is set. This bit is cleared upon starting a new transaction.
+              - If the HOST_NACK_HANDLER_TIMEOUT is enabled and expires while awaiting 'controller_halt' to
+                be handled by software, hardware will automatically end the transaction, sending a Stop
+                condition and transitioning the bus to Idle.
+                - If the transaction ends due to this timeout, the CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT
+                  bit is set to alert software.
 
             Stimulus
               - Configure DUT/Agent to Host/Target mode respectively.
               - Stimulate transactions, and randomly allow the Target to NACK.
-              - Randomize the HOST_NACK_HANDLER_TIMEOUT / 'nak' handler latency, to allow the timeout
-                behaviour to trigger.
+              - Randomize the HOST_NACK_HANDLER_TIMEOUT / 'controller_halt' handler latency, to allow
+                the timeout behaviour to trigger.
               - Software should randomly disable the HOST_NACK_HANDLER_TIMEOUT mid-stretch, to disable
                 the automatic stop generation.
 
             Checking:
-              - Data validity continues to match expectation when software uses the 'nak' interrupt
-                to change up the dataflow.
-              - During halt, the bus should be idle (both signals released)
-              - If the 'nak' interrupt is unhandled, after the HOST_NACK_HANDLER_TIMEOUT delay the DUT
-                should be observed to have returned to disabled, and a Stop condition should have been
-                generated to end the active transaction.
-              - Check that the STATUS.HOST_DISABLED_NACK_TIMEOUT bit is set when the timeout is reached.
+              - Data validity continues to match expectation when software uses the 'controller_halt'
+                interrupt to change up the dataflow.
+              - During halt, the bus should have SCL asserted, SDA released.
+              - If the 'controller_halt' interrupt is unhandled, after the HOST_NACK_HANDLER_TIMEOUT delay
+                the Controller FSM should be observed returning to Idle, and a Stop condition should have
+                been generated to end the active transaction.
+              - Check that the CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT bit is set when the timeout is
+                reached.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: target_mode_n_byte_ack_control
+      desc: '''
+            Test the (Target-Mode) N-Byte ACK control mode
+            When this mode is enabled, we should expect:
+            - So long as there is space in the ACQ_FIFO, write data bytes will be ACK'd if the
+              auto-decremeting ACK Counter (TARGET_ACK_CTRL.NBYTES) contains a positive value.
+            - If the Auto ACK Counter is zero, the clock is stretched up to the timeout configured in
+              TARGET_TIMEOUT_CTRL, if the timeout is enabled. If the timeout is reached (or is configured
+              to zero), the pending write byte is NACK'd immediately.
+            - While stretching, writes that set TARGET_ACK_CTRL.NACK cause the pending write byte to
+              be NACK'd immediately.
+            - While stretching, the pending write byte is visible in ACQ_FIFO_NEXT_DATA.
+            - While stretching, writing a positive integer to the Auto ACK Counter causes the transfer
+              to continue, ACK'ing the pending data byte.
+
+            Stimulus
+            - Configure DUT/Agent to Target/Controller mode respectively, enable ACK control mode by
+              setting CTRL.ACK_CTRL_EN to 1.
+            - Generate write transfers, and allow the ACK Counter to reach 0 / timeout on stretch.
+            - While stretching, sometimes write to the TARGET_ACK_CTRL.NACK bit to NACK immediately.
+            - While stretching, sometimes write a new value to the ACK Counter to continue ACK'ing
+              automatically.
+
+            Checks
+            - Check the ACK Counter resets to 0 at the start of each transfer.
+            - Check that NACKs are generated when controlled to do so, or stretch-timeouts expire.
+            - When stretching, read back ACQ_FIFO_NEXT_DATA to check it matches the previously-written
+              data byte.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: target_mode_bus_timeout
+      desc: '''
+            Test the bus_timeout feature (TIMEOUT_CTRL.MODE.BUS_TIMEOUT) for target mode
+
+            Stimulus
+            - Configure DUT/Agent as Target/Controller respectively.
+            - Configure TIMEOUT_CTRL with TIMEOUT_CTRL.MODE == BUS_TIMEOUT and a reasonable value.
+            - Start a read transaction using the agent that addresses the DUT, but halt midway-through
+              and hold SCL low.
+
+            Checking
+            - The TARGET_EVENTS.BUS_TIMEOUT field should be set upon timeout.
+            - The 'cmd_complete' interrupt is asserted.
+            - The target ends the transaction, and {AcqStop,AcqNackStop} is added to the ACQFIFO.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: controller_mode_bus_timeout
+      desc: '''
+            Test the bus_timeout feature (TIMEOUT_CTRL.MODE.BUS_TIMEOUT) for controller mode
+
+            Stimulus
+            - Configure DUT/Agent as Controller/Target respectively.
+            - Configure TIMEOUT_CTRL with TIMEOUT_CTRL.MODE == BUS_TIMEOUT.
+            - Start a transaction, but midway-through the Agent should stop and hold SCL low.
+            - Await the bus timeout to occur.
+            - Software adds new entries to the FMTFIFO/RXFIFO, then clears 'CONTROLLER_EVENTS'
+              to begin a new transaction.
+
+            Checking
+            - Upon the timeout, the controller is halted, and 'controller_halt' is asserted.
+            - The CONTROLLER_EVENTS.BUS_TIMEOUT field should be set upon timeout.
+            - Software can begin a new transaction from the halted state after clearing the
+              'CONTROLLER_EVENTS' CSR.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: controller_mode_bus_idle_delay
+      desc: '''
+            The MULTI_CONTROLLER_MONITOR_EN feature allows the DUT-controller to join an
+            active bus environment without stomping over other controllers and active
+            transactions.
+            One part of this is to ensure bus idle periods between transactions are respected.
+
+            Stimulus
+            - Configure DUT/Agent as Controller/Agent respectively.
+            - Populate FMTFIFO/RXFIFO for a Controller-Mode transaction.
+            - Configure HOST_TIMEOUT_CTRL with the number of idle cycles.
+            - Enable CTRL.MULTI_CONTROLLER_MONITOR_EN before enabling CTRL.ENABLEHOST
+
+            Checking
+            - Check that the DUT-Controller does not begin transmitting until at least
+              the number of idle cycles in HOST_TIMEOUT_CTRL has elapsed.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: loopback_test
+      desc: '''
+            I2C Controller and Target modes are capable of operating simultaneously, as a valid
+            multi-controller application has an endpoint attempting to start a transaction, losing
+            arbitration to another controller, then accepting the transaction as addressed to the
+            Target-Mode function within the same device.
+            A loopback test exercises a similar function.
+
+            Stimulus
+            - Disable any I2C agents.
+            - Set both CTRL.ENABLEHOST and CTRL.ENABLETARGET
+            - Drive a transaction that is addressed to one of the Target-configured addresses.
+
+            Checking
+            - That data integrity is maintained, and the transaction completes normally from the
+              perspective of both operating modes.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: multi_controller_clock_synchronization
+      desc: '''
+            The DUT-controller should observe the I2C clock synchronization procedure when transacting on
+            the bus. This allows the arbitration process to function as specified.
+
+            Testbench
+            - Common I2C bus, with the following connected devices:
+              - DUT
+              - x1 Agent-Controller
+              - x1 Agent-Target
+
+            Stimulus
+            - Configure both controllers to use different timing parameters
+            - Configure both controllers to begin a transaction, where:
+              - A significant portion of the data is identical near the start of the transaction.
+              - The latter data is random, so either may win arbitration.
+
+            Checking
+            - Confirm the final synchronized bus SCL is comprised of:
+              - tlow of the controller with the longer value
+              - thigh of the controller with the shorter value
+            - Check, based on the first difference in transaction data, that arbitration is resolved as expected.
+            - The data integrity of the winning controller's transaction is maintained at the target.
+            - The arbitration-lost DUT behaviour is consistent with other testcases
+              (e.g. "multi_controller_arbitration_lost")
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: multi_controller_arbitration_lost_interference
+      desc: '''
+            The DUT-controller should detect other controllers driving the bus simultaneously by observing
+            SDA, and correctly back-off after determining it has lost arbitration for this transaction.
+            After software has addressed the HALT-state due to lost arbitration, and the DUT has awaited the
+            bus to become free again, the DUT-controller should then be able to attempt to send a new transaction.
+
+            This test manually yanks on SDA to induce the DUT into determining it has lost arbitration (There is
+            no multi-controller-aware bus agent in use). Without another controller on the bus to create a valid
+            stop-condition, the DUT can only determine the bus has become free again after the bus_inactive
+            timeout has elapsed.
+
+            Testbench
+            - Common I2C bus, with the following connected devices:
+              - DUT
+              - x1 Agent-Target
+
+            Stimulus
+            - Configure DUT/Agent as Controller/Agent respectively.
+            - Configure HOST_TIMEOUT_CTRL to a sensible value for a bus-idle delay timeout.
+            - Begin to drive a normal DUT-Controller transaction.
+            - The testbench pulls SDA low during the transaction (while the DUT has released it).
+            - Software/TB awaits the DUT to indicate arbitration has been lost.
+            - The Controller-Mode FIFOs are cleared, followed by re-loading with a new transaction.
+            - The 'CONTROLLER_EVENTS' csr is cleared to allow the next transaction to begin.
+
+            Checking
+            - After determining it has lost arbitration, the DUT-Controller should have released the bus.
+            - The 'sda_interference' event-type interrupt should assert.
+            - The 'controller_halt' interrupt is asserted, and CONTROLLER_EVENTS.LOST_ARBITRATION is set.
+            - The bus becomes free after the HOST_TIMEOUT_CTRL timeout has elapsed once arbitration is lost.
+            - After clearing the CONTROLLER_EVENTS csr, a new transaction can complete normally once the
+              bus becomes free.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: multi_controller_arbitration_lost
+      desc: '''
+            The DUT-controller should detect other controllers driving the bus simultaneously by observing
+            SDA, and correctly back-off after determining it has lost arbitration for this transaction.
+            After software has addressed the HALT-state due to lost arbitration, and awaiting the bus to
+            become free again, the DUT-controller should then be able to attempt to send a new transaction.
+
+            This testpoint uses another multi-controller-aware agent on the bus, and configures/stimulates
+            it to begin a transaction that will win arbitration over the DUT-Controller.
+
+            Testbench
+            - Common I2C bus, with the following connected devices:
+              - DUT
+              - x1 Agent-Controller
+              - x1 Agent-Target
+
+            Stimulus
+            - TODO
+
+            Checking
+            -
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: target_mode_arbitration_lost_interference
+      desc: '''
+            The DUT-Target should lose-arbitration under the condition of simultaneously acting as a
+            Target-Transmitter with another Target, and observing the conflicting value of SDA. This
+            is possible during read transactions when two connected bus Targets have the same address.
+            When this occurs, the DUT behaves as though it has determined it should NACK, then going
+            on to NACK (release bus) for the remainder of the transaction, effectively awaiting the
+            transaction to end.
+
+            This testpoint uses the TB to manually induce an arbitration loss by pulling SDA low during
+            the transmit-phase of a read transaction. Once the DUT-target has determined it has lost
+            arbitration, it should go on to NACK, causing the transaction to end. Once the Agent-Controller
+            sends the stop condition, the DUT-Target will return to idle, awaiting the next transaction.
+
+            Testbench
+            - Common I2C bus, with the following connected devices:
+              - DUT
+              - x1 Agent-Controller
+
+            Stimulus
+            - Enable Target-Mode in the DUT, and pre-populate the TXFIFO with read data.
+            - Drive a read transaction addressed to the DUT-Target using the Agent-Controller
+            - During the transaction, yank SDA low to cause the DUT-Target to lose arbitration.
+            - Await the end of the transaction.
+            - Clear the FIFO state, then stimulate a new transaction to test recovery.
+
+            Checking
+            - ACQFIFO entries for bytes before arbitration is lost are inline with normal expectations.
+            - Once the DUT-Target loses arbitration, the 'cmd_complete' interrupt is asserted, and
+              TARGET_EVENTS.ARBITRATION_LOST is set.
+            - The DUT-Target does not attempt to drive the bus until the end of the transaction.
+            - Once the transaction has concluded with a STOP condition, the final ACQFIFO.SIGNAL entry
+              is NACK_STOP.
+            - After clearing any fifo state and TARGET_EVENTS, the DUT-Target resumes normal operation
+              for both reads and writes.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: target_mode_arbitration_lost
+      desc: '''
+            The DUT-Target should lose-arbitration under the condition of simultaneously acting as a
+            Target-Transmitter with another Target, and observing the conflicting value of SDA. This
+            is possible during read transactions when two connected bus Targets have the same address.
+            When this occurs, the DUT behaves as though it has determined it should NACK, then going
+            on to NACK (release bus) for the remainder of the transaction, effectively awaiting the
+            transaction to end.
+
+            Testbench
+            - Common I2C bus, with the following connected devices:
+              - DUT
+              - x1 Agent-Controller
+              - x1 Agent-Target
+
+            Stimulus
+            - Configure the DUT and the Agent-Target to contain identical addresses.
+            - Configure each Target with different response data.
+              - Select randomized response data, where the start of the data component is identical
+                between both Targets, and the end of the datastream diverges.
+            - Use the Agent-Controller to drive a read transaction with the common address.
+            - After the identical-addressed transaction has concluded, disable the Agent-Target, and
+              stimulate a new transaction to test recovery.
+
+            Checking
+            - ACQFIFO entries for bytes before arbitration is lost are inline with normal expectations.
+            - Once the DUT-Target loses arbitration, the 'cmd_complete' interrupt is asserted, and
+              TARGET_EVENTS.ARBITRATION_LOST is set.
+            - The DUT-Target does not attempt to drive the bus until the end of the transaction.
+            - Once the transaction has concluded with a STOP condition, the final ACQFIFO.SIGNAL entry
+              is NACK_STOP.
+            - After clearing any fifo state and TARGET_EVENTS, the DUT-Target resumes normal operation
+              for both reads and writes.
+            - Check data integrity of the read transaction based on a pre-formed expectation of which
+              target should win arbitration.
             '''
       stage: V2
       tests: []
@@ -750,7 +1053,7 @@
             Cover NACK behaviours
             * NACK/NACKSTART bits
             * Cross against ACQFIFO level
-            * Cross against TARGET_TIMEOUT_CONTROL.EN
+            * Cross against TARGET_TIMEOUT_CTRL.EN
             '''
     }
     {
@@ -794,7 +1097,7 @@
     {
       name: i2c_nack_timeout_cg
       desc: '''
-            Cover range of possible timeout val in TARGET_TIMEOUT_CONTROL
+            Cover range of possible timeout val in TARGET_TIMEOUT_CTRL
             '''
     }
     {
