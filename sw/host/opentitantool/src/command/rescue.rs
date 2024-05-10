@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
 use serde_annotate::Annotate;
@@ -14,7 +14,10 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
+use opentitanlib::image::image::Image;
+use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::util::file::FromReader;
 
 #[derive(Debug, serde::Serialize, Annotate)]
 pub struct RawBytes(
@@ -27,6 +30,8 @@ pub struct RawBytes(
 pub struct Firmware {
     #[command(flatten)]
     params: UartParams,
+    #[arg(long, default_value_t = false, help = "Upload the file contents as-is")]
+    raw: bool,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 }
@@ -37,11 +42,22 @@ impl CommandDispatch for Firmware {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let payload = std::fs::read(&self.filename)?;
+        let image = Image::read_from_file(&self.filename)?;
+        let payload = if self.raw {
+            image.bytes()
+        } else {
+            let subimages = image.subimages()?;
+            let subimage = subimages
+                .iter()
+                .find(|s| s.kind == ManifestKind::Application)
+                .ok_or_else(|| anyhow!("No application image in {:?}", self.filename))?;
+            log::info!("Found application image at offset {:#x}", subimage.offset);
+            subimage.data
+        };
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport)?;
-        rescue.update_firmware(payload.as_slice())?;
+        rescue.update_firmware(payload)?;
         Ok(None)
     }
 }
