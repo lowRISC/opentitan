@@ -965,18 +965,12 @@ opentitan_test(
 opentitan_test(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
-    ),
-    silicon = silicon_params(
-        tags = ["broken"],
     ),
     deps = [
         "//sw/device/lib/base:macros",
@@ -998,7 +992,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -1115,20 +1108,12 @@ opentitan_test(
     name = "edn_kat",
     srcs = ["edn_kat.c"],
     # Remove this line when fixed.
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
-    ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
     ),
     deps = [
         "//hw/ip/edn/data:edn_regs",
