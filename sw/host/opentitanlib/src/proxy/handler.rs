@@ -12,16 +12,18 @@ use std::time::Duration;
 
 use super::errors::SerializedError;
 use super::protocol::{
-    BitbangEntryRequest, BitbangEntryResponse, EmuRequest, EmuResponse, GpioBitRequest,
-    GpioBitResponse, GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse, I2cRequest,
-    I2cResponse, I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse,
-    Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
-    UartRequest, UartResponse,
+    BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, EmuRequest, EmuResponse,
+    GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest,
+    GpioMonResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse, I2cTransferRequest,
+    I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request, Response, SpiRequest,
+    SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
 };
 use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
-use crate::io::gpio::{BitbangEntry, GpioBitbangOperation, GpioPin};
+use crate::io::gpio::{
+    BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
+};
 use crate::io::{i2c, nonblocking_help, spi};
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
@@ -33,6 +35,7 @@ pub struct TransportCommandHandler<'a> {
     nonblocking_help: Rc<dyn nonblocking_help::NonblockingHelp>,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
+    ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
 }
 
 impl<'a> TransportCommandHandler<'a> {
@@ -43,6 +46,7 @@ impl<'a> TransportCommandHandler<'a> {
             nonblocking_help,
             spi_chip_select: HashMap::new(),
             ongoing_bitbanging: None,
+            ongoing_dacbanging: None,
         })
     }
 
@@ -196,6 +200,49 @@ impl<'a> TransportCommandHandler<'a> {
                         Ok(Response::GpioBitbanging(GpioBitResponse::QueryDone {
                             entries: resps,
                         }))
+                    }
+                }
+            }
+            Request::GpioDacBanging { command } => {
+                let instance = self.transport.gpio_bitbanging()?;
+                match command {
+                    GpioDacRequest::Start {
+                        pins,
+                        clock_ns,
+                        entries: reqs,
+                    } => {
+                        let pins = self.transport.gpio_pins(pins)?;
+                        let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
+                        let clock = Duration::from_nanos(*clock_ns);
+
+                        let entries: Vec<DacBangEntry> = reqs
+                            .iter()
+                            .map(|pair| match pair {
+                                DacBangEntryRequest::Write { data } => {
+                                    DacBangEntry::WriteOwned(data.clone().into())
+                                }
+                                DacBangEntryRequest::Delay { clock_ticks } => {
+                                    DacBangEntry::Delay(*clock_ticks)
+                                }
+                                DacBangEntryRequest::Linear { clock_ticks } => {
+                                    DacBangEntry::Linear(*clock_ticks)
+                                }
+                            })
+                            .collect();
+                        self.ongoing_dacbanging =
+                            Some(instance.dac_start(&pins, clock, entries.into())?);
+                        Ok(Response::GpioDacBanging(GpioDacResponse::Start))
+                    }
+                    GpioDacRequest::Query => {
+                        if let Some(ref mut dacbanging) = self.ongoing_dacbanging {
+                            if dacbanging.query()? {
+                                Ok(Response::GpioDacBanging(GpioDacResponse::QueryDone))
+                            } else {
+                                Ok(Response::GpioDacBanging(GpioDacResponse::QueryNotDone))
+                            }
+                        } else {
+                            Err(TransportError::InvalidOperation.into())
+                        }
                     }
                 }
             }

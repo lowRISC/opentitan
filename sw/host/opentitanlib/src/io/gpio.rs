@@ -44,6 +44,10 @@ pub enum GpioError {
     InvalidBitbangData(usize),
     #[error("Bitbang delay of zero, immediately preceding `await()`, or at end of sequence, not permitted")]
     InvalidBitbangDelay,
+    #[error("Dac-bang samples not a multiple of number of pins")]
+    InvalidDacBangData,
+    #[error("Dac-bang delay of zero or immediately adjacent to linear(), or at end of sequence, not permitted")]
+    InvalidDacBangDelay,
     #[error("Generic error: {0}")]
     Generic(String),
 }
@@ -246,6 +250,31 @@ pub enum BitbangEntry<'rd, 'wr> {
     Await { mask: u8, pattern: u8 },
 }
 
+pub enum DacBangEntry<'wr> {
+    /// Represents a sequence of volt values.  If `N` pin is being driven, then samples are
+    /// interleaved such that at first, the first `N` values are applied, one to each of the pins,
+    /// at next tick the next `N` values are applied, and so on, with a particular delay between
+    /// each tick given by the `clock_tick` argument to `run()`.
+    Write(&'wr [f32]),
+    /// Same as `Write`, but this `DacBangEntry` owns the data.
+    WriteOwned(Box<[f32]>),
+    /// Represents a delay of the given number of clock ticks in which the output levels are held
+    /// as indicated by the last values of the preceding `Write` entry.
+    ///
+    /// A delay of zero is invalid.  A delay of one tick is equivalent to not specifying any
+    /// `Delay` between two `Write` blocks, which is also equivalent to concatenating the two into
+    /// a single `Write` block.
+    Delay(u32),
+    /// Represents a time span of the given number of clock ticks during which the voltage
+    /// linearly transitions from the previous to the subsequent value.
+    ///
+    /// A value of zero is invalid.  A value of one tick is equivalent to not specifying any delay
+    /// between two `Write` blocks.  A value of two will result in a single intermediate sample
+    /// halfway between the two voltages.  In general, a value of N will result in N-1
+    /// intermediate samples being inserted at this point.
+    Linear(u32),
+}
+
 /// A trait implemented by transports which support synchronous bit-banging on GPIO pins, similar
 /// to FTDI devices.  This trait allows generation of arbitrary waveforms on a set of pins, and
 /// optionally getting back samples from same or other pins, taken at precise times.
@@ -275,6 +304,28 @@ pub trait GpioBitbanging {
         while !bitbang_op.query()? {}
         bitbang_op.get_result()
     }
+
+    /// Apply given sequence of voltage values to the given set of pins assumed to already be in
+    /// AnalogOutput mode.
+    fn dac_start(
+        &self,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: Box<[DacBangEntry]>,
+    ) -> Result<Box<dyn GpioDacBangOperation>>;
+
+    /// Convenience method which starts the DAC-banging operation, and blocks until it is
+    /// complete.
+    fn dac_run(
+        &self,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: Box<[DacBangEntry]>,
+    ) -> Result<()> {
+        let mut dacbang_op = self.dac_start(pins, clock_tick, waveform)?;
+        while !dacbang_op.query()? {}
+        Ok(())
+    }
 }
 
 /// Object representing an ongoing operation of generating a prescribed waveform on a number of
@@ -288,4 +339,9 @@ pub trait GpioBitbangOperation<'rd, 'wr> {
     /// `BitbangEntry` originally given, this is particularly useful if there are `WriteOwned` or
     /// `BothOwned` among the entries of the array.
     fn get_result(self: Box<Self>) -> Result<Box<[BitbangEntry<'rd, 'wr>]>>;
+}
+
+pub trait GpioDacBangOperation {
+    /// Returns `true` when done, `false` means to call it again.
+    fn query(&mut self) -> Result<bool>;
 }

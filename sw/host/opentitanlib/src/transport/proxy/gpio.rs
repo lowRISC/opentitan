@@ -8,12 +8,14 @@ use std::time::Duration;
 
 use super::ProxyError;
 use crate::io::gpio::{
-    BitbangEntry, ClockNature, GpioBitbangOperation, GpioBitbanging, GpioError, GpioMonitoring,
-    GpioPin, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
+    BitbangEntry, ClockNature, DacBangEntry, GpioBitbangOperation, GpioBitbanging,
+    GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringReadResponse,
+    MonitoringStartResponse, PinMode, PullMode,
 };
 use crate::proxy::protocol::{
-    BitbangEntryRequest, BitbangEntryResponse, GpioBitRequest, GpioBitResponse, GpioMonRequest,
-    GpioMonResponse, GpioRequest, GpioResponse, Request, Response,
+    BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, GpioBitRequest,
+    GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest, GpioMonResponse, GpioRequest,
+    GpioResponse, Request, Response,
 };
 use crate::transport::proxy::{Inner, Proxy};
 
@@ -179,6 +181,17 @@ impl GpioBitbangingImpl {
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
+
+    // Convenience method for issuing GPIO dac-banging commands via proxy protocol.
+    fn execute_dac_command(&self, command: GpioDacRequest) -> Result<GpioDacResponse> {
+        match self
+            .inner
+            .execute_command(Request::GpioDacBanging { command })?
+        {
+            Response::GpioDacBanging(resp) => Ok(resp),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
 }
 
 impl GpioBitbanging for GpioBitbangingImpl {
@@ -235,6 +248,46 @@ impl GpioBitbanging for GpioBitbangingImpl {
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
+
+    fn dac_start(
+        &self,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: Box<[DacBangEntry]>,
+    ) -> Result<Box<dyn GpioDacBangOperation>> {
+        let pins = pins
+            .iter()
+            .map(|p| p.get_internal_pin_name().unwrap().to_string())
+            .collect::<Vec<String>>();
+
+        let mut req: Vec<DacBangEntryRequest> = Vec::new();
+        for entry in waveform.iter() {
+            match entry {
+                DacBangEntry::Write(wbuf) => req.push(DacBangEntryRequest::Write {
+                    data: wbuf.to_vec(),
+                }),
+                DacBangEntry::WriteOwned(wbuf) => req.push(DacBangEntryRequest::Write {
+                    data: wbuf.to_vec(),
+                }),
+                DacBangEntry::Delay(ticks) => req.push(DacBangEntryRequest::Delay {
+                    clock_ticks: *ticks,
+                }),
+                DacBangEntry::Linear(ticks) => req.push(DacBangEntryRequest::Linear {
+                    clock_ticks: *ticks,
+                }),
+            }
+        }
+        match self.execute_dac_command(GpioDacRequest::Start {
+            pins,
+            clock_ns: clock_tick.as_nanos() as u64,
+            entries: req,
+        })? {
+            GpioDacResponse::Start => Ok(Box::new(GpioDacBangOperationImpl {
+                inner: Rc::clone(&self.inner),
+            })),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
 }
 
 pub struct GpioBitbangOperationImpl<'a> {
@@ -283,5 +336,32 @@ impl<'a> GpioBitbangOperation<'a, 'a> for GpioBitbangOperationImpl<'a> {
 
     fn get_result(self: Box<Self>) -> Result<Box<[BitbangEntry<'a, 'a>]>> {
         Ok(self.waveform)
+    }
+}
+
+pub struct GpioDacBangOperationImpl {
+    inner: Rc<Inner>,
+}
+
+impl GpioDacBangOperationImpl {
+    // Convenience method for issuing GPIO dacbanging commands via proxy protocol.
+    fn execute_command(&self, command: GpioDacRequest) -> Result<GpioDacResponse> {
+        match self
+            .inner
+            .execute_command(Request::GpioDacBanging { command })?
+        {
+            Response::GpioDacBanging(resp) => Ok(resp),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
+impl GpioDacBangOperation for GpioDacBangOperationImpl {
+    fn query(&mut self) -> Result<bool> {
+        match self.execute_command(GpioDacRequest::Query)? {
+            GpioDacResponse::QueryNotDone => Ok(false),
+            GpioDacResponse::QueryDone => Ok(true),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
     }
 }

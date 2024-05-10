@@ -40,6 +40,7 @@ pub enum Request {
     Gpio { id: String, command: GpioRequest },
     GpioMonitoring { command: GpioMonRequest },
     GpioBitbanging { command: GpioBitRequest },
+    GpioDacBanging { command: GpioDacRequest },
     Uart { id: String, command: UartRequest },
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
@@ -54,6 +55,7 @@ pub enum Response {
     Gpio(GpioResponse),
     GpioMonitoring(GpioMonResponse),
     GpioBitbanging(GpioBitResponse),
+    GpioDacBanging(GpioDacResponse),
     Uart(UartResponse),
     Spi(SpiResponse),
     I2c(I2cResponse),
@@ -141,6 +143,31 @@ pub enum GpioBitResponse {
     // GpioBitRequest::Query will be answered by either QueryNotDone or QueryDone.
     QueryNotDone,
     QueryDone { entries: Vec<BitbangEntryResponse> },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum DacBangEntryRequest {
+    Write { data: Vec<f32> },
+    Delay { clock_ticks: u32 },
+    Linear { clock_ticks: u32 },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GpioDacRequest {
+    Start {
+        pins: Vec<String>,
+        clock_ns: u64,
+        entries: Vec<DacBangEntryRequest>,
+    },
+    Query,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GpioDacResponse {
+    Start,
+    // GpioDacRequest::Query will be answered by either QueryNotDone or QueryDone.
+    QueryNotDone,
+    QueryDone,
 }
 
 #[derive(Serialize, Deserialize)]
