@@ -270,7 +270,7 @@ pub fn run_ft_personalize(
     // Bootstrap first personalization binary into flash and wait for test status pass over the UART.
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
-    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"PASS.*", timeout)?;
 
     // -------------------------------------------------------------------------
     // FT Personalize 2                                                        |
@@ -306,16 +306,19 @@ pub fn run_ft_personalize(
 
     // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for host public key ...", timeout)?;
+    let cap = UartConsole::wait_for(&*uart, r"Waiting for host public key ...|PASS.*", timeout)?;
+    if !cap.is_empty() && !cap[0].starts_with(r"PASS") {
+        // Send RMA token wrapping ECC keys into the device over the console.
+        rma_token_wrapping_pubkey.send(&*uart)?;
 
-    // Send RMA token wrapping ECC keys into the device over the console.
-    rma_token_wrapping_pubkey.send(&*uart)?;
-
-    // Wait until device exports the wrapped RMA unlock token.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA token ...", timeout)?;
-    let rma_token_out_data = WrappedRmaUnlockToken::recv(&*uart, timeout, false)?;
-    log::info!("{:x?}", rma_token_out_data);
-    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+        // Wait until device exports the wrapped RMA unlock token.
+        let _ = UartConsole::wait_for(&*uart, r"Exporting RMA token ...", timeout)?;
+        let rma_token_out_data = WrappedRmaUnlockToken::recv(&*uart, timeout, false)?;
+        log::info!("{:x?}", rma_token_out_data);
+        let _ = UartConsole::wait_for(&*uart, r"PASS.*", timeout)?;
+    } else {
+        log::info!("Device secrets already provisioned. Skipping.");
+    }
 
     // -------------------------------------------------------------------------
     // FT Personalize 3                                                        |
