@@ -3175,14 +3175,14 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_smoketest",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_smoketest",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap={firmware}
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_smoketest",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_smoketest",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3217,14 +3217,14 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_tpm_test",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
     ),
     silicon_owner = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_tpm_test",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3245,6 +3245,13 @@ opentitan_test(
 opentitan_test(
     name = "spi_device_flash_smoketest",
     srcs = ["spi_device_flash_smoketest.c"],
+    cw310 = cw310_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
+    ),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -3257,14 +3264,14 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_flash_smoketest",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap={firmware}
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_flash_smoketest",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -4372,13 +4379,13 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_passthru",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_passthru",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     deps = [
         "//sw/device/lib/arch:device",
