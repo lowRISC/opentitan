@@ -43,7 +43,12 @@ static volatile const uint8_t kRounds = 2;
 static const bool deepPowerdown = false;
 
 // Num of GPIO Pads to test
-enum { kNumGpioPads = 8 };
+enum { kNumGpioPadsDv = 8, kNumGpioPadsSiVal = 4 };
+int num_gpio_pads;  // One of the above, based on the actual environment.
+
+unsigned gpio_mask;
+
+static int first_gpio_pin;
 
 /**
  * External interrupt handler.
@@ -64,22 +69,22 @@ void ottf_external_isr(uint32_t *exc_info) {
 }
 
 /**
- * A round of GPIO[7:0] retention value test.
+ * A round of GPIO[num_gpio_pads-1:0] retention value test.
  *
  * The test sequence is:
  *
- * 1. Randomly choose GPIO[7:0] value using rand_testutils.
+ * 1. Randomly choose GPIO[num_gpio_pads-1:0] value using rand_testutils.
  * 2. Drive GPIO with the chosen value.
- * 3. Send the chosen values to SV via LOG_INFO.
+ * 3. Send the chosen values to SV/host via LOG_INFO.
  * 4. Configure PINMUX Retention value opposit to the chosen value for
- *    GPIO[7:0].
+ *    GPIO[num_gpio_pads-1:0].
  * 5. Initiate sleep mode (assuming pinmux pin wake up has been configured.)
  * 6. WFI()
- * 7. At this point, chip has been waken up by DV. Send a log to DV that chip
- *    has waken up.
+ * 7. At this point, chip has been waken up by DV/host. Send a log to DV/host
+ *    that the chip has waken up.
  *
- * DV env checks all PIN value. SW simply drives the GPIO and invert the value
- * for retention.
+ * DV/host env checks all PIN value. SW simply drives the GPIO and invert the
+ * value for retention.
  */
 void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                int round) {
@@ -90,10 +95,10 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   LOG_INFO("Current Test Round: %1d", round);
 
   // 1. Randomly choose GPIO value
-  gpio_val = (uint8_t)rand_testutils_gen32_range(0, 255);
+  gpio_val = (uint8_t)(rand_testutils_gen32_range(0, gpio_mask));
 
   // 2. Drive GPIO with the chosen value.
-  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
+  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)gpio_mask,
                                      (dif_gpio_state_t)gpio_val));
 
   // 3. Send the chosen value to SV via LOG_INFO.
@@ -105,13 +110,12 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
 
   // 4. Configure PINMUX Retention value opposite to the chosen value.
   pad_kind = kDifPinmuxPadKindMio;
-  for (int i = 0; i < kNumGpioPads; i++) {
+  for (int i = 0; i < num_gpio_pads; i++) {
     // GPIO are assigned starting from MIO0
     pad_mode = ((gpio_val >> i) & 0x1) ? kDifPinmuxSleepModeLow
                                        : kDifPinmuxSleepModeHigh;
     CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-        pinmux, (dif_pinmux_index_t)(kTopEarlgreyPinmuxMioOutIoa0 + i),
-        pad_kind, pad_mode));
+        pinmux, (dif_pinmux_index_t)(first_gpio_pin + i), pad_kind, pad_mode));
   }
 
   // 5. Initiate sleep mode
@@ -122,11 +126,19 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   wait_for_interrupt();
 
   // 7. Turn-off retention.
-  for (int i = 0; i < kNumGpioPads; i++) {
+  for (int i = 0; i < num_gpio_pads; i++) {
     CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-        pinmux, (dif_pinmux_index_t)(kTopEarlgreyPinmuxMioOutIoa0 + i),
-        pad_kind));
+        pinmux, (dif_pinmux_index_t)(first_gpio_pin + i), pad_kind));
   }
+
+  LOG_INFO("Woke up from low power mode.");
+
+  // When running outside DV, wait until the host is ready to end this round.
+  bool end_round = false;
+  if (kDeviceType != kDeviceSimDV)
+    do {
+      CHECK_DIF_OK(dif_gpio_read(gpio, 8, &end_round));
+    } while (!end_round);
 }
 
 /**
@@ -137,24 +149,36 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
 void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   // Drive GPIO first
   CHECK_DIF_OK(
-      dif_gpio_output_set_enabled_all(gpio, (dif_gpio_state_t)0x000000FFu));
-  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
+      dif_gpio_output_set_enabled_all(gpio, (dif_gpio_state_t)gpio_mask));
+  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)gpio_mask,
                                      (dif_gpio_state_t)0x00000000));
 
   // Configure PINMUX to GPIO
-  for (int i = 0; i < kNumGpioPads; i++) {
+  for (int i = 0; i < num_gpio_pads; i++) {
     CHECK_DIF_OK(dif_pinmux_input_select(
         pinmux,
         (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i),
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxInselIoa0 + i)));
+        (dif_pinmux_index_t)(first_gpio_pin + i)));
     CHECK_DIF_OK(dif_pinmux_output_select(
-        pinmux, (dif_pinmux_index_t)(kTopEarlgreyPinmuxMioOutIoa0 + i),
+        pinmux, (dif_pinmux_index_t)(first_gpio_pin + i),
         (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpioGpio0 + i)));
   }
+
+  // Configure PINMUX an additional GPIO pin for the SiVal host to sync with
+  // the device and indicate the round can end.
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      pinmux, (dif_pinmux_index_t)kTopEarlgreyPinmuxPeripheralInGpioGpio8,
+      (dif_pinmux_index_t)kTopEarlgreyPinmuxInselIor11));
 }
 
 bool test_main(void) {
   bool result = true;
+
+  num_gpio_pads =
+      kDeviceType == kDeviceSimDV ? kNumGpioPadsDv : kNumGpioPadsSiVal;
+  gpio_mask = (1 << num_gpio_pads) - 1;
+  first_gpio_pin = kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxMioOutIoa0
+                                               : kTopEarlgreyPinmuxMioOutIob0;
 
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
@@ -184,8 +208,10 @@ bool test_main(void) {
   // Wakeup configs
   wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
   wakeup_cfg.signal_filter = false;
-  wakeup_cfg.pad_type = 0;                              // MIO
-  wakeup_cfg.pad_select = kTopEarlgreyPinmuxInselIoa8;  // MIO08
+  wakeup_cfg.pad_type = kDifPinmuxPadKindMio;
+  wakeup_cfg.pad_select = kDeviceType == kDeviceSimDV
+                              ? kTopEarlgreyPinmuxInselIoa8
+                              : kTopEarlgreyPinmuxInselIor10;
 
   // Configure Wakeup Detector 0
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));
@@ -198,10 +224,8 @@ bool test_main(void) {
 
   LOG_INFO("Num Rounds: %3d", kRounds);
 
-  // Select IOA0:IOA7 to GPIO
+  // Select the appropriate GPIO pins
   gpio_init(&pinmux, &gpio);
-
-  // Set wakeup condition. Always use GPIO[8] for Pinmux PIN Wakeup.
 
   for (int i = kRounds - 1; i >= 0; i--) {
     gpio_test(&pwrmgr, &pinmux, &gpio, i);
