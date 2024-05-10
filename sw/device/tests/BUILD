@@ -3184,7 +3184,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_tpm_test",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -3196,7 +3196,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_tpm_test",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3222,7 +3222,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_flash_smoketest",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3236,7 +3236,7 @@ opentitan_test(
             --bootstrap={firmware}
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_device_flash_smoketest",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -4183,7 +4183,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_passthru",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -4199,13 +4199,13 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_passthru",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
-        test_harness = "//sw/host/tests/chip/spi_passthru",
+        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     deps = [
         "//sw/device/lib/arch:device",
