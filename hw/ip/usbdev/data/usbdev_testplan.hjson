@@ -468,7 +468,7 @@
             - Verify that the rx_crc_err should go high following the reception of erroneous packet.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_rx_crc_err"]
     }
     {
       name: rx_pid_err
