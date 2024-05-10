@@ -109,7 +109,7 @@
         "SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN",
       ]
       tests: ["chip_sw_spi_device_pass_through_collision"]
-      bazel: []
+      bazel: ["//sw/device/tests:spi_passthru_test"]
     }
     {
       name: chip_sw_spi_device_tpm
