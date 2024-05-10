@@ -51,10 +51,10 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
 
       // Set lc_hw_debug_en to some value other than On.
       begin
-        lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_hw_debug_en,
-                                           lc_hw_debug_en != lc_ctrl_pkg::On;)
-        cfg.rv_dm_vif.cb.lc_hw_debug_en <= lc_hw_debug_en;
+        lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pinmux_hw_debug_en,
+                                           pinmux_hw_debug_en != lc_ctrl_pkg::On;)
+        cfg.rv_dm_vif.cb.pinmux_hw_debug_en <= pinmux_hw_debug_en;
       end
 
       // Write a different value to abstractdata[0] than read it back. The write should be ignored
@@ -67,7 +67,7 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
 
       // Issue a JTAG reset through trst_n and switch lc_hw_debug_en to On.
       cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-      cfg.rv_dm_vif.cb.lc_hw_debug_en <= lc_ctrl_pkg::On;
+      cfg.rv_dm_vif.cb.pinmux_hw_debug_en <= lc_ctrl_pkg::On;
 
       // Wait a clock edge to make sure the LC signal has an effect
       cfg.clk_rst_vif.wait_clks(1);
