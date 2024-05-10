@@ -44,8 +44,13 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
   task pre_start();
     // Initialize the input signals with defaults at the start of the sim.
+    //
+    // TODO(#23763): This currently avoids setting scanmode to true. This is because doing so
+    // changes the internal JTAG interface so that it is clocked from the main clock instead of the
+    // jtag_if TCK. Muxing the tck signal in jtag_if isn't all that easy because the jtag driver
+    // expects to be able to control it.
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_hw_debug_en)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(scanmode)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(scanmode, scanmode != prim_mubi_pkg::MuBi4True;)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(unavailable)
 
     cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
