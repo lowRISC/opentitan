@@ -22,7 +22,7 @@ use opentitanlib::crypto::rsa::{RsaPrivateKey, RsaPublicKey, Signature as RsaSig
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::crypto::spx::{self, SpxKey, SpxKeypair, SpxSignature};
 use opentitanlib::image::image::{self, ImageAssembler};
-use opentitanlib::image::manifest::ManifestExtSpxSignature;
+use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId, ManifestExtSpec};
 use opentitanlib::util::file::{FromReader, ToWriter};
@@ -77,6 +77,15 @@ pub struct ManifestShowCommand {
     image: PathBuf,
 }
 
+#[derive(Debug, serde::Serialize, Annotate)]
+pub struct ManifestShowResult {
+    #[annotate(format=hex)]
+    kind: ManifestKind,
+    #[annotate(format=hex)]
+    offset: usize,
+    manifest: ManifestSpec,
+}
+
 impl CommandDispatch for ManifestShowCommand {
     fn run(
         &self,
@@ -84,8 +93,16 @@ impl CommandDispatch for ManifestShowCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
-        let manifest_def: ManifestSpec = image.borrow_manifest()?.try_into()?;
-        Ok(Some(Box::new(manifest_def)))
+        let result = image
+            .subimages()?
+            .iter()
+            .map(|s| ManifestShowResult {
+                kind: s.kind,
+                offset: s.offset,
+                manifest: s.manifest.try_into().expect("manifest conversion"),
+            })
+            .collect::<Vec<_>>();
+        Ok(Some(Box::new(result)))
     }
 }
 
