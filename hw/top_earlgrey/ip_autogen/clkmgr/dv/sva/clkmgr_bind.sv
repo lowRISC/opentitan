@@ -8,21 +8,30 @@ module clkmgr_bind;
     .EndpointType("Device")
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
-
   // In top-level testbench, do not bind the csr_assert_fpv to reduce simulation time.
 `ifndef TOP_LEVEL_DV
   bind clkmgr clkmgr_csr_assert_fpv clkmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 `endif
 
-  bind clkmgr clkmgr_pwrmgr_sva_if clkmgr_pwrmgr_sva_if (
+  bind clkmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_main_sva_if (
     .clk_i,
     .rst_ni,
-    .io_clk_en(pwr_i.io_ip_clk_en),
-    .io_status(pwr_o.io_status),
-    .main_clk_en(pwr_i.main_ip_clk_en),
-    .main_status(pwr_o.main_status),
-    .usb_clk_en(pwr_i.usb_ip_clk_en),
-    .usb_status(pwr_o.usb_status)
+    .clk_en(pwr_i.main_ip_clk_en),
+    .status(pwr_o.main_status)
+  );
+
+  bind clkmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_io_sva_if (
+    .clk_i,
+    .rst_ni,
+    .clk_en(pwr_i.io_ip_clk_en),
+    .status(pwr_o.io_status)
+  );
+
+  bind clkmgr clkmgr_pwrmgr_sva_if #(.IS_USB(1)) clkmgr_pwrmgr_usb_sva_if (
+    .clk_i,
+    .rst_ni,
+    .clk_en(pwr_i.usb_ip_clk_en),
+    .status(pwr_o.usb_status)
   );
 
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div4_peri_sva_if (
@@ -66,7 +75,7 @@ module clkmgr_bind;
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
     .hint(reg2hw.clk_hints.clk_main_aes_hint.q),
-    .idle(idle_i[0] == prim_mubi_pkg::MuBi4True),
+    .idle(idle_i[HintMainAes] == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .status(hw2reg.clk_hints_status.clk_main_aes_val.d),
     .trans_clk(clocks_o.clk_main_aes)
@@ -76,7 +85,7 @@ module clkmgr_bind;
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
     .hint(reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .idle(idle_i[1] == prim_mubi_pkg::MuBi4True),
+    .idle(idle_i[HintMainHmac] == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .status(hw2reg.clk_hints_status.clk_main_hmac_val.d),
     .trans_clk(clocks_o.clk_main_hmac)
@@ -86,7 +95,7 @@ module clkmgr_bind;
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
     .hint(reg2hw.clk_hints.clk_main_kmac_hint.q),
-    .idle(idle_i[2] == prim_mubi_pkg::MuBi4True),
+    .idle(idle_i[HintMainKmac] == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .status(hw2reg.clk_hints_status.clk_main_kmac_val.d),
     .trans_clk(clocks_o.clk_main_kmac)
@@ -96,7 +105,7 @@ module clkmgr_bind;
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
     .hint(reg2hw.clk_hints.clk_main_otbn_hint.q),
-    .idle(idle_i[3] == prim_mubi_pkg::MuBi4True),
+    .idle(idle_i[HintMainOtbn] == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .status(hw2reg.clk_hints_status.clk_main_otbn_val.d),
     .trans_clk(clocks_o.clk_main_otbn)
@@ -137,46 +146,42 @@ module clkmgr_bind;
 
   // AON clock gating enables.
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_peri (
-    .clk(clk_aon_i), .rst_n(rst_aon_ni), .cg_en(cg_en_o.aon_peri == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.aon_peri == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_powerup (
-    .clk(clk_aon_i), .rst_n(rst_aon_ni), .cg_en(cg_en_o.aon_powerup == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.aon_powerup == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_secure (
-    .clk(clk_aon_i), .rst_n(rst_aon_ni), .cg_en(cg_en_o.aon_secure == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.aon_secure == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_timers (
-    .clk(clk_aon_i), .rst_n(rst_aon_ni), .cg_en(cg_en_o.aon_timers == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_powerup (
-    .clk(clk_io_i), .rst_n(rst_io_ni), .cg_en(cg_en_o.io_powerup == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.aon_timers == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div2_powerup (
-    .clk(clk_io_div2),
-    .rst_n(rst_io_div2_ni),
     .cg_en(cg_en_o.io_div2_powerup == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div4_powerup (
-    .clk(clk_io_div4),
-    .rst_n(rst_io_div4_ni),
     .cg_en(cg_en_o.io_div4_powerup == prim_mubi_pkg::MuBi4True)
   );
 
+  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_powerup (
+    .cg_en(cg_en_o.io_powerup == prim_mubi_pkg::MuBi4True)
+  );
+
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_main_powerup (
-    .clk(clk_main_i), .rst_n(rst_main_ni), .cg_en(cg_en_o.main_powerup == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.main_powerup == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_usb_powerup (
-    .clk(clk_usb_i), .rst_n(rst_usb_ni), .cg_en(cg_en_o.usb_powerup == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.usb_powerup == prim_mubi_pkg::MuBi4True)
   );
 
-  // Non-AON clock gating enables.
+  // Non-AON clock gating enables with no software control.
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_infra (
     .clk(clk_io_div2),
     .rst_n(rst_io_div2_ni),
@@ -195,24 +200,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.io_div4_infra == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_infra (
-    .clk(clk_io_i),
-    .rst_n(rst_io_ni),
-    .ip_clk_en(clk_io_en),
-    .sw_clk_en(1'b1),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.io_infra == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_infra (
-    .clk(clk_main_i),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(clk_main_en),
-    .sw_clk_en(1'b1),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.main_infra == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_secure (
     .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
@@ -220,15 +207,6 @@ module clkmgr_bind;
     .sw_clk_en(1'b1),
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_secure == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_secure (
-    .clk(clk_main_i),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(clk_main_en),
-    .sw_clk_en(1'b1),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.main_secure == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_timers (
@@ -240,15 +218,43 @@ module clkmgr_bind;
     .cg_en(cg_en_o.io_div4_timers == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_peri (
-    .clk(clk_io_div2),
-    .rst_n(rst_io_div2_ni),
-    .ip_clk_en(clk_io_div2_en),
-    .sw_clk_en(clk_io_div2_peri_sw_en),
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_infra (
+    .clk(clk_io),
+    .rst_n(rst_io_ni),
+    .ip_clk_en(clk_io_en),
+    .sw_clk_en(1'b1),
     .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.io_div2_peri == prim_mubi_pkg::MuBi4True)
+    .cg_en(cg_en_o.io_infra == prim_mubi_pkg::MuBi4True)
   );
 
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_infra (
+    .clk(clk_main),
+    .rst_n(rst_main_ni),
+    .ip_clk_en(clk_main_en),
+    .sw_clk_en(1'b1),
+    .scanmode(prim_mubi_pkg::MuBi4False),
+    .cg_en(cg_en_o.main_infra == prim_mubi_pkg::MuBi4True)
+  );
+
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_secure (
+    .clk(clk_main),
+    .rst_n(rst_main_ni),
+    .ip_clk_en(clk_main_en),
+    .sw_clk_en(1'b1),
+    .scanmode(prim_mubi_pkg::MuBi4False),
+    .cg_en(cg_en_o.main_secure == prim_mubi_pkg::MuBi4True)
+  );
+
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_usb_infra (
+    .clk(clk_usb),
+    .rst_n(rst_usb_ni),
+    .ip_clk_en(clk_usb_en),
+    .sw_clk_en(1'b1),
+    .scanmode(prim_mubi_pkg::MuBi4False),
+    .cg_en(cg_en_o.usb_infra == prim_mubi_pkg::MuBi4True)
+  );
+
+  // Software controlled gating enables.
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_peri (
     .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
@@ -258,8 +264,17 @@ module clkmgr_bind;
     .cg_en(cg_en_o.io_div4_peri == prim_mubi_pkg::MuBi4True)
   );
 
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_peri (
+    .clk(clk_io_div2),
+    .rst_n(rst_io_div2_ni),
+    .ip_clk_en(clk_io_div2_en),
+    .sw_clk_en(clk_io_div2_peri_sw_en),
+    .scanmode(prim_mubi_pkg::MuBi4False),
+    .cg_en(cg_en_o.io_div2_peri == prim_mubi_pkg::MuBi4True)
+  );
+
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_peri (
-    .clk(clk_io_i),
+    .clk(clk_io),
     .rst_n(rst_io_ni),
     .ip_clk_en(clk_io_en),
     .sw_clk_en(clk_io_peri_sw_en),
@@ -268,7 +283,7 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_usb_peri (
-    .clk(clk_usb_i),
+    .clk(clk_usb),
     .rst_n(rst_usb_ni),
     .ip_clk_en(clk_usb_en),
     .sw_clk_en(clk_usb_peri_sw_en),
@@ -276,6 +291,7 @@ module clkmgr_bind;
     .cg_en(cg_en_o.usb_peri == prim_mubi_pkg::MuBi4True)
   );
 
+  // Hint controlled gating enables.
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_main_aes (
     .clk(clk_main_i),
     .rst_n(rst_main_ni),
@@ -327,20 +343,6 @@ module clkmgr_bind;
     .meas_ctrl_en(u_reg.io_meas_ctrl_en_qs)
   );
 
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div2_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.io_div2_meas_ctrl_en_qs)
-  );
-
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div4_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.io_div4_meas_ctrl_en_qs)
-  );
-
   bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_main_ctrl_en_sva_if (
     .clk(clk_i),
     .rst_n(rst_ni),
@@ -353,6 +355,20 @@ module clkmgr_bind;
     .rst_n(rst_ni),
     .calib_rdy(calib_rdy_i),
     .meas_ctrl_en(u_reg.usb_meas_ctrl_en_qs)
+  );
+
+  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div2_ctrl_en_sva_if (
+    .clk(clk_i),
+    .rst_n(rst_ni),
+    .calib_rdy(calib_rdy_i),
+    .meas_ctrl_en(u_reg.io_div2_meas_ctrl_en_qs)
+  );
+
+  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div4_ctrl_en_sva_if (
+    .clk(clk_i),
+    .rst_n(rst_ni),
+    .calib_rdy(calib_rdy_i),
+    .meas_ctrl_en(u_reg.io_div4_meas_ctrl_en_qs)
   );
 
   bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
