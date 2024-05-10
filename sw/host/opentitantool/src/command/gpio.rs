@@ -633,6 +633,51 @@ impl CommandDispatch for GpioBitbang {
     }
 }
 
+#[derive(Debug, Args)]
+/// Manipulates a given set of analog output pins, clocking out successive samples at a given
+/// frequency.
+pub struct GpioDacBang {
+    /// The list of analog output pins to manipulate (space separated).
+    pub pins: Vec<String>,
+
+    #[arg(long, value_parser = opentitanlib::util::bitbang::parse_clock_frequency)]
+    pub clock: Duration,
+
+    #[arg(short, long)]
+    pub sequence: String,
+}
+
+impl CommandDispatch for GpioDacBang {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport
+            .capabilities()?
+            .request(Capability::GPIO_BITBANGING)
+            .ok()?;
+        let gpio_bitbanging = transport.gpio_bitbanging()?;
+        let gpio_pins = transport.gpio_pins(&self.pins)?;
+        let mut data_accumulator: Vec<f32> = Vec::new();
+        let sequence = opentitanlib::util::bitbang::parse_dac_sequence(
+            &self.sequence,
+            gpio_pins.len(),
+            self.clock,
+            &mut data_accumulator,
+        )?;
+        gpio_bitbanging.dac_run(
+            &gpio_pins
+                .iter()
+                .map(Rc::borrow)
+                .collect::<Vec<&dyn GpioPin>>(),
+            self.clock,
+            sequence,
+        )?;
+        Ok(None)
+    }
+}
+
 /// Commands for manipulating GPIO pins.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum GpioCommand {
@@ -647,4 +692,5 @@ pub enum GpioCommand {
     AnalogWrite(GpioAnalogWrite),
     Monitoring(GpioMonitoring),
     Bitbang(GpioBitbang),
+    DacBang(GpioDacBang),
 }

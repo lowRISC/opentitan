@@ -13,9 +13,9 @@ use std::time::Duration;
 use zerocopy::{FromBytes, FromZeroes};
 
 use crate::io::gpio::{
-    BitbangEntry, ClockNature, Edge, GpioBitbangOperation, GpioBitbanging, GpioError,
-    GpioMonitoring, GpioPin, MonitoringEvent, MonitoringReadResponse, MonitoringStartResponse,
-    PinMode, PullMode,
+    BitbangEntry, ClockNature, DacBangEntry, Edge, GpioBitbangOperation, GpioBitbanging,
+    GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringEvent,
+    MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
 use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
@@ -497,6 +497,29 @@ impl HyperdebugGpioBitbanging {
     }
 }
 
+struct DacEncoder {
+    /// Conversion factor from volts to 12-bit unsigned DAC value.
+    factor: f32,
+}
+
+impl DacEncoder {
+    fn encode_dac_sample(&self, out: &mut Vec<u8>, voltage: f32) {
+        let count = voltage * self.factor;
+        let count: u16 = if count <= 0.0 {
+            0
+        } else if count >= 4095.0 {
+            4095
+        } else {
+            count as u16
+        };
+        out.push((count >> 8) as u8);
+        out.push((count & 0xFF) as u8);
+    }
+}
+
+static DAC_BANG_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new("^Calibration: ([0-9]+) ([0-9]+)").unwrap());
+
 impl GpioBitbanging for HyperdebugGpioBitbanging {
     fn start<'a>(
         &self,
@@ -510,6 +533,21 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
             pins,
             clock_tick,
             waveform,
+        )?))
+    }
+
+    fn dac_start(
+        &self,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: Box<[DacBangEntry]>,
+    ) -> Result<Box<dyn GpioDacBangOperation>> {
+        Ok(Box::new(HyperdebugGpioDacBangOperation::new(
+            Rc::clone(&self.inner),
+            self.cmsis_interface,
+            pins,
+            clock_tick,
+            &waveform,
         )?))
     }
 }
@@ -725,6 +763,166 @@ impl<'a> GpioBitbangOperation<'a, 'a> for HyperdebugGpioBitbangOperation<'a> {
 
     fn get_result(self: Box<Self>) -> Result<Box<[BitbangEntry<'a, 'a>]>> {
         Ok(self.waveform)
+    }
+}
+
+/// Represents an ongoing operation of dac-banging a number of GPIO pins.  Since there is no
+/// incoming data to decode, this struct unlike the corresponding bit-banging one, does not need
+/// to maintain any additional records, besides the encoded binary data to be streamed to
+/// HyperDebug, in the `operation` field.
+pub struct HyperdebugGpioDacBangOperation {
+    operation: HyperdebugDataOperation,
+}
+
+impl HyperdebugGpioDacBangOperation {
+    fn new(
+        inner: Rc<Inner>,
+        cmsis_interface: BulkInterface,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: &[DacBangEntry],
+    ) -> Result<Self> {
+        // Tell HyperDebug about the set of pins to manipulate, and the clock speed, using the
+        // textual console protocol.
+        let mut pin_names = Vec::new();
+        for pin in pins {
+            pin_names.push(
+                pin.get_internal_pin_name()
+                    .ok_or(TransportError::InvalidOperation)?,
+            );
+        }
+
+        let mut buf = String::new();
+        let captures = inner.cmd_one_line_output_match(
+            &format!(
+                "gpio dac-bang {} {}",
+                clock_tick.as_nanos(),
+                pin_names.join(" ")
+            ),
+            &DAC_BANG_REGEX,
+            &mut buf,
+        )?;
+        let multiplier: u32 = captures.get(1).unwrap().as_str().parse().unwrap();
+        let divisor: u32 = captures.get(2).unwrap().as_str().parse().unwrap();
+
+        // Set up how to "encode" a voltage as 12-bit DAC value, using calibration factors from
+        // HyperDebug.
+        let encoder = DacEncoder {
+            factor: 1000.0 * multiplier as f32 / divisor as f32,
+        };
+
+        let mut encoded_waveform: Vec<u8> = Vec::new();
+
+        let mut last: Vec<f32> = Vec::new();
+        last.resize(pins.len(), 0.0);
+        let mut delay = 0u32;
+        let mut linear = 0u32;
+        for a in waveform.iter() {
+            match a {
+                DacBangEntry::Write(d) => {
+                    ensure!(
+                        !d.is_empty() && d.len() % pins.len() == 0,
+                        GpioError::InvalidDacBangData
+                    );
+                    ensure!(delay == 0 || linear == 0, GpioError::InvalidDacBangDelay);
+                    if linear > 1 {
+                        // Linear transition from one voltage to another over a given time is
+                        // encoded as a list of explicit voltage at the selected clock rate.
+                        // (Clock rates above 50k samples per second may not be able to sustain
+                        // the data throughput, if the sequence does not fit in HyperDebug buffer,
+                        // and must be streamed.)
+                        for sample_no in 1..linear {
+                            for i in 0..pins.len() {
+                                let val =
+                                    last[i] + (d[i] - last[i]) * sample_no as f32 / linear as f32;
+                                encoder.encode_dac_sample(&mut encoded_waveform, val);
+                            }
+                        }
+                    }
+                    if delay > 1 {
+                        // Delays are encoded using one or more bytes with the MSB set to one.  Each
+                        // containing 7 bits of the delay value, with the least significant bits in
+                        // the first byte.
+                        let encoded_delay = delay - 1;
+                        let mut shift = 0;
+                        while (encoded_delay >> shift) != 0 {
+                            encoded_waveform.push(0x80 | ((encoded_delay >> shift) & 0x7F) as u8);
+                            shift += 7;
+                        }
+                    }
+                    for voltage in *d {
+                        encoder.encode_dac_sample(&mut encoded_waveform, *voltage);
+                    }
+                    for i in 0..pins.len() {
+                        last[i] = d[d.len() - pins.len() + i];
+                    }
+                    delay = 0;
+                    linear = 0;
+                }
+                DacBangEntry::WriteOwned(d) => {
+                    ensure!(
+                        !d.is_empty() && d.len() % pins.len() == 0,
+                        GpioError::InvalidDacBangData
+                    );
+                    ensure!(delay == 0 || linear == 0, GpioError::InvalidDacBangDelay);
+                    if linear > 1 {
+                        // Linear transition from one voltage to another over a given time is
+                        // encoded as a list of explicit voltage at the selected clock rate.
+                        // (Clock rates above 50k samples per second may not be able to sustain
+                        // the data throughput, if the sequence does not fit in HyperDebug buffer,
+                        // and must be streamed.)
+                        for sample_no in 1..linear {
+                            for i in 0..pins.len() {
+                                let val =
+                                    last[i] + (d[i] - last[i]) * sample_no as f32 / linear as f32;
+                                encoder.encode_dac_sample(&mut encoded_waveform, val);
+                            }
+                        }
+                    }
+                    if delay > 1 {
+                        // Delays are encoded using one or more bytes with the MSB set to one.  Each
+                        // containing 7 bits of the delay value, with the least significant bits in
+                        // the first byte.
+                        let encoded_delay = delay - 1;
+                        let mut shift = 0;
+                        while (encoded_delay >> shift) != 0 {
+                            encoded_waveform.push(0x80 | ((encoded_delay >> shift) & 0x7F) as u8);
+                            shift += 7;
+                        }
+                    }
+                    for voltage in d.iter() {
+                        encoder.encode_dac_sample(&mut encoded_waveform, *voltage);
+                    }
+                    for i in 0..pins.len() {
+                        last[i] = d[d.len() - pins.len() + i];
+                    }
+                    delay = 0;
+                    linear = 0;
+                }
+                DacBangEntry::Delay(0) => bail!(GpioError::InvalidDacBangDelay),
+                DacBangEntry::Delay(n @ 1..) => {
+                    delay += *n;
+                }
+                DacBangEntry::Linear(0) => bail!(GpioError::InvalidDacBangDelay),
+                DacBangEntry::Linear(n @ 1..) => {
+                    linear += *n;
+                }
+            }
+        }
+
+        // Do not allow Delay or Linear as the final entry
+        ensure!(delay == 0, GpioError::InvalidBitbangDelay);
+        ensure!(linear == 0, GpioError::InvalidBitbangDelay);
+
+        Ok(Self {
+            operation: HyperdebugDataOperation::new(inner, cmsis_interface, encoded_waveform)?,
+        })
+    }
+}
+
+impl GpioDacBangOperation for HyperdebugGpioDacBangOperation {
+    fn query(&mut self) -> Result<bool> {
+        self.operation.query()
     }
 }
 
