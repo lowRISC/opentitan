@@ -9,13 +9,13 @@
 # a key stored in Google Cloud KMS.
 #
 # Signing with Cloud KMS requires the following:
-# - a Google KMS intergration  library
-#   (https://github.com/GoogleCloudPlatform/kms-integrations) moudle
-# - a configuraton file describing the Cloud KMS project contaning the key.
+# - a Google KMS integration  library
+#   (https://github.com/GoogleCloudPlatform/kms-integrations) module
+# - a configuration file describing the Cloud KMS project containing the key.
 #
 # PKCS11_MODULE_PATH and KMS_PKCS11_CONFIG environment variables are set to
 # point at these objects. If both variables are present the script attempts to
-# geenrate a Cloud KMS signed ceritficate.
+# generate a Cloud KMS signed certificate.
 #
 # The generated certificates are named fake_ca and ckms_ca and are saved in both
 # DER and PEM forms, certificate file names are printed by this script upon
