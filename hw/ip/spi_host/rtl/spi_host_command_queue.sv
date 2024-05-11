@@ -37,7 +37,7 @@ module spi_host_command_queue #(
 
   prim_fifo_sync #(
     .Width(spi_host_cmd_pkg::CmdSize),
-    .Pass(1),
+    .Pass(0),
     .Depth(CmdDepth)
   ) cmd_fifo (
     .clk_i,
