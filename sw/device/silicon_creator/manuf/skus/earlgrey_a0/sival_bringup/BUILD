@@ -11,12 +11,15 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
+    "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
     "FT_PERSONALIZE_KEYS",
     "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
+    "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -256,10 +259,23 @@ _FT_PROVISIONING_BINARIES = {
     ":ft_personalize": "ft_personalize",
 }
 
+config_setting(
+    name = "ckms_cert_endorsement_params",
+    flag_values = {":endorse_certs_with_ckms": "True"},
+)
+
+bool_flag(
+    name = "endorse_certs_with_ckms",
+    build_setting_default = False,
+)
+
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
   --bootstrap={ft_personalize}
-""" + FT_PROVISIONING_INPUTS
+""" + FT_PROVISIONING_INPUTS + select({
+    ":ckms_cert_endorsement_params": CLOUD_KMS_CERT_ENDORSEMENT_PARAMS,
+    "//conditions:default": LOCAL_CERT_ENDORSEMENT_PARAMS,
+})
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 

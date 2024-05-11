@@ -142,3 +142,6 @@ build --output_groups=+modid_checks
 
 # Import site-specific configuration.
 try-import .bazelrc-site
+
+# Shortcut for enabling Cloud KMS certificate endorsement during test
+build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:endorse_certs_with_ckms

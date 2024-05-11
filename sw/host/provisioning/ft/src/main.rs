@@ -8,7 +8,7 @@ use std::time::Duration;
 use anyhow::{bail, Result};
 use clap::{Args, Parser};
 
-use ft_lib::{run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock};
+use ft_lib::{run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock, KeyWrapper};
 use opentitanlib::backend;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -43,8 +43,8 @@ pub struct ManufFtProvisioningDataInput {
     host_ecc_sk: PathBuf,
 
     /// Certificate endorsement ECC (P256) private key DER file.
-    #[arg(long)]
-    cert_endorsement_ecc_sk: PathBuf,
+    #[arg(long, default_value = None,  required = true, conflicts_with = "ckms_ecc_key_id")]
+    cert_endorsement_ecc_sk: Option<PathBuf>,
 
     /// UDS authority (endorsement) key ID hexstring.
     #[arg(long)]
@@ -73,6 +73,10 @@ pub struct ManufFtProvisioningDataInput {
     /// CA certificate to be used for verifying.
     #[arg(long)]
     pub ca_certificate: PathBuf,
+
+    /// Cloud KMS Key ID of the key used for certificate endorsement.
+    #[arg(long, default_value = None, required = true, conflicts_with = "cert_endorsement_ecc_sk")]
+    pub ckms_ecc_key_id: Option<String>,
 }
 
 #[derive(Debug, Parser)]
@@ -199,11 +203,23 @@ fn main() -> Result<()> {
     // Once we are in a mission mode, we no longer need to provide a DFT strapping sequence on
     // every reset, as DFT is no longer enabled in mission modes.
     transport.ignore_dft_straps_on_reset()?;
+
+    let cert_endorsement_key_wrapper = match (
+        opts.provisioning_data.ckms_ecc_key_id,
+        opts.provisioning_data.cert_endorsement_ecc_sk,
+    ) {
+        (Some(ckms), None) => KeyWrapper::CkmsKey(ckms),
+        (None, Some(local)) => KeyWrapper::LocalKey(local),
+        (_, _) => {
+            log::error!("One and only one endorsement key parameter must be included");
+            bail!("Incorrect command line endorsement key settings");
+        }
+    };
     run_ft_personalize(
         &transport,
         &opts.init,
         opts.provisioning_data.host_ecc_sk,
-        opts.provisioning_data.cert_endorsement_ecc_sk,
+        cert_endorsement_key_wrapper,
         &_perso_certgen_inputs,
         opts.timeout,
         opts.provisioning_data.ca_certificate,
