@@ -4,7 +4,7 @@
 
 use sha2::{Digest, Sha256};
 use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
@@ -14,6 +14,7 @@ use arrayvec::ArrayVec;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::{PublicKey, SecretKey};
 use num_bigint_dig::BigUint;
+use openssl::ecdsa::EcdsaSig;
 use p256::ecdsa::SigningKey;
 use p256::NistP256;
 use zerocopy::AsBytes;
@@ -247,11 +248,20 @@ fn validate_certs_chain(ca_pem: &str, certs: &[&Vec<u8>]) -> Result<()> {
     Ok(())
 }
 
+// This enum provides two different certificate signing key representations. In
+// case the local fake certificate is used for certificate chain validation, the
+// key is a path to the file containing the private key. In case a Cloud KMS
+// certificate is used, the key is a string, the ID of the key in cloud storage.
+pub enum KeyWrapper {
+    LocalKey(PathBuf),
+    CkmsKey(String),
+}
+
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
     host_ecc_sk: PathBuf,
-    cert_endorsement_ecc_sk: PathBuf,
+    cert_endorsement_key_wrapper: KeyWrapper,
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
     ca_certificate: PathBuf,
@@ -357,15 +367,21 @@ pub fn run_ft_personalize(
         .take(certs.tpm_cik_tbs_certificate_size)
         .collect();
 
-    // Parse, endorse, and log certificates to console.
-    let cert_endorsement_sk = SecretKey::<NistP256>::read_pkcs8_der_file(cert_endorsement_ecc_sk)?;
-    let uds_cert_bytes = parse_and_endorse_x509_cert(uds_tbs_cert_bytes, &cert_endorsement_sk)?;
-    let tpm_ek_cert_bytes =
-        parse_and_endorse_x509_cert(tpm_ek_tbs_cert_bytes, &cert_endorsement_sk)?;
-    let tpm_cek_cert_bytes =
-        parse_and_endorse_x509_cert(tpm_cek_tbs_cert_bytes, &cert_endorsement_sk)?;
-    let tpm_cik_cert_bytes =
-        parse_and_endorse_x509_cert(tpm_cik_tbs_cert_bytes, &cert_endorsement_sk)?;
+    let key = match cert_endorsement_key_wrapper {
+        KeyWrapper::LocalKey(path) => {
+            log::info!("Using local key for cert endorsement");
+            EndorsementKey::LocalKey(SecretKey::<NistP256>::read_pkcs8_der_file(path)?)
+        }
+        KeyWrapper::CkmsKey(key_id) => {
+            log::info!("Using Cloud KMS key for cert endorsement");
+            EndorsementKey::CkmsKey(key_id)
+        }
+    };
+    let uds_cert_bytes = parse_and_endorse_x509_cert(uds_tbs_cert_bytes, &key)?;
+    let tpm_ek_cert_bytes = parse_and_endorse_x509_cert(tpm_ek_tbs_cert_bytes, &key)?;
+    let tpm_cek_cert_bytes = parse_and_endorse_x509_cert(tpm_cek_tbs_cert_bytes, &key)?;
+    let tpm_cik_cert_bytes = parse_and_endorse_x509_cert(tpm_cik_tbs_cert_bytes, &key)?;
+
     log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
     let _ = parse_certificate(&uds_cert_bytes)?;
     log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
@@ -437,7 +453,22 @@ pub fn run_ft_personalize(
     validate_certs_chain(ca_certificate.to_str().unwrap(), &certs)
 }
 
-fn parse_and_endorse_x509_cert(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
+// This internal enum provides two different certificate signing key
+// representations, a SecretKey object in case of fake key or a String object -
+// the ID of the key used by Cloud KMS.
+enum EndorsementKey {
+    LocalKey(SecretKey<NistP256>),
+    CkmsKey(String),
+}
+
+fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &EndorsementKey) -> Result<Vec<u8>> {
+    match key {
+        EndorsementKey::CkmsKey(key_id) => parse_and_endorse_x509_cert_ckms(tbs, key_id),
+        EndorsementKey::LocalKey(ca_sk) => parse_and_endorse_x509_cert_local(tbs, ca_sk),
+    }
+}
+
+fn parse_and_endorse_x509_cert_local(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
     let tbs_digest = sha256(&tbs);
     let signing_key = SigningKey::from(ca_sk);
@@ -451,6 +482,67 @@ fn parse_and_endorse_x509_cert(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Res
             s: Value::Literal(BigUint::from_bytes_be(&s)),
         }),
     };
+
+    // Generate the (endorsed) UDS certificate.
+    generate_certificate_from_tbs(tbs, &signature)
+}
+
+fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<Vec<u8>> {
+    // Let openssl hash and sign the TBS.
+    let base_name = tmpfilename("cert_signing");
+    let binding_tbs = base_name.to_owned() + ".tbs";
+    let binding_sig = base_name.to_owned() + ".sig";
+    let tbs_filename = binding_tbs.as_str();
+    let sig_filename = binding_sig.as_str();
+
+    // Save TBS in a file.
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(tbs_filename)
+        .context("failed to open tbs file")?;
+    file.write_all(&tbs)?;
+    drop(file);
+
+    let binding_key = String::from("pkcs11:object=") + ckms_key_id;
+    openssl_command(
+        0,
+        &[
+            "dgst",
+            "-sha256",
+            "-engine",
+            "pkcs11",
+            "-keyform",
+            "engine",
+            "-sign",
+            binding_key.as_str(),
+            "-out",
+            sig_filename,
+            tbs_filename,
+        ],
+    )
+    .context("openssl failed to sign certificate digest")?;
+
+    // Read the signature represented as an ASN.1 object.
+    file = OpenOptions::new().read(true).open(sig_filename)?;
+    let mut asn1_sig = Vec::new();
+    file.read_to_end(&mut asn1_sig)?;
+    drop(file);
+
+    // Parse the ASN.1 string into signature components.
+    let ecdsa_sig =
+        EcdsaSig::from_der(&asn1_sig).context("cannot extract ECDSA signature from blob")?;
+
+    let signature = Signature::EcdsaWithSha256 {
+        value: Some(EcdsaSignature {
+            r: Value::Literal(BigUint::from_bytes_be(&ecdsa_sig.r().to_vec())),
+            s: Value::Literal(BigUint::from_bytes_be(&ecdsa_sig.s().to_vec())),
+        }),
+    };
+
+    fs::remove_file(tbs_filename).context("failed to remove tbs file")?;
+    fs::remove_file(sig_filename).context("failed to remove signature file")?;
 
     // Generate the (endorsed) UDS certificate.
     generate_certificate_from_tbs(tbs, &signature)

@@ -9,7 +9,11 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "ft_lib",
     srcs = ["src/lib.rs"],
-    data = ["//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem"],
+    data = [
+        "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
+        "//sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
+    ],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
@@ -22,6 +26,7 @@ rust_library(
         "@crate_index//:hex",
         "@crate_index//:log",
         "@crate_index//:num-bigint-dig",
+        "@crate_index//:openssl",
         "@crate_index//:p256",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
