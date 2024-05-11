@@ -44,18 +44,28 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
 
   // Read the WHERETO register over TL-UL and check it contains the expected instruction, which
   // should be a relative jump instruction (jal) pointing at the first instruction to run. This
-  // should be the first instruction in the abstract command, which is stored at "ProgBufBaseAddr"
-  // (the start of the program buffer).
+  // should be the first instruction in the abstract command, which is either stored at
+  // AbstractCmdBaseAddr or (as a shortcut) it might be stored at "ProgBufBaseAddr" (the start of
+  // the program buffer). Here, we don't model which case we're in, so we just check that it points
+  // to one of those addresses.
   task check_whereto();
     // The address of the start of the program buffer is an implementation detail of the pulp debug
-    // module: we've picked it out of the code to match. Similarly, the "WhereTo instruction" lies
-    // at an address which is an implementation detail (WhereToAddr in dm_mem.sv).
+    // module: we've picked it out of the code to match, and the same for the offset to the start of
+    // the abstract command. Similarly, the "WhereTo instruction" lies at an address which is an
+    // implementation detail (WhereToAddr in dm_mem.sv).
     bit [31:0] prog_buf_addr = dm::DataAddr - 4*dm::ProgBufSize;
+    bit [31:0] abs_cmd_addr = prog_buf_addr - 4*10;
     bit [31:0] whereto_addr = 'h300;
+
+    logic [31:0] prog_buf_jal = dm::jal(.rd(0), .imm(prog_buf_addr - whereto_addr));
+    logic [31:0] abs_cmd_jal = dm::jal(.rd(0), .imm(abs_cmd_addr - whereto_addr));
 
     uvm_reg_data_t rdata;
     csr_rd(.ptr(tl_mem_ral.whereto), .value(rdata));
-    `DV_CHECK_EQ(rdata, dm::jal(.rd(0), .imm(prog_buf_addr - whereto_addr)))
+    `DV_CHECK(rdata inside {prog_buf_jal, abs_cmd_jal},
+              $sformatf({"The whereto register reads as %0x, which is not either ",
+                         "of the jumps we expected (%0x, %0x)"},
+                        rdata, prog_buf_jal, abs_cmd_jal))
   endtask
 
   // Construct a "read register" abstract command.
