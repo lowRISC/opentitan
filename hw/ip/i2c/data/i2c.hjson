@@ -689,12 +689,14 @@
     { name: "TIMEOUT_CTRL"
       desc: '''
             I2C clock stretching and bus timeout control.
-            The behavior of this feature depends on the value of TIMEOUT_CTRL.BUS_TIMEOUT_EN.
-            If the bus timeout is disabled, this is used in I2C controller mode to detect whether a connected target is stretching a single low time beyond the timeout value.
-            When the bus timeout feature is disabled, this feature is more informative and doesn't do more than assert the "stretch_timeout" interrupt.
 
-            If the bus timeout feature is enabled, it is used to detect whether the clock has been held low for too long instead, inclusive of the controller's clock low time.
-            In an SMBus context, the VAL programmed should be tTIMEOUT:MIN, and EN and BUS_TIMEOUT_EN should be 1.
+            This timeout must be enabled by setting !!TIMEOUT_CTRL.EN to 1, and the behavior of this feature depends on the value of !!TIMEOUT_CTRL.MODE.
+
+            If the mode is "STRETCH_TIMEOUT", this is used in I2C controller mode to detect whether a connected target is stretching a single low time beyond the timeout value.
+            Configured as such, this timeout is more informative and doesn't do more than assert the "stretch_timeout" interrupt.
+
+            If the mode is "BUS_TIMEOUT", it is used to detect whether the clock has been held low for too long instead, inclusive of the controller's clock low time.
+            This is useful for an SMBus context, where the VAL programmed should be tTIMEOUT:MIN.
             '''
       swaccess: "rw"
       hwaccess: "hro"
