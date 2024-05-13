@@ -237,7 +237,6 @@ module ascon_duplex_tb (
   .no_msg(dut_no_msg),
 
   .key_i(key),
-  .iv_i(64'h80400c0600000000),
   .nonce_i(nonce),
 
   // Cipher Input Port

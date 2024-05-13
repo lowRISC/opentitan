@@ -31,6 +31,9 @@ typedef enum {
   ASCON_128A
 } duplex_variant_e;
 
+const logic [63:0] IV_128 =  64'h80400c0600000000;
+const logic [63:0] IV_128A = 64'h80800c0800000000;
+
 const logic[3:0] ROUND_MAX = 4'b1011;
 
 // Encoding generated with:

@@ -23,13 +23,12 @@ module prim_ascon_duplex
   input  logic start_i,
   output logic idle_o,
 
-  // It is assumed that no_ad, no_msg, key, iv, and nonce are always
+  // It is assumed that no_ad, no_msg, key, and nonce are always
   // valid and constant, when the cipher is triggered by the start command
   input logic no_ad,
   input logic no_msg,
 
   input logic [127:0] key_i,
-  input logic  [63:0] iv_i,
   input logic [127:0] nonce_i,
 
   // Cipher Input Port
@@ -77,6 +76,8 @@ logic [319:0] state_from_round;
 fsm_state_e fsm_state_d, fsm_state_q;
 perm_offset_e perm_offset;
 
+logic  [63:0] iv;
+assign iv = (ascon_variant == ASCON_128) ? IV_128 : IV_128A;
 
 // data output
 logic  [127:0] data_out;
@@ -331,7 +332,7 @@ always_comb begin : ascon_state_mux
 
   unique case (fsm_state_q)
     Init: begin
-      ascon_state_d[0] = iv_i;
+      ascon_state_d[0] = iv;
       ascon_state_d[1] = key_i[127:64];
       ascon_state_d[2] = key_i[63:0];
       ascon_state_d[3] = nonce_i[127:64];
