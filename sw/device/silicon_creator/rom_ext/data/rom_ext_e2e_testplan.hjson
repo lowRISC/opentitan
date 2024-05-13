@@ -216,5 +216,273 @@
         url: https://github.com/lowRISC/opentitan/issues/20247
       }
     }
+
+    {
+      name: rom_ext_e2e_transfer_any_test
+      desc:
+        '''
+        Verify that ROM_EXT can unlock and transfer ownership to a new owner.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner.
+        - Activate ownership with the `dummy` activate key.
+        - Confirm code execution with the `dummy` owner application key.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_bad_unlock_test
+      desc:
+        '''
+        Verify that ROM_EXT rejects an OwnershipUnlock operation with the wrong key.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Attempt to unlock the chip into the UnlockedAny state using the wrong key.
+        - Confirm the unlock is rejected with an `OwnershipInvalidSignature` error.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_bad_activate_test
+      desc:
+        '''
+        Verify that ROM_EXT rejects an OwnershipActivate operation with the wrong key.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner.
+        - Attempt to activate ownership with the wrong activate key.
+        - Confirm the activate is rejected with an `OwnershipInvalidSignature` error.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_bad_owner_block_test
+      desc:
+        '''
+        Verify that ROM_EXT rejects a bad ownership configuration.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner with a corrupted signature.
+        - Attempt to activate ownership with the `dummy` activate key.
+        - Confirm the activate is rejected with an `OwnershipInvalidInfoPage` error.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_bad_app_key_test
+      desc:
+        '''
+        Verify that ROM_EXT will not execute code signed with the wrong key.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner with an improper application key (ie: not the `dummy` app key).
+        - Activate ownership with the `dummy` activate key.
+        - Confirm the ROM_EXT boot-fault's with the error `OwnershipKeyNotFound`.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_transfer_endorsed_test
+      desc:
+        '''
+        Verify that ROM_EXT can unlock and transfer ownership to a specific owner.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedEndorsed state using the `fake` owner unlock key.  Endorse the `dummy` owner.
+        - Upload an owner block for the `dummy` owner.
+        - Activate ownership with the `dummy` activate key.
+        - Confirm code execution with the `dummy` owner application key.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_bad_endorsee_test
+      desc:
+        '''
+        Verify that ROM_EXT rejects ownership transfer to a non-endorsed owner.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedEndorsed state using the `fake` owner unlock key.
+        - Upload an owner block using the `fake` owner key as the owner.
+        - Attempt to activate ownership with activate key.
+        - Confirm the activate is rejected with an `OwnershipInvalidInfoPage` error.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_locked_update_test
+      desc:
+        '''
+        Verify that ROM_EXT accepts an owner configuration update.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the LockedUpdate state using the `fake` owner unlock key.
+        - Upload an new owner block using the `fake` owner key (ie: embed the `dummy` app key in the `fake` owner block).
+        - Activate ownership with the `fake` activate key.
+        - Confirm code execution with the `dummy` owner application key.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_bad_locked_update_test
+      desc:
+        '''
+        Verify that ROM_EXT rejects an owner configuration update.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the LockedUpdate state using the `fake` owner unlock key.
+        - Upload an new owner block using the wrong owner key (ie: use the `dummy` owner and app key).
+        - Activate ownership with the `fake` activate key.
+        - Confirm the activate is rejected with an `OwnershipInvalidInfoPage` error.
+        - Confirm that code execution with the new app key is denied.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_rescue_limit_test
+      desc:
+        '''
+        Verify that ROM_EXT rescue respects the limits set in the owner configuration.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner that contains a rescue flash limit.
+        - Activate ownership with the `dummy` activate key.
+        - Upload a test pattern to the flash that would write data past the limit.
+        - Confirm the test pattern exists before the limit, but not after.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_rescue_permission_test
+      desc:
+        '''
+        Verify that ROM_EXT rescue rejects commands not in the allow list.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner that contains a rescue configuration omitting some commands.
+        - Activate ownership with the `dummy` activate key.
+        - Attempt to use rescue to execute the forbidden commands.
+        - Confirm that the rescue protocol rejects the forbidden commands.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_flash_permission_test
+      desc:
+        '''
+        Verify that ROM_EXT configures flash as requested in the owner configuration.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner that contains a flash configuration.
+          The new flash configuration should have a different scrambling or ECC configuration than the current configuration.
+        - Boot owner firmware and examine the flash controller's region configuration registers.
+        - Confirm that in the intermediate "dual-owner" state, the primary half of the flash is configured for the previous owner and the secondary half is configured for the next owner.
+          Confirm that the `protect_when_primary` condition does not apply during the dual-owner state.
+        - Activate ownership with the `dummy` activate key.
+        - Use the rescue protocol to upload owner firmware into the newly-configured flash regions.
+        - Confirm that in the owned state, the entire flash is configured for the new owner and that the `protect_when_primary` condition removes erase/program permissions appropriately.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+    {
+      name: rom_ext_e2e_info_permission_test
+      desc:
+        '''
+        Verify that ROM_EXT rejects an invalid INFO page configuration.
+
+        - Start in an locked & owned state with the `fake` owner as owner.
+        - Unlock the chip into the UnlockedAny state using the `fake` owner unlock key.
+        - Upload an owner block for the `dummy` owner that tries to set properties on a creator-designated INFO page.
+        - Activate ownership with the `dummy` activate key.
+        - Confirm the activate is rejected with an `OwnershipInvalidInfoPage` error.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+      ]
+      stage: V3
+      tests: []
+    }
+
   ]
 }
