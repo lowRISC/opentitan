@@ -177,6 +177,7 @@ module keymgr_dpe
   logic [LfsrWidth-1:0] seed;
   logic reseed_req;
   logic reseed_ack;
+  logic reseed_done;
   logic reseed_cnt_err;
 
   keymgr_reseed_ctrl u_reseed_ctrl (
@@ -186,6 +187,7 @@ module keymgr_dpe
     .rst_edn_ni,
     .reseed_req_i(reseed_req),
     .reseed_ack_o(reseed_ack),
+    .reseed_done_o(reseed_done),
     .reseed_interval_i(reg2hw.reseed_interval_shadowed.q),
     .edn_o,
     .edn_i,
@@ -290,6 +292,7 @@ module keymgr_dpe
     .sideload_fsm_err_i(sideload_fsm_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
+    .prng_reseed_done_i(reseed_done),
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
