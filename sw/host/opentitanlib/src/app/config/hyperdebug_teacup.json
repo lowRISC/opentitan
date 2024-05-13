@@ -36,6 +36,7 @@
     },
     {
       "name": "IOA4",
+      "mode": "Input",
       "alias_of": "CN8_10"
     },
     {
