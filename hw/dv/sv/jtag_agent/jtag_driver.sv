@@ -95,6 +95,12 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         $cast(rsp, req.clone());
         rsp.set_id_info(req);
 
+        // Make sure that we're aligned to HOST_CB (on the negedge of TCK). If we have just finished
+        // the previous item, this delay is going to add a cycle of TCK, but we're in RunTest/IDLE,
+        // so it won't cause any harm.
+        cfg.vif.tck_en <= 1'b1;
+        @(`HOST_CB);
+
         `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
         `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
                           wait (!cfg.vif.trst_n);)
