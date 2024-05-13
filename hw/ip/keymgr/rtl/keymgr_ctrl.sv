@@ -66,6 +66,7 @@ module keymgr_ctrl
 
   // prng control interface
   input [Shares-1:0][RandWidth-1:0] entropy_i,
+  input prng_reseed_done_i,
   input prng_reseed_ack_i,
   output logic prng_reseed_req_o,
   output logic prng_en_o
@@ -234,7 +235,24 @@ module keymgr_ctrl
   //  interaction between main fsm and prng
   ///////////////////////////
 
-  assign prng_en_o = random_req | disabled | invalid | wipe_req;
+  // Upon entering StCtrlDisabled or StCtrlInvalid, the PRNG is kept advancing until it has been
+  // reseeded twice (through the reseeding mechansism inside keymgr_reseed_ctrl.sv).
+  logic [1:0] prng_en_dis_inv_d, prng_en_dis_inv_q;
+  logic prng_en_dis_inv_set;
+
+  assign prng_en_dis_inv_d =
+      prng_en_dis_inv_set ? 2'b11 :
+      prng_reseed_done_i  ? {1'b0, prng_en_dis_inv_q[1]} : prng_en_dis_inv_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      prng_en_dis_inv_q <= '0;
+    end else begin
+      prng_en_dis_inv_q <= prng_en_dis_inv_d;
+    end
+  end
+
+  assign prng_en_o = random_req | wipe_req | prng_en_dis_inv_q[0];
 
   //////////////////////////
   // Main Control FSM
@@ -456,7 +474,10 @@ module keymgr_ctrl
     // indication that state is invalid
     invalid = 1'b0;
 
-    // enable prng toggling
+    // Don't request final PRNG updating and reseeding.
+    prng_en_dis_inv_set = 1'b0;
+
+    // Request PRNG reseeding.
     prng_reseed_req_o = 1'b0;
 
     // initialization complete
@@ -535,6 +556,7 @@ module keymgr_ctrl
           state_d = StCtrlWipe;
         end else if (dis_state) begin
           state_d = StCtrlDisabled;
+          prng_en_dis_inv_set = 1'b1;
         end else if (adv_state) begin
           state_d = StCtrlCreatorRootKey;
         end
@@ -554,6 +576,7 @@ module keymgr_ctrl
           state_d = StCtrlWipe;
         end else if (dis_state) begin
           state_d = StCtrlDisabled;
+          prng_en_dis_inv_set = 1'b1;
         end else if (adv_state) begin
           state_d = StCtrlOwnerIntKey;
         end
@@ -573,6 +596,7 @@ module keymgr_ctrl
           state_d = StCtrlWipe;
         end else if (dis_state) begin
           state_d = StCtrlDisabled;
+          prng_en_dis_inv_set = 1'b1;
         end else if (adv_state) begin
           state_d = StCtrlOwnerKey;
         end
@@ -592,6 +616,7 @@ module keymgr_ctrl
           state_d = StCtrlWipe;
         end else if (adv_state || dis_state) begin
           state_d = StCtrlDisabled;
+          prng_en_dis_inv_set = 1'b1;
         end
       end
 
@@ -614,6 +639,7 @@ module keymgr_ctrl
         //    begin with (op_start_i == 0), in this case, don't wait and immediately transition
         if (!op_start_i) begin
           state_d = StCtrlInvalid;
+          prng_en_dis_inv_set = 1'b1;
         end
       end
 
