@@ -21,3 +21,19 @@ rust_binary(
         "@crate_index//:serde_json",
     ],
 )
+
+rust_binary(
+    name = "sleep_pin_mio_dio_val",
+    srcs = [
+        "src/sleep_pin_mio_dio_val.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:once_cell",
+        "@crate_index//:serde_json",
+    ],
+)
