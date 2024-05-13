@@ -27,24 +27,22 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static void init_test(dif_spi_host_t *spi_host) {
   dif_pinmux_t pinmux;
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
-  CHECK_STATUS_OK(
-      spi_host1_pinmux_connect_to_bob(&pinmux, kTopEarlgreyPinmuxMioOutIob7));
+  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_pinmux_init(addr, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
-  CHECK_DIF_OK(dif_spi_host_init(base_addr, spi_host));
+  dif_pinmux_index_t csb_pin = kTopEarlgreyPinmuxMioOutIob7;
+  CHECK_STATUS_OK(spi_host1_pinmux_connect_to_bob(&pinmux, csb_pin));
 
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
+  addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
+  CHECK_DIF_OK(dif_spi_host_init(addr, spi_host));
 
-  CHECK_DIF_OK(dif_spi_host_configure(spi_host,
-                                      (dif_spi_host_config_t){
-                                          .spi_clock = 1000000,
-                                          .peripheral_clock_freq_hz =
-                                              (uint32_t)kClockFreqPeripheralHz,
-                                      }),
+  CHECK(kClockFreqUsbHz <= UINT32_MAX, "kClockFreqUsbHz must fit in uint32_t");
+
+  CHECK_DIF_OK(dif_spi_host_configure(
+                   spi_host,
+                   (dif_spi_host_config_t){
+                       .spi_clock = 1000000,
+                       .peripheral_clock_freq_hz = (uint32_t)kClockFreqUsbHz,
                "SPI_HOST config failed!");
 
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, true));
