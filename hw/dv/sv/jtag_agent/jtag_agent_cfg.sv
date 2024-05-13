@@ -7,6 +7,10 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual jtag_if vif;
 
+  // Extra interface handle that *may* be used by the monitor instead of vif. If this is not null,
+  // the agent monitor will track signals from this interface instead of reading from vif.
+  virtual jtag_mon_if mon_vif;
+
   // Length of IR register. Update this field based on the actual width used in the design.
   uint ir_len = JTAG_IRW;
 

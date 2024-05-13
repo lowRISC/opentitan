@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:csr_utils
     files:
       - jtag_if.sv
+      - jtag_mon_if.sv
       - jtag_agent_pkg.sv
       - jtag_agent_cfg.sv: {is_include_file: true}
       - jtag_agent_cov.sv: {is_include_file: true}
