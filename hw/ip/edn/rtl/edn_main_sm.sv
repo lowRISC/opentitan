@@ -6,9 +6,8 @@
 //
 //   does hardware-based csrng app interface command requests
 
-module edn_main_sm import edn_pkg::*; #(
-  localparam int StateWidth = 9
-) (
+module edn_main_sm import edn_pkg::*;
+(
   input logic                   clk_i,
   input logic                   rst_ni,
 

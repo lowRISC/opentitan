@@ -370,7 +370,7 @@ module edn_core import edn_pkg::*;
 
   // CSRNG acknowledgement error status
   assign csrng_ack_err = edn_enable_fo[CsrngAckErr] &&
-                         csrng_cmd_i.csrng_rsp_sts && csrng_cmd_i.csrng_rsp_ack;
+      csrng_cmd_i.csrng_rsp_ack && (csrng_cmd_i.csrng_rsp_sts != csrng_pkg::CMD_STS_SUCCESS);
   assign hw2reg.recov_alert_sts.csrng_ack_err.de = csrng_ack_err;
   assign hw2reg.recov_alert_sts.csrng_ack_err.d  = csrng_ack_err;
 
@@ -608,7 +608,8 @@ module edn_core import edn_pkg::*;
          !edn_enable_fo[HwCmdSts] ? csrng_pkg::CMD_STS_SUCCESS :
          sw_cmd_valid ? csrng_hw_cmd_sts_q :
          (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? csrng_pkg::CMD_STS_SUCCESS :
-         csrng_cmd_i.csrng_rsp_ack && csrng_cmd_i.csrng_rsp_sts ? csrng_cmd_i.csrng_rsp_sts :
+         csrng_cmd_i.csrng_rsp_ack && (csrng_cmd_i.csrng_rsp_sts != csrng_pkg::CMD_STS_SUCCESS) ?
+             csrng_cmd_i.csrng_rsp_sts :
          csrng_hw_cmd_sts_q;
   // Set the cmd_ack signal to high whenever a hardware command is acknowledged and set it
   // to low whenever a new hardware command is issued to the CSRNG.
@@ -857,7 +858,8 @@ module edn_core import edn_pkg::*;
 
   assign packer_cs_clr = !edn_enable_fo[CsrngPackerClr];
   assign packer_cs_push = csrng_cmd_i.genbits_valid && !reject_csrng_entropy &&
-                          !(csrng_cmd_i.csrng_rsp_sts && csrng_cmd_i.csrng_rsp_ack);
+                          !((csrng_cmd_i.csrng_rsp_sts != csrng_pkg::CMD_STS_SUCCESS) &&
+                              csrng_cmd_i.csrng_rsp_ack);
   assign packer_cs_wdata = csrng_cmd_i.genbits_bus;
   assign csrng_cmd_o.genbits_ready = packer_cs_wready && !reject_csrng_entropy;
   assign packer_cs_rready = packer_arb_valid;
