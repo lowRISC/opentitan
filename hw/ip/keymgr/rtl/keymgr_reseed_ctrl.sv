@@ -16,6 +16,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   // interface to keymgr_ctrl
   input reseed_req_i,
   output logic reseed_ack_o,
+  output logic reseed_done_o,
 
   // interface to software
   input [15:0] reseed_interval_i,
@@ -57,6 +58,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
 
   assign seed_en_o = edn_ack;
   assign reseed_ack_o = reseed_req_i & edn_ack;
+  assign reseed_done_o = edn_done;
 
   prim_edn_req #(
     .OutWidth(LfsrWidth)
