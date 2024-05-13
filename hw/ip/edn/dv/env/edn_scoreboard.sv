@@ -305,13 +305,18 @@ class edn_scoreboard extends cip_base_scoreboard #(
       end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
-        // If the EDN was disabled via back door, the SW_CMD_STS prediction needs to be reset.
-        if (cfg.backdoor_disable) begin
-          sw_cmd_sts = 32'b0;
-        end
         if (data_phase_read) begin
-          `DV_CHECK_EQ(sw_cmd_sts, item.d_data,
-                       $sformatf("reg name: %0s", csr.get_full_name()))
+          // If the EDN was disabled via back door, the SW_CMD_STS prediction needs to be reset.
+          if (cfg.backdoor_disable) begin
+            sw_cmd_sts = 32'b0;
+            // Do a backdoor read check, since item.d_data could still return the old value.
+            // This could happen if the read was from before the disablement of EDN.
+            csr_rd_check(.ptr(ral.sw_cmd_sts), .compare_value(sw_cmd_sts), .backdoor(1));
+          end
+          if (!cfg.backdoor_disable) begin
+            `DV_CHECK_EQ(sw_cmd_sts, item.d_data,
+                        $sformatf("reg name: %0s", csr.get_full_name()))
+          end
           if (cfg.en_cov) begin
             cov_vif.cg_edn_sw_cmd_sts_sample(item.d_data[sw_cmd_rdy], item.d_data[sw_cmd_reg_rdy],
                 csrng_pkg::csrng_cmd_sts_e'(item.d_data[sw_cmd_sts+:CMD_STS_SIZE]),
