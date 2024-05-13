@@ -107,7 +107,7 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
             end
             `uvm_info("seq", $sformatf("idx:%0d done",idx), UVM_HIGH)
           end // else: !if(evct_start)
-           idx++;
+          idx++;
         end // while (idx < 30 && cfg.flash_ctrl_vif.fatal_err == 0)
         `uvm_info("seq",
                   $sformatf("read complete fatal:%0d", cfg.flash_ctrl_vif.fatal_err), UVM_HIGH)

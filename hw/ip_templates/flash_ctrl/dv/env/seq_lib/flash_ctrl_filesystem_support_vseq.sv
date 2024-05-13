@@ -26,6 +26,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
 
     // Don't select a partition defined as read-only
     cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+    cfg.seq_cfg.avoid_prog_res_fault = 1'b1;
 
     special_info_acc_c.constraint_mode(0);
     flash_program_data_c.constraint_mode(0);
@@ -95,29 +96,36 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     `uvm_info(`gfn, $sformatf("readback check stage 3"), UVM_HIGH)
     // Readback check;
     foreach(check_ent_q[op]) begin
-      `uvm_info("read_check", $sformatf("%p", check_ent_q[op]), UVM_MEDIUM)
       filesys_read_check(.flash_op_r(check_ent_q[op]));
     end
 
     `uvm_info(`gfn, $sformatf("readback check stage 4 with 1 bit error"), UVM_HIGH)
     // Readback check with 1 bit error
     foreach(check_ent_q[op]) begin
-      `uvm_info("read_check", $sformatf("%p", check_ent_q[op]), UVM_MEDIUM)
       filesys_read_check(.flash_op_r(check_ent_q[op]), .serr(1));
     end
 
+  endtask
+
+  // Helper task to issue a flash program op.
+  local task issue_flash_prog(flash_op_t op, data_q_t data);
+    bit poll_fifo_status = 1;
+    `uvm_info(`gfn, "Issuing flash write op:", UVM_MEDIUM)
+    flash_ctrl_start_op(op);
+    flash_ctrl_write(data, poll_fifo_status);
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
   endtask
 
   // Program flash.
   // Program all 0 or random data depends on 'all_zero' value.
   // If program address is in global 'addr_q', program all zero
   // to the address.
-  // Afte program, store write data for readback check.
+  // After program, store write data for readback check.
   task filesys_ctrl_prgm(flash_op_t flash_op_p, bit all_zero, output data_q_t wdata);
-    bit poll_fifo_status = 1;
     bit [BusBankAddrW-1:0] mem_addr = (flash_op_p.addr >> 3);
     bit                    ovwr_zero = 0;
 
+    flash_op_p.op = FlashOpProgram;
     `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h flash_op:%p is_secret:%b",
               flash_op_p.addr, flash_op_p, is_secret_part(flash_op_p)), UVM_MEDIUM)
     // Randomize Write Data
@@ -138,17 +146,34 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
         mem_addr++;
       end
     end
-
-    flash_ctrl_start_op(flash_op_p);
-    flash_ctrl_write(flash_program_data, poll_fifo_status);
-    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-  endtask // filesys_ctrl_prgm_page
+    // If the op spills over a program window, break it into two.
+    if (in_different_prog_win(flash_op_p.addr,
+                              flash_op_p.addr + 4 * flash_op_p.num_words - 1)) begin
+      flash_op_t first_op, second_op;
+      addr_t split_addr = round_to_prog_resolution(flash_op_p.addr + 4 * flash_op_p.num_words - 1);
+      `DV_CHECK_LE(flash_op_p.num_words, 16)
+      first_op = flash_op_p;
+      first_op.num_words = (split_addr - flash_op_p.addr) / 4;
+      print_flash_op(flash_op_p, UVM_MEDIUM);
+      `uvm_info(`gfn, $sformatf(
+                "splitting at addr:%x, first wd:%x", split_addr, first_op.num_words), UVM_MEDIUM)
+      issue_flash_prog(first_op, flash_program_data[0:first_op.num_words-1]);
+      second_op = flash_op_p;
+      second_op.addr = split_addr;
+      second_op.otf_addr = split_addr;
+      second_op.num_words = flash_op_p.num_words - first_op.num_words;
+      issue_flash_prog(second_op, flash_program_data[first_op.num_words:flash_op_p.num_words - 1]);
+    end else begin
+      issue_flash_prog(flash_op_p, flash_program_data);
+    end
+  endtask : filesys_ctrl_prgm
 
   // Read data either from host or controller, and compare with
   // readback_data[flash_op_t].
   task filesys_read_check(flash_op_t flash_op_r, bit use_cfg_rdata = 0, bit serr = 0);
     data_q_t read_data, ref_data;
     flash_op_r.op = FlashOpRead;
+    `uvm_info("read_check", $sformatf("%p", flash_op_r), UVM_MEDIUM)
     if (flash_op_r.partition == FlashPartData) begin
       randcase
         1: begin
@@ -176,7 +201,8 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   task filesys_ctrl_read(flash_op_t flash_op_r, output data_q_t rdata, input bit serr);
     bit poll_fifo_status = 1;
     int size;
-     `uvm_info(`gfn, $sformatf("filesys_ctrl_read: flash_op:%p is_secret:%b",
+    flash_op_r.op = FlashOpRead;
+    `uvm_info(`gfn, $sformatf("filesys_ctrl_read: flash_op:%p is_secret:%b",
                flash_op_r, is_secret_part(flash_op_r)), UVM_MEDIUM)
 
     rdata = '{};
