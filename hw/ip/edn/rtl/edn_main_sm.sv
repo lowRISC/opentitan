@@ -181,7 +181,9 @@ module edn_main_sm import edn_pkg::*; #(
     endcase
 
     if (local_escalate_i || csrng_ack_err_i) begin
-      state_d = local_escalate_i ? Error : RejectCsrngEntropy;
+      // Either move into RejectCsrngEntropy or Error but don't move out of Error as it's terminal.
+      state_d = local_escalate_i ? Error :
+                state_q == Error ? Error : RejectCsrngEntropy;
       // Tie off outputs, except for main_sm_err_o and reject_csrng_entropy_o.
       boot_wr_ins_cmd_o      = 1'b0;
       boot_wr_gen_cmd_o      = 1'b0;
