@@ -59,6 +59,18 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.lc_dft_en                <= lc_hw_debug_en;
     cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= prim_mubi_pkg::MuBi8True;
 
+    // If we've just enabled debug, it might be that the JTAG interface was previously disconnected
+    // and we need to tell the jtag driver (which monitors its internal state) to start again.
+    //
+    // Note that we also want to do this at the start of the simulation. If this doesn't happen, you
+    // can end up in a situation where jtag_driver sees the posedge on trst_n (not yet connected)
+    // and starts to run reset_internal_state. After a few cycles, the debug enable signal makes it
+    // through u_prim_lc_sync_lc_hw_debug_en and the jtag interface gets connected to the DAP... for
+    // the second half of the reset sequence.
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_hw_debug_en)) begin
+      cfg.m_jtag_agent_cfg.jtag_if_connected.trigger();
+    end
+
     super.pre_start();
   endtask
 
