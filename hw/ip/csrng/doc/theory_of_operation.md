@@ -47,7 +47,8 @@ This process repeats until the `glen` field value has been matched.
 Because each request is pipelined, requests from other `cmd_stage` blocks can be processed before the original generate command is completely done.
 This provides some interleaving of commands since a generate command can be programmed to take a very long time.
 
-When sending an unsupported or illegal command, `CMD_STAGE_INVALID_ACMD_ALERT` will be triggered, but there will be no status response or indication of which app the error occurred in.
+When sending an unsupported or illegal command, `CMD_STAGE_INVALID_ACMD_ALERT` will be triggered.
+Furthermore, CSRNG will respond with the appropriate error status response on the relevant interface.
 
 #### Working State Values
 The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance.
