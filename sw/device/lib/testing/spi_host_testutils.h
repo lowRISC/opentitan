@@ -12,6 +12,13 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 
+typedef enum spi_pinmux_platform_id {
+  kSpiPinmuxPlatformIdCw310 = 0,
+  kSpiPinmuxPlatformIdCw340,
+  kSpiPinmuxPlatformIdTeacup,
+  kSpiPinmuxPlatformIdCount,
+} spi_pinmux_platform_id_t;
+
 /**
  * Return True if spi host is active.
  *
@@ -41,10 +48,12 @@ status_t spi_host_testutils_flush(dif_spi_host_t *spi_host);
  * @param pinmux A pinmux handle.
  * @param csb_outsel The chip select pin, this should be one of the eight
  * devices in the BoB connected to the bus. See ::top_earlgrey_pinmux_mio_out_t.
+ * @param platform_id The ID of the platform where the test in running.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t spi_host1_pinmux_connect_to_bob(const dif_pinmux_t *pinmux,
-                                         dif_pinmux_index_t csb_outsel);
+                                         dif_pinmux_index_t csb_outsel,
+                                         spi_pinmux_platform_id_t platform_id);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_HOST_TESTUTILS_H_

@@ -30,8 +30,24 @@ static void init_test(dif_spi_host_t *spi_host) {
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(addr, &pinmux));
 
+  spi_pinmux_platform_id_t platform_id = kSpiPinmuxPlatformIdCount;
+  switch (kDeviceType) {
+    case kDeviceSilicon:
+      platform_id = kSpiPinmuxPlatformIdTeacup;
+      break;
+    case kDeviceFpgaCw310:
+      platform_id = kSpiPinmuxPlatformIdCw310;
+      break;
+    case kDeviceFpgaCw340:
+      platform_id = kSpiPinmuxPlatformIdCw340;
+      break;
+    default:
+      CHECK(false, "Device not supported %u", kDeviceType);
+      break;
+  }
   dif_pinmux_index_t csb_pin = kTopEarlgreyPinmuxMioOutIob7;
-  CHECK_STATUS_OK(spi_host1_pinmux_connect_to_bob(&pinmux, csb_pin));
+  CHECK_STATUS_OK(
+      spi_host1_pinmux_connect_to_bob(&pinmux, csb_pin, platform_id));
 
   addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(addr, spi_host));
@@ -43,6 +59,7 @@ static void init_test(dif_spi_host_t *spi_host) {
                    (dif_spi_host_config_t){
                        .spi_clock = 1000000,
                        .peripheral_clock_freq_hz = (uint32_t)kClockFreqUsbHz,
+                   }),
                "SPI_HOST config failed!");
 
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, true));
