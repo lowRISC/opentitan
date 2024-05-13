@@ -13,8 +13,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   `uvm_component_new
 
-  // The most recently selected IR. If a new request has the same IR and has the skip_reselected_ir
-  // flag set then don't bother sending the IR again.
+  // The IR that we most recently selected. If a new request has the same IR and has the
+  // skip_reselected_ir flag set then don't bother sending the IR again. If the current state of the
+  // JTAG bus is unknown (because we might just have been connected), use the reset_internal_state()
+  // function to ensure we request a new IR for the next item.
   logic [JTAG_IRW-1:0]  selected_ir;
   uint                  selected_ir_len;
 
@@ -25,16 +27,24 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // without going to Run-Test-Idle), this extra cycle must be skipped
   bit                   exit_to_rti_dr_past = 1;
 
+  // Reset internal model of interface state
+  //
+  // This is needed on a genuine interface reset, but is also needed when we find out our interface
+  // connection was broken (so we were shouting into the void)
+  function void reset_internal_state();
+    // Set a dummy "previous IR" value with a zero length. Note that we only consider setting IR for
+    // a new request if the length is nonzero, but skip doing so if the value and length match,
+    // which can't happen just after calling this function because you'd need the length to be both
+    // zero and nonzero.
+    selected_ir = '{default:0};
+    selected_ir_len = 0;
+  endfunction
+
   // do reset signals (function)
   virtual function void do_reset_signals();
     `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
-    // Set a dummy "previous IR" value with a zero length. Note that we only consider setting IR for
-    // a new request if the length is nonzero, but skip doing so if the value and length match,
-    // which can't happen at the start of time because you'd need the length to be both zero and
-    // nonzero.
-    selected_ir = '{default:0};
-    selected_ir_len = 0;
+    reset_internal_state();
 
     cfg.vif.tck_en <= 1'b0;
     cfg.vif.tms <= 1'b0;
@@ -42,14 +52,21 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     exit_to_rti_dr_past = 1;
   endfunction
 
-  // reset signals task
   virtual task reset_signals();
-    do_reset_signals();
-    forever begin
-      @(negedge cfg.vif.trst_n);
-      do_reset_signals();
-      @(posedge cfg.vif.trst_n);
-    end
+    fork
+      begin
+        do_reset_signals();
+        forever begin
+          @(negedge cfg.vif.trst_n);
+          do_reset_signals();
+          @(posedge cfg.vif.trst_n);
+        end
+      end
+      forever begin
+        cfg.jtag_if_connected.wait_trigger();
+        reset_internal_state();
+      end
+    join
   endtask
 
   // drive trans received from sequencer
