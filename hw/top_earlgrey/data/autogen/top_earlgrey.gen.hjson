@@ -4611,6 +4611,20 @@
           index: 5
         }
         {
+          name: manual_pad_attr
+          struct: pad_attr
+          package: prim_pad_wrapper_pkg
+          type: uni
+          act: req
+          width: 4
+          default: "'0"
+          inst_name: sensor_ctrl_aon
+          external: true
+          top_signame: sensor_ctrl_manual_pad_attr
+          conn_type: false
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -8907,6 +8921,7 @@
       sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
       sensor_ctrl_aon.ast2pinmux: ast2pinmux
       sensor_ctrl_aon.ast_init_done: ast_init_done
+      sensor_ctrl_aon.manual_pad_attr: sensor_ctrl_manual_pad_attr
       spi_device.sck_monitor: sck_monitor
       usbdev.usb_rx_d: ""
       usbdev.usb_tx_d: ""
@@ -18469,6 +18484,20 @@
         index: 5
       }
       {
+        name: manual_pad_attr
+        struct: pad_attr
+        package: prim_pad_wrapper_pkg
+        type: uni
+        act: req
+        width: 4
+        default: "'0"
+        inst_name: sensor_ctrl_aon
+        external: true
+        top_signame: sensor_ctrl_manual_pad_attr
+        conn_type: false
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -21591,6 +21620,18 @@
         conn_type: false
         index: -1
         netname: ast_init_done
+      }
+      {
+        package: prim_pad_wrapper_pkg
+        struct: pad_attr
+        signame: sensor_ctrl_manual_pad_attr_o
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sensor_ctrl_manual_pad_attr
       }
       {
         package: ""

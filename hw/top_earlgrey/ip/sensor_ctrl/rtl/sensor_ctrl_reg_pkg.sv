@@ -11,6 +11,7 @@ package sensor_ctrl_reg_pkg;
   parameter int NumLocalEvents = 1;
   parameter int NumAlerts = 2;
   parameter int NumIoRails = 2;
+  parameter int NumAttrPads = 4;
 
   // Address widths within the block
   parameter int BlockAw = 7;
@@ -80,6 +81,11 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_reg2hw_fatal_alert_mreg_t;
 
   typedef struct packed {
+    logic        q;
+    logic        qe;
+  } sensor_ctrl_reg2hw_manual_pad_attr_mreg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -111,25 +117,31 @@ package sensor_ctrl_reg_pkg;
     } io_pok;
   } sensor_ctrl_hw2reg_status_reg_t;
 
+  typedef struct packed {
+    logic        d;
+  } sensor_ctrl_hw2reg_manual_pad_attr_mreg_t;
+
   // Register -> HW type
   typedef struct packed {
-    sensor_ctrl_reg2hw_intr_state_reg_t intr_state; // [100:99]
-    sensor_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [98:97]
-    sensor_ctrl_reg2hw_intr_test_reg_t intr_test; // [96:93]
-    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [92:89]
-    sensor_ctrl_reg2hw_alert_trig_mreg_t [10:0] alert_trig; // [88:78]
-    sensor_ctrl_reg2hw_alert_en_mreg_t [10:0] alert_en; // [77:34]
-    sensor_ctrl_reg2hw_fatal_alert_en_mreg_t [10:0] fatal_alert_en; // [33:23]
-    sensor_ctrl_reg2hw_recov_alert_mreg_t [10:0] recov_alert; // [22:12]
-    sensor_ctrl_reg2hw_fatal_alert_mreg_t [11:0] fatal_alert; // [11:0]
+    sensor_ctrl_reg2hw_intr_state_reg_t intr_state; // [108:107]
+    sensor_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [106:105]
+    sensor_ctrl_reg2hw_intr_test_reg_t intr_test; // [104:101]
+    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [100:97]
+    sensor_ctrl_reg2hw_alert_trig_mreg_t [10:0] alert_trig; // [96:86]
+    sensor_ctrl_reg2hw_alert_en_mreg_t [10:0] alert_en; // [85:42]
+    sensor_ctrl_reg2hw_fatal_alert_en_mreg_t [10:0] fatal_alert_en; // [41:31]
+    sensor_ctrl_reg2hw_recov_alert_mreg_t [10:0] recov_alert; // [30:20]
+    sensor_ctrl_reg2hw_fatal_alert_mreg_t [11:0] fatal_alert; // [19:8]
+    sensor_ctrl_reg2hw_manual_pad_attr_mreg_t [3:0] manual_pad_attr; // [7:0]
   } sensor_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    sensor_ctrl_hw2reg_intr_state_reg_t intr_state; // [54:51]
-    sensor_ctrl_hw2reg_recov_alert_mreg_t [10:0] recov_alert; // [50:29]
-    sensor_ctrl_hw2reg_fatal_alert_mreg_t [11:0] fatal_alert; // [28:5]
-    sensor_ctrl_hw2reg_status_reg_t status; // [4:0]
+    sensor_ctrl_hw2reg_intr_state_reg_t intr_state; // [58:55]
+    sensor_ctrl_hw2reg_recov_alert_mreg_t [10:0] recov_alert; // [54:33]
+    sensor_ctrl_hw2reg_fatal_alert_mreg_t [11:0] fatal_alert; // [32:9]
+    sensor_ctrl_hw2reg_status_reg_t status; // [8:4]
+    sensor_ctrl_hw2reg_manual_pad_attr_mreg_t [3:0] manual_pad_attr; // [3:0]
   } sensor_ctrl_hw2reg_t;
 
   // Register offsets
@@ -154,6 +166,14 @@ package sensor_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_RECOV_ALERT_OFFSET = 7'h 48;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_FATAL_ALERT_OFFSET = 7'h 4c;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_0_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_1_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_2_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_3_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_0_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_1_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_2_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_MANUAL_PAD_ATTR_3_OFFSET = 7'h 70;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] SENSOR_CTRL_INTR_TEST_RESVAL = 2'h 0;
@@ -162,6 +182,14 @@ package sensor_ctrl_reg_pkg;
   parameter logic [1:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
+  parameter logic [7:0] SENSOR_CTRL_MANUAL_PAD_ATTR_0_RESVAL = 8'h 0;
+  parameter logic [0:0] SENSOR_CTRL_MANUAL_PAD_ATTR_0_INPUT_DISABLE_0_RESVAL = 1'h 0;
+  parameter logic [7:0] SENSOR_CTRL_MANUAL_PAD_ATTR_1_RESVAL = 8'h 0;
+  parameter logic [0:0] SENSOR_CTRL_MANUAL_PAD_ATTR_1_INPUT_DISABLE_1_RESVAL = 1'h 0;
+  parameter logic [7:0] SENSOR_CTRL_MANUAL_PAD_ATTR_2_RESVAL = 8'h 0;
+  parameter logic [0:0] SENSOR_CTRL_MANUAL_PAD_ATTR_2_INPUT_DISABLE_2_RESVAL = 1'h 0;
+  parameter logic [7:0] SENSOR_CTRL_MANUAL_PAD_ATTR_3_RESVAL = 8'h 0;
+  parameter logic [0:0] SENSOR_CTRL_MANUAL_PAD_ATTR_3_INPUT_DISABLE_3_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {
@@ -185,11 +213,19 @@ package sensor_ctrl_reg_pkg;
     SENSOR_CTRL_FATAL_ALERT_EN,
     SENSOR_CTRL_RECOV_ALERT,
     SENSOR_CTRL_FATAL_ALERT,
-    SENSOR_CTRL_STATUS
+    SENSOR_CTRL_STATUS,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_0,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_1,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_2,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_3,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_0,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_1,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_2,
+    SENSOR_CTRL_MANUAL_PAD_ATTR_3
   } sensor_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SENSOR_CTRL_PERMIT [21] = '{
+  parameter logic [3:0] SENSOR_CTRL_PERMIT [29] = '{
     4'b 0001, // index[ 0] SENSOR_CTRL_INTR_STATE
     4'b 0001, // index[ 1] SENSOR_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] SENSOR_CTRL_INTR_TEST
@@ -210,7 +246,15 @@ package sensor_ctrl_reg_pkg;
     4'b 0011, // index[17] SENSOR_CTRL_FATAL_ALERT_EN
     4'b 0011, // index[18] SENSOR_CTRL_RECOV_ALERT
     4'b 0011, // index[19] SENSOR_CTRL_FATAL_ALERT
-    4'b 0001  // index[20] SENSOR_CTRL_STATUS
+    4'b 0001, // index[20] SENSOR_CTRL_STATUS
+    4'b 0001, // index[21] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_0
+    4'b 0001, // index[22] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_1
+    4'b 0001, // index[23] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_2
+    4'b 0001, // index[24] SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_3
+    4'b 0001, // index[25] SENSOR_CTRL_MANUAL_PAD_ATTR_0
+    4'b 0001, // index[26] SENSOR_CTRL_MANUAL_PAD_ATTR_1
+    4'b 0001, // index[27] SENSOR_CTRL_MANUAL_PAD_ATTR_2
+    4'b 0001  // index[28] SENSOR_CTRL_MANUAL_PAD_ATTR_3
   };
 
 endpackage

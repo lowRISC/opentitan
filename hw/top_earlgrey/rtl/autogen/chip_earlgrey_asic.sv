@@ -1011,11 +1011,16 @@ module chip_earlgrey_asic #(
 
   // Enable schmitt trigger on POR for better signal integrity.
   assign manual_attr_por_n = '{schmitt_en: 1'b1, default: '0};
-  // These pad attributes currently tied off permanently (these are all input-only pads).
-  assign manual_attr_cc1 = '0;
-  assign manual_attr_cc2 = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
+
+  // These pad attributes are controlled through sensor_ctrl.  Update the description of
+  // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
+  prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr;
+  assign manual_attr_cc1 = sensor_ctrl_manual_pad_attr[0];
+  assign manual_attr_cc2 = sensor_ctrl_manual_pad_attr[1];
+  assign manual_attr_flash_test_mode0 = sensor_ctrl_manual_pad_attr[2];
+  assign manual_attr_flash_test_mode1 = sensor_ctrl_manual_pad_attr[3];
+
+  // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_flash_test_volt = '0;
   assign manual_attr_otp_ext_volt = '0;
 
@@ -1152,6 +1157,7 @@ module chip_earlgrey_asic #(
     // Pad attributes
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   ),
+    .sensor_ctrl_manual_pad_attr_o( sensor_ctrl_manual_pad_attr),
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),

@@ -16,14 +16,15 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name     | Package::Struct      | Type    | Act   |   Width | Description   |
-|:--------------|:---------------------|:--------|:------|--------:|:--------------|
-| ast_alert     | ast_pkg::ast_alert   | req_rsp | rsp   |       1 |               |
-| ast_status    | ast_pkg::ast_status  | uni     | rcv   |       1 |               |
-| ast_init_done | prim_mubi_pkg::mubi4 | uni     | rcv   |       1 |               |
-| ast2pinmux    | logic                | uni     | rcv   |       9 |               |
-| wkup_req      | logic                | uni     | req   |       1 |               |
-| tl            | tlul_pkg::tl         | req_rsp | rsp   |       1 |               |
+| Port Name       | Package::Struct                | Type    | Act   |   Width | Description   |
+|:----------------|:-------------------------------|:--------|:------|--------:|:--------------|
+| ast_alert       | ast_pkg::ast_alert             | req_rsp | rsp   |       1 |               |
+| ast_status      | ast_pkg::ast_status            | uni     | rcv   |       1 |               |
+| ast_init_done   | prim_mubi_pkg::mubi4           | uni     | rcv   |       1 |               |
+| ast2pinmux      | logic                          | uni     | rcv   |       9 |               |
+| wkup_req        | logic                          | uni     | req   |       1 |               |
+| manual_pad_attr | prim_pad_wrapper_pkg::pad_attr | uni     | req   |       4 |               |
+| tl              | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 

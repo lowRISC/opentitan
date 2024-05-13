@@ -185,6 +185,7 @@ module top_earlgrey #(
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
   input  logic [8:0] ast2pinmux_i,
   input  prim_mubi_pkg::mubi4_t       ast_init_done_i,
+  output prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr_o,
   output logic       sck_monitor_o,
   input  logic       usbdev_usb_rx_d_i,
   output logic       usbdev_usb_tx_d_o,
@@ -2041,6 +2042,7 @@ module top_earlgrey #(
       .ast_init_done_i(ast_init_done_i),
       .ast2pinmux_i(ast2pinmux_i),
       .wkup_req_o(pwrmgr_aon_wakeups[5]),
+      .manual_pad_attr_o(sensor_ctrl_manual_pad_attr_o),
       .tl_i(sensor_ctrl_aon_tl_req),
       .tl_o(sensor_ctrl_aon_tl_rsp),
 
