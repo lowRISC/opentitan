@@ -64,6 +64,19 @@ module tb;
     .jtag_o                    ({jtag_if.tdo, jtag_tdo_oe})
   );
 
+  // Mirror the muxing that we expect in rv_dm, where the JTAG interface that actually connects to
+  // the debug module has direct clock/reset in scan mode, and is disabled if debug is not enabled.
+  logic is_scanmode, dbg_enabled;
+  assign is_scanmode = prim_mubi_pkg::mubi4_test_true_strict(rv_dm_if.scanmode);
+  assign dbg_enabled = lc_ctrl_pkg::lc_tx_test_true_strict(rv_dm_if.pinmux_hw_debug_en);
+
+  jtag_mon_if mon_jtag_if ();
+  assign mon_jtag_if.tck    = !is_scanmode ? jtag_if.tck    : clk;
+  assign mon_jtag_if.trst_n = !is_scanmode ? jtag_if.trst_n : rv_dm_if.scan_rst_n;
+  assign mon_jtag_if.tms    = dbg_enabled  ? jtag_if.tms    : 1'b0;
+  assign mon_jtag_if.tdi    = dbg_enabled  ? jtag_if.tdi    : 1'b0;
+  assign mon_jtag_if.tdo    = dbg_enabled  ? jtag_if.tdo    : 1'b0;
+
   initial begin
     clk_rst_if.set_active();
     clk_lc_rst_if.set_active();
@@ -93,6 +106,7 @@ module tb;
 
     // Connect the JTAG interface, which is used by the jtag_agent build_phase
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent", "vif", jtag_if);
+    uvm_config_db#(virtual jtag_mon_if)::set(null, "*.env.m_jtag_agent", "mon_vif", mon_jtag_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
