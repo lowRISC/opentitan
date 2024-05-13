@@ -141,7 +141,13 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_digest_multimode
       digest_d = digest_q;
       if (wipe_secret_i) begin
-        digest_d = {16{wipe_v_i}};
+        if (digest_mode_i == SHA2_256) begin
+          digest_d = {{8{32'h0000_0000}}, {8{wipe_v_i}}};
+        end else if (digest_mode_i == SHA2_384) begin
+          digest_d = {{4{32'h0000_0000}}, {12{wipe_v_i}}};
+        end else if (digest_mode_i == SHA2_512) begin
+          digest_d = {16{wipe_v_i}};
+        end
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
           if (digest_mode_i == SHA2_256) begin
