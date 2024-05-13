@@ -11,6 +11,9 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // the agent monitor will track signals from this interface instead of reading from vif.
   virtual jtag_mon_if mon_vif;
 
+  // Event that is triggered when the physical JTAG interface gets connected.
+  uvm_event jtag_if_connected;
+
   // Length of IR register. Update this field based on the actual width used in the design.
   uint ir_len = JTAG_IRW;
 
@@ -28,6 +31,7 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
 
   function new (string name = "");
     super.new(name);
+    jtag_if_connected = new();
     // Create the JTAG DTM RAL.
     jtag_dtm_ral = jtag_dtm_reg_block::type_id::create("jtag_dtm_ral");
     jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
