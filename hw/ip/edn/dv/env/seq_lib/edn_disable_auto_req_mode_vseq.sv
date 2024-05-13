@@ -46,13 +46,20 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
     if (!backdoor) begin
       wait_no_outstanding_access();
     end else begin
-      cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
+      fork
+        csr_spinwait(.ptr(ral.ctrl.edn_enable), .exp_data(MuBi4False), .backdoor(1'b1));
+        cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
+      join_none
     end
 
     csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(backdoor), .predict(backdoor));
 
     // Let CSRNG agent know that EDN is disabled.
     cfg.edn_vif.drive_edn_disable(1);
+
+    // Clear the interrupt status register in case the SW command was aborted
+    // right before checking the cmd req done interrupt.
+    csr_wr(.ptr(ral.intr_state), .value((1 << CmdReqDone)));
   endtask
 
   task randomly_disable_edn();
