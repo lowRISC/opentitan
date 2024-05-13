@@ -206,13 +206,13 @@ typedef struct test_setup {
 } test_setup_t;
 
 const test_setup_t kSetup[] = {
-    // kbps: We discount 85% for the start and stop bits plus a difference
-    // between the frequency configured and the frequency measured on the clk
-    // verified on the cw310.
-    // TODO: To be adjusted when #18958 #18962 are fixed.
-    {.speed = kDifI2cSpeedStandard, .kbps = (uint32_t)(100 * 0.92 * 0.85)},
-    {.speed = kDifI2cSpeedFast, .kbps = (uint32_t)(400 * 0.74 * 0.85)},
-    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.42 * 0.85)}};
+    // kbps: We discount 85% for the start and stop bits.
+    // We also have to discount a factor to account for rounding errors.
+    // The rounding error becomes higher with higher speeds, as the i2c clock
+    // approaches the peripheral clock.
+    {.speed = kDifI2cSpeedStandard, .kbps = (uint32_t)(100 * 0.984 * 0.85)},
+    {.speed = kDifI2cSpeedFast, .kbps = (uint32_t)(400 * 0.92 * 0.85)},
+    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.55 * 0.85)}};
 
 bool test_main(void) {
   dif_pinmux_t pinmux;
