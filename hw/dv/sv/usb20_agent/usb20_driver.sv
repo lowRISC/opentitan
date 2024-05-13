@@ -75,7 +75,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, $sformatf("Complete Token_Packet = %p", comp_token_pkt), UVM_DEBUG)
     drive_pkt(comp_token_pkt);
     if (req_item.m_pid_type == PidTypeInToken) begin
-      get_dut_response(rsp_item);
+      device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)
     end else begin
@@ -107,13 +107,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     `uvm_info(`gfn, $sformatf("Complete Data_Packet = %p", comp_data_pkt), UVM_DEBUG)
     drive_pkt(comp_data_pkt);
-    `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
     if (req_item.m_usb_transfer == IsoTrans) begin
       seq_item_port.item_done();
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
     end else begin
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
-      get_dut_response(rsp_item);
+      device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
     end
   endtask
@@ -195,8 +192,12 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // EOP Task
   // -------------------------------
   task end_of_packet();
-    for (int j = 0; j < 2; j++) begin
-      drive_bit_interval(EOP[j], EOP[j]);
+    if (~cfg.single_bit_SE0) begin
+      for (int j = 0; j < 2; j++) begin
+        drive_bit_interval(EOP[j], EOP[j]);
+      end
+    end else begin
+       drive_bit_interval(EOP[0], EOP[0]);
     end
     `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
     drive_bit_interval(1'b1, 1'b0);
@@ -207,17 +208,20 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   task bit_stuffing(input bit packet[], output bit bit_stuff_out[]);
     int consecutive_ones_count = 0;
     bit stuffed[$];
-    for (int i = 0; i < packet.size(); i++) begin
-      stuffed.push_back(packet[i]);
-      if (packet[i] == 1'b1) begin
-        consecutive_ones_count = consecutive_ones_count + 1;
-        if (consecutive_ones_count >= 6) begin
-          consecutive_ones_count = 0;
-          stuffed.push_back(1'b0);
-        end
-      end else consecutive_ones_count = 0;
+   if (~cfg.usb_bitstuff_error) begin
+     for (int i = 0; i < packet.size(); i++) begin
+       stuffed.push_back(packet[i]);
+       if (packet[i] == 1'b1) begin
+         consecutive_ones_count = consecutive_ones_count + 1;
+         if (consecutive_ones_count >= 6) begin
+           consecutive_ones_count = 0;
+           stuffed.push_back(1'b0);
+         end
+       end else consecutive_ones_count = 0;
     end
     bit_stuff_out = stuffed;
+   end else
+     bit_stuff_out = packet;
   endtask
 
   // Returns 1 in the event of detecting a bit stuffing error, output is
@@ -317,7 +321,37 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   // Get_DUT_Response
   // -------------------------------
-  task get_dut_response(ref usb20_item rsp_item);
+  // This task verifies the device status following the transmission of an OUT packet or IN token.
+  // Upon receiving the IN token/OUT packet, the device is expected to initiate a response.
+  // This task monitors whether the device initiates the response in the form of a
+  // handshake or data packet within the specified timeout period.
+  // If no response is detected within timeout frame that is 18 bit times(from section 7.1.19.1),
+  // it send timeout response to sequence.
+  task device_response(ref usb20_item rsp_item);
+    bit timed_out = 1'b0;
+    `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_LOW)
+    fork begin : isolation_fork
+      fork
+        begin
+          repeat (18) begin
+            repeat (4) @(posedge cfg.bif.clk_i);
+            if (cfg.bif.usb_dp_en_o) break;
+          end
+          if (!cfg.bif.usb_dp_en_o) begin
+            timed_out = 1'b1;
+            disable get_device_response;
+          end
+        end
+        get_device_response(rsp_item);
+      join
+      if (timed_out) begin
+        // this bit will indicate that device didn't repond within timeout period.
+        cfg.time_out = 1'b1;
+      end
+    end join
+  endtask
+
+  task get_device_response(ref usb20_item rsp_item);
     bit received_pkt[];
     bit nrzi_out_pkt[];
     bit decoded_received_pkt[];

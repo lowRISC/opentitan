@@ -143,7 +143,7 @@
 	      does not ignore the packet or raise any link_err interrupts.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_phy_config_eop_single_bit_handling"]
     }
     {
       name: phy_config_pinflip
