@@ -15,6 +15,14 @@ This interface is used to drive and monitor the JTAG transactions. It is the
 physical layer of the testbench, which directly connects to the JTAG signals
 of the DUT.
 
+## jtag_mon_if
+
+A simpler version of `jtag_if`, which can passively watch JTAG signals coming
+in. If a handle to this interface is provided to the agent configuration, it can
+be used by `jtag_monitor` in preference to the main `jtag_if`. This allows the
+agent to handle situations where the JTAG interface isn't continuously
+connected.
+
 ## jtag_dtm_reg_block
 
 This RAL model represents the JTAG DTM register space. This region is defined

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define MON_CB cfg.vif.mon_mp.mon_cb
 class jtag_monitor extends dv_base_monitor #(
   .ITEM_T(jtag_item),
   .CFG_T (jtag_agent_cfg),
@@ -24,6 +23,36 @@ class jtag_monitor extends dv_base_monitor #(
     join
   endtask
 
+  // Wait for the next posedge of TCK if tck_en is true. If tck_en is false, wait until it becomes
+  // true (which gives a sort of "virtual posedge", representing something that happened at some
+  // point before).
+  //
+  // Note that this is slightly different from calling cfg.vif.wait_tck(1) because the behaviour is
+  // different when tck_en is false.
+  task wait_tck();
+    if (cfg.mon_vif != null) begin
+      @(cfg.mon_vif.mp.cb);
+    end else begin
+      if (cfg.vif.tck_en) @(cfg.vif.mon_mp.mon_cb);
+      else @(posedge cfg.vif.tck_en);
+    end
+  endtask
+
+  // Get the TMS signal from the jtag_if that we're monitoring
+  function logic read_tms();
+    return (cfg.mon_vif == null) ? cfg.vif.mon_mp.mon_cb.tms : cfg.mon_vif.mp.cb.tms;
+  endfunction
+
+  // Get the TDI signal from the jtag_if that we're monitoring
+  function logic read_tdi();
+    return (cfg.mon_vif == null) ? cfg.vif.mon_mp.mon_cb.tdi : cfg.mon_vif.mp.cb.tdi;
+  endfunction
+
+  // Get the TDO signal from the jtag_if that we're monitoring
+  function logic read_tdo();
+    return (cfg.mon_vif == null) ? cfg.vif.mon_mp.mon_cb.tdo : cfg.mon_vif.mp.cb.tdo;
+  endfunction
+
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans();
     jtag_fsm_state_e   jtag_state;
@@ -33,8 +62,8 @@ class jtag_monitor extends dv_base_monitor #(
     bit [JTAG_DRW-1:0] dr, dout;
 
     forever begin
-      @(`MON_CB);
-      if(!cfg.vif.tck_en) continue;
+      wait_tck();
+
       if (!cfg.vif.trst_n) begin
         jtag_state = JtagResetState;
         wait(cfg.vif.trst_n == 1);
@@ -45,18 +74,18 @@ class jtag_monitor extends dv_base_monitor #(
                                 jtag_state.name, ir, dr, dout, counter), UVM_DEBUG)
       case (jtag_state)
         JtagResetState: begin
-          if (!`MON_CB.tms) jtag_state = JtagIdleState;
+          if (!read_tms()) jtag_state = JtagIdleState;
         end
         JtagIdleState: begin
-          if (`MON_CB.tms) jtag_state = JtagSelectDrState;
+          if (read_tms()) jtag_state = JtagSelectDrState;
         end
         JtagSelectDrState: begin
-          jtag_state = `MON_CB.tms ? JtagSelectIrState : JtagCaptureDrState;
+          jtag_state = read_tms() ? JtagSelectIrState : JtagCaptureDrState;
         end
 
         // Select DR
         JtagCaptureDrState: begin
-          jtag_state = `MON_CB.tms ? JtagExit1DrState : JtagShiftDrState;
+          jtag_state = read_tms() ? JtagExit1DrState : JtagShiftDrState;
           if (jtag_state == JtagShiftDrState) begin
             dr      = 0;
             dout    = 0;
@@ -64,22 +93,22 @@ class jtag_monitor extends dv_base_monitor #(
           end
         end
         JtagShiftDrState: begin
-          jtag_state = `MON_CB.tms ? JtagExit1DrState : JtagShiftDrState;
-          dr[counter] = `MON_CB.tdi;
-          dout[counter] = `MON_CB.tdo;
+          jtag_state = read_tms() ? JtagExit1DrState : JtagShiftDrState;
+          dr[counter] = read_tdi();
+          dout[counter] = read_tdo();
           counter++;
         end
         JtagExit1DrState: begin
-          jtag_state = `MON_CB.tms ? JtagUpdateDrState : JtagPauseDrState;
+          jtag_state = read_tms() ? JtagUpdateDrState : JtagPauseDrState;
         end
         JtagPauseDrState: begin
-          jtag_state = `MON_CB.tms ? JtagExit2DrState : JtagPauseDrState;
+          jtag_state = read_tms() ? JtagExit2DrState : JtagPauseDrState;
         end
         JtagExit2DrState: begin
-          jtag_state = `MON_CB.tms ? JtagUpdateDrState : JtagShiftDrState;
+          jtag_state = read_tms() ? JtagUpdateDrState : JtagShiftDrState;
         end
         JtagUpdateDrState: begin
-          jtag_state = `MON_CB.tms ? JtagSelectDrState : JtagIdleState;
+          jtag_state = read_tms() ? JtagSelectDrState : JtagIdleState;
 
           // Send DR packet to analysis port, so long as the DR length is positive
           if (cfg.vif.trst_n && counter > 0) begin
@@ -95,31 +124,31 @@ class jtag_monitor extends dv_base_monitor #(
 
         // Select IR
         JtagSelectIrState: begin
-          jtag_state = `MON_CB.tms ? JtagResetState : JtagCaptureIrState;
+          jtag_state = read_tms() ? JtagResetState : JtagCaptureIrState;
         end
         JtagCaptureIrState: begin
-          jtag_state = `MON_CB.tms ? JtagExit1IrState : JtagShiftIrState;
+          jtag_state = read_tms() ? JtagExit1IrState : JtagShiftIrState;
           if (jtag_state == JtagShiftIrState) begin
             ir      = 0;
             counter = 0;
           end
         end
         JtagShiftIrState: begin
-          jtag_state  = `MON_CB.tms ? JtagExit1IrState : JtagShiftIrState;
-          ir[counter] = `MON_CB.tdi;
+          jtag_state  = read_tms() ? JtagExit1IrState : JtagShiftIrState;
+          ir[counter] = read_tdi();
           counter++;
         end
         JtagExit1IrState: begin
-          jtag_state = `MON_CB.tms ? JtagUpdateIrState : JtagPauseIrState;
+          jtag_state = read_tms() ? JtagUpdateIrState : JtagPauseIrState;
         end
         JtagPauseIrState: begin
-          jtag_state = `MON_CB.tms ? JtagExit2IrState : JtagPauseIrState;
+          jtag_state = read_tms() ? JtagExit2IrState : JtagPauseIrState;
         end
         JtagExit2IrState: begin
-          jtag_state = `MON_CB.tms ? JtagUpdateIrState : JtagShiftIrState;
+          jtag_state = read_tms() ? JtagUpdateIrState : JtagShiftIrState;
         end
         JtagUpdateIrState: begin
-          jtag_state = `MON_CB.tms ? JtagSelectDrState : JtagIdleState;
+          jtag_state = read_tms() ? JtagSelectDrState : JtagIdleState;
 
           // Send IR packet to analysis port, so long as the IR length is positive.
           if (cfg.vif.trst_n && counter > 0) begin
