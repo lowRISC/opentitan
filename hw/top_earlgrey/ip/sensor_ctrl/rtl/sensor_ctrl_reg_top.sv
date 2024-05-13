@@ -52,9 +52,9 @@ module sensor_ctrl_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [20:0] reg_we_check;
+  logic [28:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(21)
+    .OneHotWidth(29)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -256,6 +256,34 @@ module sensor_ctrl_reg_top (
   logic fatal_alert_val_11_qs;
   logic status_ast_init_done_qs;
   logic [1:0] status_io_pok_qs;
+  logic manual_pad_attr_regwen_0_we;
+  logic manual_pad_attr_regwen_0_qs;
+  logic manual_pad_attr_regwen_0_wd;
+  logic manual_pad_attr_regwen_1_we;
+  logic manual_pad_attr_regwen_1_qs;
+  logic manual_pad_attr_regwen_1_wd;
+  logic manual_pad_attr_regwen_2_we;
+  logic manual_pad_attr_regwen_2_qs;
+  logic manual_pad_attr_regwen_2_wd;
+  logic manual_pad_attr_regwen_3_we;
+  logic manual_pad_attr_regwen_3_qs;
+  logic manual_pad_attr_regwen_3_wd;
+  logic manual_pad_attr_0_re;
+  logic manual_pad_attr_0_we;
+  logic manual_pad_attr_0_qs;
+  logic manual_pad_attr_0_wd;
+  logic manual_pad_attr_1_re;
+  logic manual_pad_attr_1_we;
+  logic manual_pad_attr_1_qs;
+  logic manual_pad_attr_1_wd;
+  logic manual_pad_attr_2_re;
+  logic manual_pad_attr_2_we;
+  logic manual_pad_attr_2_qs;
+  logic manual_pad_attr_2_wd;
+  logic manual_pad_attr_3_re;
+  logic manual_pad_attr_3_we;
+  logic manual_pad_attr_3_qs;
+  logic manual_pad_attr_3_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2110,8 +2138,220 @@ module sensor_ctrl_reg_top (
   );
 
 
+  // Subregister 0 of Multireg manual_pad_attr_regwen
+  // R[manual_pad_attr_regwen_0]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_manual_pad_attr_regwen_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [20:0] addr_hit;
+    // from register interface
+    .we     (manual_pad_attr_regwen_0_we),
+    .wd     (manual_pad_attr_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (manual_pad_attr_regwen_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg manual_pad_attr_regwen
+  // R[manual_pad_attr_regwen_1]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_manual_pad_attr_regwen_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (manual_pad_attr_regwen_1_we),
+    .wd     (manual_pad_attr_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (manual_pad_attr_regwen_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg manual_pad_attr_regwen
+  // R[manual_pad_attr_regwen_2]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_manual_pad_attr_regwen_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (manual_pad_attr_regwen_2_we),
+    .wd     (manual_pad_attr_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (manual_pad_attr_regwen_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg manual_pad_attr_regwen
+  // R[manual_pad_attr_regwen_3]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_manual_pad_attr_regwen_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (manual_pad_attr_regwen_3_we),
+    .wd     (manual_pad_attr_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (manual_pad_attr_regwen_3_qs)
+  );
+
+
+  // Subregister 0 of Multireg manual_pad_attr
+  // R[manual_pad_attr_0]: V(True)
+  logic manual_pad_attr_0_qe;
+  logic [0:0] manual_pad_attr_0_flds_we;
+  assign manual_pad_attr_0_qe = &manual_pad_attr_0_flds_we;
+  // Create REGWEN-gated WE signal
+  logic manual_pad_attr_0_gated_we;
+  assign manual_pad_attr_0_gated_we = manual_pad_attr_0_we & manual_pad_attr_regwen_0_qs;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_manual_pad_attr_0 (
+    .re     (manual_pad_attr_0_re),
+    .we     (manual_pad_attr_0_gated_we),
+    .wd     (manual_pad_attr_0_wd),
+    .d      (hw2reg.manual_pad_attr[0].d),
+    .qre    (),
+    .qe     (manual_pad_attr_0_flds_we[0]),
+    .q      (reg2hw.manual_pad_attr[0].q),
+    .ds     (),
+    .qs     (manual_pad_attr_0_qs)
+  );
+  assign reg2hw.manual_pad_attr[0].qe = manual_pad_attr_0_qe;
+
+
+  // Subregister 1 of Multireg manual_pad_attr
+  // R[manual_pad_attr_1]: V(True)
+  logic manual_pad_attr_1_qe;
+  logic [0:0] manual_pad_attr_1_flds_we;
+  assign manual_pad_attr_1_qe = &manual_pad_attr_1_flds_we;
+  // Create REGWEN-gated WE signal
+  logic manual_pad_attr_1_gated_we;
+  assign manual_pad_attr_1_gated_we = manual_pad_attr_1_we & manual_pad_attr_regwen_1_qs;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_manual_pad_attr_1 (
+    .re     (manual_pad_attr_1_re),
+    .we     (manual_pad_attr_1_gated_we),
+    .wd     (manual_pad_attr_1_wd),
+    .d      (hw2reg.manual_pad_attr[1].d),
+    .qre    (),
+    .qe     (manual_pad_attr_1_flds_we[0]),
+    .q      (reg2hw.manual_pad_attr[1].q),
+    .ds     (),
+    .qs     (manual_pad_attr_1_qs)
+  );
+  assign reg2hw.manual_pad_attr[1].qe = manual_pad_attr_1_qe;
+
+
+  // Subregister 2 of Multireg manual_pad_attr
+  // R[manual_pad_attr_2]: V(True)
+  logic manual_pad_attr_2_qe;
+  logic [0:0] manual_pad_attr_2_flds_we;
+  assign manual_pad_attr_2_qe = &manual_pad_attr_2_flds_we;
+  // Create REGWEN-gated WE signal
+  logic manual_pad_attr_2_gated_we;
+  assign manual_pad_attr_2_gated_we = manual_pad_attr_2_we & manual_pad_attr_regwen_2_qs;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_manual_pad_attr_2 (
+    .re     (manual_pad_attr_2_re),
+    .we     (manual_pad_attr_2_gated_we),
+    .wd     (manual_pad_attr_2_wd),
+    .d      (hw2reg.manual_pad_attr[2].d),
+    .qre    (),
+    .qe     (manual_pad_attr_2_flds_we[0]),
+    .q      (reg2hw.manual_pad_attr[2].q),
+    .ds     (),
+    .qs     (manual_pad_attr_2_qs)
+  );
+  assign reg2hw.manual_pad_attr[2].qe = manual_pad_attr_2_qe;
+
+
+  // Subregister 3 of Multireg manual_pad_attr
+  // R[manual_pad_attr_3]: V(True)
+  logic manual_pad_attr_3_qe;
+  logic [0:0] manual_pad_attr_3_flds_we;
+  assign manual_pad_attr_3_qe = &manual_pad_attr_3_flds_we;
+  // Create REGWEN-gated WE signal
+  logic manual_pad_attr_3_gated_we;
+  assign manual_pad_attr_3_gated_we = manual_pad_attr_3_we & manual_pad_attr_regwen_3_qs;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_manual_pad_attr_3 (
+    .re     (manual_pad_attr_3_re),
+    .we     (manual_pad_attr_3_gated_we),
+    .wd     (manual_pad_attr_3_wd),
+    .d      (hw2reg.manual_pad_attr[3].d),
+    .qre    (),
+    .qe     (manual_pad_attr_3_flds_we[0]),
+    .q      (reg2hw.manual_pad_attr[3].q),
+    .ds     (),
+    .qs     (manual_pad_attr_3_qs)
+  );
+  assign reg2hw.manual_pad_attr[3].qe = manual_pad_attr_3_qe;
+
+
+
+  logic [28:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SENSOR_CTRL_INTR_STATE_OFFSET);
@@ -2135,6 +2375,14 @@ module sensor_ctrl_reg_top (
     addr_hit[18] = (reg_addr == SENSOR_CTRL_RECOV_ALERT_OFFSET);
     addr_hit[19] = (reg_addr == SENSOR_CTRL_FATAL_ALERT_OFFSET);
     addr_hit[20] = (reg_addr == SENSOR_CTRL_STATUS_OFFSET);
+    addr_hit[21] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_0_OFFSET);
+    addr_hit[22] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_1_OFFSET);
+    addr_hit[23] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_2_OFFSET);
+    addr_hit[24] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_REGWEN_3_OFFSET);
+    addr_hit[25] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_0_OFFSET);
+    addr_hit[26] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_1_OFFSET);
+    addr_hit[27] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_2_OFFSET);
+    addr_hit[28] = (reg_addr == SENSOR_CTRL_MANUAL_PAD_ATTR_3_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2162,7 +2410,15 @@ module sensor_ctrl_reg_top (
                (addr_hit[17] & (|(SENSOR_CTRL_PERMIT[17] & ~reg_be))) |
                (addr_hit[18] & (|(SENSOR_CTRL_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(SENSOR_CTRL_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(SENSOR_CTRL_PERMIT[20] & ~reg_be)))));
+               (addr_hit[20] & (|(SENSOR_CTRL_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(SENSOR_CTRL_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(SENSOR_CTRL_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(SENSOR_CTRL_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(SENSOR_CTRL_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(SENSOR_CTRL_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(SENSOR_CTRL_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(SENSOR_CTRL_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(SENSOR_CTRL_PERMIT[28] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2291,6 +2547,34 @@ module sensor_ctrl_reg_top (
   assign recov_alert_val_9_wd = reg_wdata[9];
 
   assign recov_alert_val_10_wd = reg_wdata[10];
+  assign manual_pad_attr_regwen_0_we = addr_hit[21] & reg_we & !reg_error;
+
+  assign manual_pad_attr_regwen_0_wd = reg_wdata[0];
+  assign manual_pad_attr_regwen_1_we = addr_hit[22] & reg_we & !reg_error;
+
+  assign manual_pad_attr_regwen_1_wd = reg_wdata[0];
+  assign manual_pad_attr_regwen_2_we = addr_hit[23] & reg_we & !reg_error;
+
+  assign manual_pad_attr_regwen_2_wd = reg_wdata[0];
+  assign manual_pad_attr_regwen_3_we = addr_hit[24] & reg_we & !reg_error;
+
+  assign manual_pad_attr_regwen_3_wd = reg_wdata[0];
+  assign manual_pad_attr_0_re = addr_hit[25] & reg_re & !reg_error;
+  assign manual_pad_attr_0_we = addr_hit[25] & reg_we & !reg_error;
+
+  assign manual_pad_attr_0_wd = reg_wdata[7];
+  assign manual_pad_attr_1_re = addr_hit[26] & reg_re & !reg_error;
+  assign manual_pad_attr_1_we = addr_hit[26] & reg_we & !reg_error;
+
+  assign manual_pad_attr_1_wd = reg_wdata[7];
+  assign manual_pad_attr_2_re = addr_hit[27] & reg_re & !reg_error;
+  assign manual_pad_attr_2_we = addr_hit[27] & reg_we & !reg_error;
+
+  assign manual_pad_attr_2_wd = reg_wdata[7];
+  assign manual_pad_attr_3_re = addr_hit[28] & reg_re & !reg_error;
+  assign manual_pad_attr_3_we = addr_hit[28] & reg_we & !reg_error;
+
+  assign manual_pad_attr_3_wd = reg_wdata[7];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2316,6 +2600,14 @@ module sensor_ctrl_reg_top (
     reg_we_check[18] = recov_alert_we;
     reg_we_check[19] = 1'b0;
     reg_we_check[20] = 1'b0;
+    reg_we_check[21] = manual_pad_attr_regwen_0_we;
+    reg_we_check[22] = manual_pad_attr_regwen_1_we;
+    reg_we_check[23] = manual_pad_attr_regwen_2_we;
+    reg_we_check[24] = manual_pad_attr_regwen_3_we;
+    reg_we_check[25] = manual_pad_attr_0_gated_we;
+    reg_we_check[26] = manual_pad_attr_1_gated_we;
+    reg_we_check[27] = manual_pad_attr_2_gated_we;
+    reg_we_check[28] = manual_pad_attr_3_gated_we;
   end
 
   // Read data return
@@ -2450,6 +2742,38 @@ module sensor_ctrl_reg_top (
       addr_hit[20]: begin
         reg_rdata_next[0] = status_ast_init_done_qs;
         reg_rdata_next[2:1] = status_io_pok_qs;
+      end
+
+      addr_hit[21]: begin
+        reg_rdata_next[0] = manual_pad_attr_regwen_0_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[0] = manual_pad_attr_regwen_1_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[0] = manual_pad_attr_regwen_2_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[0] = manual_pad_attr_regwen_3_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[7] = manual_pad_attr_0_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[7] = manual_pad_attr_1_qs;
+      end
+
+      addr_hit[27]: begin
+        reg_rdata_next[7] = manual_pad_attr_2_qs;
+      end
+
+      addr_hit[28]: begin
+        reg_rdata_next[7] = manual_pad_attr_3_qs;
       end
 
       default: begin

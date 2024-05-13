@@ -1141,6 +1141,7 @@
         'sensor_ctrl_aon.ast_status'      : 'sensor_ctrl_ast_status',
         'sensor_ctrl_aon.ast2pinmux'      : 'ast2pinmux',
         'sensor_ctrl_aon.ast_init_done'   : 'ast_init_done',
+        'sensor_ctrl_aon.manual_pad_attr' : 'sensor_ctrl_manual_pad_attr',
         'spi_device.sck_monitor'          : 'sck_monitor',
         'usbdev.usb_rx_d'                 : '',
         'usbdev.usb_tx_d'                 : '',

@@ -216,6 +216,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         cfg.chip_vif.cc_if.disconnect();
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
         check_manual_dios_pull();
+        check_manual_dios_input_disable();
       end : manual_dio_test
     join
 
@@ -622,6 +623,46 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC1")
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC2")
+  endtask
+
+  function logic hdl_read_lsb(string path);
+    uvm_hdl_data_t value;
+    `DV_CHECK(uvm_hdl_read(path, value))
+    return value[0];
+  endfunction
+
+  task check_manual_dios_input_disable();
+    logic act;
+
+    cfg.chip_vif.cc_if.drive('1);
+    cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+    act = hdl_read_lsb("tb.dut.manual_in_cc1");
+    `DV_CHECK_CASE_EQ(1'b1, act)
+    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[0].input_disable), .value(1'b1), .blocking(1),
+           .predict(1));
+    act = hdl_read_lsb("tb.dut.manual_in_cc1");
+    `DV_CHECK_CASE_EQ(1'bx, act)
+    act = hdl_read_lsb("tb.dut.manual_in_cc2");
+    `DV_CHECK_CASE_EQ(1'b1, act)
+    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[1].input_disable), .value(1'b1), .blocking(1),
+           .predict(1));
+    act = hdl_read_lsb("tb.dut.manual_in_cc2");
+    `DV_CHECK_CASE_EQ(1'bx, act)
+
+    cfg.chip_vif.flash_test_mode_if.drive('1);
+    cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode0");
+    `DV_CHECK_CASE_EQ(1'b1, act)
+    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[2].input_disable), .value(1'b1), .blocking(1),
+           .predict(1));
+    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode0");
+    `DV_CHECK_CASE_EQ(1'bx, act)
+    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode1");
+    `DV_CHECK_CASE_EQ(1'b1, act)
+    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[3].input_disable), .value(1'b1), .blocking(1),
+           .predict(1));
+    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode1");
+    `DV_CHECK_CASE_EQ(1'bx, act)
   endtask
 
 endclass

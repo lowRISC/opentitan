@@ -67,6 +67,12 @@
       desc:    "Number of IO rails",
       local:   "true"
     },
+    { name:    "NumAttrPads",
+      type:    "int",
+      default: "4",
+      desc:    "Number of pads for which sensor control manages attributes",
+      local:   "true"
+    },
   ],
 
   wakeup_list: [
@@ -122,6 +128,15 @@
       name:    "wkup_req",
       act:     "req",
       package: ""
+    },
+
+    { struct:  "pad_attr",
+      width:   "4", // keep this equal to `NumAttrPads` (above)
+      type:    "uni",
+      name:    "manual_pad_attr",
+      act:     "req",
+      package: "prim_pad_wrapper_pkg",
+      default: "'0",
     },
   ],
 
@@ -292,6 +307,61 @@ registers: [
       ],
       tags: [// The status readback depends on state of ast and do not always have a set value
         "excl:CsrAllTests:CsrExclCheck"]
+    },
+
+    { multireg: { name:     "MANUAL_PAD_ATTR_REGWEN",
+                  desc:     "Register write enable for attributes of manual pads",
+                  count:    "NumAttrPads",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "MANUAL_PAD",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding !!MANUAL_PAD_ATTR is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:        "MANUAL_PAD_ATTR",
+                 desc:         '''
+                               Attributes of manual pads.
+                               This register has WARL behavior since not every pad may support each attribute.
+                               The mapping of registers to pads is as follows (only supported for targets that instantiate `chip_earlgrey_asic`):
+                               - MANUAL_PAD_ATTR_0: CC1
+                               - MANUAL_PAD_ATTR_1: CC2
+                               - MANUAL_PAD_ATTR_2: FLASH_TEST_MODE0
+                               - MANUAL_PAD_ATTR_3: FLASH_TEST_MODE1
+                               ''',
+                 count:        "NumAttrPads",
+                 compact:      "false",
+                 swaccess:     "rw",
+                 hwaccess:     "hrw",
+                 hwext:        "true",
+                 hwqe:         "true",
+                 regwen:       "MANUAL_PAD_ATTR_REGWEN",
+                 regwen_multi: "true",
+                 cname:        "MANUAL_PAD",
+                 resval:       0
+                 fields: [ // keep this a bit-compatible subset of pinmux's pad attributes
+                   { bits: "7",
+                     name: "input_disable",
+                     desc: '''
+                           Disable input drivers.
+                           Setting this to 1 for pads that are not used as input can reduce their leakage current.
+                           '''
+                   },
+                 ],
+                 // These CSRs have WARL behavior and may not read back the same value that was
+                 // written to them.  Furthermore, they have hardware side effects since they drive
+                 // pad attributes, and hence no random values should be written to them.
+                 tags: ["excl:CsrAllTests:CsrExclWrite"]
+               }
     },
   ]
 }
