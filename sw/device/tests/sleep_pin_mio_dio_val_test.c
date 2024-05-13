@@ -228,6 +228,7 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
   CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled,
                                                 kDifToggleEnabled));
 
+  LOG_INFO("Going to sleep");
   wait_for_interrupt();  // Entering deep power down.
 
   return result;
