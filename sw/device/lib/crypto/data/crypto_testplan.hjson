@@ -89,5 +89,26 @@
       ]
       lc_states: ["PROD"]
     }
+    {
+      name: crypto_lib_aes_stress
+      desc: '''Check that the aes implementation is correct.
+
+            Run the following operations and compare the result against the NIST test vector:
+             - AES-CDC encryption.
+             - AES-CDC decryption.
+             - AES-GCM encryption.
+             - AES-GCM decryption.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:aes_kwp_kat_functest",
+        "//sw/device/tests/crypto:aes_kwp_functest",
+        "//sw/device/tests/crypto:aes_gcm_functest",
+        "//sw/device/tests/crypto/cryptotest:aes_kat"
+      ]
+      lc_states: ["PROD"]
+    }
   ]
 }
