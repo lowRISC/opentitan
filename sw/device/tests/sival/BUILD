@@ -91,7 +91,7 @@ test_suite(
         "//sw/device/tests:aon_timer_wdog_bite_reset_test",
         "//sw/device/tests:aon_timer_wdog_lc_escalate_test",
         "//sw/device/tests:ast_clk_outs_test",
-        "//sw/device/tests:chip_power_idle_load",
+        "//sw/device/tests:chip_power_idle_load_test",
         "//sw/device/tests:clkmgr_jitter_frequency_test",
         "//sw/device/tests:clkmgr_jitter_test",
         "//sw/device/tests:clkmgr_off_aes_trans_test",
