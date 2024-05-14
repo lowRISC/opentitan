@@ -64,5 +64,30 @@
       ]
       lc_states: ["PROD"]
     }
+    {
+      name: crypto_lib_rsa_stress
+      desc: '''Check that the RSA implementation is correct.
+
+            Run the follow operations and compare the result against the NIST test vector:
+             - RSA signature.
+             - RSA signature verification.
+            With the keys sizes 2048, 3072 and 4096 bits.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:rsa_2048_encryption_functest",
+        "//sw/device/tests/crypto:rsa_2048_key_from_cofactor_functest",
+        "//sw/device/tests/crypto:rsa_2048_signature_functest",
+        "//sw/device/tests/crypto:rsa_3072_encryption_functest",
+        "//sw/device/tests/crypto:rsa_3072_signature_functest",
+        "//sw/device/tests/crypto:rsa_3072_verify_functest_hardcoded",
+        "//sw/device/tests/crypto:rsa_3072_verify_functest_wycheproof",
+        "//sw/device/tests/crypto:rsa_4096_encryption_functest",
+        "//sw/device/tests/crypto:rsa_4096_signature_functest",
+      ]
+      lc_states: ["PROD"]
+    }
   ]
 }
