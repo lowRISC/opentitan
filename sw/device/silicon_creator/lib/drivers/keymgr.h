@@ -79,6 +79,16 @@ typedef struct sc_keymgr_diversification {
 } sc_keymgr_diversification_t;
 
 /**
+ * Destination for key generation.
+ */
+typedef enum sc_keymgr_dest {
+  kScKeymgrDestNone = 0,
+  kScKeymgrDestAes = 1,
+  kScKeymgrDestKmac = 2,
+  kScKeymgrDestOtbn = 3,
+} sc_keymgr_dest_t;
+
+/**
  * The following constants represent the expected number of sec_mmio register
  * writes performed by functions in provided in this module. See
  * `SEC_MMIO_WRITE_INCREMENT()` for more details.
@@ -192,6 +202,36 @@ typedef enum sc_keymgr_key_type {
 } sc_keymgr_key_type_t;
 
 /**
+ * Generate a key manager key and sideload to the requested block.
+ *
+ * Calls the key manager to sideload a key into the requested hardware block and
+ * waits until the operation is complete before returning. Can sideload an
+ * attestation or sealing key based on user input.
+ *
+ * @param destination: Hardware destination for key material.
+ * @param key_type Key type: attestation or sealing.
+ * @param diversification Diversification input for the key derivation.
+ * @return OK or error.
+ */
+
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_generate_key(sc_keymgr_dest_t destination,
+                                   sc_keymgr_key_type_t key_type,
+                                   sc_keymgr_diversification_t diversification);
+
+/**
+ * Clear the requested sideloaded key slot.
+ *
+ * The entropy complex needs to be initialized before calling this function, so
+ * that keymgr can use it to clear the slot.
+ *
+ * @param destination: Hardware block to clear key material.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination);
+
+/**
  * Generate a key manager key and sideload to the OTBN block.
  *
  * Calls the key manager to sideload a key into the OTBN hardware block and
@@ -203,8 +243,11 @@ typedef enum sc_keymgr_key_type {
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_generate_key_otbn(
-    sc_keymgr_key_type_t key_type, sc_keymgr_diversification_t diversification);
+inline rom_error_t sc_keymgr_generate_key_otbn(
+    sc_keymgr_key_type_t key_type,
+    sc_keymgr_diversification_t diversification) {
+  return sc_keymgr_generate_key(kScKeymgrDestOtbn, key_type, diversification);
+}
 
 /**
  * Clear OTBN's sideloaded key slot.
@@ -215,7 +258,9 @@ rom_error_t sc_keymgr_generate_key_otbn(
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_sideload_clear_otbn(void);
+inline rom_error_t sc_keymgr_sideload_clear_otbn(void) {
+  return sc_keymgr_sideload_clear(kScKeymgrDestOtbn);
+}
 
 /**
  * Sets the binding registers and advances the keymgr to the
