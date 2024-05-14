@@ -36,7 +36,7 @@ The 1024-bit secret key is written in [`KEY_0`](doc/registers.md#key) to [`KEY_3
 For example, to use a 256-bit secret key, [`CFG.key_length`] should be configured to 0x02 and then only secret key registers [`KEY_0`](doc/registers.md#key) to [`KEY_7`] are read and relevant for the HMAC operation.
 The digest size required is configured in [`CFG.digest_size`].
 The message to authenticate is written to [`MSG_FIFO`](doc/registers.md#msg_fifo) and the HMAC generates a 256/384/512-bit digest value (depending on the digest size configuration provided) which can be read from [`DIGEST_0`](doc/registers.md#digest) to [`DIGEST_7`](doc/registers.md#digest) for SHA-2 256, or from [`DIGEST_0`] to [`DIGEST_12`] for SHA-2 384, or from [`DIGEST_0`] to [`DIGEST_15`] for SHA-2 512.
-The `hash_done` interrupt is raised to report to software that the final digest is available.
+The `hmac_done` interrupt is raised to report to software that the final digest is available.
 
 This module allows software to save and restore the hashing context so that different message streams can be interleaved; please check the [Programmer's Guide](doc/programmers_guide.md#saving-and-restoring-the-context) for more information.
 

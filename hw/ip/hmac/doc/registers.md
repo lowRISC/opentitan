@@ -232,7 +232,7 @@ From a hardware perspective byte swaps are performed on a TL-UL word granularity
 SHA-2 enable.
 
  If 0, the SHA engine will not initiate compression, this is used to stop operation of the SHA-2 engine until configuration has been done.
- When the SHA-2 engine is disabled the digest is cleared.
+ When the SHA-2 engine is disabled the digest is cleared, and the digest can be written to from SW which enables restoring context (to support context switching).
 
 ### CFG . hmac_en
 HMAC datapath enable.
@@ -396,11 +396,11 @@ Digest output.
 
 If HMAC is disabled, the register shows result of SHA-2 256/384/512.
 Order of the 512-bit digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST15}.
-For SHA-2 256 order of the 256-bit digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6, DIGEST7} and {DIGEST8 - DIGEST15} are all-zero.
-For SHA-2 384, {DIGEST12-DIGEST15} are truncated and are all-zero.
+For SHA-2 256 order of the 256-bit digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6, DIGEST7} and {DIGEST8 - DIGEST15} are irrelevant and should not be read out.
+For SHA-2 384, {DIGEST12-DIGEST15} are truncated; they are irrelevant and should not be read out.
 
 The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
-When `CFG.sha_en` is 0, these registers can be written by software.
+When `CFG.sha_en` is 0, these registers can be written to by software.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

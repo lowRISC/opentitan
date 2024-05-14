@@ -38,6 +38,9 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
 The following code shows how to send a message to the HMAC, the procedure is the same whether a full HMAC or just a SHA-2 computation is required (choose between them using [`CFG.hmac_en`](registers.md#cfg)).
 In both cases the SHA-2 engine must be enabled using [`CFG.sha_en`](registers.md#cfg) (once all other configuration has been properly set).
 If the message is larger than 512-bit, the software must wait until the FIFO is not full before writing further bits.
+For SHA-2 256, only `DIGEST_0`..`7` should be read out; the redundant digests are irrelevant and would hold irrelevant values.
+For SHA-2 384, only `DIGEST_0`..`11` should be read out, the rest should be truncated out by not being read via SW.
+For SHA-2 512, all `DIGEST_0`..`15` should be read out.
 
 ```c
 void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
