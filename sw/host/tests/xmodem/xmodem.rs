@@ -6,8 +6,10 @@
 // implementation of Xmodem so that its easy to write tests for that
 // implementation.
 
-use anyhow::{anyhow, Result};
 use std::io::Write;
+use std::os::raw::c_void;
+
+use anyhow::{anyhow, Result};
 
 use opentitanlib::io::uart::Uart;
 use opentitanlib::with_unknown;
@@ -43,9 +45,12 @@ impl XmodemFirmware {
     }
 
     pub fn send(&self, uart: &dyn Uart, data: &[u8]) -> Result<()> {
+        // SAFETY:
+        // `iohandle` is a valid reference to a `dyn Uart` trait object.
+        // `buf` is a valid pointer to a buffer here with the correct `len`.
         let result = unsafe {
-            let io: *mut std::os::raw::c_void = std::mem::transmute(&uart as *const &dyn Uart);
-            let buf = data.as_ptr() as *const std::os::raw::c_void;
+            let io = (&uart as *const &dyn Uart) as *mut c_void;
+            let buf = data.as_ptr() as *const c_void;
             let len = data.len();
             XmodemResult(xmodem_send(io, buf, len))
         };
@@ -56,25 +61,39 @@ impl XmodemFirmware {
     }
 
     pub fn receive(&self, uart: &dyn Uart, data: &mut impl Write) -> Result<()> {
-        unsafe {
-            let io: *mut std::os::raw::c_void = std::mem::transmute(&uart as *const &dyn Uart);
+        // SAFETY:
+        // `iohandle` is a valid reference to a `dyn Uart` trait object.
+        let io = unsafe {
+            let io = (&uart as *const &dyn Uart) as *mut c_void;
             xmodem_recv_start(io);
+            io
+        };
 
-            let mut errors = 0;
-            let mut frame = 1u32;
-            let mut buf = [0u8; 1024];
-            let mut rxlen = 0usize;
-            let mut unknown_rx = 0u8;
+        let mut errors = 0;
+        let mut frame = 1u32;
+        let mut buf = [0u8; 1024];
+        let mut rxlen = 0usize;
+        let mut unknown_rx = 0u8;
 
-            loop {
-                let result = XmodemResult(xmodem_recv_frame(
+        loop {
+            // SAFETY:
+            // `iohandle` is a valid reference to a `dyn Uart` trait object.
+            // `buf` points to a valid buffer whose size is large enough since
+            // `xmodem_recv_frame` will only read 128 or 1024 byte frames.
+            // `rxlen` and `unknown_rx` are valid pointers as they come from refs.
+            let result = unsafe {
+                XmodemResult(xmodem_recv_frame(
                     io,
                     frame,
                     buf.as_mut_ptr(),
                     &mut rxlen as *mut usize,
                     &mut unknown_rx as *mut u8,
-                ));
+                ))
+            };
 
+            // SAFETY:
+            // `iohandle` is a valid reference to a `dyn Uart` trait object.
+            unsafe {
                 match result {
                     XmodemResult::Ok => {
                         data.write_all(&buf[..rxlen])?;
@@ -99,40 +118,59 @@ impl XmodemFirmware {
     }
 }
 
-// The xmodem_{read,write} functions provide the interface to the low-level C implementation to
-// interact with the `Uart` device provided to the `XmodemFirmware` struct.
+/// The xmodem_{read,write} functions provide the interface to the low-level C implementation to
+/// interact with the `Uart` device provided to the `XmodemFirmware` struct.
+///
+/// # SAFETY:
+///
+/// * `iohandle` must be a valid reference to a `dyn Uart` trait object.
+/// * `data` must be valid for `len` bytes.
 #[no_mangle]
-extern "C" fn xmodem_read(
-    iohandle: *mut std::os::raw::c_void,
+unsafe extern "C" fn xmodem_read(
+    iohandle: *mut c_void,
     data: *mut u8,
     len: usize,
     _timeout_ms: u32,
 ) -> usize {
-    unsafe {
+    // SAFETY:
+    // We know that the `iohandle` pointer is a valid reference to a `Uart`
+    // trait object within this test only.
+    let uart: &dyn Uart = unsafe {
         let iohandle = iohandle as *const &dyn Uart;
-        let uart: &dyn Uart = *iohandle;
-        let data = std::slice::from_raw_parts_mut(data, len);
-        match uart.read(data) {
-            Ok(n) => n,
-            Err(e) => {
-                eprintln!("xmodem_read: {e:?}");
-                0
-            }
+        *iohandle
+    };
+
+    // SAFETY: It's a precondition of this function that `data` is valid for `len`.
+    let data = unsafe { std::slice::from_raw_parts_mut(data, len) };
+    match uart.read(data) {
+        Ok(n) => n,
+        Err(e) => {
+            eprintln!("xmodem_read: {e:?}");
+            0
         }
     }
 }
 
+/// # SAFETY
+///
+/// * `iohandle` must be a valid reference to a `dyn Uart` trait object.
+/// * `data` must be valid for `len` bytes.
 #[no_mangle]
-extern "C" fn xmodem_write(iohandle: *mut std::os::raw::c_void, data: *const u8, len: usize) {
-    unsafe {
+unsafe extern "C" fn xmodem_write(iohandle: *mut c_void, data: *const u8, len: usize) {
+    // SAFETY:
+    // We know that the `iohandle` pointer is a valid reference to a `Uart`
+    // trait object within this test only.
+    let uart: &dyn Uart = unsafe {
         let iohandle = iohandle as *const &dyn Uart;
-        let uart: &dyn Uart = *iohandle;
-        let data = std::slice::from_raw_parts(data, len);
-        match uart.write(data) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("xmodem_write: {e:?}");
-            }
+        *iohandle
+    };
+
+    // SAFETY: It's a precondition of this function that `data` is valid for `len`.
+    let data = unsafe { std::slice::from_raw_parts(data, len) };
+    match uart.write(data) {
+        Ok(_) => {}
+        Err(e) => {
+            eprintln!("xmodem_write: {e:?}");
         }
     }
 }
