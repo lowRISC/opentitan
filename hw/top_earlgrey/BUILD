@@ -357,7 +357,6 @@ silicon(
 
 silicon(
     name = "silicon_owner_sival_rom_ext",
-    testonly = True,
     args = [
         "--rcfile=",
         "--logging=info",

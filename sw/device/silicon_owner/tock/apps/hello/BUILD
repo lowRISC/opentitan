@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS", "OPENTITAN_CPU", "cw310_params", "opentitan_test", "silicon_params")
 load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
 
 package(default_visibility = ["//visibility:public"])
@@ -26,11 +26,12 @@ tock_elf2tab(
     name = "tab",
     src = ":hello",
     arch = "rv32imc",
+    flash_start = 0x20040000,
 )
 
 tock_image(
     name = "image",
-    app_flash_start = 0x20040000,
     apps = [":tab"],
+    exec_env = "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     kernel = "//sw/device/silicon_owner/tock/kernel",
 )
