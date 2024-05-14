@@ -166,7 +166,7 @@
   // all peripherals, though not every peripheral will be accessible to every
   // host in that address space--Access privileges are separate from addresses.
   addr_spaces: [
-    { name: "hart", desc: "The main address space, shared between the CPU and DM"},
+    { name: "hart", desc: "The main address space, shared between the CPU and DM", default: true},
     { name: "soc_mbx", desc: "SoC address space for mailbox access"},
     { name: "soc_dbg", desc: "SoC address space for debug module interfaces"},
   ]
