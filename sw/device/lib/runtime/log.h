@@ -6,7 +6,6 @@
 #define OPENTITAN_SW_DEVICE_LIB_RUNTIME_LOG_H_
 
 #include <stdbool.h>
-#include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
@@ -93,6 +92,15 @@ typedef struct log_fields {
  * Implementation detail.
  */
 void base_log_internal_core(log_fields_t log, ...);
+
+#define LOG_CORE(severity, format, ...)                    \
+  do {                                                     \
+    log_fields_t log_fields =                              \
+        LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__); \
+    base_log_internal_core(log_fields, ##__VA_ARGS__);     \
+  } while (false)
+
+#ifdef OT_PLATFORM_RV32
 /**
  * Implementation detail.
  */
@@ -125,11 +133,14 @@ extern char _dv_log_offset[];
                            OT_VA_ARGS_COUNT(format, ##__VA_ARGS__), \
                            ##__VA_ARGS__); /* clang-format on */ \
     } else {                                                     \
-      log_fields_t log_fields =                                  \
-          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_core(log_fields, ##__VA_ARGS__);         \
+      LOG_CORE(severity, format, ##__VA_ARGS__);                 \
     }                                                            \
   } while (false)
+#else /* OT_PLATFORM_RV32 */
+
+#define LOG LOG_CORE
+
+#endif /* OT_PLATFORM_RV32 */
 
 /**
  * Implementation detail of `LOG`.

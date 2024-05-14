@@ -2,13 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/log.h"
+/* On host, we need access to memrchr */
+#ifndef OT_PLATFORM_RV32
+#define _GNU_SOURCE
+#include <string.h>
+#endif
 
 #include <assert.h>
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 
 /**
@@ -17,8 +22,10 @@
  * The assertion below helps prevent inadvertant changes to the struct.
  * Please see the description of log_fields_t in log.h for more details.
  */
+#ifdef OT_PLATFORM_RV32
 static_assert(sizeof(log_fields_t) == 20,
               "log_fields_t must always be 20 bytes.");
+#endif
 
 /**
  * Converts a severity to a static string.
@@ -72,6 +79,7 @@ void base_log_internal_core(log_fields_t log, ...) {
   base_printf("\r\n");
 }
 
+#ifdef OT_PLATFORM_RV32
 /**
  * Logs `log` and the values that follow in an efficient, DV-testbench
  * specific way, which bypasses the UART.
@@ -93,3 +101,4 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...) {
   }
   va_end(args);
 }
+#endif /* OT_PLATFORM_RV32 */

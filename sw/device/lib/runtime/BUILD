@@ -62,7 +62,6 @@ cc_library(
     name = "log",
     srcs = ["log.c"],
     hdrs = ["log.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
