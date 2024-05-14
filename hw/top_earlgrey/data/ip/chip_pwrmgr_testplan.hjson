@@ -62,7 +62,10 @@
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
-      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_wake_ups"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups",
+        "//sw/device/tests:pwrmgr_sleep_wake_5_bug_test"
+      ]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
