@@ -37,8 +37,8 @@
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_otp_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_otbn_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_otp_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rom_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
@@ -751,7 +751,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_power_sleep_load"]
-      bazel: []
+      bazel: ["//sw/device/tests:chip_power_sleep_load_test"]
     }
 
     {
