@@ -13,6 +13,10 @@ typedef enum  {
   CheckMSGLen,
   WaitMSGRead,
   ReceiveTag,
+  CheckCTLen,
+  SendCT,
+  WaitCTRead,
+  VerifyTag,
   WaitForEver
 } fsm_tb_state_e;
 

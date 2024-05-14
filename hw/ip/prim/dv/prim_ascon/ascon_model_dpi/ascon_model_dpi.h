@@ -16,7 +16,7 @@ extern "C" {
 /**
  * @brief
  *
- * @param ct      Output data with concardinated cipher text
+ * @param ct      Output data with concardinated cipher text + tag
  * @param ad      Input: Associated Data
  * @param ad_len  Length of assoicated data in bytes
  * @param msg     Input: Plaintext
@@ -27,6 +27,21 @@ extern "C" {
 void c_dpi_aead_encrypt(svOpenArrayHandle ct, svOpenArrayHandle ad,
                         unsigned int ad_len, svOpenArrayHandle msg,
                         unsigned int msg_len, svOpenArrayHandle nonce,
+                        svOpenArrayHandle key);
+/**
+ * @brief
+ *
+ * @param ct      Input data with concardinated cipher text + tag
+ * @param ct_len  Length of concardinated cipher text + tag
+ * @param msg     Output: Plaintext
+ * @param ad      Input: Associated Data
+ * @param ad_len  Length of assoicated data in bytes
+ * @param nonce   Input: 128 bit Nonce
+ * @param key     Input: 128 bit Key
+ */
+void c_dpi_aead_decrypt(svOpenArrayHandle ct, unsigned int ct_len,
+                        svOpenArrayHandle msg, svOpenArrayHandle ad,
+                        unsigned int ad_len, svOpenArrayHandle nonce,
                         svOpenArrayHandle key);
 
 /**
