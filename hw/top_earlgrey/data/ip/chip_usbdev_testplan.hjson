@@ -138,7 +138,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_setuprx"]
-      bazel: ["//sw/device/tests:usbdev_setuprx_test"]
+      bazel: [
+        "//sw/device/tests:usbdev_setuprx_test",
+        "//sw/device/tests:usbdev_test"
+      ]
     }
     {
       name: chip_sw_usbdev_config_host
@@ -246,7 +249,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_stream"]
-      bazel: ["//sw/device/tests:usbdev_stream_test"]
+      bazel: [
+        "//sw/device/tests:usbdev_stream_test",
+        "//sw/device/tests:usbdev_test"
+      ]
     }
     {
       name: chip_sw_usbdev_iso
