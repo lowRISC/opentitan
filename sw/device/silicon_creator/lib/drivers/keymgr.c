@@ -201,15 +201,16 @@ static rom_error_t keymgr_wait_until_done(void) {
   return kErrorKeymgrInternal;
 }
 
-rom_error_t keymgr_generate_key_otbn(keymgr_key_type_t key_type,
-                                     keymgr_diversification_t diversification) {
+rom_error_t keymgr_generate_key(keymgr_dest_t destination,
+                                keymgr_key_type_t key_type,
+                                keymgr_diversification_t diversification) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
   uint32_t ctrl = 0;
 
   // Select OTBN as the destination.
   ctrl = bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
-                                KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN);
+                                destination);
 
   // Select the attestation CDI.
   if (key_type == kKeymgrKeyTypeAttestation) {
@@ -241,20 +242,19 @@ rom_error_t keymgr_generate_key_otbn(keymgr_key_type_t key_type,
   return keymgr_wait_until_done();
 }
 
-rom_error_t keymgr_sideload_clear_otbn(void) {
+rom_error_t keymgr_sideload_clear(keymgr_dest_t destination) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
   // Set SIDELOAD_CLEAR to begin continuously clearing the requested slot.
   abs_mmio_write32(
       kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
-      bitfield_field32_write(0, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD,
-                             KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN));
+      bitfield_field32_write(0, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD, destination));
 
   // Read back the value (hardening measure).
   uint32_t sideload_clear =
       abs_mmio_read32(kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET);
   if (bitfield_field32_read(sideload_clear, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD) !=
-      KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN) {
+      destination) {
     return kErrorKeymgrInternal;
   }
 
@@ -295,3 +295,7 @@ rom_error_t keymgr_owner_advance(keymgr_binding_value_t *sealing_binding,
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateOwnerKey));
   return kErrorOk;
 }
+
+extern rom_error_t keymgr_generate_key_otbn(
+    keymgr_key_type_t key_type, keymgr_diversification_t diversification);
+extern rom_error_t keymgr_sideload_clear_otbn(void);
