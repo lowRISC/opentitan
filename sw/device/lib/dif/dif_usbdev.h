@@ -823,6 +823,8 @@ typedef struct dif_usbdev_wake_status {
   bool disconnected;
   /** Whether the USB was reset while the AON wake module was active. */
   bool bus_reset;
+  /** Whether the USB became non-Idle whilst the AON wake module was active. */
+  bool bus_not_idle;
 } dif_usbdev_wake_status_t;
 
 /**
