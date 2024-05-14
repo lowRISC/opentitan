@@ -14,6 +14,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "usb_testutils_diags.h"
 
+// Have Data Toggle Restore functionality (Prod)?
+#define USBDEV_HAVE_TOGGLE_STATE 0
+// Have separated Available OUT and SETUP Buffer FIFOs (Prod)?
+#define USBDEV_HAVE_SEPARATED_FIFOS 0
+
 // Result codes to rx/tx callback handlers
 typedef enum {
   /**
@@ -87,6 +92,9 @@ typedef status_t (*usb_testutils_rx_handler_t)(void *,
 typedef status_t (*usb_testutils_tx_flush_handler_t)(void *);
 /* Called when a USB link reset is detected */
 typedef status_t (*usb_testutils_reset_handler_t)(void *);
+/* Called when a link event has been detected */
+typedef status_t (*usb_testutils_link_handler_t)(
+    void *, dif_usbdev_irq_state_snapshot_t, dif_usbdev_link_state_t);
 
 // In-progress larger buffer transfer to/from host
 typedef struct usb_testutils_transfer {
@@ -140,6 +148,14 @@ struct usb_testutils_ctx {
    * Most recent bus frame number received from host
    */
   uint16_t frame;
+  /**
+   * Link event callback
+   */
+  usb_testutils_link_handler_t link_callback;
+  /**
+   * Context pointer for link event callkback
+   */
+  void *ctx_link;
 
   /**
    * IN endpoints
@@ -323,6 +339,18 @@ status_t usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
                             bool en_diff_rcvr, bool tx_use_d_se0);
+
+/**
+ * Register a callback function to be notified of link events
+ *
+ * @param ctx initialized usb test utils context pointer
+ * @param link link event callback handler
+ * @param ctx_link context pointer for link event callback
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_link_callback_register(usb_testutils_ctx_t *ctx,
+                                              usb_testutils_link_handler_t link,
+                                              void *ctx_link);
 
 /**
  * Send a larger data transfer from the given endpoint
