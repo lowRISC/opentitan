@@ -120,7 +120,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                   previous_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
 
                   `uvm_info(`gfn, $sformatf(
-                            "Setting previous digest and digest swap: %4b",
+                            "setting previous digest and digest swap: %4b",
                             previous_digest_size), UVM_HIGH)
                 end
               end
@@ -268,31 +268,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // Read and check DIGEST while HMAC is enabled/disabled
           if (cfg.en_cov) cov.rd_digest_during_hmac_en_cg.sample(`gmv(ral.cfg.hmac_en));
 
-          // TODO: will need this chunk of code if we decide to hold the previous digest
-          // value after HMAC is configured with new size etc. when doing DV for
-          // the new digest sizes
-
-          /* if (previous_digest_swap != ral.cfg.digest_swap.get_mirrored_value()) begin
-              expected_digest_swap = previous_digest_swap;
-          end else begin
-              expected_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
-          end */
-
-          // when testing only 256-bit now, digest output is wired directly
-          // to registers and swaps are directly reflected in the CSRs
-          // so do not need to hold previous digest swap cfg
           expected_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
 
           if (expected_digest_swap == 1'b0) begin
             // this only swaps the 32-bit word, but not the full 64-bit digest word for the
-            // extended modes, have to swap checks at the bottom
+            // extended digest sizes, have to swap checks at the bottom
             real_digest_val = {<<8{item.d_data}};
           end else begin
             real_digest_val = item.d_data;
           end
 
           // decide whether to assume previous or new digest size to compare correctly
-          // with the expected digest
+          // with the expected digest, because digests are retained from previous operation
+          // until new configuration is successfully started
           if (previous_digest_size != ral.cfg.digest_size.get_mirrored_value()) begin
             expected_digest_size = previous_digest_size;
           end else begin
@@ -304,50 +292,59 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                        previous_digest_size, ral.cfg.digest_size.get_mirrored_value(),
                        expected_digest_size), UVM_HIGH)
 
-          // If wipe_secret is triggered, ensure the predicted value does not match the readout
-          // digest.
+          // If wipe_secret is triggered, ensure the predicted value does not match the read out
+          // digest and update the predicted value with the read out value.
           if (cfg.wipe_secret_triggered) begin
             if (expected_digest_size == SHA2_256) begin
-              if (digest_idx < 8) begin
-                `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx]);
+              `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
+              `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
+                         exp_digest[digest_idx]), UVM_HIGH)
+              // Update new digest data to the exp_digest variable.
+              exp_digest[digest_idx] = real_digest_val;
+            end else if (expected_digest_size == SHA2_384 || expected_digest_size == SHA2_512) begin
+              if (expected_digest_swap == 1'b0) begin
+                if (digest_idx % 2) begin
+                  `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx-1])
+                  // Update new digest data to the exp_digest variable.
+                  `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
+                             exp_digest[digest_idx-1]), UVM_HIGH)
+                  exp_digest[digest_idx-1] = real_digest_val;
+                end else begin
+                  `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx+1])
+                  // Update new digest data to the exp_digest variable.
+                  `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
+                             exp_digest[digest_idx+1]), UVM_HIGH)
+                  exp_digest[digest_idx+1] = real_digest_val;
+                end
+              end else begin
+                `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
                 // Update new digest data to the exp_digest variable.
-                 exp_digest[digest_idx] = real_digest_val;
                 `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
-                          exp_digest[digest_idx]), UVM_HIGH)
+                           exp_digest[digest_idx]), UVM_HIGH)
+                exp_digest[digest_idx] = real_digest_val;
               end
             end
           end else begin
             `uvm_info(`gfn, $sformatf("expected digest[%0d] 0x%0h",
-                      digest_idx, exp_digest[digest_idx]), UVM_LOW)
+                      digest_idx, exp_digest[digest_idx]), UVM_HIGH)
             if (expected_digest_size == SHA2_256) begin
+              // only check till digest_idx = 7.
+              // Digests 8-15 are irrelevant for this digest size.
               if (digest_idx < 8) begin
-                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
-              end else begin
-                `DV_CHECK_EQ(real_digest_val, '0);
+                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
               end
-            end else if (expected_digest_size == SHA2_512) begin
-                if (expected_digest_swap == 1'b0) begin
-                   if (digest_idx % 2) begin // odd index then compare with smaller index
-                    `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx-1]);
-                   end else begin
-                    `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx+1]);
-                   end
+            end else if (((expected_digest_size == SHA2_384) && (digest_idx < 11)) ||
+                           expected_digest_size == SHA2_512) begin
+              // for SHA-2 384, only check till digest_idx = 11.
+              // Digests 12-15 are irrelevant/truncated for this digest size.
+              if (expected_digest_swap == 1'b0) begin
+                if (digest_idx % 2) begin // odd index then compare with smaller index
+                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx-1])
                 end else begin
-                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
+                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx+1])
                 end
-            end else if (expected_digest_size == SHA2_384) begin
-              if (digest_idx > 11) begin
-                `DV_CHECK_EQ(real_digest_val, '0); // truncated digest words
               end else begin
-                if (expected_digest_swap == 1'b0) begin
-                   if (digest_idx % 2) begin // odd index then compare with smaller index
-                    `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx-1]);
-                   end else begin
-                    `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx+1]);
-                   end
-                end else begin
-                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
-                end
+                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
               end
             end
           end

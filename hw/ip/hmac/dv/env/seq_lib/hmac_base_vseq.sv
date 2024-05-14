@@ -198,7 +198,7 @@ constraint key_digest_c {
     `DV_CHECK_STD_RANDOMIZE_FATAL(secret_val)
     csr_wr(.ptr(ral.wipe_secret), .value(secret_val));
     cfg.wipe_secret_triggered = 1;
-    `uvm_info(`gfn, $sformatf("wipe secret triggered"), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("wiping secret triggered"), UVM_LOW)
   endtask
 
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
@@ -359,6 +359,8 @@ constraint key_digest_c {
     csr_rd(ral.err_code, error_code);
   endtask
 
+  // TODO: extend to check for SHA-2 384 and 512 once the hmac_test_vectors_sha_vseq test is
+  // extended for these digest sizes (issue #22932)
   virtual task compare_digest(bit [7:0] exp_digest[]);
     bit [TL_DW-1:0] act_digest[16];
     bit [TL_DW-1:0] packed_exp_digest[8];
@@ -367,19 +369,15 @@ constraint key_digest_c {
     // since HMAC digest size is max 512 bits.
     packed_exp_digest = {>>byte{exp_digest}};
     if (cfg.clk_rst_vif.rst_n) begin
-      // can safely assume that `exp_digest` always has 16 elements
-      // since HMAC output digest size is 512 bits.
       foreach (act_digest[i]) begin
         `uvm_info(`gfn, $sformatf("Actual digest[%0d]: 0x%0h", i, act_digest[i]), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("Expected digest[%0d]: 0x%0h", i, packed_exp_digest[i]), UVM_HIGH)
       end
 
-      // comparing for SHA-2 256
+      // comparing only digest[0] to digest [7] for SHA-2 256
       foreach (act_digest[i]) begin
         if (i < 8) begin
           `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i], $sformatf("for index %0d", i))
-        end else begin
-          `DV_CHECK_EQ(act_digest[i], '0);
         end
       end
     end else begin
