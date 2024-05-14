@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
@@ -84,6 +85,21 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
                                           dif_otbn_t *otbn) {
   // Generate the sideloaded key.
   // TODO(weicai): also check in SV sequence that the key is correct.
+  static const dif_keymgr_versioned_key_params_t kKeyVersionedParams = {
+      .dest = kDifKeymgrVersionedKeyDestSw,
+      .salt =  // the salt doesn't really matter here.
+      {
+          0xb6521d8f,
+          0x13a0e876,
+          0x1ca1567b,
+          0xb4fb0fdf,
+          0x9f89bc56,
+          0x4bd127c7,
+          0x322288d8,
+          0xde919d54,
+      },
+      .version = 0x0,  // specify a low enough version to work with the ROM EXT.
+  };
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
   CHECK_STATUS_OK(
@@ -154,12 +170,19 @@ bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
-  // Advance to OwnerIntermediateKey state.
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
+  if (kBootStage != kBootStageOwner) {
+    CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
+    // Advance to OwnerIntermediateKey state.
+    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+    CHECK_STATUS_OK(keymgr_testutils_check_state(
+        &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+    LOG_INFO("Keymgr entered OwnerIntKey State");
+  } else {
+    CHECK_DIF_OK(dif_keymgr_init(
+        mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+    CHECK_STATUS_OK(
+        keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+  }
 
   // Initialize OTBN.
   dif_otbn_t otbn;
