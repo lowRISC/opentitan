@@ -199,7 +199,7 @@ endtask
     finish_item(m_token_pkt);
   endtask
 
-  // Send a data packet to the USB device
+  // Send a DATA packet to the USB device, retaining a copy for subsequent checks.
   virtual task send_data_packet(input pid_type_e pid_type, input byte unsigned data[],
                                 input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
@@ -214,7 +214,8 @@ endtask
     finish_item(m_data_pkt);
   endtask
 
-  // Construct and transmit a DATA packet to the USB device
+  // Construct and transmit a randomized DATA packet to the USB device, retaining a copy for
+  // subsequent checks.
   virtual task call_data_seq(input pid_type_e pid_type,
                              input bit randomize_length, input bit [6:0] num_of_bytes,
                              input bit isochronous_transfer = 1'b0);
@@ -229,6 +230,43 @@ endtask
     m_usb20_item = m_data_pkt;
     start_item(m_data_pkt);
     finish_item(m_data_pkt);
+  endtask
+
+  // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
+  virtual task send_prnd_setup_packet(bit [3:0] ep);
+    // Send SETUP token packet to the selected endpoint on the specified device.
+    endp = ep;
+    call_token_seq(PidTypeSetupToken);
+    // Variable delay between SETUP token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA packet with randomized content, but we'll honor the rule that SETUP DATA packets
+    // are 8 bytes in length. The DUT does not attempt to interpret the packet content.
+    call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
+  endtask
+
+  // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
+  virtual task send_prnd_out_packet(bit [3:0] ep, input pid_type_e pid_type,
+                                    input bit randomize_length, input bit [6:0] num_of_bytes,
+                                    bit isochronous_transfer = 1'b0);
+    // Send OUT token packet to the selected endpoint on the specified device.
+    endp = ep;
+    call_token_seq(PidTypeOutToken);
+    // Variable delay between OUT token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA packet with randomized content.
+    call_data_seq(pid_type, randomize_length, num_of_bytes, isochronous_transfer);
+  endtask
+
+  // Construct and transmit an OUT DATA packet containing the supplied data.
+  virtual task send_out_packet(bit [3:0] ep, input pid_type_e pid_type, byte unsigned data[],
+                               bit isochronous_transfer = 1'b0, bit [6:0] dev_address = dev_addr);
+    // Send OUT token packet to the selected endpoint on the specified device.
+    endp = ep;
+    call_token_seq(PidTypeOutToken);
+    // Variable delay between OUT token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA1 packet with the given content.
+    send_data_packet(pid_type, data, isochronous_transfer);
   endtask
 
   virtual task get_data_pid_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
@@ -528,10 +566,21 @@ endtask
 
   virtual task inter_packet_delay(int delay = 0);
     // From section 7.1.18.1 Time interval between packets is between 2 and 6.5 bit times.
-    // Multiply with 4 because usbdev samples every 4 clks.
     if (delay == 0) delay = $urandom_range(8, 26);
-    else delay = delay * 4;
-    // for max/min inter pkt delay it can be changed with task argument
-    cfg.clk_rst_vif.wait_clks(delay);
+    else begin
+      // Delay in host-side clock cycles may be specified explicitly to achieve min or max value.
+      `DV_CHECK(delay >= 8 && delay <= 26);
+    end
+    cfg.host_clk_rst_vif.wait_clks(delay);
+  endtask
+
+  virtual task response_delay(int delay = 0);
+    // From section 7.1.18.1 Time interval between packets is between 2 and 7.5 bit times.
+    if (delay == 0) delay = $urandom_range(8, 30);
+    else begin
+      // Delay in host-side clock cycles may be specified explicitly to achieve min or max value.
+      `DV_CHECK(delay >= 8 && delay <= 30);
+    end
+    cfg.host_clk_rst_vif.wait_clks(delay);
   endtask
 endclass : usbdev_base_vseq

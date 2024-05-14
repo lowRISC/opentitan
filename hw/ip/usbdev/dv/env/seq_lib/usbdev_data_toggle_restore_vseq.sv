@@ -29,8 +29,8 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
 
   // Send an OUT packet with the specified DATAx token to the DUT and check that it
   // receives the expected handshake response.
-  task send_out_packet(bit [3:0] ep, bit data_toggle, bit exp_ack,
-                       inout uvm_reg_data_t exp_out_data_toggles);
+  task send_and_check_packet(bit [3:0] ep, bit data_toggle, bit exp_ack,
+                             inout uvm_reg_data_t exp_out_data_toggles);
     endp = ep;  // TODO: should be a parameter to tasks in base sequence.
 
     // Set up the OUT EP and supply a randomly-chosen buffer.
@@ -243,8 +243,8 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(in_rsp);
 
       // Send a randomized packet to the chosen OUT endpoint.
-      send_out_packet(ep_out, exp_out_data_toggles[ep_out] ^ out_provoke_mismatch,
-                      !out_provoke_mismatch, exp_out_data_toggles);
+      send_and_check_packet(ep_out, exp_out_data_toggles[ep_out] ^ out_provoke_mismatch,
+                           !out_provoke_mismatch, exp_out_data_toggles);
       // Disable all OUT endpoints. See Note 1.
       csr_wr(.ptr(ral.ep_out_enable[0]), .value(0));
 
