@@ -17,15 +17,15 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // skip_reselected_ir flag set then don't bother sending the IR again. If the current state of the
   // JTAG bus is unknown (because we might just have been connected), use the reset_internal_state()
   // function to ensure we request a new IR for the next item.
-  logic [JTAG_IRW-1:0]  selected_ir;
-  uint                  selected_ir_len;
+  protected logic [JTAG_IRW-1:0]  selected_ir;
+  protected uint                  selected_ir_len;
 
   // Variable to save the previous value of exit_to_rti_dr
   // Before fetching a new request, `drive_jtag_req` task waits for a clock cycle.
   // Since, in the `drive_ir` task, there is a possibility to introduce TAP reset by consecutively
   // driving `tsm` high for five cycles if previous state is UpdateDr (previous `drive_dr` exit
   // without going to Run-Test-Idle), this extra cycle must be skipped
-  bit                   exit_to_rti_dr_past = 1;
+  protected bit                   exit_to_rti_dr_past = 1;
 
   // Reset internal model of interface state
   //
