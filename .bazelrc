@@ -134,7 +134,7 @@ build --@rules_rust//rust/toolchain/channel=nightly
 # Configure the rust 'clippy' linter.
 build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
-build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Dwarnings"
+build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Wclippy::undocumented_unsafe_blocks,-Dwarnings"
 
 # Configure the module ID check.
 build --aspects=rules/quality.bzl%modid_check_aspect
