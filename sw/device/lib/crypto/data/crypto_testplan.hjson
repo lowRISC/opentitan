@@ -24,5 +24,24 @@
       ]
       lc_states: ["PROD"]
     }
+    {
+      name: crypto_lib_ecc_stress
+      desc: '''Check that the ECC implementation is correct.
+
+            Run the follow operations and compare the result against the NIST test vector:
+             - ECDSA signature.
+             - ECDSA signature verification.
+             - ECDH signature.
+             - ECDH signature verification.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:ecdsa_p256_verify_functest_hardcoded",
+        "//sw/device/tests/crypto:ecdsa_p256_functest",
+        "//sw/device/tests/crypto:ecdh_p256_functest",
+      ]
+    }
   ]
 }
