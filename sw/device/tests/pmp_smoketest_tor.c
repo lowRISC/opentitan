@@ -77,12 +77,15 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   // Check that `PMP_LOAD_REGION_ID-1` and `PMP_LOAD_REGION_ID` regions are not
   // already used.
-  static_assert(PMP_LOAD_REGION_ID == 7, "PMP_LOAD_REGION_ID does not match");
-  uint32_t pmpcfg1 = 0;
-  CSR_READ(CSR_REG_PMPCFG1, &pmpcfg1);
-  CHECK((pmpcfg1 & 0xffff0000) == 0,
-        "expected PMP region %d and %d to be unconfigured",
-        PMP_LOAD_REGION_ID - 1, PMP_LOAD_REGION_ID);
+  for (pmp_region_index_t region = PMP_LOAD_REGION_ID - 1;
+       region <= PMP_LOAD_REGION_ID; region++) {
+    bool configured;
+    pmp_region_configure_result_t result =
+        pmp_region_is_configured(region, &configured);
+    CHECK(result == kPmpRegionConfigureOk,
+          "PMP region %d cfg read failed, error code = %d", region, result);
+    CHECK(!configured, "PMP region %d is already configured", region);
+  }
 
   pmp_load_exception = false;
   char load = pmp_load_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];
