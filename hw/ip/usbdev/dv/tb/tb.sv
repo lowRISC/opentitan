@@ -46,6 +46,11 @@ module tb;
   wire usb_vbus;
   wire usb_p;
   wire usb_n;
+  // Decoded differential signal.
+  wire usb_rx_d;
+
+  // Enable for differential receiver.
+  wire usb_rx_enable;
 
   // Pull up enables from usbdev (primary DUT).
   wire usbdev_dp_pullup_en;
@@ -88,7 +93,22 @@ module tb;
                                 .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
   `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
 
-  // dut
+  // External differential receiver; USBDEV supports an external differential receiver
+  // with USB protocol-compliant robustness against jitter and slew, to produce a clean
+  // data signal for sampling into the USBDEV clock domain.
+  prim_generic_usb_diff_rx u_usb_diff_rx (
+    .input_pi           (usb_p),
+    .input_ni           (usb_n),
+    .input_en_i         (usb_rx_enable),
+    .core_pok_h_i       (1'b1),
+    .pullup_p_en_i      (usb_dp_pullup_en),
+    .pullup_n_en_i      (usb_dn_pullup_en),
+    .calibration_i      ('0),
+    .usb_diff_rx_obs_o  (),
+    .input_o            (usb_rx_d)
+  );
+
+  // DUT
   usbdev dut (
     .clk_i                (usb_clk    ),
     .rst_ni               (usb_rst_n  ),
@@ -104,7 +124,7 @@ module tb;
     // USB Interface
     .cio_usb_dp_i           (usb_p),
     .cio_usb_dn_i           (usb_n),
-    .usb_rx_d_i             (usb20_block_if.usb_rx_d_i   ),
+    .usb_rx_d_i             (usb_rx_d),
     .cio_usb_dp_o           (cio_usb_dp                  ),
     .cio_usb_dp_en_o        (cio_usb_dp_en               ),
     .cio_usb_dn_o           (cio_usb_dn                  ),
@@ -115,7 +135,7 @@ module tb;
     // Pull up enables from primary DUT, but usbdev_aon_wake may override them.
     .usb_dp_pullup_o        (usbdev_dp_pullup_en),
     .usb_dn_pullup_o        (usbdev_dn_pullup_en),
-    .usb_rx_enable_o        (usb20_block_if.usb_rx_enable_o    ),
+    .usb_rx_enable_o        (usb_rx_enable      ),
     .usb_tx_use_d_se0_o     (usb20_block_if.usb_tx_use_d_se0_o ),
     // Direct pinmux aon detect connections
     .usb_aon_suspend_req_o  (usb_aon_suspend_req),
