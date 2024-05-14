@@ -11,9 +11,6 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
   constraint lc_hw_debug_en_c {
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
   task body();
     write_chk(.ptr(jtag_dmi_ral.progbuf[0]),.cmderr(1),.command(32'h00231000));
     write_chk(.ptr(jtag_dmi_ral.abstractdata[0]),.cmderr(1),.command(32'h00231000));

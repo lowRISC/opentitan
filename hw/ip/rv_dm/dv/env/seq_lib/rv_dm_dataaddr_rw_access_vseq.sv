@@ -11,9 +11,6 @@ class rv_dm_dataaddr_rw_access_vseq extends rv_dm_base_vseq;
   constraint lc_hw_debug_en_c {
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
   task write_and_verify(input uvm_object ptr,int idx);
     uvm_reg_data_t data;
     uvm_reg_data_t rdata;
