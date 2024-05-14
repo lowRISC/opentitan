@@ -454,6 +454,7 @@
     {
       name: hart
       desc: The main address space, shared between the CPU and DM
+      default: true
     }
     {
       name: soc_mbx

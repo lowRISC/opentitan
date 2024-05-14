@@ -4,8 +4,10 @@
 ${gencmd}
 <%
 import topgen.lib as lib
+
+addr_space_suffix = "" if helper.addr_space == helper.default_addr_space else "_" + helper.addr_space
 %>\
-package top_${top["name"]}_pkg;
+package top_${top["name"]}${addr_space_suffix}_pkg;
 % for (inst_name, if_name), region in helper.devices():
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
@@ -62,6 +64,7 @@ package top_${top["name"]}_pkg;
 % endif
 % endfor
 
+% if helper.addr_space == helper.default_addr_space:
   // Enumeration of alert modules
   typedef enum int unsigned {
 % for mod in top["alert_module"]:
@@ -172,5 +175,6 @@ package top_${top["name"]}_pkg;
   `define INOUT_AI inout
   `define INOUT_AO inout
 `endif
+% endif
 
 endpackage
