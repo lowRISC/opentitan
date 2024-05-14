@@ -57,12 +57,13 @@ static void pmp_configure_load_napot(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  // Check that `PMP_LOAD_REGION_ID` region is not already used.
-  static_assert(PMP_LOAD_REGION_ID == 7, "PMP_LOAD_REGION_ID does not match");
-  uint32_t pmpcfg1 = 0;
-  CSR_READ(CSR_REG_PMPCFG1, &pmpcfg1);
-  CHECK((pmpcfg1 & 0xff000000) == 0,
-        "expected PMP region %d to be unconfigured", PMP_LOAD_REGION_ID);
+  bool configured;
+  pmp_region_configure_result_t result =
+      pmp_region_is_configured(PMP_LOAD_REGION_ID, &configured);
+  CHECK(result == kPmpRegionConfigureOk,
+        "PMP region %d cfg read failed, error code = %d", PMP_LOAD_REGION_ID,
+        result);
+  CHECK(!configured, "PMP region %d is already configured", PMP_LOAD_REGION_ID);
 
   pmp_load_exception = false;
   char load = pmp_load_store_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];
