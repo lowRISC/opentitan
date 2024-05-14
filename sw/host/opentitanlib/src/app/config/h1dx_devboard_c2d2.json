@@ -19,11 +19,17 @@
 	  "level": false
 	}
       ]
+    },
+    {
+      "name": "ROM_BOOTSTRAP"
     }
   ],
   "uarts": [
     {
       "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1",
       "alias_of": "CR50"
     }
   ]
