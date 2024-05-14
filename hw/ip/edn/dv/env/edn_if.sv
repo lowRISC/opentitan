@@ -24,6 +24,7 @@ interface edn_if(input clk, input rst_n);
         return {core_path, ep_blk_path, ".u_edn_ack_sm_ep.state_q"};
       end
       "edn_main_sm": return {core_path, ".u_edn_main_sm.state_q"};
+      "edn_main_sm_next": return {core_path, ".u_edn_main_sm.state_d"};
       default: `uvm_fatal("edn_if", "Invalid sm name!")
     endcase // case (which_sm)
   endfunction // sm_err_path
