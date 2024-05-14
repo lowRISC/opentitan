@@ -43,6 +43,11 @@ bit do_usbdev_init = 1'b1;
 // add post_reset_delays for sync between bus clk and usb clk in the apply_reset task
 bit apply_post_reset_delays_for_sync = 1'b1;
 
+// PHY Configuration that will rarely be changed; only required for very specific sequences.
+bit phy_eop_single_bit = 1'b0;  // Note: the default reset value is 1
+bit phy_usb_ref_disable = 1'b0;
+bit phy_tx_osc_test_mode = 1'b0;
+
 `uvm_object_new
 
 // Override apply_reset to cater to AON domain and host as well.
@@ -147,8 +152,16 @@ endtask
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_usbdev_init) begin
+      // Default bus configuration; these will potentially impact all test sequences, so it's
+      // preferable to modify the test configurations rather than change these defaults.
+      bit tx_use_d_se0 = 0;
+      bit en_diff_rcvr = 1;
+      bit pin_flip = 0;
+      void'($value$plusargs("pin_flip=%d", pin_flip)); // Flip pins on the USB?
+      void'($value$plusargs("en_diff_rcvr=%d", en_diff_rcvr)); // Enable differential receiver?
+      void'($value$plusargs("tx_use_d_se0=%d", tx_use_d_se0)); // Use D/SE0 for transmission?
       // Initialize the device via its registers.
-      usbdev_init();
+      usbdev_init(dev_addr, en_diff_rcvr, tx_use_d_se0, pin_flip);
     end
   endtask
 
@@ -399,8 +412,20 @@ endtask
     // TODO
   endtask
 
-  // Set up basic configuration, optionally using a fixed device address
-  virtual task usbdev_init(bit [6:0] device_address = 0);
+  // Set up basic configuration, optionally using a specific device address
+  virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0,
+                           // PHY Configuration for this test; all permutations should be tested.
+                           bit use_diff_rcvr = 0, bit tx_use_d_se0 = 0, bit pinflip = 0);
+    // Configure PHY
+    // - the different modes of operation may be set using parameters,
+    ral.phy_config.use_diff_rcvr.set(use_diff_rcvr);
+    ral.phy_config.tx_use_d_se0.set(tx_use_d_se0);
+    ral.phy_config.pinflip.set(pinflip);
+    // ... but these rarely require changing; only for very specific test sequences.
+    ral.phy_config.eop_single_bit.set(phy_eop_single_bit);
+    ral.phy_config.usb_ref_disable.set(phy_usb_ref_disable);
+    ral.phy_config.tx_osc_test_mode.set(phy_tx_osc_test_mode);
+    csr_update(ral.phy_config);
     // Has a specified address been requested? Zero is not a valid device address
     // on the USB except during the initial configuration process, so we'll just
     // keep the previous value if asked for zero.
@@ -443,7 +468,7 @@ endtask
   endtask
 
   virtual task configure_out_trans();
-    // Enable EP Out
+    // Enable EP0 Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx out
@@ -464,7 +489,7 @@ endtask
   endtask
 
   virtual task configure_setup_trans();
-    // Enable EP Out
+    // Enable EP0 Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx setup
