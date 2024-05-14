@@ -2122,13 +2122,13 @@
     {
       name: chip_sw_power_idle_load
       uvm_test_seq: chip_sw_power_idle_load_vseq
-      sw_images: ["//sw/device/tests:chip_power_idle_load:1:new_rules"]
+      sw_images: ["//sw/device/tests:chip_power_idle_load_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_power_sleep_load
       uvm_test_seq: chip_sw_power_sleep_load_vseq
-      sw_images: ["//sw/device/tests:chip_power_sleep_load:1:new_rules"]
+      sw_images: ["//sw/device/tests:chip_power_sleep_load_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
