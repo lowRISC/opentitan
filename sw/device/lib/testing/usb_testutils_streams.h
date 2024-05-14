@@ -295,11 +295,10 @@ struct usb_testutils_streams_ctx {
  * @return The result status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
-                                    unsigned nstreams,
-                                    usb_testutils_transfer_type_t xfr_types[],
-                                    uint32_t num_bytes,
-                                    usbdev_stream_flags_t flags, bool verbose);
+status_t usb_testutils_streams_init(
+    usb_testutils_streams_ctx_t *ctx, unsigned nstreams,
+    const usb_testutils_transfer_type_t xfr_types[], uint32_t num_bytes,
+    usbdev_stream_flags_t flags, bool verbose);
 
 /**
  * Service all streams, preparing and/or sending any data that we can, as well
@@ -342,6 +341,30 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
                                    uint8_t ep_in, uint8_t ep_out,
                                    uint32_t num_bytes,
                                    usbdev_stream_flags_t flags, bool verbose);
+
+/**
+ * Initialize a set of streams of specified types, dynamically constructing a
+ * standard USB configuration descriptor for the caller. The transfer types of
+ * the streams may optionally be returned via `types` for passing to the DPI
+ * model/host.
+ *
+ * @param  ctx       Context state for streaming test.
+ * @param  cfg       Receives the configuration descriptor.
+ * @param  len       Size of buffer receiving the configuration descriptor.
+ * @param  nstreams  Number of streams to be initialized.
+ * @param  xfr_types The transfer types of the streams.
+ * @param  num_bytes Number of bytes to be transferred by stream
+ * @param  flags     Stream/test flags
+ * @param  verbose   Whether to perform verbose logging for this stream
+ * @param  types     Optionally receives the bitmap of transfer types.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_streams_typed_init(
+    usb_testutils_streams_ctx_t *ctx, uint8_t *cfg, uint16_t len,
+    unsigned nstreams, const usb_testutils_transfer_type_t xfr_types[],
+    uint32_t num_bytes, usbdev_stream_flags_t flags, bool verbose,
+    uint32_t *types);
 
 /**
  * Specify the number of already-initialized streams, and apportion the
