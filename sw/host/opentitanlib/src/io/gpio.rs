@@ -224,11 +224,15 @@ pub enum BitbangEntry<'rd, 'wr> {
     /// on.  Each byte is applied to the pins in sequence, with a particular delay between each
     /// given by the `clock_tick` argument to `run()`.
     Write(&'wr [u8]),
+    /// Same as `Write`, but this `BitbangEntry` owns the data.
+    WriteOwned(Box<[u8]>),
     /// Represents a sequence of pin values as above, but additionally captures the value of any
     /// pins in `Input` or `OpenDrain` mode.  At each clock tick, the input levels are sampled
     /// just before the given output levels are applied, meaning that the data coming back will be
     /// offset by one sample.
     Both(&'wr [u8], &'rd mut [u8]),
+    /// Same as `Both`, but this `BitbangEntry` owns the data, which will be overwritten.
+    BothOwned(Box<[u8]>),
     /// Represents a delay of the given number of clock ticks in which the output levels are held
     /// as indicated by the last byte of the preceding `Write`/`Both` entry.
     ///
@@ -251,10 +255,37 @@ pub trait GpioBitbanging {
     /// already be put into `PushPull`, `OpenDrain` or `Input` mode as appropriate.  (In the
     /// latter case, the specified waveform data does not matter, as the pin is not driving, and
     /// would be included in the set of pins only in order to have it sampled at each clock tick.)
-    fn run(
+    /// Returns a `GpioBitbangOperation` which must be continuously polled, to know when the
+    /// waveform is complete.
+    fn start<'a>(
         &self,
         pins: &[&dyn GpioPin],
         clock_tick: Duration,
-        waveform: &mut [BitbangEntry],
-    ) -> Result<()>;
+        waveform: Box<[BitbangEntry<'a, 'a>]>,
+    ) -> Result<Box<dyn GpioBitbangOperation<'a, 'a> + 'a>>;
+
+    /// Convenience method which starts the bitbanging operation, and blocks until it is complete.
+    fn run<'a>(
+        &self,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: Box<[BitbangEntry<'a, 'a>]>,
+    ) -> Result<Box<[BitbangEntry<'a, 'a>]>> {
+        let mut bitbang_op = self.start(pins, clock_tick, waveform)?;
+        while !bitbang_op.query()? {}
+        bitbang_op.get_result()
+    }
+}
+
+/// Object representing an ongoing operation of generating a prescribed waveform on a number of
+/// pins.  Must be frequently polled via the `query()` function, in order to guerantee completion
+/// of the operation.
+pub trait GpioBitbangOperation<'rd, 'wr> {
+    /// Returns `true` when done, `false` means to call it again.
+    fn query(&mut self) -> Result<bool>;
+
+    /// After `query()` has returned `true`, this method can be called to get back the array of
+    /// `BitbangEntry` originally given, this is particularly useful if there are `WriteOwned` or
+    /// `BothOwned` among the entries of the array.
+    fn get_result(self: Box<Self>) -> Result<Box<[BitbangEntry<'rd, 'wr>]>>;
 }

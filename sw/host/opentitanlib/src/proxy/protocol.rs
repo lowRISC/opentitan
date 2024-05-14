@@ -127,16 +127,20 @@ pub enum BitbangEntryResponse {
 
 #[derive(Serialize, Deserialize)]
 pub enum GpioBitRequest {
-    Run {
+    Start {
         pins: Vec<String>,
         clock_ns: u64,
         entries: Vec<BitbangEntryRequest>,
     },
+    Query,
 }
 
 #[derive(Serialize, Deserialize)]
 pub enum GpioBitResponse {
-    Run { entries: Vec<BitbangEntryResponse> },
+    Start,
+    // GpioBitRequest::Query will be answered by either QueryNotDone or QueryDone.
+    QueryNotDone,
+    QueryDone { entries: Vec<BitbangEntryResponse> },
 }
 
 #[derive(Serialize, Deserialize)]
