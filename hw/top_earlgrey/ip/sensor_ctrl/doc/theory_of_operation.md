@@ -16,11 +16,11 @@ Once an alert request is detected as active, the `sensor control` formulates a p
 
 The `sensor control` can optionally generate alert acknowledgements back to the `analog sensor top`.
 
-For each incoming alert, it can be programmed as fatal or recoverable through [`FATAL_ALERT_EN`](../data/sensor_ctrl.hjson#fatal_alert_en).
-If set to recoverable, an alert will be registered in [`RECOV_ALERT`](../data/sensor_ctrl.hjson#recov_alert) and the original `analog sensor top` event acknowledged.
+For each incoming alert, it can be programmed as fatal or recoverable through [`FATAL_ALERT_EN`](registers.md#fatal_alert_en).
+If set to recoverable, an alert will be registered in [`RECOV_ALERT`](registers.md#recov_alert) and the original `analog sensor top` event acknowledged.
 The acknowledgement prevents alerts from constantly being sent.
 
-If set to fatal, an alert will be registered in [`FATAL_ALERT`](../data/sensor_ctrl.hjson#fatal_alert) but the original `analog sensor top` event will not be acknowledged.
+If set to fatal, an alert will be registered in [`FATAL_ALERT`](registers.md#fatal_alert) but the original `analog sensor top` event will not be acknowledged.
 This causes the alert to constantly send until the system escalates in some form.
 
 ## Wakeup Requests
@@ -30,9 +30,3 @@ The `sensor control` does not make assumptions about its power domains and thus 
 
 As an example, if the `sensor control` is not placed in an always on domain, then it cannot send alert based wakeups if the system is in a deep low power state.
 It will only be able to send wakeups when the system is powered and the `clk_aon_i` input is available.
-
-## Hardware Interfaces
-
-### Signals
-
-* [Interface Tables](../data/sensor_ctrl.hjson#interfaces)
