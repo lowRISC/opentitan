@@ -546,7 +546,29 @@ pmp_region_configure_result_t pmp_region_configure_tor(
   return kPmpRegionConfigureOk;
 }
 
-pmp_region_configure_result_t pmp_cfg_mode_lock_status_get(
+pmp_region_configure_result_t pmp_region_is_configured(
+    pmp_region_index_t region, bool *configured) {
+  if (region >= PMP_REGIONS_NUM) {
+    return kPmpRegionConfigureBadRegion;
+  }
+
+  if (configured == NULL) {
+    return kPmpRegionConfigureBadArg;
+  }
+
+  uint32_t field_value;
+  pmp_region_configure_result_t result =
+      pmp_csr_cfg_field_read(region, &field_value);
+  if (result != kPmpRegionConfigureOk) {
+    return result;
+  }
+
+  *configured = field_value != 0;
+
+  return kPmpRegionConfigureOk;
+}
+
+pmp_region_configure_result_t pmp_region_lock_status_get(
     pmp_region_index_t region, pmp_region_lock_t *lock) {
   if (region >= PMP_REGIONS_NUM) {
     return kPmpRegionConfigureBadRegion;
