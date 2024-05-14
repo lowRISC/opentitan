@@ -69,9 +69,6 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
   constraint lc_hw_debug_en_c {
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
   constraint unavailable_c {
     unavailable == 0;
   }

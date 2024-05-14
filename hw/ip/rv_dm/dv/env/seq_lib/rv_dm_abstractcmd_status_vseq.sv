@@ -10,9 +10,6 @@ class rv_dm_abstractcmd_status_vseq extends rv_dm_base_vseq;
   constraint lc_hw_debug_en_c {
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
 
   // The expected contents of the debug ROM that we will read through the abstract command
   // interface.

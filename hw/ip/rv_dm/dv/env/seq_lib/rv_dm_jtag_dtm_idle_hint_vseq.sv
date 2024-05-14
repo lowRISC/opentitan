@@ -12,10 +12,6 @@ class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
 
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
-
   // Read the dtmcs register and check the idle field has the expected value.
   task check_idle(bit [2:0] expected_idle);
     uvm_reg_data_t rdata;

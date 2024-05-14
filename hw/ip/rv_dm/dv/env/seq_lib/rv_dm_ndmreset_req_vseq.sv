@@ -18,9 +18,6 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
   constraint pinmux_hw_debug_en_c {
     pinmux_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
 
   task body();
     uvm_reg_data_t wdata;

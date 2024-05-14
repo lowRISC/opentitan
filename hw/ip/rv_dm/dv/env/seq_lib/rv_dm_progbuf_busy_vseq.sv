@@ -11,9 +11,7 @@ class rv_dm_progbuf_busy_vseq extends rv_dm_base_vseq;
   constraint lc_hw_debug_en_c {
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
+
   task body();
     uvm_reg_data_t data;
     uvm_reg_data_t r_data;

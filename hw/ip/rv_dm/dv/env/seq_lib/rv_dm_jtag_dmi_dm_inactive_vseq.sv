@@ -11,9 +11,6 @@ class rv_dm_jtag_dmi_dm_inactive_vseq extends rv_dm_common_vseq;
   constraint lc_hw_debug_en_c {
     lc_hw_debug_en == lc_ctrl_pkg::On;
   }
-  constraint scanmode_c {
-    scanmode == prim_mubi_pkg::MuBi4False;
-  }
 
   task body();
     uvm_reg_data_t wdata;

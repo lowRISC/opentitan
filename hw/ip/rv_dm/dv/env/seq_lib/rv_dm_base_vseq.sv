@@ -25,6 +25,16 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     };
   }
 
+  // A constraint that disables scanmode. This is generally needed because scan mode breaks JTAG
+  // access for the usual jtag_driver: the driver sees a different clock from the TAP and everything
+  // quickly gets out of sync.
+  //
+  // A vseq that actually wants to exercise scanmode should override this constraint and turn it
+  // back on.
+  constraint no_scanmode_c {
+    scanmode != prim_mubi_pkg::MuBi4True;
+  }
+
   // SBA TL device sequence. Class member for more controllability.
   protected cip_tl_device_seq m_tl_sba_device_seq;
 
