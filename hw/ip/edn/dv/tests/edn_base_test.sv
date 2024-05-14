@@ -27,6 +27,7 @@ class edn_base_test extends cip_base_test #(
     cfg.enable_pct = 100;
 
     cfg.m_csrng_agent_cfg.cmd_zero_delays = 0; // For cmd_ack and cmd_ready
+    cfg.m_csrng_agent_cfg.cmd_force_ack   = 0;
     cfg.m_csrng_agent_cfg.min_cmd_ack_dly = 4;
     cfg.m_csrng_agent_cfg.max_cmd_ack_dly = 32;
     cfg.m_csrng_agent_cfg.min_genbits_dly = 0;

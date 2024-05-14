@@ -30,14 +30,13 @@ class edn_alert_vseq extends edn_base_vseq;
     join_none
   endtask
 
-  task test_edn_cs_sts_alert();
+  task test_edn_cs_hw_sts_alert();
     string state_path;
-    string genbits_valid_path;
     state_e exp_state;
-    bit [31:0] exp_hw_cmd_sts;
+    bit [31:0] exp_cmd_sts;
     bit send_generate;
-    state_path = cfg.edn_vif.sm_err_path("edn_main_sm");
-    genbits_valid_path = cfg.edn_vif.genbits_valid_path();
+    bit state_reached_during_cs_handshake;
+    state_path = cfg.edn_vif.sm_err_path("edn_main_sm_next");
     // Re-randomize config without invalid mubi values and without clearing the FIFOs.
     cfg.use_invalid_mubi  = 0;
     cfg.cmd_fifo_rst_pct  = 0;
@@ -55,14 +54,15 @@ class edn_alert_vseq extends edn_base_vseq;
                                          exp_state inside {BootLoadIns, BootInsAckWait,
                                                            BootLoadGen, BootGenAckWait,
                                                            BootPulse, BootDone,
-                                                           BootLoadUni};)
+                                                           BootLoadUni, BootUniAckWait};)
       // Set the boot generate command to request the minimal amount of entropy.
       wr_cmd(.cmd_type(edn_env_pkg::BootGen), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False),
              .glen(1), .mode(edn_env_pkg::BootReqMode));
     end else if (cfg.auto_req_mode == MuBi4True) begin
       // If instead EDN is configured in auto mode, randomly select one of the auto mode states.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
-                                         exp_state inside {AutoAckWait, AutoDispatch,
+                                         exp_state inside {AutoLoadIns, AutoFirstAckWait,
+                                                           AutoAckWait, AutoDispatch,
                                                            AutoCaptGenCnt, AutoSendGenCmd,
                                                            AutoCaptReseedCnt, AutoSendReseedCmd};)
       // In auto mode, minimize number of requests between reseeds and set the reseed command.
@@ -90,6 +90,14 @@ class edn_alert_vseq extends edn_base_vseq;
         `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH)
         // The next acknowledgement should return an error status.
         cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
+        cfg.m_csrng_agent_cfg.cmd_zero_delays = 1;
+        cfg.m_csrng_agent_cfg.cmd_force_ack = 1;
+        cfg.clk_rst_vif.wait_n_clks(2);
+        // If the state was reached during the handshake,
+        // the hw_cmd_type in hw_cmd_sts should not have been recorded yet.
+        state_reached_during_cs_handshake =
+            cfg.m_csrng_agent_cfg.vif.mon_cb.cmd_req.csrng_req_valid &&
+            cfg.m_csrng_agent_cfg.vif.mon_cb.cmd_rsp.csrng_req_ready;
       )
     join_none
 
@@ -111,8 +119,8 @@ class edn_alert_vseq extends edn_base_vseq;
     end
     // Issue the commands that are needed to get to exp_state in a fork.
     start_transition_to_main_sm_state(exp_state);
-    send_generate = (exp_state inside {BootLoadGen, BootGenAckWait, BootPulse, BootDone,
-                                       BootLoadUni, AutoCaptReseedCnt, AutoSendReseedCmd});
+    send_generate = (exp_state inside {BootPulse, BootDone, BootLoadUni, BootUniAckWait,
+                                       AutoCaptReseedCnt, AutoSendReseedCmd});
 
     // Load constant genbits data to complete the generate request if needed.
     if (send_generate) begin
@@ -121,39 +129,100 @@ class edn_alert_vseq extends edn_base_vseq;
       cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
     end
     // Disable the boot mode to trigger the uninstaniate command if needed.
-    if (exp_state inside {BootLoadGen, BootGenAckWait, BootPulse, BootDone, BootLoadUni}) begin
+    if (exp_state inside {BootLoadUni, BootUniAckWait}) begin
       ral.ctrl.boot_req_mode.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
     end
 
     // Wait for the CSRNG error status response to propagate through the EDN
     // to the hw_cmd_sts register.
-    csr_spinwait(.ptr(ral.hw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
+    // If the expected state is AutoLoadIns or AutoFirstAckWait we are expecting a SW command
+    // status failure instead of a HW command status failure.
+    if (exp_state inside {AutoLoadIns, AutoFirstAckWait}) begin
+      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
+      exp_cmd_sts[hw_cmd_sts+CMD_STS_SIZE-1:hw_cmd_sts] = csrng_pkg::CMD_STS_SUCCESS;
+      exp_cmd_sts[hw_cmd_ack] = 1'b0;
+    end else begin
+      csr_spinwait(.ptr(ral.hw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
+      exp_cmd_sts[hw_cmd_sts+CMD_STS_SIZE-1:hw_cmd_sts] = cfg.which_cmd_sts_err;
+      exp_cmd_sts[hw_cmd_ack] = 1'b1;
+    end
     cfg.clk_rst_vif.wait_clks(10);
     // Expect the csrng_ack_err bit to be set in the recov_alert_sts register.
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[csrng_ack_err] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
-    // Check hw_cmd_sts in scoreboard.
-    exp_hw_cmd_sts[hw_cmd_boot_mode] = (cfg.boot_req_mode == MuBi4True) ? 1'b1 : 1'b0;
-    exp_hw_cmd_sts[hw_cmd_auto_mode] = (cfg.auto_req_mode == MuBi4True) ? 1'b1 : 1'b0;
-    exp_hw_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE] = cfg.which_cmd_sts_err;
-    exp_hw_cmd_sts[hw_cmd_ack] = 1'b1;
-    exp_hw_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE] =
-        (exp_state inside {BootLoadIns, BootInsAckWait}) ? csrng_pkg::INS :
-        (exp_state inside {BootPulse, BootDone, BootLoadUni}) ? csrng_pkg::UNI :
-        (exp_state inside {AutoCaptReseedCnt, AutoSendReseedCmd}) ? csrng_pkg::RES :
-        csrng_pkg::GEN;
-    csr_rd_check(.ptr(ral.hw_cmd_sts), .compare_value(exp_hw_cmd_sts));
+    // Check the hw_cmd_sts.
+    exp_cmd_sts[hw_cmd_boot_mode] =
+        (exp_state == BootLoadIns)       ? 1'b0 :
+        (exp_state == BootInsAckWait) && !state_reached_during_cs_handshake ? 1'b0 :
+        (cfg.boot_req_mode == MuBi4True) ? 1'b1 : 1'b0;
+    exp_cmd_sts[hw_cmd_auto_mode] =
+        (exp_state inside {AutoLoadIns, AutoFirstAckWait, AutoDispatch, AutoCaptGenCnt}) ? 1'b0 :
+        (exp_state == AutoSendGenCmd) && !state_reached_during_cs_handshake ? 1'b0 :
+        (cfg.auto_req_mode == MuBi4True) ? 1'b1 : 1'b0;
+
+    unique case (exp_state)
+      BootLoadIns, AutoLoadIns, AutoFirstAckWait, AutoDispatch, AutoCaptGenCnt: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::INV;
+      end
+      BootInsAckWait: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
+            state_reached_during_cs_handshake ? csrng_pkg::INS : csrng_pkg::INV;
+      end
+      BootLoadGen: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::INS;
+      end
+      BootGenAckWait: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
+            state_reached_during_cs_handshake ? csrng_pkg::GEN : csrng_pkg::INS;
+      end
+      BootPulse, BootDone, BootLoadUni, AutoAckWait, AutoCaptReseedCnt: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::GEN;
+      end
+      AutoSendGenCmd: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
+            state_reached_during_cs_handshake ? csrng_pkg::GEN : csrng_pkg::INV;
+      end
+      AutoSendReseedCmd: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
+            state_reached_during_cs_handshake ? csrng_pkg::RES : csrng_pkg::GEN;
+      end
+      BootUniAckWait: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
+            state_reached_during_cs_handshake ? csrng_pkg::UNI : csrng_pkg::GEN;
+      end
+      default: begin
+        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::INV;
+      end
+    endcase
+
+    csr_rd_check(.ptr(ral.hw_cmd_sts), .compare_value(exp_cmd_sts));
     // If coverage is enabled, record the values of the hw_cmd_sts register.
     if (cfg.en_cov) begin
-      cov_vif.cg_edn_hw_cmd_sts_sample(.boot_mode(exp_hw_cmd_sts[hw_cmd_boot_mode]),
-          .auto_mode(exp_hw_cmd_sts[hw_cmd_auto_mode]),
-          .cmd_sts(csrng_pkg::csrng_cmd_sts_e'(exp_hw_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE])),
-          .cmd_ack(exp_hw_cmd_sts[hw_cmd_ack]),
-          .acmd(csrng_pkg::acmd_e'(exp_hw_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE])));
+      cov_vif.cg_edn_hw_cmd_sts_sample(.boot_mode(exp_cmd_sts[hw_cmd_boot_mode]),
+          .auto_mode(exp_cmd_sts[hw_cmd_auto_mode]),
+          .cmd_sts(csrng_pkg::csrng_cmd_sts_e'(exp_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE])),
+          .cmd_ack(exp_cmd_sts[hw_cmd_ack]),
+          .acmd(csrng_pkg::acmd_e'(exp_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE])));
     end
+    // Check the sw_cmd_sts. If the expected state is AutoLoadIns or AutoFirstAckWait
+    // we are expecting a SW command status failure instead of a HW command status failure.
+    exp_cmd_sts = '0;
+    if (exp_state inside {AutoLoadIns, AutoFirstAckWait}) begin
+      exp_cmd_sts[sw_cmd_sts+CMD_STS_SIZE-1:sw_cmd_sts] = cfg.which_cmd_sts_err;
+    end else begin
+      exp_cmd_sts[sw_cmd_sts+CMD_STS_SIZE-1:sw_cmd_sts] = csrng_pkg::CMD_STS_SUCCESS;
+    end
+    exp_cmd_sts[sw_cmd_ack] = (cfg.auto_req_mode == MuBi4True) ? 1'b1 : 1'b0;
+    exp_cmd_sts[sw_cmd_rdy] = 1'b0;
+    exp_cmd_sts[sw_cmd_reg_rdy] = 1'b0;
+    csr_rd_check(.ptr(ral.sw_cmd_sts), .compare_value(exp_cmd_sts));
+    // Check if the current main SM state is RejectCsrngEntropy.
     csr_rd_check(.ptr(ral.main_sm_state), .compare_value(edn_pkg::RejectCsrngEntropy));
+    // Reintroduce delays for CSRNG acknowledgements and stop forcing the acknowledgement.
+    cfg.m_csrng_agent_cfg.cmd_zero_delays = 0;
+    cfg.m_csrng_agent_cfg.cmd_force_ack = 0;
     // See if we can request some data if the generate has been issued.
     if (send_generate) begin
       m_endpoint_pull_seq.num_trans =
@@ -178,7 +247,73 @@ class edn_alert_vseq extends edn_base_vseq;
              prim_mubi_pkg::MuBi4False,  // auto_req_mode
              prim_mubi_pkg::MuBi4False}; // cmd_fifo_rst
     csr_wr(.ptr(ral.ctrl), .value(value));
-  endtask // edn_bus_cmp_alert
+  endtask // test_edn_cs_hw_sts_alert
+
+  task test_edn_cs_sw_sts_alert();
+    string state_path;
+    state_e exp_state;
+    bit [31:0] exp_sw_cmd_sts;
+    state_path = cfg.edn_vif.sm_err_path("edn_main_sm_next");
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state, exp_state inside {Idle, SWPortMode};)
+
+    // Wait for the EDN main SM to enter the desired state and apply the rsp_sts_err setting to
+    // make the next CSRNG acknowledgement return an error.
+    fork
+      `DV_SPINWAIT(
+        `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s",
+                                  exp_state.name()), UVM_HIGH)
+        forever begin
+          uvm_hdl_data_t val;
+          state_e act_state;
+          cfg.clk_rst_vif.wait_n_clks(1);
+          `DV_CHECK(uvm_hdl_read(state_path, val))
+          act_state = state_e'(val);
+          if (act_state == exp_state) break;
+        end
+        `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH)
+        // The next acknowledgement should return an error status.
+        cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
+        cfg.m_csrng_agent_cfg.cmd_zero_delays = 1;
+        cfg.m_csrng_agent_cfg.cmd_force_ack = 1;
+      )
+    join_none
+
+    // Set the EDN ctrl values.
+    ral.ctrl.edn_enable.set(cfg.enable);
+    ral.ctrl.boot_req_mode.set(MuBi4False);
+    ral.ctrl.auto_req_mode.set(MuBi4False);
+    ral.ctrl.cmd_fifo_rst.set(cfg.cmd_fifo_rst);
+    csr_update(.csr(ral.ctrl));
+
+    // Wait for the CSRNG error status response to propagate through the EDN
+    // to the sw_cmd_sts register.
+    csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
+    cfg.clk_rst_vif.wait_clks(10);
+    // Expect the csrng_ack_err bit to be set in the recov_alert_sts register.
+    exp_recov_alert_sts = 32'b0;
+    exp_recov_alert_sts[csrng_ack_err] = 1;
+    csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+    // Check sw_cmd_sts.
+    exp_sw_cmd_sts[sw_cmd_sts+CMD_STS_SIZE-1:sw_cmd_sts] = cfg.which_cmd_sts_err;
+    exp_sw_cmd_sts[sw_cmd_ack] = 1'b1;
+    exp_sw_cmd_sts[sw_cmd_rdy] = 1'b0;
+    exp_sw_cmd_sts[sw_cmd_reg_rdy] = 1'b0;
+    csr_rd_check(.ptr(ral.sw_cmd_sts), .compare_value(exp_sw_cmd_sts));
+    // Check if the current main SM state is RejectCsrngEntropy.
+    csr_rd_check(.ptr(ral.main_sm_state), .compare_value(edn_pkg::RejectCsrngEntropy));
+    // Reintroduce delays for CSRNG acknowledgements and stop forcing the acknowledgement.
+    cfg.m_csrng_agent_cfg.cmd_zero_delays = 0;
+    cfg.m_csrng_agent_cfg.cmd_force_ack = 0;
+    // From now on we want the CSRNG status responses to be valid again.
+    cfg.m_csrng_agent_cfg.rsp_sts_err = csrng_pkg::CMD_STS_SUCCESS;
+    // Disable the EDN to prepare for the next test.
+    value = {prim_mubi_pkg::MuBi4False,  // edn_enable
+             prim_mubi_pkg::MuBi4False,  // boot_req_mode
+             prim_mubi_pkg::MuBi4False,  // auto_req_mode
+             prim_mubi_pkg::MuBi4False}; // cmd_fifo_rst
+    csr_wr(.ptr(ral.ctrl), .value(value));
+  endtask // test_edn_cs_sw_sts_alert
 
   task test_edn_bus_cmp_alert();
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endpoint_port,
@@ -305,7 +440,8 @@ class edn_alert_vseq extends edn_base_vseq;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     // Start the CSRNG error status response alert test.
-    test_edn_cs_sts_alert();
+    test_edn_cs_hw_sts_alert();
+    test_edn_cs_sw_sts_alert();
 
     // Disable the EDN and clear the FIFOs.
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
