@@ -114,13 +114,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // Drive TMS, TDI to the given values and wait for a single edge of TCK.
   task tms_tdi_step(bit tms, bit tdi);
-    // We normally expect this task to be called at the negedge of tck (synchronous with HOST_CB).
-    // But that won't quite be true if the clock has been paused for a while because tck=1 when
-    // idle. We can spot that happening because tck will be 1. In that situation, wait for HOST_CB
-    // so we can get back in sync.
-    if (cfg.vif.tck) begin
-      @(`HOST_CB);
-    end
+    // When everything is in sync, this task will be called just after the negedge of TCK
+    // (synchronous with HOST_CB). In particular, TCK should be low: check that this is true.
+    `DV_CHECK_FATAL(!cfg.vif.tck);
 
     `HOST_CB.tms <= tms;
     `HOST_CB.tdi <= tdi;
