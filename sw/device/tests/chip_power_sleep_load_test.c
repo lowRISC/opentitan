@@ -189,10 +189,12 @@ bool test_main(void) {
   }
 
   // RV Timer
-  const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
-  const uint32_t kComparator = 0;
-  const uint64_t kTickFreqHz = 1000000;
-  const uint64_t kDeadline = UINT32_MAX;
+  enum {
+    kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0,
+    kComparator = 0,
+    kTickFreqHz = 1000000,
+    kDeadline = UINT32_MAX,
+  };
 
   CHECK_DIF_OK(dif_rv_timer_reset(&rv_timer));
 
@@ -275,13 +277,13 @@ bool test_main(void) {
   // PWM
 
   // Configuration struct for PWM general
-  const dif_pwm_config_t config_ = {
+  const dif_pwm_config_t kConfig_ = {
       .clock_divisor = 0,
       .beats_per_pulse_cycle = 32,
   };
 
   // Configuration struct for a specific PWM channel
-  const dif_pwm_channel_config_t default_ch_cfg_ = {
+  const dif_pwm_channel_config_t kDefaultChCfg_ = {
       .duty_cycle_a = 0,
       .duty_cycle_b = 0,
       .phase_delay = 0,
@@ -310,10 +312,10 @@ bool test_main(void) {
       kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
   };
 
-  CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));
+  CHECK_DIF_OK(dif_pwm_configure(&pwm, kConfig_));
 
   // Configure each of the PWM channels:
-  dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
+  dif_pwm_channel_config_t channel_config_ = kDefaultChCfg_;
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(
         dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleDisabled));
@@ -342,13 +344,13 @@ bool test_main(void) {
     // OTP periodic checks when the test runs after the ROM_EXT.
 
     // Configure OTP Control to do periodic "consistency" & "integrity" checks.
-    const dif_otp_ctrl_config_t otp_ctrl_config = {
+    const dif_otp_ctrl_config_t kOtpCtrlConfig = {
         .check_timeout = UINT32_MAX,
         .integrity_period_mask = 0x1,
         .consistency_period_mask = 0x1,
     };
 
-    CHECK_DIF_OK(dif_otp_ctrl_configure(&otp_ctrl, otp_ctrl_config));
+    CHECK_DIF_OK(dif_otp_ctrl_configure(&otp_ctrl, kOtpCtrlConfig));
 
     LOG_INFO("OTP periodic checks active");
   } else {
@@ -385,10 +387,12 @@ bool test_main(void) {
   LOG_INFO("AON Timer active");
 
   // ADC Controller
-  const uint8_t kNumLowPowerSamples = 2;
-  const uint8_t kNumNormalPowerSamples = 1;
-  const uint64_t kPowerUpTime = 30;
-  const uint64_t kWakeUpTime = 500;
+  enum {
+    kNumLowPowerSamples = 2,
+    kNumNormalPowerSamples = 1,
+    kPowerUpTime = 30,
+    kWakeUpTime = 500,
+  };
   uint32_t power_up_time_aon_cycles = 0;
   CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kPowerUpTime, &power_up_time_aon_cycles));
