@@ -3986,6 +3986,361 @@ opentitan_test(
     ],
 )
 
+cc_library(
+    name = "usbdev_suspend",
+    srcs = ["usbdev_suspend.c"],
+    hdrs = ["usbdev_suspend.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_streams",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_suspend_resume_test",
+    srcs = [
+        "usbdev_suspend_resume_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=suspend
+            --init-phase=suspend
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=suspend
+            --init-phase=suspend
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        #        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_sleep_resume_test",
+    srcs = [
+        "usbdev_sleep_resume_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-resume
+            --init-phase=sleep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-resume
+            --init-phase=sleep-resume
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_sleep_reset_test",
+    srcs = [
+        "usbdev_sleep_reset_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-reset
+            --init-phase=sleep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-reset
+            --init-phase=sleep-resume
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_sleep_disconnect_test",
+    srcs = [
+        "usbdev_sleep_disconnect_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-resume
+            --init-phase=sleep-disconnect
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-resume
+            --init-phase=sleep-disconnect
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_deep_resume_test",
+    srcs = [
+        "usbdev_deep_resume_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-resume
+            --init-phase=deep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-resume
+            --init-phase=deep-resume
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_deep_reset_test",
+    srcs = [
+        "usbdev_deep_reset_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-reset
+            --init-phase=deep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-reset
+            --init-phase=deep-resume
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_deep_disconnect_test",
+    srcs = [
+        "usbdev_deep_disconnect_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=shutdown
+            --init-phase=deep-disconnect
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=shutdown
+            --init-phase=deep-disconnect
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_test(
+    name = "usbdev_suspend_full_test",
+    srcs = [
+        "usbdev_suspend_full_test.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=shutdown
+            --init-phase=suspend
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=shutdown
+            --init-phase=suspend
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
 opentitan_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
