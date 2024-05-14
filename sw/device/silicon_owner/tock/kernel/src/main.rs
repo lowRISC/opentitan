@@ -21,6 +21,8 @@ use capsules_aes_gcm::aes_gcm;
 use capsules_core::rng::{Entropy32ToRandom, RngDriver};
 use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
+use capsules_system::process_policies::PanicFaultPolicy;
+use capsules_system::process_printer::ProcessPrinterText;
 use earlgrey::chip::EarlGreyDefaultPeripherals;
 use earlgrey::chip_config::EarlGreyConfig;
 use earlgrey::epmp::EPMPDebugConfig;
@@ -29,7 +31,6 @@ use kernel::capabilities;
 use kernel::component::Component;
 use kernel::hil;
 use kernel::hil::entropy::Entropy32;
-use kernel::hil::hasher::Hasher;
 use kernel::hil::i2c::I2CMaster;
 use kernel::hil::led::LedHigh;
 use kernel::hil::rng::Rng;
@@ -40,7 +41,6 @@ use kernel::scheduler::priority::PrioritySched;
 use kernel::utilities::registers::interfaces::ReadWriteable;
 use kernel::{create_capability, debug, static_init};
 use lowrisc::csrng::CsRng;
-use lowrisc::flash_ctrl::FlashMPConfig;
 use rv32i::csr;
 
 pub mod io;
@@ -71,18 +71,6 @@ static mut MAIN_CAP: Option<&dyn kernel::capabilities::MainLoopCapability> = Non
 static mut ALARM: Option<
     &'static MuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
 > = None;
-// Test access to TicKV
-static mut TICKV: Option<
-    &capsules_extra::tickv::TicKVSystem<
-        'static,
-        capsules_core::virtualizers::virtual_flash::FlashUser<
-            'static,
-            lowrisc::flash_ctrl::FlashCtrl<'static>,
-        >,
-        capsules_extra::sip_hash::SipHasher24<'static>,
-        2048,
-    >,
-> = None;
 // Test access to AES
 static mut AES: Option<
     &aes_gcm::Aes128Gcm<
@@ -100,10 +88,10 @@ static mut RSA_HARDWARE: Option<&lowrisc::rsa::OtbnRsa<'static>> = None;
 static mut SHA256SOFT: Option<&capsules_extra::sha256::Sha256Software<'static>> = None;
 
 static mut CHIP: Option<&'static EarlGreyChip> = None;
-static mut PROCESS_PRINTER: Option<&'static kernel::process::ProcessPrinterText> = None;
+static mut PROCESS_PRINTER: Option<&'static ProcessPrinterText> = None;
 
 // How should the kernel respond when a process faults.
-const FAULT_RESPONSE: kernel::process::PanicFaultPolicy = kernel::process::PanicFaultPolicy {};
+const FAULT_RESPONSE: PanicFaultPolicy = PanicFaultPolicy {};
 
 /// Dummy buffer that causes the linker to reserve enough space for the stack.
 #[no_mangle]
@@ -112,10 +100,10 @@ pub static mut STACK_MEMORY: [u8; 0x1400] = [0; 0x1400];
 
 enum ChipConfig {}
 impl EarlGreyConfig for ChipConfig {
-    const NAME: &'static str = "fpga_cw310";
-    const CPU_FREQ: u32 = 24_000_000;
-    const PERIPHERAL_FREQ: u32 = 6_000_000;
-    const AON_TIMER_FREQ: u32 = 250_000;
+    const NAME: &'static str = "silicon";
+    const CPU_FREQ: u32 = 100_000_000;
+    const PERIPHERAL_FREQ: u32 = 24_000_000;
+    const AON_TIMER_FREQ: u32 = 200_000;
     const UART_BAUDRATE: u32 = 115200;
 }
 
@@ -167,28 +155,6 @@ struct EarlGrey {
             virtual_aes_ccm::VirtualAES128CCM<'static, earlgrey::aes::Aes<'static>>,
         >,
     >,
-    kv_driver: &'static capsules_extra::kv_driver::KVStoreDriver<
-        'static,
-        capsules_extra::virtual_kv::VirtualKVPermissions<
-            'static,
-            capsules_extra::kv_store_permissions::KVStorePermissions<
-                'static,
-                capsules_extra::tickv_kv_store::TicKVKVStore<
-                    'static,
-                    capsules_extra::tickv::TicKVSystem<
-                        'static,
-                        capsules_core::virtualizers::virtual_flash::FlashUser<
-                            'static,
-                            lowrisc::flash_ctrl::FlashCtrl<'static>,
-                        >,
-                        capsules_extra::sip_hash::SipHasher24<'static>,
-                        2048,
-                    >,
-                    [u8; 8],
-                >,
-            >,
-        >,
-    >,
     syscall_filter: &'static TbfHeaderFilterDefaultAllow,
     scheduler: &'static PrioritySched,
     scheduler_timer: &'static VirtualSchedulerTimer<
@@ -214,7 +180,6 @@ impl SyscallDriverLookup for EarlGrey {
             capsules_core::spi_controller::DRIVER_NUM => f(Some(self.spi_controller)),
             capsules_core::rng::DRIVER_NUM => f(Some(self.rng)),
             capsules_extra::symmetric_encryption::aes::DRIVER_NUM => f(Some(self.aes)),
-            capsules_extra::kv_driver::DRIVER_NUM => f(Some(self.kv_driver)),
             _ => f(None),
         }
     }
@@ -495,42 +460,7 @@ unsafe fn setup() -> (
         static _estorage: u8;
     }
 
-    // Flash setup memory protection for the ROM/Kernel
-    // Only allow reads for this region, any other ops will cause an MP fault
-    let mp_cfg = FlashMPConfig {
-        read_en: true,
-        write_en: false,
-        erase_en: false,
-        scramble_en: false,
-        ecc_en: false,
-        he_en: false,
-    };
-
-    // Allocate a flash protection region (associated cfg number: 0), for the code section.
-    if let Err(e) = peripherals.flash_ctrl.mp_set_region_perms(
-        &_manifest as *const u8 as usize,
-        &_etext as *const u8 as usize,
-        0,
-        &mp_cfg,
-    ) {
-        debug!("Failed to set flash memory protection: {:?}", e);
-    } else {
-        // Lock region 0, until next system reset.
-        if let Err(e) = peripherals.flash_ctrl.mp_lock_region_cfg(0) {
-            debug!("Failed to lock memory protection config: {:?}", e);
-        }
-    }
-
     // Flash
-    let flash_ctrl_read_buf = static_init!(
-        [u8; lowrisc::flash_ctrl::PAGE_SIZE],
-        [0; lowrisc::flash_ctrl::PAGE_SIZE]
-    );
-    let page_buffer = static_init!(
-        lowrisc::flash_ctrl::LowRiscPage,
-        lowrisc::flash_ctrl::LowRiscPage::default()
-    );
-
     let mux_flash = components::flash::FlashMuxComponent::new(&peripherals.flash_ctrl).finalize(
         components::flash_mux_component_static!(lowrisc::flash_ctrl::FlashCtrl),
     );
@@ -543,108 +473,7 @@ unsafe fn setup() -> (
     kernel::deferred_call::DeferredCallClient::register(sip_hash);
     SIPHASH = Some(sip_hash);
 
-    // TicKV
-    let tickv = components::tickv::TicKVComponent::new(
-        sip_hash,
-        &mux_flash,                                    // Flash controller
-        lowrisc::flash_ctrl::FLASH_PAGES_PER_BANK - 1, // Region offset (End of Bank0/Use Bank1)
-        // Region Size
-        lowrisc::flash_ctrl::FLASH_PAGES_PER_BANK * lowrisc::flash_ctrl::PAGE_SIZE,
-        flash_ctrl_read_buf, // Buffer used internally in TicKV
-        page_buffer,         // Buffer used with the flash controller
-    )
-    .finalize(components::tickv_component_static!(
-        lowrisc::flash_ctrl::FlashCtrl,
-        capsules_extra::sip_hash::SipHasher24,
-        2048
-    ));
     hil::flash::HasClient::set_client(&peripherals.flash_ctrl, mux_flash);
-    sip_hash.set_client(tickv);
-    TICKV = Some(tickv);
-
-    let kv_store = components::kv::TicKVKVStoreComponent::new(tickv).finalize(
-        components::tickv_kv_store_component_static!(
-            capsules_extra::tickv::TicKVSystem<
-                capsules_core::virtualizers::virtual_flash::FlashUser<
-                    lowrisc::flash_ctrl::FlashCtrl,
-                >,
-                capsules_extra::sip_hash::SipHasher24<'static>,
-                2048,
-            >,
-            capsules_extra::tickv::TicKVKeyType,
-        ),
-    );
-
-    let kv_store_permissions = components::kv::KVStorePermissionsComponent::new(kv_store).finalize(
-        components::kv_store_permissions_component_static!(
-            capsules_extra::tickv_kv_store::TicKVKVStore<
-                capsules_extra::tickv::TicKVSystem<
-                    capsules_core::virtualizers::virtual_flash::FlashUser<
-                        lowrisc::flash_ctrl::FlashCtrl,
-                    >,
-                    capsules_extra::sip_hash::SipHasher24<'static>,
-                    2048,
-                >,
-                capsules_extra::tickv::TicKVKeyType,
-            >
-        ),
-    );
-
-    let mux_kv = components::kv::KVPermissionsMuxComponent::new(kv_store_permissions).finalize(
-        components::kv_permissions_mux_component_static!(
-            capsules_extra::kv_store_permissions::KVStorePermissions<
-                capsules_extra::tickv_kv_store::TicKVKVStore<
-                    capsules_extra::tickv::TicKVSystem<
-                        capsules_core::virtualizers::virtual_flash::FlashUser<
-                            lowrisc::flash_ctrl::FlashCtrl,
-                        >,
-                        capsules_extra::sip_hash::SipHasher24<'static>,
-                        2048,
-                    >,
-                    capsules_extra::tickv::TicKVKeyType,
-                >,
-            >
-        ),
-    );
-
-    let virtual_kv_driver = components::kv::VirtualKVPermissionsComponent::new(mux_kv).finalize(
-        components::virtual_kv_permissions_component_static!(
-            capsules_extra::kv_store_permissions::KVStorePermissions<
-                capsules_extra::tickv_kv_store::TicKVKVStore<
-                    capsules_extra::tickv::TicKVSystem<
-                        capsules_core::virtualizers::virtual_flash::FlashUser<
-                            lowrisc::flash_ctrl::FlashCtrl,
-                        >,
-                        capsules_extra::sip_hash::SipHasher24<'static>,
-                        2048,
-                    >,
-                    capsules_extra::tickv::TicKVKeyType,
-                >,
-            >
-        ),
-    );
-
-    let kv_driver = components::kv::KVDriverComponent::new(
-        virtual_kv_driver,
-        board_kernel,
-        capsules_extra::kv_driver::DRIVER_NUM,
-    )
-    .finalize(components::kv_driver_component_static!(
-        capsules_extra::virtual_kv::VirtualKVPermissions<
-            capsules_extra::kv_store_permissions::KVStorePermissions<
-                capsules_extra::tickv_kv_store::TicKVKVStore<
-                    capsules_extra::tickv::TicKVSystem<
-                        capsules_core::virtualizers::virtual_flash::FlashUser<
-                            lowrisc::flash_ctrl::FlashCtrl,
-                        >,
-                        capsules_extra::sip_hash::SipHasher24<'static>,
-                        2048,
-                    >,
-                    capsules_extra::tickv::TicKVKeyType,
-                >,
-            >,
-        >
-    ));
 
     let mux_otbn = crate::otbn::AccelMuxComponent::new(&peripherals.otbn)
         .finalize(otbn_mux_component_static!());
@@ -762,7 +591,7 @@ unsafe fn setup() -> (
         static _stext: u8;
         /// The end of the kernel text (Included only for kernel PMP)
         static _etext: u8;
-        /// The start of the kernel / app / storage flash (Included only for kernel PMP)
+        /// The start of flash storage (matches the start of the ROM_EXT).
         static _sflash: u8;
         /// The end of the kernel / app / storage flash (Included only for kernel PMP)
         static _eflash: u8;
@@ -792,7 +621,6 @@ unsafe fn setup() -> (
             i2c_master,
             spi_controller,
             aes,
-            kv_driver,
             syscall_filter,
             scheduler,
             scheduler_timer,
@@ -829,7 +657,7 @@ unsafe fn setup() -> (
 /// This function is called from the arch crate after some very basic RISC-V
 /// setup and RAM initialization.
 #[no_mangle]
-pub unsafe fn main() {
+pub unsafe extern "C" fn main() {
     #[cfg(test)]
     test_main();
 

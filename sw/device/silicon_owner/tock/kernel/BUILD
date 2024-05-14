@@ -59,6 +59,7 @@ rust_binary(
         "@tock//capsules/aes_gcm:capsules-aes-gcm",
         "@tock//capsules/core:capsules-core",
         "@tock//capsules/extra:capsules-extra",
+        "@tock//capsules/system:capsules-system",
         "@tock//chips/earlgrey",
         "@tock//chips/lowrisc",
         "@tock//kernel",

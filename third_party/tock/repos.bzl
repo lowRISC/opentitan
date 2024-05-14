@@ -40,9 +40,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
-        strip_prefix = "tock-25d9f42c9f4672c54840e4623d79279ff6abd820",
-        url = "https://github.com/tock/tock/archive/25d9f42c9f4672c54840e4623d79279ff6abd820.tar.gz",
-        sha256 = "56b528ad0da04e05053f2c8220b8a0bb44bc1233b51d742f05e05f5c950787b9",
+        strip_prefix = "tock-5a65d681489d30a4b88b5d1a7d2a0e8273cbf027",
+        url = "https://github.com/tock/tock/archive/5a65d681489d30a4b88b5d1a7d2a0e8273cbf027.tar.gz",
+        sha256 = "38f3efcaaa6c4e22a7c4fa8f2befa651ec1a9f730089434696ad781f6b479c79",
         additional_files_content = {
             "BUILD": """exports_files(glob(["**"]))""",
             "arch/riscv/BUILD": crate_build(
@@ -69,6 +69,7 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                     "//kernel",
                     "//capsules/core:capsules-core",
                     "//capsules/extra:capsules-extra",
+                    "//capsules/system:capsules-system",
                 ],
             ),
             "boards/opentitan/earlgrey-cw310/BUILD": _EARLGREY_CW310_BUILD,
@@ -96,6 +97,13 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                     "//libraries/enum_primitive",
                     "//libraries/tickv",
                     "//capsules/core:capsules-core",
+                ],
+            ),
+            "capsules/system/BUILD": crate_build(
+                name = "capsules-system",
+                deps = [
+                    "//kernel",
+                    "//libraries/tock-tbf",
                 ],
             ),
             "chips/earlgrey/BUILD": crate_build(
