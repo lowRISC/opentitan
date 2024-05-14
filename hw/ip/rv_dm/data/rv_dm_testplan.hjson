@@ -188,11 +188,15 @@
     {
       name: jtag_dmi_dm_inactive
       desc: '''
-            Verify that writes to DMI registers other than dmcontrol[dmactive] and ignored and they
-            all retain the reset values on reads.
 
-            - Perform random writes to DMI registers while dmcontrol[dmactive] is 0 (exclude it).
-            - Read all DMI registers back and verify they reflect POR values.
+            Verify that DMI writes to data other than dmcontrol.dmactive are ignored when dmactive
+            is false. All of these registers should return their reset values on reads.
+
+            - Write 0 to DMCONTROL.DMACTIVE to put the debug module into its reset state.
+            - Perform random DMI writes, constrained only by requiring that they don't write 1 to
+              DMCONTROL.DMACTIVE.
+            - Write 1 to DMCONTROL.DMACTIVE to leave the reset state.
+            - Read DMI registers back and check they have their POR values.
             '''
       stage: V2
       tests: ["rv_dm_jtag_dmi_dm_inactive"]
