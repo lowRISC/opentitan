@@ -23,6 +23,9 @@
 extern "C" {
 #endif  // __cplusplus
 
+// Have explicit indication of 'bus not idle' state (Prod)?
+#define USBDEV_AON_HAVE_BUS_NOT_IDLE 0
+
 /**
  * Hardware constants.
  */
@@ -769,6 +772,10 @@ typedef struct dif_usbdev_wake_status {
   bool disconnected;
   /** Whether the USB was reset while the AON wake module was active. */
   bool bus_reset;
+#if USBDEV_AON_HAVE_BUS_NOT_IDLE
+  /** Whether the USB became non-Idle whilst the AON wake module was active. */
+  bool bus_not_idle;
+#endif
 } dif_usbdev_wake_status_t;
 
 /**
