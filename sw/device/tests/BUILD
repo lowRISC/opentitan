@@ -2456,13 +2456,9 @@ opentitan_test(
 opentitan_test(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2477,13 +2473,9 @@ opentitan_test(
 opentitan_test(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
