@@ -188,6 +188,7 @@ RUST_TARGETS = [
     "//sw/host/tests/chip/spi_device:spi_passthru",
     "//sw/host/tests/xmodem:lrzsz_test",
     "//sw/host/tests/xmodem:xmodem",
+    "//sw/host/sphincsplus:sphincsplus",
 ]
 
 rustfmt_test(
