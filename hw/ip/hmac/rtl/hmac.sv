@@ -240,7 +240,10 @@ module hmac
           digest_sw[i]       = {32'h0, conv_endian32(reg2hw.digest[i].q, digest_swap)};
           digest_sw_we[i]    = reg2hw.digest[i].qe;
         end else begin
-          hw2reg.digest[i].d = '0;
+          // replicate digest[0..7] into digest[8..15]. Digest[8...15] are irrelevant for SHA2_256,
+          // but this ensures all digest CSRs are wiped out with random value (at wipe_secret)
+          // across different configurations.
+          hw2reg.digest[i].d = conv_endian32(digest[i%8][31:0], digest_swap);
         end
       end else if ((digest_size_started_q == SHA2_384) || (digest_size_started_q == SHA2_512)) begin
         if (i % 2 == 0 && i < 15) begin // even index

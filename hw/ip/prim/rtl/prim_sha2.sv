@@ -161,17 +161,6 @@ module prim_sha2 import prim_sha2_pkg::*;
       end else if (update_digest) begin
         for (int i = 0 ; i < 8 ; i++) begin
           digest_d[i] = digest_q[i] + hash_q[i];
-          if (digest_mode_flag_q == SHA2_256) digest_d[i][63:32] = 32'b0;
-        end
-        if (hash_done_o == 1'b1 && digest_mode_flag_q == SHA2_384) begin
-          // final digest truncation for SHA-2 384
-          digest_d[6] = '0;
-          digest_d[7] = '0;
-        end else if (hash_done_o == 1'b1 && digest_mode_flag_q == SHA2_256) begin
-          // make sure to clear out most significant 32-bits of each digest word (zero-padding)
-          for (int i = 0 ; i < 8 ; i++) begin
-            digest_d[i][63:32] = 32'b0;
-          end
         end
       end
     end : compute_digest_multimode
