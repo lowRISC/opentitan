@@ -52,5 +52,5 @@ openssl req -new  -key pkcs11:object=gcs-kms-earlgrey-ze-ca-p256-sha256-key \
 openssl x509 -req -in ckms_ca.csr  \
         -engine pkcs11 -keyform engine \
         -key pkcs11:object=gcs-kms-earlgrey-ze-ca-p256-sha256-key \
-        -out ckms_ca.pem -days 30 -extfile fake_ca.conf -extensions v3_ca
+        -out ckms_ca.pem -days 140 -extfile fake_ca.conf -extensions v3_ca
 pem_to_der ckms_ca.pem
