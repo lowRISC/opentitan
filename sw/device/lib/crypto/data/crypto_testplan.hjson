@@ -43,5 +43,26 @@
         "//sw/device/tests/crypto:ecdh_p256_functest",
       ]
     }
+    {
+      name: crypto_lib_rsa_key_gen_stress
+      desc: '''Check that the implementation of RSA key generation is correct.
+
+            Generate RSA key pairs with sizes 2048, 3072 and 4096 bits.
+            The key generation should take an appropriate time based on the key size and the
+            platform (FPGA or Silicon).
+            For each key pair:
+             - Sign a message with the private key.
+             - Verify the signarue with public key.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:rsa_2048_keygen_functest",
+        "//sw/device/tests/crypto:rsa_3072_keygen_functest",
+        "//sw/device/tests/crypto:rsa_4096_keygen_functest",
+      ]
+      lc_states: ["PROD"]
+    }
   ]
 }
