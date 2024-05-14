@@ -21,7 +21,7 @@ use super::protocol::{
 use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
-use crate::io::gpio::{BitbangEntry, GpioPin};
+use crate::io::gpio::{BitbangEntry, GpioBitbangOperation, GpioPin};
 use crate::io::{i2c, nonblocking_help, spi};
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
@@ -32,6 +32,7 @@ pub struct TransportCommandHandler<'a> {
     transport: &'a TransportWrapper,
     nonblocking_help: Rc<dyn nonblocking_help::NonblockingHelp>,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
+    ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
 }
 
 impl<'a> TransportCommandHandler<'a> {
@@ -41,6 +42,7 @@ impl<'a> TransportCommandHandler<'a> {
             transport,
             nonblocking_help,
             spi_chip_select: HashMap::new(),
+            ongoing_bitbanging: None,
         })
     }
 
@@ -130,7 +132,7 @@ impl<'a> TransportCommandHandler<'a> {
             Request::GpioBitbanging { command } => {
                 let instance = self.transport.gpio_bitbanging()?;
                 match command {
-                    GpioBitRequest::Run {
+                    GpioBitRequest::Start {
                         pins,
                         clock_ns,
                         entries: reqs,
@@ -139,54 +141,59 @@ impl<'a> TransportCommandHandler<'a> {
                         let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
                         let clock = Duration::from_nanos(*clock_ns);
 
+                        let entries: Vec<BitbangEntry<'static, 'static>> = reqs
+                            .iter()
+                            .map(|pair| match pair {
+                                BitbangEntryRequest::Write { data } => {
+                                    BitbangEntry::WriteOwned(data.clone().into())
+                                }
+                                BitbangEntryRequest::Both { data } => {
+                                    BitbangEntry::BothOwned(data.clone().into())
+                                }
+                                BitbangEntryRequest::Delay { clock_ticks } => {
+                                    BitbangEntry::Delay(*clock_ticks)
+                                }
+                                BitbangEntryRequest::Await { mask, pattern } => {
+                                    BitbangEntry::Await {
+                                        mask: *mask,
+                                        pattern: *pattern,
+                                    }
+                                }
+                            })
+                            .collect();
+                        self.ongoing_bitbanging =
+                            Some(instance.start(&pins, clock, entries.into())?);
+                        Ok(Response::GpioBitbanging(GpioBitResponse::Start))
+                    }
+                    GpioBitRequest::Query => {
+                        if let Some(ref mut bitbanging) = self.ongoing_bitbanging {
+                            if !bitbanging.query()? {
+                                return Ok(Response::GpioBitbanging(GpioBitResponse::QueryNotDone));
+                            }
+                        } else {
+                            return Err(TransportError::InvalidOperation.into());
+                        }
+                        let waveform = self.ongoing_bitbanging.take().unwrap().get_result()?;
+
                         // Construct proper response to each entry in request.
-                        let mut resps: Vec<BitbangEntryResponse> = reqs
+                        let resps: Vec<BitbangEntryResponse> = waveform
                             .iter()
                             .map(|entry| match entry {
-                                BitbangEntryRequest::Write { .. } => BitbangEntryResponse::Write,
-                                BitbangEntryRequest::Both { data } => BitbangEntryResponse::Both {
-                                    data: vec![0; data.len()],
+                                BitbangEntry::WriteOwned(..) => BitbangEntryResponse::Write,
+                                BitbangEntry::BothOwned(data) => BitbangEntryResponse::Both {
+                                    data: data.to_vec(),
                                 },
-                                BitbangEntryRequest::Delay { .. } => BitbangEntryResponse::Delay,
-                                BitbangEntryRequest::Await { .. } => BitbangEntryResponse::Await,
+                                BitbangEntry::Delay(..) => BitbangEntryResponse::Delay,
+                                BitbangEntry::Await { .. } => BitbangEntryResponse::Await,
+                                // No other kinds of `BitbangEntry` created above.
+                                _ => panic!(),
                             })
                             .collect();
                         // Now carefully craft a proper parameter to the
                         // `GpioBitbanging::run()` method.  It will have reference
                         // into elements of both the request vector and mutable reference into
                         // the response vector.
-                        let mut entries: Vec<BitbangEntry> = reqs
-                            .iter()
-                            .zip(resps.iter_mut())
-                            .map(|pair| match pair {
-                                (
-                                    BitbangEntryRequest::Write { data },
-                                    BitbangEntryResponse::Write,
-                                ) => BitbangEntry::Write(data),
-                                (
-                                    BitbangEntryRequest::Both { data: wdata },
-                                    BitbangEntryResponse::Both { data },
-                                ) => BitbangEntry::Both(wdata, data),
-                                (
-                                    BitbangEntryRequest::Delay { clock_ticks },
-                                    BitbangEntryResponse::Delay {},
-                                ) => BitbangEntry::Delay(*clock_ticks),
-                                (
-                                    BitbangEntryRequest::Await { mask, pattern },
-                                    BitbangEntryResponse::Await {},
-                                ) => BitbangEntry::Await {
-                                    mask: *mask,
-                                    pattern: *pattern,
-                                },
-                                _ => {
-                                    // This can only happen if the logic in this method is
-                                    // flawed.  (Never due to network input.)
-                                    panic!("Mismatch");
-                                }
-                            })
-                            .collect();
-                        instance.run(&pins, clock, &mut entries)?;
-                        Ok(Response::GpioBitbanging(GpioBitResponse::Run {
+                        Ok(Response::GpioBitbanging(GpioBitResponse::QueryDone {
                             entries: resps,
                         }))
                     }

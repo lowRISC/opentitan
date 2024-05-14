@@ -136,13 +136,14 @@ pub fn parse_clock_frequency(input: &str) -> Result<Duration> {
 /// list of `BitbangEntry` corresponding to the parsed instructions.  The slices in the entries
 /// will refer to one of the two "accumulator vectors" provided by the caller, which this function
 /// will clear out and resize according to need.
+#[allow(clippy::type_complexity)]
 pub fn parse_sequence<'a, 'wr, 'rd>(
     input: &'a str,
     num_pins: usize,
     clock: Duration,
     accumulator_rd: &'rd mut Vec<u8>,
     accumulator_wr: &'wr mut Vec<u8>,
-) -> Result<(Vec<BitbangEntry<'rd, 'wr>>, HashMap<&'a str, usize>)> {
+) -> Result<(Box<[BitbangEntry<'rd, 'wr>]>, HashMap<&'a str, usize>)> {
     ensure!(
         num_pins > 0,
         "Must specify at least one GPIO pin for bitbanging"
@@ -315,7 +316,7 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
         }
     }
 
-    Ok((result, token_map))
+    Ok((result.into(), token_map))
 }
 
 #[cfg(test)]

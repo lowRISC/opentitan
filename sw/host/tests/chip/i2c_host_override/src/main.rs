@@ -51,7 +51,7 @@ fn test_override(
     const SAMPLES: usize = 5000;
     let mut samples = vec![0x00; SAMPLES];
     let output = &[0x03; SAMPLES];
-    let mut waveform = [BitbangEntry::Both(output, &mut samples)];
+    let waveform = Box::new([BitbangEntry::Both(output, &mut samples)]);
 
     UartConsole::wait_for(
         &*uart,
@@ -66,7 +66,7 @@ fn test_override(
             .map(Rc::borrow)
             .collect::<Vec<&dyn GpioPin>>(),
         Duration::from_micros(10),
-        &mut waveform,
+        waveform,
     )?;
 
     let mut i2c_bitbang_decoder =
