@@ -7,20 +7,31 @@ class usbdev_setup_trans_ignored_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  bit pkt_received = 1;
-
   task body();
+    uvm_reg_data_t rx_depth;
+    bit pkt_received = 1;
+
     csr_wr(.ptr(ral.rxenable_setup[0].setup[endp]), .value(1'b0)); // Disable rx_enable setup
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1)); // Enable OUT EP
-    cfg.clk_rst_vif.wait_clks(10);
-    ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
+
+    // Enable pkt_received interrupt
+    ral.intr_enable.pkt_received.set(1'b1);
     csr_update(ral.intr_enable);
-    // Setup token packet
-    call_token_seq(PidTypeSetupToken);
-    cfg.clk_rst_vif.wait_clks(20);
+
+    // Send a randomized SETUP packet to the selected endpoint.
+    send_prnd_setup_packet(endp);
+    get_response(m_response_item);
+
+    // An ignored SETUP packet shall receive no response.
+    `DV_CHECK_EQ(cfg.m_usb20_agent_cfg.timed_out, 1);
+
     csr_rd(.ptr(ral.intr_state.pkt_received), .value(pkt_received));
-    // Verify the packet received bit must be zero.
+    // Verify the packet received bit is zero.
     // That ensures that device ignored the setup transaction.
     `DV_CHECK_EQ(0, pkt_received);
+
+    // Belt'n'braces - check that the RX FIFO is empty.
+    csr_rd(.ptr(ral.usbstat.rx_depth), .value(rx_depth));
+    `DV_CHECK_EQ(rx_depth, 0);
   endtask
 endclass
