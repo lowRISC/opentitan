@@ -1,0 +1,28 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "crypto"
+  testpoints: [
+    {
+      name: crypto_lib_hash_stress
+      desc: '''Check that the hash algorithms are correct.
+
+            Run the hash algorithms Sha256, Sha384 and Sha512 and compare the digist against
+            the NIST test vector.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:sha256_functest",
+        "//sw/device/tests/crypto:sha384_functest",
+        "//sw/device/tests/crypto:sha512_functest",
+        "//sw/device/tests/crypto:hkdf_functest",
+        "//sw/device/tests/crypto:otcrypto_hash_test",
+        "//sw/device/tests/crypto:otcrypto_export_test"
+      ]
+      lc_states: ["PROD"]
+    }
+  ]
+}
