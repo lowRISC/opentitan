@@ -5,6 +5,8 @@
 load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_library")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
+package(default_visibility = ["//visibility:public"])
+
 rust_bindgen_library(
     name = "sphincsplus_bindgen",
     bindgen_flags = [
@@ -20,7 +22,10 @@ rust_bindgen_library(
 rust_library(
     name = "sphincsplus",
     srcs = ["lib.rs"],
-    deps = [":sphincsplus_bindgen"],
+    deps = [
+        ":sphincsplus_bindgen",
+        "@crate_index//:thiserror",
+    ],
 )
 
 rust_test(
