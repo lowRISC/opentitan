@@ -12,6 +12,11 @@
 
 #include "usbdev_utils.h"
 
+// Hub Class Feature Selectors (Table 11-17. USB 2.0 Protocol Specification)
+static constexpr unsigned PORT_SUSPEND = 2u;
+static constexpr unsigned PORT_RESET = 4u;
+static constexpr unsigned PORT_POWER = 8u;
+
 // Initialize USB access, with intent to use a device with the given properties.
 bool USBDevice::Init(uint16_t vendorID, uint16_t productID, uint8_t devAddress,
                      uint8_t busNumber) {
@@ -38,6 +43,10 @@ bool USBDevice::Init(uint16_t vendorID, uint16_t productID, uint8_t devAddress,
 bool USBDevice::Fin() {
   (void)Close();
 #if STREAMTEST_LIBUSB
+  if (parenth_) {
+    libusb_close(parenth_);
+    parenth_ = nullptr;
+  }
   libusb_exit(ctx_);
 #endif
   return true;
@@ -104,6 +113,19 @@ bool USBDevice::Open() {
               // identical devices visible but access permissions may restrict
               // which device(s) may be opened.
             } else {
+              // Obtain the parent
+              libusb_device *parent = libusb_get_parent(dev);
+              if (parent) {
+                rc = libusb_open(parent, &parenth_);
+                if (rc < 0) {
+                  std::cerr << "Failed to open parent device - "
+                            << libusb_error_name(rc) << std::endl;
+                  parenth_ = nullptr;
+                } else {
+                  std::cout << "Opened parent\n";
+                }
+              }
+
               // Obtain the list of port numbers; required for suspend/resume.
               uint8_t bus = libusb_get_bus_number(dev);
               if (verbose_) {
@@ -123,6 +145,8 @@ bool USBDevice::Open() {
                     std::cout << '.';
                     devPath_ += '.';
                   }
+                  // TODO:
+                  portNumber_ = ports[idx];
                 }
                 std::cout << std::endl;
               } else {
@@ -214,6 +238,30 @@ bool USBDevice::Service() {
   return true;
 }
 
+// Return the name of a test phase
+const char *USBDevice::PhaseName(usbdev_suspend_phase_t phase) {
+  switch (phase) {
+    case kSuspendPhaseSuspend:
+      return "Suspend";
+    case kSuspendPhaseSleepResume:
+      return "SleepResume";
+    case kSuspendPhaseSleepReset:
+      return "SleepReset";
+    case kSuspendPhaseSleepDisconnect:
+      return "SleepDisconnect";
+    case kSuspendPhaseDeepResume:
+      return "DeepResume";
+    case kSuspendPhaseDeepReset:
+      return "DeepReset";
+    case kSuspendPhaseDeepDisconnect:
+      return "DeepDisconnect";
+    case kSuspendPhaseShutdown:
+      return "Shutdown";
+    default:
+      return "<Unknown>";
+  }
+}
+
 bool USBDevice::ReadTestDesc() {
   std::cout << "Reading Test Descriptor" << std::endl;
 
@@ -257,12 +305,19 @@ bool USBDevice::ReadTestDesc() {
                 << (int)dp[11] << std::dec << std::endl;
     }
 
+    // Although we needn't retain the test number, having checked it, the test
+    // phase does vary and determines the actions we must perform.
+    testPhase_ = (usbdev_suspend_phase_t)dp[8];
+
     // Retain the test number and the test arguments.
     testNumber_ = testNum;
     testArg_[0] = dp[8];
     testArg_[1] = dp[9];
     testArg_[2] = dp[10];
     testArg_[3] = dp[11];
+
+    std::cout << "Test number: " << testNum << " Test Phase: "
+              << PhaseName((usbdev_suspend_phase_t)testArg_[0]) << std::endl;
     return true;
   }
 
@@ -281,46 +336,128 @@ bool USBDevice::ReadTestDesc() {
 #endif
 }
 
+bool USBDevice::Delay(uint32_t time_us, bool with_traffic) {
+  while (time_us > 0) {
+    uint32_t delay_us = time_us;
+    if (verbose_) {
+      std::cout << "Delaying " << time_us << "us "
+                << (with_traffic ? " - with traffic" : "no traffic")
+                << std::endl;
+    }
+    if (with_traffic) {
+      delay_us = 1000u;
+      // Service streams
+    }
+    usleep(delay_us);
+    time_us -= delay_us;
+  }
+  return true;
+}
+
+bool USBDevice::Reset() {
+  std::cout << "Resetting Device" << std::endl;
+
+  // We need to forget the device address in the event of a Bus Reset
+  // because it will be assigned a new address.
+  addrSpec_ = 0u;
+
+  if (parenth_) {
+    // Use the hub to reset the device.
+    const uint8_t bmRequestType = LIBUSB_ENDPOINT_OUT |
+                                  LIBUSB_REQUEST_TYPE_CLASS |
+                                  LIBUSB_RECIPIENT_OTHER;
+    if (verbose_) {
+      std::cout << "Resetting port " << portNumber_ << std::endl;
+    }
+
+    int rc = libusb_control_transfer(parenth_, bmRequestType,
+                                     LIBUSB_REQUEST_SET_FEATURE, PORT_RESET,
+                                     portNumber_, NULL, 0u, 0u);
+    if (rc) {
+      std::cerr << "Failed to reset device - " << libusb_error_name(rc)
+                << std::endl;
+      return false;
+    }
+    if (verbose_) {
+      std::cout << "Done port reset" << std::endl;
+    }
+  } else {
+    if (!Open()) {
+      return false;
+    }
+
+    int rc = libusb_reset_device(devh_);
+    if (rc < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool USBDevice::Suspend() {
   std::cout << "Suspending Device " << devPath_ << std::endl;
 
-  // We need to relinquish our access to the device otherwise the kernel
-  // will refuse to autosuspend the device!
-  Close();
+  if (parenth_) {
+    // Use the hub to suspend the device.
+    const uint8_t bmRequestType = LIBUSB_ENDPOINT_OUT |
+                                  LIBUSB_REQUEST_TYPE_CLASS |
+                                  LIBUSB_RECIPIENT_OTHER;
+    if (verbose_) {
+      std::cout << "Suspending port " << portNumber_ << std::endl;
+    }
 
-  std::string powerPath = "/sys/bus/usb/devices/" + devPath_ + "/power/";
-  std::string filename = powerPath + "autosuspend_delay_ms";
+    int rc = libusb_control_transfer(parenth_, bmRequestType,
+                                     LIBUSB_REQUEST_SET_FEATURE, PORT_SUSPEND,
+                                     portNumber_, NULL, 0u, 0u);
+    if (rc) {
+      std::cerr << "Failed to suspend device - " << libusb_error_name(rc)
+                << std::endl;
+      return false;
+    }
+    if (verbose_) {
+      std::cout << "Done suspend" << std::endl;
+    }
+  } else {
+    // We need to relinquish our access to the device otherwise the kernel
+    // will refuse to autosuspend the device!
+    Close();
 
-  int fd = open(filename.c_str(), O_WRONLY);
-  if (fd < 0) {
-    std::cerr << "Failed to open '" << filename << "'" << std::endl;
-    std::cerr << "  (Note: this requires super user permissions)" << std::endl;
-    return false;
-  }
-  int rc = write(fd, "0", 1);
-  if (rc < 0) {
-    std::cerr << "Write failed" << std::endl;
-  }
-  rc = close(fd);
-  if (rc < 0) {
-    std::cerr << "Close failed" << std::endl;
-  }
+    std::string powerPath = "/sys/bus/usb/devices/" + devPath_ + "/power/";
+    std::string filename = powerPath + "autosuspend_delay_ms";
 
-  // Enable auto-suspend behavior.
-  filename = powerPath + "control";
-  fd = open(filename.c_str(), O_WRONLY);
-  if (fd < 0) {
-    std::cerr << "Failed to open '" << filename << "'" << std::endl;
-    std::cerr << "  (Note: this requires super user permissions)" << std::endl;
-    return false;
-  }
-  rc = write(fd, "auto", 4);
-  if (rc < 0) {
-    std::cerr << "Write failed" << std::endl;
-  }
-  rc = close(fd);
-  if (rc < 0) {
-    std::cerr << "Close failed" << std::endl;
+    int fd = open(filename.c_str(), O_WRONLY);
+    if (fd < 0) {
+      std::cerr << "Failed to open '" << filename << "'" << std::endl;
+      std::cerr << "  (Note: this requires super user permissions)"
+                << std::endl;
+      return false;
+    }
+    int rc = write(fd, "0", 1);
+    if (rc < 0) {
+      std::cerr << "Write failed" << std::endl;
+    }
+    rc = close(fd);
+    if (rc < 0) {
+      std::cerr << "Close failed" << std::endl;
+    }
+
+    // Enable auto-suspend behavior.
+    filename = powerPath + "control";
+    fd = open(filename.c_str(), O_WRONLY);
+    if (fd < 0) {
+      std::cerr << "Failed to open '" << filename << "'" << std::endl;
+      std::cerr << "  (Note: this requires super user permissions)"
+                << std::endl;
+      return false;
+    }
+    rc = write(fd, "auto", 4);
+    if (rc < 0) {
+      std::cerr << "Write failed" << std::endl;
+    }
+    rc = close(fd);
+    if (rc < 0) {
+      std::cerr << "Close failed" << std::endl;
+    }
   }
 
   SetState(StateSuspending);
@@ -330,35 +467,116 @@ bool USBDevice::Suspend() {
 bool USBDevice::Resume() {
   std::cout << "Resuming Device" << std::endl;
 
-  std::string powerPath = "/sys/bus/usb/devices/" + devPath_ + "/power/";
-  std::string filename = powerPath + "control";
+  if (parenth_) {
+    // Use the hub to suspend the device.
+    const uint8_t bmRequestType = LIBUSB_ENDPOINT_OUT |
+                                  LIBUSB_REQUEST_TYPE_CLASS |
+                                  LIBUSB_RECIPIENT_OTHER;
+    if (verbose_) {
+      std::cout << "Resuming port " << portNumber_ << std::endl;
+    }
 
-  int fd = open(filename.c_str(), O_WRONLY);
-  if (fd < 0) {
-    std::cerr << "Failed to open '" << filename << "'" << std::endl;
-    return false;
-  }
-  int rc = write(fd, "on", 2);
-  if (rc < 0) {
-    std::cerr << "Write failed" << std::endl;
-  }
-  close(fd);
+    int rc = libusb_control_transfer(parenth_, bmRequestType,
+                                     LIBUSB_REQUEST_CLEAR_FEATURE, PORT_SUSPEND,
+                                     portNumber_, NULL, 0u, 0u);
+    if (rc) {
+      std::cerr << "Failed to resume device - " << libusb_error_name(rc)
+                << std::endl;
+      return false;
+    }
+    if (verbose_) {
+      std::cout << "Done resume" << std::endl;
+    }
+  } else {
+    std::string powerPath = "/sys/bus/usb/devices/" + devPath_ + "/power/";
+    std::string filename = powerPath + "control";
 
-  if (!Open()) {
-    return false;
+    int fd = open(filename.c_str(), O_WRONLY);
+    if (fd < 0) {
+      std::cerr << "Failed to open '" << filename << "'" << std::endl;
+      return false;
+    }
+    int rc = write(fd, "on", 2);
+    if (rc < 0) {
+      std::cerr << "Write failed" << std::endl;
+    }
+    close(fd);
+
+    if (!Open()) {
+      return false;
+    }
   }
 
   SetState(StateResuming);
   return true;
 }
 
-bool USBDevice::Disconnect() {
-  // TODO: Are we able to implement a Disconnect/Reconnect function here?
-  //       Most hubs do not have the capacity to power cycle an individual
-  //       port.
-  //
-  // Power Off
-  // Power On
+// Note: The Rust harness uses VBUS_SENSE_EN on the HyperDebug board
+// (non-portable) to achieve connect and disconnect functionality, which we
+// cannot achieve with regular hubs.
+//
+// Instead what happens with the available hub(s) is that all USB traffic
+// to/from the USB ceases but the bus remains Idle/Suspended and VBUS remains
+// asserted. Reconnect and the result is Reset Signaling and reconfiguration.
 
-  return false;
+bool USBDevice::Connect() {
+  std::cout << "Connecting Device " << devPath_ << std::endl;
+
+  if (parenth_) {
+    // Use the hub to suspend the device.
+    const uint8_t bmRequestType = LIBUSB_ENDPOINT_OUT |
+                                  LIBUSB_REQUEST_TYPE_CLASS |
+                                  LIBUSB_RECIPIENT_OTHER;
+    if (verbose_) {
+      std::cout << "Connecting port " << portNumber_ << std::endl;
+    }
+
+    int rc = libusb_control_transfer(parenth_, bmRequestType,
+                                     LIBUSB_REQUEST_SET_FEATURE, PORT_POWER,
+                                     portNumber_, NULL, 0u, 0u);
+    if (rc) {
+      std::cerr << "Failed to connect device - " << libusb_error_name(rc)
+                << std::endl;
+      return false;
+    }
+    if (verbose_) {
+      std::cout << "Done connect" << std::endl;
+    }
+  } else {
+    std::cout << "Connect operation not available" << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool USBDevice::Disconnect() {
+  std::cout << "Disconnecting Device " << devPath_ << std::endl;
+
+  if (parenth_) {
+    // Use the hub to suspend the device.
+    const uint8_t bmRequestType = LIBUSB_ENDPOINT_OUT |
+                                  LIBUSB_REQUEST_TYPE_CLASS |
+                                  LIBUSB_RECIPIENT_OTHER;
+    if (verbose_) {
+      std::cout << "Disconnecting port " << portNumber_ << std::endl;
+    }
+
+    int rc = libusb_control_transfer(parenth_, bmRequestType,
+                                     LIBUSB_REQUEST_CLEAR_FEATURE, PORT_POWER,
+                                     portNumber_, NULL, 0u, 0u);
+    if (rc) {
+      std::cerr << "Failed to disconnect device - " << libusb_error_name(rc)
+                << std::endl;
+      return false;
+    }
+    if (verbose_) {
+      std::cout << "Done disconnect" << std::endl;
+    }
+  } else {
+    std::cout << "Disconnect operation not available" << std::endl;
+    return false;
+  }
+
+  return true;
 }
