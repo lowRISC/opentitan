@@ -47,11 +47,9 @@ pub enum StatusCode {
 fn status_create_safe(code: StatusCode, mod_id: u32, file: String, arg: i32) -> RawStatus {
     // We do not expect an error since it is a valid String.
     let file = CString::new(file).expect("CString::new failed");
-    unsafe {
-        // Safety: the function expects a valid readonly C-string which is exactly what
-        // CString:as_ptr() provides.
-        status_create(code as u32, mod_id, file.as_ptr(), arg)
-    }
+    // SAFETY: the function expects a valid readonly C-string which is exactly what
+    // CString:as_ptr() provides.
+    unsafe { status_create(code as u32, mod_id, file.as_ptr(), arg) }
     // Note: file is dropped here so the C-string pointer is valid accross the function call.
 }
 
@@ -82,21 +80,20 @@ pub struct Status {
 impl Status {
     pub fn from_raw_status(status: RawStatus) -> Result<Status> {
         // We do not care about the code string but status_extract expects a non-null pointer.
-        let mut _code_str: *const std::os::raw::c_char = std::ptr::null();
+        let mut code_str: *const std::os::raw::c_char = std::ptr::null();
         let mut arg = 0i32;
         let mut mod_id: [std::os::raw::c_char; 3] = [0; 3];
-        let is_err_status = unsafe {
-            // Safety: status_extract expects:
-            // - a non-null pointer to string pointer that will be updated to point
-            //   to the english name of the error code,
-            // - a non-null pointer to an integer (argument),
-            // - a non-null pointer to a char[3] buffer that is filled with the module ID.
-            status_extract(status, &mut _code_str, &mut arg, &mut mod_id as *mut i8)
-        };
+        let mod_id_ptr = &mut mod_id as *mut i8;
+        // SAFETY: status_extract expects:
+        // - a non-null pointer to string pointer that will be updated to point
+        //   to the english name of the error code,
+        // - a non-null pointer to an integer (argument),
+        // - a non-null pointer to a char[3] buffer that is filled with the module ID.
+        let is_err_status = unsafe { status_extract(status, &mut code_str, &mut arg, mod_id_ptr) };
         let code = match is_err_status {
             false => StatusCode::Ok,
             true => {
-                // Safety: nothing unsafe except that it's an FFI call.
+                // SAFETY: nothing unsafe except that it's an FFI call.
                 let raw_code = unsafe { status_err(status) };
                 StatusCode::try_from(raw_code)?
             }
@@ -239,11 +236,14 @@ pub fn load_elf(elf_file: &PathBuf) -> Result<StatusCreateRecords> {
     // it really is safe.
     let records = status_create_records
         .chunks(RECORD_SIZE)
-        .map(|chunk| unsafe {
+        .map(|chunk| {
             // We need to provide transmute with a fixed-size array but chunk does not give us one.
             // If/When as_chunks is stabilized, we can get rid of this conversion.
             let chunk = <[u8; RECORD_SIZE]>::try_from(chunk).unwrap();
-            std::mem::transmute::<[u8; RECORD_SIZE], ot_status_create_record_t>(chunk)
+            // SAFETY: `chunk` comes from `struct ot_status_create_record_t` types in C which
+            // `ot_status_create_record_t` was `bindgen`'d from. Its bytes should always be a
+            // valid value for this type.
+            unsafe { std::mem::transmute::<[u8; RECORD_SIZE], ot_status_create_record_t>(chunk) }
         })
         .map(StatusCreateRecord::try_from)
         .collect::<Result<_>>()?;
