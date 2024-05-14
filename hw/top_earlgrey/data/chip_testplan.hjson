@@ -751,7 +751,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_power_sleep_load"]
-      bazel: []
+      bazel: ["//sw/device/tests:chip_power_sleep_load_test"]
     }
 
     {
