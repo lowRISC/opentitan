@@ -34,7 +34,7 @@ void c_dpi_aead_encrypt(svOpenArrayHandle ct, svOpenArrayHandle msg,
   npub = (uint8_t *)svGetArrayPtr(nonce);
   k = (uint8_t *)svGetArrayPtr(key);
 
-  printf("ad length %d\n", ad_len);
+  /*printf("ad length %d\n", ad_len);
   printf("ad =  ");
   for (int i = 0; i < ad_len; i++) {
     printf("%02X", a[i]);
@@ -58,16 +58,16 @@ void c_dpi_aead_encrypt(svOpenArrayHandle ct, svOpenArrayHandle msg,
   for (int i = 0; i < 16; i++) {
     printf("%02X", npub[i]);
   }
-  printf("\n");
+  printf("\n");*/
 
   crypto_aead_encrypt(c, clen, m, mlen, a, alen, nsec, npub, k);
-  printf("ct length %d\n", (int)*clen);
+  /*printf("ct length %d\n", (int)*clen);
 
   printf("ct =  ");
   for (int i = 0; i < *clen; i++) {
     printf("%02X", c[i]);
   }
-  printf("\n");
+  printf("\n");*/
   free(clen);
   return;
 }
