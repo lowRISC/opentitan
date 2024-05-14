@@ -110,5 +110,18 @@
       ]
       lc_states: ["PROD"]
     }
+    {
+      name: crypto_lib_symmetric_keygen
+      desc: '''Check that the crypton lib can generate symmetric keys using hardware entropy.
+
+            Generate symmetric keys using entropy from the CSRNG and check it quality using
+            a statistical test.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: ["//sw/device/tests/crypto:symmetric_keygen_functest"]
+      lc_states: ["PROD"]
+    }
   ]
 }
