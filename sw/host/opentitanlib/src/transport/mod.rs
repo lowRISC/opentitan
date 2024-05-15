@@ -211,6 +211,18 @@ pub struct UpdateFirmware<'a> {
     pub force: bool,
 }
 
+/// Command for Transport::dispatch().  Runs arbitrary command, interpretation completely depends
+/// on backend transport.
+pub struct TransportCommand {
+    pub command: Vec<String>,
+}
+
+/// Textual response to `TransportCommand`, as received from the transport (e.g. HyperDebug).
+#[derive(serde::Serialize)]
+pub struct TransportCommandTextResponse {
+    pub lines: Vec<String>,
+}
+
 /// An `EmptyTransport` provides no communications backend.
 pub struct EmptyTransport;
 
