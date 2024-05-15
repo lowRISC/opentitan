@@ -51,8 +51,7 @@ static cdi_1_sig_values_t cdi_1_cert_params = {
 
 // clang-format off
 static_assert(
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE >= OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE >= OTP_CTRL_PARAM_HW_CFG_SIZE,
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE >= OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
     "The largest DICE measured OTP partition is no longer the "
     "OwnerSwCfg partition. Update the "
     "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
@@ -206,11 +205,9 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
   // Measure OTP partitions.
   hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
-  hmac_digest_t otp_hw_cfg_measurement = {.digest = {0}};
   measure_otp_partition(kOtpPartitionCreatorSwCfg,
                         &otp_creator_sw_cfg_measurement);
   measure_otp_partition(kOtpPartitionOwnerSwCfg, &otp_owner_sw_cfg_measurement);
-  measure_otp_partition(kOtpPartitionHwCfg, &otp_hw_cfg_measurement);
 
   // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
@@ -220,8 +217,6 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
       .otp_owner_sw_cfg_hash =
           (unsigned char *)otp_owner_sw_cfg_measurement.digest,
       .otp_owner_sw_cfg_hash_size = kHmacDigestNumBytes,
-      .otp_hw_cfg_hash = (unsigned char *)otp_hw_cfg_measurement.digest,
-      .otp_hw_cfg_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
