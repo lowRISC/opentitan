@@ -4,6 +4,7 @@
 
 use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
+use rusb::UsbContext;
 
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
@@ -47,7 +48,7 @@ struct DeviceLoc {
 }
 
 impl DeviceLoc {
-    fn from_device(dev: &rusb::Device<rusb::GlobalContext>) -> Result<DeviceLoc> {
+    fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<DeviceLoc> {
         Ok(DeviceLoc {
             bus: dev.bus_number(),
             port_numbers: dev.port_numbers()?,
@@ -70,13 +71,21 @@ impl UsbOpts {
     pub fn wait_for_device(
         &self,
         timeout: Duration,
-    ) -> Result<Vec<rusb::DeviceHandle<rusb::GlobalContext>>> {
+    ) -> Result<Vec<rusb::DeviceHandle<rusb::Context>>> {
         let start = Instant::now();
         // Keep a list of devices that we failed to open and when we last tried to open.
         let mut failed_dev = HashMap::<DeviceLoc, Instant>::new();
         loop {
             let mut devices = Vec::new();
-            for device in rusb::devices().context("USB error")?.iter() {
+            // NOTE We create a new context every time we scan. This is a necessary hack
+            // to workaround a problem in CI. When running in a container, libusb will be
+            // alerted to the appearence of a device very quickly and try to open the corresponding
+            // device node. However, the device is not available in the container until
+            // container-hotplug determines that the container should be allowed to use it.
+            // By the time this happens, libusb has already tried and failed to open the device
+            // and will not retry. By creating a new context, we force libusb to get the entire
+            // list from the kernel instead of relying on hotplug events.
+            for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
                 let dev_loc = DeviceLoc::from_device(&device)?;
                 // Do not retry devices that previously failed unless we have reached the retry timeout.
                 let last_seen = failed_dev.get(&dev_loc);
@@ -173,7 +182,7 @@ impl UsbOpts {
 // Structure representing a USB hub. The device needs to have sufficient permission
 // to be opened.
 pub struct UsbHub {
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+    handle: rusb::DeviceHandle<rusb::Context>,
 }
 
 // USB hub operation.
@@ -191,7 +200,7 @@ const PORT_RESET: u16 = 4;
 
 impl UsbHub {
     // Construct a hub from a device.
-    pub fn from_device(dev: &rusb::Device<rusb::GlobalContext>) -> Result<UsbHub> {
+    pub fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<UsbHub> {
         // Make sure the device is a hub.
         let dev_desc = dev.device_descriptor()?;
         // Assume that if the device has the HUB class then Linux will already enforce
