@@ -499,7 +499,7 @@
                 stay asserted until the causes are addressed.
             '''
       stage: V2
-      tests: ["i2c_target_fifo_watermarks_acq"]
+      tests: ["i2c_target_fifo_watermarks_acq", "i2c_target_fifo_watermarks_tx"]
     }
     {
       name: host_mode_config_perf
