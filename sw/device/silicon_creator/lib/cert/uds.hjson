@@ -49,11 +49,6 @@
             type: "byte-array",
             size: 32,
         },
-        // Hash of the hw_cfg1 OTP partition (SHA256).
-        otp_hw_cfg1_hash: {
-            type: "byte-array",
-            size: 32,
-        },
         // Debug (whether LC state exposes JTAG access or not).
         debug_flag: {
             type: "boolean",
@@ -115,7 +110,6 @@
                     { hash_algorithm: "sha256", digest: { var: "otp_owner_sw_cfg_hash" } },
                     { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_codesign_hash" } },
                     { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_state_hash" } },
-                    { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg1_hash" } },
                 ],
                 flags: {
                     not_configured: false,
