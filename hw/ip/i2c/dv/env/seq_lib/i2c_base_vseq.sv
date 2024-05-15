@@ -942,57 +942,42 @@ class i2c_base_vseq extends cip_base_vseq #(
     return cnt;
   endfunction
 
-  // This task needs to set do_clear_all_interrupts = 0
+  virtual task proc_intr_acqthreshold; endtask
+  virtual task proc_intr_txthreshold; endtask
+  virtual task proc_intr_unexpstop; endtask
+  virtual task proc_intr_hosttimeout; endtask
+
+  // Target-mode interrupt handling routine.
+  //
+  // This routine loops through all wired-interrupts, and calls a handler routine
+  // for each one if active. It then does some checking based on 'expected_intr[]'.
+  //
   virtual task process_target_interrupts();
-    int delay;
-    int auto_ack_bytes;
     bit acq_fifo_empty;
     bit read_one = 0;
     while (!cfg.stop_intr_handler) begin
       @(posedge cfg.clk_rst_vif.clk);
-      if (cfg.intr_vif.pins[AcqStretch]) begin
-        bit [TL_DW-1:0] status;
-        bit ack_ctrl_stretch;
-        bit acq_full;
 
-        csr_rd(.ptr(ral.status), .value(status));
-        ack_ctrl_stretch = bit'(get_field_val(ral.status.ack_ctrl_stretch, status));
-        acq_full = bit'(get_field_val(ral.status.acqfull, status));
+      if      (cfg.intr_vif.pins[AcqStretch])  proc_intr_acqstretch();
+      else if (cfg.intr_vif.pins[TxStretch])   proc_intr_txstretch();
+      else if (cfg.intr_vif.pins[CmdComplete]) proc_intr_cmdcomplete();
+      else if (cfg.read_all_acq_entries)       read_acq_fifo(0, acq_fifo_empty);
+      else begin
 
-        if (ack_ctrl_stretch) begin
-          auto_ack_bytes = $urandom_range(1, 30);
-          csr_wr(.ptr(ral.target_ack_ctrl.nbytes), .value(auto_ack_bytes));
-        end
-
-        if (acq_full) begin
-          if (cfg.slow_acq) begin
-            acq_fifo_empty = 0;
-            while (!acq_fifo_empty) begin
-              delay = $urandom_range(50, 100);
-              #(delay * 1us);
-              read_acq_fifo(1, acq_fifo_empty);
-            end
-          end else begin
-            read_acq_fifo(0, acq_fifo_empty);
-          end
-        end
-      end else if (cfg.intr_vif.pins[TxStretch]) begin
-        proc_intr_txstretch();
-      end else if (cfg.intr_vif.pins[CmdComplete]) begin
-        proc_intr_cmdcomplete();
-      end else if (cfg.read_all_acq_entries) begin
-        read_acq_fifo(0, acq_fifo_empty);
-      end else begin
+        // The variable "expected_intr[]" is used to keep track of interrupts the testbench
+        // expects the possibility of seeing asserted. If an interrupt is asserted that is
+        // not marked in this way, throw an error.
         for (int i = 0; i < NumI2cIntr; i++) begin
           i2c_intr_e my_intr = i2c_intr_e'(i);
-          if (!expected_intr.exists(my_intr)) begin
-            if (cfg.intr_vif.pins[i] !== 0) begin
+          if ((!expected_intr.exists(my_intr)) && // Not expected
+              (cfg.intr_vif.pins[i] !== 0)) begin // Triggered
               `uvm_error("process_target_interrupts",
                          $sformatf("Unexpected interrupt is set %s", my_intr.name))
             end
           end
         end
       end // else: !if(cfg.intr_vif.pins[CmdComplete])
+
       // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
       // But for the last bad read command, we have to adjust expected rd_byte separately
       // because we will not call 'write_tx_fifo'.
@@ -1209,6 +1194,48 @@ class i2c_base_vseq extends cip_base_vseq #(
     // causes deadlock. Set verify_clear to 0 to avoid deadlock
     clear_interrupt(TxStretch, 0);
   endtask // proc_intr_txstretch
+
+  // The TB's interrupt handler should call this routine whenever the "acq_stretch"
+  // interrupt is pending.
+  //
+  virtual task proc_intr_acqstretch();
+    // 'AcqStretch' can mean two things
+    // 1) The N-Byte ACK counter is zero. (if this feature is enabled)
+    // 2) The ACQFIFO is full
+
+    bit [TL_DW-1:0] status;
+    bit             ack_ctrl_stretch;
+    bit             acq_full;
+
+    csr_rd(.ptr(ral.status), .value(status));
+    ack_ctrl_stretch = bit'(get_field_val(ral.status.ack_ctrl_stretch, status));
+    acq_full = bit'(get_field_val(ral.status.acqfull, status));
+
+    // 1) (if enabled) Add a random number to the N-Byte ACK counter, allowing the FSM to continue.
+    if (ack_ctrl_stretch) begin
+      int auto_ack_bytes = $urandom_range(1, 30);
+      csr_wr(.ptr(ral.target_ack_ctrl.nbytes), .value(auto_ack_bytes));
+    end
+
+    // 2) Read the ACQFIFO if it is currently full.
+    if (acq_full) begin
+      bit acq_fifo_empty = 0;
+      case (cfg.slow_acq)
+        // Read the fifo until empty.
+        1'b0: read_acq_fifo(0, acq_fifo_empty);
+        // Read the fifo until empty, but slowly (1-word at a time with delays inbetweeen).
+        1'b1: begin
+          while (!acq_fifo_empty) begin
+            int delay = $urandom_range(50, 100);
+            #(delay * 1us);
+            read_acq_fifo(1, acq_fifo_empty);
+          end
+        end
+        default:;
+      endcase
+    end
+
+  endtask: proc_intr_acqstretch
 
   // return target address between, address0, address1 and illegal address
   // illegal address can be return ony if cfg.bad_addr_pct > 0
