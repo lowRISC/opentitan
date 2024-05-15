@@ -53,8 +53,7 @@ static cdi_1_sig_values_t cdi_1_cert_params = {
 static_assert(
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_HW_CFG1_SIZE,
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
     "The largest DICE measured OTP partition is no longer the "
     "OwnerSwCfg partition. Update the "
     "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
@@ -214,7 +213,6 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_rot_creator_auth_codesign_measurement = {.digest = {0}};
   hmac_digest_t otp_rot_creator_auth_state_measurement = {.digest = {0}};
-  hmac_digest_t otp_hw_cfg1_measurement = {.digest = {0}};
   measure_otp_partition(kOtpPartitionCreatorSwCfg,
                         &otp_creator_sw_cfg_measurement);
   measure_otp_partition(kOtpPartitionOwnerSwCfg, &otp_owner_sw_cfg_measurement);
@@ -222,7 +220,6 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
                         &otp_rot_creator_auth_codesign_measurement);
   measure_otp_partition(kOtpPartitionRotCreatorAuthState,
                         &otp_rot_creator_auth_state_measurement);
-  measure_otp_partition(kOtpPartitionHwCfg1, &otp_hw_cfg1_measurement);
 
   // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
@@ -238,8 +235,6 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
       .otp_rot_creator_auth_state_hash =
           (unsigned char *)otp_rot_creator_auth_state_measurement.digest,
       .otp_rot_creator_auth_state_hash_size = kHmacDigestNumBytes,
-      .otp_hw_cfg1_hash = (unsigned char *)otp_hw_cfg1_measurement.digest,
-      .otp_hw_cfg1_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
