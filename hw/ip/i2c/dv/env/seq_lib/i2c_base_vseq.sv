@@ -1277,4 +1277,28 @@ class i2c_base_vseq extends cip_base_vseq #(
     return (addr == target_addr0 || addr == target_addr1);
   endfunction
 
+  // Check an interrupt matches our expectation
+  // - Check that csr.intr_state[idx] == exp_val
+  // - Check the wired irq intr_vif.pins[idx] == exp_val
+  //
+  virtual task check_one_intr(i2c_intr_e intr, bit exp_val);
+    bit [TL_DW-1:0] obs_intr_state;
+    bit exp_pin;
+
+    csr_rd(.ptr(ral.intr_state), .value(obs_intr_state));
+    `DV_CHECK_EQ(obs_intr_state[intr], exp_val)
+    `DV_CHECK_EQ(cfg.intr_vif.pins[intr], exp_val)
+  endtask : check_one_intr
+
+  virtual task count_edge_intr(i2c_intr_e intr, ref uint poscnt, ref uint negcnt);
+    forever begin
+      @(cfg.intr_vif.pins[intr]);
+      case (cfg.intr_vif.pins[intr])
+        1'b0: negcnt++;
+        1'b1: poscnt++;
+        default:;
+      endcase
+    end
+  endtask: count_edge_intr
+
 endclass : i2c_base_vseq
