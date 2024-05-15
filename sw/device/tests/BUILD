@@ -5800,10 +5800,31 @@ opentitan_test(
     ],
 )
 
+# There is an issue with RTL that can cause the data output to glitch.
+# The glitch is particularly noticeable on the FPGA so the test is
+# marked as broken. The glitch does not seem to occur on silicon.
 opentitan_test(
     name = "pattgen_ios_test",
     srcs = ["pattgen_ios_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    cw310 = cw310_params(
+        tags = ["broken"],
+        test_cmd = """
+            --bootstrap={firmware}
+            --firmware-elf=\"{firmware:elf}\"
+        """,
+        test_harness = "//sw/host/tests/chip/pattgen:pattgen_ios",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --firmware-elf=\"{firmware:elf}\"
+        """,
+        test_harness = "//sw/host/tests/chip/pattgen:pattgen_ios",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -5816,5 +5837,6 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )

@@ -51,7 +51,7 @@ class chip_sw_patt_ios_vseq extends chip_sw_base_vseq;
     cfg.m_pattgen_agent_cfg.en_monitor = 0;
 
     byte_arr = {chan_en};
-    sw_symbol_backdoor_overwrite("kChannelEnable", byte_arr);
+    sw_symbol_backdoor_overwrite("kChannelEnableDV", byte_arr);
     `uvm_info(`gfn, $sformatf("PATT_IOS CHAN_EN: %2b", chan_en), UVM_MEDIUM)
 
     for (int i = 0; i < NUM_PATTGEN_CH; i++) begin
@@ -65,34 +65,34 @@ class chip_sw_patt_ios_vseq extends chip_sw_base_vseq;
 
 
     byte_arr = {exp_cfg[0].polarity};
-    sw_symbol_backdoor_overwrite("kPattPol0", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattPol0DV", byte_arr);
     byte_arr = {<<8{{<<32{exp_cfg[0].clk_div}}}};
-    sw_symbol_backdoor_overwrite("kPattDiv0", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattDiv0DV", byte_arr);
     byte_arr = {<<8{{<<32{exp_cfg[0].patt_lower}}}};
-    sw_symbol_backdoor_overwrite("kPattLower0", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattLower0DV", byte_arr);
     byte_arr = {<<8{{<<32{exp_cfg[0].patt_upper}}}};
-    sw_symbol_backdoor_overwrite("kPattUpper0", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattUpper0DV", byte_arr);
     byte_arr = {exp_cfg[0].len};
-    sw_symbol_backdoor_overwrite("kPattLen0", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattLen0DV", byte_arr);
     byte_arr = {<<8{{<<16{exp_cfg[0].rep}}}};
-    sw_symbol_backdoor_overwrite("kPattRep0", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattRep0DV", byte_arr);
 
     if (chan_en[0]) begin
       `uvm_info(`gfn, $sformatf("PATT_IOS CH0: cfg %p", exp_cfg[0]), UVM_MEDIUM)
     end
 
     byte_arr = {exp_cfg[1].polarity};
-    sw_symbol_backdoor_overwrite("kPattPol1", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattPol1DV", byte_arr);
     byte_arr = {<<8{{<<32{exp_cfg[1].clk_div}}}};
-    sw_symbol_backdoor_overwrite("kPattDiv1", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattDiv1DV", byte_arr);
     byte_arr = {<<8{{<<32{exp_cfg[1].patt_lower}}}};
-    sw_symbol_backdoor_overwrite("kPattLower1", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattLower1DV", byte_arr);
     byte_arr = {<<8{{<<32{exp_cfg[1].patt_upper}}}};
-    sw_symbol_backdoor_overwrite("kPattUpper1", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattUpper1DV", byte_arr);
     byte_arr = {exp_cfg[1].len};
-    sw_symbol_backdoor_overwrite("kPattLen1", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattLen1DV", byte_arr);
     byte_arr = {<<8{{<<16{exp_cfg[1].rep}}}};
-    sw_symbol_backdoor_overwrite("kPattRep1", byte_arr);
+    sw_symbol_backdoor_overwrite("kPattRep1DV", byte_arr);
     if (chan_en[1]) begin
       `uvm_info(`gfn, $sformatf("PATT_IOS CH1: cfg %p", exp_cfg[1]), UVM_MEDIUM)
     end
