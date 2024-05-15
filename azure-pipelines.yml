@@ -142,6 +142,10 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
+  # Check that all earlgrey countermeasures are implemented.
+  - bash: ci/scripts/check-countermeasures.sh earlgrey
+    displayName: Check countermeasures for top_earlgrey
+    continueOnError: True
   # Bazel test suites are a common cause of problematic tags. Check test suites
   # before checking for other tag issues.
   - bash:  ci/scripts/check_bazel_test_suites.py
@@ -304,6 +308,10 @@ jobs:
       verilator --version
       verible-verilog-lint --version
     displayName: Display environment
+  # Check that all englishbreakfast countermeasures are implemented.
+  - bash: ci/scripts/check-countermeasures.sh englishbreakfast
+    displayName: Check countermeasures for top_englishbreakfast
+    continueOnError: True
   - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
