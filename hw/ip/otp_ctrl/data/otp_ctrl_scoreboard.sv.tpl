@@ -807,6 +807,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     predict_no_err(OtpDaiErrIdx);
                     predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                   read_out0, read_out1);
+                    // do not check direct_access_rdata_* on ECC errors in
+                    // non-integrity partitions
+                    check_dai_rd_data = 0;
                   end else begin
                     predict_no_err(OtpDaiErrIdx);
                     predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
