@@ -38,6 +38,7 @@ module flash_phy_rd
 
   // interface with arbitration unit
   input req_i,
+  input host_req_i,
   input descramble_i,
   input ecc_i,
   input prog_i,
@@ -465,11 +466,14 @@ module flash_phy_rd
 
   logic fifo_data_ready;
   logic fifo_data_valid;
+  logic fifo_addr_xor_valid;
   logic fifo_forward_pop;
   logic rd_and_mask_fifo_pop;
   logic mask_valid;
   logic [PlainDataWidth-1:0] fifo_data;
   logic [DataWidth-1:0] mask;
+  logic addr_xor_fifo_rdy;
+  logic [BankAddrW-1:0] fifo_addr_xor;
   logic data_fifo_rdy;
   logic mask_fifo_rdy;
   logic descram;
@@ -483,9 +487,9 @@ module flash_phy_rd
   logic hint_descram;
   logic data_err_q;
   logic [NumBuf-1:0] alloc_q2;
-  logic [1:0] unused_rd_depth, unused_mask_depth;
+  logic [1:0] unused_rd_depth, unused_mask_depth, unused_addr_xor_depth;
 
-  assign scramble_stage_rdy = data_fifo_rdy & mask_fifo_rdy;
+  assign scramble_stage_rdy = data_fifo_rdy & mask_fifo_rdy & addr_xor_fifo_rdy;
 
   // descramble is only required if the location is scramble enabled AND it is not erased.
   assign descram = rd_done & rd_attrs.descramble & ~data_erased;
@@ -563,6 +567,30 @@ module flash_phy_rd
     .err_o   ()
   );
 
+  // Store the address used for the data XOR address infection. As transactions
+  // are handled in order, push on incoming transaction (rd_start) and pop using
+  // data_valid.
+  logic host_req;
+  prim_fifo_sync #(
+    .Width   (1+BankAddrW),
+    .Pass    (0),
+    .Depth   (RspOrderDepth),
+    .OutputZeroIfEmpty (1)
+  ) u_addr_xor_storage (
+    .clk_i,
+    .rst_ni,
+    .clr_i   (1'b0),
+    .wvalid_i(rsp_order_fifo_wr),
+    .wready_o(addr_xor_fifo_rdy),
+    .wdata_i ({host_req_i, flash_word_addr}),
+    .depth_o (unused_addr_xor_depth),
+    .full_o  (),
+    .rvalid_o(fifo_addr_xor_valid),
+    .rready_i(data_valid_o),
+    .rdata_o ({host_req, fifo_addr_xor}),
+    .err_o   ()
+  );
+
   // generate the mask calculation request
   // mask calculation is done in parallel to the read stage
   // calc_req_o is done after req_o is accepted so that most of the
@@ -620,6 +648,7 @@ module flash_phy_rd
   logic flash_rsp_match;
   logic [NumBuf-1:0] buf_rsp_match;
   logic [PlainDataWidth-1:0] buf_rsp_data;
+  logic [BankAddrW-1:0] buf_addr_xor;
   logic buf_rsp_err;
 
 
@@ -645,9 +674,11 @@ module flash_phy_rd
   always_comb begin
     buf_rsp_data = muxed_data;
     buf_rsp_err = '0;
+    buf_addr_xor = '0;
     for (int i = 0; i < NumBuf; i++) begin
       if (buf_rsp_match[i]) begin
         buf_rsp_data = read_buf[i].data;
+        buf_addr_xor = read_buf[i].addr;
         buf_rsp_err = buf_rsp_err | read_buf[i].err;
       end
     end
@@ -706,7 +737,54 @@ module flash_phy_rd
     .data_intg_o(inv_data_integ)
   );
 
-  assign data_o = data_err_o ? inv_data_integ : data_out_intg;
+  logic [BusFullWidth-1:0] data_out_pre_xor;
+  assign data_out_pre_xor = data_err_o ? inv_data_integ : data_out_intg;
+
+  logic [BusBankAddrW-1:0] addr_xor_muxed;
+  logic [BusBankAddrW-1:0] ctrl_addr_xor;
+  logic [BusBankAddrW-1:0] fifo_addr_xor_muxed;
+  logic [BusBankAddrW-1:0] ctrl_buf_addr_xor;
+  logic [BusBankAddrW-1:0] buf_addr_xor_muxed;
+
+  // Read requests are returned either to the host or to the controller. For host requests,
+  // use the TL-UL word address for the data XOR address infection as this address is buffered
+  // in the tlul_adapter_sram module. For controller requests, use the page address for the
+  // infection as only this address is available in the controller.
+
+  // TL-UL word address: In the default configuration, a flash word is 64 bit and a TL-UL word
+  // used in tlul_adapter_sram is 32 bit. By appending word_sel to the flash word address,
+  // we receive the address used in tlul_adapter_sram.
+
+  // Page address: At the controller, only the page address is known and buffered. Hence, the
+  // protection of the data XOR address infection covers flash pages. This implies that within a
+  // flash page, no protection is given.
+
+  assign ctrl_addr_xor = {fifo_addr_xor[BankAddrW-1:BusWordW-LsbAddrBit], {BusWordW{1'b0}}};
+  assign fifo_addr_xor_muxed = host_req ? {fifo_addr_xor, rsp_fifo_rdata.word_sel} :
+       ctrl_addr_xor;
+
+  assign ctrl_buf_addr_xor = {buf_addr_xor[BankAddrW-1:BusWordW-LsbAddrBit], {BusWordW{1'b0}}};
+  assign buf_addr_xor_muxed = host_req ? {buf_addr_xor, rsp_fifo_rdata.word_sel} :
+       ctrl_buf_addr_xor;
+
+  assign addr_xor_muxed = |buf_rsp_match ? buf_addr_xor_muxed : fifo_addr_xor_muxed;
+
+  // XOR address on top of fetched data. Later, this operation is reverted,
+  // leading to a data integrity violation if the address has been manipulated.
+  // SEC_CM: MEM.ADDR_INFECTION
+  logic [BusWidth-1:0] data_out_xor;
+  logic [BusWidth-1:0] data_out_xor_buf;
+  assign data_out_xor = data_out_pre_xor[BusWidth-1:0] ^ addr_xor_muxed;
+
+  // Buffer to ensure that synthesis tool does not optimize the XOR.
+  prim_buf #(
+    .Width(BusWidth)
+  ) u_prim_buf_data_xor_out (
+    .in_i(data_out_xor),
+    .out_o(data_out_xor_buf)
+  );
+
+  assign data_o = {data_out_pre_xor[BusFullWidth-1:BusWidth], data_out_xor_buf};
 
   // add plaintext decoding here
   // plaintext error

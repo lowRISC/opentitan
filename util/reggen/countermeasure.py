@@ -45,6 +45,7 @@ CM_TYPES = [
     'SCRAMBLE',
     'INTEGRITY',
     'READBACK',
+    'ADDR_INFECTION',
     'CONSISTENCY',
     'DIGEST',
     'LC_GATED',
