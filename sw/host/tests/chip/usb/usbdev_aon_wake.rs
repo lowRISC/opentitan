@@ -39,7 +39,7 @@ enum WakeMethod {
 }
 
 // Wait for a device to appear and then return the parent device and port number.
-fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::GlobalContext>, u8)> {
+fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Context>, u8)> {
     // Wait for USB device to appear.
     log::info!("waiting for device...");
     let devices = opts.usb.wait_for_device(opts.timeout)?;
