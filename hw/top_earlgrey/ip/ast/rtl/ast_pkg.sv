@@ -36,8 +36,8 @@ parameter int unsigned Ot3Sel     = 8;
 parameter int unsigned Ot4Sel     = 9;
 parameter int unsigned Ot5Sel     = 10;
 //
-parameter int unsigned Lc2HcTrCyc = 102;  // ((99+1)+(3+1))x5 = 520 us
-parameter int unsigned Hc2LcTrCyc = 38;   // ((35+1)+(3+1))x5 = 200 us
+parameter int unsigned Lc2HcTrCyc = 112;  // ((109+1)+(3+1))x5 = 570 us
+parameter int unsigned Hc2LcTrCyc = 142;  // ((139+1)+(3+1))x5 = 720 us
 //
 parameter int unsigned EntropyStreams   = 4;
 parameter int unsigned AdcChannels      = 2;
