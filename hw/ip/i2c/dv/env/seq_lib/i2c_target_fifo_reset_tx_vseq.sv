@@ -14,47 +14,33 @@ class i2c_target_fifo_reset_tx_vseq extends i2c_target_runtime_base_vseq;
 
     cfg.scb_h.read_rnd_data = 1;
     cfg.rd_pct = 3;
-    seq_runtime = 10000;
+    seq_runtime_us = 10000;
   endtask
 
-  task test_event();
+  virtual task body();
     #50us;
-    repeat (5) begin
-      wait(cfg.m_i2c_agent_cfg.got_stop);
-      // stop writing tx fifo and sequence
-      pause_seq = 1;
+    fork
+      super.body();
+      process_acq();
+    join
+  endtask: body
 
-      // flush acq
-      ral.fifo_ctrl.txrst.set(1'b1);
-      csr_update(ral.fifo_ctrl);
+  virtual task end_of_stim_hook();
+    // flush acq
+    ral.fifo_ctrl.txrst.set(1'b1);
+    csr_update(ral.fifo_ctrl);
 
-      // clean up sb
-      cfg.scb_h.target_mode_rd_obs_fifo.flush();
-      cfg.scb_h.mirrored_txdata = '{};
+    // clean up sb
+    cfg.scb_h.target_mode_rd_obs_fifo.flush();
+    cfg.scb_h.mirrored_txdata = '{};
 
-     #10us;
-      pause_seq = 0;
-
-      // random delay before the next round
-      #($urandom_range(1, 5) * 10us);
-    end
-  endtask // test_event
+    // random delay before the next round
+    #($urandom_range(1, 5) * 10us);
+  endtask
 
   task proc_intr_cmdcomplete();
     // read acq fifo in 'body' task
     clear_interrupt(CmdComplete, 0);
-  endtask // proc_itnr_cmd_complete
+  endtask: proc_intr_cmdcomplete
 
-  task process_acq();
-    bit fifo_empty, pop_all;
-    int delay;
-
-    while (!cfg.stop_intr_handler) begin
-      delay = $urandom_range(0, 10);
-      cfg.clk_rst_vif.wait_clks(delay * acq_rd_cyc);
-      // pop one all entries by 25% of chance.
-      pop_all = ($urandom_range(0,3) > 0);
-      read_acq_fifo(~pop_all, fifo_empty);
-    end
-  endtask // process_acq
-endclass // i2c_target_fifo_reset_tx_vseq
+endclass: i2c_target_fifo_reset_tx_vseq
