@@ -24,7 +24,7 @@ class SgeLauncher(Launcher):
     """
 
     # Misc common SgeLauncher settings.
-    max_odirs = 5
+    # max_odirs = 5
 
     def __init__(self, deploy):
         '''Initialize common class members.'''
