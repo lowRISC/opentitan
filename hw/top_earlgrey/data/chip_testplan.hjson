@@ -253,6 +253,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       tests: ["chip_sw_pattgen_ios"]
+      bazel: ["//sw/device/tests:pattgen_ios_test"]
     }
 
     // PWM (pre-verified IP) integration tests:

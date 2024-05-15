@@ -6209,7 +6209,28 @@ opentitan_test(
 opentitan_test(
     name = "pattgen_ios_test",
     srcs = ["pattgen_ios_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --firmware-elf=\"{firmware:elf}\"
+        """,
+        test_harness = "//sw/host/tests/chip/pattgen:pattgen_ios",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --firmware-elf=\"{firmware:elf}\"
+        """,
+        test_harness = "//sw/host/tests/chip/pattgen:pattgen_ios",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -6222,5 +6243,6 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
