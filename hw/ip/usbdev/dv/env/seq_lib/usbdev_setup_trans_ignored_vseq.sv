@@ -10,7 +10,6 @@ class usbdev_setup_trans_ignored_vseq extends usbdev_base_vseq;
   bit pkt_received = 1;
 
   task body();
-    super.dut_init("HARD");
     csr_wr(.ptr(ral.rxenable_setup[0].setup[endp]), .value(1'b0)); // Disable rx_enable setup
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1)); // Enable OUT EP
     cfg.clk_rst_vif.wait_clks(10);
