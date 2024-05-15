@@ -35,3 +35,4 @@
 `include "i2c_host_mode_toggle_vseq.sv"
 `include "i2c_glitch_vseq.sv"
 `include "i2c_host_may_nack_vseq.sv"
+`include "i2c_target_fifo_watermarks_acq_vseq.sv"

@@ -429,25 +429,21 @@ class i2c_base_vseq extends cip_base_vseq #(
     ral.timeout_ctrl.en.set(e_timeout);
     ral.timeout_ctrl.val.set(t_timeout);
     csr_update(.csr(ral.timeout_ctrl));
+    ral.host_fifo_config.rx_thresh.set(rx_thresh);
+    ral.host_fifo_config.fmt_thresh.set(fmt_thresh);
+    csr_update(ral.host_fifo_config);
+    ral.target_fifo_config.acq_thresh.set(acq_thresh);
+    ral.target_fifo_config.tx_thresh.set(tx_thresh);
+    csr_update(ral.target_fifo_config);
+
+    `uvm_info(`gfn, $sformatf("Wrote following register values :\n%s",
+      ral.sprint()), UVM_MEDIUM)
+
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
         cfg.m_i2c_agent_cfg.timing_cfg), UVM_MEDIUM)
 
-    //*** program Host mode FIFO thresholds
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_thresh)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_thresh)
-    ral.host_fifo_config.rx_thresh.set(rx_thresh);
-    ral.host_fifo_config.fmt_thresh.set(fmt_thresh);
-    csr_update(ral.host_fifo_config);
-    //*** program Target mode FIFO thresholds
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(acq_thresh)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_thresh)
-    ral.target_fifo_config.acq_thresh.set(acq_thresh);
-    ral.target_fifo_config.tx_thresh.set(tx_thresh);
-    csr_update(ral.target_fifo_config);
-    //*** set FIFO_CTRL register
-    csr_update(ral.fifo_ctrl);
   endtask : program_registers
 
   virtual task program_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
