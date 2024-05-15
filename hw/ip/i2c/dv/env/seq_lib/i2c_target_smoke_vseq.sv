@@ -114,7 +114,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
         if (cfg.use_intr_handler == 1'b0 && cfg.rd_pct != 0) process_txq();
       end
       begin
-        if (cfg.use_intr_handler) process_target_interrupts();
+        if (cfg.use_intr_handler) while (!cfg.stop_intr_handler) process_target_interrupts();
       end
       begin
         if (cfg.use_intr_handler) stop_target_interrupt_handler();

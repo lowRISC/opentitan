@@ -947,50 +947,66 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task proc_intr_unexpstop; endtask
   virtual task proc_intr_hosttimeout; endtask
 
-  // Target-mode interrupt handling routine.
+  // Target-mode interrupt handling.
   //
-  // This routine loops through all wired-interrupts, and calls a handler routine
-  // for each one if active. It then does some checking based on 'expected_intr[]'.
-  //
+  // This routine loops through all active target-mode wired interrupts, and
+  // randomly calls one of the handler routines.
   virtual task process_target_interrupts();
     bit acq_fifo_empty;
     bit read_one = 0;
-    while (!cfg.stop_intr_handler) begin
-      @(posedge cfg.clk_rst_vif.clk);
+    logic [NUM_MAX_INTERRUPTS-1:0] target_interrupts_mask = '0;
 
-      if      (cfg.intr_vif.pins[AcqStretch])  proc_intr_acqstretch();
-      else if (cfg.intr_vif.pins[TxStretch])   proc_intr_txstretch();
-      else if (cfg.intr_vif.pins[CmdComplete]) proc_intr_cmdcomplete();
-      else if (cfg.read_all_acq_entries)       read_acq_fifo(0, acq_fifo_empty);
-      else begin
+    target_interrupts_mask |= (1 << AcqThreshold) |
+                              (1 << CmdComplete)  |
+                              (1 << TxStretch)    |
+                              (1 << TxThreshold)  |
+                              (1 << AcqStretch)   |
+                              (1 << UnexpStop)    |
+                              (1 << HostTimeout);
 
-        // The variable "expected_intr[]" is used to keep track of interrupts the testbench
-        // expects the possibility of seeing asserted. If an interrupt is asserted that is
-        // not marked in this way, throw an error.
-        for (int i = 0; i < NumI2cIntr; i++) begin
-          i2c_intr_e my_intr = i2c_intr_e'(i);
-          if ((!expected_intr.exists(my_intr)) && // Not expected
-              (cfg.intr_vif.pins[i] !== 0)) begin // Triggered
-              `uvm_error("process_target_interrupts",
-                         $sformatf("Unexpected interrupt is set %s", my_intr.name))
-            end
-          end
+    // Add a small amount of latency, just to prevent loops when no interrupts
+    // are pending.
+    @(posedge cfg.clk_rst_vif.clk);
+
+    if (cfg.intr_vif.pins & target_interrupts_mask) begin
+      randcase
+        cfg.intr_vif.pins[AcqThreshold]: proc_intr_acqthreshold(); // status
+        cfg.intr_vif.pins[CmdComplete]:  proc_intr_cmdcomplete();  // event
+        cfg.intr_vif.pins[TxStretch]:    proc_intr_txstretch();    // status
+        cfg.intr_vif.pins[TxThreshold]:  proc_intr_txthreshold();  // status
+        cfg.intr_vif.pins[AcqStretch]:   proc_intr_acqstretch();   // status
+        cfg.intr_vif.pins[UnexpStop]:    proc_intr_unexpstop();    // event
+        cfg.intr_vif.pins[HostTimeout]:  proc_intr_hosttimeout();  // event
+      endcase
+    end
+
+    // This cfg option can be used to empty the acqfifo, typically at the end of a test.
+    if (cfg.read_all_acq_entries) read_acq_fifo(0, acq_fifo_empty);
+
+    // The variable "expected_intr[]" is used to keep track of interrupts the testbench
+    // expects the possibility of seeing asserted. If an interrupt is asserted that is
+    // not marked in this way, throw an error.
+    for (int i = 0; i < NumI2cIntr; i++) begin
+      i2c_intr_e my_intr = i2c_intr_e'(i);
+      if ((!expected_intr.exists(my_intr)) && // Not expected
+          (cfg.intr_vif.pins[i] !== 0)) begin // Triggered
+        `uvm_error("process_target_interrupts",
+                   $sformatf("Unexpected interrupt is set %s", my_intr.name))
+      end
+    end
+
+    // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
+    // But for the last bad read command, we have to adjust expected rd_byte separately
+    // because we will not call 'write_tx_fifo'.
+    if (adjust_exp_read_byte == 1 &&
+        cfg.sent_acq_cnt == cfg.rcvd_acq_cnt) begin
+      int read_size;
+      while (cfg.m_i2c_agent_cfg.read_addr_q.size > 0) begin
+        read_size = read_rcvd.pop_front();
+        if (!cfg.m_i2c_agent_cfg.read_addr_q.pop_front) begin
+          repeat (read_size) void'(read_txn_q.pop_front());
+          cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
         end
-      end // else: !if(cfg.intr_vif.pins[CmdComplete])
-
-      // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
-      // But for the last bad read command, we have to adjust expected rd_byte separately
-      // because we will not call 'write_tx_fifo'.
-      if (adjust_exp_read_byte == 1 &&
-          cfg.sent_acq_cnt == cfg.rcvd_acq_cnt) begin
-         int read_size;
-         while (cfg.m_i2c_agent_cfg.read_addr_q.size > 0) begin
-            read_size = read_rcvd.pop_front();
-            if (!cfg.m_i2c_agent_cfg.read_addr_q.pop_front) begin
-               repeat (read_size) void'(read_txn_q.pop_front());
-               cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
-            end
-         end
       end
     end
   endtask
