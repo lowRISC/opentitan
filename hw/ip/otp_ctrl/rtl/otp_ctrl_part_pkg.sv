@@ -140,7 +140,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           11'd64,
-      size:             424,
+      size:             416,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -154,8 +154,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           11'd488,
-      size:             656,
+      offset:           11'd480,
+      size:             664,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -425,9 +425,11 @@ package otp_ctrl_part_pkg;
       512'h0,
       32'h0
     }),
-    5248'({
+    5312'({
       64'hE29749216775E8A5,
-      928'h0, // unallocated space
+      864'h0, // unallocated space
+      32'h0,
+      96'h0,
       32'h0,
       32'h0,
       32'h0,
@@ -447,9 +449,9 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0
     }),
-    3392'({
+    3328'({
       64'h340A5B93BB19342,
-      992'h0, // unallocated space
+      928'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
