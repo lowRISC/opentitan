@@ -47,6 +47,7 @@
 `include "chip_sw_lc_walkthrough_testunlocks_vseq.sv"
 `include "chip_sw_otp_ctrl_vendor_test_csr_access_vseq.sv"
 `include "chip_sw_otp_ctrl_escalation_vseq.sv"
+`include "chip_sw_otp_ctrl_vendor_test_ecc_error_vseq.sv"
 `include "chip_sw_spi_host_tx_rx_vseq.sv"
 `include "chip_sw_spi_passthrough_vseq.sv"
 `include "chip_sw_spi_passthrough_collision_vseq.sv"

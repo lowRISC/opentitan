@@ -197,6 +197,23 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "otp_ctrl_vendor_test_ecc_error_test",
+    srcs = ["otp_ctrl_vendor_test_ecc_error_test.c"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 cc_library(
     name = "lc_ctrl_transition_impl",
     srcs = ["lc_ctrl_transition_impl.c"],

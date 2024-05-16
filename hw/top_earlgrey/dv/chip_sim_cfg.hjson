@@ -851,6 +851,12 @@
       reseed: 1
     }
     {
+      name: chip_sw_otp_ctrl_ecc_error_vendor_test
+      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_ecc_error_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_ecc_error_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
