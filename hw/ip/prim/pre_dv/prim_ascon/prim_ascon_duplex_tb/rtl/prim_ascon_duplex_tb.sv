@@ -301,7 +301,7 @@ module prim_ascon_duplex_tb (
   mubi4_t dut_last_block_ad;
   mubi4_t dut_last_block_msg;
 
-  logic idle;
+  mubi4_t idle;
   logic start;
   logic fsm_done;
 
