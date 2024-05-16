@@ -27,6 +27,11 @@ filegroup(
 )
 
 filegroup(
+    name = "hmac_testvectors_random",
+    srcs = ["hmac_testvectors_random.hjson"],
+)
+
+filegroup(
     name = "kdf_testvectors_random",
     srcs = ["kdf_testvectors_random.hjson"],
 )
