@@ -81,7 +81,8 @@ module ascon
     .keymgr_key_i,
 
     .reg2hw(reg2hw),
-    .hw2reg(hw2reg)
+    .hw2reg(hw2reg),
+    .idle_o(idle_o)
   );
 
   // Synchronize EDN interface
@@ -114,8 +115,6 @@ module ascon
   assign unused_edn_ack = edn_ack;
 
 
-  // TODO
-  assign idle_o = prim_mubi_pkg::MuBi4False;
 
   ////////////
   // Alerts //

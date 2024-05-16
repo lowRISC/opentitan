@@ -298,7 +298,7 @@ module ascon_duplex_tb (
   mubi4_t dut_last_AD_block;
   mubi4_t dut_last_MSG_block;
 
-  logic idle;
+  mubi4_t idle;
   logic start;
   logic fsm_done;
 

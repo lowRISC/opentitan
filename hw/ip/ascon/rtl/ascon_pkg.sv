@@ -26,4 +26,13 @@ typedef enum logic [ASCON_VARIANT_WIDTH-1:0] {
   ASCON_128A = 2'b10
 } ascon_variant_e;
 
+typedef enum logic [11:0] {
+  // This encoding represents mubi4True and mubi4False
+  MSG_IN = {4'h6, 4'h9, 4'h9},
+  AD_IN =  {4'h9, 4'h6, 4'h9},
+  TAG_IN = {4'h9, 4'h9, 4'h6},
+  NONE =   {4'h9, 4'h9, 4'h9}
+} data_type_e;
+
+
 endpackage

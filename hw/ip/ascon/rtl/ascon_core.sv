@@ -7,6 +7,7 @@
 module ascon_core
   import ascon_reg_pkg::*;
   import ascon_pkg::*;
+  import prim_mubi_pkg::*;
 (
   input clk_i,
   input rst_ni,
@@ -23,8 +24,11 @@ module ascon_core
 
   // Bus Interface
   input  ascon_reg2hw_t reg2hw,
-  output ascon_hw2reg_t hw2reg
+  output ascon_hw2reg_t hw2reg,
+
+  output mubi4_t idle_o
 );
+
 
   // Signals
   logic [3:0][31:0] data_share0_in_d;
@@ -70,16 +74,21 @@ module ascon_core
 
   logic        force_data_overwrite;
   logic        manual_start_trigger;
-  ascon_op_e   operation;
   logic        sideload_key;
   logic        start, wipe;
   logic        masked_ad_input;
   logic        masked_msg_input;
   logic  [4:0] valid_bytes;
-  logic [11:0] data_type_last;
-  logic [11:0] data_type_start;
-  logic        no_ad;
-  logic        no_msg;
+
+  // TODO: change to mubi4
+  logic           no_ad;
+  logic           no_msg;
+
+  data_type_e data_type_last;
+  data_type_e data_type_start;
+
+  ascon_op_e      operation;
+  ascon_variant_e variant;
 
   logic [3:0][31:0] msg_out_d;
   logic [3:0][31:0] msg_out_q;
@@ -96,7 +105,9 @@ module ascon_core
   logic             tag_out_read;
 
   assign alert_recov_o = 1'b0;
-  assign alert_fatal_o = 1'b0;
+
+  logic duplex_fatal_error;
+  assign alert_fatal_o = duplex_fatal_error;
 
   lc_ctrl_pkg::lc_tx_t      unused_lc_escalate_en_i;
   keymgr_pkg::hw_key_req_t  unused_keymgr_key_i;
@@ -207,6 +218,7 @@ module ascon_core
 
   // CTRL
   assign operation            = reg2hw.ctrl_shadowed.operation.q;
+  assign variant              = reg2hw.ctrl_shadowed.ascon_variant.q;
   assign sideload_key         = reg2hw.ctrl_shadowed.sideload_key.q;
   assign masked_msg_input     = reg2hw.ctrl_shadowed.masked_msg_input.q;
   assign masked_ad_input      = reg2hw.ctrl_shadowed.masked_ad_input.q;
@@ -303,12 +315,12 @@ module ascon_core
   assign data_share0_in_new_d = data_share0_in_load ? '0 : data_share0_in_new_q |
       {reg2hw.data_in_share0[3].qe, reg2hw.data_in_share0[2].qe,
        reg2hw.data_in_share0[1].qe, reg2hw.data_in_share0[0].qe};
-  assign data_share0_in_new = &data_share0_in_new_d;
+  assign data_share0_in_new = &data_share0_in_new_q;
 
   assign data_share1_in_new_d = data_share1_in_load ? '0 : data_share1_in_new_q |
       {reg2hw.data_in_share1[3].qe, reg2hw.data_in_share1[2].qe,
        reg2hw.data_in_share1[1].qe, reg2hw.data_in_share1[0].qe};
-  assign data_share1_in_new = &data_share1_in_new_d;
+  assign data_share1_in_new = &data_share1_in_new_q;
 
   assign tag_in_new_d = tag_in_load ? '0 : tag_in_new_q |
       {reg2hw.tag_in[3].qe, reg2hw.tag_in[2].qe, reg2hw.tag_in[1].qe, reg2hw.tag_in[0].qe};
@@ -316,7 +328,7 @@ module ascon_core
 
   assign msg_out_read_d = msg_out_we ? '0 : msg_out_read_q |
       {reg2hw.msg_out[3].re, reg2hw.msg_out[2].re, reg2hw.msg_out[1].re, reg2hw.msg_out[0].re};
-  assign msg_out_read = &msg_out_read_d;
+  assign msg_out_read = &msg_out_read_q;
 
   assign tag_out_read_d = tag_out_we ? '0 : tag_out_read_q |
       {reg2hw.tag_out[3].re, reg2hw.tag_out[2].re, reg2hw.tag_out[1].re, reg2hw.tag_out[0].re};
@@ -349,28 +361,18 @@ module ascon_core
   // FUNCTIONALITY
 
   // TODO: We don't use the edge detection
-  logic unused_data_share0_in_new;
-  logic unused_data_share1_in_new;
   logic unused_tag_in_new;
   logic unused_key_share0_in_new;
   logic unused_key_share1_in_new;
   logic unused_nonce_share0_in_new;
   logic unused_nonce_share1_in_new;
-  logic unused_msg_out_read;
   logic unused_tag_out_read;
-  logic unused_no_ad;
-  logic unused_no_msg;
-  assign unused_data_share0_in_new   = data_share0_in_new;
-  assign unused_data_share1_in_new   = data_share1_in_new;
   assign unused_tag_in_new   = tag_in_new;
   assign unused_nonce_share0_in_new = nonce_share0_in_new;
   assign unused_nonce_share1_in_new = nonce_share1_in_new;
   assign unused_key_share0_in_new  = key_share0_in_new;
   assign unused_key_share1_in_new  = key_share1_in_new;
-  assign unused_msg_out_read = msg_out_read;
   assign unused_tag_out_read = tag_out_read;
-  assign unused_no_ad = no_ad;
-  assign unused_no_msg = no_msg;
 
 
   // TODO: Build a very basic FSM here
@@ -378,55 +380,95 @@ module ascon_core
   assign key_share1_in_load = 1'b0;
   assign nonce_share0_in_load = 1'b0;
   assign nonce_share1_in_load = 1'b0;
-  assign data_share0_in_load = 1'b0;
-  assign data_share1_in_load = 1'b0;
   assign tag_in_load = 1'b0;
-  assign msg_out_we  = keymgr_key_i.valid;
-  assign tag_out_we  = keymgr_key_i.valid;
 
   // TODO: We don't use any control signals
   logic      unused_force_data_overwrite;
   logic      unused_manual_start_trigger;
-  ascon_op_e unused_operation;
-  logic      unused_start;
   logic      unused_wipe;
   logic      unused_masked_msg_input;
   logic      unused_masked_ad_input;
   logic      unused_sideload_key;
-  logic [4:0] unused_valid_bytes;
   logic [11:0] unused_data_type_start;
-  logic [11:0] unused_data_type_last;
 
   assign unused_force_data_overwrite = force_data_overwrite;
   assign unused_manual_start_trigger = manual_start_trigger;
-  assign unused_operation            = operation;
-  assign unused_start                = start;
   assign unused_wipe                 = wipe;
   assign unused_masked_ad_input      = masked_ad_input;
   assign unused_masked_msg_input     = masked_msg_input;
   assign unused_sideload_key         = sideload_key;
-  assign unused_valid_bytes          = valid_bytes;
-  assign unused_data_type_last       = data_type_last;
   assign unused_data_type_start      = data_type_start;
 
 
-  // This is some dummy logic to be able to instanciate the module
-  // It XORS key_in, nonce_in, and mesg_in. The result ist written to msg_out
-  // Tag_in is directly written to Tag_out
-  // Ctrl is ignored in this very first version
-  // Status and Error are set to fixed values
-  // The other register are not connected.
+  logic data_in_valid;
+  assign data_in_valid = data_share1_in_new & data_share0_in_new;
 
-  logic [31:0] key_in[4];
-  logic [31:0] data_in[4];
-  logic [31:0] nonce_in[4];
+  logic data_in_read;
+  assign data_share1_in_load = data_in_read;
+  assign data_share0_in_load = data_in_read;
+
+  // XOR shares for unprotected implementation
+  logic [3:0][31:0] key_in;
+  logic [3:0][31:0] data_in;
+  logic [3:0][31:0] nonce_in;
   for (genvar i = 0; i < 4; i++) begin : gen_dummy_op
     assign nonce_in[i] = nonce_share0_in_q[i] ^ nonce_share1_in_q[i];
     assign key_in[i] = key_share0_in_q[i] ^ key_share1_in_q[i];
     assign data_in[i] = data_share0_in_q[i] ^ data_share1_in_q[i];
-    assign msg_out_d[i] = key_in[i] ^ nonce_in[i] ^ data_in[i];
-    assign tag_out_d[i] = tag_in_q[i];
   end
+
+  mubi4_t last_ad_block;
+  mubi4_t last_msg_block;
+
+  assign last_ad_block  = (data_type_last ==  AD_IN) ? MuBi4True : MuBi4False;
+  assign last_msg_block = (data_type_last == MSG_IN) ? MuBi4True : MuBi4False;
+
+  // TODO: Add tag comparison
+  logic [3:0][31:0] unused_tag_in_q;
+  assign unused_tag_in_q = tag_in_q;
+
+ // Instantiate Ascon Duplex
+  prim_ascon_duplex ascon_duplex (
+
+  .clk_i(clk_i),
+  .rst_ni(rst_ni),
+
+  .ascon_variant(variant),
+  .ascon_operation(operation),
+
+  .start_i(start),
+  .idle_o(idle_o),
+
+  // It is assumed that no_ad, no_msg, key, and nonce are always
+  // valid and constant, when the cipher is triggered by the start command
+  .no_ad(no_ad),
+  .no_msg(no_msg),
+
+  .key_i(key_in),
+  .nonce_i(nonce_in),
+
+  // Cipher Input Port
+  .data_i(data_in),
+  .valid_bytes_i(valid_bytes),
+  .last_AD_block_i(last_ad_block),
+  .last_MSG_block_i(last_msg_block),
+  .data_valid_i(data_in_valid),
+  .data_rd_o(data_in_read),
+
+  // Cipher Output Port
+  .data_o(msg_out),
+  .data_rd_i(msg_out_read),
+  .data_we_o(msg_out_we),
+
+  .tag_o(tag_out),
+  .tag_we_o(tag_out_we),
+
+  .err_o(duplex_fatal_error)
+  );
+
+  logic [127:0] msg_out, tag_out;
+  assign msg_out_d = msg_out;
+  assign tag_out_d = tag_out;
 
   // Unused alert signals
   logic unused_alert_signals;
