@@ -29,6 +29,22 @@ extern "C" {
 rom_error_t kmac_keymgr_configure(void);
 
 /**
+ * Configure the KMAC block for KMAC-256 operation with a key loaded by
+ * software.
+ *
+ * @return Error code indicating if the operation succeeded.
+ */
+rom_error_t kmac_kmac256_sw_configure(void);
+
+/**
+ * Configure the KMAC block for KMAC-256 operation with a key sideloaded from
+ * the keymgr hardware block.
+ *
+ * @return Error code indicating if the operation succeeded.
+ */
+rom_error_t kmac_kmac256_hw_configure(void);
+
+/**
  * Configure the KMAC block at startup.
  *
  * Sets the KMAC block to use software entropy (since we have no secret inputs
@@ -128,6 +144,55 @@ void kmac_shake256_squeeze_start(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen);
+
+/**
+ * Load an unmasked software key into KMAC.
+ *
+ * @param key The key material.
+ * @param len The length of the key material in words.
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_kmac256_sw_key(const uint32_t *key, size_t len);
+
+/**
+ * Set the KMAC prefix value.
+ *
+ * Sets the prefix to the given prefix value.  The prefix
+ * must be 31 bytes or fewer.
+ *
+ * @param prefix The prefix value encoded as words.
+ * @param len The length of the prefix in bytes.
+ */
+void kmac_kmac256_set_prefix(const void *prefix, size_t len);
+
+/**
+ * Start a KMAC-256 operation.
+ *
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+inline rom_error_t kmac_kmac256_start(void) { return kmac_shake256_start(); }
+
+/**
+ * Absorb data into a KMAC-256.
+ *
+ * @param data Data to absorb into the sponge.
+ * @param len Length of the data.
+ */
+inline void kmac_kmac256_absorb(const void *data, size_t len) {
+  kmac_shake256_absorb((const uint8_t *)data, len);
+}
+
+/**
+ * Finalize the KMAC-256 operation.
+ *
+ * @param result Buffer to hold the result of the KMAC operation.
+ * @param rlen Length of the result buffer in words.
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_kmac256_final(uint32_t *result, size_t rlen);
 
 #ifdef __cplusplus
 }  // extern "C"
