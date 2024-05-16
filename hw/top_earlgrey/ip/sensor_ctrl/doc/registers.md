@@ -153,7 +153,7 @@ Alert trigger test
 
 ## ALERT_EN
 Each multibit value enables a corresponding alert.
-- Reset default: `0x9`
+- Reset default: `0x6`
 - Reset mask: `0xf`
 
 ### Instances
@@ -179,10 +179,18 @@ Each multibit value enables a corresponding alert.
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                       |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |        | Reserved                                                                                          |
-|  3:0   |   rw   |   0x9   | VAL    | kMultiBitBool4True - An alert event is enabled. kMultiBitBool4False - An alert event is disabled. |
+|  Bits  |  Type  |  Reset  | Name                  |
+|:------:|:------:|:-------:|:----------------------|
+|  31:4  |        |         | Reserved              |
+|  3:0   |   rw   |   0x6   | [VAL](#alert_en--val) |
+
+### ALERT_EN . VAL
+kMultiBitBool4True - An alert event is enabled.
+kMultiBitBool4False - An alert event is disabled.
+
+At reset, all alerts are enabled.
+This is by design so that no alerts get missed unless they get disabled explicitly.
+Firmware can disable alerts that may be problematic for the designated use case.
 
 ## FATAL_ALERT_EN
 Each bit marks a corresponding alert as fatal or recoverable.
@@ -199,20 +207,108 @@ Note that alerts are ignored if they are not enabled in [`ALERT_EN.`](#alert_en)
 {"reg": [{"name": "VAL_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_2", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_4", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_6", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_7", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_8", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_9", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "VAL_10", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                     |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------|
-| 31:11  |        |         |        | Reserved                                                        |
-|   10   |   rw   |   0x0   | VAL_10 | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   9    |   rw   |   0x0   | VAL_9  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   8    |   rw   |   0x0   | VAL_8  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   7    |   rw   |   0x0   | VAL_7  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   6    |   rw   |   0x0   | VAL_6  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   5    |   rw   |   0x0   | VAL_5  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   4    |   rw   |   0x0   | VAL_4  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   3    |   rw   |   0x0   | VAL_3  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   2    |   rw   |   0x0   | VAL_2  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   1    |   rw   |   0x0   | VAL_1  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
-|   0    |   rw   |   0x0   | VAL_0  | 1 - An alert event is fatal. 0 - An alert event is recoverable. |
+|  Bits  |  Type  |  Reset  | Name                              |
+|:------:|:------:|:-------:|:----------------------------------|
+| 31:11  |        |         | Reserved                          |
+|   10   |   rw   |   0x0   | [VAL_10](#fatal_alert_en--val_10) |
+|   9    |   rw   |   0x0   | [VAL_9](#fatal_alert_en--val_9)   |
+|   8    |   rw   |   0x0   | [VAL_8](#fatal_alert_en--val_8)   |
+|   7    |   rw   |   0x0   | [VAL_7](#fatal_alert_en--val_7)   |
+|   6    |   rw   |   0x0   | [VAL_6](#fatal_alert_en--val_6)   |
+|   5    |   rw   |   0x0   | [VAL_5](#fatal_alert_en--val_5)   |
+|   4    |   rw   |   0x0   | [VAL_4](#fatal_alert_en--val_4)   |
+|   3    |   rw   |   0x0   | [VAL_3](#fatal_alert_en--val_3)   |
+|   2    |   rw   |   0x0   | [VAL_2](#fatal_alert_en--val_2)   |
+|   1    |   rw   |   0x0   | [VAL_1](#fatal_alert_en--val_1)   |
+|   0    |   rw   |   0x0   | [VAL_0](#fatal_alert_en--val_0)   |
+
+### FATAL_ALERT_EN . VAL_10
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_9
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_8
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_7
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_6
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_5
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_4
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_3
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_2
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_1
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
+
+### FATAL_ALERT_EN . VAL_0
+1 - An alert event is fatal.
+0 - An alert event is recoverable.
+
+At reset, all alerts are recoverable.
+This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+Firmware can define alerts that are critical for the designated use case as fatal.
 
 ## RECOV_ALERT
 Each bit represents a recoverable alert that has been triggered by AST.
