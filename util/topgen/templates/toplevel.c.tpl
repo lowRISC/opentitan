@@ -3,16 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "${helper.header_path}"
-% if helper.addr_space == helper.default_addr_space:
 
+% for interrupt_domain, plic_mapping in helper.plic_mapping.items():
+    % if len(plic_mapping) > 1:
 /**
- * PLIC Interrupt Source to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map for the `${interrupt_domain}` domain
  *
- * This array is a mapping from `${helper.plic_interrupts.name.as_c_type()}` to
- * `${helper.plic_sources.name.as_c_type()}`.
+ * This array is a mapping from `${helper.plic_interrupts[interrupt_domain].name.as_c_type()}` to
+ * `${helper.plic_sources[interrupt_domain].name.as_c_type()}`.
  */
-${helper.plic_mapping.render_definition()}
-
+${plic_mapping.render_definition()}
+    % endif
+% endfor
+% if helper.addr_space == helper.default_addr_space:
 /**
  * Alert Handler Alert Source to Peripheral Map
  *

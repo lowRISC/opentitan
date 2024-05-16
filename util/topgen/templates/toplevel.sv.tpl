@@ -39,6 +39,7 @@ for m in top['memory']:
 
 last_modidx_with_params = lib.idx_of_last_module_with_params(top)
 
+defaut_interrupt_domain = lib.get_default_interrupt_domain(top)
 %>\
 `include "prim_assert.sv"
 
@@ -149,12 +150,15 @@ module top_${top["name"]} #(
 % endfor
 
 
-<%
-  # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
-  # So, total number of interrupts are the number of entries in the list + 1
-  interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]]) + 1
-%>\
-  logic [${interrupt_num-1}:0]  intr_vector;
+% for intr_domain, intr_list in top["interrupt"].items():
+  <%
+    # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
+    # So, total number of interrupts are the number of entries in the list + 1
+    interrupt_num = sum([x["width"] if "width" in x else 1 for x in intr_list]) + 1
+    intr_domain_suffix = "_" + intr_domain if intr_domain != defaut_interrupt_domain else ""
+  %>\
+logic [${interrupt_num-1}:0]  intr_vector${intr_domain_suffix};
+% endfor
   // Interrupt source list
 % for m in top["module"]:
 <%
@@ -442,8 +446,12 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
         % endif
       % endfor
     % endif
-    % if m["type"] == "rv_plic":
-      .intr_src_i (intr_vector),
+    % if m["type"].startswith("rv_plic"):
+    <%
+    intr_domain = m.get("interrupt_domain", defaut_interrupt_domain)
+    intr_domain_suffix = "_" + intr_domain if intr_domain != defaut_interrupt_domain else ""
+    %>\
+  .intr_src_i (intr_vector${intr_domain_suffix}),
     % endif
     % if m["type"] == "pinmux":
 
@@ -498,14 +506,19 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   );
 % endfor
   // interrupt assignments
-<% base = interrupt_num %>\
-  assign intr_vector = {
-  % for intr in top["interrupt"][::-1]:
-<% base -= intr["width"] %>\
-      intr_${intr["name"]}, // IDs [${base} +: ${intr['width']}]
+% for intr_domain, intr_list in top["interrupt"].items():
+<% 
+  base = interrupt_num = sum([x["width"] if "width" in x else 1 for x in intr_list]) + 1
+  intr_domain_suffix = "_" + intr_domain if intr_domain != defaut_interrupt_domain else "" 
+%>\
+  assign intr_vector${intr_domain_suffix} = {
+  % for intr in intr_list[::-1]:
+    <% base -= intr["width"] %>\
+  intr_${intr["name"]}, // IDs [${base} +: ${intr['width']}]
   % endfor
       1'b 0 // ID [0 +: 1] is a special case and tied to zero.
   };
+% endfor
 
   // TL-UL Crossbar
 % for xbar in top["xbar"]:

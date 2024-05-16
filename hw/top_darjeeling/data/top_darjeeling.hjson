@@ -171,6 +171,13 @@
     { name: "soc_dbg", desc: "SoC address space for debug module interfaces"},
   ]
 
+  // `interrupt_domains` names distinct intterrupt domains in the device.
+  // For every interrupt domain, a dedicated PLIC needs to be instantiated.
+  // All peripheral's interrupts will routed to the PLIC in the same domain.
+  interrupt_domains: [
+    { name: "main", desc: "The main interrrupt domain", default: true}
+  ]
+
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
   // TODO: Define parameter here

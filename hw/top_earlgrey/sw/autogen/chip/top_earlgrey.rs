@@ -1388,309 +1388,7 @@ pub enum TopEarlgreyPlicTarget {
     Ibex0 = 0,
 }
 
-/// Alert Handler Source Peripheral.
-///
-/// Enumeration used to determine which peripheral asserted the corresponding
-/// alert.
-#[repr(u32)]
-pub enum TopEarlgreyAlertPeripheral {
-    /// uart0
-    Uart0 = 0,
-    /// uart1
-    Uart1 = 1,
-    /// uart2
-    Uart2 = 2,
-    /// uart3
-    Uart3 = 3,
-    /// gpio
-    Gpio = 4,
-    /// spi_device
-    SpiDevice = 5,
-    /// i2c0
-    I2c0 = 6,
-    /// i2c1
-    I2c1 = 7,
-    /// i2c2
-    I2c2 = 8,
-    /// pattgen
-    Pattgen = 9,
-    /// rv_timer
-    RvTimer = 10,
-    /// otp_ctrl
-    OtpCtrl = 11,
-    /// lc_ctrl
-    LcCtrl = 12,
-    /// spi_host0
-    SpiHost0 = 13,
-    /// spi_host1
-    SpiHost1 = 14,
-    /// usbdev
-    Usbdev = 15,
-    /// pwrmgr_aon
-    PwrmgrAon = 16,
-    /// rstmgr_aon
-    RstmgrAon = 17,
-    /// clkmgr_aon
-    ClkmgrAon = 18,
-    /// sysrst_ctrl_aon
-    SysrstCtrlAon = 19,
-    /// adc_ctrl_aon
-    AdcCtrlAon = 20,
-    /// pwm_aon
-    PwmAon = 21,
-    /// pinmux_aon
-    PinmuxAon = 22,
-    /// aon_timer_aon
-    AonTimerAon = 23,
-    /// sensor_ctrl
-    SensorCtrl = 24,
-    /// sram_ctrl_ret_aon
-    SramCtrlRetAon = 25,
-    /// flash_ctrl
-    FlashCtrl = 26,
-    /// rv_dm
-    RvDm = 27,
-    /// rv_plic
-    RvPlic = 28,
-    /// aes
-    Aes = 29,
-    /// hmac
-    Hmac = 30,
-    /// kmac
-    Kmac = 31,
-    /// otbn
-    Otbn = 32,
-    /// keymgr
-    Keymgr = 33,
-    /// csrng
-    Csrng = 34,
-    /// entropy_src
-    EntropySrc = 35,
-    /// edn0
-    Edn0 = 36,
-    /// edn1
-    Edn1 = 37,
-    /// sram_ctrl_main
-    SramCtrlMain = 38,
-    /// rom_ctrl0
-    RomCtrl0 = 39,
-    /// rv_core_ibex
-    RvCoreIbex = 40,
-}
-
-/// Alert Handler Alert Source.
-///
-/// Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
-/// the same peripheral are guaranteed to be consecutive.
-#[repr(u32)]
-pub enum TopEarlgreyAlertId {
-    /// uart0_fatal_fault
-    Uart0FatalFault = 0,
-    /// uart1_fatal_fault
-    Uart1FatalFault = 1,
-    /// uart2_fatal_fault
-    Uart2FatalFault = 2,
-    /// uart3_fatal_fault
-    Uart3FatalFault = 3,
-    /// gpio_fatal_fault
-    GpioFatalFault = 4,
-    /// spi_device_fatal_fault
-    SpiDeviceFatalFault = 5,
-    /// i2c0_fatal_fault
-    I2c0FatalFault = 6,
-    /// i2c1_fatal_fault
-    I2c1FatalFault = 7,
-    /// i2c2_fatal_fault
-    I2c2FatalFault = 8,
-    /// pattgen_fatal_fault
-    PattgenFatalFault = 9,
-    /// rv_timer_fatal_fault
-    RvTimerFatalFault = 10,
-    /// otp_ctrl_fatal_macro_error
-    OtpCtrlFatalMacroError = 11,
-    /// otp_ctrl_fatal_check_error
-    OtpCtrlFatalCheckError = 12,
-    /// otp_ctrl_fatal_bus_integ_error
-    OtpCtrlFatalBusIntegError = 13,
-    /// otp_ctrl_fatal_prim_otp_alert
-    OtpCtrlFatalPrimOtpAlert = 14,
-    /// otp_ctrl_recov_prim_otp_alert
-    OtpCtrlRecovPrimOtpAlert = 15,
-    /// lc_ctrl_fatal_prog_error
-    LcCtrlFatalProgError = 16,
-    /// lc_ctrl_fatal_state_error
-    LcCtrlFatalStateError = 17,
-    /// lc_ctrl_fatal_bus_integ_error
-    LcCtrlFatalBusIntegError = 18,
-    /// spi_host0_fatal_fault
-    SpiHost0FatalFault = 19,
-    /// spi_host1_fatal_fault
-    SpiHost1FatalFault = 20,
-    /// usbdev_fatal_fault
-    UsbdevFatalFault = 21,
-    /// pwrmgr_aon_fatal_fault
-    PwrmgrAonFatalFault = 22,
-    /// rstmgr_aon_fatal_fault
-    RstmgrAonFatalFault = 23,
-    /// rstmgr_aon_fatal_cnsty_fault
-    RstmgrAonFatalCnstyFault = 24,
-    /// clkmgr_aon_recov_fault
-    ClkmgrAonRecovFault = 25,
-    /// clkmgr_aon_fatal_fault
-    ClkmgrAonFatalFault = 26,
-    /// sysrst_ctrl_aon_fatal_fault
-    SysrstCtrlAonFatalFault = 27,
-    /// adc_ctrl_aon_fatal_fault
-    AdcCtrlAonFatalFault = 28,
-    /// pwm_aon_fatal_fault
-    PwmAonFatalFault = 29,
-    /// pinmux_aon_fatal_fault
-    PinmuxAonFatalFault = 30,
-    /// aon_timer_aon_fatal_fault
-    AonTimerAonFatalFault = 31,
-    /// sensor_ctrl_recov_alert
-    SensorCtrlRecovAlert = 32,
-    /// sensor_ctrl_fatal_alert
-    SensorCtrlFatalAlert = 33,
-    /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 34,
-    /// flash_ctrl_recov_err
-    FlashCtrlRecovErr = 35,
-    /// flash_ctrl_fatal_std_err
-    FlashCtrlFatalStdErr = 36,
-    /// flash_ctrl_fatal_err
-    FlashCtrlFatalErr = 37,
-    /// flash_ctrl_fatal_prim_flash_alert
-    FlashCtrlFatalPrimFlashAlert = 38,
-    /// flash_ctrl_recov_prim_flash_alert
-    FlashCtrlRecovPrimFlashAlert = 39,
-    /// rv_dm_fatal_fault
-    RvDmFatalFault = 40,
-    /// rv_plic_fatal_fault
-    RvPlicFatalFault = 41,
-    /// aes_recov_ctrl_update_err
-    AesRecovCtrlUpdateErr = 42,
-    /// aes_fatal_fault
-    AesFatalFault = 43,
-    /// hmac_fatal_fault
-    HmacFatalFault = 44,
-    /// kmac_recov_operation_err
-    KmacRecovOperationErr = 45,
-    /// kmac_fatal_fault_err
-    KmacFatalFaultErr = 46,
-    /// otbn_fatal
-    OtbnFatal = 47,
-    /// otbn_recov
-    OtbnRecov = 48,
-    /// keymgr_recov_operation_err
-    KeymgrRecovOperationErr = 49,
-    /// keymgr_fatal_fault_err
-    KeymgrFatalFaultErr = 50,
-    /// csrng_recov_alert
-    CsrngRecovAlert = 51,
-    /// csrng_fatal_alert
-    CsrngFatalAlert = 52,
-    /// entropy_src_recov_alert
-    EntropySrcRecovAlert = 53,
-    /// entropy_src_fatal_alert
-    EntropySrcFatalAlert = 54,
-    /// edn0_recov_alert
-    Edn0RecovAlert = 55,
-    /// edn0_fatal_alert
-    Edn0FatalAlert = 56,
-    /// edn1_recov_alert
-    Edn1RecovAlert = 57,
-    /// edn1_fatal_alert
-    Edn1FatalAlert = 58,
-    /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 59,
-    /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 60,
-    /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 61,
-    /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 62,
-    /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 63,
-    /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 64,
-}
-
-impl TryFrom<u32> for TopEarlgreyAlertId {
-    type Error = u32;
-    fn try_from(val: u32) -> Result<Self, Self::Error> {
-        match val {
-            0 => Ok(Self::Uart0FatalFault),
-            1 => Ok(Self::Uart1FatalFault),
-            2 => Ok(Self::Uart2FatalFault),
-            3 => Ok(Self::Uart3FatalFault),
-            4 => Ok(Self::GpioFatalFault),
-            5 => Ok(Self::SpiDeviceFatalFault),
-            6 => Ok(Self::I2c0FatalFault),
-            7 => Ok(Self::I2c1FatalFault),
-            8 => Ok(Self::I2c2FatalFault),
-            9 => Ok(Self::PattgenFatalFault),
-            10 => Ok(Self::RvTimerFatalFault),
-            11 => Ok(Self::OtpCtrlFatalMacroError),
-            12 => Ok(Self::OtpCtrlFatalCheckError),
-            13 => Ok(Self::OtpCtrlFatalBusIntegError),
-            14 => Ok(Self::OtpCtrlFatalPrimOtpAlert),
-            15 => Ok(Self::OtpCtrlRecovPrimOtpAlert),
-            16 => Ok(Self::LcCtrlFatalProgError),
-            17 => Ok(Self::LcCtrlFatalStateError),
-            18 => Ok(Self::LcCtrlFatalBusIntegError),
-            19 => Ok(Self::SpiHost0FatalFault),
-            20 => Ok(Self::SpiHost1FatalFault),
-            21 => Ok(Self::UsbdevFatalFault),
-            22 => Ok(Self::PwrmgrAonFatalFault),
-            23 => Ok(Self::RstmgrAonFatalFault),
-            24 => Ok(Self::RstmgrAonFatalCnstyFault),
-            25 => Ok(Self::ClkmgrAonRecovFault),
-            26 => Ok(Self::ClkmgrAonFatalFault),
-            27 => Ok(Self::SysrstCtrlAonFatalFault),
-            28 => Ok(Self::AdcCtrlAonFatalFault),
-            29 => Ok(Self::PwmAonFatalFault),
-            30 => Ok(Self::PinmuxAonFatalFault),
-            31 => Ok(Self::AonTimerAonFatalFault),
-            32 => Ok(Self::SensorCtrlRecovAlert),
-            33 => Ok(Self::SensorCtrlFatalAlert),
-            34 => Ok(Self::SramCtrlRetAonFatalError),
-            35 => Ok(Self::FlashCtrlRecovErr),
-            36 => Ok(Self::FlashCtrlFatalStdErr),
-            37 => Ok(Self::FlashCtrlFatalErr),
-            38 => Ok(Self::FlashCtrlFatalPrimFlashAlert),
-            39 => Ok(Self::FlashCtrlRecovPrimFlashAlert),
-            40 => Ok(Self::RvDmFatalFault),
-            41 => Ok(Self::RvPlicFatalFault),
-            42 => Ok(Self::AesRecovCtrlUpdateErr),
-            43 => Ok(Self::AesFatalFault),
-            44 => Ok(Self::HmacFatalFault),
-            45 => Ok(Self::KmacRecovOperationErr),
-            46 => Ok(Self::KmacFatalFaultErr),
-            47 => Ok(Self::OtbnFatal),
-            48 => Ok(Self::OtbnRecov),
-            49 => Ok(Self::KeymgrRecovOperationErr),
-            50 => Ok(Self::KeymgrFatalFaultErr),
-            51 => Ok(Self::CsrngRecovAlert),
-            52 => Ok(Self::CsrngFatalAlert),
-            53 => Ok(Self::EntropySrcRecovAlert),
-            54 => Ok(Self::EntropySrcFatalAlert),
-            55 => Ok(Self::Edn0RecovAlert),
-            56 => Ok(Self::Edn0FatalAlert),
-            57 => Ok(Self::Edn1RecovAlert),
-            58 => Ok(Self::Edn1FatalAlert),
-            59 => Ok(Self::SramCtrlMainFatalError),
-            60 => Ok(Self::RomCtrl0Fatal),
-            61 => Ok(Self::RvCoreIbexFatalSwErr),
-            62 => Ok(Self::RvCoreIbexRecovSwErr),
-            63 => Ok(Self::RvCoreIbexFatalHwErr),
-            64 => Ok(Self::RvCoreIbexRecovHwErr),
-            _ => Err(val),
-        }
-    }
-}
-
-/// PLIC Interrupt Source to Peripheral Map
+/// PLIC Interrupt Source to Peripheral Map for the `main` domain
 ///
 /// This array is a mapping from `TopEarlgreyPlicIrqId` to
 /// `TopEarlgreyPlicPeripheral`.
@@ -2066,6 +1764,307 @@ pub const TOP_EARLGREY_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopEarlgreyPlicPeripheral
     // Edn1EdnFatalErr -> TopEarlgreyPlicPeripheral::Edn1
     TopEarlgreyPlicPeripheral::Edn1,
 ];
+/// Alert Handler Source Peripheral.
+///
+/// Enumeration used to determine which peripheral asserted the corresponding
+/// alert.
+#[repr(u32)]
+pub enum TopEarlgreyAlertPeripheral {
+    /// uart0
+    Uart0 = 0,
+    /// uart1
+    Uart1 = 1,
+    /// uart2
+    Uart2 = 2,
+    /// uart3
+    Uart3 = 3,
+    /// gpio
+    Gpio = 4,
+    /// spi_device
+    SpiDevice = 5,
+    /// i2c0
+    I2c0 = 6,
+    /// i2c1
+    I2c1 = 7,
+    /// i2c2
+    I2c2 = 8,
+    /// pattgen
+    Pattgen = 9,
+    /// rv_timer
+    RvTimer = 10,
+    /// otp_ctrl
+    OtpCtrl = 11,
+    /// lc_ctrl
+    LcCtrl = 12,
+    /// spi_host0
+    SpiHost0 = 13,
+    /// spi_host1
+    SpiHost1 = 14,
+    /// usbdev
+    Usbdev = 15,
+    /// pwrmgr_aon
+    PwrmgrAon = 16,
+    /// rstmgr_aon
+    RstmgrAon = 17,
+    /// clkmgr_aon
+    ClkmgrAon = 18,
+    /// sysrst_ctrl_aon
+    SysrstCtrlAon = 19,
+    /// adc_ctrl_aon
+    AdcCtrlAon = 20,
+    /// pwm_aon
+    PwmAon = 21,
+    /// pinmux_aon
+    PinmuxAon = 22,
+    /// aon_timer_aon
+    AonTimerAon = 23,
+    /// sensor_ctrl
+    SensorCtrl = 24,
+    /// sram_ctrl_ret_aon
+    SramCtrlRetAon = 25,
+    /// flash_ctrl
+    FlashCtrl = 26,
+    /// rv_dm
+    RvDm = 27,
+    /// rv_plic
+    RvPlic = 28,
+    /// aes
+    Aes = 29,
+    /// hmac
+    Hmac = 30,
+    /// kmac
+    Kmac = 31,
+    /// otbn
+    Otbn = 32,
+    /// keymgr
+    Keymgr = 33,
+    /// csrng
+    Csrng = 34,
+    /// entropy_src
+    EntropySrc = 35,
+    /// edn0
+    Edn0 = 36,
+    /// edn1
+    Edn1 = 37,
+    /// sram_ctrl_main
+    SramCtrlMain = 38,
+    /// rom_ctrl0
+    RomCtrl0 = 39,
+    /// rv_core_ibex
+    RvCoreIbex = 40,
+}
+
+/// Alert Handler Alert Source.
+///
+/// Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
+/// the same peripheral are guaranteed to be consecutive.
+#[repr(u32)]
+pub enum TopEarlgreyAlertId {
+    /// uart0_fatal_fault
+    Uart0FatalFault = 0,
+    /// uart1_fatal_fault
+    Uart1FatalFault = 1,
+    /// uart2_fatal_fault
+    Uart2FatalFault = 2,
+    /// uart3_fatal_fault
+    Uart3FatalFault = 3,
+    /// gpio_fatal_fault
+    GpioFatalFault = 4,
+    /// spi_device_fatal_fault
+    SpiDeviceFatalFault = 5,
+    /// i2c0_fatal_fault
+    I2c0FatalFault = 6,
+    /// i2c1_fatal_fault
+    I2c1FatalFault = 7,
+    /// i2c2_fatal_fault
+    I2c2FatalFault = 8,
+    /// pattgen_fatal_fault
+    PattgenFatalFault = 9,
+    /// rv_timer_fatal_fault
+    RvTimerFatalFault = 10,
+    /// otp_ctrl_fatal_macro_error
+    OtpCtrlFatalMacroError = 11,
+    /// otp_ctrl_fatal_check_error
+    OtpCtrlFatalCheckError = 12,
+    /// otp_ctrl_fatal_bus_integ_error
+    OtpCtrlFatalBusIntegError = 13,
+    /// otp_ctrl_fatal_prim_otp_alert
+    OtpCtrlFatalPrimOtpAlert = 14,
+    /// otp_ctrl_recov_prim_otp_alert
+    OtpCtrlRecovPrimOtpAlert = 15,
+    /// lc_ctrl_fatal_prog_error
+    LcCtrlFatalProgError = 16,
+    /// lc_ctrl_fatal_state_error
+    LcCtrlFatalStateError = 17,
+    /// lc_ctrl_fatal_bus_integ_error
+    LcCtrlFatalBusIntegError = 18,
+    /// spi_host0_fatal_fault
+    SpiHost0FatalFault = 19,
+    /// spi_host1_fatal_fault
+    SpiHost1FatalFault = 20,
+    /// usbdev_fatal_fault
+    UsbdevFatalFault = 21,
+    /// pwrmgr_aon_fatal_fault
+    PwrmgrAonFatalFault = 22,
+    /// rstmgr_aon_fatal_fault
+    RstmgrAonFatalFault = 23,
+    /// rstmgr_aon_fatal_cnsty_fault
+    RstmgrAonFatalCnstyFault = 24,
+    /// clkmgr_aon_recov_fault
+    ClkmgrAonRecovFault = 25,
+    /// clkmgr_aon_fatal_fault
+    ClkmgrAonFatalFault = 26,
+    /// sysrst_ctrl_aon_fatal_fault
+    SysrstCtrlAonFatalFault = 27,
+    /// adc_ctrl_aon_fatal_fault
+    AdcCtrlAonFatalFault = 28,
+    /// pwm_aon_fatal_fault
+    PwmAonFatalFault = 29,
+    /// pinmux_aon_fatal_fault
+    PinmuxAonFatalFault = 30,
+    /// aon_timer_aon_fatal_fault
+    AonTimerAonFatalFault = 31,
+    /// sensor_ctrl_recov_alert
+    SensorCtrlRecovAlert = 32,
+    /// sensor_ctrl_fatal_alert
+    SensorCtrlFatalAlert = 33,
+    /// sram_ctrl_ret_aon_fatal_error
+    SramCtrlRetAonFatalError = 34,
+    /// flash_ctrl_recov_err
+    FlashCtrlRecovErr = 35,
+    /// flash_ctrl_fatal_std_err
+    FlashCtrlFatalStdErr = 36,
+    /// flash_ctrl_fatal_err
+    FlashCtrlFatalErr = 37,
+    /// flash_ctrl_fatal_prim_flash_alert
+    FlashCtrlFatalPrimFlashAlert = 38,
+    /// flash_ctrl_recov_prim_flash_alert
+    FlashCtrlRecovPrimFlashAlert = 39,
+    /// rv_dm_fatal_fault
+    RvDmFatalFault = 40,
+    /// rv_plic_fatal_fault
+    RvPlicFatalFault = 41,
+    /// aes_recov_ctrl_update_err
+    AesRecovCtrlUpdateErr = 42,
+    /// aes_fatal_fault
+    AesFatalFault = 43,
+    /// hmac_fatal_fault
+    HmacFatalFault = 44,
+    /// kmac_recov_operation_err
+    KmacRecovOperationErr = 45,
+    /// kmac_fatal_fault_err
+    KmacFatalFaultErr = 46,
+    /// otbn_fatal
+    OtbnFatal = 47,
+    /// otbn_recov
+    OtbnRecov = 48,
+    /// keymgr_recov_operation_err
+    KeymgrRecovOperationErr = 49,
+    /// keymgr_fatal_fault_err
+    KeymgrFatalFaultErr = 50,
+    /// csrng_recov_alert
+    CsrngRecovAlert = 51,
+    /// csrng_fatal_alert
+    CsrngFatalAlert = 52,
+    /// entropy_src_recov_alert
+    EntropySrcRecovAlert = 53,
+    /// entropy_src_fatal_alert
+    EntropySrcFatalAlert = 54,
+    /// edn0_recov_alert
+    Edn0RecovAlert = 55,
+    /// edn0_fatal_alert
+    Edn0FatalAlert = 56,
+    /// edn1_recov_alert
+    Edn1RecovAlert = 57,
+    /// edn1_fatal_alert
+    Edn1FatalAlert = 58,
+    /// sram_ctrl_main_fatal_error
+    SramCtrlMainFatalError = 59,
+    /// rom_ctrl0_fatal
+    RomCtrl0Fatal = 60,
+    /// rv_core_ibex_fatal_sw_err
+    RvCoreIbexFatalSwErr = 61,
+    /// rv_core_ibex_recov_sw_err
+    RvCoreIbexRecovSwErr = 62,
+    /// rv_core_ibex_fatal_hw_err
+    RvCoreIbexFatalHwErr = 63,
+    /// rv_core_ibex_recov_hw_err
+    RvCoreIbexRecovHwErr = 64,
+}
+
+impl TryFrom<u32> for TopEarlgreyAlertId {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(Self::Uart0FatalFault),
+            1 => Ok(Self::Uart1FatalFault),
+            2 => Ok(Self::Uart2FatalFault),
+            3 => Ok(Self::Uart3FatalFault),
+            4 => Ok(Self::GpioFatalFault),
+            5 => Ok(Self::SpiDeviceFatalFault),
+            6 => Ok(Self::I2c0FatalFault),
+            7 => Ok(Self::I2c1FatalFault),
+            8 => Ok(Self::I2c2FatalFault),
+            9 => Ok(Self::PattgenFatalFault),
+            10 => Ok(Self::RvTimerFatalFault),
+            11 => Ok(Self::OtpCtrlFatalMacroError),
+            12 => Ok(Self::OtpCtrlFatalCheckError),
+            13 => Ok(Self::OtpCtrlFatalBusIntegError),
+            14 => Ok(Self::OtpCtrlFatalPrimOtpAlert),
+            15 => Ok(Self::OtpCtrlRecovPrimOtpAlert),
+            16 => Ok(Self::LcCtrlFatalProgError),
+            17 => Ok(Self::LcCtrlFatalStateError),
+            18 => Ok(Self::LcCtrlFatalBusIntegError),
+            19 => Ok(Self::SpiHost0FatalFault),
+            20 => Ok(Self::SpiHost1FatalFault),
+            21 => Ok(Self::UsbdevFatalFault),
+            22 => Ok(Self::PwrmgrAonFatalFault),
+            23 => Ok(Self::RstmgrAonFatalFault),
+            24 => Ok(Self::RstmgrAonFatalCnstyFault),
+            25 => Ok(Self::ClkmgrAonRecovFault),
+            26 => Ok(Self::ClkmgrAonFatalFault),
+            27 => Ok(Self::SysrstCtrlAonFatalFault),
+            28 => Ok(Self::AdcCtrlAonFatalFault),
+            29 => Ok(Self::PwmAonFatalFault),
+            30 => Ok(Self::PinmuxAonFatalFault),
+            31 => Ok(Self::AonTimerAonFatalFault),
+            32 => Ok(Self::SensorCtrlRecovAlert),
+            33 => Ok(Self::SensorCtrlFatalAlert),
+            34 => Ok(Self::SramCtrlRetAonFatalError),
+            35 => Ok(Self::FlashCtrlRecovErr),
+            36 => Ok(Self::FlashCtrlFatalStdErr),
+            37 => Ok(Self::FlashCtrlFatalErr),
+            38 => Ok(Self::FlashCtrlFatalPrimFlashAlert),
+            39 => Ok(Self::FlashCtrlRecovPrimFlashAlert),
+            40 => Ok(Self::RvDmFatalFault),
+            41 => Ok(Self::RvPlicFatalFault),
+            42 => Ok(Self::AesRecovCtrlUpdateErr),
+            43 => Ok(Self::AesFatalFault),
+            44 => Ok(Self::HmacFatalFault),
+            45 => Ok(Self::KmacRecovOperationErr),
+            46 => Ok(Self::KmacFatalFaultErr),
+            47 => Ok(Self::OtbnFatal),
+            48 => Ok(Self::OtbnRecov),
+            49 => Ok(Self::KeymgrRecovOperationErr),
+            50 => Ok(Self::KeymgrFatalFaultErr),
+            51 => Ok(Self::CsrngRecovAlert),
+            52 => Ok(Self::CsrngFatalAlert),
+            53 => Ok(Self::EntropySrcRecovAlert),
+            54 => Ok(Self::EntropySrcFatalAlert),
+            55 => Ok(Self::Edn0RecovAlert),
+            56 => Ok(Self::Edn0FatalAlert),
+            57 => Ok(Self::Edn1RecovAlert),
+            58 => Ok(Self::Edn1FatalAlert),
+            59 => Ok(Self::SramCtrlMainFatalError),
+            60 => Ok(Self::RomCtrl0Fatal),
+            61 => Ok(Self::RvCoreIbexFatalSwErr),
+            62 => Ok(Self::RvCoreIbexRecovSwErr),
+            63 => Ok(Self::RvCoreIbexFatalHwErr),
+            64 => Ok(Self::RvCoreIbexRecovHwErr),
+            _ => Err(val),
+        }
+    }
+}
 
 /// Alert Handler Alert Source to Peripheral Map
 ///

@@ -10,7 +10,9 @@ from typing import Dict, List, Optional, Tuple
 from mako.template import Template
 from reggen.ip_block import IpBlock
 
-from .lib import Name, get_base_and_size
+
+from .lib import Name, get_base_and_size, get_default_interrupt_domain, get_interrupt_domains, \
+    get_module_by_name
 
 C_FILE_EXTENSIONS = (".c", ".h", ".cc", ".inc")
 
@@ -43,6 +45,9 @@ class CEnum(object):
         self.finalized = False
 
         self.constants = []
+
+    def __len__(self):
+        return len(self.constants)
 
     def add_constant(self, constant_name, docstring=""):
         assert not self.finalized
@@ -81,6 +86,9 @@ class CArrayMapping(object):
         self.output_type_name = output_type_name
 
         self.mapping = OrderedDict()
+
+    def __len__(self):
+        return len(self.mapping)
 
     def add_entry(self, in_name, out_name):
         self.mapping[in_name] = out_name
@@ -212,15 +220,23 @@ class TopGenC:
         return ret
 
     def _init_plic_targets(self):
-        enum = CEnum(self._top_name + Name(["plic", "target"]))
+        default_interrupt_domain = get_default_interrupt_domain(self.top)
+        interrupt_domains = get_interrupt_domains(self.top, self.addr_space,
+                                                  default_interrupt_domain)
+        self.plic_targets = {}
 
-        for core_id in range(int(self.top["num_cores"])):
-            enum.add_constant(Name(["ibex", str(core_id)]),
-                              docstring="Ibex Core {}".format(core_id))
+        for interrupt_domain in interrupt_domains:
+            irq_domain_name = (interrupt_domain,) if interrupt_domain != default_interrupt_domain else ()
 
-        enum.add_last_constant("Final PLIC target")
+            enum = CEnum(self._top_name + Name(["plic", *irq_domain_name, "target"]))
 
-        self.plic_targets = enum
+            for core_id in range(int(self.top["num_cores"])):
+                enum.add_constant(Name(["ibex", str(core_id)]),
+                                docstring="Ibex Core {}".format(core_id))
+
+            enum.add_last_constant("Final PLIC target")
+
+            self.plic_targets[interrupt_domain] = enum
 
     def _init_plic_mapping(self):
         """We eventually want to generate a mapping from interrupt id to the
@@ -237,57 +253,81 @@ class TopGenC:
         that they get the correct mapping to their PLIC id, which is used for
         addressing the right registers and bits.
         """
-        sources = CEnum(self._top_name + Name(["plic", "peripheral"]))
-        interrupts = CEnum(self._top_name + Name(["plic", "irq", "id"]))
-        plic_mapping = CArrayMapping(
-            self._top_name + Name(["plic", "interrupt", "for", "peripheral"]),
-            sources.name)
+        self.plic_sources = {}
+        self.plic_interrupts = {}
+        self.plic_mapping = {}
+        self.device_irqs = {}
 
-        unknown_source = sources.add_constant(Name(["unknown"]),
-                                              docstring="Unknown Peripheral")
-        none_irq_id = interrupts.add_constant(Name(["none"]),
-                                              docstring="No Interrupt")
-        plic_mapping.add_entry(none_irq_id, unknown_source)
+        default_interrupt_domain = get_default_interrupt_domain(self.top)
+        interrupt_domains = get_interrupt_domains(self.top, self.addr_space,
+                                                  default_interrupt_domain)
 
-        # When we generate the `interrupts` enum, the only info we have about
-        # the source is the module name. We'll use `source_name_map` to map a
-        # short module name to the full name object used for the enum constant.
-        source_name_map = {}
+        for interrupt_domain, interrupt_names in self.top["interrupt_module"].items():
+            irq_domain_name = (interrupt_domain,) if interrupt_domain != default_interrupt_domain else ()
 
-        for name in self.top["interrupt_module"]:
-            source_name = sources.add_constant(Name.from_snake_case(name),
-                                               docstring=name)
-            source_name_map[name] = source_name
+            sources = CEnum(self._top_name + Name(["plic", *irq_domain_name, "peripheral"]))
+            interrupts = CEnum(self._top_name + Name(["plic", *irq_domain_name, "irq", "id"]))
+            plic_mapping = CArrayMapping(
+                self._top_name + Name(["plic", *irq_domain_name, "interrupt", "for", "peripheral"]),
+                sources.name)
 
-        sources.add_last_constant("Final PLIC peripheral")
+            unknown_source = sources.add_constant(Name(["unknown"]),
+                                                docstring="Unknown Peripheral")
+            none_irq_id = interrupts.add_constant(Name(["none"]),
+                                                docstring="No Interrupt")
+            plic_mapping.add_entry(none_irq_id, unknown_source)
 
-        # Maintain a list of instance-specific IRQs by instance name.
-        self.device_irqs = defaultdict(list)
-        for intr in self.top["interrupt"]:
-            # Some interrupts are multiple bits wide. Here we deal with that by
-            # adding a bit-index suffix
-            if "width" in intr and int(intr["width"]) != 1:
-                for i in range(int(intr["width"])):
-                    name = Name.from_snake_case(intr["name"]) + Name([str(i)])
-                    irq_id = interrupts.add_constant(name,
-                                                     docstring="{} {}".format(
-                                                         intr["name"], i))
+            # When we generate the `interrupts` enum, the only info we have about
+            # the source is the module name. We'll use `source_name_map` to map a
+            # short module name to the full name object used for the enum constant.
+            source_name_map = {}
+
+            for name in interrupt_names:
+                # Only consider interrupts from the own interrupt domain
+                module = get_module_by_name(self.top, name)
+                interrupt_domain = module.get('interrupt_domain', default_interrupt_domain)
+                if interrupt_domain not in interrupt_domains:
+                    continue
+
+                source_name = sources.add_constant(Name.from_snake_case(name),
+                                                docstring=name)
+                source_name_map[name] = source_name
+
+            sources.add_last_constant("Final PLIC peripheral")
+
+            # Maintain a list of instance-specific IRQs by instance name.
+            self.device_irqs[interrupt_domain] = defaultdict(list)
+            for intr in self.top["interrupt"][interrupt_domain]:
+                # Only consider interrupts from the own interrupt domain
+                module = get_module_by_name(self.top, intr["module_name"])
+                interrupt_domain = module.get('interrupt_domain', default_interrupt_domain)
+                if interrupt_domain not in interrupt_domains:
+                    continue
+
+                # Some interrupts are multiple bits wide. Here we deal with that by
+                # adding a bit-index suffix
+                if "width" in intr and int(intr["width"]) != 1:
+                    for i in range(int(intr["width"])):
+                        name = Name.from_snake_case(intr["name"]) + Name([str(i)])
+                        irq_id = interrupts.add_constant(name,
+                                                        docstring="{} {}".format(
+                                                            intr["name"], i))
+                        source_name = source_name_map[intr["module_name"]]
+                        plic_mapping.add_entry(irq_id, source_name)
+                        self.device_irqs[interrupt_domain][intr["module_name"]].append(
+                            intr["name"] + str(i))
+                else:
+                    name = Name.from_snake_case(intr["name"])
+                    irq_id = interrupts.add_constant(name, docstring=intr["name"])
                     source_name = source_name_map[intr["module_name"]]
                     plic_mapping.add_entry(irq_id, source_name)
-                    self.device_irqs[intr["module_name"]].append(intr["name"] +
-                                                                 str(i))
-            else:
-                name = Name.from_snake_case(intr["name"])
-                irq_id = interrupts.add_constant(name, docstring=intr["name"])
-                source_name = source_name_map[intr["module_name"]]
-                plic_mapping.add_entry(irq_id, source_name)
-                self.device_irqs[intr["module_name"]].append(intr["name"])
+                    self.device_irqs[interrupt_domain][intr["module_name"]].append(intr["name"])
 
-        interrupts.add_last_constant("The Last Valid Interrupt ID.")
+            interrupts.add_last_constant("The Last Valid Interrupt ID.")
 
-        self.plic_sources = sources
-        self.plic_interrupts = interrupts
-        self.plic_mapping = plic_mapping
+            self.plic_sources[interrupt_domain] = sources
+            self.plic_interrupts[interrupt_domain] = interrupts
+            self.plic_mapping[interrupt_domain] = plic_mapping
 
     def _init_alert_mapping(self):
         """We eventually want to generate a mapping from alert id to the source

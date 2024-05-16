@@ -15,7 +15,8 @@ from typing import Dict
 from reggen.ip_block import IpBlock
 
 from .c import TopGenC
-from .lib import Name
+from .lib import Name, get_default_interrupt_domain, get_interrupt_domains, \
+                 get_module_address_space
 
 
 class TestPeripheral:
@@ -65,14 +66,29 @@ class TopGenCTest(TopGenC):
         self.irq_peripherals = self._get_irq_peripherals()
         self.alert_peripherals = self._get_alert_peripherals()
 
+    def _inside_interrupt_module(self, interrupt_domain, module_name):
+        for module_names in self.top["interrupt_module"][interrupt_domain]:
+            if module_name in module_names:
+                return True
+        return False
+
     def _get_irq_peripherals(self):
-        if self.addr_space != self.default_addr_space:
-            return []
         irq_peripherals = []
         self.devices()
+        default_interrupt_domain = get_default_interrupt_domain(self.top)
+        interrupt_domains = get_interrupt_domains(self.top, self.addr_space,
+                                                  default_interrupt_domain)
+
         for entry in self.top['module']:
+            # Only consider devices of the own address space
+            if get_module_address_space(entry) != self.addr_space:
+                continue
             inst_name = entry['name']
-            if inst_name not in self.top["interrupt_module"]:
+            # Only consider interrupts from the own interrupt domain
+            interrupt_domain = entry.get('interrupt_domain', default_interrupt_domain)
+            if interrupt_domain not in interrupt_domains:
+                continue
+            if not self._inside_interrupt_module(interrupt_domain, inst_name):
                 continue
 
             name = entry['type']
@@ -99,9 +115,12 @@ class TopGenCTest(TopGenC):
                          Name.from_snake_case(inst_name))
             plic_name = plic_name.as_c_enum()
 
-            start_irq = self.device_irqs[inst_name][0]
-            end_irq = self.device_irqs[inst_name][-1]
-            plic_start_irq = (self._top_name + Name(["plic", "irq", "id"]) +
+            # Default interrupt domain is not named in definitions
+            irq_domain_name = (interrupt_domain,) if interrupt_domain != default_interrupt_domain else ()
+
+            start_irq = self.device_irqs[interrupt_domain][inst_name][0]
+            end_irq = self.device_irqs[interrupt_domain][inst_name][-1]
+            plic_start_irq = (self._top_name + Name(["plic", *irq_domain_name, "irq", "id"]) +
                               Name.from_snake_case(start_irq))
             plic_start_irq = plic_start_irq.as_c_enum()
 

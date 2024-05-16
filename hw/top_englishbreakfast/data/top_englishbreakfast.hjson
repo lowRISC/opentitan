@@ -175,6 +175,13 @@
     { name: "hart", desc: "The main address space, shared between the CPU and DM", default: true},
   ]
 
+  // `interrupt_domains` names distinct intterrupt domains in the device.
+  // For every interrupt domain, a dedicated PLIC needs to be instantiated.
+  // All peripheral's interrupts will routed to the PLIC in the same domain.
+  interrupt_domains: [
+    { name: "main", desc: "The main interrrupt domain", default: true}
+  ]
+
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
   // TODO: Define parameter here
@@ -737,17 +744,18 @@
   ],
 
   // Modules whose interrupts are connected to RV_PLIC.
-  interrupt_module: [
-    "uart0",
-    "gpio",
-    "spi_device",
-    "spi_host0",
-    // "rv_timer", connected to a dedicated interrupt input in rv_core_ibex.
-    "usbdev",
-    "pwrmgr_aon",
-    "aon_timer_aon",
-    "flash_ctrl",
-  ]
+  interrupt_module: {'main' : [
+      "uart0",
+      "gpio",
+      "spi_device",
+      "spi_host0",
+      // "rv_timer", connected to a dedicated interrupt input in rv_core_ibex.
+      "usbdev",
+      "pwrmgr_aon",
+      "aon_timer_aon",
+      "flash_ctrl",
+    ]
+  }
 
   // ===== PINMUX & PINOUT ======================================================
 

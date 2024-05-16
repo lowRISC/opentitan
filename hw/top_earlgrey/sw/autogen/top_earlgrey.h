@@ -1204,7 +1204,7 @@ typedef enum top_earlgrey_plic_irq_id {
 } top_earlgrey_plic_irq_id_t;
 
 /**
- * PLIC Interrupt Source to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map for the `main` domain
  *
  * This array is a mapping from `top_earlgrey_plic_irq_id_t` to
  * `top_earlgrey_plic_peripheral_t`.

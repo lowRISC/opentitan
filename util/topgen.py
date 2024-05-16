@@ -35,6 +35,7 @@ from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
+from topgen.lib import get_interrupt_domains, get_default_interrupt_domain
 from topgen.merge import connect_clocks, create_alert_lpgs, extract_clocks
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
@@ -218,17 +219,24 @@ def generate_plic(top, out_path):
     topname = top["name"]
     params = {}
 
-    # Count number of interrupts
-    # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
-    # So, total number of interrupts are the number of entries in the list + 1
-    params["src"] = sum(
-        [x["width"] if "width" in x else 1 for x in top["interrupt"]]) + 1
+    default_interrupt_domain = get_default_interrupt_domain(top)
+    for interrupt_domain, interrupts in top["interrupt"].items():
+        # Count number of interrupts
+        # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
+        # So, total number of interrupts are the number of entries in the list + 1
+        params["src"] = sum(
+            [x["width"] if "width" in x else 1 for x in interrupts]) + 1
 
-    # Target and priority: Currently fixed
-    params["target"] = int(top["num_cores"], 0) if "num_cores" in top else 1
-    params["prio"] = 3
+        # Target and priority: Currently fixed
+        params["target"] = int(top["num_cores"], 0) if "num_cores" in top else 1
+        params["prio"] = 3
 
-    ipgen_render("rv_plic", topname, params, out_path)
+        # Default interrupt domain has no name suffix
+        params["module_instance_name"] = "rv_plic"
+        if interrupt_domain != default_interrupt_domain:
+            params["module_instance_name"] = f"rv_plic_{interrupt_domain}"
+
+        ipgen_render("rv_plic", topname, params, out_path)
 
 
 # TODO: For generated IPs that are generated legacy style (i.e., without IPgen)
@@ -854,6 +862,7 @@ def _process_top(topcfg, args, repo_top_path, out_path, pass_idx):
     # then creates rv_plic.hjson then run xbar generation.
     hjson_dir = Path(args.topcfg).parent
 
+    rv_plic_added = False
     for ip in generated_list:
         # For modules that are generated prior to gathering, we need to take it from
         # the output path.  For modules not generated before, it may exist in a
@@ -866,6 +875,12 @@ def _process_top(topcfg, args, repo_top_path, out_path, pass_idx):
             ip_relpath = "ip"
             desc_file_relpath = "data/autogen"
 
+        # Hack until rv_plic is templated
+        if ip == "rv_plic":
+            if rv_plic_added:
+                continue
+            rv_plic_added = True
+        
         if ip == "clkmgr" or (pass_idx > 0):
             ip_hjson = (Path(out_path) / ip_relpath / ip / desc_file_relpath /
                         f"{ip}.hjson")
@@ -908,10 +923,21 @@ def _process_top(topcfg, args, repo_top_path, out_path, pass_idx):
                         "Falling back to the default configuration of template "
                         "%s for initial validation." % (ip_desc_file, ip_name))
 
-                    tpl_path = SRCTREE_TOP / "hw/ip_templates" / ip_name
+                    ip_name_path = ip_name
+                    if ip_name.startswith("rv_plic"):
+                        ip_name_path = "rv_plic"
+
+                    tpl_path = SRCTREE_TOP / "hw/ip_templates" / ip_name_path
                     ip_template = IpTemplate.from_template_path(tpl_path)
+
+                    param_values = {}
+                    if ip_name.startswith("rv_plic"):
+                        ip_template.params["module_instance_name"].value = ip_name
+                        param_values["module_instance_name"] = ip_name
+
                     ip_config = IpConfig(ip_template.params,
-                                         f"top_{topname}_{ip_name}")
+                                         f"top_{topname}_{ip_name}",
+                                         param_values)
 
                     try:
                         ip_desc = IpDescriptionOnlyRenderer(
@@ -1395,13 +1421,28 @@ def main():
 
                     # Auto-generate tests in "sw/device/tests/autogen" area.
                     gencmd = warnhdr + GENCMD.format(topname=topname)
-                    for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
+                    for fname in ["alert_test.c", "BUILD"]:
                         outfile = SRCTREE_TOP / f"sw/device/tests/autogen/top_{topname}" / fname
                         render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
                                         outfile,
                                         helper=c_helper,
                                         gencmd=gencmd)
 
+                default_interrupt_domain = get_default_interrupt_domain(topcfg)
+                interrupt_domains = get_interrupt_domains(topcfg, addr_space['name'], 
+                                                          default_interrupt_domain)
+
+                for interrupt_domain in interrupt_domains:
+                    plic_suffix = ""
+                    if interrupt_domain != default_interrupt_domain:
+                        plic_suffix = "_" + interrupt_domain
+
+                    outfile = SRCTREE_TOP / f"sw/device/tests/autogen/top_{topname}" / f"plic_all_irqs{plic_suffix}_test.c"
+                    render_template(TOPGEN_TEMPLATE_PATH / "plic_all_irqs_test.c.tpl",
+                                    outfile,
+                                    helper=c_helper,
+                                    gencmd=gencmd)                
+                
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",

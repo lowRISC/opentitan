@@ -4,13 +4,14 @@
 
 import logging as log
 import re
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
 from topgen import c, lib, secure_prng
 from .clocks import Clocks
+from .lib import get_default_interrupt_domain
 from .resets import Resets
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
@@ -957,11 +958,13 @@ def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]
     if 'interrupt_module' in top:
         return
 
-    modules = []
+    modules = defaultdict(list)
+    default_interrupt_domain = get_default_interrupt_domain(top)
     for module in top['module']:
         block = name_to_block[module['type']]
         if block.interrupts:
-            modules.append(module['name'])
+            interrupt_domain = module.get('interrupt_domain', default_interrupt_domain)
+            modules[interrupt_domain].append(module['name'])
 
     top['interrupt_module'] = modules
 
@@ -972,24 +975,25 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     ensure_interrupt_modules(top, name_to_block)
 
     if "interrupt" not in top or top["interrupt"] == "":
-        top["interrupt"] = []
+        top["interrupt"] = defaultdict(list)
 
-    for m in top["interrupt_module"]:
-        ips = list(filter(lambda module: module["name"] == m, top["module"]))
-        if len(ips) == 0:
-            log.warning(
-                "Cannot find IP %s which is used in the interrupt_module" % m)
-            continue
+    for interrupt_domain, modules in top["interrupt_module"].items():
+        for m in modules:
+            ips = list(filter(lambda module: module["name"] == m, top["module"]))
+            if len(ips) == 0:
+                log.warning(
+                    "Cannot find IP %s which is used in the interrupt_module" % m)
+                continue
 
-        ip = ips[0]
-        block = name_to_block[ip['type']]
+            ip = ips[0]
+            block = name_to_block[ip['type']]
 
-        log.info("Adding interrupts from module %s" % ip["name"])
-        for signal in block.interrupts:
-            sig_dict = signal.as_nwt_dict('interrupt')
-            qual = lib.add_module_prefix_to_signal(sig_dict,
-                                                   module=m.lower())
-            top["interrupt"].append(qual)
+            log.info("Adding interrupts from module %s" % ip["name"])
+            for signal in block.interrupts:
+                sig_dict = signal.as_nwt_dict('interrupt')
+                qual = lib.add_module_prefix_to_signal(sig_dict,
+                                                    module=m.lower())
+                top["interrupt"][interrupt_domain].append(qual)
 
 
 def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):

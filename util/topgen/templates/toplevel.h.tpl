@@ -112,39 +112,53 @@ extern "C" {
 % endif
 % endfor
 
-% if helper.addr_space == helper.default_addr_space:
+% for plic_sources in helper.plic_sources.values():
+    % if len(plic_sources) > 2:
 /**
  * PLIC Interrupt Source Peripheral.
  *
  * Enumeration used to determine which peripheral asserted the corresponding
  * interrupt.
  */
-${helper.plic_sources.render()}
+${plic_sources.render()}
+    % endif
+% endfor
 
+% for plic_interrupts in helper.plic_interrupts.values():
+    % if len(plic_interrupts) > 2:
 /**
  * PLIC Interrupt Source.
  *
  * Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
  * the same peripheral are guaranteed to be consecutive.
  */
-${helper.plic_interrupts.render()}
+${plic_interrupts.render()}
+    % endif
+% endfor
 
+% for interrupt_domain, plic_mapping in helper.plic_mapping.items():
+    % if len(plic_mapping) > 1:
 /**
- * PLIC Interrupt Source to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map for the `${interrupt_domain}` domain
  *
- * This array is a mapping from `${helper.plic_interrupts.name.as_c_type()}` to
- * `${helper.plic_sources.name.as_c_type()}`.
+ * This array is a mapping from `${helper.plic_interrupts[interrupt_domain].name.as_c_type()}` to
+ * `${helper.plic_sources[interrupt_domain].name.as_c_type()}`.
  */
-${helper.plic_mapping.render_declaration()}
+${plic_mapping.render_declaration()}
+    % endif
+% endfor
 
+% for plic_target in helper.plic_targets.values():
 /**
  * PLIC Interrupt Target.
  *
  * Enumeration used to determine which set of IE, CC, threshold registers to
  * access for a given interrupt target.
  */
-${helper.plic_targets.render()}
+${plic_target.render()}
+% endfor
 
+% if helper.addr_space == helper.default_addr_space:
 /**
  * Alert Handler Source Peripheral.
  *

@@ -1365,6 +1365,338 @@ pub enum TopDarjeelingPlicTarget {
     Ibex0 = 0,
 }
 
+/// PLIC Interrupt Source to Peripheral Map for the `main` domain
+///
+/// This array is a mapping from `TopDarjeelingPlicIrqId` to
+/// `TopDarjeelingPlicPeripheral`.
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 163] = [
+    // None -> TopDarjeelingPlicPeripheral::Unknown
+    TopDarjeelingPlicPeripheral::Unknown,
+    // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0RxWatermark -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0TxEmpty -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0RxOverflow -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0RxFrameErr -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0RxBreakErr -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0RxTimeout -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // Uart0RxParityErr -> TopDarjeelingPlicPeripheral::Uart0
+    TopDarjeelingPlicPeripheral::Uart0,
+    // GpioGpio0 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio1 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio2 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio3 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio4 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio5 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio6 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio7 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio8 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio9 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio10 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio11 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio12 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio13 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio14 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio15 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio16 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio17 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio18 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio19 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio20 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio21 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio22 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio23 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio24 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio25 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio26 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio27 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio28 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio29 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio30 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // GpioGpio31 -> TopDarjeelingPlicPeripheral::Gpio
+    TopDarjeelingPlicPeripheral::Gpio,
+    // SpiDeviceGenericRxFull -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceGenericRxWatermark -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceGenericTxWatermark -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceGenericRxError -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceGenericRxOverflow -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceGenericTxUnderflow -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceUploadCmdfifoNotEmpty -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceUploadPayloadNotEmpty -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceUploadPayloadOverflow -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceReadbufWatermark -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceReadbufFlip -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // SpiDeviceTpmHeaderNotEmpty -> TopDarjeelingPlicPeripheral::SpiDevice
+    TopDarjeelingPlicPeripheral::SpiDevice,
+    // I2c0FmtThreshold -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0RxThreshold -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0FmtOverflow -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0RxOverflow -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0Nak -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0SclInterference -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0SdaInterference -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0StretchTimeout -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0SdaUnstable -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0CmdComplete -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0TxStretch -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0TxOverflow -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0AcqFull -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0UnexpStop -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // I2c0HostTimeout -> TopDarjeelingPlicPeripheral::I2c0
+    TopDarjeelingPlicPeripheral::I2c0,
+    // RvTimerTimerExpiredHart0Timer0 -> TopDarjeelingPlicPeripheral::RvTimer
+    TopDarjeelingPlicPeripheral::RvTimer,
+    // OtpCtrlOtpOperationDone -> TopDarjeelingPlicPeripheral::OtpCtrl
+    TopDarjeelingPlicPeripheral::OtpCtrl,
+    // OtpCtrlOtpError -> TopDarjeelingPlicPeripheral::OtpCtrl
+    TopDarjeelingPlicPeripheral::OtpCtrl,
+    // AlertHandlerClassa -> TopDarjeelingPlicPeripheral::AlertHandler
+    TopDarjeelingPlicPeripheral::AlertHandler,
+    // AlertHandlerClassb -> TopDarjeelingPlicPeripheral::AlertHandler
+    TopDarjeelingPlicPeripheral::AlertHandler,
+    // AlertHandlerClassc -> TopDarjeelingPlicPeripheral::AlertHandler
+    TopDarjeelingPlicPeripheral::AlertHandler,
+    // AlertHandlerClassd -> TopDarjeelingPlicPeripheral::AlertHandler
+    TopDarjeelingPlicPeripheral::AlertHandler,
+    // SpiHost0Error -> TopDarjeelingPlicPeripheral::SpiHost0
+    TopDarjeelingPlicPeripheral::SpiHost0,
+    // SpiHost0SpiEvent -> TopDarjeelingPlicPeripheral::SpiHost0
+    TopDarjeelingPlicPeripheral::SpiHost0,
+    // PwrmgrAonWakeup -> TopDarjeelingPlicPeripheral::PwrmgrAon
+    TopDarjeelingPlicPeripheral::PwrmgrAon,
+    // AonTimerAonWkupTimerExpired -> TopDarjeelingPlicPeripheral::AonTimerAon
+    TopDarjeelingPlicPeripheral::AonTimerAon,
+    // AonTimerAonWdogTimerBark -> TopDarjeelingPlicPeripheral::AonTimerAon
+    TopDarjeelingPlicPeripheral::AonTimerAon,
+    // SensorCtrlIoStatusChange -> TopDarjeelingPlicPeripheral::SensorCtrl
+    TopDarjeelingPlicPeripheral::SensorCtrl,
+    // SensorCtrlInitStatusChange -> TopDarjeelingPlicPeripheral::SensorCtrl
+    TopDarjeelingPlicPeripheral::SensorCtrl,
+    // SocProxyExternal0 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal1 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal2 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal3 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal4 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal5 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal6 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal7 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal8 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal9 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal10 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal11 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal12 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal13 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal14 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal15 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal16 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal17 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal18 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal19 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal20 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal21 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal22 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal23 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal24 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal25 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal26 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal27 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal28 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal29 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal30 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal31 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // HmacHmacDone -> TopDarjeelingPlicPeripheral::Hmac
+    TopDarjeelingPlicPeripheral::Hmac,
+    // HmacFifoEmpty -> TopDarjeelingPlicPeripheral::Hmac
+    TopDarjeelingPlicPeripheral::Hmac,
+    // HmacHmacErr -> TopDarjeelingPlicPeripheral::Hmac
+    TopDarjeelingPlicPeripheral::Hmac,
+    // KmacKmacDone -> TopDarjeelingPlicPeripheral::Kmac
+    TopDarjeelingPlicPeripheral::Kmac,
+    // KmacFifoEmpty -> TopDarjeelingPlicPeripheral::Kmac
+    TopDarjeelingPlicPeripheral::Kmac,
+    // KmacKmacErr -> TopDarjeelingPlicPeripheral::Kmac
+    TopDarjeelingPlicPeripheral::Kmac,
+    // OtbnDone -> TopDarjeelingPlicPeripheral::Otbn
+    TopDarjeelingPlicPeripheral::Otbn,
+    // KeymgrDpeOpDone -> TopDarjeelingPlicPeripheral::KeymgrDpe
+    TopDarjeelingPlicPeripheral::KeymgrDpe,
+    // CsrngCsCmdReqDone -> TopDarjeelingPlicPeripheral::Csrng
+    TopDarjeelingPlicPeripheral::Csrng,
+    // CsrngCsEntropyReq -> TopDarjeelingPlicPeripheral::Csrng
+    TopDarjeelingPlicPeripheral::Csrng,
+    // CsrngCsHwInstExc -> TopDarjeelingPlicPeripheral::Csrng
+    TopDarjeelingPlicPeripheral::Csrng,
+    // CsrngCsFatalErr -> TopDarjeelingPlicPeripheral::Csrng
+    TopDarjeelingPlicPeripheral::Csrng,
+    // Edn0EdnCmdReqDone -> TopDarjeelingPlicPeripheral::Edn0
+    TopDarjeelingPlicPeripheral::Edn0,
+    // Edn0EdnFatalErr -> TopDarjeelingPlicPeripheral::Edn0
+    TopDarjeelingPlicPeripheral::Edn0,
+    // Edn1EdnCmdReqDone -> TopDarjeelingPlicPeripheral::Edn1
+    TopDarjeelingPlicPeripheral::Edn1,
+    // Edn1EdnFatalErr -> TopDarjeelingPlicPeripheral::Edn1
+    TopDarjeelingPlicPeripheral::Edn1,
+    // DmaDmaDone -> TopDarjeelingPlicPeripheral::Dma
+    TopDarjeelingPlicPeripheral::Dma,
+    // DmaDmaError -> TopDarjeelingPlicPeripheral::Dma
+    TopDarjeelingPlicPeripheral::Dma,
+    // DmaDmaMemoryBufferLimit -> TopDarjeelingPlicPeripheral::Dma
+    TopDarjeelingPlicPeripheral::Dma,
+    // Mbx0MbxReady -> TopDarjeelingPlicPeripheral::Mbx0
+    TopDarjeelingPlicPeripheral::Mbx0,
+    // Mbx0MbxAbort -> TopDarjeelingPlicPeripheral::Mbx0
+    TopDarjeelingPlicPeripheral::Mbx0,
+    // Mbx0MbxError -> TopDarjeelingPlicPeripheral::Mbx0
+    TopDarjeelingPlicPeripheral::Mbx0,
+    // Mbx1MbxReady -> TopDarjeelingPlicPeripheral::Mbx1
+    TopDarjeelingPlicPeripheral::Mbx1,
+    // Mbx1MbxAbort -> TopDarjeelingPlicPeripheral::Mbx1
+    TopDarjeelingPlicPeripheral::Mbx1,
+    // Mbx1MbxError -> TopDarjeelingPlicPeripheral::Mbx1
+    TopDarjeelingPlicPeripheral::Mbx1,
+    // Mbx2MbxReady -> TopDarjeelingPlicPeripheral::Mbx2
+    TopDarjeelingPlicPeripheral::Mbx2,
+    // Mbx2MbxAbort -> TopDarjeelingPlicPeripheral::Mbx2
+    TopDarjeelingPlicPeripheral::Mbx2,
+    // Mbx2MbxError -> TopDarjeelingPlicPeripheral::Mbx2
+    TopDarjeelingPlicPeripheral::Mbx2,
+    // Mbx3MbxReady -> TopDarjeelingPlicPeripheral::Mbx3
+    TopDarjeelingPlicPeripheral::Mbx3,
+    // Mbx3MbxAbort -> TopDarjeelingPlicPeripheral::Mbx3
+    TopDarjeelingPlicPeripheral::Mbx3,
+    // Mbx3MbxError -> TopDarjeelingPlicPeripheral::Mbx3
+    TopDarjeelingPlicPeripheral::Mbx3,
+    // Mbx4MbxReady -> TopDarjeelingPlicPeripheral::Mbx4
+    TopDarjeelingPlicPeripheral::Mbx4,
+    // Mbx4MbxAbort -> TopDarjeelingPlicPeripheral::Mbx4
+    TopDarjeelingPlicPeripheral::Mbx4,
+    // Mbx4MbxError -> TopDarjeelingPlicPeripheral::Mbx4
+    TopDarjeelingPlicPeripheral::Mbx4,
+    // Mbx5MbxReady -> TopDarjeelingPlicPeripheral::Mbx5
+    TopDarjeelingPlicPeripheral::Mbx5,
+    // Mbx5MbxAbort -> TopDarjeelingPlicPeripheral::Mbx5
+    TopDarjeelingPlicPeripheral::Mbx5,
+    // Mbx5MbxError -> TopDarjeelingPlicPeripheral::Mbx5
+    TopDarjeelingPlicPeripheral::Mbx5,
+    // Mbx6MbxReady -> TopDarjeelingPlicPeripheral::Mbx6
+    TopDarjeelingPlicPeripheral::Mbx6,
+    // Mbx6MbxAbort -> TopDarjeelingPlicPeripheral::Mbx6
+    TopDarjeelingPlicPeripheral::Mbx6,
+    // Mbx6MbxError -> TopDarjeelingPlicPeripheral::Mbx6
+    TopDarjeelingPlicPeripheral::Mbx6,
+    // MbxJtagMbxReady -> TopDarjeelingPlicPeripheral::MbxJtag
+    TopDarjeelingPlicPeripheral::MbxJtag,
+    // MbxJtagMbxAbort -> TopDarjeelingPlicPeripheral::MbxJtag
+    TopDarjeelingPlicPeripheral::MbxJtag,
+    // MbxJtagMbxError -> TopDarjeelingPlicPeripheral::MbxJtag
+    TopDarjeelingPlicPeripheral::MbxJtag,
+    // MbxPcie0MbxReady -> TopDarjeelingPlicPeripheral::MbxPcie0
+    TopDarjeelingPlicPeripheral::MbxPcie0,
+    // MbxPcie0MbxAbort -> TopDarjeelingPlicPeripheral::MbxPcie0
+    TopDarjeelingPlicPeripheral::MbxPcie0,
+    // MbxPcie0MbxError -> TopDarjeelingPlicPeripheral::MbxPcie0
+    TopDarjeelingPlicPeripheral::MbxPcie0,
+    // MbxPcie1MbxReady -> TopDarjeelingPlicPeripheral::MbxPcie1
+    TopDarjeelingPlicPeripheral::MbxPcie1,
+    // MbxPcie1MbxAbort -> TopDarjeelingPlicPeripheral::MbxPcie1
+    TopDarjeelingPlicPeripheral::MbxPcie1,
+    // MbxPcie1MbxError -> TopDarjeelingPlicPeripheral::MbxPcie1
+    TopDarjeelingPlicPeripheral::MbxPcie1,
+];
 /// Alert Handler Source Peripheral.
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
@@ -1770,339 +2102,6 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
         }
     }
 }
-
-/// PLIC Interrupt Source to Peripheral Map
-///
-/// This array is a mapping from `TopDarjeelingPlicIrqId` to
-/// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 163] = [
-    // None -> TopDarjeelingPlicPeripheral::Unknown
-    TopDarjeelingPlicPeripheral::Unknown,
-    // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0RxWatermark -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0TxEmpty -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0RxOverflow -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0RxFrameErr -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0RxBreakErr -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0RxTimeout -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // Uart0RxParityErr -> TopDarjeelingPlicPeripheral::Uart0
-    TopDarjeelingPlicPeripheral::Uart0,
-    // GpioGpio0 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio1 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio2 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio3 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio4 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio5 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio6 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio7 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio8 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio9 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio10 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio11 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio12 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio13 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio14 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio15 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio16 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio17 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio18 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio19 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio20 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio21 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio22 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio23 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio24 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio25 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio26 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio27 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio28 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio29 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio30 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // GpioGpio31 -> TopDarjeelingPlicPeripheral::Gpio
-    TopDarjeelingPlicPeripheral::Gpio,
-    // SpiDeviceGenericRxFull -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceGenericRxWatermark -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceGenericTxWatermark -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceGenericRxError -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceGenericRxOverflow -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceGenericTxUnderflow -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceUploadCmdfifoNotEmpty -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceUploadPayloadNotEmpty -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceUploadPayloadOverflow -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceReadbufWatermark -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceReadbufFlip -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // SpiDeviceTpmHeaderNotEmpty -> TopDarjeelingPlicPeripheral::SpiDevice
-    TopDarjeelingPlicPeripheral::SpiDevice,
-    // I2c0FmtThreshold -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0RxThreshold -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0FmtOverflow -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0RxOverflow -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0Nak -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0SclInterference -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0SdaInterference -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0StretchTimeout -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0SdaUnstable -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0CmdComplete -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0TxStretch -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0TxOverflow -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0AcqFull -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0UnexpStop -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // I2c0HostTimeout -> TopDarjeelingPlicPeripheral::I2c0
-    TopDarjeelingPlicPeripheral::I2c0,
-    // RvTimerTimerExpiredHart0Timer0 -> TopDarjeelingPlicPeripheral::RvTimer
-    TopDarjeelingPlicPeripheral::RvTimer,
-    // OtpCtrlOtpOperationDone -> TopDarjeelingPlicPeripheral::OtpCtrl
-    TopDarjeelingPlicPeripheral::OtpCtrl,
-    // OtpCtrlOtpError -> TopDarjeelingPlicPeripheral::OtpCtrl
-    TopDarjeelingPlicPeripheral::OtpCtrl,
-    // AlertHandlerClassa -> TopDarjeelingPlicPeripheral::AlertHandler
-    TopDarjeelingPlicPeripheral::AlertHandler,
-    // AlertHandlerClassb -> TopDarjeelingPlicPeripheral::AlertHandler
-    TopDarjeelingPlicPeripheral::AlertHandler,
-    // AlertHandlerClassc -> TopDarjeelingPlicPeripheral::AlertHandler
-    TopDarjeelingPlicPeripheral::AlertHandler,
-    // AlertHandlerClassd -> TopDarjeelingPlicPeripheral::AlertHandler
-    TopDarjeelingPlicPeripheral::AlertHandler,
-    // SpiHost0Error -> TopDarjeelingPlicPeripheral::SpiHost0
-    TopDarjeelingPlicPeripheral::SpiHost0,
-    // SpiHost0SpiEvent -> TopDarjeelingPlicPeripheral::SpiHost0
-    TopDarjeelingPlicPeripheral::SpiHost0,
-    // PwrmgrAonWakeup -> TopDarjeelingPlicPeripheral::PwrmgrAon
-    TopDarjeelingPlicPeripheral::PwrmgrAon,
-    // AonTimerAonWkupTimerExpired -> TopDarjeelingPlicPeripheral::AonTimerAon
-    TopDarjeelingPlicPeripheral::AonTimerAon,
-    // AonTimerAonWdogTimerBark -> TopDarjeelingPlicPeripheral::AonTimerAon
-    TopDarjeelingPlicPeripheral::AonTimerAon,
-    // SensorCtrlIoStatusChange -> TopDarjeelingPlicPeripheral::SensorCtrl
-    TopDarjeelingPlicPeripheral::SensorCtrl,
-    // SensorCtrlInitStatusChange -> TopDarjeelingPlicPeripheral::SensorCtrl
-    TopDarjeelingPlicPeripheral::SensorCtrl,
-    // SocProxyExternal0 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal1 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal2 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal3 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal4 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal5 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal6 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal7 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal8 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal9 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal10 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal11 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal12 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal13 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal14 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal15 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal16 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal17 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal18 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal19 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal20 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal21 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal22 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal23 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal24 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal25 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal26 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal27 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal28 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal29 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal30 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // SocProxyExternal31 -> TopDarjeelingPlicPeripheral::SocProxy
-    TopDarjeelingPlicPeripheral::SocProxy,
-    // HmacHmacDone -> TopDarjeelingPlicPeripheral::Hmac
-    TopDarjeelingPlicPeripheral::Hmac,
-    // HmacFifoEmpty -> TopDarjeelingPlicPeripheral::Hmac
-    TopDarjeelingPlicPeripheral::Hmac,
-    // HmacHmacErr -> TopDarjeelingPlicPeripheral::Hmac
-    TopDarjeelingPlicPeripheral::Hmac,
-    // KmacKmacDone -> TopDarjeelingPlicPeripheral::Kmac
-    TopDarjeelingPlicPeripheral::Kmac,
-    // KmacFifoEmpty -> TopDarjeelingPlicPeripheral::Kmac
-    TopDarjeelingPlicPeripheral::Kmac,
-    // KmacKmacErr -> TopDarjeelingPlicPeripheral::Kmac
-    TopDarjeelingPlicPeripheral::Kmac,
-    // OtbnDone -> TopDarjeelingPlicPeripheral::Otbn
-    TopDarjeelingPlicPeripheral::Otbn,
-    // KeymgrDpeOpDone -> TopDarjeelingPlicPeripheral::KeymgrDpe
-    TopDarjeelingPlicPeripheral::KeymgrDpe,
-    // CsrngCsCmdReqDone -> TopDarjeelingPlicPeripheral::Csrng
-    TopDarjeelingPlicPeripheral::Csrng,
-    // CsrngCsEntropyReq -> TopDarjeelingPlicPeripheral::Csrng
-    TopDarjeelingPlicPeripheral::Csrng,
-    // CsrngCsHwInstExc -> TopDarjeelingPlicPeripheral::Csrng
-    TopDarjeelingPlicPeripheral::Csrng,
-    // CsrngCsFatalErr -> TopDarjeelingPlicPeripheral::Csrng
-    TopDarjeelingPlicPeripheral::Csrng,
-    // Edn0EdnCmdReqDone -> TopDarjeelingPlicPeripheral::Edn0
-    TopDarjeelingPlicPeripheral::Edn0,
-    // Edn0EdnFatalErr -> TopDarjeelingPlicPeripheral::Edn0
-    TopDarjeelingPlicPeripheral::Edn0,
-    // Edn1EdnCmdReqDone -> TopDarjeelingPlicPeripheral::Edn1
-    TopDarjeelingPlicPeripheral::Edn1,
-    // Edn1EdnFatalErr -> TopDarjeelingPlicPeripheral::Edn1
-    TopDarjeelingPlicPeripheral::Edn1,
-    // DmaDmaDone -> TopDarjeelingPlicPeripheral::Dma
-    TopDarjeelingPlicPeripheral::Dma,
-    // DmaDmaError -> TopDarjeelingPlicPeripheral::Dma
-    TopDarjeelingPlicPeripheral::Dma,
-    // DmaDmaMemoryBufferLimit -> TopDarjeelingPlicPeripheral::Dma
-    TopDarjeelingPlicPeripheral::Dma,
-    // Mbx0MbxReady -> TopDarjeelingPlicPeripheral::Mbx0
-    TopDarjeelingPlicPeripheral::Mbx0,
-    // Mbx0MbxAbort -> TopDarjeelingPlicPeripheral::Mbx0
-    TopDarjeelingPlicPeripheral::Mbx0,
-    // Mbx0MbxError -> TopDarjeelingPlicPeripheral::Mbx0
-    TopDarjeelingPlicPeripheral::Mbx0,
-    // Mbx1MbxReady -> TopDarjeelingPlicPeripheral::Mbx1
-    TopDarjeelingPlicPeripheral::Mbx1,
-    // Mbx1MbxAbort -> TopDarjeelingPlicPeripheral::Mbx1
-    TopDarjeelingPlicPeripheral::Mbx1,
-    // Mbx1MbxError -> TopDarjeelingPlicPeripheral::Mbx1
-    TopDarjeelingPlicPeripheral::Mbx1,
-    // Mbx2MbxReady -> TopDarjeelingPlicPeripheral::Mbx2
-    TopDarjeelingPlicPeripheral::Mbx2,
-    // Mbx2MbxAbort -> TopDarjeelingPlicPeripheral::Mbx2
-    TopDarjeelingPlicPeripheral::Mbx2,
-    // Mbx2MbxError -> TopDarjeelingPlicPeripheral::Mbx2
-    TopDarjeelingPlicPeripheral::Mbx2,
-    // Mbx3MbxReady -> TopDarjeelingPlicPeripheral::Mbx3
-    TopDarjeelingPlicPeripheral::Mbx3,
-    // Mbx3MbxAbort -> TopDarjeelingPlicPeripheral::Mbx3
-    TopDarjeelingPlicPeripheral::Mbx3,
-    // Mbx3MbxError -> TopDarjeelingPlicPeripheral::Mbx3
-    TopDarjeelingPlicPeripheral::Mbx3,
-    // Mbx4MbxReady -> TopDarjeelingPlicPeripheral::Mbx4
-    TopDarjeelingPlicPeripheral::Mbx4,
-    // Mbx4MbxAbort -> TopDarjeelingPlicPeripheral::Mbx4
-    TopDarjeelingPlicPeripheral::Mbx4,
-    // Mbx4MbxError -> TopDarjeelingPlicPeripheral::Mbx4
-    TopDarjeelingPlicPeripheral::Mbx4,
-    // Mbx5MbxReady -> TopDarjeelingPlicPeripheral::Mbx5
-    TopDarjeelingPlicPeripheral::Mbx5,
-    // Mbx5MbxAbort -> TopDarjeelingPlicPeripheral::Mbx5
-    TopDarjeelingPlicPeripheral::Mbx5,
-    // Mbx5MbxError -> TopDarjeelingPlicPeripheral::Mbx5
-    TopDarjeelingPlicPeripheral::Mbx5,
-    // Mbx6MbxReady -> TopDarjeelingPlicPeripheral::Mbx6
-    TopDarjeelingPlicPeripheral::Mbx6,
-    // Mbx6MbxAbort -> TopDarjeelingPlicPeripheral::Mbx6
-    TopDarjeelingPlicPeripheral::Mbx6,
-    // Mbx6MbxError -> TopDarjeelingPlicPeripheral::Mbx6
-    TopDarjeelingPlicPeripheral::Mbx6,
-    // MbxJtagMbxReady -> TopDarjeelingPlicPeripheral::MbxJtag
-    TopDarjeelingPlicPeripheral::MbxJtag,
-    // MbxJtagMbxAbort -> TopDarjeelingPlicPeripheral::MbxJtag
-    TopDarjeelingPlicPeripheral::MbxJtag,
-    // MbxJtagMbxError -> TopDarjeelingPlicPeripheral::MbxJtag
-    TopDarjeelingPlicPeripheral::MbxJtag,
-    // MbxPcie0MbxReady -> TopDarjeelingPlicPeripheral::MbxPcie0
-    TopDarjeelingPlicPeripheral::MbxPcie0,
-    // MbxPcie0MbxAbort -> TopDarjeelingPlicPeripheral::MbxPcie0
-    TopDarjeelingPlicPeripheral::MbxPcie0,
-    // MbxPcie0MbxError -> TopDarjeelingPlicPeripheral::MbxPcie0
-    TopDarjeelingPlicPeripheral::MbxPcie0,
-    // MbxPcie1MbxReady -> TopDarjeelingPlicPeripheral::MbxPcie1
-    TopDarjeelingPlicPeripheral::MbxPcie1,
-    // MbxPcie1MbxAbort -> TopDarjeelingPlicPeripheral::MbxPcie1
-    TopDarjeelingPlicPeripheral::MbxPcie1,
-    // MbxPcie1MbxError -> TopDarjeelingPlicPeripheral::MbxPcie1
-    TopDarjeelingPlicPeripheral::MbxPcie1,
-];
 
 /// Alert Handler Alert Source to Peripheral Map
 ///

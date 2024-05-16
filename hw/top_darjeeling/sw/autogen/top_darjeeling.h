@@ -1250,7 +1250,7 @@ typedef enum top_darjeeling_plic_irq_id {
 } top_darjeeling_plic_irq_id_t;
 
 /**
- * PLIC Interrupt Source to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map for the `main` domain
  *
  * This array is a mapping from `top_darjeeling_plic_irq_id_t` to
  * `top_darjeeling_plic_peripheral_t`.

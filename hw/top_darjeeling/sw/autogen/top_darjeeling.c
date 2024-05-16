@@ -5,7 +5,7 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
- * PLIC Interrupt Source to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map for the `main` domain
  *
  * This array is a mapping from `top_darjeeling_plic_irq_id_t` to
  * `top_darjeeling_plic_peripheral_t`.
@@ -176,7 +176,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort] = kTopDarjeelingPlicPeripheralMbxPcie1,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxError] = kTopDarjeelingPlicPeripheralMbxPcie1,
 };
-
 
 /**
  * Alert Handler Alert Source to Peripheral Map

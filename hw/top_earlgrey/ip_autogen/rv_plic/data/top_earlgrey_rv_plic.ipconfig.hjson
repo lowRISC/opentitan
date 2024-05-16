@@ -8,6 +8,7 @@
     src: 185
     target: 1
     prio: 3
+    module_instance_name: rv_plic
     top_name: earlgrey
   }
 }

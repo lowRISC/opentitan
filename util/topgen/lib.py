@@ -566,3 +566,51 @@ def is_lc_ctrl(modules):
             return True
 
     return False
+
+
+def get_default_interrupt_domain(topcfg):
+    """Determines the default interrupt domain of the toplevel config"""
+    default_interrupt_domain = None
+    for interrupt_domain in topcfg['interrupt_domains']:
+        default = interrupt_domain.get('default', False)
+        if default:
+            default_interrupt_domain = interrupt_domain['name']
+
+    assert default_interrupt_domain is not None, "Missing default interrupt_domain"
+    return default_interrupt_domain
+
+
+def get_module_address_space(module):
+    """Returns the address space where the core interface with 
+    registers and interrupts is defined"""
+
+    base_addrs = module['base_addrs']
+    if len(base_addrs) == 1:
+        # Single address space case
+        return list(list(base_addrs.values())[0].keys())[0]
+    
+    if 'core' in base_addrs:
+        return list(base_addrs['core'].keys())[0]
+    if 'regs' in base_addrs:
+        return list(base_addrs['regs'].keys())[0]
+    if 'cfg' in base_addrs:
+        return list(base_addrs['cfg'].keys())[0]
+    
+    assert False, 'Neither core, regs, cfg address space defined in module'
+
+
+def get_interrupt_domains(topcfg, address_space, default_interrupt_domain):
+    """Determine the interrupt domains of this address space by finding the
+    PLIC of this address space and then lookup for its interrupt domain.
+    One address space may have multiple PLICs instantiated."""
+    interrupt_domains = []
+
+    for m in topcfg['module']:
+        module_addr_space = get_module_address_space(m)
+        if module_addr_space != address_space:
+            continue
+
+        if m['type'].startswith('rv_plic'):
+            interrupt_domains.append(m.get('interrupt_domain', default_interrupt_domain))
+
+    return interrupt_domains
