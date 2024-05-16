@@ -201,8 +201,12 @@ registers: [
               desc: '''
                 kMultiBitBool4True - An alert event is enabled.
                 kMultiBitBool4False - An alert event is disabled.
+
+                At reset, all alerts are enabled.
+                This is by design so that no alerts get missed unless they get disabled explicitly.
+                Firmware can disable alerts that may be problematic for the designated use case.
               ''',
-              resval: "False"
+              resval: "True"
             },
         ],
       },
@@ -226,6 +230,10 @@ registers: [
               desc: '''
                 1 - An alert event is fatal.
                 0 - An alert event is recoverable.
+
+                At reset, all alerts are recoverable.
+                This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+                Firmware can define alerts that are critical for the designated use case as fatal.
               ''',
               resval: "0"
             },

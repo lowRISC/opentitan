@@ -808,7 +808,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_0 (
     .clk_i   (clk_i),
@@ -840,7 +840,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_1 (
     .clk_i   (clk_i),
@@ -872,7 +872,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_2 (
     .clk_i   (clk_i),
@@ -904,7 +904,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_3 (
     .clk_i   (clk_i),
@@ -936,7 +936,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_4 (
     .clk_i   (clk_i),
@@ -968,7 +968,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_5 (
     .clk_i   (clk_i),
@@ -1000,7 +1000,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_6 (
     .clk_i   (clk_i),
@@ -1032,7 +1032,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_7 (
     .clk_i   (clk_i),
@@ -1064,7 +1064,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_8 (
     .clk_i   (clk_i),
@@ -1096,7 +1096,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_9 (
     .clk_i   (clk_i),
@@ -1128,7 +1128,7 @@ module sensor_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
+    .RESVAL  (4'h6),
     .Mubi    (1'b1)
   ) u_alert_en_10 (
     .clk_i   (clk_i),
