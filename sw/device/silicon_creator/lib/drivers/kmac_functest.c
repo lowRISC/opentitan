@@ -5,7 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/hexstr.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
@@ -72,7 +75,7 @@ rom_error_t shake256_test(size_t input_len, const char *input,
   return kErrorOk;
 }
 
-rom_error_t kmac_test(void) {
+rom_error_t kmac_shake256_test(void) {
   // Configure KMAC to run SHAKE-256.
   RETURN_IF_ERROR(kmac_shake256_configure());
 
@@ -90,6 +93,80 @@ rom_error_t kmac_test(void) {
   return kErrorOk;
 }
 
+#define KMAC_KMAC256_KAT(name_, prefix_, key_, msg_, rsp_)       \
+  status_t kmac_kmac256_kat_##name_(void) {                      \
+    /* Constants for this test. */                               \
+    const char key_hex[] = key_;                                 \
+    const char msg_hex[] = msg_;                                 \
+    const char rsp_hex[] = rsp_;                                 \
+    const char prefix[] = prefix_;                               \
+                                                                 \
+    /* Decode constants from hex into local buffers. */          \
+    uint32_t key[sizeof(key_hex) / 2 / sizeof(uint32_t)];        \
+    uint32_t msg[sizeof(msg_hex) / 2 / sizeof(uint32_t)];        \
+    uint32_t rsp[sizeof(rsp_hex) / 2 / sizeof(uint32_t)];        \
+    uint32_t output[sizeof(rsp_hex) / 2 / sizeof(uint32_t)];     \
+                                                                 \
+    TRY(hexstr_decode(key, sizeof(key), key_hex));               \
+    TRY(hexstr_decode(msg, sizeof(msg), msg_hex));               \
+    TRY(hexstr_decode(rsp, sizeof(rsp), rsp_hex));               \
+                                                                 \
+    /* Set up KMAC for KMAC-256 with a software provided key. */ \
+    TRY(kmac_kmac256_sw_configure());                            \
+    TRY(kmac_kmac256_sw_key(key, ARRAYSIZE(key)));               \
+    kmac_kmac256_set_prefix(prefix, sizeof(prefix) - 1);         \
+                                                                 \
+    /* Peform the operation. */                                  \
+    TRY(kmac_kmac256_start());                                   \
+    kmac_kmac256_absorb(msg, sizeof(msg));                       \
+    TRY(kmac_kmac256_final(output, ARRAYSIZE(output)));          \
+                                                                 \
+    /* Check the result. */                                      \
+    CHECK_ARRAYS_EQ(output, rsp, ARRAYSIZE(rsp));                \
+    return OK_STATUS();                                          \
+  }
+
+// NIST test vectors for KMAC.
+// See also: //hw/dv/sv/test_vectors/vectors/xof/kmac/KMAC256Ex1.rsp.
+KMAC_KMAC256_KAT(
+    /*name=*/1,
+    /*prefix=*/"My Tagged Application",
+    /*key=*/"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+    /*msg=*/"00010203",
+    /*rsp=*/
+    "20c570c31346f703c9ac36c61c03cb64c3970d0cfc787e9b79599d273a68d2f7f69d4cc3de"
+    "9d104a351689f27cf6f5951f0103f33f4f24871024d9c27773a8dd")
+
+KMAC_KMAC256_KAT(
+    /*name=*/2,
+    /*prefix=*/"",
+    /*key=*/"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+    /*msg=*/
+    "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324"
+    "25262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f40414243444546474849"
+    "4a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e"
+    "6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f90919293"
+    "9495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8"
+    "b9babbbcbdbebfc0c1c2c3c4c5c6c7",
+    /*rsp=*/
+    "75358cf39e41494e949707927cee0af20a3ff553904c86b08f21cc414bcfd691589d27cf5e"
+    "15369cbbff8b9a4c2eb17800855d0235ff635da82533ec6b759b69")
+
+KMAC_KMAC256_KAT(
+    /*name=*/3,
+    /*prefix=*/"My Tagged Application",
+    /*key=*/"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+    /*msg=*/
+    "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2021222324"
+    "25262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f40414243444546474849"
+    "4a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e"
+    "6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f90919293"
+    "9495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8"
+    "b9babbbcbdbebfc0c1c2c3c4c5c6c7",
+    /*rsp=*/
+    "b58618f71f92e1d56c1b8c55ddd7cd188b97b4ca4d99831eb2699a837da2e4d970fbacfde5"
+    "0033aea585f1a2708510c32d07880801bd182898fe476876fc8965")
+
 bool test_main(void) {
   // Disable all entropy. The test should also succeed with entropy enabled,
   // but KMAC blocking on entropy for SHAKE-256 would be unexpected and
@@ -98,6 +175,9 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_stop_all());
 
   status_t result = OK_STATUS();
-  EXECUTE_TEST(result, kmac_test);
+  EXECUTE_TEST(result, kmac_shake256_test);
+  EXECUTE_TEST(result, kmac_kmac256_kat_1);
+  EXECUTE_TEST(result, kmac_kmac256_kat_2);
+  EXECUTE_TEST(result, kmac_kmac256_kat_3);
   return status_ok(result);
 }

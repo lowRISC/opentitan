@@ -376,6 +376,7 @@ opentitan_test(
         ":kmac",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
     ],
