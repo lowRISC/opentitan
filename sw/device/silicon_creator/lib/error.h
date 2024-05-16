@@ -118,6 +118,7 @@ enum module_ {
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   \
   X(kErrorKmacInvalidStatus,          ERROR_(1, kModuleKmac, kInternal)), \
+  X(kErrorKmacInvalidKeySize,         ERROR_(2, kModuleKmac, kInvalidArgument)), \
   \
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
