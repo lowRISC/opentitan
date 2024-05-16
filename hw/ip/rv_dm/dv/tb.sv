@@ -64,18 +64,14 @@ module tb;
     .jtag_o                    ({jtag_if.tdo, jtag_tdo_oe})
   );
 
-  // Mirror the muxing that we expect in rv_dm, where the JTAG interface that actually connects to
-  // the debug module has direct clock/reset in scan mode, and is disabled if debug is not enabled.
-  logic is_scanmode, dbg_enabled;
-  assign is_scanmode = prim_mubi_pkg::mubi4_test_true_strict(rv_dm_if.scanmode);
-  assign dbg_enabled = lc_ctrl_pkg::lc_tx_test_true_strict(rv_dm_if.pinmux_hw_debug_en);
-
+  // Apply the muxing that we get in rv_dm, where the JTAG interface that actually connects to the
+  // debug module has direct clock/reset in scan mode, and is disabled if debug is not enabled.
   jtag_mon_if mon_jtag_if ();
-  assign mon_jtag_if.tck    = !is_scanmode ? jtag_if.tck    : clk;
-  assign mon_jtag_if.trst_n = !is_scanmode ? jtag_if.trst_n : rv_dm_if.scan_rst_n;
-  assign mon_jtag_if.tms    = dbg_enabled  ? jtag_if.tms    : 1'b0;
-  assign mon_jtag_if.tdi    = dbg_enabled  ? jtag_if.tdi    : 1'b0;
-  assign mon_jtag_if.tdo    = dbg_enabled  ? jtag_if.tdo    : 1'b0;
+  assign mon_jtag_if.tck    = dut.dap.tck_i;
+  assign mon_jtag_if.trst_n = dut.dap.trst_ni;
+  assign mon_jtag_if.tms    = dut.dap.tms_i;
+  assign mon_jtag_if.tdi    = dut.dap.td_i;
+  assign mon_jtag_if.tdo    = dut.dap.td_o;
 
   initial begin
     clk_rst_if.set_active();
