@@ -23,8 +23,8 @@ module prim_ascon_duplex
   input duplex_variant_e ascon_variant,
   input duplex_op_e ascon_operation,
 
-  input  logic start_i,
-  output logic idle_o,
+  input  logic   start_i,
+  output mubi4_t idle_o,
 
   // It is assumed that no_ad, no_msg, key, and nonce are always
   // valid and constant, when the cipher is triggered by the start command
@@ -325,7 +325,7 @@ always_comb begin : p_fsm
   set_round_counter = 1'b0;
   inc_round_counter = 1'b0;
   perm_offset = P12;
-  idle_o = 1'b0;
+  idle_o = MuBi4False;
 
   // Default: Don't update state
   set_dom_sep   = 1'b0;
@@ -345,7 +345,7 @@ always_comb begin : p_fsm
 
   unique case (fsm_state_q)
     Idle: begin
-      idle_o = 1'b1;
+      idle_o = MuBi4True;
       if (start_i) begin
         fsm_state_d = Init;
       end
