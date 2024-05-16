@@ -79,6 +79,15 @@ typedef struct kmac_config {
    * Enable KMAC sideload mode.
    */
   bool sideload;
+  /**
+   * Whether or not to use enable KMAC mode.
+   */
+  bool kmac_en;
+
+  /**
+   * The algorithm: SHA3, SHAKE or cSHAKE
+   */
+  uint8_t mode;
 } kmac_config_t;
 
 /**
@@ -168,7 +177,7 @@ static rom_error_t kmac_configure(kmac_config_t config) {
                                    KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256);
   // Set `CFG.MODE` field to SHAKE.
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                   KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE);
+                                   config.mode);
   // Set `CFG.MSG_ENDIANNESS` bit to 0 (little-endian).
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT, 0);
@@ -192,6 +201,8 @@ static rom_error_t kmac_configure(kmac_config_t config) {
 
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT,
                                  config.msg_mask);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT,
+                                 config.kmac_en);
 
   // Set `CFG.ENTROPY_READY` bit to 1.
   cfg_reg =
@@ -231,6 +242,30 @@ rom_error_t kmac_keymgr_configure(void) {
       .entropy_fast_process = false,
       .msg_mask = true,
       .sideload = true,
+      .kmac_en = false,
+      .mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
+  });
+}
+
+rom_error_t kmac_kmac256_sw_configure(void) {
+  kmac_kmac256_set_prefix(NULL, 0);
+  return kmac_configure((kmac_config_t){
+      .entropy_fast_process = false,
+      .msg_mask = false,
+      .sideload = false,
+      .kmac_en = true,
+      .mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
+  });
+}
+
+rom_error_t kmac_kmac256_hw_configure(void) {
+  kmac_kmac256_set_prefix(NULL, 0);
+  return kmac_configure((kmac_config_t){
+      .entropy_fast_process = false,
+      .msg_mask = false,
+      .sideload = true,
+      .kmac_en = true,
+      .mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
   });
 }
 
@@ -239,6 +274,8 @@ rom_error_t kmac_shake256_configure(void) {
       .entropy_fast_process = false,
       .msg_mask = false,
       .sideload = false,
+      .kmac_en = false,
+      .mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
   });
 }
 
@@ -350,3 +387,76 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
 
   return kErrorOk;
 }
+
+#define WORD_BITS (sizeof(uint32_t) * 8)
+#define KEY_CASE(x_)                       \
+  case x_ / WORD_BITS:                     \
+    klen = KMAC_KEY_LEN_LEN_VALUE_KEY##x_; \
+    break
+rom_error_t kmac_kmac256_sw_key(const uint32_t *key, size_t len) {
+  uint32_t klen;
+  switch (len) {
+    KEY_CASE(128);
+    KEY_CASE(192);
+    KEY_CASE(256);
+    KEY_CASE(384);
+    KEY_CASE(512);
+    default:
+      return kErrorKmacInvalidKeySize;
+  }
+  abs_mmio_write32(kBase + KMAC_KEY_LEN_REG_OFFSET, klen);
+  for (size_t i = 0; i < KMAC_KEY_SHARE0_MULTIREG_COUNT; ++i) {
+    uint32_t value = i < len ? key[i] : 0;
+    abs_mmio_write32(
+        kBase + KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t), value);
+    abs_mmio_write32(
+        kBase + KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t), 0);
+  }
+  return kErrorOk;
+}
+
+void kmac_kmac256_set_prefix(const void *prefix, size_t len) {
+  // The length must be less than 32 because this function encodes the prefix
+  // length as a single byte, and 32*8 == 256, which won't fit in a byte.
+  HARDENED_CHECK_LT(len, 32);
+  uint32_t regs[KMAC_PREFIX_MULTIREG_COUNT] = {
+      0x4D4B2001,  //  1  32  'K' 'M'
+      0x00014341,  // 'A' 'C'  1   0
+  };
+  char *r = (char *)&regs[2];
+
+  // The prefix length is the byte immediately before where we'll store the
+  // message (the last `0` byte in the `regs` above).  Set the length and
+  // then copy the prefix into the `regs` buffer.
+  r[-1] = (char)(len * 8);
+  memcpy(r, prefix, len);
+
+  for (size_t i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; ++i) {
+    abs_mmio_write32(kBase + KMAC_PREFIX_0_REG_OFFSET + i * sizeof(uint32_t),
+                     regs[i]);
+  }
+}
+
+rom_error_t kmac_kmac256_final(uint32_t *result, size_t rlen) {
+  // To finalize a kmac operation, we need to right-pad the bit-length of the
+  // result buffer and absorb that padded length value into the sponge.
+  uint8_t buffer[sizeof(size_t) + 1];
+  size_t val = rlen * 32;
+  size_t n = 0;
+  size_t p = sizeof(buffer) - 1;
+  while (val) {
+    buffer[--p] = val & 0xFF;
+    val >>= 8;
+    n++;
+  }
+  buffer[sizeof(buffer) - 1] = (uint8_t)n;
+  kmac_shake256_absorb(buffer + p, n + 1);
+
+  // Now, squeeze out the result.
+  kmac_shake256_squeeze_start();
+  return kmac_shake256_squeeze_end(result, rlen);
+}
+
+// Provide link locations for the inline functions in the header file.
+extern rom_error_t kmac_kmac256_start(void);
+extern void kmac_kmac256_absorb(const void *data, size_t len);
