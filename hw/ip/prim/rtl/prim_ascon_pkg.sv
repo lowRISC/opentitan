@@ -18,23 +18,25 @@ typedef enum logic [3:0] {
   P6  = 4'b0110
 } perm_offset_e;
 
-parameter int DUPLEX_OP_WIDTH    =   2;
+parameter int DUPLEX_OP_WIDTH = 3;
 
 typedef enum logic [DUPLEX_OP_WIDTH-1:0] {
-  ASCON_ENC  = 2'b01,
-  ASCON_DEC  = 2'b10,
-  ASCON_HASH = 2'b11
+  ASCON_ENC  = 3'b001,
+  ASCON_DEC  = 3'b010,
+  ASCON_HASH = 3'b100
 } duplex_op_e;
 
-typedef enum {
-  ASCON_128,
-  ASCON_128A
+parameter int DUPLEX_VARIANT_WIDTH = 2;
+
+typedef enum logic [DUPLEX_VARIANT_WIDTH-1:0] {
+  ASCON_128  = 2'b01,
+  ASCON_128A = 2'b10
 } duplex_variant_e;
 
-const logic [63:0] IV_128 =  64'h80400c0600000000;
-const logic [63:0] IV_128A = 64'h80800c0800000000;
+localparam logic [63:0] IV_128  = 64'h80400c0600000000;
+localparam logic [63:0] IV_128A = 64'h80800c0800000000;
 
-const logic[3:0] ROUND_MAX = 4'b1011;
+localparam logic[3:0] ROUND_MAX = 4'b1011;
 
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 17 -n 10 \
