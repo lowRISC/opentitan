@@ -13,17 +13,19 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   virtual spi_if  spi_vif;
 
   // TLM fifos hold the transactions sent from monitor
-  uvm_tlm_analysis_fifo #(spi_item) host_data_fifo;
-  uvm_tlm_analysis_fifo #(spi_item) device_data_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) plain_data_fifo;
 
   // hold expected transactions
   spi_segment_item                  host_wr_segment;
   spi_segment_item                  host_rd_segment;
   spi_item                          device_item;
+  spi_item                          plain_item;
 
   // local variables
   // queues hold expected read and write transactions issued by tl_ul
   local spi_segment_item            write_segment_q[$];
+  // Just a data queue, not any other fields from spi_segment_item apart from
+  // 'spi_segment_item.spi_data' are used.
   local spi_segment_item            read_segment_q[$];
   local bit [7:0]                   rx_data_q[$];
 
@@ -57,8 +59,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    host_data_fifo   = new("host_data_fifo", this);
-    device_data_fifo = new("device_data_fifo", this);
+    plain_data_fifo  = new("plain_data_fifo", this);
     host_wr_segment  = new("host_wr_segment");
     host_rd_segment  = new("host_rd_segment");
     device_item      = new("device_item");
@@ -72,6 +73,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         fork
           compare_tx_trans();
           compare_rx_trans();
+          get_plain_txn();
         join,
         @(negedge cfg.clk_rst_vif.rst_n or event_sw_rst)
       )
@@ -79,18 +81,30 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     end
   endtask : run_phase
 
+  // RX spi raw txn. The monitor sampled the spi bus raw, and the data gets decoded in
+  // 'compare_tx_trans' according to the segment configuration.
+  virtual task get_plain_txn();
+    forever begin
+      plain_data_fifo.get(plain_item);
+      // Each time CSB goes low, SCB receives a "plain data txn"
+      `uvm_info(`gfn, $sformatf("Received: plain_item=\n%s", plain_item.sprint), UVM_DEBUG)
+    end
+  endtask
 
+  // Receives spi_segment_item - this is then compared with the value on the bus which is extracted
+  // in compare_tx_trans
   virtual task compare_rx_trans();
     spi_segment_item   tl_segment = new();
     string             txt = "";
     bit [7:0]          read_data;
-    int                i = 0;
 
     forever begin
       wait (read_segment_q.size() > 0);
       tl_segment = read_segment_q.pop_front();
       // always read 4 bytes that is the minimum read size
       txt = "\n\t byte      SPI Bus     TL Bus";
+      if (rx_data_q.size == 0)
+        `uvm_fatal(`gfn, "'rx_data_q.size' is empty - hence can't compare TXN")
       for ( int i = 0; i < 4; i++) begin
         read_data = rx_data_q.pop_back();
         if (read_data != tl_segment.spi_data[i]) begin
@@ -105,18 +119,78 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         end
       end
       `uvm_info(`gfn, $sformatf("\n successfully compared read transaction of %d ",
-                                tl_segment.command_reg.len+1), UVM_HIGH)
-      i++;
-    end
+                                tl_segment.command_reg.len+1), UVM_DEBUG)
+    end // forever begin
   endtask
 
+  virtual task  extract_data_for_segment(spi_host_command_t  command_info,
+                                         output bit[7:0] host_data, output bit [7:0] device_data);
+    bit [3:0] bus_cycle;
+    int unsigned idx, loop_jump;
 
+    if (plain_item == null)
+      `uvm_fatal(`gfn, "Something's wrong: 'plain_item =  null'")
+
+    case (command_info.direction)
+      None: begin
+        wait(plain_item.plain_data_q.size >= 1);
+        `uvm_info(`gfn,
+                  $sformatf("Dummy_cycle: Popping 1 item from 'plain_item.plain_data_q': \n%s",
+                            plain_item.sprint),
+                  UVM_DEBUG)
+        void'(plain_item.plain_data_q.pop_front());
+      end
+      default: begin
+        // RX/TX/Bidir
+        case (command_info.mode)
+          // Comparison against TX/RX fifo is carried out on a per-byte basis:
+          Standard : loop_jump = 1;
+          Dual     : loop_jump = 2;
+          Quad     : loop_jump = 4;
+          default  : `uvm_fatal(`gfn, $sformatf("Wrong command.speed: %s",command_info.mode.name()))
+        endcase // case (command_info.mode)
+        wait(plain_item.plain_data_q.size >= (8 / loop_jump) );
+
+        for (int i = 0; i < 8; i = i + loop_jump) begin
+          bit bit_dir = (command_info.direction != RxOnly ?
+                         cfg.m_spi_agent_cfg.host_bit_dir : cfg.m_spi_agent_cfg.device_bit_dir);
+          idx = bit_dir ? i : (7 - i);
+
+          bus_cycle = plain_item.plain_data_q.pop_front();
+          case (command_info.mode)
+            Standard: begin
+              host_data[idx]   = bus_cycle[0];
+              device_data[idx] = bus_cycle[1];
+            end
+            Dual: begin
+              host_data[idx -: 2] = bus_cycle[1:0];
+              device_data[idx -: 2] = bus_cycle[1:0];
+            end
+            Quad: begin
+              host_data[idx -: 4] = bus_cycle[3:0];
+              device_data[idx -: 4] = bus_cycle[3:0];
+            end
+            default: `uvm_fatal(`gfn, "Command.mode = Reserved")
+          endcase
+        end
+
+        `uvm_info(`gfn, $sformatf("[%s] - Extracted byte-> host: 0x%0x | device: 0x%0x",
+                                  command_info.mode.name, host_data, device_data), UVM_DEBUG)
+      end
+    endcase
+
+  endtask
+
+  // Receives spi_segment_item - this is then compared with the value on the bus which is extracted
+  // If the written segment's direction is RxOnly or Bidir, this then also populate the `rx_data_q`
+  // for further RX comparison in compare_rx_trans
   virtual task compare_tx_trans();
     spi_segment_item   exp_segment = new();
     spi_item           dut_item, device_item;
     // indication that this is a new transaction
     bit                prev_csaat = 0;
     string             txt = "";
+    bit [7:0]          host_data, device_data, extracted_data;
 
     forever begin
       // Get predicted item
@@ -126,40 +200,37 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // get bytes from the spi monitor
       txt = "\n\t byte      actual     expected";
       for (int i=0; i < exp_segment.command_reg.len+1; i++) begin
-        host_data_fifo.get(dut_item);
-        device_data_fifo.get(device_item);
+
+        wait(&cfg.m_spi_agent_cfg.vif.csb == 0);
+        // After the sampling edge the plain_item should've been populated
+        cfg.m_spi_agent_cfg.wait_sck_edge(SamplingEdge, cfg.m_spi_agent_cfg.vif.get_active_csb());
+
+        // Extract data based on segment: task below blocks if data has not yet been fully sampled
+        extract_data_for_segment(exp_segment.command_reg, host_data, device_data);
+
         // process tx part of the transaction
         if (exp_segment.command_reg.direction inside {TxOnly, Bidir}) begin
-          // check this was the first item in transaction
-          if ( (i == 0) && !dut_item.first_byte && ~prev_csaat) begin
-            `uvm_fatal(`gfn, $sformatf("FIRST SPI_ITEM DIDN'T CONTAIN FIRST BYE INDICATION"))
-          end else if (dut_item.first_byte && i != 0) begin
-            `uvm_fatal(`gfn, $sformatf("FIRST BYTE SET PREMATURELY - STILL MISSING %0d/%0d",
-                                       exp_segment.command_reg.len + 1 - i,
-                                       exp_segment.command_reg.len + 1))
-          end
-
-          if (dut_item.data[0] != exp_segment.spi_data[i]) begin
+          if (host_data != exp_segment.spi_data[i]) begin
             txt = {txt, $sformatf("\n \t [%d] \t\t\t      %0h  \t\t\t %0h",
-                        i, dut_item.data[0], exp_segment.spi_data[i])};
+                                  i, host_data, exp_segment.spi_data[i])};
             `uvm_fatal(`gfn,
                        $sformatf("\n\t WRITE: actual data did not match exp data \n len %d %s",
-                           exp_segment.command_reg.len+1, txt))
+                                 exp_segment.command_reg.len+1, txt))
           end else begin
             txt = {txt, $sformatf("\n \t [%d] \t\t\t %0h \t\t\t %0h",
-                                  i, dut_item.data[0], exp_segment.spi_data[i])};
+                                  i, host_data, exp_segment.spi_data[i])};
           end
         end
 
         // process rx part of transaction
         // sorting step - will drop everything that is not stored in rx fifo
         if (exp_segment.command_reg.direction inside {RxOnly, Bidir}) begin
-          rx_data_q.push_front(device_item.data[0]);
+          rx_data_q.push_front(device_data);
         end
-      end
+      end // for (int i=0; i < exp_segment.command_reg.len+1; i++)
       // zero-pad bytes to complete 32 bytes rx fifo read
       if ((exp_segment.command_reg.direction inside {RxOnly, Bidir})
-         && ((exp_segment.command_reg.len+1)%4 != 0)) begin
+          && ((exp_segment.command_reg.len+1)%4 != 0)) begin
         for (int n=0; n<(4-(exp_segment.command_reg.len+1)%4); n++) begin
           rx_data_q.push_front(8'h00);
         end
@@ -170,9 +241,10 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // update number of ok segments
       checked_tx_seg_cnt += 1;
       `uvm_info(`gfn, $sformatf("\n successfully compared write transaction of %d ",
-                                            exp_segment.command_reg.len+1), UVM_HIGH)
-    end
-  endtask
+                                exp_segment.command_reg.len+1), UVM_HIGH)
+    end // forever begin
+  endtask // compare_tx_trans
+
 
 
   // The SPI_HOST hwip block TL-UL interface contains a set of CSRs plus windows into two
@@ -188,7 +260,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
     bit cmd_phase_write =  (write && channel == AddrChannel);
     bit data_phase_read = (!write && channel == DataChannel);
-
     // If the access was inside the TXFIFO window...
     if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_TX_FIFO_START :
                                             SPI_HOST_TX_FIFO_END]}) begin
@@ -198,10 +269,11 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
         cov.tx_fifo_overflow_cg.sample(status);
       end
-
       // Store all write-data into the local transaction item.
       if (cmd_phase_write) begin
-        foreach (tl_byte[i]) host_wr_segment.spi_data.push_back(tl_byte[i]);
+        foreach (tl_byte[i]) begin
+          host_wr_segment.spi_data.push_back(tl_byte[i]);
+        end
       end
       // Based on the value of cfg.tx_stall_check, we push this data into the
       // expected queue (write_segment_q) for checking by compare_tx_trans() at
@@ -216,6 +288,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         // If cfg.tx_stall_check == 1'b1, this writes the stimulus to the expected queue
         // only after a write to the COMMAND csr.
         `downcast(wr_segment, host_wr_segment.clone());
+        `uvm_info(`gfn, $sformatf("Pushed segment:\n%s \nonto 'write_segment_q'",
+                                  wr_segment.convert2string), UVM_DEBUG)
         write_segment_q.push_back(wr_segment);
         host_wr_segment = new();
       end
@@ -239,6 +313,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       if (data_phase_read) begin
         foreach (tl_byte[i]) host_rd_segment.spi_data.push_back(tl_byte[i]);
         `downcast(rd_segment, host_rd_segment.clone());
+        `uvm_info(`gfn, $sformatf("Pushed segment:\n%s \nonto 'read_segment_q'",
+                                  rd_segment.convert2string()), UVM_DEBUG)
         read_segment_q.push_back(rd_segment);
         host_rd_segment = new();
       end
@@ -261,6 +337,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     end else `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
 
     if (cmd_phase_write) begin
+      `uvm_info(`gfn, $sformatf("Accessing CSR: %s",csr_name), UVM_DEBUG)
       case (csr_name)
         default:; // Do nothing
         "control": begin
@@ -334,21 +411,24 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           host_wr_segment.command_reg.csaat     = spi_cmd_reg.csaat;
           if (write) begin
             `downcast(wr_segment, host_wr_segment.clone());
+
             // If cfg.tx_stall_check, we only push the expected transaction into the queue
             // when the write to the TXFIFO occurs.
             if (cfg.tx_stall_check) commit_exp_txn_at_txfifo_write = 1'b1;
             else begin
               // Push the expected transaction into the queue now.
               write_segment_q.push_back(wr_segment);
-              `uvm_info(`gfn, $sformatf("\n  created expeted segment item %s",
-                                          wr_segment.convert2string()), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("Pushed wr_segment: \n%s onto 'write_segment_q'",
+                                          wr_segment.convert2string()), UVM_DEBUG)
+              `uvm_info(`gfn, $sformatf("\n  created expeted wr_segment item %s",
+                                          wr_segment.convert2string()), UVM_LOW)
               host_wr_segment = new();
             end
           end
           if (cfg.en_cov) begin
             cov.duplex_cg.sample(spi_cmd_reg.direction);
             cov.command_cg.sample(spi_cmd_reg);
-            cov.segment_speed_cg.sample(spi_cmd_reg);
+            cov.command_segment_cg.sample(spi_cmd_reg);
           end
         end
         "intr_enable": begin
@@ -471,8 +551,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    host_data_fifo.flush();
-    device_data_fifo.flush();
+    plain_data_fifo.flush();
     write_segment_q.delete();
     read_segment_q.delete();
     rx_data_q.delete();
@@ -490,9 +569,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
     `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, write_segment_q)
     `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, read_segment_q)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, host_data_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, device_data_fifo)
-    if((rx_data_q.size() != 0))
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, plain_data_fifo)
+    if ((rx_data_q.size() != 0))
       `uvm_fatal(`gfn,
                  $sformatf("ERROR - RX FIFO in DUT still has data to be read! (rx_data_q = %0d)",
                            rx_data_q.size()))

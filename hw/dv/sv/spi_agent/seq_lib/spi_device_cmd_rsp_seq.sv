@@ -81,6 +81,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
           case (cmd)
             ReadStd,  ReadDual,  ReadQuad: handle_reads();
             WriteStd, WriteDual, WriteQuad: handle_writes(item);
+            AltCmd:; // Doesn't relate to reads or writes
             default: `uvm_fatal(`gfn, $sformatf("UNSUPPORTED COMMAND"))
           endcase
         end

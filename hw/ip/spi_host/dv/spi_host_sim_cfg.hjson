@@ -49,20 +49,7 @@
   uvm_test: spi_host_base_test
   uvm_test_seq: spi_host_base_vseq
 
-  component_a: "uvm_test_top.env.scoreboard"
-  id_a: _ALL_
-  verbosity_a: UVM_MEDIUM
-  phase_a: run
-
-  run_modes: [
-    {
-      name: set_verbosity_comp_a_uvm_debug
-      run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
-    }
-  ]
-
-  run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}",
-             // Enable cdc instrumentation.
+  run_opts: [// Enable cdc instrumentation.
              "+cdc_instrumentation_enabled=1"]
 
   // List of test specifications.

@@ -30,6 +30,11 @@ class spi_item extends uvm_sequence_item;
   // indicate the active csb
   rand bit [CSB_WIDTH-1:0] csb_sel;
 
+  // Currently the spi_agent assumes the data will flow a certain order (opcode, addr, data)  which
+  // blocks spi_host full testing when generating random spi_segments. This queue allows the
+  // scoreboard to take the data from the bus directly in a per-cycle basis and group it accordingly
+  rand bit [3:0]           plain_data_q[$];
+
   // transaction status. only use in monitor on flash mode
   // allow scb to process payload when one byte data is received, instead
   // of wait until the entire item is collected. This indicates item has collected all data.
@@ -80,6 +85,7 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_int(read_pipeline_mode,           UVM_DEFAULT)
     `uvm_field_int(terminated_before_dummy_cycles, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(terminated_before_read_pipeline, UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_queue_int(plain_data_q,           UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

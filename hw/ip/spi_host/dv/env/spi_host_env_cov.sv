@@ -152,12 +152,32 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     rxfull_cp : coverpoint spi_event_enable_reg.rxfull;
   endgroup
 
-  covergroup segment_speed_cg with function sample(spi_host_command_t spi_cmd_reg);
-    mode_trans_cp : coverpoint spi_cmd_reg.mode {
-      bins std_dual = (Standard=>Dual);
-      bins std_quad = (Standard=>Quad);
-      }
-  endgroup
+  covergroup command_segment_cg with function sample(spi_host_command_t spi_cmd_reg);
+
+    csaat_cp: coverpoint spi_cmd_reg.csaat;
+
+    speed_cp : coverpoint spi_cmd_reg.mode{
+      ignore_bins unsupported_speed = {RsvdSpd};
+    }
+    speed_trans_cp : coverpoint spi_cmd_reg.mode {
+      // Creates a bin for each of the possible transitions
+      bins Any2Any[] = ([Standard:Quad] => [Standard:Quad]);
+    }
+    direction_cp: coverpoint spi_cmd_reg.direction;
+    direction_transition_cp: coverpoint spi_cmd_reg.direction{
+      // Creates a bin for each of the possible transitions
+      bins Any2Any[] = ([None:Bidir] => [None:Bidir]);
+    }
+    len_cp: coverpoint spi_cmd_reg.len{
+      bins zero = {0};
+      bins one = {1};
+      bins middle_range_val = {[2:2**SPI_HOST_COMMAND_LEN_SIZE_BITS - 2]};
+      bins max_val = { 2**SPI_HOST_COMMAND_LEN_SIZE_BITS - 1 };
+    }
+    //XCOV
+    speedXdirectionXcsaat_cp: cross speed_cp, direction_cp, csaat_cp;
+
+  endgroup // command_segment_cg
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -174,8 +194,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     error_en_cg = new();
     error_status_cg = new();
     event_en_cg = new();
-    segment_speed_cg = new();
-
+    command_segment_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

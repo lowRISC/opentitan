@@ -70,8 +70,9 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
       // lock fifo to this seq
       spi_host_atomic.get(1);
       segment = trans.segments.pop_back();
+      `uvm_info(`gfn, $sformatf("Last segment: %s",segment.convert2string()), UVM_DEBUG)
       // Populate TXIFIO with write-data (if required)
-      if (segment.command_reg.direction != RxOnly) begin
+      if (segment.command_reg.direction inside {TxOnly, Bidir}) begin
         access_data_fifo(segment.spi_data, TxFifo);
       end
       // As soon as the COMMAND reg is populated, the DUT will begin the transaction.
@@ -91,6 +92,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   virtual task generate_transaction();
     transaction_init();
     `DV_CHECK_RANDOMIZE_FATAL(transaction)
+    `uvm_info(`gfn, $sformatf("transaction = %s",transaction.convert2string()), UVM_DEBUG)
   endtask
 
   task check_event(uvm_reg_field fld, bit intr_value, bit state_value);

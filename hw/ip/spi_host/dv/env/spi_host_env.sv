@@ -31,8 +31,9 @@ class spi_host_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_spi_agent.monitor.host_analysis_port.connect(scoreboard.host_data_fifo.analysis_export);
-      m_spi_agent.monitor.device_analysis_port.connect(scoreboard.device_data_fifo.analysis_export);
+      cfg.m_spi_agent_cfg.enable_plain_sampling = 1;
+      m_spi_agent.monitor.plain_sampling_analysis_port.connect(
+                                                      scoreboard.plain_data_fifo.analysis_export);
     end
     if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;

@@ -31,6 +31,7 @@ package spi_host_env_pkg;
   parameter uint SPI_HOST_RX_FIFO_END    = (SPI_HOST_RX_FIFO_START - 1) +
                                            spi_host_reg_pkg::SPI_HOST_RXDATA_SIZE;
 
+  parameter uint SPI_HOST_COMMAND_LEN_SIZE_BITS = 9;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -90,7 +91,7 @@ package spi_host_env_pkg;
     rand spi_mode_e mode;
     rand spi_dir_e  direction;
     rand bit        csaat;
-    rand bit [8:0]  len;
+    rand bit [SPI_HOST_COMMAND_LEN_SIZE_BITS-1:0] len;
   } spi_host_command_t;
 
   typedef struct packed {
