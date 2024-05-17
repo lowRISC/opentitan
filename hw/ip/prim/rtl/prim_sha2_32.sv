@@ -31,6 +31,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o,         // use extended digest length
+  output logic              digest_on_blk_o,
   output logic              hash_running_o,
   output logic              idle_o
 );
@@ -204,6 +205,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_i           (digest_i),
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
+      .digest_on_blk_o    (digest_on_blk_o),
       .hash_running_o     (hash_running_o),
       .idle_o             (idle_o)
     );
@@ -256,6 +258,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_i           (digest_i),
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
+      .digest_on_blk_o    (digest_on_blk_o),
       .hash_running_o     (hash_running_o),
       .idle_o             (idle_o)
     );
