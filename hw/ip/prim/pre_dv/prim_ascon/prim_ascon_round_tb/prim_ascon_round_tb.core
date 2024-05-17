@@ -7,7 +7,7 @@ description: "Ascon Permutation Verilator TB"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:prim_ascon
+      - lowrisc:prim:prim_ascon
       - lowrisc:dv:ascon_model_dpi
     files:
       - rtl/prim_ascon_round_tb.sv
