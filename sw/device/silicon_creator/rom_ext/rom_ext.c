@@ -285,8 +285,7 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_attestation_keygen(
-    const manifest_t *owner_manifest) {
+static rom_error_t rom_ext_attestation_silicon(void) {
   hardened_bool_t curr_cert_valid = kHardenedBoolFalse;
 
   // Load OTBN attestation keygen program.
@@ -338,20 +337,24 @@ static rom_error_t rom_ext_attestation_keygen(
     HARDENED_CHECK_EQ(curr_cert_valid, kHardenedBoolFalse);
     dbg_printf("Warning: UDS certificate not valid.\r\n");
   }
+  return kErrorOk;
+}
 
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_attestation_creator(
+    const manifest_t *rom_ext_manifest) {
   // Generate CDI_0 attestation keys and (potentially) update certificate.
-  keymgr_binding_value_t zero_binding_value = {.data = {0}};
-  const manifest_t *rom_ext_manifest =
-      (const manifest_t *)_rom_ext_start_address;
+  keymgr_binding_value_t seal_binding_value = {
+      .data = {rom_ext_manifest->identifier, 0}};
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
   HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_owner_int_advance(/*sealing_binding=*/&zero_binding_value,
+      sc_keymgr_owner_int_advance(/*sealing_binding=*/&seal_binding_value,
                                   /*attest_binding=*/&boot_measurements.rom_ext,
                                   rom_ext_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
       kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_attestation_pubkey));
-  curr_cert_valid = kHardenedBoolFalse;
+  hardened_bool_t curr_cert_valid = kHardenedBoolFalse;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
       &kFlashCtrlInfoPageCdi0Certificate, (uint8_t *)cdi_0_pubkey_id.digest,
       &curr_cert_valid));
@@ -369,7 +372,12 @@ static rom_error_t rom_ext_attestation_keygen(
         &kFlashCtrlInfoPageCdi0Certificate,
         /*offset=*/0, cdi_0_cert_size / sizeof(uint32_t), cdi_0_cert));
   }
+  return kErrorOk;
+}
 
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_attestation_owner(const manifest_t *owner_manifest) {
+  keymgr_binding_value_t zero_binding_value = {.data = {0}};
   // Generate CDI_1 attestation keys and (potentially) update certificate.
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
@@ -381,7 +389,7 @@ static rom_error_t rom_ext_attestation_keygen(
                               owner_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
       kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_attestation_pubkey));
-  curr_cert_valid = kHardenedBoolFalse;
+  hardened_bool_t curr_cert_valid = kHardenedBoolFalse;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
       &kFlashCtrlInfoPageCdi1Certificate, (uint8_t *)cdi_1_pubkey_id.digest,
       &curr_cert_valid));
@@ -414,8 +422,8 @@ static rom_error_t rom_ext_attestation_keygen(
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
-  // Crank the keymgr and validate attestation certificates.
-  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_keygen(manifest));
+  // Generate CDI_1 attestation keys and certificate.
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_owner(manifest));
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.
@@ -745,6 +753,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   const manifest_t *self = rom_ext_manifest();
   dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
              self->version_minor);
+
+  // Establish our identity.
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_silicon());
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_creator(self));
 
   // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
