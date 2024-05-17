@@ -21,6 +21,9 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit decode_commands;  // Used in monitor if decoding of commands needed
   bit [2:0] cmd_addr_size = 4; // Address size for command
 
+  bit       enable_plain_sampling; // When set to 1 the monitor will sample the bus values directly
+                                   // without any configuration other than the leading edge
+
   //-------------------------
   // spi_host regs
   //-------------------------

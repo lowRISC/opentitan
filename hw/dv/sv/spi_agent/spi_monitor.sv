@@ -11,6 +11,7 @@ class spi_monitor extends dv_base_monitor#(
 
   spi_item host_item, host_clone;
   spi_item device_item, device_clone;
+  spi_item plain_item;
   spi_cmd_e cmd;
   spi_cmd_e cmdtmp;
   int cmd_byte;
@@ -25,14 +26,16 @@ class spi_monitor extends dv_base_monitor#(
   uvm_analysis_port #(spi_item) device_analysis_port;
   // Sends txn on CSB deassertion (CSB becoming active)
   uvm_analysis_port #(spi_item) csb_active_analysis_port;
+  uvm_analysis_port #(spi_item) plain_sampling_analysis_port;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    host_analysis_port       = new("host_analysis_port", this);
-    device_analysis_port     = new("device_analysis_port", this);
-    csb_active_analysis_port = new("csb_active_analysis_port", this);
+    host_analysis_port           = new("host_analysis_port", this);
+    device_analysis_port         = new("device_analysis_port", this);
+    csb_active_analysis_port     = new("csb_active_analysis_port", this);
+    plain_sampling_analysis_port = new("plain_sampling_analysis_port", this);
   endfunction
 
   virtual task run_phase(uvm_phase phase);
@@ -51,10 +54,23 @@ class spi_monitor extends dv_base_monitor#(
     cfg.vif.sck_phase = cfg.sck_phase[active_csb];
     host_item   = spi_item::type_id::create("host_item", this);
     device_item = spi_item::type_id::create("device_item", this);
+    plain_item           = spi_item::type_id::create("plain_item", this);
     cfg.ongoing_flash_cmd = null;
+
+    // Currently only used in spi_host where the SPI bus is sampled without
+    // any segement order expectation
+    plain_sampling_analysis_port.write(plain_item);
+    if (cfg.enable_plain_sampling) begin
+      // Currently used in the spi_device scoreboard. It triggeres SV events on a per-byte basis and
+      // when the transaction finishes.
+      csb_active_analysis_port.write(host_item);
+    end
     fork
       begin : isolation_thread
         fork
+          begin: plain_bus_sampling
+            plain_sampling();
+          end
           begin : csb_deassert_thread
             wait(cfg.vif.csb[active_csb] == 1'b1);
           end
@@ -105,6 +121,18 @@ class spi_monitor extends dv_base_monitor#(
     endcase // case (cfg.spi_func_mode)
   endtask : collect_trans
 
+  virtual protected task plain_sampling();
+    // for mode 1 and 3, get the leading edges out of the way
+    cfg.wait_sck_edge(LeadingEdge, active_csb);
+    forever begin : loop_forever
+      // wait for the sampling edge
+      cfg.wait_sck_edge(SamplingEdge, active_csb);
+      if(cfg.enable_plain_sampling) begin
+        plain_item.plain_data_q.push_back(cfg.vif.sio[3:0]);
+      end
+    end
+  endtask
+
   virtual protected task collect_curr_trans();
     // for mode 1 and 3, get the leading edges out of the way
     cfg.wait_sck_edge(LeadingEdge, active_csb);
@@ -124,7 +152,6 @@ class spi_monitor extends dv_base_monitor#(
       end else begin
         num_samples = 8;
       end
-
       case (cmd)
         CmdOnly, ReadStd, WriteStd: begin
           data_shift = 1;
@@ -150,6 +177,7 @@ class spi_monitor extends dv_base_monitor#(
 
         which_bit_h = cfg.host_bit_dir ? i : 7 - i;
         which_bit_d = cfg.device_bit_dir ? i : 7 - i;
+
         case (cmd)
           CmdOnly, ReadStd, WriteStd: begin
             // sample sio[0] for tx

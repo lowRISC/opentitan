@@ -38,6 +38,18 @@ class spi_segment_item extends uvm_sequence_item;
 
   constraint command_reg_direction_c {
     //make sure the direction matches the segtype /cmd address are always tx/standard
+
+    // Alternative command just generates any kind of allowed segment combination
+    if (cmd inside {AltCmd} && (seg_type inside {Dummy, Data})) {
+      // Bidirectional commands only allow in standard speed
+      (command_reg.direction == Bidir) -> (command_reg.mode == Standard);
+      command_reg.direction dist {
+        None   := 25,
+        TxOnly := 25,
+        RxOnly := 25,
+        Bidir  := 25
+      };
+    } else
     if ((cmd inside {ReadStd}) && (seg_type inside {Dummy, Data})) {
       command_reg.direction dist {
         RxOnly := rx_only_weight,

@@ -67,7 +67,9 @@ package spi_agent_pkg;
     WriteDual    = 8'b00001100,
     ReadQuad     = 8'b00001111,
     WriteQuad    = 8'b11110000,
-    CmdOnly      = 8'b10000001
+    CmdOnly      = 8'b10000001,
+    AltCmd       = 8'b11111111 // Alternative command - used in spi_host to achieve
+                               // alternative segment combinations
   } spi_cmd_e;
 
   typedef enum bit [1:0] {
