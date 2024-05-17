@@ -4828,9 +4828,7 @@ opentitan_test(
     srcs = [
         "usbdev_suspend_resume_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=suspend
@@ -4868,9 +4866,7 @@ opentitan_test(
     srcs = [
         "usbdev_sleep_resume_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=sleep-resume
@@ -4909,9 +4905,7 @@ opentitan_test(
     srcs = [
         "usbdev_sleep_reset_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=sleep-reset
@@ -4950,7 +4944,7 @@ opentitan_test(
     srcs = [
         "usbdev_sleep_disconnect_test.c",
     ],
-    cw310 = cw310_params(
+    cw310 = fpga_params(
         timeout = "eternal",
         tags = ["manual"],
         test_cmd = """
@@ -4991,9 +4985,7 @@ opentitan_test(
     srcs = [
         "usbdev_deep_resume_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
@@ -5032,9 +5024,7 @@ opentitan_test(
     srcs = [
         "usbdev_deep_reset_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=deep-reset
@@ -5073,9 +5063,7 @@ opentitan_test(
     srcs = [
         "usbdev_deep_disconnect_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=shutdown
@@ -5114,9 +5102,7 @@ opentitan_test(
     srcs = [
         "usbdev_suspend_full_test.c",
     ],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
+    cw310 = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=shutdown
