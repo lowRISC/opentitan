@@ -718,7 +718,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit [7:0] wdata_q[$];
     i2c_item  txn;
     bit       rs_avl;
-    int       last_sr;
+    uint      last_sr = 0;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wdata_q,
                                        wdata_q.size() inside {
