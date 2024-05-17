@@ -320,6 +320,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   uint32_t cmd_reg_addr;
   uint32_t sts_reg_addr;
   uint32_t rdy_bit_offset;
+  uint32_t reg_rdy_bit_offset;
   uint32_t reg;
   bool ready;
 
@@ -328,11 +329,13 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       cmd_reg_addr = base_address + CSRNG_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + CSRNG_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnSw:
       cmd_reg_addr = base_address + EDN_SW_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + EDN_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = EDN_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnGen:
       cmd_reg_addr = base_address + EDN_GENERATE_CMD_REG_OFFSET;
@@ -400,12 +403,14 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   abs_mmio_write32(cmd_reg_addr, reg);
 
   for (size_t i = 0; i < cmd_len; ++i) {
-    // If the command is issued to the SW register of the EDN, the reg ready
-    // bit needs to be polled before writing each word of additional data.
-    if (cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw) {
+    // Before writing each word of additional data, the command ready or command
+    // reg ready bit needs to be polled if the command is issued to CSRNG or the
+    // SW register of EDN, respectively.
+    if (cmd_type == kEntropyCsrngSendAppCmdTypeCsrng ||
+        cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw) {
       do {
-        reg = abs_mmio_read32(base_address + EDN_SW_CMD_STS_REG_OFFSET);
-        ready = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT);
+        reg = abs_mmio_read32(sts_reg_addr);
+        ready = bitfield_bit32_read(reg, reg_rdy_bit_offset);
       } while (!ready);
     }
     abs_mmio_write32(cmd_reg_addr, cmd.seed_material->data[i]);
