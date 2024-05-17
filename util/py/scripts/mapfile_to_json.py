@@ -215,7 +215,7 @@ class Mapfile(object):
             addr = int(field[1], 0)
             size = int(field[2], 0)
             self.memory[name] = (addr, addr + size)
-        return self.GNU_LLD
+        return self.GNU_LD
 
     @staticmethod
     def object_file(section, addr, size, comment):
