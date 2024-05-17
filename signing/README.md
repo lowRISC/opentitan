@@ -118,7 +118,7 @@ gcloud auth application-default login
 ```
 
 Once authenticated to Google cloud, you can build and sign SiVAL tests
-by requesting the `cloud_kms` token:
+by requesting the `cloud_kms_sival` token:
 
 > You may have to update the permissions on the KMS configuration file as
 follows:
@@ -126,7 +126,7 @@ follows:
 > `chmod 600 signing/tokens/earlgrey_z1_sival.yaml`
 
 ```console
-bazel build --//signing:token=//signing/tokens:cloud_kms //label-of-target
+bazel build --//signing:token=//signing/tokens:cloud_kms_sival //label-of-target
 ```
 
 ## Demo of offline signing

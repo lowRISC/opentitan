@@ -197,11 +197,11 @@ bazel test --define DISABLE_VERILATOR_BUILD=true \
 
 The following command runs the `SV2` test suite using the
 `silicon_owner_sival_rom_ext` execution environment. The binaries are signed
-using the `cloud_kms` signing token configuration.
+using the `cloud_kms_sival` signing token configuration.
 
 ```console
-bazel test --define DISABLE_VERILATOR_BUILD=true    \
-    --//signing:token=//signing/tokens:cloud_kms    \
+bazel test --define DISABLE_VERILATOR_BUILD=true       \
+    --//signing:token=//signing/tokens:cloud_kms_sival \
     --build_tag_filters=silicon_owner_sival_rom_ext,-broken \
     --test_tag_filters=silicon_owner_sival_rom_ext,-broken  \
     --test_output=streamed          \
