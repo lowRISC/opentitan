@@ -53,20 +53,18 @@ enum {
   kRemapAlignment = 256,
 };
 
-// Short-hand arrays. (Allow slots and buses to be simply indexed.)
-const dif_rv_core_ibex_addr_translation_bus_t kBuses[] = {
-    kDifRvCoreIbexAddrTranslationIBus, kDifRvCoreIbexAddrTranslationDBus};
+// Short-hand arrays. (Allow slots to be simply indexed.)
 const dif_rv_core_ibex_addr_translation_slot_t kSlots[] = {
     kDifRvCoreIbexAddrTranslationSlot_0, kDifRvCoreIbexAddrTranslationSlot_1};
 
 // Translation descriptions to use.
-static const dif_rv_core_ibex_addr_translation_mapping_t
-    make_lower_case_mapping = {
+static const dif_rv_core_ibex_addr_translation_mapping_t kMakeLowerCaseMapping =
+    {
         .matching_addr = (uintptr_t)remapped_function,
         .remap_addr = (uintptr_t)make_lower_case,
         .size = kRemapAlignment,
 };
-static const dif_rv_core_ibex_addr_translation_mapping_t get_name_mapping = {
+static const dif_rv_core_ibex_addr_translation_mapping_t kGetNameMapping = {
     .matching_addr = (uintptr_t)remapped_function,
     .remap_addr = (uintptr_t)get_name,
     .size = kRemapAlignment,
@@ -178,7 +176,7 @@ void check_ibus_map(dif_rv_core_ibex_t *ibex_core) {
 
   // Map virtual address space to make_lower_case() using slot 1.
   map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus,
-              make_lower_case_mapping);
+              kMakeLowerCaseMapping);
 
   // Enable address translation slot 1.
   enable_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus);
@@ -191,8 +189,7 @@ void check_ibus_map(dif_rv_core_ibex_t *ibex_core) {
   CHECK_STR_EQ(test_str, EXPECTED_RESULT_MAKE_LOWER_CASE);
 
   // Remap virtual address space to get_name() using slot 1.
-  map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus,
-              get_name_mapping);
+  map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus, kGetNameMapping);
 
   // Run get_name() from virtual memory and check the result.
   remapped_function(test_str);
@@ -204,7 +201,7 @@ void check_ibus_map(dif_rv_core_ibex_t *ibex_core) {
   //
   // Map virtual address space to make_lower_case() but using slot 0.
   map_to_slot(ibex_core, 0, kDifRvCoreIbexAddrTranslationIBus,
-              make_lower_case_mapping);
+              kMakeLowerCaseMapping);
 
   // Enable address translation slot 0.
   enable_slot(ibex_core, 0, kDifRvCoreIbexAddrTranslationIBus);
@@ -235,6 +232,67 @@ void check_ibus_map(dif_rv_core_ibex_t *ibex_core) {
   CHECK(illegal_instr_fault);
 }
 
+void check_dbus_map(dif_rv_core_ibex_t *ibex_core) {
+  CHECK_ARRAYS_NE((uint8_t *)make_lower_case, (uint8_t *)get_name,
+                  kRemapAlignment,
+                  "make_lower_case and get_name are the same!");
+  CHECK_ARRAYS_NE((uint8_t *)make_lower_case, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "make_lower_case and remapped_function are the same!");
+  CHECK_ARRAYS_NE((uint8_t *)get_name, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "get_name and remapped_function are the same!");
+
+  // Map virtual address space to make_lower_case() using slot 1.
+  map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationDBus,
+              kMakeLowerCaseMapping);
+
+  // Enable address translation slot 1.
+  enable_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationDBus);
+
+  CHECK_ARRAYS_EQ((uint8_t *)make_lower_case, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "remapped_function is not mapped to make_lower_case!");
+
+  // Remap virtual address space to get_name() using slot 1.
+  map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationDBus, kGetNameMapping);
+
+  CHECK_ARRAYS_EQ((uint8_t *)get_name, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "remapped_function is not mapped to get_name!");
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Check slot 0 has higher priority than slot 1.
+  /////////////////////////////////////////////////////////////////////////////
+  //
+  // Map virtual address space to make_lower_case() but using slot 0.
+  map_to_slot(ibex_core, 0, kDifRvCoreIbexAddrTranslationDBus,
+              kMakeLowerCaseMapping);
+
+  // Enable address translation slot 0.
+  enable_slot(ibex_core, 0, kDifRvCoreIbexAddrTranslationDBus);
+
+  CHECK_ARRAYS_EQ((uint8_t *)make_lower_case, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "remapped_function is not mapped to make_lower_case!");
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Check address translation no longer occurs after being disabled.
+  /////////////////////////////////////////////////////////////////////////////
+  //
+  // Disable all address translation.
+  for (size_t slot_i = 0; slot_i < 2; ++slot_i) {
+    disable_slot(ibex_core, slot_i, kDifRvCoreIbexAddrTranslationDBus);
+  }
+
+  CHECK_ARRAYS_NE((uint8_t *)make_lower_case, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "make_lower_case and remapped_function are the same!");
+  CHECK_ARRAYS_NE((uint8_t *)get_name, (uint8_t *)remapped_function,
+                  kRemapAlignment,
+                  "make_lower_case and remapped_function are the same!");
+}
+
 bool test_main(void) {
   // Get ibex core handle.
   dif_rv_core_ibex_t ibex_core;
@@ -243,6 +301,7 @@ bool test_main(void) {
       &ibex_core));
 
   check_ibus_map(&ibex_core);
+  check_dbus_map(&ibex_core);
 
   return true;
 }
