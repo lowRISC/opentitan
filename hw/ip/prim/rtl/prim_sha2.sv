@@ -39,6 +39,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o, // tie off unused port slice when MultimodeEn = 0
+  output logic digest_on_blk_o, // digest being computed for a complete block
   output logic hash_running_o, // `1` iff hash computation is active (as opposed to `idle_o`, which
                                // is also `0` and thus 'busy' when waiting for a FIFO input)
   output logic idle_o
@@ -444,6 +445,13 @@ module prim_sha2 import prim_sha2_pkg::*;
 
     if (!sha_en_i || hash_go) sha_st_d  = ShaIdle;
   end
+
+  // Determine whether a digest is being computed for a complete block: when `update_digest` is set,
+  // this module is not waiting for more data from the FIFO, and `message_length_i` is zero modulo a
+  // complete block (512 bit for SHA2_256 and 1024 bit for SHA2_384 and SHA2_512).
+  assign digest_on_blk_o = update_digest && (fifo_st_q == FifoIdle) && (
+      (digest_mode_flag_q == SHA2_256                 && message_length_i[8:0] == '0) ||
+      (digest_mode_flag_q inside {SHA2_384, SHA2_512} && message_length_i[9:0] == '0));
 
   assign one_chunk_done = ((digest_mode_flag_q == SHA2_256 || ~MultimodeEn)
                           && (round_q == 7'd63)) ? 1'b1 :

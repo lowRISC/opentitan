@@ -99,6 +99,7 @@ module hmac
   logic        hash_done_event;
   logic        reg_hash_process;
   logic        sha_hash_process;
+  logic        digest_on_blk;
 
   logic        reg_hash_done;
   logic        sha_hash_done;
@@ -167,8 +168,9 @@ module hmac
       end
 
       DoneAwaitMessageComplete: begin
-        if (sha_message_length[8:0] == '0 /* <=> sha_message_length % 512 == 0 */) begin
-          // Once the current message block is complete, wait for the hash to complete.
+        if (digest_on_blk) begin
+          // Once the digest is being computed for the complete message block, wait for the hash to
+          // complete.
           // TODO (issue #21710): handle incomplete message size and check against 512 or 1024
           done_state_d = DoneAwaitHashComplete;
         end
@@ -712,6 +714,7 @@ module hmac
     .digest_we_i          (digest_sw_we),
     .digest_o             (digest),
     .hash_running_o       (hash_running),
+    .digest_on_blk_o      (digest_on_blk),
     .hash_done_o          (sha_hash_done),
     .idle_o               (sha_core_idle)
   );
