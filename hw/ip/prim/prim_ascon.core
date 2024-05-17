@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:ip:prim_ascon:0.1"
+name: "lowrisc:prim:prim_ascon:0.1"
 description: "Ascon unit"
 filesets:
   files_rtl:

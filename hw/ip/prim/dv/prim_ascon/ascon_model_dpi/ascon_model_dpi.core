@@ -7,7 +7,7 @@ description: "ASCON model DPI"
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:prim_ascon
+      - lowrisc:prim:prim_ascon
     files:
       - vendor/ascon_ascon-c/ascon128/api.h: { file_type: cSource, is_include_file: true }
       - vendor/ascon_ascon-c/ascon128/round.h: { file_type: cSource, is_include_file: true }
