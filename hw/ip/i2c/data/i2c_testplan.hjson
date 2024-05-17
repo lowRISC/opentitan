@@ -567,7 +567,7 @@
                 TARGET_EVENTS.TX_PENDING bit has cleared.
             '''
       stage: V2
-      tests: []
+      tests: ["i2c_target_tx_stretch_ctrl"]
     }
     {
       name: target_mode_nack_generation
