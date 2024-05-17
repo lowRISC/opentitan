@@ -286,22 +286,52 @@ static const entropy_complex_config_t
             },
 };
 
-// TODO(#19568): CSRNG commands may hang if the main FSM is not idle.
-// This function is used as a workaround to poll for the internal FSM state,
-// blocking until it reaches the `kCsrngMainSmIdle` state. The function
-// attempts `kCsrngIdleNumTries` before returning `OTCRYPTO_RECOV_ERR` if
-// unable to detect idle state.
+// The software command interface including the SW_CMD_STS and the CMD_REQ
+// registers of CSRNG v.1.0.0 is incomplete. To find out whether the hardware
+// has successfully completed a command or whether the hardware is ready to
+// accept the next command or the next part of a command, software has to
+// leverage the MAIN_SM_STATE debug register and the INTR_STATE register.
+//
+// In particular, software commands including additional data can only be safely
+// written to the CMD_REQ command register if the main state machine of CSRNG is
+// in one of the following two states:
+//
+// - `MainSmIdle`: CSRNG is idle and the software command interface can accept
+//    at most two command words. Writing the first command word with start
+//    command arbitration and cause the state machine to advance to the next
+//    state.
+//
+// - `MainSmParseCmd`: CSRNG is currently parsing a command. This may be the
+//    command provided by software in which case CSRNG will remain in this state
+//    until software has provided all additional data. The number of additional
+//    data words is specified in the Application Interface Command Header.
+//    In case CSRNG is parsing a command of one of the hardware interfaces (EDN0
+//    or EDN1), the command parsing is done withing a couple of cycles and CSRNG
+//    will leave the state again quickly. This means CSRNG will be done before
+//    software can write more than 2 words to the CMD_REQ register. The next
+//    time CSRNG becomes idle, the software command interface will win
+//    arbitration. CSRNG will enter the `MainSmParseCmd` state and wait for
+//    software to provide the complete command.
+//
+// As of CSRNG v.2.0.0, this is fixed in hardware and software can fully rely on
+// the SW_CMD_STS register.
+//
+// For more details, refer to:
+// - https://github.com/lowRISC/opentitan/pull/21981
+// - https://github.com/lowRISC/opentitan/issues/19568
 OT_WARN_UNUSED_RESULT
-static status_t csrng_fsm_idle_wait(void) {
+static status_t csrng_fsm_wait(void) {
   enum {
     kCsrngIdleNumTries = 100000,
 
-    // This value needs to match `MainSmIdle` in csrng_pkg.sv.
+    // This values needs to match `MainSmIdle` / `MainSmParseCmd` in
+    // csrng_pkg.sv.
     kCsrngMainSmIdle = 0x4e,
+    kCsrngMainSmParseCmd = 0xbb,
   };
   for (size_t i = 0; i < kCsrngIdleNumTries; ++i) {
     uint32_t reg = abs_mmio_read32(kBaseCsrng + CSRNG_MAIN_SM_STATE_REG_OFFSET);
-    if (reg == kCsrngMainSmIdle) {
+    if (reg == kCsrngMainSmIdle || reg == kCsrngMainSmParseCmd) {
       return OTCRYPTO_OK;
     }
   }
@@ -309,14 +339,12 @@ static status_t csrng_fsm_idle_wait(void) {
 }
 
 // Write a CSRNG command to a register.  That register can be the SW interface
-// of CSRNG, in which case the `check_completion` argument should be `true`.
+// of CSRNG, in which case the `is_csrng` argument must be `true`.
 // That register can alternatively be one of EDN's that holds commands that EDN
-// passes to CSRNG, in which case the `check_completion` argument must be
-// `false`.
+// passes to CSRNG, in which case the `is_csrng` argument must be `false`.
 OT_WARN_UNUSED_RESULT
 static status_t csrng_send_app_cmd(uint32_t reg_address,
-                                   entropy_csrng_cmd_t cmd,
-                                   bool check_completion) {
+                                   entropy_csrng_cmd_t cmd, bool is_csrng) {
   enum {
     // This is to maintain full compliance with NIST SP 800-90A, which requires
     // the max generate output to be constrained to gen < 2 ^ 12 bits or 0x800
@@ -326,8 +354,6 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   if (cmd.generate_len > kMaxGenerateSizeIn128BitBlocks) {
     return OUT_OF_RANGE();
   }
-
-  HARDENED_TRY(csrng_fsm_idle_wait());
 
   uint32_t reg;
   bool cmd_ready;
@@ -361,7 +387,11 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
     return OTCRYPTO_RECOV_ERR;
   }
 
-  if (check_completion) {
+  if (is_csrng) {
+    // Wait for the CSRNG main SM to be in a state where CSRNG can accept
+    // multiple writes to the SW command register.
+    HARDENED_TRY(csrng_fsm_wait());
+
     // Clear the `cs_cmd_req_done` bit, which is asserted whenever a command
     // request is completed, because that bit will be used below to determine if
     // this command request is completed.
@@ -382,10 +412,13 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   abs_mmio_write32(reg_address, reg);
 
   for (size_t i = 0; i < cmd_len; ++i) {
+    if (is_csrng) {
+      HARDENED_TRY(csrng_fsm_wait());
+    }
     abs_mmio_write32(reg_address, cmd.seed_material->data[i]);
   }
 
-  if (check_completion) {
+  if (is_csrng) {
     if (cmd.id == kEntropyDrbgOpGenerate) {
       // The Generate command is complete only after all entropy bits have been
       // consumed. Thus poll the register that indicates if entropy bits are
