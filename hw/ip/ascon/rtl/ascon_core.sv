@@ -8,6 +8,7 @@ module ascon_core
   import ascon_reg_pkg::*;
   import ascon_pkg::*;
   import prim_mubi_pkg::*;
+  import prim_ascon_pkg::*;
 (
   input clk_i,
   input rst_ni,
@@ -88,8 +89,8 @@ module ascon_core
   data_type_e data_type_last;
   data_type_e data_type_start;
 
-  ascon_op_e      operation;
-  ascon_variant_e variant;
+  duplex_op_e      operation;
+  duplex_variant_e variant;
 
   logic [127:0]     msg_out;
   logic [3:0][31:0] msg_out_d;
