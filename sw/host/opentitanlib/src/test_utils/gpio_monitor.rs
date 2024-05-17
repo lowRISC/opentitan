@@ -20,12 +20,17 @@ pub struct GpioMon<'a> {
     monitor: Rc<dyn GpioMonitoring>,
     // Transport pins names.
     pins: Vec<String>,
-    // Human pin names.
-    pin_names: Vec<String>,
     // Whether to dump the trace on drop.
     dump_on_drop: bool,
     // Are we still monitoring?
     still_monitoring: bool,
+    // Waves.
+    waves: Waves,
+}
+
+pub struct Waves {
+    // Human pin names.
+    pin_names: Vec<String>,
     // Initial levels.
     initial_levels: Vec<bool>,
     // Initial timestamp.
@@ -73,34 +78,30 @@ impl<'a> GpioMon<'a> {
             transport,
             monitor,
             pins,
-            pin_names,
             dump_on_drop,
             still_monitoring: true,
-            initial_levels: start.initial_levels,
-            initial_timestamp: start.timestamp,
-            resolution,
-            events: vec![],
+            waves: Waves::new(pin_names, start.initial_levels, start.timestamp, resolution),
         })
     }
 
     pub fn timestamp_ns(&self, timestamp: u64) -> u64 {
-        timestamp * 1000000000u64 / self.resolution
+        timestamp * 1000000000u64 / self.waves.resolution
     }
 
     pub fn signal_index(&self, name: &str) -> Option<usize> {
-        self.pin_names.iter().position(|x| x == name)
+        self.waves.pin_names.iter().position(|x| x == name)
     }
 
     pub fn initial_levels(&self) -> Vec<bool> {
-        self.initial_levels.clone()
+        self.waves.initial_levels.clone()
     }
 
     pub fn all_events(&self) -> Vec<MonitoringEvent> {
-        self.events.clone()
+        self.waves.events.clone()
     }
 
     pub fn timestamp_to_ns(&self, timestamp: u64) -> u64 {
-        (timestamp - self.initial_timestamp) * 1000000000u64 / self.resolution
+        (timestamp - self.waves.initial_timestamp) * 1000000000u64 / self.waves.resolution
     }
 
     pub fn read(&mut self, continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
@@ -114,7 +115,7 @@ impl<'a> GpioMon<'a> {
             .monitor
             .monitoring_read(gpios_pins, continue_monitoring)?;
         self.still_monitoring = continue_monitoring;
-        self.events.extend_from_slice(&events.events);
+        self.waves.add_events(&events.events);
         Ok(events.events)
     }
 
@@ -123,8 +124,37 @@ impl<'a> GpioMon<'a> {
     }
 
     pub fn dump_vcd(&self) -> String {
+        self.waves.dump_vcd()
+    }
+}
+
+impl Waves {
+    pub fn new(
+        pin_names: Vec<String>,
+        initial_levels: Vec<bool>,
+        initial_timestamp: u64,
+        resolution: u64,
+    ) -> Waves {
+        Waves {
+            pin_names,
+            initial_levels,
+            initial_timestamp,
+            resolution,
+            events: vec![],
+        }
+    }
+
+    pub fn add_event(&mut self, event: MonitoringEvent) {
+        self.events.push(event)
+    }
+
+    pub fn add_events(&mut self, event: &[MonitoringEvent]) {
+        self.events.extend_from_slice(event)
+    }
+
+    pub fn dump_vcd(&self) -> String {
         const SYMBOLS: &[char] = &['!', '#', '$', '%', '&', '(', ')'];
-        assert!(self.pins.len() < SYMBOLS.len());
+        assert!(self.pin_names.len() < SYMBOLS.len());
         let mut vcd = String::new();
         vcd.push_str("$timescale 1ns $end\n");
         vcd.push_str("$scope module opentitanlib $end\n");
@@ -148,6 +178,12 @@ impl<'a> GpioMon<'a> {
                 SYMBOLS[event.signal_index as usize]
             ));
         }
+        // Add a final time to make sure that the last edge is visible.
+        vcd.push_str(&format!(
+            "#{}",
+            1000 + (self.events.last().unwrap().timestamp - self.initial_timestamp) * 1000000000u64
+                / self.resolution
+        ));
 
         vcd
     }
