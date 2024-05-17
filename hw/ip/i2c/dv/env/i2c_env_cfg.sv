@@ -32,6 +32,12 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   int        min_data = 1;
   int        max_data = 60;
 
+  // This sets the minimum length of a transfer (START/RSTART -> RSTART/STOP) within
+  // any larger transaction. A transfer with no data, where the address byte is NACK'd,
+  // is possible with our stimulus approach, and this can break checking in certain
+  // circumstances.
+  int        min_xfer_len = 0;
+
   // Use i2c interrupt handler
   bit        use_intr_handler = 1'b0;
   bit        stop_intr_handler = 1'b0;

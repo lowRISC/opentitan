@@ -718,6 +718,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit [7:0] wdata_q[$];
     i2c_item  txn;
     bit       rs_avl;
+    int       last_sr;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wdata_q,
                                        wdata_q.size() inside {
@@ -728,6 +729,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       else rs_avl = 0;
       // restart entry
       if (rs_avl == 1 && wdata_q.size() > 1 &&
+         (myq.size() - last_sr > cfg.min_xfer_len) && // Limit min xfer len if desired
           i inside {[1:wdata_q.size() -1]}) begin
         `uvm_info("seq", $sformatf("RS inserted before data %0d", i), UVM_HIGH)
         `uvm_create_obj(i2c_item, txn)
@@ -736,6 +738,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         txn.stop = 0;
         txn.read = get_read_write();
         myq.push_back(txn);
+        last_sr = myq.size();
       end
       `uvm_create_obj(i2c_item, txn)
       txn.drv_type = HostData;
