@@ -281,7 +281,7 @@ module pinmux_assert_fpv
             ($past(!$rose(sleep_en_i) || !mio_pad_sleep_en.q) && mio_pad_sleep_status.q)))
 
   // ------ Mio_attr_o ------
-  pinmux_reg_pkg::pinmux_reg2hw_mio_pad_attr_mreg_t mio_pad_attr;
+  pad_attr_t mio_pad_attr;
   assign mio_pad_attr = pinmux.mio_pad_attr_q[mio_sel_i];
 
   pad_attr_t mio_pad_attr_mask;
