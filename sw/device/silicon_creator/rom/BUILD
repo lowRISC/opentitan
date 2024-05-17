@@ -322,6 +322,7 @@ cc_library(
     ],
     deps = [
         ":sigverify_key_types",
+        ":sigverify_otp_keys",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
