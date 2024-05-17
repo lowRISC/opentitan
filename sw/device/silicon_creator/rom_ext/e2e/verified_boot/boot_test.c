@@ -26,6 +26,9 @@ status_t boot_log_print(boot_log_t *boot_log) {
   LOG_INFO("boot_log bl0_slot = %C", boot_log->bl0_slot);
   LOG_INFO("boot_log ownership_state = %C", boot_log->ownership_state);
   LOG_INFO("boot_log ownership_transfers = %u", boot_log->ownership_transfers);
+  LOG_INFO("boot_log rom_ext_min_sec_ver = %u", boot_log->rom_ext_min_sec_ver);
+  LOG_INFO("boot_log bl0_min_sec_ver = %u", boot_log->bl0_min_sec_ver);
+  LOG_INFO("boot_log primary_bl0_slot = %C", boot_log->primary_bl0_slot);
   return OK_STATUS();
 }
 
