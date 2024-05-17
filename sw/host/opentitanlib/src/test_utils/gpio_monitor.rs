@@ -95,6 +95,14 @@ impl<'a> GpioMon<'a> {
         self.initial_levels.clone()
     }
 
+    pub fn all_events(&self) -> Vec<MonitoringEvent> {
+        self.events.clone()
+    }
+
+    pub fn timestamp_to_ns(&self, timestamp: u64) -> u64 {
+        (timestamp - self.initial_timestamp) * 1000000000u64 / self.resolution
+    }
+
     pub fn read(&mut self, continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
         ensure!(
             self.still_monitoring,
@@ -108,6 +116,10 @@ impl<'a> GpioMon<'a> {
         self.still_monitoring = continue_monitoring;
         self.events.extend_from_slice(&events.events);
         Ok(events.events)
+    }
+
+    pub fn dump_on_drop(&mut self, dump_on_drop: bool) {
+        self.dump_on_drop = dump_on_drop
     }
 
     pub fn dump_vcd(&self) -> String {
