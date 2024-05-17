@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:prim_ascon
       - lowrisc:prim:lc_sync
       - lowrisc:ip:tlul
       - lowrisc:ip:lc_ctrl_pkg
