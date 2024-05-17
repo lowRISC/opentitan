@@ -59,8 +59,21 @@ const dif_rv_core_ibex_addr_translation_bus_t kBuses[] = {
 const dif_rv_core_ibex_addr_translation_slot_t kSlots[] = {
     kDifRvCoreIbexAddrTranslationSlot_0, kDifRvCoreIbexAddrTranslationSlot_1};
 
+// Translation descriptions to use.
+static const dif_rv_core_ibex_addr_translation_mapping_t
+    make_lower_case_mapping = {
+        .matching_addr = (uintptr_t)remapped_function,
+        .remap_addr = (uintptr_t)make_lower_case,
+        .size = kRemapAlignment,
+};
+static const dif_rv_core_ibex_addr_translation_mapping_t get_name_mapping = {
+    .matching_addr = (uintptr_t)remapped_function,
+    .remap_addr = (uintptr_t)get_name,
+    .size = kRemapAlignment,
+};
+
 // Stores whether an access fault exception has fired.
-static volatile bool access_fault = false;
+static volatile bool illegal_instr_fault = false;
 
 /**
  * Overrides the default OTTF exception handler.
@@ -104,7 +117,7 @@ void ottf_exception_handler(uint32_t *exc_info) {
   switch (exception) {
     case kIbexExcIllegalInstrFault:
       LOG_INFO("Illegal instruction fault handler");
-      access_fault = true;
+      illegal_instr_fault = true;
       *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
     default:
@@ -114,37 +127,48 @@ void ottf_exception_handler(uint32_t *exc_info) {
 }
 
 /**
- * Configures the given address translation mapping in the given slot
- * for both IBus and DBus.
+ * Configures the given address translation mapping in the given slot and bus.
  *
  * @param ibex_core A handle to the ibex core.
- * @param slot The slot to be used for mapping.
+ * @param slot The slot index to be used for mapping.
+ * @param bus The bus to be used for mapping.
  * @param mapping A description of the mapping.
  */
-void map_to_slot(dif_rv_core_ibex_t *ibex_core,
-                 dif_rv_core_ibex_addr_translation_slot_t slot,
+void map_to_slot(dif_rv_core_ibex_t *ibex_core, size_t slot,
+                 dif_rv_core_ibex_addr_translation_bus_t bus,
                  dif_rv_core_ibex_addr_translation_mapping_t mapping) {
-  for (size_t idx = 0; idx < 2; ++idx) {
-    CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
-        ibex_core, slot, kBuses[idx], mapping));
-  };
+  CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      ibex_core, kSlots[slot], bus, mapping));
 }
 
 /**
- * Enables IBus and DBus address translation for the given slot.
+ * Enables address translation for the given slot and bus.
  *
  * @param ibex_core A handle to the ibex core.
- * @param slot The slot to be used enabled.
+ * @param slot The slot index to be used enabled.
+ * @param bus The bus to be enabled.
  */
-void enable_slot(dif_rv_core_ibex_t *ibex_core,
-                 dif_rv_core_ibex_addr_translation_slot_t slot) {
-  for (size_t idx = 0; idx < 2; ++idx) {
-    CHECK_DIF_OK(
-        dif_rv_core_ibex_enable_addr_translation(ibex_core, slot, kBuses[idx]));
-  };
+void enable_slot(dif_rv_core_ibex_t *ibex_core, size_t slot,
+                 dif_rv_core_ibex_addr_translation_bus_t bus) {
+  CHECK_DIF_OK(
+      dif_rv_core_ibex_enable_addr_translation(ibex_core, kSlots[slot], bus));
 }
 
-bool test_main(void) {
+/**
+ * Disables address translation for the given slot and bus.
+ *
+ * @param ibex_core A handle to the ibex core.
+ * @param slot The slot index to be used enabled.
+ * @param bus The bus to be enabled.
+ */
+void disable_slot(dif_rv_core_ibex_t *ibex_core, size_t slot,
+                  dif_rv_core_ibex_addr_translation_bus_t bus) {
+  CHECK_DIF_OK(
+      dif_rv_core_ibex_disable_addr_translation(ibex_core, kSlots[slot], bus));
+}
+
+void check_ibus_map(dif_rv_core_ibex_t *ibex_core) {
+  // Check the functions are expected before doing the mapping test.
   char test_str[] = TEST_STR;
   make_lower_case(test_str);
   CHECK_STR_EQ(test_str, EXPECTED_RESULT_MAKE_LOWER_CASE);
@@ -152,29 +176,12 @@ bool test_main(void) {
   get_name(test_str);
   CHECK_STR_EQ(test_str, EXPECTED_RESULT_GET_NAME);
 
-  // Create translation descriptions.
-  dif_rv_core_ibex_addr_translation_mapping_t make_lower_case_mapping = {
-      .matching_addr = (uintptr_t)remapped_function,
-      .remap_addr = (uintptr_t)make_lower_case,
-      .size = kRemapAlignment,
-  };
-  dif_rv_core_ibex_addr_translation_mapping_t get_name_mapping = {
-      .matching_addr = (uintptr_t)remapped_function,
-      .remap_addr = (uintptr_t)get_name,
-      .size = kRemapAlignment,
-  };
-
-  // Get ibex core handle.
-  dif_rv_core_ibex_t ibex_core;
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &ibex_core));
-
   // Map virtual address space to make_lower_case() using slot 1.
-  map_to_slot(&ibex_core, kSlots[1], make_lower_case_mapping);
+  map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus,
+              make_lower_case_mapping);
 
   // Enable address translation slot 1.
-  enable_slot(&ibex_core, kSlots[1]);
+  enable_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus);
 
   // Reset test string content.
   memcpy(test_str, TEST_STR, sizeof(test_str));
@@ -184,7 +191,8 @@ bool test_main(void) {
   CHECK_STR_EQ(test_str, EXPECTED_RESULT_MAKE_LOWER_CASE);
 
   // Remap virtual address space to get_name() using slot 1.
-  map_to_slot(&ibex_core, kSlots[1], get_name_mapping);
+  map_to_slot(ibex_core, 1, kDifRvCoreIbexAddrTranslationIBus,
+              get_name_mapping);
 
   // Run get_name() from virtual memory and check the result.
   remapped_function(test_str);
@@ -195,10 +203,11 @@ bool test_main(void) {
   /////////////////////////////////////////////////////////////////////////////
   //
   // Map virtual address space to make_lower_case() but using slot 0.
-  map_to_slot(&ibex_core, kSlots[0], make_lower_case_mapping);
+  map_to_slot(ibex_core, 0, kDifRvCoreIbexAddrTranslationIBus,
+              make_lower_case_mapping);
 
   // Enable address translation slot 0.
-  enable_slot(&ibex_core, kSlots[0]);
+  enable_slot(ibex_core, 0, kDifRvCoreIbexAddrTranslationIBus);
 
   // Reset test string content.
   memcpy(test_str, TEST_STR, sizeof(test_str));
@@ -213,20 +222,27 @@ bool test_main(void) {
   //
   // Disable all address translation.
   for (size_t slot_i = 0; slot_i < 2; ++slot_i) {
-    for (size_t bus_i = 0; bus_i < 2; ++bus_i) {
-      CHECK_DIF_OK(dif_rv_core_ibex_disable_addr_translation(
-          &ibex_core, kSlots[slot_i], kBuses[bus_i]));
-    }
+    disable_slot(ibex_core, slot_i, kDifRvCoreIbexAddrTranslationIBus);
   }
 
   // Ensure there hasn't already been an access fault.
-  CHECK(!access_fault);
+  CHECK(!illegal_instr_fault);
 
   // Try to run the remap address as a function.
   remapped_function(test_str);
 
   // Ensure the exception has fired.
-  CHECK(access_fault);
+  CHECK(illegal_instr_fault);
+}
+
+bool test_main(void) {
+  // Get ibex core handle.
+  dif_rv_core_ibex_t ibex_core;
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &ibex_core));
+
+  check_ibus_map(&ibex_core);
 
   return true;
 }
