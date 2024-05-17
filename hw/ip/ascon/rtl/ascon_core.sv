@@ -27,46 +27,46 @@ module ascon_core
 );
 
   // Signals
-  logic [31:0] data_share0_in_d[4];
-  logic [31:0] data_share0_in_q[4];
-  logic  [3:0] data_share0_in_new_d, data_share0_in_new_q;
-  logic        data_share0_in_new;
-  logic        data_share0_in_load;
+  logic [3:0][31:0] data_share0_in_d;
+  logic [3:0][31:0] data_share0_in_q;
+  logic [3:0]       data_share0_in_new_d, data_share0_in_new_q;
+  logic             data_share0_in_new;
+  logic             data_share0_in_load;
 
-  logic [31:0] data_share1_in_d[4];
-  logic [31:0] data_share1_in_q[4];
-  logic  [3:0] data_share1_in_new_d, data_share1_in_new_q;
-  logic        data_share1_in_new;
-  logic        data_share1_in_load;
+  logic [3:0][31:0] data_share1_in_d;
+  logic [3:0][31:0] data_share1_in_q;
+  logic [3:0]       data_share1_in_new_d, data_share1_in_new_q;
+  logic             data_share1_in_new;
+  logic             data_share1_in_load;
 
-  logic [31:0] tag_in_q[4];
-  logic  [3:0] tag_in_new_d, tag_in_new_q;
-  logic        tag_in_new;
-  logic        tag_in_load;
+  logic [3:0][31:0] tag_in_q;
+  logic [3:0]       tag_in_new_d, tag_in_new_q;
+  logic             tag_in_new;
+  logic             tag_in_load;
 
-  logic [31:0] nonce_share0_in_d[4];
-  logic [31:0] nonce_share0_in_q[4];
-  logic  [3:0] nonce_share0_in_new_d, nonce_share0_in_new_q;
-  logic        nonce_share0_in_new;
-  logic        nonce_share0_in_load;
+  logic [3:0][31:0] nonce_share0_in_d;
+  logic [3:0][31:0] nonce_share0_in_q;
+  logic [3:0]       nonce_share0_in_new_d, nonce_share0_in_new_q;
+  logic             nonce_share0_in_new;
+  logic             nonce_share0_in_load;
 
-  logic [31:0] nonce_share1_in_d[4];
-  logic [31:0] nonce_share1_in_q[4];
-  logic  [3:0] nonce_share1_in_new_d, nonce_share1_in_new_q;
-  logic        nonce_share1_in_new;
-  logic        nonce_share1_in_load;
+  logic [3:0][31:0] nonce_share1_in_d;
+  logic [3:0][31:0] nonce_share1_in_q;
+  logic [3:0]       nonce_share1_in_new_d, nonce_share1_in_new_q;
+  logic             nonce_share1_in_new;
+  logic             nonce_share1_in_load;
 
-  logic [31:0] key_share0_in_d[4];
-  logic [31:0] key_share0_in_q[4];
-  logic  [3:0] key_share0_in_new_d, key_share0_in_new_q;
-  logic        key_share0_in_new;
-  logic        key_share0_in_load;
+  logic [3:0][31:0] key_share0_in_d;
+  logic [3:0][31:0] key_share0_in_q;
+  logic [3:0]       key_share0_in_new_d, key_share0_in_new_q;
+  logic             key_share0_in_new;
+  logic             key_share0_in_load;
 
-  logic [31:0] key_share1_in_d[4];
-  logic [31:0] key_share1_in_q[4];
-  logic  [3:0] key_share1_in_new_d, key_share1_in_new_q;
-  logic        key_share1_in_new;
-  logic        key_share1_in_load;
+  logic [3:0][31:0] key_share1_in_d;
+  logic [3:0][31:0] key_share1_in_q;
+  logic [3:0]       key_share1_in_new_d, key_share1_in_new_q;
+  logic             key_share1_in_new;
+  logic             key_share1_in_load;
 
   logic           force_data_overwrite;
   logic           manual_start_trigger;
@@ -82,19 +82,19 @@ module ascon_core
   logic           no_ad;
   logic           no_msg;
 
-  logic [31:0] msg_out_d[4];
-  logic [31:0] msg_out_q[4];
-  logic        msg_out_we;
-  logic [31:0] unused_msg_out_q[4];
-  logic  [3:0] msg_out_read_d, msg_out_read_q;
-  logic        msg_out_read;
+  logic [3:0][31:0] msg_out_d;
+  logic [3:0][31:0] msg_out_q;
+  logic             msg_out_we;
+  logic [3:0][31:0] unused_msg_out_q;
+  logic [3:0]       msg_out_read_d, msg_out_read_q;
+  logic             msg_out_read;
 
-  logic [31:0] tag_out_d[4];
-  logic [31:0] tag_out_q[4];
-  logic        tag_out_we;
-  logic [31:0] unused_tag_out_q[4];
-  logic  [3:0] tag_out_read_d, tag_out_read_q;
-  logic        tag_out_read;
+  logic [3:0][31:0] tag_out_d;
+  logic [3:0][31:0] tag_out_q;
+  logic             tag_out_we;
+  logic [3:0][31:0] unused_tag_out_q;
+  logic [3:0]       tag_out_read_d, tag_out_read_q;
+  logic             tag_out_read;
 
   assign alert_recov_o = 1'b0;
   assign alert_fatal_o = 1'b0;
