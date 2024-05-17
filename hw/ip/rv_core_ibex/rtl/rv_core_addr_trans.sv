@@ -73,8 +73,9 @@ module rv_core_addr_trans import rv_core_ibex_pkg::*; #(
 
   // if there is a match, mask off the address bits and remap
   // if there is no match, just use incoming address
-  assign addr_o = sel_match ? addr_i & sel_region.output_mask | sel_region.remap_addr :
-                              addr_i;
+  assign addr_o = sel_match ?
+    (addr_i & sel_region.output_mask) | (sel_region.remap_addr & ~sel_region.output_mask) :
+    addr_i;
 
   // unused clock/reset, only needed for assertions
   logic unused_clk;
