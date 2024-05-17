@@ -5,3 +5,9 @@
 // waiver file for ascon
 
 `verilator_config
+
+// In the following arrays some members may depend on others.
+// There are no circular dependencies but the tool must be told to analyze each member separately for simulation, i.e., to split up the arrays internally.
+// Otherwise the tool needs to evaluate corresponding statements multiple times before the entire signal settles.
+// This slows down simulation and causes the tool to print UNOPTFLAT lint warnings.
+split_var -module "prim_ascon_sbox" -var "*temp_w*"
