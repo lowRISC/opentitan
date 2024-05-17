@@ -6,26 +6,6 @@
 
 package ascon_pkg;
 
-parameter logic [63:0] IV_128  = 64'h80400c0600000000;
-parameter logic [63:0] IV_128A = 64'h80800c0800000000;
-
-parameter int ASCON_STATE_WIDTH = 320;
-
-
-parameter int ASCON_OP_WIDTH      = 3;
-parameter int ASCON_VARIANT_WIDTH = 2;
-
-typedef enum logic [ASCON_OP_WIDTH-1:0] {
-  ASCON_ENC  = 3'b001,
-  ASCON_DEC  = 3'b010,
-  ASCON_HASH = 3'b100
-} ascon_op_e;
-
-typedef enum logic [ASCON_VARIANT_WIDTH-1:0] {
-  ASCON_128  = 2'b01,
-  ASCON_128A = 2'b10
-} ascon_variant_e;
-
 typedef enum logic [11:0] {
   // This encoding represents mubi4True and mubi4False
   MSG_IN = {4'h6, 4'h9, 4'h9},
