@@ -428,6 +428,10 @@ module ascon_core
   logic [3:0][31:0] unused_tag_in_q;
   assign unused_tag_in_q = tag_in_q;
 
+  logic [127:0] msg_out, tag_out;
+  assign msg_out_d = swap_endianess_byte(msg_out);
+  assign tag_out_d = swap_endianess_byte(tag_out);
+
  // Instantiate Ascon Duplex
   prim_ascon_duplex ascon_duplex (
 
@@ -445,11 +449,11 @@ module ascon_core
   .no_ad(no_ad),
   .no_msg(no_msg),
 
-  .key_i(key_in),
-  .nonce_i(nonce_in),
+  .key_i(swap_endianess_byte(key_in)),
+  .nonce_i(swap_endianess_byte(nonce_in)),
 
   // Cipher Input Port
-  .data_i(data_in),
+  .data_i(swap_endianess_byte(data_in)),
   .valid_bytes_i(valid_bytes),
   .last_AD_block_i(last_ad_block),
   .last_MSG_block_i(last_msg_block),
@@ -466,10 +470,6 @@ module ascon_core
 
   .err_o(duplex_fatal_error)
   );
-
-  logic [127:0] msg_out, tag_out;
-  assign msg_out_d = msg_out;
-  assign tag_out_d = tag_out;
 
   // Unused alert signals
   logic unused_alert_signals;
