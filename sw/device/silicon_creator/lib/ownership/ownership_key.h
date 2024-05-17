@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
 /**
@@ -44,5 +45,31 @@ typedef enum ownership_key {
 hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                        const owner_signature_t *signature,
                                        const void *message, size_t len);
+
+/**
+ * Initialize sealing.
+ *
+ * Initializes the KMAC block to create a KMAC-256 seal based on a key
+ * created by keymgr.
+ *
+ * @return Success or error code.
+ */
+rom_error_t ownership_seal_init(void);
+
+/**
+ * Generate a seal for an ownership page.
+ *
+ * @param page Owner page for which to generate the sealing value.
+ * @return Success or error code.
+ */
+rom_error_t ownership_seal_page(size_t page);
+
+/**
+ * Check the seal on an ownership page.
+ *
+ * @param page Owner page on which to check the seal.
+ * @return Success or error code.
+ */
+rom_error_t ownership_seal_check(size_t page);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_
