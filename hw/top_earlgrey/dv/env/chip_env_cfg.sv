@@ -447,7 +447,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           // suffix to the image name.
           if ("signed" inside {sw_image_flags[i]}) begin
             // Options match DEFAULT_SIGNING_KEYS in `rules/opentitan.bzl`.
-            if ("fake_rsa_dev_key_0" inside {sw_image_flags[i]}) begin
+            if ("fake_ecdsa_dev_key_0" inside {sw_image_flags[i]}) begin
+              sw_images[i] = $sformatf("%0s.fake_ecdsa_dev_key_0.signed", sw_images[i]);
+            end else if ("fake_ecdsa_prod_key_0" inside {sw_image_flags[i]}) begin
+              sw_images[i] = $sformatf("%0s.fake_ecdsa_prod_key_0.signed", sw_images[i]);
+            end else if ("fake_ecdsa_test_key_0" inside {sw_image_flags[i]}) begin
+              sw_images[i] = $sformatf("%0s.fake_ecdsa_test_key_0.signed", sw_images[i]);
+            end else if ("fake_rsa_dev_key_0" inside {sw_image_flags[i]}) begin
               sw_images[i] = $sformatf("%0s.fake_rsa_dev_key_0.signed", sw_images[i]);
             end else if ("fake_rsa_prod_key_0" inside {sw_image_flags[i]}) begin
               sw_images[i] = $sformatf("%0s.fake_rsa_prod_key_0.signed", sw_images[i]);
