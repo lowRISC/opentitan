@@ -114,7 +114,6 @@ module hmac
 
   sha_word64_t [7:0] digest, digest_sw;
   logic [7:0]        digest_sw_we;
-  sha_word64_t       inter_digest;
 
   digest_mode_e digest_size, digest_size_supplied;
   // this is the digest size captured into HMAC when it gets started
@@ -224,44 +223,29 @@ module hmac
 
   // Retain the previous digest in CSRs until HMAC is actually started with a valid configuration
   always_comb begin : assign_digest_reg
-    for (int i = 0; i < 16; i++) begin
-      // default
-      if (i < 8) begin
-        // digest SW -> HW
-        digest_sw[i]    = '0;
-        digest_sw_we[i] = '0;
-      end
-      // digest HW -> SW
-      hw2reg.digest[i].d = '0;
-
+    // default
+    digest_sw     = '0;
+    digest_sw_we  = '0;
+    hw2reg.digest = '0;
+    for (int i = 0; i < 8; i++) begin
       if (digest_size_started_q == SHA2_256) begin
-        if (i < 8) begin
-          // digest HW -> SW
-          hw2reg.digest[i].d = conv_endian32(digest[i][31:0], digest_swap);
-          // digest SW -> HW
-          digest_sw[i]       = {32'h0, conv_endian32(reg2hw.digest[i].q, digest_swap)};
-          digest_sw_we[i]    = reg2hw.digest[i].qe;
-        end else begin
-          // replicate digest[0..7] into digest[8..15]. Digest[8...15] are irrelevant for SHA2_256,
-          // but this ensures all digest CSRs are wiped out with random value (at wipe_secret)
-          // across different configurations.
-          hw2reg.digest[i].d = conv_endian32(digest[i%8][31:0], digest_swap);
-        end
+        // digest HW -> SW
+        hw2reg.digest[i].d     = conv_endian32(digest[i][31:0], digest_swap);
+        // digest SW -> HW
+        digest_sw[i][31:0]     = conv_endian32(reg2hw.digest[i].q, digest_swap);
+        digest_sw_we[i]        = reg2hw.digest[i].qe;
       end else if ((digest_size_started_q == SHA2_384) || (digest_size_started_q == SHA2_512)) begin
-        if (i % 2 == 0 && i < 15) begin // even index
-          // digest HW -> SW
-          inter_digest       = conv_endian64(digest[i/2], digest_swap);
-          hw2reg.digest[i].d = inter_digest[31:0];
-          // digest SW -> HW
-          digest_sw[i/2]    = conv_endian64({reg2hw.digest[i+1].q,reg2hw.digest[i].q}, digest_swap);
-          digest_sw_we[i/2] = reg2hw.digest[i].qe | reg2hw.digest[i+1].qe;
-        end else begin  // odd index
-          inter_digest       = conv_endian64(digest[i/2], digest_swap);
-          hw2reg.digest[i].d = inter_digest[63:32];
-          // digest SW -> HW
-          digest_sw[i/2]    = conv_endian64({reg2hw.digest[i].q,reg2hw.digest[i-1].q}, digest_swap);
-          digest_sw_we[i/2] = reg2hw.digest[i].qe | reg2hw.digest[i-1].qe;
-        end
+        // digest HW -> SW
+        hw2reg.digest[2*i].d   = conv_endian32(digest[i][63:32], digest_swap);
+        hw2reg.digest[2*i+1].d = conv_endian32(digest[i][31:0], digest_swap);
+        // digest SW -> HW
+        digest_sw_we[i]        = reg2hw.digest[2*i].qe | reg2hw.digest[2*i+1].qe;
+        digest_sw[i][63:32]    = reg2hw.digest[2*i].qe ?
+                                 conv_endian32(reg2hw.digest[2*i].q, digest_swap) :
+                                 digest[i][63:32];
+        digest_sw[i][31:0]     = reg2hw.digest[2*i+1].qe ?
+                                 conv_endian32(reg2hw.digest[2*i+1].q, digest_swap) :
+                                 digest[i][31:0];
       end
     end
   end
