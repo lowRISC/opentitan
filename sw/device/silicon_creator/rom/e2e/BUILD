@@ -111,9 +111,9 @@ opentitan_test(
 
 [
     opentitan_binary(
-        name = "empty_test_slot_{}".format(slot),
+        name = "empty_test_slot_{}_unsigned".format(slot),
         testonly = True,
-        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        srcs = [":empty_test"],
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:sim_dv",
@@ -127,6 +127,19 @@ opentitan_test(
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
+    )
+    for slot in SLOTS
+]
+
+# The following filegroup is required to allow dvsim to build the
+# empty_test_slot_* targets as the `sim_dv` execution environment is expected
+# as a suffix in the target label. For example:
+#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_unsigned_sim_dv`
+[
+    filegroup(
+        name = "empty_test_slot_{}_unsigned_sim_dv".format(slot),
+        testonly = True,
+        srcs = [":empty_test_slot_{}_unsigned".format(slot)],
     )
     for slot in SLOTS
 ]
@@ -159,7 +172,7 @@ opentitan_test(
     opentitan_binary(
         name = "empty_test_slot_{}_{}".format(slot, key),
         testonly = True,
-        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        srcs = [":empty_test"],
         ecdsa_key = ecdsa_key_by_name(ECDSA_ONLY_KEY_STRUCTS, key),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -167,8 +180,6 @@ opentitan_test(
             "//hw/top_earlgrey:sim_verilator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        # We need to specify the manifest because the simulation environments do not
-        # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
@@ -177,6 +188,20 @@ opentitan_test(
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+]
+
+# The following filegroup is required to allow dvsim to build the
+# empty_test_slot_* targets as the `sim_dv` execution environment is expected
+# as a suffix in the target label. For example:
+#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_sim_dv`
+[
+    filegroup(
+        name = "empty_test_slot_{}_{}_sim_dv".format(slot, key),
+        testonly = True,
+        srcs = [":empty_test_slot_{}_{}".format(slot, key)],
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
@@ -225,7 +250,7 @@ opentitan_test(
     bin_to_vmem(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
         testonly = True,
-        bin = "empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
+        bin = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
     for slot in SLOTS
@@ -236,7 +261,7 @@ opentitan_test(
     scramble_flash_vmem(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
-        vmem = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
+        vmem = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
@@ -250,7 +275,7 @@ opentitan_test(
         name = "empty_test_slot_{}_corrupted_sim_dv".format(slot),
         testonly = True,
         srcs = [
-            "empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
+            ":empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
             for file_type in [
                 "signed_bin",
                 "vmem64_signed",
@@ -287,11 +312,13 @@ opentitan_test(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
     },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
@@ -335,11 +362,13 @@ opentitan_test(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     verilator = verilator_params(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom:mask_rom",
