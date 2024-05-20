@@ -75,8 +75,8 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_queue_int(payload_q,              UVM_DEFAULT)
     `uvm_field_queue_int(address_q,              UVM_DEFAULT)
     `uvm_field_int(read_pipeline_mode,           UVM_DEFAULT)
-    `uvm_field_int(terminated_before_dummy_cycles,UVM_DEFAULT)
-    `uvm_field_int(terminated_before_read_pipeline,UVM_DEFAULT)
+    `uvm_field_int(terminated_before_dummy_cycles, UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(terminated_before_read_pipeline, UVM_DEFAULT | UVM_NOCOMPARE)
   `uvm_object_utils_end
 
   `uvm_object_new
