@@ -77,8 +77,8 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
     // Clear all interrupts
     process_interrupts();
     // Clear scoreboard FIFO
-    cfg.scb_h.target_mode_wr_exp_fifo.flush();
-    cfg.scb_h.target_mode_wr_obs_fifo.flush();
+    cfg.scoreboard.target_mode_wr_exp_fifo.flush();
+    cfg.scoreboard.target_mode_wr_obs_fifo.flush();
     // Enable scorebaord
     cfg.en_scb = 1;
     `uvm_info(`gfn, "Enable Host mode", UVM_LOW)

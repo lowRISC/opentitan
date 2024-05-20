@@ -26,13 +26,20 @@ class i2c_target_fifo_reset_tx_vseq extends i2c_target_runtime_base_vseq;
   endtask: body
 
   virtual task end_of_stim_hook();
-    // flush acq
+    `uvm_info(`gfn, $sformatf("Flushing txfifo now."), UVM_MEDIUM)
+    // flush txfifo
     ral.fifo_ctrl.txrst.set(1'b1);
     csr_update(ral.fifo_ctrl);
 
+    #10us;
+
+    // Flush any leftover data from the fifos
+    ral.fifo_ctrl.acqrst.set(1'b1);
+    ral.fifo_ctrl.txrst.set(1'b1);
+    csr_update(ral.fifo_ctrl);
+    `uvm_info(`gfn, $sformatf("Resetting scoreboard now."), UVM_MEDIUM)
     // clean up sb
-    cfg.scb_h.target_mode_rd_obs_fifo.flush();
-    cfg.scb_h.mirrored_txdata = '{};
+    cfg.scoreboard.reset();
 
     // random delay before the next round
     #($urandom_range(1, 5) * 10us);

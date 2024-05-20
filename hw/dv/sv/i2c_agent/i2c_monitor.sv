@@ -95,7 +95,7 @@ class i2c_monitor extends dv_base_monitor #(
     end else begin
       mon_dut_item.rstart = 1'b1;
     end
-    num_dut_tran++;
+    mon_dut_item.tran_id = num_dut_tran++;
     mon_dut_item.start = 1'b1;
 
     target_address_thread();
@@ -120,7 +120,6 @@ class i2c_monitor extends dv_base_monitor #(
     bit rw_req = 1'b0;
 
     // sample address and r/w bit
-    mon_dut_item.tran_id = num_dut_tran;
     for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
       cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_dut_item.addr[i]);
       `uvm_info(`gfn, $sformatf("target_address_thread() address[%0d] %b",
@@ -255,22 +254,45 @@ class i2c_monitor extends dv_base_monitor #(
     end
   endtask : monitor_ready_to_end
 
-  // Handle agent reset and set stop bit to indicate completion of the current transaction
-  task handle_monitor_rst(input string task_name);
+  // Handle an externally-triggered monitor reset
+  // This routine is currently triggered externally by setting cfg.monitor_rst = 1 in the
+  // hrst_vseq. This is a hack to try and keep the dv env in sync with stimulus that
+  // short-circuits the current transaction with an early RSTART/STOP. It should be refactored
+  // and removed, preferably with proper modelling inside the scoreboard/refmodel.
+  //
+  // - Wait for the next edge on the bus
+  // - Clear temporary state about the currently monitored transaction
+  // - Set stop bit to indicate completion of the current transaction
+  task handle_rst(input string task_name);
     int wait_timeout_ns = 1_000_000; // 1 ms
-    if (cfg.monitor_rst) begin
-      @(cfg.vif.cb);
-      mon_dut_item.clear_all();
-      `DV_WAIT((!cfg.monitor_rst), , wait_timeout_ns, $sformatf("%0s:monitor reset de-assert",
-               task_name));
-      cfg.got_stop = 1;
-      `uvm_info(`gfn, $sformatf("monitor forceout from %0s", task_name), UVM_MEDIUM)
-    end
+    `uvm_info(`gfn, $sformatf("handle_rst() from task '%0s'", task_name), UVM_MEDIUM)
+
+    // Wait for the next bus activity via the clocking block
+    @(cfg.vif.cb);
+
+    // Clear the temporary item used to accumulate in-progress transactions
+    mon_dut_item.clear_all();
+
+    // Wait for cfg.monitor_rst to de-assert (within 1ms).
+    `DV_WAIT(// WAIT_COND_
+             (!cfg.monitor_rst),
+             // MSG_
+             ,
+             // TIMEOUT_NS_
+             wait_timeout_ns,
+             // ID_
+             $sformatf("handle_rst: reset failed to de-asserted from task '%0s'", task_name));
+
+    // Indicate the end of the current transaction with a stop condition.
+    cfg.got_stop = 1;
   endtask
 
   virtual protected task controller_collect_thread();
     i2c_item full_item;
     bit skip_the_loop = 0;
+
+    // Wait for the vseq to clear this at the start of the next stimulus round.
+    wait(cfg.got_stop == 0);
 
     cfg.valid_addr = 0;
     cfg.vif.drv_phase = DrvIdle;
@@ -281,7 +303,7 @@ class i2c_monitor extends dv_base_monitor #(
     end else begin
       mon_dut_item.rstart = 1'b1;
     end
-    mon_dut_item.tran_id = num_dut_tran;
+    mon_dut_item.tran_id = num_dut_tran++;
     mon_dut_item.start = 1'b1;
 
     controller_address_thread(skip_the_loop);
@@ -300,7 +322,6 @@ class i2c_monitor extends dv_base_monitor #(
       full_item.read = 1;
       analysis_port.write(full_item);
     end
-    num_dut_tran++;
     mon_dut_item.clear_data();
   endtask: controller_collect_thread
 
@@ -347,10 +368,11 @@ class i2c_monitor extends dv_base_monitor #(
              `DV_CHECK_CASE_EQ(r_bit, 1'b0)
            end
          end
-         begin // agent reset thread
-           bit rst_detected = 0;
-           wait(cfg.monitor_rst);
-           handle_monitor_rst("controller_address_thread()");
+         begin
+           begin
+             wait(cfg.monitor_rst);
+             handle_rst("controller_address_thread()");
+           end
            do_skip = 1; // Skip processing rest of the transaction
          end
        join_any
@@ -413,7 +435,7 @@ class i2c_monitor extends dv_base_monitor #(
           // This is undeterministic event so cannot set the timeout,
           // but this thread will be terminated by the other thread.
           wait((cfg.allow_ack_stop & mon_rstart) | cfg.monitor_rst);
-          handle_monitor_rst("controller_read_thread()");
+          handle_rst("controller_read_thread()");
         end
       join_any
       disable fork;
@@ -443,7 +465,7 @@ class i2c_monitor extends dv_base_monitor #(
               data), UVM_MEDIUM)
           end
 
-          `uvm_info(`gfn, "controller_write_thread() waiting for A/N", UVM_MEDIUM)
+          `uvm_info(`gfn, "controller_write_thread() waiting for N(ACK)...", UVM_MEDIUM)
           cfg.vif.p_edge_scl();
           r_bit = cfg.vif.cb.sda_i;
           `uvm_info(`gfn, $sformatf("controller_write_thread() saw %0s",
@@ -461,7 +483,7 @@ class i2c_monitor extends dv_base_monitor #(
         end
         begin
           wait(cfg.monitor_rst);
-          handle_monitor_rst("controller_write_thread");
+          handle_rst("controller_write_thread");
         end
       join_any
       disable fork;

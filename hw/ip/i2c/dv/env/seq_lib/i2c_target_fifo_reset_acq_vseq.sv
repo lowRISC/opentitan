@@ -25,19 +25,21 @@ class i2c_target_fifo_reset_acq_vseq extends i2c_target_runtime_base_vseq;
   endtask: body
 
   virtual task end_of_stim_hook();
-    // flush acq
+    // Flush acqfifo
     ral.fifo_ctrl.acqrst.set(1'b1);
     csr_update(ral.fifo_ctrl);
 
-    // clean up sb
-    cfg.scb_h.target_mode_wr_exp_fifo.flush();
-    cfg.scb_h.target_mode_wr_obs_fifo.flush();
-    cfg.scb_h.skip_acq_comp = 1;
-
     #10us;
+
+    `uvm_info(`gfn, $sformatf("Resetting scoreboard now."), UVM_MEDIUM)
+    // Clear base-vseq id for exp_items
     tran_id = 0;
-    cfg.scb_h.obs_wr_id = 0;
-    cfg.scb_h.skip_acq_comp = 0;
+    // Flush any leftover data from the fifos
+    ral.fifo_ctrl.acqrst.set(1'b1);
+    ral.fifo_ctrl.txrst.set(1'b1);
+    csr_update(ral.fifo_ctrl);
+    // Clean up sb
+    cfg.scoreboard.reset();
 
     // random delay before the next round
     #($urandom_range(1, 5) * 10us);

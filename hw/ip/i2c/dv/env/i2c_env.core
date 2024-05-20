@@ -19,6 +19,7 @@ filesets:
       - i2c_env_cov.sv: {is_include_file: true}
       - i2c_env.sv: {is_include_file: true}
       - i2c_virtual_sequencer.sv: {is_include_file: true}
+      - i2c_reference_model.sv: {is_include_file: true}
       - i2c_scoreboard.sv: {is_include_file: true}
       - seq_lib/i2c_vseq_list.sv: {is_include_file: true}
       - seq_lib/i2c_base_vseq.sv: {is_include_file: true}

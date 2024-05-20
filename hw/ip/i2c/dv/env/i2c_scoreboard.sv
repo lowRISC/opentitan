@@ -9,760 +9,613 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(i2c_scoreboard)
 
-  virtual i2c_if  i2c_vif;
+  i2c_reference_model model; // Handle to the env's reference model
 
-  // Local seq_items used to construct larger transactions.
-  // Construct txn_items by updating the local items as different
-  // events occur, then push the item into a queue for checking after the
-  // end of the transaction has been detected.
-  local i2c_item  exp_rd_item;
-  local i2c_item  exp_wr_item;
-  local i2c_item  obs_wr_item;
-  local i2c_item  obs_rd_item;
-  local i2c_item  rd_pending_item; // Store partially-complete state of read txn in host-mode
-  local uint      rd_wait;
-  local bit       host_init = 1'b0;
-  local uint      rdata_cnt = 0; // Count data-bytes read from a target in host-mode
-  local uint      tran_id = 0;
-  local uint      num_exp_tran = 0;
+  ////////////////////
+  // DUT-Controller //
+  ////////////////////
 
-  // DUT in HOST mode
-  ///////////////////
-  // These queues hold items representing full read or write transactions,
-  // assembled by monitoring the TL-interface to the HWIP block.
-  // As there is no model required to predict the transaction that should be
-  // recorded by the monitors (it is a pure comms system, the output data
-  // should exactly equal the input data), these queues become the source of
-  // expected 'exp_trn' items in the 'compare_trans' checker method.
-  local i2c_item  exp_wr_q[$];
-  local i2c_item  exp_rd_q[$];
-  local i2c_item  rd_pending_q[$]; // Helper-queue : hold partial read transactions (data-phase)
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_wr_exp_fifo; // Input -> RefModel
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_wr_obs_fifo; // Input -> Monitor (wr_item_port)
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_rd_exp_fifo; // Input -> RefModel
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_rd_obs_fifo; // Input -> Monitor (rd_item_port)
 
-  // TLM fifos hold the transactions sent by monitor
-  // These become the source of measured 'dut_trn' items in the 'compare_trans'
-  // checker method.
-  uvm_tlm_analysis_fifo #(i2c_item) rd_item_fifo;
-  uvm_tlm_analysis_fifo #(i2c_item) wr_item_fifo;
-  ///////////////////
+  ////////////////
+  // DUT-Target //
+  ////////////////
 
-  // DUT in TARGET/DEVICE mode
-  ///////////////////
-  // Captures an item-per-byte read from 'ACQDATA' register
-  uvm_analysis_port #(i2c_item) target_mode_wr_obs_port;
-  // Target mode seq_item queues (wr/rd transactions)
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_exp_fifo;
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_exp_fifo;
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo;
-  ///////////////////
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_exp_fifo; // Input -> StimVseqs (via. RefModel)
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo; // Input -> ACQFIFO rd (via. RefModel)
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_exp_fifo; // Input -> StimVseqs (via. RefModel)
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo; // Input -> Monitor 'analysis_port'
 
   // interrupt bit vector
   local bit [NumI2cIntr-1:0] intr_exp;
 
-  int                        num_obs_rd;
-  int                        obs_wr_id = 0;
-  bit                        skip_acq_comp = 0; // used only for fifo_reset test
+  // Counters for DUT-Target transactions
+  uint dut_target_exp_read_transfer_id = 0;
+  uint dut_target_obs_read_transfer_id = 0;
+  uint dut_target_exp_write_transfer_id = 0;
+  uint dut_target_obs_write_transfer_id = 0;
+  // Counters for DUT-Controller transactions
+  uint dut_controller_transfer_id = 0;
 
-  bit [7:0]                  mirrored_txdata[$];
+  // These events reset the comparison routines for DUT-Target transactions.
+  uvm_event reset_dut_target_wr_compare;
+  uvm_event reset_dut_target_rd_compare;
 
-  // skip segment comparison
-  bit                        skip_target_txn_comp = 0;
-  bit                        skip_target_rd_comp = 0;
-
-  // Variable to sample fmt fifo data
-  i2c_item                   fmt_fifo_data_q[$];
-  i2c_item                   fmt_fifo_data;
-  // Host mode stretch timeout control enable
-  bit                        host_timeout_ctrl_en;
+  // (Coverage only) Queue for fmtfifo data to be sampled
+  i2c_item  fmt_fifo_data_q[$];
 
   `uvm_component_new
 
+  ///////////////////
+  // CLASS METHODS //
+  ///////////////////
+  //
+  // {build,connect,run,report,check}_phase()
+  //
+  // process_tl_access()
+  //   sample_write_coverage()
+  //   sample_read_coverage()
+  //
+  // compare_target_write_trans()
+  // compare_target_read_trans()
+  // compare_controller_trans(bus_op_e dir) // READ+WRITE
+  // target_wr_comp()/target_rd_comp()
+  //
+  // collect_scl_stretch_cg()
+  // sample_fmt_fifo_data()
+  //
+  //////////////////////////////////////
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    rd_item_fifo = new("rd_item_fifo", this);
-    wr_item_fifo = new("wr_item_fifo", this);
-    rd_pending_item = new("rd_pending_item" );
-    exp_rd_item = new("exp_rd_item");
-    exp_wr_item = new("exp_wr_item");
-    obs_wr_item = new("obs_wr_item");
+    controller_mode_wr_obs_fifo = new("controller_mode_wr_obs_fifo", this);
+    controller_mode_wr_exp_fifo = new("controller_mode_wr_exp_fifo", this);
+    controller_mode_rd_obs_fifo = new("controller_mode_rd_obs_fifo", this);
+    controller_mode_rd_exp_fifo = new("controller_mode_rd_exp_fifo", this);
     target_mode_wr_exp_fifo = new("target_mode_wr_exp_fifo", this);
     target_mode_wr_obs_fifo = new("target_mode_wr_obs_fifo", this);
     target_mode_rd_exp_fifo = new("target_mode_rd_exp_fifo", this);
     target_mode_rd_obs_fifo = new("target_mode_rd_obs_fifo", this);
-    target_mode_wr_obs_port = new("target_mode_wr_obs_port", this);
-    `uvm_create_obj(i2c_item, fmt_fifo_data)
-  endfunction : build_phase
+    reset_dut_target_rd_compare = new("reset_dut_target_rd_compare");
+    reset_dut_target_wr_compare = new("reset_dut_target_wr_compare");
+  endfunction: build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    target_mode_wr_obs_port.connect(target_mode_wr_obs_fifo.analysis_export);
-    cfg.scb_h = this;
-  endfunction
+    cfg.scoreboard = this;
+  endfunction: connect_phase
 
   task run_phase(uvm_phase phase);
-    string str;
     super.run_phase(phase);
-    sample_scl_stretch_cg();
-    //-----------------------------------------------
-    // Checks for I2C DUT in TARGET/DEVICE mode
-    // - (agent in HOST mode)
-    //-----------------------------------------------
-    if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
-      fork
-        // Compare seq_items for write transactions
-        // Currently, items for this check are captures byte-by-byte at the ACQFIFO reg
-        // Hence, we check only compare start, stop and wdata fields of the item.
-        forever begin
-          fork begin
-            fork
-              begin
-                target_mode_wr_obs_fifo.get(obs_wr_item);
-                if (!skip_target_txn_comp) begin
-                  if (cfg.en_cov) begin
-                    cov.sample_i2c_b2b_cg(obs_wr_item.addr,
-                                          ral.ctrl.enablehost.get_mirrored_value());
-                  end
-                  obs_wr_item.tran_id = obs_wr_id++;
-                  target_mode_wr_exp_fifo.get(exp_wr_item);
-                  str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
-                  `uvm_info(`gfn, $sformatf("exp_%s_txn %0d\n %s", str,
-                            exp_wr_item.tran_id, exp_wr_item.sprint()), UVM_MEDIUM)
-                  target_txn_comp(obs_wr_item, exp_wr_item, str);
-                end
-              end
-              begin
-                wait(skip_acq_comp);
-                cfg.clk_rst_vif.wait_clks(1);
-              end
-            join_any
-            disable fork;
-          end join
-        end
-        // Compare seq_items for read transactions
-        forever begin
-          target_mode_rd_obs_fifo.get(obs_rd_item);
-          if (!skip_target_rd_comp) begin
-            if (cfg.en_cov) begin
-              cov.sample_i2c_b2b_cg(obs_rd_item.addr, ral.ctrl.enablehost.get_mirrored_value());
-            end
-            obs_rd_item.pname = "obs_rd";
-            obs_rd_item.tran_id = num_obs_rd++;
-            if (cfg.read_rnd_data) begin
-              // With read_rnd_data mode, only read data can be compared.
-              // Other variables cannot be predictable.
-              `uvm_create_obj(i2c_item, exp_rd_item);
-              exp_rd_item.tran_id = obs_rd_item.tran_id;
-              exp_rd_item.num_data = obs_rd_item.num_data;
-              repeat (exp_rd_item.num_data) begin
-                exp_rd_item.data_q.push_back(mirrored_txdata.pop_front);
-              end
-            end else begin
-              target_mode_rd_exp_fifo.get(exp_rd_item);
-            end
-            exp_rd_item.pname = "exp_rd";
-            `uvm_info(`gfn, $sformatf("\n%s", exp_rd_item.convert2string()), UVM_MEDIUM)
-            target_rd_comp(obs_rd_item, exp_rd_item);
-          end
-        end
-      join_none
-    //-----------------------------------------------
-    // Checks for I2C DUT in HOST mode
-    // - (agent in TARGET/DEVICE mode)
-    //-----------------------------------------------
-    end else if (cfg.m_i2c_agent_cfg.if_mode == Device) begin
-      forever begin
-        `DV_SPINWAIT_EXIT(
-          fork
-            compare_trans(BusOpWrite);
-            compare_trans(BusOpRead);
-          join,
-          @(negedge cfg.clk_rst_vif.rst_n),
-        )
-      end
-    end
-  endtask : run_phase
 
-  // Task to sample the i2c_scl_stretch_cg based on the interrupts and FIFO status
-  task sample_scl_stretch_cg();
-    if (cfg.en_cov) begin
-      fork
+    if (cfg.en_cov) collect_scl_stretch_cg();
+
+    case (cfg.m_i2c_agent_cfg.if_mode)
+      //-----------------------------------------------
+      // DUT:Agent == TARGET:CONTROLLER
+      //-----------------------------------------------
+      Host: begin
+        // Spawn two threads which await and check read and write
+        // transactions independently.
+        fork
+          // Compare write transactions
+          forever begin
+            fork begin: iso_fork
+              // The event 'reset_dut_target_wr_compare' can be used to
+              // abandon the current comparison routine, and force it to
+              // start again at the top. This is useful for fault-injection.
+              fork
+                compare_target_write_trans();
+                begin
+                  reset_dut_target_wr_compare.wait_trigger();
+                  `uvm_info(`gfn, "dut_target_wr_compare routine is reset now.", UVM_MEDIUM)
+                end
+              join_any
+              disable fork;
+            end : iso_fork join
+          end
+          // Compare seq_items for read transactions
+          forever begin
+            fork begin: iso_fork2
+              // The event 'reset_dut_target_rd_compare' can be used to
+              // abandon the current comparison routine, and force it to
+              // start again at the top. This is useful for fault-injection.
+              fork
+                compare_target_read_trans();
+                begin
+                  reset_dut_target_rd_compare.wait_trigger();
+                  `uvm_info(`gfn, "dut_target_rd_compare routine is reset now.", UVM_MEDIUM)
+                end
+              join_any
+              disable fork;
+            end : iso_fork2 join
+          end
+        join_none
+      end
+      //-----------------------------------------------
+      // DUT:Agent == CONTROLLER:TARGET
+      //-----------------------------------------------
+      Device: begin
+        // Spawn two parallel threads to check read and write
+        // transactions respectively.
         forever begin
-          uint acqlvl, txlvl;
-          bit timeout_ctrl_en;
-          fork
-            wait(cfg.intr_vif.pins[StretchTimeout]);
-            wait(cfg.intr_vif.pins[TxStretch]);
-            wait(cfg.intr_vif.pins[AcqStretch]);
-          join_any
-          csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl), .backdoor(UVM_BACKDOOR));
-          csr_rd(.ptr(ral.target_fifo_status.txlvl), .value(txlvl), .backdoor(UVM_BACKDOOR));
-          cov.scl_stretch_cg.sample(
-            .host_mode(host_init),
-            .intr_stretch_timeout(cfg.intr_vif.pins[StretchTimeout]),
-            .host_timeout_ctrl_en(host_timeout_ctrl_en),
-            .intr_tx_stretch(cfg.intr_vif.pins[TxStretch]),
-            .intr_acq_stretch(cfg.intr_vif.pins[AcqStretch]),
-            .acq_fifo_size(acqlvl),
-            .tx_fifo_size(txlvl)
-            );
-        cfg.clk_rst_vif.wait_clks(1);
+          `DV_SPINWAIT_EXIT(
+            // WAIT_
+            wait(cfg.clk_rst_vif.rst_n === 1'b1)
+            fork
+              forever compare_controller_trans(BusOpWrite);
+              forever compare_controller_trans(BusOpRead);
+            join,
+            // EXIT_
+            @(negedge cfg.clk_rst_vif.rst_n),
+          )
         end
-      join_none
-    end
-  endtask
+      end
+      default:;
+    endcase
+  endtask: run_phase
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg   csr;
-    i2c_item  sb_exp_wr_item; // tmpvar : Push into 'exp_wr_q' once a full txn is assembled
-    i2c_item  sb_exp_rd_item; // tmpvar : Push into 'exp_rd_q' once a full txn is assembled
-    i2c_item  temp_item;
-
-    // After reads, if do_read_check is set, compare the mirrored_value against item.d_data
-    bit do_read_check = 1'b1;
+    dv_base_reg_block i2c_ral = cfg.ral_models[ral_name];
+    uvm_reg_addr_t csr_addr = i2c_ral.get_word_aligned_addr(item.a_addr);
+    uvm_reg csr;
 
     bit write = item.is_write();
-    bit addr_phase_read = (!write && channel == AddrChannel);
-    bit addr_phase_write = (write && channel == AddrChannel);
-    bit data_phase_read = (!write && channel == DataChannel);
-    bit data_phase_write = (write && channel == DataChannel);
+    bit tl_get           = (!write && channel == AddrChannel);
+    bit tl_putdata       =  (write && channel == AddrChannel); // write
+    bit tl_accessackdata = (!write && channel == DataChannel); // read
+    bit tl_accessack     =  (write && channel == DataChannel);
 
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-    end else begin
-      `uvm_fatal(`gfn, $sformatf("\naccess unexpected addr 0x%0h", csr_addr))
+    // If access was not addressed to a valid csr, raise a fatal error
+    if (!(csr_addr inside {i2c_ral.csr_addrs})) begin
+      `uvm_fatal(`gfn, $sformatf("An unexpected addr 0x%8h was accessed.", csr_addr))
     end
 
-    // The access is to a valid CSR, now process it.
-    // writes -> update local variable and fifo at A-channel access
-    // reads  -> update predication at address phase and compare at D-channel access
+    // The access was to a valid csr, so get the corresponding RAL csr handle
+    csr = i2c_ral.default_map.get_reg_by_offset(csr_addr);
+    `DV_CHECK_NE_FATAL(csr, null)
 
-    sb_exp_wr_item = new();
-    if (addr_phase_write) begin
-      // incoming access is a write to a valid csr, so make updates right away
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+    // Update the reference model based on the TL-UL access
+    // - This also updates the RAL
+    model.process_tl_access(item, channel, ral_name, csr);
 
-      case (csr.get_name())
-        "ctrl": begin
-          host_init = ral.ctrl.enablehost.get_mirrored_value();
-          if (cfg.en_cov) begin
-            cov.openting_mode_cg.sample(.ip_mode(host_init),
-                                        .tb_mode(!host_init),
-                                        .scl_frequency(cfg.scl_frequency));
-          end
-        end
-        "timeout_ctrl": begin
-          host_timeout_ctrl_en = ral.timeout_ctrl.en.get_mirrored_value();
-        end
-
-        "target_id": begin
-           cfg.m_i2c_agent_cfg.target_addr0 = get_field_val(ral.target_id.address0, item.a_data);
-           cfg.m_i2c_agent_cfg.target_addr1 = get_field_val(ral.target_id.address1, item.a_data);
-        end
-
-        "fdata": begin
-          bit [7:0] fbyte;
-          bit start, stop, read, rcont, nakok;
-          if (!cfg.under_reset && host_init) begin
-            fbyte = get_field_val(ral.fdata.fbyte, item.a_data);
-            start = bit'(get_field_val(ral.fdata.start, item.a_data));
-            stop  = bit'(get_field_val(ral.fdata.stop, item.a_data));
-            read  = bit'(get_field_val(ral.fdata.readb, item.a_data));
-            rcont = bit'(get_field_val(ral.fdata.rcont, item.a_data));
-            nakok = bit'(get_field_val(ral.fdata.nakok, item.a_data));
-            if (cfg.en_cov) begin
-              i2c_item fmt_data;
-              fmt_fifo_data.fbyte = fbyte;
-              fmt_fifo_data.start = start;
-              fmt_fifo_data.stop  = stop;
-              fmt_fifo_data.read  = read;
-              fmt_fifo_data.rcont = rcont;
-              fmt_fifo_data.nakok = nakok;
-              `downcast(fmt_data, fmt_fifo_data.clone());
-              fmt_fifo_data_q.push_back(fmt_data); // push data to fmt_fifo_data_q
-            end
-            // target address is begin programmed to begin a transaction
-            if (start) begin
-              tran_id++;
-              if (exp_wr_item.start && !sb_exp_wr_item.stop &&
-                  exp_wr_item.bus_op == BusOpWrite) begin
-                // write transaction ends with rstart
-                exp_wr_item.rstart = 1'b1;
-                `downcast(sb_exp_wr_item, exp_wr_item.clone());
-                sb_exp_wr_item.stop = 1'b1;
-                exp_wr_item.clear_all();
-              end
-              if (fbyte[0]) begin
-                // read transaction
-                exp_rd_item.tran_id = tran_id;
-                exp_rd_item.bus_op  = BusOpRead;
-                exp_rd_item.addr    = fbyte[7:1];
-                exp_rd_item.start   = start;
-                exp_rd_item.stop    = stop;
-              end else begin
-                // write transaction
-                exp_wr_item.tran_id = tran_id;
-                exp_wr_item.bus_op  = BusOpWrite;
-                exp_wr_item.addr    = fbyte[7:1];
-                exp_wr_item.start   = start;
-                exp_wr_item.stop    = stop;
-              end
-            end else begin // transaction begins with started/rstarted
-              // write transaction
-              if (exp_wr_item.start && exp_wr_item.bus_op == BusOpWrite) begin
-                // irq is asserted with 2 latency cycles (#3422)
-                cfg.clk_rst_vif.wait_clks(2);
-                exp_wr_item.data_q.push_back(fbyte);
-                exp_wr_item.num_data++;
-                exp_wr_item.stop = stop;
-                if (exp_wr_item.stop) begin
-                  // get a complete write
-                  `downcast(sb_exp_wr_item, exp_wr_item.clone());
-                  exp_wr_item.clear_all();
-                end
-              end
-              // read transaction
-              if (exp_rd_item.start && exp_rd_item.bus_op == BusOpRead) begin
-                if (read) begin
-                  i2c_item tmp_rd_item;
-                  uint num_rd_bytes = (fbyte == 8'd0) ? 256 : fbyte;
-                  // get the number of byte to read
-                  if (exp_rd_item.rcont && (rcont || stop)) begin
-                    exp_rd_item.num_data += num_rd_bytes; // accumulate for chained reads
-                  end else begin
-                    exp_rd_item.num_data  = num_rd_bytes;
-                  end
-                  exp_rd_item.stop   = stop;
-                  exp_rd_item.rcont  = rcont;
-                  exp_rd_item.read   = read;
-                  exp_rd_item.nakok  = nakok;
-                  exp_rd_item.nack   = ~exp_rd_item.rcont;
-                  exp_rd_item.rstart = (exp_rd_item.stop) ? 1'b0 : 1'b1;
-                  // decrement since data is dropped by rx_overflow
-                  if (cfg.seq_cfg.en_rx_overflow) exp_rd_item.num_data--;
-
-                  // always push the expected transaction into the queue and handle during
-                  // rdata.
-                  `downcast(tmp_rd_item, exp_rd_item.clone());
-                  rd_pending_q.push_back(tmp_rd_item);
-                  `uvm_info(`gfn, $sformatf("\nrd_pending_q.push_back"), UVM_DEBUG)
-                  if (exp_rd_item.stop) begin
-                    `uvm_info(`gfn, $sformatf("\nscoreboard, partial exp_rd_item\n\%s",
-                        exp_rd_item.sprint()), UVM_DEBUG)
-                    exp_rd_item.start = 0;
-                    exp_rd_item.clear_data();
-                  end
-                end
-              end
-            end
-          end
-        end
-
-        "fifo_ctrl": begin
-          // these fields are WO
-          bit fmtrst_val = bit'(get_field_val(ral.fifo_ctrl.fmtrst, item.a_data));
-          bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
-          bit acqrst_val = bit'(get_field_val(ral.fifo_ctrl.acqrst, item.a_data));
-          bit txrst_val = bit'(get_field_val(ral.fifo_ctrl.txrst, item.a_data));
-          if (rxrst_val) begin
-            rd_item_fifo.flush();
-            exp_rd_q.delete();
-            rd_pending_q.delete();
-            rd_pending_item.clear_all();
-            exp_rd_item.clear_all();
-          end
-          if (cfg.en_cov) begin
-            if (fmtrst_val) begin
-              fmt_fifo_data_q.delete();
-            end
-            cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
-                                         .fifolvl(`gmv(ral.host_fifo_status.fmtlvl)),
-                                         .rst(fmtrst_val));
-            cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
-                                        .fifolvl(`gmv(ral.host_fifo_status.rxlvl)),
-                                        .rst(rxrst_val));
-            cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
-                                     .rxrst (rxrst_val),
-                                     .acqrst(acqrst_val),
-                                     .txrst (txrst_val),
-                                     .fmt_threshold(cfg.intr_vif.pins[FmtThreshold]),
-                                     .rx_threshold (cfg.intr_vif.pins[RxThreshold]),
-                                     .acq_threshold(cfg.intr_vif.pins[AcqThreshold]),
-                                     .rx_overflow  (cfg.intr_vif.pins[RxOverflow]),
-                                     .acq_overflow (cfg.intr_vif.pins[AcqStretch]),
-                                     .tx_threshold (cfg.intr_vif.pins[TxThreshold]));
-          end
-        end
-
-        "intr_test": begin
-          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
-          intr_exp |= item.a_data;
-          if (cfg.en_cov) begin
-            i2c_intr_e intr;
-            foreach (intr_exp[i]) begin
-              intr = i2c_intr_e'(i); // cast to enum to get interrupt name
-              cov.intr_test_cg.sample(intr, item.a_data[i], intr_en[i], intr_exp[i]);
-            end
-          end
-          if (cfg.en_cov) begin
-            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
-                                     .intr_enable(ral.intr_enable.get_mirrored_value()),
-                                     .intr_test(item.a_data));
-          end
-        end
-
-        "intr_enable" : begin
-          if (cfg.en_cov) begin
-            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
-                                     .intr_enable(item.a_data),
-                                     .intr_test(ral.intr_test.get_mirrored_value()));
-          end
-        end
-
-        "txdata": begin
-          if (cfg.read_rnd_data) begin
-            mirrored_txdata.push_back(item.a_data[7:0]);
-          end
-        end
-        "timing0": begin
-          if (cfg.en_cov) begin
-            cov.thigh_cg.sample(`gmv(ral.timing0.thigh));
-            cov.tlow_cg.sample(`gmv(ral.timing0.thigh));
-          end
-        end
-        "timing1": begin
-          if (cfg.en_cov) begin
-            cov.t_r_cg.sample(`gmv(ral.timing1.t_r));
-            cov.t_f_cg.sample(`gmv(ral.timing1.t_f));
-          end
-        end
-        "timing2": begin
-          if (cfg.en_cov) begin
-            cov.tsu_sta_cg.sample(`gmv(ral.timing2.tsu_sta));
-            cov.thd_sta_cg.sample(`gmv(ral.timing2.thd_sta));
-          end
-        end
-        "timing3": begin
-          if (cfg.en_cov) begin
-            cov.tsu_dat_cg.sample(`gmv(ral.timing3.tsu_dat));
-            cov.thd_dat_cg.sample(`gmv(ral.timing3.thd_dat));
-          end
-        end
-        "timing4": begin
-          if (cfg.en_cov) begin
-            cov.t_buf_cg.sample(`gmv(ral.timing4.t_buf));
-            cov.tsu_sto_cg.sample(`gmv(ral.timing4.tsu_sto));
-          end
-        end
-      endcase
-
-      if (cfg.under_reset || !host_init) return;
-      // If we have completed a transaction (detected both start and stop)
-      //   - Push a completed txn item to the queue
-      if (sb_exp_wr_item.start &&
-          sb_exp_wr_item.stop) begin
-        exp_wr_q.push_back(sb_exp_wr_item); num_exp_tran++;
-        `uvm_info(`gfn,
-          $sformatf("\nscoreboard, push to queue, exp_wr_item\n\%s", sb_exp_wr_item.sprint()),
-          UVM_DEBUG)
-      end
-    end // addr_phase_write
-
-    sb_exp_rd_item = new();
-    if (data_phase_read) begin
-      case (csr.get_name())
-
-        "rdata": begin
-          do_read_check = 1'b0;
-          if (host_init) begin
-            // If read data count is 0, it means the transaction has not yet started.
-            // If read data count is non-zero and equals the expected number of data while the stop
-            // bit is not set, it means a chained read has been issued and we need to update the
-            // expected transaction.
-            if (rdata_cnt == 0 ||
-                rdata_cnt == rd_pending_item.num_data && !rd_pending_item.stop) begin
-              // for on-the-fly reset, immediately finish task to avoid blocking
-              wait(rd_pending_q.size() > 0 || cfg.under_reset);
-              if (cfg.under_reset) return;
-              temp_item = rd_pending_q.pop_front();
-
-              if (rdata_cnt == 0) begin
-                // if rdata_cnt is 0, use transaction directly since it is the first
-                rd_pending_item = temp_item;
-              end else begin
-                // if rdata_cnt is non_zero, then we are part of chain read. Update the
-                // expected number of bytes and stop bit as required.
-                rd_pending_item.num_data = temp_item.num_data;
-                rd_pending_item.stop = temp_item.stop;
-              end
-            end
-            rd_pending_item.data_q.push_back(item.d_data);
-            rdata_cnt++;
-            `uvm_info(`gfn,
-              $sformatf("\nscoreboard, rd_pending_item\n\%s", rd_pending_item.sprint()),
-              UVM_DEBUG)
-            // Push completed read transactions into the 'exp_rd_q'
-            if (rd_pending_item.num_data == rdata_cnt &&
-                rd_pending_item.stop) begin
-              `downcast(sb_exp_rd_item, rd_pending_item.clone());
-              if (!cfg.under_reset) exp_rd_q.push_back(sb_exp_rd_item);
-              num_exp_tran++;
-              `uvm_info(`gfn,
-                $sformatf("\nscoreboard, push to queue, exp_rd_item\n\%s", sb_exp_rd_item.sprint()),
-                UVM_DEBUG)
-              rdata_cnt = 0;
-            end
-          end
-        end
-
-        "intr_state": begin
-          i2c_intr_e     intr;
-          bit [TL_DW-1:0] intr_en = item.d_data;
-          do_read_check = 1'b0;
-          foreach (intr_exp[i]) begin
-            intr = i2c_intr_e'(i); // cast to enum to get interrupt name
-            if (cfg.en_cov) begin
-              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
-              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
-            end
-          end
-          if (cfg.en_cov) begin
-            cov.interrupts_cg.sample(.intr_state(item.a_data),
-                                     .intr_enable(ral.intr_enable.get_mirrored_value()),
-                                     .intr_test(ral.intr_test.get_mirrored_value()));
-          end
-        end
-        "intr_test" : begin
-          if (cfg.en_cov) begin
-            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
-                                     .intr_enable(ral.intr_enable.get_mirrored_value()),
-                                     .intr_test(item.a_data));
-          end
-        end
-        "intr_enable" : begin
-          if (cfg.en_cov) begin
-            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
-                                     .intr_enable(item.a_data),
-                                     .intr_test(ral.intr_test.get_mirrored_value()));
-          end
-        end
-
-        "status": begin
-          do_read_check = 1'b0;
-          if (cfg.en_cov) begin
-            cov.status_cg.sample(
-              .fmtfull   (`gmv(ral.status.fmtfull)),
-              .rxfull    (`gmv(ral.status.rxfull)),
-              .fmtempty  (`gmv(ral.status.fmtempty)),
-              .hostidle  (`gmv(ral.status.hostidle)),
-              .targetidle(`gmv(ral.status.targetidle)),
-              .rxempty   (`gmv(ral.status.rxempty)),
-              .txfull    (`gmv(ral.status.txfull)),
-              .acqfull   (`gmv(ral.status.acqfull)),
-              .txempty   (`gmv(ral.status.txempty)),
-              .acqempty  (`gmv(ral.status.acqempty))
-            );
-          end
-        end
-
-        "host_fifo_status": do_read_check = 1'b0;
-        "target_fifo_status": do_read_check = 1'b0;
-
-        "acqdata": begin
-          i2c_item obs;
-          `uvm_create_obj(i2c_item, obs);
-          obs = acq2item(item.d_data);
-          obs.tran_id = cfg.rcvd_acq_cnt++;
-          target_mode_wr_obs_port.write(obs);
-          do_read_check = 1'b0;
-          if (cfg.en_cov) begin
-            cov.acq_fifo_cg.sample(.abyte(item.d_data[7:1]),
-                                   .rw_ack_nack(item.d_data[0]),
-                                   .signal(item.d_data[9:8]));
-          end
-        end
-
-        "ovrd": begin
-          do_read_check = 1'b0;
-          if (cfg.en_cov) begin
-            cov.scl_sda_override_cg.sample(
-              .txovrden(`gmv(ral.ovrd.txovrden)),
-              .sclval(`gmv(ral.ovrd.sclval)),
-              .sdaval(`gmv(ral.ovrd.sdaval))
-            );
-          end
-        end
-
-        "host_fifo_config":   do_read_check = 1'b0;
-        "target_fifo_config": do_read_check = 1'b0;
-
-        default: do_read_check = 1'b0;
-      endcase
-
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-            $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-    end // data_phase_read
+    // Collect fcov based on the access
+    if (tl_putdata) sample_write_coverage(item.a_data, csr);
+    if (tl_accessackdata) sample_read_coverage(item.d_data, csr);
   endtask : process_tl_access
 
-  // Task to sample FMT FIFO data along with ACK/NACK status
-  // For Read transactions, one entry of FMT FIFO data is sampled
-  //     since read data is captured in RXDAT FIFO
-  // For Write transactions, multiple entries of FMT FIFO data are sampled
-  //     since write data is encoded in to multiple fbyte values
-  task sample_fmt_fifo_data(ref i2c_item dut_trn);
-    if (cfg.en_cov) begin
-      i2c_item fmt_data;
-      `uvm_info(`gfn, $sformatf("exp_txn.addr_ack = %0b", dut_trn.addr_ack), UVM_DEBUG)
-      fmt_data = fmt_fifo_data_q.pop_front();
-      `uvm_info(`gfn, dut_trn.sprint(), UVM_DEBUG)
-      `uvm_info(`gfn, fmt_data.sprint(), UVM_DEBUG)
-      cov.fmt_fifo_cg.sample(
-        .fbyte(fmt_data.fbyte),
-        .start(fmt_data.start),
-        .stop(fmt_data.stop),
-        .read(fmt_data.read),
-        .rcont(fmt_data.rcont),
-        .nakok(fmt_data.nakok),
-        .ack_int_recv(dut_trn.read ? dut_trn.ack : dut_trn.addr_ack)
-        );
-        `uvm_info(`gfn,
-          $sformatf("fmt_data.size = %0d ; dut_trn.size = %0d",
-            fmt_fifo_data_q.size(),
-            dut_trn.data_q.size()),
-          UVM_MEDIUM)
-      if (dut_trn.bus_op != BusOpRead) begin
-        foreach(dut_trn.data_q[i]) begin
-          fmt_data = fmt_fifo_data_q.pop_front();
-          cov.fmt_fifo_cg.sample(
-            .start(fmt_data.start),
-            .stop(fmt_data.stop),
-            .read(fmt_data.read),
-            .rcont(fmt_data.rcont),
-            .nakok(fmt_data.nakok),
-            .fbyte(fmt_data.fbyte),
-            .ack_int_recv(fmt_data.data_ack_q[i])
+
+  // Sample functional coverage points based on write data to a valid CSR.
+  //
+  virtual task sample_write_coverage(bit [bus_params_pkg::BUS_DW-1:0] data, uvm_reg csr);
+
+    case (csr.get_name())
+      "ctrl": begin
+        if (cfg.en_cov) begin
+          cov.openting_mode_cg.sample(.ip_mode(`gmv(ral.ctrl.enablehost)),
+                                      .tb_mode(!(`gmv(ral.ctrl.enablehost))),
+                                      .scl_frequency(cfg.scl_frequency));
+        end
+      end
+
+      "fdata": begin // aka. FMTFIFO
+
+        // Only capture coverage if not in reset, and HOST/CONTROLLER mode
+        // is active.
+        if (!cfg.under_reset && `gmv(ral.ctrl.enablehost)) begin
+
+          bit [7:0] fbyte = get_field_val(ral.fdata.fbyte, data);
+          bit start = get_field_val(ral.fdata.start, data);
+          bit stop  = get_field_val(ral.fdata.stop, data);
+          bit readb = get_field_val(ral.fdata.readb, data);
+          bit rcont = get_field_val(ral.fdata.rcont, data);
+          bit nakok = get_field_val(ral.fdata.nakok, data);
+
+          // Sample for coverage
+          // - Data is pushed to 'fmt_fifo_data_q', which is popped off in
+          //   sample_fmt_fifo_data() when both exp/obs parts of the transfer
+          //   have been captured for comparison.
+          if (cfg.en_cov) begin
+            i2c_item fmt_fifo_data;
+            `uvm_create_obj(i2c_item, fmt_fifo_data)
+            fmt_fifo_data.fbyte = fbyte;
+            fmt_fifo_data.start = start;
+            fmt_fifo_data.stop  = stop;
+            fmt_fifo_data.read  = readb;
+            fmt_fifo_data.rcont = rcont;
+            fmt_fifo_data.nakok = nakok;
+            fmt_fifo_data_q.push_back(fmt_fifo_data);
+          end
+
+        end // (!cfg.under_reset && `gmv(ral.ctrl.enablehost))
+
+      end
+
+      "fifo_ctrl": begin
+        // these fields are WO
+        bit fmtrst_val = get_field_val(ral.fifo_ctrl.fmtrst, data);
+        bit rxrst_val = get_field_val(ral.fifo_ctrl.rxrst, data);
+        bit acqrst_val = get_field_val(ral.fifo_ctrl.acqrst, data);
+        bit txrst_val = get_field_val(ral.fifo_ctrl.txrst, data);
+        if (rxrst_val) begin
+          // TODO: FLUSH FIFOS
+        end
+        if (cfg.en_cov) begin
+          if (fmtrst_val) fmt_fifo_data_q.delete();
+          cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
+                                       .fifolvl(`gmv(ral.host_fifo_status.fmtlvl)),
+                                       .rst(fmtrst_val));
+          cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
+                                      .fifolvl(`gmv(ral.host_fifo_status.rxlvl)),
+                                      .rst(rxrst_val));
+          cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
+                                   .rxrst (rxrst_val),
+                                   .acqrst(acqrst_val),
+                                   .txrst (txrst_val),
+                                   .fmt_threshold(cfg.intr_vif.pins[FmtThreshold]),
+                                   .rx_threshold (cfg.intr_vif.pins[RxThreshold]),
+                                   .acq_threshold(cfg.intr_vif.pins[AcqThreshold]),
+                                   .rx_overflow  (cfg.intr_vif.pins[RxOverflow]),
+                                   .acq_overflow (cfg.intr_vif.pins[AcqStretch]),
+                                   .tx_threshold (cfg.intr_vif.pins[TxThreshold]));
+        end
+      end
+
+      "intr_test": begin
+        bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+        intr_exp |= data;
+        if (cfg.en_cov) begin
+          i2c_intr_e intr;
+          foreach (intr_exp[i]) begin
+            intr = i2c_intr_e'(i); // cast to enum to get interrupt name
+            cov.intr_test_cg.sample(intr, data[i], intr_en[i], intr_exp[i]);
+          end
+        end
+        if (cfg.en_cov) begin
+          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                   .intr_enable(`gmv(ral.intr_enable)),
+                                   .intr_test(data));
+        end
+      end
+
+      "intr_enable" : begin
+        if (cfg.en_cov) begin
+          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                   .intr_enable(data),
+                                   .intr_test(`gmv(ral.intr_test)));
+        end
+      end
+
+      "timing0": begin
+        if (cfg.en_cov) begin
+          cov.thigh_cg.sample(`gmv(ral.timing0.thigh));
+          cov.tlow_cg.sample(`gmv(ral.timing0.thigh));
+        end
+      end
+      "timing1": begin
+        if (cfg.en_cov) begin
+          cov.t_r_cg.sample(`gmv(ral.timing1.t_r));
+          cov.t_f_cg.sample(`gmv(ral.timing1.t_f));
+        end
+      end
+      "timing2": begin
+        if (cfg.en_cov) begin
+          cov.tsu_sta_cg.sample(`gmv(ral.timing2.tsu_sta));
+          cov.thd_sta_cg.sample(`gmv(ral.timing2.thd_sta));
+        end
+      end
+      "timing3": begin
+        if (cfg.en_cov) begin
+          cov.tsu_dat_cg.sample(`gmv(ral.timing3.tsu_dat));
+          cov.thd_dat_cg.sample(`gmv(ral.timing3.thd_dat));
+        end
+      end
+      "timing4": begin
+        if (cfg.en_cov) begin
+          cov.t_buf_cg.sample(`gmv(ral.timing4.t_buf));
+          cov.tsu_sto_cg.sample(`gmv(ral.timing4.tsu_sto));
+        end
+      end
+
+      default:;
+    endcase
+
+  endtask: sample_write_coverage
+
+
+  // Sample functional coverage points based on read data from a valid CSR.
+  //
+  virtual task sample_read_coverage(bit [bus_params_pkg::BUS_DW-1:0] data, uvm_reg csr);
+
+    case (csr.get_name())
+      "rdata":;
+
+      "intr_state": begin
+        i2c_intr_e intr;
+        bit [TL_DW-1:0] intr_en = data;
+        foreach (intr_exp[i]) begin
+          intr = i2c_intr_e'(i); // cast to enum to get interrupt name
+          if (cfg.en_cov) begin
+            cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+            cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+          end
+        end
+        if (cfg.en_cov) begin
+          cov.interrupts_cg.sample(.intr_state(data),
+                                   .intr_enable(`gmv(ral.intr_enable)),
+                                   .intr_test(`gmv(ral.intr_test)));
+        end
+      end
+      "intr_test" : begin
+        if (cfg.en_cov) begin
+          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                   .intr_enable(`gmv(ral.intr_enable)),
+                                   .intr_test(data));
+        end
+      end
+      "intr_enable" : begin
+        if (cfg.en_cov) begin
+          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                   .intr_enable(data),
+                                   .intr_test(`gmv(ral.intr_test)));
+        end
+      end
+
+      "status": begin
+        if (cfg.en_cov) begin
+          cov.status_cg.sample(
+            .fmtfull   (`gmv(ral.status.fmtfull)),
+            .rxfull    (`gmv(ral.status.rxfull)),
+            .fmtempty  (`gmv(ral.status.fmtempty)),
+            .hostidle  (`gmv(ral.status.hostidle)),
+            .targetidle(`gmv(ral.status.targetidle)),
+            .rxempty   (`gmv(ral.status.rxempty)),
+            .txfull    (`gmv(ral.status.txfull)),
+            .acqfull   (`gmv(ral.status.acqfull)),
+            .txempty   (`gmv(ral.status.txempty)),
+            .acqempty  (`gmv(ral.status.acqempty))
           );
         end
       end
-    end
 
+      "acqdata": begin
+        if (cfg.en_cov) begin
+          cov.acq_fifo_cg.sample(.abyte(data[7:1]),
+                                 .rw_ack_nack(data[0]),
+                                 .signal(data[9:8]));
+        end
+      end
+
+      "ovrd": begin
+        if (cfg.en_cov) begin
+          cov.scl_sda_override_cg.sample(
+            .txovrden(`gmv(ral.ovrd.txovrden)),
+            .sclval(`gmv(ral.ovrd.sclval)),
+            .sdaval(`gmv(ral.ovrd.sdaval))
+            );
+        end
+      end
+
+      default:;
+    endcase
+
+  endtask: sample_read_coverage
+
+  // Task to sample FMT FIFO data along with ACK/NACK status
+  // For Read transactions, one entry of FMT FIFO data is sampled
+  //     since read data is captured in RXFIFO
+  // For Write transactions, multiple entries of FMT FIFO data are sampled
+  //     since write data is encoded in to multiple fbyte values
+  task sample_fmt_fifo_data(ref i2c_item dut_trn);
+    i2c_item fmt_data;
+    `uvm_info(`gfn, $sformatf("exp_txn.addr_ack = %0b", dut_trn.addr_ack), UVM_DEBUG)
+    fmt_data = fmt_fifo_data_q.pop_front();
+    `uvm_info(`gfn, dut_trn.sprint(), UVM_DEBUG)
+    `uvm_info(`gfn, fmt_data.sprint(), UVM_DEBUG)
+    cov.fmt_fifo_cg.sample(
+      .fbyte(fmt_data.fbyte),
+      .start(fmt_data.start),
+      .stop(fmt_data.stop),
+      .read(fmt_data.read),
+      .rcont(fmt_data.rcont),
+      .nakok(fmt_data.nakok),
+      .ack_int_recv(dut_trn.read ? dut_trn.ack : dut_trn.addr_ack)
+    );
+    `uvm_info(`gfn, $sformatf("fmt_data.size = %0d ; dut_trn.size = %0d",
+      fmt_fifo_data_q.size(), dut_trn.data_q.size()), UVM_MEDIUM)
+
+    if (dut_trn.bus_op != BusOpRead) begin
+      foreach(dut_trn.data_q[i]) begin
+        fmt_data = fmt_fifo_data_q.pop_front();
+        cov.fmt_fifo_cg.sample(
+          .start(fmt_data.start),
+          .stop(fmt_data.stop),
+          .read(fmt_data.read),
+          .rcont(fmt_data.rcont),
+          .nakok(fmt_data.nakok),
+          .fbyte(fmt_data.fbyte),
+          .ack_int_recv(fmt_data.data_ack_q[i])
+        );
+      end
+    end
   endtask
 
-  task compare_trans(bus_op_e dir = BusOpWrite);
-    i2c_item   exp_trn;
-    i2c_item   dut_trn;
-    int        lastidx;
-    forever begin
-      if (dir == BusOpWrite) begin
-        wr_item_fifo.get(dut_trn);
-        if (cfg.en_cov) begin
-          cov.sample_i2c_b2b_cg(dut_trn.addr, ral.ctrl.enablehost.get_mirrored_value());
-        end
-        wait(exp_wr_q.size() > 0);
-        lastidx = dut_trn.data_q.size();
-        cfg.lastbyte = dut_trn.data_q[lastidx - 1];
-        exp_trn = exp_wr_q.pop_front();
-      end else begin  // BusOpRead
-        rd_item_fifo.get(dut_trn);
-        if (cfg.en_cov) begin
-          cov.sample_i2c_b2b_cg(dut_trn.addr, ral.ctrl.enablehost.get_mirrored_value());
-        end
-        wait(exp_rd_q.size() > 0);
-        exp_trn = exp_rd_q.pop_front();
+  // Task to sample the i2c_scl_stretch_cg based on the interrupts and FIFO status
+  task collect_scl_stretch_cg();
+    fork
+      forever begin
+        uint acqlvl, txlvl;
+        bit timeout_ctrl_en;
+        fork
+          wait(cfg.intr_vif.pins[StretchTimeout]);
+          wait(cfg.intr_vif.pins[TxStretch]);
+          wait(cfg.intr_vif.pins[AcqStretch]);
+        join_any
+        csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl), .backdoor(UVM_BACKDOOR));
+        csr_rd(.ptr(ral.target_fifo_status.txlvl), .value(txlvl), .backdoor(UVM_BACKDOOR));
+        cov.scl_stretch_cg.sample(
+          .host_mode(`gmv(ral.ctrl.enablehost)),
+          .intr_stretch_timeout(cfg.intr_vif.pins[StretchTimeout]),
+          .host_timeout_ctrl_en(`gmv(ral.timeout_ctrl.en)),
+          .intr_tx_stretch(cfg.intr_vif.pins[TxStretch]),
+          .intr_acq_stretch(cfg.intr_vif.pins[AcqStretch]),
+          .acq_fifo_size(acqlvl),
+          .tx_fifo_size(txlvl)
+        );
+        cfg.clk_rst_vif.wait_clks(1);
       end
-      sample_fmt_fifo_data(dut_trn);
-      if (!cfg.en_scb) begin // Skip comparison
-        `uvm_info(`gfn, "Scoreboard disabled", UVM_LOW)
-        continue;
+    join_none
+  endtask: collect_scl_stretch_cg
+
+  // Compare seq_items for write transactions
+  // OBS: captured byte-by-byte upon reading the ACQFIFO
+  // EXP: generated when we created the stimulus (fetch_txn())
+  //
+  // We only check the start, stop and wdata fields of the item.
+  task compare_target_write_trans();
+    i2c_item obs_wr, exp_wr;
+
+    // Block until both items are received
+    fork
+      begin
+        `uvm_info(`gfn, "Awaiting obs_wr item.", UVM_HIGH)
+        cfg.wait_fifo_not_empty(target_mode_wr_obs_fifo);
+        `uvm_info(`gfn, "obs_wr item has arrived, not yet popping from stack.", UVM_HIGH)
       end
-      // when rx_fifo is overflow, drop the last byte from dut_trn
-      if (cfg.seq_cfg.en_rx_overflow && dut_trn.bus_op == BusOpRead) begin
-        void'(dut_trn.data_q.pop_back());
-        dut_trn.num_data--;
+      begin
+        `uvm_info(`gfn, "Awaiting exp_wr item.", UVM_HIGH)
+        cfg.wait_fifo_not_empty(target_mode_wr_exp_fifo);
+        `uvm_info(`gfn, "exp_wr item has arrived, not yet popping from stack.", UVM_HIGH)
       end
-      if (!dut_trn.compare(exp_trn)) begin
-        if (!check_overflow_data_fmt_fifo(exp_trn, dut_trn)) begin  // see description below
-          `uvm_error(`gfn, $sformatf("\ndirection %s item mismatch!\n--> EXP:\n%0s\--> DUT:\n%0s",
-              (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()))
-        end
-      end else begin
-        `uvm_info(`gfn, $sformatf("\ndirection %s item match!\n--> EXP:\n%0s\--> DUT:\n%0s",
-            (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()), UVM_MEDIUM)
-      end
+    join
+    target_mode_wr_obs_fifo.get(obs_wr);
+    obs_wr.tran_id = dut_target_obs_write_transfer_id++;
+    `uvm_info(`gfn, $sformatf("Popped obs_wr item %0d.", obs_wr.tran_id), UVM_HIGH)
+    target_mode_wr_exp_fifo.get(exp_wr);
+    exp_wr.tran_id = dut_target_exp_write_transfer_id++;
+    `uvm_info(`gfn, $sformatf("Popped exp_wr item %0d.", exp_wr.tran_id), UVM_HIGH)
+
+    // Sample the covergroup before doing the comparison.
+    if (cfg.en_cov) begin
+      cov.sample_i2c_b2b_cg(obs_wr.addr, `gmv(ral.ctrl.enablehost));
     end
-  endtask : compare_trans
 
-  // this function check overflowed data occured in fmt_fifo does not exist
-  // in write transactions sent over busses
-  function bit check_overflow_data_fmt_fifo(i2c_item exp_trn, i2c_item dut_trn);
-    if (exp_trn.fmt_ovf_data_q.size() > 0) begin
-      bit [7:0] unique_q[$] = dut_trn.data_q.find with
-                              ( item inside {exp_trn.fmt_ovf_data_q} );
-      return (unique_q.size() == 0);
+    target_wr_comp(obs_wr, exp_wr);
+  endtask: compare_target_write_trans
+
+  // Compare seq_items for read transactions
+  // - OBS: Captured by the monitor
+  // - EXP: Created when we generated the stimulus (fetch_txn())
+  task compare_target_read_trans();
+    i2c_item obs_rd, exp_rd;
+
+    // Block until both items are received
+    fork
+      begin
+        `uvm_info(`gfn, "Awaiting obs_rd item.", UVM_HIGH)
+        cfg.wait_fifo_not_empty(target_mode_rd_obs_fifo);
+        `uvm_info(`gfn, "obs_rd item has arrived, not yet popping from stack.", UVM_HIGH)
+      end
+      begin
+        `uvm_info(`gfn, "Awaiting exp_rd item.", UVM_HIGH)
+        cfg.wait_fifo_not_empty(target_mode_rd_exp_fifo);
+        `uvm_info(`gfn, "exp_rd item has arrived, not yet popping from stack.", UVM_HIGH)
+      end
+    join
+    begin
+      i2c_item temp;
+      target_mode_rd_obs_fifo.get(temp);
+      `downcast(obs_rd, temp.clone())
+      obs_rd.tran_id = dut_target_obs_read_transfer_id++;
+      `uvm_info(`gfn, $sformatf("Got obs_rd item %0d.", obs_rd.tran_id), UVM_HIGH)
     end
-  endfunction : check_overflow_data_fmt_fifo
+    target_mode_rd_exp_fifo.get(exp_rd);
+    // Don't use the trans_id from the monitor, use our own local counter value.
+    exp_rd.tran_id = dut_target_exp_read_transfer_id++;
+    `uvm_info(`gfn, $sformatf("Got exp_rd item %0d.", exp_rd.tran_id), UVM_HIGH)
 
-  virtual function void reset(string kind = "HARD");
-    super.reset(kind);
-    // reset local fifos queues and variables
-    rd_item_fifo.flush();
-    wr_item_fifo.flush();
-    exp_rd_q.delete();
-    exp_wr_q.delete();
-    rd_pending_q.delete();
-    rd_pending_item.clear_all();
-    exp_rd_item.clear_all();
-    exp_wr_item.clear_all();
-    host_init    = 1'b0;
-    tran_id      = 0;
-    rdata_cnt    = 0;
-    num_exp_tran = 0;
-    `uvm_info(`gfn, "\n>>> reset scoreboard", UVM_DEBUG)
-    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_wr_q)
-    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_rd_q)
-    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, rd_pending_q)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, rd_item_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, wr_item_fifo)
-    num_obs_rd = 0;
-    obs_wr_id = 0;
-    target_mode_wr_exp_fifo.flush();
-    target_mode_wr_obs_fifo.flush();
-    target_mode_rd_exp_fifo.flush();
-    target_mode_rd_obs_fifo.flush();
-    mirrored_txdata.delete();
-    fmt_fifo_data_q.delete();
-  endfunction : reset
-
-  function void report_phase(uvm_phase phase);
-    string str;
-
-    super.report_phase(phase);
-    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_DEBUG)
-    if (cfg.en_scb) begin
-      str = {$sformatf("\n*** SCOREBOARD CHECK\n")};
-      str = {str, $sformatf("    - total checked trans   %0d\n", num_exp_tran)};
-      `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
+    // Sample the covergroup before doing the comparison.
+    if (cfg.en_cov) begin
+      cov.sample_i2c_b2b_cg(obs_rd.addr, `gmv(ral.ctrl.enablehost));
     end
-  endfunction : report_phase
 
-  function void check_phase(uvm_phase phase);
-    super.check_phase(phase);
-    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_wr_q)
-    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_rd_q)
-    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, rd_pending_q)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, rd_item_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, wr_item_fifo)
-  endfunction
+    obs_rd.pname = "obs_rd";
+    exp_rd.pname = "exp_rd";
+    target_rd_comp(obs_rd, exp_rd);
+  endtask: compare_target_read_trans
 
+  // This task compares either read or write transactions for the
+  // (DUT/AGENT == Controller/Target) configuration.
+  //
+  task compare_controller_trans(bus_op_e dir = BusOpWrite);
+    i2c_item exp, obs;
+
+    fork
+      begin
+        // Get OBS item
+        case (dir)
+          BusOpWrite: controller_mode_wr_obs_fifo.get(obs);
+          BusOpRead: controller_mode_rd_obs_fifo.get(obs);
+          default:;
+        endcase
+
+        // Save the last databyte of the write transaction, as some directed test
+        // sequences use it for checking purposes.
+        if (dir == BusOpWrite) cfg.lastbyte = obs.data_q[$];
+
+        // If 'seq_cfg.en_rx_overflow' was set, the stimulus has made the RXFIFO overflow,
+        // dropping the final byte.
+        // The observed item (from the monitor) will have seen the item, but it won't appear
+        // on the output of the DUT's RXFIFO, and hence in our exp item.
+        if (cfg.seq_cfg.en_rx_overflow && obs.bus_op == BusOpRead) begin
+          void'(obs.data_q.pop_back());
+          obs.num_data--;
+        end
+      end
+      begin
+        `uvm_info(`gfn, $sformatf("Awaiting exp_%0s item.", dir.name()), UVM_HIGH)
+        // Get EXP item
+        case (dir)
+          BusOpWrite: controller_mode_wr_exp_fifo.get(exp);
+          BusOpRead: controller_mode_rd_exp_fifo.get(exp);
+          default:;
+        endcase
+        // Increment the counter for each expected DUT-Controller transaction
+        exp.tran_id = dut_controller_transfer_id++;
+        `uvm_info(`gfn, $sformatf("Got exp_%0s item %0d.", dir.name(), exp.tran_id), UVM_MEDIUM)
+      end
+    join
+
+    if (cfg.en_cov) begin
+      cov.sample_i2c_b2b_cg(obs.addr, `gmv(ral.ctrl.enablehost));
+      sample_fmt_fifo_data(obs);
+    end
+
+    if (!cfg.en_scb) return; // Skip comparison
+
+    if (!obs.compare(exp)) begin
+      `uvm_error(`gfn, $sformatf(
+        "Miscompare: DUT-Controller, dir:%0s\n--> EXP:\n%0s\--> OBS:\n%0s",
+        dir.name(), exp.sprint(), obs.sprint()))
+    end else begin
+      `uvm_info(`gfn, $sformatf(
+        "Compare succeeded: DUT-Controller, dir:%0s\n--> EXP:\n%0s\--> OBS:\n%0s",
+        dir.name(), exp.sprint(), obs.sprint()), UVM_MEDIUM)
+    end
+  endtask : compare_controller_trans
+
+  // Compare seq_items for DUT-Target Write Transactions
+  //
   // Compare start, stop and wdata only
-  function void target_txn_comp(i2c_item obs, i2c_item exp, string str);
-    `uvm_info(`gfn, $sformatf("comp:target obs_%s_txn %0d\n%s", str, obs.tran_id, obs.sprint()),
-              UVM_MEDIUM)
+  function void target_wr_comp(i2c_item obs, i2c_item exp);
+    string str = (exp.start) ? "addr" : (exp.stop) ? "stop" : "";
+    `uvm_info(`gfn, $sformatf("target_wr_comp() exp_wr_txn (%0s) %0d\n%s",
+      str, exp.tran_id, exp.sprint()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("target_wr_comp() obs_wr_txn (%0s) %0d\n%s",
+      str, obs.tran_id, obs.sprint()), UVM_MEDIUM)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.start, exp.start)
@@ -770,11 +623,16 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     if (obs.stop == 0 && obs.rstart == 0) begin
       `DV_CHECK_EQ(obs.wdata, exp.wdata)
     end
-  endfunction // target_txn_comp
+  endfunction: target_wr_comp
 
+  // Compare seq_items for DUT-Target Read Transactions
+  //
   function void target_rd_comp(i2c_item obs, i2c_item exp);
-    `uvm_info(`gfn, $sformatf("comp:target obs_rd %0d\n%s", obs.tran_id, obs.convert2string()),
-              UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("target_rd_comp() exp_rd_txn %0d\n%s",
+      exp.tran_id, exp.sprint()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("target_rd_comp() obs_rd_txn %0d\n%s",
+      obs.tran_id, obs.sprint()), UVM_MEDIUM)
+
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.num_data, exp.num_data)
     `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
@@ -782,5 +640,49 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     foreach (exp.data_q[i]) begin
       `DV_CHECK_EQ(obs.data_q[i], exp.data_q[i])
     end
-  endfunction // target_rd_comp
+  endfunction: target_rd_comp
+
+  // Reset local fifos, queues and variables
+  virtual function void reset(string kind = "HARD");
+    super.reset(kind);
+
+    cfg.scoreboard.reset_dut_target_wr_compare.trigger();
+    cfg.scoreboard.reset_dut_target_rd_compare.trigger();
+
+    dut_target_exp_read_transfer_id = 0;
+    dut_target_obs_read_transfer_id = 0;
+    dut_target_exp_write_transfer_id = 0;
+    dut_target_obs_write_transfer_id = 0;
+    dut_controller_transfer_id = 0;
+    controller_mode_wr_exp_fifo.flush();
+    controller_mode_wr_obs_fifo.flush();
+    controller_mode_rd_exp_fifo.flush();
+    controller_mode_rd_obs_fifo.flush();
+    target_mode_wr_exp_fifo.flush();
+    target_mode_wr_obs_fifo.flush();
+    target_mode_rd_exp_fifo.flush();
+    target_mode_rd_obs_fifo.flush();
+    fmt_fifo_data_q.delete();
+
+    // Also reset the model when the scoreboard is reset (such as on dut_init())
+    model.reset();
+  endfunction : reset
+
+  function void check_phase(uvm_phase phase);
+    super.check_phase(phase);
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, controller_mode_rd_obs_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, controller_mode_wr_obs_fifo)
+  endfunction
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+
+    `uvm_info(`gfn, $sformatf("report_phase() i2c_env_cfg:\n%s", cfg.convert2string()), UVM_MEDIUM)
+
+    if (cfg.en_scb) begin
+      string str = {$sformatf("\nSCOREBOARD REPORT_PHASE\n")};
+      `uvm_info(`gfn, $sformatf("%s", str), UVM_MEDIUM)
+    end
+  endfunction : report_phase
+
 endclass : i2c_scoreboard
