@@ -18,9 +18,11 @@ package(default_visibility = ["//visibility:public"])
 _POSITIONS = {
     "slot_a": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "slot": "SlotA",
     },
     "slot_b": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
+        "slot": "SlotB",
     },
 }
 
@@ -45,30 +47,34 @@ _POSITIONS = {
     for name, position in _POSITIONS.items()
 ]
 
-opentitan_test(
-    name = "firmware",
-    cw310 = cw310_params(
-        assemble = "",
-        binaries = {
-            ":boot_test_slot_a": "slot_a",
+[
+    opentitan_test(
+        name = "rescue_firmware_{}".format(name),
+        cw310 = cw310_params(
+            assemble = "",
+            binaries = {
+                ":boot_test_{}".format(name): "payload",
+            },
+            slot = position["slot"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                # First make sure the ROM_EXT is faulting because there is no firmware
+                --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
+                # Load firmware via rescue
+                --exec="rescue firmware --slot={slot} {payload:signed_bin}"
+                # Check for firmware execution
+                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                no-op
+            """,
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         },
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {rom_ext}"
-            # First make sure the ROM_EXT is faulting because there is no firmware
-            --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
-            # Load firmware via rescue
-            --exec="rescue firmware {slot_a:signed_bin}"
-            # Check for firmware execution
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
-    ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
-)
+    )
+    for name, position in _POSITIONS.items()
+]
 
 opentitan_test(
     name = "next_slot",

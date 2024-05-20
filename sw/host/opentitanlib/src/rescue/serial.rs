@@ -23,11 +23,13 @@ pub struct RescueSerial {
 impl RescueSerial {
     const ONE_SECOND: Duration = Duration::from_secs(1);
     pub const RESCUE: [u8; 4] = *b"RESQ";
+    pub const RESCUE_B: [u8; 4] = *b"RESB";
     pub const REBOOT: [u8; 4] = *b"REBO";
     pub const BOOT_LOG: [u8; 4] = *b"BLOG";
     pub const BOOT_SVC_REQ: [u8; 4] = *b"BREQ";
     pub const BOOT_SVC_RSP: [u8; 4] = *b"BRSP";
     pub const OWNER_BLOCK: [u8; 4] = *b"OWNR";
+    pub const WAIT: [u8; 4] = *b"WAIT";
 
     pub fn new(uart: Rc<dyn Uart>) -> Self {
         RescueSerial {
@@ -61,13 +63,22 @@ impl RescueSerial {
         Ok(())
     }
 
+    pub fn wait(&self) -> Result<()> {
+        self.set_mode(Self::WAIT)?;
+        Ok(())
+    }
+
     pub fn reboot(&self) -> Result<()> {
         self.set_mode(Self::REBOOT)?;
         Ok(())
     }
 
-    pub fn update_firmware(&self, image: &[u8]) -> Result<()> {
-        self.set_mode(Self::RESCUE)?;
+    pub fn update_firmware(&self, slot: BootSlot, image: &[u8]) -> Result<()> {
+        self.set_mode(if slot == BootSlot::SlotB {
+            Self::RESCUE_B
+        } else {
+            Self::RESCUE
+        })?;
         let xm = Xmodem::new();
         xm.send(&*self.uart, image)?;
         Ok(())
