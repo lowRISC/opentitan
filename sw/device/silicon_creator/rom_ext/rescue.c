@@ -4,11 +4,13 @@
 
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/xmodem.h"
 
 #include "flash_ctrl_regs.h"
@@ -59,9 +61,48 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
   return kErrorOk;
 }
 
+static void change_speed(void) {
+  dbg_printf("ok: waiting for baudrate\r\n");
+  uint32_t speed = 0;
+  OT_DISCARD(uart_read((uint8_t *)&speed, sizeof(speed), 10000));
+  uint32_t nco;
+  switch (speed) {
+    case kRescueBaud115K:
+      nco = kUartBaud115K;
+      break;
+    case kRescueBaud230K:
+      nco = kUartBaud230K;
+      break;
+    case kRescueBaud460K:
+      nco = kUartBaud460K;
+      break;
+    case kRescueBaud921K:
+      nco = kUartBaud921K;
+      break;
+    case kRescueBaud1M33:
+      nco = kUartBaud1M33;
+      break;
+    case kRescueBaud1M50:
+      nco = kUartBaud1M50;
+      break;
+    default:
+      nco = 0;
+  }
+  if (nco) {
+    dbg_printf("ok: new baudrate %C\r\n", speed);
+    uart_init(nco);
+    uart_enable_receiver();
+  } else {
+    dbg_printf("error: unsupported baudrate %C\r\n", speed);
+  }
+}
+
 static void validate_mode(uint32_t mode, rescue_state_t *state) {
   dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
   switch (mode) {
+    case kRescueModeBaud:
+      change_speed();
+      return;
     case kRescueModeBootLog:
       dbg_printf("ok: receive boot_log via xmodem-crc\r\n");
       break;
