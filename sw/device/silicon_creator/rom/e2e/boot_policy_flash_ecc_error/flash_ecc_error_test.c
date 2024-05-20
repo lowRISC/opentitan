@@ -30,6 +30,14 @@ static dif_flash_ctrl_region_properties_t kFlashFullAccessScrambledEcc = {
     .prog_en = kMultiBitBool4True,
     .rd_en = kMultiBitBool4True};
 
+/**
+ * ROM_EXT slots.
+ */
+typedef enum rom_ext_slot {
+  kRomExtSlotA = 0,
+  kRomExtSlotB = 1,
+} rom_ext_slot_t;
+
 enum {
   // Manifest Offsets; See `sw/device/silicon_creator/lib/manifest.h`.
   kManifestIdOffest = 820,
@@ -65,15 +73,22 @@ static void init_peripherals(void) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
 }
 
-static status_t corrupt_rom_ext_slot_a_identifier(void) {
+static status_t corrupt_rom_ext_identifier(rom_ext_slot_t slot) {
+  uint32_t page_idx = slot == kRomExtSlotA ? kRomExtSlotAFirstPageIndex
+                                           : kRomExtSlotBFirstPageIndex;
+  uint32_t flash_data_bank =
+      slot == kRomExtSlotA ? kFlashBank0DataRegion : kFlashBank1DataRegion;
+  uint32_t manifest_id_addr = slot == kRomExtSlotA ? kRomExtSlotAManifestIdAddr
+                                                   : kRomExtSlotBManifestIdAddr;
+
   // Setup full access (read, erase, program) to first flash page in slot A.
   TRY(flash_ctrl_testutils_data_region_setup_properties(
-      &flash_ctrl, kRomExtSlotAFirstPageIndex, kFlashBank0DataRegion,
+      &flash_ctrl, page_idx, flash_data_bank,
       /*region_size=*/1, kFlashFullAccessScrambledEcc, NULL));
 
   // Read back the manifest identifier via the flash_ctrl and Ibex.
   uint32_t manifest_identifier = 0;
-  TRY(flash_ctrl_testutils_read(&flash_ctrl, kRomExtSlotAManifestIdAddr,
+  TRY(flash_ctrl_testutils_read(&flash_ctrl, manifest_id_addr,
                                 /*partition_id=*/0, &manifest_identifier,
                                 kDifFlashCtrlPartitionTypeData,
                                 /*word_count=*/1, /*delay_micros=*/0));
@@ -81,7 +96,7 @@ static status_t corrupt_rom_ext_slot_a_identifier(void) {
            manifest_identifier);
   TRY_CHECK(manifest_identifier == CHIP_ROM_EXT_IDENTIFIER);
   // Read it back again via Ibex, expecting a load access fault.
-  manifest_identifier = abs_mmio_read32(kRomExtSlotAManifestIdAddr);
+  manifest_identifier = abs_mmio_read32(manifest_id_addr);
   LOG_INFO("Uncorrupted Manifest ID (Ibex Read):      0x%08x",
            manifest_identifier);
   TRY_CHECK(manifest_identifier == CHIP_ROM_EXT_IDENTIFIER);
@@ -90,7 +105,7 @@ static status_t corrupt_rom_ext_slot_a_identifier(void) {
   // erasing the page) to corrupt ECC (since flash writes can only transition 1
   // bits to 0 bit).
   uint32_t inv_test_data = ~((uint32_t)CHIP_ROM_EXT_IDENTIFIER);
-  TRY(flash_ctrl_testutils_write(&flash_ctrl, kRomExtSlotAManifestIdAddr,
+  TRY(flash_ctrl_testutils_write(&flash_ctrl, manifest_id_addr,
                                  /*partition_id=*/0, &inv_test_data,
                                  kDifFlashCtrlPartitionTypeData,
                                  /*word_count=*/1));
@@ -101,13 +116,25 @@ static status_t corrupt_rom_ext_slot_a_identifier(void) {
 bool test_main(void) {
   init_peripherals();
 
-  CHECK_STATUS_OK(corrupt_rom_ext_slot_a_identifier());
-
-  // Read it back ROM_EXT slot A data via Ibex, expecting a load access fault.
-  // TODO(timothytrippel): replace with chip reset to trigger slot B boot.
   uint32_t data_read = UINT32_MAX;
+#ifdef CORRUPT_SLOT_A_ID
+  LOG_INFO("Slot A self corrupting it's manifest identifier ...");
+  CHECK_STATUS_OK(corrupt_rom_ext_identifier(kRomExtSlotA));
+  // TODO(#21353): replace with chip reset to trigger slot B boot attempt.
+  // Read it back ROM_EXT slot A data via Ibex, expecting a load access fault.
   data_read = abs_mmio_read32(kRomExtSlotAManifestIdAddr);
   LOG_INFO("Corrupted Data: 0x%08x", data_read);
+#elif defined CORRUPT_SLOT_B_ID
+  LOG_INFO("Slot B self corrupting it's manifest identifier ...");
+  CHECK_STATUS_OK(corrupt_rom_ext_identifier(kRomExtSlotB));
+  // TODO(#21353): replace with chip reset to trigger slot A boot attempt.
+  // Read it back ROM_EXT slot B data via Ibex, expecting a load access fault.
+  data_read = abs_mmio_read32(kRomExtSlotBManifestIdAddr);
+  LOG_INFO("Corrupted Data: 0x%08x", data_read);
+#else
+  LOG_INFO("Not slot selected for corruption.");
+  return false;
+#endif
 
   return true;
 }
