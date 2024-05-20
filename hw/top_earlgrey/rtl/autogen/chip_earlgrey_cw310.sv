@@ -355,6 +355,7 @@ module chip_earlgrey_cw310 #(
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
+    .mux_iob_sel_i ('0), // TODO(#23280)
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
