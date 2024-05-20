@@ -607,7 +607,7 @@
                 number observed by the Agent.
             '''
       stage: V2
-      tests: []
+      tests: ["i2c_target_nack"]
     }
     {
       name: host_mode_halt_on_nak

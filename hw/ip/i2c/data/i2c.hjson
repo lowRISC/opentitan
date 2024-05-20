@@ -859,7 +859,7 @@
             { value: "5",
               name: "NACK_START",
               desc: '''
-                    A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer.
+                    A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transfer.
                     The ABYTE contains the matching I2C address and command bit.
                     The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.
                     '''
