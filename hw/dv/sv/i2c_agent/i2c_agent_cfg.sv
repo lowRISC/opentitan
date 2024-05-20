@@ -15,6 +15,8 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // bit. If 0, perform stretching during the ACK / NACK bit.
   bit stretch_after_ack = 0;
 
+  uvm_event got_nack;
+
   virtual i2c_if  vif;
 
   // Performance Monitoring Variables
@@ -107,6 +109,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   function new(string name = "");
     super.new(name);
+    got_nack = new("got_nack");
     start_perf_monitor = new("start_perf_monitor");
     stop_perf_monitor = new("stop_perf_monitor");
   endfunction
