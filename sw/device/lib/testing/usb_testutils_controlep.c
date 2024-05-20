@@ -197,6 +197,9 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
       if (wValue == kUsbFeatureEndpointHalt) {
         CHECK_DIF_OK(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint,
                                                       kDifToggleDisabled));
+        // Clearing the Halt feature on an endpoint that is using Data Toggling
+        // also requires us to clear the Data Toggle for that endpoint
+        CHECK_DIF_OK(dif_usbdev_clear_data_toggle(ctx->dev, endpoint.number));
         // send zero length packet for status phase
         CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
         return kUsbTestutilsCtStatIn;

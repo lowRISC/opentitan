@@ -16,9 +16,15 @@
 
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_diags.h"
 
 #define MODULE_ID MAKE_MODULE_ID('u', 't', 's')
+
+// Maximum length of the configuration descriptor.
+#define CFG_DSCR_LEN_MAX \
+  (USB_CFG_DSCR_LEN +    \
+   USBUTILS_STREAMS_MAX * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN))
 
 /**
  * Read method to be employed
@@ -673,11 +679,10 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
   return OK_STATUS();
 }
 
-status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
-                                    unsigned nstreams,
-                                    usb_testutils_transfer_type_t xfr_types[],
-                                    uint32_t num_bytes,
-                                    usbdev_stream_flags_t flags, bool verbose) {
+status_t usb_testutils_streams_init(
+    usb_testutils_streams_ctx_t *ctx, unsigned nstreams,
+    const usb_testutils_transfer_type_t xfr_types[], uint32_t num_bytes,
+    usbdev_stream_flags_t flags, bool verbose) {
   TRY_CHECK(nstreams <= USBUTILS_STREAMS_MAX);
   TRY_CHECK(nstreams <= UINT8_MAX);
 
@@ -689,6 +694,81 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
     const uint8_t ep_out = id + 1U;
     TRY(usb_testutils_stream_init(ctx, id, xfr_types[id], ep_in, ep_out,
                                   num_bytes, flags, verbose));
+  }
+
+  // Remember the stream count and apportion the available tx buffers
+  TRY_CHECK(usb_testutils_streams_count_set(ctx, nstreams));
+
+  return OK_STATUS();
+}
+
+status_t usb_testutils_streams_typed_init(
+    usb_testutils_streams_ctx_t *ctx, uint8_t *cfg, uint16_t len,
+    unsigned nstreams, const usb_testutils_transfer_type_t xfr_types[],
+    uint32_t num_bytes, usbdev_stream_flags_t flags, bool verbose,
+    uint32_t *types) {
+  TRY_CHECK(nstreams <= USBUTILS_STREAMS_MAX);
+
+  // Does the caller require a bitmap of the transfer type(s) collected?
+  if (types) {
+    *types = 0U;
+  }
+
+  // Total length of the configuration descriptor; validate caller buffer.
+  size_t cfg_len = USB_CFG_DSCR_LEN +
+                   nstreams * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN);
+  TRY_CHECK(cfg && cfg_len <= len);
+
+  // Configuration Descriptor header.
+  uint8_t head[CFG_DSCR_LEN_MAX] = {
+      USB_CFG_DSCR_HEAD((uint16_t)cfg_len, (uint8_t)nstreams)};
+  memcpy(cfg, head, USB_CFG_DSCR_LEN);
+  cfg += USB_CFG_DSCR_LEN;
+
+  // Followed by programmatically-generated list of interface descriptors.
+  for (uint8_t id = 0U; id < nstreams; id++) {
+    usb_testutils_transfer_type_t xfr_type = xfr_types[id];
+    // Return to the caller the transfer type of each stream in turn.
+    if (types) {
+      *types |= xfr_type << (id * 2U);
+    }
+
+    uint8_t ep_in = (uint8_t)(id + 1U);
+    uint8_t ep_out = (uint8_t)(id + 1U);
+    TRY(usb_testutils_stream_init(ctx, id, xfr_type, ep_in, ep_out, num_bytes,
+                                  flags, verbose));
+
+    // Isochronous and Interrupt endpoints require a bInterval value of 1.
+    uint8_t bInterval = (xfr_type == kUsbTransferTypeIsochronous ||
+                         xfr_type == kUsbTransferTypeInterrupt);
+
+    // Description of a single interface.
+    uint8_t int_dscr[USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN] = {
+        VEND_INTERFACE_DSCR(id, 2, 0x50, 1),
+        USB_EP_DSCR(0, ep_out, (uint8_t)xfr_type, USBDEV_MAX_PACKET_SIZE,
+                    bInterval),
+        USB_EP_DSCR(1, ep_in, (uint8_t)xfr_type, USBDEV_MAX_PACKET_SIZE,
+                    bInterval),
+    };
+
+    // Append interface descriptor to the configuration descriptor.
+    memcpy(cfg, int_dscr, sizeof(int_dscr));
+    cfg += sizeof(int_dscr);
+
+    if (verbose) {
+      /**
+       * Indexed by usb_testutils_transfer_type_t
+       */
+      static const char *xfr_name[] = {
+          "Control",
+          "Isochronous",
+          "Bulk",
+          "Interrupt",
+      };
+      TRY_CHECK(xfr_type <= sizeof(xfr_name) / sizeof(*xfr_name));
+      LOG_INFO("S%u: IN %u:OUT %u : %s - 0x%x bytes flags 0x%x", id, ep_in,
+               ep_out, xfr_name[xfr_type], num_bytes, flags);
+    }
   }
 
   // Remember the stream count and apportion the available tx buffers

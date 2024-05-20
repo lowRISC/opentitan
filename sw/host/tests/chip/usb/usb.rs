@@ -138,7 +138,10 @@ impl UsbOpts {
         let Some(vbus_sense_en) = &self.vbus_sense_en else {
             bail!("cannot control VBUS, you must specify --vbus-sense-en");
         };
-        log::info!("{} VBUS sensing.", if en { "Enable" } else { "Disable" });
+        log::info!(
+            "{} VBUS to OT USBDEV.",
+            if en { "Enable" } else { "Disable" }
+        );
         let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
         vbus_sense_en_pin.write(en)?;
         // Give time to hardware buffer to stabilize.

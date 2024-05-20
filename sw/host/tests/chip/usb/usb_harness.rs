@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{anyhow, ensure, Result};
 use clap::Parser;
 use std::time::Duration;
 
@@ -16,8 +16,9 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    /// Console/USB timeout.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
+    /// Console/USB timeout; device must be configured and some tests require a
+    // small degree of user interaction when invoked manually.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "30s")]
     timeout: Duration,
 
     /// USB options.
@@ -46,7 +47,10 @@ fn main() -> Result<()> {
         );
     }
 
-    UartConsole::wait_for(&*uart, r"PASS!", opts.timeout)?;
-
-    Ok(())
+    // Simply await the PASS/FAIL indication from the device-side software.
+    let vec = UartConsole::wait_for(&*uart, r"(PASS|FAIL)!", opts.timeout)?;
+    match vec[0].as_str() {
+        "PASS!" => Ok(()),
+        _ => Err(anyhow!("Failure result: {:?}", vec)),
+    }
 }

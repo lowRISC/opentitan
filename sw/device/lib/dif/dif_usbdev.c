@@ -856,6 +856,10 @@ dif_result_t dif_usbdev_get_wake_status(const dif_usbdev_t *usbdev,
       bitfield_bit32_read(reg_val, USBDEV_WAKE_EVENTS_DISCONNECTED_BIT);
   status->bus_reset =
       bitfield_bit32_read(reg_val, USBDEV_WAKE_EVENTS_BUS_RESET_BIT);
+#if USBDEV_AON_HAVE_BUS_NOT_IDLE
+  status->bus_not_idle =
+      bitfield_bit32_read(reg_val, USBDEV_WAKE_EVENTS_BUS_NOT_IDLE_BIT);
+#endif
   return kDifOk;
 }
 

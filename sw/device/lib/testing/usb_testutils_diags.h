@@ -18,6 +18,19 @@
 #define USBUTILS_MEM_FASTER 1
 #endif
 
+// Implement low-impact tracing of software execution, permitting the software
+//   and hardware behavior to be married, hopefully without modifying the
+//   behavior/performance, particularly in top-level simulation.
+#define USBUTILS_FUNCTION_POINTS 0
+
+#if USBUTILS_FUNCTION_POINTS
+// TODO: excluded form this build at present.
+#else
+// Omit function point tracing
+#define USBUTILS_FUNCPT(pt, d)
+#define USBUTILS_TRACE(pt, d)
+#endif
+
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.
 #define USBUTILS_ENABLE_TRC 0

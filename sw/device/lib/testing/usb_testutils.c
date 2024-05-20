@@ -141,7 +141,11 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   }
 
   // Keep buffers available for packet reception
+#if USBDEV_HAVE_SEPARATED_FIFOS
+  TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
+#else
   TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+#endif
 
   if (istate & (1u << kDifUsbdevIrqPktReceived)) {
     // TODO: we run the risk of starving the IN side here if the rx_callback(s)
@@ -192,6 +196,25 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     // The first bus frame is 1
     TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
     ctx->got_frame = true;
+  }
+
+  // Report all link events to the registered callback handler, if any
+  if (ctx->link_callback) {
+    const dif_usbdev_irq_state_snapshot_t irqs_link =
+        (1u << kDifUsbdevIrqPowered) | (1u << kDifUsbdevIrqDisconnected) |
+        (1u << kDifUsbdevIrqHostLost) | (1u << kDifUsbdevIrqLinkReset) |
+        (1u << kDifUsbdevIrqLinkSuspend) | (1u << kDifUsbdevIrqLinkResume) |
+        (1u << kDifUsbdevIrqFrame);
+    if (istate & irqs_link) {
+      // Retrieve and report the current link state, since this should help
+      // resolve any confusion caused by delayed reporting of earlier link
+      // events (eg. disconnect/powered, suspend/resume)
+      dif_usbdev_link_state_t link_state;
+      TRY(dif_usbdev_status_get_link_state(ctx->dev, &link_state));
+
+      // Indicate only the link-related interrupts
+      TRY(ctx->link_callback(ctx->ctx_link, istate & irqs_link, link_state));
+    }
   }
 
   // Note: LinkInErr will be raised in response to a packet being NAKed by the
@@ -246,6 +269,20 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     ctx->flushed = 0;
   }
   // TODO Errors? What Errors?
+  return OK_STATUS();
+}
+
+status_t usb_testutils_link_callback_register(usb_testutils_ctx_t *ctx,
+                                              usb_testutils_link_handler_t link,
+                                              void *ctx_link) {
+  CHECK(ctx != NULL);
+
+  // Retain the new link callback handler and its context pointer; either of
+  // these may be NULL, respectively to deregister a handler or because no
+  // context is required.
+  ctx->link_callback = link;
+  ctx->ctx_link = ctx_link;
+
   return OK_STATUS();
 }
 
@@ -422,6 +459,9 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   ctx->got_frame = false;
   ctx->frame = 0u;
 
+  // No callback handler for link events
+  ctx->link_callback = NULL;
+
   TRY(dif_usbdev_init(mmio_region_from_addr(USBDEV_BASE_ADDR), ctx->dev));
 
   dif_usbdev_config_t config = {
@@ -445,8 +485,16 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   // All about polling...
   TRY(dif_usbdev_irq_disable_all(ctx->dev, NULL));
 
+  // Clear any outstanding interrupts such as Powered/Disconnected interrupts
+  // from when the usbdev came out of reset
+  TRY(dif_usbdev_irq_acknowledge_all(ctx->dev));
+
   // Provide buffers for any packet reception
+#if USBDEV_HAVE_SEPARATED_FIFOS
+  TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
+#else
   TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+#endif
 
   // Preemptively enable SETUP reception on endpoint zero for the
   // Default Control Pipe; all other settings for that endpoint will be applied
