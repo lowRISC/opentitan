@@ -25,11 +25,19 @@ impl RescueSerial {
     pub const RESCUE: [u8; 4] = *b"RESQ";
     pub const RESCUE_B: [u8; 4] = *b"RESB";
     pub const REBOOT: [u8; 4] = *b"REBO";
+    pub const BAUD: [u8; 4] = *b"BAUD";
     pub const BOOT_LOG: [u8; 4] = *b"BLOG";
     pub const BOOT_SVC_REQ: [u8; 4] = *b"BREQ";
     pub const BOOT_SVC_RSP: [u8; 4] = *b"BRSP";
     pub const OWNER_BLOCK: [u8; 4] = *b"OWNR";
     pub const WAIT: [u8; 4] = *b"WAIT";
+
+    const BAUD_115K: [u8; 4] = *b"115K";
+    const BAUD_230K: [u8; 4] = *b"230K";
+    const BAUD_460K: [u8; 4] = *b"460K";
+    const BAUD_921K: [u8; 4] = *b"921K";
+    const BAUD_1M33: [u8; 4] = *b"1M33";
+    const BAUD_1M50: [u8; 4] = *b"1M50";
 
     pub fn new(uart: Rc<dyn Uart>) -> Self {
         RescueSerial {
@@ -49,6 +57,32 @@ impl RescueSerial {
         // Upon entry, rescue is going to tell us what mode it is.
         // Consume and discard.
         let _ = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND);
+        Ok(())
+    }
+
+    pub fn set_baud(&self, baud: u32) -> Result<()> {
+        // Make sure the requested rate is a known rate.
+        let symbol = match baud {
+            115200 => Self::BAUD_115K,
+            230400 => Self::BAUD_230K,
+            460800 => Self::BAUD_460K,
+            921600 => Self::BAUD_921K,
+            1333333 => Self::BAUD_1M33,
+            1500000 => Self::BAUD_1M50,
+            _ => return Err(RescueError::BadMode(format!("Unsupported badrate {baud}")).into()),
+        };
+
+        // Request to change rates.
+        self.set_mode(Self::BAUD)?;
+
+        // Send the new rate and check for success.
+        self.uart.write(&symbol)?;
+        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND)?;
+        if result[1] == "error" {
+            return Err(RescueError::BadMode(result[0].clone()).into());
+        }
+        // Change our side of the connection to the new rate.
+        self.uart.set_baudrate(baud)?;
         Ok(())
     }
 
