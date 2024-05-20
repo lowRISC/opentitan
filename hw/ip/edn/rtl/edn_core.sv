@@ -102,12 +102,15 @@ module edn_core import edn_pkg::*;
   logic                    send_rescmd, send_rescmd_gated;
   logic                    send_gencmd, send_gencmd_gated;
   logic                    cs_cmd_handshake, gencmd_handshake, rescmd_handshake;
+  logic                    cs_hw_cmd_handshake;
+  logic                    main_sm_idle;
   logic                    cmd_sent;
   logic                    boot_wr_ins_cmd;
+  logic                    boot_send_ins_cmd;
   logic                    boot_wr_gen_cmd;
   logic                    boot_wr_uni_cmd;
   logic                    sw_cmd_req_load;
-  logic                    sw_cmd_valid;
+  logic                    sw_cmd_mode;
   logic [31:0]             sw_cmd_req_bus;
   logic                    send_cs_cmd_gated;
   logic                    reseed_cmd_load;
@@ -230,7 +233,7 @@ module edn_core import edn_pkg::*;
       csrng_hw_cmd_sts_q   <= csrng_pkg::CMD_STS_SUCCESS;
       boot_mode_q   <= '0;
       auto_mode_q   <= '0;
-      cmd_type_q   <= '0;
+      cmd_type_q   <= {1'b0, csrng_pkg::INV};
       cmd_reg_rdy_q   <= '0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
@@ -289,7 +292,7 @@ module edn_core import edn_pkg::*;
   );
 
   // interrupt for sw app interface only
-  assign event_edn_cmd_req_done = csrng_cmd_i.csrng_rsp_ack && sw_cmd_valid;
+  assign event_edn_cmd_req_done = csrng_cmd_i.csrng_rsp_ack && sw_cmd_mode;
 
   // Counter, internal FIFO errors and FSM errors are structural errors and are always active
   // regardless of the functional state.
@@ -538,7 +541,7 @@ module edn_core import edn_pkg::*;
          cs_cmd_req_vld_q && !cs_cmd_handshake;
 
   // drive outputs
-  assign csrng_cmd_o.csrng_req_valid = cs_cmd_req_vld_out_q;
+  assign csrng_cmd_o.csrng_req_valid = cs_cmd_req_vld_out_q && !reject_csrng_entropy;
   assign csrng_cmd_o.csrng_req_bus = cs_cmd_req_out_q;
 
   // Accept a new command only if no command is currently being written to SW_CMD_REQ
@@ -547,11 +550,12 @@ module edn_core import edn_pkg::*;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
   assign cmd_rdy = !sw_cmd_req_load && cmd_rdy_d && cmd_reg_rdy_d;
   // We accept SW commands only in SW or auto mode.
-  // In auto mode, sw_cmd_valid will transition to low after the initial instantiate command.
+  // In auto mode, sw_cmd_mode will transition to low after the initial instantiate command.
   // In SW mode, cmd_rdy is low when a previous command has not been acked yet.
   assign cmd_rdy_d =
          !edn_enable_fo[SwCmdSts] ? 1'b0 :
-         !sw_cmd_valid ? 1'b0 :
+         !sw_cmd_mode ? 1'b0 :
+         reject_csrng_entropy ? 1'b0 :
          sw_cmd_req_load ? 1'b0 :
          accept_sw_cmds_pulse ? 1'b1 :
          csrng_cmd_i.csrng_rsp_ack ? 1'b1 :
@@ -562,7 +566,8 @@ module edn_core import edn_pkg::*;
   assign hw2reg.sw_cmd_sts.cmd_reg_rdy.d = cmd_reg_rdy_d;
   assign cmd_reg_rdy_d =
          !edn_enable_fo[SwCmdSts] ? 1'b0 :
-         !sw_cmd_valid ? 1'b0 :
+         !sw_cmd_mode ? 1'b0 :
+         reject_csrng_entropy ? 1'b0 :
          sw_cmd_req_load ? 1'b0 :
          accept_sw_cmds_pulse ? 1'b1 :
          cs_cmd_handshake ? 1'b1 :
@@ -573,7 +578,8 @@ module edn_core import edn_pkg::*;
   assign hw2reg.sw_cmd_sts.cmd_sts.d = csrng_cmd_sts_d;
   assign csrng_cmd_sts_d =
          !edn_enable_fo[SwCmdSts] ? csrng_pkg::CMD_STS_SUCCESS :
-         (csrng_cmd_i.csrng_rsp_ack && sw_cmd_valid) ? csrng_cmd_i.csrng_rsp_sts :
+         csrng_cmd_i.csrng_rsp_ack && sw_cmd_mode &&
+            !reject_csrng_entropy ? csrng_cmd_i.csrng_rsp_sts :
          csrng_cmd_sts_q;
 
   // cmd_ack goes high only when a command is acknowledged that has been loaded into sw_cmd_req.
@@ -582,23 +588,26 @@ module edn_core import edn_pkg::*;
   assign csrng_sw_cmd_ack_d =
          !edn_enable_fo[SwCmdSts] ? 1'b0 :
          sw_cmd_req_load ? 1'b0 :
-         (csrng_cmd_i.csrng_rsp_ack && sw_cmd_valid) ? 1'b1 :
+         csrng_cmd_i.csrng_rsp_ack && sw_cmd_mode && !reject_csrng_entropy ? 1'b1 :
          csrng_sw_cmd_ack_q;
 
   //--------------------------------------------
   // hw_cmd_sts register
   //--------------------------------------------
+  assign main_sm_idle = (edn_main_sm_state == Idle);
+  assign cs_hw_cmd_handshake = !sw_cmd_mode && csrng_cmd_o.csrng_req_valid &&
+                               csrng_cmd_i.csrng_req_ready;
   // Set the boot_mode field to one when boot mode is entered and to zero when it is left.
   assign hw2reg.hw_cmd_sts.boot_mode.de = 1'b1;
   assign hw2reg.hw_cmd_sts.boot_mode.d = boot_mode_d;
-  assign boot_mode_d = main_sm_done_pulse || !edn_enable_fo[HwCmdSts] ? 1'b0 :
-                       boot_wr_ins_cmd ? 1'b1 :
+  assign boot_mode_d = main_sm_done_pulse || main_sm_idle ? 1'b0 :
+                       boot_send_ins_cmd && cs_hw_cmd_handshake ? 1'b1 :
                        boot_mode_q;
   // Set the auto_mode field to one when auto mode is entered and to zero when it is left.
   assign hw2reg.hw_cmd_sts.auto_mode.de = 1'b1;
   assign hw2reg.hw_cmd_sts.auto_mode.d = auto_mode_d;
-  assign auto_mode_d = main_sm_done_pulse || !edn_enable_fo[HwCmdSts] ? 1'b0 :
-                       auto_req_mode_busy ? 1'b1 :
+  assign auto_mode_d = main_sm_done_pulse || main_sm_idle ? 1'b0 :
+                       auto_req_mode_busy && cs_hw_cmd_handshake ? 1'b1 :
                        auto_mode_q;
   // Record the cmd_sts signal each time a hardware command is acknowledged.
   // Reset it each time a new hardware command is issued.
@@ -606,10 +615,9 @@ module edn_core import edn_pkg::*;
   assign hw2reg.hw_cmd_sts.cmd_sts.d = csrng_hw_cmd_sts_d;
   assign csrng_hw_cmd_sts_d =
          !edn_enable_fo[HwCmdSts] ? csrng_pkg::CMD_STS_SUCCESS :
-         sw_cmd_valid ? csrng_hw_cmd_sts_q :
-         (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? csrng_pkg::CMD_STS_SUCCESS :
-         csrng_cmd_i.csrng_rsp_ack && (csrng_cmd_i.csrng_rsp_sts != csrng_pkg::CMD_STS_SUCCESS) ?
-             csrng_cmd_i.csrng_rsp_sts :
+         csrng_cmd_i.csrng_rsp_ack && !sw_cmd_mode &&
+            !reject_csrng_entropy ? csrng_cmd_i.csrng_rsp_sts :
+         cs_hw_cmd_handshake ? csrng_pkg::CMD_STS_SUCCESS :
          csrng_hw_cmd_sts_q;
   // Set the cmd_ack signal to high whenever a hardware command is acknowledged and set it
   // to low whenever a new hardware command is issued to the CSRNG.
@@ -617,16 +625,16 @@ module edn_core import edn_pkg::*;
   assign hw2reg.hw_cmd_sts.cmd_ack.d = csrng_hw_cmd_ack_d;
   assign csrng_hw_cmd_ack_d =
          !edn_enable_fo[HwCmdSts] ? 1'b0 :
-         sw_cmd_valid ? csrng_hw_cmd_ack_q :
-         (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? 1'b0 :
-         csrng_cmd_i.csrng_rsp_ack ? 1'b1 :
+         csrng_cmd_i.csrng_rsp_ack && !sw_cmd_mode && !reject_csrng_entropy ? 1'b1 :
+         cs_hw_cmd_handshake ? 1'b0 :
          csrng_hw_cmd_ack_q;
   // Set the cmd_type to the application command type value of the hardware controlled
   // command issued last.
   assign hw2reg.hw_cmd_sts.cmd_type.de = 1'b1;
   assign hw2reg.hw_cmd_sts.cmd_type.d = cmd_type_d;
-  assign cmd_type_d = (edn_enable_fo[HwCmdSts] && !sw_cmd_valid && cs_cmd_req_vld_out_q
-                       && csrng_cmd_i.csrng_req_ready) ? cs_cmd_req_out_q[3:0] : cmd_type_q;
+  assign cmd_type_d =
+         !edn_enable_fo[HwCmdSts] ? {1'b0, csrng_pkg::INV} :
+         cs_hw_cmd_handshake ? cs_cmd_req_out_q[3:0] : cmd_type_q;
 
   // rescmd fifo
   // SEC_CM: FIFO.CTR.REDUN
@@ -724,8 +732,9 @@ module edn_core import edn_pkg::*;
     .boot_req_mode_i        (boot_req_mode_fo[1]),
     .auto_req_mode_i        (auto_req_mode_pfe),
     .sw_cmd_req_load_i      (sw_cmd_req_load),
-    .sw_cmd_valid_o         (sw_cmd_valid),
+    .sw_cmd_mode_o          (sw_cmd_mode),
     .boot_wr_ins_cmd_o      (boot_wr_ins_cmd),
+    .boot_send_ins_cmd_o    (boot_send_ins_cmd),
     .boot_wr_gen_cmd_o      (boot_wr_gen_cmd),
     .boot_wr_uni_cmd_o      (boot_wr_uni_cmd),
     .accept_sw_cmds_pulse_o (accept_sw_cmds_pulse),

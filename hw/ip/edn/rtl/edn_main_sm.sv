@@ -15,8 +15,9 @@ module edn_main_sm import edn_pkg::*;
   input logic                   boot_req_mode_i,
   input logic                   auto_req_mode_i,
   input logic                   sw_cmd_req_load_i,
-  output logic                  sw_cmd_valid_o,
+  output logic                  sw_cmd_mode_o,
   output logic                  boot_wr_ins_cmd_o,
+  output logic                  boot_send_ins_cmd_o,
   output logic                  boot_wr_gen_cmd_o,
   output logic                  boot_wr_uni_cmd_o,
   output logic                  accept_sw_cmds_pulse_o,
@@ -44,9 +45,10 @@ module edn_main_sm import edn_pkg::*;
 
   always_comb begin
     state_d                = state_q;
-    boot_wr_ins_cmd_o  = 1'b0;
-    boot_wr_gen_cmd_o  = 1'b0;
-    boot_wr_uni_cmd_o  = 1'b0;
+    boot_wr_ins_cmd_o      = 1'b0;
+    boot_send_ins_cmd_o    = 1'b0;
+    boot_wr_gen_cmd_o      = 1'b0;
+    boot_wr_uni_cmd_o      = 1'b0;
     accept_sw_cmds_pulse_o = 1'b0;
     auto_req_mode_busy_o   = 1'b0;
     capt_gencmd_fifo_cnt_o = 1'b0;
@@ -56,27 +58,29 @@ module edn_main_sm import edn_pkg::*;
     main_sm_done_pulse_o   = 1'b0;
     main_sm_err_o          = 1'b0;
     reject_csrng_entropy_o = 1'b0;
-    sw_cmd_valid_o         = 1'b0;
+    sw_cmd_mode_o         = 1'b0;
     unique case (state_q)
       Idle: begin
         if (boot_req_mode_i && edn_enable_i) begin
           state_d = BootLoadIns;
         end else if (auto_req_mode_i && edn_enable_i) begin
           accept_sw_cmds_pulse_o = 1'b1;
-          sw_cmd_valid_o = 1'b1;
+          sw_cmd_mode_o = 1'b1;
           state_d = AutoLoadIns;
         end else if (edn_enable_i) begin
           main_sm_done_pulse_o = 1'b1;
           accept_sw_cmds_pulse_o = 1'b1;
-          sw_cmd_valid_o = 1'b1;
+          sw_cmd_mode_o = 1'b1;
           state_d = SWPortMode;
         end
       end
       BootLoadIns: begin
         boot_wr_ins_cmd_o = 1'b1;
+        boot_send_ins_cmd_o = 1'b1;
         state_d = BootInsAckWait;
       end
       BootInsAckWait: begin
+        boot_send_ins_cmd_o = 1'b1;
         if (csrng_cmd_ack_i) begin
           state_d = BootLoadGen;
         end
@@ -110,13 +114,13 @@ module edn_main_sm import edn_pkg::*;
       end
       //-----------------------------------
       AutoLoadIns: begin
-        sw_cmd_valid_o = 1'b1;
+        sw_cmd_mode_o = 1'b1;
         if (sw_cmd_req_load_i) begin
           state_d = AutoFirstAckWait;
         end
       end
       AutoFirstAckWait: begin
-        sw_cmd_valid_o = 1'b1;
+        sw_cmd_mode_o = 1'b1;
         if (csrng_cmd_ack_i) begin
           state_d = AutoDispatch;
         end
@@ -165,7 +169,7 @@ module edn_main_sm import edn_pkg::*;
         end
       end
       SWPortMode: begin
-        sw_cmd_valid_o = 1'b1;
+        sw_cmd_mode_o = 1'b1;
       end
       RejectCsrngEntropy: begin
         reject_csrng_entropy_o = 1'b1;
@@ -183,17 +187,16 @@ module edn_main_sm import edn_pkg::*;
       // Either move into RejectCsrngEntropy or Error but don't move out of Error as it's terminal.
       state_d = local_escalate_i ? Error :
                 state_q == Error ? Error : RejectCsrngEntropy;
-      // Tie off outputs, except for main_sm_err_o and reject_csrng_entropy_o.
+      // Tie off outputs, except for main_sm_err_o, auto_req_mode_busy_o, boot_send_ins_cmd_o,
+      // sw_cmd_mode_o and reject_csrng_entropy_o.
       boot_wr_ins_cmd_o      = 1'b0;
       boot_wr_gen_cmd_o      = 1'b0;
       boot_wr_uni_cmd_o      = 1'b0;
       accept_sw_cmds_pulse_o = 1'b0;
-      auto_req_mode_busy_o   = 1'b0;
       capt_gencmd_fifo_cnt_o = 1'b0;
       send_gencmd_o          = 1'b0;
       capt_rescmd_fifo_cnt_o = 1'b0;
       send_rescmd_o          = 1'b0;
-      sw_cmd_valid_o         = 1'b0;
       main_sm_done_pulse_o   = 1'b0;
     end else if (!edn_enable_i && state_q inside {BootLoadIns, BootInsAckWait, BootLoadGen,
                                                   BootGenAckWait, BootLoadUni, BootUniAckWait,
@@ -208,6 +211,7 @@ module edn_main_sm import edn_pkg::*;
       state_d = Idle;
       // Tie off outputs, except for main_sm_err_o.
       boot_wr_ins_cmd_o      = 1'b0;
+      boot_send_ins_cmd_o    = 1'b0;
       boot_wr_gen_cmd_o      = 1'b0;
       boot_wr_uni_cmd_o      = 1'b0;
       accept_sw_cmds_pulse_o = 1'b0;
@@ -216,7 +220,7 @@ module edn_main_sm import edn_pkg::*;
       send_gencmd_o          = 1'b0;
       capt_rescmd_fifo_cnt_o = 1'b0;
       send_rescmd_o          = 1'b0;
-      sw_cmd_valid_o         = 1'b0;
+      sw_cmd_mode_o          = 1'b0;
       reject_csrng_entropy_o = 1'b0;
       main_sm_done_pulse_o   = 1'b1;
     end
