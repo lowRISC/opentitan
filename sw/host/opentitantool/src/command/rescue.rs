@@ -31,6 +31,8 @@ pub struct RawBytes(
 pub struct Firmware {
     #[command(flatten)]
     params: UartParams,
+    #[arg(long, help = "After connecting to rescue, negotiate faster baudrate")]
+    rate: Option<u32>,
     #[arg(long, default_value = "SlotA", help = "Which flash slot to rescue")]
     slot: BootSlot,
     #[arg(long, value_parser = usize::from_str, help = "Offset of application image")]
@@ -74,6 +76,9 @@ impl CommandDispatch for Firmware {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport)?;
+        if let Some(rate) = self.rate {
+            rescue.set_baud(rate)?;
+        }
         if self.wait {
             rescue.wait()?;
         }

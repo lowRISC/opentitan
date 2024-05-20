@@ -18,6 +18,8 @@ enum {
 };
 
 typedef enum {
+  /** `BAUD` */
+  kRescueModeBaud = 0x42415544,
   /** `BLOG` */
   kRescueModeBootLog = 0x424c4f47,
   /** `BRSP` */
@@ -35,6 +37,21 @@ typedef enum {
   /** `WAIT` */
   kRescueModeWait = 0x57414954,
 } rescue_mode_t;
+
+typedef enum {
+  /** `115K` */
+  kRescueBaud115K = 0x4b353131,
+  /** `230K` */
+  kRescueBaud230K = 0x4b303332,
+  /** `460K` */
+  kRescueBaud460K = 0x4b303634,
+  /** `921K` */
+  kRescueBaud921K = 0x4b313239,
+  /** `1M33` */
+  kRescueBaud1M33 = 0x33334d31,
+  /** `1M50` */
+  kRescueBaud1M50 = 0x30354d31,
+} rescue_baud_t;
 
 typedef struct RescueState {
   rescue_mode_t mode;
