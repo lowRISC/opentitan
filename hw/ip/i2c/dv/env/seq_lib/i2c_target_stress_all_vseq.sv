@@ -57,7 +57,7 @@ class i2c_target_stress_all_vseq extends i2c_target_smoke_vseq;
         `uvm_info(`gfn, "\n  reset may be driven by upper_seq thus not be issued", UVM_DEBUG)
       end
       // Need to reset scoreboard whenever sequence start over regardless of dut reset
-      cfg.scb_h.reset("SOFT");
+      cfg.scoreboard.reset("SOFT");
 
       i2c_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(i2c_vseq)

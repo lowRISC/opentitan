@@ -128,4 +128,10 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
     rcvd_ack_stop = 0;
   endfunction : reset_seq_cfg
 
+  task wait_fifo_not_empty(i2c_analysis_fifo fifo);
+    while (!fifo.is_empty()) begin
+      clk_rst_vif.wait_clks(1);
+    end
+  endtask
+
 endclass : i2c_env_cfg

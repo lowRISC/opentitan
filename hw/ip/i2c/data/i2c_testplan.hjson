@@ -464,16 +464,17 @@
     {
       name: target_mode_glitch
       desc: '''
-            Test handling of RStart ot Stop glitches in Target mode
+            Test handling of RSTART or STOP glitches in Target mode
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Issue a new request(RStart) to DUT during an active transfer
-              - Stop current request(Stop) to DUT during an active transfer
+              - Insert a "glitched" transaction (early Sr/P)
+                - Issue a new transfer(RSTART) to DUT during an active transfer
+                - Stop current transfer(STOP) to DUT during an active transfer
               - Continue issuing requests to check if DUT FSM handles the transaction correctly
 
             Checking:
-            Ensure all transactions including glitches are observed in i2c.ACQDATA FIFO
+              - Ensure all transactions including glitches are observed in i2c.ACQDATA FIFO
             '''
       stage: V2
       tests: ["i2c_target_hrst"]

@@ -70,6 +70,8 @@ package i2c_env_pkg;
     FastPlus
   } speed_mode_e;
 
+  typedef uvm_tlm_analysis_fifo #(i2c_item) i2c_analysis_fifo;
+
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
@@ -140,6 +142,7 @@ package i2c_env_pkg;
   `include "i2c_env_cfg.sv"
   `include "i2c_env_cov.sv"
   `include "i2c_virtual_sequencer.sv"
+  `include "i2c_reference_model.sv"
   `include "i2c_scoreboard.sv"
   `include "i2c_env.sv"
   `include "i2c_vseq_list.sv"
