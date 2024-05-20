@@ -37,6 +37,19 @@ const uint64_t kUartBaudrate = 1 * 1000 * 1000;  // 1Mbps
 const uint32_t kUartNCOValue =
     CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
 
+const uint32_t kUartBaud115K =
+    CALCULATE_UART_NCO(115200, kClockFreqPeripheralHz);
+const uint32_t kUartBaud230K =
+    CALCULATE_UART_NCO(115200 * 2, kClockFreqPeripheralHz);
+const uint32_t kUartBaud460K =
+    CALCULATE_UART_NCO(115200 * 4, kClockFreqPeripheralHz);
+const uint32_t kUartBaud921K =
+    CALCULATE_UART_NCO(115200 * 8, kClockFreqPeripheralHz);
+const uint32_t kUartBaud1M33 =
+    CALCULATE_UART_NCO(1333333, kClockFreqPeripheralHz);
+const uint32_t kUartBaud1M50 =
+    CALCULATE_UART_NCO(1500000, kClockFreqPeripheralHz);
+
 const uint32_t kUartTxFifoCpuCycles =
     CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
 
