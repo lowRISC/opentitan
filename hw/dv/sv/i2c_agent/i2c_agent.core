@@ -25,6 +25,7 @@ filesets:
       - seq_lib/i2c_device_response_seq.sv: {is_include_file: true}
       - seq_lib/i2c_target_base_seq.sv: {is_include_file: true}
       - seq_lib/i2c_target_may_nack_seq.sv: {is_include_file: true}
+      - seq_lib/i2c_controller_base_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
