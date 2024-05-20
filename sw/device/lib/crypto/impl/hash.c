@@ -188,19 +188,18 @@ static status_t check_digest_len(otcrypto_hash_digest_t digest) {
 OT_WARN_UNUSED_RESULT
 static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
                             otcrypto_hash_digest_t digest) {
-  HARDENED_CHECK_EQ(digest.len, kHmacDigestNumWords);
+  HARDENED_CHECK_EQ(digest.len, kHmacSha256DigestWords);
   HARDENED_CHECK_EQ(digest.mode, kOtcryptoHashModeSha256);
 
-  // Initialize the hardware.
-  hmac_sha_init();
+  hmac_ctx_t hwip_ctx;
+  hmac_digest_t hmac_digest = {
+      .len = kHmacSha256DigestBytes,
+  };
+  HARDENED_TRY(hmac_init(&hwip_ctx, kHmacModeSha256, /*key=*/NULL));
+  HARDENED_TRY(hmac_update(&hwip_ctx, message.data, message.len));
+  HARDENED_TRY(hmac_final(&hwip_ctx, &hmac_digest));
 
-  // Pass the message and check the length.
-  hmac_update(message.data, message.len);
-
-  // Retrieve the digest and copy it to the destination buffer.
-  hmac_digest_t hmac_digest;
-  hmac_final(&hmac_digest);
-  hardened_memcpy(digest.data, hmac_digest.digest, kHmacDigestNumWords);
+  hardened_memcpy(digest.data, hmac_digest.digest, kHmacSha256DigestWords);
 
   return OTCRYPTO_OK;
 }
