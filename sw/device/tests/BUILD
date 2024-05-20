@@ -933,6 +933,7 @@ opentitan_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",

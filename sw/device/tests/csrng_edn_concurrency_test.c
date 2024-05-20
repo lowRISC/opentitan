@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
@@ -31,6 +32,7 @@ static dif_entropy_src_t entropy_src;
 static dif_otbn_t otbn;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
+static dif_aes_t aes;
 
 enum {
   /**
@@ -43,6 +45,7 @@ enum {
    */
   kTestParamNumOtbnIterationsMax = 4,
   kTestParamNumIbexIterationsMax = 16,
+  kTestParamNumAesIterationsMax = 32,
 };
 
 /**
@@ -90,6 +93,10 @@ typedef enum task_id {
    */
   kTestTaskIdIbex,
   /**
+   * Assigned to `aes_task()`.
+   */
+  kTestTaskIdAes,
+  /**
    * Number of tasks. Used to define task flag and counter arrays.
    */
   kTestTaskIdCount
@@ -124,6 +131,8 @@ static void init_peripherals(void) {
       &rv_core_ibex));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 }
 
 /**
@@ -174,7 +183,7 @@ static void otbn_task(void *task_parameters) {
 /**
  * Ibex task.
  *
- * Executes Ibex randomness test the, test state is set to `kTestStateRun`.
+ * Executes Ibex randomness test, the test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */
@@ -215,6 +224,40 @@ static void ibex_task(void *task_parameters) {
 }
 
 /**
+ * AES task.
+ *
+ * Reseeds the AES masking and clearing PRNGs, test state is set to
+ * `kTestStateRun`.
+ *
+ * @param task_parameters Unused. Set to NULL by ottf.
+ */
+static void aes_task(void *task_parameters) {
+  while (true) {
+    if (execution_state == kTestStateTearDown) {
+      break;
+    }
+    if (execution_state == kTestStateSetup || task_done[kTestTaskIdAes]) {
+      ottf_task_yield();
+      continue;
+    }
+    LOG_INFO("AES:START");
+    for (size_t i = 0; i < task_iter_count_max[kTestTaskIdAes]; ++i) {
+      dif_aes_trigger_t trigger = kDifAesTriggerPrngReseed;
+      dif_aes_status_t status = kDifAesStatusIdle;
+      bool set;
+      CHECK_DIF_OK(dif_aes_trigger(&aes, trigger));
+      do {
+        CHECK_DIF_OK(dif_aes_get_status(&aes, status, &set));
+        ottf_task_yield();
+      } while (!set);
+    }
+    LOG_INFO("AES:DONE");
+    task_done_set_and_yield(kTestTaskIdAes);
+  }
+  OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
+/**
  * Configures the entropy complex and starts both EDNs in auto mode.
  */
 static void entropy_config(void) {
@@ -234,6 +277,8 @@ static void entropy_config(void) {
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumOtbnIterationsMax);
   task_iter_count_max[kTestTaskIdIbex] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumIbexIterationsMax);
+  task_iter_count_max[kTestTaskIdAes] =
+      rand_testutils_gen32_range(/*min=*/1, kTestParamNumAesIterationsMax);
 
   CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_DIF_OK(dif_entropy_src_configure(
@@ -315,6 +360,7 @@ bool test_main(void) {
   CHECK(ottf_task_create(main_task, "main", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(otbn_task, "otbn", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(ibex_task, "ibex", kOttfFreeRtosMinStackSize, 1));
+  CHECK(ottf_task_create(aes_task, "aes", kOttfFreeRtosMinStackSize, 1));
 
   // There is no need to poll for completion as the tasks above will execute
   // with higher priority and control will not be returned to this task until
