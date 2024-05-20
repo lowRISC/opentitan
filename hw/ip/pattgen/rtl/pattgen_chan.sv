@@ -58,11 +58,21 @@ module pattgen_chan
     end
   end
 
+  // Drive pcl_o and pda_o directly from FF, so that they don't glitch.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      pcl_o <= 1'b0;
+      pda_o <= 1'b0;
+    end else begin
+      pcl_o <= polarity_q ? ~pcl_int_q : pcl_int_q;
+      pda_o <= (!enable) ? 1'b0 : data_q[bit_cnt_q];
+    end
+  end
+
   assign pcl_int_d = (!enable) ? 1'h0 :
                      (clk_cnt_q == prediv_q) ? ~pcl_int_q : pcl_int_q;
   assign clk_cnt_d = (!enable) ? 32'h0:
                      (clk_cnt_q == prediv_q) ? 32'h0 : (clk_cnt_q + 32'h1);
-  assign pcl_o     = polarity_q ? ~pcl_int_q : pcl_int_q;
 
   // disable the clock if the previous pattern is complete
   assign clk_en    = ~complete_q;
@@ -82,7 +92,6 @@ module pattgen_chan
   assign bit_cnt_en = (pcl_int_q & (clk_cnt_q == prediv_q) ) | (~enable);
   assign bit_cnt_d  = (!enable) ? 6'h0:
                       (bit_cnt_q == len_q) ? 6'h0 : bit_cnt_q + 6'h1;
-  assign pda_o      = (!enable) ? 1'b0 : data_q[bit_cnt_q];
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
