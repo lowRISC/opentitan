@@ -27,6 +27,8 @@ module padring
   // This is only used for scan
   input                           clk_scan_i,
   prim_mubi_pkg::mubi4_t          scanmode_i,
+  // Mux selectors for IOB[0-3]
+  input logic               [3:0] mux_iob_sel_i,
   // RAW outputs used for DFT and infrastructure
   // purposes (e.g. external muxed clock)
   output logic     [NDioPads-1:0] dio_in_raw_o,
@@ -56,6 +58,90 @@ module padring
   );
 
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_pads
+    logic dio_out, dio_oe;
+
+    if (k == top_earlgrey_pkg::DioSpiHost0Sd2) begin : gen_mux_spi_host_sd2
+      // Connect output towards muxed pad IOB0 to pad SPI_HOST_D2.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_out (
+        .clk0_i (dio_out_i[k]),
+        .clk1_i (mio_out_i[top_earlgrey_pkg::MioPadIob0]),
+        .sel_i  (mux_iob_sel_i[0]),
+        .clk_o  (dio_out)
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_oe (
+        .clk0_i (dio_oe_i[k]),
+        .clk1_i (mio_oe_i[top_earlgrey_pkg::MioPadIob0]),
+        .sel_i  (mux_iob_sel_i[0]),
+        .clk_o  (dio_oe)
+      );
+
+    end else if (k == top_earlgrey_pkg::DioSpiHost0Sd3) begin : gen_mux_spi_host_sd3
+      // Connect output towards muxed pad IOB1 to pad SPI_HOST_D3.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_out (
+        .clk0_i (dio_out_i[k]),
+        .clk1_i (mio_out_i[top_earlgrey_pkg::MioPadIob1]),
+        .sel_i  (mux_iob_sel_i[1]),
+        .clk_o  (dio_out)
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_oe (
+        .clk0_i (dio_oe_i[k]),
+        .clk1_i (mio_oe_i[top_earlgrey_pkg::MioPadIob1]),
+        .sel_i  (mux_iob_sel_i[1]),
+        .clk_o  (dio_oe)
+      );
+
+    end else if (k == top_earlgrey_pkg::DioSpiDeviceSd2) begin : gen_mux_spi_device_sd2
+      // Connect output towards muxed pad IOB2 to pad SPI_DEV_D2.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_out (
+        .clk0_i (dio_out_i[k]),
+        .clk1_i (mio_out_i[top_earlgrey_pkg::MioPadIob2]),
+        .sel_i  (mux_iob_sel_i[2]),
+        .clk_o  (dio_out)
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_oe (
+        .clk0_i (dio_oe_i[k]),
+        .clk1_i (mio_oe_i[top_earlgrey_pkg::MioPadIob2]),
+        .sel_i  (mux_iob_sel_i[2]),
+        .clk_o  (dio_oe)
+      );
+
+    end else if (k == top_earlgrey_pkg::DioSpiDeviceSd3) begin : gen_mux_spi_device_sd3
+      // Connect output towards muxed pad IOB3 to pad SPI_DEV_D3.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_out (
+        .clk0_i (dio_out_i[k]),
+        .clk1_i (mio_out_i[top_earlgrey_pkg::MioPadIob3]),
+        .sel_i  (mux_iob_sel_i[3]),
+        .clk_o  (dio_out)
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_dio_oe (
+        .clk0_i (dio_oe_i[k]),
+        .clk1_i (mio_oe_i[top_earlgrey_pkg::MioPadIob3]),
+        .sel_i  (mux_iob_sel_i[3]),
+        .clk_o  (dio_oe)
+      );
+
+    end else begin : gen_no_mux
+      // Directly connect output signals to pad.
+      assign dio_out = dio_out_i[k];
+      assign dio_oe  = dio_oe_i[k];
+    end
+
     prim_pad_wrapper #(
       .PadType  ( DioPadType[k]  ),
       .ScanRole ( DioScanRole[k] )
@@ -72,13 +158,97 @@ module padring
       // Orthogonal to this pin, the input can be disabled
       // by setting `attr_i.input_disable` to 1.
       .ie_i       ( 1'b1                     ),
-      .out_i      ( dio_out_i[k]             ),
-      .oe_i       ( dio_oe_i[k]              ),
+      .out_i      ( dio_out                  ),
+      .oe_i       ( dio_oe                   ),
       .attr_i     ( dio_attr_i[k]            )
     );
   end
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_pads
+    logic mio_in, mio_in_raw;
+
+    if (k == top_earlgrey_pkg::MioPadIob0) begin : gen_mux_iob0
+      // Connect input coming from pad SPI_HOST_D2 to signals of muxed pad IOB0.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in (
+        .clk0_i (mio_in),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiHost0Sd2]),
+        .sel_i  (mux_iob_sel_i[0]),
+        .clk_o  (mio_in_o[k])
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in_raw (
+        .clk0_i (mio_in_raw),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiHost0Sd2]),
+        .sel_i  (mux_iob_sel_i[0]),
+        .clk_o  (mio_in_raw_o[k])
+      );
+
+    end else if (k == top_earlgrey_pkg::MioPadIob1) begin : gen_mux_iob1
+      // Connect input coming from pad SPI_HOST_D3 to signals of muxed pad IOB1.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in (
+        .clk0_i (mio_in),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiHost0Sd3]),
+        .sel_i  (mux_iob_sel_i[1]),
+        .clk_o  (mio_in_o[k])
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in_raw (
+        .clk0_i (mio_in_raw),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiHost0Sd3]),
+        .sel_i  (mux_iob_sel_i[1]),
+        .clk_o  (mio_in_raw_o[k])
+      );
+
+    end else if (k == top_earlgrey_pkg::MioPadIob2) begin : gen_mux_iob2
+      // Connect input coming from pad SPI_DEV_D2 to signals of muxed pad IOB2.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in (
+        .clk0_i (mio_in),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiDeviceSd2]),
+        .sel_i  (mux_iob_sel_i[2]),
+        .clk_o  (mio_in_o[k])
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in_raw (
+        .clk0_i (mio_in_raw),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiDeviceSd2]),
+        .sel_i  (mux_iob_sel_i[2]),
+        .clk_o  (mio_in_raw_o[k])
+      );
+
+    end else if (k == top_earlgrey_pkg::MioPadIob3) begin : gen_mux_iob3
+      // Connect input coming from pad SPI_DEV_D3 to signals of muxed pad IOB3.
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in (
+        .clk0_i (mio_in),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiDeviceSd3]),
+        .sel_i  (mux_iob_sel_i[3]),
+        .clk_o  (mio_in_o[k])
+      );
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_mux_mio_in_raw (
+        .clk0_i (mio_in_raw),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiDeviceSd3]),
+        .sel_i  (mux_iob_sel_i[3]),
+        .clk_o  (mio_in_raw_o[k])
+      );
+
+    end else begin : gen_no_mux
+      // Directly connect input signals to pad.
+      assign mio_in_o[k]     = mio_in;
+      assign mio_in_raw_o[k] = mio_in_raw;
+    end
+
     prim_pad_wrapper #(
       .PadType  ( MioPadType[k]  ),
       .ScanRole ( MioScanRole[k] )
@@ -87,8 +257,8 @@ module padring
       .scanmode_i ( scanmode                 ),
       .pok_i      ( pad_pok[MioPadBank[k]]   ),
       .inout_io   ( mio_pad_io[k]            ),
-      .in_o       ( mio_in_o[k]              ),
-      .in_raw_o   ( mio_in_raw_o[k]          ),
+      .in_o       ( mio_in                   ),
+      .in_raw_o   ( mio_in_raw               ),
       // This is currently not dynamically controlled.
       // However, this may change in the future if the
       // need arises (e.g. as part of to power sequencing).

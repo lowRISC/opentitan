@@ -477,6 +477,7 @@ module chip_earlgrey_asic #(
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( ast_base_clks.clk_sys ),
     .scanmode_i   ( scanmode              ),
+    .mux_iob_sel_i ('0), // TODO(#23280)
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
