@@ -1,0 +1,40 @@
+/*
+ * This file declares the default way that test in OpenTitan repository prefers
+ * the signals to an Earlgrey chip on a Teacup shield to be.
+ */
+{
+  "includes": ["/__builtin__/hyperdebug_teacup.json"],
+  "interface": "teacup",
+  "pins": [
+    {
+      "name": "DFT_STRAP0",
+      "mode": "Alternate",
+    },
+    {
+      "name": "DFT_STRAP1",
+      "mode": "Alternate",
+    },
+    {
+      /* HyperDebug would disturb PMOD signal by default */
+      "name": "PMOD1_2",
+      "mode": "Input",
+    }
+  ],
+  "strappings": [
+    {
+      "name": "PRERESET_DFT_DISABLE",
+      "pins": [
+        {
+          "name": "DFT_STRAP0",
+          "mode": "PushPull",
+          "level": false
+        },
+        {
+          "name": "DFT_STRAP1",
+          "mode": "PushPull",
+          "level": false
+        }
+      ]
+    }
+  ]
+}
