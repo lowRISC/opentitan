@@ -4444,9 +4444,19 @@ _RV_DM_TAP_SEL_LC_STATES = get_lc_items(
             ],
             test_harness = "//sw/host/tests/chip/rv_dm:jtag_tap_sel",
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-        },
+        exec_env = dicts.add(
+            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
+            {
+                "//hw/top_earlgrey:fpga_cw310_sival": None,
+            },
+        ),
+        silicon = silicon_params(
+            needs_jtag = True,
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_harness = "//sw/host/tests/chip/rv_dm:jtag_tap_sel",
+        ),
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
