@@ -18,6 +18,7 @@ use opentitanlib::image::image::Image;
 use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::util::file::FromReader;
+use opentitanlib::util::parse_int::ParseInt;
 
 #[derive(Debug, serde::Serialize, Annotate)]
 pub struct RawBytes(
@@ -30,8 +31,18 @@ pub struct RawBytes(
 pub struct Firmware {
     #[command(flatten)]
     params: UartParams,
+    #[arg(long, default_value = "SlotA", help = "Which flash slot to rescue")]
+    slot: BootSlot,
+    #[arg(long, value_parser = usize::from_str, help = "Offset of application image")]
+    offset: Option<usize>,
     #[arg(long, default_value_t = false, help = "Upload the file contents as-is")]
     raw: bool,
+    #[arg(
+        long,
+        default_value_t = false,
+        help = "Wait after upload (no automatic reboot)"
+    )]
+    wait: bool,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 }
@@ -49,15 +60,24 @@ impl CommandDispatch for Firmware {
             let subimages = image.subimages()?;
             let subimage = subimages
                 .iter()
-                .find(|s| s.kind == ManifestKind::Application)
+                .find(|s| {
+                    s.kind == ManifestKind::Application
+                        && (self.offset.is_none() || Some(s.offset) == self.offset)
+                })
                 .ok_or_else(|| anyhow!("No application image in {:?}", self.filename))?;
             log::info!("Found application image at offset {:#x}", subimage.offset);
+            if self.slot != BootSlot::SlotA && self.offset.is_none() {
+                log::warn!("Rescuing to {} may produce unexpected results.  Use `--offset` to select the desired application image.", self.slot);
+            }
             subimage.data
         };
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport)?;
-        rescue.update_firmware(payload)?;
+        if self.wait {
+            rescue.wait()?;
+        }
+        rescue.update_firmware(self.slot, payload)?;
         Ok(None)
     }
 }
