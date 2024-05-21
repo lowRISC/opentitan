@@ -91,8 +91,9 @@ Here is an example usage pattern of this feature:
 1. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
 1. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).
 1. Save the context by reading the `DIGEST_0`..`15` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
-If the operation is keyed HMAC, then `KEY_0`..`X` registers also need to be stored, where `X` is the last register used for the given key length (e.g. for HMAC-256, `X=7`).
-(The values in the `CFG` register must also be preserved, but that is purely SW-controlled so doesn't need to be read from HW.)
+If the operation is keyed HMAC, the values of `KEY_0`..`X` registers also need to be maintained as part of the context, where `X` is the last register used for the given key length (e.g. for HMAC-256, `X=7`).
+However, key registers cannot be read from SW, therefore SW must maintain key values as part of its own context during initialization.
+Similarly, the value of the `CFG` register must also be preserved, and SW should keep its value separately, instead of reading it from `CFG` register.
 1. Disable `sha_en` by updating `CFG` register, in order to clear the digest from stream A.
 This is necessary to also prevent leakage of intermediate context of one SW thread to another.
 1. Repeat steps 1-5 for message stream B.
