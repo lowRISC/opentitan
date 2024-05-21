@@ -235,9 +235,9 @@ dif_result_t dif_clkmgr_measure_ctrl_get_enable(const dif_clkmgr_t *clkmgr,
 // there is a #define for the corresponding enable CSR offset.
 //
 // These macro are a tricky way to implement a macro like the following:
-// #define CONDITIONALLY_DO	\
-//   #ifdef SOMETHING do_something \
-//   #else do_something_else       \
+// #define CONDITIONALLY_DO        \ ...
+//   #ifdef SOMETHING do_something \ ...
+//   #else do_something_else       \ ...
 //   #endif
 // However, such macros are illegal in C. So the macros below implement
 // the conditional using a suggestion presented in
