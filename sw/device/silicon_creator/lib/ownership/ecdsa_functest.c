@@ -60,11 +60,6 @@ void __assert_func(const char *file, int line, const char *func,
   abort();
 }
 
-static status_t initialize(void) {
-  TRY(ecdsa_init());
-  return OK_STATUS();
-}
-
 // Tests that we can verify an ECDSA signature given the digest.
 status_t ecdsa_verify_digest_test(void) {
   hmac_digest_t digest;
@@ -93,7 +88,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-  status_t result = initialize();
+  status_t result = OK_STATUS();
   EXECUTE_TEST(result, ecdsa_verify_digest_test);
   EXECUTE_TEST(result, ecdsa_verify_message_test);
   return status_ok(result);

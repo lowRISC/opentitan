@@ -9,17 +9,11 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * Initializes ECDSA crypto.
- */
-rom_error_t ecdsa_init(void);
 
 /**
  * Verifies an ECDSA P-256 signature.
