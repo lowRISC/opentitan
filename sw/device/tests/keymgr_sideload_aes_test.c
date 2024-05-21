@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -84,7 +85,7 @@ static void keymgr_initialize_sival(void) {
 }
 
 static void keymgr_initialize(void) {
-  if (kDeviceType == kDeviceSilicon) {
+  if (kBootStage == kBootStageOwner) {
     keymgr_initialize_sival();
   } else {
     // All other configurations use the sim_dv initialization.
