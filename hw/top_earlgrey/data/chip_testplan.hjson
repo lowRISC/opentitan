@@ -202,6 +202,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_retention"]
+      bazel: ["//sw/device/tests:sleep_pin_retention_test"],
     }
     {
       name: chip_sw_tap_strap_sampling
