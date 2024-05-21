@@ -147,9 +147,9 @@ def get_cov_results(logpath, dut_name):
             cov_pattern = r"\s*\|\d*.\d\d%\s\(\d*\/\d*\)"  # cov pattern: 100.00% (5/5)
             pattern_match = r"\s*\|(\d*.\d\d)%\s\(\d*\/\d*\)"  # extract percentage in cov_pattern
             coverage_patterns = \
-                [("stimuli", r"^\|" + dut_name + pattern_match + cov_pattern + cov_pattern),
-                 ("coi", r"^\|" + dut_name + cov_pattern + pattern_match + cov_pattern),
-                 ("proof", r"^\|" + dut_name + cov_pattern + cov_pattern + pattern_match)]
+                [("formal", r"^\|" + dut_name + pattern_match + cov_pattern + cov_pattern),
+                 ("stimuli", r"^\|" + dut_name + cov_pattern + pattern_match + cov_pattern),
+                 ("checker", r"^\|" + dut_name + cov_pattern + cov_pattern + pattern_match)]
             cov_results = extract_messages(full_file, coverage_patterns)
             for key, item in cov_results.items():
                 if len(item) == 1:
@@ -191,9 +191,9 @@ def main():
         },
         If coverage is enabled, this script will also parse the coverage result:
         "coverage": {
+          formal:  "90 %",
           stimuli: "90 %",
-          coi    : "90 %",
-          proof  : "80 %"
+          checker: "80 %"
         }
         The script returns nonzero status if any errors or property failures including
         "cex, undetermined, unreachable" are presented.
