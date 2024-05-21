@@ -6,7 +6,8 @@
 
 module ascon_sim import ascon_pkg::*;
 #(
-  localparam int DONE_DELAY_CYCLES = 10
+  localparam int DONE_DELAY_CYCLES = 10,
+  localparam int MAX_BUS_DELAY = 10
 )
 (
   input  clk_i,
@@ -30,10 +31,27 @@ module ascon_sim import ascon_pkg::*;
   logic pop_stimulus;
   logic pop_response;
 
+
+  int delay_counter;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      delay_counter <= 0;
+    end else if (delay_counter == MAX_BUS_DELAY) begin
+      delay_counter <= 0;
+    end else begin
+      delay_counter <= delay_counter + 1;
+    end
+  end
+
+  logic bus_delay;
+  assign bus_delay = delay_counter == MAX_BUS_DELAY ? 1'b1 : 1'b0;
+
+
   // only pop new response if previous response was AccessAckData
-  assign pop_response = tl_i.d_ready & tl_o.d_valid
+  assign pop_response = tl_i.d_ready & tl_o.d_valid & bus_delay
                         & (tl_o.d_opcode == tlul_pkg::AccessAckData);
-  assign pop_stimulus = tl_o.a_ready & tl_i.a_valid;
+  assign pop_stimulus = tl_o.a_ready & tl_i.a_valid & bus_delay;
 
   ascon_tl_ul_stim g_ascon_tl_ul_stim (
     .clk_i,
