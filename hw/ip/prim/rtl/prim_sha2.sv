@@ -27,6 +27,8 @@ module prim_sha2 import prim_sha2_pkg::*;
   input               sha_en_i,   // if disabled, it clears internal content
   input               hash_start_i, // start hashing: initialize data counter to zero and clear
                                     // digest
+  input               hash_stop_i, // stop hashing: after all data up to message length has been
+                                   // hashed, stop without padding
   input               hash_continue_i, // continue hashing: set data counter to `message_length_i`
                                        // and use current digest
   input digest_mode_e digest_mode_i,
@@ -461,6 +463,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .shaf_rready_i (shaf_rready), // indicates that w is ready for more words from padding buffer
     .sha_en_i,
     .hash_start_i,
+    .hash_stop_i,
     .hash_continue_i,
     .digest_mode_i,
     .hash_process_i,

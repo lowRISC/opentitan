@@ -703,6 +703,7 @@ module hmac
     .fifo_rready_o        (shaf_rready),
     .sha_en_i             (sha_en),
     .hash_start_i         (sha_hash_start),
+    .hash_stop_i          (reg_hash_stop),
     .hash_continue_i      (sha_hash_continue),
     .digest_mode_i        (digest_size),
     .hash_process_i       (sha_hash_process),
