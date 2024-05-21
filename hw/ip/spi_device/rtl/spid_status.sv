@@ -25,6 +25,7 @@ module spid_status
   input rst_ni,
 
   input clk_out_i, // Output clock (inverted SCK)
+  input rst_out_ni, // Reset safely timed for output clock
 
   input clk_csb_i, // CSb clock source
 
@@ -301,8 +302,8 @@ module spid_status
   /////////////////
 
   // Latch in clk_out
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       outclk_p2s_valid_o <= 1'b 0;
       outclk_p2s_byte_o  <= '0;
     end else begin

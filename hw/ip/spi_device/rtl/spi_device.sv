@@ -705,7 +705,21 @@ module spi_device
     .clk_o(rst_spi_n)
   );
 
-  logic tpm_rst_n, sys_tpm_rst_n;
+  logic rst_spi_in_n, rst_spi_out_n;
+  assign rst_spi_in_n = rst_spi_n;
+
+  // Synchronizes reset de-assertion to safely occur in the outclk domain.
+  prim_flop #(
+    .Width      (1),
+    .ResetValue (1'b0)
+  ) u_rst_spi_out_sync (
+    .clk_i (clk_spi_in_buf),
+    .rst_ni(rst_spi_n),
+    .d_i   (1'b1),
+    .q_o   (rst_spi_out_n)
+  );
+
+  logic tpm_rst_in_n, tpm_rst_out_n, sys_tpm_rst_n;
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
@@ -713,7 +727,18 @@ module spi_device
     .clk0_i (rst_ni & ~rst_tpm_csb_buf),
     .clk1_i (scan_rst_ni),
     .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[TpmRstSel])),
-    .clk_o  (tpm_rst_n)
+    .clk_o  (tpm_rst_in_n)
+  );
+
+  // Synchronizes reset de-assertion to safely occur in the outclk domain.
+  prim_flop #(
+    .Width      (1),
+    .ResetValue (1'b0)
+  ) u_tpm_rst_out_sync (
+    .clk_i (clk_spi_in_buf),
+    .rst_ni(tpm_rst_in_n),
+    .d_i   (1'b1),
+    .q_o   (tpm_rst_out_n)
   );
 
   // TPM Read FIFO uses TPM CSb as a reset.
@@ -726,7 +751,7 @@ module spi_device
     .SkipScan   (1'b 0)
   ) u_tpm_csb_rst_sync (
     .clk_i,
-    .d_i   (tpm_rst_n),
+    .d_i   (tpm_rst_in_n),
     .q_o   (sys_tpm_rst_n),
 
     .scan_rst_ni,
@@ -780,9 +805,9 @@ module spi_device
   //          or QuadIO commands
   //       -> changed io_mode affects spi_s2p module, which again affects
   //          cmdparse module.
-  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
-    if (!rst_spi_n) io_mode_outclk <= SingleIO;
-    else            io_mode_outclk <= io_mode;
+  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_out_n) begin
+    if (!rst_spi_out_n) io_mode_outclk <= SingleIO;
+    else                io_mode_outclk <= io_mode;
   end
 
   // SCK clock domain MUX for SRAM access for Flash and Passthrough
@@ -925,7 +950,7 @@ module spi_device
     .ResetValue    ('0)
   ) u_read_pipe_stg1 (
     .clk_i     (clk_spi_out_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_out_n),
     .d_i       (internal_sd_stg1_d),
     .q_o       (internal_sd_stg1_q)
   );
@@ -935,7 +960,7 @@ module spi_device
     .ResetValue    ('0)
   ) u_read_pipe_stg2 (
     .clk_i     (clk_spi_out_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_out_n),
     .d_i       (internal_sd_stg2_d),
     .q_o       (internal_sd_stg2_q)
   );
@@ -945,7 +970,7 @@ module spi_device
     .ResetValue    ('0)
   ) u_read_en_pipe_stg1 (
     .clk_i     (clk_spi_out_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_out_n),
     .d_i       (internal_sd_en),
     .q_o       (internal_sd_en_stg1)
   );
@@ -955,7 +980,7 @@ module spi_device
     .ResetValue    ('0)
   ) u_read_en_pipe_stg2 (
     .clk_i     (clk_spi_out_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_out_n),
     .d_i       (internal_sd_en_stg1),
     .q_o       (internal_sd_en_stg2)
   );
@@ -965,7 +990,7 @@ module spi_device
     .ResetValue    ('0)
   ) u_read_intercept_pipe_stg1 (
     .clk_i     (clk_spi_out_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_out_n),
     .d_i       (intercept_en),
     .q_o       (intercept_en_stg1)
   );
@@ -975,7 +1000,7 @@ module spi_device
     .ResetValue    ('0)
   ) u_read_intercept_pipe_stg2 (
     .clk_i     (clk_spi_out_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_out_n),
     .d_i       (intercept_en_stg1),
     .q_o       (intercept_en_stg2)
   );
@@ -1030,22 +1055,22 @@ module spi_device
 
   // Assume `intercept` is registered (SPI_IN).
   // passthrough assumed signal shall be registered in (SPI_OUT)
-  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
-    if (!rst_spi_n) intercept_en <= 1'b 0;
-    else            intercept_en <= |intercept;
+  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_out_n) begin
+    if (!rst_spi_out_n) intercept_en <= 1'b 0;
+    else                intercept_en <= |intercept;
   end
   // intercept_en shall not be de-asserted except mailbox
   `ASSUME(InterceptLevel_M,
     $rose(|{intercept.status, intercept.jedec, intercept.sfdp}) |=>
-      ##1 $stable(intercept_en) until !rst_spi_n,
-    clk_spi_out_buf, !rst_spi_n)
+      ##1 $stable(intercept_en) until !rst_spi_out_n,
+    clk_spi_out_buf, !rst_spi_out_n)
 
   ////////////////////////////
   // SPI Serial to Parallel //
   ////////////////////////////
   spi_s2p u_s2p (
     .clk_i        (clk_spi_in_buf),
-    .rst_ni       (rst_spi_n),
+    .rst_ni       (rst_spi_in_n),
 
     // SPI interface
     .s_i          (cio_sd_i),
@@ -1060,7 +1085,7 @@ module spi_device
 
   spi_p2s u_p2s (
     .clk_i        (clk_spi_out_buf),
-    .rst_ni       (rst_spi_n),
+    .rst_ni       (rst_spi_out_n),
 
     .data_valid_i (p2s_valid),
     .data_i       (p2s_data),
@@ -1080,7 +1105,7 @@ module spi_device
 
   spi_cmdparse u_cmdparse (
     .clk_i  (clk_spi_in_buf),
-    .rst_ni (rst_spi_n),
+    .rst_ni (rst_spi_in_n),
 
     .data_valid_i (s2p_data_valid),
     .data_i       (s2p_data),
@@ -1116,9 +1141,10 @@ module spi_device
 
   spi_readcmd u_readcmd (
     .clk_i  (clk_spi_in_buf),
-    .rst_ni (rst_spi_n),
+    .rst_ni (rst_spi_in_n),
 
-    .clk_out_i (clk_spi_out_buf),
+    .clk_out_i  (clk_spi_out_buf),
+    .rst_out_ni (rst_spi_out_n),
 
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
@@ -1188,9 +1214,10 @@ module spi_device
 
   spid_status u_spid_status (
     .clk_i  (clk_spi_in_buf),
-    .rst_ni (rst_spi_n),
+    .rst_ni (rst_spi_in_n),
 
-    .clk_out_i (clk_spi_out_buf),
+    .clk_out_i  (clk_spi_out_buf),
+    .rst_out_ni (rst_spi_out_n),
 
     .clk_csb_i (clk_csb),
 
@@ -1238,9 +1265,10 @@ module spi_device
 
   spid_jedec u_jedec (
     .clk_i  (clk_spi_in_buf),
-    .rst_ni (rst_spi_n),
+    .rst_ni (rst_spi_in_n),
 
-    .clk_out_i (clk_spi_out_buf),
+    .clk_out_i  (clk_spi_out_buf),
+    .rst_out_ni (rst_spi_out_n),
 
     .cmd_sync_pulse_i (cmd_sync_pulse),
 
@@ -1276,7 +1304,7 @@ module spi_device
     .SpiByte ($bits(spi_byte_t))
   ) u_upload (
     .clk_i  (clk_spi_in_buf),
-    .rst_ni (rst_spi_n),
+    .rst_ni (rst_spi_in_n),
 
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
@@ -1431,8 +1459,9 @@ module spi_device
 
   spi_passthrough u_passthrough (
     .clk_i     (clk_spi_in_buf),
-    .rst_ni    (rst_spi_n),
+    .rst_ni    (rst_spi_in_n),
     .clk_out_i (clk_spi_out_buf),
+    .rst_out_ni(rst_spi_out_n),
 
     .cfg_cmd_filter_i (cmd_filter),
 
@@ -1475,7 +1504,8 @@ module spi_device
   ) u_spi_tpm (
     .clk_in_i  (clk_spi_in_buf ),
     .clk_out_i (clk_spi_out_buf),
-    .rst_ni    (tpm_rst_n    ),
+    .rst_ni    (tpm_rst_in_n ),
+    .rst_out_ni(tpm_rst_out_n),
 
     .sys_clk_i (clk_i),
     .sys_rst_ni(rst_ni       ),
@@ -1732,7 +1762,7 @@ module spi_device
   // SRAM Wrapper
   // The SRAM should only be reset if both modes are inactive.
   logic spi_dpram_rst_n;
-  assign spi_dpram_rst_n = tpm_rst_n | rst_spi_n;
+  assign spi_dpram_rst_n = tpm_rst_in_n | rst_spi_in_n;
 
   assign mem_b_req   = mem_b_l2m.req;
   assign mem_b_write = mem_b_l2m.we;

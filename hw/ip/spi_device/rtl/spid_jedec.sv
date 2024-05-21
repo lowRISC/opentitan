@@ -13,6 +13,7 @@ module spid_jedec
   input rst_ni,
 
   input clk_out_i, // Output clock (inverted SCK)
+  input rst_out_ni, // Reset safely timed for output clock
 
   input cmd_sync_pulse_i,
 
@@ -86,8 +87,8 @@ module spid_jedec
   end
 
   // Output to Parallel-to-Serial
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       outclk_p2s_valid_o <= 1'b 0;
       outclk_p2s_byte_o  <= 8'h 0;
     end else begin

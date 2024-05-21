@@ -77,6 +77,7 @@ module spi_passthrough
   input rst_ni,  // SPI reset
 
   input clk_out_i, // SPI output clk
+  input rst_out_ni, // SPI reset safely timed for output clk
 
   // command filter information is given as 256bit register. It is subject to be
   // changed if command config is stored in DPSRAM. If that is supported, the
@@ -344,9 +345,9 @@ module spi_passthrough
     if (!rst_ni)     csb_deassert <= 1'b 0;
     else if (filter) csb_deassert <= 1'b 1;
   end
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) csb_deassert_outclk <= 1'b 0;
-    else         csb_deassert_outclk <= csb_deassert;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) csb_deassert_outclk <= 1'b 0;
+    else             csb_deassert_outclk <= csb_deassert;
   end
 
   // Look at the waveform above to see why sck_gate_en is inversion of fliter OR
@@ -481,8 +482,8 @@ module spi_passthrough
     end
   end
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       addrcnt_outclk <= '0;
     end else if (addr_set_q) begin
       addrcnt_outclk <= addr_size_d;
@@ -501,9 +502,9 @@ module spi_passthrough
   // The state machine operates in inclk domain.
   // The state generates mux selection signal.
   // The signal latched in outclk domain then activates the mux.
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) addr_phase_outclk <= 1'b 0;
-    else         addr_phase_outclk <= addr_phase;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) addr_phase_outclk <= 1'b 0;
+    else             addr_phase_outclk <= addr_phase;
   end
 
   // Payload (4 bytes) swap
@@ -523,9 +524,9 @@ module spi_passthrough
     end
   end
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) payloadcnt_outclk <= 5'h 1F;
-    else         payloadcnt_outclk <= payloadcnt;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) payloadcnt_outclk <= 5'h 1F;
+    else             payloadcnt_outclk <= payloadcnt;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -534,9 +535,9 @@ module spi_passthrough
     else if (payload_replace_clr) payload_replace <= 1'b 0;
   end
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) payload_replace_outclk <= 1'b 0;
-    else         payload_replace_outclk <= payload_replace;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) payload_replace_outclk <= 1'b 0;
+    else             payload_replace_outclk <= payload_replace;
   end
 
   assign payload_replace_clr = (payloadcnt == '0);
@@ -556,8 +557,8 @@ module spi_passthrough
   // violates timing regardless of the path delay.  By latching the configs
   // into output clock (inverted SCK), it alleviates the timing budget.
   logic cmd_info_addr_swap_en_outclk, cmd_info_payload_swap_en_outclk;
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       cmd_info_addr_swap_en_outclk    <= 1'b 0;
       cmd_info_payload_swap_en_outclk <= 1'b 0;
     end else begin
@@ -608,9 +609,9 @@ module spi_passthrough
   assign passthrough_o.s = (swap_en) ? {host_s_i[3:1], swap_data} : host_s_i ;
 
   logic [3:0] passthrough_s_en;
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) passthrough_s_en <= 4'h 1; // S[0] active by default
-    else passthrough_s_en <= device_s_en_inclk;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) passthrough_s_en <= 4'h 1; // S[0] active by default
+    else             passthrough_s_en <= device_s_en_inclk;
   end
   assign passthrough_o.s_en = passthrough_s_en;
 
@@ -645,7 +646,7 @@ module spi_passthrough
     .ResetValue    ('0)
   ) u_read_pipe_stg1 (
     .clk_i     (clk_out_i),
-    .rst_ni,
+    .rst_ni    (rst_out_ni),
     .d_i       (read_pipeline_stg1_d),
     .q_o       (read_pipeline_stg1_q)
   );
@@ -655,7 +656,7 @@ module spi_passthrough
     .ResetValue    ('0)
   ) u_read_pipe_stg2 (
     .clk_i     (clk_out_i),
-    .rst_ni,
+    .rst_ni    (rst_out_ni),
     .d_i       (read_pipeline_stg2_d),
     .q_o       (read_pipeline_stg2_q)
   );
@@ -665,7 +666,7 @@ module spi_passthrough
     .ResetValue    ('0)
   ) u_read_pipe_oe_stg1 (
     .clk_i     (clk_out_i),
-    .rst_ni,
+    .rst_ni    (rst_out_ni),
     .d_i       (read_pipeline_oe_stg1_d),
     .q_o       (read_pipeline_oe_stg1_q)
   );
@@ -675,7 +676,7 @@ module spi_passthrough
     .ResetValue    ('0)
   ) u_read_pipe_oe_stg2 (
     .clk_i     (clk_out_i),
-    .rst_ni,
+    .rst_ni    (rst_out_ni),
     .d_i       (read_pipeline_oe_stg2_d),
     .q_o       (read_pipeline_oe_stg2_q)
   );
@@ -708,9 +709,9 @@ module spi_passthrough
     endcase
   end
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) host_s_en_o <= '0; // input mode
-    else         host_s_en_o <= host_s_en_muxed;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) host_s_en_o <= '0; // input mode
+    else             host_s_en_o <= host_s_en_muxed;
   end
 
   logic pt_gated_sck;
