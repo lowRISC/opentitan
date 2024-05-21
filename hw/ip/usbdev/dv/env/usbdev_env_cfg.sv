@@ -22,13 +22,15 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
   // Constrain the AON clock to be slower than the USB clock. For the usbdev_aon_wake logic
   // to operate correctly and not generate spurious reports of bus resets when detecting Low Speed
-  // signaling, it requires a clock frequency lower than 2MHz cf the usbdev clock at 48MHz, so the
-  // ratio should exceed 24.
+  // signaling, it requires a clock frequency lower than 1MHz cf the usbdev clock at 48MHz, so the
+  // ratio should exceed 48. This is because 2 bit intervals @ 1.5Mbps may be seen - in the limit -
+  // as being high for 3 clock edges at frequencies above 1MHz.
+  //
   // In a real device we expect it to be as low as 200kHz.
   rand uint aon_clk_freq_khz;
   constraint aon_clk_freq_khz_c {
     aon_clk_freq_khz >  usb_clk_freq_khz / 300 &&
-    aon_clk_freq_khz <= usb_clk_freq_khz / 24;
+    aon_clk_freq_khz <= usb_clk_freq_khz / 48;
   }
 
   // Constrain the host clock to be close to that of the DUT at present; in time we shall want

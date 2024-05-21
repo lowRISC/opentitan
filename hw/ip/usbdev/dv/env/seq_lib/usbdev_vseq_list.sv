@@ -45,3 +45,5 @@
 `include "usbdev_endpoint_access_vseq.sv"
 // This must follow usbdev_pkt_sent
 `include "usbdev_link_suspend_vseq.sv"
+// This must follow usbdev_link_suspend
+`include "usbdev_aon_wake_vseq.sv"

@@ -51,6 +51,21 @@
       uvm_test_seq: usbdev_smoke_vseq
     }
     {
+      name: usbdev_aon_wake_disconnect
+      uvm_test_seq: usbdev_aon_wake_vseq
+      run_opts: ["+do_vbus_disconnects=1"]
+    }
+    {
+      name: usbdev_aon_wake_reset
+      uvm_test_seq: usbdev_aon_wake_vseq
+      run_opts: ["+do_reset_signaling=1"]
+    }
+    {
+      name: usbdev_aon_wake_resume
+      uvm_test_seq: usbdev_aon_wake_vseq
+      run_opts: ["+do_resume_signaling=1"]
+    }
+    {
       name: usbdev_av_buffer
       uvm_test_seq: usbdev_av_buffer_vseq
     }

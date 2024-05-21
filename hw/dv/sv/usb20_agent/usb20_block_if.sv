@@ -30,6 +30,9 @@ interface usb20_block_if (
   logic usb_ref_val_o;
   logic usb_ref_pulse_o;
 
+  // Wake request from AON/Wake module.
+  logic wake_req_aon;
+
   // Are our drivers connected?
   bit connected = 0;
 

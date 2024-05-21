@@ -31,6 +31,12 @@ constraint endpoint_c {
   endp inside {[0:11]};
 }
 
+// Bus events/stimuli to be presented during the sequence
+//   (these are used in the `aon_wake_` and `rand_bus...` tests points).
+bit do_reset_signaling  = 1'b0;
+bit do_resume_signaling = 1'b0;
+bit do_vbus_disconnects = 1'b0;
+
 // Connect the usb20_agent via the block level interface?
 bit do_agent_connect = 1'b1;
 
@@ -47,6 +53,16 @@ bit apply_post_reset_delays_for_sync = 1'b1;
 bit phy_eop_single_bit = 1'b0;  // Note: the default reset value is 1
 bit phy_usb_ref_disable = 1'b0;
 bit phy_tx_osc_test_mode = 1'b0;
+// TODO: support pin-flipping through the DV including the usb20_driver and usb20_monitor.
+bit phy_pinflip = 1'b0;
+
+// Approx. over-estimate of the USBDEV:AON/Wake clock ratio; we expect the USB device to be
+// operating at no more than 48.24kHz, and the AON/Wake module to be operating at >= 200KHz.
+// In fact we have permitted a ratio of up to 300:1 in the constraints.
+uint usbdev_aon_wake_clk_ratio = 300;
+// but we also have the two-cycle CDC synchronizer to consider.
+uint aon_wake_control_wr_clks = (1 + 2) * usbdev_aon_wake_clk_ratio;
+uint aon_wake_events_rd_clks = usbdev_aon_wake_clk_ratio;
 
 `uvm_object_new
 
@@ -134,6 +150,12 @@ endtask
   // Give derived sequences the opportunity to override the connection of the usb20_agent via the
   // the interface.
   virtual task pre_start();
+    // These options are common to a few tests, but will not be specified for most so they default
+    // to zero (above).
+    void'($value$plusargs("do_reset_signaling=%0b",  do_reset_signaling));
+    void'($value$plusargs("do_resume_signaling=%0b", do_resume_signaling));
+    void'($value$plusargs("do_vbus_disconnects=%0b", do_vbus_disconnects));
+
     if (do_agent_connect) begin
       // Connect the USB20 agent and ensure that the USBDPI model is not connected.
       cfg.m_usb20_agent_cfg.bif.enable_driver(1'b1);
@@ -188,6 +210,7 @@ endtask
   // Construct and transmit a token packet to the USB device
   virtual task call_token_seq(input pid_type_e pid_type, bit inject_crc_error = 0);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
+    m_token_pkt.m_ev_type  = EvPacket;
     m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
     assert(m_token_pkt.randomize() with {m_token_pkt.address == dev_addr;
@@ -203,6 +226,7 @@ endtask
   virtual task send_data_packet(input pid_type_e pid_type, input byte unsigned data[],
                                 input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
     if (isochronous_transfer) begin
@@ -220,6 +244,7 @@ endtask
                              input bit randomize_length, input bit [6:0] num_of_bytes,
                              input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
     if (isochronous_transfer) begin
@@ -279,6 +304,7 @@ endtask
 
   virtual task call_handshake_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
+    m_handshake_pkt.m_ev_type  = EvPacket;
     m_handshake_pkt.m_pkt_type = pkt_type;
     m_handshake_pkt.m_pid_type = pid_type;
     m_usb20_item = m_handshake_pkt;
@@ -454,6 +480,8 @@ endtask
   virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0,
                            // PHY Configuration for this test; all permutations should be tested.
                            bit use_diff_rcvr = 0, bit tx_use_d_se0 = 0, bit pinflip = 0);
+    // Remember the pinflip setting.
+    phy_pinflip = pinflip;
     // Configure PHY
     // - the different modes of operation may be set using parameters,
     ral.phy_config.use_diff_rcvr.set(use_diff_rcvr);
@@ -556,12 +584,72 @@ endtask
 
   virtual task call_sof_seq(input pid_type_e pid_type);
     `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
+    m_sof_pkt.m_ev_type  = EvPacket;
     m_sof_pkt.m_pkt_type = PktTypeSoF;
     m_sof_pkt.m_pid_type = pid_type;
     assert(m_sof_pkt.randomize());
     m_usb20_item = m_sof_pkt;
     start_item(m_sof_pkt);
     finish_item(m_sof_pkt);
+  endtask
+
+  // Perform Resume Signaling on the USB; this instructs the DUT to exit a Suspended state.
+  virtual task send_resume_signaling();
+    usb20_item item;
+    `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
+    start_item(item);
+    item.m_ev_type = EvResume;
+    finish_item(item);
+  endtask
+
+  // Issue a Bus Reset to the DUT.
+  virtual task send_bus_reset();
+    usb20_item item;
+    `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
+    start_item(item);
+    item.m_ev_type = EvBusReset;
+    finish_item(item);
+  endtask
+
+  // Set the state of the VBUS signal from the usb20_driver, indicating the presence/absence
+  // of a host connection.
+  virtual task set_vbus_state(bit enabled);
+    usb20_item item;
+    `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
+    start_item(item);
+    item.m_ev_type = enabled ? EvConnect : EvDisconnect;
+    finish_item(item);
+  endtask
+
+  // Hand over control of the USB to the AON/Wake module.
+  virtual task aon_wake_activate();
+    bit active = 1'b0;
+    ral.wake_control.suspend_req.set(1'b1);
+    csr_update(.csr(ral.wake_control));
+    aon_wake_wait_status(1'b1, active);
+    `DV_CHECK_EQ(active, 1'b1, "AON/Wake module did not become active when expected")
+  endtask
+
+  // Recover control of the USB from the AON/Wake module.
+  virtual task aon_wake_deactivate();
+    bit active = 1'b1;
+    ral.wake_control.wake_ack.set(1'b1);
+    csr_update(.csr(ral.wake_control));
+    aon_wake_wait_status(1'b0, active);
+    `DV_CHECK_EQ(active, 1'b0, "AON/Wake module did not deactivate as expected")
+  endtask
+
+  // Wait until the 'module_active' status indicator has the desired value or it has not
+  // changed within the expected interval.
+  virtual task aon_wake_wait_status(bit exp_active, output bit active);
+    // The 'control' write into the AON/Wake domain takes some time because of its much slower
+    // clock frequency, and then we must read back the status indication too.
+    uint delay_max = aon_wake_control_wr_clks + aon_wake_events_rd_clks;
+    for (int unsigned i = 0; i < delay_max; i++) begin
+      // Wait until the AON/Wake module indicates that it is inactive.
+      csr_rd(.ptr(ral.wake_events.module_active), .value(active));
+      if (active == exp_active) break;
+    end
   endtask
 
   virtual task inter_packet_delay(int delay = 0);

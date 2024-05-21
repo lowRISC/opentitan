@@ -878,7 +878,7 @@
               ie. the DP pullup is enabled and DP is high.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_aon_wake_resume"]
     }
     {
       name: aon_wake_reset
@@ -900,7 +900,7 @@
               ie. the DP pullup is enabled and DP is high.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_aon_wake_reset"]
     }
     {
       name: aon_wake_disconnect
@@ -922,7 +922,7 @@
             - Disable the AON/Wake module and verify that the USB device remains disconnected.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_aon_wake_disconnect"]
     }
     {
       name: invalid_sync
