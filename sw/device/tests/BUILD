@@ -3389,7 +3389,7 @@ opentitan_test(
 
 opentitan_test(
     name = "sensor_ctrl_alert_test",
-    srcs = ["sensor_ctrl_alerts.c"],
+    srcs = ["sensor_ctrl_alerts_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3423,7 +3423,7 @@ opentitan_test(
 
 opentitan_test(
     name = "sensor_ctrl_wakeup_test",
-    srcs = ["sensor_ctrl_wakeup.c"],
+    srcs = ["sensor_ctrl_wakeup_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
