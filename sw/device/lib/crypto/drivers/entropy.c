@@ -314,7 +314,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     kMaxGenerateSizeIn128BitBlocks = 0x800,
   };
   if (cmd.generate_len > kMaxGenerateSizeIn128BitBlocks) {
-    return OUT_OF_RANGE();
+    return OTCRYPTO_BAD_ARGS;
   }
 
   uint32_t cmd_reg_addr;
@@ -344,7 +344,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       cmd_reg_addr = base_address + EDN_RESEED_CMD_REG_OFFSET;
       break;
     default:
-      return INVALID_ARGUMENT();
+      return OTCRYPTO_BAD_ARGS;
   }
 
   if ((cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) ||
