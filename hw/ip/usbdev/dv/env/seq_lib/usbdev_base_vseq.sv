@@ -43,6 +43,11 @@ bit do_usbdev_init = 1'b1;
 // add post_reset_delays for sync between bus clk and usb clk in the apply_reset task
 bit apply_post_reset_delays_for_sync = 1'b1;
 
+// PHY Configuration that will rarely be changed; only required for very specific sequences.
+bit phy_eop_single_bit = 1'b0;  // Note: the default reset value is 1
+bit phy_usb_ref_disable = 1'b0;
+bit phy_tx_osc_test_mode = 1'b0;
+
 `uvm_object_new
 
 // Override apply_reset to cater to AON domain and host as well.
@@ -147,8 +152,16 @@ endtask
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_usbdev_init) begin
+      // Default bus configuration; these will potentially impact all test sequences, so it's
+      // preferable to modify the test configurations rather than change these defaults.
+      bit tx_use_d_se0 = 0;
+      bit en_diff_rcvr = 1;
+      bit pin_flip = 0;
+      void'($value$plusargs("pin_flip=%d", pin_flip)); // Flip pins on the USB?
+      void'($value$plusargs("en_diff_rcvr=%d", en_diff_rcvr)); // Enable differential receiver?
+      void'($value$plusargs("tx_use_d_se0=%d", tx_use_d_se0)); // Use D/SE0 for transmission?
       // Initialize the device via its registers.
-      usbdev_init();
+      usbdev_init(dev_addr, en_diff_rcvr, tx_use_d_se0, pin_flip);
     end
   endtask
 
@@ -186,7 +199,7 @@ endtask
     finish_item(m_token_pkt);
   endtask
 
-  // Send a data packet to the USB device
+  // Send a DATA packet to the USB device, retaining a copy for subsequent checks.
   virtual task send_data_packet(input pid_type_e pid_type, input byte unsigned data[],
                                 input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
@@ -201,7 +214,8 @@ endtask
     finish_item(m_data_pkt);
   endtask
 
-  // Construct and transmit a DATA packet to the USB device
+  // Construct and transmit a randomized DATA packet to the USB device, retaining a copy for
+  // subsequent checks.
   virtual task call_data_seq(input pid_type_e pid_type,
                              input bit randomize_length, input bit [6:0] num_of_bytes,
                              input bit isochronous_transfer = 1'b0);
@@ -216,6 +230,43 @@ endtask
     m_usb20_item = m_data_pkt;
     start_item(m_data_pkt);
     finish_item(m_data_pkt);
+  endtask
+
+  // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
+  virtual task send_prnd_setup_packet(bit [3:0] ep);
+    // Send SETUP token packet to the selected endpoint on the specified device.
+    endp = ep;
+    call_token_seq(PidTypeSetupToken);
+    // Variable delay between SETUP token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA packet with randomized content, but we'll honor the rule that SETUP DATA packets
+    // are 8 bytes in length. The DUT does not attempt to interpret the packet content.
+    call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
+  endtask
+
+  // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
+  virtual task send_prnd_out_packet(bit [3:0] ep, input pid_type_e pid_type,
+                                    input bit randomize_length, input bit [6:0] num_of_bytes,
+                                    bit isochronous_transfer = 1'b0);
+    // Send OUT token packet to the selected endpoint on the specified device.
+    endp = ep;
+    call_token_seq(PidTypeOutToken);
+    // Variable delay between OUT token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA packet with randomized content.
+    call_data_seq(pid_type, randomize_length, num_of_bytes, isochronous_transfer);
+  endtask
+
+  // Construct and transmit an OUT DATA packet containing the supplied data.
+  virtual task send_out_packet(bit [3:0] ep, input pid_type_e pid_type, byte unsigned data[],
+                               bit isochronous_transfer = 1'b0, bit [6:0] dev_address = dev_addr);
+    // Send OUT token packet to the selected endpoint on the specified device.
+    endp = ep;
+    call_token_seq(PidTypeOutToken);
+    // Variable delay between OUT token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA1 packet with the given content.
+    send_data_packet(pid_type, data, isochronous_transfer);
   endtask
 
   virtual task get_data_pid_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
@@ -399,8 +450,20 @@ endtask
     // TODO
   endtask
 
-  // Set up basic configuration, optionally using a fixed device address
-  virtual task usbdev_init(bit [6:0] device_address = 0);
+  // Set up basic configuration, optionally using a specific device address
+  virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0,
+                           // PHY Configuration for this test; all permutations should be tested.
+                           bit use_diff_rcvr = 0, bit tx_use_d_se0 = 0, bit pinflip = 0);
+    // Configure PHY
+    // - the different modes of operation may be set using parameters,
+    ral.phy_config.use_diff_rcvr.set(use_diff_rcvr);
+    ral.phy_config.tx_use_d_se0.set(tx_use_d_se0);
+    ral.phy_config.pinflip.set(pinflip);
+    // ... but these rarely require changing; only for very specific test sequences.
+    ral.phy_config.eop_single_bit.set(phy_eop_single_bit);
+    ral.phy_config.usb_ref_disable.set(phy_usb_ref_disable);
+    ral.phy_config.tx_osc_test_mode.set(phy_tx_osc_test_mode);
+    csr_update(ral.phy_config);
     // Has a specified address been requested? Zero is not a valid device address
     // on the USB except during the initial configuration process, so we'll just
     // keep the previous value if asked for zero.
@@ -443,7 +506,7 @@ endtask
   endtask
 
   virtual task configure_out_trans();
-    // Enable EP Out
+    // Enable EP0 Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx out
@@ -464,7 +527,7 @@ endtask
   endtask
 
   virtual task configure_setup_trans();
-    // Enable EP Out
+    // Enable EP0 Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx setup
@@ -503,10 +566,21 @@ endtask
 
   virtual task inter_packet_delay(int delay = 0);
     // From section 7.1.18.1 Time interval between packets is between 2 and 6.5 bit times.
-    // Multiply with 4 because usbdev samples every 4 clks.
     if (delay == 0) delay = $urandom_range(8, 26);
-    else delay = delay * 4;
-    // for max/min inter pkt delay it can be changed with task argument
-    cfg.clk_rst_vif.wait_clks(delay);
+    else begin
+      // Delay in host-side clock cycles may be specified explicitly to achieve min or max value.
+      `DV_CHECK(delay >= 8 && delay <= 26);
+    end
+    cfg.host_clk_rst_vif.wait_clks(delay);
+  endtask
+
+  virtual task response_delay(int delay = 0);
+    // From section 7.1.18.1 Time interval between packets is between 2 and 7.5 bit times.
+    if (delay == 0) delay = $urandom_range(8, 30);
+    else begin
+      // Delay in host-side clock cycles may be specified explicitly to achieve min or max value.
+      `DV_CHECK(delay >= 8 && delay <= 30);
+    end
+    cfg.host_clk_rst_vif.wait_clks(delay);
   endtask
 endclass : usbdev_base_vseq

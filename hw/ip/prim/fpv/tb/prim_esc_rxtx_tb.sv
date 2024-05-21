@@ -23,6 +23,10 @@ module prim_esc_rxtx_tb
   output logic esc_req_o
 );
 
+  // This gets passed to the prim_esc_receiver that we instantiate below. Doing so reduces the state
+  // space for the counter from 2**24 to 2**6, speeding up convergence.
+  localparam int TimeoutCntDw = 6;
+
   esc_rx_t esc_rx_in, esc_rx_out;
   esc_tx_t esc_tx_in, esc_tx_out;
 
@@ -43,9 +47,7 @@ module prim_esc_rxtx_tb
   );
 
   prim_esc_receiver #(
-    // This reduces the state space for this counter
-    // from 2**24 to 2**6 to speed up convergence.
-    .TimeoutCntDw(6)
+    .TimeoutCntDw(TimeoutCntDw)
   ) u_prim_esc_receiver (
     .clk_i    ,
     .rst_ni   ,
