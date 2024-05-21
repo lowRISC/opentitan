@@ -341,9 +341,9 @@ module prim_sha2_pad import prim_sha2_pkg::*;
     else         tx_count <= tx_count_d;
   end
 
-  assign digest_mode_flag_d = hash_start_i ? digest_mode_i  :    // latch in configured mode
-                              hash_done_i  ? SHA2_None      :    // clear
-                                             digest_mode_flag_q; // keep
+  assign digest_mode_flag_d = (hash_start_i || hash_continue_i) ? digest_mode_i  :    // set config
+                              hash_done_i                       ? SHA2_None      :    // clear
+                                                                  digest_mode_flag_q; // keep
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)  digest_mode_flag_q <= SHA2_None;
