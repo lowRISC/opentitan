@@ -234,25 +234,25 @@
     { name: "AttrDw",
       desc: "Pad attribute data width",
       type: "int",
-      default: "10",
+      default: "13",
       local: "true"
     },
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "33",
+      default: "57",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "32",
+      default: "75",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "32",
+      default: "47",
       local: "true"
     },
     { name: "NDioPads",
@@ -396,7 +396,7 @@
                   regwen_multi: "true",
                   cname:        "OUT",
                   fields: [
-                    { bits: "5:0",
+                    { bits: "6:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1, 2: high-Z,
@@ -650,7 +650,7 @@
                       name:   "EN",
                       desc:   '''
                               Register write enable bit.
-                              If this is cleared to 0, the corresponding !!MIO_OUT_SLEEP_MODE
+                              If this is cleared to 0, the corresponding !!MIO_PAD_SLEEP_MODE
                               is not writable anymore.
                               ''',
                       resval: "1",
@@ -1017,7 +1017,7 @@
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).
-                      In case of MIO, the pad select index is the same as used for !!PERIPH_INSEL, meaning that index
+                      In case of MIO, the pad select index is the same as used for !!MIO_PERIPH_INSEL, meaning that index
                       0 and 1 just select constants 0 and 1, and the MIO pads live at indices >= 2. In case of DIO pads,
                       the pad select index corresponds 1:1 to the DIO pad to be selected.
                       '''
