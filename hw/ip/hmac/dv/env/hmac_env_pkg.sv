@@ -54,8 +54,10 @@ package hmac_env_pkg;
 
   // HMAC status register indices
   typedef enum int {
-    HmacStaMsgFifoEmpty     = 0,
-    HmacStaMsgFifoFull      = 1,
+    // TODO verify HmacIdle
+    HmacIdle                = 0,
+    HmacStaMsgFifoEmpty     = 1,
+    HmacStaMsgFifoFull      = 2,
     HmacStaMsgFifoDepthLsb  = 4,
     HmacStaMsgFifoDepthMsb  = 9
   } hmac_sta_e;
@@ -66,10 +68,12 @@ package hmac_env_pkg;
     ShaEn         = 1,
     EndianSwap    = 2,
     DigestSwap    = 3,
-    DigestSizeLsb = 4,
-    DigestSizeMsb = 7,
-    KeyLengthLsb  = 8,
-    KeyLengthMsb  = 13
+    // TODO (issue #23245)
+    KeySwap    = 4,
+    DigestSizeLsb = 5,
+    DigestSizeMsb = 8,
+    KeyLengthLsb  = 9,
+    KeyLengthMsb  = 14
   } hmac_cfg_e;
 
   // HMAC cmd register indices
