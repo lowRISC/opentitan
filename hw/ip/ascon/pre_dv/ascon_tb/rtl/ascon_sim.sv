@@ -78,7 +78,7 @@ module ascon_sim import ascon_pkg::*;
   end
 
   assign test_passed_o = test_passed_q;
-  assign current_test = 1'b1 ? (tl_o.d_data == tl_expected_response.d_data) : 1'b0;
+  assign current_test = (tl_o.d_data == tl_expected_response.d_data) ? 1'b1 : 1'b0;
 
   // All other interfaces are static for the moment
 
