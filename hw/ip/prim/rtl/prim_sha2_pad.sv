@@ -375,6 +375,6 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   end
 
   // State machine is in Idle only when it meets tx_count == message length
-  assign msg_feed_complete_o = hash_process_flag_q && (st_q == StIdle);
+  assign msg_feed_complete_o = (hash_process_flag_q || hash_stop_flag_q) && (st_q == StIdle);
 
 endmodule
