@@ -52,6 +52,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterResets));
   }
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
+  LOG_INFO("rst_info: %x", rst_info);
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
             rst_info == kDifRstmgrResetInfoSysRstCtrl ||
             rst_info == kDifRstmgrResetInfoWatchdog ||

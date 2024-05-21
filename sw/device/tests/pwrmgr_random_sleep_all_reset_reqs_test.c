@@ -53,6 +53,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterResets));
   }
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
+  LOG_INFO("rst_info: %x", rst_info);
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
             rst_info == kDifRstmgrResetInfoSysRstCtrl ||
             rst_info == kDifRstmgrResetInfoWatchdog ||
@@ -115,7 +116,8 @@ bool test_main(void) {
       LOG_INFO("Last Booting");
       return true;
     default:
-      LOG_INFO("Booting for undefined case %0d", reset_case);
+      LOG_INFO("Booting for undefined case %d, reset_info 0x%x", reset_case,
+               rst_info);
   }
 
   return false;
