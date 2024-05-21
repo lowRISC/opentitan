@@ -35,6 +35,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   logic         inc_txcount;
   logic         fifo_partial;
   logic         txcnt_eq_1a0;
+  logic         txcnt_eq_msg_len;
   logic         hash_go;
 
   logic         hash_process_flag_d, hash_process_flag_q;
@@ -59,6 +60,12 @@ module prim_sha2_pad import prim_sha2_pkg::*;
                         ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)) ?
                                                                         (tx_count[9:0] == 10'h340) :
                                                                         '0;
+
+  if (MultimodeEn) begin : gen_txcnt_comp_multimode
+    assign txcnt_eq_msg_len = (tx_count == message_length_i);
+  end else begin : gen_txcnt_comp_no_multimode
+    assign txcnt_eq_msg_len = (tx_count[63:0] == message_length_i[63:0]);
+  end
 
   assign hash_process_flag_d = (~sha_en_i || hash_go || hash_done_i) ? 1'b0 :
                                hash_process_i                        ? 1'b1 :
@@ -206,8 +213,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
           shaf_rvalid_o = fifo_rvalid_i;
           inc_txcount   = shaf_rready_i;
           st_d = StFifoReceive;
-        end else if (((tx_count        == message_length_i) & MultimodeEn) ||
-                     ((tx_count [63:0] == message_length_i [63:0]) & !MultimodeEn)) begin
+        end else if (txcnt_eq_msg_len) begin
           // already received all msg and was waiting process flag
           shaf_rvalid_o = 1'b0;
           inc_txcount   = 1'b0;
