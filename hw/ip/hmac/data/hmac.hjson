@@ -225,7 +225,20 @@
             "excl:CsrAllTests:CsrExclWrite"
           ]
         }
-        { bits: "7:4",
+        { bits: "4",
+          name: "key_swap",
+          desc: '''Key register byte swap.
+
+                If 1 the endianness of each KEY_* register is swapped. Default value (value 0) is big endian representation of the KEY_* CSRs.
+                ''',
+          resval: "0",
+          tags: [
+            // Don't enable/disable key swap in automated CSR tests because it will have side effects on the KEY_* CSRs that the automated tests don't know of.
+            // This field will be covered in functional tests instead.
+            "excl:CsrAllTests:CsrExclWrite"
+          ]
+        }
+        { bits: "8:5",
           name: "digest_size",
           resval: "0x08",
           desc: '''Digest size configuration.
@@ -263,7 +276,7 @@
           tags: [// Exclude fields with non-zero reset value from write-read checks.
                "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
-        { bits: "13:8",
+        { bits: "14:9",
           name: "key_length",
           resval: "0x20",
           desc: '''Key length configuration.
@@ -362,11 +375,16 @@
       hwext: "true",
       fields: [
         { bits: "0",
+          name: "hmac_idle",
+          desc: "HMAC idle status."
+          resval: "1"
+        }
+        { bits: "1",
           name: "fifo_empty",
           desc: "FIFO empty",
           resval: "1"
         }
-        { bits: "1",
+        { bits: "2",
           name: "fifo_full",
           desc: "FIFO full. Data written to the FIFO whilst it is full will cause back-pressure on the interconnect"
         }

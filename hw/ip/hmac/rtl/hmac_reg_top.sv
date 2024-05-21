@@ -199,6 +199,8 @@ module hmac_reg_top (
   logic cfg_endian_swap_wd;
   logic cfg_digest_swap_qs;
   logic cfg_digest_swap_wd;
+  logic cfg_key_swap_qs;
+  logic cfg_key_swap_wd;
   logic [3:0] cfg_digest_size_qs;
   logic [3:0] cfg_digest_size_wd;
   logic [5:0] cfg_key_length_qs;
@@ -209,6 +211,7 @@ module hmac_reg_top (
   logic cmd_hash_stop_wd;
   logic cmd_hash_continue_wd;
   logic status_re;
+  logic status_hmac_idle_qs;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
   logic [5:0] status_fifo_depth_qs;
@@ -594,7 +597,7 @@ module hmac_reg_top (
 
   // R[cfg]: V(True)
   logic cfg_qe;
-  logic [5:0] cfg_flds_we;
+  logic [6:0] cfg_flds_we;
   assign cfg_qe = &cfg_flds_we;
   //   F[hmac_en]: 0:0
   prim_subreg_ext #(
@@ -660,7 +663,23 @@ module hmac_reg_top (
   );
   assign reg2hw.cfg.digest_swap.qe = cfg_qe;
 
-  //   F[digest_size]: 7:4
+  //   F[key_swap]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_cfg_key_swap (
+    .re     (cfg_re),
+    .we     (cfg_we),
+    .wd     (cfg_key_swap_wd),
+    .d      (hw2reg.cfg.key_swap.d),
+    .qre    (),
+    .qe     (cfg_flds_we[4]),
+    .q      (reg2hw.cfg.key_swap.q),
+    .ds     (),
+    .qs     (cfg_key_swap_qs)
+  );
+  assign reg2hw.cfg.key_swap.qe = cfg_qe;
+
+  //   F[digest_size]: 8:5
   prim_subreg_ext #(
     .DW    (4)
   ) u_cfg_digest_size (
@@ -669,14 +688,14 @@ module hmac_reg_top (
     .wd     (cfg_digest_size_wd),
     .d      (hw2reg.cfg.digest_size.d),
     .qre    (),
-    .qe     (cfg_flds_we[4]),
+    .qe     (cfg_flds_we[5]),
     .q      (reg2hw.cfg.digest_size.q),
     .ds     (),
     .qs     (cfg_digest_size_qs)
   );
   assign reg2hw.cfg.digest_size.qe = cfg_qe;
 
-  //   F[key_length]: 13:8
+  //   F[key_length]: 14:9
   prim_subreg_ext #(
     .DW    (6)
   ) u_cfg_key_length (
@@ -685,7 +704,7 @@ module hmac_reg_top (
     .wd     (cfg_key_length_wd),
     .d      (hw2reg.cfg.key_length.d),
     .qre    (),
-    .qe     (cfg_flds_we[5]),
+    .qe     (cfg_flds_we[6]),
     .q      (reg2hw.cfg.key_length.q),
     .ds     (),
     .qs     (cfg_key_length_qs)
@@ -763,7 +782,22 @@ module hmac_reg_top (
 
 
   // R[status]: V(True)
-  //   F[fifo_empty]: 0:0
+  //   F[hmac_idle]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_hmac_idle (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.hmac_idle.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_hmac_idle_qs)
+  );
+
+  //   F[fifo_empty]: 1:1
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_fifo_empty (
@@ -778,7 +812,7 @@ module hmac_reg_top (
     .qs     (status_fifo_empty_qs)
   );
 
-  //   F[fifo_full]: 1:1
+  //   F[fifo_full]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_fifo_full (
@@ -2070,9 +2104,11 @@ module hmac_reg_top (
 
   assign cfg_digest_swap_wd = reg_wdata[3];
 
-  assign cfg_digest_size_wd = reg_wdata[7:4];
+  assign cfg_key_swap_wd = reg_wdata[4];
 
-  assign cfg_key_length_wd = reg_wdata[13:8];
+  assign cfg_digest_size_wd = reg_wdata[8:5];
+
+  assign cfg_key_length_wd = reg_wdata[14:9];
   assign cmd_we = addr_hit[5] & reg_we & !reg_error;
 
   assign cmd_hash_start_wd = reg_wdata[0];
@@ -2350,8 +2386,9 @@ module hmac_reg_top (
         reg_rdata_next[1] = cfg_sha_en_qs;
         reg_rdata_next[2] = cfg_endian_swap_qs;
         reg_rdata_next[3] = cfg_digest_swap_qs;
-        reg_rdata_next[7:4] = cfg_digest_size_qs;
-        reg_rdata_next[13:8] = cfg_key_length_qs;
+        reg_rdata_next[4] = cfg_key_swap_qs;
+        reg_rdata_next[8:5] = cfg_digest_size_qs;
+        reg_rdata_next[14:9] = cfg_key_length_qs;
       end
 
       addr_hit[5]: begin
@@ -2362,8 +2399,9 @@ module hmac_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = status_fifo_empty_qs;
-        reg_rdata_next[1] = status_fifo_full_qs;
+        reg_rdata_next[0] = status_hmac_idle_qs;
+        reg_rdata_next[1] = status_fifo_empty_qs;
+        reg_rdata_next[2] = status_fifo_full_qs;
         reg_rdata_next[9:4] = status_fifo_depth_qs;
       end
 

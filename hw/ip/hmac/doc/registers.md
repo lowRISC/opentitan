@@ -160,20 +160,21 @@ HMAC Configuration register.
 The register is updated when the engine is in Idle.
 If the software updates the register while the engine computes the hash, the updated value is discarded.
 - Offset: `0x10`
-- Reset default: `0x2080`
-- Reset mask: `0x3fff`
+- Reset default: `0x4100`
+- Reset mask: `0x7fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                             |
 |:------:|:------:|:-------:|:---------------------------------|
-| 31:14  |        |         | Reserved                         |
-|  13:8  |   rw   |  0x20   | [key_length](#cfg--key_length)   |
-|  7:4   |   rw   |   0x8   | [digest_size](#cfg--digest_size) |
+| 31:15  |        |         | Reserved                         |
+|  14:9  |   rw   |  0x20   | [key_length](#cfg--key_length)   |
+|  8:5   |   rw   |   0x8   | [digest_size](#cfg--digest_size) |
+|   4    |   rw   |   0x0   | [key_swap](#cfg--key_swap)       |
 |   3    |   rw   |   0x0   | [digest_swap](#cfg--digest_swap) |
 |   2    |   rw   |   0x0   | [endian_swap](#cfg--endian_swap) |
 |   1    |   rw   |    x    | [sha_en](#cfg--sha_en)           |
@@ -212,6 +213,11 @@ Invalid/unsupported values, i.e., values that don't correspond to SHA2_256, SHA2
 | 0x8     | SHA2_None | 4'b1000: Unsupported/invalid values and all-zero values are mapped to SHA2_None. With this value, when HMAC/SHA-2 is triggered to start operation (via `hash_start` or `hash_continue`), it will be blocked from starting and an error is signalled to the SW. |
 
 Other values are reserved.
+
+### CFG . key_swap
+Key register byte swap.
+
+If 1 the endianness of each KEY_* register is swapped. Default value (value 0) is big endian representation of the KEY_* CSRs.
 
 ### CFG . digest_swap
 Digest register byte swap.
@@ -277,22 +283,23 @@ CPU must configure relative information first, such as the digest size, secret k
 ## STATUS
 HMAC Status register
 - Offset: `0x18`
-- Reset default: `0x1`
-- Reset mask: `0x3f3`
+- Reset default: `0x3`
+- Reset mask: `0x3f7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "fifo_depth", "bits": 6, "attr": ["ro"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "hmac_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_depth", "bits": 6, "attr": ["ro"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name       | Description                                                                                        |
 |:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------|
 | 31:10  |        |         |            | Reserved                                                                                           |
 |  9:4   |   ro   |    x    | fifo_depth | FIFO entry count.                                                                                  |
-|  3:2   |        |         |            | Reserved                                                                                           |
-|   1    |   ro   |    x    | fifo_full  | FIFO full. Data written to the FIFO whilst it is full will cause back-pressure on the interconnect |
-|   0    |   ro   |   0x1   | fifo_empty | FIFO empty                                                                                         |
+|   3    |        |         |            | Reserved                                                                                           |
+|   2    |   ro   |    x    | fifo_full  | FIFO full. Data written to the FIFO whilst it is full will cause back-pressure on the interconnect |
+|   1    |   ro   |   0x1   | fifo_empty | FIFO empty                                                                                         |
+|   0    |   ro   |   0x1   | hmac_idle  | HMAC idle status.                                                                                  |
 
 ## ERR_CODE
 HMAC Error Code
