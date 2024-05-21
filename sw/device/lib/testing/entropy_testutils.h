@@ -70,6 +70,14 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
                                           dif_entropy_src_main_fsm_t state);
 
 /**
+ * Stops EDN instances and CSRNG.
+ *
+ * Stops EDN instances before stopping CSRNG.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_stop_csrng_edn(void);
+
+/**
  * Stops all entropy complex blocks.
  *
  * Stops EDN and CSRNG instances before stopping the entropy source.

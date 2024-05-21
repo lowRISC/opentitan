@@ -211,9 +211,7 @@ status_t entropy_testutils_drain_observe_fifo(dif_entropy_src_t *entropy_src) {
   return OK_STATUS();
 }
 
-status_t entropy_testutils_stop_all(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+status_t entropy_testutils_stop_csrng_edn(void) {
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
@@ -224,6 +222,14 @@ status_t entropy_testutils_stop_all(void) {
   TRY(dif_edn_stop(&edn0));
   TRY(dif_edn_stop(&edn1));
   TRY(dif_csrng_stop(&csrng));
+  return OK_STATUS();
+}
+
+status_t entropy_testutils_stop_all(void) {
+  const dif_entropy_src_t entropy_src = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+
+  CHECK_STATUS_OK(entropy_testutils_stop_csrng_edn());
   TRY(dif_entropy_src_stop(&entropy_src));
   return OK_STATUS();
 }
