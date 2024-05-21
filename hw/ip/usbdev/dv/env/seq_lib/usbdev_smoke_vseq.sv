@@ -88,6 +88,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     usb20_item response;
     RSP rsp_item;
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = pkt_type;
     m_data_pkt.m_pid_type = pid_type;
     // Construct a GET DESCRIPTOR request that retrieves the Device descriptor

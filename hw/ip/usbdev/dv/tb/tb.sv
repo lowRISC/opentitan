@@ -77,6 +77,9 @@ module tb;
   wire usb_aon_sense_lost;
   wire usb_aon_wake_detect_active;
 
+  // Wake request from AON/Wake to usb20_agent
+  wire wake_req_aon;
+
   // interfaces
   clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
   clk_rst_if usbdev_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
@@ -181,6 +184,7 @@ module tb;
   assign usb20_block_if.usb_dn_en_o     = cio_usb_dn_en;
   assign usb20_block_if.usb_dp_o        = cio_usb_dp;
   assign usb20_block_if.usb_dn_o        = cio_usb_dn;
+  assign usb20_block_if.wake_req_aon    = wake_req_aon;
 
   // Drivers from the USB device
   assign (strong0, strong1) usb_p = cio_usb_dp_en ? cio_usb_dp : 1'bZ;
@@ -249,8 +253,8 @@ module tb;
     .usb_dppullup_en_o        (usb_dp_pullup_en),
     .usb_dnpullup_en_o        (usb_dn_pullup_en),
 
-    // TODO: this signal should be made available for testing somehow.
-    .wake_req_aon_o           (),
+    // Wake request from AON/Wake to usb20_agent
+    .wake_req_aon_o           (wake_req_aon),
 
     .bus_not_idle_aon_o       (usb_aon_bus_not_idle),
     .bus_reset_aon_o          (usb_aon_bus_reset),

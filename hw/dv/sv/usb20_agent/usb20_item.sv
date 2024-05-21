@@ -3,18 +3,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class usb20_item extends uvm_sequence_item;
+  ev_type_e  m_ev_type;
   pid_type_e m_pid_type;
   pkt_type_e m_pkt_type;
   bmrequesttype_e m_bmRT;
   brequest_e m_bR;
   usb_transfer_e m_usb_transfer;
 
+  `uvm_object_utils_begin(usb20_item)
+  `uvm_object_utils_end
+
+  `uvm_object_new
+
   // Check the PID type of this item is the expected value. If not, raise a fatal error.
   function void check_pid_type(pid_type_e expected);
     `DV_CHECK_EQ_FATAL(m_pid_type, expected)
   endfunction
-
-  `uvm_object_new
 endclass
 
 class token_pkt extends usb20_item;

@@ -8,7 +8,14 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   `uvm_component_new
 
   // These delays are in terms of bit intervals
-  int usb_rst_time = 100_000;  // upto 10ms
+  //
+  // TODO: introduce variation in the duration of the signaling, and permit these intervals to be
+  // shortened for those sequences not specifically designed to test with real-world timings;
+  // it's just wasting simulation time for many of the sequences since the DUT must respond long
+  // before the protracted Reset/Resume Signaling concludes.
+
+  int usb_rst_time = 120_000;  // Bit intervals @ 12Mbps => 10ms
+  int usb_resume_time = 240_000;
   int usb_idle_clk_cycles = 5;
   int usb_pwr_good_clk_cycles = 100;  // arbitrary short delay post-VBUS assertion.
 
@@ -40,12 +47,42 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
         seq_item_port.get_next_item(req_item);
         $cast(rsp_item, req_item.clone());
         rsp_item.set_id_info(req_item);
-        case (req_item.m_pkt_type)
-          PktTypeToken:     prepare_token_packet(req_item, rsp_item);
-          PktTypeData:      prepare_data_packet(req_item, rsp_item);
-          PktTypeHandshake: prepare_handshake_packet(req_item, rsp_item);
-          PktTypeSoF:       prepare_sof_packet(req_item, rsp_item);
-          default: `uvm_fatal(`gfn, $sformatf("Pkt type %x not supported", req_item.m_pkt_type))
+        unique case (req_item.m_ev_type)
+          // Send Bus Reset to the DUT.
+          EvBusReset: begin
+            // No response required, and this is a lengthy operation; Reset Signaling is supposed
+            // to take >= 10ms under the USB 2.0 Protocol Specification.
+            seq_item_port.item_done(rsp_item);
+            bus_reset();
+          end
+          // Resume Signaling (exit from Suspended).
+          EvResume: begin
+            // No response required, and this is a lengthy operation; this must be at least 20ms
+            // for real USB hosts.
+            seq_item_port.item_done(rsp_item);
+            resume_signaling();
+          end
+          // Assert VBUS (connection to USB host).
+          EvConnect: begin
+            cfg.bif.drive_vbus = 1'b1;
+            seq_item_port.item_done(rsp_item);
+          end
+          // Deassert VBUS (disconnection from USB host).
+          EvDisconnect: begin
+            cfg.bif.drive_vbus = 1'b0;
+            seq_item_port.item_done(rsp_item);
+          end
+          // Transmit packet (and maybe receive a response).
+          EvPacket: begin
+            case (req_item.m_pkt_type)
+              PktTypeToken:     prepare_token_packet(req_item, rsp_item);
+              PktTypeData:      prepare_data_packet(req_item, rsp_item);
+              PktTypeHandshake: prepare_handshake_packet(req_item, rsp_item);
+              PktTypeSoF:       prepare_sof_packet(req_item, rsp_item);
+              default: `uvm_fatal(`gfn, $sformatf("Pkt type %x not supported", req_item.m_pkt_type))
+            endcase
+          end
+          default: `uvm_fatal(`gfn, "Invalid/unsupported USB event type")
         endcase
       end
     end
@@ -293,12 +330,11 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       // Idle period post DUT reset.
       repeat (usb_idle_clk_cycles)
         drive_bit_interval(1'b0, 1'b0);
-      // TODO: the generation of Bus Reset on the USB shall probably want to become a sequence item,
-      // so that it my be done on demand during sequences, and to prevent it interfering with other
-      // test sequences.
       cfg.bif.drive_vbus = 1'b1;
       repeat (usb_pwr_good_clk_cycles)
         drive_bit_interval(1'b1, 1'b0);
+      // Waitfor device active state
+      `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
       bus_reset();
     end
   endtask
@@ -306,15 +342,26 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // USB Bus Reset Task
   // -------------------------------
   task bus_reset();
-    // Waitfor device active state
-    `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
     // Reset bus or drive 0 on both DP and DN for 10ms
     repeat (usb_rst_time)
       drive_bit_interval(1'b0, 1'b0);
-    `uvm_info(`gfn, "Reset for 10ms completed", UVM_DEBUG)
+    `uvm_info(`gfn, "Reset for 10ms completed", UVM_MEDIUM)
     // After reset change state to IDLE
     repeat(usb_idle_clk_cycles)
       drive_bit_interval(1'b1, 1'b0);
+  endtask
+
+  // Resume Signaling
+  task resume_signaling();
+    // K state signaling required for at least 20ms.
+    repeat (usb_resume_time)
+      drive_bit_interval(1'b0, 1'b1);
+    `uvm_info(`gfn, "Resume Signaling for 20ms completed", UVM_MEDIUM)
+    // _Low_ Speed EOP (SE0 for two bit intervals, J for one); LS is 1.5Mbps,
+    // so 8x longer than FS signaling.
+    for (int unsigned i = 0; i < 24; i++) begin
+      drive_bit_interval((i >= 16), 1'b0);
+    end
   endtask
 
   // Get_DUT_Response
