@@ -22,6 +22,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   // Control signals
   input                     sha_en_i, // if disabled, it clears internal content
   input                     hash_start_i,
+  input                     hash_stop_i,
   input                     hash_continue_i,
   input digest_mode_e       digest_mode_i,
   input                     hash_process_i,
@@ -194,6 +195,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .fifo_rready_o      (sha_ready),
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
+      .hash_stop_i        (hash_stop_i),
       .hash_continue_i    (hash_continue_i),
       .digest_mode_i      (digest_mode_i),
       .hash_process_i     (sha_process),
@@ -245,6 +247,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .fifo_rready_o      (sha_ready),
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
+      .hash_stop_i        (hash_stop_i),
       .hash_continue_i    (hash_continue_i),
       .digest_mode_i      (SHA2_None),      // unused input port tied to ground
       .hash_process_i     (hash_process_i), // feed input port directly to SHA-2 engine

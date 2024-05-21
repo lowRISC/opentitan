@@ -23,6 +23,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   input                 shaf_rready_i,
   input                 sha_en_i,
   input                 hash_start_i,
+  input                 hash_stop_i,
   input                 hash_continue_i,
   input digest_mode_e   digest_mode_i,
   input                 hash_process_i,
@@ -38,6 +39,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   logic         txcnt_eq_msg_len;
   logic         hash_go;
 
+  logic         hash_stop_flag_d, hash_stop_flag_q;
   logic         hash_process_flag_d, hash_process_flag_q;
   digest_mode_e digest_mode_flag_d,  digest_mode_flag_q;
 
@@ -67,13 +69,22 @@ module prim_sha2_pad import prim_sha2_pkg::*;
     assign txcnt_eq_msg_len = (tx_count[63:0] == message_length_i[63:0]);
   end
 
+  assign hash_stop_flag_d = (~sha_en_i || hash_go || hash_done_i) ? 1'b0 :
+                            hash_stop_i                           ? 1'b1 :
+                                                                    hash_stop_flag_q;
+
   assign hash_process_flag_d = (~sha_en_i || hash_go || hash_done_i) ? 1'b0 :
                                hash_process_i                        ? 1'b1 :
                                                                        hash_process_flag_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)  hash_process_flag_q <= 1'b0;
-    else          hash_process_flag_q <= hash_process_flag_d;
+    if (!rst_ni) begin
+      hash_stop_flag_q    <= 1'b0;
+      hash_process_flag_q <= 1'b0;
+    end else begin
+      hash_stop_flag_q    <= hash_stop_flag_d;
+      hash_process_flag_q <= hash_process_flag_d;
+    end
   end
 
   // data path: fout_wdata
@@ -224,6 +235,13 @@ module prim_sha2_pad import prim_sha2_pkg::*;
           fifo_rready_o = shaf_rready_i; // 0 always
           inc_txcount   = shaf_rready_i; // 0 always
           st_d = StFifoReceive;
+        end
+
+        if (txcnt_eq_msg_len && hash_stop_flag_q) begin
+          shaf_rvalid_o = 1'b0;
+          inc_txcount   = 1'b0;
+          fifo_rready_o = 1'b0;
+          st_d = StIdle;
         end
       end
 
