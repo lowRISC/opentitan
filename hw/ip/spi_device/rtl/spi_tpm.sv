@@ -58,6 +58,7 @@ module spi_tpm
   input clk_in_i,
   input clk_out_i,
   input rst_ni,
+  input rst_out_ni,
 
   input sys_clk_i,
   input sys_rst_ni,
@@ -537,8 +538,8 @@ module spi_tpm
   end
 
   // data_sel (sck -> isck)
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       isck_data_sel <= SelWait;
     end else begin
       isck_data_sel <= sck_data_sel;
@@ -589,8 +590,8 @@ module spi_tpm
   // address correctly.
   assign sck_fifoaddr_latch = (cmdaddr_bitcnt == 5'h 1F);
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       isck_fifoaddr_latch <= 1'b 0;
     end else begin
       isck_fifoaddr_latch <= sck_fifoaddr_latch;
@@ -615,8 +616,8 @@ module spi_tpm
 
   // fifoaddr latch
   //  clk_out (iSCK)
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       isck_fifoaddr <= '0;
     end else if (isck_fifoaddr_latch) begin
       // Shall assert when sck_st_q moves away from StAddr
@@ -791,9 +792,9 @@ module spi_tpm
   // Remember that the logic chooses only one HwReg at a transaction.
   // It does not send continuously even the transfer size is greater than the
   // word boundary.
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) isck_hw_reg_idx <= RegAccess;
-    else        isck_hw_reg_idx <= sck_hw_reg_idx;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) isck_hw_reg_idx <= RegAccess;
+    else             isck_hw_reg_idx <= sck_hw_reg_idx;
   end
 
   // locality store
@@ -887,7 +888,7 @@ module spi_tpm
   );
 
   // Output data mux
-  `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_ni)
+  `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_out_ni)
   always_comb begin
     isck_p2s_data = 8'h 00;
 
@@ -929,7 +930,7 @@ module spi_tpm
     .data_o (isck_hw_reg_byte)
   );
 
-  `ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_ni)
+  `ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_out_ni)
   always_comb begin : hw_reg_mux
     isck_hw_reg_word = 32'h FFFF_FFFF;
 
@@ -1007,8 +1008,8 @@ module spi_tpm
   //  signal (`rready`) at the 8th beat.
   logic [2:0] isck_p2s_bitcnt; // loop from 7 to 0
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       isck_p2s_bitcnt <= 3'h 7;
     end else begin
       isck_p2s_bitcnt <= isck_p2s_bitcnt - 1'b 1;
@@ -1019,9 +1020,9 @@ module spi_tpm
   //                                        ~|isck_p2s_bitcnt
   assign isck_p2s_sent = isck_p2s_valid && (isck_p2s_bitcnt == '0);
 
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) isck_p2s_valid <= 1'b 0;
-    else        isck_p2s_valid <= sck_p2s_valid;
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) isck_p2s_valid <= 1'b 0;
+    else             isck_p2s_valid <= sck_p2s_valid;
   end
 
   // Decided to implement 8-to-1 mux rather than conventional shift out for
@@ -1047,8 +1048,8 @@ module spi_tpm
   // Read FIFO data selection and FIFO ready
   assign isck_rd_byte_sent = isck_p2s_sent && (isck_data_sel == SelRdFifo);
   // Select RdFIFO RDATA
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       isck_sel_rdata <= '0;
     end else begin
       isck_sel_rdata <= sck_rdfifo_rdata[NumBits*sck_rdfifo_idx+:NumBits];
