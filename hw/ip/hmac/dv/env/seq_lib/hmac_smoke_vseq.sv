@@ -16,9 +16,6 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand bit               do_hash_start;
   rand bit               re_enable_sha;
   rand wipe_secret_req_e do_wipe_secret;
-  bit                    invalid_cfg;
-  bit [5:0]              cast_key_length;
-  bit [3:0]              cast_digest_size;
 
   constraint num_trans_c {
     num_trans inside {[1:50]};
@@ -88,21 +85,6 @@ class hmac_smoke_vseq extends hmac_base_vseq;
                 .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
-      // read digest size and key length after casting from CSRs and update mirrored values
-      csr_rd_digest_size(cast_digest_size);
-      csr_rd_key_length(cast_key_length);
-
-      // indicate if config is invalid and would block triggering the hash to start
-      if ((cast_digest_size == SHA2_None) ||
-          ((cast_key_length == Key_None) && hmac_en) ||
-          ((cast_digest_size == SHA2_256) && (cast_key_length == Key_1024) && hmac_en)) begin
-        invalid_cfg = 1;
-      end else begin
-        invalid_cfg = 0;
-      end
-
-      `uvm_info(`gfn, $sformatf("invalid config: %1b", invalid_cfg), UVM_LOW)
-
       // can randomly read previous digest
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
 
@@ -133,18 +115,10 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         fork
           begin
             if (do_hash_start) trigger_hash();
-            if (invalid_cfg & do_hash_start) begin // error would only be signalled when started
-              // wait for interrupt to assert, check status and clear it
-              if (intr_hmac_err_en) begin
-                `DV_WAIT(cfg.intr_vif.pins[HmacErr] === 1'b1)
-              end else begin
-                csr_spinwait(.ptr(ral.intr_state.hmac_err), .exp_data(1'b1));
-              end
-              check_error_code();
-            end
             if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
             else             wr_msg(msg);
           end
+
           begin
             if (do_wipe_secret == WipeSecretBeforeProcess) begin
               `uvm_info(`gfn, $sformatf("wiping before process"), UVM_HIGH)
@@ -152,11 +126,11 @@ class hmac_smoke_vseq extends hmac_base_vseq;
               wipe_secrets();
             end
           end
-          csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
-          csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
         join
 
-        if (!sha_en) begin
+        if (invalid_cfg) begin
+          continue; // discard current transaction
+        end else if (!sha_en) begin
           if (re_enable_sha) begin // restream in the message
             sha_enable();
             if (do_hash_start) trigger_hash();

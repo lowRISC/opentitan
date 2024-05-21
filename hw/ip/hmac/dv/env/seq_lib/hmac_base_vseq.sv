@@ -13,6 +13,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   bit do_back_pressure = 1'b0;
   bit do_burst_wr      = 1'b0;
 
+  bit       invalid_cfg;
+  bit [5:0] cast_key_length;
+  bit [3:0] cast_digest_size;
+
+
   rand bit [TL_AW-1:0]    wr_addr;
   rand bit [TL_DBW-1:0]   wr_mask;
   rand bit                wr_config_during_hash;
@@ -101,6 +106,21 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     ral.cfg.key_length.set(key_length);
     csr_update(.csr(ral.cfg));
 
+    // read digest size and key length after casting from CSRs and update mirrored values
+    csr_rd_digest_size(cast_digest_size);
+    csr_rd_key_length(cast_key_length);
+
+    // indicate if config is invalid and would block triggering the hash to start
+    if ((cast_digest_size == SHA2_None) ||
+        ((cast_key_length == Key_None) && hmac_en) ||
+        ((cast_digest_size == SHA2_256) && (cast_key_length == Key_1024) && hmac_en)) begin
+      invalid_cfg = 1;
+    end else begin
+      invalid_cfg = 0;
+    end
+
+    `uvm_info(`gfn, $sformatf("invalid config: %1b", invalid_cfg), UVM_LOW)
+
     // enable interrupts
     interrupts = (intr_hmac_err_en << HmacErr) | (intr_hmac_done_en << HmacDone) |
                  (intr_fifo_empty_en << HmacMsgFifoEmpty);
@@ -135,31 +155,30 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // start hash computations
   virtual task trigger_hash();
-    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
-    // If SHA is not enabled, check that an error is signaled.
     `uvm_info(`gfn, "triggering hash to start", UVM_LOW)
-    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
+    // If incorrectly configured or SHA is not enabled, check that an error is signaled.
+    if (invalid_cfg || !ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
   // continue hash computations
   virtual task trigger_hash_continue();
-    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
     `uvm_info(`gfn, "triggering hash to continue", UVM_LOW)
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
     // If SHA is not enabled, check that an error is signaled.
     if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
   // stop hash computations
   virtual task trigger_hash_stop();
-    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStop));
     `uvm_info(`gfn, "triggering hash to stop", UVM_LOW)
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStop));
   endtask
 
   // trigger calculation of digest at the end of a message
   virtual task trigger_process();
-    // read digest size and key length and update their mirrored values
+    `uvm_info(`gfn, "triggering hash to process", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
-   `uvm_info(`gfn, "triggering hash to process", UVM_LOW)
     cfg.hash_process_triggered = 1;
   endtask
 
@@ -379,6 +398,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       csr_wr(.ptr(ral.intr_state), .value(error_code));
     end
     csr_rd(ral.err_code, error_code);
+    `uvm_info(`gfn, $sformatf("Error code: 0x%0h", error_code), UVM_HIGH)
   endtask
 
   // TODO: extend to check for SHA-2 384 and 512 once the hmac_test_vectors_sha_vseq test is
