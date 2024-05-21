@@ -781,7 +781,7 @@ module hmac
   always_comb begin
     update_seckey_inprocess = 1'b0;
     if (cfg_block) begin
-      for (int i = 0 ; i < 8 ; i++) begin
+      for (int i = 0 ; i < 32 ; i++) begin
         if (reg2hw.key[i].qe) begin
           update_seckey_inprocess = update_seckey_inprocess | 1'b1;
         end
