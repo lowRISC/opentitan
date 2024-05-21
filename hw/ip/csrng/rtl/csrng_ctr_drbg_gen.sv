@@ -593,7 +593,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
   // Return a status error when the genbits FIFO is popped while ctr_drbg_gen_ccmd_o is not
   // equal to GEN.
-  assign ctr_drbg_gen_sts_err = sfifo_genbits_pop && (ctr_drbg_gen_ccmd_o != GEN);
+  assign ctr_drbg_gen_sts_err = sfifo_genbits_pop && (ctr_drbg_gen_ccmd_o != GENU);
 
   assign ctr_drbg_gen_sts_o = ctr_drbg_gen_sts_err ? CMD_STS_INVALID_GEN_CMD : CMD_STS_SUCCESS;
 
