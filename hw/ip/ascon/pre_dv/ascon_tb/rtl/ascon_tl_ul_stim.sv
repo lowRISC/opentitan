@@ -146,10 +146,8 @@ module ascon_tl_ul_stim
       stimulus_selected = TL_H2D_DEFAULT;
     end
   end
-  //Please explain, why this is not working!
-  //assign stimulus_selected = (stimulus[stimulus_counter]) ? (stimulus_counter < NumStimulus) : TL_H2D_DEFAULT;
 
-  assign done_o = 1'b1 ? (response_counter == NumResponses-1)
-                        && (stimulus_counter == NumStimulus) : 1'b0;
+  assign done_o = (response_counter == NumResponses-1)
+                  && (stimulus_counter == NumStimulus) ? 1'b1 : 1'b0;
 
 endmodule
