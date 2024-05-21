@@ -665,6 +665,7 @@ module hmac
     .key_length_i  (key_length),
 
     .reg_hash_start_i    (hash_start),
+    .reg_hash_stop_i     (reg_hash_stop),
     .reg_hash_continue_i (hash_continue),
     .reg_hash_process_i  (packer_flush_done), // Trigger after all msg written
     .hash_done_o         (reg_hash_done),

@@ -14,6 +14,7 @@ module hmac_core import prim_sha2_pkg::*; (
   input key_length_e  key_length_i,
 
   input        reg_hash_start_i,
+  input        reg_hash_stop_i,
   input        reg_hash_continue_i,
   input        reg_hash_process_i,
   output logic hash_done_o,
@@ -433,7 +434,25 @@ module hmac_core import prim_sha2_pkg::*; (
     endcase
   end
 
-  // Idle: Idle in HMAC_CORE only represents the idle status when hmac mode is
-  // set. If hmac_en_i is 0, this logic sends the idle signal always.
-  assign idle_o = (st_q == StIdle) && !(reg_hash_start_i || reg_hash_continue_i);
+  // Idle status signaling: This module ..
+  logic idle_d, idle_q;
+  assign idle_d =
+      // .. is not idle when told to start or continue
+      (reg_hash_start_i || reg_hash_continue_i) ? 1'b0 :
+      // .. is idle when the FSM is in the Idle state
+      (st_q == StIdle) ? 1'b1 :
+      // .. is idle when it has processed a complete block of a message and is told to stop
+      (st_q == StMsg && txcnt_eq_blksz && reg_hash_stop_i) ? 1'b1 :
+      // .. and keeps the current idle state in all other cases.
+      idle_q;
+
+  assign idle_o = idle_d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      idle_q <= 1'b1;
+    end else begin
+      idle_q <= idle_d;
+    end
+  end
 endmodule
