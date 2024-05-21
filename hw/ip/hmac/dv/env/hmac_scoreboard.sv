@@ -15,7 +15,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [TL_DW-1:0] key[NUM_KEYS];
   bit [TL_DW-1:0] exp_digest[NUM_DIGESTS];
   bit [3:0]       digest_size, previous_digest_size, expected_digest_size;
-  bit             previous_digest_swap, expected_digest_swap;
   bit [5:0]       key_length;
   bit             invalid_cfg;
   event           sample_cfg;
@@ -60,10 +59,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     if (write && channel == AddrChannel) begin
       // push the msg into msg_fifo
       if ((item.a_addr & addr_mask) inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]}) begin
-        if (!hmac_start) begin
-          update_err_intr_code(SwPushMsgWhenDisallowed);
-        end else if (!sha_en) begin
+        if (!sha_en) begin
           update_err_intr_code(SwHashStartWhenShaDisabled);
+        end else if (!hmac_start) begin
+          update_err_intr_code(SwPushMsgWhenDisallowed);
         end else if (hmac_start && !cfg.under_reset) begin
           bit [7:0] bytes[4];
           bit [7:0] msg[$];
@@ -111,21 +110,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 `uvm_info(`gfn, $sformatf("invalid config at starting: %1b", invalid_cfg), UVM_LOW)
 
                 if (invalid_cfg) begin
-                  // TODO: check if we need to update_err_intro_code and block hmac_start here
+                  update_err_intr_code(SwInvalidConfig);
                 end else begin
                   check_idle_o(1'b0);
                   msg_q.delete(); // make sure next transaction won't include this msg_q
                   update_wr_msg_length(0);
-                  // update digest size and swap to the new one only at the start signal
+                  // update digest size to the new one only at the start signal
                   previous_digest_size = ral.cfg.digest_size.get_mirrored_value();
-                  previous_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
-
                   `uvm_info(`gfn, $sformatf(
-                            "setting previous digest and digest swap: %4b",
-                            previous_digest_size), UVM_HIGH)
+                            "setting previous digest: %4b", previous_digest_size), UVM_LOW)
                 end
               end
-            end else if (item.a_data[HashStart] == 1) begin
+            end else if (item.a_data[HashStart]) begin
               if (!sha_en) begin
                 update_err_intr_code(SwHashStartWhenShaDisabled);
               end else begin
@@ -200,7 +196,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             // When predicting a new value of the DIGEST registers due to a write, also update
             // `exp_digest` with the prediction.
             int digest_idx = get_digest_index(csr_name);
-            if (ral.cfg.digest_swap.get_mirrored_value() == 1'b1) begin
+            if (ral.cfg.digest_swap.get_mirrored_value()) begin
               exp_digest[digest_idx] = {<<8{`gmv(csr)}};
             end else begin
               exp_digest[digest_idx] = `gmv(csr);
@@ -259,7 +255,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               intr = intr.next;
             end while (intr != intr.first);
           end
-          if (item.d_data[HmacDone] == 1) begin
+          if (item.d_data[HmacDone]) begin
             // here check DUT should only trigger hmac_done when sha is enabled, and
             // previously triggered hash_process.
             // future throughput test should check the accurate cycles
@@ -270,8 +266,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             flush();
           end
           if (hmac_start && invalid_cfg) begin // hmac has been triggered and config is invalid
-            void'(ral.intr_state.hmac_err.predict(.value(1),    .kind(UVM_PREDICT_READ)));
-            void'(ral.err_code.predict(.value(SwInvalidConfig), .kind(UVM_PREDICT_READ)));
             hmac_start = 0;
             flush();
           end
@@ -284,18 +278,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         "digest_14", "digest_15": begin
           int digest_idx = get_digest_index(csr_name);
           // By default, the hardware outputs little-endian data for each digest (32 bits). But DPI
-          // functions expect output to be big-endian. Thus we should flip the expected value if
-          // digest_swap is zero.
+          // functions/test vectors from specs expect output to be big-endian.
+          // Therefore we should flip the expected value if digest_swap is zero.
           bit [TL_DW-1:0] real_digest_val;
 
           // Read and check DIGEST while HMAC is enabled/disabled
           if (cfg.en_cov) cov.rd_digest_during_hmac_en_cg.sample(`gmv(ral.cfg.hmac_en));
 
-          expected_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
-
-          if (expected_digest_swap == 1'b0) begin
-            // this only swaps the 32-bit word, but not the full 64-bit digest word for the
-            // extended digest sizes, have to swap checks at the bottom
+          if (!ral.cfg.digest_swap.get_mirrored_value()) begin
+            // digest_swap is set to true to match spec vectors/expected digest word (big-endian)
+            // when digest swap is not true, then we need to swap the digest word
+            // to be able to compare it with the expected digest word (big-endian)
             real_digest_val = {<<8{item.d_data}};
           end else begin
             real_digest_val = item.d_data;
@@ -318,58 +311,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // If wipe_secret is triggered, ensure the predicted value does not match the read out
           // digest and update the predicted value with the read out value.
           if (cfg.wipe_secret_triggered) begin
-            if (expected_digest_size == SHA2_256) begin
-              `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx]);
-              `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
-                        exp_digest[digest_idx]), UVM_HIGH)
-              // Update new digest data to the exp_digest variable.
-              exp_digest[digest_idx] = real_digest_val;
-            end else if (expected_digest_size == SHA2_384 || expected_digest_size == SHA2_512) begin
-              if (expected_digest_swap == 1'b0) begin
-                if (digest_idx % 2) begin
-                  `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx-1])
-                  // Update new digest data to the exp_digest variable.
-                  `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
-                            exp_digest[digest_idx-1]), UVM_HIGH)
-                  exp_digest[digest_idx-1] = real_digest_val;
-                end else begin
-                  `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx+1])
-                  // Update new digest data to the exp_digest variable.
-                  `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
-                             exp_digest[digest_idx+1]), UVM_HIGH)
-                  exp_digest[digest_idx+1] = real_digest_val;
-                end
-              end else begin
-                `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx]);
-                // Update new digest data to the exp_digest variable.
-                `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
-                           exp_digest[digest_idx]), UVM_HIGH)
-                exp_digest[digest_idx] = real_digest_val;
-              end
-            end
-          end else begin // if !cfg.wipe_secret_triggered
-            `uvm_info(`gfn, $sformatf("comparing digests with predicted"), UVM_LOW)
-            `uvm_info(`gfn, $sformatf("expected digest[%0d] 0x%0h",
-                      digest_idx, exp_digest[digest_idx]), UVM_HIGH)
-            if (expected_digest_size == SHA2_256) begin
-              // only check till digest_idx = 7.
-              // Digests 8-15 are irrelevant for this digest size.
-              if (digest_idx < 8) begin
-                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
-              end
-            end else if (((expected_digest_size == SHA2_384) && (digest_idx < 11)) ||
-                           expected_digest_size == SHA2_512) begin
-              // for SHA-2 384, only check till digest_idx = 11.
-              // Digests 12-15 are irrelevant/truncated for this digest size.
-              if (expected_digest_swap == 1'b0) begin
-                if (digest_idx % 2) begin // odd index then compare with smaller index
-                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx-1])
-                end else begin
-                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx+1])
-                end
-              end else begin
-                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
-              end
+            `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
+            `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
+                       exp_digest[digest_idx]), UVM_HIGH)
+            // update new digest data to the exp_digest variable.
+            exp_digest[digest_idx] = real_digest_val;
+          end else begin // !cfg.wipe_secret_triggered
+            // only check till digest_idx = 7 for SHA-2 256 and till digest_idx = 11 for SHA-2 384
+            // Remaining digest values are irrelevant or truncated for these digest sizes.
+            if (((expected_digest_size == SHA2_256) && (digest_idx < 8))  ||
+                ((expected_digest_size == SHA2_384) && (digest_idx < 11)) ||
+                  expected_digest_size == SHA2_512) begin
+              `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
             end
           end
           return;
@@ -504,7 +457,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : process_hmac_key_pad
         forever begin
-          `uvm_info(`gfn, $sformatf("cfg.under_reset %0b", cfg.under_reset), UVM_LOW)
           wait(!cfg.under_reset);
           // delay 1ps to make sure all variables are being reset, before moving to the next
           // forever loop
@@ -519,6 +471,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 key_processed = 1;
               end
               while (1) begin
+                // TODO: check if we need the error checking here - might not be necessary
                 // break if hmac is done or if invalid config error is triggered
                 if (ral.intr_state.hmac_done.get_mirrored_value() == 1 ||
                    (ral.intr_state.hmac_err.get_mirrored_value()  == 1 &&
@@ -653,20 +606,21 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   endfunction
 
   virtual task update_err_intr_code(err_code_e err_code_val);
-    // if (!ral.intr_state.hmac_err.get_mirrored_value()) begin
-    while (ral.intr_state.is_busy()) begin
-      // using cfg.clk_rst_vif.wait_clks(1) instead was still resulting in race conditions with
-      // the incrementing of hmac_rd_cnt and hmac_wr_cnt and a desynchronization
-      #1ps;
-    end
-    void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+    if (!ral.intr_state.hmac_err.get_mirrored_value()) begin
+      while (ral.intr_state.is_busy()) begin
+        // using cfg.clk_rst_vif.wait_clks(1) instead was still resulting in race conditions with
+        // the incrementing of hmac_rd_cnt and hmac_wr_cnt and a desynchronization
+        #1ps;
+      end
+      void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
 
-    while (ral.err_code.is_busy()) begin
-      // using cfg.clk_rst_vif.wait_clks(1) instead was still resulting in race conditions with
-      // the incrementing of hmac_rd_cnt and hmac_wr_cnt and a desynchronization
-      #1ps;
+      while (ral.err_code.is_busy()) begin
+        // using cfg.clk_rst_vif.wait_clks(1) instead was still resulting in race conditions with
+        // the incrementing of hmac_rd_cnt and hmac_wr_cnt and a desynchronization
+        #1ps;
+      end
+      void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
     end
-    void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
   endtask
 
   virtual function void check_idle_o(bit val);
