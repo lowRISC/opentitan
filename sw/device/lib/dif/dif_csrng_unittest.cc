@@ -201,11 +201,15 @@ class CommandTest : public DifCsrngTest {
 };
 
 TEST_F(CommandTest, InstantiateOk) {
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000001 | kMultiBitBool4True << 8);
   EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
                                       &seed_material_));
 
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000001 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
@@ -213,8 +217,12 @@ TEST_F(CommandTest, InstantiateOk) {
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000011 | kMultiBitBool4False << 8);
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
                                       &seed_material_));
@@ -231,14 +239,20 @@ TEST_F(CommandTest, InstantiateBadArgs) {
 }
 
 TEST_F(CommandTest, ReseedOk) {
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000002 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_csrng_reseed(&csrng_, &seed_material_));
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000012 | kMultiBitBool4False << 8);
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_DIF_OK(dif_csrng_reseed(&csrng_, &seed_material_));
 }
@@ -252,14 +266,20 @@ TEST_F(CommandTest, ReseedBadArgs) {
 }
 
 TEST_F(CommandTest, UpdateOk) {
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000004 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_csrng_update(&csrng_, &seed_material_));
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000014 | kMultiBitBool4False << 8);
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_DIF_OK(dif_csrng_update(&csrng_, &seed_material_));
 }
@@ -270,11 +290,15 @@ TEST_F(CommandTest, UpdateBadArgs) {
 
 TEST_F(CommandTest, GenerateOk) {
   // 512bits = 16 x 32bit = 4 x 128bit blocks
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00004003 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, /*len=*/16));
 
   // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00005003 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, /*len=*/18));
@@ -296,6 +320,8 @@ TEST_F(CommandTest, GenerateOutOfRange) {
 }
 
 TEST_F(CommandTest, UninstantiateOk) {
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
+                {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00000005 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_csrng_uninstantiate(&csrng_));
