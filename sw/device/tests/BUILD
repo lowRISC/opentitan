@@ -1952,23 +1952,18 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
-    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/ip/kmac/data:kmac_c_regs",
-        "//sw/device/lib/arch:device",
+        "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:keymgr",
