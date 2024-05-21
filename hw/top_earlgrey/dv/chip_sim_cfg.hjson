@@ -2215,5 +2215,11 @@
               "rom_e2e_smoke",
             ]
     }
+    {
+      name: xcelium_nightly
+      tests: [
+              "chip_padctrl_attributes",
+             ]
+    }
   ]
 }
