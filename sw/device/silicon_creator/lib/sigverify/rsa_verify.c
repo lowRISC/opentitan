@@ -166,20 +166,5 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
   return sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec);
 }
 
-rom_error_t sigverify_rsa_verify_ibex(const sigverify_rsa_buffer_t *signature,
-                                      const sigverify_rsa_key_t *key,
-                                      const hmac_digest_t *act_digest,
-                                      lifecycle_state_t lc_state,
-                                      uint32_t *flash_exec) {
-  sigverify_rsa_buffer_t enc_msg;
-  rom_error_t error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
-  if (launder32(error) != kErrorOk) {
-    *flash_exec ^= UINT32_MAX;
-    return error;
-  }
-  HARDENED_CHECK_EQ(error, kErrorOk);
-  return sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec);
-}
-
 // Extern declarations for the inline functions in the header.
 extern uint32_t sigverify_rsa_success_to_ok(uint32_t v);
