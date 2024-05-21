@@ -112,6 +112,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

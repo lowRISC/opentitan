@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "csrng_regs.h"  // Generated
@@ -16,6 +17,58 @@
 enum {
   kNumOutputWordsMax = 16,
 };
+
+/**
+ * Generates randomized seed material.
+ */
+status_t csrng_testutils_seed_material_build(
+    bool disable_rand, dif_csrng_seed_material_t *seed_material) {
+  if (seed_material == NULL) {
+    return INVALID_ARGUMENT();
+  }
+  seed_material->seed_material_len =
+      disable_rand
+          ? 0
+          : rand_testutils_gen32_range(0, kDifCsrngSeedMaterialMaxWordLen);
+  for (size_t i = 0; i < seed_material->seed_material_len; ++i) {
+    seed_material->seed_material[i] = rand_testutils_gen32();
+  }
+  return OK_STATUS();
+}
+
+/**
+ * Returns a randomized CSRNG application command.
+ */
+csrng_app_cmd_t csrng_testutils_app_cmd_build(
+    bool disable_rand, csrng_app_cmd_id_t id,
+    dif_csrng_entropy_src_toggle_t entropy_src_en, unsigned int glen_val,
+    dif_csrng_seed_material_t *seed_material) {
+  CHECK_STATUS_OK(
+      csrng_testutils_seed_material_build(disable_rand, seed_material));
+
+  // If disable_rand is true, we set flag0 to the provided value.
+  // If disable_rand is false, we pick a value at random.
+  dif_csrng_entropy_src_toggle_t entropy_src_enable =
+      disable_rand                       ? entropy_src_en
+      : rand_testutils_gen32_range(0, 1) ? kDifCsrngEntropySrcToggleEnable
+                                         : kDifCsrngEntropySrcToggleDisable;
+
+  // If glen_val > 0, the generate length is set to glen_val.
+  // If disable_rand is false we pick a random value between 1 and 10 with a
+  // bias towards 1. Otherwise, if glen would be too high, we would not see
+  // any reseeds because we do not consume enough entropy.
+  unsigned int glen = glen_val ? glen_val
+                      : (disable_rand || rand_testutils_gen32_range(0, 1))
+                          ? 1
+                          : rand_testutils_gen32_range(2, 10);
+
+  return (csrng_app_cmd_t){
+      .id = id,
+      .entropy_src_enable = entropy_src_enable,
+      .seed_material = seed_material,
+      .generate_len = glen,
+  };
+}
 
 status_t csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t cmd_status;

@@ -7,6 +7,35 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
+
+/**
+ * Generates randomized seed material.
+ *
+ * @param disable_rand If set, the generated seed material has length zero.
+ * @param seed_material The seed material to generate.
+ */
+OT_WARN_UNUSED_RESULT
+status_t csrng_testutils_seed_material_build(
+    bool disable_rand, dif_csrng_seed_material_t *seed_material);
+
+/**
+ * Returns a randomized CSRNG application command.
+ *
+ * @param disable_rand If set, a struct containing default values is returned.
+ * @param id CSRNG application command to generate.
+ * @param entropy_src_en If set, Instantiate and Reseed commands use entropy
+ * from the entropy source.
+ * @param glen_val If > 0, the generate length is set to glen_val.
+ * @param seed_material The seed material to generate and use for the generated
+ * application command.
+ * @return The generated CSRNG application command.
+ */
+OT_WARN_UNUSED_RESULT
+csrng_app_cmd_t csrng_testutils_app_cmd_build(
+    bool disable_rand, csrng_app_cmd_id_t id,
+    dif_csrng_entropy_src_toggle_t entropy_src_en, unsigned int glen_val,
+    dif_csrng_seed_material_t *seed_material);
 
 /**
  * Wait for the `csrng` instance command interface to be ready to accept
