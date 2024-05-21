@@ -43,25 +43,6 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  uint32_t *flash_exec);
 
 /**
- * Verifies an RSASSA-PKCS1-v1_5 signature.
- *
- * This function uses the Ibex software implementation only.
- *
- * @param signature Signature to be verified.
- * @param key Signer's RSA public key.
- * @param act_digest Actual digest of the message being verified.
- * @param lc_state Life cycle state of the device.
- * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
- * @return Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t sigverify_rsa_verify_ibex(const sigverify_rsa_buffer_t *signature,
-                                      const sigverify_rsa_key_t *key,
-                                      const hmac_digest_t *act_digest,
-                                      lifecycle_state_t lc_state,
-                                      uint32_t *flash_exec);
-
-/**
  * Transforms `kSigverifyRsaSuccess` into `kErrorOk`.
  *
  * Callers should transform the result to a suitable error value if it is not
