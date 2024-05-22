@@ -94,6 +94,7 @@ class OTDevice:
                      ecc_priv_keyfile,
                      ca_priv_keyfile,
                      ca_certfile,
+                     ca_key_id,
                      require_confirmation=True):
         """Run the FT provisioning Bazel target."""
         logging.info("Running FT Provisioning")
@@ -164,9 +165,9 @@ class OTDevice:
 --rom-ext-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-manifest-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
---uds-auth-key-id="0x11223344_55667788_99112233_44556677_88991122"
---rom-ext-security-version="0"
---owner-security-version="0"
+--uds-auth-key-id={ca_key_id} \
+--rom-ext-security-version="0" \
+--owner-security-version="0" \
 """  # noqa: E501
 
         logging.info(f"Running command: {cmd}")
