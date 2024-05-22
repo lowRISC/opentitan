@@ -39,7 +39,6 @@ package(default_visibility = ["//visibility:public"])
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             lc_state_val,

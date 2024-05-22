@@ -39,7 +39,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
@@ -65,7 +64,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
@@ -92,7 +90,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
@@ -146,7 +143,6 @@ opentitan_test(
 
 manifest({
     "name": "manifest_version_4",
-    "address_translation": hex(CONST.HARDENED_TRUE),
     "security_version": "4",
     "identifier": hex(CONST.OWNER),
 })
@@ -196,7 +192,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
+    manifest = "//sw/device/silicon_owner:manifest",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",

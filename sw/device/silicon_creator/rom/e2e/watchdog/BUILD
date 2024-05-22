@@ -96,7 +96,7 @@ WATCHDOG_TEST_CASES = {
             "EXPECT_WATCHDOG_{}".format(watchdog_config.upper()),
             "WATCHDOG_BITE_THRESHOLD={}".format(WATCHDOG_BITE_THRESHOLD),
         ],
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             lc_state_val,

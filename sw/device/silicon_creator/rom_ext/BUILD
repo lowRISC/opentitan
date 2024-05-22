@@ -284,19 +284,12 @@ cc_library(
 )
 
 manifest(d = {
-    "name": "manifest_standard",
-    "address_translation": hex(CONST.HARDENED_FALSE),
+    "name": "manifest",
     "identifier": hex(CONST.ROM_EXT),
     "visibility": ["//visibility:public"],
     "version_major": ROM_EXT_VERSION.MAJOR,
     "version_minor": ROM_EXT_VERSION.MINOR,
     "security_version": ROM_EXT_VERSION.SECURITY,
-})
-
-manifest(d = {
-    "name": "manifest_virtual",
-    "address_translation": hex(CONST.HARDENED_TRUE),
-    "identifier": hex(CONST.ROM_EXT),
 })
 
 opentitan_binary(
@@ -308,7 +301,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = ":ld_slot_a",
-    manifest = ":manifest_standard",
+    manifest = ":manifest",
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
@@ -332,7 +325,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = ":ld_slot_b",
-    manifest = ":manifest_standard",
+    manifest = ":manifest",
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
@@ -355,7 +348,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = ":ld_slot_virtual",
-    manifest = ":manifest_virtual",
+    manifest = ":manifest",
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},

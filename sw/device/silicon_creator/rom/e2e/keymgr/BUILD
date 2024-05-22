@@ -100,6 +100,7 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         verilator = verilator_params(
             timeout = "eternal",
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},

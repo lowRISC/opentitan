@@ -44,7 +44,7 @@ package(default_visibility = ["//visibility:public"])
                 CONST.LCV.RMA,
             ] else 0),
         ],
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             lc_state_val,

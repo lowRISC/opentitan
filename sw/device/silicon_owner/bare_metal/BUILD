@@ -58,14 +58,7 @@ cc_library(
 )
 
 manifest({
-    "name": "manifest_standard",
-    "address_translation": hex(CONST.HARDENED_FALSE),
-    "identifier": hex(CONST.OWNER),
-})
-
-manifest({
-    "name": "manifest_virtual",
-    "address_translation": hex(CONST.HARDENED_TRUE),
+    "name": "manifest",
     "identifier": hex(CONST.OWNER),
 })
 
@@ -77,7 +70,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310_rom_ext",
     ],
     linker_script = ":ld_slot_a",
-    manifest = ":manifest_standard",
+    manifest = ":manifest",
     deps = [
         ":bare_metal",
         "//sw/device/lib/crt",
@@ -93,7 +86,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310_rom_ext",
     ],
     linker_script = ":ld_slot_b",
-    manifest = ":manifest_standard",
+    manifest = ":manifest",
     deps = [
         ":bare_metal",
         "//sw/device/lib/crt",
@@ -109,7 +102,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310_rom_ext",
     ],
     linker_script = ":ld_slot_virtual",
-    manifest = ":manifest_virtual",
+    manifest = ":manifest",
     deps = [
         ":bare_metal",
         "//sw/device/lib/crt",
@@ -150,7 +143,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = ":manifest_virtual",
+    manifest = ":manifest",
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
