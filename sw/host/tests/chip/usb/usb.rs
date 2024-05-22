@@ -42,6 +42,16 @@ fn usb_id_parser(id: &str) -> Result<u16> {
     Ok(u16::from_str_radix(id, 16)?)
 }
 
+// Return the device ports path as a string, or an error.
+pub fn port_path_string(dev: &UsbDevice) -> Result<String> {
+    Ok(dev
+        .port_numbers()?
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>()
+        .join("."))
+}
+
 // Represent an already seen device. Rely on the physical location (port numbers)
 // instead of device address.
 #[derive(Hash, PartialEq, Eq)]
