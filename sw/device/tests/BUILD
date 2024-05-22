@@ -5545,18 +5545,14 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "rv_core_ibex_mem_test_functest",
+    name = "rv_core_ibex_mem_test_test_unlocked0",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     cw310 = cw310_params(
         binaries = {
-            ":rv_core_ibex_mem_test": "sram_program",
+            ":rv_core_ibex_mem_test_sram": "sram_program",
         },
         needs_jtag = True,
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
-        tags = [
-            "broken",
-            "manual",
-        ],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
@@ -5580,7 +5576,7 @@ opentitan_test(
     ),
     silicon = silicon_params(
         binaries = {
-            ":rv_core_ibex_mem_test": "sram_program",
+            ":rv_core_ibex_mem_test_sram": "sram_program",
         },
         needs_jtag = True,
         tags = ["manual"],
@@ -5595,7 +5591,7 @@ opentitan_test(
 )
 
 opentitan_binary(
-    name = "rv_core_ibex_mem_test",
+    name = "rv_core_ibex_mem_test_sram",
     testonly = True,
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = {
@@ -5605,7 +5601,7 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/ip/pwm/data:pwm_regs",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/ip/rv_timer/data:rv_timer_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -5617,7 +5613,43 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
+
+opentitan_test(
+    name = "rv_core_ibex_mem_test_prod",
+    srcs = ["rv_core_ibex_mem_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    deps = [
+        "//hw/ip/pwm/data:pwm_regs",
+        "//hw/ip/rv_timer/data:rv_timer_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib/base:chip",
+    ],
+)
+
+test_suite(
+    name = "rv_core_ibex_mem_test",
+    tags = ["manual"],
+    tests = [
+        "rv_core_ibex_mem_test_prod",
+        "rv_core_ibex_mem_test_test_unlocked0",
     ],
 )
 
