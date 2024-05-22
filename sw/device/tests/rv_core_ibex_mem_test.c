@@ -31,9 +31,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 
+#include "flash_ctrl_regs.h"
 #include "hw/ip/pwm/data/pwm_regs.h"
-#include "hw/ip/rv_core_ibex/data/rv_core_ibex_regs.h"
+#include "hw/ip/rv_timer/data/rv_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -44,19 +46,30 @@ enum {
   kRomTestLocStart = TOP_EARLGREY_ROM_BASE_ADDR + 0x400,
   kRomTestLocEnd = TOP_EARLGREY_ROM_BASE_ADDR + 0x500,
   kRomTestLocContent = 0x8082,
+
+  // Number of bytes per page.
+  kFlashBytesPerPage = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+
+  // Number of pages allocated to the ROM_EXT. The same number of pages are
+  // allocated at the begining of each data bank.
+  kRomExtPageCount = CHIP_ROM_EXT_SIZE_MAX / kFlashBytesPerPage,
+
+  // The start page used by this test. Points to the start of the owner
+  // partition in bank 1, otherwise known as owner partition B.
+  kBank1StartPageNum = 256 + kRomExtPageCount,
+
+  kFlashTestLoc = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                  kBank1StartPageNum * kFlashBytesPerPage,
 };
 
-volatile const uint32_t *kFlashTestLoc =
-    (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
 // The flash test location is set to the encoding of `jalr x0, 0(x1)`
 // so execution can be tested.
 const uint32_t kFlashTestLocContent = 0x00008067;
-void (*flash_test_gadget)(void) = (void (*)(void))
-    TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+void (*flash_test_gadget)(void) = (void (*)(void))kFlashTestLoc;
 
 volatile uint32_t *kMMIOTestLoc1 =
-    (uint32_t *)(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
-                 RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET);
+    (uint32_t *)(TOP_EARLGREY_RV_TIMER_BASE_ADDR +
+                 RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET);
 const uint32_t kMMIOTestLoc1Content = 0x126d8c15;  // a random value
 
 volatile uint32_t *kMMIOTestLoc2 =
@@ -132,10 +145,20 @@ static void setup_flash(void) {
 
   CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
 
-  // Set up default access for data partitions.
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash_ctrl, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4False,
+      .ecc_en = kMultiBitBool4False,
+      .high_endurance_en = kMultiBitBool4False};
+  dif_flash_ctrl_data_region_properties_t data_region = {
+      .base = kBank1StartPageNum, .size = 0x1, .properties = region_properties};
+
+  CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_properties(&flash_ctrl, 0, data_region));
+  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_enablement(&flash_ctrl, 0,
+                                                         kDifToggleEnabled));
 
   // Make flash executable
   CHECK_DIF_OK(
@@ -144,7 +167,7 @@ static void setup_flash(void) {
   // Write the wanted value to flash
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
       /*flash_state=*/&flash_ctrl,
-      /*byte_address=*/(uint32_t)kFlashTestLoc,
+      /*byte_address=*/kFlashTestLoc,
       /*partition_id=*/0,
       /*data=*/&kFlashTestLocContent,
       /*partition_type=*/kDifFlashCtrlPartitionTypeData,
@@ -205,7 +228,7 @@ bool test_main(void) {
   setup_flash();
 
   LOG_INFO("Check flash load");
-  load = *kFlashTestLoc;
+  load = *(volatile const uint32_t *)kFlashTestLoc;
   CHECK(
       load == kFlashTestLocContent,
       "The content of the Flash address was 0x%08x and not the expected value.",

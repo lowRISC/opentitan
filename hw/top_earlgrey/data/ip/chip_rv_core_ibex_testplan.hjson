@@ -209,7 +209,7 @@
          "RV_CORE_IBEX.CPU.ICACHE",
          "RV_CORE_IBEX.CPU.MEMORY"
        ]
-       bazel: ["//sw/device/tests:rv_core_ibex_mem_test_functest"]
+       bazel: ["//sw/device/tests:rv_core_ibex_mem_test"]
     }
     {
      name: chip_sw_rv_core_ibex_lockstep_glitch
