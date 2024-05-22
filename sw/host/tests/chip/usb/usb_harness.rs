@@ -11,7 +11,7 @@ use std::time::Duration;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use usb::UsbOpts;
+use usb::{port_path_string, UsbDeviceHandle, UsbOpts};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -26,15 +26,49 @@ struct Opts {
     #[command(flatten)]
     usb: UsbOpts,
 
+    /// Do not wait for USB device to appear before continuing with the test.
+    #[arg(long, default_value_t = false)]
+    no_wait_for_usb_device: bool,
+
     /// Executable to run after USB device connection.
     /// This harness will spawn a process to execute and continue monitoring the UART
     /// until the test passes (or fails). After that, the process will be killed.
+    /// Unless `no_wait_for_usb_device` is set, the harness will pass two extra arguments
+    /// to the executable to specify the bus and address of the USB device, as follows:
+    /// `--devide <bus>:<addr>`.
     #[arg(long)]
     exec: Option<PathBuf>,
 
     /// Arguments to pass to the executable.
     #[arg(long)]
     exec_arg: Vec<std::ffi::OsString>,
+}
+
+fn wait_for_device(opts: &Opts) -> Result<UsbDeviceHandle> {
+    log::info!("waiting for device...");
+    let mut devices = opts.usb.wait_for_device(opts.timeout)?;
+    if devices.is_empty() {
+        bail!("no USB device found");
+    }
+    if devices.len() > 1 {
+        log::error!("several USB devices found:");
+        for dev in devices {
+            log::error!(
+                "- bus={} address={}",
+                dev.device().bus_number(),
+                dev.device().address()
+            );
+        }
+        bail!("several USB devices found");
+    }
+    let device = devices.remove(0);
+    log::info!(
+        "device found at bus={}, address={}, path={}",
+        device.device().bus_number(),
+        device.device().address(),
+        port_path_string(&device.device())?
+    );
+    Ok(device)
 }
 
 fn main() -> Result<()> {
@@ -57,39 +91,25 @@ fn main() -> Result<()> {
             "OT USB does not appear to be connected to a host (VBUS not detected)"
         );
     }
+
     // Wait for USB device to appear.
-    log::info!("waiting for device...");
-    let devices = opts.usb.wait_for_device(opts.timeout)?;
-    if devices.is_empty() {
-        bail!("no USB device found");
-    }
-    if devices.len() > 1 {
-        log::error!("several USB devices found:");
-        for dev in devices {
-            log::error!(
-                "- bus={} address={}",
-                dev.device().bus_number(),
-                dev.device().address()
-            );
-        }
-        bail!("several USB devices found");
-    }
-    let device = &devices[0];
-    log::info!(
-        "device found at bus={} address={}",
-        device.device().bus_number(),
-        device.device().address()
-    );
+    let device = if opts.no_wait_for_usb_device {
+        None
+    } else {
+        Some(wait_for_device(&opts)?)
+    };
 
     // Run executable if requested.
     let child = match opts.exec {
         Some(exec) => {
             let mut cmd = Command::new(exec);
-            cmd.arg("--device").arg(format!(
-                "{}:{}",
-                device.device().bus_number(),
-                device.device().address()
-            ));
+            if let Some(device) = device {
+                cmd.arg("--device").arg(format!(
+                    "{}:{}",
+                    device.device().bus_number(),
+                    device.device().address()
+                ));
+            }
             cmd.args(opts.exec_arg);
             log::info!(
                 "calling {:?} on {:?}",
