@@ -17,6 +17,7 @@
  * Two MMIO registers from two different devices are written to and read from.
  */
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -37,14 +38,13 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-#define EFLASH_END_ADDR \
-  (TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES)
-
-// This ROM location contains a `c.jr x1`, so execution can be tested.
-#define ROM_TEST_LOC 0x0000844a
-volatile const uint32_t *kRomTestLoc = (uint32_t *)ROM_TEST_LOC;
-const uint32_t kRomTestLocContent = 0x13638082;
-void (*rom_test_gadget)(void) = (void (*)(void))ROM_TEST_LOC;
+enum {
+  // Search within this ROM region to find `c.jr x1`, so execution can be
+  // tested.
+  kRomTestLocStart = TOP_EARLGREY_ROM_BASE_ADDR + 0x400,
+  kRomTestLocEnd = TOP_EARLGREY_ROM_BASE_ADDR + 0x500,
+  kRomTestLocContent = 0x8082,
+};
 
 volatile const uint32_t *kFlashTestLoc =
     (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
@@ -119,9 +119,8 @@ static void setup_flash(void) {
       .lock = kPmpRegionLockLocked,
       .permissions = kPmpRegionPermissionsReadWriteExecute,
   };
-  pmp_region_configure_napot_result_t result =
-      pmp_region_configure_napot(14, config, TOP_EARLGREY_EFLASH_BASE_ADDR,
-                                 TOP_EARLGREY_EFLASH_SIZE_BYTES);
+  pmp_region_configure_napot_result_t result = pmp_region_configure_napot(
+      8, config, TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES);
   CHECK(result == kPmpRegionConfigureNapotOk,
         "Load configuration failed, error code = %d", result);
 
@@ -158,24 +157,37 @@ static void setup_flash(void) {
 bool test_main(void) {
   setup_uart();
 
-  LOG_INFO("Testing Load from ROM Location.");
-  uint32_t load = *kRomTestLoc;
-  CHECK(load == kRomTestLocContent,
-        "The content of the ROM test location was 0x%08x and not the expected "
-        "value.",
-        load);
+  // ROM access is blocked in the silicon owner stage.
+  if (kBootStage != kBootStageOwner) {
+    LOG_INFO("Testing Load from ROM Location.");
 
-  use_icache(false);
-  LOG_INFO("Running an instruction from ROM with icache disabled.");
-  rom_test_gadget();
+    // For the execution test we a specific `c.jr x1` (i.e. function return)
+    // instruction. Since the address can vary between ROM builds, we scan a
+    // small region to find it.
+    volatile uint16_t *test_loc;
+    for (test_loc = (uint16_t *)kRomTestLocStart;
+         test_loc < (uint16_t *)kRomTestLocEnd; test_loc++) {
+      if (*test_loc == kRomTestLocContent) {
+        break;
+      }
+    }
+    CHECK(test_loc != (uint16_t *)kRomTestLocEnd,
+          "Couldn't find the expected content in ROM test location.");
+    LOG_INFO("Found the expected content at 0x%p", test_loc);
+    void (*rom_test_gadget)(void) = (void (*)(void))test_loc;
 
-  use_icache(true);
-  LOG_INFO("Running an instruction from ROM with icache enabled.");
-  rom_test_gadget();
+    use_icache(false);
+    LOG_INFO("Running an instruction from ROM with icache disabled.");
+    rom_test_gadget();
+
+    use_icache(true);
+    LOG_INFO("Running an instruction from ROM with icache enabled.");
+    rom_test_gadget();
+  }
 
   LOG_INFO("Testing Store to and Load from MMIO Location 1");
   *kMMIOTestLoc1 = kMMIOTestLoc1Content;
-  load = *kMMIOTestLoc1;
+  uint32_t load = *kMMIOTestLoc1;
   CHECK(
       load == kMMIOTestLoc1Content,
       "The content of the MMIO address was 0x%08x and not the expected value.",
