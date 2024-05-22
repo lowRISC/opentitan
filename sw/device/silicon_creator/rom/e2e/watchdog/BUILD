@@ -100,7 +100,7 @@ WATCHDOG_TEST_CASES = {
             "EXPECT_WATCHDOG_{}".format(watchdog_config.upper()),
             "WATCHDOG_BITE_THRESHOLD={}".format(WATCHDOG_BITE_THRESHOLD),
         ],
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
             "//hw/ip/aon_timer/data:aon_timer_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",

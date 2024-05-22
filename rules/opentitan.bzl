@@ -1002,7 +1002,7 @@ def opentitan_flash_binary(
         signed = True,
         sim_otp = None,
         testonly = False,
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
 

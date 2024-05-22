@@ -18,7 +18,7 @@ offline_presigning_artifacts(
     srcs = [
         "//sw/device/examples/hello_world",
     ],
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     # To sign with real keys, replace the rsa_key with the label of a real
     # key (e.g. //sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0).
     # This is left as a fake key so that the presigning artifacts will be
@@ -50,7 +50,7 @@ offline_presigning_artifacts(
     ecdsa_key = {
         "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
     },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     tags = ["manual"],
 )
 

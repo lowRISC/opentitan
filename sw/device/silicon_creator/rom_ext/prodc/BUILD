@@ -23,7 +23,6 @@ LINK_ORDER = [
 
 manifest(d = {
     "name": "manifest_prodc",
-    "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.PRODC),
     "version_major": ROM_EXT_VERSION.MAJOR,

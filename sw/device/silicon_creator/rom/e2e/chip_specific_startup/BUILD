@@ -43,7 +43,6 @@ package(default_visibility = ["//visibility:public"])
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         deps = [
             "//hw/ip/csrng/data:csrng_c_regs",
             "//hw/ip/edn/data:edn_c_regs",

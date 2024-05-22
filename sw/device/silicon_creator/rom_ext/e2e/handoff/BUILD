@@ -65,7 +65,7 @@ _FAULT_TEST_CASES = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         },
         linker_script = ":ld_slot_a",
-        manifest = "//sw/device/silicon_owner:manifest_standard",
+        manifest = "//sw/device/silicon_owner:manifest",
         deps = [
             "//hw/ip/uart/data:uart_c_regs",
             "//sw/device/lib/base:abs_mmio",

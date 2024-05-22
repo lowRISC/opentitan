@@ -81,7 +81,7 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         verilator = verilator_params(
             timeout = "eternal",
             otp = ":otp_img_keymgr_{}".format(config["name"]),

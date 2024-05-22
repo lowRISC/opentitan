@@ -36,7 +36,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
@@ -62,7 +61,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
@@ -89,7 +87,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
