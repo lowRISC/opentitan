@@ -122,7 +122,6 @@ SHUTDOWN_WATCHDOG_CASES = [
         local_defines = [
             "HANG_SECS=2",
         ],
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             t["lc_state_val"],

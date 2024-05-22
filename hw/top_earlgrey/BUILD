@@ -95,7 +95,7 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_cw310_test_rom",
     exec_env = "fpga_cw310_rom_with_fake_keys",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     rom = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         "//conditions:default": "//sw/device/silicon_creator/rom:rom_with_real_keys",
@@ -116,7 +116,7 @@ fpga_cw310(
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
         "interface": "cw310",
@@ -140,7 +140,7 @@ fpga_cw310(
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
     exec_env = "fpga_hyper310_rom_with_fake_keys",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
     param = {
@@ -170,7 +170,7 @@ fpga_cw310(
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
         "interface": "hyper310",
@@ -304,7 +304,7 @@ fpga_cw340(
     base = ":fpga_cw340",
     base_bitstream = "//hw/bitstream/cw340:bitstream",
     exec_env = "fpga_cw340_rom_with_fake_keys",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -337,7 +337,7 @@ silicon(
         "//sw/device/lib/arch:silicon",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     param = {
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -370,7 +370,7 @@ silicon(
         "//sw/device/lib/arch:silicon",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     param = {
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,

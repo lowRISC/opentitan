@@ -176,7 +176,7 @@ opentitan_functest(
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         # We need to specify the manifest because the simulation environments do not
         # specify one by default.
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         rsa_key = rsa_key_by_name(RSA_ONLY_KEY_STRUCTS, key),
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",

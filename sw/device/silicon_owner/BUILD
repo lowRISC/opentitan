@@ -8,15 +8,7 @@ load("//rules:manifest.bzl", "manifest")
 package(default_visibility = ["//visibility:public"])
 
 manifest({
-    "name": "manifest_standard",
-    "address_translation": hex(CONST.HARDENED_FALSE),
-    "identifier": hex(CONST.OWNER),
-    "visibility": ["//visibility:public"],
-})
-
-manifest({
-    "name": "manifest_virtual",
-    "address_translation": hex(CONST.HARDENED_TRUE),
+    "name": "manifest",
     "identifier": hex(CONST.OWNER),
     "visibility": ["//visibility:public"],
 })
