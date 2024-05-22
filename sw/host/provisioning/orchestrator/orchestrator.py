@@ -238,6 +238,7 @@ def main():
                       args.ca_priv_keyfile,
                       args.ca_certfile,
                       args.ca_key_id,
+                      args.target_lc_state,
                       require_confirmation=not args.non_interactive)
     chip.parse_logs()
     chip.record_device(db_conn, commit_hash, timestamp, ecc_keyfile_basename)
