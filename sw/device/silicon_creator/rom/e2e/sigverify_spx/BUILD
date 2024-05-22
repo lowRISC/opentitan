@@ -14,7 +14,6 @@ load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
-    "hex",
 )
 load(
     "//rules:opentitan.bzl",
@@ -23,7 +22,6 @@ load(
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
-    "otp_bytestring",
     "otp_hex",
     "otp_image",
     "otp_json",
@@ -40,10 +38,6 @@ load(
 load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
-)
-load(
-    "@bazel_skylib//lib:shell.bzl",
-    "shell",
 )
 
 package(default_visibility = ["//visibility:public"])
