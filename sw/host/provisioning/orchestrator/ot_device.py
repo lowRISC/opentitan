@@ -207,21 +207,19 @@ class OTDevice:
         logging.debug("Found RESP_OK messages")
 
         # First match is the RMA unlock token payload
-        rma_payload = json.loads(rma_msg_matches[0])
-        wrapped_key = rma_payload["wrapped_rma_unlock_token"]["data"]
-        device_pk = rma_payload["wrapped_rma_unlock_token"]["device_pk"]
+        wrapped_key = ""
+        device_pk = {"x": "", "y": ""}
+        if rma_msg_matches:
+            rma_payload = json.loads(rma_msg_matches[0])
+            wrapped_key = rma_payload["wrapped_rma_unlock_token"]["data"]
+            device_pk = rma_payload["wrapped_rma_unlock_token"]["device_pk"]
         # TODO: parse these keys
         self.enc_rma_unlock = str(wrapped_key)
         self.device_ecc_pub_key_x = str(device_pk["x"])
         self.device_ecc_pub_key_y = str(device_pk["y"])
 
-        # Second match is the certificate payload
-        # cert_payload = json.loads(uds_cert_msg_matches[0])
-        # Note: FT stage currently outputs the public key of the certficate
-        # rather than the cert itself
-        # uds_cert_pub_key = cert_payload["uds_certificate"]
-        # self.uds_cert_pub_key_x = str(uds_cert_pub_key["x"])
-        # self.uds_cert_pub_key_y = str(uds_cert_pub_key["y"])
+        # Second match is the certificate payload.
+        # TODO: parse the certificate payload
         self.uds_cert_pub_key_x = "0"
         self.uds_cert_pub_key_y = "0"
 
