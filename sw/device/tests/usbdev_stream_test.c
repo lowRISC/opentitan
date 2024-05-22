@@ -35,7 +35,7 @@
 #define NUM_STREAMS USBUTILS_STREAMS_MAX
 #endif
 
-#define TRANSFER_BYTES_SILICON (0x10U << 20)
+#define TRANSFER_BYTES_SILICON (8U << 20)
 // 16MiB takes about 256s presently with 10MHz CPU in CW310 FPGA and physical
 // USB with randomized packet sizes and the default memcpy implementation;
 // The _MEM_FASTER switch drops the run time to 187s. In CI, we want to keep
