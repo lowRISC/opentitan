@@ -13,7 +13,9 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'k')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_keygen);      // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_keygen);  // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen,
+                         mode);  // ECDSA keygen application mode.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, d0);  // Private key first share.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, d1);  // Private key second share.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, x);   // x-coordinate.
@@ -21,6 +23,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, y);   // y-coordinate.
 
 static const otbn_app_t kOtbnAppEcdsaKeygen =
     OTBN_APP_T_INIT(p384_ecdsa_keygen);
+static const otbn_addr_t kOtbnVarEcdsaMode =
+    OTBN_ADDR_T_INIT(p384_ecdsa_keygen, mode);
 static const otbn_addr_t kOtbnVarEcdsaX =
     OTBN_ADDR_T_INIT(p384_ecdsa_keygen, x);
 static const otbn_addr_t kOtbnVarEcdsaY =
@@ -38,26 +42,36 @@ enum {
   /*
    * Mode to generate a new random keypair.
    *
-   * Value taken from `p384_ecdsa.s`.
+   * Value taken from `p384_ecdsa_keygen.s`.
    */
   kOtbnEcdsaModeKeygen = 0x3d4,
   /*
-   * Mode to generate a signature.
+   * Mode to generate a sideloaded key.
    *
-   * Value taken from `p384_ecdsa.s`.
+   * Value taken from `p384_ecdsa_keygen.s`.
    */
-  kOtbnEcdsaModeSign = 0x15b,
-  /*
-   * Mode to verify a signature.
-   *
-   * Value taken from `p384_ecdsa.s`.
-   */
-  kOtbnEcdsaModeVerify = 0x727,
+  kOtbnEcdsaModeSideloadKeygen = 0x5e8,
 };
 
 status_t ecdsa_p384_keygen_start(void) {
   // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsaKeygen));
+
+  // Set mode so start() will jump into sideload-keygen.
+  uint32_t mode = kOtbnEcdsaModeKeygen;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdsa_p384_sideload_keygen_start(void) {
+  // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsaKeygen));
+
+  // Set mode so start() will jump into sideload-keygen.
+  uint32_t mode = kOtbnEcdsaModeSideloadKeygen;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -73,6 +87,20 @@ status_t ecdsa_p384_keygen_finalize(p384_masked_scalar_t *private_key,
                               private_key->share0));
   HARDENED_TRY(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarEcdsaD1,
                               private_key->share1));
+
+  // Read the public key from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarEcdsaX, public_key->x));
+  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarEcdsaY, public_key->y));
+
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  return OTCRYPTO_OK;
+}
+
+status_t ecdsa_p384_sideload_keygen_finalize(p384_point_t *public_key) {
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the public key from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarEcdsaX, public_key->x));
