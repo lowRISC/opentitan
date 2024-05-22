@@ -111,6 +111,7 @@ cc_library(
     ],
     deps = [
         ":boot_policy",
+        ":boot_policy_ptrs",
         ":bootstrap",
         ":rom_epmp",
         ":sigverify_keys_ecdsa_p256",

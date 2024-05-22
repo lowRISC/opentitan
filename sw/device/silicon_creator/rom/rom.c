@@ -42,6 +42,7 @@
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/boot_policy.h"
+#include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_ecdsa_p256.h"
@@ -469,9 +470,14 @@ static rom_error_t rom_measure_otp_partitions(
  * @return rom_error_t Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
+static rom_error_t rom_boot(boot_log_t *boot_log, const manifest_t *manifest,
+                            uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
+
+  boot_log->rom_ext_slot =
+      manifest == boot_policy_manifest_a_get() ? kBootSlotA : kBootSlotB;
+  boot_log_digest_update(boot_log);
 
   keymgr_binding_value_t otp_measurement;
   const keymgr_binding_value_t *attestation_measurement =
@@ -617,19 +623,13 @@ static rom_error_t rom_try_boot(void) {
 
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
-
-    boot_log->rom_ext_slot = kBootSlotA;
-    boot_log_digest_update(boot_log);
-
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
-    HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
+    HARDENED_RETURN_IF_ERROR(
+        rom_boot(boot_log, manifests.ordered[0], flash_exec));
     return kErrorRomBootFailed;
   }
-
-  boot_log->rom_ext_slot = kBootSlotB;
-  boot_log_digest_update(boot_log);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
   HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
@@ -637,7 +637,8 @@ static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
-  HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
+  HARDENED_RETURN_IF_ERROR(
+      rom_boot(boot_log, manifests.ordered[1], flash_exec));
   return kErrorRomBootFailed;
 }
 
