@@ -3687,6 +3687,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
@@ -3713,6 +3714,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
@@ -3809,6 +3811,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
@@ -3835,6 +3838,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
