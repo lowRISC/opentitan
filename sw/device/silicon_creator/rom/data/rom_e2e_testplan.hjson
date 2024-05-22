@@ -694,7 +694,7 @@
               - Log so that test can be reproduced.
             - Apply bootstrap pin strapping and reset the chip.
             - Load the image.
-            - Verify that boot fails with the expected `BFV`: `kErrorSigverifyBadRsaSignature`.
+            - Verify that boot fails with the expected `BFV`: `kErrorSigverifyBadEcdsaSignature`.
             - Repeat the steps above for TEST, DEV, PROD, PROD_END, and RMA.
 
             See `rom_e2e_boot_policy_valid`.
@@ -737,10 +737,12 @@
       name: rom_e2e_sigverify_key_validity
       desc: '''Verify that ROM only uses authorized keys that are not invalidated.
 
-            - For each key entry in `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN`,
-              - Invalidate the key by setting the entry to a value other than `kHardenedBoolTrue`.
+            - For each key entry in the `ROT_CREATOR_AUTH_STATE` partition,
+              - Invalidate the key by setting the entry to a value other than `PROVISIONED`.
               - Prepare a ROM_EXT image with a valid signature generated using the invalidated key.
-              - Verify that boot fails with `BFV:kErrorSigverifyBadKey`
+              - Verify that boot fails with `BFV:kErrorSigverifyBadEcdsaKey` or
+                `BFV:kErrorSigverifyBadSpxKey` depending on whether the failure is due to a bad
+                ECDSA or SPX key.
 
             | LC State | Allowed key types |
             |:--------:|:-----------------:|
