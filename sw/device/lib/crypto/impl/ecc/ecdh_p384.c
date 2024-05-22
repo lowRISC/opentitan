@@ -43,8 +43,14 @@ enum {
    * Mode to generate a new shared key.
    */
   kOtbnEcdhModeSharedKey = 0x5ec,
-  // TODO: kOtbnEcdhModeKeypairFromSeed = 0x29f;
-  // TODO: kOtbnEcdhModeSharedKeyFromSeed = 0x74b;
+   /*
+   * Mode to generate a new sideloaded keypair.
+   */
+  kOtbnEcdhModeKeypairFromSeed = 0x29f,
+  /*
+   * Mode to generate a new sideloaded shared key.
+   */
+  kOtbnEcdhModeSharedKeyFromSeed = 0x74b,
 };
 
 status_t ecdh_p384_keypair_start(void) {
@@ -121,4 +127,52 @@ status_t ecdh_p384_shared_key_finalize(ecdh_p384_shared_key_t *shared_key) {
   HARDENED_TRY(otbn_dmem_sec_wipe());
 
   return OTCRYPTO_OK;
+}
+
+status_t ecdh_p384_sideload_keypair_start(void) {
+  // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
+
+  // Set mode so start() will jump into keygen.
+  uint32_t mode = kOtbnEcdhModeKeypairFromSeed;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &mode, kOtbnVarEcdhMode));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdh_p384_sideload_keypair_finalize(p384_point_t *public_key) {
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the public key from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarEcdhX, public_key->x));
+  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarEcdhY, public_key->y));
+
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  return OTCRYPTO_OK;
+}
+
+status_t ecdh_p384_sideload_shared_key_start(const p384_point_t *public_key) {
+  // Check if public key is valid
+  HARDENED_TRY(p384_curve_point_validate_start(public_key));
+  HARDENED_TRY(p384_curve_point_validate_finalize());
+
+  // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
+
+  // Set mode so start() will jump into shared-key generation.
+  uint32_t mode = kOtbnEcdhModeSharedKeyFromSeed;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &mode, kOtbnVarEcdhMode));
+
+  // Set the public key x coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->x, kOtbnVarEcdhX));
+
+  // Set the public key y coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->y, kOtbnVarEcdhY));
+
+  // Start the OTBN routine.
+  return otbn_execute();
 }

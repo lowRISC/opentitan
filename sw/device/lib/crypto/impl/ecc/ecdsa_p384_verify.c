@@ -39,31 +39,6 @@ static const otbn_addr_t kOtbnVarEcdsaS =
 static const otbn_addr_t kOtbnVarEcdsaRnd =
     OTBN_ADDR_T_INIT(p384_ecdsa_verify, x_r);
 
-enum {
-  /*
-   * Mode is represented by a single word.
-   */
-  kOtbnEcdsaModeWords = 1,
-  /*
-   * Mode to generate a new random keypair.
-   *
-   * Value taken from `p384_ecdsa.s`.
-   */
-  kOtbnEcdsaModeKeygen = 0x3d4,
-  /*
-   * Mode to generate a signature.
-   *
-   * Value taken from `p384_ecdsa.s`.
-   */
-  kOtbnEcdsaModeSign = 0x15b,
-  /*
-   * Mode to verify a signature.
-   *
-   * Value taken from `p384_ecdsa.s`.
-   */
-  kOtbnEcdsaModeVerify = 0x727,
-};
-
 status_t ecdsa_p384_verify_start(const ecdsa_p384_signature_t *signature,
                                  const uint32_t digest[kP384ScalarWords],
                                  const p384_point_t *public_key) {
