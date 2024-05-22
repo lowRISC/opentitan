@@ -182,21 +182,9 @@ static void curr_tbs_signature_le_to_be_convert(attestation_signature_t *sig) {
  */
 static void measure_otp_partition(otp_partition_t partition,
                                   hmac_digest_t *measurement) {
-  // Compute the digest.
   otp_dai_read(partition, /*address=*/0, otp_state,
                kOtpPartitions[partition].size / sizeof(uint32_t));
   hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
-
-  // Check the digest matches what is stored in OTP (for partitions that are
-  // locked via software computed digest).
-  if (partition == kOtpPartitionCreatorSwCfg ||
-      partition == kOtpPartitionOwnerSwCfg) {
-    uint64_t expected_digest = otp_partition_digest_read(partition);
-    uint32_t digest_hi = expected_digest >> 32;
-    uint32_t digest_lo = expected_digest & UINT32_MAX;
-    HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
-    HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
-  }
 }
 
 rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
