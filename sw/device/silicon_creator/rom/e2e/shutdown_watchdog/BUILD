@@ -126,7 +126,6 @@ SHUTDOWN_WATCHDOG_CASES = [
         local_defines = [
             "HANG_SECS=2",
         ],
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         deps = [
             "//sw/device/lib/base:memory",
             "//sw/device/lib/dif:aon_timer",

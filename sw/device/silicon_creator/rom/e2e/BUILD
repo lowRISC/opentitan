@@ -180,7 +180,9 @@ opentitan_test(
             "//hw/top_earlgrey:sim_verilator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        # We need to specify the manifest because the simulation environments do not
+        # specify one by default.
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -318,7 +320,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
     },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
@@ -345,7 +347,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom:mask_rom",
@@ -368,7 +370,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom:mask_rom",

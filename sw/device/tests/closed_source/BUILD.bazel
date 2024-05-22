@@ -155,7 +155,7 @@ opentitan_test(
     },
     # We need to specify the manifest because the simulation environments do not
     # specify one by default.
-    manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "@//sw/device/silicon_creator/rom_ext:manifest",
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -196,7 +196,7 @@ opentitan_test(
     },
     # We need to specify the manifest because the simulation environments do not
     # specify one by default.
-    manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "@//sw/device/silicon_creator/rom_ext:manifest",
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
         "@manufacturer_test_hooks//:test_hooks_1",

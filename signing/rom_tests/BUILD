@@ -14,7 +14,7 @@ offline_presigning_artifacts(
     ecdsa_key = {
         "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0_ecdsa_p256",
     },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     spx_key = {
         "//sw/device/silicon_creator/rom/keys/real/spx:test_key_0_spx": "earlgrey_a0_test_0_spx",
     },
@@ -28,7 +28,7 @@ offline_presigning_artifacts(
     ecdsa_key = {
         "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0_ecdsa_p256",
     },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     tags = ["manual"],
 )
 

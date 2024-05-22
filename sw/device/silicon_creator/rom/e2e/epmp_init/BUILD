@@ -48,7 +48,7 @@ package(default_visibility = ["//visibility:public"])
                 CONST.LCV.RMA,
             ] else 0),
         ],
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         verilator = verilator_params(
             timeout = "eternal",
             otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
