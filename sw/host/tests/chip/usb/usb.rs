@@ -11,6 +11,9 @@ use std::time::{Duration, Instant};
 
 use opentitanlib::app::TransportWrapper;
 
+pub type UsbDevice = rusb::Device<rusb::Context>;
+pub type UsbDeviceHandle = rusb::DeviceHandle<rusb::Context>;
+
 #[derive(Debug, Parser)]
 pub struct UsbOpts {
     /// USB vendor ID, default value is Google VID
@@ -48,7 +51,7 @@ struct DeviceLoc {
 }
 
 impl DeviceLoc {
-    fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<DeviceLoc> {
+    fn from_device(dev: &UsbDevice) -> Result<DeviceLoc> {
         Ok(DeviceLoc {
             bus: dev.bus_number(),
             port_numbers: dev.port_numbers()?,
@@ -68,10 +71,7 @@ impl UsbOpts {
     //
     // This function will return an error on critical failures such as failing to poll
     // the USB bus.
-    pub fn wait_for_device(
-        &self,
-        timeout: Duration,
-    ) -> Result<Vec<rusb::DeviceHandle<rusb::Context>>> {
+    pub fn wait_for_device(&self, timeout: Duration) -> Result<Vec<UsbDeviceHandle>> {
         let start = Instant::now();
         // Keep a list of devices that we failed to open and when we last tried to open.
         let mut failed_dev = HashMap::<DeviceLoc, Instant>::new();
@@ -182,7 +182,7 @@ impl UsbOpts {
 // Structure representing a USB hub. The device needs to have sufficient permission
 // to be opened.
 pub struct UsbHub {
-    handle: rusb::DeviceHandle<rusb::Context>,
+    handle: UsbDeviceHandle,
 }
 
 // USB hub operation.
@@ -200,7 +200,7 @@ const PORT_RESET: u16 = 4;
 
 impl UsbHub {
     // Construct a hub from a device.
-    pub fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<UsbHub> {
+    pub fn from_device(dev: &UsbDevice) -> Result<UsbHub> {
         // Make sure the device is a hub.
         let dev_desc = dev.device_descriptor()?;
         // Assume that if the device has the HUB class then Linux will already enforce
