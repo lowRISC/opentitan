@@ -2765,6 +2765,12 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2798,6 +2804,12 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
