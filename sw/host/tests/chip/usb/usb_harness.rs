@@ -123,7 +123,12 @@ fn main() -> Result<()> {
 
     // Wait for test to pass.
     log::info!("wait for pass...");
-    UartConsole::wait_for(&*uart, r"PASS!", opts.timeout)?;
+    let res = UartConsole::wait_for(&*uart, r"PASS|FAIL", opts.timeout)?;
+    match res[0].as_str() {
+        "PASS" => (),
+        "FAIL" => bail!("device code reported a failure"),
+        _ => (),
+    };
 
     // Kill executable (if running).
     if let Some(mut child) = child {
