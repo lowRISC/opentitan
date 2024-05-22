@@ -9,6 +9,7 @@ class usbdev_link_in_err_vseq extends usbdev_base_vseq;
 
   virtual task body();
     bit link_error;
+
     configure_out_trans();
     call_token_seq(PidTypeOutToken);
     inter_packet_delay();
@@ -25,12 +26,16 @@ class usbdev_link_in_err_vseq extends usbdev_base_vseq;
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_data_pid_from_device(m_usb20_item, PidTypeData0);
-    inter_packet_delay();
+    response_delay();
     // Send unexpected PID to USB device and device will assert link_in_err interrupt.
     // Expected pkt is ACK but send NYET packet.
     call_handshake_sequence(PktTypeHandshake, PidTypeNyet);
-    csr_rd(.ptr(ral.intr_state.link_in_err), .value(link_error));
+    // The 'link_in_err' interrupt will take a few cycles to be asserted.
+    for (uint i = 0; i < 16; i++) begin
+      csr_rd(.ptr(ral.intr_state.link_in_err), .value(link_error));
+      if (link_error) break;
+    end
     // Check link_in_err is asserted.
-    `DV_CHECK_EQ(1, link_error);
+    `DV_CHECK_EQ(link_error, 1'b1, "link_in_err interrupt not asserted when expected")
   endtask
 endclass
