@@ -424,10 +424,12 @@ otbn_binary(
         "p384_ecdsa_sign.s",
     ],
     deps = [
+        ":p384_b2a",
         ":p384_base",
         ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_keygen",
+        ":p384_keygen_from_seed",
         ":p384_modinv",
         ":p384_sign",
     ],

@@ -6,7 +6,27 @@
  * Entrypoint for P-384 ECDSA signing operations.
  *
  * This binary generates a signature using a caller-provided secret key.
+ *
+ * This binary has the following modes of operation:
+ * 1. MODE_SIGN: generate signature using caller-provided secret key
+ * 2. MODE_SIDELOAD_SIGN: generate signature using sideloaded secret key/seed
  */
+
+ /**
+ * Mode magic values, generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 5 -n 11 \
+ *     --avoid-zero -s 2205231843
+ *
+ * Call the same utility with the same arguments and a higher -m to generate
+ * additional value(s) without changing the others or sacrificing mutual HD.
+ *
+ * TODO(#17727): in some places the OTBN assembler support for .equ directives
+ * is lacking, so they cannot be used in bignum instructions or pseudo-ops such
+ * as `li`. If support is added, we could use 32-bit values here instead of
+ * 11-bit.
+ */
+.equ MODE_SIGN, 0x15b
+.equ MODE_SIDELOAD_SIGN, 0x49e
 
 .section .text.start
 .globl start
@@ -14,7 +34,15 @@ start:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  jal       x1, ecdsa_sign
+  /* Read the mode and tail-call the requested operation. */
+  la    x2, mode
+  lw    x2, 0(x2)
+
+  addi  x3, x0, MODE_SIGN
+  beq   x2, x3, ecdsa_sign
+
+  addi  x3, x0, MODE_SIDELOAD_SIGN
+  beq   x2, x3, ecdsa_sign_sideload
 
   /* Invalid mode; fail. */
   unimp
@@ -25,8 +53,6 @@ start:
  * P-384 ECDSA signature generation.
  * Generate the secret scalar k from a random seed.
  *
- * @param[in]   dmem[k0]: 1st scalar share k0
- * @param[in]   dmem[k1]: 2nd scalar share k1
  * @param[in]  dmem[msg]: message to be signed in dmem
  * @param[in]   dmem[d0]: 1st private key share d0
  * @param[in]   dmem[d1]: 2nd private key share d1
@@ -44,7 +70,40 @@ ecdsa_sign:
 
   ecall
 
+/**
+ * P-384 ECDSA side-loaded signature generation.
+ * Generate a signature using a private key from a 
+ * sideloaded seed.
+ *
+ * @param[in]  dmem[msg]: message to be signed in dmem
+ * @param[out]   dmem[r]: r component of signature
+ * @param[out]   dmem[s]: s component of signature
+ */
+ecdsa_sign_sideload:
+  /* Load keymgr seeds from WSRs.
+       w20,w21 <= seed0
+       w10,w11 <= seed1 */
+  bn.wsrr   w20, KEY_S0_L
+  bn.wsrr   w21, KEY_S0_H
+  bn.wsrr   w10, KEY_S1_L
+  bn.wsrr   w11, KEY_S1_H
+
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, p384_key_from_seed
+
+  /* Tail-call signature-generation routine. */
+  jal       x0, ecdsa_sign
+
+
 .bss
+
+/* Operational mode. */
+.globl mode
+.balign 4
+mode:
+  .zero 4
 
 /* x-coordinate. */
 .globl x

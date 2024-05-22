@@ -10,7 +10,7 @@
  * 2. MODE_SIGN: generate signature using caller-provided secret key
  * 3. MODE_VERIFY: verify a signature
  * 4. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
- * 5. MODE_SIDELOAD_SIGN: compute shared key using sideloaded seed
+ * 5. MODE_SIDELOAD_SIGN: generate signature using sideloaded secret key/seed
  */
 
 /**

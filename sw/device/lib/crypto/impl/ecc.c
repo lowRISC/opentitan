@@ -523,8 +523,8 @@ static status_t internal_ecdsa_p384_sign_start(
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    // TODO: Implement sideloaded signature generation.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    HARDENED_TRY(sideload_key_seed(private_key));
+    return ecdsa_p384_sideload_sign_start(message_digest.data);
   }
 
   // Invalid value for private_key->hw_backed.

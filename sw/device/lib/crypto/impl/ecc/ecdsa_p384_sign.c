@@ -13,7 +13,9 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 's')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sign);       // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sign);  // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign,
+                         mode);                  // ECDSA sign application mode.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, d0);   // private key first share
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, d1);   // private key second share
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, msg);  // hash message to sign/verify
@@ -21,6 +23,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, r);    // r part of signature
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, s);    // s part of signature
 
 static const otbn_app_t kOtbnAppEcdsaSign = OTBN_APP_T_INIT(p384_ecdsa_sign);
+static const otbn_addr_t kOtbnVarEcdsaMode =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sign, mode);
 static const otbn_addr_t kOtbnVarEcdsaD0 =
     OTBN_ADDR_T_INIT(p384_ecdsa_sign, d0);
 static const otbn_addr_t kOtbnVarEcdsaD1 =
@@ -30,10 +34,33 @@ static const otbn_addr_t kOtbnVarEcdsaMsg =
 static const otbn_addr_t kOtbnVarEcdsaR = OTBN_ADDR_T_INIT(p384_ecdsa_sign, r);
 static const otbn_addr_t kOtbnVarEcdsaS = OTBN_ADDR_T_INIT(p384_ecdsa_sign, s);
 
+enum {
+  /*
+   * Mode is represented by a single word.
+   */
+  kOtbnEcdsaModeWords = 1,
+  /*
+   * Mode to generate a signature.
+   *
+   * Value taken from `p384_ecdsa.s`.
+   */
+  kOtbnEcdsaModeSign = 0x15b,
+  /*
+   * Mode to sign with a sideloaded key.
+   *
+   * Value taken from `p384_ecdsa.s`.
+   */
+  kOtbnEcdsaModeSideloadSign = 0x49e,
+};
+
 status_t ecdsa_p384_sign_start(const uint32_t digest[kP384ScalarWords],
                                const p384_masked_scalar_t *private_key) {
   // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsaSign));
+
+  // Set mode so start() will jump into sideloaded signing.
+  uint32_t mode = kOtbnEcdsaModeSign;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
   // Set the message digest.
   HARDENED_TRY(set_message_digest(digest, kOtbnVarEcdsaMsg));
@@ -41,6 +68,22 @@ status_t ecdsa_p384_sign_start(const uint32_t digest[kP384ScalarWords],
   // Set the private key shares.
   HARDENED_TRY(
       p384_masked_scalar_write(private_key, kOtbnVarEcdsaD0, kOtbnVarEcdsaD1));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdsa_p384_sideload_sign_start(
+    const uint32_t digest[kP384ScalarWords]) {
+  // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsaSign));
+
+  // Set mode so start() will jump into sideloaded signing.
+  uint32_t mode = kOtbnEcdsaModeSideloadSign;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest, kOtbnVarEcdsaMsg));
 
   // Start the OTBN routine.
   return otbn_execute();

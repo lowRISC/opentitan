@@ -30,6 +30,19 @@ status_t ecdsa_p384_sign_start(const uint32_t digest[kP384ScalarWords],
                                const p384_masked_scalar_t *private_key);
 
 /**
+ * Start an async ECDSA/P-384 signature generation operation on OTBN.
+ *
+ * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
+ * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param digest Digest of the message to sign.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t ecdsa_p384_sideload_sign_start(
+    const uint32_t digest[kP384ScalarWords]);
+
+/**
  * Finish an async ECDSA/P-384 signature generation operation on OTBN.
  *
  * See the documentation of `ecdsa_p384_sign` for details.
