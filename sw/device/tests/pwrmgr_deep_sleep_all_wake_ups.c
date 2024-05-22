@@ -76,6 +76,13 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterCases, &wakeup_unit));
+    // There is a bug in the last wakeup (5), so this test skips that
+    // and there is a separate test that triggers it.
+    // TODO(lowrisc/opentitan#20798) Enable all wakeups once this is addressed.
+    if (wakeup_unit == PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX) {
+      CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
+      wakeup_unit++;
+    }
     if (wakeup_unit >= PWRMGR_PARAM_NUM_WKUPS) {
       return true;
     } else if (kDeviceType != kDeviceSimDV &&
