@@ -58,6 +58,13 @@ bool test_main(void) {
           wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
         continue;
       }
+      // There is a bug in the last wakeup (5), so this test skips that
+      // and there is a separate test that triggers it.
+      // TODO(lowrisc/opentitan#20798) Enable all wakeups once this is
+      // addressed.
+      if (wakeup_unit == PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX) {
+        continue;
+      }
       LOG_INFO("Test %d begin", wakeup_unit);
       execute_test(wakeup_unit, /*deep_sleep=*/false);
       check_wakeup_reason(wakeup_unit);
