@@ -4,11 +4,10 @@
 //
 // Ascon duplex function implementation
 
-// TODO: Check endianesses: Padding and domainsep should be consistant, but
-// Input/Outpu should be adressed. And Tag squeeze.
-// DONE: Padding and domainsep ==> absorb passt nicht
-// TODO: Update diagram!
-// TODO: Add countermeasures: mubi, randomones, blinding
+// TODO: Add countermeasures: mubi for control signals,
+//       random values for state_to_round input, blinding for output signals
+// TODO: Add backpressure logic, if output is not ready
+// TODO: Add check what to do, if valid_bytes_i is greater than blocksize
 
 module prim_ascon_duplex
   import prim_ascon_pkg::*;
@@ -50,9 +49,9 @@ module prim_ascon_duplex
   output logic err_o
 );
 
-// TODO: Add backpreasure here, or in upper module?
-logic data_rd_i_unused;
-assign data_rd_i_unused = data_rd_i;
+// TODO: Add backpressure check
+logic unused_data_rd_i;
+assign unused_data_rd_i = data_rd_i;
 
 logic round_count_error;
 logic sparse_fsm_error;
@@ -79,18 +78,10 @@ perm_offset_e perm_offset;
 logic  [63:0] iv;
 assign iv = (ascon_variant == ASCON_128) ? IV_128 : IV_128A;
 
-// data output
-logic  [127:0] data_out;
-assign data_out = (data_i ^ {ascon_state_q[0],ascon_state_q[1]}) & valid_bytes_mask;
-
-// TODO  add blinding
-assign data_o  = data_out;
-assign  tag_o  = ({ascon_state_q[3],ascon_state_q[4]} ^ key_i);
-
 // internal combinatorial signals
 mubi4_t complete_block;
 
-// TODO should we add a check what to do, if valid_bytesy_i is greater than blocksize?
+// TODO add a check what to do, if valid_bytes_i is greater than blocksize
 assign complete_block =  (ascon_variant == ASCON_128  && valid_bytes_i ==  8)
                        ||(ascon_variant == ASCON_128A && valid_bytes_i == 16) ?
                           MuBi4True : MuBi4False;
@@ -103,12 +94,12 @@ assign complete_block =  (ascon_variant == ASCON_128  && valid_bytes_i ==  8)
 //    c) complete last block: No padding to the input, but an addtional state in the FSM
 //       is used to perform the padding. A 10+ block is XORed to the state.
 // 2) Encryption:
-//    a) incomplete last block: A 10* padding is added to the input data.
+//    a) empty or incomplete last block: A 10* padding is added to the input data.
 //       The padded associated data is XORed blockwise
 //    b) complete last block: No padding to the input, but an additional state in the FSM
 //       is used to perform the padding. A 10+ block is XORed to the sate.
 // 3) Decryption:
-//    a) incomplete last block: The padded (output) PLAINTEXT is XORed to the sate.
+//    a) empty or incomplete last block: The padded (output) PLAINTEXT is XORed to the sate.
 //       This is equivalent to:
 //       The unpadded part of the Ciphertext replaces the coresponding part of S_r
 //       The remaining part of S_r is Xored with 10*
@@ -128,10 +119,14 @@ assign padding_byte_mask = get_padding_mask(valid_bytes_i);
 logic [127:0] data_in_valid_bytes;
 assign data_in_valid_bytes = data_i & valid_bytes_mask;
 
+// data output
+logic  [127:0] data_out;
+assign data_out = (data_i ^ {ascon_state_q[0],ascon_state_q[1]}) & valid_bytes_mask;
+
 logic [127:0] data_in_padded;
 logic [127:0] data_out_padded; // is only used intenrally for decryption.
 
-// For BOTH encryption AND decryption the PLAINTEXT is XORed to the sate!
+// For BOTH encryption AND decryption the PLAINTEXT is XORed to the state!
 // For encryption this is straight forward: S_r = S_r XOR P
 // For decryption this means: S_r = S_r XOR P = S_r XOR (S_r XOR C) = C
 // Thus the ciphertext replaces the rate. However, we cannot simply implement
@@ -149,6 +144,34 @@ always_comb begin
       data_out_padded = data_out | padding_byte_mask;
   end
 end
+
+// TODO  add blinding
+assign data_o  = data_out;
+assign  tag_o  = ({ascon_state_q[3],ascon_state_q[4]} ^ key_i);
+
+// Due to Ascon's round constants the current_round
+// contains an offset:
+// for P12 we count: from 0 to 11 = 12 rounds,
+// for P8  we count: from 4 to 11 =  8 rounds,
+// for P6  we count: from 5 to 11 =  6 rounds
+logic [AsconRoundCountW-1:0] current_round;
+
+prim_count #(
+    .Width(AsconRoundCountW)
+) u_round_counter (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(set_round_counter),
+    .set_cnt_i(perm_offset),
+    .incr_en_i(inc_round_counter),
+    .decr_en_i(1'b0),
+    .step_i(AsconRoundCountW'(1)),
+    .commit_i(1'b1),
+    .cnt_o(current_round),
+    .cnt_after_commit_o(),
+    .err_o(round_count_error)
+  );
 
 always_comb begin : p_fsm
   // Default assignments
@@ -204,7 +227,7 @@ always_comb begin : p_fsm
             fsm_state_d = PermADLast;
           end
         end else begin // there are more blocks to come
-          fsm_state_d =PermAD;
+          fsm_state_d = PermAD;
         end
       end
       if (ascon_variant == ASCON_128) begin
@@ -347,7 +370,7 @@ always_comb begin : ascon_state_mux
       ascon_state_d[4] = ascon_state_q[4] ^ key_i[63:0];
     end
     AbsorbAD: begin
-      // padding is not a issue here. It is done on the fly.
+      // padding is not an issue here. It is done on the fly.
       ascon_state_d[0] = ascon_state_q[0] ^ data_in_padded[127:64];
       if (ascon_variant == ASCON_128A) begin
         ascon_state_d[1] = ascon_state_q[1] ^ data_in_padded[63:0];
@@ -375,7 +398,7 @@ always_comb begin : ascon_state_mux
       end
     end
     XorDomSep: begin
-        // Invert MSB in ascon state
+        // Invert MSB in Ascon's state
         // C-Code: s.x[4] ^= 1;
         // Double checked with C-output
         ascon_state_d[4][0] = ascon_state_q[4][0] ^ 1'b1;
@@ -427,30 +450,6 @@ always_comb begin : ascon_state_mux
     default: ascon_state_d = ascon_state_q;
   endcase
 end
-
-// Due to Ascon's round constants the current_round
-// contains an offset:
-// for P12 we count: from 0 to 11 = 12 rounds,
-// for P8  we count: from 4 to 11 =  8 rounds,
-// for P6  we count: from 5 tp 11 =  6 rounds
-logic [AsconRoundCountW-1:0] current_round;
-
-prim_count #(
-    .Width(AsconRoundCountW)
-) u_round_counter (
-    .clk_i,
-    .rst_ni,
-    .clr_i(1'b0),
-    .set_i(set_round_counter),
-    .set_cnt_i(perm_offset),
-    .incr_en_i(inc_round_counter),
-    .decr_en_i(1'b0),
-    .step_i(AsconRoundCountW'(1)),
-    .commit_i(1'b1),
-    .cnt_o(current_round),
-    .cnt_after_commit_o(),
-    .err_o(round_count_error)
-  );
 
 assign err_o = round_count_error | sparse_fsm_error;
 
