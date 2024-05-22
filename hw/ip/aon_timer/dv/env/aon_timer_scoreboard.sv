@@ -144,7 +144,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         if (data_phase_write) wkup_num_update_due = 1;
       end
       "wkup_thold_hi": begin
-        wkup_thold[73:32] =  csr.get_mirrored_value();
+        wkup_thold[63:32] =  csr.get_mirrored_value();
         if (data_phase_write) wkup_num_update_due = 1;
       end
       "wdog_ctrl": begin
@@ -251,9 +251,24 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task run_wkup_timer();
+    event sample_coverage;
     forever begin
       wait (wkup_en);
       fork
+        begin
+          forever begin
+            @(sample_coverage.triggered);
+            if (cfg.en_cov) begin
+              bit [63:0] rtl_count;
+              //reading RTL value since TB doesn't keep track of count
+              csr_rd(.ptr(ral.wkup_count_lo), .value(rtl_count[31:0]), .backdoor(1));
+              csr_rd(.ptr(ral.wkup_count_lo), .value(rtl_count[63:32]), .backdoor(1));
+              cov.wake_up_timer_thold_hit_cg.sample(intr_status_exp[WKUP],
+                                                    wkup_thold,
+                                                    rtl_count);
+            end
+          end
+        end
         begin
           // trying to count how many cycles we need to count
           uint count = 0;
@@ -265,9 +280,12 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
             // reset the cycle counter when we update the cycle count needed
             count = wkup_num_update_due ? 0 : (count + 1);
             `uvm_info(`gfn, $sformatf("WKUP Timer count: %d", count), UVM_HIGH)
+            -> sample_coverage;
           end
           `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
           intr_status_exp[WKUP] = 1'b1;
+          -> sample_coverage;
+
           // Interrupt should happen N+1 clock ticks after count == wkup_num.
           cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
           // Wait for 2 extra cycles in AON clock domain to account for CDC randomization delay
@@ -297,9 +315,23 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task run_wdog_bark_timer();
+    event sample_coverage;
     forever begin
       wait (wdog_en);
       fork
+        begin
+          forever begin
+            @(sample_coverage.triggered);
+            if (cfg.en_cov) begin
+              bit [31:0] rtl_count;
+              //reading RTL value since TB doesn't keep track of count
+              csr_rd(.ptr(ral.wdog_count), .value(rtl_count), .backdoor(1));
+              cov.watchdog_timer_bark_thold_hit_cg.sample(intr_status_exp[WDOG],
+                                                          bark_thold,
+                                                          rtl_count);
+            end
+          end
+        end
         begin
           // trying to count how many cycles we need to count
           uint count = 0;
@@ -311,9 +343,12 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
             // reset the cycle counter when we update the cycle count needed
             count = wdog_num_update_due ? 0 : (count + 1);
             `uvm_info(`gfn, $sformatf("WDOG Bark Timer count: %d", count), UVM_HIGH)
+            -> sample_coverage;
           end
           `uvm_info(`gfn, $sformatf("WDOG Bark Timer expired check for interrupts"), UVM_HIGH)
           intr_status_exp[WDOG] = 1'b1;
+          -> sample_coverage;
+
           // Propagation delay of one cycle from aon_core to interrupt pins.
           cfg.aon_clk_rst_vif.wait_clks(1);
           // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
@@ -342,9 +377,23 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task run_wdog_bite_timer();
+    event sample_coverage;
     forever begin
       wait (wdog_en);
       fork
+        begin
+          forever begin
+            @(sample_coverage.triggered);
+            if (cfg.en_cov) begin
+              bit [31:0] rtl_count;
+              //reading RTL value since TB doesn't keep track of count
+              csr_rd(.ptr(ral.wdog_count), .value(rtl_count), .backdoor(1));
+              cov.watchdog_timer_bite_thold_hit_cg.sample(wdog_rst_req_exp,
+                                                          bite_thold,
+                                                          rtl_count);
+            end
+          end
+        end
         begin
           // trying to count how many cycles we need to count
           uint count = 0;
@@ -356,9 +405,12 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
             // reset the cycle counter when we update the cycle count needed
             count = wdog_num_update_due ? 0 : (count + 1);
             `uvm_info(`gfn, $sformatf("WDOG Bite Timer count: %d", count), UVM_HIGH)
+            -> sample_coverage;
           end
           `uvm_info(`gfn, $sformatf("WDOG Bite Timer expired check for interrupts"), UVM_HIGH)
           wdog_rst_req_exp = 1'b1;
+          -> sample_coverage;
+
           // Propagation delay of one cycle from aon_core to interrupt pins.
           cfg.aon_clk_rst_vif.wait_clks(1);
           // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
