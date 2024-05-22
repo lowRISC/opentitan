@@ -9,10 +9,13 @@ class aon_timer_prescaler_vseq extends aon_timer_base_vseq;
   // Randomize prescaler configuration of the wake up timer.
   randc bit [11:0] prescaler;
 
-  constraint thold_vals_c {
+  //Overrides constraint in parent vseq:
+  constraint thold_count_c {
     wkup_thold      inside {[1:2]};
     wdog_bark_thold inside {[1:2]};
     wdog_bite_thold inside {[1:2]};
+    wkup_count == 0;
+    wdog_count == 0;
   }
 
   `uvm_object_new

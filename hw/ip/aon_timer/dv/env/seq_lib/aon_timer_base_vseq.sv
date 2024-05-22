@@ -37,10 +37,33 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   rand bit [31:0] wdog_bark_thold;
   rand bit [31:0] wdog_bite_thold;
 
-  constraint thold_vals_c {
+  // Randomize Bark/Bite and Wake-up thresholds for the counter
+  rand bit [63:0] wkup_count;
+  rand bit [31:0] wdog_count;
+
+  // Used to determine the differenceto initialise the counts with respect to the thresholds
+  rand int unsigned wkup_count_gap, wdog_count_gap;
+  // When set randomisation tries to set the count and threshold so that the bite is likely hit:
+  rand bit          aim_bite;
+
+  constraint thold_count_c {
+    solve wkup_count_gap, wkup_thold before wkup_count;
+    solve aim_bite, wdog_count_gap, wdog_bark_thold, wdog_bite_thold before wdog_count;
+    wkup_count_gap inside {[1:500]};
+    wdog_count_gap inside {[1:500]};
+
     wkup_thold      inside {[1:10]};
     wdog_bark_thold inside {[1:10]};
     wdog_bite_thold inside {[1:10]};
+
+    wkup_thold      <= (2**64-1);
+    wdog_bark_thold <= (2**32-1);
+    wdog_bite_thold <= (2**32-1);
+
+    wkup_count inside {[wkup_thold-wkup_count_gap:wkup_thold]};
+    !aim_bite -> wdog_count inside {[wdog_bark_thold-wdog_count_gap:wdog_bark_thold]};
+    aim_bite  -> wdog_count inside {[wdog_bite_thold-wdog_count_gap:wdog_bite_thold]};
+
   }
 
   `uvm_object_new
@@ -67,10 +90,14 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     // Clear the interrupts
     csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
 
-    // Zero out the COUNT registers
-    csr_utils_pkg::csr_wr(ral.wkup_count_lo, 32'h0000_0000);
-    csr_utils_pkg::csr_wr(ral.wkup_count_hi, 32'h0000_0000);
-    csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
+    `uvm_info(`gfn, $sformatf({"Initializating AON Timer. Writing ",
+                               "0x%0x to WKUP_COUNT and 0x%0x ",
+                               "to WDOG_COUNT."},
+                              wkup_count, wdog_count), UVM_LOW)
+    // Register Write
+    csr_utils_pkg::csr_wr(ral.wkup_count_lo, wkup_count[31:0]);
+    csr_utils_pkg::csr_wr(ral.wkup_count_hi, wkup_count[63:32]);
+    csr_utils_pkg::csr_wr(ral.wdog_count, wdog_count);
 
     // Wait to settle registers on AON timer domain
     cfg.aon_clk_rst_vif.wait_clks(5);
