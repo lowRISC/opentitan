@@ -23,7 +23,6 @@ struct Opts {
 
 fn sleep_por_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
     log::info!("Starting host side");
     let vec = UartConsole::wait_for(&*uart, r"PASS|FAIL|Ready for pad POR", opts.timeout)?;
     match vec[0].as_str() {
