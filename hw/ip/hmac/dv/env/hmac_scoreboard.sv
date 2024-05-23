@@ -361,10 +361,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               expected_digest_size = ral.cfg.digest_size.get_mirrored_value();
             end
 
-          `uvm_info(`gfn, $sformatf(
-                      "comparing digest sizes (previous, cfg, and expected): %4b, %4b, %4b",
-                       previous_digest_size, ral.cfg.digest_size.get_mirrored_value(),
-                       expected_digest_size), UVM_HIGH)
+            `uvm_info(`gfn, $sformatf(
+                        "comparing digest sizes (previous, cfg, and expected): %4b, %4b, %4b",
+                        previous_digest_size, ral.cfg.digest_size.get_mirrored_value(),
+                        expected_digest_size), UVM_HIGH)
 
           // If wipe_secret is triggered, ensure the predicted value does not match the read out
           // digest and update the predicted value with the read out value.
@@ -524,7 +524,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : process_hmac_key_pad
         forever begin
-          wait(!cfg.under_reset);
+          if (cfg.under_reset) begin
+            wait(!cfg.under_reset);
+          end
           // delay 1ps to make sure all variables are being reset, before moving to the next
           // forever loop
           #1ps;
