@@ -1238,7 +1238,8 @@ module otbn
       u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
         EccZeroWord,
       clk_i,
-      !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+      !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+      u_otbn_core.u_otbn_start_stop_control.state_error_d)
     // After execution, it's expected to see a change resulting with a nonzero register value
     `ASSERT(SecWipeChangedBaseRegs_A,
       $rose(busy_secure_wipe) |-> ((##[0:$]
@@ -1248,7 +1249,8 @@ module otbn
           u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q))
         within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
       clk_i,
-      !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+      !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+      u_otbn_core.u_otbn_start_stop_control.state_error_d)
   end
 
   // We have several assertions that check that secure wipe worked properly. However, we've also got
@@ -1277,7 +1279,8 @@ module otbn
                   EccWideZeroWord,
               clk_i,
               !rst_ni || u_otbn_core.urnd_reseed_err ||
-                u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+                u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+                u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
       // After execution, it's expected to see a change resulting with a nonzero register value
       `ASSERT(SecWipeChangedWideRegs_A,
@@ -1304,32 +1307,41 @@ module otbn
           $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_rf_base.u_call_stack.top_valid_o),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
-            u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+            u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d)
   `ASSERT(SecWipeInvalidLoopStack_A,
           $fell(busy_secure_wipe) |->
             (!u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.top_valid_o),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
-            u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+            u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
   `ASSERT(SecWipeNonZeroMod_A,
           $fell(busy_secure_wipe) |-> u_otbn_core.u_otbn_alu_bignum.mod_intg_q != EccWideZeroWord,
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
-            u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+            u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
   `ASSERT(SecWipeNonZeroACC_A,
           $fell(busy_secure_wipe) |->
             u_otbn_core.u_otbn_alu_bignum.ispr_acc_intg_i != EccWideZeroWord,
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
-            u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+            u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
   `ASSERT(SecWipeNonZeroFlags_A,
           $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_alu_bignum.flags_flattened),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
-            u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+            u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d ||
+            u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
   // Secure wipe of IMEM and DMEM first happens with a key change from URND (while valid is zero)
   `ASSERT(ImemSecWipeRequiresUrndKey_A,
