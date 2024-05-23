@@ -615,7 +615,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on OTP_EXT_VOLT")
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE0")
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
+    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE1")
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_volt_if.pins[0]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_VOLT")
