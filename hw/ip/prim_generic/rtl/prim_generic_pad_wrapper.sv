@@ -46,9 +46,9 @@ module prim_generic_pad_wrapper
   //VCS coverage on
   // pragma coverage on
 
-  // Input enable, active-low = input disable, active-high
-  logic ie_n;
-  assign ie_n = ~ie_i | attr_i.input_disable;
+  // Input enable (active-high)
+  logic ie;
+  assign ie = ie_i & ~attr_i.input_disable;
 
   if (PadType == InputStd) begin : gen_input_only
     //VCS coverage off
@@ -61,7 +61,7 @@ module prim_generic_pad_wrapper
     //VCS coverage on
     // pragma coverage on
 
-    assign in_raw_o = ie_n ? 1'bz : inout_io;
+    assign in_raw_o = ie ? inout_io : 1'bz;
     // input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
 
@@ -75,7 +75,7 @@ module prim_generic_pad_wrapper
                PadType == BidirOd ||
                PadType == BidirStd) begin : gen_bidir
 
-    assign in_raw_o = ie_n ? 1'bz : inout_io;
+    assign in_raw_o = ie ? inout_io : 1'bz;
     // input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
 
@@ -111,7 +111,7 @@ module prim_generic_pad_wrapper
     // pragma coverage on
 
     assign inout_io = 1'bz; // explicitly make this tristate to avoid lint errors.
-    assign in_raw_o = ie_n ? 1'bz : inout_io;
+    assign in_raw_o = ie ? inout_io : 1'bz;
     assign in_o = in_raw_o;
 
   end else begin : gen_invalid_config

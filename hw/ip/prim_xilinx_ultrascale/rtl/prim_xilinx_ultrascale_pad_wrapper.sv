@@ -44,9 +44,9 @@ module prim_xilinx_ultrascale_pad_wrapper
                          scanmode_i,
                          pok_i};
 
-  // Input enable, active-low = input disable, active-high
-  logic ie_n;
-  assign ie_n = ~ie_i | attr_i.input_disable;
+  // Input enable (active-high)
+  logic ie;
+  assign ie = ie_i & ~attr_i.input_disable;
 
   if (PadType == InputStd) begin : gen_input_only
     logic unused_sigs;
@@ -59,7 +59,7 @@ module prim_xilinx_ultrascale_pad_wrapper
       .SIM_DEVICE ("ULTRASCALE") // required to pass DRC (defaults to "7SERIES")
       ) u_ibuf (
       .I           ( inout_io ),
-      .IBUFDISABLE ( ie_n     ),
+      .IBUFDISABLE ( ~ie      ),
       .O           ( in_raw_o )
     );
 
@@ -91,7 +91,7 @@ module prim_xilinx_ultrascale_pad_wrapper
       .O  ( in       ),
       .IO ( inout_io )
     );
-    assign in_raw_o = ie_n ? 1'b0 : in;
+    assign in_raw_o = ie ? in : 1'b0;
 
     // Input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
@@ -109,7 +109,7 @@ module prim_xilinx_ultrascale_pad_wrapper
       .SIM_DEVICE ("ULTRASCALE") // required to pass DRC (defaults to "7SERIES")
       ) u_ibuf (
       .I           ( inout_io ),
-      .IBUFDISABLE ( ie_n     ),
+      .IBUFDISABLE ( ~ie      ),
       .O           ( in_raw_o )
     );
     assign in_o = in_raw_o;

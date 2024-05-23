@@ -44,9 +44,9 @@ module prim_xilinx_pad_wrapper
                          scanmode_i,
                          pok_i};
 
-  // Input enable, active-low = input disable, active-high
-  logic ie_n;
-  assign ie_n = ~ie_i | attr_i.input_disable;
+  // Input enable (active-high)
+  logic ie;
+  assign ie = ie_i & ~attr_i.input_disable;
 
   if (PadType == InputStd) begin : gen_input_only
     logic unused_sigs;
@@ -64,7 +64,7 @@ module prim_xilinx_pad_wrapper
       .I ( inout_io ),
       .O ( in       )
     );
-    assign in_raw_o = ie_n ? 1'b1 : in;
+    assign in_raw_o = ie ? in : 1'b1;
 
     // Input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
@@ -94,7 +94,7 @@ module prim_xilinx_pad_wrapper
       .O  ( in       ),
       .IO ( inout_io )
     );
-    assign in_raw_o = ie_n ? 1'b1 : in;
+    assign in_raw_o = ie ? in : 1'b1;
 
     // Input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
@@ -114,7 +114,7 @@ module prim_xilinx_pad_wrapper
       .I ( inout_io ),
       .O ( in       )
     );
-    assign in_raw_o = ie_n ? 1'b1 : in;
+    assign in_raw_o = ie ? in : 1'b1;
     assign in_o = in_raw_o;
 
   end else begin : gen_invalid_config
