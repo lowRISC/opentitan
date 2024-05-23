@@ -61,8 +61,12 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
     cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
   endtask
 
+  task wait_for_call_stack_read(string rf_base_path);
+    wait_for_flag({rf_base_path, ".pop_stack_reqd"});
+  endtask
+
   task inject_integ_err();
-    string       stack_path;
+    string       base_path, stack_path;
     bit          stack_nonempty;
     int unsigned msb;
     string       forced_paths[$];
@@ -73,12 +77,13 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
 
     if (err_type) begin
       // We want to inject an error into the call stack (the data backing x1)
-      stack_path = "tb.dut.u_otbn_core.u_otbn_rf_base.u_call_stack";
+      base_path = "tb.dut.u_otbn_core.u_otbn_rf_base";
+      stack_path = {base_path, ".u_call_stack"};
       msb = 38;
     end else begin
       // We want to inject an error into the loop stack
-      stack_path = {"tb.dut.u_otbn_core.",
-                    "u_otbn_controller.u_otbn_loop_controller.loop_info_stack"};
+      base_path = "tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller";
+      stack_path = {base_path, ".loop_info_stack"};
       msb = 34;
     end
 
@@ -107,7 +112,7 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
           if (err_type) begin
             // We have just injected an error into the call stack. Wait until it gets read back
             // again and then tell the model about the expected error.
-            wait_for_flag({stack_path, ".stack_read_o"});
+            wait_for_call_stack_read(base_path);
             send_escalation_to_model();
           end else begin
             // A loop stack corruption should actually have become visible immediately, so we do the
