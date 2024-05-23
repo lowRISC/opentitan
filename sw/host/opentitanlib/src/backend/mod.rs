@@ -106,7 +106,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         "teacup" => (
             hyperdebug::create::<StandardFlavor>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_teacup.json")),
+            Some(Path::new("/__builtin__/hyperdebug_teacup_default.json")),
         ),
         "hyper340" => (
             hyperdebug::create::<ChipWhispererFlavor<Cw340>>(args)?,

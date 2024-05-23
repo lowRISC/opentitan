@@ -1,3 +1,20 @@
+/*
+ * This file declares the signal routing of the Teacup board.  This file is
+ * meant to be used with multiple iterations of the silicon chip (possibly
+ * requiring separate chip-specific JSON configuration files to declare where,
+ * e.g. the DFT strap pins are placed on a particular chip).  This file is also
+ * meant to be used by tests that require different incompatible default pin
+ * setups, e.g. some tests may want all pins to be GPIO on HyperDebug to be able
+ * to test pinmux, others may want to make use of HyperDebug UART features on
+ * some pins.  Such preferences should be declared in a test-suite-specific JSON
+ * configuration file.  Third-party users of OpenTitan are expected to have
+ * their own test-suite JSON files outside of the OpenTitan repository, and
+ * combine those with this file, as long as they use the physical Teacup board.
+ *
+ * Initially, chip and default test preferences have been moved to
+ * hyperdebug_teacup_default.json, and it what users get with `--interface
+ * teacup`.
+ */
 {
   "includes": ["/__builtin__/opentitan.json"],
   "interface": "teacup",
@@ -36,7 +53,6 @@
     },
     {
       "name": "IOA4",
-      "mode": "Input",
       "alias_of": "CN8_10"
     },
     {
@@ -222,6 +238,70 @@
     {
       "name": "CC2",
       "alias_of": "CN7_10"
+    },
+    {
+      "name": "PMOD1_1",
+      "alias_of": "IOA2"
+    },
+    {
+      "name": "PMOD1_2",
+      "alias_of": "IOA4"
+    },
+    {
+      "name": "PMOD1_3",
+      "alias_of": "IOA5"
+    },
+    {
+      "name": "PMOD1_4",
+      "alias_of": "IOA3"
+    },
+    {
+      "name": "PMOD1_5",
+      "alias_of": "IOA6"
+    },
+    {
+      "name": "PMOD1_6",
+      "alias_of": "IOC12"
+    },
+    {
+      "name": "PMOD1_7",
+      "alias_of": "IOA8"
+    },
+    {
+      "name": "PMOD1_8",
+      "alias_of": "IOA7"
+    },
+    {
+      "name": "PMOD2_1",
+      "alias_of": "IOC9"
+    },
+    {
+      "name": "PMOD2_2",
+      "alias_of": "IOC6"
+    },
+    {
+      "name": "PMOD2_3",
+      "alias_of": "IOC10"
+    },
+    {
+      "name": "PMOD2_4",
+      "alias_of": "IOC11"
+    },
+    {
+      "name": "PMOD2_5",
+      "alias_of": "IOB7"
+    },
+    {
+      "name": "PMOD2_6",
+      "alias_of": "IOB8"
+    },
+    {
+      "name": "PMOD2_7",
+      "alias_of": "IOB11"
+    },
+    {
+      "name": "PMOD2_8",
+      "alias_of": "IOB12"
     },
     {
       "name": "SPI_DEV_SCK",
