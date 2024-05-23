@@ -110,9 +110,9 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
             wait_for_flag({stack_path, ".stack_read_o"});
             send_escalation_to_model();
           end else begin
-            // A loop stack corruption isn't so easy to wait for, so we actually do the waiting at
-            // the end of corrupt_stack. Wait here until that task has finished, to avoid exiting
-            // the fork early.
+            // A loop stack corruption should actually have become visible immediately, so we do the
+            // short bit of waiting at the end of corrupt_stack. Wait here until that task has
+            // finished, to avoid exiting the fork early.
             `DV_WAIT(end_test)
             @(cfg.clk_rst_vif.cb);
           end
@@ -185,6 +185,20 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
     forced_paths.push_back(err_path);
 
     if (immediately_escalate) begin
+      // When immediately_escalate is true, we assume that the corruption we have just introduced
+      // will be visible through the top_data_o port from otbn_stack. This is almost immediate, but
+      // the index of the element to be exposed is computed from stack_rd_idx which might be a cycle
+      // behind the "correct" value that we have calculated from stack_wr_idx.
+      //
+      // The element index gets updated when stack_wr_ptr_commit is true. If that is the case,
+      // mirror the delay by waiting an extra cycle before sending the escalation to the model.
+      logic  stack_wr_ptr_commit;
+      string commit_path = {stack_path, ".stack_wr_ptr_commit"};
+      `DV_CHECK_FATAL(uvm_hdl_read(commit_path, stack_wr_ptr_commit))
+      if (stack_wr_ptr_commit) begin
+        @(cfg.clk_rst_vif.cb);
+      end
+
       send_escalation_to_model();
       `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
       end_test = 1;
