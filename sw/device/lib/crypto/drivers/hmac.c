@@ -137,8 +137,8 @@ static void context_restore(hmac_ctx_t *ctx) {
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, ctx->cfg_reg);
 
   // Write to KEY registers for HMAC operations. If the operation is SHA-2,
-  // `key_len` is set to 0 during `ctx` initialization.
-  for (size_t i = 0; i < ctx->key_len; i++) {
+  // `key_wordlen` is set to 0 during `ctx` initialization.
+  for (size_t i = 0; i < ctx->key_wordlen; i++) {
     abs_mmio_write32(kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET + 4 * i,
                      ctx->key[i]);
   }
@@ -207,7 +207,7 @@ static void msg_fifo_write(const uint8_t *msg, size_t msg_len) {
 }
 
 status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
-                   const hmac_key_t *key) {
+                   const uint32_t *key, size_t key_wordlen) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -217,6 +217,8 @@ status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
   ctx->cfg_reg = HMAC_CFG_REG_RESVAL;
   // The endianness is fixed at driver level and not exposed to the caller.
   // Digest should be big-endian to match the SHA-256 specification.
+  ctx->cfg_reg =
+      bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_KEY_SWAP_BIT, true);
   ctx->cfg_reg =
       bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SWAP_BIT, true);
   // Message should be little-endian to match Ibex's endianness.
@@ -234,41 +236,44 @@ status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
     case kHmacModeHmac256:
       ctx->cfg_reg =
           bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
+      ctx->cfg_reg =
+          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                                 HMAC_CFG_KEY_LENGTH_VALUE_KEY_512);
       OT_FALLTHROUGH_INTENDED;
     case kHmacModeSha256:
       ctx->cfg_reg =
           bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
                                  HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
-      // The unit for `ctx->msg_block_len` is bytes.
-      ctx->msg_block_len = kHmacSha256InternalBlockBytes;
-      // The unit for `ctx->digest_len` is bytes.
-      ctx->digest_len = kHmacSha256DigestBytes;
+      ctx->msg_block_bytelen = kHmacSha256InternalBlockBytes;
+      ctx->digest_wordlen = kHmacSha256DigestWords;
       break;
     case kHmacModeHmac384:
       ctx->cfg_reg =
           bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
+      ctx->cfg_reg =
+          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                                 HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
       OT_FALLTHROUGH_INTENDED;
     case kHmacModeSha384:
       ctx->cfg_reg =
           bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
                                  HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_384);
-      // The unit for `ctx->msg_block_len` is bytes.
-      ctx->msg_block_len = kHmacSha384InternalBlockBytes;
-      // The unit for `ctx->digest_len` is bytes.
-      ctx->digest_len = kHmacSha384DigestBytes;
+      ctx->msg_block_bytelen = kHmacSha384InternalBlockBytes;
+      ctx->digest_wordlen = kHmacSha384DigestWords;
       break;
     case kHmacModeHmac512:
       ctx->cfg_reg =
           bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
+      ctx->cfg_reg =
+          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                                 HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
       OT_FALLTHROUGH_INTENDED;
     case kHmacModeSha512:
       ctx->cfg_reg =
           bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
                                  HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_512);
-      // The unit for `ctx->msg_block_len` is bytes.
-      ctx->msg_block_len = kHmacSha512InternalBlockBytes;
-      // The unit for `ctx->digest_len` is bytes.
-      ctx->digest_len = kHmacSha512DigestBytes;
+      ctx->msg_block_bytelen = kHmacSha512InternalBlockBytes;
+      ctx->digest_wordlen = kHmacSha512DigestWords;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -279,54 +284,22 @@ status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
     if (key == NULL) {
       return OTCRYPTO_BAD_ARGS;
     }
-    ctx->cfg_reg =
-        bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
-    // Key values supported natively by HW are {128, 256, 384, 512, 1024}.
-    switch (key->len) {
-      case kHmacKey128Bytes:
-        ctx->cfg_reg =
-            bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                   HMAC_CFG_KEY_LENGTH_VALUE_KEY_128);
-        break;
-      case kHmacKey256Bytes:
-        ctx->cfg_reg =
-            bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                   HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
-        break;
-      case kHmacKey384Bytes:
-        ctx->cfg_reg =
-            bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                   HMAC_CFG_KEY_LENGTH_VALUE_KEY_384);
-        break;
-      case kHmacKey512Bytes:
-        ctx->cfg_reg =
-            bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                   HMAC_CFG_KEY_LENGTH_VALUE_KEY_512);
-        break;
-      case kHmacKey1024Bytes:
-        ctx->cfg_reg =
-            bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                   HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
-        break;
-      default:
-        return OTCRYPTO_BAD_ARGS;
+    // Ensure that the key length matches the internal block size.
+    if (ctx->msg_block_bytelen != key_wordlen * sizeof(uint32_t)) {
+      return OTCRYPTO_BAD_ARGS;
     }
-    // `ctx->key_len` has 32b as unit.
-    ctx->key_len = key->len / sizeof(uint32_t);
-    for (size_t i = 0; i < ctx->key_len; i++) {
-      // TODO(#23158): Use `key_swap` to avoid endianness change.
-      ctx->key[i] = (0xff & key->key[0]) << 24 | (0xff00 & key->key[1]) << 8 |
-                    (0xff0000 & key->key[2]) >> 8 |
-                    (0xff000000 & key->key[3]) >> 24;
+    ctx->key_wordlen = key_wordlen;
+    for (size_t i = 0; i < ctx->key_wordlen; i++) {
+      ctx->key[i] = key[i];
     }
   } else {
     // Ensure that `key` is NULL for hashing operations.
     if (key != NULL) {
       return OTCRYPTO_BAD_ARGS;
     }
-    // Set `key_len` to 0, so that it is clear this is hash operation. This
+    // Set `key_wordlen` to 0, so that it is clear this is hash operation. This
     // value is later used to skip writing to KEY registers.
-    ctx->key_len = 0;
+    ctx->key_wordlen = 0;
   }
 
   ctx->hw_started = 0;
@@ -344,7 +317,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   // enough bits to fill an internal SHA-2 block. Otherwise, this function just
   // appends the incoming bits to partial_block and returns without invoking
   // HWIP operation.
-  if (ctx->partial_block_len + len < ctx->msg_block_len) {
+  if (ctx->partial_block_len + len < ctx->msg_block_bytelen) {
     memcpy(ctx->partial_block + ctx->partial_block_len, data, len);
     ctx->partial_block_len += len;
     return OTCRYPTO_OK;
@@ -352,7 +325,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 
   // `leftover` bits refers to the size of the next partial block, after we
   // handle the current partial block and the incoming message bytes.
-  size_t leftover_len = (ctx->partial_block_len + len) % ctx->msg_block_len;
+  size_t leftover_len = (ctx->partial_block_len + len) % ctx->msg_block_bytelen;
 
   // The previous caller should have left it clean, but it doesn't hurt to
   // clear again.
@@ -390,13 +363,13 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   return OTCRYPTO_OK;
 }
 
-status_t hmac_final(hmac_ctx_t *ctx, hmac_digest_t *digest) {
+status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest, size_t digest_wordlen) {
   if (ctx == NULL || digest == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check that `digest_len` match the one from ctx.
-  if (ctx->digest_len != digest->len) {
+  // Check that `digest_wordlen` matches the one from ctx.
+  if (ctx->digest_wordlen != digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -417,8 +390,8 @@ status_t hmac_final(hmac_ctx_t *ctx, hmac_digest_t *digest) {
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
   hmac_done_wait();
 
-  for (size_t i = 0; i < ctx->digest_len / sizeof(uint32_t); i++) {
-    digest->digest[i] =
+  for (size_t i = 0; i < ctx->digest_wordlen; i++) {
+    digest[i] =
         abs_mmio_read32(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + 4 * i);
   }
 
@@ -427,4 +400,17 @@ status_t hmac_final(hmac_ctx_t *ctx, hmac_digest_t *digest) {
 
   // TODO(#23191): Destroy sensitive values in the ctx object.
   return OTCRYPTO_OK;
+}
+
+status_t hmac(const hmac_mode_t hmac_mode, const uint32_t *key,
+              size_t key_wordlen, const uint8_t *data, size_t len,
+              uint32_t *digest, size_t digest_wordlen) {
+  // This particular implementation of `hmac_oneshot` is a placeholder, so that
+  // it does not clutter upper layer Hash and Mac functions. The eventual idea
+  // is to avoid handling large `ctx` for one-shot calls.
+  // TODO(#23191): Implement oneshot for HMAC.
+  hmac_ctx_t hmac_ctx;
+  HARDENED_TRY(hmac_init(&hmac_ctx, hmac_mode, key, key_wordlen));
+  HARDENED_TRY(hmac_update(&hmac_ctx, data, len));
+  return hmac_final(&hmac_ctx, digest, digest_wordlen);
 }
