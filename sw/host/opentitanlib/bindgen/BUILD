@@ -217,6 +217,8 @@ rust_bindgen_library(
         "--allowlist-function=status_err",
         "--allowlist-function=status_ok",
         "--generate-inline-functions",
+        "--with-derive-custom=ot_status_create_record=zerocopy::FromZeroes",
+        "--with-derive-custom=ot_status_create_record=zerocopy::FromBytes",
     ],
     cc_lib = "//sw/device/lib/base:status",
     header = "//sw/device/lib/base:status.h",
@@ -224,6 +226,9 @@ rust_bindgen_library(
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
         "--allow=non_camel_case_types",
+    ],
+    deps = [
+        "@crate_index//:zerocopy",
     ],
 )
 

@@ -5,16 +5,15 @@
 // This utility handles the various aspect of the status_t type used in
 // the device code.
 
-use anyhow::{bail, Context, Result};
-use bindgen::status::{ot_status_create_record_t, status_create, status_err, status_extract};
-
-use object::{Object, ObjectSection};
-
-use num_enum::TryFromPrimitive;
-
 use std::convert::TryFrom;
 use std::ffi::CString;
 use std::path::PathBuf;
+
+use anyhow::{bail, Context, Result};
+use bindgen::status::{ot_status_create_record_t, status_create, status_err, status_extract};
+use num_enum::TryFromPrimitive;
+use object::{Object, ObjectSection};
+use zerocopy::FromBytes;
 
 pub use bindgen::status::absl_status_t as RawStatusCode;
 pub use bindgen::status::status_t as RawStatus;
@@ -236,15 +235,7 @@ pub fn load_elf(elf_file: &PathBuf) -> Result<StatusCreateRecords> {
     // it really is safe.
     let records = status_create_records
         .chunks(RECORD_SIZE)
-        .map(|chunk| {
-            // We need to provide transmute with a fixed-size array but chunk does not give us one.
-            // If/When as_chunks is stabilized, we can get rid of this conversion.
-            let chunk = <[u8; RECORD_SIZE]>::try_from(chunk).unwrap();
-            // SAFETY: `chunk` comes from `struct ot_status_create_record_t` types in C which
-            // `ot_status_create_record_t` was `bindgen`'d from. Its bytes should always be a
-            // valid value for this type.
-            unsafe { std::mem::transmute::<[u8; RECORD_SIZE], ot_status_create_record_t>(chunk) }
-        })
+        .map(|chunk| ot_status_create_record_t::read_from(chunk).unwrap())
         .map(StatusCreateRecord::try_from)
         .collect::<Result<_>>()?;
     Ok(StatusCreateRecords { records })
