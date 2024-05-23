@@ -473,6 +473,21 @@ class otbn_base_vseq extends cip_base_vseq #(
     running_ = 1'b0;
   endtask
 
+  // Wait for OTBN to finish, either by polling or by waiting on the interrupt pins
+  task wait_for_run_completion(input bit verbosity);
+    if (_pick_use_interrupt()) begin
+      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (interrupt)", verbosity)
+      wait_for_interrupt();
+    end else begin
+      uvm_reg_data_t run_status;
+
+      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (polling)", verbosity)
+      csr_utils_pkg::csr_rd(.ptr(ral.status), .value(run_status), .backdoor(1));
+      csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(run_status),
+                                  .compare_op(CompareOpNe));
+    end
+  endtask
+
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
   // register until completion. On reset, this returns immediately.
   protected task _run_otbn_cmd(logic [7:0] cmd_i);
@@ -496,15 +511,7 @@ class otbn_base_vseq extends cip_base_vseq #(
 
     csr_utils_pkg::csr_wr(ral.cmd, cmd_i);
 
-    // Wait for OTBN to finish, either by polling or by waiting on the interrupt pins
-    if (_pick_use_interrupt()) begin
-      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (interrupt)", UVM_MEDIUM)
-      wait_for_interrupt();
-    end else begin
-      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (polling)", UVM_MEDIUM)
-      csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(exp_data_status),
-                                  .compare_op(CompareOpNe));
-    end
+    wait_for_run_completion(UVM_MEDIUM);
 
     if (cfg.clk_rst_vif.rst_n) begin
       if (exp_data_status == otbn_pkg::StatusBusyExecute) begin
