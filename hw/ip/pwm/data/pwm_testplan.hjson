@@ -142,12 +142,6 @@
 
  covergroups: [
     {
-     name: regwen_cg
-      desc: '''
-            Covers that an attempt to write wen REG enable was made and was unsuccessful
-            '''
-    }
-    {
      name: cfg_cg
       desc: '''
             Covers that valid settings for the PWM.CFG register has been tested.
