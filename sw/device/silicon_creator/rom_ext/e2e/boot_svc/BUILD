@@ -7,7 +7,7 @@ load(
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
 )
@@ -30,7 +30,7 @@ cc_library(
 opentitan_test(
     name = "boot_svc_empty_test",
     srcs = ["boot_svc_empty_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV|PASS|FAIL",
         exit_success = "FinalBootLog: 2:AA\r\n",
@@ -55,7 +55,7 @@ opentitan_test(
 opentitan_test(
     name = "boot_svc_next_test",
     srcs = ["boot_svc_next_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 3:ABA\r\n",
@@ -81,7 +81,7 @@ opentitan_test(
 opentitan_test(
     name = "boot_svc_bad_next_test",
     srcs = ["boot_svc_bad_next_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 3:AAA\r\n",
@@ -109,7 +109,7 @@ opentitan_test(
     srcs = [
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         data = [
             "//sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key",
         ],
@@ -173,7 +173,7 @@ opentitan_binary(
 opentitan_test(
     name = "boot_svc_min_sec_ver_test",
     srcs = ["boot_svc_min_sec_ver_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {min_sec_ver_4:signed_bin}@0x90000",
         binaries = {
             ":min_sec_ver_4": "min_sec_ver_4",

@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -141,7 +141,7 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
             case["default_boot_data"],
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
             otp = ":otp_img_boot_data_recovery_{}_{}".format(
                 case["lc_state"],

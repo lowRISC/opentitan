@@ -4,7 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "cw310_params", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "fpga_params", "opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -37,7 +37,7 @@ tock_image(
 
 opentitan_test(
     name = "basic_test",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         binaries = {":image": "firmware"},
     ),
     exec_env = {

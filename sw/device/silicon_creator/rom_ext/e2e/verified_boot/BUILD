@@ -6,7 +6,7 @@ load(
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load("//rules:const.bzl", "CONST", "hex")
@@ -82,7 +82,7 @@ _POSITIONS = {
     opentitan_test(
         name = "position_{}".format(name),
         srcs = [":boot_test"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
             binaries = {
                 position["romext"]: "romext",
@@ -122,7 +122,7 @@ manifest(d = {
 opentitan_test(
     name = "bad_manifest_test",
     srcs = [":boot_test"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
         # Because our bad manifest has an invalid manifest version, we should
         # expect kErrorManifestBadVersionMajor from the ROM_EXT.
@@ -167,7 +167,7 @@ _KEYS = {
     opentitan_test(
         name = "key_{}".format(name),
         srcs = [":boot_test"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_failure = keyinfo["exit_failure"],
             exit_success = keyinfo["exit_success"],
         ),

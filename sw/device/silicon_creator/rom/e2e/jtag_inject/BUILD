@@ -5,12 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "opentitan_test",
-    new_cw310_params = "cw310_params",
-)
-load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "opentitan_functest",
+    "fpga_params",
 )
 load(
     "//rules:const.bzl",
@@ -45,7 +40,7 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = new_cw310_params(
+        fpga = fpga_params(
             binaries = {
                 "//sw/device/examples/sram_program:sram_program": "sram_program",
             },
@@ -92,7 +87,7 @@ test_suite(
     opentitan_test(
         name = "openocd_asm_interrupt_handler_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = new_cw310_params(
+        fpga = fpga_params(
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
@@ -133,7 +128,7 @@ test_suite(
     opentitan_test(
         name = "openocd_shutdown_execution_asm_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = new_cw310_params(
+        fpga = fpga_params(
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
@@ -174,7 +169,7 @@ test_suite(
     opentitan_test(
         name = "openocd_asm_watchdog_bark_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = new_cw310_params(
+        fpga = fpga_params(
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
@@ -216,7 +211,7 @@ test_suite(
     opentitan_test(
         name = "openocd_asm_watchdog_bite_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = new_cw310_params(
+        fpga = fpga_params(
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
@@ -263,7 +258,7 @@ LC_STATES_DEBUG_DISALLOWED = [
     opentitan_test(
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = new_cw310_params(
+        fpga = fpga_params(
             timeout = "moderate",
             logging = "debug",
             needs_jtag = True,

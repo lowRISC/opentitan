@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "dv_params",
     "opentitan_binary",
     "opentitan_test",
@@ -86,7 +86,7 @@ rom_e2e_keymgr_init_configs = [
 [
     opentitan_test(
         name = "rom_e2e_keymgr_init_{}".format(config["name"]),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             otp = ":otp_img_keymgr_{}".format(config["name"]),
         ),

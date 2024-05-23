@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -70,7 +70,7 @@ otp_json(
     opentitan_test(
         name = "rom_ext_upgrade_interrupt_{}".format(lc_state),
         srcs = ["rom_ext_upgrade_interrupt.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmd = """

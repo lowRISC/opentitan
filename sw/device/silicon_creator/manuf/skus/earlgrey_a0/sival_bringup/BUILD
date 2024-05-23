@@ -8,7 +8,7 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "silicon_params",
@@ -128,7 +128,7 @@ _CP_PROVISIONING_HARNESS = "//sw/host/provisioning/cp"
 
 opentitan_test(
     name = "cp_provision",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
         needs_jtag = True,
@@ -153,7 +153,7 @@ opentitan_test(
 
 opentitan_test(
     name = "cp_provision_functest",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         binaries = {
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
@@ -379,7 +379,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
 opentitan_test(
     name = "ft_provision",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
         binaries = _FT_PROVISIONING_BINARIES,
         changes_otp = True,

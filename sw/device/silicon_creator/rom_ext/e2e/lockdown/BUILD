@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 
@@ -12,7 +12,7 @@ package(default_visibility = ["//visibility:public"])
 opentitan_test(
     name = "otp_creator_lockdown",
     srcs = ["otp_creator_lockdown.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
         # Make sure we get to the correct point in the test program before the fault.
         # The MTVAL is the location of the access fault.  The address below
@@ -34,7 +34,7 @@ opentitan_test(
 opentitan_test(
     name = "otp_dai_lockdown",
     srcs = ["otp_dai_lockdown.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
         # Make sure we get to the correct point in the test program before the fault.
         # The OTP DIF first checks to see if the OTP controller is locked.

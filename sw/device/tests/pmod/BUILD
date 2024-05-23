@@ -9,7 +9,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "silicon_params",
 )
@@ -19,7 +19,7 @@ package(default_visibility = ["//visibility:public"])
 opentitan_test(
     name = "spi_host_macronix_flash_test",
     srcs = ["spi_host_macronix_flash_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -52,7 +52,7 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_gigadevice256Mb_flash_test",
     srcs = ["spi_host_gigadevice256Mb_flash_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -83,7 +83,7 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_gigadevice1Gb_flash_test",
     srcs = ["spi_host_gigadevice1Gb_flash_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -114,7 +114,7 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_micron512Mb_flash_test",
     srcs = ["spi_host_micron512Mb_flash_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -145,7 +145,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -173,7 +173,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_ambient_light_detector_test",
     srcs = ["i2c_host_ambient_light_detector_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -201,7 +201,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_hdc1080_humidity_temp_test",
     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -229,7 +229,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_clock_stretching_test",
     srcs = ["i2c_host_clock_stretching_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -262,7 +262,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_compass_test",
     srcs = ["i2c_host_compass_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -291,7 +291,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_eeprom_test",
     srcs = ["i2c_host_eeprom_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -322,7 +322,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -356,7 +356,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_gas_sensor_test",
     srcs = ["i2c_host_gas_sensor_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -384,7 +384,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_power_monitor_test",
     srcs = ["i2c_host_power_monitor_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
@@ -412,7 +412,7 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_irq_test",
     srcs = ["i2c_host_irq_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
             "pmod",

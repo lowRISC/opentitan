@@ -52,7 +52,7 @@ load(
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_by_name",
-    new_cw310_params = "cw310_params",
+    "fpga_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
 )

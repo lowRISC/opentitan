@@ -6,7 +6,7 @@ load("//rules:linker.bzl", "ld_library")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -140,7 +140,7 @@ cc_library(
 opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
@@ -201,7 +201,7 @@ cc_library(
 opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
         changes_otp = True,
         tags = ["manuf"],
@@ -262,7 +262,7 @@ cc_library(
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         changes_otp = True,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         needs_jtag = True,

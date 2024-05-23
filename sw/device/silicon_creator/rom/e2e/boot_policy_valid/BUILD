@@ -5,7 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -87,7 +87,7 @@ BOOT_POLICY_VALID_CASES = [
             a["desc"],
             b["desc"],
         ),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "{{slot_a}}@{} {{slot_b}}@{}".format(
                 SLOTS["a"],
                 SLOTS["b"],
