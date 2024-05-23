@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -105,7 +105,7 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["bite_threshold"],
         ),
         srcs = ["hang_test.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_success = t["exit_success"],
             otp = ":otp_img_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],

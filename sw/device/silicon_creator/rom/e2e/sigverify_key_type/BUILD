@@ -16,7 +16,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -56,7 +56,7 @@ package(default_visibility = ["//visibility:public"])
         srcs = [
             "//sw/device/silicon_creator/rom/e2e:empty_test",
         ],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_failure = MSG_PASS if not key_allowed_in_lc_state(
                 key.rsa,
                 lc_state_val,

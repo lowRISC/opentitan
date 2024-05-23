@@ -5,11 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "opentitan_test",
-    new_cw310_params = "cw310_params",
-)
-load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
+    "fpga_params",
 )
 load(
     "//rules:const.bzl",
@@ -28,7 +24,7 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_test(
     name = "rom_ext_a_flash_a",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
@@ -44,7 +40,7 @@ opentitan_test(
 
 opentitan_test(
     name = "rom_ext_b_flash_b",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
@@ -60,7 +56,7 @@ opentitan_test(
 
 opentitan_test(
     name = "rom_ext_a_flash_b",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
@@ -76,7 +72,7 @@ opentitan_test(
 
 opentitan_test(
     name = "rom_ext_b_flash_a",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
@@ -92,7 +88,7 @@ opentitan_test(
 
 opentitan_test(
     name = "rom_ext_v_flash_a",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
@@ -108,7 +104,7 @@ opentitan_test(
 
 opentitan_test(
     name = "rom_ext_v_flash_b",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
@@ -124,7 +120,7 @@ opentitan_test(
 
 opentitan_test(
     name = "rom_ext_a_flash_a_bad_addr_trans",
-    cw310 = new_cw310_params(
+    fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation": "firmware",

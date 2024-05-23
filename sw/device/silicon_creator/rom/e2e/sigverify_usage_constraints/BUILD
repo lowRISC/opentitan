@@ -5,7 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -276,7 +276,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
     opentitan_test(
         name = "sigverify_usage_constraint_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
             otp = t["otp"],

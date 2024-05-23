@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -71,7 +71,7 @@ otp_image(
 opentitan_test(
     name = "e2e_bootstrap_rma",
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
         otp = "otp_img_bootstrap_rma",
@@ -98,7 +98,7 @@ opentitan_test(
 
 opentitan_test(
     name = "e2e_bootstrap_disabled",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         # Since the bitstream disables bootstrap, there is no firmware to
         # load into the chip.  However, opentitan_functest wants to build a
         # binary target.  We'll build an unsigned do-nothing binary.

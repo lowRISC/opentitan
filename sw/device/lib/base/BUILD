@@ -6,7 +6,7 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -62,7 +62,7 @@ opentitan_test(
 opentitan_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = [
             "manual",
         ],

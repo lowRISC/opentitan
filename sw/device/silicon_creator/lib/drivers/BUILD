@@ -15,7 +15,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -84,7 +84,7 @@ cc_test(
 opentitan_test(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -306,7 +306,7 @@ cc_test(
 opentitan_test(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -621,7 +621,7 @@ cc_test(
 opentitan_test(
     name = "rnd_functest",
     srcs = ["rnd_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -688,7 +688,7 @@ cc_test(
 opentitan_test(
     name = "rstmgr_functest",
     srcs = ["rstmgr_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -782,7 +782,7 @@ cc_test(
 opentitan_test(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {

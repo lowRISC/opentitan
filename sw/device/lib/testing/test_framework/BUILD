@@ -6,7 +6,7 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -333,7 +333,7 @@ _FLOW_CONTROL_MESSAGE = (
 opentitan_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         flow_control_message = _FLOW_CONTROL_MESSAGE,
         test_cmd = """
             --exec="transport init"

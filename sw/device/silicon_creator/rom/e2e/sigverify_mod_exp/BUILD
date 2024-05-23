@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -83,7 +83,7 @@ SIGVERIFY_MOD_EXP_CASES = [
             t["name"],
         ),
         srcs = ["sigverify_mod_exp.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_success = t["exit_success"][lc_state],
             otp = ":otp_img_sigverify_mod_exp_{}_{}".format(
                 lc_state,

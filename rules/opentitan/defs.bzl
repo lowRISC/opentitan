@@ -15,7 +15,7 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
-    _cw310_params = "cw310_params",
+    _fpga_params = "fpga_params",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
@@ -53,7 +53,7 @@ opentitan_binary = _opentitan_binary
 fpga_cw310 = _fpga_cw310
 fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
-cw310_params = _cw310_params
+fpga_params = _fpga_params
 
 silicon = _silicon
 silicon_params = _silicon_params
@@ -102,10 +102,8 @@ CLEAR_TEST_CMD = " "
 def _parameter_name(env, pname):
     if not pname:
         (_, suffix) = env.split(":")
-        if "cw310" in suffix:
-            pname = "cw310"
-        elif "cw340" in suffix:
-            pname = "cw340"
+        if "fpga" in suffix:
+            pname = "fpga"
         elif "verilator" in suffix:
             pname = "verilator"
         elif "dv" in suffix:
@@ -147,8 +145,7 @@ def opentitan_test(
         spx_key = None,
         manifest = None,
         exec_env = {},
-        cw310 = _cw310_params(),
-        cw340 = _cw310_params(),
+        fpga = _fpga_params(),
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
@@ -175,15 +172,14 @@ def opentitan_test(
                 execution environments.  The values are the kwargs parameter names
                 of the exec_env override or None.  If None, the default parameter
                 names of `cw310`, `dv`, `silicon`, or `verilator` will be guessed.
-      cw310: Execution overrides for a CW310-based test.
+      fpga: Execution overrides for a CW310-based test.
       dv: Execution overrides for a DV-based test.
       silicon: Execution overrides for a silicon-based test.
       verilator: Execution overrides for a verilator-based test.
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
-        "cw310": cw310,
-        "cw340": cw340,
+        "fpga": fpga,
         "dv": dv,
         "silicon": silicon,
         "verilator": verilator,

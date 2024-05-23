@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "dv_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -61,7 +61,7 @@ manifest(
 [
     opentitan_test(
         name = "shutdown_output_{}".format(lc_state),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},
             exit_failure = MSG_PASS,
             exit_success = MSG_TEMPLATE_BFV_LCV.format(

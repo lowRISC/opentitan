@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -80,7 +80,7 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             binaries = {
                 "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
             },

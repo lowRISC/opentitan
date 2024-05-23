@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -81,7 +81,7 @@ otp_json(
             key.rsa.name,
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_failure = MSG_PASS if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_TEMPLATE_BFV_LCV.format(
                 hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
