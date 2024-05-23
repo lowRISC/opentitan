@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
   /**
-   * Compute the MEPC to that will be saved to the stack by the associated ISR
+   * Compute the MEPC that will be saved to the stack by the associated ISR
    * handler sub-routine below.
    *
    * This subroutine is only invoked for IRQs that are synchronous. Specifically,
@@ -23,8 +23,8 @@
    * Before loading the instruction pointed to by the `mepc` we should check
    * whether the `mepc` address is invalid by checking the `mcause` register for
    * the `Instruction access fault` code (1u). If it is invalid, return the
-   * unmodified `mpec`, as attempting to load an instruction at an invalid address
-   * below will cause another exception.
+   * unmodified `mpec`, as attempting to load an instruction at an invalid
+   * address below will cause another exception.
    */
   .balign 4
   .type compute_mepc_on_synchronous_irq, @function
