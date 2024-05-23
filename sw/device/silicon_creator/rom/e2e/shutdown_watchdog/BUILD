@@ -105,6 +105,9 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["bite_threshold"],
         ),
         srcs = ["hang_test.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_success = t["exit_success"],
             otp = ":otp_img_shutdown_watchdog_{}_{}".format(
@@ -116,9 +119,6 @@ SHUTDOWN_WATCHDOG_CASES = [
                 t["lc_state"].upper(),
             )),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         local_defines = [
             "HANG_SECS=2",
         ],

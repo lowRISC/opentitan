@@ -141,6 +141,9 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
             case["default_boot_data"],
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
             otp = ":otp_img_boot_data_recovery_{}_{}".format(
@@ -152,9 +155,6 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
                 case["lc_state"].upper(),
             )),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         manifest = BOOT_DATA_RECOVERY_MANIFEST,
         # PROD keys can sign binaries able to run across all life cycle states.
         rsa_key = rsa_key_for_lc_state(

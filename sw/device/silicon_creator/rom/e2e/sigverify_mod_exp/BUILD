@@ -83,6 +83,9 @@ SIGVERIFY_MOD_EXP_CASES = [
             t["name"],
         ),
         srcs = ["sigverify_mod_exp.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_success = t["exit_success"][lc_state],
             otp = ":otp_img_sigverify_mod_exp_{}_{}".format(
@@ -91,9 +94,6 @@ SIGVERIFY_MOD_EXP_CASES = [
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             lc_state_val,

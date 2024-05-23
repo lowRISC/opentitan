@@ -127,6 +127,10 @@ WATCHDOG_OTP = {
             watchdog_config,
             lc_state,
         ),
+        exec_env = {
+            "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "@//hw/top_earlgrey:sim_verilator": None,
+        },
         fpga = fpga_params(
             binaries = {
                 ":test_watchdog_{}_{}".format(
@@ -137,10 +141,6 @@ WATCHDOG_OTP = {
             otp = WATCHDOG_OTP[watchdog_config].format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "@//hw/top_earlgrey:sim_verilator": None,
-        },
         verilator = verilator_params(
             timeout = "eternal",
             binaries = {

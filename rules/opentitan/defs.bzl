@@ -15,10 +15,10 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
-    _fpga_params = "fpga_params",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
+    _fpga_params = "fpga_params",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:silicon.bzl",

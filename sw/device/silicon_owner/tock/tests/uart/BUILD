@@ -37,6 +37,11 @@ tock_image(
 
 opentitan_test(
     name = "uart_test",
+    exec_env = {
+        # TODO: Migrate to a _rom_ext environment once we have Tock successfully
+        # booting in one.
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         binaries = {":image": "firmware"},
         test_cmd = """
@@ -44,9 +49,4 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/tock/uart",
     ),
-    exec_env = {
-        # TODO: Migrate to a _rom_ext environment once we have Tock successfully
-        # booting in one.
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
 )

@@ -82,6 +82,9 @@ _POSITIONS = {
     opentitan_test(
         name = "position_{}".format(name),
         srcs = [":boot_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        },
         fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
             binaries = {
@@ -91,9 +94,6 @@ _POSITIONS = {
             owner_offset = position["owner_offset"],
             romext_offset = position["romext_offset"],
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        },
         linker_script = position["linker_script"],
         deps = [
             "//sw/device/lib/base:status",
@@ -122,15 +122,15 @@ manifest(d = {
 opentitan_test(
     name = "bad_manifest_test",
     srcs = [":boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
         # Because our bad manifest has an invalid manifest version, we should
         # expect kErrorManifestBadVersionMajor from the ROM_EXT.
         exit_success = "BFV:054d410d",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
     manifest = ":bad_manifest",
     deps = [
         "//sw/device/lib/base:status",
@@ -167,13 +167,13 @@ _KEYS = {
     opentitan_test(
         name = "key_{}".format(name),
         srcs = [":boot_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        },
         fpga = fpga_params(
             exit_failure = keyinfo["exit_failure"],
             exit_success = keyinfo["exit_success"],
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        },
         rsa_key = keyinfo["key"],
         deps = [
             "//sw/device/lib/base:status",
