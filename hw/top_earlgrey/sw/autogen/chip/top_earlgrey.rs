@@ -3252,5 +3252,5 @@ pub enum HintableClocks {
 /// MMIO region excludes any memory that is separate from the module
 /// configuration space, i.e. ROM, main SRAM, and flash are excluded but
 /// retention SRAM, spi_device memory, or usbdev memory are included.
-pub const MMIO_BASE_ADDR: usize = 0x40000000;
-pub const MMIO_SIZE_BYTES: usize = 0x10000000;
+pub const TOP_EARLGREY_MMIO_BASE_ADDR: usize = 0x40000000;
+pub const TOP_EARLGREY_MMIO_SIZE_BYTES: usize = 0x10000000;

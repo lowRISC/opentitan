@@ -220,8 +220,9 @@ def elaborate_instance(instance, block: IpBlock):
     else:
         converted_value, err = check_bool(instance['generate_dif'], 'generate_dif')
         if err:
-            raise ValueError(f'generate_dif contains invalid value {instance['generate_dif']}')
+            raise ValueError(f'generate_dif contains invalid value {instance["generate_dif"]}')
         instance['generate_dif'] = converted_value
+
 
 # TODO: Replace this part to be configurable from Hjson or template
 predefined_modules = {
