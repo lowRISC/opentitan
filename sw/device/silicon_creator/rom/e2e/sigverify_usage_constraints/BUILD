@@ -276,15 +276,15 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
     opentitan_test(
         name = "sigverify_usage_constraint_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
             otp = t["otp"],
             tags = maybe_skip_in_ci(t["lc_state_val"]),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         manifest = manifest(
             dict(
                 t["manifest"],

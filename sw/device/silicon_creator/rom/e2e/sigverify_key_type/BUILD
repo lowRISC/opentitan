@@ -56,6 +56,9 @@ package(default_visibility = ["//visibility:public"])
         srcs = [
             "//sw/device/silicon_creator/rom/e2e:empty_test",
         ],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_failure = MSG_PASS if not key_allowed_in_lc_state(
                 key.rsa,
@@ -74,9 +77,6 @@ package(default_visibility = ["//visibility:public"])
             otp = "otp_img_sigverify_key_type_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         rsa_key = {key.rsa.label: key.rsa.name},
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",

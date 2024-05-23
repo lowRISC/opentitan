@@ -81,6 +81,9 @@ otp_json(
             key.rsa.name,
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_failure = MSG_PASS if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_TEMPLATE_BFV_LCV.format(
                 hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
@@ -93,9 +96,6 @@ otp_json(
             otp = ":otp_img_sigverify_key_validity_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         rsa_key = {key.rsa.label: key.rsa.name},
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",

@@ -87,6 +87,9 @@ BOOT_POLICY_VALID_CASES = [
             a["desc"],
             b["desc"],
         ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             assemble = "{{slot_a}}@{} {{slot_b}}@{}".format(
                 SLOTS["a"],
@@ -102,9 +105,6 @@ BOOT_POLICY_VALID_CASES = [
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
     )
     for lc_state, lc_state_val in get_lc_items()
     for a in BOOT_POLICY_VALID_CASES

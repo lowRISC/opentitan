@@ -80,6 +80,9 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             binaries = {
                 "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
@@ -96,9 +99,6 @@ REDACT.update({"INVALID": 0x0})
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         # Skip signing by clearing the manifest configuration.
         manifest = None,
     )

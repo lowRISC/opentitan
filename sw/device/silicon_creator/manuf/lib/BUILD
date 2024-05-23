@@ -140,13 +140,13 @@ cc_library(
 opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
         ":individualize",
@@ -201,6 +201,9 @@ cc_library(
 opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
         changes_otp = True,
@@ -210,9 +213,6 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/manuf/individualize_sw_cfg_functest",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
     deps = [
         ":flash_info_fields",
         ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
@@ -262,6 +262,9 @@ cc_library(
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+    },
     fpga = fpga_params(
         changes_otp = True,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
@@ -277,9 +280,6 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-    },
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":flash_info_fields",

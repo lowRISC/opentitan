@@ -4,8 +4,8 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "fpga_params",
     "dv_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "verilator_params",
@@ -86,10 +86,6 @@ rom_e2e_keymgr_init_configs = [
 [
     opentitan_test(
         name = "rom_e2e_keymgr_init_{}".format(config["name"]),
-        fpga = fpga_params(
-            binaries = {":rom_e2e_keymgr_init_test": "firmware"},
-            otp = ":otp_img_keymgr_{}".format(config["name"]),
-        ),
         dv = dv_params(
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             otp = ":otp_img_keymgr_{}".format(config["name"]),
@@ -100,6 +96,10 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
+        fpga = fpga_params(
+            binaries = {":rom_e2e_keymgr_init_test": "firmware"},
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
+        ),
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         verilator = verilator_params(
             timeout = "eternal",

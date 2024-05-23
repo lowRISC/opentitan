@@ -49,10 +49,10 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_by_name",
-    "fpga_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
 )

@@ -27,6 +27,9 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "e2e_chip_specific_startup_{}".format(lc_state),
         srcs = ["chip_specific_startup.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             otp = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
@@ -36,9 +39,6 @@ package(default_visibility = ["//visibility:public"])
             """,
             test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             lc_state_val,

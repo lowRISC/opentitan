@@ -71,6 +71,9 @@ otp_image(
 opentitan_test(
     name = "e2e_bootstrap_rma",
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
@@ -80,9 +83,6 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.PROD,
@@ -98,6 +98,9 @@ opentitan_test(
 
 opentitan_test(
     name = "e2e_bootstrap_disabled",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         # Since the bitstream disables bootstrap, there is no firmware to
         # load into the chip.  However, opentitan_functest wants to build a
@@ -108,8 +111,5 @@ opentitan_test(
         otp = "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
     manifest = None,
 )

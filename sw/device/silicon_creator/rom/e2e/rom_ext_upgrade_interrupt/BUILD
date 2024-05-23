@@ -70,6 +70,9 @@ otp_json(
     opentitan_test(
         name = "rom_ext_upgrade_interrupt_{}".format(lc_state),
         srcs = ["rom_ext_upgrade_interrupt.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
@@ -83,9 +86,6 @@ otp_json(
                 no-op
             """,
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,

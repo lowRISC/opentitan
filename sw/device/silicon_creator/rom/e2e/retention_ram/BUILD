@@ -48,13 +48,13 @@ otp_image(
 opentitan_test(
     name = "rom_e2e_ret_ram_init",
     srcs = ["rom_e2e_ret_ram_init_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         otp = ":otp_img_reset_ret_ram",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:rstmgr",
@@ -68,12 +68,12 @@ opentitan_test(
 opentitan_test(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
-    fpga = fpga_params(
-        tags = maybe_skip_in_ci(CONST.LCV.RMA),
-    ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
+    fpga = fpga_params(
+        tags = maybe_skip_in_ci(CONST.LCV.RMA),
+    ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//sw/device/lib/base:memory",

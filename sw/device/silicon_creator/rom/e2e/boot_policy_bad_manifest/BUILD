@@ -230,6 +230,9 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             slot,
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             assemble = "{firmware}@{offset}",
             exit_failure = t["exit_failure"],
@@ -241,9 +244,6 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         manifest = ":{}_{}".format(
             t["name"],
