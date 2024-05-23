@@ -41,7 +41,7 @@ top_required = {
     'type': ['s', 'type of hjson. Shall be "top" always'],
     'clocks': ['g', 'group of clock properties'],
     'resets': ['l', 'list of resets'],
-    'addr_spaces': ['ln', 'list of address spaces'],
+    'addr_spaces': ['g', 'list of address spaces'],
     'module': ['l', 'list of modules to instantiate'],
     'memory': ['l', 'list of memories. At least one memory '
                     'is needed to run the software'],
