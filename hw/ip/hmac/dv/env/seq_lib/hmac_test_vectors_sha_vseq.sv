@@ -18,30 +18,27 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
     soft hmac_en == 0;
   }
 
-  // only testing 256-bit key now
   // TODO (#22932): remove this constraint and use the constraints from hmac_base_vseq once
   // this test is adapted for all digest sizes and key lengths
-  constraint key_digest_c {
-    key_length dist {
-      6'b00_0001 := 0,
-      6'b00_0010 := 10, // 256-bit key
-      6'b00_0100 := 0,
-      6'b00_1000 := 0,
-      6'b01_0000 := 0,
-      6'b10_0000 := 0
-    };
+  constraint key_length_c {
+    key_length == 'h2;  // test only with key_256
+    // $countones(key_length) == 1 dist {
+    //   1 :/ 8,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
+    //   0 :/ 2   // Illegal -> should get casted to Key_None in HW
+    // };
+  }
 
-    // only testing SHA-2 256 now
-    digest_size dist {
-      4'b0001 := 10, // SHA-2 256
-      4'b0010 := 0,  // SHA-2 384
-      4'b0100 := 0,  // SHA-2 512
-      4'b1000 := 0   // SHA-2 None
-    };
+  constraint digest_size_c {
+    digest_size == 'h1;  // test only with SHA2-256
+    // $countones(digest_size) == 1 dist {
+    //   1 :/ 8,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
+    //   0 :/ 2   // Illegal -> should get casted to SHA2_None in HW
+    // };
   }
 
   virtual task pre_start();
-    do_hmac_init = 1'b0;
+    cfg.save_and_restore_pct  = 0;    // Should not be triggered for this test
+    do_hmac_init              = 1'b0;
     super.pre_start();
   endtask
 
@@ -66,12 +63,11 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0), .key_swap(1'b0),
                   .digest_size(digest_size), .key_length(key_length));
 
-        `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
-                digest_size, key_length), UVM_LOW)
-
-        `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",
-                                  vector_list[i], j, parsed_vectors[j].msg_length_byte),
-                                  UVM_LOW)
+        `uvm_info(`gtn, $sformatf("%s, starting seq %0d/%0d, message size %0d bits",
+                  vector_list[i], j+1, parsed_vectors.size(), parsed_vectors[j].msg_length_byte*8),
+                  UVM_LOW)
+        `uvm_info(`gfn, $sformatf("digest size=%s, key length=%0d",
+                  get_digest_size(digest_size), get_key_length(key_length)), UVM_LOW)
 
         // always start off the transaction by reading previous digest to clear
         // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
@@ -95,7 +91,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
         csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
         // read digest and compare with the expected result, scb will calculate and check too
-        compare_digest(parsed_vectors[j].exp_digest);
+        compare_digest(parsed_vectors[j].exp_digest, digest_size);   // TODO (#23288)
       end
     end
   endtask : body
