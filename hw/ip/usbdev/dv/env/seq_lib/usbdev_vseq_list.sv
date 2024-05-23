@@ -20,6 +20,7 @@
 `include "usbdev_in_trans_vseq.sv"
 `include "usbdev_in_iso_vseq.sv"
 `include "usbdev_link_in_err_vseq.sv"
+`include "usbdev_max_usb_traffic_vseq.sv"
 `include "usbdev_nak_trans_vseq.sv"
 `include "usbdev_out_iso_vseq.sv"
 `include "usbdev_out_stall_vseq.sv"
@@ -41,9 +42,12 @@
 // These depend on usbdev_random_length_out_transaction, so need to come after it.
 `include "usbdev_max_length_out_transaction_vseq.sv"
 `include "usbdev_min_length_out_transaction_vseq.sv"
-// This must follow usbdev_in_trans
+// This must follow usbdev_in_trans_vseq.sv
 `include "usbdev_endpoint_access_vseq.sv"
-// This must follow usbdev_pkt_sent
+// This must follow usbdev_pkt_sent_vseq.sv
 `include "usbdev_link_suspend_vseq.sv"
-// This must follow usbdev_link_suspend
+// This must follow usbdev_link_suspend_vseq.sv
 `include "usbdev_aon_wake_vseq.sv"
+// These must follow usbdev_max_usb_traffic_vseq.sv
+`include "usbdev_bus_rand_vseq.sv"
+`include "usbdev_streaming_vseq.sv"

@@ -16,10 +16,13 @@ package usb20_agent_pkg;
 
   // USB-level events; the DP/DN wires are used for transmitting packet data but also held for
   // extended intervals to signal specific bus-level events.
-  //
-  // (DP low, DN low = Bus Reset; DP low, DN high = Resume Signaling; VBUS low when Disconnected,
-  //  and VBUS high when Connected to Host).
-  typedef enum bit [2:0] {EvBusReset, EvResume, EvConnect, EvDisconnect, EvPacket} ev_type_e;
+  typedef enum bit [2:0] {
+      EvBusReset,   // DP low, DN low.
+      EvSuspend,    // Idle for > 3ms.
+      EvResume,     // DP low, DN high.
+      EvDisconnect, // VBUS low when disconnected.
+      EvConnect,    // VBUS high after connection.
+      EvPacket} ev_type_e;
   // Packet Types
   typedef enum bit [2:0] {PktTypeSoF, PktTypeToken, PktTypeData, PktTypeHandshake} pkt_type_e;
   // Packet IDentifiers; the 4 LSBs identify the Packet type, and are reflected in inverted

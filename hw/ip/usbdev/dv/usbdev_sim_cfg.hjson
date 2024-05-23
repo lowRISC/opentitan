@@ -120,6 +120,10 @@
       uvm_test_seq: usbdev_disconnected_vseq
     }
     {
+      name: usbdev_max_usb_traffic
+      uvm_test_seq: usbdev_max_usb_traffic_vseq
+    }
+    {
       name: usbdev_nak_trans
       uvm_test_seq: usbdev_nak_trans_vseq
     }
@@ -148,12 +152,45 @@
       uvm_test_seq: usbdev_pkt_sent_vseq
     }
     {
+      name: usbdev_rand_bus_disconnects
+      uvm_test_seq: usbdev_bus_rand_vseq
+      run_opts: ["+do_vbus_disconnects=1"]
+      // Long simulation times
+      reseed: 10
+    }
+    {
+      name: usbdev_rand_bus_resets
+      uvm_test_seq: usbdev_bus_rand_vseq
+      run_opts: ["+do_reset_signaling=1"]
+      // Long simulation times
+      reseed: 10
+    }
+    {
+      name: usbdev_rand_suspends
+      uvm_test_seq: usbdev_bus_rand_vseq
+      run_opts: ["+do_resume_signaling=1"]
+      // Long simulation times
+      reseed: 10
+    }
+    {
       name: usbdev_random_length_out_trans
       uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
       name: usbdev_stall_trans
       uvm_test_seq: usbdev_stall_trans_vseq
+    }
+    {
+      name: usbdev_streaming_out
+      uvm_test_seq: usbdev_streaming_vseq
+    }
+    {
+      name: usbdev_stress_usb_traffic
+      // In time this shall become a separate sequence with additional fault injection traffic.
+      uvm_test_seq: usbdev_bus_rand_vseq
+      run_opts: ["+do_resume_signaling=1", "+do_reset_signaling=1", "+do_vbus_disconnects=1"],
+      // Very long simulation times
+      reseed: 5
     }
     {
       name: usbdev_rx_crc_err
