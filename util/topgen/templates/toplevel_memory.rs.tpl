@@ -1,6 +1,9 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+import textwrap
+%>\
 ${helper.file_header.render()}
 // This file was generated automatically.
 // Please do not modify content of this file directly.
@@ -70,10 +73,12 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 % endfor
 
-/// MMIO Region
+% for (subspace_name, description, subspace_range) in helper.subranges:
+/// ${subspace_name.upper()} Region
 ///
-/// MMIO region excludes any memory that is separate from the module
-/// configuration space, i.e. ROM, main SRAM, and flash are excluded but
-/// retention SRAM, spi_device memory, or usbdev memory are included.
-pub const ${helper.mmio.base_addr_name().as_c_define()}: usize = ${"0x{:X}".format(helper.mmio.base_addr)};
-pub const ${helper.mmio.size_bytes_name().as_c_define()}: usize = ${"0x{:X}".format(helper.mmio.size_bytes)};
+% for l in textwrap.wrap(description, 76, break_long_words=False):
+/// ${l}
+% endfor
+pub const ${subspace_range.base_addr_name().as_c_define()}: usize = ${"0x{:X}".format(subspace_range.base_addr)};
+pub const ${subspace_range.size_bytes_name().as_c_define()}: usize = ${"0x{:X}".format(subspace_range.size_bytes)};
+% endfor

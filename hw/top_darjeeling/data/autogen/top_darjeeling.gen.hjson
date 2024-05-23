@@ -454,6 +454,63 @@
     {
       name: hart
       desc: The main address space, shared between the CPU and DM
+      subspaces:
+      [
+        {
+          name: mmio
+          desc:
+            '''
+            MMIO region excludes any memory that is separate from the module configuration
+            space, i.e. ROM, main SRAM, and mbx SRAM are excluded but retention SRAM or
+            spi_device are included.
+            '''
+          nodes:
+          [
+            uart0
+            gpio
+            spi_device
+            i2c0
+            rv_timer
+            otp_ctrl
+            lc_ctrl.regs
+            alert_handler
+            spi_host0
+            pwrmgr_aon
+            rstmgr_aon
+            clkmgr_aon
+            pinmux_aon
+            aon_timer_aon
+            ast
+            sensor_ctrl
+            soc_proxy.core
+            sram_ctrl_ret_aon
+            rv_plic
+            aes
+            hmac
+            otbn
+            keymgr_dpe
+            csrng
+            edn0
+            edn1
+            sram_ctrl_main.regs
+            sram_ctrl_mbox.regs
+            rom_ctrl0.regs
+            rom_ctrl1.regs
+            dma
+            mbx0.core
+            mbx1.core
+            mbx2.core
+            mbx3.core
+            mbx4.core
+            mbx5.core
+            mbx6.core
+            mbx_jtag.core
+            mbx_pcie0.core
+            mbx_pcie1.core
+            rv_core_ibex
+          ]
+        }
+      ]
     }
     {
       name: soc_mbx
