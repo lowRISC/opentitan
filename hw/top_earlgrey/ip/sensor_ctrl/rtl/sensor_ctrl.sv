@@ -348,23 +348,37 @@ module sensor_ctrl
   ///////////////////////////
   // Attributes for manual pads
   ///////////////////////////
-  logic [NumAttrPads-1:0] manual_pad_input_disable_q;
+  logic [NumAttrPads-1:0] manual_pad_pull_en_q,
+                          manual_pad_pull_select_q,
+                          manual_pad_input_disable_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      manual_pad_pull_en_q       <= '0;
+      manual_pad_pull_select_q   <= '0;
       manual_pad_input_disable_q <= '0;
     end else begin
       for (int kk = 0; kk < NumAttrPads; kk++) begin
-        if (reg2hw.manual_pad_attr[kk].qe) begin
-          manual_pad_input_disable_q[kk] <= reg2hw.manual_pad_attr[kk].q;
+        if (reg2hw.manual_pad_attr[kk].pull_en.qe) begin
+          manual_pad_pull_en_q[kk]       <= reg2hw.manual_pad_attr[kk].pull_en.q;
+        end
+        if (reg2hw.manual_pad_attr[kk].pull_select.qe) begin
+          manual_pad_pull_select_q[kk]   <= reg2hw.manual_pad_attr[kk].pull_select.q;
+        end
+        if (reg2hw.manual_pad_attr[kk].input_disable.qe) begin
+          manual_pad_input_disable_q[kk] <= reg2hw.manual_pad_attr[kk].input_disable.q;
         end
       end
     end
   end
 
   for (genvar k = 0; k < NumAttrPads; k++) begin : gen_manual_pad_attr
-    assign hw2reg.manual_pad_attr[k].d = manual_pad_input_disable_q[k];
+    assign hw2reg.manual_pad_attr[k].pull_en.d       = manual_pad_pull_en_q[k];
+    assign hw2reg.manual_pad_attr[k].pull_select.d   = manual_pad_pull_select_q[k];
+    assign hw2reg.manual_pad_attr[k].input_disable.d = manual_pad_input_disable_q[k];
     assign manual_pad_attr_o[k] = '{
+      pull_en:       manual_pad_pull_en_q[k],
+      pull_select:   manual_pad_pull_select_q[k],
       input_disable: manual_pad_input_disable_q[k],
       default: '0
     };
