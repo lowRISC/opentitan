@@ -371,8 +371,8 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     log::info!("New value of pmpcfg2: {:x}", pmpcfg2);
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG2), pmpcfg2)?;
     // Write pmpaddr10 and pmpaddr11 to map the MMIO range.
-    let base = top_earlgrey::MMIO_BASE_ADDR as u32;
-    let size = top_earlgrey::MMIO_SIZE_BYTES as u32;
+    let base = top_earlgrey::TOP_EARLGREY_MMIO_BASE_ADDR as u32;
+    let size = top_earlgrey::TOP_EARLGREY_MMIO_SIZE_BYTES as u32;
     // make sure that this is a power of two
     assert!(size & (size - 1) == 0);
     let pmpaddr10 = base >> 2;
