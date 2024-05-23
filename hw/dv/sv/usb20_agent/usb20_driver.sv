@@ -7,15 +7,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   `uvm_component_new
 
-  // These delays are in terms of bit intervals
-  //
-  // TODO: introduce variation in the duration of the signaling, and permit these intervals to be
-  // shortened for those sequences not specifically designed to test with real-world timings;
-  // it's just wasting simulation time for many of the sequences since the DUT must respond long
-  // before the protracted Reset/Resume Signaling concludes.
-
+  // These default times are in terms of bit intervals
   int usb_rst_time = 120_000;  // Bit intervals @ 12Mbps => 10ms
   int usb_resume_time = 240_000;
+  int usb_suspend_time = 37_573;  // Bit intervals @ 12Mbps => 3.1ms, allowing for max freq delta.
   int usb_idle_clk_cycles = 5;
   int usb_pwr_good_clk_cycles = 100;  // arbitrary short delay post-VBUS assertion.
 
@@ -50,17 +45,25 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
         unique case (req_item.m_ev_type)
           // Send Bus Reset to the DUT.
           EvBusReset: begin
-            // No response required, and this is a lengthy operation; Reset Signaling is supposed
-            // to take >= 10ms under the USB 2.0 Protocol Specification.
+            // This can be a lengthy operation but it requires exclusive access to the USB;
+            // Reset Signaling is supposed to take >= 10ms under the USB 2.0 Protocol Specification.
+            bus_reset(req_item.m_ev_duration_usecs);
             seq_item_port.item_done(rsp_item);
-            bus_reset();
+          end
+          // Suspend Signaling
+          EvSuspend: begin
+            // This must be a lengthy operation and it requires exclusive access to the USB;
+            // this must be at least 3ms because the timing is hardwired into the DUT logic
+            // presently.
+            suspend_signaling(req_item.m_ev_duration_usecs);
+            seq_item_port.item_done(rsp_item);
           end
           // Resume Signaling (exit from Suspended).
           EvResume: begin
-            // No response required, and this is a lengthy operation; this must be at least 20ms
-            // for real USB hosts.
+            // This can be a lengthy operation but it requires exclusive access to the USB;
+            // this must be at least 20ms for real USB hosts.
+            resume_signaling(req_item.m_ev_duration_usecs);
             seq_item_port.item_done(rsp_item);
-            resume_signaling();
           end
           // Assert VBUS (connection to USB host).
           EvConnect: begin
@@ -339,24 +342,53 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
   endtask
 
-  // USB Bus Reset Task
-  // -------------------------------
-  task bus_reset();
-    // Reset bus or drive 0 on both DP and DN for 10ms
-    repeat (usb_rst_time)
+  // USB Bus Reset
+  //
+  // The duration in microseconds may be specified explicitly to speed up testing.
+  // If the default of 0 is used then the minimum specification-compliant interval of 10ms will
+  // be used.
+  task bus_reset(int unsigned duration_usecs = 0);
+    int unsigned duration_bits = usb_rst_time;
+    if (duration_usecs != 0) duration_bits = duration_usecs * 12;
+    // Reset bus (drive 0 on both DP and DN) for the specified number of bit intervals.
+    repeat (duration_bits) begin
       drive_bit_interval(1'b0, 1'b0);
-    `uvm_info(`gfn, "Reset for 10ms completed", UVM_MEDIUM)
+    end
+    `uvm_info(`gfn, $sformatf("Reset for %d bits completed", duration_bits), UVM_MEDIUM)
     // After reset change state to IDLE
-    repeat(usb_idle_clk_cycles)
+    repeat(usb_idle_clk_cycles) begin
       drive_bit_interval(1'b1, 1'b0);
+    end
+  endtask
+
+  // Suspend Signaling
+  //
+  // The duration in microseconds may be specified explicitly to speed up testing.
+  // If the default of 0 is used then an interval of 3.1ms will be used to cause the DUT to enter
+  // a Suspended state, allowing for maximum host-device frequency delta.
+  task suspend_signaling(int unsigned duration_usecs = 0);
+    int unsigned duration_bits = usb_suspend_time;
+    if (duration_usecs != 0) duration_bits = duration_usecs * 12;
+    // K state signaling required for the specified number of bit intervals.
+    repeat (duration_bits) begin
+      drive_bit_interval(1'b1, 1'b0);
+    end
+    `uvm_info(`gfn, $sformatf("Suspend Signaling for %d bits completed", duration_bits), UVM_MEDIUM)
   endtask
 
   // Resume Signaling
-  task resume_signaling();
-    // K state signaling required for at least 20ms.
-    repeat (usb_resume_time)
+  //
+  // The duration in microseconds may be specified explicitly to speed up testing.
+  // If the default of 0 is used then the minimum specification-compliant interval of 20ms will
+  // be used.
+  task resume_signaling(int unsigned duration_usecs = 0);
+    int unsigned duration_bits = usb_resume_time;
+    if (duration_usecs != 0) duration_bits = duration_usecs * 12;
+    // K state signaling required for the specified number of bit intervals.
+    repeat (duration_bits) begin
       drive_bit_interval(1'b0, 1'b1);
-    `uvm_info(`gfn, "Resume Signaling for 20ms completed", UVM_MEDIUM)
+    end
+    `uvm_info(`gfn, $sformatf("Resume Signaling for %d bits completed", duration_bits), UVM_MEDIUM)
     // _Low_ Speed EOP (SE0 for two bit intervals, J for one); LS is 1.5Mbps,
     // so 8x longer than FS signaling.
     for (int unsigned i = 0; i < 24; i++) begin

@@ -27,6 +27,7 @@ filesets:
       - seq_lib/usbdev_vseq_list.sv: {is_include_file: true}
       - seq_lib/usbdev_base_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_bitstuff_err_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_bus_rand_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_common_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_aon_wake_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_data_toggle_restore_vseq.sv: {is_include_file: true}
@@ -47,8 +48,10 @@ filesets:
       - seq_lib/usbdev_in_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_in_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_suspend_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_streaming_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_min_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_length_out_transaction_vseq.sv: {is_include_file: true}

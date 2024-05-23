@@ -704,7 +704,7 @@
               RX FIFO becoming full.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_streaming_out"]
     }
     {
       name: max_clock_error_untracked

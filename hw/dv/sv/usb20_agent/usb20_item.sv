@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class usb20_item extends uvm_sequence_item;
+
+  // Bus-level events
   ev_type_e  m_ev_type;
+  // in microseconds, 0 = default (minimum specification-compliant delay).
+  int unsigned m_ev_duration_usecs;
+
   pid_type_e m_pid_type;
   pkt_type_e m_pkt_type;
   bmrequesttype_e m_bmRT;

@@ -64,6 +64,11 @@ uint usbdev_aon_wake_clk_ratio = 300;
 uint aon_wake_control_wr_clks = (1 + 2) * usbdev_aon_wake_clk_ratio;
 uint aon_wake_events_rd_clks = usbdev_aon_wake_clk_ratio;
 
+// Controls exclusive access to the USB 2.0 driver.
+// - some multi-stage operations must be performed atomically,
+//   eg. token packet and handshake response, or VBUS connection and Bus Reset.
+semaphore m_drv_lock;
+
 `uvm_object_new
 
 // Override apply_reset to cater to AON domain and host as well.
@@ -156,6 +161,9 @@ endtask
     void'($value$plusargs("do_resume_signaling=%0b", do_resume_signaling));
     void'($value$plusargs("do_vbus_disconnects=%0b", do_vbus_disconnects));
 
+    // Create the lock controlling exclusive access to the driver.
+    m_drv_lock = new(1);
+
     if (do_agent_connect) begin
       // Connect the USB20 agent and ensure that the USBDPI model is not connected.
       cfg.m_usb20_agent_cfg.bif.enable_driver(1'b1);
@@ -205,6 +213,16 @@ endtask
     if (fatal && !(rd inside {states})) begin
       `dv_fatal($sformatf("DUT did not enter expected link state (still in %d)", rd))
     end
+  endtask
+
+  // Claim exclusive access to the USB 2.0 driver.
+  virtual task claim_driver();
+    m_drv_lock.get(1);
+  endtask
+
+  // Release access to the USB 2.0 driver.
+  virtual task release_driver();
+    m_drv_lock.put(1);
   endtask
 
   // Construct and transmit a token packet to the USB device
@@ -593,22 +611,43 @@ endtask
     finish_item(m_sof_pkt);
   endtask
 
-  // Perform Resume Signaling on the USB; this instructs the DUT to exit a Suspended state.
-  virtual task send_resume_signaling();
+  // Perform Suspend Signaling (Idle state). 0 = Use default duration.
+  virtual task send_suspend_signaling(int unsigned duration_usecs = 0);
     usb20_item item;
+    // Suspend Signaling.
+    `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
+    start_item(item);
+    item.m_ev_type = EvSuspend;
+    item.m_ev_duration_usecs = duration_usecs;
+    finish_item(item);
+    // Block until Suspend Signaling has been completed.
+    get_response(m_response_item);
+  endtask
+
+  // Perform Resume Signaling on the USB; this instructs the DUT to exit a Suspended state.
+  // 0 = Use default duration.
+  virtual task send_resume_signaling(int unsigned duration_usecs = 0);
+    usb20_item item;
+    // Send Resume Signaling.
     `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
     start_item(item);
     item.m_ev_type = EvResume;
+    item.m_ev_duration_usecs = duration_usecs;
     finish_item(item);
+    // Block until Resume Signaling has been completed.
+    get_response(m_response_item);
   endtask
 
-  // Issue a Bus Reset to the DUT.
-  virtual task send_bus_reset();
+  // Issue a Bus Reset to the DUT. 0 = Use default duration.
+  virtual task send_bus_reset(int unsigned duration_usecs = 0);
     usb20_item item;
     `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
     start_item(item);
     item.m_ev_type = EvBusReset;
+    item.m_ev_duration_usecs = duration_usecs;
     finish_item(item);
+    // Block until Reset Signaling is complete.
+    get_response(m_response_item);
   endtask
 
   // Set the state of the VBUS signal from the usb20_driver, indicating the presence/absence
@@ -619,6 +658,8 @@ endtask
     start_item(item);
     item.m_ev_type = enabled ? EvConnect : EvDisconnect;
     finish_item(item);
+    // Block until VBUS change has occurred.
+    get_response(m_response_item);
   endtask
 
   // Hand over control of the USB to the AON/Wake module.
