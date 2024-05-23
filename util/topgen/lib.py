@@ -85,6 +85,40 @@ class Name:
         return Name([p for p in self.parts if p != part_to_remove])
 
 
+class MemoryRegion(object):
+    def __init__(self, top_name: Name, name: Name, base_addr: int, size_bytes: int):
+        assert isinstance(base_addr, int)
+        self.name = top_name + name
+        self.short_name = name
+        self.base_addr = base_addr
+        self.size_bytes = size_bytes
+        self.size_words = (size_bytes + 3) // 4
+
+    def base_addr_name(self, short=False):
+        if short:
+            return self.short_name + Name(["base", "addr"])
+        else:
+            return self.name + Name(["base", "addr"])
+
+    def offset_name(self, short=False):
+        if short:
+            return self.short_name + Name(["offset"])
+        else:
+            return self.name + Name(["offset"])
+
+    def size_bytes_name(self, short=False):
+        if short:
+            return self.short_name + Name(["size", "bytes"])
+        else:
+            return self.name + Name(["size", "bytes"])
+
+    def size_words_name(self, short=False):
+        if short:
+            return self.short_name + Name(["size", "words"])
+        else:
+            return self.name + Name(["size", "words"])
+
+
 def is_ipcfg(ip: Path) -> bool:  # return bool
     log.info("IP Path: %s" % repr(ip))
     ip_name = ip.parents[1].name
@@ -566,3 +600,52 @@ def is_lc_ctrl(modules):
             return True
 
     return False
+
+
+def get_addr_space(top, addr_space_name):
+    """Returns the address dict for a given address space name"""
+    for addr_space in top['addr_spaces']:
+        if addr_space['name'] == addr_space_name:
+            return addr_space
+    assert False, "Address space not found"
+
+
+def get_device_ranges(devices, device_name):
+    ranges = {}
+    for (dev_name, if_name), range in devices:
+        if dev_name == device_name:
+            ranges[if_name] = range
+    return ranges
+
+
+def init_subranges(top, top_name, devices, addr_space_name):
+    """
+    Computes the bounds of all subspace regions of a given address space.
+    """
+    subspace_regions = []
+    addr_space = get_addr_space(top, addr_space_name)
+    for subspace in addr_space.get('subspaces', []):
+        regions = []
+        for node in subspace['nodes']:
+            # Get the dot-delimited interface name. If no interface name is given, all device
+            # interfaces are considered for this subspace range.
+            split_dev = node.rsplit('.', 1)
+            dev_name = split_dev[0]
+            if_name = None
+            if len(split_dev) > 1:
+                if_name = split_dev[1]
+
+            ranges = get_device_ranges(devices, dev_name)
+            if if_name:
+                # Only a single interface, if name contained an interface name
+                regions.append(ranges[if_name])
+            else:
+                # All interfaces
+                regions += list(ranges.values())
+
+        subspace_range = range(min([r.base_addr for r in regions]),
+                               max([r.base_addr + r.size_bytes for r in regions]))
+        subspace_region = MemoryRegion(top_name, Name([subspace['name']]), subspace_range.start,
+                                       subspace_range.stop - subspace_range.start)
+        subspace_regions.append((subspace['name'], subspace['desc'], subspace_region))
+    return subspace_regions

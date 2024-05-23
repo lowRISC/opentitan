@@ -172,7 +172,40 @@
   // all peripherals, though not every peripheral will be accessible to every
   // host in that address space--Access privileges are separate from addresses.
   addr_spaces: [
-    { name: "hart", desc: "The main address space, shared between the CPU and DM"},
+    { name: "hart",
+      desc: "The main address space, shared between the CPU and DM"
+      subspaces: [
+        { name: "mmio",
+          desc: '''
+                MMIO region excludes any memory that is separate from the module configuration
+                space, i.e. ROM, main SRAM, and flash are excluded but retention SRAM, spi_device
+                memory, or usbdev memory are included.
+                '''
+          nodes: [
+            "uart0",
+            "uart1",
+            "gpio",
+            "spi_device",
+            "rv_timer"
+            "spi_host0",
+            "usbdev",
+            "pwrmgr_aon",
+            "rstmgr_aon",
+            "clkmgr_aon",
+            "pinmux_aon",
+            "aon_timer_aon",
+            "ast",
+            "flash_ctrl.core",
+            "flash_ctrl.prim",
+            "rv_plic",
+            "aes",
+            "sram_ctrl_main.regs"
+            "rom_ctrl.regs",
+            "rv_core_ibex"
+          ]
+        }
+      ]
+    },
   ]
 
   // `module` defines the peripherals.
