@@ -205,7 +205,6 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    //regwen_cg = new(); // TODO stage V2S
     cfg_cg = new();
     pwm_chan_en_inv_cg = new();
     pwm_per_channel_cg = new();
