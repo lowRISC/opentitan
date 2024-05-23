@@ -205,11 +205,5 @@
             Cover that a range of frequencies have been tested for the PWM clock including a clock that matches the TL clk.
             '''
     }
-    {
-     name: overwrite_conf_cg
-      desc: '''
-            Cover that a the PWM configuration cannot be altered while a channel is active
-            '''
-    }
   ]
 }
