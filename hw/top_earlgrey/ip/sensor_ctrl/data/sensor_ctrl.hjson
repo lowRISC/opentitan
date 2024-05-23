@@ -357,6 +357,24 @@ registers: [
                   cname:        "MANUAL_PAD",
                   resval:       0
                   fields: [ // keep this a bit-compatible subset of pinmux's pad attributes
+                    { bits: "2",
+                      name: "pull_en",
+                      desc: "Enable pull-up or pull-down resistor."
+                    },
+                    { bits: "3",
+                      name: "pull_select",
+                      desc: "Pull select (0: pull-down, 1: pull-up)."
+                      enum: [
+                        { value: "0",
+                          name:  "pull_down",
+                          desc:  "Select the pull-down resistor."
+                        },
+                        { value: "1",
+                          name:  "pull_up",
+                          desc:  "Select the pull-up resistor."
+                        }
+                      ]
+                    },
                     { bits: "7",
                       name: "input_disable",
                       desc: '''

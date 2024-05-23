@@ -423,7 +423,7 @@ The mapping of registers to pads is as follows (only supported for targets that 
 - MANUAL_PAD_ATTR_2: FLASH_TEST_MODE0
 - MANUAL_PAD_ATTR_3: FLASH_TEST_MODE1
 - Reset default: `0x0`
-- Reset mask: `0x80`
+- Reset mask: `0x8c`
 
 ### Instances
 
@@ -438,14 +438,33 @@ The mapping of registers to pads is as follows (only supported for targets that 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 7}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"bits": 2}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                    |
-|:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |               | Reserved                                                                                                       |
-|   7    |   rw   |   0x0   | input_disable | Disable input drivers. Setting this to 1 for pads that are not used as input can reduce their leakage current. |
-|  6:0   |        |         |               | Reserved                                                                                                       |
+|  Bits  |  Type  |  Reset  | Name                                             |
+|:------:|:------:|:-------:|:-------------------------------------------------|
+|  31:8  |        |         | Reserved                                         |
+|   7    |   rw   |   0x0   | [input_disable](#manual_pad_attr--input_disable) |
+|  6:4   |        |         | Reserved                                         |
+|   3    |   rw   |   0x0   | [pull_select](#manual_pad_attr--pull_select)     |
+|   2    |   rw   |   0x0   | [pull_en](#manual_pad_attr--pull_en)             |
+|  1:0   |        |         | Reserved                                         |
+
+### MANUAL_PAD_ATTR . input_disable
+Disable input drivers.
+Setting this to 1 for pads that are not used as input can reduce their leakage current.
+
+### MANUAL_PAD_ATTR . pull_select
+Pull select (0: pull-down, 1: pull-up).
+
+| Value   | Name      | Description                    |
+|:--------|:----------|:-------------------------------|
+| 0x0     | pull_down | Select the pull-down resistor. |
+| 0x1     | pull_up   | Select the pull-up resistor.   |
+
+
+### MANUAL_PAD_ATTR . pull_en
+Enable pull-up or pull-down resistor.
 
 
 <!-- END CMDGEN -->
