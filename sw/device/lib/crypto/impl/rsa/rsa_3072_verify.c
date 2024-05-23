@@ -49,8 +49,6 @@ static const uint32_t kOtbnRsaModeModexp = 2;
 
 status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
                                 rsa_3072_int_t *result) {
-  enum { kSha256DigestNumWords = 8 };
-
   if (msg == NULL && msgLen != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -78,25 +76,28 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
   // Set 0x00 || 0x01 bytes at most significant end
   result->data[kRsa3072NumWords - 1] = 0x0001ffff;
 
-  // Compute the SHA-256 message digest.
-  hmac_sha_init();
-  hmac_update(msg, msgLen);
-  hmac_digest_t digest;
-  hmac_final(&digest);
+  // Compute the SHA-256 digest using the HMAC HWIP.
+  hmac_ctx_t hwip_ctx;
+  hmac_digest_t digest = {
+      .len = kHmacSha256DigestBytes,
+  };
+  TRY(hmac_init(&hwip_ctx, kHmacModeSha256, /*key=*/NULL));
+  TRY(hmac_update(&hwip_ctx, msg, msgLen));
+  TRY(hmac_final(&hwip_ctx, &digest));
 
   // Copy the message digest into the least significant end of the result,
   // reversing the order of bytes to get little-endian form.
-  for (size_t i = 0; i < kSha256DigestNumWords; i++) {
+  for (size_t i = 0; i < kHmacSha256DigestWords; i++) {
     result->data[i] =
-        __builtin_bswap32(digest.digest[kSha256DigestNumWords - 1 - i]);
+        __builtin_bswap32(digest.digest[kHmacSha256DigestWords - 1 - i]);
   }
 
   // Set remainder of 0x00 || T section
-  result->data[kSha256DigestNumWords] = 0x05000420;
-  result->data[kSha256DigestNumWords + 1] = 0x03040201;
-  result->data[kSha256DigestNumWords + 2] = 0x86480165;
-  result->data[kSha256DigestNumWords + 3] = 0x0d060960;
-  result->data[kSha256DigestNumWords + 4] = 0x00303130;
+  result->data[kHmacSha256DigestWords] = 0x05000420;
+  result->data[kHmacSha256DigestWords + 1] = 0x03040201;
+  result->data[kHmacSha256DigestWords + 2] = 0x86480165;
+  result->data[kHmacSha256DigestWords + 3] = 0x0d060960;
+  result->data[kHmacSha256DigestWords + 4] = 0x00303130;
 
   return OTCRYPTO_OK;
 }
