@@ -298,6 +298,14 @@
                   '''
           resval: false
         },
+        { bits: "15:12",
+          name: "FIPS_FORCE_ENABLE",
+          mubi: true
+          desc: '''
+                Setting this field to kMultiBitBool4True enables forcing the FIPS/CC compliance flag to true via the !!FIPS_FORCE register.
+                '''
+          resval: false
+        },
       ]
     },
     {
@@ -482,6 +490,26 @@
       ]
     },
     {
+      name: "FIPS_FORCE",
+      desc: "FIPS/CC compliance flag forcing register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "REGWEN",
+      fields: [
+        { bits: "2:0",
+          name: "FIPS_FORCE",
+          desc: '''
+                Force the FIPS/CC compliance flag of individual instances to true.
+                This allows CSRNG to set the output FIPS/CC compliance flag to true despite running in fully deterministic mode (flag0 being true).
+                This can be useful e.g. for known-answer testing through entropy consumers accepting FIPS/CC compliant entropy only, or when firmware is used to derive FIPS/CC compliant entropy seeds.
+                After setting a particular bit to 1, the FIPS/CC compliance flag of the corresponding instance will be forced to true upon the next Instantiate or Reseed command.
+
+                Note that for this to work, !!CTRL.FIPS_FORCE_ENABLE needs to be set to kMultiBitBool4True.
+                '''
+        }
+      ]
+    },
+    {
       name: "HW_EXC_STS",
       desc: "Hardware instance exception status register",
       swaccess: "rw0c",
@@ -531,6 +559,13 @@
                 '''
         }
         { bits: "3",
+          name: "FIPS_FORCE_ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the FIPS_FORCE_ENABLE field in the !!CTRL register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "4",
           name: "ACMD_FLAG0_FIELD_ALERT",
           desc: '''
                 This bit is set when the FLAG0 field in the Application Command is set to

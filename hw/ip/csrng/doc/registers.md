@@ -18,11 +18,12 @@
 | csrng.[`GENBITS`](#genbits)                 | 0x28     |        4 | Generate bits returned register                                            |
 | csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x2c     |        4 | Internal state number register                                             |
 | csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x30     |        4 | Internal state read access register                                        |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x34     |        4 | Hardware instance exception status register                                |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x38     |        4 | Recoverable alert status register                                          |
-| csrng.[`ERR_CODE`](#err_code)               | 0x3c     |        4 | Hardware detection of error conditions status register                     |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x40     |        4 | Test error conditions register                                             |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x44     |        4 | Main state machine state debug register                                    |
+| csrng.[`FIPS_FORCE`](#fips_force)           | 0x34     |        4 | FIPS/CC compliance flag forcing register                                   |
+| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x38     |        4 | Hardware instance exception status register                                |
+| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x3c     |        4 | Recoverable alert status register                                          |
+| csrng.[`ERR_CODE`](#err_code)               | 0x40     |        4 | Hardware detection of error conditions status register                     |
+| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x44     |        4 | Test error conditions register                                             |
+| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x48     |        4 | Main state machine state debug register                                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -122,22 +123,23 @@ Register write enable for all control registers
 ## CTRL
 Control register
 - Offset: `0x14`
-- Reset default: `0x999`
-- Reset mask: `0xfff`
+- Reset default: `0x9999`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SW_APP_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "READ_INT_STATE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "ENABLE", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SW_APP_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "READ_INT_STATE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                                                                                           |
-|:------:|:------:|:-------:|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |                | Reserved                                                                                                                                                                                                                                                              |
-|  11:8  |   rw   |   0x9   | READ_INT_STATE | Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register. Reading the internal state of the enable instances will be enabled only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding. |
-|  7:4   |   rw   |   0x9   | SW_APP_ENABLE  | Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register. This application interface for software (register based) will be enabled only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.       |
-|  3:0   |   rw   |   0x9   | ENABLE         | Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules of the entropy complex may only be enabled and disabled in a specific order, see Programmers Guide for details.                                                                    |
+|  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                                                                                                                                                           |
+|:------:|:------:|:-------:|:------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |        |         |                   | Reserved                                                                                                                                                                                                                                                              |
+| 15:12  |   rw   |   0x9   | FIPS_FORCE_ENABLE | Setting this field to kMultiBitBool4True enables forcing the FIPS/CC compliance flag to true via the [`FIPS_FORCE`](#fips_force) register.                                                                                                                            |
+|  11:8  |   rw   |   0x9   | READ_INT_STATE    | Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register. Reading the internal state of the enable instances will be enabled only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding. |
+|  7:4   |   rw   |   0x9   | SW_APP_ENABLE     | Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register. This application interface for software (register based) will be enabled only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.       |
+|  3:0   |   rw   |   0x9   | ENABLE            | Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules of the entropy complex may only be enabled and disabled in a specific order, see Programmers Guide for details.                                                                    |
 
 ## CMD_REQ
 Command request register
@@ -332,9 +334,35 @@ Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the in
 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 Otherwise, the register reads as 0.
 
+## FIPS_FORCE
+FIPS/CC compliance flag forcing register
+- Offset: `0x34`
+- Reset default: `0x0`
+- Reset mask: `0x7`
+- Register enable: [`REGWEN`](#regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "FIPS_FORCE", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:3  |        |         | Reserved                              |
+|  2:0   |   rw   |   0x0   | [FIPS_FORCE](#fips_force--fips_force) |
+
+### FIPS_FORCE . FIPS_FORCE
+Force the FIPS/CC compliance flag of individual instances to true.
+This allows CSRNG to set the output FIPS/CC compliance flag to true despite running in fully deterministic mode (flag0 being true).
+This can be useful e.g. for known-answer testing through entropy consumers accepting FIPS/CC compliant entropy only, or when firmware is used to derive FIPS/CC compliant entropy seeds.
+After setting a particular bit to 1, the FIPS/CC compliance flag of the corresponding instance will be forced to true upon the next Instantiate or Reseed command.
+
+Note that for this to work, [`CTRL.FIPS_FORCE_ENABLE`](#ctrl) needs to be set to kMultiBitBool4True.
+
 ## HW_EXC_STS
 Hardware instance exception status register
-- Offset: `0x34`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -359,14 +387,14 @@ resets the status bits.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x38`
+- Offset: `0x3c`
 - Reset default: `0x0`
-- Reset mask: `0xf00f`
+- Reset mask: `0xf01f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 7}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                 |
@@ -376,8 +404,9 @@ Recoverable alert status register
 |   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
 |   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
-|  11:4  |        |         | Reserved                                                                             |
-|   3    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)                   |
+|  11:5  |        |         | Reserved                                                                             |
+|   4    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)                   |
+|   3    |  rw0c  |   0x0   | [FIPS_FORCE_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_force_enable_field_alert)     |
 |   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert)           |
 |   1    |  rw0c  |   0x0   | [SW_APP_ENABLE_FIELD_ALERT](#recov_alert_sts--sw_app_enable_field_alert)             |
 |   0    |  rw0c  |   0x0   | [ENABLE_FIELD_ALERT](#recov_alert_sts--enable_field_alert)                           |
@@ -412,6 +441,10 @@ This bit is set when the FLAG0 field in the Application Command is set to
 a value other than kMultiBitBool4True or kMultiBitBool4False.
 Writing a zero resets this status bit.
 
+### RECOV_ALERT_STS . FIPS_FORCE_ENABLE_FIELD_ALERT
+This bit is set when the FIPS_FORCE_ENABLE field in the [`CTRL`](#ctrl) register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
+Writing a zero resets this status bit.
+
 ### RECOV_ALERT_STS . READ_INT_STATE_FIELD_ALERT
 This bit is set when the READ_INT_STATE field in the [`CTRL`](#ctrl) register is set to
 a value other than kMultiBitBool4True or kMultiBitBool4False.
@@ -429,7 +462,7 @@ Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0x3c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x77f0ffff`
 
@@ -630,7 +663,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x40`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 - Register enable: [`REGWEN`](#regwen)
@@ -656,7 +689,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0x44`
+- Offset: `0x48`
 - Reset default: `0x4e`
 - Reset mask: `0xff`
 
