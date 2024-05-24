@@ -1410,10 +1410,11 @@
       name: chip_sw_csrng_edn_concurrency
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:csrng_edn_concurrency_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
       run_opts: ["+sw_test_timeout_ns=140_000_000", "+rng_srate_value_min=15",
                  "+rng_srate_value_max=20"]
       run_timeout_mins: 240
+      reseed: 10
     }
     {
       name: chip_sw_csrng_kat_test
