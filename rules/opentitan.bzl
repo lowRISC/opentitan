@@ -104,17 +104,6 @@ SILICON_CREATOR_KEYS = struct(
                 create_prod_key("fake_ecdsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256"),
             ],
         ),
-        RSA = struct(
-            TEST = [
-                create_test_key("fake_rsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0"),
-            ],
-            DEV = [
-                create_dev_key("fake_rsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0"),
-            ],
-            PROD = [
-                create_prod_key("fake_rsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0"),
-            ],
-        ),
         SPX = struct(
             TEST = [
                 create_test_key("fake_spx_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
@@ -130,9 +119,6 @@ SILICON_CREATOR_KEYS = struct(
     # We can't expose real private keys publicly.
     REAL = None,
     UNAUTHORIZED = struct(
-        RSA = [
-            create_key_("rsa_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/rsa:unauthorized_private_key_0", []),
-        ],
         SPX = [
             create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
         ],
@@ -171,20 +157,6 @@ def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
         (not k.ecdsa or key_allowed_in_lc_state(k.ecdsa, hw_lc_state)) and
         (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))
     )]
-
-RSA_ONLY_KEY_STRUCTS = [
-    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], None),
-    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], None),
-    create_key_struct(None, SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], None),
-]
-
-RSA_SPX_KEY_STRUCTS = [
-    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0]),
-    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
-    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
-    create_key_struct(None, SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0]),
-]
 
 ECDSA_ONLY_KEY_STRUCTS = [
     create_key_struct(SILICON_CREATOR_KEYS.FAKE.ECDSA.TEST[0], None, None),
@@ -998,7 +970,7 @@ def opentitan_flash_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        signing_key_structs = RSA_ONLY_KEY_STRUCTS + RSA_ONLY_ROM_EXT_KEY_STRUCTS,
+        signing_key_structs = ECDSA_ONLY_KEY_STRUCTS + RSA_ONLY_ROM_EXT_KEY_STRUCTS,
         signed = True,
         sim_otp = None,
         testonly = False,
