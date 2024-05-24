@@ -3,20 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:otp.bzl",
-    "STD_OTP_OVERLAYS",
-    "otp_image",
-    "otp_json",
-    "otp_partition",
+    "//rules:const.bzl",
+    "CONST",
+    "hex",
 )
 load(
     "//rules:manifest.bzl",
     "manifest",
 )
 load(
-    "//rules:const.bzl",
-    "CONST",
-    "hex",
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
 )
 load(
     "//rules/opentitan:defs.bzl",
@@ -47,7 +47,7 @@ BOOT_POLICY_FLASH_ECC_ERROR_CASES = [
 ]
 
 otp_json(
-    name = "otp_json_flash_data_cfg_default_unprovisioned",
+    name = "otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
     partitions = [
         otp_partition(
             name = "CREATOR_SW_CFG",
@@ -62,7 +62,7 @@ otp_json(
 otp_image(
     name = "otp_img_boot_policy_flash_ecc_error",
     src = "//hw/ip/otp_ctrl/data:otp_json_prod",
-    overlays = STD_OTP_OVERLAYS + [":otp_json_flash_data_cfg_default_unprovisioned"],
+    overlays = STD_OTP_OVERLAYS + [":otp_json_flash_data_cfg_default_scr_and_ecc_enabled"],
     visibility = ["//visibility:private"],
 )
 
@@ -131,9 +131,11 @@ SEC_VERS = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:otp_ctrl_testutils",
+            "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/base:chip",
         ],

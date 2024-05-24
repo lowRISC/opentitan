@@ -105,6 +105,20 @@ SECTIONS {
   } > rom
 
   /**
+   * ROM ISRs text section, containing the exception handler entry/exit logic
+   * used for handling load access faults due to flash ECC errors during boot.
+   *
+   * This is placed next to the ".shutdown" section.
+   */
+  .rom_isrs : ALIGN(4) {
+    *(.rom_isrs)
+    *(.rom_isrs.*)
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+  } > rom
+
+  /**
    * Shutdown text section, containing shutdown function(s).
    *
    * This must be the last executable section in the ROM.

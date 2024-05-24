@@ -71,15 +71,23 @@ ld_library(
 )
 
 cc_library(
-    name = "mask_rom_lib",
+    name = "rom_isrs",
     srcs = [
-        "rom_start.S",
+        "rom_isrs.S",
+        "//sw/device/lib/base:macros.h",
     ],
+    target_compatible_with = [OPENTITAN_CPU],
+)
+
+cc_library(
+    name = "mask_rom_lib",
+    srcs = ["rom_start.S"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":linker_script",
         ":rom_common",
         ":rom_epmp",
+        ":rom_isrs",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/ip/csrng/data:csrng_c_regs",
         "//hw/ip/edn/data:edn_c_regs",
