@@ -1,4 +1,4 @@
-/* Copyright lowRISC contributors. */
+/* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 /*
@@ -142,8 +142,8 @@ p384_key_from_seed:
 
   /* Get 63 bits of randomness from RND, multiply it with n,
      and add it to the key share to get a 448-bit share. */
-  
-  /* [w2,w1] <= (RND >> 193) * n */   
+
+  /* [w2,w1] <= (RND >> 193) * n */
   bn.wsrr   w10, RND
   bn.rshi   w10, w31, w10 >> 193
   bn.mov    w11, w31

@@ -72,7 +72,7 @@ ecdsa_sign:
 
 /**
  * P-384 ECDSA side-loaded signature generation.
- * Generate a signature using a private key from a 
+ * Generate a signature using a private key from a
  * sideloaded seed.
  *
  * @param[in]  dmem[msg]: message to be signed in dmem
