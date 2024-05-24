@@ -115,10 +115,10 @@ offline_presigning_artifacts(
         ":rom_ext_real_prod_signed_slot_a",
         ":rom_ext_real_prod_signed_slot_b",
     ],
-    manifest = ":manifest_prodc",
-    rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_prod_0",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "earlgrey_prod_0",
     },
+    manifest = ":manifest_prodc",
     tags = ["manual"],
 )
 
@@ -136,8 +136,8 @@ offline_signature_attach(
     srcs = [
         ":presigning",
     ],
-    rsa_signatures = [
-        "//sw/device/silicon_creator/rom_ext/prodc/signatures:rsa_signatures",
+    ecdsa_signatures = [
+        "//sw/device/silicon_creator/rom_ext/prodc/signatures:ecdsa_signatures",
     ],
     tags = ["manual"],
 )
