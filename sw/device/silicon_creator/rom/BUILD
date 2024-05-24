@@ -312,31 +312,6 @@ cc_fuzz_test(
 )
 
 cc_library(
-    name = "sigverify_keys",
-    srcs = [
-        "sigverify_keys.c",
-        "sigverify_keys_rsa.h",
-        "sigverify_keys_spx.h",
-    ],
-    hdrs = [
-        "sigverify_keys.h",
-    ],
-    deps = [
-        ":sigverify_key_types",
-        ":sigverify_otp_keys",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/device/silicon_creator/lib/sigverify:spx_key",
-    ],
-)
-
-cc_library(
     name = "sigverify_otp_keys",
     srcs = ["sigverify_otp_keys.c"],
     hdrs = ["sigverify_otp_keys.h"],
@@ -382,25 +357,6 @@ cc_library(
 )
 
 cc_library(
-    name = "sigverify_keys_rsa",
-    srcs = [
-        "sigverify_keys_rsa.c",
-    ],
-    hdrs = [
-        "sigverify_keys_rsa.h",
-    ],
-    deps = [
-        ":sigverify_key_types",
-        ":sigverify_keys",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-    ],
-)
-
-cc_library(
     name = "sigverify_keys_spx",
     srcs = [
         "sigverify_keys_spx.c",
@@ -417,18 +373,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
-    ],
-)
-
-cc_test(
-    name = "sigverify_keys_unittest",
-    srcs = ["sigverify_keys_unittest.cc"],
-    deps = [
-        ":sigverify_keys",
-        ":sigverify_keys_rsa",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
     ],
 )
 
