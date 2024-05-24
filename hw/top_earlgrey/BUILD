@@ -470,9 +470,12 @@ silicon(
     base = ":silicon_owner_sival_rom_ext",
     ecdsa_key = CLEAR_KEY_SET,
     exec_env = "silicon_owner_prodc_rom_ext",
+    # The //conditions:default ROM_EXT needs to be updated to use the following
+    # target once available:
+    # //sw/device/silicon_creator/rom_ext/prodc/binaries:rom_ext_real_prod_signed_slot_a.
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/prodc/binaries:rom_ext_real_prod_signed_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
     }),
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
