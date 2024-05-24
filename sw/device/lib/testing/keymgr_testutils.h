@@ -116,6 +116,23 @@ status_t keymgr_testutils_flash_init(
     const keymgr_testutils_secret_t *owner_secret);
 
 /**
+ * Initializes the key manager and its dependencies for testing.
+ *
+ * This function initializes the key manager and its dependencies for testing.
+ *
+ * This fuction will call `keymgr_testutils_try_startup()` if the boot stage is
+ * `kBootStageOwner`; otherwise, it will call `keymgr_testutils_startup()`.
+ * Additional checks are performed to ensure that the key manager is in a valid
+ * state, and ready to perform key derivations.
+ *
+ * @param keymgr A key manager handle, may be uninitialized.
+ * @param kmac A KMAC handle, may be uninitialized.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_initialize(dif_keymgr_t *keymgr, dif_kmac_t *kmac);
+
+/**
  * Wrapper function to `keymgr_testutils_startup()`.
  *
  * This function checks the state of the key manager before attempting to
