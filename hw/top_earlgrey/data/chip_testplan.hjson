@@ -509,7 +509,6 @@
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",
               "chip_sw_otbn_smoketest",
-              "chip_sw_otp_ctrl_smoketest",
               "chip_sw_pwrmgr_smoketest",
               "chip_sw_pwrmgr_usbdev_smoketest",
               "chip_sw_rv_plic_smoketest",
@@ -529,7 +528,6 @@
         "//sw/device/tests:hmac_smoketest",
         "//sw/device/tests:kmac_smoketest",
         "//sw/device/tests:otbn_smoketest",
-        "//sw/device/tests:otp_ctrl_smoketest",
         "//sw/device/tests:pmp_smoketest_napot",
         "//sw/device/tests:pmp_smoketest_tor",
         "//sw/device/tests:pwrmgr_smoketest",
@@ -541,6 +539,20 @@
         "//sw/device/tests:sram_ctrl_smoketest",
         "//sw/device/tests:uart_smoketest",
       ]
+    }
+    {
+      name: chip_sw_otp_smoketest
+      desc: '''Run smoke tests developed for OTP.
+
+            This smoketest is separated from the chip_sw_smoketest since it
+            cannot be executed in silicon owner stage.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"],
+      boot_stages: ["rom_ext"],
+      tests: ["chip_sw_otp_ctrl_smoketest"],
+      bazel: ["//sw/device/tests:otp_ctrl_smoketest"],
     }
     {
       name: chip_sw_rom_functests
