@@ -362,11 +362,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               // for SHA-2 384, only check till digest_idx = 11.
               // Digests 12-15 are irrelevant/truncated for this digest size.
               if (expected_digest_swap == 1'b0) begin
-                if (digest_idx % 2) begin // odd index then compare with smaller index
-                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx-1])
-                end else begin
-                  `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx+1])
-                end
+                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
               end else begin
                 `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
               end
