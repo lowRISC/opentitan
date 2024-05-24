@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -47,50 +46,6 @@ static void init_peripheral_handles(void) {
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
-}
-
-static void keymgr_initialize_sim_dv(void) {
-  // Initialize keymgr and advance to CreatorRootKey state.
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
-  LOG_INFO("Keymgr entered CreatorRootKey State");
-  // Generate identity at CreatorRootKey (to follow same sequence and reuse
-  // chip_sw_keymgr_key_derivation_vseq.sv).
-  CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
-  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
-
-  // Advance to OwnerIntermediateKey state and check that the state is correct.
-  // The sim_dv testbench expects this state.
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
-}
-
-static void keymgr_initialize_sival(void) {
-  dif_keymgr_state_t keymgr_state;
-  CHECK_STATUS_OK(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
-
-  if (keymgr_state == kDifKeymgrStateInitialized) {
-    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    CHECK_DIF_OK(dif_keymgr_get_state(&keymgr, &keymgr_state));
-  }
-
-  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
-    CHECK_STATUS_OK(
-        keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  }
-
-  CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
-}
-
-static void keymgr_initialize(void) {
-  if (kBootStage == kBootStageOwner) {
-    keymgr_initialize_sival();
-  } else {
-    // All other configurations use the sim_dv initialization.
-    keymgr_initialize_sim_dv();
-  }
 }
 
 status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
@@ -232,7 +187,7 @@ bool test_main(void) {
   init_peripheral_handles();
 
   // Configure the keymgr to generate an AES key.
-  keymgr_initialize();
+  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
 
   // Run the AES test.
   aes_test();
