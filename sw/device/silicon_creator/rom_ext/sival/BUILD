@@ -136,8 +136,8 @@ offline_signature_attach(
     srcs = [
         ":presigning",
     ],
-    rsa_signatures = [
-        "//sw/device/silicon_creator/rom_ext/sival/signatures:rsa_signatures",
+    ecdsa_signatures = [
+        "//sw/device/silicon_creator/rom_ext/sival/signatures:ecdsa_signatures",
     ],
     tags = ["manual"],
 )
