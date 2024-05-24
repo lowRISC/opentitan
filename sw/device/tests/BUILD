@@ -1985,17 +1985,13 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -2017,16 +2013,12 @@ opentitan_test(
     name = "keymgr_sideload_otbn_test",
     srcs = ["keymgr_sideload_otbn_test.c"],
     exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
