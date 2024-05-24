@@ -332,12 +332,14 @@ static void csrng_task(void *task_parameters) {
 }
 
 /**
- * Configures the entropy complex, starts both EDNs in auto mode and
- * instantiates the CSRNG SW instance.
+ * Generates a randomized entropy complex configuration and applies it to both
+ * EDNs and the CSRNG SW instance. The configuration of ENTROPY_SRC is left
+ * untouched to optimize test performance.
+ *
+ * Note that to generate the randomized configuration, the entropy complex needs
+ * to be configured in auto mode before calling this function.
  */
 static void entropy_config(void) {
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
   LOG_INFO("Generating EDN and CSRNG params");
   dif_edn_auto_params_t edn_params0 =
       edn_testutils_auto_params_build(false,
@@ -451,6 +453,7 @@ static void main_task(void *task_parameters) {
 
 bool test_main(void) {
   init_peripherals();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   // Initialize the test `execution_state` before launching the tasks.
   execution_state_update(kTestStateSetup);
