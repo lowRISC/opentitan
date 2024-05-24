@@ -4,13 +4,12 @@
 
 load(
     "@//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
     "opentitan_flash_binary",
     "opentitan_rom_binary",
 )
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
-load("@bazel_skylib//lib:sets.bzl", "sets")
 
 def _fpga_from_fpga_target(target):
     """
@@ -325,7 +324,7 @@ def opentitan_functest(
         manifest = "@//sw/device/silicon_creator/rom_ext:manifest",
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
-        key_struct = RSA_ONLY_KEY_STRUCTS[0],
+        key_struct = ECDSA_ONLY_KEY_STRUCTS[0],
         logging = "info",
         dv = None,
         verilator = None,
