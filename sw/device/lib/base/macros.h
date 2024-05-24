@@ -550,4 +550,12 @@ class SignConverter {
     irq_global_ctrl(true);                             \
   }                                                    \
   irq_global_ctrl(true)
+
+/**
+ * Macros for implementing OT ISRs.
+ */
+#define OT_WORD_SIZE 4
+#define OT_HALF_WORD_SIZE (OT_WORD_SIZE / 2)
+#define OT_CONTEXT_SIZE (OT_WORD_SIZE * 30)
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

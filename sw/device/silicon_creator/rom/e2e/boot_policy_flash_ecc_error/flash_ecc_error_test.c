@@ -6,9 +6,11 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -20,6 +22,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_flash_ctrl_state_t flash_ctrl;
+static dif_rstmgr_t rstmgr;
 static dif_otp_ctrl_t otp_ctrl;
 
 static dif_flash_ctrl_region_properties_t kFlashFullAccessScrambledEcc = {
@@ -60,19 +63,29 @@ enum {
   kFlashBank1DataRegion = 1,
 };
 
-void ottf_load_store_fault_handler(uint32_t *exc_info) {
-  LOG_INFO("Load Access Fault ... continuing execution.");
-  return;
-}
-
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 }
 
+/**
+ * Issue a software reset.
+ */
+void sw_reset(void) {
+  rstmgr_testutils_reason_clear();
+  CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+  wait_for_interrupt();
+}
+
+/**
+ * Corrupt the ROM_EXT manifest identifier of a given slot to trigger an ECC
+ * itegrity errory (load access fault) on the next boot.
+ */
 static status_t corrupt_rom_ext_identifier(rom_ext_slot_t slot) {
   uint32_t page_idx = slot == kRomExtSlotA ? kRomExtSlotAFirstPageIndex
                                            : kRomExtSlotBFirstPageIndex;
@@ -116,25 +129,20 @@ static status_t corrupt_rom_ext_identifier(rom_ext_slot_t slot) {
 bool test_main(void) {
   init_peripherals();
 
-  uint32_t data_read = UINT32_MAX;
 #ifdef CORRUPT_SLOT_A_ID
   LOG_INFO("Slot A self corrupting it's manifest identifier ...");
   CHECK_STATUS_OK(corrupt_rom_ext_identifier(kRomExtSlotA));
-  // TODO(#21353): replace with chip reset to trigger slot B boot attempt.
-  // Read it back ROM_EXT slot A data via Ibex, expecting a load access fault.
-  data_read = abs_mmio_read32(kRomExtSlotAManifestIdAddr);
-  LOG_INFO("Corrupted Data: 0x%08x", data_read);
+  LOG_INFO("Resetting chip to trigger load access fault in the ROM ...");
+  sw_reset();
+  return true;
 #elif defined CORRUPT_SLOT_B_ID
   LOG_INFO("Slot B self corrupting it's manifest identifier ...");
   CHECK_STATUS_OK(corrupt_rom_ext_identifier(kRomExtSlotB));
-  // TODO(#21353): replace with chip reset to trigger slot A boot attempt.
-  // Read it back ROM_EXT slot B data via Ibex, expecting a load access fault.
-  data_read = abs_mmio_read32(kRomExtSlotBManifestIdAddr);
-  LOG_INFO("Corrupted Data: 0x%08x", data_read);
+  LOG_INFO("Resetting chip to trigger load access fault in the ROM ...");
+  sw_reset();
+  return true;
 #else
   LOG_INFO("Not slot selected for corruption.");
   return false;
 #endif
-
-  return true;
 }

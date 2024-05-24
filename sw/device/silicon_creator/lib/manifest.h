@@ -266,7 +266,7 @@ typedef struct manifest {
    *
    * These version values can be used to maintain or break forward compatibility
    * in ROM while preserving backward compatibility in ROM_EXT. ROM requires the
-   * major version to be `kManifestFormatVersionMajor1`.
+   * major version to be `kManifestVersionMajor2`.
    */
   manifest_version_t manifest_version;
   /**
