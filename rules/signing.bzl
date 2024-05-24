@@ -506,6 +506,9 @@ def _offline_fake_rsa_sign(ctx):
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     tool, _, _ = _signing_tool_info(ctx, ctx.attr.rsa_key, tc.tools.opentitantool)
     for file in ctx.files.srcs:
+        # Skip the presigning script.
+        if file.basename.endswith(".json"):
+            continue
         _, sig, _ = _local_sign(ctx, tool, file, None, rsa_key)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
@@ -530,6 +533,9 @@ def _offline_fake_ecdsa_sign(ctx):
     ecdsa_key = key_from_dict(ctx.attr.ecdsa_key, "ecdsa_key")
     tool, _, _ = _signing_tool_info(ctx, ctx.attr.ecdsa_key, tc.tools.opentitantool)
     for file in ctx.files.srcs:
+        # Skip the presigning script.
+        if file.basename.endswith(".json"):
+            continue
         sig, _, _ = _local_sign(ctx, tool, file, ecdsa_key, None)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
