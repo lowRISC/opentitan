@@ -216,6 +216,17 @@ extern "C++" {
                 "Unexpected offset for " #type "." #member)
 
 /**
+ * A macro that expands to an assertion for the offset of a struct member.
+ *
+ * @param type A struct type.
+ * @param member A member of the struct.
+ * @param enum_offset Expected offset of the member as an enum constant.
+ */
+#define OT_ASSERT_MEMBER_OFFSET_AS_ENUM(type, member, enum_offset) \
+  static_assert(offsetof(type, member) == enum_offset,             \
+                "Unexpected offset for " #type "." #member)
+
+/**
  * A macro that expands to an assertion for the size of a struct member.
  *
  * @param type A struct type.
@@ -234,7 +245,7 @@ extern "C++" {
  *
  * @param type A struct type.
  * @param member A member of the struct.
- * @param size Expected size of the type as an enum constant.
+ * @param enum_size Expected size of the type as an enum constant.
  */
 #define OT_ASSERT_MEMBER_SIZE_AS_ENUM(type, member, enum_size) \
   static_assert(sizeof(((type){0}).member) == enum_size,       \
@@ -556,6 +567,8 @@ class SignConverter {
  */
 #define OT_WORD_SIZE 4
 #define OT_HALF_WORD_SIZE (OT_WORD_SIZE / 2)
+// The ISR context size is 30 words.  There are 32 cpu registers; 30 of them
+// need to be saved.  The two that do not are `sp` and `gp` (x2 and x3).
 #define OT_CONTEXT_SIZE (OT_WORD_SIZE * 30)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

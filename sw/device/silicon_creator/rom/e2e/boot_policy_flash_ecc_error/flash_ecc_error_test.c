@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -14,6 +15,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -62,6 +64,8 @@ enum {
   kFlashBank0DataRegion = 0,
   kFlashBank1DataRegion = 1,
 };
+
+OT_ASSERT_MEMBER_OFFSET_AS_ENUM(manifest_t, identifier, kManifestIdOffest);
 
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(

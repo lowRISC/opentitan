@@ -128,6 +128,7 @@ SEC_VERS = [
             "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:macros",
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:otp_ctrl",
@@ -137,6 +138,7 @@ SEC_VERS = [
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:manifest",
             "//sw/device/silicon_creator/lib/base:chip",
         ],
     )
