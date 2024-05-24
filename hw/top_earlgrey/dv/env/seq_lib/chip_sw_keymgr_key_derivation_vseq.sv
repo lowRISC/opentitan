@@ -30,18 +30,17 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
   typedef struct packed {
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
-    bit [keymgr_pkg::DevIdWidth-1:0]       DeviceIdentifier;
-    bit [keymgr_pkg::HealthStateWidth-1:0] HealthMeasurement;
-    bit [keymgr_pkg::KeyWidth-1:0]         RomDigest;
-    bit [keymgr_pkg::KeyWidth-1:0]         DiversificationKey;
+    bit [keymgr_pkg::DevIdWidth-1:0]                     DeviceIdentifier;
+    bit [keymgr_pkg::HealthStateWidth-1:0]               HealthMeasurement;
+    bit [keymgr_pkg::KeyWidth-1:0]                       RomDigest;
+    bit [keymgr_pkg::KeyWidth-1:0]                       HardwareRevisionSecret;
   } adv_creator_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
+    bit [keymgr_pkg::KeyWidth-1:0]                       CreatorSeed;
   } adv_owner_int_data_t;
 
   typedef struct packed {
@@ -222,11 +221,9 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   // HardwareRevisionSecret: backdoor read CSRs at ral.lc_ctrl.device_id
   // HealthMeasurement: HW random constant - RndCnstLcCtrlLcKeymgrDivTestDevRma
   // RomDigest:  backdoor read CSRs at ral.rom_ctrl_regs.digest
-  // DiversificationKey: program fixed value to flash in the C test
   virtual task get_creator_data(output bit [keymgr_pkg::AdvDataWidth-1:0] creator_data_out);
     adv_creator_data_t creator_data;
     creator_data.SoftwareBinding = CreatorSwBinding;
-    creator_data.HardwareRevisionSecret = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrRevisionSeed;
 
     for (int i = 0; i < keymgr_pkg::DevIdWidth / TL_DW; i++) begin
       bit [TL_DW-1:0] rdata = csr_peek(ral.lc_ctrl.device_id[i]);
@@ -251,14 +248,16 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("RomDigest 0x%0h", creator_data.RomDigest),
               UVM_LOW)
 
-    creator_data.DiversificationKey = CreatorFlashSeeds;
+    creator_data.HardwareRevisionSecret = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrRevisionSeed;
     creator_data_out = keymgr_pkg::AdvDataWidth'(creator_data);
   endtask
 
+  // Here is how the OwnerIntermediateKey data are found
+  // CreatorSeed: program fixed value to flash in the C test
   virtual function bit [keymgr_pkg::AdvDataWidth-1:0] get_owner_int_data();
     adv_owner_int_data_t owner_int_data;
     owner_int_data.SoftwareBinding = OwnerIntSwBinding;
-    owner_int_data.OwnerRootSecret = OwnerFlashSeeds;
+    owner_int_data.CreatorSeed     = CreatorFlashSeeds;
 
     return keymgr_pkg::AdvDataWidth'(owner_int_data);
   endfunction
