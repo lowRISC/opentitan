@@ -43,7 +43,7 @@ enum {
    * Mode to generate a new shared key.
    */
   kOtbnEcdhModeSharedKey = 0x5ec,
-   /*
+  /*
    * Mode to generate a new sideloaded keypair.
    */
   kOtbnEcdhModeKeypairFromSeed = 0x29f,
