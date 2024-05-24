@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/testing/keymgr_testutils.h"
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
@@ -116,6 +117,48 @@ static status_t dif_init(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
                       keymgr));
   return OK_STATUS();
+}
+
+status_t keymgr_initialize_sim_dv(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  // Initialize keymgr and advance to CreatorRootKey state.
+  TRY(keymgr_testutils_startup(keymgr, kmac));
+  LOG_INFO("Keymgr entered CreatorRootKey State");
+  // Generate identity at CreatorRootKey (to follow same sequence and reuse
+  // chip_sw_keymgr_key_derivation_vseq.sv).
+  TRY(keymgr_testutils_generate_identity(keymgr));
+  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+
+  // Advance to OwnerIntermediateKey state and check that the state is correct.
+  // The sim_dv testbench expects this state.
+  TRY(keymgr_testutils_advance_state(keymgr, &kOwnerIntParams));
+  TRY(keymgr_testutils_check_state(keymgr,
+                                   kDifKeymgrStateOwnerIntermediateKey));
+  LOG_INFO("Keymgr entered OwnerIntKey State");
+  return OK_STATUS();
+}
+
+status_t keymgr_initialize_sival(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  dif_keymgr_state_t keymgr_state;
+  TRY(keymgr_testutils_try_startup(keymgr, kmac, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInitialized) {
+    TRY(keymgr_testutils_advance_state(keymgr, &kOwnerIntParams));
+    TRY(dif_keymgr_get_state(keymgr, &keymgr_state));
+  }
+
+  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
+    TRY(keymgr_testutils_advance_state(keymgr, &kOwnerRootKeyParams));
+  }
+
+  return keymgr_testutils_check_state(keymgr, kDifKeymgrStateOwnerRootKey);
+}
+
+status_t keymgr_testutils_initialize(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  if (kBootStage == kBootStageOwner) {
+    return keymgr_initialize_sival(keymgr, kmac);
+  }
+  // All other configurations use the sim_dv initialization.
+  return keymgr_initialize_sim_dv(keymgr, kmac);
 }
 
 status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
