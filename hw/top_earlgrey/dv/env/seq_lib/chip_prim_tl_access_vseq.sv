@@ -24,12 +24,14 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
   virtual function void backdoor_override_otp();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_state)
+    `uvm_info(`gfn, $sformatf("Configuring via backdoor OTP:  lc_state %0s", lc_state.name),
+              UVM_LOW)
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
   endfunction
 
-  virtual function void initialize_otp_sig_verify();
+  virtual function void initialize_otp_lc_state();
     backdoor_override_otp();
-    super.initialize_otp_sig_verify();
+    super.initialize_otp_lc_state();
   endfunction
 
   virtual function bit allow_otp_prim_tl_access();

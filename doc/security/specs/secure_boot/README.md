@@ -92,17 +92,6 @@ The following table summarizes which role can be used in which lifecycle state:
 If the key indicated in the manifest has a role that doesn't match the lifecycle state of the device, the boot fails.
 All of these keys are 3072-bit RSA public keys with exponent e=65537 (the “F4 exponent”).
 
-The `ROM` has `N` key slots (the exact number depends on the `ROM`) numbered from `0` to `N-1`.
-The `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN` item in the OTP can be used to invalidate a key at
-manufacturing time. This item consists of several little-endian 32-bit words. Each word contains four 8-bit hardened booleans
-(see `hardened_byte_bool_t` in `hardened.h`) that specifies whether the key is valid (`kHardenedByteBoolTrue`)
-or invalid (any value other that `kHardenedByteBoolTrue`). In order to verify that the key slot `i` contains
-a valid key, the `ROM` will:
-
-* read the `floor(i / 4)`-th word in `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN`,
-* extract the `(i % 4)`-th boolean from that word (the lower 8 bits correspond to the 0-th boolean and so on),
-* compare it to `kHardenedByteBoolTrue`.
-
 # Terminology Quick Reference
 
 ## OpenTitan Logical Entities

@@ -75,9 +75,8 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
   endfunction
 
-  virtual function void initialize_otp_sig_verify();
+  virtual function void initialize_otp_lc_state();
     backdoor_override_otp();
-    super.initialize_otp_sig_verify();
   endfunction
 
   // Returns true if the RV_DM is accessible in a certain life cycle state.

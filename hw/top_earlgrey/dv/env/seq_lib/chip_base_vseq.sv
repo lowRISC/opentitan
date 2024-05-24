@@ -147,7 +147,7 @@ class chip_base_vseq #(
         cfg.mem_bkdr_util_h[Otp].otp_clear_secret2_partition();
     end
 
-    initialize_otp_sig_verify();
+    initialize_otp_lc_state();
     initialize_otp_creator_sw_cfg_ast_cfg();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
@@ -278,14 +278,11 @@ class chip_base_vseq #(
     end
   endtask : alert_ping_en_shorten
 
-  // Initialize the OTP creator SW cfg region to use otbn for signature verification.
-  virtual function void initialize_otp_sig_verify();
-    // Use otbn mod_exp implementation for signature
-    // verification. See the definition of `hardened_bool_t` in
-    // sw/device/lib/base/hardened.h.
-    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset,
-                                     32'h1d4);
-  endfunction : initialize_otp_sig_verify
+  // OTP life cycle initialization placeholder. Used by the `chip_prim_tl_access` test.
+  // Regular test cases should use the OTP load infrastructure.
+  virtual function void initialize_otp_lc_state();
+
+  endfunction
 
   // Initialize the OTP creator SW cfg region with AST configuration data.
   virtual function void initialize_otp_creator_sw_cfg_ast_cfg();
