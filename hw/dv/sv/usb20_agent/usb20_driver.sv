@@ -213,6 +213,13 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     @(posedge cfg.bif.clk_i);
   endtask
 
+  // Wait for the given number of host clks.
+  // TODO: we should probably have access to the host_clk_rst_if!
+  task wait_clks(int unsigned n);
+    for (int unsigned i = 0; i < n; i++)
+      @(posedge cfg.bif.clk_i);
+  endtask
+
   task drive_pkt(bit comp_pkt[]);
     bit nrzi_out[];
     bit bit_stuff_out[];
@@ -289,9 +296,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     return error;
   endfunction
 
-  // NRZI Encoding/Decoding Task
+  // NRZI Encoding/Decoding Tasks
   // -------------------------------
-
   task nrzi_encoder(input bit packet[], output bit nrzi_out[]);
     bit prev_bit = 1'b1;
     nrzi_out = new[packet.size()];
@@ -331,11 +337,13 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     @(posedge cfg.bif.rst_ni);
     if (cfg.bif.active) begin
       // Idle period post DUT reset.
-      repeat (usb_idle_clk_cycles)
+      repeat (usb_idle_clk_cycles) begin
         drive_bit_interval(1'b0, 1'b0);
+      end
       cfg.bif.drive_vbus = 1'b1;
-      repeat (usb_pwr_good_clk_cycles)
+      repeat (usb_pwr_good_clk_cycles) begin
         drive_bit_interval(1'b1, 1'b0);
+      end
       // Waitfor device active state
       `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
       bus_reset();
@@ -452,16 +460,33 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       @(posedge cfg.bif.clk_i);
       @(posedge cfg.bif.clk_i);
     end
+    // Check SE0 signaling; we've hopefully sampled in the middle of the first bit,
+    // so there should be 1.5 bit intervals of additional SE0 signaling; check throughout the
+    // full bit interval, but avoid the transition to Idle because the agent and DUT frequencies
+    // may differ.
+    for (int unsigned clks = 0; clks < 4; clks++) begin
+      @(posedge cfg.bif.clk_i);
+      `DV_CHECK_FATAL(cfg.bif.usb_p === 1'b0 && cfg.bif.usb_n === 1'b0);
+    end
+    // Check Idle signaling for a single bit interval, which also prevents us transmitting too soon.
+    wait_clks(4);
+    `DV_CHECK_FATAL(cfg.bif.usb_p == 1'b1 && cfg.bif.usb_n == 1'b0);
+    // Wait for the Idle bit interval to complete.
+    wait_clks(2);
     `uvm_info(`gfn, $sformatf("Received Packet = %p", received_pkt), UVM_LOW)
     nrzi_decoder(received_pkt, nrzi_out_pkt);
     `uvm_info(`gfn, $sformatf("NRZI-decoded Packet = %p", nrzi_out_pkt), UVM_LOW)
     bitstuff_err = bit_unstuffing(nrzi_out_pkt, decoded_received_pkt);
     `DV_CHECK_EQ(bitstuff_err, 0, "Bit stuffing error detected");
     `uvm_info(`gfn, $sformatf("Decoded Received Packet = %p", decoded_received_pkt), UVM_LOW)
-    // TODO: check that we have enough bits for the PID
+
+     // Collect the Packet IDentifier and check that it's a valid PID; the upper nibble should
+     // be the bitwise complement of the lower one.
+    `DV_CHECK_FATAL(decoded_received_pkt.size() >= 16);
     for (int i = 0 ; i < 8; i++) begin
       received_pid[i] = decoded_received_pkt[i + 8];
     end
+    `DV_CHECK_FATAL(received_pid[7:4] == ~received_pid[3:0]);
 
     // Capture the Packet IDentifier and Packet Type
     rsp_item.m_pid_type = pid_type_e'(received_pid);
@@ -476,23 +501,33 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       default: rsp_item.m_pkt_type = PktTypeToken;
     endcase
 
-    // TODO: Temporary code just to lift the received DATA packet content of an IN transaction.
     case (rsp_item.m_pid_type)
       PidTypeData0, PidTypeData1: begin
         // TODO: Ignoring the 16-bits of CRC, and we have possibly captured some additional bit(s)
         // from the EOP (SE0) signaling.
+        bit [15:0] calc_crc16;
+        bit [15:0] rx_crc16;
         int unsigned len = (decoded_received_pkt.size() - 32) & ~7;  // integral byte count
         data_pkt data;
         `uvm_create_obj(data_pkt, data)
         data.set_id_info(rsp_item);
         data.m_pkt_type = rsp_item.m_pkt_type;
         data.m_pid_type = rsp_item.m_pid_type;
+        // Collect the data bytes from the IN DATA packet.
         data.data = new [len >> 3];
         for (int unsigned i = 0; i < len; i++) begin
           data.data[i >> 3] = data.data[i >> 3] | (decoded_received_pkt[i + 16] << (i & 7));
         end
+        // Collect the received CRC16 from the DATA packet; LSB received first.
+        for (int unsigned i = 0; i < 16; i++) begin
+          rx_crc16[i] = decoded_received_pkt[16 + len + i];
+        end
         rsp_item = data;
         `uvm_info(`gfn, $sformatf("IN packet has length %d bytes", len >> 3), UVM_DEBUG)
+        calc_crc16 = data_pkt::generate_crc16(data.data);
+        `uvm_info(`gfn, $sformatf("RX CRC16 0x%0x - Calc CRC16 0x%0x", rx_crc16, calc_crc16),
+                  UVM_MEDIUM)
+        `DV_CHECK_EQ(rx_crc16, calc_crc16, "CRC16 mismatch on IN DATA packet")
       end
       default: begin
         // No other PID type carries a data payload.
