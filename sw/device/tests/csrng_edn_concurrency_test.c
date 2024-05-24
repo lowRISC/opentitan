@@ -54,6 +54,10 @@ enum {
   kTestParamNumIbexIterationsMax = 16,
   kTestParamNumAesIterationsMax = 32,
   kTestParamNumCsrngIterationsMax = 8,
+  /*
+   * The number of entries of the esfinal FIFO of ENTROPY_SRC.
+   */
+  kEntropySrcEsFinalFifoDepth = 3
 };
 
 /**
@@ -386,6 +390,14 @@ static void entropy_config(void) {
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, sw_ins.entropy_src_enable,
                                      sw_ins.seed_material));
   CHECK_STATUS_OK(csrng_testutils_cmd_ready_wait(&csrng));
+
+  // Wait for the esfinal FIFO inside ENTROPY_SRC to fill up. This will reduce
+  // the wait time for ENTROPY_SRC seeds and instead increase contention on the
+  // CSRNG and EDN hardware pipelines which are in focus for this test.
+  dif_entropy_src_debug_state_t debug_state;
+  do {
+    CHECK_DIF_OK(dif_entropy_src_get_debug_state(&entropy_src, &debug_state));
+  } while (debug_state.entropy_fifo_depth < kEntropySrcEsFinalFifoDepth);
 }
 
 /**
