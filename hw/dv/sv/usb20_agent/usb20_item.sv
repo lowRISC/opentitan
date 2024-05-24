@@ -44,7 +44,7 @@ class token_pkt extends usb20_item;
     crc5 = generate_crc5(address, endpoint);
   endfunction
 
-  function bit [4:0] generate_crc5(bit [6:0] address, bit [3:0] endpoint);
+  static function bit [4:0] generate_crc5(bit [6:0] address, bit [3:0] endpoint);
     bit [4:0] crc;
     bit [4:0] crc_reg;
     bit [10:0] data;
@@ -111,7 +111,7 @@ class data_pkt extends usb20_item;
     crc16 = generate_crc16(data);
   endfunction
 
-  function bit [15:0] generate_crc16(input byte unsigned data[]);
+  static function bit [15:0] generate_crc16(input byte unsigned data[]);
     bit [15:0] crc;
     bit [15:0] crc_reg;
     bit        as1;
