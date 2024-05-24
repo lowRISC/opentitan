@@ -199,6 +199,8 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
             info);
 
+  LOG_INFO("Initializing entropy complex in Auto mode");
+
   TRY(entropy_testutils_auto_mode_init());
 
   LOG_INFO("Powered up for the second time, actuate keymgr and perform test.");

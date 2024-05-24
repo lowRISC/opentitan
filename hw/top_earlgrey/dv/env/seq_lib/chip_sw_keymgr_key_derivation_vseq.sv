@@ -118,8 +118,13 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
     super.body();
 
-    // wait and check Keymgr entered CreatorRootKey State
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr entered CreatorRootKey State")
+    // Wait and check Keymgr entered CreatorRootKey State.  This needs initialization of flash and
+    // OTP followed by a reset, and then the entropy complex is configured in Auto mode, so it has
+    // to complete startup checks before keymgr can be initialized.  Thus the timeout has to be
+    // longer than the default (which is typically 10 ms).
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr entered CreatorRootKey State",
+             "Timed out waiting for keymgr to enter CreatorRootKey state",
+             /*timeout_ns=*/20_000_000)
     cur_unmasked_key = get_unmasked_key(get_otp_root_key());
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_internal_key))
     `DV_CHECK_FATAL(uvm_hdl_read(path_internal_key, new_key))
