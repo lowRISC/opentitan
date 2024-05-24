@@ -18,7 +18,19 @@ from mako.template import Template
 REPO_TOP = Path(__file__).resolve().parent.parent.parent
 
 
-def gen_testutils(top_name: str, ips_with_difs: List[Ip]) -> None:
+def get_plic_address_space(top, interrupt_domain, default_interrupt_domain):
+    """Returns the address space for the PLIC in the given interrupt domain"""
+    for m in top['module']:
+        if m['type'].startswith('rv_plic'):
+            module_irq_domain = m.get('interrupt_domain', default_interrupt_domain)
+            if module_irq_domain == interrupt_domain:
+                # PLIC uses a single base_addr field for its address space
+                base_addr = m['base_addr']
+                return list(base_addr.keys())[0]
+    assert False, 'Address space not found'
+
+
+def gen_testutils(top: dict, ips_with_difs: List[Ip]) -> None:
     """Generate testutils libraries that are rendered from Mako templates.
 
     Args:
@@ -32,28 +44,69 @@ def gen_testutils(top_name: str, ips_with_difs: List[Ip]) -> None:
 
     # Define input/output directories.
     testutils_templates_dir = REPO_TOP / "util/autogen_testutils/templates"
-    autogen_testutils_dir = REPO_TOP / f"sw/top_{top_name}/sw/test/utils/autogen"
+    autogen_testutils_dir = REPO_TOP / f"sw/top_{top['name']}/sw/test/utils/autogen"
 
     # Create output directories if needed.
     autogen_testutils_dir.mkdir(exist_ok=True)
 
     testutilses = []
 
-    # Render templates.
-    for testutils_template_path in testutils_templates_dir.iterdir():
-        if testutils_template_path.suffix == ".tpl":
-            comment_syntax = "#" if testutils_template_path.stem.endswith(
-                ".build") else "//"
-            # Read in template, render it, and write it to the output file.
-            testutils_template = Template(testutils_template_path.read_text())
-            testutils = autogen_testutils_dir / testutils_template_path.stem
-            testutils.write_text(
-                testutils_template.render(top_name=top_name,
-                                          ips_with_difs=ips_with_difs,
-                                          autogen_banner=get_autogen_banner(
-                                              "util/autogen_testutils.py",
-                                              comment=comment_syntax)))
-            testutilses += [testutils]
+    # Determine the default interrupt domain first
+    default_interrupt_domain = None
+    for interrupt_domain in top['interrupt_domains']:
+        if interrupt_domain.get('default', False):
+            default_interrupt_domain = interrupt_domain['name']
+    assert default_interrupt_domain, 'No default interrupt domain found'
+
+    # Determine the default addr space first
+    default_addr_space = None
+    for addr_space in top['addr_spaces']:
+        if addr_space.get('default', False):
+            default_addr_space = addr_space['name']
+    assert default_addr_space, 'No default address space found'
+ 
+    # Render templates. For this only renders ISR testutils templates, we render them separately for
+    # each interrupt domain
+    for interrupt_domain in top['interrupt_domains']:
+        intr_domain_suffix = ""
+        if interrupt_domain['name'] != default_interrupt_domain:
+            intr_domain_suffix = "_" + interrupt_domain['name']
+
+        addr_space = get_plic_address_space(top, interrupt_domain['name'], default_interrupt_domain)
+        addr_space_suffix = ""
+        if addr_space != default_addr_space:
+            addr_space_suffix = "_" + addr_space
+
+        # Filter IPs for interrupt domain
+        filtered_ips = []
+        for ip in ips_with_difs:
+            for m in top['module']:
+                module_interrupt_domain = m.get('interrupt_domain', default_interrupt_domain)
+                if m['type'] == ip.name_snake and module_interrupt_domain == interrupt_domain['name']:
+                    filtered_ips.append(ip)
+        # Filter duplicates and preserve order
+        filtered_ips = list(dict.fromkeys(filtered_ips))
+
+        for testutils_template_path in testutils_templates_dir.iterdir():
+            if testutils_template_path.suffix == ".tpl":
+                comment_syntax = "#" if testutils_template_path.stem.endswith(
+                    ".build") else "//"
+                # Read in template, render it, and write it to the output file.
+                testutils_template = Template(testutils_template_path.read_text())
+
+                base_file = Path(testutils_template_path.stem)
+                test_utils_file = base_file.stem + intr_domain_suffix + base_file.suffix
+                testutils = autogen_testutils_dir / test_utils_file
+
+                testutils.write_text(
+                    testutils_template.render(top=top,
+                                              plic_suffix=intr_domain_suffix,
+                                              addr_space_suffix=addr_space_suffix,
+                                              ips_with_difs=filtered_ips,
+                                              autogen_banner=get_autogen_banner(
+                                                  "util/autogen_testutils.py",
+                                                  comment=comment_syntax)))
+                testutilses += [testutils]
 
     # Format autogenerated file with clang-format.
     try:

@@ -1433,6 +1433,7 @@ def main():
                                                           default_interrupt_domain)
 
                 for interrupt_domain in interrupt_domains:
+                    c_helper.interrupt_domain = interrupt_domain
                     plic_suffix = ""
                     if interrupt_domain != default_interrupt_domain:
                         plic_suffix = "_" + interrupt_domain

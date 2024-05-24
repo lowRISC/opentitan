@@ -172,6 +172,7 @@ def main():
                     (REPO_TOP / "util/make_new_dif/templates/rv_plic_testutils.c.tpl"),
                     (REPO_TOP / "util/make_new_dif/templates/rv_plic_testutils.h.tpl"),
                     (REPO_TOP / "util/make_new_dif/templates/BUILD_testutils.tpl"),
+                    (REPO_TOP / "util/make_new_dif/templates/dif_rv_plic_unittest.cc.tpl"),
                 ]
                 out_files = [
                     (dif_dir / f"dif_{ip.name_snake}.c"),
@@ -179,6 +180,7 @@ def main():
                     (testutils_dir / f"{ip.name_snake}_testutils.c"),
                     (testutils_dir / f"{ip.name_snake}_testutils.h"),
                     (testutils_dir / "BUILD"),
+                    (dif_dir / f"dif_{ip.name_snake}_unittest.cc"),
                 ]
                 for template_file, out_file in list(zip(templates, out_files)):
                     template = Template(template_file.read_text(),
@@ -246,7 +248,7 @@ def main():
         # Only generate testutils for modules that are part of the toplevel
         top_ips = [ip for ip in ips
                    if ip.name_snake in top_modules]
-        gen_testutils(topcfg['name'], top_ips)
+        gen_testutils(topcfg, top_ips)
 
 
 if __name__ == "__main__":

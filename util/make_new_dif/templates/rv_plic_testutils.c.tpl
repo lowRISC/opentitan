@@ -7,7 +7,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
-#include "sw/ip/${ip.name_snake}/dif/dif_${ip.name_snake}${ip.name_snake}.h"
+#include "sw/ip/${ip.name_snake}/dif/dif_${ip.name_snake}.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
 void ${ip.name_snake}_testutils_irq_range_enable(dif_${ip.name_snake}_t *plic,

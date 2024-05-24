@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
+
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 
 #include <stdbool.h>
@@ -22,10 +25,10 @@ const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO0_PRIO0_MASK;
  * This data type is used to store IRQ source bit offset within a register,
  * and the offset of this register inside the PLIC.
  */
-typedef struct plic_reg_info {
+typedef struct rv_plic_reg_info {
   ptrdiff_t offset;
   bitfield_bit32_index_t bit_index;
-} plic_reg_info_t;
+} rv_plic_reg_info_t;
 
 /**
  * Get an IE, IP or LE register offset (IE0_0, IE01, ...) from an IRQ source ID.
@@ -34,7 +37,7 @@ typedef struct plic_reg_info {
  * accommodate all the bits (1 bit per IRQ source). This function calculates
  * the offset for a specific IRQ source ID (ID 32 would be IE01, ...).
  */
-static ptrdiff_t plic_offset_from_reg0(dif_rv_plic_irq_id_t irq) {
+static ptrdiff_t rv_plic_offset_from_reg0(dif_rv_plic_irq_id_t irq) {
   uint8_t register_index = (uint8_t)(irq / RV_PLIC_PARAM_REG_WIDTH);
   return register_index * sizeof(uint32_t);
 }
@@ -47,14 +50,15 @@ static ptrdiff_t plic_offset_from_reg0(dif_rv_plic_irq_id_t irq) {
  * the bit position within a register for a specific IRQ source ID (ID 32 would
  * be bit 0).
  */
-static uint8_t plic_irq_bit_index(dif_rv_plic_irq_id_t irq) {
+static uint8_t rv_plic_irq_bit_index(dif_rv_plic_irq_id_t irq) {
   return irq % RV_PLIC_PARAM_REG_WIDTH;
 }
 
 /**
  * Get the address of the first target N interrupt enable register (IEN0).
  */
-static ptrdiff_t plic_irq_enable_base_for_target(dif_rv_plic_target_t target) {
+static ptrdiff_t rv_plic_irq_enable_base_for_target(
+    dif_rv_plic_target_t target) {
   ptrdiff_t range = RV_PLIC_IE0_MULTIREG_COUNT * sizeof(uint32_t);
   return RV_PLIC_IE0_0_REG_OFFSET + (range * (ptrdiff_t)target);
 }
@@ -62,7 +66,7 @@ static ptrdiff_t plic_irq_enable_base_for_target(dif_rv_plic_target_t target) {
 /**
  * Get the address of the first target N software interrupt register (MSIPN).
  */
-static ptrdiff_t plic_software_irq_base_for_target(
+static ptrdiff_t rv_plic_software_irq_base_for_target(
     dif_rv_plic_target_t target) {
   return RV_PLIC_MSIP0_REG_OFFSET + (ptrdiff_t)(target * sizeof(uint32_t));
 }
@@ -70,7 +74,8 @@ static ptrdiff_t plic_software_irq_base_for_target(
 /**
  * Get the address of the first target N threshold register (THRESHOLDN).
  */
-static ptrdiff_t plic_threshold_base_for_target(dif_rv_plic_target_t target) {
+static ptrdiff_t rv_plic_threshold_base_for_target(
+    dif_rv_plic_target_t target) {
   return RV_PLIC_THRESHOLD0_REG_OFFSET + (ptrdiff_t)(target * sizeof(uint32_t));
 }
 
@@ -85,23 +90,24 @@ static ptrdiff_t plic_claim_complete_base_for_target(
 /**
  * Get a target and an IRQ source specific Interrupt Enable register info.
  */
-static plic_reg_info_t plic_irq_enable_reg_info(dif_rv_plic_irq_id_t irq,
-                                                dif_rv_plic_target_t target) {
-  ptrdiff_t offset = plic_offset_from_reg0(irq);
-  return (plic_reg_info_t){
-      .offset = plic_irq_enable_base_for_target(target) + offset,
-      .bit_index = plic_irq_bit_index(irq),
+static rv_plic_reg_info_t rv_plic_irq_enable_reg_info(
+    dif_rv_plic_irq_id_t irq, dif_rv_plic_target_t target) {
+  ptrdiff_t offset = rv_plic_offset_from_reg0(irq);
+  return (rv_plic_reg_info_t){
+      .offset = rv_plic_irq_enable_base_for_target(target) + offset,
+      .bit_index = rv_plic_irq_bit_index(irq),
   };
 }
 
 /**
  * Get an IRQ source specific Interrupt Pending register info.
  */
-static plic_reg_info_t plic_irq_pending_reg_info(dif_rv_plic_irq_id_t irq) {
-  ptrdiff_t offset = plic_offset_from_reg0(irq);
-  return (plic_reg_info_t){
+static rv_plic_reg_info_t rv_plic_irq_pending_reg_info(
+    dif_rv_plic_irq_id_t irq) {
+  ptrdiff_t offset = rv_plic_offset_from_reg0(irq);
+  return (rv_plic_reg_info_t){
       .offset = RV_PLIC_IP_0_REG_OFFSET + offset,
-      .bit_index = plic_irq_bit_index(irq),
+      .bit_index = rv_plic_irq_bit_index(irq),
   };
 }
 
@@ -111,7 +117,7 @@ static plic_reg_info_t plic_irq_pending_reg_info(dif_rv_plic_irq_id_t irq) {
  * There is one PRIO register per IRQ source, this function calculates the IRQ
  * source specific PRIO register offset.
  */
-static ptrdiff_t plic_priority_reg_offset(dif_rv_plic_irq_id_t irq) {
+static ptrdiff_t rv_plic_priority_reg_offset(dif_rv_plic_irq_id_t irq) {
   ptrdiff_t offset = (ptrdiff_t)(irq * sizeof(uint32_t));
   return RV_PLIC_PRIO0_REG_OFFSET + offset;
 }
@@ -123,7 +129,7 @@ dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
 
   // Clear all of the priority registers.
   for (uint32_t i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
-    ptrdiff_t offset = plic_priority_reg_offset(i);
+    ptrdiff_t offset = rv_plic_priority_reg_offset(i);
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 
@@ -131,18 +137,18 @@ dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
   for (dif_rv_plic_target_t target = 0; target < RV_PLIC_PARAM_NUM_TARGET;
        ++target) {
     // Clear interrupt enable registers.
-    ptrdiff_t offset = plic_irq_enable_base_for_target(target);
+    ptrdiff_t offset = rv_plic_irq_enable_base_for_target(target);
     for (size_t i = 0; i < RV_PLIC_IE0_MULTIREG_COUNT; ++i) {
       ptrdiff_t multireg_offset = offset + (ptrdiff_t)(i * sizeof(uint32_t));
       mmio_region_write32(plic->base_addr, multireg_offset, 0);
     }
 
     // Clear threshold registers.
-    offset = plic_threshold_base_for_target(target);
+    offset = rv_plic_threshold_base_for_target(target);
     mmio_region_write32(plic->base_addr, offset, 0);
 
     // Clear software interrupt registers.
-    offset = plic_software_irq_base_for_target(target);
+    offset = rv_plic_software_irq_base_for_target(target);
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 
@@ -158,7 +164,7 @@ dif_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  plic_reg_info_t reg_info = plic_irq_enable_reg_info(irq, target);
+  rv_plic_reg_info_t reg_info = rv_plic_irq_enable_reg_info(irq, target);
 
   uint32_t reg = mmio_region_read32(plic->base_addr, reg_info.offset);
   bool is_enabled = bitfield_bit32_read(reg, reg_info.bit_index);
@@ -188,7 +194,7 @@ dif_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
       return kDifBadArg;
   }
 
-  plic_reg_info_t reg_info = plic_irq_enable_reg_info(irq, target);
+  rv_plic_reg_info_t reg_info = rv_plic_irq_enable_reg_info(irq, target);
 
   uint32_t reg = mmio_region_read32(plic->base_addr, reg_info.offset);
   reg = bitfield_bit32_write(reg, reg_info.bit_index, flag);
@@ -205,7 +211,7 @@ dif_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  ptrdiff_t offset = plic_priority_reg_offset(irq);
+  ptrdiff_t offset = rv_plic_priority_reg_offset(irq);
   mmio_region_write32(plic->base_addr, offset, priority);
 
   return kDifOk;
@@ -219,7 +225,7 @@ dif_result_t dif_rv_plic_target_set_threshold(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  ptrdiff_t threshold_offset = plic_threshold_base_for_target(target);
+  ptrdiff_t threshold_offset = rv_plic_threshold_base_for_target(target);
   mmio_region_write32(plic->base_addr, threshold_offset, threshold);
 
   return kDifOk;
@@ -232,7 +238,7 @@ dif_result_t dif_rv_plic_irq_is_pending(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  plic_reg_info_t reg_info = plic_irq_pending_reg_info(irq);
+  rv_plic_reg_info_t reg_info = rv_plic_irq_pending_reg_info(irq);
   uint32_t reg = mmio_region_read32(plic->base_addr, reg_info.offset);
   *is_pending = bitfield_bit32_read(reg, reg_info.bit_index);
 
@@ -274,7 +280,7 @@ dif_result_t dif_rv_plic_software_irq_force(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  ptrdiff_t msip_offset = plic_software_irq_base_for_target(target);
+  ptrdiff_t msip_offset = rv_plic_software_irq_base_for_target(target);
   mmio_region_write32(plic->base_addr, msip_offset, 1);
 
   return kDifOk;
@@ -286,7 +292,7 @@ dif_result_t dif_rv_plic_software_irq_acknowledge(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  ptrdiff_t msip_offset = plic_software_irq_base_for_target(target);
+  ptrdiff_t msip_offset = rv_plic_software_irq_base_for_target(target);
   mmio_region_write32(plic->base_addr, msip_offset, 0);
 
   return kDifOk;
@@ -300,7 +306,7 @@ dif_result_t dif_rv_plic_software_irq_is_pending(const dif_rv_plic_t *plic,
     return kDifBadArg;
   }
 
-  ptrdiff_t msip_offset = plic_software_irq_base_for_target(target);
+  ptrdiff_t msip_offset = rv_plic_software_irq_base_for_target(target);
   uint32_t register_value = mmio_region_read32(plic->base_addr, msip_offset);
 
   *is_pending = (register_value == 1) ? true : false;

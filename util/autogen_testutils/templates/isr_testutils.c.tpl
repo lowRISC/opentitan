@@ -4,11 +4,11 @@
 
 ${autogen_banner}
 
-#include "sw/top_${top_name}/sw/test/utils/autogen/isr_testutils.h"
+#include "sw/top_${top['name']}/sw/test/utils/autogen/isr_testutils${plic_suffix}.h"
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
-#include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic${plic_suffix}/dif/dif_rv_plic${plic_suffix}.h"
 % for ip in ips_with_difs:
   % if ip.irqs:
     #include "sw/ip/${ip.name_snake}/dif/dif_${ip.name_snake}.h"
@@ -16,26 +16,26 @@ ${autogen_banner}
 % endfor
 #include "sw/lib/sw/device/arch/device.h"
 
-#include "hw/top_${top_name}/sw/autogen/top_${top_name}.h"
+#include "hw/top_${top['name']}/sw/autogen/top_${top['name']}${addr_space_suffix}.h"
 
 % for ip in ips_with_difs:
   % if ip.irqs:
-    void isr_testutils_${ip.name_snake}_isr(
-      plic_isr_ctx_t plic_ctx,
-      ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
-      top_${top_name}_plic_peripheral_t *peripheral_serviced,
+    void isr_testutils_${ip.name_snake}${plic_suffix}_isr(
+      plic${plic_suffix}_isr_ctx_t plic_ctx,
+      ${ip.name_snake}${plic_suffix}_isr_ctx_t ${ip.name_snake}_ctx,
+      top_${top['name']}_plic${plic_suffix}_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced) {
 
       // Claim the IRQ at the PLIC.
-      dif_rv_plic_irq_id_t plic_irq_id;
-      CHECK_DIF_OK(dif_rv_plic_irq_claim(
+      dif_rv_plic${plic_suffix}_irq_id_t plic_irq_id;
+      CHECK_DIF_OK(dif_rv_plic${plic_suffix}_irq_claim(
         plic_ctx.rv_plic,
         plic_ctx.hart_id,
         &plic_irq_id));
 
       // Get the peripheral the IRQ belongs to.
-      *peripheral_serviced = (top_${top_name}_plic_peripheral_t)
-        top_${top_name}_plic_interrupt_for_peripheral[plic_irq_id];
+      *peripheral_serviced = (top_${top['name']}_plic${plic_suffix}_peripheral_t)
+        top_${top['name']}_plic${plic_suffix}_interrupt_for_peripheral[plic_irq_id];
 
       // Get the IRQ that was fired from the PLIC IRQ ID.
       dif_${ip.name_snake}_irq_t irq = (dif_${ip.name_snake}_irq_t)(plic_irq_id -
@@ -75,7 +75,7 @@ ${autogen_banner}
       }
 
       // Complete the IRQ at the PLIC.
-      CHECK_DIF_OK(dif_rv_plic_irq_complete(
+      CHECK_DIF_OK(dif_rv_plic${plic_suffix}_irq_complete(
           plic_ctx.rv_plic,
           plic_ctx.hart_id,
           plic_irq_id));

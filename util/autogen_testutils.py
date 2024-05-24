@@ -78,7 +78,7 @@ def main():
                reggen_top_modules))
 
     # Auto-generate testutils files.
-    gen_testutils(topcfg['name'], ips_with_difs)
+    gen_testutils(topcfg, ips_with_difs)
 
 
 if __name__ == "__main__":

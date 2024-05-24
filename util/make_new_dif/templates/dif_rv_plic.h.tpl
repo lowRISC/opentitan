@@ -207,12 +207,12 @@ dif_result_t dif_${ip.name_snake}_irq_claim(const dif_${ip.name_snake}_t *plic,
  *
  * Finishes servicing of the claimed IRQ by writing the IRQ source ID back to a
  * target specific Claim/Complete register. This function must be called after
- * #dif_{ip.name_snake}_irq_claim, when the caller is prepared to service another IRQ
+ * #dif_${ip.name_snake}_irq_claim, when the caller is prepared to service another IRQ
  * with the same source ID. If a source ID is never Completed, then when future
  * interrupts are Claimed, they will never have the source ID of the uncompleted
  * IRQ.
  *
- * @see #dif_{ip.name_snake}_irq_claim
+ * @see #dif_${ip.name_snake}_irq_claim
  *
  * @param plic A ${ip.name_long_upper} handle.
  * @param target Target that claimed the IRQ.

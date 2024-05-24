@@ -10,6 +10,7 @@ differently.
 
 import logging as log
 import sys
+from collections import defaultdict
 from typing import Dict
 
 from reggen.ip_block import IpBlock
@@ -66,14 +67,8 @@ class TopGenCTest(TopGenC):
         self.irq_peripherals = self._get_irq_peripherals()
         self.alert_peripherals = self._get_alert_peripherals()
 
-    def _inside_interrupt_module(self, interrupt_domain, module_name):
-        for module_names in self.top["interrupt_module"][interrupt_domain]:
-            if module_name in module_names:
-                return True
-        return False
-
     def _get_irq_peripherals(self):
-        irq_peripherals = []
+        irq_peripherals = defaultdict(list)
         self.devices()
         default_interrupt_domain = get_default_interrupt_domain(self.top)
         interrupt_domains = get_interrupt_domains(self.top, self.addr_space,
@@ -88,13 +83,8 @@ class TopGenCTest(TopGenC):
             interrupt_domain = entry.get('interrupt_domain', default_interrupt_domain)
             if interrupt_domain not in interrupt_domains:
                 continue
-            if not self._inside_interrupt_module(interrupt_domain, inst_name):
+            if inst_name not in self.top["interrupt_module"][interrupt_domain]:
                 continue
-
-            name = entry['type']
-            plic_name = (self._top_name + Name(["plic", "peripheral"]) +
-                         Name.from_snake_case(inst_name))
-            plic_name = plic_name.as_c_enum()
 
             # Device regions may have multiple TL interfaces. Pick the region
             # associated with the 'core' interface.
@@ -111,13 +101,14 @@ class TopGenCTest(TopGenC):
             base_addr_name = region.base_addr_name().as_c_define()
             is_templated = 'attr' in entry and entry['attr'] == 'templated'
 
-            plic_name = (self._top_name + Name(["plic", "peripheral"]) +
-                         Name.from_snake_case(inst_name))
-            plic_name = plic_name.as_c_enum()
-
             # Default interrupt domain is not named in definitions
             irq_domain_name = (interrupt_domain,) if interrupt_domain != default_interrupt_domain else ()
 
+            name = entry['type']
+            plic_name = (self._top_name + Name(["plic", *irq_domain_name, "peripheral"]) +
+                         Name.from_snake_case(inst_name))
+            plic_name = plic_name.as_c_enum()
+            
             start_irq = self.device_irqs[interrupt_domain][inst_name][0]
             end_irq = self.device_irqs[interrupt_domain][inst_name][-1]
             plic_start_irq = (self._top_name + Name(["plic", *irq_domain_name, "irq", "id"]) +
@@ -133,9 +124,10 @@ class TopGenCTest(TopGenC):
             irq_peripheral = IrqTestPeripheral(name, inst_name, base_addr_name,
                                                is_templated, plic_name, start_irq,
                                                end_irq, plic_start_irq)
-            irq_peripherals.append(irq_peripheral)
+            irq_peripherals[interrupt_domain].append(irq_peripheral)
 
-        irq_peripherals.sort(key=lambda p: p.inst_name)
+        for key in irq_peripherals.keys():
+            irq_peripherals[key].sort(key=lambda p: p.inst_name)
         return irq_peripherals
 
     def _get_alert_peripherals(self):
