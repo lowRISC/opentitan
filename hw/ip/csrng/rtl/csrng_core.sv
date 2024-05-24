@@ -56,6 +56,7 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_invalid;
 
   localparam int NApps = NHwApps + 1;
+  localparam int NAppsLog = $clog2(NApps);
   localparam int AppCmdWidth = 32;
   localparam int AppCmdFifoDepth = 2;
   localparam int GenBitsWidth = 128;
@@ -92,6 +93,9 @@ module csrng_core import csrng_pkg::*; #(
   logic                        read_int_state;
   logic                        read_int_state_pfe;
   logic                        read_int_state_pfa;
+  logic                        fips_force_enable;
+  logic                        fips_force_enable_pfe;
+  logic                        fips_force_enable_pfa;
   logic                        recov_alert_event;
   logic                        acmd_avail;
   logic                        acmd_sop;
@@ -821,10 +825,29 @@ module csrng_core import csrng_pkg::*; #(
     .mubi_o(mubi_read_int_state_fanout)
   );
 
+  // SEC_CM: CONFIG.MUBI
+  mubi4_t mubi_fips_force_enable;
+  mubi4_t [1:0] mubi_fips_force_enable_fanout;
+  assign mubi_fips_force_enable = mubi4_t'(reg2hw.ctrl.fips_force_enable.q);
+  assign fips_force_enable_pfe = mubi4_test_true_strict(mubi_fips_force_enable_fanout[0]);
+  assign fips_force_enable_pfa = mubi4_test_invalid(mubi_fips_force_enable_fanout[1]);
+  assign hw2reg.recov_alert_sts.fips_force_enable_field_alert.de = fips_force_enable_pfa;
+  assign hw2reg.recov_alert_sts.fips_force_enable_field_alert.d  = fips_force_enable_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_fips_force_enable (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_fips_force_enable),
+    .mubi_o(mubi_fips_force_enable_fanout)
+  );
 
   // master module enable
   assign sw_app_enable = sw_app_enable_pfe;
   assign read_int_state = read_int_state_pfe;
+  assign fips_force_enable = fips_force_enable_pfe;
 
   //------------------------------------------
   // application interface
@@ -1283,6 +1306,9 @@ module csrng_core import csrng_pkg::*; #(
             (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
          entropy_src_seed_q;
   assign entropy_src_fips_d =
+         // Use shid_d here such that u_csrng_ctr_drbg_cmd gets the shid_q and the proper
+         // entropy_src_fips_q in the next clock cycle.
+         fips_force_enable && reg2hw.fips_force.q[shid_d[NAppsLog-1:0]] ? 1'b1 :
          flag0_fo[2] ? '0 : // special case where zero is used
          cmd_entropy_req && cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;

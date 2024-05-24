@@ -462,7 +462,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
 
 /**
  * Enables the CSRNG block with the SW application and internal state registers
- * enabled.
+ * enabled, and FIPS flag forcing disabled.
  */
 static void csrng_configure(void) {
   uint32_t reg =
@@ -471,6 +471,8 @@ static void csrng_configure(void) {
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
+                               kMultiBitBool4False);
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, reg);
 }
 

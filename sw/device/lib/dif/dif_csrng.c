@@ -54,6 +54,8 @@ dif_result_t dif_csrng_configure(const dif_csrng_t *csrng) {
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
+                               kMultiBitBool4False);
   mmio_region_write32(csrng->base_addr, CSRNG_CTRL_REG_OFFSET, reg);
   return kDifOk;
 }

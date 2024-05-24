@@ -295,13 +295,16 @@ In such cases, a 32-bit exception message will be propagated to firmware via the
 #### Generated Bits (`genbits`) Interface
 
 In addition to the command response signals there is a bus for returning the generated bits.
-This 129-bit bus consists of 128-bits, `genbits_bus`, for the random bit sequence itself, along with a single bit flag, `genbits_fips`, indicating whether the bits were considered fully in accordance with FIPS standards.
+This 129-bit bus consists of 128-bits, `genbits_bus`, for the random bit sequence itself, along with a single bit flag, `genbits_fips`, indicating whether the bits were considered fully in accordance with FIPS/CC standards.
 
 There are two cases when the sequence will not be FIPS compliant:
 - Early in the boot sequence, the `ENTROPY_SRC` generates a seed from the first 384 bits pulled from the noise source.
 This initial seed is tested to ensure some minimum quality for obfuscation use- cases, but this boot seed is not expected to be full-entropy nor do these health checks meet the 1024-bit requirement for start-up health checks required by NIST 800-90B.
-- If `flag0` is asserted during instantiation, the resulting DRBG instance will have a fully-deterministic seed, determined only by user input data.
-Such a seed will be created only using factory-entropy and will lack the physical-entropy required by NIST SP 800-90A, and thus this DRBG instance will not be FIPS compliant.
+- If `flag0` is asserted during instantiation, the resulting DRBG instance will have a fully deterministic seed.
+  If this seed is determined only by user input data, it may lack the physical-entropy required by NIST SP 800-90A, and thus this DRBG instance may not be FIPS/CC compliant.
+  If the seed has been derived by firmware in a FIPS/CC complaint way, the DRBG instance can still be FIPS/CC compliant.
+  To this end, CSRNG allows forcing the FIPS flag using the [`CTRL.FIPS_FORCE_ENABLE`](registers.md#ctrl) field and the [`FIPS_FORCE`](registers.md#fips_force) register.
+  This feature may also be useful for known-answer testing through entropy consumers accepting FIPS/CC compliant entropy only.
 
 #### Handshaking signals
 
