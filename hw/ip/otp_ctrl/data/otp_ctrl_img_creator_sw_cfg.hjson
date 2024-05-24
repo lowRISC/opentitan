@@ -17,35 +17,12 @@
                     value: "0x0",
                 },
                 {
-                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
-                    // Use software mod_exp implementation for signature
-                    // verification. See the definition of `hardened_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x739",
-                },
-                {
-                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
-                    // Mark the first three keys as valid and remaining as
-                    // invalid since we currently have only three keys. See the
-                    // definition of `hardened_byte_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x4ba5a5a5a5a5a5a5",
-                },
-                {
                     name: "CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
                     // Disable SPX+ signature verification. See the definitions
                     // of `kSigverifySpxDisabledOtp` and
                     // `kSigverifySpxEnabledOtp` in
                     // sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                     value: "0x8d6c8c17",
-                },
-                {
-                    name: "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN",
-                    // Mark the first three keys as valid and remaining as
-                    // invalid since we currently have only three keys. See the
-                    // definition of `hardened_byte_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x4ba5a5a5a5a5a5a5",
                 },
                 {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",

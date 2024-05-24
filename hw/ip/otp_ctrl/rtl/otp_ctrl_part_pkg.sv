@@ -451,7 +451,8 @@ package otp_ctrl_part_pkg;
     }),
     3328'({
       64'h340A5B93BB19342,
-      928'h0, // unallocated space
+      912'h0, // unallocated space
+      176'h0,
       32'h0,
       32'h0,
       32'h0,
@@ -478,9 +479,6 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0,
       32'h0,
-      64'h0,
-      32'h0,
-      64'h0,
       32'h0,
       32'h0,
       32'h0,
