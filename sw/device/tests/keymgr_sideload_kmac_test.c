@@ -44,10 +44,23 @@ static const size_t kCustomStringLen = 0;
 static const char kKmacMessage[] = "\x00\x01\x02\x03";
 static const size_t kKmacMessageLen = 4;
 
+static dif_keymgr_t keymgr;
+static dif_kmac_t kmac;
+
 // This is computed and filled by dv side
 static volatile const uint8_t sideload_digest_result[32] = {0};
 
 OTTF_DEFINE_TEST_CONFIG();
+
+/**
+ * Initializes all DIF handles for each peripheral used in this test.
+ */
+static void init_peripheral_handles(void) {
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+}
 
 /**
  * Initialize and run KMAC using a sideloaded key.
@@ -75,6 +88,20 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Generate the sideloaded key.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
+
+  // Get the maximum key version supported by the keymgr in its current state.
+  uint32_t max_key_version;
+  CHECK_STATUS_OK(
+      keymgr_testutils_max_key_version_get(keymgr, &max_key_version));
+
+  if (sideload_params.version > max_key_version) {
+    LOG_INFO("Key version %d is greater than the maximum key version %d",
+             sideload_params.version, max_key_version);
+    LOG_INFO("Setting key version to the maximum key version %d",
+             max_key_version);
+    sideload_params.version = max_key_version;
+  }
+
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
@@ -126,19 +153,11 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
 }
 
 bool test_main(void) {
-  // Initialize keymgr and advance to CreatorRootKey state.
-  dif_keymgr_t keymgr;
-  dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
+  init_peripheral_handles();
 
-  // Advance to OwnerIntKey state.
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
+  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
 
   // Test KMAC sideloading.
   test_kmac_with_sideloaded_key(&keymgr, &kmac);
-
   return true;
 }

@@ -62,6 +62,8 @@ static const dif_otbn_err_bits_t kErrBitsOk = 0x0;
  */
 static void run_x25519_app(dif_otbn_t *otbn, uint32_t *result,
                            dif_otbn_err_bits_t expect_err_bits) {
+  CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, /*enable=*/false));
+
   // Copy the input argument (Montgomery u-coordinate).
   CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(kEncodedU), &kEncodedU,
                                             kOtbnVarEncU));
