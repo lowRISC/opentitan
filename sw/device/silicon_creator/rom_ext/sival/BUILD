@@ -9,6 +9,7 @@ load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_a
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
+    "SLOTS",
     "secver_write_selection",
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
@@ -37,77 +38,47 @@ manifest(d = {
 # in the manifest definition).  You can manually create such a bitstream with:
 #
 # bazel build //hw/bitstream/universal:splice --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_sival
-opentitan_binary(
-    name = "rom_ext_fake_prod_signed_slot_a",
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
-    linkopts = LINK_ORDER,
-    manifest = ":manifest_sival",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
+[
+    opentitan_binary(
+        name = "rom_ext_fake_prod_signed_slot_{}".format(slot),
+        exec_env = [
+            "//hw/top_earlgrey:silicon_creator",
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:sim_dv_base",
+            "//hw/top_earlgrey:sim_verilator_base",
+        ],
+        linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
+        linkopts = LINK_ORDER,
+        manifest = ":manifest_sival",
+        rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        deps = [
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/rom_ext",
+            "//sw/device/silicon_creator/rom_ext/sival/keys",
+        ],
+    )
+    for slot in SLOTS
+]
 
-opentitan_binary(
-    name = "rom_ext_fake_prod_signed_slot_b",
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
-    linkopts = LINK_ORDER,
-    manifest = ":manifest_sival",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_real_prod_signed_slot_a",
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
-    linkopts = LINK_ORDER,
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_real_prod_signed_slot_b",
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
-    linkopts = LINK_ORDER,
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
+[
+    opentitan_binary(
+        name = "rom_ext_real_prod_signed_slot_{}".format(slot),
+        exec_env = [
+            "//hw/top_earlgrey:silicon_creator",
+            "//hw/top_earlgrey:fpga_cw310",
+        ],
+        linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
+        linkopts = LINK_ORDER,
+        deps = [
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/rom_ext",
+            "//sw/device/silicon_creator/rom_ext/sival/keys",
+        ],
+    )
+    for slot in SLOTS
+]
 
 offline_presigning_artifacts(
     name = "presigning",
@@ -115,6 +86,7 @@ offline_presigning_artifacts(
     srcs = [
         ":rom_ext_real_prod_signed_slot_a",
         ":rom_ext_real_prod_signed_slot_b",
+        ":rom_ext_real_prod_signed_slot_virtual",
     ],
     manifest = ":manifest_sival",
     rsa_key = {
