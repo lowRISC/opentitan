@@ -17,3 +17,9 @@ ROM_EXT_VERSION = struct(
     MINOR = "2",
     SECURITY = "1",
 )
+
+SLOTS = [
+    "a",
+    "b",
+    "virtual",
+]
