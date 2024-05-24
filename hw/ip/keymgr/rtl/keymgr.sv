@@ -429,17 +429,15 @@ module keymgr
   //   end
   // end
   // assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
-  //                                             revision_seed,
   //                                             otp_device_id_i,
   //                                             lc_keymgr_div_i,
   //                                             rom_digests,
-  //                                             creator_seed});
+  //                                             revision_seed});
   assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
-                                              revision_seed,
                                               otp_device_id_i,
                                               lc_keymgr_div_i,
                                               rom_digest_i.data,
-                                              creator_seed});
+                                              revision_seed});
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
@@ -458,11 +456,11 @@ module keymgr
                                  otp_key_i.owner_seed_valid};
     assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
   end
-  assign adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding,owner_seed});
+  assign adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding, creator_seed});
   assign adv_dvalid[OwnerInt] = owner_seed_vld;
 
   // Advance to owner_key
-  assign adv_matrix[Owner] = AdvDataWidth'(sw_binding);
+  assign adv_matrix[Owner] = AdvDataWidth'({sw_binding, owner_seed});
   assign adv_dvalid[Owner] = 1'b1;
 
   // Generate Identity operation input construction

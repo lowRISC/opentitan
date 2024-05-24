@@ -13,24 +13,24 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   typedef struct packed {
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
     bit [keymgr_pkg::DevIdWidth-1:0]       DeviceIdentifier;
     bit [keymgr_pkg::HealthStateWidth-1:0] HealthMeasurement;
     bit [keymgr_pkg::KeyWidth-1:0]         RomDigest;
-    bit [keymgr_pkg::KeyWidth-1:0]         DiversificationKey;
+    bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
   } adv_creator_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
+    bit [keymgr_pkg::KeyWidth-1:0]                       CreatorSeed;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
+    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [keymgr_pkg::KeyWidth-1:0]                       OwnerSeed;
   } adv_owner_data_t;
 
   typedef struct packed {
@@ -819,7 +819,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
     end
-    // for advance to OwnerRootSecret, both KDF use same otp_key
+    // The first advance calls use the same otp_key
     current_internal_key[Sealing] = otp_key;
     current_internal_key[Attestation] = otp_key;
     cfg.keymgr_vif.store_internal_key(current_internal_key[Sealing], current_state,
@@ -1046,20 +1046,18 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
     act = {<<8{byte_data_q}};
 
-    exp.DiversificationKey = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    exp.RomDigest          = cfg.keymgr_vif.rom_digest.data;
-    exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
-    exp.DeviceIdentifier   = cfg.keymgr_vif.otp_device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
+    exp.RomDigest              = cfg.keymgr_vif.rom_digest.data;
+    exp.HealthMeasurement      = cfg.keymgr_vif.keymgr_div;
+    exp.DeviceIdentifier       = cfg.keymgr_vif.otp_device_id;
 
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
     // The order of the string creation must match the design
-    `CREATE_CMP_STR(DiversificationKey)
+    `CREATE_CMP_STR(HardwareRevisionSecret)
     `CREATE_CMP_STR(RomDigest)
     `CREATE_CMP_STR(HealthMeasurement)
     `CREATE_CMP_STR(DeviceIdentifier)
-    `CREATE_CMP_STR(HardwareRevisionSecret)
     `CREATE_CMP_STR(SoftwareBinding)
 
     if (exp_match) begin
@@ -1079,11 +1077,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
-    exp.OwnerRootSecret = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+    exp.CreatorSeed = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    exp.unused = '0;
 
+    `CREATE_CMP_STR(CreatorSeed)
     `CREATE_CMP_STR(unused)
-    `CREATE_CMP_STR(OwnerRootSecret)
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
@@ -1105,8 +1104,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
+    exp.OwnerSeed = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    exp.unused    = '0;
 
+    `CREATE_CMP_STR(OwnerSeed)
     `CREATE_CMP_STR(unused)
     for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
