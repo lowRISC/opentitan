@@ -2,6 +2,8 @@
 
 ## Configuration of NitroKeys
 
+> The following configuration only works in the `earlgrey_es_sival` branch.
+
 NitroKeys are a personal security token used to hold the signing keys for
 TEST and DEV devices.  NitroKeys can be used to sign tests and binaries for
 devices in the TEST or DEV lifecycle states.
@@ -28,6 +30,8 @@ mode to 600.
 ```
 
 ## Signing with a token
+
+> The following configuration only works in the `earlgrey_es_sival` branch.
 
 Once a profile configuration is in place, you can build binaries signed by
 the keyset by telling bazel that you want to use a token.
@@ -184,7 +188,7 @@ instead of the real keys:
 
 ```console
 opentitantool \
-   rsa sign \
+   ecdsa sign \
    --input=<sha256 digest> \
    --output=<signed digest> \
    <private key file>
@@ -196,7 +200,7 @@ Normally, in this step, the signatures created in the signing ceremony
 would be copied into the target directory.
 
 ```console
-cp -f bazel-bin/signing/examples/*.sig signing/examples/signatures/
+cp -f bazel-bin/signing/examples/*sig signing/examples/signatures/
 ```
 
 ### Attach signatures producing final signed binaries
