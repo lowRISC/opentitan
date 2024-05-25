@@ -9,7 +9,7 @@ The ROM needs to prepare the OpenTitan chip for executing a ROM_EXT, including e
 - [Secure Boot Specification](../../../../doc/security/specs/secure_boot/README.md)
 - [Mask ROM Specification](doc/rom_overview_specification.md)
 - [Manifest Format](../rom_ext/doc/manifest.md)
-- [Signing Keys](keys/README.md)
+- [Root Keys](doc/root_keys.md)
 - [Signature Verification](doc/sigverify.md)
 - [ROM End-End Regression Setup](doc/e2e_tests.md)
 - [Test Plan](data/rom_e2e_testplan.hjson)
