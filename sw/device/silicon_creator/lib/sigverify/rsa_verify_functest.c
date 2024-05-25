@@ -11,9 +11,6 @@ static const char kMessage[] = "test message";
 // Digest of the test message above.
 hmac_digest_t act_digest;
 
-// See sw/device/silicon_creator/keys/README.md for more details on how to
-// update the structs below.
-
 static const sigverify_rsa_buffer_t kSignatureExp65537 = {
     .data = {
         0x725bfa2c, 0xdb359e00, 0x4dd50e25, 0x344ce68a, 0x2d49dc6b, 0x4a53a013,
