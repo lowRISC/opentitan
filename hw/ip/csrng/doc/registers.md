@@ -207,20 +207,18 @@ Application interface command status register
 This field represents the status code returned with the application command ack.
 It is updated each time a command ack is asserted on the internal application
 interface for software use.
-To check whether a command was succesful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state) or
+To check whether a command was successful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state) or
 [`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
-0x0: Request completed successfully.
-0x1: Request completed with an invalid application command error.
-     This error indicates that the issued application command doesn't represent a valid operation.
-     If this error appears, the main state machine will hang and the entropy complex has to be restarted.
-0x2: Request completed with an invalid counter drbg generation command error.
-     This error indicates that CSRNG entropy was generated for a command that is not a generate command.
-     In this case the entropy should not be considered as valid.
-0x3: This error indicates that the last command was issued out of sequence.
-     This happens when a command other than instantiate was issued without sending an instantiate command first.
-     This can also happen when an uninstantiate command is sent without instantiating first.
-0x4: This error indicates that the number of generate commands between reseeds exceeded the maximum number allowed.
-     This happens only for generate commands.
+
+| Value   | Name                | Description                                                                                                                                                                                                                                                                |
+|:--------|:--------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | SUCCESS             | Request completed successfully.                                                                                                                                                                                                                                            |
+| 0x1     | INVALID_ACMD        | Request completed with an invalid application command error. This error indicates that the issued application command doesn't represent a valid operation. If this error appears, the main state machine will hang and the entropy complex has to be restarted.            |
+| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid counter DRBG generation command error. This error indicates that CSRNG entropy was generated for a command that is not a Generate command. In this case the entropy should not be considered as valid.                                   |
+| 0x3     | INVALID_CMD_SEQ     | This error indicates that the last command was issued out of sequence. This happens when a command other than Instantiate was issued without sending an Instantiate command first. This can also happen when an Uninstantiate command is sent without instantiating first. |
+| 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see !!RESEED_INTERVAL). This happens only for Generate commands.                                                                                            |
+
+Other values are reserved.
 
 ### SW_CMD_STS . CMD_ACK
 This one bit field indicates when a SW command has been acknowledged by the CSRNG.
