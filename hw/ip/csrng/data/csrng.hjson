@@ -399,7 +399,6 @@
               desc: '''
                     Request completed with an invalid application command error.
                     This error indicates that the issued application command doesn't represent a valid operation.
-                    If this error appears, the main state machine will hang and the entropy complex has to be restarted.
                     '''
             },
             { value: "2",
