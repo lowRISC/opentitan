@@ -96,17 +96,6 @@ cc_library(
 )
 
 cc_library(
-    name = "rom_print",
-    srcs = ["rom_print.c"],
-    hdrs = ["rom_print.h"],
-    deps = [
-        ":error",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/lib/sw/device/base:macros",
-    ],
-)
-
-cc_library(
     name = "rom_patch",
     srcs = ["rom_patch.c"],
     hdrs = ["rom_patch.h"],
