@@ -131,17 +131,6 @@ cc_test(
 )
 
 cc_test(
-    name = "rom_print_unittest",
-    srcs = ["//sw/lib/sw/device/silicon_creator:rom_print_unittest.cc"],
-    deps = [
-        "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/lib/sw/device/silicon_creator:error",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_test(
     name = "rom_patch_unittest",
     srcs = ["//sw/lib/sw/device/silicon_creator:rom_patch_unittest.cc"],
     deps = [
