@@ -141,12 +141,7 @@
         "RSTMGR.ALERT_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_alert_info"]
-      bazel: [
-# TODO(lowrisc/opentitan#20589): Enable these _sival tests when the bug is fixed
-#        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_sival",
-#        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:rstmgr_alert_info_test"]
     }
     {
       name: chip_sw_rstmgr_sw_rst
