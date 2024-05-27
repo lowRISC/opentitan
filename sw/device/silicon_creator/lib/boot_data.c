@@ -92,7 +92,7 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
     boot_data = (char *)boot_data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, kBootDataNumWords);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   if (launder32(res) == kFlashCtrlErasedWord) {
     HARDENED_CHECK_EQ(res, kFlashCtrlErasedWord);
     return is_empty;
