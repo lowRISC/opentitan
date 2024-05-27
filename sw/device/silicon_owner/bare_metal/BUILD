@@ -58,7 +58,7 @@ cc_library(
     hdrs = ["bare_metal.h"],
     deps = [
         "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],

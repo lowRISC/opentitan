@@ -118,7 +118,7 @@ cc_library(
         "//sw/lib/sw/device/base:hardened_memory",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:multibits",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
         "//sw/lib/sw/device/silicon_creator/sigverify",
     ],
 )

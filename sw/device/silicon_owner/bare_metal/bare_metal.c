@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 #include "sw/lib/sw/device/silicon_creator/manifest_def.h"
-#include "sw/lib/sw/device/silicon_creator/rom_print.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 void bare_metal_main(void) {
-  OT_DISCARD(rom_printf("Bare metal PASS!\r\n"));
+  dbg_printf("Bare metal PASS!\r\n");
   while (true) {
   }
 }
 
-void interrupt_handler(void) { OT_DISCARD(rom_printf("Interrupt!\r\n")); }
+void interrupt_handler(void) { dbg_printf("Interrupt!\r\n"); }
 
 // We only need a single handler for all interrupts, but we want to
 // keep distinct symbols to make writing tests easier.

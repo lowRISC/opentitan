@@ -34,7 +34,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
     ],
 )
 
@@ -46,7 +46,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
     ],
 )
 
