@@ -160,7 +160,7 @@ cc_library(
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:stdasm",
         "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
         "//sw/lib/sw/device/silicon_creator/base:chip",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",

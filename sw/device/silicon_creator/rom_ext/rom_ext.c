@@ -21,10 +21,10 @@
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/manifest.h"
 #include "sw/lib/sw/device/silicon_creator/manifest_def.h"
-#include "sw/lib/sw/device/silicon_creator/rom_print.h"
 #include "sw/lib/sw/device/silicon_creator/shutdown.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
@@ -159,7 +159,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Jump to OWNER entry point.
-  OT_DISCARD(rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point));
+  dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();
 
   return kErrorRomBootFailed;
@@ -186,7 +186,7 @@ static rom_error_t rom_ext_try_boot(void) {
 
 void rom_ext_main(void) {
   rom_ext_init();
-  OT_DISCARD(rom_printf("Starting ROM_EXT\r\n"));
+  dbg_printf("Starting ROM_EXT\r\n");
   shutdown_finalize(rom_ext_try_boot());
 }
 

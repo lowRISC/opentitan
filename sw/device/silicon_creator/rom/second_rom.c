@@ -37,9 +37,9 @@
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/base/static_critical_version.h"
 #include "sw/lib/sw/device/silicon_creator/cfi.h"
+#include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/silicon_creator/rom_print.h"
 #include "sw/lib/sw/device/silicon_creator/shutdown.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
@@ -133,7 +133,7 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
 
-  OT_DISCARD(rom_printf("Starting 2nd stage ROM\r\n"));
+  dbg_printf("Starting 2nd stage ROM\r\n");
 
   // Reset MMIO counters
   sec_mmio_next_stage_init();
@@ -257,8 +257,8 @@ static rom_error_t rom_try_boot(void) {
 
   // TODO: Entry point should come from the manifest.
   uintptr_t entry_point = (uintptr_t)_rom_ext_virtual_start + 0x480;
-  OT_DISCARD(rom_printf("Jumping to ROM_EXT entry point at 0x%x\r\n",
-                        (unsigned)entry_point));
+  dbg_printf("Jumping to ROM_EXT entry point at 0x%x\r\n",
+             (unsigned)entry_point);
   ((rom_ext_entry_point *)entry_point)();
 
   return kErrorRomBootFailed;
