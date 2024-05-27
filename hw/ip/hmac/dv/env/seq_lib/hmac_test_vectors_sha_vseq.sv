@@ -65,7 +65,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         bit [TL_DW-1:0] intr_state_val;
         `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_LOW)
         // wr init: SHA256 only. HMAC, endian swap, digest swap all disabled.
-        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0),
+        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0), .key_swap(1'b0),
                   .digest_size(digest_size), .key_length(key_length));
 
         `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
@@ -74,6 +74,10 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",
                                   vector_list[i], j, parsed_vectors[j].msg_length_byte),
                                   UVM_LOW)
+
+        // always start off the transaction by reading previous digest to clear
+        // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
+        rd_digest();
 
         if ($urandom_range(0, 1) && !hmac_en) begin
           `DV_CHECK_RANDOMIZE_FATAL(this) // only key is randomized

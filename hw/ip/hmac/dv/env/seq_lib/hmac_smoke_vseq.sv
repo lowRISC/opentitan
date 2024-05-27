@@ -85,8 +85,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
                 .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
-      // can randomly read previous digest
-      if (i != 1 && $urandom_range(0, 1)) rd_digest();
+      // always start off the transaction by reading previous digest to clear
+      // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
+      rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeKey) begin
         `uvm_info(`gfn, $sformatf("wiping before key"), UVM_HIGH)

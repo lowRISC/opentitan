@@ -28,6 +28,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   rand bit [5:0]          key_length;
   rand bit                endian_swap;
   rand bit                digest_swap;
+  rand bit                key_swap;
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
@@ -90,6 +91,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                          bit hmac_en            = 1'b1,
                          bit endian_swap        = 1'b1,
                          bit digest_swap        = 1'b1,
+                         bit key_swap           = 1'b0,
                          bit [3:0] digest_size  = 4'b0001, // SHA-256
                          bit [5:0] key_length   = 6'b00_0010, // 256-bit key
                          bit intr_fifo_empty_en = 1'b1,
@@ -102,6 +104,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     ral.cfg.hmac_en.set(hmac_en);
     ral.cfg.endian_swap.set(endian_swap);
     ral.cfg.digest_swap.set(digest_swap);
+    ral.cfg.key_swap.set(key_swap);
     ral.cfg.digest_size.set(digest_size);
     ral.cfg.key_length.set(key_length);
     csr_update(.csr(ral.cfg));
