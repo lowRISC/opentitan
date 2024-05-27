@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
-#include "sw/lib/sw/device/silicon_creator/rom_print.h"
+#include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
