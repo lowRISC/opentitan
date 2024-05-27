@@ -12,6 +12,7 @@
             It also performs a sanity region protection check to make sure a protected page cannot be modified.
             When the test passes, it will output "PASS!".'''
       stage: V1
+      si_stage: NA
       tests: ["flash_test"]
     }
     {
@@ -20,6 +21,7 @@
             It computes the hash of a known input and compares it against the known digest.
             When the test passes, it will output "PASS!".'''
       stage: V1
+      si_stage: NA
       tests: ["sha256_test"]
     }
     {
@@ -29,6 +31,7 @@
             If the interrupt handling is incorrect, the test will never complete.
             When the test passes, it will output "PASS!".'''
       stage: V1
+      si_stage: NA
       tests: ["rv_timer_test"]
     }
   ]

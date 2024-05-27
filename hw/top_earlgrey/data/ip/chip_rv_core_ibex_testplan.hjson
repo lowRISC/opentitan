@@ -218,7 +218,7 @@
               - Inputs into the lockstep core are corrupted.
            '''
      stage: V2S
-     si_stage: None
+     si_stage: NA
      tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
     }
     {
