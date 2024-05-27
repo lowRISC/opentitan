@@ -79,6 +79,11 @@ TEST_F(ManifestTest, CodeRegionUnalignedEnd) {
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadCodeRegion);
 }
 
+TEST_F(ManifestTest, ExtensionOffsetUnaligned) {
+  manifest_.extensions.entries[1].offset = 1;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadExtension);
+}
+
 TEST_F(ManifestTest, EntryPointBeforeCodeStart) {
   manifest_.entry_point = manifest_.code_start - 1;
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadEntryPoint);

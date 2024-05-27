@@ -488,6 +488,13 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
     return kErrorManifestBadEntryPoint;
   }
 
+  // Manifest extension offset must be word aligned.
+  for (size_t i = 0; i < CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT; ++i) {
+    if ((manifest->extensions.entries[i].offset & 0x3) != 0) {
+      return kErrorManifestBadExtension;
+    }
+  }
+
   return kErrorOk;
 }
 
