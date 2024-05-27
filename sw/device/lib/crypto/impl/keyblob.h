@@ -164,6 +164,26 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
 OT_WARN_UNUSED_RESULT
 status_t keyblob_remask(otcrypto_blinded_key_t *key, const uint32_t *mask);
 
+/**
+ * Unmask and return the effective key from blinded key struct.
+ *
+ * This function should be used only for situations where the underlying
+ * implementation does not support shared computations (e.g. HMAC HWIP).
+ *
+ * `key` must not be NULL and must be large enough to accommodate the unmasked
+ * key. This function compares `unmasked_key_len` against the key length implied
+ * by `key->config`. `unmasked_key_len` is the length of the unmasked key in
+ * words.
+ *
+ * @param key The input blinded key.
+ * @param unmasked_key_len The length of `unmasked_key` in words.
+ * @param[out] unmasked_key The computed unmasked key.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
+                            size_t unmasked_key_len, uint32_t *unmasked_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

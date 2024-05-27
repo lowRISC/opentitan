@@ -218,3 +218,22 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key, const uint32_t *mask) {
   key->checksum = integrity_blinded_checksum(key);
   return OTCRYPTO_OK;
 }
+
+status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
+                            size_t unmasked_key_len, uint32_t *unmasked_key) {
+  if (key == NULL || unmasked_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (keyblob_share_num_words(key->config) != unmasked_key_len) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
+
+  for (size_t i = 0; i < unmasked_key_len; i++) {
+    unmasked_key[i] = share0[i] ^ share1[i];
+  }
+  return OTCRYPTO_OK;
+}
