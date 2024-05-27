@@ -31,10 +31,10 @@
 #include "sw/lib/sw/device/silicon_creator/base/boot_measurements.h"
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/cfi.h"
+#include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/rom_patch.h"
-#include "sw/lib/sw/device/silicon_creator/rom_print.h"
 #include "sw/lib/sw/device/silicon_creator/shutdown.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
@@ -109,7 +109,7 @@ static rom_error_t base_rom_init(void) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
-  OT_DISCARD(rom_printf("Starting Base ROM\n"));
+  dbg_printf("Starting Base ROM\n");
 
   // There are no conditional checks before writing to this CSR because it is
   // expected that if relevant Ibex countermeasures are disabled, this will
@@ -229,7 +229,7 @@ static rom_error_t second_rom_boot(void) {
   CSR_WRITE(CSR_REG_MTVEC, ((uintptr_t)_second_rom_boot_address) | 1);
 
   // Jump to the second rom entry point
-  OT_DISCARD(rom_printf("Jumping to 2nd stage ROM\n"));
+  dbg_printf("Jumping to 2nd stage ROM\n");
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiSecondRomBoot, 6);
   ((second_rom_entry_point *)entry_point)();
 
