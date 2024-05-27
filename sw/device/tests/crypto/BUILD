@@ -527,8 +527,8 @@ opentitan_test(
     ),
     deps = [
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
-        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -780,8 +780,8 @@ opentitan_test(
     deps = [
         ":rsa_3072_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
