@@ -120,6 +120,17 @@ opentitan_functest(
 )
 
 cc_test(
+    name = "dbg_print_unittest",
+    srcs = ["//sw/lib/sw/device/silicon_creator:dbg_print_unittest.cc"],
+    deps = [
+        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "rom_print_unittest",
     srcs = ["//sw/lib/sw/device/silicon_creator:rom_print_unittest.cc"],
     deps = [
