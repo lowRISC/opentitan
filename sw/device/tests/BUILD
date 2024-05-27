@@ -3876,6 +3876,13 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_config_host_test",
     srcs = ["usbdev_config_host_test.c"],
+    cw310 = cw310_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --no-wait-for-usb-device
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
+    ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -3885,6 +3892,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
