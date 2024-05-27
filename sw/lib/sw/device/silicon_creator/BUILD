@@ -82,6 +82,20 @@ cc_library(
 )
 
 cc_library(
+    name = "dbg_print",
+    srcs = ["dbg_print.c"],
+    hdrs = ["dbg_print.h"],
+    deps = [
+        ":epmp_defs",
+        ":error",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:macros",
+    ],
+)
+
+cc_library(
     name = "rom_print",
     srcs = ["rom_print.c"],
     hdrs = ["rom_print.h"],
