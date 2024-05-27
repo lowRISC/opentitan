@@ -82,9 +82,11 @@ pub enum SpxKeySubcommands {
     Generate(SpxKeyGenerateCommand),
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Annotate)]
 pub struct SpxSignResult {
-    pub signature: String,
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub signature: Vec<u8>,
 }
 
 #[derive(Debug, Args)]
@@ -92,7 +94,7 @@ pub struct SpxSignCommand {
     /// The filename for the message to sign.
     message: PathBuf,
 
-    /// The file contianing SPHICS+ keypair.
+    /// The file containing the SPHINCS+ keypair.
     #[arg(value_name = "KEY_FILE")]
     keypair: PathBuf,
     /// The filename to write the signature to.
@@ -113,9 +115,9 @@ impl CommandDispatch for SpxSignCommand {
             signature.write_to_file(output)?;
             return Ok(None);
         }
-        Ok(Some(Box::new(SpxSignResult {
-            signature: signature.to_string(),
-        })))
+        let mut sig = Vec::new();
+        signature.to_writer(&mut sig)?;
+        Ok(Some(Box::new(SpxSignResult { signature: sig })))
     }
 }
 

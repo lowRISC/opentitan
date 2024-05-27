@@ -283,6 +283,7 @@ rust_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib/bindgen",
+        "//sw/host/sphincsplus",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:bitflags",
@@ -312,8 +313,6 @@ rust_library(
         "@crate_index//:once_cell",
         "@crate_index//:p256",
         "@crate_index//:pem-rfc7468",
-        "@crate_index//:pqcrypto-sphincsplus",
-        "@crate_index//:pqcrypto-traits",
         "@crate_index//:rand",
         "@crate_index//:regex",
         "@crate_index//:rsa",

@@ -134,7 +134,7 @@ impl ManifestExtEntry {
                     name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
                 },
                 signature: SigverifySpxSignature {
-                    data: le_bytes_to_word_arr(&signature.0.to_le_bytes())?,
+                    data: le_bytes_to_word_arr(signature.sig_as_bytes())?,
                 },
             },
         )))

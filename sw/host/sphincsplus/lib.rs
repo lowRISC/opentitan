@@ -41,6 +41,62 @@ pub enum SpxError {
     BadSignature,
 }
 
+impl SpxPublicKey {
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl TryFrom<[u8; SPX_PUBLIC_KEY_BYTES]> for SpxPublicKey {
+    type Error = SpxError;
+    #[inline]
+    fn try_from(buf: [u8; SPX_PUBLIC_KEY_BYTES]) -> Result<Self, SpxError> {
+        Ok(SpxPublicKey(buf))
+    }
+}
+
+impl SpxSecretKey {
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl TryFrom<[u8; SPX_SECRET_KEY_BYTES]> for SpxSecretKey {
+    type Error = SpxError;
+    #[inline]
+    fn try_from(buf: [u8; SPX_SECRET_KEY_BYTES]) -> Result<Self, SpxError> {
+        Ok(SpxSecretKey(buf))
+    }
+}
+
+impl SpxSignature {
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl TryFrom<[u8; SPX_SIGNATURE_BYTES]> for SpxSignature {
+    type Error = SpxError;
+    #[inline]
+    fn try_from(buf: [u8; SPX_SIGNATURE_BYTES]) -> Result<Self, SpxError> {
+        Ok(SpxSignature(buf))
+    }
+}
+
+impl SpxSeed {
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl TryFrom<[u8; SPX_SEED_BYTES]> for SpxSeed {
+    type Error = SpxError;
+    #[inline]
+    fn try_from(buf: [u8; SPX_SEED_BYTES]) -> Result<Self, SpxError> {
+        Ok(SpxSeed(buf))
+    }
+}
+
 // Generate a new keypair from a seed.
 pub fn spx_keypair_from_seed(seed: &SpxSeed) -> Result<(SpxPublicKey, SpxSecretKey), SpxError> {
     let mut pk = [0u8; SPX_PUBLIC_KEY_BYTES];
@@ -68,7 +124,7 @@ pub fn spx_keypair_generate() -> Result<(SpxPublicKey, SpxSecretKey), SpxError> 
 }
 
 // Generate a detached signature for the message using the secret key.
-pub fn spx_sign(sk: &SpxSecretKey, msg: &Vec<u8>) -> Result<SpxSignature, SpxError> {
+pub fn spx_sign(sk: &SpxSecretKey, msg: &[u8]) -> Result<SpxSignature, SpxError> {
     let mut sig = [0u8; SPX_SIGNATURE_BYTES];
     let mut sig_bytes_written = 0;
     let err_code =
@@ -96,7 +152,7 @@ pub fn spx_sign(sk: &SpxSecretKey, msg: &Vec<u8>) -> Result<SpxSignature, SpxErr
 }
 
 // Verify a detached signature and return true if the signature is valid.
-pub fn spx_verify(pk: &SpxPublicKey, sig: &SpxSignature, msg: &Vec<u8>) -> Result<(), SpxError> {
+pub fn spx_verify(pk: &SpxPublicKey, sig: &SpxSignature, msg: &[u8]) -> Result<(), SpxError> {
     let err_code =
         // SAFETY: the signature and public key buffers here are fixed-length arrays of the size
         // expected by the C code, and the message buffer is passed along with its length.
@@ -153,7 +209,7 @@ mod test {
     fn sign_verify_test() {
         // Check that a generated signature passes verification.
         let (pk, sk) = spx_keypair_generate().unwrap();
-        let msg: Vec<u8> = vec![255u8; 100];
+        let msg = [255u8; 100];
         let mut sig = spx_sign(&sk, &msg).unwrap();
         assert!(spx_verify(&pk, &sig, &msg).is_ok());
 
