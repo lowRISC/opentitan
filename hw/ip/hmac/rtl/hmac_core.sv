@@ -79,6 +79,9 @@ module hmac_core import prim_sha2_pkg::*; (
 
   logic hmac_sha_rvalid;
 
+  logic idle_d, idle_q;
+  logic reg_hash_stop_d, reg_hash_stop_q;
+
   typedef enum logic [1:0] {
     SelIPad,
     SelOPad,
@@ -231,11 +234,12 @@ module hmac_core import prim_sha2_pkg::*; (
 
   assign sha_message_length_o = sha_msg_len;
 
+  // asserting txcnt_eq_blksz when txcount is a multiple of block size
   always_comb begin
     unique case (digest_size_i)
-      SHA2_256: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA256:0] == BlockSizeBSBSHA256);
-      SHA2_384: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512:0] == BlockSizeBSBSHA512);
-      SHA2_512: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512:0] == BlockSizeBSBSHA512);
+      SHA2_256: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA256-1:0] == '0) && (txcount != '0);
+      SHA2_384: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512-1:0] == '0) && (txcount != '0);
+      SHA2_512: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512-1:0] == '0) && (txcount != '0);
       default : txcnt_eq_blksz = '0;
     endcase
   end
@@ -434,15 +438,27 @@ module hmac_core import prim_sha2_pkg::*; (
     endcase
   end
 
+  assign reg_hash_stop_d =
+      reg_hash_stop_i ? 1'b1 :
+      idle_q          ? 1'b0 :
+      reg_hash_stop_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      reg_hash_stop_q <= 1'b0;
+    end else begin
+      reg_hash_stop_q <= reg_hash_stop_d;
+    end
+  end
+
   // Idle status signaling: This module ..
-  logic idle_d, idle_q;
   assign idle_d =
       // .. is not idle when told to start or continue
       (reg_hash_start_i || reg_hash_continue_i) ? 1'b0 :
       // .. is idle when the FSM is in the Idle state
       (st_q == StIdle) ? 1'b1 :
       // .. is idle when it has processed a complete block of a message and is told to stop
-      (st_q == StMsg && txcnt_eq_blksz && reg_hash_stop_i) ? 1'b1 :
+      (st_q == StMsg && txcnt_eq_blksz && reg_hash_stop_d) ? 1'b1 :
       // .. and keeps the current idle state in all other cases.
       idle_q;
 
