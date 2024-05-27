@@ -21,24 +21,40 @@ class BootPolicyTest : public rom_test::RomTest {
   rom_test::MockManifest mock_manifest_;
 };
 
-class ManifestCheckLengthTest : public BootPolicyTest,
-                                public testing::WithParamInterface<uint32_t> {};
+struct ManifestLengthTestCase {
+  uint32_t length;
+  rom_error_t result;
+};
 
-TEST_P(ManifestCheckLengthTest, ManifestCheckGood) {
+class ManifestCheckLengthTest
+    : public BootPolicyTest,
+      public testing::WithParamInterface<ManifestLengthTestCase> {};
+
+TEST_P(ManifestCheckLengthTest, ManifestCheckLength) {
   manifest_t manifest{};
   manifest.identifier = CHIP_ROM_EXT_IDENTIFIER;
-  manifest.length = GetParam();
+  manifest.length = GetParam().length;
   boot_data_t boot_data{};
 
-  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+  if (GetParam().result == kErrorOk) {
+    EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+  }
 
-  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data), kErrorOk);
+  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
+            GetParam().result);
 }
 
-INSTANTIATE_TEST_SUITE_P(GoodLengths, ManifestCheckLengthTest,
-                         testing::Values(CHIP_ROM_EXT_SIZE_MIN,
-                                         CHIP_ROM_EXT_SIZE_MAX >> 1,
-                                         CHIP_ROM_EXT_SIZE_MAX));
+INSTANTIATE_TEST_SUITE_P(
+    GoodLengths, ManifestCheckLengthTest,
+    testing::Values(
+        ManifestLengthTestCase{CHIP_ROM_EXT_SIZE_MIN, kErrorOk},
+        ManifestLengthTestCase{CHIP_ROM_EXT_SIZE_MAX >> 1, kErrorOk},
+        ManifestLengthTestCase{CHIP_ROM_EXT_SIZE_MAX, kErrorOk},
+        ManifestLengthTestCase{CHIP_ROM_EXT_RESIZABLE_SIZE_MAX, kErrorOk},
+        ManifestLengthTestCase{CHIP_ROM_EXT_SIZE_MIN - 1,
+                               kErrorBootPolicyBadLength},
+        ManifestLengthTestCase{CHIP_ROM_EXT_RESIZABLE_SIZE_MAX + 1,
+                               kErrorBootPolicyBadLength}));
 
 TEST_F(BootPolicyTest, ManifestCheckBadIdentifier) {
   manifest_t manifest{};
@@ -46,16 +62,6 @@ TEST_F(BootPolicyTest, ManifestCheckBadIdentifier) {
 
   EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadIdentifier);
-}
-
-TEST_F(BootPolicyTest, ManifestCheckBadLength) {
-  manifest_t manifest{};
-  manifest.identifier = CHIP_ROM_EXT_IDENTIFIER;
-  boot_data_t boot_data{};
-
-  manifest.length = CHIP_ROM_EXT_SIZE_MIN - 1;
-  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
-            kErrorBootPolicyBadLength);
 }
 
 TEST_F(BootPolicyTest, ManifestCheckBadManifest) {

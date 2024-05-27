@@ -557,20 +557,21 @@
               - Verify that the chip outputs the expected `BFV` over UART.
               - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
 
-            | Case                                | `BFV`                             |
-            | :---------------------------------: | :-------------------------------: |
-            | `identitfier = 0`                   | `kErrorBootPolicyBadIdentifier`   |
-            | `length < CHIP_ROM_EXT_SIZE_MIN`    | `kErrorBootPolicyBadLength`       |
-            | `length > CHIP_ROM_EXT_SIZE_MAX`    | No Error; image should boot.      |
-            | `code_start = code_end`             | `kErrorManifestBadCodeRegion`     |
-            | `code_start < CHIP_MANIFEST_SIZE`   | `kErrorManifestBadCodeRegion`     |
-            | `code_end > length`                 | `kErrorManifestBadCodeRegion`     |
-            | `code_start` in range, unaligned    | `kErrorManifestBadCodeRegion`     |
-            | `code_end` in range, unaligned      | `kErrorManifestBadCodeRegion`     |
-            | `entry_point < code_start`          | `kErrorManifestBadCodeRegion`     |
-            | `entry_point >= code_end`           | `kErrorManifestBadCodeRegion`     |
-            | `entry_point` in range, unaligned   | `kErrorManifestBadCodeRegion`     |
-            | `security_version = 0`              | `kErrorBootPolicyRollback`        |
+            | Case                                  | `BFV`                             |
+            | :---------------------------------:   | :-------------------------------: |
+            | `identitfier = 0`                     | `kErrorBootPolicyBadIdentifier`   |
+            | `length < CHIP_ROM_EXT_SIZE_MIN`      | `kErrorBootPolicyBadLength`       |
+            | `length > CHIP_ROM_EXT_SIZE_MAX`      | No Error; image should boot.      |
+            | `length > ROM_EXT_RESIZABLE_SIZE_MAX` | `kErrorBootPolicyBadLength`       |
+            | `code_start = code_end`               | `kErrorManifestBadCodeRegion`     |
+            | `code_start < CHIP_MANIFEST_SIZE`     | `kErrorManifestBadCodeRegion`     |
+            | `code_end > length`                   | `kErrorManifestBadCodeRegion`     |
+            | `code_start` in range, unaligned      | `kErrorManifestBadCodeRegion`     |
+            | `code_end` in range, unaligned        | `kErrorManifestBadCodeRegion`     |
+            | `entry_point < code_start`            | `kErrorManifestBadCodeRegion`     |
+            | `entry_point >= code_end`             | `kErrorManifestBadCodeRegion`     |
+            | `entry_point` in range, unaligned     | `kErrorManifestBadCodeRegion`     |
+            | `security_version = 0`                | `kErrorBootPolicyRollback`        |
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
@@ -587,7 +588,7 @@
 
             - Write image of size `CHIP_ROM_EXT_SIZE_MAX` + 1 or greater to `slot_a`.
               - The other slot remains empty (since it could be consumed by the single image).
-              - Image should be less than (`CHIP_ROM_EXT_SIZE_MAX` + `CHIP_BL0_SIZE_MAX` + 1).
+              - Image should be less than (`CHIP_ROM_EXT_RESIZABLE_SIZE_MAX` + 1).
             - Verify that the chip boots the image successfully.
             - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
             '''

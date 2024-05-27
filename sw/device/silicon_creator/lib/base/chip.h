@@ -31,17 +31,6 @@
 #define CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT 15
 
 /**
- * ROM_EXT manifest identifier (ASCII "OTRE").
- */
-#define CHIP_ROM_EXT_IDENTIFIER 0x4552544f
-
-/**
- * Allowed bounds for the `length` field of a ROM_EXT manifest.
- */
-#define CHIP_ROM_EXT_SIZE_MIN CHIP_MANIFEST_SIZE
-#define CHIP_ROM_EXT_SIZE_MAX 0x10000
-
-/**
  * Size of the header of a boot services message.
  */
 #define CHIP_BOOT_SVC_MSG_HEADER_SIZE 44
@@ -67,6 +56,19 @@
  */
 #define CHIP_BL0_SIZE_MIN CHIP_MANIFEST_SIZE
 #define CHIP_BL0_SIZE_MAX 0x70000
+
+/**
+ * ROM_EXT manifest identifier (ASCII "OTRE").
+ */
+#define CHIP_ROM_EXT_IDENTIFIER 0x4552544f
+
+/**
+ * Allowed bounds for the `length` field of a ROM_EXT manifest.
+ */
+#define CHIP_ROM_EXT_SIZE_MIN CHIP_MANIFEST_SIZE
+#define CHIP_ROM_EXT_SIZE_MAX 0x10000
+#define CHIP_ROM_EXT_RESIZABLE_SIZE_MAX \
+  (CHIP_ROM_EXT_SIZE_MAX + CHIP_BL0_SIZE_MAX)
 
 /**
  * Value written to the end of the retention SRAM creator area by `test_rom` to
