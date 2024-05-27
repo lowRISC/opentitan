@@ -342,8 +342,6 @@ _NORMAL_DEPENDENCIES = {
             "p384": "@crate_index__p384-0.13.0//:p384",
             "pem-rfc7468": "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
             "pest": "@crate_index__pest-2.7.3//:pest",
-            "pqcrypto-sphincsplus": "@crate_index__pqcrypto-sphincsplus-0.6.4//:pqcrypto_sphincsplus",
-            "pqcrypto-traits": "@crate_index__pqcrypto-traits-0.3.4//:pqcrypto_traits",
             "proc-macro2": "@crate_index__proc-macro2-1.0.69//:proc_macro2",
             "quote": "@crate_index__quote-1.0.33//:quote",
             "rand": "@crate_index__rand-0.8.5//:rand",
@@ -2321,42 +2319,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/ppv-lite86/0.2.17/download"],
         strip_prefix = "ppv-lite86-0.2.17",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ppv-lite86-0.2.17.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__pqcrypto-internals-0.2.5",
-        sha256 = "d9d34bec6abe2283e6de7748b68b292d1ffa2203397e3e71380ff8418a49fb46",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pqcrypto-internals/0.2.5/download"],
-        strip_prefix = "pqcrypto-internals-0.2.5",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.pqcrypto-internals-0.2.5.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__pqcrypto-sphincsplus-0.6.4",
-        patch_args = [
-            "-p2",
-        ],
-        patches = [
-            "@//third_party/rust/patches:pqcrypto-sphincsplus-includedir.patch",
-        ],
-        sha256 = "1b1ac9adfc6a5f52ca8dc4fef14a808386975e3ff82145ce0a21cbc3c5632946",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pqcrypto-sphincsplus/0.6.4/download"],
-        strip_prefix = "pqcrypto-sphincsplus-0.6.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.pqcrypto-sphincsplus-0.6.4.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__pqcrypto-traits-0.3.4",
-        sha256 = "97e91cb6af081c6daad5fa705f8adb0634c027662052cb3174bdf2957bf07e25",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pqcrypto-traits/0.3.4/download"],
-        strip_prefix = "pqcrypto-traits-0.3.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.pqcrypto-traits-0.3.4.bazel"),
     )
 
     maybe(
