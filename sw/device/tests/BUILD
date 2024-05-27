@@ -3866,11 +3866,19 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --no-wait-for-usb-device
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
