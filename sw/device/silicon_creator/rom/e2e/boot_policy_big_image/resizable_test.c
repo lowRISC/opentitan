@@ -27,6 +27,6 @@ bool test_main(void) {
   const manifest_t *manifest = boot_policy_manifest_a_get();
   LOG_INFO("Image Length (bytes) = %d", manifest->length);
   CHECK(manifest->length > CHIP_ROM_EXT_SIZE_MAX);
-  CHECK(manifest->length <= (CHIP_ROM_EXT_SIZE_MAX + CHIP_BL0_SIZE_MAX));
+  CHECK(manifest->length <= CHIP_ROM_EXT_RESIZABLE_SIZE_MAX);
   return true;
 }

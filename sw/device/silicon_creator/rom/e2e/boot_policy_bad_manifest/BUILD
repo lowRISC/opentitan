@@ -62,7 +62,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.BAD_LENGTH),
     },
     {
-        "name": "too_large",
+        "name": "resizable_rom_ext",
         "manifest": {
             "identifier": hex(CONST.ROM_EXT),
             # Note: we expect this image to boot successfully, so we must set the `address_translation` field to ensure the ROM does not error out an a bad field here.
@@ -71,6 +71,15 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         },
         "exit_success": OTTF_SUCCESS_MSG,
         "exit_failure": ROM_BOOT_FAILURE_MSG,
+    },
+    {
+        "name": "too_large",
+        "manifest": {
+            "identifier": hex(CONST.ROM_EXT),
+            "length": hex(CONST.ROM_EXT_RESIZABLE_SIZE_MAX + 1),
+        },
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.BAD_LENGTH),
     },
     {
         "name": "empty_code",

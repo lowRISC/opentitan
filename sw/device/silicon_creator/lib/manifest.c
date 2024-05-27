@@ -12,6 +12,8 @@ static_assert(CHIP_ROM_EXT_SIZE_MIN >= CHIP_MANIFEST_SIZE,
               "`CHIP_ROM_EXT_SIZE_MIN` is too small");
 static_assert(CHIP_ROM_EXT_SIZE_MAX >= CHIP_ROM_EXT_SIZE_MIN,
               "`CHIP_ROM_EXT_SIZE_MAX` is too small");
+static_assert(CHIP_ROM_EXT_RESIZABLE_SIZE_MAX >= CHIP_ROM_EXT_SIZE_MAX,
+              "`CHIP_ROM_EXT_RESIZABLE_SIZE_MAX` is too small");
 static_assert(CHIP_BL0_SIZE_MIN >= CHIP_MANIFEST_SIZE,
               "`CHIP_BL0_SIZE_MIN` is too small");
 static_assert(CHIP_BL0_SIZE_MAX >= CHIP_BL0_SIZE_MIN,
