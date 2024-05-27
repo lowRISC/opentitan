@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -16,26 +16,23 @@
 // the version of this file matching the Bazel rule under test.
 #include "ecdsa_p256_verify_testvectors.h"
 
-static status_t compute_digest(size_t msg_len, const uint8_t *msg,
-                               hmac_digest_t *digest) {
-  // Compute the SHA-256 digest using the HMAC HWIP.
-  hmac_ctx_t hwip_ctx;
-  TRY(hmac_init(&hwip_ctx, kHmacModeSha256, /*key=*/NULL));
-  TRY(hmac_update(&hwip_ctx, msg, msg_len));
-  TRY(hmac_final(&hwip_ctx, digest));
-  return OTCRYPTO_OK;
-}
-
 status_t ecdsa_p256_verify_test(
     const ecdsa_p256_verify_test_vector_t *testvec) {
   // Hash message.
-  hmac_digest_t digest = {
-      .len = kHmacSha256DigestBytes,
+  otcrypto_const_byte_buf_t msg_buf = {
+      .data = testvec->msg,
+      .len = testvec->msg_len,
   };
-  TRY(compute_digest(testvec->msg_len, testvec->msg, &digest));
+  uint32_t digest_buf[kSha256DigestWords];
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .data = digest_buf,
+      .len = kSha256DigestWords,
+  };
+  TRY(otcrypto_hash(msg_buf, digest));
 
   // Attempt to verify signature.
-  TRY(ecdsa_p256_verify_start(&testvec->signature, digest.digest,
+  TRY(ecdsa_p256_verify_start(&testvec->signature, digest.data,
                               &testvec->public_key));
   hardened_bool_t result;
   TRY(ecdsa_p256_verify_finalize(&testvec->signature, &result));
