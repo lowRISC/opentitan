@@ -85,7 +85,7 @@ void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
         kBase + LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, kLifecycleDeviceIdNumWords);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {

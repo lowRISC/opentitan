@@ -132,7 +132,7 @@ static void fifo_read(size_t word_count, void *data) {
     data = (char *)data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, word_count);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 /**
@@ -150,7 +150,7 @@ static void fifo_write(size_t word_count, const void *data) {
     data = (const char *)data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, word_count);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 /**
@@ -421,7 +421,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
     error &= word;
   }
   HARDENED_CHECK_EQ(i, byte_count);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 
   if (launder32(mask) == kFlashCtrlErasedWord) {
     HARDENED_CHECK_EQ(mask, kFlashCtrlErasedWord);
@@ -726,7 +726,7 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
     page_lockdown(kInfoPagesNoOwnerAccess[i]);
   }
   HARDENED_CHECK_EQ(i, kInfoPagesNoOwnerAccessCount);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 const flash_ctrl_info_page_t
@@ -764,7 +764,7 @@ void flash_ctrl_cert_info_pages_creator_cfg(void) {
                               kCertificateInfoPagesCreatorAccess);
   }
   HARDENED_CHECK_EQ(i, kFlashCtrlNumCertInfoPages);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 void flash_ctrl_cert_info_pages_owner_restrict(void) {
@@ -778,5 +778,5 @@ void flash_ctrl_cert_info_pages_owner_restrict(void) {
                               kCertificateInfoPagesOwnerAccess);
   }
   HARDENED_CHECK_EQ(i, kFlashCtrlNumCertInfoPages);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }

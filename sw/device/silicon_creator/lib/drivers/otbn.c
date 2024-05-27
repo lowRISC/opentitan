@@ -91,7 +91,7 @@ static void sc_otbn_write(uint32_t dest_addr, const uint32_t *src,
     HARDENED_CHECK_LT(i, num_words);
   }
   HARDENED_CHECK_EQ(iter_cnt, num_words);
-  HARDENED_CHECK_EQ((uint32_t)r_iter_cnt, UINT32_MAX);
+  HARDENED_CHECK_EQ(r_iter_cnt, SIZE_MAX);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -121,7 +121,7 @@ rom_error_t sc_otbn_dmem_read(size_t num_words, sc_otbn_addr_t src,
                               i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, num_words);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   return kErrorOk;
 }
 

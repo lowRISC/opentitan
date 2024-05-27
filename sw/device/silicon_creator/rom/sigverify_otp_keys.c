@@ -271,7 +271,7 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
   }
   // Ensure that the loop was executed exactly `params.key_cnt` times.
   HARDENED_CHECK_EQ(iter_cnt, params.key_cnt);
-  HARDENED_CHECK_EQ((uint32_t)r_iter_cnt, UINT32_MAX);
+  HARDENED_CHECK_EQ(r_iter_cnt, SIZE_MAX);
 
   // Verify the key a second time and only return it if it passes all checks.
   // The hardened check macros create barriers in the code, causing the binary

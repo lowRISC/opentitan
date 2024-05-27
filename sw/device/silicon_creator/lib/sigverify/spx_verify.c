@@ -95,7 +95,7 @@ rom_error_t sigverify_spx_verify(
       // Set `flash_exec_spx` to `UINT32_MAX` if `actual_root` is incorrect.
       flash_exec_spx |= diff;
     }
-    HARDENED_CHECK_EQ(i, UINT32_MAX);
+    HARDENED_CHECK_EQ(i, SIZE_MAX);
     error = sigverify_spx_success_to_ok(flash_exec_spx);
     *flash_exec ^= flash_exec_spx;
   } else {

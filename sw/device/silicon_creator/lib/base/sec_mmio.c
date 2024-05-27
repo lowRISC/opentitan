@@ -43,7 +43,7 @@ static void upsert_register(uint32_t addr, uint32_t value) {
     }
   }
   if (launder32(i) == last_index && launder32(i) < kSecMmioRegFileSize) {
-    HARDENED_CHECK_EQ((uint32_t)j, UINT32_MAX);
+    HARDENED_CHECK_EQ(j, SIZE_MAX);
     sec_mmio_ctx.addrs[i] = addr;
     sec_mmio_ctx.values[i] = value;
     ++sec_mmio_ctx.last_index;
@@ -64,7 +64,7 @@ void sec_mmio_init(void) {
     sec_mmio_ctx.values[i] = UINT32_MAX;
   }
   HARDENED_CHECK_EQ(i, kEntryCount);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   uint32_t check = kSecMmioValZero ^ sec_mmio_ctx.last_index;
   check ^= sec_mmio_ctx.write_count;
   check ^= sec_mmio_ctx.check_count;
@@ -81,7 +81,7 @@ void sec_mmio_next_stage_init(void) {
     sec_mmio_ctx.values[i] = UINT32_MAX;
   }
   HARDENED_CHECK_EQ(i, kEntryCount);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   HARDENED_CHECK_EQ(sec_mmio_ctx.check_count, 0);
 }
 
@@ -135,7 +135,7 @@ void sec_mmio_check_values(uint32_t rnd_offset) {
   }
   // Check for loop completion.
   HARDENED_CHECK_EQ(i, last_index);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   ++sec_mmio_ctx.check_count;
 }
 
@@ -165,7 +165,7 @@ void sec_mmio_check_values_except_otp(uint32_t rnd_offset, uint32_t otp_base) {
   }
   // Check for loop completion.
   HARDENED_CHECK_EQ(i, last_index);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   ++sec_mmio_ctx.check_count;
 }
 

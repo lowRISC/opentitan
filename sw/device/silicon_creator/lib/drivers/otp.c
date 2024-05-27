@@ -82,7 +82,7 @@ void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
     data[i] = sec_mmio_read32(kBase + reg_offset + i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, num_words);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 uint64_t otp_partition_digest_read(otp_partition_t partition) {
@@ -140,7 +140,7 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t relative_address,
     addr += sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, num_words);
-  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
   return kErrorOk;
 }
 
