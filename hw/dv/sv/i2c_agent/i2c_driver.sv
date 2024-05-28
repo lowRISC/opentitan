@@ -87,7 +87,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task drive_host_data_bits(ref i2c_item req);
     int num_bits = $bits(req.wdata);
     `uvm_info(`gfn, $sformatf("Driving host item 0x%x", req.wdata), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("wait_cycles 0x%x", req.wait_cycles), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("wait_cycles 0x%x", req.wait_cycles), UVM_HIGH)
     for (int i = num_bits - 1; i >= (num_bits - req.wait_cycles); i--) begin
       cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
     end

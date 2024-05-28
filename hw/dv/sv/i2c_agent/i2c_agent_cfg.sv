@@ -32,6 +32,8 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   int     sent_rd_byte = 0;
   int     rcvd_rd_byte = 0;
 
+  bit     is_read;
+
   // this variables can be configured from host test
   uint i2c_host_min_data_rw = 1;
   uint i2c_host_max_data_rw = 10;
@@ -46,15 +48,29 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // ack followed by stop test mode
   bit     allow_ack_stop = 0;
   bit     ack_stop_det = 0;
-  bit     allow_bad_addr = 0;
-  // target address is stored when dut is programmed
+
+  ////////////////
+  // Addressing //
+  ////////////////
+
+  // Store the DUT's programmed target addresses
   bit [6:0] target_addr0;
   bit [6:0] target_addr1;
-  // store history of good and bad read target address
-  // '1' good. '0' bad
+
+  // Set this bit when there is the possibility of generating Agent-Controller stimulus
+  // transfers where the address does not match that configured into the DUT.
+  bit       allow_bad_addr = 0;
+
+  bit       valid_addr; // Was the last observed transaction to the DUT addressed correctly?
+  // Store history of good and bad read target address ( '1' = good, '0' = bad )
+  // This is used by the env's scoreboard to adjust its expectations, and also
+  // to adjust the stimulus for reads, so we don't put data into the TXFIFO that will
+  // never be read out.
   bit       read_addr_q[$];
-  bit       valid_addr;
-  bit       is_read;
+
+  ////////////
+  // Resets //
+  ////////////
 
   // reset driver only without resetting dut
   bit       driver_rst = 0;
