@@ -906,9 +906,9 @@ module hmac
 
   logic initiated;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)                     initiated <= 1'b0;
-    else if (hash_start_or_continue) initiated <= 1'b1;
-    else if (hash_process)           initiated <= 1'b0;
+    if (!rst_ni)                              initiated <= 1'b0;
+    else if (hash_start_or_continue)          initiated <= 1'b1;
+    else if (hash_process || reg_hash_stop)   initiated <= 1'b0;
   end
 
   // the host doesn't write data after hash_process until hash_start_or_continue.
