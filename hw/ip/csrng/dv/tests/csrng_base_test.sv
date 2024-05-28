@@ -31,6 +31,7 @@ class csrng_base_test extends cip_base_test #(
     cfg.enable_pct                      = 100;
     cfg.sw_app_enable_pct               = 90;
     cfg.read_int_state_pct              = 90;
+    cfg.fips_force_enable_pct           = 50;
     cfg.check_int_state_pct             = 100;
   endfunction
 

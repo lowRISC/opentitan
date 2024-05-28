@@ -346,6 +346,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           );
         end
       end
+      "fips_force": begin
+      end
       "hw_exc_sts": begin
       end
       "recov_alert_sts": begin
@@ -450,7 +452,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.v[app]   = 'h0;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b0;
-    cfg.compliance[app]     = fips;
+    cfg.compliance[app]     = fips || ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
+                                        `gmv(ral.fips_force)[app]);
     cfg.status[app]         = 1'b1;
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
@@ -467,7 +470,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b0;
-    cfg.compliance[app]     = fips;
+    cfg.compliance[app]     = fips || ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
+                                        `gmv(ral.fips_force)[app]);
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
 
@@ -476,7 +480,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.key[app] = 'h0;
     cfg.v[app]   = 'h0;
     cfg.reseed_counter[app] = 1'b0;
-    cfg.compliance[app]     = 1'b0;
+    cfg.compliance[app]     =  ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
+                                 `gmv(ral.fips_force)[app]);
     cfg.status[app]         = 1'b0;
   endfunction
 

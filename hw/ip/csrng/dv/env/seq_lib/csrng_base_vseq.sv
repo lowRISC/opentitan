@@ -54,9 +54,11 @@ class csrng_base_vseq extends cip_base_vseq #(
 
     // Enables
     csr_wr(.ptr(ral.regwen), .value(cfg.regwen));
+    csr_wr(.ptr(ral.fips_force), .value(cfg.fips_force));
     ral.ctrl.enable.set(cfg.enable);
     ral.ctrl.sw_app_enable.set(cfg.sw_app_enable);
     ral.ctrl.read_int_state.set(cfg.read_int_state);
+    ral.ctrl.fips_force_enable.set(cfg.fips_force_enable);
     csr_update(.csr(ral.ctrl));
   endtask
 
