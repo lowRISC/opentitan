@@ -63,11 +63,6 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   int                        obs_wr_id = 0;
   bit                        skip_acq_comp = 0; // used only for fifo_reset test
 
-  // In Target-mode, read data is created by i2c_base_seq::fetch_txn().
-  // With a random tx fifo flush event, this makes it difficult to check read path integrity.
-  // By setting 'read_rnd_data = 1', expected read data is collected right at the input of tx fifo
-  // and at the tx fifo reset event, expected read data also get flushed.
-  bit                        read_rnd_data = 0;
   bit [7:0]                  mirrored_txdata[$];
 
   // skip segment comparison
@@ -152,7 +147,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
             obs_rd_item.pname = "obs_rd";
             obs_rd_item.tran_id = num_obs_rd++;
-            if (read_rnd_data) begin
+            if (cfg.read_rnd_data) begin
               // With read_rnd_data mode, only read data can be compared.
               // Other variables cannot be predictable.
               `uvm_create_obj(i2c_item, exp_rd_item);
@@ -427,7 +422,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         end
 
         "txdata": begin
-          if (read_rnd_data) begin
+          if (cfg.read_rnd_data) begin
             mirrored_txdata.push_back(item.a_data[7:0]);
           end
         end
