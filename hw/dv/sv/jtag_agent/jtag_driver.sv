@@ -105,18 +105,32 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   endtask
 
   // Task to drive TMS such that TAP FSM resets to Test-Logic-Reset state
+  //
+  // If there is a trst_n reset in the meantime, wait until the signal goes high again. After its
+  // does, we'll be in the test-logic-reset state by a different route, so the task can terminate.
   task drive_jtag_test_logic_reset();
     `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
-    // Enable clock
-    cfg.vif.tck_en <= 1'b1;
-    `HOST_CB.tms <= 1'b0;
-    @(`HOST_CB);
-    // Go to Test Logic Reset
-    repeat (JTAG_TEST_LOGIC_RESET_CYCLES) begin
-      tms_tdi_step(1, 0);
-    end
-    // Go to Run-Test/Idle
-    tms_tdi_step(0, 0);
+    fork begin : isolation_fork
+      fork
+        begin
+          // Enable clock
+          cfg.vif.tck_en <= 1'b1;
+          `HOST_CB.tms <= 1'b0;
+          @(`HOST_CB);
+          // Go to Test Logic Reset
+          repeat (JTAG_TEST_LOGIC_RESET_CYCLES) begin
+            tms_tdi_step(1, 0);
+          end
+          // Go to Run-Test/Idle
+          tms_tdi_step(0, 0);
+        end
+        begin
+          wait (!cfg.vif.trst_n);
+          wait (cfg.vif.trst_n);
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
   // drive jtag req and retrieve rsp
