@@ -5,32 +5,37 @@ typedef class i2c_scoreboard;
 
 class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
-  // i2c address mode (only support 7-bit address for targets)
-  i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
+  i2c_scoreboard scoreboard;
+  virtual i2c_dv_if i2c_dv_vif;
 
-  // i2c_agent cfg
+  ////////////////////////////////
+  // Test Configuration Options //
+  ////////////////////////////////
+
   rand i2c_agent_cfg m_i2c_agent_cfg;
-
-  // seq cfg
   i2c_seq_cfg seq_cfg;
-  bit [7:0]  lastbyte;
+
+  i2c_target_addr_mode_e target_addr_mode = Addr7BitMode; // (dv supports 7-bit addresses only)
 
   int        spinwait_timeout_ns = 10_000_000; // 10ms
   int        long_spinwait_timeout_ns = 400_000_000;
-  int        sent_acq_cnt;
-  int        rcvd_acq_cnt;
 
-  // Ratio between write and read
+  // Constrain the direction of each randomly-generated Agent-Controller transfer.
+  // - These values become weights in a randcase statement, so setting to 0 will disable a
+  //   particular direction of transfer.
   int        wr_pct = 1;
   int        rd_pct = 1;
+  // If enabled, 'bad_addr_pct' gives each generated Agent-Controller transaction the possibilty
+  // of selecting an address that does not match the DUT's configuration.
   int        bad_addr_pct = 0;
 
-  // re-start injection rate between 1~10
-  int        rs_pct = 1;
-
-  // dut target mode parameters
+  // Constrain the min/max number of bytes that should make up a stimulated
+  // DUT-target transaction. Note this constrains each whole transaction, and RSTARTs
+  // may be injected to break it up into many smaller contiguous transfers.
   int        min_data = 1;
   int        max_data = 60;
+  // RSTART injection rate (between 1~10)
+  int        rs_pct = 1;
 
   // This sets the minimum length of a transfer (START/RSTART -> RSTART/STOP) within
   // any larger transaction. A transfer with no data, where the address byte is NACK'd,
@@ -38,18 +43,18 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // circumstances.
   int        min_xfer_len = 0;
 
-  // Use i2c interrupt handler
+  // The vseq stimulus has routines to generate interrupt and polling-driven stimulus.
+  // This bit (settable via a plusarg) allows individual tests to specify which generic
+  // handling routines should be used. (0==polling/1==interrupts)
   bit        use_intr_handler = 1'b0;
-  bit        stop_intr_handler = 1'b0;
-  bit        read_all_acq_entries = 1'b0;
 
-  // Use ACK Control Mode
+  // If set, 50% chance to enable ACK Control Mode
   bit        ack_ctrl_en = 1'b0;
 
-  // Slow acq process
+  // Enabling these bits add extra delays to the testbench processes that read back the ACQFIFO and
+  // write into the TXFIFO for DUT-Target operation. This allows stimulating full/empty stalls and
+  // stretches.
   bit        slow_acq = 1'b0;
-
-  // Slow tx process
   bit        slow_txq = 1'b0;
 
   // In Target-mode, read data is created by i2c_base_seq::fetch_txn().
@@ -59,15 +64,23 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // also flushed.
   bit        read_rnd_data = 0;
 
+  ////////////////////////////////
+  // Helper Variables (not cfg) //
+  ////////////////////////////////
+
+  int        sent_acq_cnt;
+  int        rcvd_acq_cnt;
+  bit [7:0]  lastbyte;
+
   // Flags for the 'ack_stop' test
   int        sent_ack_stop = 0;
   int        rcvd_ack_stop = 0;
 
-  // Timing parameter related settings
-  uint                   scl_frequency = 100; //in KHz
+  // Flags that test sequences can use to cleanup
+  bit        stop_intr_handler = 1'b0;
+  bit        read_all_acq_entries = 1'b0;
 
-  i2c_scoreboard scb_h;
-  virtual    i2c_dv_if i2c_dv_vif;
+  uint scl_frequency = 100; //in KHz
 
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)
@@ -79,20 +92,15 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
     list_of_alerts = i2c_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
-    // create i2c_agent_cfg
     m_i2c_agent_cfg = i2c_agent_cfg::type_id::create("m_i2c_agent_cfg");
-    // set agent to Device mode
     m_i2c_agent_cfg.if_mode = Device;
-    // set time to stop test
     m_i2c_agent_cfg.ok_to_end_delay_ns = 5000;
-    // config target address mode of agent to the same
     m_i2c_agent_cfg.target_addr_mode = Addr7BitMode;
-
     m_tl_agent_cfg.max_outstanding_req = 1;
-    // create the seq_cfg
+
     seq_cfg = i2c_seq_cfg::type_id::create("seq_cfg");
 
-    // set num_interrupts & num_alerts
+    // set num_interrupts
     begin
       uvm_reg rg = ral.get_reg_by_name("intr_state");
       if (rg != null) begin

@@ -40,8 +40,11 @@ class i2c_seq_cfg extends uvm_object;
   uint i2c_prob_sda_interference = 30;
   uint i2c_prob_scl_interference = 70;
 
-  // bits to control fifos access
-  // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
+  // The follow control bits are related to fifo accesses
+
+  // This bit makes the tb adjust its expectation based upon 1 data
+  // byte being dropped due to overflowing the RXFIFO. If set, the stimulus
+  // should ensure this exact overflow condition will occur.
   bit en_rx_overflow             = 1'b0;
   // set en_rx_threshold to ensure rx_threshold irq is triggered
   bit en_rx_threshold            = 1'b0;
