@@ -1,3 +1,7 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 # While the code below looks messy, it was taken directly from a vivado example
 # See here (https://www.xilinx.com/support/answers/66386.html)
 # See also this link (https://github.com/lowRISC/opentitan/pull/8138#issuecomment-916696830)
