@@ -26,9 +26,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   // Knobs & Weights
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
-       enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct, check_int_state_pct,
-       num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks, max_aes_halt_clks,
-       min_num_disable_enable, max_num_disable_enable,
+       enable_pct, sw_app_enable_pct, read_int_state_pct, fips_force_enable_pct, force_state_pct,
+       check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks,
+       max_aes_halt_clks, min_num_disable_enable, max_num_disable_enable,
        min_enable_clks, max_enable_clks,
        min_disable_edn_before_csrng_clks, max_disable_edn_before_csrng_clks,
        min_disable_csrng_before_entropy_src_clks, max_disable_csrng_before_entropy_src_clks,
@@ -40,7 +40,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS],
                  sw_app, aes_halt;
-  rand mubi4_t   enable, sw_app_enable, read_int_state;
+  rand mubi4_t   enable, sw_app_enable, read_int_state, fips_force_enable;
+  rand bit [2:0] fips_force;
   rand bit [3:0] lc_hw_debug_en;
   rand bit [7:0] otp_en_cs_sw_app_read;
 
@@ -109,6 +110,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint aes_halt_c { aes_halt dist {
                           1 :/ aes_halt_pct,
                           0 :/ (100 - aes_halt_pct) };}
+
+  constraint fips_force_enable_c { fips_force_enable dist {
+                                   MuBi4True  :/ fips_force_enable_pct,
+                                   MuBi4False :/ (100 - fips_force_enable_pct) };}
 
   // Behind the aes_cipher_sm_err error code, there are which_aes_cm.num() countermeasures each of
   // which can be stimulated by forcing the Sp2VWidth independent logic rails. We bias error
@@ -311,6 +316,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            regwen)};
     str = {str,  $sformatf("\n\t |***** check_int_state                 : %10d *****| \t",
            check_int_state)};
+    str = {str,  $sformatf("\n\t |***** fips_force_enable               : %10d *****| \t",
+           fips_force_enable)};
     str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------------| \t")};
     str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct       : %10d *****| \t",
            otp_en_cs_sw_app_read_pct) };
@@ -328,6 +335,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            regwen_pct)};
     str = {str,  $sformatf("\n\t |***** check_int_state_pct             : %10d *****| \t",
            check_int_state_pct)};
+    str = {str,  $sformatf("\n\t |***** fips_force_enable_pct           : %10d *****| \t",
+           fips_force_enable_pct)};
     str = {str,  $sformatf("\n\t |***** num_cmds_min                    : %10d *****| \t",
            num_cmds_min)};
     str = {str,  $sformatf("\n\t |***** num_cmds_max                    : %10d *****| \t",
