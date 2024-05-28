@@ -1521,7 +1521,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
-            bitstream = "//hw/bitstream:mask_rom_otp_{}".format(lc_state.lower()),
+            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
         ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
