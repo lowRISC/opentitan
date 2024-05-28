@@ -12,7 +12,7 @@ class i2c_target_fifo_reset_tx_vseq extends i2c_target_runtime_base_vseq;
   virtual task pre_start();
     super.pre_start();
 
-    cfg.scb_h.read_rnd_data = 1;
+    cfg.read_rnd_data = 1;
     cfg.rd_pct = 3;
     seq_runtime_us = 10000;
   endtask

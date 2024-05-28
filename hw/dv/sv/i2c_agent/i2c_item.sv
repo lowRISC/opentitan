@@ -14,6 +14,7 @@ class i2c_item extends uvm_sequence_item;
   bit                      addr_ack;
   bit                      data_ack_q[$];
   // transaction control part
+  i2c_acq_byte_id_e        signal; // ACQDATA.SIGNAL
   bit                      nack;
   bit                      ack;
   bit                      rstart;
@@ -51,27 +52,28 @@ class i2c_item extends uvm_sequence_item;
   }
 
   `uvm_object_utils_begin(i2c_item)
-    `uvm_field_int(tran_id,                 UVM_DEFAULT)
-    `uvm_field_enum(bus_op_e, bus_op,       UVM_DEFAULT)
-    `uvm_field_int(addr,                    UVM_DEFAULT)
-    `uvm_field_int(num_data,                UVM_DEFAULT)
-    `uvm_field_int(start,                   UVM_DEFAULT)
-    `uvm_field_int(stop,                    UVM_DEFAULT)
-    `uvm_field_int(wdata,                   UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_queue_int(data_q,            UVM_DEFAULT | UVM_NOPRINT)
-    `uvm_field_queue_int(fmt_ovf_data_q,    UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_int(rdata,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(rstart,                  UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_int(fbyte,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(ack,                     UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(nack,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(read,                    UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_int(rcont,                   UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_int(nakok,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_enum(drv_type_e,  drv_type,  UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_int(wait_cycles,             UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_int(addr_ack,                UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
-    `uvm_field_queue_int(data_ack_q,        UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
+    `uvm_field_int(tran_id,                    UVM_DEFAULT)
+    `uvm_field_enum(bus_op_e, bus_op,          UVM_DEFAULT)
+    `uvm_field_int(addr,                       UVM_DEFAULT)
+    `uvm_field_int(num_data,                   UVM_DEFAULT)
+    `uvm_field_int(start,                      UVM_DEFAULT)
+    `uvm_field_int(stop,                       UVM_DEFAULT)
+    `uvm_field_int(wdata,                      UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_queue_int(data_q,               UVM_DEFAULT)
+    `uvm_field_queue_int(fmt_ovf_data_q,       UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(rdata,                      UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_enum(i2c_acq_byte_id_e, signal, UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(rstart,                     UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(fbyte,                      UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(ack,                        UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(nack,                       UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(read,                       UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(rcont,                      UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(nakok,                      UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_enum(drv_type_e,  drv_type,     UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(wait_cycles,                UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(addr_ack,                   UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
+    `uvm_field_queue_int(data_ack_q,           UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
   `uvm_object_utils_end
 
   `uvm_object_new

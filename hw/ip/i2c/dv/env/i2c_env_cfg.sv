@@ -52,7 +52,14 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // Slow tx process
   bit        slow_txq = 1'b0;
 
-  //  ack stop test
+  // In Target-mode, read data is created by i2c_base_seq::fetch_txn().
+  // Random TXFIFO flush events make it difficult to check read path integrity.
+  // By setting 'read_rnd_data = 1', the expected read data is instead collected
+  // right at the input of TXFIFO. On TXFIFO reset, any expected read data is
+  // also flushed.
+  bit        read_rnd_data = 0;
+
+  // Flags for the 'ack_stop' test
   int        sent_ack_stop = 0;
   int        rcvd_ack_stop = 0;
 

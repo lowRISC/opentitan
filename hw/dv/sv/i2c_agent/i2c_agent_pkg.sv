@@ -11,6 +11,8 @@ package i2c_agent_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
 
+  import i2c_pkg::*;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"

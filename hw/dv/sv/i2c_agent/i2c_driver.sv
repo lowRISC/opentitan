@@ -184,9 +184,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
         rd_data_cnt++;
       end
-      WrData: begin
-        // nothing to do
-      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  device_driver, received invalid request"))
       end

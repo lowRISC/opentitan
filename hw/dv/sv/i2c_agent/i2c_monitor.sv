@@ -197,11 +197,6 @@ class i2c_monitor extends dv_base_monitor #(
           fork
             begin
               bit ack_nack;
-               `uvm_info(`gfn, "Req analysis port: write thread data", UVM_HIGH)
-              // ask driver's response a write request
-              mon_dut_item.drv_type = WrData;
-              `downcast(clone_item, mon_dut_item.clone());
-              req_analysis_port.write(clone_item);
               for (int i = 7; i >= 0; i--) begin
                 cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_data[i]);
               end
@@ -437,8 +432,6 @@ class i2c_monitor extends dv_base_monitor #(
     fork begin
       fork
         while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
-
-          mon_dut_item.drv_type = WrData;
 
           begin
             bit [6:0] data;
