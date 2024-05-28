@@ -93,7 +93,7 @@
       lc_states: ["PROD"]
       features: ["UART.PARITY"]
       tests: []
-      bazel: ["//sw/device/tests:uart_parity_test"]
+      bazel: ["//sw/device/tests:uart_parity_break_test"]
     }
     {
       name: chip_sw_uart_line_loopback
