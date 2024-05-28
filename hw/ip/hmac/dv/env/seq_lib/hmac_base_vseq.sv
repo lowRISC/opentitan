@@ -442,7 +442,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // TODO (#22932): extend to check for SHA-2 384 and 512 once the hmac_test_vectors_sha_vseq test
   // is extended for these digest sizes
   // TODO (#23288): remove this check from the seq
-  virtual task compare_digest(bit [7:0] exp_digest[]);
+  virtual task compare_digest(bit [7:0] exp_digest[], bit [3:0] digest_size_i);
     bit [TL_DW-1:0] act_digest[16];
     bit [TL_DW-1:0] packed_exp_digest[8];
     csr_rd_digest(act_digest);
@@ -456,8 +456,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       end
 
       // comparing only digest[0] to digest [7] for SHA-2 256
+      // comparing only digest[0] to digest [12] for SHA-2 384
+      // comparing all digest for SHA-2 512
       foreach (act_digest[i]) begin
-        if (i < 8) begin
+        if ( (i < 8) ||
+            ((i >= 8 && i < 12) && (digest_size_i == SHA2_384 || digest_size_i == SHA2_512)) ||
+            ((i >= 12)          && (digest_size_i == SHA2_512))) begin
           `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i], $sformatf("for index %0d", i))
         end
       end
