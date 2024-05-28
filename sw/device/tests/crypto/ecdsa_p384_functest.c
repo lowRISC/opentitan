@@ -14,8 +14,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 enum {
-  /* Number of 32-bit words in a SHA384 digest. */
-  kSha384DigestWords = 384 / 32,
   /* Number of 32-bit words in a P-384 public key. */
   kP384PublicKeyWords = 768 / 32,
   /* Number of 32-bit words in a P-384 signature. */

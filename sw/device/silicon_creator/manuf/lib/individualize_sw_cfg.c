@@ -5,8 +5,8 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"

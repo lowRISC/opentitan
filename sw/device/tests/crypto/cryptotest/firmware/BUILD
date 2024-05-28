@@ -97,8 +97,6 @@ cc_library(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl/sha2:sha256",
-        "//sw/device/lib/crypto/impl/sha2:sha512",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
