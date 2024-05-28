@@ -1517,7 +1517,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
         name = "flash_ctrl_info_access_lc_{}".format(lc_state.lower()),
         srcs = ["flash_ctrl_info_access_lc.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
