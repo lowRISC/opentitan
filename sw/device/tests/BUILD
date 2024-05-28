@@ -1549,6 +1549,7 @@ test_suite(
     tests = ["flash_ctrl_info_access_lc_{}".format(lc_state.lower()) for lc_state, _ in _FLASH_CTRL_INFO_ACCESS_LC_STATES],
 )
 
+# These tests cannot run at the owner stage because the ROM_EXT locks the info pages.
 [
     opentitan_test(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),

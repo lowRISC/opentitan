@@ -156,6 +156,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
+      boot_stages: ["rom_ext"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states",
               "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
@@ -189,6 +190,7 @@
       si_stage: SV3
       lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      boot_stages: ["rom_ext"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
     {
@@ -208,6 +210,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      boot_stages: ["rom_ext"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
     {
@@ -227,6 +230,7 @@
       si_stage: SV3
       lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      boot_stages: ["rom_ext"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
     {
@@ -243,6 +247,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      boot_stages: ["rom_ext"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
