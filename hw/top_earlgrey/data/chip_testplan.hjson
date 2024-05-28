@@ -476,6 +476,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+      bazel: ["//sw/device/tests:sensor_ctrl_alert_test", "//sw/device/tests:sensor_ctrl_wakeup_test"]
     }
 
     ////////////////////////////
