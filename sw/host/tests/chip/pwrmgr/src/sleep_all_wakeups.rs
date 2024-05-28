@@ -24,7 +24,6 @@ struct Opts {
 fn sleep_all_wakeups_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let ioc0_pin = transport.gpio_pin("Ioc0")?;
     let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
     loop {
         let vec = UartConsole::wait_for(
             &*uart,
