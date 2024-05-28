@@ -16,7 +16,6 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
-  kSha512DigestWords = 512 / 32,
   kRsa3072NumBytes = 3072 / 8,
   kRsa3072NumWords = kRsa3072NumBytes / sizeof(uint32_t),
 };

@@ -17,8 +17,6 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
-  /* Number of 32-bit words in a SHA384 digest. */
-  kSha384DigestWords = 384 / 32,
   /* Number of 32-bit words in a P-384 public key. */
   kP384PublicKeyWords = 768 / 32,
   /* Number of 32-bit words in a P-384 signature. */

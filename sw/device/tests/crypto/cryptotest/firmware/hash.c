@@ -10,8 +10,6 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/sha2/sha256.h"
-#include "sw/device/lib/crypto/impl/sha2/sha512.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"

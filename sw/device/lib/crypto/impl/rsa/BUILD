@@ -67,8 +67,6 @@ cc_library(
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/crypto/impl/sha2:sha256",
-        "//sw/device/lib/crypto/impl/sha2:sha512",
     ],
 )
 
@@ -87,8 +85,6 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:hash",
-        "//sw/device/lib/crypto/impl/sha2:sha256",
-        "//sw/device/lib/crypto/impl/sha2:sha512",
     ],
 )
 

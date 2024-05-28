@@ -16,11 +16,6 @@
 // Module for status messages.
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
-enum {
-  /* Number of words for a SHA-256 digest. */
-  kSha256DigestWords = 256 / 32,
-};
-
 // Message data for testing.
 static const unsigned char kTestMessage[] = "Test message.";
 static const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
