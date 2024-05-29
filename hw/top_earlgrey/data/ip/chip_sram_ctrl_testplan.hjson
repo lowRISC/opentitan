@@ -150,6 +150,27 @@
       bazel: ["//sw/device/tests:sram_ctrl_memset_test"]
     }
     {
+      name: chip_sw_sram_readback
+      desc: '''Enable the SRAM readback feature and write and read data from and to the SRAM.
+
+             - Enable the SRAM readback feature.
+             - Write some known data to the ret. SRAM and read it back to make sure the write worked
+               as expected.
+             - Use the INIT CSR for the relevant sram_ctrl to request that the memory is filled with
+               pseudo-random data.
+             - Read the location from the SRAM and check that the data has been wiped.
+             - Repeat the steps above with the disabled SRAM readback feature.
+             - Lock the SRAM readback configuration register and try to set it.
+
+             '''
+      features: ["SRAM_CTRL.READBACK"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:sram_ctrl_readback_test"]
+    }
+    {
       name: chip_sw_sram_subword_access
       desc: '''Check that subword access works for each SRAM.
 
