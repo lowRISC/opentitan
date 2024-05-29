@@ -417,7 +417,8 @@ package kmac_pkg;
 
   // Endian conversion functions (32-bit, 64-bit)
   function automatic logic [31:0] conv_endian32( input logic [31:0] v, input logic swap);
-    logic [31:0] conv_data = {<<8{v}};
+    logic [31:0] conv_data;
+    conv_data = {<<8{v}};
     conv_endian32 = (swap) ? conv_data : v ;
   endfunction : conv_endian32
 

@@ -113,7 +113,8 @@ package prim_sha2_pkg;
   };
 
   function automatic sha_word32_t conv_endian32(input sha_word32_t v, input logic swap);
-    sha_word32_t conv_data = {<<8{v}};
+    sha_word32_t conv_data;
+    conv_data = {<<8{v}};
     conv_endian32 = (swap) ? conv_data : v;
   endfunction : conv_endian32
 
