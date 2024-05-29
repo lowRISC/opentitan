@@ -95,37 +95,29 @@ class OTDevice:
                      ca_priv_keyfile,
                      ca_certfile,
                      ca_key_id,
-                     mission_mode_state,
                      require_confirmation=True):
         """Run the FT provisioning Bazel target."""
         logging.info("Running FT Provisioning")
 
         sram_ft_indiv_elf_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/sram_ft_individualize_{}_{}.elf"  # noqa: E501
         # Default to prod signed binaries unless in DEV state.
-        perso_bin_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/"  # noqa: E501
-        if mission_mode_state == "dev":
-            perso_bin_path += "{}"
-        else:
-            perso_bin_path += "binaries/{}"
+        perso_bin_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries/{}"  # noqa: E501
 
         if self.fpga_test:
             elf = sram_ft_indiv_elf_path.format(
                 self.sku, "fpga_cw310_rom_with_fake_keys")
-            signing_key = "{}_key_0".format(mission_mode_state)
-            bazel_suffix = "fpga_cw310_rom_with_fake_keys.{}.signed.bin".format(signing_key)
+            signing_key = "prod_key_0"
+            bazel_suffix = "fpga_cw310_rom_with_fake_keys.{}.signed.bin".format(
+                signing_key)
 
             bootstrap = perso_bin_path.format(
-                "ft_personalize_1_{}".format(bazel_suffix)
-            )
+                "ft_personalize_1_{}".format(bazel_suffix))
             bootstrap2 = perso_bin_path.format(
-                "ft_personalize_2_{}".format(bazel_suffix)
-            )
+                "ft_personalize_2_{}".format(bazel_suffix))
             bootstrap3 = perso_bin_path.format(
-                "ft_personalize_3_{}".format(bazel_suffix)
-            )
+                "ft_personalize_3_{}".format(bazel_suffix))
             bootstrap4 = perso_bin_path.format(
-                "ft_personalize_4_{}".format(bazel_suffix)
-            )
+                "ft_personalize_4_{}".format(bazel_suffix))
 
             platform_bazel_flags = ""
             platform_harness_flags = """--interface=cw310 --clear-bitstream \
@@ -135,21 +127,17 @@ class OTDevice:
 
         else:
             elf = sram_ft_indiv_elf_path.format(self.sku, "silicon_creator")
-            signing_key = "earlgrey_a0_{}_0".format(mission_mode_state)
+            signing_key = "earlgrey_a0_prod_0"
             bazel_suffix = "silicon_creator.{}.signed.bin".format(signing_key)
 
             bootstrap = perso_bin_path.format(
-                "ft_personalize_1_{}".format(bazel_suffix)
-            )
+                "ft_personalize_1_{}".format(bazel_suffix))
             bootstrap2 = perso_bin_path.format(
-                "ft_personalize_2_{}".format(bazel_suffix)
-            )
+                "ft_personalize_2_{}".format(bazel_suffix))
             bootstrap3 = perso_bin_path.format(
-                "ft_personalize_3_{}".format(bazel_suffix)
-            )
+                "ft_personalize_3_{}".format(bazel_suffix))
             bootstrap4 = perso_bin_path.format(
-                "ft_personalize_4_{}".format(bazel_suffix)
-            )
+                "ft_personalize_4_{}".format(bazel_suffix))
 
             platform_bazel_flags = "--//signing:token=//signing/tokens:nitrokey"
             platform_harness_flags = """--interface=teacup \
