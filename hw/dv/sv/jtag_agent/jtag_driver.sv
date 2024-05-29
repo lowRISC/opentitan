@@ -87,8 +87,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
       if (!cfg.vif.trst_n) begin
         `DV_WAIT(cfg.vif.trst_n)
-        cfg.vif.wait_tck(1);
-        drive_jtag_test_logic_reset();
       end else begin
         // Since trst_n is not 0, the get_next_item() task must have completed and has written the
         // request to req
