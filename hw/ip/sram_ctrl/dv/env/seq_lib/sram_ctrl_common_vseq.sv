@@ -12,6 +12,8 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
   bit first_reset;
 
+  bit readback_task_enabled;
+
   string path_sram_key = {`DUT_HIER_STR, ".key_q"};
   string path_sram_nonce = {`DUT_HIER_STR, ".nonce_q"};
 
@@ -43,6 +45,16 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
       first_reset       = 1;
     end else begin
       do_sram_ctrl_init = 0;
+    end
+
+    if (!readback_task_enabled) begin
+      // Enable the SRAM readback enable feature. The sram_readback_en task initializes
+      // the test randomly with the SRAM readback feature enabled or disabled. During
+      // the test, at random points in time, the feature is enabled or disabled.
+      do_readback_en = 1;
+      readback_task_enabled = 1;
+    end else begin
+      do_readback_en = 0;
     end
 
     super.pre_start();
