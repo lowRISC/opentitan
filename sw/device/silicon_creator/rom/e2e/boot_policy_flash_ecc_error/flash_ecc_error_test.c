@@ -19,6 +19,7 @@
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
@@ -121,6 +122,17 @@ OT_ASSERT_MEMBER_OFFSET_AS_ENUM(manifest_t, ecdsa_signature,
 OT_ASSERT_MEMBER_OFFSET_AS_ENUM(manifest_t, extensions,
                                 kManifestExtensionsOffset);
 
+typedef struct corruption_word {
+  /**
+   * The byte offset within the flash bank to corrupt.
+   */
+  uint32_t offset;
+  /**
+   * A string description of what value is being corrupted.
+   */
+  char *description;
+} corruption_word_t;
+
 /**
  * Offsets of the manifest fields and code words we corrupt in this test.
  *
@@ -145,47 +157,37 @@ OT_ASSERT_MEMBER_OFFSET_AS_ENUM(manifest_t, extensions,
  *   b. triggers a signature verification failure that will then cause the ROM
  *      to try to boot the next slot.
  */
-static const uint32_t kCorruptionOffsets[] = {
+static const corruption_word_t kWords2Corrupt[] = {
     // Manifest corruption offsets.
-    kManifestSecurityVersionOffset,
-    kManifestIdOffest,
-    kManifestLengthOffset,
-    kManifestManifestVersionOffset,
-    kManifestSignedRegionEndOffset,
-    kManifestCodeStartOffset,
-    kManifestCodeEndOffset,
-    kManifestEntryPointOffset,
-    kManifestEcdsaPublicKeyOffset,
-    kManifestUsageConstraintsSelectorBitsOffset,
-    kManifestEcdsaSignatureOffset,
-    kManifestExtIdSpxKey,        // Represented as the extension ID; offset is
-                                 // computed below.
-    kManifestExtIdSpxSignature,  // Represented as the extension ID; offset is
-                                 // computed below.
+    {.offset = kManifestSecurityVersionOffset,
+     .description = "manifest_security_version"},
+    {.offset = kManifestIdOffest, .description = "manifest_identifier"},
+    {.offset = kManifestLengthOffset, .description = "manifest_length"},
+    {.offset = kManifestManifestVersionOffset,
+     .description = "manifest_manifest_version"},
+    {.offset = kManifestSignedRegionEndOffset,
+     .description = "manifest_signed_region_end"},
+    {.offset = kManifestCodeStartOffset, .description = "manifest_code_start"},
+    {.offset = kManifestCodeEndOffset, .description = "manifest_code_end"},
+    {.offset = kManifestEntryPointOffset,
+     .description = "manifest_entry_point"},
+    {.offset = kManifestEcdsaPublicKeyOffset,
+     .description = "manifest_ecdsa_public_key"},
+    {.offset = kManifestUsageConstraintsSelectorBitsOffset,
+     .description = "manifest_usage_constraints_selector_bits"},
+    {.offset = kManifestEcdsaSignatureOffset,
+     .description = "manifest_ecdsa_signature"},
+    {.offset = kManifestExtIdSpxKey,  // Represented as the extension ID; offset
+                                      // is computed below.
+     .description = "manifest_extension_spx_public_key"},
+    {.offset = kManifestExtIdSpxSignature,  // Represented as the extension ID;
+                                            // offset is computed below.
+     .description = "manifest_extension_spx_signature"},
 
     // Code corruption offsets.
-    kCodeFirstWordOffset,
-    kCodeMiddleWordOffset,
-    kCodeLastWordOffset,
-};
-
-static const char *kCorruptionDescriptions[] = {
-    "manifest_security_version",
-    "manifest_identifier",
-    "manifest_length",
-    "manifest_manifest_version",
-    "manifest_signed_region_end",
-    "manifest_code_start",
-    "manifest_code_end",
-    "manifest_entry_point",
-    "manifest_ecdsa_public_key",
-    "manifest_usage_constraints->selector_bits",
-    "manifest_ecdsa_signature",
-    "manifest_extension_spx_public_key",
-    "manifest_extension_spx_signature",
-    "code_first_word",
-    "code_middle_word",
-    "code_last_word",
+    {.offset = kCodeFirstWordOffset, .description = "code_first_word"},
+    {.offset = kCodeMiddleWordOffset, .description = "code_middle_word"},
+    {.offset = kCodeLastWordOffset, .description = "code_last_word"},
 };
 
 static void init_peripherals(void) {
@@ -260,23 +262,25 @@ static status_t corrupt_rom_ext_word(rom_ext_slot_t slot,
 bool test_main(void) {
   init_peripherals();
 
-  // Get the cause ID we will test.
-  size_t i = CAUSE_ID;  // Set in Bazel build file.
-  CHECK(i < ARRAYSIZE(kCorruptionOffsets));
-  CHECK(i < ARRAYSIZE(kCorruptionDescriptions));
+  // Get the cause ID we will test and store the cause description in retention
+  // SRAM (we will check it when the valid slot boots after a flash ECC error is
+  // triggered).
+  uint32_t cause_id = CAUSE_ID;  // Set in Bazel build file.
+  CHECK(cause_id < ARRAYSIZE(kWords2Corrupt));
+  char *corruption_desc = (char *)retention_sram_get()->owner.reserved;
+  const char *str = kWords2Corrupt[cause_id].description;
+  int len = -1;
+  do {
+    ++len;
+    corruption_desc[len] = str[len];
+  } while (str[len] != '\0' && len < sizeof(retention_sram_owner_t));
 
-  // Get the current slot we are running in, which is the one we will corrupt.
-  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
-  const manifest_t *manifest;
-  if (boot_log->rom_ext_slot == kBootSlotA) {
-    manifest = boot_policy_manifest_a_get();
-  } else {
-    manifest = boot_policy_manifest_b_get();
-  }
+  // Get the manifest of the current slot we are running in.
+  const manifest_t *manifest = manifest_def_get();
 
   // Compute the address we are corrupting within the slot. Some addresses are
   // hardcoded constants, others we must compute dynamically.
-  uint32_t addr_of_corruption = kCorruptionOffsets[i];
+  uint32_t addr_of_corruption = kWords2Corrupt[cause_id].offset;
   switch (addr_of_corruption) {
     case kManifestExtIdSpxKey:
       CHECK(manifest->extensions.entries[0].identifier == kManifestExtIdSpxKey);
@@ -302,11 +306,12 @@ bool test_main(void) {
   }
 
   // Corrupt the ECC of a targeted flash word by performing a double write.
+  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
   if (boot_log->rom_ext_slot == kBootSlotA) {
-    LOG_INFO("Slot A self corrupting (%s) ...", kCorruptionDescriptions[i]);
+    LOG_INFO("Slot A self corrupting (%s) ...", corruption_desc);
     CHECK_STATUS_OK(corrupt_rom_ext_word(kRomExtSlotA, addr_of_corruption));
   } else {
-    LOG_INFO("Slot B self corrupting (%s) ...", kCorruptionDescriptions[i]);
+    LOG_INFO("Slot B self corrupting (%s) ...", corruption_desc);
     CHECK_STATUS_OK(corrupt_rom_ext_word(kRomExtSlotB, addr_of_corruption));
   }
 

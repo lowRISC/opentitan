@@ -104,14 +104,14 @@ BOOT_POLICY_FLASH_ECC_ERROR_TESTS = [
     {
         "name": "a_corrupt_b_valid_{}",
         "a": ":flash_ecc_self_corruption_slot_a_{}",
-        "b": ":empty_test_slot_b",
-        "exit_success": "Booted slot=0x20080000",
+        "b": ":uncorrupted_test_slot_b",
+        "exit_success": "Booted slot=0x20080000; Cause={}",
     },
     {
         "name": "a_valid_b_corrupt_{}",
-        "a": ":empty_test_slot_a",
+        "a": ":uncorrupted_test_slot_a",
         "b": ":flash_ecc_self_corruption_slot_b_{}",
-        "exit_success": "Booted slot=0x20000000",
+        "exit_success": "Booted slot=0x20000000; Cause={}",
     },
 ]
 
@@ -154,28 +154,24 @@ SEC_VERS = [
 
 [
     opentitan_binary(
-        name = "empty_test_slot_{}".format(slot),
+        name = "uncorrupted_test_slot_{}".format(slot),
         testonly = True,
-        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        srcs = ["uncorrupted_test.c"],
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        local_defines = [
-            "EMPTY_TEST_MSG=\"Booted slot=%p\", manifest_def_get()",
-        ],
         # This image always get the lower security version as we want the image that self-corrupts the ECC
         # of the manifest identifier to always boot first, befause attempting to boot this (known-good) image.
         manifest = ":manifest_sec_ver_0",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/silicon_creator/lib/drivers:lifecycle",
-            "//sw/device/silicon_creator/lib/drivers:otp",
-            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
         ],
     )
     for slot in SLOTS
@@ -219,6 +215,7 @@ SEC_VERS = [
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib:boot_log",
             "//sw/device/silicon_creator/lib:manifest",
+            "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/silicon_creator/rom:boot_policy_ptrs",
@@ -240,7 +237,7 @@ SEC_VERS = [
                 t["a"].format(c["cause"]): "fw_a",
                 t["b"].format(c["cause"]): "fw_b",
             },
-            exit_success = t["exit_success"],
+            exit_success = t["exit_success"].format(c["cause"]),
             otp = ":otp_img_boot_policy_flash_ecc_error",
             slot_a = SLOTS["a"],
             slot_b = SLOTS["b"],
