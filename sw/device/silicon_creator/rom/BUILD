@@ -426,6 +426,17 @@ output_groups(
     ],
 )
 
+output_groups(
+    name = "mask_rom_disassembly",
+    srcs = [":mask_rom"],
+    groups = [
+        "fpga_cw310_disassembly",
+        "fpga_cw340_disassembly",
+        "sim_dv_disassembly",
+        "sim_verilator_disassembly",
+    ],
+)
+
 genrule(
     name = "rom_hashes",
     testonly = True,
