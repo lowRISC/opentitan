@@ -13,6 +13,7 @@ std::random_device MockDevice::rd;
 extern "C" {
 // dummy
 mmio_region_t mmio_region_from_addr(uintptr_t address) {
+  OT_DISCARD(address);
   return (mmio_region_t){};
 }
 

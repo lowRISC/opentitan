@@ -190,7 +190,10 @@ void ottf_timer_isr(uint32_t *exc_info) {
 }
 
 OT_WEAK
-bool ottf_console_flow_control_isr(uint32_t *exc_info) { return false; }
+bool ottf_console_flow_control_isr(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
+  return false;
+}
 
 OT_WEAK
 void ottf_external_isr(uint32_t *exc_info) {

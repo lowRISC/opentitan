@@ -49,6 +49,7 @@ rand_testutils_rng_t rand_testutils_rng_ctx;
 // The OTTF overrides the default machine ecall exception handler to implement
 // FreeRTOS context switching, required for supporting cooperative scheduling.
 void ottf_machine_ecall_handler(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
   if (pxCurrentTCB != NULL) {
     // If the pointer to the current TCB is not NULL, we are operating in
     // concurrency mode. In this case, our default behavior is to assume a
@@ -139,6 +140,7 @@ static void report_test_status(bool result) {
 // logic to be invoked as a FreeRTOS task. This wrapper can be used by tests
 // that are run on bare-metal.
 static void test_wrapper(void *task_parameters) {
+  OT_DISCARD(task_parameters);
   // Invoke test hooks that can be overridden by closed-source code.
   bool result = manufacturer_pre_test_hook();
   result = result && test_main();
