@@ -14,6 +14,10 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   rand mubi4_t readback_en;
 
   // various knobs to enable certain routines
+  bit readback_running = 0;
+
+  bit do_readback_en = 0;
+
   bit do_sram_ctrl_init = 1'b1;
 
   bit stress_pipeline = 1'b0;
@@ -30,12 +34,19 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     `DV_CHECK_LE(partial_access_pct, 100)
     // Wait for ram initialization to be done, since it blocks memory accesses.
     `DV_WAIT(cfg.in_init == 1'b0, "Timed out waiting for initialization done")
+    // Make sure that the sram_readback_en task only runs once during the test.
+    // This is important to make sure that only one sram_readback_en task sets
+    // or unsets the readback enable CSR.
+    if (!uvm_config_db #(bit)::get(get_sequencer(), "*", "readback_running",
+        readback_running)) begin
+      uvm_config_db #(bit)::set(null, "*", "readback_running", readback_running);
+    end
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_sram_ctrl_init) sram_ctrl_init();
-    sram_readback_en();
+    if (!readback_running && do_readback_en) sram_readback_en();
   endtask
 
   // Enable readback feature only for non-throughput and non-sec_cm tests. The
@@ -43,26 +54,28 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   // and randomly switched during the tests.
   // TODO(#23321) Adapt the troughput tests to take the delay caused by the
   // readback feature into account.
-  virtual task sram_readback_en();
-  if (uvm_re_match("*throughput*", get_type_name()) &&
-      uvm_re_match("*sec_cm*", get_type_name()) &&
-      uvm_re_match("*throughput*", common_seq_type) &&
-      uvm_re_match("*sec_cm*", common_seq_type)) begin
+  virtual protected task sram_readback_en();
+    readback_running = 1;
+    if (uvm_re_match("*throughput*", get_type_name()) &&
+        uvm_re_match("*sec_cm*", get_type_name()) &&
+        uvm_re_match("*throughput*", common_seq_type) &&
+        uvm_re_match("*sec_cm*", common_seq_type)) begin
       // Configure the SRAM TLUL agent to wait at least 2 cycles before dropping
       // a request.
       cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_min = 2;
       // Init the readback enable randomly to true or false.
+      csr_utils_pkg::wait_no_outstanding_access();
       csr_wr(.ptr(ral.readback), .value(readback_en));
       // Randomly toggle the readback enable during the test.
       fork
         begin
           forever begin
             cfg.clk_rst_vif.wait_clks($urandom_range(10, 10_000));
-            csr_utils_pkg::wait_no_outstanding_access();
             std::randomize(readback_en) with {
               readback_en inside {MuBi4True, MuBi4False};};
+            csr_utils_pkg::wait_no_outstanding_access();
             csr_wr(.ptr(ral.readback), .value(readback_en));
-            `uvm_info(`gfn, "Update READBACK Value", UVM_LOW)
+            `uvm_info(`gfn, "Update READBACK Value", UVM_MEDIUM)
           end
         end
       join_none
