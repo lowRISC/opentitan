@@ -40,6 +40,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o, // tie off unused port slice when MultimodeEn = 0
   output logic digest_on_blk_o, // digest being computed for a complete block
+  output fifoctl_state_e fifo_st_o,
   output logic hash_running_o, // `1` iff hash computation is active (as opposed to `idle_o`, which
                                // is also `0` and thus 'busy' when waiting for a FIFO input)
   output logic idle_o
@@ -306,13 +307,9 @@ module prim_sha2 import prim_sha2_pkg::*;
     else         hash_done_o <= hash_done_next;
   end
 
-  typedef enum logic [1:0] {
-    FifoIdle,
-    FifoLoadFromFifo,
-    FifoWait
-  } fifoctl_state_e;
-
   fifoctl_state_e fifo_st_q, fifo_st_d;
+
+  assign fifo_st_o = fifo_st_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) fifo_st_q <= FifoIdle;

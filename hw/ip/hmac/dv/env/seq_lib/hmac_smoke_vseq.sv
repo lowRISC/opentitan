@@ -17,6 +17,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand bit               re_enable_sha;
   rand wipe_secret_req_e do_wipe_secret;
 
+  int key_process_cycles;
+
   constraint num_trans_c {
     num_trans inside {[1:50]};
   }
@@ -156,11 +158,19 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         // If the last two fifo_rds are back-to-back, then design will have one cycle delay before
         // the last fifo_rd in order to switch the state.
         // If the last two fifo_rds are not back-to-back, then there won't be any delay for the
-        // last fifo_rd
-        // the wait_clk below is implemented to avoid checking intr_state during this corner case
+        // last fifo_rd.
+        // the wait_clk below is implemented to avoid checking intr_state during this period of time
+        // for such corner cases, because it is hard to align the scb with the fifo_empty interrupt.
+        // Since prim_packer can hold more data, the ignored period of time is extended by * 2.
+        // TODO revisit this and understand why this particular delay is selected
+        if (ral.cfg.digest_size.get_mirrored_value() == SHA2_256) begin
+          key_process_cycles = HMAC_KEY_PROCESS_CYCLES_256;
+        end else begin
+          key_process_cycles = HMAC_KEY_PROCESS_CYCLES_512;
+        end
         cfg.clk_rst_vif.wait_clks((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
-                                  HMAC_KEY_PROCESS_CYCLES * 2 :
-                                  $urandom_range(0, HMAC_KEY_PROCESS_CYCLES * 2));
+                                  key_process_cycles * 2 :
+                                  $urandom_range(0, key_process_cycles * 2));
 
         if (do_hash_start) begin
           fork

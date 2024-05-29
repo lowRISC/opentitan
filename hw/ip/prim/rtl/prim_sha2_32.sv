@@ -43,6 +43,8 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   // to hash.
   assign hash_go = hash_start_i | hash_continue_i;
 
+  fifoctl_state_e fifo_st;
+
   // tie off unused ports/port slices
   if (!MultimodeEn) begin : gen_tie_unused
     logic unused_signals;
@@ -78,8 +80,13 @@ module prim_sha2_32 import prim_sha2_pkg::*;
             // accumulate most significant 32 bits of word and mask bits
             word_buffer_d.data[63:32] = fifo_rdata_i.data;
             word_buffer_d.mask[7:4]   = fifo_rdata_i.mask;
-            word_part_inc             = 1'b1;
-            fifo_rready_o             = 1'b1;
+            if (fifo_st == FifoLoadFromFifo) begin
+              fifo_rready_o = 1'b1; // load word from FIFO
+              word_part_inc = 1'b1;
+            end else begin
+              fifo_rready_o = 1'b0; // do not load from FIFO
+              word_part_inc = 1'b0;
+            end
           end else begin   // SHA2_256 so pad and push out the word
             word_valid = 1'b1;
             // store the word with most significant padding
@@ -98,8 +105,8 @@ module prim_sha2_32 import prim_sha2_pkg::*;
               fifo_rready_o = 1'b0;
             end
           end
+
         end else if (word_part_count_q == 2'b01) begin
-          fifo_rready_o = 1'b1; // buffer still has room for another word
           // accumulate least significant 32 bits and mask
           word_buffer_d.data [31:0] = fifo_rdata_i.data;
           word_buffer_d.mask [3:0]  = fifo_rdata_i.mask;
@@ -116,12 +123,12 @@ module prim_sha2_32 import prim_sha2_pkg::*;
           end
           if (sha_ready == 1'b1) begin
             // word has been consumed
-            fifo_rready_o       = 1'b1; // word pushed out to SHA engine so word buffer ready
+            fifo_rready_o     = 1'b1; // word pushed out to SHA engine so word buffer ready
             word_part_reset   = 1'b1;
             word_part_inc     = 1'b0;
           end else begin
-            fifo_rready_o       = 1'b1;
-            word_part_inc     = 1'b1;
+            fifo_rready_o     = 1'b0;
+            word_part_inc     = 1'b0;
           end
         end else if (word_part_count_q == 2'b10) begin // word buffer is full and not loaded out yet
           // fifo_rready_o is now deasserted: accumulated word is waiting to be pushed out
@@ -206,6 +213,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
       .digest_on_blk_o    (digest_on_blk_o),
+      .fifo_st_o          (fifo_st),
       .hash_running_o     (hash_running_o),
       .idle_o             (idle_o)
     );
@@ -259,6 +267,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
       .digest_on_blk_o    (digest_on_blk_o),
+      .fifo_st_o          (fifo_st),
       .hash_running_o     (hash_running_o),
       .idle_o             (idle_o)
     );
