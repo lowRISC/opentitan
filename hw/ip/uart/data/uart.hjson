@@ -64,7 +64,7 @@
     { name: "rx_watermark",
       type: "status",
       desc: "raised if the receive FIFO is past the high-water mark."}
-    { name: "tx_empty",
+    { name: "tx_done",
       desc: "raised if the transmit FIFO has emptied and no transmit is ongoing."}
     { name: "rx_overflow",
       desc: "raised if the receive FIFO has overflowed."}

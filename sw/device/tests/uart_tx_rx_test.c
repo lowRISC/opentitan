@@ -122,8 +122,8 @@ static volatile bool exp_uart_irq_tx_watermark;
 static volatile bool uart_irq_tx_watermark_fired;
 static volatile bool exp_uart_irq_rx_watermark;
 static volatile bool uart_irq_rx_watermark_fired;
-static volatile bool exp_uart_irq_tx_empty;
-static volatile bool uart_irq_tx_empty_fired;
+static volatile bool exp_uart_irq_tx_done;
+static volatile bool uart_irq_tx_done_fired;
 static volatile bool exp_uart_irq_rx_overflow;
 static volatile bool uart_irq_rx_overflow_fired;
 
@@ -162,10 +162,10 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
     uart_irq_rx_watermark_fired = true;
     uart_irq = kDifUartIrqRxWatermark;
-  } else if (plic_irq_id == uart_cfg.irq_tx_empty_id) {
-    CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
-    uart_irq_tx_empty_fired = true;
-    uart_irq = kDifUartIrqTxEmpty;
+  } else if (plic_irq_id == uart_cfg.irq_tx_done_id) {
+    CHECK(exp_uart_irq_tx_done, "Unexpected TX done interrupt");
+    uart_irq_tx_done_fired = true;
+    uart_irq = kDifUartIrqTxDone;
   } else if (plic_irq_id == uart_cfg.irq_rx_overflow_id) {
     CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
     uart_irq_rx_overflow_fired = true;
@@ -222,7 +222,7 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
   CHECK_DIF_OK(
-      dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty, kDifToggleEnabled));
+      dif_uart_irq_set_enabled(uart, kDifUartIrqTxDone, kDifToggleEnabled));
   CHECK_DIF_OK(
       dif_uart_irq_set_enabled(uart, kDifUartIrqRxOverflow, kDifToggleEnabled));
 }
@@ -242,7 +242,7 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   CHECK_DIF_OK(
       dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_watermark_id, 0x2));
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_empty_id, 0x3));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_done_id, 0x3));
   CHECK_DIF_OK(
       dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_overflow_id, 0x1));
   CHECK_DIF_OK(
@@ -267,7 +267,7 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_tx_empty_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_tx_done_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
@@ -346,8 +346,8 @@ static void execute_test(const dif_uart_t *uart) {
   // the if comdition below. Subsequently, TX watermark interrupt will trigger
   // more data to be sent.
   uart_irq_tx_watermark_fired = true;
-  exp_uart_irq_tx_empty = false;
-  uart_irq_tx_empty_fired = false;
+  exp_uart_irq_tx_done = false;
+  uart_irq_tx_done_fired = false;
 
   bool uart_rx_done = false;
   size_t uart_rx_bytes_read = 0;
@@ -363,7 +363,7 @@ static void execute_test(const dif_uart_t *uart) {
   uint8_t uart_rx_data[UART_DATASET_SIZE];
 
   LOG_INFO("Executing the test.");
-  while (!uart_tx_done || !uart_rx_done || !uart_irq_tx_empty_fired ||
+  while (!uart_tx_done || !uart_rx_done || !uart_irq_tx_done_fired ||
          !uart_irq_rx_overflow_fired) {
     if (!uart_tx_done && uart_irq_tx_watermark_fired) {
       uart_irq_tx_watermark_fired = false;
@@ -378,7 +378,7 @@ static void execute_test(const dif_uart_t *uart) {
       if (uart_tx_done) {
         // At this point, we have sent the required number of bytes.
         // Expect the TX empty interrupt to fire at some point.
-        exp_uart_irq_tx_empty = true;
+        exp_uart_irq_tx_done = true;
       }
     }
 
@@ -406,9 +406,9 @@ static void execute_test(const dif_uart_t *uart) {
       }
     }
 
-    if (uart_irq_tx_empty_fired) {
+    if (uart_irq_tx_done_fired) {
       exp_uart_irq_tx_watermark = false;
-      exp_uart_irq_tx_empty = false;
+      exp_uart_irq_tx_done = false;
     }
 
     if (uart_irq_rx_overflow_fired) {
@@ -418,7 +418,7 @@ static void execute_test(const dif_uart_t *uart) {
     // Wait for the next interrupt to arrive.
     // This check here is necessary as rx interrupts may sometimes occur ahead
     // of tx interrupts.  When this happens, the tx handling code above is not
-    // triggered and as a result an unexpected tx_empty interrupt is fired
+    // triggered and as a result an unexpected tx_done interrupt is fired
     // later.
     if (!uart_irq_rx_watermark_fired && !uart_irq_tx_watermark_fired &&
         !uart_irq_rx_overflow_fired) {

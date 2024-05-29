@@ -36,7 +36,7 @@ package uart_reg_pkg;
     } rx_overflow;
     struct packed {
       logic        q;
-    } tx_empty;
+    } tx_done;
     struct packed {
       logic        q;
     } rx_watermark;
@@ -63,7 +63,7 @@ package uart_reg_pkg;
     } rx_overflow;
     struct packed {
       logic        q;
-    } tx_empty;
+    } tx_done;
     struct packed {
       logic        q;
     } rx_watermark;
@@ -96,7 +96,7 @@ package uart_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } tx_empty;
+    } tx_done;
     struct packed {
       logic        q;
       logic        qe;
@@ -228,7 +228,7 @@ package uart_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } tx_empty;
+    } tx_done;
     struct packed {
       logic        d;
       logic        de;
@@ -344,7 +344,7 @@ package uart_reg_pkg;
   parameter logic [7:0] UART_INTR_TEST_RESVAL = 8'h 0;
   parameter logic [0:0] UART_INTR_TEST_TX_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
-  parameter logic [0:0] UART_INTR_TEST_TX_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] UART_INTR_TEST_TX_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_OVERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_FRAME_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_BREAK_ERR_RESVAL = 1'h 0;

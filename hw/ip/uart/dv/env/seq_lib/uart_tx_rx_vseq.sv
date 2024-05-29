@@ -172,7 +172,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
 
     // for fifo interrupt, parity/frame error, don't clear it at ignored period
     // as it hasn't been checked
-    clear_tx_intr = clear_intr[TxWatermark] | clear_intr[TxWatermark] | clear_intr[TxEmpty];
+    clear_tx_intr = clear_intr[TxWatermark] | clear_intr[TxWatermark] | clear_intr[TxDone];
     clear_rx_intr = clear_intr[RxWatermark] | clear_intr[RxOverflow] | clear_intr[RxFrameErr] |
                     clear_intr[RxParityErr];
     wait_when_in_ignored_period(clear_tx_intr, clear_rx_intr);

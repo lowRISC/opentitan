@@ -28,7 +28,7 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                                                    |
@@ -39,7 +39,7 @@ Interrupt State Register
 |   5    |  rw1c  |   0x0   | rx_break_err  | raised if break condition has been detected on receive.                                                        |
 |   4    |  rw1c  |   0x0   | rx_frame_err  | raised if a framing error has been detected on receive.                                                        |
 |   3    |  rw1c  |   0x0   | rx_overflow   | raised if the receive FIFO has overflowed.                                                                     |
-|   2    |  rw1c  |   0x0   | tx_empty      | raised if the transmit FIFO has emptied and no transmit is ongoing.                                            |
+|   2    |  rw1c  |   0x0   | tx_done       | raised if the transmit FIFO has emptied and no transmit is ongoing.                                            |
 |   1    |   ro   |   0x0   | rx_watermark  | raised if the receive FIFO is past the high-water mark.                                                        |
 |   0    |   ro   |   0x1   | tx_watermark  | raised if the transmit FIFO is past the high-water mark.                                                       |
 
@@ -52,7 +52,7 @@ Interrupt Enable Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                             |
@@ -63,7 +63,7 @@ Interrupt Enable Register
 |   5    |   rw   |   0x0   | rx_break_err  | Enable interrupt when [`INTR_STATE.rx_break_err`](#intr_state) is set.  |
 |   4    |   rw   |   0x0   | rx_frame_err  | Enable interrupt when [`INTR_STATE.rx_frame_err`](#intr_state) is set.  |
 |   3    |   rw   |   0x0   | rx_overflow   | Enable interrupt when [`INTR_STATE.rx_overflow`](#intr_state) is set.   |
-|   2    |   rw   |   0x0   | tx_empty      | Enable interrupt when [`INTR_STATE.tx_empty`](#intr_state) is set.      |
+|   2    |   rw   |   0x0   | tx_done       | Enable interrupt when [`INTR_STATE.tx_done`](#intr_state) is set.       |
 |   1    |   rw   |   0x0   | rx_watermark  | Enable interrupt when [`INTR_STATE.rx_watermark`](#intr_state) is set.  |
 |   0    |   rw   |   0x0   | tx_watermark  | Enable interrupt when [`INTR_STATE.tx_watermark`](#intr_state) is set.  |
 
@@ -76,7 +76,7 @@ Interrupt Test Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                      |
@@ -87,7 +87,7 @@ Interrupt Test Register
 |   5    |   wo   |   0x0   | rx_break_err  | Write 1 to force [`INTR_STATE.rx_break_err`](#intr_state) to 1.  |
 |   4    |   wo   |   0x0   | rx_frame_err  | Write 1 to force [`INTR_STATE.rx_frame_err`](#intr_state) to 1.  |
 |   3    |   wo   |   0x0   | rx_overflow   | Write 1 to force [`INTR_STATE.rx_overflow`](#intr_state) to 1.   |
-|   2    |   wo   |   0x0   | tx_empty      | Write 1 to force [`INTR_STATE.tx_empty`](#intr_state) to 1.      |
+|   2    |   wo   |   0x0   | tx_done       | Write 1 to force [`INTR_STATE.tx_done`](#intr_state) to 1.       |
 |   1    |   wo   |   0x0   | rx_watermark  | Write 1 to force [`INTR_STATE.rx_watermark`](#intr_state) to 1.  |
 |   0    |   wo   |   0x0   | tx_watermark  | Write 1 to force [`INTR_STATE.tx_watermark`](#intr_state) to 1.  |
 

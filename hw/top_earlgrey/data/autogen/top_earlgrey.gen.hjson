@@ -13532,7 +13532,7 @@
       default_val: false
     }
     {
-      name: uart0_tx_empty
+      name: uart0_tx_done
       width: 1
       type: interrupt
       module_name: uart0
@@ -13596,7 +13596,7 @@
       default_val: false
     }
     {
-      name: uart1_tx_empty
+      name: uart1_tx_done
       width: 1
       type: interrupt
       module_name: uart1
@@ -13660,7 +13660,7 @@
       default_val: false
     }
     {
-      name: uart2_tx_empty
+      name: uart2_tx_done
       width: 1
       type: interrupt
       module_name: uart2
@@ -13724,7 +13724,7 @@
       default_val: false
     }
     {
-      name: uart3_tx_empty
+      name: uart3_tx_done
       width: 1
       type: interrupt
       module_name: uart3

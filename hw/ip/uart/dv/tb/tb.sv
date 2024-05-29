@@ -17,7 +17,7 @@ module tb;
   wire clk, rst_n;
   wire intr_tx_watermark;
   wire intr_rx_watermark;
-  wire intr_tx_empty;
+  wire intr_tx_done;
   wire intr_rx_overflow;
   wire intr_rx_frame_err;
   wire intr_rx_break_err;
@@ -52,7 +52,7 @@ module tb;
 
     .intr_tx_watermark_o  (intr_tx_watermark ),
     .intr_rx_watermark_o  (intr_rx_watermark ),
-    .intr_tx_empty_o      (intr_tx_empty     ),
+    .intr_tx_done_o       (intr_tx_done      ),
     .intr_rx_overflow_o   (intr_rx_overflow  ),
     .intr_rx_frame_err_o  (intr_rx_frame_err ),
     .intr_rx_break_err_o  (intr_rx_break_err ),
@@ -62,7 +62,7 @@ module tb;
 
   assign interrupts[TxWatermark] = intr_tx_watermark;
   assign interrupts[RxWatermark] = intr_rx_watermark;
-  assign interrupts[TxEmpty]     = intr_tx_empty;
+  assign interrupts[TxDone]      = intr_tx_done;
   assign interrupts[RxOverflow]  = intr_rx_overflow;
   assign interrupts[RxFrameErr]  = intr_rx_frame_err;
   assign interrupts[RxBreakErr]  = intr_rx_break_err;

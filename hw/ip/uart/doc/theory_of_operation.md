@@ -53,7 +53,7 @@ TX pin on positive edges of the baud clock.
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
 
-When the FIFO becomes empty as part of transmission, a TX FIFO empty interrupt will be raised.
+When the FIFO becomes empty as part of transmission, a TX FIFO done interrupt will be raised with the final byte has finished transmitting.
 This is separate from the TX FIFO water mark interrupt.
 
 
@@ -173,8 +173,8 @@ Note that the watermark interrupts are level-based status interrupts.
 They will stay asserted for as long as the FIFO levels are in violation of the configured level and cannot be cleared by writing to the status register.
 This also means that the `tx_watermark` starts off in an asserted state (resets high).
 
-#### tx_empty
-If TX FIFO becomes empty as part of transmit, the interrupt `tx_empty` is asserted.
+#### tx_done
+If TX FIFO becomes empty as part of transmit, the interrupt `tx_done` is asserted once the final byte has been transmitted.
 The transmitted contents may be garbage at this point as old FIFO contents will likely be transmitted.
 
 #### rx_overflow

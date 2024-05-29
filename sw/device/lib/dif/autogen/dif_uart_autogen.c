@@ -58,8 +58,8 @@ static bool uart_get_irq_bit_index(dif_uart_irq_t irq,
     case kDifUartIrqRxWatermark:
       *index_out = UART_INTR_COMMON_RX_WATERMARK_BIT;
       break;
-    case kDifUartIrqTxEmpty:
-      *index_out = UART_INTR_COMMON_TX_EMPTY_BIT;
+    case kDifUartIrqTxDone:
+      *index_out = UART_INTR_COMMON_TX_DONE_BIT;
       break;
     case kDifUartIrqRxOverflow:
       *index_out = UART_INTR_COMMON_RX_OVERFLOW_BIT;

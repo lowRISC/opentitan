@@ -98,7 +98,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       predict_tx_watermark_intr();
 
       if (tx_q.size() == 0 && tx_processing_item_q.size() == 0) begin
-        intr_exp[TxEmpty] = 1;
+        intr_exp[TxDone] = 1;
       end
     end
   endtask
@@ -425,7 +425,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               end
             end
             // don't check it when it's in ignored period
-            if (intr inside {TxWatermark, TxEmpty}) begin // TX interrupts
+            if (intr inside {TxWatermark, TxDone}) begin // TX interrupts
               if (is_in_ignored_period(UartTx)) continue;
             end else begin // RX interrupts
               // RxTimeout, RxBreakErr is checked in seq

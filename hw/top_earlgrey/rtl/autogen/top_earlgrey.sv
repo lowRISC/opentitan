@@ -376,7 +376,7 @@ module top_earlgrey #(
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
-  logic intr_uart0_tx_empty;
+  logic intr_uart0_tx_done;
   logic intr_uart0_rx_overflow;
   logic intr_uart0_rx_frame_err;
   logic intr_uart0_rx_break_err;
@@ -384,7 +384,7 @@ module top_earlgrey #(
   logic intr_uart0_rx_parity_err;
   logic intr_uart1_tx_watermark;
   logic intr_uart1_rx_watermark;
-  logic intr_uart1_tx_empty;
+  logic intr_uart1_tx_done;
   logic intr_uart1_rx_overflow;
   logic intr_uart1_rx_frame_err;
   logic intr_uart1_rx_break_err;
@@ -392,7 +392,7 @@ module top_earlgrey #(
   logic intr_uart1_rx_parity_err;
   logic intr_uart2_tx_watermark;
   logic intr_uart2_rx_watermark;
-  logic intr_uart2_tx_empty;
+  logic intr_uart2_tx_done;
   logic intr_uart2_rx_overflow;
   logic intr_uart2_rx_frame_err;
   logic intr_uart2_rx_break_err;
@@ -400,7 +400,7 @@ module top_earlgrey #(
   logic intr_uart2_rx_parity_err;
   logic intr_uart3_tx_watermark;
   logic intr_uart3_rx_watermark;
-  logic intr_uart3_tx_empty;
+  logic intr_uart3_tx_done;
   logic intr_uart3_rx_overflow;
   logic intr_uart3_rx_frame_err;
   logic intr_uart3_rx_break_err;
@@ -1034,7 +1034,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_tx_watermark_o  (intr_uart0_tx_watermark),
       .intr_rx_watermark_o  (intr_uart0_rx_watermark),
-      .intr_tx_empty_o      (intr_uart0_tx_empty),
+      .intr_tx_done_o       (intr_uart0_tx_done),
       .intr_rx_overflow_o   (intr_uart0_rx_overflow),
       .intr_rx_frame_err_o  (intr_uart0_rx_frame_err),
       .intr_rx_break_err_o  (intr_uart0_rx_break_err),
@@ -1066,7 +1066,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_tx_watermark_o  (intr_uart1_tx_watermark),
       .intr_rx_watermark_o  (intr_uart1_rx_watermark),
-      .intr_tx_empty_o      (intr_uart1_tx_empty),
+      .intr_tx_done_o       (intr_uart1_tx_done),
       .intr_rx_overflow_o   (intr_uart1_rx_overflow),
       .intr_rx_frame_err_o  (intr_uart1_rx_frame_err),
       .intr_rx_break_err_o  (intr_uart1_rx_break_err),
@@ -1098,7 +1098,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_tx_watermark_o  (intr_uart2_tx_watermark),
       .intr_rx_watermark_o  (intr_uart2_rx_watermark),
-      .intr_tx_empty_o      (intr_uart2_tx_empty),
+      .intr_tx_done_o       (intr_uart2_tx_done),
       .intr_rx_overflow_o   (intr_uart2_rx_overflow),
       .intr_rx_frame_err_o  (intr_uart2_rx_frame_err),
       .intr_rx_break_err_o  (intr_uart2_rx_break_err),
@@ -1130,7 +1130,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_tx_watermark_o  (intr_uart3_tx_watermark),
       .intr_rx_watermark_o  (intr_uart3_rx_watermark),
-      .intr_tx_empty_o      (intr_uart3_tx_empty),
+      .intr_tx_done_o       (intr_uart3_tx_done),
       .intr_rx_overflow_o   (intr_uart3_rx_overflow),
       .intr_rx_frame_err_o  (intr_uart3_rx_frame_err),
       .intr_rx_break_err_o  (intr_uart3_rx_break_err),
@@ -2777,7 +2777,7 @@ module top_earlgrey #(
       intr_uart3_rx_break_err, // IDs [30 +: 1]
       intr_uart3_rx_frame_err, // IDs [29 +: 1]
       intr_uart3_rx_overflow, // IDs [28 +: 1]
-      intr_uart3_tx_empty, // IDs [27 +: 1]
+      intr_uart3_tx_done, // IDs [27 +: 1]
       intr_uart3_rx_watermark, // IDs [26 +: 1]
       intr_uart3_tx_watermark, // IDs [25 +: 1]
       intr_uart2_rx_parity_err, // IDs [24 +: 1]
@@ -2785,7 +2785,7 @@ module top_earlgrey #(
       intr_uart2_rx_break_err, // IDs [22 +: 1]
       intr_uart2_rx_frame_err, // IDs [21 +: 1]
       intr_uart2_rx_overflow, // IDs [20 +: 1]
-      intr_uart2_tx_empty, // IDs [19 +: 1]
+      intr_uart2_tx_done, // IDs [19 +: 1]
       intr_uart2_rx_watermark, // IDs [18 +: 1]
       intr_uart2_tx_watermark, // IDs [17 +: 1]
       intr_uart1_rx_parity_err, // IDs [16 +: 1]
@@ -2793,7 +2793,7 @@ module top_earlgrey #(
       intr_uart1_rx_break_err, // IDs [14 +: 1]
       intr_uart1_rx_frame_err, // IDs [13 +: 1]
       intr_uart1_rx_overflow, // IDs [12 +: 1]
-      intr_uart1_tx_empty, // IDs [11 +: 1]
+      intr_uart1_tx_done, // IDs [11 +: 1]
       intr_uart1_rx_watermark, // IDs [10 +: 1]
       intr_uart1_tx_watermark, // IDs [9 +: 1]
       intr_uart0_rx_parity_err, // IDs [8 +: 1]
@@ -2801,7 +2801,7 @@ module top_earlgrey #(
       intr_uart0_rx_break_err, // IDs [6 +: 1]
       intr_uart0_rx_frame_err, // IDs [5 +: 1]
       intr_uart0_rx_overflow, // IDs [4 +: 1]
-      intr_uart0_tx_empty, // IDs [3 +: 1]
+      intr_uart0_tx_done, // IDs [3 +: 1]
       intr_uart0_rx_watermark, // IDs [2 +: 1]
       intr_uart0_tx_watermark, // IDs [1 +: 1]
       1'b 0 // ID [0 +: 1] is a special case and tied to zero.
