@@ -28,6 +28,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   rand bit [5:0]          key_length;
   rand bit                endian_swap;
   rand bit                digest_swap;
+  // TODO (issue #23245): verify key_swap
   rand bit                key_swap;
 
   constraint wr_addr_c {

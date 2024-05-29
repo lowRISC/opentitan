@@ -22,21 +22,26 @@ package hmac_env_pkg;
 
   // local parameters and types
   parameter uint32 HMAC_MSG_FIFO_DEPTH_WR     = 32;
-  parameter uint32 HMAC_MSG_FIFO_DEPTH_RD     = 16;
-  parameter uint32 HMAC_MSG_FIFO_DEPTH_256    = 16;
-  parameter uint32 HMAC_MSG_FIFO_DEPTH_512    = 32;
+  // SHA-2 256 block size = 16 32-bit words, so FIFO reading depth is up to 16 words
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_RD_256 = 16;
+  // SHA-2 385/512 block size = 16 64-bit words, so FIFO reading depth is up to 32 words
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_RD_512 = 32;
   parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES  = HMAC_MSG_FIFO_DEPTH_WR * 4;
   parameter uint32 HMAC_MSG_FIFO_SIZE         = 2048;
   parameter uint32 HMAC_MSG_FIFO_BASE         = 32'h1000;
   parameter uint32 HMAC_MSG_FIFO_LAST_ADDR    = HMAC_MSG_FIFO_BASE + HMAC_MSG_FIFO_SIZE - 1;
   parameter uint32 HMAC_BLK_SIZE_SHA2_256     = 512/8;  // Nb bytes
   parameter uint32 HMAC_BLK_SIZE_SHA2_384_512 = 1024/8; // Nb bytes
+
   // 48 cycles of hashing, 16 cycles to rd next 16 words, 1 cycle to update digest
-  parameter uint32 HMAC_MSG_PROCESS_CYCLES   = 65;
-  // 80 cycles for hmac key padding
-  parameter uint32 HMAC_KEY_PROCESS_CYCLES   = 80;
+  parameter uint32 HMAC_MSG_PROCESS_CYCLES_256 = 65;
+  parameter uint32 HMAC_MSG_PROCESS_CYCLES_512 = 81;
+  // 80 (64+16) cycles for hmac key padding for SHA-2 256
+  parameter uint32 HMAC_KEY_PROCESS_CYCLES_256 = 80;
+  // 112 (80+32) cycles for hmac key padding for SHA-2 384/512
+  parameter uint32 HMAC_KEY_PROCESS_CYCLES_512 = 112;
   // 1 cycles to write a msg word to hmac_msg_fifo
-  parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
+  parameter uint32 HMAC_WR_WORD_CYCLE          = 1;
 
   parameter uint NUM_DIGESTS = 16;
   parameter uint NUM_KEYS    = 32;
@@ -54,8 +59,7 @@ package hmac_env_pkg;
 
   // HMAC status register indices
   typedef enum int {
-    // TODO verify HmacIdle
-    HmacIdle                = 0,
+    HmacStaIdle             = 0,
     HmacStaMsgFifoEmpty     = 1,
     HmacStaMsgFifoFull      = 2,
     HmacStaMsgFifoDepthLsb  = 4,
@@ -68,8 +72,7 @@ package hmac_env_pkg;
     ShaEn         = 1,
     EndianSwap    = 2,
     DigestSwap    = 3,
-    // TODO (issue #23245)
-    KeySwap    = 4,
+    KeySwap       = 4,
     DigestSizeLsb = 5,
     DigestSizeMsb = 8,
     KeyLengthLsb  = 9,
