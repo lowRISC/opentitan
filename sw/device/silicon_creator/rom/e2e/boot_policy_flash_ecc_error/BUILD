@@ -14,6 +14,7 @@ load(
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
+    "otp_hex",
     "otp_image",
     "otp_json",
     "otp_partition",
@@ -32,18 +33,86 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-BOOT_POLICY_FLASH_ECC_ERROR_CASES = [
+FLASH_ECC_ERROR_CAUSES = [
     {
-        "name": "a_corrupt_b_valid",
-        "a": ":flash_ecc_self_corruption_slot_a",
+        "cause": "manifest_security_version",
+        "id": 0,
+    },
+    {
+        "cause": "manifest_identifier",
+        "id": 1,
+    },
+    {
+        "cause": "manifest_length",
+        "id": 2,
+    },
+    {
+        "cause": "manifest_manifest_version",
+        "id": 3,
+    },
+    {
+        "cause": "manifest_signed_region_end",
+        "id": 4,
+    },
+    {
+        "cause": "manifest_code_start",
+        "id": 5,
+    },
+    {
+        "cause": "manifest_code_end",
+        "id": 6,
+    },
+    {
+        "cause": "manifest_entry_point",
+        "id": 7,
+    },
+    {
+        "cause": "manifest_ecdsa_public_key",
+        "id": 8,
+    },
+    {
+        "cause": "manifest_usage_constraints_selector_bits",
+        "id": 9,
+    },
+    {
+        "cause": "manifest_ecdsa_signature",
+        "id": 10,
+    },
+    {
+        "cause": "manifest_extension_spx_public_key",
+        "id": 11,
+    },
+    {
+        "cause": "manifest_extension_spx_signature",
+        "id": 12,
+    },
+    {
+        "cause": "code_first_word",
+        "id": 13,
+    },
+    {
+        "cause": "code_middle_word",
+        "id": 14,
+    },
+    {
+        "cause": "code_last_word",
+        "id": 15,
+    },
+]
+
+BOOT_POLICY_FLASH_ECC_ERROR_TESTS = [
+    {
+        "name": "a_corrupt_b_valid_{}",
+        "a": ":flash_ecc_self_corruption_slot_a_{}",
         "b": ":empty_test_slot_b",
+        "exit_success": "Booted slot=0x20080000",
     },
     {
-        "name": "a_valid_b_corrupt",
+        "name": "a_valid_b_corrupt_{}",
         "a": ":empty_test_slot_a",
-        "b": ":flash_ecc_self_corruption_slot_b",
+        "b": ":flash_ecc_self_corruption_slot_b_{}",
+        "exit_success": "Booted slot=0x20000000",
     },
-    # TODO(#21353): add test case for both images corrupted.
 ]
 
 otp_json(
@@ -54,6 +123,8 @@ otp_json(
             items = {
                 # Enable flash data page scrambling and ECC.
                 "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                # Enable SPX+ signature verification.
+                "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(CONST.HARDENED_TRUE),
             },
         ),
     ],
@@ -93,11 +164,12 @@ SEC_VERS = [
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         local_defines = [
-            "EMPTY_TEST_MSG=\"slot=%p, security_version=%01d, lc_state=0x%08x\", manifest_def_get(), manifest_def_get()->security_version, lifecycle_raw_state_get()",
+            "EMPTY_TEST_MSG=\"Booted slot=%p\", manifest_def_get()",
         ],
         # This image always get the lower security version as we want the image that self-corrupts the ECC
         # of the manifest identifier to always boot first, befause attempting to boot this (known-good) image.
         manifest = ":manifest_sec_ver_0",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -111,7 +183,10 @@ SEC_VERS = [
 
 [
     opentitan_binary(
-        name = "flash_ecc_self_corruption_slot_{}".format(slot),
+        name = "flash_ecc_self_corruption_slot_{}_{}".format(
+            slot,
+            c["cause"],
+        ),
         testonly = True,
         srcs = ["flash_ecc_error_test.c"],
         # Use the prod key because it is valid in every LC state.
@@ -120,9 +195,12 @@ SEC_VERS = [
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        local_defines = ["CORRUPT_SLOT_{}_ID=\"1\"".format(slot.upper())],
+        local_defines = [
+            "CAUSE_ID={}".format(c["id"]),
+        ],
         # This image always get the higher security version as we want it to always boot first.
         manifest = ":manifest_sec_ver_1",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
@@ -138,38 +216,46 @@ SEC_VERS = [
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib:boot_log",
             "//sw/device/silicon_creator/lib:manifest",
             "//sw/device/silicon_creator/lib/base:chip",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/rom:boot_policy_ptrs",
         ],
     )
     for slot in SLOTS
+    for c in FLASH_ECC_ERROR_CAUSES
 ]
 
 [
     opentitan_test(
-        name = "boot_policy_flash_ecc_error_{}".format(c["name"]),
+        name = t["name"].format(c["cause"]),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
             binaries = {
-                c["a"]: "fw_a",
-                c["b"]: "fw_b",
+                t["a"].format(c["cause"]): "fw_a",
+                t["b"].format(c["cause"]): "fw_b",
             },
+            exit_success = t["exit_success"],
             otp = ":otp_img_boot_policy_flash_ecc_error",
             slot_a = SLOTS["a"],
             slot_b = SLOTS["b"],
         ),
     )
-    for c in BOOT_POLICY_FLASH_ECC_ERROR_CASES
+    for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
+    for c in FLASH_ECC_ERROR_CAUSES
 ]
 
 test_suite(
     name = "boot_policy_flash_ecc_error",
     tags = ["manual"],
     tests = [
-        "boot_policy_flash_ecc_error_{}".format(c["name"])
-        for c in BOOT_POLICY_FLASH_ECC_ERROR_CASES
+        t["name"].format(c["cause"])
+        for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
+        for c in FLASH_ECC_ERROR_CAUSES
     ],
 )
