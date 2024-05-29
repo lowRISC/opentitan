@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::Parser;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -25,7 +25,41 @@ struct Opts {
     timeout: Duration,
 }
 
-fn sw_strap_set(transport: &TransportWrapper, value: u8) -> Result<()> {
+fn sw_strap_set_teacup(transport: &TransportWrapper, value: u8) -> Result<()> {
+    // The teacup board has some hyperdebug GPIOs dedicated to driving the
+    // weak values.
+    let pin_pairs = [
+        (
+            transport.gpio_pin("SW_STRAP0")?,
+            transport.gpio_pin("SW_STRAP0_WEAK")?,
+        ),
+        (
+            transport.gpio_pin("SW_STRAP1")?,
+            transport.gpio_pin("SW_STRAP1_WEAK")?,
+        ),
+        (
+            transport.gpio_pin("SW_STRAP2")?,
+            transport.gpio_pin("SW_STRAP2_WEAK")?,
+        ),
+    ];
+    for (i, (strong, weak)) in pin_pairs.iter().enumerate() {
+        let pinval = ((value >> (2 * i)) & 3) as usize;
+        if pinval == 0 || pinval == 3 {
+            // For the strong strap values, we set the strong pin to PushPull
+            // and drive the value.  We set the weak pin to Input to tri-state.
+            strong.set(Some(PinMode::PushPull), Some(pinval == 3), None, None)?;
+            weak.set(Some(PinMode::Input), None, None, None)?;
+        } else {
+            // For the weak strap values, we set the weak pin to PushPull and
+            // drive the value.  We set the strong pin to Input to tri-state.
+            weak.set(Some(PinMode::PushPull), Some(pinval == 2), None, None)?;
+            strong.set(Some(PinMode::Input), None, None, None)?;
+        }
+    }
+    Ok(())
+}
+
+fn sw_strap_set_verilator(transport: &TransportWrapper, value: u8) -> Result<()> {
     let dont_care = false;
     let settings = [
         (PinMode::PushPull, false, PullMode::None),
@@ -50,6 +84,21 @@ fn sw_strap_set(transport: &TransportWrapper, value: u8) -> Result<()> {
     Ok(())
 }
 
+fn strap_pattern(value: u8) -> String {
+    let bits = [
+        b's', // Strong zero.
+        b'w', // Weak zero.
+        b'W', // Weak one.
+        b'S', // Strong one.
+    ];
+    let mut buf = [b'X'; 3];
+    for i in 0..3 {
+        let v = (value >> (2 * i)) & 3;
+        buf[2 - i] = bits[v as usize];
+    }
+    return std::str::from_utf8(&buf).unwrap().into();
+}
+
 fn test_sw_strap_values(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
     // BootstrapOptions first.
@@ -58,8 +107,20 @@ fn test_sw_strap_values(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     for value in 0..64 {
-        log::info!("Setting strap value to {:x}", value);
-        sw_strap_set(transport, value)?;
+        log::info!(
+            "Setting strap value to {value:02x}, pattern = {}",
+            strap_pattern(value)
+        );
+        match opts.init.backend_opts.interface.as_str() {
+            "teacup" => sw_strap_set_teacup(transport, value)?,
+            "verilator" => sw_strap_set_verilator(transport, value)?,
+            intf => return Err(anyhow!("Unsupported interface: {intf}")),
+        };
+        if opts.init.backend_opts.interface == "teacup" {
+            sw_strap_set_teacup(transport, value)?;
+        } else {
+            sw_strap_set_verilator(transport, value)?;
+        }
         TestCommand::SwStrapRead.send(&*uart)?;
         let response = Status::recv(&*uart, opts.timeout, false)?;
         assert_eq!(value, u8::try_from(response)?);
