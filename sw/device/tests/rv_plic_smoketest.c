@@ -24,7 +24,7 @@ static dif_uart_t uart0;
 // since they are referenced in the ISR routine as well as in the main program
 // flow.
 static volatile bool uart_rx_overflow_handled;
-static volatile bool uart_tx_empty_handled;
+static volatile bool uart_tx_done_handled;
 
 /**
  * UART ISR.
@@ -45,12 +45,11 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t interrupt_id) {
       uart_irq = kDifUartIrqRxOverflow;
       uart_rx_overflow_handled = true;
       break;
-    case kTopEarlgreyPlicIrqIdUart0TxEmpty:
-      CHECK(!uart_tx_empty_handled,
-            "UART TX empty IRQ asserted more than once");
+    case kTopEarlgreyPlicIrqIdUart0TxDone:
+      CHECK(!uart_tx_done_handled, "UART TX done IRQ asserted more than once");
 
-      uart_irq = kDifUartIrqTxEmpty;
-      uart_tx_empty_handled = true;
+      uart_irq = kDifUartIrqTxDone;
+      uart_tx_done_handled = true;
       break;
     default:
       LOG_FATAL("ISR is not implemented!");
@@ -107,7 +106,7 @@ static void uart_configure_irqs(dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqRxOverflow,
                                         kDifToggleEnabled));
   CHECK_DIF_OK(
-      dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxEmpty, kDifToggleEnabled));
+      dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxDone, kDifToggleEnabled));
 }
 
 /**
@@ -119,7 +118,7 @@ static void plic_configure_irqs(dif_rv_plic_t *plic) {
       plic, kTopEarlgreyPlicIrqIdUart0RxOverflow, kDifRvPlicMaxPriority));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdUart0TxEmpty, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdUart0TxDone, kDifRvPlicMaxPriority));
 
   // Set Ibex IRQ priority threshold level
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic0, kPlicTarget,
@@ -131,7 +130,7 @@ static void plic_configure_irqs(dif_rv_plic_t *plic) {
                                            kPlicTarget, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdUart0TxEmpty, kPlicTarget, kDifToggleEnabled));
+      plic, kTopEarlgreyPlicIrqIdUart0TxDone, kPlicTarget, kDifToggleEnabled));
 }
 
 static void execute_test(dif_uart_t *uart) {
@@ -144,14 +143,14 @@ static void execute_test(dif_uart_t *uart) {
   }
   CHECK(uart_rx_overflow_handled, "RX overflow IRQ has not been handled!");
 
-  // Force UART TX empty interrupt.
-  uart_tx_empty_handled = false;
-  CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqTxEmpty, true));
+  // Force UART TX done interrupt.
+  uart_tx_done_handled = false;
+  CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqTxDone, true));
   // Check if the IRQ has occured and has been handled appropriately.
-  if (!uart_tx_empty_handled) {
+  if (!uart_tx_done_handled) {
     busy_spin_micros(10);
   }
-  CHECK(uart_tx_empty_handled, "TX empty IRQ has not been handled!");
+  CHECK(uart_tx_done_handled, "TX done IRQ has not been handled!");
 }
 
 OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);

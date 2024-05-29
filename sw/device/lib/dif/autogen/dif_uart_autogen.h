@@ -86,7 +86,7 @@ typedef enum dif_uart_irq {
   /**
    * Raised if the transmit FIFO has emptied and no transmit is ongoing.
    */
-  kDifUartIrqTxEmpty = 2,
+  kDifUartIrqTxDone = 2,
   /**
    * Raised if the receive FIFO has overflowed.
    */

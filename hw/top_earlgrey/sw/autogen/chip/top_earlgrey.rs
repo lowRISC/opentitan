@@ -869,8 +869,8 @@ pub enum PlicIrqId {
     Uart0TxWatermark = 1,
     /// uart0_rx_watermark
     Uart0RxWatermark = 2,
-    /// uart0_tx_empty
-    Uart0TxEmpty = 3,
+    /// uart0_tx_done
+    Uart0TxDone = 3,
     /// uart0_rx_overflow
     Uart0RxOverflow = 4,
     /// uart0_rx_frame_err
@@ -885,8 +885,8 @@ pub enum PlicIrqId {
     Uart1TxWatermark = 9,
     /// uart1_rx_watermark
     Uart1RxWatermark = 10,
-    /// uart1_tx_empty
-    Uart1TxEmpty = 11,
+    /// uart1_tx_done
+    Uart1TxDone = 11,
     /// uart1_rx_overflow
     Uart1RxOverflow = 12,
     /// uart1_rx_frame_err
@@ -901,8 +901,8 @@ pub enum PlicIrqId {
     Uart2TxWatermark = 17,
     /// uart2_rx_watermark
     Uart2RxWatermark = 18,
-    /// uart2_tx_empty
-    Uart2TxEmpty = 19,
+    /// uart2_tx_done
+    Uart2TxDone = 19,
     /// uart2_rx_overflow
     Uart2RxOverflow = 20,
     /// uart2_rx_frame_err
@@ -917,8 +917,8 @@ pub enum PlicIrqId {
     Uart3TxWatermark = 25,
     /// uart3_rx_watermark
     Uart3RxWatermark = 26,
-    /// uart3_tx_empty
-    Uart3TxEmpty = 27,
+    /// uart3_tx_done
+    Uart3TxDone = 27,
     /// uart3_rx_overflow
     Uart3RxOverflow = 28,
     /// uart3_rx_frame_err
@@ -1236,7 +1236,7 @@ impl TryFrom<u32> for PlicIrqId {
             0 => Ok(Self::None),
             1 => Ok(Self::Uart0TxWatermark),
             2 => Ok(Self::Uart0RxWatermark),
-            3 => Ok(Self::Uart0TxEmpty),
+            3 => Ok(Self::Uart0TxDone),
             4 => Ok(Self::Uart0RxOverflow),
             5 => Ok(Self::Uart0RxFrameErr),
             6 => Ok(Self::Uart0RxBreakErr),
@@ -1244,7 +1244,7 @@ impl TryFrom<u32> for PlicIrqId {
             8 => Ok(Self::Uart0RxParityErr),
             9 => Ok(Self::Uart1TxWatermark),
             10 => Ok(Self::Uart1RxWatermark),
-            11 => Ok(Self::Uart1TxEmpty),
+            11 => Ok(Self::Uart1TxDone),
             12 => Ok(Self::Uart1RxOverflow),
             13 => Ok(Self::Uart1RxFrameErr),
             14 => Ok(Self::Uart1RxBreakErr),
@@ -1252,7 +1252,7 @@ impl TryFrom<u32> for PlicIrqId {
             16 => Ok(Self::Uart1RxParityErr),
             17 => Ok(Self::Uart2TxWatermark),
             18 => Ok(Self::Uart2RxWatermark),
-            19 => Ok(Self::Uart2TxEmpty),
+            19 => Ok(Self::Uart2TxDone),
             20 => Ok(Self::Uart2RxOverflow),
             21 => Ok(Self::Uart2RxFrameErr),
             22 => Ok(Self::Uart2RxBreakErr),
@@ -1260,7 +1260,7 @@ impl TryFrom<u32> for PlicIrqId {
             24 => Ok(Self::Uart2RxParityErr),
             25 => Ok(Self::Uart3TxWatermark),
             26 => Ok(Self::Uart3RxWatermark),
-            27 => Ok(Self::Uart3TxEmpty),
+            27 => Ok(Self::Uart3TxDone),
             28 => Ok(Self::Uart3RxOverflow),
             29 => Ok(Self::Uart3RxFrameErr),
             30 => Ok(Self::Uart3RxBreakErr),
@@ -1746,7 +1746,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::Uart0,
     // Uart0RxWatermark -> PlicPeripheral::Uart0
     PlicPeripheral::Uart0,
-    // Uart0TxEmpty -> PlicPeripheral::Uart0
+    // Uart0TxDone -> PlicPeripheral::Uart0
     PlicPeripheral::Uart0,
     // Uart0RxOverflow -> PlicPeripheral::Uart0
     PlicPeripheral::Uart0,
@@ -1762,7 +1762,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::Uart1,
     // Uart1RxWatermark -> PlicPeripheral::Uart1
     PlicPeripheral::Uart1,
-    // Uart1TxEmpty -> PlicPeripheral::Uart1
+    // Uart1TxDone -> PlicPeripheral::Uart1
     PlicPeripheral::Uart1,
     // Uart1RxOverflow -> PlicPeripheral::Uart1
     PlicPeripheral::Uart1,
@@ -1778,7 +1778,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::Uart2,
     // Uart2RxWatermark -> PlicPeripheral::Uart2
     PlicPeripheral::Uart2,
-    // Uart2TxEmpty -> PlicPeripheral::Uart2
+    // Uart2TxDone -> PlicPeripheral::Uart2
     PlicPeripheral::Uart2,
     // Uart2RxOverflow -> PlicPeripheral::Uart2
     PlicPeripheral::Uart2,
@@ -1794,7 +1794,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::Uart3,
     // Uart3RxWatermark -> PlicPeripheral::Uart3
     PlicPeripheral::Uart3,
-    // Uart3TxEmpty -> PlicPeripheral::Uart3
+    // Uart3TxDone -> PlicPeripheral::Uart3
     PlicPeripheral::Uart3,
     // Uart3RxOverflow -> PlicPeripheral::Uart3
     PlicPeripheral::Uart3,

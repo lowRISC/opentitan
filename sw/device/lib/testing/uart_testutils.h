@@ -35,7 +35,7 @@ typedef struct uart_cfg_params {
   uint32_t peripheral_id;
   uint32_t irq_tx_watermark_id;
   uint32_t irq_rx_watermark_id;
-  uint32_t irq_tx_empty_id;
+  uint32_t irq_tx_done_id;
   uint32_t irq_rx_overflow_id;
   uint32_t irq_rx_frame_err_id;
   uint32_t irq_rx_break_err_id;

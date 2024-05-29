@@ -100,7 +100,7 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx));
       end
 
-      TxEmpty: begin
+      TxDone: begin
         if (en_tx) begin
           // when tx is enabled, one extra item is in the data path, total is TxFifoDepth + 1
           drive_tx_bytes(.num_bytes($urandom_range(1, TxFifoDepth + 1)));
