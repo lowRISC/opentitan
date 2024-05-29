@@ -578,6 +578,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":otp",
+            "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:hardened",
@@ -609,6 +610,7 @@ cc_test(
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/silicon_creator/lib/base:sec_mmio",

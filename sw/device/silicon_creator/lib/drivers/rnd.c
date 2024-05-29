@@ -1,8 +1,10 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/csr.h"
@@ -105,8 +107,9 @@ rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
 }
 
 uint32_t rnd_uint32(void) {
-  if (otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET) ==
-      kHardenedBoolTrue) {
+  if (kBootStage == kBootStageOwner ||
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET) ==
+          kHardenedBoolTrue) {
     // When bit-0 is clear an EDN request for new data for RND_DATA is
     // pending.
     while (!abs_mmio_read32(kBaseIbex + RV_CORE_IBEX_RND_STATUS_REG_OFFSET)) {
