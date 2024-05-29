@@ -55,6 +55,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // once triggered, it won't be triggered again until it flips
   bit read_buffer_watermark_triggered;
 
+  // ADDR_MODE TL side values;
+  bit tl_ul_side_addr_mode_pending;
+  bit tl_ul_side_addr_mode_addr_4b_en;
+  bit spi_side_addr_mode_addr_4b_en;
+  event check_addr_mode_propagation_ev;
+
   // Predicted spi-side flash status
   flash_status_t spi_side_flash_status;
   // flash_status value written on TL-UL. There can be several (RTL supports up to 2) writes on the
@@ -112,8 +118,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       process_upstream_spi_device_fifo();
       process_downstream_spi_fifo();
       upstream_req_fifo_distributor();
-      process_flash_tl2spi_updates();
+      process_tl2spi_updates();
       process_clear_mems();
+      check_addr_mode_propagation();
     join_none
   endtask
 
@@ -196,13 +203,30 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     end
                     void'(ral.addr_mode.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
                     `uvm_info(`gfn, "Enable 4b addr due to cmd EN4B", UVM_MEDIUM)
+                    spi_side_addr_mode_addr_4b_en = 1;
+                    if (tl_ul_side_addr_mode_pending && tl_ul_side_addr_mode_addr_4b_en != 1) begin
+                      `uvm_info(`gfn, "Write to ADDR_mode colliding with this EN4B flash command",
+                                UVM_DEBUG)
+                      tl_ul_side_addr_mode_addr_4b_en = 1;
+                      if (cfg.en_cov) begin
+                        cov.en4b_flash_cmd_clash_with_addr_mode_write_cg.sample(1);
+                      end
+                    end
                   end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, item.opcode)) begin
                     if (cfg.en_cov) begin
                       cov.spi_device_addr_4b_enter_exit_command_cg.sample(
                           .addr_4b_en(0), .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
                     end
                     void'(ral.addr_mode.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
-                    `uvm_info(`gfn, "Disable 4b addr due to cmd EX4B", UVM_MEDIUM)
+                    spi_side_addr_mode_addr_4b_en = 0;
+                    if (tl_ul_side_addr_mode_pending && tl_ul_side_addr_mode_addr_4b_en != 0) begin
+                      `uvm_info(`gfn, "Write to ADDR_mode colliding with this EX4B flash command",
+                                UVM_DEBUG)
+                      tl_ul_side_addr_mode_addr_4b_en = 0;
+                      if (cfg.en_cov) begin
+                        cov.ex4b_flash_cmd_clash_with_addr_mode_write_cg.sample(1);
+                      end
+                    end
                   end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, item.opcode)) begin
                     // It could happen there is a flash_status write prior to WREN command finishing.
                     // What happens depends on when exactly the written flash value crosses
@@ -219,9 +243,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     rtl_committed_flash_status = fetch_flash_status_rtl_committed_value();
 
                     // Update flash_status.wel predicted value
-                    `DV_CHECK_EQ_FATAL( ral.flash_status.wel.predict(.value(
-                                        spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
-                                        "ral.flash_status.predict did not succeed")
+                    `DV_CHECK_EQ_FATAL(ral.flash_status.wel.predict(.value(
+                                       spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
+                                       "ral.flash_status.predict did not succeed")
                     `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
                                              spi_side_flash_status.wel), UVM_DEBUG)
 
@@ -876,9 +900,70 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endtask
 
-  // RX TXN on CSB active and each of the sampled bytes of data as well as CSB becoming inactive
-  virtual task process_flash_tl2spi_updates();
+  task check_addr_mode_propagation();
+    bit rtl_pending, rtl_addr_4b_en;
+    // 3-6 (and even up to 6 in certain scenarios due to CDC instrumentation variability) sys
+    // cycles delay after the first byte of spi-data
+    int unsigned cycle_delay = 6;
+
     forever begin
+      wait(check_addr_mode_propagation_ev.triggered);
+      `uvm_info(`gfn, "Event 'check_addr_mode_propagation_ev' triggered", UVM_DEBUG)
+
+      if (!tl_ul_side_addr_mode_pending) begin
+        // Adding some time consuming delay to avoid an infinite loop if
+        // 'tl_ul_side_addr_mode_pending' is not set
+        #(cfg.spi_host_agent_cfg.sck_period_ps/4 * 1ps);
+        continue;
+      end
+
+      // Sys clk delay
+      cfg.clk_rst_vif.wait_n_clks(cycle_delay);
+      // Adding a SPI clock_cycle delay since the spi_item.byte_event may be triggered before RTL update
+      #(cfg.spi_host_agent_cfg.sck_period_ps * 1ps);
+      tl_ul_side_addr_mode_pending = 0;
+
+
+      `uvm_info(`gfn, {"Carrying out ADDR_MODE check since there was a write and SPI Host",
+                       " sent the first data byte"}, UVM_DEBUG)
+
+      // Check the pending bit is set
+      csr_rd(.ptr(ral.addr_mode.pending), .value(rtl_pending), .backdoor(1));
+
+      `uvm_info(`gfn, "Checking pending bit has been unset", UVM_DEBUG)
+
+      // We expect the pending bit to be unset at this time, hence compare against 0
+      `DV_CHECK_EQ(rtl_pending, 0,
+                   $sformatf("Comparison mismatch, act (0x%0x) != exp %p",
+                             rtl_pending, tl_ul_side_addr_mode_pending))
+
+      // Update flash_status predicted value
+      `DV_CHECK_EQ_FATAL(ral.addr_mode.addr_4b_en.predict(.value(tl_ul_side_addr_mode_addr_4b_en),
+                                                          .kind(UVM_PREDICT_READ)), 1,
+                         "ral.addr_mode.addr_4b_en.predict did not succeed")
+      spi_side_addr_mode_addr_4b_en = tl_ul_side_addr_mode_addr_4b_en;
+      `uvm_info(`gfn, $sformatf("Updated TL-UL ADDR_MODE CSR to: ral.addr_mode.addr_4b_en=0x%0x",
+                                tl_ul_side_addr_mode_addr_4b_en), UVM_DEBUG)
+
+      `DV_CHECK_EQ_FATAL(ral.addr_mode.pending.predict(.value(0),
+                                                       .kind(UVM_PREDICT_READ)), 1,
+                         "ral.addr_mode.addr_4b_en.predict did not succeed")
+
+
+      // Check if the RTL value has updated
+      csr_rd(.ptr(ral.addr_mode.addr_4b_en), .value(rtl_addr_4b_en), .backdoor(1));
+      `DV_CHECK_EQ(rtl_addr_4b_en, tl_ul_side_addr_mode_addr_4b_en,
+                   $sformatf("ADDR_MODE.addr_4b_en Comparison mismatch, act (0x%0x) != exp %p",
+                             rtl_addr_4b_en, tl_ul_side_addr_mode_addr_4b_en))
+
+    end // forever begin
+  endtask
+
+  // RX TXN on CSB active and each of the sampled bytes of data as well as CSB becoming inactive
+  // Checks for flash_status and addr_mode TL-UL to SCK side propagation and vice versa
+  virtual task process_tl2spi_updates();
+    forever begin
+      bit first_byte = 1;
       spi_item spi_txn;
       flash_status_t old_flash_status;
 
@@ -940,6 +1025,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 wait (spi_txn.byte_sampled_ev.triggered);
                 `uvm_info(`gfn, "Event 'spi_txn.byte_sampled' has been triggered", UVM_DEBUG)
 
+                if (first_byte) begin
+                  first_byte = 0;
+                  // ADDR_MODE updates on SCK side on the first byte of SPI flash txn
+                  -> check_addr_mode_propagation_ev;
+                end
+
                 // task above is delay free since it's an infinite loop  within a fork...join_any
                 // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
                 #(cfg.spi_host_agent_cfg.sck_period_ps/4 * 1ps);
@@ -992,7 +1083,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                   else if (tl_ul_fuzzy_idx != -1) begin
                     if (ongoing_read_status_cmd) begin
                       // If there's a READ_STATUS flash command on-flight - we update spi_side
-                      // status in task: process_flash_tl2spi_updates
+                      // status in task: process_tl2spi_updates
                       update_spi_side_flash_status_after_read_status = 1;
                       `uvm_info(`gfn, {"Set 'update_spi_side_flash_status_after_read_status'",
                                        "-> Update after READ_STATUS command "},
@@ -1098,7 +1189,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           disable fork;
         end: isolation_thread
       join
-      `uvm_info(`gfn, "[process_flash_tl2spi_updates] - thread killed", UVM_DEBUG)
+      `uvm_info(`gfn, "[process_tl2spi_updates] - thread killed", UVM_DEBUG)
 
       // All CSR predictions here:
       `uvm_info(`gfn, "Updating TL-UL register side ", UVM_DEBUG)
@@ -1141,13 +1232,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, $sformatf("Updated TL-UL flash_status CSR to: spi_side_flash_status=0x%0x",
                                   spi_side_flash_status), UVM_DEBUG)
 
-
       // Triggered after CSB is asserted
       -> CSB_not_active_ev;
       `uvm_info(`gfn, "Triggered 'CSB_not_active_ev'", UVM_DEBUG)
 
     end // forever begin
-  endtask // process_flash_tl2spi_updates
+  endtask // process_tl2spi_updates
 
   // Receives a flash_status_t queue and returns '1' if the value has yet been comitted
   // This function is used to update spi_side_flash_status value
@@ -1459,7 +1549,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       join
 
       ongoing_read_status_cmd = 0;
-      `uvm_info(`gfn, "[process_flash_tl2spi_updates] - thread killed", UVM_DEBUG)
+      `uvm_info(`gfn, "[process_read_status_cmd] - thread killed", UVM_DEBUG)
 
     end // if (cmd_type == InternalProcessStatus)
   endtask
@@ -1637,7 +1727,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               UVM_DEBUG)
 
     `uvm_info(`gfn, $sformatf("CSR name: %s",csr.get_name()), UVM_DEBUG)
-
     // if incoming access is a write to a valid csr, then make updates right away
     // don't update flash_status predict value as it's updated at the end of spi transaction
     if (write && channel == AddrChannel && csr.get_name != "flash_status") begin
@@ -1667,6 +1756,45 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     // process the csr req
     case (csr.get_name())
+      "addr_mode": begin
+        // Note: The expected behaviour is SW won't write to addr_mode whilst the host is sending
+        // data. The expectation is SW will only initialise the value, then the host will handle 3
+        // to 4 byte addresses bya sending EN4B EX4B flash commands.
+        // EN4B/EX4B commands take precedence over TL-UL writes, so if the write collides with
+        // EN4B/EX4B commands the written value will be ignored.
+        // ADDR_MODE updates on SCK side after the first byte is received. The TB updates
+        // ADDR_MODE.addr_4b_en at the end of the flash_command, so the TB won't need to handle this
+        // case differently.
+        if (write && channel == AddrChannel) begin
+          bit rtl_pending;
+          tl_ul_side_addr_mode_pending = 1;
+          tl_ul_side_addr_mode_addr_4b_en = item.a_data[0];
+
+          `uvm_info(`gfn, $sformatf("ADDR_MODE.addr_4b_en Write (0x%0x)",
+                                    tl_ul_side_addr_mode_addr_4b_en), UVM_DEBUG)
+
+          // Check the pending bit is set
+          csr_rd(.ptr(ral.addr_mode.pending), .value(rtl_pending), .backdoor(1));
+          `DV_CHECK_EQ(rtl_pending, tl_ul_side_addr_mode_pending,
+                       $sformatf("Comparison mismatch, act (0x%0x) != exp %p",
+                                 rtl_pending, tl_ul_side_addr_mode_pending))
+        end
+        if (!write && channel == DataChannel) begin
+          bit [TL_DW-1:0] exp_addr_mode = tl_ul_side_addr_mode_pending ?
+                                          tl_ul_side_addr_mode_addr_4b_en :
+                                          spi_side_addr_mode_addr_4b_en;
+          `uvm_info(`gfn, $sformatf("ADDR_MODE read: act=0x%0x, exp=0x%0x",
+                                    item.d_data, exp_addr_mode), UVM_DEBUG)
+
+          `DV_CHECK_EQ(item.d_data[0], exp_addr_mode,
+                       $sformatf("Comparison mismatch [addr_4b_en], act (0x%0x) != exp %p",
+                                 item.d_data[0], exp_addr_mode))
+
+          `DV_CHECK_EQ(item.d_data[TL_DW-1], tl_ul_side_addr_mode_pending,
+                       $sformatf("Comparison mismatch [pending], act (0x%0x) != exp %p",
+                                 item.d_data[TL_DW-1], tl_ul_side_addr_mode_pending))
+        end
+      end
       "flash_status": begin
         if (write && channel == AddrChannel) begin
           flash_status_t flash_status = item.a_data;
@@ -1938,7 +2066,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             wait (check_spi_status_bits_ev.triggered);
             `uvm_info(`gfn, "first check_spi_status_bits_ev has been triggered", UVM_DEBUG)
             // Eigth of  a SPI cycle to ensure a second event is triggered for the 2nd wait
-            // statement. Also to ensure this thread updates ahead of 'process_flash_tl2spi_updates'
+            // statement. Also to ensure this thread updates ahead of 'process_tl2spi_updates'
             // which has a 'cfg.spi_host_agent_cfg.sck_period_ps/4' delay.
             // So the 'tl_ul_side_flash_status_q' is updated in time for the value to propagate
             // towards the SPI side
