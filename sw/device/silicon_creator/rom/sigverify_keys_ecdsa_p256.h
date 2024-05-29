@@ -26,7 +26,7 @@ extern "C" {
  *
  * @param key_id A key ID.
  * @param lc_state Life cycle state of the device.
- * @param key Key with the given ID, valid only if it exists.
+ * @param[out] key Key with the given ID, valid only if the result is kErrorOk.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
