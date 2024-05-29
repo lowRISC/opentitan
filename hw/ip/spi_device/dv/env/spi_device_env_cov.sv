@@ -125,6 +125,14 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     cr_modeXdummyXnum_lanes: cross cp_is_flash, cp_dummy_cycles, cp_num_lanes;
   endgroup
 
+  covergroup en4b_flash_cmd_clash_with_addr_mode_write_cg with function sample(bit en4b_clash);
+    en4b_clash_cp: coverpoint en4b_clash { bins overwritten = {1}; }
+  endgroup
+
+  covergroup ex4b_flash_cmd_clash_with_addr_mode_write_cg with function sample(bit ex4b_clash);
+    ex4b_clash_cp: coverpoint ex4b_clash { bins overwritten = {1}; }
+  endgroup
+
   covergroup passthrough_addr_swap_cg with function sample(
       bit addr_swap_en, bit[TL_DW-1:0] data, bit[TL_DW-1:0] mask);
     cp_addr_swap_en: coverpoint addr_swap_en;
@@ -296,6 +304,9 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     spi_device_write_enable_disable_cg = new();
     spi_device_buffer_boundary_cg = new();
     tpm_interleave_with_flash_item_cg = new();
+    en4b_flash_cmd_clash_with_addr_mode_write_cg = new();
+    ex4b_flash_cmd_clash_with_addr_mode_write_cg = new();
+
   endfunction : new
 
 endclass
