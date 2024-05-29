@@ -481,6 +481,7 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
 
   static_assert(kPageCount == 2,
                 "Number of pages changed, unrolled loop must be updated");
+  memset(boot_data, 0, sizeof(*boot_data));
   HARDENED_RETURN_IF_ERROR(
       boot_data_page_info_update(kPages[0], page_info, boot_data));
   HARDENED_RETURN_IF_ERROR(
