@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
@@ -30,8 +31,6 @@
 #include "aon_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwm_regs.h"
-
-// Global Variables
 
 typedef void (*isr_handler)(void);
 static volatile isr_handler expected_isr_handler;
@@ -61,8 +60,6 @@ static volatile const bool kDeepSleep = false;
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 OTTF_DEFINE_TEST_CONFIG();
-
-// ISRs
 
 void ottf_external_isr(uint32_t *exc_info) {
   LOG_INFO("got external IRQ");
@@ -94,7 +91,7 @@ static void wdog_irq_handler(void) {
   CHECK_DIF_OK(
       dif_aon_timer_irq_acknowledge(&aon_timer, kDifAonTimerIrqWdogTimerBark));
 
-  // Signal a software interrupt
+  // Signal a software interrupt.
   dif_rv_plic_t rv_plic_isr;
   mmio_region_t plic_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
@@ -102,9 +99,7 @@ static void wdog_irq_handler(void) {
   CHECK_DIF_OK(dif_rv_plic_software_irq_force(&rv_plic_isr, kPlicTarget));
 }
 
-// Functions
-
-void prepare_to_exit(void) {
+static void prepare_to_exit(void) {
   CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleDisabled));
 
   CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
@@ -116,7 +111,7 @@ void prepare_to_exit(void) {
 
   CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
-  // Set the test status flag back to "TestStatusInTest"
+  // Set the test status flag back to "TestStatusInTest".
   test_status_set(kTestStatusInTest);
 }
 
@@ -148,16 +143,16 @@ bool test_main(void) {
   LOG_INFO("Running CHIP Power Sleep Load test");
 
   // Testplan: "The test should set a GPIO (mapped to the IOA2 pin) to high
-  // while the power state of interest is active"
+  // while the power state of interest is active".
 
   const uint32_t kGpioMask = 0x00000004;
 
-  // PINMUX
+  // PINMUX.
   CHECK_DIF_OK(
       dif_pinmux_output_select(&pinmux, (kTopEarlgreyPinmuxMioOutIoa0 + 2),
                                (kTopEarlgreyPinmuxOutselGpioGpio0 + 2)));
 
-  // Set output modes of all GPIO pins
+  // Set output modes of all GPIO pins.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));
 
   // Write to set IOA2 low at the start of the test:
@@ -165,7 +160,7 @@ bool test_main(void) {
 
   LOG_INFO("GPIO active");
 
-  // PWRMGR- Read wakeup reason
+  // PWRMGR- Read wakeup reason.
 
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
@@ -178,7 +173,7 @@ bool test_main(void) {
   } else if ((wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) &&
              (wakeup_reason.request_sources ==
               kDifPwrmgrWakeupRequestSourceFive)) {
-    // Wakeup due to a peripheral request and reason is AON Timer
+    // Wakeup due to a peripheral request and reason is AON Timer.
     prepare_to_exit();
     return true;
   } else {
@@ -187,18 +182,20 @@ bool test_main(void) {
     return false;
   }
 
-  // RV Timer
-  const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
-  const uint32_t kComparator = 0;
-  const uint64_t kTickFreqHz = 1000000;
-  const uint64_t kDeadline = UINT32_MAX;
+  // RV Timer.
+  enum {
+    kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0,
+    kComparator = 0,
+    kTickFreqHz = 1000000,
+    kDeadline = UINT32_MAX,
+  };
 
   CHECK_DIF_OK(dif_rv_timer_reset(&rv_timer));
 
   dif_rv_timer_tick_params_t rv_timer_tick_params;
   CHECK_DIF_OK(dif_rv_timer_approximate_tick_params(
       kClockFreqPeripheralHz, kTickFreqHz, &rv_timer_tick_params));
-  // Configure the tick params for a particular hart's counter
+  // Configure the tick params for a particular hart's counter.
   CHECK_DIF_OK(
       dif_rv_timer_set_tick_params(&rv_timer, kHart, rv_timer_tick_params));
 
@@ -211,7 +208,7 @@ bool test_main(void) {
 
   LOG_INFO("RV Timer active");
 
-  // Alert Ping
+  // Alert Ping.
 
   // 1. Config structs for all Incoming Alerts:
   dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
@@ -221,17 +218,17 @@ bool test_main(void) {
     alert_classes[i] = kDifAlertHandlerClassA;
   }
 
-  // 2. Config structs for Local Alerts
+  // 2. Config structs for Local Alerts:
   dif_alert_handler_local_alert_t loc_alerts[] = {
       kDifAlertHandlerLocalAlertAlertPingFail};
   dif_alert_handler_class_t loc_alert_classes[] = {kDifAlertHandlerClassB};
 
-  // 3. Config structs for Escalation phase
+  // 3. Config structs for Escalation phase:
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
        .duration_cycles = 2000}};
-  // Escalation protocol (struct) for an alert class
+  // Escalation protocol (struct) for an alert class.
   dif_alert_handler_class_config_t class_config = {
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = UINT16_MAX,
@@ -259,11 +256,11 @@ bool test_main(void) {
       .ping_timeout = UINT16_MAX,
   };
 
-  // 5. Configure Alerts
+  // 5. Configure Alerts:
   CHECK_STATUS_OK(alert_handler_testutils_configure_all(&alert_handler, config,
                                                         kDifToggleEnabled));
 
-  // Checks whether alert handler's ping timer is locked
+  // Checks whether alert handler's ping timer is locked.
   bool is_locked;
   CHECK_DIF_OK(
       dif_alert_handler_is_ping_timer_locked(&alert_handler, &is_locked));
@@ -272,15 +269,14 @@ bool test_main(void) {
   LOG_INFO("Alert ping is active");
 
   // PWM
-
-  // Configuration struct for PWM general
-  const dif_pwm_config_t config_ = {
+  // Configuration struct for PWM general.
+  const dif_pwm_config_t kConfig_ = {
       .clock_divisor = 0,
       .beats_per_pulse_cycle = 32,
   };
 
-  // Configuration struct for a specific PWM channel
-  const dif_pwm_channel_config_t default_ch_cfg_ = {
+  // Configuration struct for a specific PWM channel.
+  const dif_pwm_channel_config_t kDefaultChCfg_ = {
       .duty_cycle_a = 0,
       .duty_cycle_b = 0,
       .phase_delay = 0,
@@ -293,7 +289,7 @@ bool test_main(void) {
       kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
       kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
   };
-  // Duty cycle (arbitrary) values (in the beats)
+  // Duty cycle (arbitrary) values (in the beats).
   const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
       6, 11, 27, 8, 17, 7,
   };
@@ -309,10 +305,10 @@ bool test_main(void) {
       kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
   };
 
-  CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));
+  CHECK_DIF_OK(dif_pwm_configure(&pwm, kConfig_));
 
   // Configure each of the PWM channels:
-  dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
+  dif_pwm_channel_config_t channel_config_ = kDefaultChCfg_;
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(
         dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleDisabled));
@@ -323,10 +319,10 @@ bool test_main(void) {
         dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleEnabled));
   }
 
-  // Enable all PWM channels
+  // Enable all PWM channels.
   CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleEnabled));
 
-  // PINMUX
+  // PINMUX.
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(
         dif_pinmux_output_select(&pinmux, kPinmuxMioOut[i], kPinmuxOutsel[i]));
@@ -334,20 +330,27 @@ bool test_main(void) {
 
   LOG_INFO("PWM active");
 
-  // OTP
+  // OTP.
+  if (kBootStage != kBootStageOwner) {
+    // The ROM_EXT locks up the OTP register in the ePMP, any attempt to
+    // write to it would generate an exception. Therfore we can't test the
+    // OTP periodic checks when the test runs after the ROM_EXT.
 
-  // Configure OTP Control to do periodic "consistency" & "integrity" checks.
-  const dif_otp_ctrl_config_t otp_ctrl_config = {
-      .check_timeout = UINT32_MAX,
-      .integrity_period_mask = 0x1,
-      .consistency_period_mask = 0x1,
-  };
+    // Configure OTP Control to do periodic "consistency" & "integrity" checks.
+    const dif_otp_ctrl_config_t kOtpCtrlConfig = {
+        .check_timeout = UINT32_MAX,
+        .integrity_period_mask = 0x1,
+        .consistency_period_mask = 0x1,
+    };
 
-  CHECK_DIF_OK(dif_otp_ctrl_configure(&otp_ctrl, otp_ctrl_config));
+    CHECK_DIF_OK(dif_otp_ctrl_configure(&otp_ctrl, kOtpCtrlConfig));
 
-  LOG_INFO("OTP periodic checks active");
+    LOG_INFO("OTP periodic checks active");
+  } else {
+    LOG_INFO("Skipping OTP periodic checks due to ROM_EXT ePMP configuration");
+  }
 
-  // AON Timer
+  // AON Timer.
   const uint64_t kTimeTillBark = 1000;
 
   CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
@@ -362,7 +365,7 @@ bool test_main(void) {
                                                                 &count_cycles));
 
   if (kDeepSleep) {
-    // activate in Wakeup mode (no need for IRQ)
+    // Activate in Wakeup mode (no need for IRQ).
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, kTimeTillBark));
   } else {
@@ -370,17 +373,19 @@ bool test_main(void) {
     // sleep without having an NMI race WFI.
     irq_software_ctrl(/*en=*/true);
 
-    // activate in Watchdog mode & IRQ
+    // Activate in Watchdog mode & IRQ.
     CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
         &aon_timer, count_cycles, UINT32_MAX, false));
   }
   LOG_INFO("AON Timer active");
 
-  // ADC Controller
-  const uint8_t kNumLowPowerSamples = 2;
-  const uint8_t kNumNormalPowerSamples = 1;
-  const uint64_t kPowerUpTime = 30;
-  const uint64_t kWakeUpTime = 500;
+  // ADC Controller.
+  enum {
+    kNumLowPowerSamples = 2,
+    kNumNormalPowerSamples = 1,
+    kPowerUpTime = 30,
+    kWakeUpTime = 500,
+  };
   uint32_t power_up_time_aon_cycles = 0;
   CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kPowerUpTime, &power_up_time_aon_cycles));
@@ -388,7 +393,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kWakeUpTime, &wake_up_time_aon_cycles));
 
-  // ADC configuration
+  // ADC configuration.
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl));
   CHECK(power_up_time_aon_cycles < UINT8_MAX,
@@ -405,17 +410,17 @@ bool test_main(void) {
 
   LOG_INFO("ADC Controller active");
 
-  // Power Manager
+  // Power Manager.
   dif_pwrmgr_domain_config_t pwrmgr_cfg;
   dif_pwrmgr_request_sources_t pwrmgr_wakeups;
 
-  // Specify which request sources are enabled for wake-up
+  // Specify which request sources are enabled for wake-up.
   pwrmgr_wakeups =
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix);
 
-  // Power manager configuration
+  // Power manager configuration.
   pwrmgr_cfg = ((kCoreClkOff ? 0 : kDifPwrmgrDomainOptionCoreClockInLowPower) |
                 (kIoClkOff ? 0 : kDifPwrmgrDomainOptionIoClockInLowPower) |
                 (kUsbSlpOff ? 0 : kDifPwrmgrDomainOptionUsbClockInLowPower) |

@@ -504,8 +504,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "chip_power_idle_load",
-    srcs = ["chip_power_idle_load.c"],
+    name = "chip_power_idle_load_test",
+    srcs = ["chip_power_idle_load_test.c"],
     broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
@@ -540,18 +540,15 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "chip_power_sleep_load",
-    srcs = ["chip_power_sleep_load.c"],
-    broken = cw310_params(tags = ["broken"]),
+    name = "chip_power_sleep_load_test",
+    srcs = ["chip_power_sleep_load_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         },
     ),
-    # TODO(#16374): test doesn't make progress after enabling PWM
-    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
