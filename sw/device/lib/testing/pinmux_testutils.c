@@ -165,6 +165,8 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   dif_pinmux_pad_attr_t attr_out;
   CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
                                           attr, &attr_out));
+  // Let the change propagate.
+  busy_spin_micros(100);
   bool state;
   // The value read is unmodified by the internal pull resistors and represents
   // the upper bit of the 4 possible states [Strong0, Weak0, Weak1,
@@ -179,6 +181,8 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                (state ? 0 : kDifPinmuxPadAttrPullResistorUp);
   CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
                                           attr, &attr_out));
+  // Let the change propagate.
+  busy_spin_micros(100);
   // Combine the result of the contest between the external signal in internal
   // pull resistors.  This represents the lower bit of the 4 possible states.
   CHECK_DIF_OK(dif_gpio_read(gpio, io, &state));

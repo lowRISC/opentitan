@@ -22,7 +22,14 @@ static dif_pinmux_t pinmux;
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t test_sw_strap_read(ujson_t *uj) {
+  const char bits[] = {'s', 'w', 'W', 'S'};
+  char pattern[4] = {0};
   uint32_t strap = pinmux_testutils_read_straps(&pinmux, &gpio);
+  for (size_t i = 0; i < 3; ++i) {
+    uint32_t v = (strap >> (2 * i)) & 3;
+    pattern[2 - i] = bits[v];
+  }
+  LOG_INFO("strap = %02x, pattern = %s", strap, pattern);
   return RESP_OK_STATUS(uj, (int32_t)strap);
 }
 

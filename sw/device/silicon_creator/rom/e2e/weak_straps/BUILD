@@ -5,6 +5,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "CLEAR_TEST_CMD",
     "opentitan_test",
+    "silicon_params",
     "verilator_params",
 )
 load(":gpio.bzl", "strap_combinations_test")
@@ -22,7 +23,16 @@ strap_combinations_test(
 opentitan_test(
     name = "sw_strap_value",
     srcs = ["sw_straps_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_verilator": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+    },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/rom/sw_strap_value",
+    ),
     verilator = verilator_params(
         timeout = "long",
         test_cmd = CLEAR_TEST_CMD,
