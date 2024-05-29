@@ -170,14 +170,14 @@ class OTDevice:
 --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
 --target-mission-mode-lc-state="{self.target_lc_state}" \
 --host-ecc-sk={ecc_priv_keyfile} \
---cert-endorsement-ecc-sk={ca_priv_keyfile} \
---ca-certificate={ca_certfile} \
 --rom-ext-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-manifest-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
---uds-auth-key-id={ca_key_id} \
 --rom-ext-security-version="0" \
 --owner-security-version="0" \
+--ca-key-der-file={ca_priv_keyfile} \
+--ca-key-id={ca_key_id} \
+--ca-certificate={ca_certfile} \
 """  # noqa: E501
 
         logging.info(f"Running command: {cmd}")
