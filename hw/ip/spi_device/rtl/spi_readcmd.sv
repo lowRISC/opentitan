@@ -111,6 +111,7 @@ module spi_readcmd
   input rst_ni,
 
   input clk_out_i, // Output clock (inverted SPI_CLK)
+  input rst_out_ni, // Reset safely timed for output clock
 
   input sys_clk_i,
   input sys_rst_ni, // System reset for buffer tracking pointers
@@ -530,8 +531,8 @@ module spi_readcmd
 
   // outclk latch
   // can't put async fifo. DC constraint should have half clk datapath
-  always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_out_i or negedge rst_out_ni) begin
+    if (!rst_out_ni) begin
       p2s_valid_o <= 1'b 0;
       p2s_byte_o  <= '0 ;
     end else begin

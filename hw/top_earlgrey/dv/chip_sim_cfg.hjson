@@ -35,6 +35,7 @@
              "xbar_peri_bind"]
 
   top_dv_path: "{proj_root}/hw/top_earlgrey/dv"
+  top_autogen_path: "{proj_root}/hw/top_earlgrey/ip_autogen"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -72,7 +73,7 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_dv_path}/autogen/rstmgr_tgl_excl.cfg+{top_dv_path}/cov/clkmgr_tgl_excl.cfg+{top_dv_path}/cov/pwrmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_autogen_path}/rstmgr/dv/cov/rstmgr_tgl_excl.cfg+{top_autogen_path}/clkmgr/dv/cov/clkmgr_tgl_excl.cfg+{top_autogen_path}/pwrmgr/dv/cov/pwrmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
@@ -344,13 +345,8 @@
       en_run_modes: ["sw_test_mode_common"]
     }
     {
-      name: sw_test_mode_rom_with_fake_keys
-      sw_images: ["//sw/device/silicon_creator/rom:rom_with_fake_keys:0"]
-      en_run_modes: ["sw_test_mode_common"]
-    }
-    {
-      name: sw_test_mode_rom_with_real_keys
-      sw_images: ["//sw/device/silicon_creator/rom:rom_with_real_keys:0"]
+      name: sw_test_mode_mask_rom
+      sw_images: ["//sw/device/silicon_creator/rom:mask_rom:0"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
@@ -391,7 +387,7 @@
   // List of test specifications.
   //
   // If you are adding a test that has been generated from a Bazel
-  // `opentitan_functest` macro, you can specify the test using its Bazel label
+  // `opentitan_test` macro, you can specify the test using its Bazel label
   // followed by an index separated with a ':', which is used by the testbench
   // to know what type of image is it:
   // - 0 for Boot ROM,
@@ -853,6 +849,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 1
+    }
+    {
+      name: chip_sw_otp_ctrl_ecc_error_vendor_test
+      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_ecc_error_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_ecc_error_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
@@ -1408,10 +1410,11 @@
       name: chip_sw_csrng_edn_concurrency
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:csrng_edn_concurrency_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
       run_opts: ["+sw_test_timeout_ns=140_000_000", "+rng_srate_value_min=15",
                  "+rng_srate_value_max=20"]
       run_timeout_mins: 240
+      reseed: 10
     }
     {
       name: chip_sw_csrng_kat_test
@@ -1561,7 +1564,7 @@
     {
       name: chip_sw_sram_ctrl_scrambled_access
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:sram_ctrl_scrambled_access_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=12_000_000", "+en_scb_tl_err_chk=0",
                  "+bypass_alert_ready_to_end_check=1"]
@@ -1569,7 +1572,7 @@
     {
       name: chip_sw_sram_ctrl_scrambled_access_jitter_en
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:sram_ctrl_scrambled_access_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
                  "+en_jitter=1", "+en_scb_tl_err_chk=0"]
@@ -1959,7 +1962,7 @@
     {
       name: chip_sw_flash_ctrl_write_clear
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/sim_dv:flash_ctrl_write_clear_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:flash_ctrl_write_clear_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+test_timeout_ns=8_000_000"]
     }
@@ -2032,7 +2035,7 @@
     {
       name: chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:sram_ctrl_scrambled_access_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+mem_sel=main",
                  "+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
@@ -2210,10 +2213,14 @@
               "chip_sw_pwrmgr_sleep_disabled",
               "chip_sw_csrng_kat_test",
               "chip_sw_sysrst_ctrl_inputs",
-              // TODO(#21204): Disable ROM e2e smoke test until we are done
-              // migrating ROM to use ECDSA keys.
-              // "rom_e2e_smoke",
+              "rom_e2e_smoke",
             ]
+    }
+    {
+      name: xcelium_nightly
+      tests: [
+              "chip_padctrl_attributes",
+             ]
     }
   ]
 }

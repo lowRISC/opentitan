@@ -791,7 +791,15 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
     if (res.value != 0) {
       return ABORTED();
     }
+    // Load the magic seed into the PRNG. After this, the PRNG outputs
+    // an all-zero vector.
     UJSON_CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+    bool idle = false;
+    do {
+      TRY(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
+    } while (!idle);
+    // Load the PRNG output into the buffer stage.
+    UJSON_CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
   }
 #endif
 

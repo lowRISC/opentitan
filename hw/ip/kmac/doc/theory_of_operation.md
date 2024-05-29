@@ -359,14 +359,14 @@ It asserts the entropy valid signal to complete the current hashing operation.
 If the module does not complete, or flush the pending operation, it creates the back pressure to the message FIFO.
 Then, the SW may not be able to access the KMAC IP at all, as the crossbar is stuck.
 
-The SW may move the state machine to the reset state by issuing [`CFG_SHADOWED.err_processed`](registers.md#cfg_shadowed).
+The SW may move the state machine to the reset state by issuing [`CMD.err_processed`](registers.md#cmd).
 
 #### IncorrectEntropyMode (0x05)
 
 If SW misconfigures the entropy mode and let the entropy module prepare the random data, the module reports `IncorrectEntropyMode` error.
 The state machine moves to Wait state after reporting the error.
 
-The SW may move the state machine to the reset state by issuing [`CFG_SHADOWED.err_processed`](registers.md#cfg_shadowed).
+The SW may move the state machine to the reset state by issuing [`CMD.err_processed`](registers.md#cmd).
 
 #### UnexpectedModeStrength (0x06)
 

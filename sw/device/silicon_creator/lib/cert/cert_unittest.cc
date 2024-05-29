@@ -31,66 +31,47 @@ class CertTest : public rom_test::RomTest {
       .mp_err = false,
       .op_err = false,
   };
-  uint32_t expected_sn_words_[kCertX509Asn1SerialNumberSizeIn32BitWords] = {
-      0xDE595D6D, 0x4209A128, 0x2ECC45C4, 0xB1588428, 0x90B7A35C,
-  };
-  static constexpr size_t kDiceCertSizeInBytes = 801;
-  uint8_t valid_dice_cert_bytes_[kDiceCertSizeInBytes] = {
-      48,  130, 3,   29,  48,  130, 2,   195, 160, 3,   2,   1,   2,   2,   21,
-      0,   222, 89,  93,  109, 66,  9,   161, 40,  46,  204, 69,  196, 177, 88,
-      132, 40,  144, 183, 163, 92,  48,  10,  6,   8,   42,  134, 72,  206, 61,
-      4,   3,   2,   48,  35,  49,  20,  48,  18,  6,   3,   85,  4,   3,   12,
-      11,  108, 111, 119, 82,  73,  83,  67,  32,  67,  73,  67,  49,  11,  48,
-      9,   6,   3,   85,  4,   6,   19,  2,   85,  75,  48,  34,  24,  15,  50,
-      48,  49,  56,  48,  51,  50,  50,  50,  51,  53,  57,  53,  57,  90,  24,
-      15,  57,  57,  57,  57,  49,  50,  51,  49,  50,  51,  53,  57,  53,  57,
-      90,  48,  51,  49,  49,  48,  47,  6,   3,   85,  4,   5,   19,  40,  100,
-      101, 53,  57,  53,  100, 54,  100, 52,  50,  48,  57,  97,  49,  50,  56,
-      50,  101, 99,  99,  52,  53,  99,  52,  98,  49,  53,  56,  56,  52,  50,
-      56,  57,  48,  98,  55,  97,  51,  53,  99,  48,  89,  48,  19,  6,   7,
-      42,  134, 72,  206, 61,  2,   1,   6,   8,   42,  134, 72,  206, 61,  3,
-      1,   7,   3,   66,  0,   4,   166, 216, 6,   171, 245, 43,  85,  149, 51,
-      175, 190, 73,  216, 70,  114, 123, 124, 131, 69,  23,  42,  209, 23,  255,
-      248, 34,  94,  167, 135, 0,   179, 89,  145, 8,   185, 194, 68,  239, 24,
-      117, 247, 24,  247, 179, 182, 134, 247, 129, 209, 19,  182, 167, 226, 169,
-      84,  82,  162, 165, 130, 89,  166, 158, 121, 139, 163, 130, 1,   190, 48,
-      130, 1,   186, 48,  15,  6,   3,   85,  29,  19,  1,   1,   255, 4,   5,
-      48,  3,   1,   1,   255, 48,  15,  6,   3,   85,  29,  15,  1,   1,   255,
-      4,   5,   3,   3,   7,   4,   0,   48,  34,  6,   3,   85,  29,  35,  1,
-      1,   0,   4,   24,  48,  22,  128, 20,  17,  34,  51,  68,  85,  102, 119,
-      136, 153, 17,  34,  51,  68,  85,  102, 119, 136, 153, 17,  34,  48,  32,
-      6,   3,   85,  29,  14,  1,   1,   0,   4,   22,  4,   20,  222, 89,  93,
-      109, 66,  9,   161, 40,  46,  204, 69,  196, 177, 88,  132, 40,  144, 183,
-      163, 92,  48,  130, 1,   78,  6,   6,   103, 129, 5,   5,   4,   1,   1,
-      1,   255, 4,   130, 1,   63,  48,  130, 1,   59,  128, 9,   79,  112, 101,
-      110, 84,  105, 116, 97,  110, 129, 6,   68,  101, 118, 105, 99,  101, 131,
-      1,   0,   132, 1,   0,   166, 130, 1,   26,  48,  45,  6,   9,   96,  134,
-      72,  1,   101, 3,   4,   2,   1,   4,   32,  65,  195, 187, 182, 60,  255,
-      44,  184, 145, 4,   186, 220, 241, 97,  228, 212, 25,  26,  10,  25,  37,
-      89,  100, 107, 145, 5,   171, 14,  218, 81,  191, 120, 48,  45,  6,   9,
-      96,  134, 72,  1,   101, 3,   4,   2,   1,   4,   32,  172, 191, 169, 194,
-      6,   126, 202, 26,  207, 249, 235, 39,  42,  52,  167, 10,  188, 128, 0,
-      83,  199, 136, 98,  42,  149, 78,  14,  254, 188, 71,  125, 156, 48,  45,
-      6,   9,   96,  134, 72,  1,   101, 3,   4,   2,   1,   4,   32,  247, 253,
-      170, 31,  253, 52,  30,  111, 225, 72,  186, 222, 117, 125, 50,  179, 33,
-      188, 139, 1,   83,  45,  177, 102, 64,  253, 2,   67,  220, 130, 95,  16,
-      48,  45,  6,   9,   96,  134, 72,  1,   101, 3,   4,   2,   1,   4,   32,
-      120, 3,   216, 254, 55,  169, 3,   189, 9,   32,  255, 218, 100, 86,  54,
-      17,  26,  207, 200, 206, 77,  47,  165, 203, 170, 199, 89,  177, 202, 56,
-      147, 238, 48,  45,  6,   9,   96,  134, 72,  1,   101, 3,   4,   2,   1,
-      4,   32,  25,  225, 192, 88,  201, 174, 218, 67,  185, 45,  84,  124, 95,
-      166, 139, 196, 246, 148, 226, 193, 238, 157, 81,  26,  91,  59,  122, 100,
-      220, 65,  239, 55,  48,  45,  6,   9,   96,  134, 72,  1,   101, 3,   4,
-      2,   1,   4,   32,  3,   125, 86,  40,  158, 162, 127, 87,  44,  48,  66,
-      201, 144, 140, 29,  90,  145, 139, 54,  130, 135, 190, 39,  76,  232, 225,
-      45,  197, 71,  232, 143, 145, 135, 2,   4,   0,   48,  10,  6,   8,   42,
-      134, 72,  206, 61,  4,   3,   2,   3,   72,  0,   48,  69,  2,   32,  77,
-      146, 90,  183, 96,  93,  116, 156, 76,  17,  247, 35,  154, 87,  22,  182,
-      3,   105, 150, 122, 252, 126, 63,  112, 192, 220, 51,  71,  88,  105, 4,
-      10,  2,   33,  0,   254, 51,  54,  114, 51,  65,  213, 244, 203, 189, 99,
-      51,  205, 78,  32,  77,  84,  45,  131, 156, 199, 217, 136, 120, 47,  201,
-      46,  94,  89,  107, 136, 215,
-  };
+  uint8_t expected_sn_bytes_[kCertX509Asn1SerialNumberSizeInBytes] = {
+      0x31, 0xF9, 0xE7, 0x35, 0x9F, 0xF2, 0x84, 0x46, 0x99, 0x5B,
+      0xA0, 0x3D, 0xE5, 0xED, 0x7E, 0x32, 0x16, 0x95, 0xF1, 0xD1};
+  static constexpr size_t kDiceCertSizeInBytes =
+      kCertX509Asn1FirstWordsWithSerialNumber * sizeof(uint32_t);
+  uint32_t valid_dice_cert_words_[200] = {
+      0x1b038230, 0xc2028230, 0x010203a0, 0x31140202, 0x9f35e7f9, 0x994684f2,
+      0xe53da05b, 0x16327eed, 0x30d1f195, 0x2a08060a, 0x3dce4886, 0x30020304,
+      0x300b3123, 0x55030609, 0x02130604, 0x14314b55, 0x03061230, 0x0c030455,
+      0x776f6c0b, 0x43534952, 0x43494320, 0x0f182230, 0x38313032, 0x32323330,
+      0x39353332, 0x185a3935, 0x3939390f, 0x33323139, 0x35333231, 0x5a393539,
+      0x31313330, 0x03062f30, 0x13050455, 0x66313328, 0x33376539, 0x66663935,
+      0x34343832, 0x35393936, 0x33306162, 0x65356564, 0x33653764, 0x39363132,
+      0x64316635, 0x30593031, 0x2a070613, 0x3dce4886, 0x08060102, 0xce48862a,
+      0x0701033d, 0x04004203, 0x8d706f77, 0xe483013c, 0x7712eb41, 0x77324391,
+      0x87759618, 0x637ff07c, 0x94703230, 0x425c9385, 0x4f6201c9, 0x7fb9b232,
+      0x0d382d05, 0x13d677c4, 0xde831f4c, 0x9ef35ad2, 0xf6185161, 0x837a99cd,
+      0xbe0182a3, 0xba018230, 0x03060f30, 0x01131d55, 0x0504ff01, 0x01010330,
+      0x060f30ff, 0x0f1d5503, 0x04ff0101, 0x07030305, 0x22300004, 0x1d550306,
+      0x00010123, 0x16301804, 0x22111480, 0x66554433, 0x11998877, 0x55443322,
+      0x99887766, 0x20302211, 0x1d550306, 0x0001010e, 0x14041604, 0x35e7f931,
+      0x4684f29f, 0x3da05b99, 0x327eede5, 0xd1f19516, 0x4e018230, 0x81670606,
+      0x01040505, 0x04ff0101, 0x303f0182, 0x803b0182, 0x65704f09, 0x7469546e,
+      0x06816e61, 0x69766544, 0x01836563, 0x00018400, 0x1a0182a6, 0x09062d30,
+      0x01488660, 0x02040365, 0x41200401, 0x3cb6bbc3, 0x91b82cff, 0xf1dcba04,
+      0x19d4e461, 0x25190a1a, 0x916b6459, 0xda0eab05, 0x3078bf51, 0x6009062d,
+      0x65014886, 0x01020403, 0xbfac2004, 0x7e06c2a9, 0xf9cf1aca, 0x342a27eb,
+      0x80bc0aa7, 0x88c75300, 0x4e952a62, 0x47bcfe0e, 0x2d309c7d, 0x86600906,
+      0x03650148, 0x04010204, 0x2930f520, 0x06a7b225, 0xc22d94ad, 0x39f4fed4,
+      0xf8db2f89, 0x9e813a3e, 0x75ea0986, 0x45ed09b7, 0x062d30a4, 0x48866009,
+      0x04036501, 0x20040102, 0xf57adf1f, 0x3ceaa4a5, 0x94bce43f, 0xe027c121,
+      0x33fc069d, 0x7487f3ae, 0xbf78e978, 0x2fe19e76, 0x09062d30, 0x01488660,
+      0x02040365, 0x19200401, 0xc958c0e1, 0xb943daae, 0x5f7c542d, 0xf6c48ba6,
+      0xeec1e294, 0x5b1a519d, 0xdc647a3b, 0x3037ef41, 0x6009062d, 0x65014886,
+      0x01020403, 0x7d032004, 0xa29e2856, 0x302c577f, 0x8c90c942, 0x8b915a1d,
+      0xbe878236, 0xe1e84c27, 0xe847c52d, 0x0287918f, 0x0a300004, 0x862a0806,
+      0x043dce48, 0x47030203, 0x02443000, 0xd2bb3520, 0xbc8d82c0, 0xbf404f45,
+      0x384855f2, 0x8ba5b0c8, 0x0698f275, 0x37d827c1, 0x3bee0f7d, 0x1d200289,
+      0x533fe16b, 0xfa62b6b4, 0x46af0351, 0x3e262772, 0xe9d81a0b, 0x53859bf3,
+      0x990281cf, 0x007897f8};
+  uint8_t *valid_dice_cert_bytes_ = (uint8_t *)valid_dice_cert_words_;
   rom_test::MockFlashCtrl flash_ctrl_;
   void ExpectFlashInfoPageRead(const flash_ctrl_info_page_t *info_page,
                                uint32_t offset, size_t num_words,
@@ -119,7 +100,7 @@ TEST_F(CertTest, InvalidArgs) {
   hardened_bool_t matches = kHardenedBoolFalse;
   // Invalid flash info page.
   EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(nullptr, expected_sn_words_, &matches),
+      cert_x509_asn1_check_serial_number(nullptr, expected_sn_bytes_, &matches),
       kErrorCertInvalidArgument);
 
   // Invalid expected serial number.
@@ -129,79 +110,181 @@ TEST_F(CertTest, InvalidArgs) {
 
   // Invalid match flag pointer.
   EXPECT_EQ(cert_x509_asn1_check_serial_number(
-                &kFlashCtrlInfoPageUdsCertificate, expected_sn_words_, nullptr),
+                &kFlashCtrlInfoPageUdsCertificate, expected_sn_bytes_, nullptr),
             kErrorCertInvalidArgument);
 }
 
-TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
+/**
+ * Here we test if the flash page looks like garbage, as is the case when
+ * scrambling is enabled but the page has never been erased.
+ */
+TEST_F(CertTest, CorruptedOrUnprovisionedCertFlashInfoPage) {
   hardened_bool_t matches = kHardenedBoolFalse;
   flash_ctrl_error_code_.rd_err = true;
   ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
                           /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          (uint32_t *)valid_dice_cert_bytes_,
-                          kErrorFlashCtrlInfoRead);
+                          valid_dice_cert_words_, kErrorFlashCtrlInfoRead);
   ExpectFlashCtrlErrorCodeGet(&flash_ctrl_error_code_);
   ExpectFlashInfoPageErase(&kFlashCtrlInfoPageUdsCertificate, kErrorOk);
   EXPECT_EQ(
       cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_words_, &matches),
-      kErrorCertCorrupted);
+                                         expected_sn_bytes_, &matches),
+      kErrorOk);
+  EXPECT_EQ(matches, kHardenedBoolFalse);
   flash_ctrl_error_code_.rd_err = false;
+}
+
+/**
+ * Here we test if a flash page has been erased (i.e., is all 1s) but the page
+ * has never been provisioned with a certificate.
+ */
+TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
+  hardened_bool_t matches = kHardenedBoolFalse;
+  uint8_t unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber] = {
+      0};
+  unprovisioned_cert_bytes[0] = 0xFF;
+  unprovisioned_cert_bytes[1] = 0xFF;
+  unprovisioned_cert_bytes[2] = 0xFF;
+  unprovisioned_cert_bytes[3] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 4] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 3] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 2] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 1] = 0xFF;
+  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
+                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+                          (uint32_t *)unprovisioned_cert_bytes, kErrorOk);
+  EXPECT_EQ(
+      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
+                                         expected_sn_bytes_, &matches),
+      kErrorOk);
+  EXPECT_EQ(matches, kHardenedBoolFalse);
 }
 
 TEST_F(CertTest, BadSerialNumberTag) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  uint8_t invalid_dice_cert_bytes[kDiceCertSizeInBytes] = {0};
+  uint8_t invalid_dice_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber] = {
+      0};
   EXPECT_DEATH(
       {
-        ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                                /*offset=*/0,
-                                kCertX509Asn1FirstWordsWithSerialNumber,
-                                (uint32_t *)invalid_dice_cert_bytes, kErrorOk);
+        ExpectFlashInfoPageRead(
+            &kFlashCtrlInfoPageUdsCertificate,
+            /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+            reinterpret_cast<uint32_t *>(invalid_dice_cert_bytes), kErrorOk);
         OT_DISCARD(cert_x509_asn1_check_serial_number(
-            &kFlashCtrlInfoPageUdsCertificate, expected_sn_words_, &matches))
+            &kFlashCtrlInfoPageUdsCertificate, expected_sn_bytes_, &matches))
       },
       "");
 }
 
 TEST_F(CertTest, BadSerialNumberLength) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  uint8_t invalid_dice_cert_bytes[kDiceCertSizeInBytes] = {0};
-  invalid_dice_cert_bytes[kCertX509Asn1SerialNumberByteOffset] = 0x02;
+  uint8_t invalid_dice_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber] = {
+      0};
+  invalid_dice_cert_bytes[kCertX509Asn1SerialNumberTagByteOffset] = 2;
+  invalid_dice_cert_bytes[kCertX509Asn1SerialNumberLengthByteOffset] = 22;
   EXPECT_DEATH(
       {
-        ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                                /*offset=*/0,
-                                kCertX509Asn1FirstWordsWithSerialNumber,
-                                (uint32_t *)invalid_dice_cert_bytes, kErrorOk);
+        ExpectFlashInfoPageRead(
+            &kFlashCtrlInfoPageUdsCertificate,
+            /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+            reinterpret_cast<uint32_t *>(invalid_dice_cert_bytes), kErrorOk);
         OT_DISCARD(cert_x509_asn1_check_serial_number(
-            &kFlashCtrlInfoPageUdsCertificate, expected_sn_words_, &matches))
+            &kFlashCtrlInfoPageUdsCertificate, expected_sn_bytes_, &matches))
       },
       "");
 }
 
 TEST_F(CertTest, CertOutdated) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  uint32_t empty_sn[kCertX509Asn1SerialNumberSizeIn32BitWords] = {0};
+  uint8_t empty_sn[kCertX509Asn1SerialNumberSizeInBytes] = {0};
   ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
                           /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          (uint32_t *)valid_dice_cert_bytes_, kErrorOk);
+                          valid_dice_cert_words_, kErrorOk);
   EXPECT_EQ(cert_x509_asn1_check_serial_number(
                 &kFlashCtrlInfoPageUdsCertificate, empty_sn, &matches),
             kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolFalse);
 }
 
-TEST_F(CertTest, CertValid) {
+TEST_F(CertTest, CertOutdatedSerialNumberSizeMismatch) {
+  hardened_bool_t matches = kHardenedBoolFalse;
+  uint8_t old_length =
+      valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset];
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = 19;
+  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
+                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+                          valid_dice_cert_words_, kErrorOk);
+  EXPECT_EQ(
+      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
+                                         expected_sn_bytes_, &matches),
+      kErrorOk);
+  EXPECT_EQ(matches, kHardenedBoolFalse);
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] =
+      old_length;
+}
+
+TEST_F(CertTest, CertValidShortSerialNumber) {
+  hardened_bool_t matches = kHardenedBoolFalse;
+  uint8_t old_length =
+      valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset];
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = 19;
+  uint8_t sn_bytes[kCertX509Asn1SerialNumberSizeInBytes] = {0};
+  memcpy(&sn_bytes[1], expected_sn_bytes_,
+         kCertX509Asn1SerialNumberSizeInBytes - 1);
+  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
+                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+                          valid_dice_cert_words_, kErrorOk);
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(
+                &kFlashCtrlInfoPageUdsCertificate, sn_bytes, &matches),
+            kErrorOk);
+  EXPECT_EQ(matches, kHardenedBoolTrue);
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] =
+      old_length;
+}
+
+TEST_F(CertTest, CertValidFullSerialNumber) {
   hardened_bool_t matches = kHardenedBoolFalse;
   ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
                           /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          (uint32_t *)valid_dice_cert_bytes_, kErrorOk);
+                          valid_dice_cert_words_, kErrorOk);
   EXPECT_EQ(
       cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_words_, &matches),
+                                         expected_sn_bytes_, &matches),
       kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolTrue);
+}
+
+TEST_F(CertTest, CertValidFullSerialNumberThenShortSerialNumber) {
+  hardened_bool_t matches = kHardenedBoolFalse;
+
+  // Full length serial number.
+  matches = kHardenedBoolFalse;
+  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
+                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+                          valid_dice_cert_words_, kErrorOk);
+  EXPECT_EQ(
+      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
+                                         expected_sn_bytes_, &matches),
+      kErrorOk);
+  EXPECT_EQ(matches, kHardenedBoolTrue);
+
+  // Short length serial number.
+  matches = kHardenedBoolFalse;
+  uint8_t old_length =
+      valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset];
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = 19;
+  uint8_t sn_bytes[kCertX509Asn1SerialNumberSizeInBytes] = {0};
+  memcpy(&sn_bytes[1], expected_sn_bytes_,
+         kCertX509Asn1SerialNumberSizeInBytes - 1);
+  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
+                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+                          valid_dice_cert_words_, kErrorOk);
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(
+                &kFlashCtrlInfoPageUdsCertificate, sn_bytes, &matches),
+            kErrorOk);
+  EXPECT_EQ(matches, kHardenedBoolTrue);
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] =
+      old_length;
 }
 
 }  // namespace

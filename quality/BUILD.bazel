@@ -115,13 +115,10 @@ clang_tidy_rv_test(
         "//sw/device/lib/base:memory_perftest",
         "//sw/device/silicon_creator/rom:boot_policy",
         "//sw/device/silicon_creator/rom:bootstrap",
+        "//sw/device/silicon_creator/rom:mask_rom_lib",
         "//sw/device/silicon_creator/rom:rom_common",
         "//sw/device/silicon_creator/rom:rom_epmp",
-        "//sw/device/silicon_creator/rom:rom_without_keys",
-        "//sw/device/silicon_creator/rom:sigverify_keys",
-        "//sw/device/silicon_creator/rom:sigverify_keys_rsa",
         "//sw/device/silicon_creator/rom:sigverify_keys_spx",
-        "//sw/device/silicon_creator/rom/keys/fake/rsa",
     ],
 )
 
@@ -185,9 +182,10 @@ RUST_TARGETS = [
     "//sw/host/tests/rom/e2e_bootstrap_entry:e2e_bootstrap_entry",
     "//sw/host/tests/rom/e2e_chip_specific_startup:e2e_chip_specific_startup",
     "//sw/host/tests/rom/sw_strap_value:sw_strap_value",
-    "//sw/host/tests/chip/spi_passthru:spi_passthru",
+    "//sw/host/tests/chip/spi_device:spi_passthru",
     "//sw/host/tests/xmodem:lrzsz_test",
     "//sw/host/tests/xmodem:xmodem",
+    "//sw/host/sphincsplus:sphincsplus",
 ]
 
 rustfmt_test(

@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Rules to build OpenTitan for the RISC-V target"""
+
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
@@ -37,13 +39,18 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
+    _ecdsa_key_by_name = "ecdsa_key_by_name",
+    _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
     _rsa_key_by_name = "rsa_key_by_name",
     _rsa_key_for_lc_state = "rsa_key_for_lc_state",
     _spx_key_by_name = "spx_key_by_name",
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
 
-"""Rules to build OpenTitan for the RISC-V target"""
+# The following definition is used to clear the key set in the signing
+# configuration for execution environments (exec_env) and opentitan_test
+# and opentitan_binary rules.
+CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
 # Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
 # to get to them.
@@ -65,6 +72,9 @@ verilator_params = _verilator_params
 
 sim_dv = _sim_dv
 dv_params = _dv_params
+
+ecdsa_key_for_lc_state = _ecdsa_key_for_lc_state
+ecdsa_key_by_name = _ecdsa_key_by_name
 
 rsa_key_for_lc_state = _rsa_key_for_lc_state
 rsa_key_by_name = _rsa_key_by_name
@@ -155,6 +165,7 @@ def opentitan_test(
         includes = [],
         linkopts = [],
         linker_script = None,
+        ecdsa_key = None,
         rsa_key = None,
         spx_key = None,
         manifest = None,
@@ -164,6 +175,7 @@ def opentitan_test(
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
+        data = [],
         **kwargs):
     """Instantiate a test per execution environment.
 
@@ -178,6 +190,7 @@ def opentitan_test(
       local_defines: Compiler defines for this test.
       includes: Additional compiler include dirs for this test.
       linker_script: Linker script for this test.
+      ecdsa_key: ECDSA key to sign the binary for this test.
       rsa_key: RSA key to sign the binary for this test.
       spx_key: SPX key to sign the binary for this test.
       manifest: manifest used during signing for this test.
@@ -218,7 +231,7 @@ def opentitan_test(
             kind = kind,
             deps = deps,
             copts = copts,
-            defines = defines,
+            defines = defines + getattr(tparam, "defines", []),
             local_defines = local_defines,
             includes = includes,
             linker_script = linker_script,
@@ -240,7 +253,8 @@ def opentitan_test(
             post_test_harness = getattr(tparam, "post_test_harness", None),
             test_cmd = tparam.test_cmd,
             param = tparam.param,
-            data = tparam.data,
+            data = data + tparam.data,
+            ecdsa_key = ecdsa_key,
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,

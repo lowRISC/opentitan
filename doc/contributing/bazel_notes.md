@@ -56,47 +56,29 @@ This can make them difficult to find manually, however, Bazel also provides a me
 Note, the `outquery-*` command shown below is a special command that is parsed via our `bazelisk.sh` script.
 Therefore, it cannot be run with a standalone `bazel ...` invocation.
 
-## `opentitan_{rom,flash}_binary` Artifacts
+## `opentitan_binary` Artifacts
 
-- Query the locations of all Bazel-built artifacts for all OpenTitan devices for an `opentitan_{rom,flash}_binary` macro:
+- Query the locations of all Bazel-built artifacts for all OpenTitan devices for an `opentitan_binary` macro:
   ```sh
   ./bazelisk.sh outquery-all <target>
   ```
-- Query the locations of all Bazel-built artifacts for a specific OpenTitan device for an `opentitan_{rom,flash}_binary` macro:
-  ```sh
-  ./bazelisk.sh outquery-all <target>_<device>
-  ```
-  Note: `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
+
+> See [OpenTitan binary and test rules](../../rules/opentitan/README.md)) for more details on the `opentitan_binary` rule.
 
 See [Building (and Testing) Software](../getting_started/build_sw.md#device-artifacts), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
 
-## `opentitan_functest` Artifacts
+## `opentitan_test` Artifacts
 
 As described [Building (and Testing) Software](../getting_started/build_sw.md#device-artifacts), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
 Since running tests on multiple OpenTitan devices (whether DV or Verilator simulation, or an FPGA) involves building several software images for multiple memories, we provide a Bazel macro for this.
-This macro is called `opentitan_functest`.
+This macro is called `opentitan_test`.
 
-- List all `sh_test` targets instantiated by a `opentitan_functest`, e.g. the UART smoketest:
+- List all `sh_test` targets instantiated by a `opentitan_test`, e.g. the UART smoketest:
   ```sh
   bazel query 'labels(tests, //sw/device/tests:uart_smoketest)'
   ```
-- Query the HW and SW dependencies of a specific `opentitan_functest` for the `fpga_cw310` device, e.g. the UART smoketest:
-  ```sh
-  bazel query 'labels(data, //sw/device/tests:uart_smoketest_fpga_cw310)'
-  ```
-  or for any `opentitan_functest` target and `<device>` in {`sim_dv`, `sim_verilator`, `fpga_cw310`}
-  ```sh
-  bazel query 'labels(data, <target>_<device>)'
-  ```
-- Query the software artifacts built for the `opentitan_flash_binary` that is a dependency of an `opentitan_functest` for the `fpga_cw310` device, e.g. the UART smoketest:
-  ```sh
-  bazel query 'labels(srcs, //sw/device/tests:uart_smoketest_prog_fpga_cw310)'
-  ```
-  or for any `opentitan_functest` `<target>` and `<device>` in {`sim_dv`, `sim_verilator`, `fpga_cw310`}
-  ```sh
-  bazel query 'labels(srcs, <target>_prog_<device>)'
-  ```
-  Note: if an `opentitan_functest` target has the name `foo`, then the `opentitan_flash_binary` target that is instantiated by the `opentitan_functest` will be named `foo_prog_<device>`.
+
+> Info: See [OpenTitan binary and test rules](../../rules/opentitan/README.md)) for more details on the `opentitan_test` rule.
 
 # Building Software
 

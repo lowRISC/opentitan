@@ -13,7 +13,6 @@ filegroup(
         "//hw/ip/csrng:all_files",
         "//hw/ip/edn:all_files",
         "//hw/ip/entropy_src:all_files",
-        "//hw/ip/flash_ctrl:all_files",
         "//hw/ip/gpio:all_files",
         "//hw/ip/hmac:all_files",
         "//hw/ip/i2c:all_files",

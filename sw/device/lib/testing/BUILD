@@ -86,6 +86,14 @@ cc_library(
 )
 
 cc_library(
+    name = "binary_blob",
+    hdrs = ["binary_blob.h"],
+    deps = [
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "clkmgr_testutils",
     srcs = ["clkmgr_testutils.c"],
     hdrs = ["clkmgr_testutils.h"],
@@ -104,6 +112,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
@@ -143,7 +152,7 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -160,7 +169,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
@@ -221,18 +230,20 @@ cc_library(
     hdrs = ["keymgr_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":entropy_testutils",
+        ":flash_ctrl_testutils",
+        ":kmac_testutils",
+        ":otp_ctrl_testutils",
+        ":rstmgr_testutils",
         "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:kmac_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -460,6 +471,7 @@ cc_library(
     hdrs = ["spi_host_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":pinmux_testutils",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",

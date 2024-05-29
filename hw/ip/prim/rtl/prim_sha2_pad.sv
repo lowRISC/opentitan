@@ -23,6 +23,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   input                 shaf_rready_i,
   input                 sha_en_i,
   input                 hash_start_i,
+  input                 hash_stop_i,
   input                 hash_continue_i,
   input digest_mode_e   digest_mode_i,
   input                 hash_process_i,
@@ -35,8 +36,10 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   logic         inc_txcount;
   logic         fifo_partial;
   logic         txcnt_eq_1a0;
+  logic         txcnt_eq_msg_len;
   logic         hash_go;
 
+  logic         hash_stop_flag_d, hash_stop_flag_q;
   logic         hash_process_flag_d, hash_process_flag_q;
   digest_mode_e digest_mode_flag_d,  digest_mode_flag_q;
 
@@ -60,13 +63,28 @@ module prim_sha2_pad import prim_sha2_pkg::*;
                                                                         (tx_count[9:0] == 10'h340) :
                                                                         '0;
 
+  if (MultimodeEn) begin : gen_txcnt_comp_multimode
+    assign txcnt_eq_msg_len = (tx_count == message_length_i);
+  end else begin : gen_txcnt_comp_no_multimode
+    assign txcnt_eq_msg_len = (tx_count[63:0] == message_length_i[63:0]);
+  end
+
+  assign hash_stop_flag_d = (~sha_en_i || hash_go || hash_done_i) ? 1'b0 :
+                            hash_stop_i                           ? 1'b1 :
+                                                                    hash_stop_flag_q;
+
   assign hash_process_flag_d = (~sha_en_i || hash_go || hash_done_i) ? 1'b0 :
                                hash_process_i                        ? 1'b1 :
                                                                        hash_process_flag_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)  hash_process_flag_q <= 1'b0;
-    else          hash_process_flag_q <= hash_process_flag_d;
+    if (!rst_ni) begin
+      hash_stop_flag_q    <= 1'b0;
+      hash_process_flag_q <= 1'b0;
+    end else begin
+      hash_stop_flag_q    <= hash_stop_flag_d;
+      hash_process_flag_q <= hash_process_flag_d;
+    end
   end
 
   // data path: fout_wdata
@@ -206,8 +224,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
           shaf_rvalid_o = fifo_rvalid_i;
           inc_txcount   = shaf_rready_i;
           st_d = StFifoReceive;
-        end else if (((tx_count        == message_length_i) & MultimodeEn) ||
-                     ((tx_count [63:0] == message_length_i [63:0]) & !MultimodeEn)) begin
+        end else if (txcnt_eq_msg_len) begin
           // already received all msg and was waiting process flag
           shaf_rvalid_o = 1'b0;
           inc_txcount   = 1'b0;
@@ -218,6 +235,13 @@ module prim_sha2_pad import prim_sha2_pkg::*;
           fifo_rready_o = shaf_rready_i; // 0 always
           inc_txcount   = shaf_rready_i; // 0 always
           st_d = StFifoReceive;
+        end
+
+        if (txcnt_eq_msg_len && hash_stop_flag_q) begin
+          shaf_rvalid_o = 1'b0;
+          inc_txcount   = 1'b0;
+          fifo_rready_o = 1'b0;
+          st_d = StIdle;
         end
       end
 
@@ -341,9 +365,9 @@ module prim_sha2_pad import prim_sha2_pkg::*;
     else         tx_count <= tx_count_d;
   end
 
-  assign digest_mode_flag_d = hash_start_i ? digest_mode_i  :    // latch in configured mode
-                              hash_done_i  ? SHA2_None      :    // clear
-                                             digest_mode_flag_q; // keep
+  assign digest_mode_flag_d = (hash_start_i || hash_continue_i) ? digest_mode_i  :    // set config
+                              hash_done_i                       ? SHA2_None      :    // clear
+                                                                  digest_mode_flag_q; // keep
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)  digest_mode_flag_q <= SHA2_None;
@@ -351,6 +375,6 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   end
 
   // State machine is in Idle only when it meets tx_count == message length
-  assign msg_feed_complete_o = hash_process_flag_q && (st_q == StIdle);
+  assign msg_feed_complete_o = (hash_process_flag_q || hash_stop_flag_q) && (st_q == StIdle);
 
 endmodule

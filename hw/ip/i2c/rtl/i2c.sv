@@ -9,7 +9,8 @@
 module i2c
   import i2c_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter int unsigned InputDelayCycles = 0
 ) (
   input                               clk_i,
   input                               rst_ni,
@@ -89,7 +90,9 @@ module i2c
   logic scl_int;
   logic sda_int;
 
-  i2c_core i2c_core (
+  i2c_core #(
+    .InputDelayCycles(InputDelayCycles)
+  ) i2c_core (
     .clk_i,
     .rst_ni,
     .ram_cfg_i,

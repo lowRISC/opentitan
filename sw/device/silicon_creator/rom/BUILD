@@ -2,14 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_test")
-load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:opentitan_test.bzl", "manual_test")
-load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_test")
+load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -71,7 +71,7 @@ ld_library(
 )
 
 cc_library(
-    name = "rom_without_keys",
+    name = "mask_rom_lib",
     srcs = [
         "rom_start.S",
     ],
@@ -111,10 +111,10 @@ cc_library(
     ],
     deps = [
         ":boot_policy",
+        ":boot_policy_ptrs",
         ":bootstrap",
         ":rom_epmp",
-        ":sigverify_keys",
-        ":sigverify_keys_rsa",
+        ":sigverify_keys_ecdsa_p256",
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
@@ -133,6 +133,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -140,6 +141,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -163,8 +165,7 @@ _ROM_DEVICES = [
 ]
 
 opentitan_binary(
-    name = "rom_with_fake_keys",
-    testonly = True,
+    name = "mask_rom",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -174,47 +175,15 @@ opentitan_binary(
     kind = "rom",
     linker_script = ":linker_script",
     deps = [
-        ":rom_without_keys",
-        "//sw/device/silicon_creator/rom/keys/fake/rsa",
+        ":mask_rom_lib",
     ],
 )
 
-# Create the legacy ROM target names so that existing opentitan_functest and
-# splicing rules can find the rom VMEM files.
-legacy_rom_targets(
-    testonly = True,
-    suffixes = _ROM_DEVICES,
-    target = "rom_with_fake_keys",
-)
-
-filegroup(
-    name = "rom_with_fake_keys_fpga_cw310_elf",
-    testonly = True,
-    srcs = [":rom_with_fake_keys"],
-    output_group = "fpga_cw310_elf",
-)
-
-opentitan_binary(
-    name = "rom_with_real_keys",
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
-    kind = "rom",
-    linker_script = ":linker_script",
-    deps = [
-        ":rom_without_keys",
-        "//sw/device/silicon_creator/rom/keys/real/rsa",
-    ],
-)
-
-# Create the legacy ROM target names so that existing opentitan_functest and
-# splicing rules can find the rom VMEM files.
+# Create the legacy ROM target names so that existing splicing rules can find
+# the rom VMEM files.
 legacy_rom_targets(
     suffixes = _ROM_DEVICES,
-    target = "rom_with_real_keys",
+    target = "mask_rom",
 )
 
 cc_library(
@@ -256,8 +225,8 @@ opentitan_test(
         "-Wl,--defsym=rom_test=1",
     ],
     deps = [
-        ":rom_without_keys",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        ":mask_rom_lib",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -300,7 +269,7 @@ cc_library(
     deps = [
         "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -320,7 +289,7 @@ cc_test(
         ":bootstrap",
         "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "@googletest//:gtest_main",
@@ -339,30 +308,6 @@ cc_fuzz_test(
         ":bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",
         "@com_google_absl//absl/types:span",
-    ],
-)
-
-cc_library(
-    name = "sigverify_keys",
-    srcs = [
-        "sigverify_keys.c",
-        "sigverify_keys_rsa.h",
-        "sigverify_keys_spx.h",
-    ],
-    hdrs = [
-        "sigverify_keys.h",
-    ],
-    deps = [
-        ":sigverify_key_types",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 
@@ -412,25 +357,6 @@ cc_library(
 )
 
 cc_library(
-    name = "sigverify_keys_rsa",
-    srcs = [
-        "sigverify_keys_rsa.c",
-    ],
-    hdrs = [
-        "sigverify_keys_rsa.h",
-    ],
-    deps = [
-        ":sigverify_key_types",
-        ":sigverify_keys",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-    ],
-)
-
-cc_library(
     name = "sigverify_keys_spx",
     srcs = [
         "sigverify_keys_spx.c",
@@ -450,22 +376,10 @@ cc_library(
     ],
 )
 
-cc_test(
-    name = "sigverify_keys_unittest",
-    srcs = ["sigverify_keys_unittest.cc"],
-    deps = [
-        ":sigverify_keys",
-        ":sigverify_keys_rsa",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
-    ],
-)
-
-[output_groups(
-    name = "pre_package_{}".format(authenticity),
-    testonly = testonly,
-    srcs = [":rom_with_{}_keys".format(authenticity)],
+output_groups(
+    name = "pre_package",
+    testonly = True,
+    srcs = [":mask_rom"],
     groups = [
         "fpga_cw310_binary",
         "fpga_cw310_elf",
@@ -483,22 +397,14 @@ cc_test(
         "sim_verilator_rom",
         "sim_verilator_mapfile",
     ],
-) for authenticity, testonly in (
-    ("fake", True),
-    # FIXME: remove testonly after adding the real keys
-    ("real", True),
-)]
+)
 
-[pkg_files(
-    name = "package_{}".format(authenticity),
-    testonly = testonly,
-    srcs = [":pre_package_{}".format(authenticity)],
+pkg_files(
+    name = "package",
+    testonly = True,
+    srcs = [":pre_package"],
     prefix = "earlgrey/rom",
-) for authenticity, testonly in (
-    ("fake", True),
-    # FIXME: remove testonly after adding the real keys
-    ("real", True),
-)]
+)
 
 manual_test(
     name = "manual_test",
@@ -510,8 +416,8 @@ manual_test(
 )
 
 output_groups(
-    name = "rom_with_real_keys_binaries",
-    srcs = [":rom_with_real_keys"],
+    name = "mask_rom_binaries",
+    srcs = [":mask_rom"],
     groups = [
         "fpga_cw310_binary",
         "fpga_cw340_binary",
@@ -524,26 +430,26 @@ genrule(
     name = "rom_hashes",
     testonly = True,
     srcs = [
-        ":rom_with_real_keys_binaries",
+        ":mask_rom_binaries",
     ],
     outs = ["rom_hashes.txt"],
     cmd = """
         echo "SHA256 of rom with real keys" > $@
-	for f in $(locations :rom_with_real_keys_binaries); do
-	    if [[ "$$f" == *bin ]]; then
-	        name=$$(basename $$f)
-		echo $$f >> $@
-		size=$$(stat -L -c %s $$f)
-		full=$$(sha256sum $$f | cut -f1 -d' ')
-		without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
-		code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
+    for f in $(locations :mask_rom_binaries); do
+        if [[ "$$f" == *bin ]]; then
+            name=$$(basename $$f)
+        echo $$f >> $@
+        size=$$(stat -L -c %s $$f)
+        full=$$(sha256sum $$f | cut -f1 -d' ')
+        without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
+        code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
 
-		echo "              size: $$size" >> $@
-		echo "     complete hash: $$full" >> $@
-		echo " without chip_info: $$without_chip_info" >> $@
-		echo "w/o chip_info le32: $$code" >> $@
-		echo >> $@
-	    fi
-	done
+        echo "              size: $$size" >> $@
+        echo "     complete hash: $$full" >> $@
+        echo " without chip_info: $$without_chip_info" >> $@
+        echo "w/o chip_info le32: $$code" >> $@
+        echo >> $@
+        fi
+    done
     """,
 )

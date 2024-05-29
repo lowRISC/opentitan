@@ -15,8 +15,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
-  boot_svc_next_boot_bl0_slot_req_init(kBootSvcNextBootBl0SlotB,
-                                       &msg.next_boot_bl0_slot_req);
+  boot_svc_next_boot_bl0_slot_req_init(kBootSlotB, &msg.next_boot_bl0_slot_req);
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateNextSideB;
   rstmgr_reset();
@@ -49,6 +48,7 @@ static status_t next_bl0_slot_test(void) {
 
   for (;;) {
     LOG_INFO("Test state = %d", state->state);
+    LOG_INFO("CurrentBootLog: %d:%s", state->boots, state->partition);
     switch (state->state) {
       case kBootSvcTestStateInit:
         TRY(initialize(retram, state));

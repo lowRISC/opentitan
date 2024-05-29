@@ -9,17 +9,37 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   rand bit [31:0] key[]; // random because SHA-2 will not use the key
+  // TODO (#22932): remove this and use the constraints from hmac_base_vseq once
+  // this test is adapted for all digest sizes and key lengths
+  rand bit [5:0]  key_length;
+  rand bit [3:0]  digest_size;
 
   string vector_list[] = test_vectors_pkg::sha_file_list;
 
-  // HMAC key size will always be 1024 bits.
-  // key_length determines actual key size used in HW and scoreboard.
-  constraint key_c {
-    key.size() == NUM_KEYS;
-  }
-
   constraint hmac_disabled_c {
     soft hmac_en == 0;
+  }
+
+  // only testing 256-bit key now
+  // TODO (#22932): remove this constraint and use the constraints from hmac_base_vseq once
+  // this test is adapted for all digest sizes and key lengths
+  constraint key_digest_c {
+    key_length dist {
+      6'b00_0001 := 0,
+      6'b00_0010 := 10, // 256-bit key
+      6'b00_0100 := 0,
+      6'b00_1000 := 0,
+      6'b01_0000 := 0,
+      6'b10_0000 := 0
+    };
+
+    // only testing SHA-2 256 now
+    digest_size dist {
+      4'b0001 := 10, // SHA-2 256
+      4'b0010 := 0,  // SHA-2 384
+      4'b0100 := 0,  // SHA-2 512
+      4'b1000 := 0   // SHA-2 None
+    };
   }
 
   virtual task pre_start();
@@ -45,15 +65,19 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         bit [TL_DW-1:0] intr_state_val;
         `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_LOW)
         // wr init: SHA256 only. HMAC, endian swap, digest swap all disabled.
-        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0),
+        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0), .key_swap(1'b0),
                   .digest_size(digest_size), .key_length(key_length));
 
-        `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%5b",
+        `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
                 digest_size, key_length), UVM_LOW)
 
         `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",
                                   vector_list[i], j, parsed_vectors[j].msg_length_byte),
                                   UVM_LOW)
+
+        // always start off the transaction by reading previous digest to clear
+        // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
+        rd_digest();
 
         if ($urandom_range(0, 1) && !hmac_en) begin
           `DV_CHECK_RANDOMIZE_FATAL(this) // only key is randomized
@@ -65,7 +89,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         trigger_hash();
 
         // wr_msg is non_blocking to ensure the order of input msg
-        wr_msg(parsed_vectors[j].msg, 1);
+        wr_msg(parsed_vectors[j].msg);
 
         trigger_process();
 

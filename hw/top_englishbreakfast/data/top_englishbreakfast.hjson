@@ -368,7 +368,7 @@
           }
         }
       }
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "rv_plic",
       type: "rv_plic",

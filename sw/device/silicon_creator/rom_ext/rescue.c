@@ -4,11 +4,13 @@
 
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/xmodem.h"
 
 #include "flash_ctrl_regs.h"
@@ -18,6 +20,9 @@
 // any function in real firmware.
 #define iohandle NULL
 
+const uint32_t kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+const uint32_t kFlashBankSize =
+    kFlashPageSize * FLASH_CTRL_PARAM_REG_PAGES_PER_BANK;
 static rescue_state_t rescue_state;
 
 rom_error_t flash_firmware_block(rescue_state_t *state) {
@@ -27,14 +32,14 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
         .write = kMultiBitBool4True,
         .erase = kMultiBitBool4True,
     });
-    for (uint32_t addr = state->flash_start; addr < state->flash_limit;
-         addr += FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+    for (uint32_t addr = state->flash_start; addr <= state->flash_limit;
+         addr += kFlashPageSize) {
       HARDENED_RETURN_IF_ERROR(
           flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage));
     }
     state->flash_offset = state->flash_start;
   }
-  if (state->flash_offset < state->flash_limit) {
+  if (state->flash_offset <= state->flash_limit) {
     HARDENED_RETURN_IF_ERROR(flash_ctrl_data_write(
         state->flash_offset, sizeof(state->data) / sizeof(uint32_t),
         state->data));
@@ -56,9 +61,48 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
   return kErrorOk;
 }
 
+static void change_speed(void) {
+  dbg_printf("ok: waiting for baudrate\r\n");
+  uint32_t speed = 0;
+  OT_DISCARD(uart_read((uint8_t *)&speed, sizeof(speed), 10000));
+  uint32_t nco;
+  switch (speed) {
+    case kRescueBaud115K:
+      nco = kUartBaud115K;
+      break;
+    case kRescueBaud230K:
+      nco = kUartBaud230K;
+      break;
+    case kRescueBaud460K:
+      nco = kUartBaud460K;
+      break;
+    case kRescueBaud921K:
+      nco = kUartBaud921K;
+      break;
+    case kRescueBaud1M33:
+      nco = kUartBaud1M33;
+      break;
+    case kRescueBaud1M50:
+      nco = kUartBaud1M50;
+      break;
+    default:
+      nco = 0;
+  }
+  if (nco) {
+    dbg_printf("ok: new baudrate %C\r\n", speed);
+    uart_init(nco);
+    uart_enable_receiver();
+  } else {
+    dbg_printf("error: unsupported baudrate %C\r\n", speed);
+  }
+}
+
 static void validate_mode(uint32_t mode, rescue_state_t *state) {
   dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
   switch (mode) {
+    case kRescueModeBaud:
+      change_speed();
+      return;
     case kRescueModeBootLog:
       dbg_printf("ok: receive boot_log via xmodem-crc\r\n");
       break;
@@ -73,13 +117,22 @@ static void validate_mode(uint32_t mode, rescue_state_t *state) {
       break;
     case kRescueModeFirmware:
       dbg_printf("ok: send firmware via xmodem-crc\r\n");
+      // Ensure the start/limit are in SlotA.
+      state->flash_start &= ~kFlashBankSize;
+      state->flash_limit &= ~kFlashBankSize;
+      break;
+    case kRescueModeFirmwareSlotB:
+      dbg_printf("ok: send slot-b firmware via xmodem-crc\r\n");
+      // Ensure the start/limit are in SlotB.
+      state->flash_start |= kFlashBankSize;
+      state->flash_limit |= kFlashBankSize;
       break;
     case kRescueModeReboot:
       dbg_printf("ok: reboot\r\n");
       break;
-    case kRescueModeDWIM:
-      // Easter egg :)
-      dbg_printf("error: i don't know what you mean\r\n");
+    case kRescueModeWait:
+      state->reboot = false;
+      dbg_printf("ok: wait after upload\r\n");
       return;
     default:
       // User input error.  Do not change modes.
@@ -106,6 +159,7 @@ static rom_error_t handle_send_modes(rescue_state_t *state) {
     case kRescueModeBootSvcReq:
     case kRescueModeOwnerBlock:
     case kRescueModeFirmware:
+    case kRescueModeFirmwareSlotB:
       // Nothing to do for receive modes.
       return kErrorOk;
     case kRescueModeReboot:
@@ -141,6 +195,7 @@ static rom_error_t handle_recv_modes(rescue_state_t *state) {
       }
       break;
     case kRescueModeFirmware:
+    case kRescueModeFirmwareSlotB:
       if (state->offset == sizeof(state->data)) {
         HARDENED_RETURN_IF_ERROR(flash_firmware_block(state));
         state->offset = 0;
@@ -160,13 +215,14 @@ static rom_error_t protocol(rescue_state_t *state) {
   uint8_t command;
   uint32_t next_mode = 0;
 
+  state->reboot = true;
   validate_mode(kRescueModeFirmware, &rescue_state);
 
   // The rescue region starts immediately after the ROM_EXT and ends
   // at the end of the flash bank.
   // TODO(cfrantz): This needs to be owner-configurable.
   state->flash_start = 0x10000;
-  state->flash_limit = 0x80000;
+  state->flash_limit = 0x7FFFF;
 
   xmodem_recv_start(iohandle);
   while (true) {
@@ -194,6 +250,12 @@ static rom_error_t protocol(rescue_state_t *state) {
           HARDENED_RETURN_IF_ERROR(handle_recv_modes(&rescue_state));
         }
         xmodem_ack(iohandle, true);
+        if (!state->reboot) {
+          state->frame = 1;
+          state->offset = 0;
+          state->flash_offset = 0;
+          continue;
+        }
         return kErrorRescueReboot;
       case kErrorXModemCrc:
         xmodem_ack(iohandle, false);

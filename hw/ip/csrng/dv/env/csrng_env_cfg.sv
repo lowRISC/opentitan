@@ -61,14 +61,20 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   int NApps = NHwApps + 1;
   int Sp2VWidth = 3;
 
-  rand uint  which_app_err_alert;
-  constraint which_app_err_alert_c { which_app_err_alert inside {[0:NApps-1]};}
+  rand uint   which_app_err_alert;
+  constraint  which_app_err_alert_c { which_app_err_alert inside {[0:NApps-1]};}
 
-  rand uint  which_hw_inst_exc;
-  constraint which_hw_inst_exc_c { which_hw_inst_exc inside {[0:NHwApps-1]};}
+  rand acmd_e which_cmd_alert;
+  constraint  which_cmd_alert_c { which_cmd_alert inside {INS, GEN, RES};}
 
-  rand uint  which_sp2v;
-  constraint which_sp2v_c { which_sp2v inside {[0:Sp2VWidth-1]};}
+  rand uint   max_reseed_count;
+  constraint  max_reseed_count_c { max_reseed_count inside {[0:100]};}
+
+  rand uint   which_hw_inst_exc;
+  constraint  which_hw_inst_exc_c { which_hw_inst_exc inside {[0:NHwApps-1]};}
+
+  rand uint   which_sp2v;
+  constraint  which_sp2v_c { which_sp2v inside {[0:Sp2VWidth-1]};}
 
   constraint otp_en_cs_sw_app_read_c {
     `DV_MUBI8_DIST(otp_en_cs_sw_app_read,

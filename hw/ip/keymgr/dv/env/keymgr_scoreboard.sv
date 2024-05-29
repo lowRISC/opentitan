@@ -13,24 +13,24 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   typedef struct packed {
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
     bit [keymgr_pkg::DevIdWidth-1:0]       DeviceIdentifier;
     bit [keymgr_pkg::HealthStateWidth-1:0] HealthMeasurement;
     bit [keymgr_pkg::KeyWidth-1:0]         RomDigest;
-    bit [keymgr_pkg::KeyWidth-1:0]         DiversificationKey;
+    bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
   } adv_creator_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
+    bit [keymgr_pkg::KeyWidth-1:0]                       CreatorSeed;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
+    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
     bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [keymgr_pkg::KeyWidth-1:0]                       OwnerSeed;
   } adv_owner_data_t;
 
   typedef struct packed {
@@ -56,7 +56,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
-  bit                                is_sw_share_corrupted;
+  bit [keymgr_pkg::Shares-1:0][keymgr_reg_pkg::NumOutReg-1:0] is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
   key_shares_t current_internal_key[keymgr_cdi_type_e];
@@ -66,7 +66,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     addr_phase_op_status;
   bit                                addr_phase_cfg_regwen;
   keymgr_pkg::keymgr_working_state_e addr_phase_working_state;
-  bit                                addr_phase_is_sw_share_corrupted;
+  bit [keymgr_pkg::Shares-1:0][keymgr_reg_pkg::NumOutReg-1:0] addr_phase_is_sw_share_corrupted;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(kmac_app_item) req_fifo;
@@ -120,6 +120,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
 
         wait(cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On);
+      end
+      forever begin
+        wait(current_state == keymgr_pkg::StInvalid);
+        // Also wipe keys when moving into Invalid state, except if they have already been wiped
+        // because keymgr has been disabled by LC.
+        if (cfg.en_scb && cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On) wipe_hw_keys();
+        wait(current_state != keymgr_pkg::StInvalid);
       end
     join_none
   endtask
@@ -212,6 +219,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             uvm_reg csr = ral.get_reg_by_name(csr_name);
 
             void'(csr.predict(.value(sw_share_output[i][j]), .kind(UVM_PREDICT_DIRECT)));
+            is_sw_share_corrupted[i][j] = 1'b0;
             `uvm_info(`gfn, $sformatf("Predict %0s = 0x%0h", csr_name, sw_share_output[i][j]),
                       UVM_MEDIUM)
           end
@@ -300,7 +308,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       if (op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
         if (adv_cnt != keymgr_pkg::CDIs - 1) begin
           adv_cnt++;
-          is_sw_share_corrupted = 1;
+          is_sw_share_corrupted = '1;
           cfg.keymgr_vif.wipe_sideload_keys();
         end else begin
           adv_cnt = 0;
@@ -387,6 +395,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     dv_base_reg dv_reg;
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
+    bit     do_predict      = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
@@ -577,7 +586,16 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 end
                 void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
               end
-              default: begin // other than StReset and StDisabled
+              keymgr_pkg::StInvalid: begin
+                // No operation is allowed in this state.  Expect a recoverable alert, that the
+                // operation status is *failed*, that the `err_code` CSR has `invalid_op` set, and
+                // that the `op_done` IRQ gets raised.
+                set_exp_alert("recov_operation_err");
+                current_op_status = keymgr_pkg::OpDoneFail;
+                void'(ral.err_code.invalid_op.predict(.value(1'b1)));
+                void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+              end
+              default: begin // other than StReset and StInvalid
                 bit good_key;
                 bit good_data;
 
@@ -725,16 +743,42 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
       default: begin
         if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share
-          // if keymgr isn't On, SW output should be entropy and not match to predict value
+          uint share, idx;
+          `DV_CHECK(sw_share_csr_get_indices(csr.get_name(), share, idx))
+          // The SW output registers (`sw_share{0,1}_output{0..7}`) get their value assigned by
+          // keymgr based on KMAC responses or based on entropy during wiping.  The scoreboard can
+          // predict their value based on observed KMAC responses.  However, the scoreboard cannot
+          // predict their value when they get wiped, but it knows *when* they get wiped (this is
+          // modeled cycle-accurately).  In case of a wipe, `is_sw_share_corrupted` is set.
           if (addr_phase_read) begin
-            addr_phase_is_sw_share_corrupted = is_sw_share_corrupted;
-          end else if (data_phase_read && addr_phase_is_sw_share_corrupted) begin
-            // disable read check outside of the item compare.
-            // it is possible for the returned data when corrupted, to be 0
-            do_read_check = 1'b0;
-            if (item.d_data != 0) begin
-              `DV_CHECK_NE(item.d_data, `gmv(csr))
+            // Track whether a register is corrupted during the address phase and propagate that
+            // information to the data phase.
+            addr_phase_is_sw_share_corrupted[share][idx] = is_sw_share_corrupted[share][idx];
+            // The register is no longer corrupted for the next access because it gets cleared to
+            // zero.
+            is_sw_share_corrupted[share][idx] = 1'b0;
+          end else if (data_phase_read) begin
+            if (addr_phase_is_sw_share_corrupted[share][idx]) begin
+              // Disable read check (for equality) because the scoreboard currently cannot predict
+              // sw_share when its "corrupted" (i.e., wiped with random entropy).
+              do_read_check = 1'b0;
+              // Instead check that the returned sw_share does *not* match our prediction.
+              `DV_CHECK_NE(item.d_data, `gmv(csr), $sformatf("reg name: %0s", csr.get_full_name()))
             end
+            // This CSR gets cleared on read, thus:
+            // - update the predicted/mirrored value to zero
+            fork
+              begin
+                // Update prediction a cycle later so it happens *after* the ongoing access.
+                cfg.clk_rst_vif.wait_clks(1);
+                // Except if it has been again marked as corrupted in the mean time.
+                if (!is_sw_share_corrupted[share][idx]) begin
+                  void'(csr.predict(.value('0)));
+                end
+              end
+            join_none
+            // - skip the "predict what got returned on the bus" below
+            do_predict = 1'b0;
           end
         end else begin // Not sw_share
           // ICEBOX(#18344): explicitly list all the unchecked regs here.
@@ -750,9 +794,20 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(item.d_data, `gmv(csr),
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      if (do_predict) void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  function bit sw_share_csr_get_indices(string csr_name, output uint share, output uint idx);
+    for (share = 0; share < keymgr_pkg::Shares; share++) begin
+      for (idx = 0; idx < keymgr_reg_pkg::NumOutReg; idx++) begin
+        if (csr_name == $sformatf("sw_share%0d_output_%0d", share, idx)) begin
+          return 1'b1;
+        end
+      end
+    end
+    return 1'b0; // No match
+  endfunction
 
   virtual function void latch_otp_key();
     key_shares_t otp_key;
@@ -764,7 +819,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
     end
-    // for advance to OwnerRootSecret, both KDF use same otp_key
+    // The first advance calls use the same otp_key
     current_internal_key[Sealing] = otp_key;
     current_internal_key[Attestation] = otp_key;
     cfg.keymgr_vif.store_internal_key(current_internal_key[Sealing], current_state,
@@ -791,7 +846,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     void'(ral.err_code.predict(err));
 
     if (get_fault_err() || !cfg.keymgr_vif.get_keymgr_en()) begin
-      is_sw_share_corrupted = 1;
+      is_sw_share_corrupted = '1;
       cfg.keymgr_vif.wipe_sideload_keys();
     end
 
@@ -991,20 +1046,18 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
     act = {<<8{byte_data_q}};
 
-    exp.DiversificationKey = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    exp.RomDigest          = cfg.keymgr_vif.rom_digest.data;
-    exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
-    exp.DeviceIdentifier   = cfg.keymgr_vif.otp_device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
+    exp.RomDigest              = cfg.keymgr_vif.rom_digest.data;
+    exp.HealthMeasurement      = cfg.keymgr_vif.keymgr_div;
+    exp.DeviceIdentifier       = cfg.keymgr_vif.otp_device_id;
 
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
     // The order of the string creation must match the design
-    `CREATE_CMP_STR(DiversificationKey)
+    `CREATE_CMP_STR(HardwareRevisionSecret)
     `CREATE_CMP_STR(RomDigest)
     `CREATE_CMP_STR(HealthMeasurement)
     `CREATE_CMP_STR(DeviceIdentifier)
-    `CREATE_CMP_STR(HardwareRevisionSecret)
     `CREATE_CMP_STR(SoftwareBinding)
 
     if (exp_match) begin
@@ -1024,11 +1077,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
-    exp.OwnerRootSecret = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+    exp.CreatorSeed = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    exp.unused = '0;
 
+    `CREATE_CMP_STR(CreatorSeed)
     `CREATE_CMP_STR(unused)
-    `CREATE_CMP_STR(OwnerRootSecret)
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
@@ -1050,8 +1104,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
+    exp.OwnerSeed = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    exp.unused    = '0;
 
+    `CREATE_CMP_STR(OwnerSeed)
     `CREATE_CMP_STR(unused)
     for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
@@ -1178,8 +1235,22 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function keymgr_pkg::keymgr_working_state_e get_next_state(
       keymgr_pkg::keymgr_working_state_e cur = current_state);
-    if (!cfg.keymgr_vif.get_keymgr_en()) return keymgr_pkg::StInvalid;
-    else                                 return keymgr_env_pkg::get_next_state(cur);
+    keymgr_pkg::keymgr_working_state_e next_linear_state = keymgr_env_pkg::get_next_state(cur);
+
+    if (// If keymgr is not enabled in the current LC
+        !cfg.keymgr_vif.get_keymgr_en() ||
+        // or the linearly next state would be initialized but not all of the Creator Root Key
+        // shares are valid
+        (next_linear_state == keymgr_pkg::StInit &&
+         !&{cfg.keymgr_vif.otp_key.creator_root_key_share0_valid,
+            cfg.keymgr_vif.otp_key.creator_root_key_share1_valid})
+    ) begin
+      // then the next state is invalid.
+      return keymgr_pkg::StInvalid;
+    end else begin
+      // Otherwise, the next state is just the linearly next state.
+      return next_linear_state;
+    end
   endfunction
 
   virtual function void update_state(
@@ -1225,11 +1296,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       begin
-        // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
+        // it takes 1 cycle to wipe sw_share. add one more negedge to avoid race condition
         // corner case
-        cfg.clk_rst_vif.wait_n_clks(3);
+        cfg.clk_rst_vif.wait_n_clks(2);
         cfg.keymgr_vif.wipe_sideload_keys();
-        is_sw_share_corrupted = 1;
+        is_sw_share_corrupted = '1;
+        cfg.clk_rst_vif.wait_n_clks(1);
+        addr_phase_is_sw_share_corrupted = '1;
       end
     join_none
   endfunction
@@ -1241,7 +1314,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     current_op_status     = keymgr_pkg::OpIdle;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
-    is_sw_share_corrupted = 0;
+    is_sw_share_corrupted = '0;
+    addr_phase_is_sw_share_corrupted = '0;
     req_fifo.flush();
     rsp_fifo.flush();
     current_internal_key.delete;

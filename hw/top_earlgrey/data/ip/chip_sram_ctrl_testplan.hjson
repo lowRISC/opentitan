@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_sram_ctrl
+  name: sram_ctrl
   testpoints: [
     // SRAM (pre-verified IP) integration tests:
     {
@@ -29,6 +29,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+      bazel: ["//sw/device/tests:sram_ctrl_scrambled_access_test"]
     }
     {
       name: chip_sw_sleep_sram_ret_contents
@@ -123,9 +124,10 @@
       features: ["SRAM_CTRL.LOCK_ON_ERROR"]
       stage: V2
       si_stage: SV3
-      lc_states: ["PROD"]
+      lc_states: ["RMA"]
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
+      bazel: ["//sw/device/tests:sram_ctrl_lc_escalation"]
     }
 
     {

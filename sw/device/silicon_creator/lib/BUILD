@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:autogen.bzl", "autogen_chip_info")
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//rules:autogen.bzl", "autogen_chip_info")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
@@ -31,8 +31,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
@@ -66,14 +66,12 @@ cc_test(
 opentitan_test(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
@@ -92,6 +90,7 @@ cc_library(
     srcs = ["boot_log.c"],
     hdrs = ["boot_log.h"],
     deps = [
+        ":boot_data",
         ":nonce",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:chip_info",
@@ -196,7 +195,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -368,7 +367,7 @@ dual_cc_library(
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/ip/uart/data:uart_c_regs",
             "//hw/top_earlgrey:alert_handler_c_regs",
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -422,7 +421,7 @@ cc_library(
     srcs = ["bootstrap_fuzzer_util.cc"],
     hdrs = ["bootstrap_fuzzer_util.h"],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
@@ -442,7 +441,7 @@ cc_library(
         ":bootstrap",
         "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
@@ -491,14 +490,11 @@ cc_library(
 opentitan_test(
     name = "otbn_boot_services_functest",
     srcs = ["otbn_boot_services_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",

@@ -84,10 +84,15 @@ typedef struct boot_data {
    */
   uint32_t ownership_state;
   /**
+   * Number of ownership transfers this chip has had.
+   */
+  uint32_t ownership_transfers;
+
+  /**
    * Padding for future enhancements and to make the size of `boot_data_t` a
    * power of two.
    */
-  uint32_t padding[5];
+  uint32_t padding[4];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
@@ -101,7 +106,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_data_t, primary_bl0_slot, 60);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, next_owner, 64);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, nonce, 96);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, ownership_state, 104);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 108);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, ownership_transfers, 108);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 112);
 OT_ASSERT_SIZE(boot_data_t, 128);
 
 enum {
@@ -156,20 +162,15 @@ static_assert(kBootDataValidEntry ==
                   ((uint64_t)kFlashCtrlErasedWord << 32 | kFlashCtrlErasedWord),
               "kBootDataValidEntry words must be kFlashCtrlErasedWord");
 
-/*
- * Encoding generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 \
- *     -s 3436204326 --language=c
- *
- * Minimum Hamming distance: 12
- * Maximum Hamming distance: 12
- * Minimum Hamming weight: 15
- * Maximum Hamming weight: 15
+/**
+ * Constants referring to EFLASH slots A and B.
  */
-enum {
-  kBootDataSlotA = 0x9cdc8d50,
-  kBootDataSlotB = 0xcd598a4a,
-};
+typedef enum boot_slot {
+  /** Slot A: `AA__`. */
+  kBootSlotA = 0x5f5f4141,
+  /** Slot B: `__BB`. */
+  kBootSlotB = 0x42425f5f,
+} boot_slot_t;
 
 /**
  * Reads the boot data stored in the flash info partition.

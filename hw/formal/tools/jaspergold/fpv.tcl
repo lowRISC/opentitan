@@ -11,6 +11,9 @@
 # STOPATS: string to indicate the name of the signal to insert `stopat`.
 # TASK: string to collect and prove a subset of assertions that contains these string.
 # FPV_DEFINES: string to add additional macro defines during anaylze phase.
+# AFTER_LOAD: string with the path to a TCL file that should be sourced after the design and test
+#             bench have been loaded. If there is no such file, the variable should be undefined or
+#             the string should be empty.
 
 # clear previous settings
 clear -all
@@ -62,6 +65,14 @@ set stopat [regexp -all -inline {[^\s\']+} $env(STOPATS)]
 if {$stopat ne ""} {
   stopat -env $stopat
 }
+
+if {[info exists ::env(AFTER_LOAD)]} {
+    if {$env(AFTER_LOAD) != ""} {
+        puts "Running prefix TCL command from $env(AFTER_LOAD)"
+        source $env(AFTER_LOAD)
+    }
+}
+
 
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)

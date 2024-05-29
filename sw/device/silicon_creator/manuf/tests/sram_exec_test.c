@@ -122,7 +122,7 @@ static status_t provisioning_device_id_end(void) {
   return OK_STATUS();
 }
 
-void sram_main(void) {
+bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   // Initialize UART console.
   pinmux_testutils_init(&pinmux);
@@ -144,4 +144,5 @@ void sram_main(void) {
   CHECK_STATUS_OK(provisioning_device_id_end());
 
   test_status_set(kTestStatusPassed);
+  return true;
 }

@@ -90,7 +90,10 @@ class OTDevice:
         else:
             logging.info("CP completed successfully")
 
-    def ft_provision(self, ecc_priv_keyfile, require_confirmation=True):
+    def ft_provision(self,
+                     ecc_priv_keyfile,
+                     ca_priv_keyfile,
+                     require_confirmation=True):
         """Run the FT provisioning Bazel target."""
         logging.info("Running FT Provisioning")
 
@@ -148,9 +151,14 @@ class OTDevice:
 --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
 --target-mission-mode-lc-state="{self.target_lc_state}" \
 --host-ecc-sk={ecc_priv_keyfile} \
+--cert-endorsement-ecc-sk={ca_priv_keyfile} \
 --rom-ext-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --owner-manifest-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
---owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"""  # noqa: E501
+--owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
+--uds-auth-key-id="0x11223344_55667788_99112233_44556677_88991122"
+--rom-ext-security-version="0"
+--owner-security-version="0"
+"""  # noqa: E501
 
         logging.info(f"Running command: {cmd}")
         if require_confirmation:

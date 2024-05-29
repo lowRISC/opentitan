@@ -425,7 +425,7 @@ pub const SRAM_CTRL_RET_AON_REGS_BASE_ADDR: usize = 0x40500000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
 /// `SRAM_CTRL_RET_AON_REGS_BASE_ADDR + SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
-pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x20;
+pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
 ///
@@ -663,7 +663,7 @@ pub const SRAM_CTRL_MAIN_REGS_BASE_ADDR: usize = 0x411C0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SRAM_CTRL_MAIN_REGS_BASE_ADDR and
 /// `SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
-pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x20;
+pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
 ///

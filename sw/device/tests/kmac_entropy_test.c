@@ -180,7 +180,8 @@ bool test_main(void) {
         dif_kmac_irq_is_pending(&kmac, kDifKmacIrqKmacErr, &irq_err_pending));
     if (irq_err_pending) {
       dif_kmac_error_t err_status;
-      CHECK_DIF_OK(dif_kmac_get_error(&kmac, &err_status));
+      uint32_t err_info;
+      CHECK_DIF_OK(dif_kmac_get_error(&kmac, &err_status, &err_info));
       CHECK(err_status == kDifErrorEntropyWaitTimerExpired,
             "Error other than EDN timeout occurred.");
       LOG_INFO("EDN timed out.");

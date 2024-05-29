@@ -42,7 +42,10 @@ module sensor_ctrl
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // wakeup to power manager
-  output logic wkup_req_o
+  output logic wkup_req_o,
+
+  // Attributes for manual pads
+  output prim_pad_wrapper_pkg::pad_attr_t [NumAttrPads-1:0] manual_pad_attr_o
 );
 
   import prim_mubi_pkg::mubi4_t;
@@ -340,6 +343,45 @@ module sensor_ctrl
     end else begin
       wkup_req_o <= &wake_req_filter;
     end
+  end
+
+  ///////////////////////////
+  // Attributes for manual pads
+  ///////////////////////////
+  logic [NumAttrPads-1:0] manual_pad_pull_en_q,
+                          manual_pad_pull_select_q,
+                          manual_pad_input_disable_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      manual_pad_pull_en_q       <= '0;
+      manual_pad_pull_select_q   <= '0;
+      manual_pad_input_disable_q <= '0;
+    end else begin
+      for (int kk = 0; kk < NumAttrPads; kk++) begin
+        if (reg2hw.manual_pad_attr[kk].pull_en.qe) begin
+          manual_pad_pull_en_q[kk]       <= reg2hw.manual_pad_attr[kk].pull_en.q;
+        end
+        if (reg2hw.manual_pad_attr[kk].pull_select.qe) begin
+          manual_pad_pull_select_q[kk]   <= reg2hw.manual_pad_attr[kk].pull_select.q;
+        end
+        if (reg2hw.manual_pad_attr[kk].input_disable.qe) begin
+          manual_pad_input_disable_q[kk] <= reg2hw.manual_pad_attr[kk].input_disable.q;
+        end
+      end
+    end
+  end
+
+  for (genvar k = 0; k < NumAttrPads; k++) begin : gen_manual_pad_attr
+    assign hw2reg.manual_pad_attr[k].pull_en.d       = manual_pad_pull_en_q[k];
+    assign hw2reg.manual_pad_attr[k].pull_select.d   = manual_pad_pull_select_q[k];
+    assign hw2reg.manual_pad_attr[k].input_disable.d = manual_pad_input_disable_q[k];
+    assign manual_pad_attr_o[k] = '{
+      pull_en:       manual_pad_pull_en_q[k],
+      pull_select:   manual_pad_pull_select_q[k],
+      input_disable: manual_pad_input_disable_q[k],
+      default: '0
+    };
   end
 
   ///////////////////////////

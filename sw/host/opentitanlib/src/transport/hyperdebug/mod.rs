@@ -133,6 +133,7 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_I2C_DEVICE: u16 = 0x0002;
     const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
     const GOOGLE_CAP_GPIO_BITBANGING: u16 = 0x0008;
+    const GOOGLE_CAP_UART_QUEUE_CLEAR: u16 = 0x0010;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -140,7 +141,7 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> Result<Self> {
-        let device = UsbBackend::new(
+        let mut device = UsbBackend::new(
             usb_vid.unwrap_or_else(T::get_default_usb_vid),
             usb_pid.unwrap_or_else(T::get_default_usb_pid),
             usb_serial,
@@ -208,6 +209,13 @@ impl<T: Flavor> Hyperdebug<T> {
                         Ok(interface_name) => interface_name,
                         _ => continue,
                     };
+
+                    if !device.kernel_driver_active(interface.number())? {
+                        device.attach_kernel_driver(interface.number())?;
+                        // Wait for udev rules to apply proper permissions to new device.
+                        std::thread::sleep(std::time::Duration::from_millis(100));
+                    }
+
                     if interface_name.ends_with("Shell") {
                         // We found the "main" control interface of HyperDebug, allowing textual
                         // commands to be sent, to e.g. manipulate GPIOs.
@@ -369,6 +377,10 @@ impl<T: Flavor> Hyperdebug<T> {
             // Return cached value.
             return Ok(capabilities);
         }
+        self.inner
+            .usb_device
+            .borrow_mut()
+            .claim_interface(cmsis_interface.interface)?;
         let cmd = [
             Self::CMSIS_DAP_CUSTOM_COMMAND_GOOGLE_INFO,
             Self::GOOGLE_INFO_CAPABILITIES,
@@ -392,6 +404,10 @@ impl<T: Flavor> Hyperdebug<T> {
         );
         let capabilities = u16::from_le_bytes([resp[2], resp[3]]);
         self.cmsis_google_capabilities.set(Some(capabilities));
+        self.inner
+            .usb_device
+            .borrow_mut()
+            .release_interface(cmsis_interface.interface)?;
         Ok(capabilities)
     }
 }
@@ -655,8 +671,13 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 if let Some(instance) = self.inner.uarts.borrow().get(&uart_interface.tty) {
                     return Ok(Rc::clone(instance));
                 }
-                let instance: Rc<dyn Uart> =
-                    Rc::new(uart::HyperdebugUart::open(&self.inner, uart_interface)?);
+                let supports_clearing_queues =
+                    self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_UART_QUEUE_CLEAR != 0;
+                let instance: Rc<dyn Uart> = Rc::new(uart::HyperdebugUart::open(
+                    &self.inner,
+                    uart_interface,
+                    supports_clearing_queues,
+                )?);
                 self.inner
                     .uarts
                     .borrow_mut()

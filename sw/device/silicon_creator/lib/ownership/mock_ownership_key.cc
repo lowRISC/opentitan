@@ -14,5 +14,17 @@ hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                                len);
 }
 
+rom_error_t ownership_seal_init() {
+  return MockOwnershipKey::Instance().seal_init();
+}
+
+rom_error_t ownership_seal_page(size_t page) {
+  return MockOwnershipKey::Instance().seal_page(page);
+}
+
+rom_error_t ownership_seal_check(size_t page) {
+  return MockOwnershipKey::Instance().seal_check(page);
+}
+
 }  // extern "C"
 }  // namespace rom_test

@@ -99,6 +99,7 @@
     {
       name: "{name}_sideload"
       uvm_test_seq: kmac_sideload_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
     {
       name: "{name}_burst_write"

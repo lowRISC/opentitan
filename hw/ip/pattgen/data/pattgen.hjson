@@ -83,6 +83,9 @@
     { name: "PATTGEN.CONFIG.POLARITY",
       desc: "Each channel's clock can be inverted."
     },
+    { name: "PATTGEN.CONFIG.INACTIVE_LEVEL",
+      desc: "The inactive level of clock and data output of each channel can be configured separately."
+    }
     { name: "PATTGEN.COMPLETE",
       desc: "Once a pattern is finished, an interrupt is raised."
     }
@@ -126,6 +129,38 @@
           resval: "0",
           name: "POLARITY_CH1",
           desc: "Clock (`pcl`) polarity for Channel 1.  If low, `pda` signal changes on falling edge of `pcl` signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled."
+        }
+        { bits: "4"
+          resval: "0",
+          name: "INACTIVE_LEVEL_PCL_CH0",
+          desc: '''
+                If 0, `pcl` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent).
+                If 1, `pcl` is high when pattgen is not actively sending data bits.
+                ''',
+        }
+        { bits: "5"
+          resval: "0",
+          name: "INACTIVE_LEVEL_PDA_CH0",
+          desc: '''
+                If 0, `pda` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent).
+                If 1, `pda` is high when pattgen is not actively sending data bits.
+                ''',
+        }
+        { bits: "6"
+          resval: "0",
+          name: "INACTIVE_LEVEL_PCL_CH1",
+          desc: '''
+                If 0, `pcl` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent).
+                If 1, `pcl` is high when pattgen is not actively sending data bits.
+                ''',
+        }
+        { bits: "7"
+          resval: "0",
+          name: "INACTIVE_LEVEL_PDA_CH1",
+          desc: '''
+                If 0, `pda` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent).
+                If 1, `pda` is high when pattgen is not actively sending data bits.
+                ''',
         }
       ]
     }

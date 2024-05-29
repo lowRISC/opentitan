@@ -180,10 +180,12 @@ module keymgr
   // The second case is less sensitive and is applied directly.  If the inputs
   // have more bits than the lfsr output, the lfsr value is simply replicated
 
+  logic lfsr_en;
   logic seed_en;
   logic [LfsrWidth-1:0] seed;
   logic reseed_req;
   logic reseed_ack;
+  logic reseed_done;
   logic reseed_cnt_err;
 
   keymgr_reseed_ctrl u_reseed_ctrl (
@@ -193,9 +195,11 @@ module keymgr
     .rst_edn_ni,
     .reseed_req_i(reseed_req),
     .reseed_ack_o(reseed_ack),
+    .reseed_done_o(reseed_done),
     .reseed_interval_i(reg2hw.reseed_interval_shadowed.q),
     .edn_o,
     .edn_i,
+    .lfsr_en_i(lfsr_en),
     .seed_en_o(seed_en),
     .seed_o(seed),
     .cnt_err_o(reseed_cnt_err)
@@ -203,6 +207,7 @@ module keymgr
 
   logic [63:0] lfsr;
   logic ctrl_lfsr_en, data_lfsr_en, sideload_lfsr_en;
+  assign lfsr_en = ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en;
 
   prim_lfsr #(
     .LfsrDw(LfsrWidth),
@@ -214,13 +219,8 @@ module keymgr
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .lfsr_en_i(ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en),
-    // The seed update is skipped if there is an ongoing keymgr transaction.
-    // This is not really done for any functional purpose but more to simplify
-    // DV. When an invalid operation is selected, the keymgr just starts transmitting
-    // whatever is at the prng output, however, this may cause a dv protocol violation
-    // if a reseed happens to coincide.
-    .seed_en_i(seed_en & ~reg2hw.start.q),
+    .lfsr_en_i(lfsr_en),
+    .seed_en_i(seed_en),
     .seed_i(seed),
     .entropy_i('0),
     .state_o(lfsr)
@@ -287,6 +287,7 @@ module keymgr
     .sideload_fsm_err_i(sideload_fsm_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
+    .prng_reseed_done_i(reseed_done),
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
     .op_i(keymgr_ops_e'(reg2hw.control_shadowed.operation.q)),
@@ -428,17 +429,15 @@ module keymgr
   //   end
   // end
   // assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
-  //                                             revision_seed,
   //                                             otp_device_id_i,
   //                                             lc_keymgr_div_i,
   //                                             rom_digests,
-  //                                             creator_seed});
+  //                                             revision_seed});
   assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
-                                              revision_seed,
                                               otp_device_id_i,
                                               lc_keymgr_div_i,
                                               rom_digest_i.data,
-                                              creator_seed});
+                                              revision_seed});
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
@@ -457,11 +456,11 @@ module keymgr
                                  otp_key_i.owner_seed_valid};
     assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
   end
-  assign adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding,owner_seed});
+  assign adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding, creator_seed});
   assign adv_dvalid[OwnerInt] = owner_seed_vld;
 
   // Advance to owner_key
-  assign adv_matrix[Owner] = AdvDataWidth'(sw_binding);
+  assign adv_matrix[Owner] = AdvDataWidth'({sw_binding, owner_seed});
   assign adv_dvalid[Owner] = 1'b1;
 
   // Generate Identity operation input construction

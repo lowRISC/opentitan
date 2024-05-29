@@ -300,6 +300,7 @@ The following standardised countermeasures are defined:
 | REGREN         | A register write enable is used to protect the asset from read access | CONFIG, MEM
 | SCRAMBLE       | The asset is scrambled | CONFIG, MEM
 | INTEGRITY      | The asset has integrity protection from a computed value such as a checksum | CONFIG, REG, MEM
+| READBACK       | A readback check is performed to validate that the asset has been correctly modified or fetched | MEM
 | CONSISTENCY    | This asset is checked for consistency other than by associating integrity bits | CTRL, RST
 | DIGEST         | Similar to integrity but more computationally intensive, implying a full hash function | CONFIG, REG, MEM
 | LC_GATED       | Access to the asset is qualified by life-cycle state | REG, MEM, CONSTANTS, CONFIG

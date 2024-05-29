@@ -21,9 +21,6 @@ namespace {
  * Message: "test"
  * SHA2-256 hash (little-endian): {0xb0f00a08, 0xd15d6c15, 0x2b0b822c,
  * 0xa3bf4f1b, 0xc55ad015, 0x9a2feaa0, 0x884c7d65, 0x9f86d081}
- *
- * Generated using the `openssl rsautl` command as discussed in
- * sw/device/silicon_creator/keys/README.md.
  */
 constexpr sigverify_rsa_buffer_t kEncMsgTest = {
     0xb0f00a08, 0xd15d6c15, 0x2b0b822c, 0xa3bf4f1b, 0xc55ad015, 0x9a2feaa0,
@@ -54,9 +51,6 @@ struct SigTestCase {
   const sigverify_rsa_key_t key;
   /**
    * An RSA signature.
-   *
-   * Can be generated using the `openssl dgst` command as discussed in
-   * sw/device/silicon_creator/keys/README.md.
    */
   sigverify_rsa_buffer_t sig;
   /**

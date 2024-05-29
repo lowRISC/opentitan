@@ -139,7 +139,6 @@ module tb;
     .SPI_DEV_CS_L(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevCsL]),
     .IOR8(dut.chip_if.dios[top_earlgrey_pkg::DioPadIor8]),
     .IOR9(dut.chip_if.dios[top_earlgrey_pkg::DioPadIor9]),
-    .AST_MISC(dut.chip_if.ast_misc),
 
     // Muxed Pads
     .IOA0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa0]),

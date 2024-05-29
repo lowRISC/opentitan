@@ -118,8 +118,8 @@ bool test_main(void) {
       // the RMA unlock token, to arrive over the console.
       LOG_INFO("Ready to receive host ECC pubkey ...");
       ecc_p256_public_key_t host_ecc_pk;
-      CHECK_STATUS_OK(
-          ujson_deserialize_ecc_p256_public_key_t(&uj, &host_ecc_pk));
+      CHECK_STATUS_OK(UJSON_WITH_CRC(ujson_deserialize_ecc_p256_public_key_t,
+                                     &uj, &host_ecc_pk));
 
       // Perform OTP and flash info writes.
       LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");

@@ -241,6 +241,8 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        # Use the prod key because it is valid in every LC state.
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
@@ -249,8 +251,6 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             t["name"],
             slot,
         ),
-        # Use the prod key because it is valid in every LC state.
-        rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],

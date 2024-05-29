@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:pinmux_component
+      - lowrisc:systems:top_earlgrey_pkg
       - "!fileset_partner ? (lowrisc:systems:physical_pads)"
       - "fileset_partner ? (partner:systems:physical_pads)"
     files:

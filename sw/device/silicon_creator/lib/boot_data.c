@@ -552,7 +552,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);
   boot_data->min_security_version_bl0 =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
-  boot_data->primary_bl0_slot = kBootDataSlotA;
+  boot_data->primary_bl0_slot = kBootSlotA;
   // We cannot use a constant digest since some fields are read from the OTP
   // and we check the digest of the cached boot data entry in rom.c
   boot_data_digest_compute(boot_data, &boot_data->digest);
@@ -576,7 +576,7 @@ static rom_error_t boot_data_as_v2(boot_data_t *boot_data) {
   switch (launder32(boot_data->version)) {
     case kBootDataVersion1:
       HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion1);
-      boot_data->primary_bl0_slot = kBootDataSlotA;
+      boot_data->primary_bl0_slot = kBootSlotA;
       boot_data->version = kBootDataVersion2;
       boot_data_digest_compute(boot_data, &boot_data->digest);
       return kErrorOk;

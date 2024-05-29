@@ -146,7 +146,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
           sent_txn_cnt++;
         end
       end
-      process_target_interrupts();
+      while (!cfg.stop_intr_handler) process_target_interrupts();
       stop_target_interrupt_handler();
       // Wait for completion of all transactions issued in the sequence
       begin

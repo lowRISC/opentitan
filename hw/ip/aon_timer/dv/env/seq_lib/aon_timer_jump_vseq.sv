@@ -6,14 +6,19 @@
 class aon_timer_jump_vseq extends aon_timer_base_vseq;
   `uvm_object_utils(aon_timer_jump_vseq)
 
-  // Randomize Bark/Bite and Wake-up thresholds for the counter
-  rand bit [63:0] wkup_count;
-  rand bit [31:0] wdog_count;
+  // Overrides constraint in parent vseq:
+  constraint thold_count_c {
+    solve wkup_thold before wkup_count;
+    solve aim_bite, wdog_bark_thold, wdog_bite_thold before wdog_count;
+    wkup_thold      <= (2**64-1);
+    wdog_bark_thold <= (2**32-1);
+    wdog_bite_thold <= (2**32-1);
 
-  constraint count_vals_c {
     wkup_count inside {[wkup_thold-10:wkup_thold+10]};
-    wdog_count inside {[wdog_bark_thold-10:wdog_bark_thold+10]};
+    !aim_bite -> wdog_count inside {[wdog_bark_thold-10:wdog_bark_thold+10]};
+    aim_bite  -> wdog_count inside {[wdog_bite_thold-10:wdog_bite_thold+10]};
   }
+
   `uvm_object_new
 
 

@@ -6,6 +6,10 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VERSION",
+)
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
@@ -19,9 +23,11 @@ LINK_ORDER = [
 
 manifest(d = {
     "name": "manifest_sival",
-    "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.SIVAL),
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
     "visibility": ["//visibility:private"],
 })
 
@@ -32,6 +38,7 @@ manifest(d = {
 # bazel build //hw/bitstream/universal:splice --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_sival
 opentitan_binary(
     name = "rom_ext_fake_prod_signed_slot_a",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
@@ -41,7 +48,6 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -52,6 +58,7 @@ opentitan_binary(
 
 opentitan_binary(
     name = "rom_ext_fake_prod_signed_slot_b",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
@@ -61,7 +68,6 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -109,10 +115,10 @@ offline_presigning_artifacts(
         ":rom_ext_real_prod_signed_slot_a",
         ":rom_ext_real_prod_signed_slot_b",
     ],
-    manifest = ":manifest_sival",
-    rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "earlgrey_a0_prod_0",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0_ecdsa_p256",
     },
+    manifest = ":manifest_sival",
     tags = ["manual"],
 )
 
@@ -130,8 +136,8 @@ offline_signature_attach(
     srcs = [
         ":presigning",
     ],
-    rsa_signatures = [
-        "//sw/device/silicon_creator/rom_ext/sival/signatures:rsa_signatures",
+    ecdsa_signatures = [
+        "//sw/device/silicon_creator/rom_ext/sival/signatures:ecdsa_signatures",
     ],
     tags = ["manual"],
 )

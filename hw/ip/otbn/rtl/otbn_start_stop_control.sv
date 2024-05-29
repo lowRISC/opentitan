@@ -79,6 +79,7 @@ module otbn_start_stop_control
   logic mubi_err_q, mubi_err_d;
   logic urnd_reseed_err_q, urnd_reseed_err_d;
   logic secure_wipe_error_q, secure_wipe_error_d;
+  logic secure_wipe_running_q, secure_wipe_running_d;
   logic skip_reseed_q;
 
   logic addr_cnt_inc;
@@ -165,7 +166,7 @@ module otbn_start_stop_control
     sec_wipe_zero_o           = 1'b0;
     addr_cnt_inc              = 1'b0;
     secure_wipe_ack_o         = 1'b0;
-    secure_wipe_running_o     = 1'b0;
+    secure_wipe_running_d     = 1'b0;
     state_error_d             = state_error_q;
     allow_secure_wipe         = 1'b0;
     expect_secure_wipe        = 1'b0;
@@ -176,7 +177,7 @@ module otbn_start_stop_control
 
     unique case (state_q)
       OtbnStartStopStateInitial: begin
-        secure_wipe_running_o = 1'b1;
+        secure_wipe_running_d = 1'b1;
         urnd_reseed_req_o     = 1'b1;
         if (rma_request) begin
           // If we get an RMA request before the URND got reseeded, proceed with the initial secure
@@ -203,7 +204,8 @@ module otbn_start_stop_control
           if (rma_request) begin
             // Do not reseed URND before secure wipe for RMA, as the entropy complex may not be able
             // to provide entropy at this point.
-            state_d = OtbnStartStopSecureWipeWdrUrnd;
+            secure_wipe_running_d = 1'b1;
+            state_d               = OtbnStartStopSecureWipeWdrUrnd;
             // As we don't reseed URND, there's no point in doing two rounds of wiping, so we
             // pretend that the first round is already the second round.
             wipe_after_urnd_refresh_d = MuBi4True;
@@ -225,7 +227,7 @@ module otbn_start_stop_control
             // wait for the ACK and then do a secure wipe.
             allow_secure_wipe     = 1'b1;
             expect_secure_wipe    = 1'b1;
-            secure_wipe_running_o = 1'b1;
+            secure_wipe_running_d = 1'b1;
             if (urnd_reseed_ack_i) begin
               state_d = OtbnStartStopSecureWipeWdrUrnd;
             end
@@ -242,7 +244,7 @@ module otbn_start_stop_control
             // wait for the ACK and then do a secure wipe.
             allow_secure_wipe     = 1'b1;
             expect_secure_wipe    = 1'b1;
-            secure_wipe_running_o = 1'b1;
+            secure_wipe_running_d = 1'b1;
             if (urnd_reseed_ack_i) begin
               state_d = OtbnStartStopSecureWipeWdrUrnd;
             end
@@ -254,7 +256,8 @@ module otbn_start_stop_control
         allow_secure_wipe = 1'b1;
 
         if (stop) begin
-          state_d = OtbnStartStopSecureWipeWdrUrnd;
+          secure_wipe_running_d = 1'b1;
+          state_d               = OtbnStartStopSecureWipeWdrUrnd;
         end
       end
       // SEC_CM: DATA_REG_SW.SEC_WIPE
@@ -266,7 +269,7 @@ module otbn_start_stop_control
         sec_wipe_wdr_urnd_o   = 1'b1;
         allow_secure_wipe     = 1'b1;
         expect_secure_wipe    = 1'b1;
-        secure_wipe_running_o = 1'b1;
+        secure_wipe_running_d = 1'b1;
 
         // Count one extra cycle when wiping the WDR, because the wipe signals to the WDR
         // (`sec_wipe_wdr_o` and `sec_wipe_wdr_urnd_o`) are flopped once but the wipe signals to the
@@ -291,7 +294,7 @@ module otbn_start_stop_control
         addr_cnt_inc          = 1'b1;
         allow_secure_wipe     = 1'b1;
         expect_secure_wipe    = 1'b1;
-        secure_wipe_running_o = 1'b1;
+        secure_wipe_running_d = 1'b1;
         // The first two clock cycles are used to write random data to accumulator and modulus.
         sec_wipe_acc_urnd_o   = (addr_cnt_q == 6'b000000);
         sec_wipe_mod_urnd_o   = (addr_cnt_q == 6'b000001);
@@ -305,10 +308,9 @@ module otbn_start_stop_control
       // Writing zeros to the CSRs and reset the stack. The other registers are intentionally not
       // overwritten with zero.
        OtbnStartStopSecureWipeAllZero: begin
-        sec_wipe_zero_o       = 1'b1;
-        allow_secure_wipe     = 1'b1;
-        expect_secure_wipe    = 1'b1;
-        secure_wipe_running_o = 1'b1;
+        sec_wipe_zero_o    = 1'b1;
+        allow_secure_wipe  = 1'b1;
+        expect_secure_wipe = 1'b1;
 
         // Leave this state after a single cycle, which is sufficient to reset the CSRs and the
         // stack.
@@ -316,12 +318,14 @@ module otbn_start_stop_control
           // This is the first round of wiping with random numbers, refresh URND and do a second
           // round.
           state_d = OtbnStartStopStateUrndRefresh;
+          secure_wipe_running_d     = 1'b1;
           wipe_after_urnd_refresh_d = MuBi4True;
         end else begin
           // This is the second round of wiping with random numbers, so the secure wipe is
           // complete.
           state_d = OtbnStartStopSecureWipeComplete;
-          secure_wipe_ack_o = 1'b1;
+          secure_wipe_running_d = 1'b0;
+          secure_wipe_ack_o     = 1'b1;
         end
       end
       OtbnStartStopSecureWipeComplete: begin
@@ -396,11 +400,13 @@ module otbn_start_stop_control
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      addr_cnt_q           <= 6'd0;
-      init_sec_wipe_done_q <= 1'b0;
+      addr_cnt_q            <= 6'd0;
+      init_sec_wipe_done_q  <= 1'b0;
+      secure_wipe_running_q <= 1'b1;
     end else begin
-      addr_cnt_q           <= addr_cnt_d;
-      init_sec_wipe_done_q <= init_sec_wipe_done_d;
+      addr_cnt_q            <= addr_cnt_d;
+      init_sec_wipe_done_q  <= init_sec_wipe_done_d;
+      secure_wipe_running_q <= secure_wipe_running_d;
     end
   end
 
@@ -453,6 +459,8 @@ module otbn_start_stop_control
   assign fatal_error_o = urnd_reseed_err_o | state_error_d | secure_wipe_error_q | mubi_err_q;
 
   assign rma_ack_o = rma_ack_q;
+
+  assign secure_wipe_running_o = secure_wipe_running_q;
 
   `ASSERT(StartStopStateValid_A,
       state_q inside {OtbnStartStopStateInitial,

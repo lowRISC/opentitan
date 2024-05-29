@@ -4,11 +4,15 @@
 
 use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
+use rusb::UsbContext;
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use opentitanlib::app::TransportWrapper;
+
+pub type UsbDevice = rusb::Device<rusb::Context>;
+pub type UsbDeviceHandle = rusb::DeviceHandle<rusb::Context>;
 
 #[derive(Debug, Parser)]
 pub struct UsbOpts {
@@ -38,6 +42,16 @@ fn usb_id_parser(id: &str) -> Result<u16> {
     Ok(u16::from_str_radix(id, 16)?)
 }
 
+// Return the device ports path as a string, or an error.
+pub fn port_path_string(dev: &UsbDevice) -> Result<String> {
+    Ok(dev
+        .port_numbers()?
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>()
+        .join("."))
+}
+
 // Represent an already seen device. Rely on the physical location (port numbers)
 // instead of device address.
 #[derive(Hash, PartialEq, Eq)]
@@ -47,7 +61,7 @@ struct DeviceLoc {
 }
 
 impl DeviceLoc {
-    fn from_device(dev: &rusb::Device<rusb::GlobalContext>) -> Result<DeviceLoc> {
+    fn from_device(dev: &UsbDevice) -> Result<DeviceLoc> {
         Ok(DeviceLoc {
             bus: dev.bus_number(),
             port_numbers: dev.port_numbers()?,
@@ -62,35 +76,48 @@ impl UsbOpts {
     // a new device that can be opened is found. If several devices are found
     // at the time that match and can be open, all of them will be returned.
     // On timeout, the function will return an empty list.
+    // This function will regularly retry to open devices that previously failed
+    // but will not display messages when they fail again.
     //
     // This function will return an error on critical failures such as failing to poll
     // the USB bus.
-    pub fn wait_for_device(
-        &self,
-        timeout: Duration,
-    ) -> Result<Vec<rusb::DeviceHandle<rusb::GlobalContext>>> {
+    pub fn wait_for_device(&self, timeout: Duration) -> Result<Vec<UsbDeviceHandle>> {
         let start = Instant::now();
-        // Keep a list of devices to not warn against again.
-        let mut warned_desc = HashSet::<DeviceLoc>::new();
-        let mut warned_open = HashSet::<DeviceLoc>::new();
+        // Keep a list of devices that we failed to open and when we last tried to open.
+        let mut failed_dev = HashMap::<DeviceLoc, Instant>::new();
         loop {
             let mut devices = Vec::new();
-            for device in rusb::devices().context("USB error")?.iter() {
-                let seen_dev = DeviceLoc::from_device(&device)?;
+            // NOTE We create a new context every time we scan. This is a necessary hack
+            // to workaround a problem in CI. When running in a container, libusb will be
+            // alerted to the appearence of a device very quickly and try to open the corresponding
+            // device node. However, the device is not available in the container until
+            // container-hotplug determines that the container should be allowed to use it.
+            // By the time this happens, libusb has already tried and failed to open the device
+            // and will not retry. By creating a new context, we force libusb to get the entire
+            // list from the kernel instead of relying on hotplug events.
+            for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
+                let dev_loc = DeviceLoc::from_device(&device)?;
+                // Do not retry devices that previously failed unless we have reached the retry timeout.
+                let last_seen = failed_dev.get(&dev_loc);
+                match last_seen {
+                    Some(last_try) if last_try.elapsed() < self.usb_poll_delay() => continue,
+                    _ => (),
+                }
                 let descriptor = match device.device_descriptor() {
                     Ok(desc) => desc,
                     Err(e) => {
-                        // Ignore device if we have already seen it.
-                        if !warned_desc.contains(&seen_dev) {
-                            warned_desc.insert(seen_dev);
+                        // Only warned if we haven't done so before.
+                        if last_seen.is_none() {
                             log::warn!("Could not read device descriptor for device at bus={} address={}: {}",
                                 device.bus_number(),
                                 device.address(),
                                 e);
                         }
+                        failed_dev.insert(dev_loc, Instant::now());
                         continue;
                     }
                 };
+                // Ignore devices that do not match.
                 if descriptor.vendor_id() != self.vid {
                     continue;
                 }
@@ -100,9 +127,8 @@ impl UsbOpts {
                 let handle = match device.open() {
                     Ok(handle) => handle,
                     Err(e) => {
-                        // Ignore device if we have already seen it.
-                        if !warned_open.contains(&seen_dev) {
-                            warned_open.insert(seen_dev);
+                        // Only warned if we haven't done so before.
+                        if last_seen.is_none() {
                             log::warn!(
                                 "Could not open device at bus={} address={}: {}",
                                 device.bus_number(),
@@ -110,6 +136,7 @@ impl UsbOpts {
                                 e
                             );
                         }
+                        failed_dev.insert(dev_loc, Instant::now());
                         continue;
                     }
                 };
@@ -120,8 +147,12 @@ impl UsbOpts {
                 return Ok(devices);
             }
             // Wait a bit before polling again.
-            std::thread::sleep(Duration::from_micros(1_000_000u64 / self.usb_poll_freq));
+            std::thread::sleep(self.usb_poll_delay());
         }
+    }
+
+    pub fn usb_poll_delay(&self) -> Duration {
+        Duration::from_micros(1_000_000 / self.usb_poll_freq)
     }
 
     pub fn vbus_control_available(&self) -> bool {
@@ -161,7 +192,7 @@ impl UsbOpts {
 // Structure representing a USB hub. The device needs to have sufficient permission
 // to be opened.
 pub struct UsbHub {
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+    handle: UsbDeviceHandle,
 }
 
 // USB hub operation.
@@ -179,7 +210,7 @@ const PORT_RESET: u16 = 4;
 
 impl UsbHub {
     // Construct a hub from a device.
-    pub fn from_device(dev: &rusb::Device<rusb::GlobalContext>) -> Result<UsbHub> {
+    pub fn from_device(dev: &UsbDevice) -> Result<UsbHub> {
         // Make sure the device is a hub.
         let dev_desc = dev.device_descriptor()?;
         // Assume that if the device has the HUB class then Linux will already enforce

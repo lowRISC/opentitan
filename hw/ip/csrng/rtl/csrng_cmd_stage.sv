@@ -18,6 +18,11 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   input logic [StateId-1:0]          cmd_stage_shid_i,
   input logic [CmdFifoWidth-1:0]     cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
+  // Command checking interface.
+  input logic                        reseed_cnt_reached_i,
+  output logic                       reseed_cnt_alert_o,
+  output logic                       invalid_cmd_seq_alert_o,
+  output logic                       invalid_acmd_alert_o,
   // Command to arbiter.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
@@ -72,16 +77,22 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                        sfifo_genbits_not_empty;
 
   // Command signals.
-  logic [3:0]              cmd_len;
-  logic                    cmd_fifo_zero;
-  logic                    cmd_fifo_pop;
-  logic                    cmd_len_dec;
-  logic                    cmd_gen_cnt_dec;
-  logic                    cmd_gen_1st_req;
-  logic                    cmd_gen_inc_req;
-  logic                    cmd_gen_cnt_last;
-  logic                    cmd_final_ack;
+  logic [3:0]                  cmd_len;
+  logic                        cmd_fifo_zero;
+  logic                        cmd_fifo_pop;
+  logic                        cmd_len_dec;
+  logic                        cmd_gen_cnt_dec;
+  logic                        cmd_gen_1st_req;
+  logic                        cmd_gen_inc_req;
+  logic                        cmd_gen_cnt_last;
+  logic                        cmd_final_ack;
+  logic                        cmd_err_ack;
   logic [GenBitsCntrWidth-1:0] cmd_gen_cnt;
+  csrng_cmd_sts_e              err_sts;
+  logic                        reseed_cnt_exceeded;
+  logic                        invalid_cmd_seq;
+  logic                        invalid_acmd;
+  logic [2:0]                  acmd;
 
   // Flops.
   logic                    cmd_ack_q, cmd_ack_d;
@@ -89,6 +100,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic [3:0]              cmd_len_q, cmd_len_d;
   logic                    cmd_gen_flag_q, cmd_gen_flag_d;
   logic [11:0]             cmd_gen_cmd_q, cmd_gen_cmd_d;
+  logic                    instantiated_d, instantiated_q;
 
   logic                    local_escalate;
 
@@ -100,12 +112,14 @@ module csrng_cmd_stage import csrng_pkg::*; #(
       cmd_len_q       <= '0;
       cmd_gen_flag_q  <= '0;
       cmd_gen_cmd_q   <= '0;
+      instantiated_q  <= '0;
     end else begin
       cmd_ack_q       <= cmd_ack_d;
       cmd_ack_sts_q   <= cmd_ack_sts_d;
       cmd_len_q       <= cmd_len_d;
       cmd_gen_flag_q  <= cmd_gen_flag_d;
       cmd_gen_cmd_q   <= cmd_gen_cmd_d;
+      instantiated_q  <= instantiated_d;
     end
 
   assign  cmd_stage_sfifo_cmd_err_o = sfifo_cmd_err;
@@ -167,10 +181,13 @@ module csrng_cmd_stage import csrng_pkg::*; #(
          cmd_len_dec ? (cmd_len_q-1) :
          cmd_len_q;
 
+  // Capture the application command type.
+  assign acmd = sfifo_cmd_rdata[2:0];
+
   // For gen commands, capture information from the orignal command for use later.
   assign cmd_gen_flag_d =
          (!cs_enable_i) ? '0 :
-         cmd_gen_1st_req ? (sfifo_cmd_rdata[2:0] == GEN) :
+         cmd_gen_1st_req ? (acmd == GEN) :
          cmd_gen_flag_q;
 
   assign cmd_gen_cmd_d =
@@ -255,6 +272,11 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_arb_mop_o = 1'b0;
     cmd_arb_eop_o = 1'b0;
     cmd_stage_sm_err_o = 1'b0;
+    cmd_err_ack = 1'b0;
+    reseed_cnt_exceeded = 1'b0;
+    invalid_cmd_seq = 1'b0;
+    invalid_acmd = 1'b0;
+    instantiated_d = instantiated_q;
 
     if (state_q == Error) begin
       // In case we are in the Error state we must ignore the local escalate and enable signals.
@@ -266,13 +288,70 @@ module csrng_cmd_stage import csrng_pkg::*; #(
                                                  GenReq, GenArbGnt, GenSOP}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = Idle;
+      instantiated_d = 1'b0;
     end else begin
       // Otherwise do the state machine as normal.
       unique case (state_q)
         Idle: begin
           // Because of the if statement above we won't leave idle if enable is low.
           if (!cmd_fifo_zero) begin
-            state_d = ArbGnt;
+            if (acmd == INS) begin
+              if (!instantiated_q) begin
+                state_d = ArbGnt;
+                instantiated_d = 1'b1;
+              end
+              if (instantiated_q) begin
+                cmd_err_ack = 1'b1;
+                invalid_cmd_seq = 1'b1;
+                state_d = Idle;
+              end
+            end else if (acmd == RES) begin
+              if (instantiated_q) begin
+                state_d = ArbGnt;
+              end
+              if (!instantiated_q) begin
+                cmd_err_ack = 1'b1;
+                invalid_cmd_seq = 1'b1;
+                state_d = Idle;
+              end
+            end else if (acmd == GEN) begin
+              if (instantiated_q) begin
+                // If the issued command is GEN and the reseed count has already been reached,
+                // send an ack with an error status response.
+                if ((acmd == GEN) && reseed_cnt_reached_i) begin
+                  cmd_err_ack = 1'b1;
+                  reseed_cnt_exceeded = 1'b1;
+                  state_d = Idle;
+                end else begin
+                  state_d = ArbGnt;
+                end
+              end
+              if (!instantiated_q) begin
+                cmd_err_ack = 1'b1;
+                invalid_cmd_seq = 1'b1;
+                state_d = Idle;
+              end
+            end else if (acmd == UPD) begin
+              if (instantiated_q) begin
+                state_d = ArbGnt;
+              end
+              if (!instantiated_q) begin
+                cmd_err_ack = 1'b1;
+                invalid_cmd_seq = 1'b1;
+                state_d = Idle;
+              end
+            end else if (acmd == UNI) begin
+              // Set the instantiation to zero.
+              instantiated_d = 1'b0;
+              state_d = ArbGnt;
+            end else begin
+              // Command was not supported.
+              cmd_err_ack = 1'b1;
+              invalid_acmd = 1'b1;
+              state_d = Idle;
+            end
+            // If we received an invalid command, pop it from the FIFO.
+            cmd_fifo_pop = cmd_err_ack;
           end
         end
         ArbGnt: begin
@@ -310,12 +389,15 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         end
         GenCmdChk: begin
           if (cmd_gen_flag_q) begin
-            cmd_gen_cnt_dec= 1'b1;
+            cmd_gen_cnt_dec = 1'b1;
           end
           state_d = CmdAck;
         end
         CmdAck: begin
           if (cmd_ack_i) begin
+            // The state database has successfully been updated.
+            // In case of Generate commands, we get the generated bits one clock cycle before
+            // receiving the ACK from the state database (from csrng_ctr_drbg_gen).
             state_d = GenReq;
           end
         end
@@ -389,6 +471,17 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   assign sfifo_genbits_wdata = {genbits_fips_i,genbits_bus_i};
 
+  // The prim_fifo_sync primitive is constructed to only accept pushes if there is indeed space
+  // available. Backpressure would actually need to be handled at the sender (csrng_ctr_drbg_gen).
+  // In this particular case, it is safe to unconditionally push the genbits FIFO because
+  // the GenSOP FSM state which triggers csrng_ctr_drbg_gen to generate bits can only be reached
+  // after checking that the genbits FIFO isn't full already. This condition is checked using an
+  // SVA below.
+  //
+  // If the genbits FIFO got pushed without having space, this either means the output of a genbits
+  // request is routed to the wrong application interface (which would be a critical design bug)
+  // or that some fault injection attack is going on. Thus, we track such cases both with an SVA
+  // and with a fatal alert (identifiable via the ERR_CODE register).
   assign sfifo_genbits_push = cs_enable_i && genbits_vld_i;
 
   assign sfifo_genbits_pop = genbits_vld_o && genbits_rdy_i;
@@ -396,11 +489,18 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign genbits_vld_o = cs_enable_i && sfifo_genbits_not_empty;
   assign {genbits_fips_o, genbits_bus_o} = sfifo_genbits_rdata;
 
-
   assign sfifo_genbits_err =
          {(sfifo_genbits_push && sfifo_genbits_full),
           (sfifo_genbits_pop && !sfifo_genbits_not_empty),
           (sfifo_genbits_full && !sfifo_genbits_not_empty)};
+
+  // We're only allowed to request more bits if the genbits FIFO has indeed space.
+  `ASSERT(CsrngCmdStageGenbitsFifoFull_A, state_q == GenSOP |-> !sfifo_genbits_full)
+
+  // Pushes to the genbits FIFO outside of the GenCmdChk and CmdAck states or while handling a
+  // command other than Generate are not allowed.
+  `ASSERT(CsrngCmdStageGenbitsFifoPushExpected_A,
+      sfifo_genbits_push |-> state_q inside {GenCmdChk, CmdAck} && cmd_gen_flag_q)
 
   //---------------------------------------------------------
   // Ack logic.
@@ -408,16 +508,25 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   assign cmd_ack_d =
          (!cs_enable_i) ? '0 :
-         cmd_final_ack;
+         cmd_final_ack || cmd_err_ack;
 
   assign cmd_stage_ack_o = cmd_ack_q;
 
+  assign err_sts = reseed_cnt_exceeded ? CMD_STS_RESEED_CNT_EXCEEDED :
+                   invalid_cmd_seq     ? CMD_STS_INVALID_CMD_SEQ     :
+                   invalid_acmd        ? CMD_STS_INVALID_ACMD        : CMD_STS_INVALID_ACMD;
+
   assign cmd_ack_sts_d =
          (!cs_enable_i) ? CMD_STS_SUCCESS :
+         cmd_err_ack ? err_sts :
          cmd_final_ack ? cmd_ack_sts_i :
          cmd_ack_sts_q;
 
   assign cmd_stage_ack_sts_o = cmd_ack_sts_q;
+
+  assign reseed_cnt_alert_o = reseed_cnt_exceeded;
+  assign invalid_cmd_seq_alert_o = invalid_cmd_seq;
+  assign invalid_acmd_alert_o = invalid_acmd;
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.

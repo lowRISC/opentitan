@@ -232,11 +232,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
         if (key_len_i != AES_256) begin
           // Advance in sync with KeyExpand. Based on the S-Box implementation, it can take
           // multiple cycles to finish. Wait for handshake. The DOM S-Boxes consume fresh PRD
-          // only in the first clock cycle. By requesting the PRNG update in any clock cycle
-          // other than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable.
-          // This is better in terms of SCA resistance. Request the PRNG update in the first cycle.
+          // only in the first clock cycle and that PRD is taken from the buffer stage updated
+          // based on key_full_we_o. The PRNG itself is updated in every clock cycle to increase
+          // the noise.
           advance         = key_expand_out_req_i & cyc_ctr_expr;
-          prng_update_o   = (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : SecMasking;
+          prng_update_o   = SecMasking;
           key_expand_en_o = 1'b1;
           if (advance) begin
             key_expand_out_ack_o = 1'b1;
@@ -275,12 +275,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
         // Advance in sync with SubBytes and KeyExpand. Based on the S-Box implementation, both can
         // take multiple cycles to finish. Wait for handshake. The DOM S-Boxes consume fresh PRD
-        // only in the first clock cycle. By requesting the PRNG update in any clock cycle other
-        // than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable. This is
-        // better in terms of SCA resistance. Request the PRNG update in the first cycle. Non-DOM
-        // S-Boxes need fresh PRD in every clock cycle.
+        // only in the first clock cycle and that PRD is taken from the buffer stages updated
+        // with state_we_o / based on key_full_we_o. The PRNG itself is updated in every clock
+        // cycle to increase the noise.
         advance = key_expand_out_req_i & cyc_ctr_expr & (dec_key_gen_q_i | sub_bytes_out_req_i);
-        prng_update_o   = (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : SecMasking;
+        prng_update_o   = SecMasking;
         sub_bytes_en_o  = ~dec_key_gen_q_i;
         key_expand_en_o = 1'b1;
 
@@ -357,14 +356,14 @@ module aes_cipher_control_fsm import aes_pkg::*;
         cyc_ctr_d =
             (SecSBoxImpl == SBoxImplDom) ? (!advance ? cyc_ctr_q + 3'd1 : cyc_ctr_q) : 3'd0;
 
-        // The DOM S-Boxes consume fresh PRD only in the first clock cycle. By requesting the PRNG
-        // update in any clock cycle other than the last one, the PRD fed into the DOM S-Boxes is
-        // guaranteed to be stable. This is better in terms of SCA resistance. Request the PRNG
-        // update in the first cycle. We update it only once and in the last cycle for non-DOM
-        // S-Boxes where otherwise updating the PRNG while being stalled would cause the S-Boxes
-        // to be re-evaluated, thereby creating additional SCA leakage.
+        // The DOM S-Boxes consume fresh PRD only in the first clock cycle and that PRD is taken
+        // from the buffer stages updated with state_we_o / based on key_full_we_o. The PRNG itself
+        // is updated in every but the last processing clock cycle to increase the noise. Once the
+        // processing is all done (e.g. if we're just waiting for the PRNG reseeding to finish or
+        // if we're waiting for out_ready_i), the PRNG is no longer updated to save power. In the
+        // very last clock cycle, we update the PRNG again to get ready for the next block.
         prng_update_o =
-            (SecSBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : out_valid_o & out_ready_i;
+            ((SecSBoxImpl == SBoxImplDom) ? !advance : 1'b0) | (out_valid_o & out_ready_i);
 
         if (out_valid_o && out_ready_i) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q_i;
@@ -384,6 +383,9 @@ module aes_cipher_control_fsm import aes_pkg::*;
       CIPHER_CTRL_PRNG_RESEED: begin
         // Keep requesting PRNG reseeding until it is acknowledged.
         prng_reseed_req_o = prng_reseed_q_i & ~prng_reseed_done_q;
+
+        // Don't update the cycle counter as we don't need it.
+        cyc_ctr_d = 3'd0;
 
         // Once we're done, wait for handshake.
         out_valid_o = prng_reseed_done_q;

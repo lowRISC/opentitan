@@ -95,8 +95,9 @@ typedef enum dif_i2c_irq {
   kDifI2cIrqRxOverflow = 3,
   /**
    * Host mode interrupt: raised if the controller FSM is halted, such as on an
-   * unexpected NACK. Check !!CONTROLLER_EVENTS for the reason. The interrupt
-   * will be released when the bits in !!CONTROLLER_EVENTS are cleared.
+   * unexpected NACK or lost arbitration. Check !!CONTROLLER_EVENTS for the
+   * reason. The interrupt will be released when the bits in !!CONTROLLER_EVENTS
+   * are cleared.
    */
   kDifI2cIrqControllerHalt = 4,
   /**

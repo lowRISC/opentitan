@@ -16,10 +16,7 @@ class usb20_monitor extends dv_base_monitor #(
    token_pkt      m_token_pkt;
    data_pkt       m_data_pkt;
    handshake_pkt  m_handshake_pkt;
-   bit packet[$];
-   bit sync_pattern[];
-   bit decoded_packet[];
-   bit monitored_decoded_packet[];
+
    bit bit_destuffed[$];
    bit [2:0] eop_cnt = 3'b000;
    bit [7:0] packet_type;
@@ -51,7 +48,9 @@ class usb20_monitor extends dv_base_monitor #(
 
 //-----------------------------------------Collect Trans------------------------------------------//
   virtual protected task collect_trans();
+    bit monitored_decoded_packet[];
     bit use_negedge;
+    bit packet[$];
 
     // Wait until bus becomes Idle
     while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.clk_i);
@@ -70,10 +69,9 @@ class usb20_monitor extends dv_base_monitor #(
       @(posedge cfg.bif.clk_i);
     end
     // TODO: this does not even check the EOP!
-    repeat (3) packet.push_back(cfg.bif.usb_p);
     // TODO: we should almost certainly be consuming the EOP interval here.
 
-    `uvm_info(`gfn, $sformatf("Complete monitored packet = %p ", packet), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("Complete monitored packet = %p ", packet), UVM_HIGH)
     nrzi_decoder(packet, monitored_decoded_packet);
     bit_destuffing(monitored_decoded_packet, bit_destuffed);
     classifies_packet();
@@ -85,7 +83,7 @@ class usb20_monitor extends dv_base_monitor #(
     for (int i = 0; i < 8; i++) begin
     packet_type[i] = bit_destuffed[i + 8];
     end
-    `uvm_info(`gfn, $sformatf(".......Packet PID = %b ", packet_type), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf(".......Packet PID = %b ", packet_type), UVM_HIGH)
     case (packet_type)
       PidTypeOutToken: token_packet();
       PidTypeInToken: token_packet();
@@ -102,7 +100,7 @@ class usb20_monitor extends dv_base_monitor #(
 
 //-------------------------------------------SOF Packet-------------------------------------------//
   virtual task sof_packet();
-    typedef bit [34:0] sof_p;
+    typedef bit [31:0] sof_p;
     sof_p sof_result;
 
     // bits to binary conversion
@@ -115,7 +113,7 @@ class usb20_monitor extends dv_base_monitor #(
 
 //------------------------------------------Token Packet------------------------------------------//
   virtual task token_packet();
-    typedef bit [34:0] token_p;
+    typedef bit [31:0] token_p;
     token_p token_result;
 
     // bits to binary conversion
@@ -141,7 +139,7 @@ class usb20_monitor extends dv_base_monitor #(
     // Data_PID
     m_data_pkt.m_pid_type = pid_type_e'(packet_type);
     // Data_in_bits
-    for (int i = 0 ; i < bit_destuffed.size() - 35; i++) begin
+    for (int i = 0 ; i < bit_destuffed.size() - 32; i++) begin
       data = new[data.size() + 1](data);
       data[i] = bit_destuffed[i + 16];
     end
@@ -161,7 +159,7 @@ class usb20_monitor extends dv_base_monitor #(
 
 //----------------------------------------Handshake Packet----------------------------------------//
   virtual task handshake_packet();
-    typedef bit [18:0] handshake_p;
+    typedef bit [15:0] handshake_p;
     handshake_p handshake_result;
 
     // bits to binary conversion
@@ -177,9 +175,9 @@ class usb20_monitor extends dv_base_monitor #(
     invalid_pid_p invalid_pid_result;
     int unsigned size;
     size = $size(bit_destuffed);
-    `uvm_info(`gfn, $sformatf("packet size = %d", size), UVM_DEBUG)
-    if (size == 35) token_packet();
-    else if (size == 19) handshake_packet();
+    `uvm_info(`gfn, $sformatf("packet size = %d", size), UVM_HIGH)
+    if (size == 32) token_packet();
+    else if (size == 16) handshake_packet();
     else data_packet();
   endtask
 
@@ -198,33 +196,33 @@ class usb20_monitor extends dv_base_monitor #(
       prev_bit = nrzi_in[i];
     end
     `uvm_info(`gfn, $sformatf("Monitored NRZI Decoded Packet = %p", monitored_decoded_packet),
-              UVM_DEBUG)
+              UVM_HIGH)
   endtask
 
-  // bit destuffing
-  task bit_destuffing (input bit packet[], output bit packet_destuffed[$]);
-    int consecutive_ones_count = 0;
+  // Bit Destuffing
+  task bit_destuffing(input bit packet[], output bit packet_destuffed[$]);
+    int unsigned consecutive_ones_count = 0;
     int i;
     for (i = 0; i < packet.size(); i++) begin
-      if (packet[i] == 1'b1) begin
-        consecutive_ones_count = consecutive_ones_count + 1;
-        if (consecutive_ones_count == 6) begin
-          if(i <= packet.size()) begin
-            packet_destuffed.push_back(packet[i]);
-            i += 2; // Skip the next bit as it was part of the stuffing
-            consecutive_ones_count = 0;
-            if (packet[i] == 1'b1)
-              consecutive_ones_count = consecutive_ones_count + 1;
-          end else break;
+      if (consecutive_ones_count >= 6) begin
+        if (packet[i] != 1'b0) begin
+          // TODO: record and forward the bit stuffing violation for error-injection sequences.
+          `uvm_info(`gfn, $sformatf("Bit stuffing violation detected in %p at bit %d",
+                                    packet, i), UVM_LOW)
         end
-      end else begin
         consecutive_ones_count = 0;
-      end
-      if(i <= packet.size()) begin
-        packet_destuffed.push_back(packet[i]); // Add the current bit to the destuffed packet
+      end else begin
+        packet_destuffed.push_back(packet[i]); // Add the current bit to the destuffed packet.
+        if (packet[i] == 1'b1) consecutive_ones_count = consecutive_ones_count + 1;
+        else consecutive_ones_count = 0;
       end
     end
-    `uvm_info(`gfn, $sformatf("Monitored Destuffed Packet = %p", packet_destuffed), UVM_DEBUG)
+    if (consecutive_ones_count >= 6) begin
+      // TODO: record and forward the bit stuffing violation for error-injection sequences.
+      `uvm_info(`gfn, $sformatf("Bit stuffing violation detected in %p at bit %d", packet, i),
+                UVM_LOW)
+    end
+    `uvm_info(`gfn, $sformatf("Monitored Destuffed Packet = %p", packet_destuffed), UVM_HIGH)
   endtask
 
   // Reset detection
@@ -257,6 +255,6 @@ class usb20_monitor extends dv_base_monitor #(
         end
       end
     end
-    `uvm_info(`gfn, $sformatf("ok_to_end = %b", ok_to_end), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("ok_to_end = %b", ok_to_end), UVM_HIGH)
   endtask : monitor_ready_to_end
 endclass

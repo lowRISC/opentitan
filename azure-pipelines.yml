@@ -142,6 +142,10 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
+  # Check that all earlgrey countermeasures are implemented.
+  - bash: ci/scripts/check-countermeasures.sh earlgrey
+    displayName: Check countermeasures for top_earlgrey
+    continueOnError: True
   # Bazel test suites are a common cause of problematic tags. Check test suites
   # before checking for other tag issues.
   - bash:  ci/scripts/check_bazel_test_suites.py
@@ -257,12 +261,10 @@ jobs:
       # copy the rom to a specific location
       ROM_TARGET="${BIN_DIR}/sw/device/silicon_creator/rom"
       mkdir -p "${ROM_TARGET}"
-      ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package_real"
-      ROM_FAKE_TARGETS="//sw/device/silicon_creator/rom:package_fake"
+      ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package"
       QUERY_CMD_ARGS=(outquery-all --noinclude_aspects --noimplicit_deps)
       ROM_REAL_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
-      ROM_FAKE_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
-      cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
+      cp -Lvt "${ROM_TARGET}" "${ROM_REAL_FILES[@]}"
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -306,6 +308,10 @@ jobs:
       verilator --version
       verible-verilog-lint --version
     displayName: Display environment
+  # Check that all englishbreakfast countermeasures are implemented.
+  - bash: ci/scripts/check-countermeasures.sh englishbreakfast
+    displayName: Check countermeasures for top_englishbreakfast
+    continueOnError: True
   - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml

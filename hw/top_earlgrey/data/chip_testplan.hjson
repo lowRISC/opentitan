@@ -202,6 +202,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_retention"]
+      bazel: ["//sw/device/tests:sleep_pin_retention_test"],
     }
     {
       name: chip_sw_tap_strap_sampling
@@ -227,6 +228,7 @@
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "RMA"]
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
               "chip_tap_straps_testunlock0"]
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
     }
 
     // PATTGEN (pre-verified IP) integration tests:
@@ -483,7 +485,6 @@
       si_stage: NA
       tests: ["chip_sw_example_rom",
               "chip_sw_example_flash",
-              "chip_sw_uart_smoketest_signed",
               "chip_sw_example_manufacturer",
               "chip_sw_example_concurrency"
               ]
@@ -535,7 +536,7 @@
         "//sw/device/tests:rstmgr_smoketest",
         "//sw/device/tests:rv_plic_smoketest",
         "//sw/device/tests:rv_timer_smoketest",
-        "//sw/device/tests:sim_dv/pwrmgr_usbdev_smoketest",
+        "//sw/device/tests:pwrmgr_usbdev_smoketest",
         "//sw/device/tests:spi_host_smoketest",
         "//sw/device/tests:sram_ctrl_smoketest",
         "//sw/device/tests:uart_smoketest",
@@ -553,18 +554,6 @@
       stage: V2
       si_stage: NA
       tests: ["rom_keymgr_functest"]
-    }
-    {
-      name: chip_sw_signed
-      desc: '''Run some chip-level tests with ROM.
-
-            In addition to ROM E2E tests, we select at least one (or a few)
-            tests defined in this file to sign, and run via ROM instead of
-            test ROM. We need to ensure our test infrastructure and ROM can
-            boot and run one (or a few) of the same tests our test ROM can.
-            '''
-      stage: V2
-      tests: ["chip_sw_uart_smoketest_signed"]
     }
     {
       name: chip_sw_coremark

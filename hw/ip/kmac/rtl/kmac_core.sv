@@ -40,6 +40,7 @@ module kmac_core
   // Key input from CSR
   input [MaxKeyLen-1:0] key_data_i [Share],
   input key_len_e       key_len_i,
+  input logic           key_valid_i,
 
   // Controls : same to SHA3 core
   input start_i,
@@ -147,8 +148,9 @@ module kmac_core
   // Encoded key has wider bits. `key_sliced` is the data to send to sha3
   logic [MsgWidth-1:0] key_sliced [Share];
 
-  sha3_pkg::sha3_mode_e unused_mode;
-  assign unused_mode = mode_i;
+  // The following signals are only used in assertions.
+  logic unused_signals;
+  assign unused_signals = ^{mode_i, key_valid_i};
 
   /////////
   // FSM //
@@ -458,14 +460,8 @@ module kmac_core
           $changed(strength_i) |->
           (st inside {StKmacIdle, StTerminalError}) ||
           ($past(st) == StKmacIdle))
-  `ASSUME(KeyLengthStable_M,
-          $changed(key_len_i) |->
-          (st inside {StKmacIdle, StTerminalError}) ||
-          ($past(st) == StKmacIdle))
-  `ASSUME(KeyDataStable_M,
-          $changed(key_data_i) |->
-          (st inside {StKmacIdle, StTerminalError}) ||
-          ($past(st) == StKmacIdle))
+  `ASSUME(KeyLengthStableWhenValid_M, key_valid_i && !$rose(key_valid_i) |-> $stable(key_len_i))
+  `ASSUME(KeyDataStableWhenValid_M, key_valid_i && !$rose(key_valid_i) |-> $stable(key_data_i))
 
   // no acked to MsgFIFO in StKmacMsg
   `ASSERT(AckOnlyInMessageState_A,

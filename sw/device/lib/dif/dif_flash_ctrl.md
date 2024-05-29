@@ -1,6 +1,6 @@
 # Flash Controller DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Flash Controller DIF](../../../../hw/ip/flash_ctrl/README.md).
+This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Flash Controller DIF](../../../../hw/top_earlgrey/ip_autogen/flash_ctrl/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).
 
 <h2>DIF Checklist</h2>

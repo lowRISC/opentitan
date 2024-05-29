@@ -25,7 +25,11 @@
  * To protect an address range that starts above 0 address, the first region
  * we can use is 1.
  */
-#define PMP_LOAD_REGION_ID 2
+
+// Usable PMP regions vary depending on different exectuion environments.
+// PMP regions with small or large indices are usually reserved by ROM/ROM_EXT
+// So use PMP region 6 & 7 for this test.
+#define PMP_LOAD_REGION_ID 7
 
 #define PMP_LOAD_RANGE_BUFFER_SIZE 1024
 #define PMP_LOAD_RANGE_SIZE 512
@@ -71,14 +75,17 @@ static void pmp_configure_load_tor(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  // Unlock the entire address space for RWX so that we can run this test with
-  // both rom and test_rom.
-  CSR_SET_BITS(CSR_REG_PMPADDR15, 0x7fffffff);
-  CSR_WRITE(CSR_REG_PMPCFG3, (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute)
-                                 << 24);
-  CSR_WRITE(CSR_REG_PMPCFG2, 0);
-  CSR_WRITE(CSR_REG_PMPCFG1, 0);
-  CSR_WRITE(CSR_REG_PMPCFG0, 0);
+  // Check that `PMP_LOAD_REGION_ID-1` and `PMP_LOAD_REGION_ID` regions are not
+  // already used.
+  for (pmp_region_index_t region = PMP_LOAD_REGION_ID - 1;
+       region <= PMP_LOAD_REGION_ID; region++) {
+    bool configured;
+    pmp_region_configure_result_t result =
+        pmp_region_is_configured(region, &configured);
+    CHECK(result == kPmpRegionConfigureOk,
+          "PMP region %d cfg read failed, error code = %d", region, result);
+    CHECK(!configured, "PMP region %d is already configured", region);
+  }
 
   pmp_load_exception = false;
   char load = pmp_load_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];

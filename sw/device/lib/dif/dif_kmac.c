@@ -134,16 +134,24 @@ static bool is_state_squeeze(const dif_kmac_t *kmac) {
   return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT);
 }
 
-/**
- * Report whether the hardware has indicated a error.
- *
- * @param kmac Handle.
- * @returns True if an error occurred, False otherwise.
- */
-static bool has_error_occurred(const dif_kmac_t *kmac) {
+dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
   uint32_t reg =
       mmio_region_read32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET);
-  return bitfield_bit32_read(reg, KMAC_INTR_STATE_KMAC_ERR_BIT);
+  *error = bitfield_bit32_read(reg, KMAC_INTR_STATE_KMAC_ERR_BIT);
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_clear_err_irq(const dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, KMAC_INTR_STATE_KMAC_ERR_BIT, true);
+  mmio_region_write32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET, reg);
+  return kDifOk;
 }
 
 dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag) {
@@ -152,7 +160,9 @@ dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag) {
     if (bitfield_bit32_read(reg, flag)) {
       break;
     }
-    if (has_error_occurred(kmac)) {
+    bool error;
+    DIF_RETURN_IF_ERROR(dif_kmac_has_error_occurred(kmac, &error));
+    if (error) {
       return kDifError;
     }
   }
@@ -849,13 +859,15 @@ dif_result_t dif_kmac_get_hash_counter(const dif_kmac_t *kmac,
   return kDifOk;
 }
 
-dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
-                                dif_kmac_error_t *error) {
-  if (kmac == NULL || error == NULL) {
+dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac, dif_kmac_error_t *error,
+                                uint32_t *info) {
+  if (kmac == NULL || error == NULL || info == NULL) {
     return kDifBadArg;
   }
 
-  *error = mmio_region_read32(kmac->base_addr, KMAC_ERR_CODE_REG_OFFSET);
+  uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_ERR_CODE_REG_OFFSET);
+  *info = reg & 0xFFFFFF;
+  *error = (reg >> 24) & 0xFF;
   return kDifOk;
 }
 
@@ -868,11 +880,16 @@ dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
   operation_state->r = 0;
   operation_state->offset = 0;
   operation_state->squeezing = false;
-  uint32_t reg =
-      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, 1);
+  DIF_RETURN_IF_ERROR(dif_kmac_err_processed(kmac));
+  return kDifOk;
+}
 
-  mmio_region_write32_shadowed(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
-                               reg);
+dif_result_t dif_kmac_err_processed(const dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, KMAC_CMD_ERR_PROCESSED_BIT, 1);
+  mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, reg);
   return kDifOk;
 }

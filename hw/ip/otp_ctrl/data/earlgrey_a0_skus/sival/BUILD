@@ -48,28 +48,9 @@ otp_json(
                 # and not listed directly in this configuration.
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 "CREATOR_SW_CFG_ROM_EXT_SKU": otp_hex(0x0),
-                # Use software mod_exp implementation for signature
-                # verification. See the definition of `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.HARDENED_FALSE),
-                # Mark the first 7 keys as valid and remaining as invalid since
-                # we currently have only 7 keys. See the definition of
-                # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
-                    CONST.HARDENED_BYTE_TRUE,  # key0
-                    CONST.HARDENED_BYTE_TRUE,  # key1
-                    CONST.HARDENED_BYTE_TRUE,  # key2
-                    CONST.HARDENED_BYTE_TRUE,  # key3
-                    CONST.HARDENED_BYTE_TRUE,  # key4
-                    CONST.HARDENED_BYTE_TRUE,  # key5
-                    CONST.HARDENED_BYTE_TRUE,  # key6
-                    CONST.HARDENED_BYTE_FALSE,  # key7
-                ]),
                 # Disable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
-                # The CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN needs to be added
-                # when SPX sigverify is enabled.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable flash data page scrambling and ECC.
                 "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
@@ -194,10 +175,11 @@ otp_json(
                     D = "0x0, 0x0, 0x0, 0x0",
                 ),
                 "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(0x0),
-                # Set to 0x739 to use the ROM_EXT hash measurement as the key
-                # manager attestation binding value. Since our attestation
-                # scheme has changed, we keep this as false (disabled).
-                "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(0x0),
+                # Set to 0x739 to use the OTP hash measurement of the software
+                # readable OTP partitions as the key manager attestation binding
+                # value. Since our attestation scheme is not finalized, we keep
+                # this unprovisioned (disabled).
+                "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
                 "OWNER_SW_CFG_MANUF_STATE": otp_hex(0x0),
                 "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN": otp_hex(0x0),
                 # Disable ROM_EXT recovery feature.

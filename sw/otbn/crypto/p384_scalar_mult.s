@@ -19,12 +19,10 @@
  * Sets up context and calls the internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]   dmem[0]: dptr_k0, pointer to location in dmem containing
- *                       1st scalar share k0
- * @param[in]   dmem[4]: dptr_k1, pointer to location in dmem containing
- *                       2nd scalar share k1
- * @param[in]  dmem[20]: dptr_x, pointer to affine x-coordinate in dmem
- * @param[in]  dmem[22]: dptr_y, pointer to affine y-coordinate in dmem
+ * @param[in]   dmem[x]: affine x-coordinate in dmem
+ * @param[in]   dmem[y]: affine y-coordinate in dmem
+ * @param[in]  dmem[k0]: 1st scalar share k0 in dmem
+ * @param[in]  dmem[k1]: 2nd scalar share k1 in dmem
  * @param[out]  dmem[x]: masked x coordinate of R
  * @param[out]  dmem[y]: corresponding mask
  *
@@ -34,7 +32,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30
+ * clobbered registers: x2, x3, x9 to x13, x17 to x21, x26 to x30
  *                      w0 to w30
  * clobbered flag groups: FG0
  */
@@ -44,27 +42,23 @@ p384_scalar_mult:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
-  /* set dmem pointer to point x-coordinate */
-  la        x20, dptr_x
-  lw        x20, 0(x20)
-
-  /* set dmem pointer to point y-coordinate */
-  la        x21, dptr_y
-  lw        x21, 0(x21)
-
-  /* set dmem pointer to 1st scalar share k0 */
-  la        x17, dptr_k0
-  lw        x17, 0(x17)
-
-  /* set dmem pointer to 2nd scalar share k1 */
-  la        x19, dptr_k1
-  lw        x19, 0(x19)
-
   /* set dmem pointer to domain parameter b */
   la        x28, p384_b
 
   /* set dmem pointer to scratchpad */
   la        x30, scratchpad
+
+  /* set dmem pointer to point to x-coordinate */
+  la       x20, x
+
+  /* set dmem pointer to point to y-coordinate */
+  la       x21, y
+
+  /* set dmem pointer to point to 1st scalar share k0 */
+  la       x17, k0
+
+  /* set dmem pointer to point to 2nd scalar share k1 */
+  la       x19, k1
 
   /* load domain parameter p (modulus)
      [w13, w12] = p = dmem[p384_p] */
@@ -178,46 +172,34 @@ p384_scalar_mult:
 
   ret
 
-/* pointers and scratchpad memory */
+/* scratchpad memory */
 .section .data
 
 .balign 32
 
-  /* pointer to k0 (dptr_k0) */
-.globl dptr_k0
-.weak dptr_k0
-dptr_k0:
-  .zero 4
+/* 1st scalar share d0 */
+.globl k0
+.weak k0
+k0:
+  .zero 64
 
-/* pointer to k1 (dptr_k1) */
-.globl dptr_k1
-.weak dptr_k1
-dptr_k1:
-  .zero 4
+/* 2nd scalar share d1 */
+.globl k1
+.weak k1
+k1:
+  .zero 64
 
-/* pointer to d0 (dptr_d0) */
-.globl dptr_d0
-.weak dptr_d0
-dptr_d0:
-  .zero 4
+/* x-coordinate */
+.globl x
+.weak x
+x:
+  .zero 64
 
-/* pointer to d1 (dptr_d1) */
-.globl dptr_d1
-.weak dptr_d1
-dptr_d1:
-  .zero 4
-
-/* pointer to X (dptr_x) */
-.globl dptr_x
-.weak dptr_x
-dptr_x:
-  .zero 4
-
-/* pointer to Y (dptr_y) */
-.globl dptr_y
-.weak dptr_y
-dptr_y:
-  .zero 4
+/* y-coordinate */
+.globl y
+.weak y
+y:
+  .zero 64
 
 /* 704 bytes of scratchpad memory */
 .balign 32

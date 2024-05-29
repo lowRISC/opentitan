@@ -286,6 +286,17 @@ pmp_region_configure_result_t pmp_region_configure_tor(
     uintptr_t address_start, uintptr_t address_end);
 
 /**
+ * Check if the requested region is configured.
+ *
+ * @param region PMP region to query the information for.
+ * @param[out] configured Whether the PMP region is configured.
+ * @return `pmp_region_configure_result_t`.
+ */
+OT_WARN_UNUSED_RESULT
+pmp_region_configure_result_t pmp_region_is_configured(
+    pmp_region_index_t region, bool *configured);
+
+/**
  * Queries the lock status for the requested region.
  *
  * @param region PMP region to query the lock information for.

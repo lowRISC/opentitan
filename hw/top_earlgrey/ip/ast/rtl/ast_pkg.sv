@@ -10,8 +10,7 @@
 `define __AST_PKG_SV
 
 `define PAD2AST_WIRES     \
-{ manual_in_ast_misc,     \
-  mio_in_raw[MioPadIoc3], \
+{ mio_in_raw[MioPadIoc3], \
   mio_in_raw[MioPadIoc2], \
   mio_in_raw[MioPadIoc1], \
   mio_in_raw[MioPadIob2], \
@@ -45,7 +44,7 @@ parameter int unsigned AdcChannels      = 2;
 parameter int unsigned AdcDataWidth     = 10;
 parameter int unsigned UsbCalibWidth    = 20;
 parameter int unsigned Ast2PadOutWidth  = 9;
-parameter int unsigned Pad2AstInWidth   = 9;
+parameter int unsigned Pad2AstInWidth   = 8;
 //
 // AstRegsNum is the number of AST registers programmed during initialization. It includes
 // the register that marks the finalization of init, which asserts the ast_init_done_o.

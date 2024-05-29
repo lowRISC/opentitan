@@ -440,7 +440,7 @@ the TileLink specification for more examples.
     text: 'TileLink-UL read transactions',
   },
   foot: {
-    text: 'six read transactions with various req/ready delays, error on I4 response',
+    text: 'six read transactions with various req/ready delays, error on I5 response',
     }
 }
 ```
@@ -692,3 +692,9 @@ The act of storing into the `rspfifo` also pops `sramreqfifo` entry.
 
 The `reqfifo` entry is used to construct the TL-UL response.
 When the response is accepted by an upstream TL-UL host, the `reqfifo` and `rspfifo` entries are both popped.
+
+#### Readback Mode
+When enabled using the [`SRAM_CTRL.READBACK`](../sram_ctrl/doc/registers.md#readback) register, the `tlul_sram_byte` module is capable of reading back and checking each issued read and write.
+On an integrity failure, for example caused by a fault injection attack, a fatal alert is raised and the alert register [`STATUS.READBACK_ERROR`](../sram_ctrl/doc/registers.md#status--readback_error) is set.
+When the host issues a read, the `tlul_sram_byte` module performs the read, internally stores the received data from the memory, issues a second read, and compares the values of the first and second reads.
+Similarily, on a write, the module temporarily stores the data to write, performs the write, issues a readback, and compares the read back value to the temporarily stored write data to ensure that the data correctly got written into the memory.

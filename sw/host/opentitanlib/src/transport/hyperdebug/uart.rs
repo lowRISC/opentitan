@@ -21,6 +21,7 @@ const UART_BAUD: u32 = 115200;
 pub struct HyperdebugUart {
     inner: Rc<Inner>,
     usb_interface: u8,
+    supports_clearing_queues: bool,
     serial_port: SerialPortUart,
 }
 
@@ -31,13 +32,26 @@ enum ControlRequest {
     ReqBaud = 2,
     SetBaud = 3,
     Break = 4,
+    ClearQueues = 5,
 }
 
+/// Request clearing the queue of UART data having been received by HyperDebug.
+#[allow(dead_code)]
+const CLEAR_RX_FIFO: u16 = 0x0001;
+/// Request clearing the queue of data to be transmitted by HyperDebug UART.
+#[allow(dead_code)]
+const CLEAR_TX_FIFO: u16 = 0x0002;
+
 impl HyperdebugUart {
-    pub fn open(inner: &Rc<Inner>, uart_interface: &UartInterface) -> Result<Self> {
+    pub fn open(
+        inner: &Rc<Inner>,
+        uart_interface: &UartInterface,
+        supports_clearing_queues: bool,
+    ) -> Result<Self> {
         Ok(Self {
             inner: Rc::clone(inner),
             usb_interface: uart_interface.interface,
+            supports_clearing_queues,
             serial_port: SerialPortUart::open(
                 uart_interface
                     .tty
@@ -92,6 +106,16 @@ impl Uart for HyperdebugUart {
     }
 
     fn clear_rx_buffer(&self) -> Result<()> {
+        if self.supports_clearing_queues {
+            let usb_handle = self.inner.usb_device.borrow();
+            usb_handle.write_control(
+                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
+                ControlRequest::ClearQueues as u8,
+                CLEAR_RX_FIFO,
+                self.usb_interface as u16,
+                &[],
+            )?;
+        }
         self.serial_port.clear_rx_buffer()
     }
 

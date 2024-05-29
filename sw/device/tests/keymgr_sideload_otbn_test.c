@@ -21,6 +21,10 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
 
+static dif_keymgr_t keymgr;
+static dif_kmac_t kmac;
+static dif_otbn_t otbn;
+
 /* Set up pointers to symbols in the OTBN application. */
 OTBN_DECLARE_APP_SYMBOLS(x25519_sideload);
 OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
@@ -32,6 +36,18 @@ static const otbn_addr_t kOtbnVarEncResult =
     OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
 
 OTTF_DEFINE_TEST_CONFIG();
+
+/**
+ * Initializes all DIF handles for each peripheral used in this test.
+ */
+static void init_peripheral_handles(void) {
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+}
 
 /**
  * Encoded Montgomery u-coordinate for testing.
@@ -61,12 +77,16 @@ static const dif_otbn_err_bits_t kErrBitsOk = 0x0;
  */
 static void run_x25519_app(dif_otbn_t *otbn, uint32_t *result,
                            dif_otbn_err_bits_t expect_err_bits) {
+  CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, /*enable=*/false));
+
   // Copy the input argument (Montgomery u-coordinate).
   CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(kEncodedU), &kEncodedU,
                                             kOtbnVarEncU));
 
-  // Run the OTBN program and wait for it to complete.
+  // Run the OTBN program and wait for it to complete. Clear software
+  // error fatal flag as the test expects an intermediate error state.
   LOG_INFO("Starting OTBN program...");
+  CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, expect_err_bits));
 
@@ -86,6 +106,20 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   // TODO(weicai): also check in SV sequence that the key is correct.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
+
+  // Get the maximum key version supported by the keymgr in its current state.
+  uint32_t max_key_version;
+  CHECK_STATUS_OK(
+      keymgr_testutils_max_key_version_get(keymgr, &max_key_version));
+
+  if (sideload_params.version > max_key_version) {
+    LOG_INFO("Key version %d is greater than the maximum key version %d",
+             sideload_params.version, max_key_version);
+    LOG_INFO("Setting key version to the maximum key version %d",
+             max_key_version);
+    sideload_params.version = max_key_version;
+  }
+
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
@@ -151,25 +185,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 }
 
 bool test_main(void) {
-  // Initialize keymgr and advance to CreatorRootKey state.
-  dif_keymgr_t keymgr;
-  dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
-  // Advance to OwnerIntermediateKey state.
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
-
-  // Initialize OTBN.
-  dif_otbn_t otbn;
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-
-  // Put entropy source into auto mode. If the entropy source was merely left
-  // with the entropy it generated at boot, this test may exhaust the supply
-  // with no renewal.
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  init_peripheral_handles();
+  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
 
   // Test OTBN sideloading.
   test_otbn_with_sideloaded_key(&keymgr, &otbn);

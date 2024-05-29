@@ -334,7 +334,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg_shadowed.entropy_fast_process.set(entropy_fast_process);
     ral.cfg_shadowed.entropy_ready.set(entropy_ready);
     ral.cfg_shadowed.msg_mask.set(msg_mask);
-    ral.cfg_shadowed.err_processed.set(1'b0);
     ral.cfg_shadowed.en_unsupported_modestrength.set(en_unsupported_modestrength);
     ral.cfg_shadowed.sideload.set(reg_en_sideload);
 
@@ -396,9 +395,9 @@ class kmac_base_vseq extends cip_base_vseq #(
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
       // After entropy related errors, cannot set `err_processed` and `entropy_ready` together.
       // Otherwise design will ignore the `entropy_ready` field.
-      csr_wr(.ptr(ral.cfg_shadowed.err_processed), .value(1));
+      csr_wr(.ptr(ral.cmd.err_processed), .value(1));
     end else if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin
-      csr_wr(.ptr(ral.cfg_shadowed.err_processed), .value(1));
+      csr_wr(.ptr(ral.cmd.err_processed), .value(1));
     end
     `uvm_info(`gfn, "Finished checking error", UVM_HIGH)
   endtask

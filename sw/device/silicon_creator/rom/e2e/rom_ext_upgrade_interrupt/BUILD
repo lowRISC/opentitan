@@ -5,12 +5,12 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -83,14 +83,14 @@ otp_json(
                 no-op
             """,
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         manifest = ":manifest_rom_ext_upgrade_interrupt",
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         deps = [
             "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:nv_counter_testutils",

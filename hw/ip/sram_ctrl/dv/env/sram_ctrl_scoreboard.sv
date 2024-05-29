@@ -550,6 +550,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       "exec": begin
         // do nothing
       end
+      "readback": begin
+        // do nothing
+      end
       "status": begin
         if (addr_phase_read) begin
           void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));

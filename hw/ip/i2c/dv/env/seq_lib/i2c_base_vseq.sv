@@ -190,6 +190,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     solve t_f, thigh            before t_sda_unstable, t_sda_interference;
 
     thd_sta > thd_dat + 1;
+    // thd_sta must at least be long enough to cover the round-trip time
+    thd_sta > 3;
+    // tsu_sto + t_r must cover the round-trip time.
+    tsu_sto > 3 - t_r;
     t_buf > thd_dat + 1;
 
     if (program_incorrect_regs) {
@@ -205,7 +209,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       // If we are generating a fixed_period SCL in the agent, we need the clock pulses
       // to be at-least long enough to contain an RSTART condition to chain transfers
       // together.
-      thigh >= tsu_sta + t_f + thd_sta; // RSTART constraint
       // force derived timing parameters to be positive (correct DUT config)
       // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
       // because the flopped clock (see #15003 below) reduces tClockLow by 1.
@@ -213,9 +216,11 @@ class i2c_base_vseq extends cip_base_vseq #(
                        (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
-      t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
-      t_sda_interference inside {[0 : t_r + thigh + t_f - 1]};
-      t_scl_interference inside {[0 : t_r + thigh + t_f - 1]};
+      // These need to be at least 2 cycles to overcome CDC instrumentation's
+      // deletion.
+      t_sda_unstable     inside {[2 : t_r + thigh - 2]};
+      t_sda_interference inside {[2 : t_r + thigh + t_f - 1]};
+      t_scl_interference inside {[2 : t_r + thigh - 3]};
     }
   }
 
@@ -424,25 +429,21 @@ class i2c_base_vseq extends cip_base_vseq #(
     ral.timeout_ctrl.en.set(e_timeout);
     ral.timeout_ctrl.val.set(t_timeout);
     csr_update(.csr(ral.timeout_ctrl));
+    ral.host_fifo_config.rx_thresh.set(rx_thresh);
+    ral.host_fifo_config.fmt_thresh.set(fmt_thresh);
+    csr_update(ral.host_fifo_config);
+    ral.target_fifo_config.acq_thresh.set(acq_thresh);
+    ral.target_fifo_config.tx_thresh.set(tx_thresh);
+    csr_update(ral.target_fifo_config);
+
+    `uvm_info(`gfn, $sformatf("Wrote following register values :\n%s",
+      ral.sprint()), UVM_MEDIUM)
+
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
         cfg.m_i2c_agent_cfg.timing_cfg), UVM_MEDIUM)
 
-    //*** program Host mode FIFO thresholds
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_thresh)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_thresh)
-    ral.host_fifo_config.rx_thresh.set(rx_thresh);
-    ral.host_fifo_config.fmt_thresh.set(fmt_thresh);
-    csr_update(ral.host_fifo_config);
-    //*** program Target mode FIFO thresholds
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(acq_thresh)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_thresh)
-    ral.target_fifo_config.acq_thresh.set(acq_thresh);
-    ral.target_fifo_config.tx_thresh.set(tx_thresh);
-    csr_update(ral.target_fifo_config);
-    //*** set FIFO_CTRL register
-    csr_update(ral.fifo_ctrl);
   endtask : program_registers
 
   virtual task program_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
@@ -937,70 +938,71 @@ class i2c_base_vseq extends cip_base_vseq #(
     return cnt;
   endfunction
 
-  // This task needs to set do_clear_all_interrupts = 0
+  virtual task proc_intr_acqthreshold; endtask
+  virtual task proc_intr_txthreshold; endtask
+  virtual task proc_intr_unexpstop; endtask
+  virtual task proc_intr_hosttimeout; endtask
+
+  // Target-mode interrupt handling.
+  //
+  // This routine loops through all active target-mode wired interrupts, and
+  // randomly calls one of the handler routines.
   virtual task process_target_interrupts();
-    int delay;
-    int auto_ack_bytes;
     bit acq_fifo_empty;
     bit read_one = 0;
-    while (!cfg.stop_intr_handler) begin
-      @(posedge cfg.clk_rst_vif.clk);
-      if (cfg.intr_vif.pins[AcqStretch]) begin
-        bit [TL_DW-1:0] status;
-        bit ack_ctrl_stretch;
-        bit acq_full;
+    logic [NUM_MAX_INTERRUPTS-1:0] target_interrupts_mask = '0;
 
-        csr_rd(.ptr(ral.status), .value(status));
-        ack_ctrl_stretch = bit'(get_field_val(ral.status.ack_ctrl_stretch, status));
-        acq_full = bit'(get_field_val(ral.status.acqfull, status));
+    target_interrupts_mask |= (1 << AcqThreshold) |
+                              (1 << CmdComplete)  |
+                              (1 << TxStretch)    |
+                              (1 << TxThreshold)  |
+                              (1 << AcqStretch)   |
+                              (1 << UnexpStop)    |
+                              (1 << HostTimeout);
 
-        if (ack_ctrl_stretch) begin
-          auto_ack_bytes = $urandom_range(1, 30);
-          csr_wr(.ptr(ral.target_ack_ctrl.nbytes), .value(auto_ack_bytes));
-        end
+    // Add a small amount of latency, just to prevent loops when no interrupts
+    // are pending.
+    @(posedge cfg.clk_rst_vif.clk);
 
-        if (acq_full) begin
-          if (cfg.slow_acq) begin
-            acq_fifo_empty = 0;
-            while (!acq_fifo_empty) begin
-              delay = $urandom_range(50, 100);
-              #(delay * 1us);
-              read_acq_fifo(1, acq_fifo_empty);
-            end
-          end else begin
-            read_acq_fifo(0, acq_fifo_empty);
-          end
+    if (cfg.intr_vif.pins & target_interrupts_mask) begin
+      randcase
+        cfg.intr_vif.pins[AcqThreshold]: proc_intr_acqthreshold(); // status
+        cfg.intr_vif.pins[CmdComplete]:  proc_intr_cmdcomplete();  // event
+        cfg.intr_vif.pins[TxStretch]:    proc_intr_txstretch();    // status
+        cfg.intr_vif.pins[TxThreshold]:  proc_intr_txthreshold();  // status
+        cfg.intr_vif.pins[AcqStretch]:   proc_intr_acqstretch();   // status
+        cfg.intr_vif.pins[UnexpStop]:    proc_intr_unexpstop();    // event
+        cfg.intr_vif.pins[HostTimeout]:  proc_intr_hosttimeout();  // event
+      endcase
+    end
+
+    // This cfg option can be used to empty the acqfifo, typically at the end of a test.
+    if (cfg.read_all_acq_entries) read_acq_fifo(0, acq_fifo_empty);
+
+    // The variable "expected_intr[]" is used to keep track of interrupts the testbench
+    // expects the possibility of seeing asserted. If an interrupt is asserted that is
+    // not marked in this way, throw an error.
+    for (int i = 0; i < NumI2cIntr; i++) begin
+      i2c_intr_e my_intr = i2c_intr_e'(i);
+      if ((!expected_intr.exists(my_intr)) && // Not expected
+          (cfg.intr_vif.pins[i] !== 0)) begin // Triggered
+        `uvm_error("process_target_interrupts",
+                   $sformatf("Unexpected interrupt is set %s", my_intr.name))
+      end
+    end
+
+    // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
+    // But for the last bad read command, we have to adjust expected rd_byte separately
+    // because we will not call 'write_tx_fifo'.
+    if (adjust_exp_read_byte == 1 &&
+        cfg.sent_acq_cnt == cfg.rcvd_acq_cnt) begin
+      int read_size;
+      while (cfg.m_i2c_agent_cfg.read_addr_q.size > 0) begin
+        read_size = read_rcvd.pop_front();
+        if (!cfg.m_i2c_agent_cfg.read_addr_q.pop_front) begin
+          repeat (read_size) void'(read_txn_q.pop_front());
+          cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
         end
-      end else if (cfg.intr_vif.pins[TxStretch]) begin
-        proc_intr_txstretch();
-      end else if (cfg.intr_vif.pins[CmdComplete]) begin
-        proc_intr_cmdcomplete();
-      end else if (cfg.read_all_acq_entries) begin
-        read_acq_fifo(0, acq_fifo_empty);
-      end else begin
-        for (int i = 0; i < NumI2cIntr; i++) begin
-          i2c_intr_e my_intr = i2c_intr_e'(i);
-          if (!expected_intr.exists(my_intr)) begin
-            if (cfg.intr_vif.pins[i] !== 0) begin
-              `uvm_error("process_target_interrupts",
-                         $sformatf("Unexpected interrupt is set %s", my_intr.name))
-            end
-          end
-        end
-      end // else: !if(cfg.intr_vif.pins[CmdComplete])
-      // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
-      // But for the last bad read command, we have to adjust expected rd_byte separately
-      // because we will not call 'write_tx_fifo'.
-      if (adjust_exp_read_byte == 1 &&
-          cfg.sent_acq_cnt == cfg.rcvd_acq_cnt) begin
-         int read_size;
-         while (cfg.m_i2c_agent_cfg.read_addr_q.size > 0) begin
-            read_size = read_rcvd.pop_front();
-            if (!cfg.m_i2c_agent_cfg.read_addr_q.pop_front) begin
-               repeat (read_size) void'(read_txn_q.pop_front());
-               cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
-            end
-         end
       end
     end
   endtask
@@ -1205,6 +1207,48 @@ class i2c_base_vseq extends cip_base_vseq #(
     clear_interrupt(TxStretch, 0);
   endtask // proc_intr_txstretch
 
+  // The TB's interrupt handler should call this routine whenever the "acq_stretch"
+  // interrupt is pending.
+  //
+  virtual task proc_intr_acqstretch();
+    // 'AcqStretch' can mean two things
+    // 1) The N-Byte ACK counter is zero. (if this feature is enabled)
+    // 2) The ACQFIFO is full
+
+    bit [TL_DW-1:0] status;
+    bit             ack_ctrl_stretch;
+    bit             acq_full;
+
+    csr_rd(.ptr(ral.status), .value(status));
+    ack_ctrl_stretch = bit'(get_field_val(ral.status.ack_ctrl_stretch, status));
+    acq_full = bit'(get_field_val(ral.status.acqfull, status));
+
+    // 1) (if enabled) Add a random number to the N-Byte ACK counter, allowing the FSM to continue.
+    if (ack_ctrl_stretch) begin
+      int auto_ack_bytes = $urandom_range(1, 30);
+      csr_wr(.ptr(ral.target_ack_ctrl.nbytes), .value(auto_ack_bytes));
+    end
+
+    // 2) Read the ACQFIFO if it is currently full.
+    if (acq_full) begin
+      bit acq_fifo_empty = 0;
+      case (cfg.slow_acq)
+        // Read the fifo until empty.
+        1'b0: read_acq_fifo(0, acq_fifo_empty);
+        // Read the fifo until empty, but slowly (1-word at a time with delays inbetweeen).
+        1'b1: begin
+          while (!acq_fifo_empty) begin
+            int delay = $urandom_range(50, 100);
+            #(delay * 1us);
+            read_acq_fifo(1, acq_fifo_empty);
+          end
+        end
+        default:;
+      endcase
+    end
+
+  endtask: proc_intr_acqstretch
+
   // return target address between, address0, address1 and illegal address
   // illegal address can be return ony if cfg.bad_addr_pct > 0
   // Make sure the last transaction should return good address to guarantee
@@ -1228,5 +1272,29 @@ class i2c_base_vseq extends cip_base_vseq #(
   function bit is_target_addr(bit [6:0] addr);
     return (addr == target_addr0 || addr == target_addr1);
   endfunction
+
+  // Check an interrupt matches our expectation
+  // - Check that csr.intr_state[idx] == exp_val
+  // - Check the wired irq intr_vif.pins[idx] == exp_val
+  //
+  virtual task check_one_intr(i2c_intr_e intr, bit exp_val);
+    bit [TL_DW-1:0] obs_intr_state;
+    bit exp_pin;
+
+    csr_rd(.ptr(ral.intr_state), .value(obs_intr_state));
+    `DV_CHECK_EQ(obs_intr_state[intr], exp_val)
+    `DV_CHECK_EQ(cfg.intr_vif.pins[intr], exp_val)
+  endtask : check_one_intr
+
+  virtual task count_edge_intr(i2c_intr_e intr, ref uint poscnt, ref uint negcnt);
+    forever begin
+      @(cfg.intr_vif.pins[intr]);
+      case (cfg.intr_vif.pins[intr])
+        1'b0: negcnt++;
+        1'b1: poscnt++;
+        default:;
+      endcase
+    end
+  endtask: count_edge_intr
 
 endclass : i2c_base_vseq

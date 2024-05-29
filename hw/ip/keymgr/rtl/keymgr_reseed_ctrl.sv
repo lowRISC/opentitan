@@ -16,6 +16,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   // interface to keymgr_ctrl
   input reseed_req_i,
   output logic reseed_ack_o,
+  output logic reseed_done_o,
 
   // interface to software
   input [15:0] reseed_interval_i,
@@ -25,6 +26,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   input edn_pkg::edn_rsp_t edn_i,
 
   // interface to lfsr
+  input  logic lfsr_en_i,
   output logic seed_en_o,
   output logic [LfsrWidth-1:0] seed_o,
 
@@ -56,6 +58,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
 
   assign seed_en_o = edn_ack;
   assign reseed_ack_o = reseed_req_i & edn_ack;
+  assign reseed_done_o = edn_done;
 
   prim_edn_req #(
     .OutWidth(LfsrWidth)
@@ -97,7 +100,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .clr_i(edn_done),
     .set_i('0),
     .set_cnt_i('0),
-    .incr_en_i(cnt_en),
+    .incr_en_i(cnt_en & lfsr_en_i),
     .decr_en_i(1'b0),
     .step_i(16'h1),
     .commit_i(1'b1),

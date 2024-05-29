@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
@@ -31,6 +32,14 @@ static dif_entropy_src_t entropy_src;
 static dif_otbn_t otbn;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
+static dif_aes_t aes;
+static csrng_app_cmd_t sw_ins;
+static csrng_app_cmd_t sw_gen;
+static csrng_app_cmd_t sw_res;
+dif_csrng_seed_material_t sw_ins_seed;
+dif_csrng_seed_material_t sw_gen_seed;
+dif_csrng_seed_material_t sw_res_seed;
+static uint32_t sw_num_reqs_between_reseeds;
 
 enum {
   /**
@@ -43,6 +52,12 @@ enum {
    */
   kTestParamNumOtbnIterationsMax = 4,
   kTestParamNumIbexIterationsMax = 16,
+  kTestParamNumAesIterationsMax = 32,
+  kTestParamNumCsrngIterationsMax = 8,
+  /*
+   * The number of entries of the esfinal FIFO of ENTROPY_SRC.
+   */
+  kEntropySrcEsFinalFifoDepth = 3
 };
 
 /**
@@ -90,6 +105,14 @@ typedef enum task_id {
    */
   kTestTaskIdIbex,
   /**
+   * Assigned to `aes_task()`.
+   */
+  kTestTaskIdAes,
+  /**
+   * Assigned to `csrng_task()`.
+   */
+  kTestTaskIdCsrng,
+  /**
    * Number of tasks. Used to define task flag and counter arrays.
    */
   kTestTaskIdCount
@@ -124,6 +147,8 @@ static void init_peripherals(void) {
       &rv_core_ibex));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 }
 
 /**
@@ -174,7 +199,7 @@ static void otbn_task(void *task_parameters) {
 /**
  * Ibex task.
  *
- * Executes Ibex randomness test the, test state is set to `kTestStateRun`.
+ * Executes Ibex randomness test, the test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */
@@ -215,12 +240,111 @@ static void ibex_task(void *task_parameters) {
 }
 
 /**
- * Configures the entropy complex and starts both EDNs in auto mode.
+ * AES task.
+ *
+ * Reseeds the AES masking and clearing PRNGs, test state is set to
+ * `kTestStateRun`.
+ *
+ * @param task_parameters Unused. Set to NULL by ottf.
+ */
+static void aes_task(void *task_parameters) {
+  while (true) {
+    if (execution_state == kTestStateTearDown) {
+      break;
+    }
+    if (execution_state == kTestStateSetup || task_done[kTestTaskIdAes]) {
+      ottf_task_yield();
+      continue;
+    }
+    LOG_INFO("AES:START");
+    for (size_t i = 0; i < task_iter_count_max[kTestTaskIdAes]; ++i) {
+      dif_aes_trigger_t trigger = kDifAesTriggerPrngReseed;
+      dif_aes_status_t status = kDifAesStatusIdle;
+      bool set;
+      CHECK_DIF_OK(dif_aes_trigger(&aes, trigger));
+      do {
+        CHECK_DIF_OK(dif_aes_get_status(&aes, status, &set));
+        ottf_task_yield();
+      } while (!set);
+    }
+    LOG_INFO("AES:DONE");
+    task_done_set_and_yield(kTestTaskIdAes);
+  }
+  OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
+/**
+ * CSRNG task.
+ *
+ * Uses the CSRNG SW instance, test state is set to
+ * `kTestStateRun`.
+ *
+ * @param task_parameters Unused. Set to NULL by ottf.
+ */
+static void csrng_task(void *task_parameters) {
+  while (true) {
+    if (execution_state == kTestStateTearDown) {
+      break;
+    }
+    if (execution_state == kTestStateSetup || task_done[kTestTaskIdCsrng]) {
+      ottf_task_yield();
+      continue;
+    }
+    LOG_INFO("CSRNG:START");
+    // Per test iteration, we do:
+    // - 1 instantiate, see entropy_config()
+    // - task_iter_count_max[kTestTaskIdCsrng] iterations of
+    //   - sw_num_reqs_between_reseeds Generate commands
+    //     - Each Generate command produces generate_len 128-bit genbits blocks
+    //   - 1 Reseed command
+    for (size_t i = 0; i < task_iter_count_max[kTestTaskIdCsrng]; ++i) {
+      dif_csrng_cmd_status_t cmd_status;
+      for (uint32_t i_gen = 0; i_gen < sw_num_reqs_between_reseeds; ++i_gen) {
+        // Run Generate command.
+        do {
+          CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(&csrng, &cmd_status));
+          CHECK(cmd_status.kind != kDifCsrngCmdStatusError);
+          ottf_task_yield();
+        } while (cmd_status.kind != kDifCsrngCmdStatusReady);
+        CHECK_DIF_OK(
+            csrng_send_app_cmd(csrng.base_addr, kCsrngAppCmdTypeCsrng, sw_gen));
+        // Read genbits blocks.
+        for (uint32_t i_block = 0; i_block < sw_gen.generate_len; ++i_block) {
+          dif_csrng_output_status_t output_status;
+          uint32_t output[kCsrngGenBitsBufferSize];
+          do {
+            CHECK_DIF_OK(dif_csrng_get_output_status(&csrng, &output_status));
+            ottf_task_yield();
+          } while (!output_status.valid_data);
+          CHECK_DIF_OK(dif_csrng_generate_read(
+              &csrng, output, (size_t)kCsrngGenBitsBufferSize));
+        }
+      }
+      // Run Reseed command.
+      do {
+        CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(&csrng, &cmd_status));
+        CHECK(cmd_status.kind != kDifCsrngCmdStatusError);
+        ottf_task_yield();
+      } while (cmd_status.kind != kDifCsrngCmdStatusReady);
+      CHECK_DIF_OK(
+          csrng_send_app_cmd(csrng.base_addr, kCsrngAppCmdTypeCsrng, sw_res));
+    }
+    LOG_INFO("CSRNG:DONE");
+    task_done_set_and_yield(kTestTaskIdCsrng);
+  }
+  OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
+/**
+ * Generates a randomized entropy complex configuration and applies it to both
+ * EDNs and the CSRNG SW instance. The configuration of ENTROPY_SRC is left
+ * untouched to optimize test performance.
+ *
+ * Note that to generate the randomized configuration, the entropy complex needs
+ * to be configured in auto mode before calling this function.
  */
 static void entropy_config(void) {
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
-  LOG_INFO("Generating EDN params");
+  LOG_INFO("Generating EDN and CSRNG params");
   dif_edn_auto_params_t edn_params0 =
       edn_testutils_auto_params_build(false,
                                       /*res_itval=*/0,
@@ -229,18 +353,51 @@ static void entropy_config(void) {
       edn_testutils_auto_params_build(false,
                                       /*res_itval=*/0,
                                       /*glen_val=*/0);
+  sw_ins = csrng_testutils_app_cmd_build(
+      false,
+      /*id=*/kCsrngAppCmdInstantiate,
+      /*entropy_src_en=*/kDifCsrngEntropySrcToggleEnable,
+      /*glen_val=*/0, &sw_ins_seed);
+  sw_gen = csrng_testutils_app_cmd_build(
+      false,
+      /*id=*/kCsrngAppCmdGenerate,
+      /*entropy_src_en=*/kDifCsrngEntropySrcToggleEnable,
+      /*glen_val=*/0, &sw_gen_seed);
+  sw_res = csrng_testutils_app_cmd_build(
+      false,
+      /*id=*/kCsrngAppCmdReseed,
+      /*entropy_src_en=*/kDifCsrngEntropySrcToggleEnable,
+      /*glen_val=*/0, &sw_res_seed);
+  sw_num_reqs_between_reseeds = rand_testutils_gen32_range(1, 10);
 
   task_iter_count_max[kTestTaskIdOtbn] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumOtbnIterationsMax);
   task_iter_count_max[kTestTaskIdIbex] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumIbexIterationsMax);
+  task_iter_count_max[kTestTaskIdAes] =
+      rand_testutils_gen32_range(/*min=*/1, kTestParamNumAesIterationsMax);
+  task_iter_count_max[kTestTaskIdCsrng] =
+      rand_testutils_gen32_range(/*min=*/1, kTestParamNumCsrngIterationsMax);
 
-  CHECK_STATUS_OK(entropy_testutils_stop_all());
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  CHECK_STATUS_OK(entropy_testutils_stop_csrng_edn());
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn0, edn_params0));
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn_params1));
+
+  CHECK_STATUS_OK(csrng_testutils_cmd_ready_wait(&csrng));
+  CHECK_DIF_OK(dif_csrng_uninstantiate(&csrng));
+  CHECK_STATUS_OK(csrng_testutils_cmd_ready_wait(&csrng));
+  CHECK_DIF_OK(dif_csrng_instantiate(&csrng, sw_ins.entropy_src_enable,
+                                     sw_ins.seed_material));
+  CHECK_STATUS_OK(csrng_testutils_cmd_ready_wait(&csrng));
+
+  // Wait for the esfinal FIFO inside ENTROPY_SRC to fill up. This will reduce
+  // the wait time for ENTROPY_SRC seeds and instead increase contention on the
+  // CSRNG and EDN hardware pipelines which are in focus for this test.
+  dif_entropy_src_debug_state_t debug_state;
+  do {
+    CHECK_DIF_OK(dif_entropy_src_get_debug_state(&entropy_src, &debug_state));
+  } while (debug_state.entropy_fifo_depth < kEntropySrcEsFinalFifoDepth);
 }
 
 /**
@@ -308,6 +465,7 @@ static void main_task(void *task_parameters) {
 
 bool test_main(void) {
   init_peripherals();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   // Initialize the test `execution_state` before launching the tasks.
   execution_state_update(kTestStateSetup);
@@ -315,6 +473,8 @@ bool test_main(void) {
   CHECK(ottf_task_create(main_task, "main", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(otbn_task, "otbn", kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(ibex_task, "ibex", kOttfFreeRtosMinStackSize, 1));
+  CHECK(ottf_task_create(aes_task, "aes", kOttfFreeRtosMinStackSize, 1));
+  CHECK(ottf_task_create(csrng_task, "csrng", kOttfFreeRtosMinStackSize, 1));
 
   // There is no need to poll for completion as the tasks above will execute
   // with higher priority and control will not be returned to this task until

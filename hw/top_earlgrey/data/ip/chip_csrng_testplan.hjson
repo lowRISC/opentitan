@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_csrng
+  name: csrng
   testpoints: [
     // CSRNG (pre-verified IP) integration tests:
     {
@@ -27,7 +27,9 @@
       si_stage: SV2
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_csrng"]
-      bazel: ["//sw/device/tests:entropy_src_csrng_test"]
+      bazel: [
+        "//sw/device/tests:entropy_src_csrng_test",
+      ]
     }
     {
       name: chip_sw_csrng_fuse_en_sw_app_read
@@ -50,7 +52,7 @@
         "CSRNG.READ_INT_STATE",
       ]
       stage: V2
-      si_stage: SV3
+      si_stage: NA
       lc_states: ["PROD"]
       tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
     }
@@ -80,7 +82,7 @@
         "CSRNG.LIFECYCLE.DEBUGENABLE",
       ]
       stage: V2
-      si_stage: SV3
+      si_stage: NA
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END"]
       tests: ["chip_sw_csrng_lc_hw_debug_en_test"]
     }

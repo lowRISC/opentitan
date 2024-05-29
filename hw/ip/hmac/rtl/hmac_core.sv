@@ -9,13 +9,12 @@ module hmac_core import prim_sha2_pkg::*; (
   input rst_ni,
 
   input [1023:0]      secret_key_i, // {word0, word1, ..., word7}
-  input               wipe_secret_i,
-  input [31:0]        wipe_v_i,
   input               hmac_en_i,
   input digest_mode_e digest_size_i,
   input key_length_e  key_length_i,
 
   input        reg_hash_start_i,
+  input        reg_hash_stop_i,
   input        reg_hash_continue_i,
   input        reg_hash_process_i,
   output logic hash_done_o,
@@ -129,7 +128,7 @@ module hmac_core import prim_sha2_pkg::*; (
   assign pad_index_512 = txcount[BlockSizeBitsSHA512-1:HashWordBitsSHA256];
   assign pad_index_256 = txcount[BlockSizeBitsSHA256-1:HashWordBitsSHA256];
 
-  // this defaults key length to block size if supplied key length is larger than block size
+  // adjust inner and outer padding depending on key length and block size
   always_comb begin : adjust_key_pad_length
     unique case (key_length_i)
       Key_128: begin
@@ -170,23 +169,19 @@ module hmac_core import prim_sha2_pkg::*; (
         o_pad_512 = {secret_key_i[1023:512],
                     {(BlockSizeSHA512-512){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
       end
-      Key_1024: begin
-        // cap key to 512-bit for SHA-256
-        i_pad_256 = secret_key_i[1023:512] ^ {(BlockSizeSHA256/8){8'h36}};
+      Key_1024: begin // not allowed to be configured for SHA-2 256
+        // zero out for SHA-2 256
+        i_pad_256 = '{default: '0};
         i_pad_512 = secret_key_i[1023:0]   ^ {(BlockSizeSHA512/8){8'h36}};
-        // cap key to 512-bit for SHA-256
-        o_pad_256 = secret_key_i[1023:512] ^ {(BlockSizeSHA256/8){8'h5c}};
+        // zero out for SHA-2 256
+        o_pad_256 = '{default: '0};
         o_pad_512 = secret_key_i[1023:0]   ^ {(BlockSizeSHA512/8){8'h5c}};
       end
-      default: begin // TODO (issue  #22312)
-        i_pad_256 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h36}};
-        i_pad_512 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
-        o_pad_256 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h5c}};
-        o_pad_512 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      default: begin // set default
+        i_pad_256 = '{default: '0};
+        i_pad_512 = '{default: '0};
+        o_pad_256 = '{default: '0};
+        o_pad_512 = '{default: '0};
       end
     endcase
   end
@@ -439,7 +434,25 @@ module hmac_core import prim_sha2_pkg::*; (
     endcase
   end
 
-  // Idle: Idle in HMAC_CORE only represents the idle status when hmac mode is
-  // set. If hmac_en_i is 0, this logic sends the idle signal always.
-  assign idle_o = (st_q == StIdle) && !(reg_hash_start_i || reg_hash_continue_i);
+  // Idle status signaling: This module ..
+  logic idle_d, idle_q;
+  assign idle_d =
+      // .. is not idle when told to start or continue
+      (reg_hash_start_i || reg_hash_continue_i) ? 1'b0 :
+      // .. is idle when the FSM is in the Idle state
+      (st_q == StIdle) ? 1'b1 :
+      // .. is idle when it has processed a complete block of a message and is told to stop
+      (st_q == StMsg && txcnt_eq_blksz && reg_hash_stop_i) ? 1'b1 :
+      // .. and keeps the current idle state in all other cases.
+      idle_q;
+
+  assign idle_o = idle_d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      idle_q <= 1'b1;
+    end else begin
+      idle_q <= idle_d;
+    end
+  end
 endmodule

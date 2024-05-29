@@ -95,10 +95,6 @@ interface chip_if;
   pins_if#(.Width(top_earlgrey_pkg::MioPadCount), .PullStrength("Weak")) mios_if(.pins(mios));
   pins_if#(.Width(top_earlgrey_pkg::DioPadCount), .PullStrength("Weak")) dios_if(.pins(dios));
 
-  // Functional (dedicated) interface (input): AST misc.
-  wire ast_misc;
-  pins_if #(.Width(1), .PullStrength("Weak")) ast_misc_if(.pins(ast_misc));
-
   // Weak pulls for DIOs.
   //
   // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
@@ -930,7 +926,6 @@ interface chip_if;
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
     sysrst_ctrl_if.disconnect();
-    ast_misc_if.disconnect();
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();

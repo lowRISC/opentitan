@@ -21,19 +21,31 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
+    deps = [
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
+    ],
 )
 
 cc_library(
     name = "ecdsa",
     srcs = ["ecdsa.c"],
     hdrs = ["ecdsa.h"],
-    defines = ["USE_CRYPTOC=1"],
+    defines = [
+        "USE_OTBN=1",
+        #"USE_CRYPTOC=1",
+    ],
     deps = [
         ":datatypes",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/vendor:cryptoc",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        #"//sw/vendor:cryptoc",
     ],
 )
 
@@ -68,6 +80,9 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":ecdsa",
+            "//sw/device/lib/base:hardened_memory",
+            "//sw/device/silicon_creator/lib/drivers:keymgr",
+            "//sw/device/silicon_creator/lib/drivers:kmac",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -77,6 +92,7 @@ dual_cc_library(
         shared = [
             ":datatypes",
             "//sw/device/lib/base:hardened",
+            "//sw/device/silicon_creator/lib:error",
         ],
     ),
 )
@@ -90,6 +106,36 @@ cc_library(
         ":ecdsa",
         ":ownership_key",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
+    name = "owner_block",
+    srcs = ["owner_block.c"],
+    hdrs = ["owner_block.h"],
+    deps = [
+        ":datatypes",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_test(
+    name = "owner_block_unittest",
+    srcs = [
+        "owner_block_unittest.cc",
+        "testdata/basic_owner_testdata.h",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/testing:binary_blob",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
     ],
 )
 

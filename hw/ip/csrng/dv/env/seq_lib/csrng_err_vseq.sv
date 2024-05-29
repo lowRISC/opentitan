@@ -47,15 +47,24 @@ class csrng_err_vseq extends csrng_base_vseq;
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
 
+    `define CMD_STAGE_0 tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage
+    `define CMD_STAGE_1 tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage
+    `define CMD_STAGE_2 tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage
+
+    `define HIER_PATH(prefix, suffix) `"prefix.suffix`"
+
     // Turn off assertions
     $assertoff(0, "tb.entropy_src_if.ReqHighUntilAck_A");
     $assertoff(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.LockArbDecision_A");
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
-    $assertoff(0, "tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.u_state_regs_A");
-    $assertoff(0, "tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.u_state_regs_A");
-    $assertoff(0, "tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.u_state_regs_A");
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_0, u_state_regs_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_1, u_state_regs_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_2, u_state_regs_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_0, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
     cfg.csrng_assert_vif.assert_off();
     `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 0)
 
@@ -294,9 +303,19 @@ class csrng_err_vseq extends csrng_base_vseq;
     $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.LockArbDecision_A");
     $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
     $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
-    $asserton(0, "tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.u_state_regs_A");
-    $asserton(0, "tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.u_state_regs_A");
-    $asserton(0, "tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.u_state_regs_A");
+    $asserton(0, `HIER_PATH(`CMD_STAGE_0, u_state_regs_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_1, u_state_regs_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_2, u_state_regs_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_0, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
+
+    `undef CMD_STAGE_0
+    `undef CMD_STAGE_1
+    `undef CMD_STAGE_2
+
+    `undef HIER_PATH
+
     cfg.csrng_assert_vif.assert_on();
 
   endtask : body

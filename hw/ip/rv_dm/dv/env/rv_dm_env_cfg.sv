@@ -9,6 +9,10 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   rand jtag_agent_cfg m_jtag_agent_cfg;
   rand tl_agent_cfg   m_tl_sba_agent_cfg;
 
+  // A handle to a clock interface for the LC domain. We don't actually use the clock itself, but
+  // use the unsynchronised reset signal.
+  virtual clk_rst_if clk_lc_rst_vif;
+
   // The JTAG DMI register model.
   rand jtag_dmi_reg_block jtag_dmi_ral;
 

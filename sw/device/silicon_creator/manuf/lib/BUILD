@@ -74,7 +74,7 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -141,13 +141,13 @@ opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
+        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
         ":individualize",
         ":otp_fields",
@@ -202,7 +202,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
+        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked1",
         changes_otp = True,
         tags = ["manuf"],
         test_cmd = """
@@ -267,8 +267,9 @@ opentitan_test(
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_individualized",
+        # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
-            "broken",  # https://github.com/lowRISC/opentitan/issues/19086
+            "broken",
             "lc_dev",
             "manuf",
         ],
@@ -278,16 +279,16 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":flash_info_fields",
         ":personalize",
-        "//hw/ip/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",

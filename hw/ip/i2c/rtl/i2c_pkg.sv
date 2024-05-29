@@ -32,6 +32,11 @@ package i2c_pkg;
     AcqNackStop  = 3'b110
   } i2c_acq_byte_id_e;
 
+  typedef enum logic {
+    StretchTimeoutMode = 1'b0,
+    BusTimeoutMode     = 1'b1
+  } i2c_timeout_mode_e;
+
   // Width of each entry in the FMT FIFO with enough space for an 8-bit data
   // byte and 5 flags.
   parameter int unsigned FMT_FIFO_WIDTH = 8 + 5;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -28,22 +29,31 @@ typedef struct boot_log {
   uint32_t identifier;
   /** Chip version (from the ROM). */
   chip_info_scm_revision_t chip_version;
-  /** Which ROM_EXT slot booted. */
+  /** Which ROM_EXT slot booted (boot_slot_t). */
   uint32_t rom_ext_slot;
   /** ROM_EXT major version number. */
-  uint16_t rom_ext_major;
+  uint32_t rom_ext_major;
   /** ROM_EXT minor version number. */
-  uint16_t rom_ext_minor;
+  uint32_t rom_ext_minor;
   /** ROM_EXT size in flash. */
   uint32_t rom_ext_size;
   /** ROM_EXT nonce for challenge/response boot_svc commands. */
   nonce_t rom_ext_nonce;
-  /** Which BL0 slot booted. */
+  /** Which BL0 slot booted (boot_slot_t). */
   uint32_t bl0_slot;
   /** Chip ownership state. */
   uint32_t ownership_state;
+  /** Number of ownership transfers this chip has had. */
+  uint32_t ownership_transfers;
+  /** Minimum security version permitted for ROM_EXT payloads */
+  uint32_t rom_ext_min_sec_ver;
+  /** Minimum security version permitted for application payloads */
+  uint32_t bl0_min_sec_ver;
+  /** Primary BL0 slot. */
+  uint32_t primary_bl0_slot;
+  ;
   /** Pad to 128 bytes. */
-  uint32_t reserved[14];
+  uint32_t reserved[9];
 } boot_log_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, digest, 0);
@@ -51,40 +61,22 @@ OT_ASSERT_MEMBER_OFFSET(boot_log_t, identifier, 32);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, chip_version, 36);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_slot, 44);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_major, 48);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_minor, 50);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_size, 52);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_nonce, 56);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_slot, 64);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, ownership_state, 68);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 72);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_minor, 52);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_size, 56);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_nonce, 60);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_slot, 68);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, ownership_state, 72);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, ownership_transfers, 76);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_min_sec_ver, 80);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_min_sec_ver, 84);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, primary_bl0_slot, 88);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 92);
 
 enum {
   /**
    * Boot log identifier value (ASCII "BLOG").
    */
   kBootLogIdentifier = 0x474f4c42,
-
-  /**
-   * Boot Slot designators
-   *
-   * Encoding generated with:
-   * $ ./util/design/sparse-fsm-encode.py -d 6 -m 5 -n 32 \
-   *     -s 2335952935 --language=c
-   *
-   * Minimum Hamming distance: 12
-   * Maximum Hamming distance: 21
-   * Minimum Hamming weight: 18
-   * Maximum Hamming weight: 22
-   */
-  kRomExtBootSlotA = 0x5abf68ea,
-  kRomExtBootSlotB = 0x53ebdf83,
-  kBl0BootSlotA = 0xb851f57e,
-  kBl0BootSlotB = 0x17cfb6bf,
-
-  /**
-   * Indicates an unpopulated field in the boot log.
-   */
-  kBootLogUninitialized = 0xe67f0d52,
 };
 
 /**

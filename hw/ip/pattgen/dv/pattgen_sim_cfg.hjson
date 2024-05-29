@@ -71,6 +71,11 @@
       name: cnt_rollover
       uvm_test_seq: pattgen_cnt_rollover_vseq
     }
+
+    {
+      name: pattgen_inactive_level
+      uvm_test_seq: pattgen_inactive_level_vseq
+    }
   ]
 
   // List of regressions.

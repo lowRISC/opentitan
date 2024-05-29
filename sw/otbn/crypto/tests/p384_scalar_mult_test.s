@@ -20,35 +20,15 @@ p384_scalar_mult_test:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
-  /* set dmem pointer to point to x-coordinate */
-  la       x2, p1_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to y-coordinate */
-  la       x2, p1_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to 1st scalar share k0 */
-  la       x2, k0
-  la       x3, dptr_k0
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to 2nd scalar share k1 */
-  la       x2, k1
-  la       x3, dptr_k1
-  sw       x2, 0(x3)
-
   /* call scalar point multiplication routine in P-384 lib */
   jal      x1, p384_scalar_mult
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  la        x3, p1_x
+  la        x3, x
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
-  la        x3, p1_y
+  la        x3, y
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -78,7 +58,8 @@ p384_scalar_mult_test:
 .balign 32
 
 /* point 1 x-cooridante p1_x */
-p1_x:
+.globl x
+x:
   .word 0x1a11808b
   .word 0x02e3d5a9
   .word 0x440d8db6
@@ -94,7 +75,8 @@ p1_x:
   .zero 16
 
 /* point 1 y-cooridante p1_y*/
-p1_y:
+.globl y
+y:
   .word 0xa9f8b96e
   .word 0x82f268be
   .word 0x8e51c662
@@ -110,6 +92,7 @@ p1_y:
   .zero 16
 
 /* 1st scalar share k0 (448-bit) */
+.globl k0
 k0:
   .word 0x5c832a51
   .word 0x3eb17c27
@@ -128,6 +111,7 @@ k0:
   .zero 8
 
 /* 2nd scalar share k1 (448-bit) */
+.globl k1
 k1:
   .word 0x33eae098
   .word 0xd31b18d5

@@ -90,23 +90,6 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                # Use software mod_exp implementation for signature
-                # verification. See the definition of `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.HARDENED_TRUE),
-                # Mark the first 7 keys as valid and remaining as invalid since
-                # we currently have only 7 keys. See the definition of
-                # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
-                    CONST.HARDENED_BYTE_TRUE,  # key0
-                    CONST.HARDENED_BYTE_TRUE,  # key1
-                    CONST.HARDENED_BYTE_TRUE,  # key2
-                    CONST.HARDENED_BYTE_TRUE,  # key3
-                    CONST.HARDENED_BYTE_TRUE,  # key4
-                    CONST.HARDENED_BYTE_TRUE,  # key5
-                    CONST.HARDENED_BYTE_TRUE,  # key6
-                    CONST.HARDENED_BYTE_FALSE,  # key7
-                ]),
                 # Disable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
@@ -185,9 +168,10 @@ otp_json(
                 # Enable bootstrap. See `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
                 "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
-                # Set to 0x739 to use the ROM_EXT hash measurement as the key
-                # manager attestation binding value.
-                "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(0x0),
+                # Set to 0x739 to use the OTP hash measurement of the software
+                # readable OTP partitions as the key manager attestation binding
+                # value.
+                "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.

@@ -241,10 +241,6 @@ module kmac_reg_top (
   logic cfg_shadowed_entropy_ready_wd;
   logic cfg_shadowed_entropy_ready_storage_err;
   logic cfg_shadowed_entropy_ready_update_err;
-  logic cfg_shadowed_err_processed_qs;
-  logic cfg_shadowed_err_processed_wd;
-  logic cfg_shadowed_err_processed_storage_err;
-  logic cfg_shadowed_err_processed_update_err;
   logic cfg_shadowed_en_unsupported_modestrength_qs;
   logic cfg_shadowed_en_unsupported_modestrength_wd;
   logic cfg_shadowed_en_unsupported_modestrength_storage_err;
@@ -253,6 +249,7 @@ module kmac_reg_top (
   logic [5:0] cmd_cmd_wd;
   logic cmd_entropy_req_wd;
   logic cmd_hash_cnt_clr_wd;
+  logic cmd_err_processed_wd;
   logic status_re;
   logic status_sha3_idle_qs;
   logic status_sha3_absorb_qs;
@@ -652,7 +649,7 @@ module kmac_reg_top (
 
   // R[cfg_shadowed]: V(False)
   logic cfg_shadowed_qe;
-  logic [11:0] cfg_shadowed_flds_we;
+  logic [10:0] cfg_shadowed_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -1035,43 +1032,6 @@ module kmac_reg_top (
   );
   assign reg2hw.cfg_shadowed.entropy_ready.qe = cfg_shadowed_qe;
 
-  //   F[err_processed]: 25:25
-  prim_subreg_shadow #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_cfg_shadowed_err_processed (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .rst_shadowed_ni (rst_shadowed_ni),
-
-    // from register interface
-    .re     (cfg_shadowed_re),
-    .we     (cfg_shadowed_gated_we),
-    .wd     (cfg_shadowed_err_processed_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (cfg_shadowed_flds_we[10]),
-    .q      (reg2hw.cfg_shadowed.err_processed.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (cfg_shadowed_err_processed_qs),
-
-    // Shadow register phase. Relevant for hwext only.
-    .phase  (),
-
-    // Shadow register error conditions
-    .err_update  (cfg_shadowed_err_processed_update_err),
-    .err_storage (cfg_shadowed_err_processed_storage_err)
-  );
-  assign reg2hw.cfg_shadowed.err_processed.qe = cfg_shadowed_qe;
-
   //   F[en_unsupported_modestrength]: 26:26
   prim_subreg_shadow #(
     .DW      (1),
@@ -1093,7 +1053,7 @@ module kmac_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (cfg_shadowed_flds_we[11]),
+    .qe     (cfg_shadowed_flds_we[10]),
     .q      (reg2hw.cfg_shadowed.en_unsupported_modestrength.q),
     .ds     (),
 
@@ -1112,7 +1072,7 @@ module kmac_reg_top (
 
   // R[cmd]: V(True)
   logic cmd_qe;
-  logic [2:0] cmd_flds_we;
+  logic [3:0] cmd_flds_we;
   assign cmd_qe = &cmd_flds_we;
   //   F[cmd]: 5:0
   prim_subreg_ext #(
@@ -1161,6 +1121,22 @@ module kmac_reg_top (
     .qs     ()
   );
   assign reg2hw.cmd.hash_cnt_clr.qe = cmd_qe;
+
+  //   F[err_processed]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_cmd_err_processed (
+    .re     (1'b0),
+    .we     (cmd_we),
+    .wd     (cmd_err_processed_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (cmd_flds_we[3]),
+    .q      (reg2hw.cmd.err_processed.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.cmd.err_processed.qe = cmd_qe;
 
 
   // R[status]: V(True)
@@ -2788,8 +2764,6 @@ module kmac_reg_top (
 
   assign cfg_shadowed_entropy_ready_wd = reg_wdata[24];
 
-  assign cfg_shadowed_err_processed_wd = reg_wdata[25];
-
   assign cfg_shadowed_en_unsupported_modestrength_wd = reg_wdata[26];
   assign cmd_we = addr_hit[6] & reg_we & !reg_error;
 
@@ -2798,6 +2772,8 @@ module kmac_reg_top (
   assign cmd_entropy_req_wd = reg_wdata[8];
 
   assign cmd_hash_cnt_clr_wd = reg_wdata[9];
+
+  assign cmd_err_processed_wd = reg_wdata[10];
   assign status_re = addr_hit[7] & reg_re & !reg_error;
   assign entropy_period_we = addr_hit[8] & reg_we & !reg_error;
 
@@ -3048,7 +3024,6 @@ module kmac_reg_top (
         reg_rdata_next[19] = cfg_shadowed_entropy_fast_process_qs;
         reg_rdata_next[20] = cfg_shadowed_msg_mask_qs;
         reg_rdata_next[24] = cfg_shadowed_entropy_ready_qs;
-        reg_rdata_next[25] = cfg_shadowed_err_processed_qs;
         reg_rdata_next[26] = cfg_shadowed_en_unsupported_modestrength_qs;
       end
 
@@ -3056,6 +3031,7 @@ module kmac_reg_top (
         reg_rdata_next[5:0] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
+        reg_rdata_next[10] = '0;
       end
 
       addr_hit[7]: begin
@@ -3307,7 +3283,6 @@ module kmac_reg_top (
     cfg_shadowed_entropy_fast_process_storage_err,
     cfg_shadowed_msg_mask_storage_err,
     cfg_shadowed_entropy_ready_storage_err,
-    cfg_shadowed_err_processed_storage_err,
     cfg_shadowed_en_unsupported_modestrength_storage_err,
     entropy_refresh_threshold_shadowed_storage_err
   };
@@ -3322,7 +3297,6 @@ module kmac_reg_top (
     cfg_shadowed_entropy_fast_process_update_err,
     cfg_shadowed_msg_mask_update_err,
     cfg_shadowed_entropy_ready_update_err,
-    cfg_shadowed_err_processed_update_err,
     cfg_shadowed_en_unsupported_modestrength_update_err,
     entropy_refresh_threshold_shadowed_update_err
   };

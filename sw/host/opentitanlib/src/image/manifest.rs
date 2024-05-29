@@ -11,6 +11,7 @@
 #![deny(unused)]
 #![deny(unsafe_code)]
 
+use crate::with_unknown;
 use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 // Currently, these definitions must be updated manually but they can be
@@ -44,6 +45,13 @@ pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
 pub const CHIP_ROM_EXT_SIZE_MAX: u32 = 0x10000;
 pub const CHIP_BL0_SIZE_MIN: u32 = 8788;
 pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
+
+with_unknown! {
+    pub enum ManifestKind: u32 {
+        RomExt = CHIP_ROM_EXT_IDENTIFIER,
+        Application = CHIP_BL0_IDENTIFIER,
+    }
+}
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]

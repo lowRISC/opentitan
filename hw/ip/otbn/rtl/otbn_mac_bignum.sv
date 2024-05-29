@@ -22,8 +22,10 @@ module otbn_mac_bignum
   input  mac_predec_bignum_t mac_predec_bignum_i,
   output logic               predec_error_o,
 
-  input logic [WLEN-1:0] urnd_data_i,
-  input logic            sec_wipe_acc_urnd_i,
+  input  logic [WLEN-1:0] urnd_data_i,
+  input  logic            sec_wipe_acc_urnd_i,
+  input  logic            sec_wipe_running_i,
+  output logic            sec_wipe_err_o,
 
   output logic [ExtWLEN-1:0] ispr_acc_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
@@ -235,6 +237,8 @@ module otbn_mac_bignum
   // SEC_CM: CTRL.REDUN
   assign predec_error_o = |{expected_op_en     != mac_predec_bignum_i.op_en,
                             expected_acc_rd_en != mac_predec_bignum_i.acc_rd_en};
+
+  assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i;
 
   `ASSERT(NoISPRAccWrAndMacEn, ~(ispr_acc_wr_en_i & mac_en_i))
 endmodule

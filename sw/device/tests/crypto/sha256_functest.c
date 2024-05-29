@@ -56,14 +56,14 @@ static const uint8_t kExactBlockExpDigest[] = {
  */
 static status_t run_test(otcrypto_const_byte_buf_t msg,
                          const uint32_t *exp_digest) {
-  uint32_t act_digest[kHmacDigestNumWords];
+  uint32_t act_digest[kHmacSha256DigestWords];
   otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
-      .len = kHmacDigestNumWords,
+      .len = kHmacSha256DigestWords,
       .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(msg, digest_buf));
-  TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kHmacDigestNumWords);
+  TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kHmacSha256DigestWords);
   return OK_STATUS();
 }
 

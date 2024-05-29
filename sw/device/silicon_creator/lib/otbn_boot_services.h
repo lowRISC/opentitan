@@ -30,6 +30,14 @@ OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_app_load(void);
 
 /**
+ * OTBN attestation key types (DICE or TPM).
+ */
+typedef enum otbn_boot_attestation_key_type {
+  kOtbnBootAttestationKeyTypeDice = kScKeymgrKeyTypeAttestation,
+  kOtbnBootAttestationKeyTypeTpm = kScKeymgrKeyTypeSealing,
+} otbn_boot_attestation_key_type_t;
+
+/**
  * Generate an attestation public key from a keymgr-derived secret.
  *
  * This routine triggers the key manager to sideload key material into OTBN,
@@ -47,6 +55,9 @@ rom_error_t otbn_boot_app_load(void);
  * `otbn_boot_app_load`.
  *
  * @param additional_seed The attestation key generation seed to load.
+ * @param key_type OTBN attestation key type to generate. "DICE" attestation
+ *                 keys are based on "attestation" keys from the keymgr; "TPM"
+ *                 attestation keys are based on "sealing keys from the keymgr.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
@@ -54,6 +65,7 @@ rom_error_t otbn_boot_app_load(void);
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
     attestation_key_seed_t additional_seed,
+    otbn_boot_attestation_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     attestation_public_key_t *public_key);
 
@@ -68,12 +80,16 @@ rom_error_t otbn_boot_attestation_keygen(
  * `otbn_boot_app_load`.
  *
  * @param additional_seed The attestation key generation seed to load.
+ * @param key_type OTBN attestation key type to generate. "DICE" attestation
+ *                 keys are based on "attestation" keys from the keymgr; "TPM"
+ *                 attestation keys are based on "sealing keys from the keymgr.
  * @param diversification Salt and version information for key manager.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
     attestation_key_seed_t additional_seed,
+    otbn_boot_attestation_key_type_t key_type,
     sc_keymgr_diversification_t diversification);
 
 /**

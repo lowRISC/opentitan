@@ -49,16 +49,6 @@
             type: "byte-array",
             size: 32,
         },
-        // Hash of the hw_cfg0 OTP partition (SHA256).
-        otp_hw_cfg0_hash: {
-            type: "byte-array",
-            size: 32,
-        },
-        // Hash of the hw_cfg1 OTP partition (SHA256).
-        otp_hw_cfg1_hash: {
-            type: "byte-array",
-            size: 32,
-        },
         // Debug (whether LC state exposes JTAG access or not).
         debug_flag: {
             type: "boolean",
@@ -77,13 +67,16 @@
 
     certificate: {
         serial_number: { var: "creator_pub_key_id", convert: "big-endian" },
-        issuer: {
-            country: "UK",
-            common_name: "lowRISC CIC",
-        },
-        subject: {
-            serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex"},
-        },
+        issuer: [
+            { country: "US" },
+            { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "Google Engineering ICA" },
+        ],
+        subject: [
+            { serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex"} },
+        ],
         // From the Open Profile for DICE specification:
         // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#x_509-cdi-certificates
         // The certificate expiration time is set to a fixed date in the future.
@@ -105,7 +98,7 @@
         // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
         // The standard extensions are fixed by the specification.
         basic_constraints: { ca: true },
-        extensions: [
+        private_extensions: [
             {
                 type: "dice_tcb_info",
                 vendor: "OpenTitan",
@@ -117,8 +110,6 @@
                     { hash_algorithm: "sha256", digest: { var: "otp_owner_sw_cfg_hash" } },
                     { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_codesign_hash" } },
                     { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_state_hash" } },
-                    { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg0_hash" } },
-                    { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg1_hash" } },
                 ],
                 flags: {
                     not_configured: false,

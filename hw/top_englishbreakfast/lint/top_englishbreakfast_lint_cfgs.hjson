@@ -19,7 +19,7 @@
   rel_path: "hw/top_englishbreakfast/lint/{tool}"
 
   use_cfgs: [{    name: flash_ctrl
-                  fusesoc_core: lowrisc:ip:flash_ctrl
+                  fusesoc_core: lowrisc:opentitan:top_englishbreakfast_flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/flash_ctrl/lint/{tool}"
                   overrides: [

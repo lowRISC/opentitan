@@ -19,6 +19,7 @@ module prim_generic_pad_attr
   //
   // - inversion
   // - pullup / pulldown
+  // - input disable
   //
   // Bidirectional:
   //
@@ -26,6 +27,7 @@ module prim_generic_pad_attr
   // - virtual open drain
   // - pullup / pulldown
   // - 1 driving strength bit
+  // - input disable
   //
   // Note that the last three attributes are not supported on Verilator.
   if (PadType == InputStd) begin : gen_input_only_warl
@@ -34,6 +36,7 @@ module prim_generic_pad_attr
       attr_warl_o.invert = 1'b1;
       attr_warl_o.pull_en = 1'b1;
       attr_warl_o.pull_select = 1'b1;
+      attr_warl_o.input_disable = 1'b1;
     end
   end else if (PadType == BidirStd ||
                PadType == BidirTol ||
@@ -50,12 +53,14 @@ module prim_generic_pad_attr
       // Only one driving strength bit is supported.
       attr_warl_o.drive_strength[0] = 1'b1;
   `endif
+      attr_warl_o.input_disable = 1'b1;
     end
   end else if (PadType == AnalogIn0) begin : gen_analog0_warl
     // The analog pad type is basically just a feedthrough,
-    // and does hence not support any of the attributes.
+    // and hence only supports input disable.
     always_comb begin : p_attr
       attr_warl_o = '0;
+      attr_warl_o.input_disable = 1'b1;
     end
   end else begin : gen_invalid_config
     // this should throw link warnings in elaboration

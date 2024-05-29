@@ -13,9 +13,6 @@
 static_assert(kSpxTreeHeight * (kSpxD - 1) <= 64,
               "Subtree addressing is currently limited to at most 2^64 trees.");
 
-// Specifies whether we need one or two bytes to represent the keypair.
-#define SPX_ADDR_TWO_BYTE_KEYPAIR ((kSpxFullHeight / kSpxD) > 8)
-
 /**
  * Sets a single byte within the internal buffer of an address.
  *
@@ -62,19 +59,18 @@ void spx_addr_subtree_copy(spx_addr_t *out, const spx_addr_t *in) {
 }
 
 void spx_addr_keypair_set(spx_addr_t *addr, uint32_t keypair) {
-  spx_addr_set_byte(addr, kSpxOffsetKpAddr1, (keypair & 0xff));
-  if (SPX_ADDR_TWO_BYTE_KEYPAIR) {
-    spx_addr_set_byte(addr, kSpxOffsetKpAddr2, ((keypair >> 8) & 0xff));
-  }
+  unsigned char *buf = (unsigned char *)addr->addr;
+  // Reverse bytes in the integer so it will be in big-endian form.
+  uint32_t keypair_be = __builtin_bswap32(keypair);
+  memcpy(buf + kSpxOffsetKpAddr, &keypair_be, sizeof(uint32_t));
 }
 
 void spx_addr_keypair_copy(spx_addr_t *out, const spx_addr_t *in) {
   spx_addr_subtree_copy(out, in);
   unsigned char *in_buf = (unsigned char *)in->addr;
-  spx_addr_set_byte(out, kSpxOffsetKpAddr1, in_buf[kSpxOffsetKpAddr1]);
-  if (SPX_ADDR_TWO_BYTE_KEYPAIR) {
-    spx_addr_set_byte(out, kSpxOffsetKpAddr2, in_buf[kSpxOffsetKpAddr2]);
-  }
+  unsigned char *out_buf = (unsigned char *)out->addr;
+  memcpy(out_buf + kSpxOffsetKpAddr, in_buf + kSpxOffsetKpAddr,
+         sizeof(uint32_t));
 }
 
 void spx_addr_chain_set(spx_addr_t *addr, uint8_t chain) {

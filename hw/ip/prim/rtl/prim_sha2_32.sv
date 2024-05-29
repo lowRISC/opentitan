@@ -22,6 +22,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   // Control signals
   input                     sha_en_i, // if disabled, it clears internal content
   input                     hash_start_i,
+  input                     hash_stop_i,
   input                     hash_continue_i,
   input digest_mode_e       digest_mode_i,
   input                     hash_process_i,
@@ -30,6 +31,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o,         // use extended digest length
+  output logic              digest_on_blk_o,
   output logic              hash_running_o,
   output logic              idle_o
 );
@@ -188,12 +190,13 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .clk_i (clk_i),
       .rst_ni (rst_ni),
       .wipe_secret_i      (wipe_secret_i),
-      .wipe_v_i           ({wipe_v_i, wipe_v_i}),
+      .wipe_v_i           (wipe_v_i),
       .fifo_rvalid_i      (word_valid),
       .fifo_rdata_i       (full_word),
       .fifo_rready_o      (sha_ready),
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
+      .hash_stop_i        (hash_stop_i),
       .hash_continue_i    (hash_continue_i),
       .digest_mode_i      (digest_mode_i),
       .hash_process_i     (sha_process),
@@ -202,6 +205,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_i           (digest_i),
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
+      .digest_on_blk_o    (digest_on_blk_o),
       .hash_running_o     (hash_running_o),
       .idle_o             (idle_o)
     );
@@ -239,12 +243,13 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .clk_i (clk_i),
       .rst_ni (rst_ni),
       .wipe_secret_i      (wipe_secret_i),
-      .wipe_v_i           ({wipe_v_i, wipe_v_i}),
+      .wipe_v_i           (wipe_v_i),
       .fifo_rvalid_i      (fifo_rvalid_i), // feed input directly
       .fifo_rdata_i       (full_word),
       .fifo_rready_o      (sha_ready),
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
+      .hash_stop_i        (hash_stop_i),
       .hash_continue_i    (hash_continue_i),
       .digest_mode_i      (SHA2_None),      // unused input port tied to ground
       .hash_process_i     (hash_process_i), // feed input port directly to SHA-2 engine
@@ -253,6 +258,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_i           (digest_i),
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
+      .digest_on_blk_o    (digest_on_blk_o),
       .hash_running_o     (hash_running_o),
       .idle_o             (idle_o)
     );

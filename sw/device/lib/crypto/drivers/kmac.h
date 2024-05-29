@@ -83,7 +83,7 @@ status_t kmac_key_length_check(size_t key_len);
  * It touches the following fields of CSRs:
  *   CFG register:
  *     endianness, entropy_mode, fast_process, msg_mask, ent_ready,
- * err_processed, en_unsup_mode EDN refresh settings: hash threshold refresh
+ * en_unsup_mode EDN refresh settings: hash threshold refresh
  * counter entropy seed -> ignore? INTR_ENABLE: all disabled
  *
  * @return Error code.

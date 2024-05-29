@@ -57,6 +57,8 @@ SEC_VERS = [
         name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        # Use the prod key because it is valid in every LC state.
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
         ],
@@ -65,8 +67,6 @@ SEC_VERS = [
             "EMPTY_TEST_MSG=\"slot=%p, security_version=%01d, lc_state=0x%08x\", manifest_def_get(), manifest_def_get()->security_version, lifecycle_raw_state_get()",
         ],
         manifest = ":manifest_sec_ver_{}".format(sec_ver),
-        # Use the prod key because it is valid in every LC state.
-        rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",

@@ -13,6 +13,64 @@ class csrng_intr_vseq extends csrng_base_vseq;
   csrng_item   cs_item;
   string       path1, path2, path3, path4, path_push, path_full, path_pop, path_not_empty, path;
 
+  // TODO(#22869): Instead of forcing ack_sts, actually generate the different error conditions.
+  task force_ack_and_ack_sts(int inst_idx, csrng_cmd_sts_e cmd_status);
+    bit [31:0] value_ack_sts;
+    string path_ack, path_ack_sts;
+
+    // Get paths
+    // ack is a 1D packed array - 1 bit per instance
+    path_ack = $sformatf("tb.dut.u_csrng_core.cmd_stage_ack[%0d]", inst_idx);
+    // ack_sts is a 1D packed array of enums -> a 2D packed array where the first packed dimension
+    // indexes the enum
+    path_ack_sts = "tb.dut.u_csrng_core.cmd_stage_ack_sts";
+
+    // Check paths and read the current ack_sts value
+    if (!uvm_hdl_check_path(path_ack)) begin
+      `uvm_fatal(`gfn, $sformatf("Path %s not found", path_ack))
+    end
+    if (!uvm_hdl_check_path(path_ack_sts)) begin
+      `uvm_fatal(`gfn, $sformatf("Path %s not found", path_ack_sts))
+    end else if (!uvm_hdl_read(path_ack_sts, value_ack_sts)) begin
+      `uvm_error(`gfn, $sformatf("Path %s could not be read", path_ack_sts))
+    end
+
+    // Inject the defined status bits at the correct positon.
+    // ack_sts is a 1D packed array of enums. This corresponds to a 2D packed array where the first
+    // packed dimension indexes the enum. We have to interpret this as a flat 1D packed array.
+    value_ack_sts =
+        value_ack_sts & ~({CSRNG_CMD_STS_WIDTH{1'b1}} << (CSRNG_CMD_STS_WIDTH * inst_idx));
+    value_ack_sts = value_ack_sts | ({cmd_status} << (CSRNG_CMD_STS_WIDTH * inst_idx));
+
+    // Force signals
+    if (!uvm_hdl_force(path_ack, 1'b1)) begin
+      `uvm_error(`gfn, $sformatf("Path %s could not be forced", path_ack))
+    end else begin
+      `uvm_info(`gfn, $sformatf("Path %s forced to 1", path_ack), UVM_MEDIUM)
+    end
+    if (!uvm_hdl_force(path_ack_sts, value_ack_sts)) begin
+      `uvm_error(`gfn, $sformatf("Path %s could not be forced", path_ack))
+    end else begin
+      `uvm_info(`gfn, $sformatf("Path %s forced to %b", path_ack_sts, value_ack_sts), UVM_MEDIUM)
+    end
+  endtask
+
+  task release_ack_and_ack_sts(int inst_idx);
+    string path_ack, path_ack_sts;
+
+    // Get paths
+    path_ack = $sformatf("tb.dut.u_csrng_core.cmd_stage_ack[%0d]", inst_idx);
+    path_ack_sts = "tb.dut.u_csrng_core.cmd_stage_ack_sts";
+
+    // Release signals
+    if (!uvm_hdl_release(path_ack)) begin
+      `uvm_error(`gfn, $sformatf("Path %s could not be released", path_ack))
+    end
+    if (!uvm_hdl_release(path_ack_sts)) begin
+      `uvm_error(`gfn, $sformatf("Path %s could not be released", path_ack_sts))
+    end
+  endtask
+
   task test_cs_cmd_req_done();
     cs_item = csrng_item::type_id::create("cs_item");
 
@@ -77,57 +135,38 @@ class csrng_intr_vseq extends csrng_base_vseq;
   endtask // test_cs_entropy_req
 
   task test_cs_sw_cmd_sts();
-    // TODO(#16516): Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
-    // response as described in the documentation
-    // 1. Failure of the entropy source
-    // 2. Attempts to use an instance which has not been properly instantiated, or
-    // 3. Attempts to generate data when an instance has exceeded its maximum seed life.
-    path1 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", 2);
-    path2 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", 2);
-
+    // TODO(#22869): Instead of forcing ack_sts, actually generate the different error conditions.
     // Force error on SW instance
-    force_path(path1, path2, 1'b1, 1'b1);
+    force_ack_and_ack_sts(2, CMD_STS_INVALID_CMD_SEQ);
     // Wait for SW_CMD_STS getting set
-    csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(1'b1));
+    csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(CMD_STS_INVALID_CMD_SEQ));
     cov_vif.cg_err_code_sample(.err_code(32'b0));
-    `DV_CHECK(uvm_hdl_release(path1));
-    `DV_CHECK(uvm_hdl_release(path2));
+    release_ack_and_ack_sts(2);
   endtask
 
   task test_cs_hw_inst_exc();
-    // TODO(#16516): Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
-    // response as described in the documentation
-    // 1. Failure of the entropy source
-    // 2. Attempts to use an instance which has not been properly instantiated, or
-    // 3. Attempts to generate data when an instance has exceeded its maximum seed life.
+    // TODO(#22869): Instead of forcing ack_sts, actually generate the different error conditions.
     bit [31:0] backdoor_err_code_val;
 
-    path1 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", 0);
-    path2 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", 0);
-    path3 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", 1);
-    path4 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", 1);
-
     // Force error on HW instance 0.
-    force_path(path1, path2, 1'b1, 1'b1);
+    force_ack_and_ack_sts(0, CMD_STS_INVALID_CMD_SEQ);
     // Wait for cs_hw_inst_exc interrupt
     csr_spinwait(.ptr(ral.intr_state.cs_hw_inst_exc), .exp_data(1'b1));
     cov_vif.cg_err_code_sample(.err_code(32'b0));
 
     // Force errors on both HW instance 1 and 0.
-    force_path(path3, path4, 1'b1, 1'b1);
+    force_ack_and_ack_sts(1, CMD_STS_INVALID_CMD_SEQ);
     cfg.clk_rst_vif.wait_clks(100);
     cov_vif.cg_err_code_sample(.err_code(32'b0));
 
-    `DV_CHECK(uvm_hdl_release(path1));
-    `DV_CHECK(uvm_hdl_release(path2));
+    release_ack_and_ack_sts(0);
 
     // Now only have error on HW instance 1.
     cfg.clk_rst_vif.wait_clks(100);
     cov_vif.cg_err_code_sample(.err_code(32'b0));
 
     // Release last error so that we're back to normal operation.
-    `DV_CHECK(uvm_hdl_release(path3));
-    `DV_CHECK(uvm_hdl_release(path4));
+    release_ack_and_ack_sts(1);
 
     // Expect/Clear interrupt bit
     check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));

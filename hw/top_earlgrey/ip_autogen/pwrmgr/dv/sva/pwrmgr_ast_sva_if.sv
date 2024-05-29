@@ -26,18 +26,18 @@ interface pwrmgr_ast_sva_if #(
   // takes 0 cycles, and assertion takes a 2 cycle synchronizer delay on
   // the slow clock; deassertion of main_pok takes one cycle, and assertion
   // not more than 2 cycles.
-  localparam int MIN_CLK_WAIT_CYCLES = 0;
-  localparam int MIN_PDN_WAIT_CYCLES = 0;
-  localparam int MAX_CLK_WAIT_CYCLES = 60;
-  localparam int MAX_PDN_WAIT_CYCLES = 110;
+  localparam int MinClkWaitCycles = 0;
+  localparam int MinPdnWaitCycles = 0;
+  localparam int MaxClkWaitCycles = 60;
+  localparam int MaxPdnWaitCycles = 110;
 
   bit disable_sva;
   bit reset_or_disable;
 
   always_comb reset_or_disable = !rst_slow_ni || disable_sva;
 
-  `define CLK_WAIT_BOUNDS ##[MIN_CLK_WAIT_CYCLES:MAX_CLK_WAIT_CYCLES]
-  `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_PDN_WAIT_CYCLES]
+  `define CLK_WAIT_BOUNDS ##[MinClkWaitCycles:MaxClkWaitCycles]
+  `define PDN_WAIT_BOUNDS ##[MinPdnWaitCycles:MaxPdnWaitCycles]
 
   // Clock enable-valid.
 

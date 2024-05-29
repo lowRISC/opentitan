@@ -55,10 +55,59 @@ class aon_timer_env_cov extends cip_base_env_cov #(.CFG_T(aon_timer_env_cfg));
 
   endgroup : timer_cfg_cg
 
+  // Covergroup: wake_up_timer_thold_hit_cg
+  // Samples count, threshold and interrupt for the wake-up timer.
+  // Crosses the threshold with the interrupt
+  covergroup wake_up_timer_thold_hit_cg with function sample(bit        wkup_int,
+                                                             bit [63:0] wkup_thold,
+                                                             bit [63:0] wkup_count);
+
+    wkup_count_cp: coverpoint wkup_count {option.auto_bin_max = 512;}
+    wkup_thold_cp: coverpoint wkup_thold {option.auto_bin_max = 512;}
+    wkup_int_cp  : coverpoint wkup_int   {bins unset          = {0};
+                                          bins set            = {1};
+    }
+    wkup_thold_cpXwkup_int_cp:  cross wkup_thold_cp, wkup_int_cp;
+  endgroup : wake_up_timer_thold_hit_cg
+
+  // Covergroup: watchdog_timer_bite_thold_hit_cg
+  // Samples count, threshold and interrupt for bite interrupt.
+  // Crosses the threshold with the interrupt
+  covergroup watchdog_timer_bite_thold_hit_cg with function sample(bit        wdog_bite_rst,
+                                                                   bit [31:0] wdog_thold,
+                                                                   bit [31:0] wdog_count);
+
+    wdog_count_cp:    coverpoint wdog_count {option.auto_bin_max = 256;}
+    wdog_thold_cp:    coverpoint wdog_thold {option.auto_bin_max = 256;}
+    wdog_bite_rst_cp: coverpoint wdog_bite_rst   { bins unset    = {0};
+                                                   bins set      = {1};
+    }
+    wdog_thold_cpXwdog_bite_rst:  cross wdog_thold_cp, wdog_bite_rst;
+  endgroup : watchdog_timer_bite_thold_hit_cg
+
+  // Covergroup: watchdog_timer_bark_thold_hit_cg
+  // Samples count, threshold and interrupt for bark interrupt.
+  // Crosses the threshold with the interrupt
+  covergroup watchdog_timer_bark_thold_hit_cg with function sample(bit        wdog_bark_int,
+                                                                   bit [31:0] wdog_thold,
+                                                                   bit [31:0] wdog_count);
+
+    wdog_count_cp:    coverpoint wdog_count {option.auto_bin_max = 256;}
+    wdog_thold_cp:    coverpoint wdog_thold {option.auto_bin_max = 256;}
+    wdog_bark_int_cp: coverpoint wdog_bark_int   { bins unset          = {0};
+                                                   bins set            = {1};
+    }
+    wdog_thold_cpXwdog_bark_rst:  cross wdog_thold_cp, wdog_bark_int;
+  endgroup : watchdog_timer_bark_thold_hit_cg
+
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     // [instantiate covergroups here]
     timer_cfg_cg = new(name);
+    wake_up_timer_thold_hit_cg = new();
+    watchdog_timer_bite_thold_hit_cg = new();
+    watchdog_timer_bark_thold_hit_cg = new();
   endfunction : new
 
 endclass

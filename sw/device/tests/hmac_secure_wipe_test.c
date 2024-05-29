@@ -81,9 +81,9 @@ bool test_main(void) {
   const uint32_t kSecureWipeValue = UINT32_MAX;
   CHECK_DIF_OK(dif_hmac_wipe_secret(&hmac, kSecureWipeValue, &digest));
 
-  // Secure wipe is just an XOR of kSecureWipeValue with the digest words.
+  // Secure wipe is kSecureWipeValue overwritten to the digest words.
   for (size_t i = 0; i < ARRAYSIZE(digest.digest); ++i) {
-    uint32_t expected_value = kSecureWipeValue ^ kExpectedHmacDigest.digest[i];
+    uint32_t expected_value = kSecureWipeValue;
     CHECK(digest.digest[i] == expected_value,
           "Expected digest[%d] = %x, actual = %x", i, expected_value,
           digest.digest[i]);

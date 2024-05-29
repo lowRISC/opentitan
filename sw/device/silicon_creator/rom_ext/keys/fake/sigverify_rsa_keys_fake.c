@@ -26,9 +26,6 @@ const size_t kSigverifyRsaKeysStep = 1;
 
 /**
  * Fake public keys for signature verification in tests.
- *
- * Please see sw/device/silicon_creator/rom/keys/README.md for more
- * details.
  */
 const sigverify_rom_ext_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {

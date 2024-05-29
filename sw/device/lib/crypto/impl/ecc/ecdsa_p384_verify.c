@@ -14,21 +14,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'v')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_verify);  // The OTBN ECDSA/P-384 app.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         dptr_x);  // pointer to x-coordinate (dptr_x)
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         dptr_y);  // pointer to y-coordinate (dptr_y)
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         dptr_rnd);  // pointer to rnd (dptr_rnd)
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         dptr_msg);  // pointer to msg (dptr_msg)
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, dptr_r);  // pointer to R (dptr_r)
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, dptr_s);  // pointer to S (dptr_s)
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_verify);     // The OTBN ECDSA/P-384 app.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, x);  // Public key x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, y);  // Public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         rnd);  // result of verify (x1 coordinate)
+                         x_r);  // result of verify (x1 coordinate)
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
                          msg);                   // hash message to sign/verify
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, r);  // r part of signature
@@ -36,18 +26,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, s);  // s part of signature
 
 static const otbn_app_t kOtbnAppEcdsaVerify =
     OTBN_APP_T_INIT(p384_ecdsa_verify);
-static const otbn_addr_t kOtbnVarEcdsaDptrX =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, dptr_x);
-static const otbn_addr_t kOtbnVarEcdsaDptrY =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, dptr_y);
-static const otbn_addr_t kOtbnVarEcdsaDptrRnd =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, dptr_rnd);
-static const otbn_addr_t kOtbnVarEcdsaDptrMsg =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, dptr_msg);
-static const otbn_addr_t kOtbnVarEcdsaDptrR =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, dptr_r);
-static const otbn_addr_t kOtbnVarEcdsaDptrS =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, dptr_s);
 static const otbn_addr_t kOtbnVarEcdsaX =
     OTBN_ADDR_T_INIT(p384_ecdsa_verify, x);
 static const otbn_addr_t kOtbnVarEcdsaY =
@@ -59,7 +37,7 @@ static const otbn_addr_t kOtbnVarEcdsaR =
 static const otbn_addr_t kOtbnVarEcdsaS =
     OTBN_ADDR_T_INIT(p384_ecdsa_verify, s);
 static const otbn_addr_t kOtbnVarEcdsaRnd =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, rnd);
+    OTBN_ADDR_T_INIT(p384_ecdsa_verify, x_r);
 
 enum {
   /*
@@ -86,34 +64,6 @@ enum {
   kOtbnEcdsaModeVerify = 0x727,
 };
 
-/**
- * Makes a single dptr in the P384 library point to where its value is stored.
- */
-static void setup_data_pointer(const otbn_addr_t dptr,
-                               const otbn_addr_t value) {
-  otbn_dmem_write(sizeof(value) / sizeof(uint32_t), &value, dptr);
-}
-
-/**
- * Sets up all data pointers used by the P384 library to point to DMEM.
- *
- * The ECDSA P384 OTBN library makes use of "named" data pointers as part of
- * its calling convention, which are exposed as symbol starting with `dptr_`.
- * The DMEM locations these pointers refer to is not mandated by the P384
- * calling convention; the values can be placed anywhere in OTBN DMEM.
- *
- * This function makes the data pointers refer to the pre-allocated DMEM
- * regions to store the actual values.
- */
-static void setup_data_pointers(void) {
-  setup_data_pointer(kOtbnVarEcdsaDptrX, kOtbnVarEcdsaX);
-  setup_data_pointer(kOtbnVarEcdsaDptrY, kOtbnVarEcdsaY);
-  setup_data_pointer(kOtbnVarEcdsaDptrRnd, kOtbnVarEcdsaRnd);
-  setup_data_pointer(kOtbnVarEcdsaDptrMsg, kOtbnVarEcdsaMsg);
-  setup_data_pointer(kOtbnVarEcdsaDptrR, kOtbnVarEcdsaR);
-  setup_data_pointer(kOtbnVarEcdsaDptrS, kOtbnVarEcdsaS);
-}
-
 status_t ecdsa_p384_verify_start(const ecdsa_p384_signature_t *signature,
                                  const uint32_t digest[kP384ScalarWords],
                                  const p384_point_t *public_key) {
@@ -123,9 +73,6 @@ status_t ecdsa_p384_verify_start(const ecdsa_p384_signature_t *signature,
 
   // Load the ECDSA/P-384 app
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsaVerify));
-
-  // Set up the data pointers
-  setup_data_pointers();
 
   // Set the message digest.
   HARDENED_TRY(set_message_digest(digest, kOtbnVarEcdsaMsg));
@@ -152,10 +99,10 @@ status_t ecdsa_p384_verify_finalize(const ecdsa_p384_signature_t *signature,
   HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read x_r (recovered R) out of OTBN dmem.
-  uint32_t rnd[kP384ScalarWords];
-  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarEcdsaRnd, rnd));
+  uint32_t x_r[kP384ScalarWords];
+  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarEcdsaRnd, x_r));
 
-  *result = hardened_memeq(rnd, signature->r, kP384ScalarWords);
+  *result = hardened_memeq(x_r, signature->r, kP384ScalarWords);
 
   // Wipe DMEM.
   HARDENED_TRY(otbn_dmem_sec_wipe());

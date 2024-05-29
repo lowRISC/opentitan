@@ -35,12 +35,7 @@ class flash_ctrl_rd_ooo_vseq extends flash_ctrl_legacy_base_vseq;
           `DV_CHECK_RANDOMIZE_FATAL(this)
           ctrl = rand_op;
           bank = rand_op.addr[OTFBankId];
-          if (ctrl.partition == FlashPartData) begin
-            num = ctrl_num;
-          end else begin
-            num = ctrl_info_num;
-          end
-          read_flash(ctrl, bank, num, fractions);
+          read_flash(ctrl, bank, ctrl_num, fractions);
         end
       end
     join

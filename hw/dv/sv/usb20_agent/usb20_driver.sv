@@ -8,7 +8,14 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   `uvm_component_new
 
   // These delays are in terms of bit intervals
-  int usb_rst_time = 100_000;  // upto 10ms
+  //
+  // TODO: introduce variation in the duration of the signaling, and permit these intervals to be
+  // shortened for those sequences not specifically designed to test with real-world timings;
+  // it's just wasting simulation time for many of the sequences since the DUT must respond long
+  // before the protracted Reset/Resume Signaling concludes.
+
+  int usb_rst_time = 120_000;  // Bit intervals @ 12Mbps => 10ms
+  int usb_resume_time = 240_000;
   int usb_idle_clk_cycles = 5;
   int usb_pwr_good_clk_cycles = 100;  // arbitrary short delay post-VBUS assertion.
 
@@ -40,12 +47,42 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
         seq_item_port.get_next_item(req_item);
         $cast(rsp_item, req_item.clone());
         rsp_item.set_id_info(req_item);
-        case (req_item.m_pkt_type)
-          PktTypeToken:     prepare_token_packet(req_item, rsp_item);
-          PktTypeData:      prepare_data_packet(req_item, rsp_item);
-          PktTypeHandshake: prepare_handshake_packet(req_item, rsp_item);
-          PktTypeSoF:       prepare_sof_packet(req_item, rsp_item);
-          default: `uvm_fatal(`gfn, $sformatf("Pkt type %x not supported", req_item.m_pkt_type))
+        unique case (req_item.m_ev_type)
+          // Send Bus Reset to the DUT.
+          EvBusReset: begin
+            // No response required, and this is a lengthy operation; Reset Signaling is supposed
+            // to take >= 10ms under the USB 2.0 Protocol Specification.
+            seq_item_port.item_done(rsp_item);
+            bus_reset();
+          end
+          // Resume Signaling (exit from Suspended).
+          EvResume: begin
+            // No response required, and this is a lengthy operation; this must be at least 20ms
+            // for real USB hosts.
+            seq_item_port.item_done(rsp_item);
+            resume_signaling();
+          end
+          // Assert VBUS (connection to USB host).
+          EvConnect: begin
+            cfg.bif.drive_vbus = 1'b1;
+            seq_item_port.item_done(rsp_item);
+          end
+          // Deassert VBUS (disconnection from USB host).
+          EvDisconnect: begin
+            cfg.bif.drive_vbus = 1'b0;
+            seq_item_port.item_done(rsp_item);
+          end
+          // Transmit packet (and maybe receive a response).
+          EvPacket: begin
+            case (req_item.m_pkt_type)
+              PktTypeToken:     prepare_token_packet(req_item, rsp_item);
+              PktTypeData:      prepare_data_packet(req_item, rsp_item);
+              PktTypeHandshake: prepare_handshake_packet(req_item, rsp_item);
+              PktTypeSoF:       prepare_sof_packet(req_item, rsp_item);
+              default: `uvm_fatal(`gfn, $sformatf("Pkt type %x not supported", req_item.m_pkt_type))
+            endcase
+          end
+          default: `uvm_fatal(`gfn, "Invalid/unsupported USB event type")
         endcase
       end
     end
@@ -75,7 +112,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, $sformatf("Complete Token_Packet = %p", comp_token_pkt), UVM_DEBUG)
     drive_pkt(comp_token_pkt);
     if (req_item.m_pid_type == PidTypeInToken) begin
-      get_dut_response(rsp_item);
+      device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)
     end else begin
@@ -107,13 +144,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     `uvm_info(`gfn, $sformatf("Complete Data_Packet = %p", comp_data_pkt), UVM_DEBUG)
     drive_pkt(comp_data_pkt);
-    `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
     if (req_item.m_usb_transfer == IsoTrans) begin
       seq_item_port.item_done();
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
     end else begin
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
-      get_dut_response(rsp_item);
+      device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
     end
   endtask
@@ -195,7 +229,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // EOP Task
   // -------------------------------
   task end_of_packet();
-    for (int j = 0; j < 2; j++) begin
+    int se0_bits = cfg.single_bit_SE0 ? 1 : 2;
+    for (int j = 0; j < se0_bits; j++) begin
       drive_bit_interval(EOP[j], EOP[j]);
     end
     `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
@@ -207,17 +242,21 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   task bit_stuffing(input bit packet[], output bit bit_stuff_out[]);
     int consecutive_ones_count = 0;
     bit stuffed[$];
-    for (int i = 0; i < packet.size(); i++) begin
-      stuffed.push_back(packet[i]);
-      if (packet[i] == 1'b1) begin
-        consecutive_ones_count = consecutive_ones_count + 1;
-        if (consecutive_ones_count >= 6) begin
-          consecutive_ones_count = 0;
-          stuffed.push_back(1'b0);
-        end
-      end else consecutive_ones_count = 0;
+    if (cfg.disable_bitstuffing) begin
+      bit_stuff_out = packet;
+    end else begin
+      for (int i = 0; i < packet.size(); i++) begin
+        stuffed.push_back(packet[i]);
+        if (packet[i] == 1'b1) begin
+          consecutive_ones_count = consecutive_ones_count + 1;
+          if (consecutive_ones_count >= 6) begin
+            consecutive_ones_count = 0;
+            stuffed.push_back(1'b0);
+          end
+        end else consecutive_ones_count = 0;
+      end
+      bit_stuff_out = stuffed;
     end
-    bit_stuff_out = stuffed;
   endtask
 
   // Returns 1 in the event of detecting a bit stuffing error, output is
@@ -291,12 +330,11 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       // Idle period post DUT reset.
       repeat (usb_idle_clk_cycles)
         drive_bit_interval(1'b0, 1'b0);
-      // TODO: the generation of Bus Reset on the USB shall probably want to become a sequence item,
-      // so that it my be done on demand during sequences, and to prevent it interfering with other
-      // test sequences.
       cfg.bif.drive_vbus = 1'b1;
       repeat (usb_pwr_good_clk_cycles)
         drive_bit_interval(1'b1, 1'b0);
+      // Waitfor device active state
+      `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
       bus_reset();
     end
   endtask
@@ -304,20 +342,62 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // USB Bus Reset Task
   // -------------------------------
   task bus_reset();
-    // Waitfor device active state
-    `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
     // Reset bus or drive 0 on both DP and DN for 10ms
     repeat (usb_rst_time)
       drive_bit_interval(1'b0, 1'b0);
-    `uvm_info(`gfn, "Reset for 10ms completed", UVM_DEBUG)
+    `uvm_info(`gfn, "Reset for 10ms completed", UVM_MEDIUM)
     // After reset change state to IDLE
     repeat(usb_idle_clk_cycles)
       drive_bit_interval(1'b1, 1'b0);
   endtask
 
+  // Resume Signaling
+  task resume_signaling();
+    // K state signaling required for at least 20ms.
+    repeat (usb_resume_time)
+      drive_bit_interval(1'b0, 1'b1);
+    `uvm_info(`gfn, "Resume Signaling for 20ms completed", UVM_MEDIUM)
+    // _Low_ Speed EOP (SE0 for two bit intervals, J for one); LS is 1.5Mbps,
+    // so 8x longer than FS signaling.
+    for (int unsigned i = 0; i < 24; i++) begin
+      drive_bit_interval((i >= 16), 1'b0);
+    end
+  endtask
+
   // Get_DUT_Response
   // -------------------------------
-  task get_dut_response(ref usb20_item rsp_item);
+  // This task verifies the device status following the transmission of an OUT packet or IN token.
+  // Upon receiving the IN token/OUT packet, the device is expected to initiate a response.
+  // This task monitors whether the device initiates the response in the form of a
+  // handshake or data packet within the specified timeout period.
+  // If no response is detected within timeout frame that is 18 bit times(from section 7.1.19.1),
+  // it send timeout response to sequence.
+  task device_response(ref usb20_item rsp_item);
+    bit timed_out = 1'b0;
+    `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_MEDIUM)
+    fork begin : isolation_fork
+      fork
+        begin
+          repeat (18 * 4) begin  // 18 bit-intervals, 4 x oversampling
+            @(posedge cfg.bif.clk_i);
+            // TODO: change this to avoid stealing a look at the USBDEV driver enable.
+            if (cfg.bif.usb_dp_en_o) break;
+          end
+          // Has the device started transmitting?
+          if (!cfg.bif.usb_dp_en_o) begin
+            timed_out = 1'b1;
+            disable get_device_response;
+          end
+        end
+        get_device_response(rsp_item);
+      join
+      `uvm_info(`gfn, $sformatf("timed_out = %d", timed_out), UVM_MEDIUM)
+      // this bit will indicate if device didn't repond within timeout period.
+      cfg.timed_out = timed_out;
+    end join
+  endtask
+
+  task get_device_response(ref usb20_item rsp_item);
     bit received_pkt[];
     bit nrzi_out_pkt[];
     bit decoded_received_pkt[];

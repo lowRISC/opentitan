@@ -677,6 +677,8 @@
   iterations: 15
   gen_test: riscv_rand_instr_test
   rtl_test: core_ibex_pc_intg_test
+  rtl_params:
+    SecureIbex: 1
 
 - test: riscv_rf_intg_test
   description: >
@@ -684,6 +686,8 @@
   iterations: 15
   gen_test: riscv_rand_instr_test
   rtl_test: core_ibex_rf_intg_test
+  rtl_params:
+    SecureIbex: 1
 
 - test: riscv_icache_intg_test
   description: >
@@ -691,6 +695,8 @@
   iterations: 15
   gen_test: riscv_rand_instr_test
   rtl_test: core_ibex_icache_intg_test
+  rtl_params:
+    SecureIbex: 1
 
 - test: riscv_rv32im_instr_test
   description: >

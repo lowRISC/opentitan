@@ -28,6 +28,7 @@ class usbdev_setup_stage_vseq extends usbdev_base_vseq;
   // Construct and transmit a DATA packet containing a SETUP descriptor to the USB device
   task call_desc_sequence(input pid_type_e pid_type);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
     m_data_pkt.m_bmRT = bmrequesttype_e'(bmRequestType3);

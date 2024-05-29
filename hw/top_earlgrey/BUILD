@@ -9,6 +9,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_cw305",
@@ -112,29 +113,24 @@ fpga_cw310(
     name = "fpga_cw310_rom_with_fake_keys",
     testonly = True,
     base = ":fpga_cw310_test_rom",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw310_rom_with_fake_keys",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rom = select({
-        "//signing:test_keys": "//sw/device/silicon_creator/rom:rom_with_fake_keys",
-        "//conditions:default": "//sw/device/silicon_creator/rom:rom_with_real_keys",
-    }),
-    rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
-    }),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
 )
 
 fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,
     base = ":fpga_cw310_test_rom",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "fpga_cw310_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
         "interface": "cw310",
@@ -142,7 +138,7 @@ fpga_cw310(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
 )
@@ -157,8 +153,9 @@ fpga_cw310(
     ],
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_hyper310_rom_with_fake_keys",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
     param = {
@@ -166,9 +163,8 @@ fpga_cw310(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_mmi = "//hw/bitstream/hyperdebug:rom_mmi",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
@@ -182,13 +178,14 @@ fpga_cw310(
     name = "fpga_hyper310_rom_ext",
     testonly = True,
     base = ":fpga_hyper310_rom_with_fake_keys",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "fpga_hyper310_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
         "interface": "hyper310",
@@ -209,13 +206,13 @@ fpga_cw310(
     name = "fpga_cw310_sival",
     testonly = True,
     base = ":fpga_hyper310_rom_with_fake_keys",
-    exec_env = "fpga_cw310_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
 
     # PROD keys are allowed to run across all life cycle stages. This prod key
     # is used to enable execution across life cycle stages with a single
     # binary.
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = "fpga_cw310_sival",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
     tags = ["cw310_sival"],
 )
 
@@ -227,6 +224,7 @@ fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
     base = ":fpga_hyper310_rom_ext",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "fpga_cw310_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -315,13 +313,13 @@ fpga_cw340(
     testonly = True,
     base = ":fpga_cw340",
     base_bitstream = "//hw/bitstream/cw340:bitstream",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw340_rom_with_fake_keys",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/cw340:otp_mmi",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_mmi = "//hw/bitstream/cw340:rom_mmi",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
@@ -335,13 +333,14 @@ fpga_cw340(
     name = "fpga_cw340_rom_ext",
     testonly = True,
     base = ":fpga_cw340_rom_with_fake_keys",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "fpga_cw340_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw340",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
         "interface": "hyper340",
@@ -362,13 +361,13 @@ fpga_cw340(
     name = "fpga_cw340_sival",
     testonly = True,
     base = ":fpga_cw340_rom_with_fake_keys",
-    exec_env = "fpga_cw340_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
 
     # PROD keys are allowed to run across all life cycle stages. This prod key
     # is used to enable execution across life cycle stages with a single
     # binary.
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = "fpga_cw340_sival",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
     tags = ["cw340_sival"],
 )
 
@@ -380,6 +379,7 @@ fpga_cw340(
     name = "fpga_cw340_sival_rom_ext",
     testonly = True,
     base = ":fpga_cw340_rom_ext",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "fpga_cw340_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -403,22 +403,20 @@ silicon(
         "--interface={interface}",
     ],
     design = "earlgrey",
+    # TODO: Add switch to enable privdate key.
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "silicon_creator",
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:silicon",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     param = {
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0"},
-    }),
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
@@ -431,27 +429,31 @@ silicon(
     name = "silicon_owner_sival_rom_ext",
     testonly = True,
     args = [
-        "--rcfile=",
+        "--rcfile=__builtin__/hyperdebug_teacup.json",
         "--logging=info",
         "--interface={interface}",
     ],
     design = "earlgrey",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "silicon_owner_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:silicon",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_owner:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest",
     param = {
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
+    # The //conditions:default ROM_EXT needs to be updated to use the following
+    # target once available:
+    # //sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_real_prod_signed_slot_a
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_real_prod_signed_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
     }),
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
@@ -469,10 +471,14 @@ silicon(
     name = "silicon_owner_prodc_rom_ext",
     testonly = True,
     base = ":silicon_owner_sival_rom_ext",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "silicon_owner_prodc_rom_ext",
+    # The //conditions:default ROM_EXT needs to be updated to use the following
+    # target once available:
+    # //sw/device/silicon_creator/rom_ext/prodc/binaries:rom_ext_real_prod_signed_slot_a.
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/prodc/binaries:rom_ext_real_prod_signed_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
     }),
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
@@ -527,6 +533,15 @@ sim_verilator(
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
+)
+
+sim_verilator(
+    name = "sim_verilator_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_verilator",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    rom = "//sw/device/silicon_creator/rom:mask_rom_sim_verilator",
 )
 
 ###########################################################################

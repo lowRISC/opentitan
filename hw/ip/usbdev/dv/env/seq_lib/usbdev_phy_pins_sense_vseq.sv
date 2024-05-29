@@ -14,10 +14,8 @@ class usbdev_phy_pins_sense_vseq extends usbdev_base_vseq;
     bit rx_dp;
     bit rx_dn;
 
-    super.dut_init("HARD");
     // Configure phy_pins_drive register
     // Set dp and dn randomly (0 or 1)
-
     csr_wr(.ptr(ral.phy_pins_drive.dp_o), .value(set_dp));
     csr_wr(.ptr(ral.phy_pins_drive.dn_o), .value(set_dn));
     csr_wr(.ptr(ral.phy_pins_drive.oe_o), .value(1'b1));
@@ -31,7 +29,6 @@ class usbdev_phy_pins_sense_vseq extends usbdev_base_vseq;
     // output (sampled by phy_pins_sense reg)
     `DV_CHECK_EQ(set_dp, rx_dp)
     `DV_CHECK_EQ(set_dn, rx_dn)
-
   endtask
 
 endclass

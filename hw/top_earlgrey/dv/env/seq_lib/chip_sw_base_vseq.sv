@@ -751,10 +751,48 @@ class chip_sw_base_vseq extends chip_base_vseq;
             (is_test_unlocked_lc_state(state) == 1));
   endfunction
 
-
   // LC_CTRL JTAG tasks
+
+
+  // Wait until pinmux has become configured for JTAG signals to be routed to lc_ctrl. Fail if this
+  // doesn't happen within max_cycles cycles.
+  task wait_lc_ctrl_jtag_connection(int max_cycles = 1000);
+    bit connected = 1'b0;
+
+    fork : isolation_fork
+      fork
+        cfg.clk_rst_vif.wait_clks(max_cycles);
+        forever begin
+          uvm_hdl_data_t tap_strap_value;
+          string tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+                                   "u_pinmux_strap_sampling.tap_strap"};
+          `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
+          if (tap_strap_value == pinmux_pkg::LcTapSel) begin
+            connected = 1'b1;
+            break;
+          end
+          cfg.clk_rst_vif.wait_clks(10);
+        end
+      join_any
+      disable fork;
+    join
+
+    if (!connected) begin
+      `uvm_fatal(`gfn, $sformatf("Cycle timeout (%0d) for pinmux to connect JTAG to lc_ctrl",
+                                 max_cycles))
+    end
+  endtask
+
+  // Read the lc_ctrl status over JTAG and wait until it becomes expect_status.
+  //
+  // This task will only work when the dut power-on sequence has got far enough for the JTAG signals
+  // to be routed correctly to lc_ctrl.
   virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attempt = 5000);
     int i;
+
+    // Make sure the DUT power-on sequence has got far enough for this to work at all.
+    wait_lc_ctrl_jtag_connection(100000);
+
     for (i = 0; i < max_attempt; i++) begin
       bit [TL_DW-1:0] status_val;
       lc_ctrl_status_e dummy;

@@ -25,9 +25,9 @@ package chip_common_pkg;
   parameter uint ROM_CONSOLE_UART = 0;
 
   // ROM Boot Fault Values, matches definitions in `rules/const.bzl`.
-  parameter string ROM_BFV_BAD_IDENTIFIER     = "0142500d";
-  parameter string ROM_BFV_BAD_RSA_SIGNATURE    = "01535603";
-  parameter string ROM_BFV_INSTRUCTION_ACCESS = "01495202";
+  parameter string ROM_BFV_BAD_IDENTIFIER       = "0142500d";
+  parameter string ROM_BFV_BAD_ECDSA_SIGNATURE  = "07535603";
+  parameter string ROM_BFV_INSTRUCTION_ACCESS   = "01495202";
 
   // ROM Lifecycle Values, matches definitions in `rules/const.bzl`.
   parameter string ROM_LCV_TEST_UNLOCKED0 = "02108421";

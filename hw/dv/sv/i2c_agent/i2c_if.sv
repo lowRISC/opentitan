@@ -228,7 +228,10 @@ interface i2c_if(
     sda_o = 1'b1;
     // First, wait for clock stretching to end before driving the bit.
     // tStretchHostClock represents the extra cycles tacked on from stretching.
-    if (can_stretch) wait_for_dly(tc.tStretchHostClock);
+    if (can_stretch) begin
+      `uvm_info(msg_id, "Device stretch SCL", UVM_MEDIUM)
+      wait_for_dly(tc.tStretchHostClock);
+    end
     wait_for_dly(tc.tClockLow);
     `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_HIGH)
     sda_o = bit_i;
@@ -236,9 +239,14 @@ interface i2c_if(
     @(posedge scl_i);
     `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_HIGH)
     // flip sda_target2host during the clock pulse of scl_host2target causes sda_unstable irq
-    sda_o = ~sda_o;
-    wait_for_dly(tc.tSdaUnstable);
-    sda_o = ~sda_o;
+    if (tc.tSdaUnstable > 0) begin
+      `uvm_info(msg_id, "SDA unstable", UVM_MEDIUM)
+      // Clear any random CDC delays first.
+      wait_for_dly(2);
+      sda_o = ~sda_o;
+      wait_for_dly(tc.tSdaUnstable);
+      sda_o = ~sda_o;
+    end
 
     // Hold the bit past SCL going low, then release.
     wait(!scl_i);
@@ -264,9 +272,14 @@ interface i2c_if(
       scl_o = 1'b1;
     end
     @(posedge scl_i);
-    scl_o = ~scl_o;
-    wait_for_dly(tc.tSclInterference);
-    scl_o = ~scl_o;
+    if (tc.tSclInterference > 0) begin
+      // First clear any random CDC delays and the glitch assertion.
+      `uvm_info(msg_id, "Device SCL interference", UVM_MEDIUM)
+      wait_for_dly(3);
+      scl_o = ~scl_o;
+      wait_for_dly(tc.tSclInterference);
+      scl_o = ~scl_o;
+    end
   endtask : device_stretch_host_clk
 
   // when the I2C module is in transmit mode, `sda_interference` interrupt
@@ -275,15 +288,23 @@ interface i2c_if(
   task automatic get_bit_data(string src = "host",
                               ref timing_cfg_t tc,
                               output bit bit_o);
+    if ((src == "host") && (tc.tSdaInterference & 1'b1)) begin
+      `uvm_info(msg_id, "SDA interference, SCL=0", UVM_MEDIUM)
+      sda_o = 1'b0;
+    end
+
     @(posedge scl_i);
     bit_o = sda_i;
 
     if (src == "host") begin // host transmits data (addr/wr_data)
       `uvm_info(msg_id, $sformatf("get bit data %d", bit_o), UVM_HIGH)
       // force sda_target2host low during the clock pulse of scl_host2target
-      sda_o = 1'b0;
-      wait_for_dly(tc.tSdaInterference);
-      sda_o = 1'b1;
+      if (tc.tSdaInterference > 0) begin
+        `uvm_info(msg_id, "SDA interference, SCL=1", UVM_MEDIUM)
+        sda_o = 1'b0;
+        wait_for_dly(tc.tSdaInterference);
+        sda_o = 1'b1;
+      end
       // The code below was originally written as
       // wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaInterference);
       // But this functionally should be identical to just waiting for the

@@ -2,16 +2,21 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "opentitan_test",
     "verilator_params",
 )
 load("@ot_python_deps//:requirements.bzl", "requirement")
+
+package(default_visibility = ["//visibility:public"])
 
 opentitan_test(
     name = "fors_test",
@@ -51,7 +56,14 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "verify_test_hardcoded",
     srcs = ["verify_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    # TODO(#22871): Remove "broken" tag once the tests are fixed.
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),

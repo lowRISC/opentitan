@@ -42,7 +42,7 @@ assign hw2reg = 'b0;
 
 // TODO
 logic d, q;
-assign d = 1'b1;
+assign d = keymgr_key_i.valid;
 
 logic unused_q;
 assign unused_q = q;

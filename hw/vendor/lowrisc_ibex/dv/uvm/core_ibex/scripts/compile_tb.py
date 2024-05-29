@@ -20,10 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 def _get_iss_pkgconfig_flags(specifiers, iss_pc, simulator):
-    _flags = subprocess.check_output(
-        args=(['pkg-config'] + specifiers + iss_pc),
-        universal_newlines=True,
-        ).strip()
+    # Seperate pkg-config calls for each specifier as combining them has been
+    # observed misbehaving on CentOS 7
+    _flags = ' '.join([subprocess.check_output(
+                        args=(['pkg-config', s] + iss_pc),
+                        universal_newlines=True,).strip()
+                       for s in specifiers])
+
     if simulator == 'xlm':
         # See xcelium documentation for the -Wld syntax for passing
         # flags to the linker. Passing -rpath,<path> options is tricky
@@ -63,8 +66,12 @@ def _main() -> int:
             'dut_cov_rtl_path': md.dut_cov_rtl_path
         }
 
-        # Locate the spike .pc files to allow us to link against it when building
-        spike_iss_pc = ['riscv-riscv', 'riscv-disasm', 'riscv-fdt']
+        # Locate the spike .pc files to allow us to link against it when
+        # building, riscv-fesvr isn't strictly required but the DV flow has been
+        # observed to see build failures where it isn't present with CentOS 7.
+        spike_iss_pc = ['riscv-riscv', 'riscv-disasm', 'riscv-fdt',
+            'riscv-fesvr']
+
         iss_pkgconfig_dict = {
             'ISS_CFLAGS'  : ['--cflags'],
             'ISS_LDFLAGS' : ['--libs-only-other'],

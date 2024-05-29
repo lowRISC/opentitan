@@ -47,15 +47,25 @@ module pwrmgr_bind;
     .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)
   );
 
-  bind pwrmgr clkmgr_pwrmgr_sva_if clkmgr_pwrmgr_sva_if (
+  bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_io_sva_if (
     .clk_i,
     .rst_ni,
-    .io_clk_en(pwr_clk_o.io_ip_clk_en),
-    .io_status(pwr_clk_i.io_status),
-    .main_clk_en(pwr_clk_o.main_ip_clk_en),
-    .main_status(pwr_clk_i.main_status),
-    .usb_clk_en(pwr_clk_o.usb_ip_clk_en),
-    .usb_status(pwr_clk_i.usb_status)
+    .clk_en(pwr_clk_o.io_ip_clk_en),
+    .status(pwr_clk_i.io_status)
+  );
+
+  bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_main_sva_if (
+    .clk_i,
+    .rst_ni,
+    .clk_en(pwr_clk_o.main_ip_clk_en),
+    .status(pwr_clk_i.main_status)
+  );
+
+  bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(1)) clkmgr_pwrmgr_usb_sva_if (
+    .clk_i,
+    .rst_ni,
+    .clk_en(pwr_clk_o.usb_ip_clk_en),
+    .status(pwr_clk_i.usb_status)
   );
 
   bind pwrmgr pwrmgr_sec_cm_checker_assert pwrmgr_sec_cm_checker_assert (
@@ -68,7 +78,9 @@ module pwrmgr_bind;
     .clk_slow_i,
     .rst_slow_ni,
     .rst_main_ni,
+    .io_clk_en(pwr_clk_o.io_ip_clk_en),
     .pwr_rst_o,
+    .esc_timeout(esc_timeout_lc_q),
     .slow_esc_rst_req(slow_peri_reqs.rstreqs[3]),
     .slow_mp_rst_req(slow_peri_reqs.rstreqs[2]),
     .slow_fsm_invalid,

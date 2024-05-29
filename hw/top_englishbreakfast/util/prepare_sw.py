@@ -104,7 +104,6 @@ def main():
     delete_path(REPO_TOP / 'hw' / topname / 'dv/autogen')
     delete_path(REPO_TOP / 'hw' / topname / 'dv/env/autogen')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/ast/rtl')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/flash_ctrl')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/pinmux')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/sensor_ctrl/rtl')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_main')
@@ -139,11 +138,11 @@ def main():
     print("Transplanting autogen-ed hjson files")
     REG_FILES = [
         'ip/ast/data/ast.hjson',
-        'ip/flash_ctrl/data/autogen/flash_ctrl.hjson',
         'ip/pinmux/data/autogen/pinmux.hjson',
         'ip/sensor_ctrl/data/sensor_ctrl.hjson',
         'ip_autogen/alert_handler/data/alert_handler.hjson',
         'ip_autogen/clkmgr/data/clkmgr.hjson',
+        'ip_autogen/flash_ctrl/data/flash_ctrl.hjson',
         'ip_autogen/pwrmgr/data/pwrmgr.hjson',
         'ip_autogen/rstmgr/data/rstmgr.hjson',
         'ip_autogen/rv_plic/data/rv_plic.hjson',

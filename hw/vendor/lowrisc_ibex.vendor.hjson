@@ -19,7 +19,11 @@
       patch_dir: "dv"
     }
     "lint",
-    "rtl",
+    {
+      from:      "rtl",
+      to:        "rtl",
+      patch_dir: "rtl"
+    }
     "syn",
     "util",
     "vendor/google_riscv-dv",

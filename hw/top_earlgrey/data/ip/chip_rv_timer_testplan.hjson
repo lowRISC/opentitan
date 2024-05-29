@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_rv_timer
+  name: rv_timer
   testpoints: [
     {
       name: chip_sw_timer

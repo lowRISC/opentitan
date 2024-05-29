@@ -82,9 +82,15 @@ TEST_F(BootPolicyTest, ManifestCheckRollback) {
             kErrorBootPolicyRollback);
 }
 
+struct Versions {
+  uint32_t security;
+  uint32_t major;
+  uint32_t minor;
+};
+
 struct ManifestOrderTestCase {
-  uint32_t version_a;
-  uint32_t version_b;
+  Versions version_a;
+  Versions version_b;
   bool is_a_first;
 };
 
@@ -93,16 +99,23 @@ class ManifestOrderTest
       public testing::WithParamInterface<ManifestOrderTestCase> {};
 
 TEST_P(ManifestOrderTest, ManifestsGet) {
-  manifest_t manifest_a{};
-  manifest_t manifest_b{};
-  manifest_a.security_version = GetParam().version_a;
-  manifest_b.security_version = GetParam().version_b;
+  const ManifestOrderTestCase &param = GetParam();
+  manifest_t manifest_a{
+      .version_major = param.version_a.major,
+      .version_minor = param.version_a.minor,
+      .security_version = param.version_a.security,
+  };
+  manifest_t manifest_b{
+      .version_major = param.version_b.major,
+      .version_minor = param.version_b.minor,
+      .security_version = param.version_b.security,
+  };
 
   EXPECT_CALL(boot_policy_ptrs_, ManifestA).WillOnce(Return(&manifest_a));
   EXPECT_CALL(boot_policy_ptrs_, ManifestB).WillOnce(Return(&manifest_b));
 
   boot_policy_manifests_t res = boot_policy_manifests_get();
-  if (GetParam().is_a_first) {
+  if (param.is_a_first) {
     EXPECT_EQ(res.ordered[0], &manifest_a);
     EXPECT_EQ(res.ordered[1], &manifest_b);
   } else {
@@ -114,25 +127,54 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
 INSTANTIATE_TEST_SUITE_P(
     SecurityVersionCases, ManifestOrderTest,
     testing::Values(
+        // Versions equal, choose A.
         ManifestOrderTestCase{
-            .version_a = 0,
-            .version_b = 0,
+            .version_a = {0, 0, 0},
+            .version_b = {0, 0, 0},
             .is_a_first = true,
         },
+        // A.secver > B.secver, choose A.
         ManifestOrderTestCase{
-            .version_a = 1,
-            .version_b = 0,
+            .version_a = {1, 0, 0},
+            .version_b = {0, 0, 0},
             .is_a_first = true,
         },
+        // A.secver < B.secver, choose B.
         ManifestOrderTestCase{
-            .version_a = 0,
-            .version_b = 1,
+            .version_a = {0, 0, 0},
+            .version_b = {1, 0, 0},
             .is_a_first = false,
         },
+        // Secver equal, A.major > B.major, choose A.
         ManifestOrderTestCase{
-            .version_a = std::numeric_limits<int32_t>::max(),
+            .version_a = {0, 1, 0},
+            .version_b = {0, 0, 0},
+            .is_a_first = true,
+        },
+        // Secver equal, B.major > A.major, choose B.
+        ManifestOrderTestCase{
+            .version_a = {0, 1, 0},
+            .version_b = {0, 2, 0},
+            .is_a_first = false,
+        },
+        // Secver equal, major equal, A.minor > B.minor, choose A.
+        ManifestOrderTestCase{
+            .version_a = {0, 3, 1},
+            .version_b = {0, 3, 0},
+            .is_a_first = true,
+        },
+        // Secver equal, major equal, A.minor < B.minor, choose B.
+        ManifestOrderTestCase{
+            .version_a = {0, 3, 1},
+            .version_b = {0, 3, 5},
+            .is_a_first = false,
+        },
+        // Signed integer limit wraparound. B is larger; choose B.
+        ManifestOrderTestCase{
+            .version_a = {std::numeric_limits<int32_t>::max(), 0, 0},
             .version_b =
-                static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) + 1,
+                {static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) + 1,
+                 0, 0},
             .is_a_first = false,
         }));
 

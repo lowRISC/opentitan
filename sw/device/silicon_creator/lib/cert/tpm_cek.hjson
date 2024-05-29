@@ -43,22 +43,22 @@
 
     certificate: {
         serial_number: { var: "tpm_cek_pub_key_id", convert: "big-endian" },
-        issuer: {
-            country: "USA",
-            state: "CA",
-            organization: "Google",
-            organizational_unit: "Engineering",
-            common_name: "ChromeOS OT ICA"
-        },
+        issuer: [
+            { country: "US" },
+            { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "Google Engineering ICA" },
+        ],
         not_before: "20230101000000Z",
         not_after: "20500101000000Z",
-        subject: {
-            country: "USA",
-            state: "CA",
-            organization: "Google",
-            organizational_unit: "Engineering",
-            common_name: "ChromeOS OT TPM CEK",
-        },
+        subject: [
+            { country: "US" },
+            { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "OT Ti50 TPM CEK" },
+        ],
         subject_public_key_info: {
             algorithm: "ec-public-key",
             curve: "prime256v1",
@@ -69,7 +69,6 @@
         },
         authority_key_identifier: { var: "auth_key_key_id" },
         subject_key_identifier: { var: "tpm_cek_pub_key_id" },
-        extensions: [],
         signature: {
             algorithm: "ecdsa-with-sha256",
             value: {

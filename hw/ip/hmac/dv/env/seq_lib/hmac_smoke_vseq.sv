@@ -7,24 +7,15 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   rand bit               sha_en;
-  rand bit               endian_swap;
-  rand bit               digest_swap;
   rand bit               intr_fifo_empty_en;
   rand bit               intr_hmac_done_en;
   rand bit               intr_hmac_err_en;
-  rand bit [31:0]        key[];
   rand bit [7:0]         msg[];
   rand int               burst_wr_length;
   rand bit               do_hash_start_when_active;
   rand bit               do_hash_start;
   rand bit               re_enable_sha;
   rand wipe_secret_req_e do_wipe_secret;
-
-  // HMAC key size will always be 1024 bits.
-  // key_length determines actual key size used in HW and scoreboard.
-  constraint key_c {
-    key.size() == NUM_KEYS;
-  }
 
   constraint num_trans_c {
     num_trans inside {[1:50]};
@@ -48,7 +39,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   }
 
   constraint burst_wr_c {
-    burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
+    burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH_WR]};
   }
 
   constraint intr_enable_c {
@@ -79,9 +70,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       bit [7:0] msg_q[$];
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d, sha=%0d",
-                i, num_trans, msg.size(), hmac_en, sha_en), UVM_LOW)
-      `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%5b",
+      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d bits, hmac=%0d, sha=%0d",
+                i, num_trans, msg.size()*8, hmac_en, sha_en), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
                 digest_size, key_length), UVM_LOW)
       `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
                 {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
@@ -94,11 +85,12 @@ class hmac_smoke_vseq extends hmac_base_vseq;
                 .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
-      // can randomly read previous digest
-      if (i != 1 && $urandom_range(0, 1)) rd_digest();
+      // always start off the transaction by reading previous digest to clear
+      // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
+      rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeKey) begin
-        `uvm_info(`gfn, $sformatf("wiping before key"), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("wiping before key"), UVM_HIGH)
         wipe_secrets();
         // Check if digest data are corrupted by wiping secrets.
         rd_digest();
@@ -111,8 +103,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeStart) begin
-        `uvm_info(`gfn, $sformatf("wiping before start"), UVM_LOW)
-
+        `uvm_info(`gfn, $sformatf("wiping before start"), UVM_HIGH)
         wipe_secrets();
         // Here the wipe secret will only corrupt secret keys and current digests.
         // If HMAC is not enabled, check if digest is corrupted.
@@ -125,20 +116,22 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         fork
           begin
             if (do_hash_start) trigger_hash();
-
             if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
             else             wr_msg(msg);
           end
+
           begin
             if (do_wipe_secret == WipeSecretBeforeProcess) begin
-              `uvm_info(`gfn, $sformatf("wiping before process"), UVM_LOW)
+              `uvm_info(`gfn, $sformatf("wiping before process"), UVM_HIGH)
               cfg.clk_rst_vif.wait_clks($urandom_range(0, msg.size() * 10));
               wipe_secrets();
             end
           end
         join
 
-        if (!sha_en) begin
+        if (invalid_cfg) begin
+          continue; // discard current transaction
+        end else if (!sha_en) begin
           if (re_enable_sha) begin // restream in the message
             sha_enable();
             if (do_hash_start) trigger_hash();
@@ -150,7 +143,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
 
         if (do_hash_start_when_active && do_hash_start) begin
           trigger_hash_when_active();
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(msg);
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(msg)
           wr_msg(msg);
         end
 
@@ -172,17 +165,18 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         if (do_hash_start) begin
           fork
             begin
-              // wait for interrupt to assert, check status and clear it
-              if (intr_hmac_done_en) begin
-                wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-              end else begin
-                csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+              if (!invalid_cfg) begin
+                // wait for interrupt to assert, check status and clear it
+                if (intr_hmac_done_en) begin
+                  `DV_WAIT(cfg.intr_vif.pins[HmacDone] === 1'b1)
+                end else begin
+                  csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+                end
               end
             end
             begin
               if (do_wipe_secret == WipeSecretBeforeDone) begin
-                        `uvm_info(`gfn, $sformatf("wiping before done"), UVM_LOW)
-
+                `uvm_info(`gfn, $sformatf("wiping before done"), UVM_HIGH)
                 cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
                 wipe_secrets();
               end
@@ -198,7 +192,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       if ($urandom_range(0, 1)) rd_msg_length();
 
       // read digest from DUT
-      `uvm_info(`gfn, $sformatf("will read digest now"), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("reading digest"), UVM_LOW)
       rd_digest();
     end
   endtask : body

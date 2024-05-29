@@ -298,7 +298,8 @@ import i2c_reg_pkg::AcqFifoDepth;
     .rdata_o (ram_rdata),
     .rvalid_o(ram_rvalid),
     .rerror_o(/* unused */),
-    .cfg_i   (ram_cfg_i)
+    .cfg_i   (ram_cfg_i),
+    .alert_o (/* unused */)
   );
   assign {ram_write, ram_addr, ram_wdata} = ram_arb_oup_data;
 

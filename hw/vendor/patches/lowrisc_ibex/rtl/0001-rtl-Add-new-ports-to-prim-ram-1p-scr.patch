@@ -1,0 +1,106 @@
+commit ce590553992529dd1ae3e8d984255abe2a8d631d
+Author: Pascal Nasahl <nasahlpa@lowrisc.org>
+Date:   Tue May 21 07:45:37 2024 +0000
+
+    [PATCH] [rtl] Add new output ports to prim_ram_1p_scr
+    
+    This patch adds the new output ports `wr_collision_o` and
+    `write_pending_o` to the `prim_ram_1p_scr` instantiations inside
+    `ibex_top`.
+    
+    Signed-off-by: Pascal Nasahl <nasahlpa@lowrisc.org>
+
+diff --git a/ibex_top.sv b/ibex_top.sv
+index 69c7cb7bba..df1e607ac4 100644
+--- a/ibex_top.sv
++++ b/ibex_top.sv
+@@ -571,24 +571,26 @@ module ibex_top import ibex_pkg::*; #(
+           .clk_i,
+           .rst_ni,
+ 
+-          .key_valid_i (scramble_key_valid_q),
+-          .key_i       (scramble_key_q),
+-          .nonce_i     (scramble_nonce_q),
+-
+-          .req_i       (ic_tag_req[way]),
+-
+-          .gnt_o       (),
+-          .write_i     (ic_tag_write),
+-          .addr_i      (ic_tag_addr),
+-          .wdata_i     (ic_tag_wdata),
+-          .wmask_i     ({TagSizeECC{1'b1}}),
+-          .intg_error_i(1'b0),
+-
+-          .rdata_o     (ic_tag_rdata[way]),
+-          .rvalid_o    (),
+-          .raddr_o     (),
+-          .rerror_o    (),
+-          .cfg_i       (ram_cfg_i)
++          .key_valid_i      (scramble_key_valid_q),
++          .key_i            (scramble_key_q),
++          .nonce_i          (scramble_nonce_q),
++
++          .req_i            (ic_tag_req[way]),
++
++          .gnt_o            (),
++          .write_i          (ic_tag_write),
++          .addr_i           (ic_tag_addr),
++          .wdata_i          (ic_tag_wdata),
++          .wmask_i          ({TagSizeECC{1'b1}}),
++          .intg_error_i     (1'b0),
++
++          .rdata_o          (ic_tag_rdata[way]),
++          .rvalid_o         (),
++          .raddr_o          (),
++          .rerror_o         (),
++          .cfg_i            (ram_cfg_i),
++          .wr_collision_o   (),
++          .write_pending_o  ()
+         );
+ 
+         // Data RAM instantiation
+@@ -604,24 +606,26 @@ module ibex_top import ibex_pkg::*; #(
+           .clk_i,
+           .rst_ni,
+ 
+-          .key_valid_i (scramble_key_valid_q),
+-          .key_i       (scramble_key_q),
+-          .nonce_i     (scramble_nonce_q),
+-
+-          .req_i       (ic_data_req[way]),
+-
+-          .gnt_o       (),
+-          .write_i     (ic_data_write),
+-          .addr_i      (ic_data_addr),
+-          .wdata_i     (ic_data_wdata),
+-          .wmask_i     ({LineSizeECC{1'b1}}),
+-          .intg_error_i(1'b0),
+-
+-          .rdata_o     (ic_data_rdata[way]),
+-          .rvalid_o    (),
+-          .raddr_o     (),
+-          .rerror_o    (),
+-          .cfg_i       (ram_cfg_i)
++          .key_valid_i      (scramble_key_valid_q),
++          .key_i            (scramble_key_q),
++          .nonce_i          (scramble_nonce_q),
++
++          .req_i            (ic_data_req[way]),
++
++          .gnt_o            (),
++          .write_i          (ic_data_write),
++          .addr_i           (ic_data_addr),
++          .wdata_i          (ic_data_wdata),
++          .wmask_i          ({LineSizeECC{1'b1}}),
++          .intg_error_i     (1'b0),
++
++          .rdata_o          (ic_data_rdata[way]),
++          .rvalid_o         (),
++          .raddr_o          (),
++          .rerror_o         (),
++          .cfg_i            (ram_cfg_i),
++          .wr_collision_o   (),
++          .write_pending_o  ()
+         );
+ 
+         `ifdef INC_ASSERT

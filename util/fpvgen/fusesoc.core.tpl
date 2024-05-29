@@ -25,8 +25,8 @@ generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../data/${dut_name}.hjson
-      depend: lowrisc:ip:${dut_name}
+      spec: ../data/${dut.name}.hjson
+      depend: lowrisc:ip:${dut.name}
 % endif
 
 targets:

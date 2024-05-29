@@ -49,7 +49,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
   // Single direct read data
   data_t flash_rd_one_data;
 
-  localparam data_t ALL_ONES = {TL_DW{1'b1}};
+  localparam data_t AllOnes = {TL_DW{1'b1}};
 
   // Configure sequence knobs to tailor it to smoke seq.
   virtual function void configure_vseq();
@@ -287,7 +287,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
       `uvm_info(`gfn, $sformatf("FLASH DIRECT READ DATA: 0x%0h", flash_rd_one_data), UVM_HIGH)
       //first 5 data have init value while 6th value is overwritten by ctrl due to priority lost
       if (j < 5) begin
-        `DV_CHECK_EQ(flash_rd_one_data, ALL_ONES)
+        `DV_CHECK_EQ(flash_rd_one_data, AllOnes)
       end
       if (j == 5) begin
         `DV_CHECK_EQ(flash_rd_one_data, flash_op_data[0])

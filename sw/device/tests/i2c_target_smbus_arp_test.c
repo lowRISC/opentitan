@@ -297,19 +297,20 @@ static status_t test_init(void) {
   TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
   TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
 
-  // 20 ms stretch timeout. The upper limit of support is ~1 GHz for the IP, so
-  // OK to make the frequency a uint32_t.
-  uint32_t kStretchCycles = ((uint32_t)kClockFreqPeripheralHz / (1000 / 20));
-  TRY(dif_i2c_enable_clock_stretching_timeout(&i2c, kDifToggleEnabled,
-                                              kStretchCycles));
+  // 25 ms bus timeout. The upper limit of support is ~1 GHz for the IP, so OK
+  // to make the frequency a uint32_t.
+  uint32_t kBusTimeoutCycles = ((uint32_t)kClockFreqPeripheralHz / (1000 / 25));
+  TRY(dif_i2c_enable_clock_timeout(&i2c, kDifI2cSclTimeoutBus,
+                                   kBusTimeoutCycles));
 
   // 50 us bus idle timeout.
   uint32_t kIdleCycles = ((uint32_t)kClockFreqPeripheralHz / (1000000 / 50));
   TRY(dif_i2c_set_host_timeout(&i2c, kIdleCycles));
 
-  // TODO: Add TX FIFO reset on unexpected condition. Not available in DIFs yet.
-  // TODO: Maybe RTL should change this feature to a TX stretch only. Then
-  // require clearing the event to allow the FIFO to proceed.
+  // Enable TX stretch controls. Stale TX data should not be left in the FIFO.
+  // This test shouldn't actually run into the scenario for which these controls
+  // were created, but it still handles the mechanisms that guard against it.
+  TRY(dif_i2c_target_tx_stretch_ctrl_set_enabled(&i2c, kDifToggleEnabled));
 
   // Enable N-byte ACK control.
   TRY(dif_i2c_ack_ctrl_set_enabled(&i2c, kDifToggleEnabled));
@@ -319,6 +320,7 @@ static status_t test_init(void) {
   TRY(dif_i2c_set_target_watermarks(&i2c, /*tx_level=*/0,
                                     I2C_PARAM_ACQ_FIFO_DEPTH));
   TRY(dif_i2c_set_device_id(&i2c, &kSmbusArpId, NULL));
+  TRY(dif_i2c_multi_controller_monitor_set_enabled(&i2c, kDifToggleEnabled));
   TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
 
   // Enable all I2C interrupts.
@@ -637,6 +639,13 @@ static status_t prepare_udid_reply(dif_i2c_irq_state_snapshot_t irq_snapshot,
   TRY_CHECK(tx_stretch);
   TRY_CHECK(i2c_status.tx_fifo_empty);
 
+  // Clear the TX pending bit.
+  dif_i2c_target_tx_halt_events_t events = {0};
+  TRY(dif_i2c_get_target_tx_halt_events(&i2c, &events));
+  TRY_CHECK(events.tx_pending);
+  TRY_CHECK(!events.bus_timeout);
+  TRY(dif_i2c_clear_target_tx_halt_events(&i2c, events));
+
   // Should see a Restart with the read to the ARP default address here.
   uint8_t data = 0;
   dif_i2c_signal_t signal;
@@ -675,7 +684,6 @@ static status_t prepare_udid_reply(dif_i2c_irq_state_snapshot_t irq_snapshot,
 static status_t complete_get_udid(dif_i2c_irq_state_snapshot_t irq_snapshot,
                                   dif_i2c_status_t i2c_status) {
   TRY_CHECK(arp_cmd_pending == kArpCmdGetUdid);
-  // TODO: Handle arbitration loss.
   TRY_CHECK(bitfield_bit32_read(irq_snapshot, kDifI2cIrqCmdComplete));
   TRY_CHECK(!i2c_status.acq_fifo_empty);
 
@@ -684,6 +692,14 @@ static status_t complete_get_udid(dif_i2c_irq_state_snapshot_t irq_snapshot,
   // There should only be a Stop next.
   TRY(dif_i2c_acquire_byte(&i2c, &data, &signal));
   TRY_CHECK(signal == kDifI2cSignalStop);
+
+  // Make a superfluous check for lost arbitration. If arbitration were lost,
+  // the ACQ FIFO would have kDifI2cSignalNackStop instead.
+  dif_i2c_target_tx_halt_events_t events = {0};
+  TRY(dif_i2c_get_target_tx_halt_events(&i2c, &events));
+  TRY_CHECK(!events.tx_pending);
+  TRY_CHECK(!events.bus_timeout);
+  TRY_CHECK(!events.arbitration_lost);
 
   // Return to idle.
   TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqCmdComplete));
@@ -928,6 +944,14 @@ static status_t message_transmit(dif_i2c_irq_state_snapshot_t irq_snapshot,
   TRY_CHECK(signal == kDifI2cSignalRepeat);
   TRY_CHECK(data == ((i2c_id.address << 1) | 1));
 
+  // Clear the TX pending bit.
+  dif_i2c_target_tx_halt_events_t events = {0};
+  TRY(dif_i2c_get_target_tx_halt_events(&i2c, &events));
+  TRY_CHECK(events.tx_pending);
+  TRY_CHECK(!events.bus_timeout);
+  TRY(dif_i2c_clear_target_tx_halt_events(&i2c, events));
+
+  // Prepare the TX FIFO.
   for (size_t i = 0; i < sizeof(message); ++i) {
     TRY(dif_i2c_transmit_byte(&i2c, message[i]));
   }

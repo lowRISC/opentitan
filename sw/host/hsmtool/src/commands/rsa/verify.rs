@@ -50,8 +50,8 @@ impl Dispatch for Verify {
         if self.little_endian {
             data.reverse();
         }
-        let data = self.format.prepare(&data)?;
-        let mechanism = self.format.mechanism()?;
+        let data = self.format.prepare(KeyType::Rsa, &data)?;
+        let mechanism = self.format.mechanism(KeyType::Rsa)?;
         let mut signature = helper::read_file(&self.signature)?;
         if self.little_endian {
             signature.reverse();

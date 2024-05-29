@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, ensure, Result};
+use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use std::time::Duration;
@@ -105,9 +105,16 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
     // the entire time.
     let events = gpio_mon.read(false)?;
     let mut events_iter = events.iter();
-    let first_event = events_iter.next().context("Expected at least one GPIO event during reset")?;
-    let second_event = events_iter.next().context("Expected at least two GPIO events during reset")?;
-    ensure!(events_iter.next().is_none(), "Unexpected third GPIO event during reset");
+    let first_event = events_iter
+        .next()
+        .context("Expected at least one GPIO event during reset")?;
+    let second_event = events_iter
+        .next()
+        .context("Expected at least two GPIO events during reset")?;
+    ensure!(
+        events_iter.next().is_none(),
+        "Unexpected third GPIO event during reset"
+    );
     match (first_event, second_event) {
         (
             &MonitoringEvent {
@@ -167,9 +174,16 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
     let events = gpio_mon.read(false)?;
     // We expect to see EC_RST go low and then high.
     let mut events_iter = events.iter();
-    let first_event = events_iter.next().context("Expected at least one GPIO event during reset")?;
-    let second_event = events_iter.next().context("Expected at least two GPIO events during reset")?;
-    ensure!(events_iter.next().is_none(), "Unexpected third GPIO event during reset");
+    let first_event = events_iter
+        .next()
+        .context("Expected at least one GPIO event during reset")?;
+    let second_event = events_iter
+        .next()
+        .context("Expected at least two GPIO events during reset")?;
+    ensure!(
+        events_iter.next().is_none(),
+        "Unexpected third GPIO event during reset"
+    );
     match (first_event, second_event) {
         (
             &MonitoringEvent {

@@ -412,9 +412,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // This function backdoor inject error according to ecc_err.
-  // For example, if err_mask is set to 'b01, bit 1 in OTP macro will be flipped.
-  // This function will output original backdoor read data for the given address.
+  // This function backdoor inject error according to ecc_err:
+  // - for OtpEccUncorrErr it injects a 2 bit eror
+  // - for OtpEccCorrErr it injects a 1 bit eror
+  // This function will output original backdoor read data for the given address
+  // so the error can be cleared.
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
                                                            otp_ecc_err_e   ecc_err);
     bit [TL_DW-1:0] val;

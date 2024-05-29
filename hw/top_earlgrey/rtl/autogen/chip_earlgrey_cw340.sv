@@ -211,7 +211,7 @@ module chip_earlgrey_cw340 #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [24-1:0]                       dio_in_raw;
+  logic [27-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -351,6 +351,7 @@ module chip_earlgrey_cw340 #(
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
+    .mux_iob_sel_i ('0), // TODO(#23280)
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
@@ -978,21 +979,19 @@ module chip_earlgrey_cw340 #(
   top_earlgrey #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(320),
+    .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
-    .KmacEnMasking(0),
-    .KmacSwKeyMasked(1),
-    .SecKmacCmdDelay(320),
-    .SecKmacIdleAcceptSwMsg(1'b1),
-    .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .SecOtbnMuteUrnd(1'b1),
-    .SecOtbnSkipUrndReseedAtStart(1'b1),
+    .SecOtbnMuteUrnd(1'b0),
+    .SecOtbnSkipUrndReseedAtStart(1'b0),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
+    .KmacEnMasking(1),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(1),
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexSecureIbex(0),

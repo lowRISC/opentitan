@@ -28,3 +28,4 @@ The SRAM controller contains the SRAM data and address scrambling device and pro
 - LFSR-based memory initialization feature.
 - Access controls to allow / disallow code execution from SRAM.
 - Security hardening when integrity error has been detected.
+- Optional memory readback mode for detecting memory integrity errors.

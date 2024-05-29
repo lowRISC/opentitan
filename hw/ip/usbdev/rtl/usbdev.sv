@@ -764,21 +764,25 @@ module usbdev
       .clk_i,
       .rst_ni,
 
-      .tl_i             (tl_sram_h2d),
-      .tl_o             (tl_sram_d2h),
-      .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-      .req_o            (sw_mem_a_req),
-      .req_type_o       (),
-      .gnt_i            (sw_mem_a_gnt),
-      .we_o             (sw_mem_a_write),
-      .addr_o           (sw_mem_a_addr),
-      .wdata_o          (sw_mem_a_wdata),
-      .wmask_o          (),           // Not used
-      .intg_error_o     (),
-      .rdata_i          (sw_mem_a_rdata),
-      .rvalid_i         (sw_mem_a_rvalid),
-      .rerror_i         (sw_mem_a_rerror),
-      .rmw_in_progress_o()
+      .tl_i                       (tl_sram_h2d),
+      .tl_o                       (tl_sram_d2h),
+      .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+      .req_o                      (sw_mem_a_req),
+      .req_type_o                 (),
+      .gnt_i                      (sw_mem_a_gnt),
+      .we_o                       (sw_mem_a_write),
+      .addr_o                     (sw_mem_a_addr),
+      .wdata_o                    (sw_mem_a_wdata),
+      .wmask_o                    (),           // Not used
+      .intg_error_o               (),
+      .rdata_i                    (sw_mem_a_rdata),
+      .rvalid_i                   (sw_mem_a_rvalid),
+      .rerror_i                   (sw_mem_a_rerror),
+      .compound_txn_in_progress_o (),
+      .readback_en_i              (prim_mubi_pkg::MuBi4False),
+      .readback_error_o           (),
+      .wr_collision_i             (1'b0),
+      .write_pending_i            (1'b0)
     );
 
     // Single Port RAM implementation, which will award the `usb` port absolute priority and
@@ -856,7 +860,8 @@ module usbdev
       .rdata_o    (mem_rdata),
       .rvalid_o   (mem_rvalid),
       .rerror_o   (mem_rerror),
-      .cfg_i      (ram_cfg_i)
+      .cfg_i      (ram_cfg_i),
+      .alert_o    ()
     );
   end : gen_no_stubbed_memory
 

@@ -1,13 +1,6 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
-load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "dv_params",
-    "opentitan_functest",
-)
 load(
     "//rules:opentitan.bzl",
     "opentitan_flash_binary",
@@ -16,7 +9,6 @@ load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
-    "otp_json",
 )
 load(
     "//rules:splice.bzl",
@@ -36,7 +28,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_sigverify_spx_rma",
-    src = "//hw/bitstream:rom_with_real_keys",
+    src = "//hw/bitstream:mask_rom",
     data = ":otp_img_sigverify_spx_rma",
     meminfo = "//hw/bitstream:otp_mmi",
     update_usr_access = True,
@@ -87,7 +79,7 @@ opentitan_flash_binary(
 #         bitstream = ":bitstream_rom_self_hash_test_rma_otbn_mod_exp",
 #     ),
 #     dv = dv_params(
-#         rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
+#         rom = "//sw/device/silicon_creator/rom:mask_rom",
 #     ),
 #     ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash",
 #     # False because we don't want this rule to do the signing; the image is already signed.

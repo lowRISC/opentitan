@@ -9,7 +9,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#define PMP_LOAD_REGION_ID 0
+// Usable PMP regions vary depending on different exectuion environments.
+// PMP regions with small or large indices are usually reserved by ROM/ROM_EXT
+// So use PMP region 7 for this test.
+#define PMP_LOAD_REGION_ID 7
 
 #define PMP_LOAD_RANGE_BUFFER_SIZE 1024
 #define PMP_LOAD_RANGE_SIZE 512
@@ -54,6 +57,14 @@ static void pmp_configure_load_napot(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
+  bool configured;
+  pmp_region_configure_result_t result =
+      pmp_region_is_configured(PMP_LOAD_REGION_ID, &configured);
+  CHECK(result == kPmpRegionConfigureOk,
+        "PMP region %d cfg read failed, error code = %d", PMP_LOAD_REGION_ID,
+        result);
+  CHECK(!configured, "PMP region %d is already configured", PMP_LOAD_REGION_ID);
+
   pmp_load_exception = false;
   char load = pmp_load_store_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];
   CHECK(!pmp_load_exception, "Load access violation before PMP configuration");

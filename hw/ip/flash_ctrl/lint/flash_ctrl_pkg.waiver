@@ -1,8 +1,0 @@
-# Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
-
-
-waive -rules UNSIZED_BIT_CONTEXT -location {flash_ctrl_pkg.sv} -regexp {Unsized bit literal "'1" encountered within a parameter declaration} \
-      -comment "This instance of an unsized parameter literal is difficult to circumvent, as the width of the assigned field is not readily available in this package."

@@ -11,12 +11,15 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
+    "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
     "FT_PERSONALIZE_KEYS",
     "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
+    "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -204,13 +207,13 @@ opentitan_binary(
     name = "ft_personalize",
     testonly = True,
     srcs = ["ft_personalize.c"],
+    ecdsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
@@ -223,12 +226,16 @@ opentitan_binary(
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:dice",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
         "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -244,10 +251,23 @@ _FT_PROVISIONING_BINARIES = {
     ":ft_personalize": "ft_personalize",
 }
 
+config_setting(
+    name = "ckms_cert_endorsement_params",
+    flag_values = {":endorse_certs_with_ckms": "True"},
+)
+
+bool_flag(
+    name = "endorse_certs_with_ckms",
+    build_setting_default = False,
+)
+
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
   --bootstrap={ft_personalize}
-""" + FT_PROVISIONING_INPUTS
+""" + FT_PROVISIONING_INPUTS + select({
+    ":ckms_cert_endorsement_params": CLOUD_KMS_CERT_ENDORSEMENT_PARAMS,
+    "//conditions:default": LOCAL_CERT_ENDORSEMENT_PARAMS,
+})
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
@@ -278,7 +298,7 @@ opentitan_test(
         binaries = _FT_PROVISIONING_BINARIES,
         changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
-        interface = "hyper310",
+        interface = "teacup",
         needs_jtag = True,
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = _FT_PROVISIONING_HARNESS,

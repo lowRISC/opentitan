@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_pwrmgr
+  name: pwrmgr
   testpoints: [
     // PWRMGR tests:
     {
@@ -20,6 +20,7 @@
       lc_states: ["PROD"]
       features: ["PWRMGR.RESET.POR_REQUEST"]
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
+      bazel: ["//sw/device/tests:pwrmgr_smoketest"]
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_wake_ups
@@ -62,7 +63,10 @@
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
-      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_wake_ups"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups",
+        "//sw/device/tests:pwrmgr_sleep_wake_5_bug_test"
+      ]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups

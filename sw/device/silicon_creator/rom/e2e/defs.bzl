@@ -47,7 +47,7 @@ SLOTS = {
 # it must contain at least one key of each type and contains all
 # the keys used in SIGVERIFY_LCS_2_VALID_KEY
 SIGVERIFY_LC_KEYS = [
-    SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0].name,
-    SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0].name,
-    SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0].name,
+    SILICON_CREATOR_KEYS.FAKE.ECDSA.TEST[0].name,
+    SILICON_CREATOR_KEYS.FAKE.ECDSA.DEV[0].name,
+    SILICON_CREATOR_KEYS.FAKE.ECDSA.PROD[0].name,
 ]

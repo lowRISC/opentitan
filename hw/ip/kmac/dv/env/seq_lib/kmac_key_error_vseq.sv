@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Trigger KeyNotValid error by not providing valid keymgr key during kmac transaction.
-// ICEBOX(#10704): current RTL only supports this error in app mode.
 class kmac_key_error_vseq extends kmac_app_vseq;
 
   `uvm_object_utils(kmac_key_error_vseq)
@@ -46,7 +45,8 @@ class kmac_key_error_vseq extends kmac_app_vseq;
       fork begin : isolation_fork
         fork
           send_kmac_app_req(app_mode);
-          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid);
+          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid &&
+                cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.last);
         join_any;
         disable fork;
       end join
@@ -54,10 +54,16 @@ class kmac_key_error_vseq extends kmac_app_vseq;
       // Wait randomly time before check status and issue err_processed.
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10_000));
 
-      // ICEBOX(#10835): Check with designer if sha3_idle should be set to 0.
-      csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
+      // Read the `ERR_CODE` CSR and check that it contains the expected error.
       csr_rd_check(.ptr(ral.err_code), .compare_value(kmac_err));
+      // Emulate reaction of SW to error interrupt: clear the IRQ in the `INTR_STATE` CSR, read the
+      // `ERR_CODE` CSR, and set `err_processed` in the `CMD` CSR.
       check_err();
+      // Wait for the SHA3 core to become idle again (having processed all data items that got
+      // flushed).
+      csr_spinwait(.ptr(ral.status.sha3_idle), .exp_data(1'b1));
+      // Check that the `STATUS` CSR is back at its reset value.
+      csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
     end
 
     // ICEBOX: enable scb and run normal sequence, then add this sequence to stress_all sequence.

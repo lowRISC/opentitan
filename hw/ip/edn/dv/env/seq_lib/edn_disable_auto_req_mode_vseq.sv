@@ -46,13 +46,20 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
     if (!backdoor) begin
       wait_no_outstanding_access();
     end else begin
-      cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
+      fork
+        csr_spinwait(.ptr(ral.ctrl.edn_enable), .exp_data(MuBi4False), .backdoor(1'b1));
+        cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
+      join_none
     end
 
     csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(backdoor), .predict(backdoor));
 
     // Let CSRNG agent know that EDN is disabled.
     cfg.edn_vif.drive_edn_disable(1);
+
+    // Clear the interrupt status register in case the SW command was aborted
+    // right before checking the cmd req done interrupt.
+    csr_wr(.ptr(ral.intr_state), .value((1 << CmdReqDone)));
   endtask
 
   task randomly_disable_edn();
@@ -88,6 +95,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         randomly_disable_edn();
         // Abort any open SW commands and wait for CSR accesses to complete, as simply killing their
         // thread would create problems later due to unterminated accesses.
+        reset_asserted();
         cfg.abort_sw_cmd = 1;
         wait_no_outstanding_access();
         // Kill EDN initialization and endpoint requests if necessary.
@@ -101,6 +109,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         // killed it).
         void'(mbox_kill_edn_init.try_get(unused));
         cfg.abort_sw_cmd = 0;
+        reset_deasserted();
         // Let CSRNG know that we're re-enabling EDN.
         device_init();
         // Initialize EDN again -- this time without randomly disabling EDN.
@@ -121,7 +130,9 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         super.edn_init();
         cfg.clk_rst_vif.wait_clks(1);
         instantiate_csrng(.mode(edn_env_pkg::AutoReqMode));
-        csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
+        if (!cfg.abort_sw_cmd) begin
+          csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
+        end
       ,
         // Exit thread: Wait for a signal from the thread that randomly disables EDN.
         bit unused;

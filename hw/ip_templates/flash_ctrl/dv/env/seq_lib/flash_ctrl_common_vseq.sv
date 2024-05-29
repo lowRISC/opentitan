@@ -13,8 +13,8 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    // After reset, scoreboard need to wait until  wip process is done.
-    // Since common reset test is not awared of it, remove check from sb and
+    // After reset, scoreboard need to wait until wip process is done.
+    // Since common reset test is not aware of it, remove check from sb and
     // have each test check read response.
     if (common_seq_type inside {"stress_all_with_rand_reset", "csr_mem_rw_with_rand_reset"}) begin
       cfg.scb_h.skip_read_check = 1'b1;

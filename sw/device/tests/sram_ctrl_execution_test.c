@@ -75,11 +75,15 @@ bool test_main(void) {
 
   // Unlock the entire address space for RWX so that we can run this test with
   // both rom and test_rom.
-  CSR_SET_BITS(CSR_REG_PMPADDR15, 0x7fffffff);
-  CSR_SET_BITS(CSR_REG_PMPCFG3, kEpmpPermLockedReadWriteExecute << 24);
-  CSR_WRITE(CSR_REG_PMPCFG2, 0);
-  CSR_WRITE(CSR_REG_PMPCFG1, 0);
-  CSR_WRITE(CSR_REG_PMPCFG0, 0);
+  CSR_WRITE(CSR_REG_PMPADDR7, 0x7fffffff);
+
+  uint32_t pmpcfg1 = 0;
+  CSR_READ(CSR_REG_PMPCFG1, &pmpcfg1);
+  CHECK((pmpcfg1 & 0xff000000) == 0,
+        "expected PMPCFG1 to be unconfigured before changing it");
+
+  CSR_SET_BITS(CSR_REG_PMPCFG1,
+               (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 24);
 
   // Note: We can test the negative case only using the retention SRAM since
   // execution is unconditionally enabled for the main SRAM in the RMA life

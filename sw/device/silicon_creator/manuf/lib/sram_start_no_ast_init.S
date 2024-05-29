@@ -176,7 +176,7 @@ sram_start:
   sw t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Jump into the C program entry point.
-  call sram_main
+  call test_main
 
   // Notify the host that we are done.
   li  sp, SRAM_MAGIC_SP_EXECUTION_DONE

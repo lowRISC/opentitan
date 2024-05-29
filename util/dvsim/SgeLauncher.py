@@ -23,9 +23,6 @@ class SgeLauncher(Launcher):
     Implementation of Launcher to launch jobs in the user's local workstation.
     """
 
-    # Misc common SgeLauncher settings.
-    max_odirs = 5
-
     def __init__(self, deploy):
         '''Initialize common class members.'''
 

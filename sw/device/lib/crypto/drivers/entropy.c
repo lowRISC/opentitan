@@ -246,7 +246,7 @@ static const entropy_complex_config_t
                 .edn0 =
                     {
                         .base_address = kBaseEdn0,
-                        .reseed_interval = 32,
+                        .reseed_interval = 128,
                         .instantiate =
                             {
                                 .id = kEntropyDrbgOpInstantiate,
@@ -297,28 +297,6 @@ static const entropy_complex_config_t
             },
 };
 
-// TODO(#19568): CSRNG commands may hang if the main FSM is not idle.
-// This function is used as a workaround to poll for the internal FSM state,
-// blocking until it reaches the `kCsrngMainSmIdle` state. The function
-// attempts `kCsrngIdleNumTries` before returning `OTCRYPTO_RECOV_ERR` if
-// unable to detect idle state.
-OT_WARN_UNUSED_RESULT
-static status_t csrng_fsm_idle_wait(void) {
-  enum {
-    kCsrngIdleNumTries = 100000,
-
-    // This value needs to match `MainSmIdle` in csrng_pkg.sv.
-    kCsrngMainSmIdle = 0x4e,
-  };
-  for (size_t i = 0; i < kCsrngIdleNumTries; ++i) {
-    uint32_t reg = abs_mmio_read32(kBaseCsrng + CSRNG_MAIN_SM_STATE_REG_OFFSET);
-    if (reg == kCsrngMainSmIdle) {
-      return OTCRYPTO_OK;
-    }
-  }
-  return OTCRYPTO_RECOV_ERR;
-}
-
 // Write a CSRNG command to a register. That register can be the SW interface
 // of CSRNG, in which case the `check_completion` argument should be `true`.
 // That register can alternatively be one of EDN's that holds commands that EDN
@@ -336,12 +314,13 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     kMaxGenerateSizeIn128BitBlocks = 0x800,
   };
   if (cmd.generate_len > kMaxGenerateSizeIn128BitBlocks) {
-    return OUT_OF_RANGE();
+    return OTCRYPTO_BAD_ARGS;
   }
 
   uint32_t cmd_reg_addr;
   uint32_t sts_reg_addr;
   uint32_t rdy_bit_offset;
+  uint32_t reg_rdy_bit_offset;
   uint32_t reg;
   bool ready;
 
@@ -350,11 +329,13 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       cmd_reg_addr = base_address + CSRNG_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + CSRNG_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnSw:
       cmd_reg_addr = base_address + EDN_SW_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + EDN_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = EDN_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnGen:
       cmd_reg_addr = base_address + EDN_GENERATE_CMD_REG_OFFSET;
@@ -363,7 +344,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       cmd_reg_addr = base_address + EDN_RESEED_CMD_REG_OFFSET;
       break;
     default:
-      return INVALID_ARGUMENT();
+      return OTCRYPTO_BAD_ARGS;
   }
 
   if ((cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) ||
@@ -422,12 +403,14 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   abs_mmio_write32(cmd_reg_addr, reg);
 
   for (size_t i = 0; i < cmd_len; ++i) {
-    // If the command is issued to the SW register of the EDN, the reg ready
-    // bit needs to be polled before writing each word of additional data.
-    if (cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw) {
+    // Before writing each word of additional data, the command ready or command
+    // reg ready bit needs to be polled if the command is issued to CSRNG or the
+    // SW register of EDN, respectively.
+    if (cmd_type == kEntropyCsrngSendAppCmdTypeCsrng ||
+        cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw) {
       do {
-        reg = abs_mmio_read32(base_address + EDN_SW_CMD_STS_REG_OFFSET);
-        ready = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT);
+        reg = abs_mmio_read32(sts_reg_addr);
+        ready = bitfield_bit32_read(reg, reg_rdy_bit_offset);
       } while (!ready);
     }
     abs_mmio_write32(cmd_reg_addr, cmd.seed_material->data[i]);

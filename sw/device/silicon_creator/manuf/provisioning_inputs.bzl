@@ -21,22 +21,33 @@ CP_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
 
 FT_PERSONALIZE_KEYS = [
     "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
+    "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
+    "//sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem",
     "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
 ]
 
+# Note that uds-auth-key-id below is the actual hash of the public key of cert_endorsement_key.sk.der
 FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --target-mission-mode-lc-state="prod"
   --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
-  --cert-endorsement-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der)"
   --rom-ext-measurement="0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
   --owner-manifest-measurement="0x22222222_22222222_22222222_22222222_22222222_22222222_22222222_22222222"
   --owner-measurement="0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333333"
-  --uds-auth-key-id="0x11223344_55667788_99112233_44556677_88991122"
   --rom-ext-security-version="0"
   --owner-security-version="0"
 """
 
-FT_PERSONALIZE_SIGNING_KEYS = select({
-    "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-    "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0"},
-})
+LOCAL_CERT_ENDORSEMENT_PARAMS = """
+  --cert-endorsement-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der)"
+  --uds-auth-key-id="0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
+  --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem)"
+"""
+
+CLOUD_KMS_CERT_ENDORSEMENT_PARAMS = """
+  --uds-auth-key-id="0x40aac5fb_2b1205f9_003f40ab_7f3df784_1d5b59f5"
+  --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem)"
+  --ckms-ecc-key-id="gcs-kms-earlgrey-ze-ca-p256-sha256-key"
+"""
+
+# TODO(#22780): Integrate real keys for A1 flows.
+FT_PERSONALIZE_SIGNING_KEYS = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"}

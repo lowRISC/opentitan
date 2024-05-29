@@ -46,6 +46,7 @@ module pinmux_assert_fpv
   input usb_dnpullup_en_o,
   input usbdev_suspend_req_i,
   input usbdev_wake_ack_i,
+  input usbdev_bus_not_idle_o,
   input usbdev_bus_reset_o,
   input usbdev_sense_lost_o,
   input usbdev_wake_detect_active_o,
@@ -284,17 +285,18 @@ module pinmux_assert_fpv
   assign mio_pad_attr = pinmux.mio_pad_attr_q[mio_sel_i];
 
   pad_attr_t mio_pad_attr_mask;
-  pad_type_e bid_pad_types[4] = {BidirStd, BidirTol, DualBidirTol, BidirOd};
-  assign mio_pad_attr_mask.invert = TargetCfg.mio_pad_type[mio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign mio_pad_attr_mask.virt_od_en = TargetCfg.mio_pad_type[mio_sel_i] inside {bid_pad_types} ?
-                                        1 : 0;
-  assign mio_pad_attr_mask.pull_en = TargetCfg.mio_pad_type[mio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign mio_pad_attr_mask.pull_select = TargetCfg.mio_pad_type[mio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign mio_pad_attr_mask.drive_strength[0] = TargetCfg.mio_pad_type[mio_sel_i] inside
-                                               {bid_pad_types} ? 1 : 0;
+  pad_type_e bid_pad_types[4];
+  assign bid_pad_types = {BidirStd, BidirTol, DualBidirTol, BidirOd};
+  assign mio_pad_attr_mask.invert = TargetCfg.mio_pad_type[mio_sel_i] != AnalogIn0;
+  assign mio_pad_attr_mask.virt_od_en = TargetCfg.mio_pad_type[mio_sel_i] inside {bid_pad_types};
+  assign mio_pad_attr_mask.pull_en = TargetCfg.mio_pad_type[mio_sel_i] != AnalogIn0;
+  assign mio_pad_attr_mask.pull_select = TargetCfg.mio_pad_type[mio_sel_i] != AnalogIn0;
+  assign mio_pad_attr_mask.drive_strength[0] =
+      TargetCfg.mio_pad_type[mio_sel_i] inside {bid_pad_types};
   assign mio_pad_attr_mask.keep_en = 0;
   assign mio_pad_attr_mask.schmitt_en = 0;
   assign mio_pad_attr_mask.od_en = 0;
+  assign mio_pad_attr_mask.input_disable = 0;
   assign mio_pad_attr_mask.slew_rate = '0;
   assign mio_pad_attr_mask.drive_strength[3:1] = '0;
 
@@ -312,16 +314,16 @@ module pinmux_assert_fpv
   assign dio_pad_attr = pinmux.dio_pad_attr_q[dio_sel_i];
 
   pad_attr_t dio_pad_attr_mask;
-  assign dio_pad_attr_mask.invert = TargetCfg.dio_pad_type[dio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign dio_pad_attr_mask.virt_od_en = TargetCfg.dio_pad_type[dio_sel_i] inside {bid_pad_types} ?
-                                        1 : 0;
-  assign dio_pad_attr_mask.pull_en = TargetCfg.dio_pad_type[dio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign dio_pad_attr_mask.pull_select = TargetCfg.dio_pad_type[dio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign dio_pad_attr_mask.drive_strength[0] = TargetCfg.dio_pad_type[dio_sel_i] inside
-                                               {bid_pad_types} ? 1 : 0;
+  assign dio_pad_attr_mask.invert = TargetCfg.dio_pad_type[dio_sel_i] != AnalogIn0;
+  assign dio_pad_attr_mask.virt_od_en = TargetCfg.dio_pad_type[dio_sel_i] inside {bid_pad_types};
+  assign dio_pad_attr_mask.pull_en = TargetCfg.dio_pad_type[dio_sel_i] != AnalogIn0;
+  assign dio_pad_attr_mask.pull_select = TargetCfg.dio_pad_type[dio_sel_i] != AnalogIn0;
+  assign dio_pad_attr_mask.drive_strength[0] =
+      TargetCfg.dio_pad_type[dio_sel_i] inside {bid_pad_types};
   assign dio_pad_attr_mask.keep_en     = 0;
   assign dio_pad_attr_mask.schmitt_en = 0;
   assign dio_pad_attr_mask.od_en = 0;
+  assign dio_pad_attr_mask.input_disable = 0;
   assign dio_pad_attr_mask.slew_rate = '0;
   assign dio_pad_attr_mask.drive_strength[3:1] = '0;
 
@@ -496,7 +498,8 @@ module pinmux_assert_fpv
     end
   end
 
-  logic final_pin_val = wkup_detector.filter.q ? filter_vals[3] : pin_val_sync_2;
+  logic final_pin_val;
+  assign final_pin_val = wkup_detector.filter.q ? filter_vals[3] : pin_val_sync_2;
 
   // Threshold counters.
   // Adding one more bit for the counters to check overflow case.

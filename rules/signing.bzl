@@ -39,6 +39,8 @@ def key_from_dict(key, attr_name):
     Returns:
         A struct with the key label, the key file and key nickname.
     """
+    if not key:
+        return None
     if len(key) == 0:
         return None
     if len(key) != 1:
@@ -492,6 +494,9 @@ def _offline_fake_rsa_sign(ctx):
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     tool, _, _ = _signing_tool_info(ctx, ctx.attr.rsa_key, tc.tools.opentitantool)
     for file in ctx.files.srcs:
+        # Skip the presigning script.
+        if file.basename.endswith(".json"):
+            continue
         _, sig, _ = _local_sign(ctx, tool, file, None, rsa_key)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
@@ -516,6 +521,9 @@ def _offline_fake_ecdsa_sign(ctx):
     ecdsa_key = key_from_dict(ctx.attr.ecdsa_key, "ecdsa_key")
     tool, _, _ = _signing_tool_info(ctx, ctx.attr.ecdsa_key, tc.tools.opentitantool)
     for file in ctx.files.srcs:
+        # Skip the presigning script.
+        if file.basename.endswith(".json"):
+            continue
         sig, _, _ = _local_sign(ctx, tool, file, ecdsa_key, None)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
@@ -563,8 +571,6 @@ def _offline_signature_attach(ctx):
         f, _ = paths.split_extension(sig.basename)
         if f not in inputs:
             fail("SPX signature {} does not have a corresponding entry in srcs".format(sig.path))
-        if "rsa_sig" not in inputs[f]:
-            fail("SPX signature {} does not have corresponding RSA signature".format(sig.path))
         inputs[f]["spx_sig"] = sig
 
     outputs = []
@@ -579,8 +585,8 @@ def _offline_signature_attach(ctx):
             ctx,
             tc.tools.opentitantool,
             inputs[f]["bin"],
-            getattr(inputs[f], "ecdsa_sig", None),
-            getattr(inputs[f], "rsa_sig", None),
+            inputs[f].get("ecdsa_sig"),
+            inputs[f].get("rsa_sig"),
             inputs[f].get("spx_sig"),
         )
         outputs.append(out)
@@ -596,6 +602,27 @@ offline_signature_attach = rule(
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
+
+def _clear_if_none_key(key_attr):
+    """Clear the key attribute if it is set to "//hw/signing:none_key.
+
+    Args:
+        key_attr: The key attribute.
+    Returns:
+        The key attribute if it is not set to "//hw/signing:none_key" or {}.
+    """
+    if not key_attr:
+        return None
+
+    key, _ = key_attr.items()[0]
+
+    if KeyInfo in key:
+        return key_attr
+
+    if key.label.name == "none_key":
+        return None
+
+    return key_attr
 
 def sign_binary(ctx, opentitantool, **kwargs):
     """Sign a binary.
@@ -621,9 +648,13 @@ def sign_binary(ctx, opentitantool, **kwargs):
           signed: The final signed binary.
     """
     key_attr = get_override(ctx, "attr.ecdsa_key", kwargs)
+    key_attr = _clear_if_none_key(key_attr)
+
     ecdsa_key = key_from_dict(key_attr, "ecdsa_key")
 
     rsa_attr = get_override(ctx, "attr.rsa_key", kwargs)
+    rsa_attr = _clear_if_none_key(rsa_attr)
+
     if rsa_attr and key_attr:
         fail("Only one of ECDSA or RSA key should be provided")
 

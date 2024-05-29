@@ -7,22 +7,14 @@ load(
     "dicts",
 )
 load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "dv_params",
-    "opentitan_functest",
-    "verilator_params",
-)
-load(
     "//rules:const.bzl",
     "CONST",
     "hex_digits",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
     "bin_to_vmem",
-    "opentitan_flash_binary",
     "scramble_flash_vmem",
 )
 load(
@@ -50,12 +42,12 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "cw310_params",
+    "dv_params",
+    "ecdsa_key_by_name",
     "opentitan_binary",
     "opentitan_test",
-    "rsa_key_by_name",
-    new_cw310_params = "cw310_params",
-    new_dv_params = "dv_params",
-    new_verilator_params = "verilator_params",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -92,7 +84,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_default_otp",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream:mask_rom",
     data = ":otp_img_default",
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
@@ -100,17 +92,16 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_e2e_default_otp_bootup",
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+    srcs = [":empty_test"],
     cw310 = cw310_params(
         bitstream = ":bitstream_default_otp",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
-    signed = True,
-    targets = [
-        "cw310_rom_with_fake_keys",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -119,24 +110,36 @@ opentitan_functest(
 )
 
 [
-    opentitan_flash_binary(
-        name = "empty_test_slot_{}".format(slot),
+    opentitan_binary(
+        name = "empty_test_slot_{}_unsigned".format(slot),
         testonly = True,
-        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        devices = [
-            "fpga_cw310",
-            "sim_dv",
-            "sim_verilator",
+        srcs = [":empty_test"],
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:sim_dv",
+            "//hw/top_earlgrey:sim_verilator",
         ],
-        signed = True,
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
-            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
+    )
+    for slot in SLOTS
+]
+
+# The following filegroup is required to allow dvsim to build the
+# empty_test_slot_* targets as the `sim_dv` execution environment is expected
+# as a suffix in the target label. For example:
+#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_unsigned_sim_dv`
+[
+    filegroup(
+        name = "empty_test_slot_{}_unsigned_sim_dv".format(slot),
+        testonly = True,
+        srcs = [":empty_test_slot_{}_unsigned".format(slot)],
     )
     for slot in SLOTS
 ]
@@ -169,7 +172,8 @@ opentitan_functest(
     opentitan_binary(
         name = "empty_test_slot_{}_{}".format(slot, key),
         testonly = True,
-        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        srcs = [":empty_test"],
+        ecdsa_key = ecdsa_key_by_name(ECDSA_ONLY_KEY_STRUCTS, key),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
@@ -178,16 +182,28 @@ opentitan_functest(
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         # We need to specify the manifest because the simulation environments do not
         # specify one by default.
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-        rsa_key = rsa_key_by_name(RSA_ONLY_KEY_STRUCTS, key),
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
-            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+]
+
+# The following filegroup is required to allow dvsim to build the
+# empty_test_slot_* targets as the `sim_dv` execution environment is expected
+# as a suffix in the target label. For example:
+#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_sim_dv`
+[
+    filegroup(
+        name = "empty_test_slot_{}_{}_sim_dv".format(slot, key),
+        testonly = True,
+        srcs = [":empty_test_slot_{}_{}".format(slot, key)],
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
@@ -236,7 +252,7 @@ opentitan_functest(
     bin_to_vmem(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
         testonly = True,
-        bin = "empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
+        bin = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
     for slot in SLOTS
@@ -247,7 +263,7 @@ opentitan_functest(
     scramble_flash_vmem(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
-        vmem = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
+        vmem = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
@@ -261,7 +277,7 @@ opentitan_functest(
         name = "empty_test_slot_{}_corrupted_sim_dv".format(slot),
         testonly = True,
         srcs = [
-            "empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
+            ":empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
             for file_type in [
                 "signed_bin",
                 "vmem64_signed",
@@ -273,13 +289,12 @@ opentitan_functest(
     for slot in SLOTS
 ]
 
-opentitan_functest(
+opentitan_test(
     name = "rom_e2e_flash_ctrl_init",
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
-    signed = True,
-    targets = [
-        "cw310_rom_with_fake_keys",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -287,7 +302,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
     cw310 = cw310_params(
@@ -297,19 +312,19 @@ opentitan_functest(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    signed = True,
-    targets = [
-        "dv",
-        "cw310_rom_with_fake_keys",
-        "verilator",
-    ],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
+    },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -320,23 +335,22 @@ opentitan_functest(
 
 opentitan_test(
     name = "rom_e2e_smoke",
-    srcs = ["empty_test.c"],
-    dv = new_dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    srcs = [":empty_test"],
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
-    verilator = new_verilator_params(
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     deps = [
         "//sw/device/lib/dif:spi_device",
@@ -344,21 +358,22 @@ opentitan_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    signed = True,
-    targets = [
-        "dv",
-        "cw310_rom_with_fake_keys",
-        "verilator",
-    ],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     deps = [
         "//sw/device/lib/dif:hmac",
@@ -368,17 +383,16 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
     cw310 = cw310_params(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_PASS,
     ),
-    signed = True,
-    targets = [
-        "cw310_rom_with_fake_keys",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
@@ -396,67 +410,79 @@ opentitan_functest(
 
 # Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
 # bitstream before it's sent to the CW310 FPGA.
-opentitan_functest(
+opentitan_test(
     name = "e2e_bootup_success_otp_dev",
+    srcs = [":empty_test"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
+        otp = "//hw/ip/otp_ctrl/data:img_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    key_struct = RSA_ONLY_KEY_STRUCTS[0],
-    ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_functest(
-    name = "sigverify_key_auth",
-    cw310 = cw310_params(
-        exit_failure = MSG_PASS,
-        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY)),
-    ),
-    key_struct = "rsa_unauthorized_0",
-    ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_flash_binary(
-    name = "rom_ext_upgrade_test",
-    testonly = True,
-    srcs = ["rom_ext_upgrade_test.c"],
-    devices = [
-        "fpga_cw310",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
+
+opentitan_test(
+    name = "sigverify_key_auth",
+    srcs = [":empty_test"],
+    cw310 = cw310_params(
+        exit_failure = MSG_PASS,
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_KEY)),
+    ),
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:unauthorized_key_0_ecdsa_p256": "unauthorized_key_0",
+    },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
+
+opentitan_test(
+    name = "rom_ext_upgrade",
+    srcs = ["rom_ext_upgrade_test.c"],
+    cw310 = cw310_params(
+        # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
+        exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
+        exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        # We clear the bitstream to force any subsequent test to load a
+        # fresh bitstream and clear all memories (ie: flash-based boot policy).
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            --exec="fpga clear-bitstream\"
+            no-op
+        """,
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
-)
-
-opentitan_functest(
-    name = "rom_ext_upgrade",
-    cw310 = cw310_params(
-        # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
-        exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
-        exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
-        test_cmds = [
-            "--exec=\"transport init\"",
-            "--exec=\"fpga load-bitstream $(rootpath {bitstream})\"",
-            "--exec=\"bootstrap --clear-uart=true $(rootpath {flash})\"",
-            "--exec=\"console --non-interactive --exit-success={exit_success} --exit-failure={exit_failure}\"",
-            # We clear the bitstream to force any subsequent test to load a
-            # fresh bitstream and clear all memories (ie: flash-based boot policy).
-            "--exec=\"fpga clear-bitstream\"",
-            "no-op",
-        ],
-    ),
-    ot_flash_binary = "rom_ext_upgrade_test",
-    targets = [
-        "cw310_rom_with_fake_keys",
     ],
 )

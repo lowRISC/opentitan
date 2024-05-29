@@ -142,6 +142,12 @@ enum {
    * and the a recognizable ASCII tag of `RR03`.
    */
   kRetentionSramVersion3 = 0x33305252,
+  /**
+   * Version 4 is the same layout as 3, but all identifiers and commands have
+   * been changed to use "FourCC" style values.  Version 4 is identified by
+   * the ASCII tag `RR04`.
+   */
+  kRetentionSramVersion4 = 0x34305252,
 };
 
 /**

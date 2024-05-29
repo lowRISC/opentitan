@@ -469,15 +469,20 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     // QW (8byte) align
     flash_op.addr[2:0] = 'h0;
 
-    `uvm_info("flash_mem_otf_read", $sformatf("is_odd:%0d size:%0d tail:%0d wd:%0d",
-                                            is_odd, size, tail, flash_op.num_words), UVM_MEDIUM)
+    `uvm_info("flash_mem_otf_read", $sformatf(
+              "addr:0x%x is_odd:%0d size:%0d tail:%0d wd:%0d", flash_op.addr, is_odd, size, tail,
+              flash_op.num_words), UVM_MEDIUM)
     for (int i = 0; i < size; i++) begin
       flash_bkdr_read_full_word(flash_op, rdata);
+      `uvm_info("flash_mem_otf_read", $sformatf("addr:0x%x data:0x%x", flash_op.addr, rdata),
+                UVM_MEDIUM)
       data.push_back(rdata);
       flash_op.addr += 8;
     end
     if (tail) begin
       flash_bkdr_read_full_word(flash_op, rdata);
+      `uvm_info("flash_mem_otf_read", $sformatf("addr:0x%x data:0x%x", flash_op.addr, rdata),
+                UVM_MEDIUM)
       data.push_back(rdata);
     end
   endfunction // flash_mem_otf_read
@@ -1159,7 +1164,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   function void update_otf_mem_read_zone(flash_dv_part_e part, int bank, addr_t addr);
     flash_otf_item item;
     int page;
-     bit [BankAddrW-1:0] mem_addr;
+    bit [BankAddrW-1:0] mem_addr;
 
     `uvm_create_obj(flash_otf_item, item)
     item.dq.push_back($urandom());

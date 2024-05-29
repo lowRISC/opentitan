@@ -146,6 +146,7 @@ module otbn_core
   logic [31:0]              rf_base_wr_data_no_intg_ctrl;
   logic [BaseIntgWidth-1:0] rf_base_wr_data_intg;
   logic                     rf_base_wr_data_intg_sel, rf_base_wr_data_intg_sel_ctrl;
+  logic                     rf_base_wr_sec_wipe_err;
   logic [4:0]               rf_base_rd_addr_a;
   logic                     rf_base_rd_en_a;
   logic [BaseIntgWidth-1:0] rf_base_rd_data_a_intg;
@@ -157,6 +158,7 @@ module otbn_core
   logic                     rf_base_call_stack_hw_err;
   logic                     rf_base_intg_err;
   logic                     rf_base_spurious_we_err;
+  logic                     rf_base_sec_wipe_err;
 
   alu_base_operation_t  alu_base_operation;
   alu_base_comparison_t alu_base_comparison;
@@ -185,6 +187,7 @@ module otbn_core
   logic [WLEN-1:0]    rf_bignum_wr_data_no_intg_ctrl;
   logic [ExtWLEN-1:0] rf_bignum_wr_data_intg;
   logic               rf_bignum_wr_data_intg_sel, rf_bignum_wr_data_intg_sel_ctrl;
+  logic               rf_bignum_wr_sec_wipe_err;
   logic [WdrAw-1:0]   rf_bignum_rd_addr_a;
   logic               rf_bignum_rd_en_a;
   logic [ExtWLEN-1:0] rf_bignum_rd_data_a_intg;
@@ -200,6 +203,7 @@ module otbn_core
   logic [WLEN-1:0]       alu_bignum_operation_result;
   logic                  alu_bignum_selection_flag;
   logic                  alu_bignum_reg_intg_violation_err;
+  logic                  alu_bignum_sec_wipe_err;
 
   mac_bignum_operation_t mac_bignum_operation;
   logic [WLEN-1:0]       mac_bignum_operation_result;
@@ -208,6 +212,7 @@ module otbn_core
   logic                  mac_bignum_en;
   logic                  mac_bignum_commit;
   logic                  mac_bignum_reg_intg_violation_err;
+  logic                  mac_bignum_sec_wipe_err;
 
   ispr_e                       ispr_addr;
   logic [31:0]                 ispr_base_wdata;
@@ -255,6 +260,7 @@ module otbn_core
   logic sec_wipe_acc_urnd;
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
+  logic sec_wipe_err;
 
   logic zero_flags;
 
@@ -416,6 +422,12 @@ module otbn_core
      ispr_predec_error                                                                           |
      rd_predec_error;
 
+  assign sec_wipe_err = |{rf_base_wr_sec_wipe_err,
+                          rf_base_sec_wipe_err,
+                          rf_bignum_wr_sec_wipe_err,
+                          alu_bignum_sec_wipe_err,
+                          mac_bignum_sec_wipe_err};
+
   // Controller: coordinate between functional units, prepare their inputs (e.g. by muxing between
   // operand sources), and post-process their outputs as needed.
   otbn_controller #(
@@ -544,6 +556,7 @@ module otbn_core
     .secure_wipe_ack_i     (secure_wipe_ack),
     .sec_wipe_zero_i       (sec_wipe_zero),
     .secure_wipe_running_i (secure_wipe_running_o),
+    .sec_wipe_err_i        (sec_wipe_err),
 
     .state_reset_i       (state_reset),
     .insn_cnt_o          (insn_cnt),
@@ -684,6 +697,7 @@ module otbn_core
 
     .state_reset_i         (state_reset),
     .sec_wipe_stack_reset_i(sec_wipe_zero),
+    .sec_wipe_running_i    (secure_wipe_running_o),
 
     .wr_addr_i         (rf_base_wr_addr),
     .wr_en_i           (rf_base_wr_en),
@@ -703,7 +717,8 @@ module otbn_core
     .call_stack_sw_err_o(rf_base_call_stack_sw_err),
     .call_stack_hw_err_o(rf_base_call_stack_hw_err),
     .intg_err_o         (rf_base_intg_err),
-    .spurious_we_err_o  (rf_base_spurious_we_err)
+    .spurious_we_err_o  (rf_base_spurious_we_err),
+    .sec_wipe_err_o     (rf_base_sec_wipe_err)
   );
 
   assign rf_base_wr_addr         = sec_wipe_base ? sec_wipe_addr : rf_base_wr_addr_ctrl;
@@ -725,6 +740,8 @@ module otbn_core
       rf_base_wr_data_intg_sel = rf_base_wr_data_intg_sel_ctrl;
     end
   end
+
+  assign rf_base_wr_sec_wipe_err = sec_wipe_base & ~secure_wipe_running_o;
 
   otbn_alu_base u_otbn_alu_base (
     .clk_i,
@@ -799,6 +816,8 @@ module otbn_core
     end
   end
 
+  assign rf_bignum_wr_sec_wipe_err = sec_wipe_wdr_q & ~secure_wipe_running_o;
+
   otbn_alu_bignum u_otbn_alu_bignum (
     .clk_i,
     .rst_ni,
@@ -830,6 +849,8 @@ module otbn_core
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
+    .sec_wipe_running_i (secure_wipe_running_o),
+    .sec_wipe_err_o     (alu_bignum_sec_wipe_err),
 
     .mac_operation_flags_i   (mac_bignum_operation_flags),
     .mac_operation_flags_en_i(mac_bignum_operation_flags_en),
@@ -858,6 +879,8 @@ module otbn_core
 
     .urnd_data_i        (urnd_data),
     .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
+    .sec_wipe_running_i (secure_wipe_running_o),
+    .sec_wipe_err_o     (mac_bignum_sec_wipe_err),
 
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),

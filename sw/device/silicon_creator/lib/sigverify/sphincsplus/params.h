@@ -173,13 +173,9 @@ enum {
    */
   kSpxOffsetType = 19,
   /**
-   * High byte of the key pair.
+   * The start of the 4 byte field used to specify the key pair address.
    */
-  kSpxOffsetKpAddr2 = 22,
-  /**
-   * Low byte of the key pair.
-   */
-  kSpxOffsetKpAddr1 = 23,
+  kSpxOffsetKpAddr = 20,
   /**
    * Byte for the chain address (i.e. which Winternitz chain).
    */

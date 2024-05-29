@@ -118,6 +118,7 @@ enum module_ {
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   \
   X(kErrorKmacInvalidStatus,          ERROR_(1, kModuleKmac, kInternal)), \
+  X(kErrorKmacInvalidKeySize,         ERROR_(2, kModuleKmac, kInvalidArgument)), \
   \
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
@@ -195,17 +196,24 @@ enum module_ {
   X(kErrorRescueBadMode,              ERROR_(1, kModuleRescue, kInvalidArgument)), \
   X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
   \
-  X(kErrorDiceInvalidArgument,        ERROR_(0, kModuleDice, kInvalidArgument)), \
+  X(kErrorDiceInvalidKeyType,         ERROR_(0, kModuleDice, kInvalidArgument)), \
   \
   X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
   X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
-  X(kErrorCertCorrupted,              ERROR_(2, kModuleCert, kDataLoss)), \
   \
   X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidSignature,  ERROR_(2, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidState,      ERROR_(3, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidRequest,    ERROR_(4, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidTag,        ERROR_(5, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidTagLength,  ERROR_(6, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipDuplicateItem,     ERROR_(7, kModuleOwnership, kAlreadyExists)), \
+  X(kErrorOwnershipFlashConfigLenth,  ERROR_(8, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipInvalidInfoPage,   ERROR_(9, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipBadInfoPage,       ERROR_(10, kModuleOwnership, kInternal)), \
+  X(kErrorOwnershipNoOwner,           ERROR_(11, kModuleOwnership, kInternal)), \
+  X(kErrorOwnershipKeyNotFound,       ERROR_(12, kModuleOwnership, kNotFound)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 

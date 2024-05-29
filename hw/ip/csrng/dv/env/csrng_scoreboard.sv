@@ -266,6 +266,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      "reseed_interval": begin
+      end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
       end
@@ -447,7 +449,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.key[app] = 'h0;
     cfg.v[app]   = 'h0;
     ctr_drbg_update(app, seed_material);
-    cfg.reseed_counter[app] = 1'b1;
+    cfg.reseed_counter[app] = 1'b0;
     cfg.compliance[app]     = fips;
     cfg.status[app]         = 1'b1;
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
@@ -464,7 +466,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("Reseed of app %0d", app), UVM_MEDIUM)
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
-    cfg.reseed_counter[app] = 1'b1;
+    cfg.reseed_counter[app] = 1'b0;
     cfg.compliance[app]     = fips;
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction

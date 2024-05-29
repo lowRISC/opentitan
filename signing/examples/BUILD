@@ -4,7 +4,7 @@
 
 load(
     "//rules:signing.bzl",
-    "offline_fake_rsa_sign",
+    "offline_fake_ecdsa_sign",
     "offline_presigning_artifacts",
     "offline_signature_attach",
 )
@@ -18,14 +18,14 @@ offline_presigning_artifacts(
     srcs = [
         "//sw/device/examples/hello_world",
     ],
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    # To sign with real keys, replace the rsa_key with the label of a real
-    # key (e.g. //sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0).
+    # To sign with real keys, replace the ecdsa_key with the label of a real
+    # key.
     # This is left as a fake key so that the presigning artifacts will be
     # appropriate for the `fake_sign` rule below.
-    rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "fake_test_key_0",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
     },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     tags = ["manual"],
 )
 
@@ -37,41 +37,16 @@ pkg_tar(
     tags = ["manual"],
 )
 
-offline_presigning_artifacts(
-    name = "presigning_ecdsa",
-    testonly = True,
-    srcs = [
-        "//sw/device/examples/hello_world",
-    ],
-    # To sign with real keys, replace the ecdsa_key with the label of a real
-    # key.
-    # This is left as a fake key so that the presigning artifacts will be
-    # appropriate for the `fake_sign` rule below.
-    ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
-    },
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    tags = ["manual"],
-)
-
-pkg_tar(
-    name = "digests_ecdsa",
-    testonly = True,
-    srcs = [":presigning_ecdsa"],
-    mode = "0644",
-    tags = ["manual"],
-)
-
 # The `fake_sign` rule uses opentitantool to generate the detached signatures
 # that would normally be created by the offline signing operation.
 # These signatures can be copied into the `signatures` directory and attached
 # to the binaries to test the offline signing flow without an HSM operation.
-offline_fake_rsa_sign(
+offline_fake_ecdsa_sign(
     name = "fake",
     testonly = True,
     srcs = [":presigning"],
-    rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "fake_test_key_0",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
     },
     tags = ["manual"],
 )
@@ -82,8 +57,8 @@ offline_signature_attach(
     srcs = [
         ":presigning",
     ],
-    rsa_signatures = [
-        "//signing/examples/signatures:rsa_signatures",
+    ecdsa_signatures = [
+        "//signing/examples/signatures:ecdsa_signatures",
     ],
     tags = ["manual"],
 )

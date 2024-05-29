@@ -86,18 +86,21 @@ module hmac
   logic        hmac_en;
   logic        endian_swap;
   logic        digest_swap;
+  logic        key_swap;
 
   logic        reg_hash_start;
   logic        sha_hash_start;
   logic        reg_hash_stop;
   logic        reg_hash_continue;
   logic        sha_hash_continue;
-  logic        hash_start;     // hash_start is reg_hash_start gated with an extra check
-  logic        hash_continue;  // hash_continue is reg_hash_continue gated with an extra check
+  logic        hash_start;     // hash_start is reg_hash_start gated with extra checks
+  logic        hash_continue;  // hash_continue is reg_hash_continue gated with extra checks
+  logic        hash_process;   // hash_process is reg_hash_process gated with extra checks
   logic        hash_start_or_continue;
   logic        hash_done_event;
   logic        reg_hash_process;
   logic        sha_hash_process;
+  logic        digest_on_blk;
 
   logic        reg_hash_done;
   logic        sha_hash_done;
@@ -105,14 +108,17 @@ module hmac
   logic [63:0] message_length, message_length_d;
   logic [63:0] sha_message_length;
 
-  err_code_e   err_code;
-  logic        err_valid;
+  err_code_e  err_code;
+  logic       err_valid;
+  logic       invalid_config; // HMAC/SHA-2 is configured with invalid digest size/key length
+  logic       invalid_config_atstart;
 
   sha_word64_t [7:0] digest, digest_sw;
   logic [7:0]        digest_sw_we;
-  sha_word64_t       inter_digest;
 
-  digest_mode_e      digest_size, digest_size_supplied;
+  digest_mode_e digest_size, digest_size_supplied;
+  // this is the digest size captured into HMAC when it gets started
+  digest_mode_e digest_size_started_d, digest_size_started_q;
 
   hmac_reg2hw_cfg_reg_t cfg_reg;
   logic                 cfg_block;   // Prevents changing config
@@ -129,6 +135,7 @@ module hmac
   assign hw2reg.status.fifo_full.d  = fifo_full;
   assign hw2reg.status.fifo_empty.d = fifo_empty;
   assign hw2reg.status.fifo_depth.d = fifo_depth;
+  assign hw2reg.status.hmac_idle.d  = idle;
 
   typedef enum logic [1:0] {
     DoneAwaitCmd,
@@ -162,8 +169,9 @@ module hmac
       end
 
       DoneAwaitMessageComplete: begin
-        if (sha_message_length[8:0] == '0 /* <=> sha_message_length % 512 == 0 */) begin
-          // Once the current message block is complete, wait for the hash to complete.
+        if (digest_on_blk) begin
+          // Once the digest is being computed for the complete message block, wait for the hash to
+          // complete.
           // TODO (issue #21710): handle incomplete message size and check against 512 or 1024
           done_state_d = DoneAwaitHashComplete;
         end
@@ -200,7 +208,8 @@ module hmac
       // Allow updating secret key only when the engine is in Idle.
       for (int i = 0; i < 32; i++) begin
         if (reg2hw.key[31-i].qe) begin
-          secret_key_d[32*i+:32] = reg2hw.key[31-i].q;
+          // swap byte endianness per secret key word if key_swap = 1
+          secret_key_d[32*i+:32] = conv_endian32(reg2hw.key[31-i].q, key_swap);
         end
       end
     end
@@ -215,44 +224,51 @@ module hmac
     assign hw2reg.key[31-i].d      = '0;
   end
 
-  // TODO (issue #22312): decide how to deal with changing HMAC cfg (digest sizes)
-  // retain previous digest or clear?
+  // Retain the previous digest in CSRs until HMAC is actually started with a valid configuration
   always_comb begin : assign_digest_reg
-    for (int i = 0; i < 16; i++) begin
-      // default
-      if (i < 8) begin
-        // digest SW -> HW
-        digest_sw[i]    = '0;
-        digest_sw_we[i] = '0;
-      end
-      // digest HW -> SW
-      hw2reg.digest[i].d = '0;
+    // default
+    // digest SW -> HW
+    digest_sw     = '0;
+    digest_sw_we  = '0;
+    // digest HW -> SW
+    hw2reg.digest = '0;
 
+    for (int i = 0; i < 8; i++) begin
+      // digest SW -> HW (depends on digest size configured even before starting/enabling)
+      // capturing the intermediate digests written by SW when restoring context into the SHA-2
+      // engine before it is started
       if (digest_size == SHA2_256) begin
-        if (i < 8) begin
-          // digest HW -> SW
-          hw2reg.digest[i].d = conv_endian32(digest[i][31:0], digest_swap);
-          // digest SW -> HW
-          digest_sw[i]       = {32'h0, conv_endian32(reg2hw.digest[i].q, digest_swap)};
-          digest_sw_we[i]    = reg2hw.digest[i+1].qe;
-        end else begin
-          hw2reg.digest[i].d = '0;
-        end
+        // digest SW -> HW
+        digest_sw[i][31:0] = conv_endian32(reg2hw.digest[i].q, digest_swap);
+        digest_sw_we[i]    = reg2hw.digest[i].qe;
       end else if ((digest_size == SHA2_384) || (digest_size == SHA2_512)) begin
-        if (i % 2 == 0 && i < 15) begin // even index
-          // digest HW -> SW
-          inter_digest       = conv_endian64(digest[i/2], digest_swap);
-          hw2reg.digest[i].d = inter_digest[31:0];
-          // digest SW -> HW
-          digest_sw[i/2]    = conv_endian64({reg2hw.digest[i+1].q,reg2hw.digest[i].q}, digest_swap);
-          digest_sw_we[i/2] = reg2hw.digest[i].qe | reg2hw.digest[i+1].qe;
-        end else begin  // odd index
-          inter_digest       = conv_endian64(digest[i/2], digest_swap);
-          hw2reg.digest[i].d = inter_digest[63:32];
-          // digest SW -> HW
-          digest_sw[i/2]    = conv_endian64({reg2hw.digest[i].q,reg2hw.digest[i-1].q}, digest_swap);
-          digest_sw_we[i/2] = reg2hw.digest[i].qe | reg2hw.digest[i-1].qe;
-        end
+        // digest SW -> HW
+        digest_sw[i][63:32]    = reg2hw.digest[2*i].qe ?
+                                 conv_endian32(reg2hw.digest[2*i].q, digest_swap) :
+                                 digest[i][63:32];
+        digest_sw[i][31:0]     = reg2hw.digest[2*i+1].qe ?
+                                 conv_endian32(reg2hw.digest[2*i+1].q, digest_swap) :
+                                 digest[i][31:0];
+        digest_sw_we[i]        = reg2hw.digest[2*i].qe | reg2hw.digest[2*i+1].qe;
+      end
+
+      // digest HW -> SW (depends on configuration that has been started)
+      if (digest_size_started_q == SHA2_256) begin
+        hw2reg.digest[i].d   = conv_endian32(digest[i][31:0], digest_swap);
+        // replicate digest[0..7] into digest[8..15]. Digest[8...15] are irrelevant for SHA2_256,
+        // but this ensures all digest CSRs are wiped out with random value (at wipe_secret)
+        // across different configurations.
+        hw2reg.digest[i+8].d = conv_endian32(digest[i][31:0], digest_swap);
+      end else if ((digest_size_started_q == SHA2_384) || (digest_size_started_q == SHA2_512)) begin
+        // digest HW -> SW
+        // digest swap only within each 32-bit word of the 64-bit digest word, not digest swap
+        // on the entire 64-bit digest word
+        hw2reg.digest[2*i].d   = conv_endian32(digest[i][63:32], digest_swap);
+        hw2reg.digest[2*i+1].d = conv_endian32(digest[i][31:0], digest_swap);
+      end else begin // for SHA2_None
+        // to ensure secret wiping is always passed to digest CSRs
+        hw2reg.digest[i].d   = conv_endian32(digest[i][31:0], digest_swap);
+        hw2reg.digest[i+8].d = conv_endian32(digest[i][31:0], digest_swap);
       end
     end
   end
@@ -260,7 +276,8 @@ module hmac
   logic unused_cfg_qe;
   assign unused_cfg_qe = ^{cfg_reg.sha_en.qe,      cfg_reg.hmac_en.qe,
                            cfg_reg.endian_swap.qe, cfg_reg.digest_swap.qe,
-                           cfg_reg.digest_size.qe, cfg_reg.key_length.qe };
+                           cfg_reg.key_swap.qe,    cfg_reg.digest_size.qe,
+                           cfg_reg.key_length.qe };
 
   assign sha_en               = cfg_reg.sha_en.q;
   assign hmac_en              = cfg_reg.hmac_en.q;
@@ -271,10 +288,19 @@ module hmac
       SHA2_256:  digest_size = SHA2_256;
       SHA2_384:  digest_size = SHA2_384;
       SHA2_512:  digest_size = SHA2_512;
-      SHA2_None: digest_size = SHA2_None;
-      default:   digest_size = SHA2_None; // unsupported values are mapped to SHA2_NONE
-      // TODO (issue #22312)
+      // unsupported digest size values are mapped to SHA2_None
+      // if HMAC/SHA-2 is triggered to start with this digest size, it is blocked
+      // and an error is signalled to SW
+      default:   digest_size = SHA2_None;
     endcase
+  end
+
+  // Hold the previous digest size till HMAC is started with the new digest size configured
+  assign digest_size_started_d = (hash_start_or_continue) ? digest_size : digest_size_started_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) digest_size_started_q <= SHA2_None;
+    else         digest_size_started_q <= digest_size_started_d;
   end
 
   assign key_length_supplied  = key_length_e'(cfg_reg.key_length.q);
@@ -285,13 +311,16 @@ module hmac
       Key_384:  key_length = Key_384;
       Key_512:  key_length = Key_512;
       Key_1024: key_length = Key_1024;
-      default:  key_length = Key_256; // unsupported values are mapped to Key_256
-      // TODO (issue #22312)
+      // unsupported key length values are mapped to Key_None
+      // if HMAC (not SHA-2) is triggered to start with this key length, it is blocked
+      // and an error is signalled to SW
+      default:  key_length = Key_None;
     endcase
   end
 
   assign endian_swap = cfg_reg.endian_swap.q;
   assign digest_swap = cfg_reg.digest_swap.q;
+  assign key_swap    = cfg_reg.key_swap.q;
 
   assign hw2reg.cfg.hmac_en.d     = cfg_reg.hmac_en.q;
   assign hw2reg.cfg.sha_en.d      = cfg_reg.sha_en.q;
@@ -299,6 +328,7 @@ module hmac
   assign hw2reg.cfg.key_length.d  = key_length_e'(key_length);
   assign hw2reg.cfg.endian_swap.d = cfg_reg.endian_swap.q;
   assign hw2reg.cfg.digest_swap.d = cfg_reg.digest_swap.q;
+  assign hw2reg.cfg.key_swap.d    = cfg_reg.key_swap.q;
 
   assign reg_hash_start    = reg2hw.cmd.hash_start.qe & reg2hw.cmd.hash_start.q;
   assign reg_hash_stop     = reg2hw.cmd.hash_stop.qe & reg2hw.cmd.hash_stop.q;
@@ -312,8 +342,9 @@ module hmac
   /////////////////////
   // Control signals //
   /////////////////////
-  assign hash_start = reg_hash_start & sha_en & ~cfg_block;
-  assign hash_continue = reg_hash_continue & sha_en & ~cfg_block;
+  assign hash_start             = reg_hash_start    & sha_en & ~cfg_block & ~invalid_config;
+  assign hash_continue          = reg_hash_continue & sha_en & ~cfg_block & ~invalid_config;
+  assign hash_process           = reg_hash_process  & sha_en & cfg_block &  ~invalid_config;
   assign hash_start_or_continue = hash_start | hash_continue;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -343,6 +374,10 @@ module hmac
         },
         digest_swap: '{
           q: HMAC_CFG_DIGEST_SWAP_RESVAL,
+          qe: 1'b0
+        },
+        key_swap: '{
+          q: HMAC_CFG_KEY_SWAP_RESVAL,
           qe: 1'b0
         },
         digest_size: '{
@@ -544,21 +579,26 @@ module hmac
   ) u_tlul_adapter (
     .clk_i,
     .rst_ni,
-    .tl_i             (tl_win_h2d),
-    .tl_o             (tl_win_d2h),
-    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-    .req_o            (msg_fifo_req   ),
-    .req_type_o       (               ),
-    .gnt_i            (msg_fifo_gnt   ),
-    .we_o             (msg_fifo_we    ),
-    .addr_o           (               ), // Doesn't care the address other than sub-word
-    .wdata_o          (msg_fifo_wdata ),
-    .wmask_o          (msg_fifo_wmask ),
-    .intg_error_o     (               ),
-    .rdata_i          (msg_fifo_rdata ),
-    .rvalid_i         (msg_fifo_rvalid),
-    .rerror_i         (msg_fifo_rerror),
-    .rmw_in_progress_o()
+    .tl_i                       (tl_win_h2d),
+    .tl_o                       (tl_win_d2h),
+    .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+    .req_o                      (msg_fifo_req   ),
+    .req_type_o                 (               ),
+    .gnt_i                      (msg_fifo_gnt   ),
+    .we_o                       (msg_fifo_we    ),
+    .addr_o                     (               ), // Doesn't care the address
+                                                   // other than sub-word
+    .wdata_o                    (msg_fifo_wdata ),
+    .wmask_o                    (msg_fifo_wmask ),
+    .intg_error_o               (               ),
+    .rdata_i                    (msg_fifo_rdata ),
+    .rvalid_i                   (msg_fifo_rvalid),
+    .rerror_i                   (msg_fifo_rerror),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (1'b0),
+    .write_pending_i            (1'b0)
   );
 
   // TL-UL to MSG_FIFO byte write handling
@@ -628,24 +668,22 @@ module hmac
     .mask_o       (reg_fifo_wmask),
     .ready_i      (fifo_wready & ~hmac_fifo_wsel),
 
-    .flush_i      (reg_hash_process),
+    .flush_i      (hash_process),
     .flush_done_o (packer_flush_done), // ignore at this moment
 
     .err_o  () // Not used
   );
 
-
   hmac_core u_hmac (
     .clk_i,
     .rst_ni,
     .secret_key_i  (secret_key),
-    .wipe_secret_i (wipe_secret),
-    .wipe_v_i      (wipe_v),
     .hmac_en_i     (hmac_en),
     .digest_size_i (digest_size),
     .key_length_i  (key_length),
 
     .reg_hash_start_i    (hash_start),
+    .reg_hash_stop_i     (reg_hash_stop),
     .reg_hash_continue_i (hash_continue),
     .reg_hash_process_i  (packer_flush_done), // Trigger after all msg written
     .hash_done_o         (reg_hash_done),
@@ -686,6 +724,7 @@ module hmac
     .fifo_rready_o        (shaf_rready),
     .sha_en_i             (sha_en),
     .hash_start_i         (sha_hash_start),
+    .hash_stop_i          (reg_hash_stop),
     .hash_continue_i      (sha_hash_continue),
     .digest_mode_i        (digest_size),
     .hash_process_i       (sha_hash_process),
@@ -694,6 +733,7 @@ module hmac
     .digest_we_i          (digest_sw_we),
     .digest_o             (digest),
     .hash_running_o       (hash_running),
+    .digest_on_blk_o      (digest_on_blk),
     .hash_done_o          (sha_hash_done),
     .idle_o               (sha_core_idle)
   );
@@ -746,14 +786,25 @@ module hmac
   logic hash_start_sha_disabled, update_seckey_inprocess;
   logic hash_start_active;  // `reg_hash_start` or `reg_hash_continue` set when hash already active
   logic msg_push_not_allowed; // Message is received when `hash_start_or_continue` isn't set
+
   assign hash_start_sha_disabled = (reg_hash_start | reg_hash_continue) & ~sha_en;
   assign hash_start_active = (reg_hash_start | reg_hash_continue) & cfg_block;
   assign msg_push_not_allowed = msg_fifo_req & ~msg_allowed;
 
+  // Invalid/unconfigured HMAC/SHA-2: not configured/invalid digest size or
+  // not configured/invalid key length for HMAC mode or
+  // key_length = 1024-bit for digest_size = SHA2_256 (max 512-bit is supported for SHA-2 256)
+  assign invalid_config = ((digest_size == SHA2_None)            |
+                           ((key_length == Key_None) && hmac_en) |
+                           ((key_length == Key_1024) && (digest_size == SHA2_256) && hmac_en));
+
+  // invalid_config at reg_hash_start or reg_hash_continue will signal an error to the SW
+  assign invalid_config_atstart = (reg_hash_start || reg_hash_continue) & invalid_config;
+
   always_comb begin
     update_seckey_inprocess = 1'b0;
     if (cfg_block) begin
-      for (int i = 0 ; i < 8 ; i++) begin
+      for (int i = 0 ; i < 32 ; i++) begin
         if (reg2hw.key[i].qe) begin
           update_seckey_inprocess = update_seckey_inprocess | 1'b1;
         end
@@ -769,17 +820,18 @@ module hmac
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
                    ( hash_start_sha_disabled | update_seckey_inprocess
-                   | hash_start_active | msg_push_not_allowed );
+                   | hash_start_active | msg_push_not_allowed | invalid_config_atstart);
 
   always_comb begin
     err_code = NoError;
-    unique case (1'b1)
-      hash_start_sha_disabled: begin
-        err_code = SwHashStartWhenShaDisabled;
+    priority case (1'b1)
+      // SwInvalidConfig has the highest priority: SW configures HMAC incorrectly
+      invalid_config_atstart: begin
+        err_code = SwInvalidConfig;
       end
 
-      update_seckey_inprocess: begin
-        err_code = SwUpdateSecretKeyInProcess;
+      hash_start_sha_disabled: begin
+        err_code = SwHashStartWhenShaDisabled;
       end
 
       hash_start_active: begin
@@ -788,6 +840,10 @@ module hmac
 
       msg_push_not_allowed: begin
         err_code = SwPushMsgWhenDisallowed;
+      end
+
+      update_seckey_inprocess: begin
+        err_code = SwUpdateSecretKeyInProcess;
       end
 
       default: begin
@@ -844,7 +900,7 @@ module hmac
   logic in_process;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)               in_process <= 1'b0;
-    else if (reg_hash_process) in_process <= 1'b1;
+    else if (hash_process)     in_process <= 1'b1;
     else if (reg_hash_done)    in_process <= 1'b0;
   end
 
@@ -852,16 +908,16 @@ module hmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                     initiated <= 1'b0;
     else if (hash_start_or_continue) initiated <= 1'b1;
-    else if (reg_hash_process)       initiated <= 1'b0;
+    else if (hash_process)           initiated <= 1'b0;
   end
 
   // the host doesn't write data after hash_process until hash_start_or_continue.
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
-  // `hash_process` shall be toggle and paired with `hash_start_or_continue`.
+  // `hash_process` shall be toggled and paired with `hash_start_or_continue`.
   // Below condition is covered by the design (2020-02-19)
   //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
-  `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated)
+  `ASSERT(ValidHashProcessAssert, hash_process |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,

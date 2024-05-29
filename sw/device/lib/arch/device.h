@@ -123,15 +123,31 @@ extern const uint64_t kUartBaudrate;
  * the NCO width, use NCO = 0xffff for this case since the error is tolerable.
  * Refer to #4263
  */
-#define CALCULATE_UART_NCO(baudrate, peripheral_clock)  \
+#define CALCULATE_UART_NCO_(baudrate, peripheral_clock) \
   (baudrate == 1500000 && peripheral_clock == 24000000) \
       ? 0xffff                                          \
-      : (((baudrate) << (16 + 4)) / (peripheral_clock))
+      : (uint32_t)(((uint64_t)(baudrate) << (16 + 4)) / (peripheral_clock))
+
+#define CALCULATE_UART_NCO(baudrate, peripheral_clock)      \
+  CALCULATE_UART_NCO_(baudrate, peripheral_clock) < 0x10000 \
+      ? CALCULATE_UART_NCO_(baudrate, peripheral_clock)     \
+      : 0;
 
 /**
  * The pre-calculated UART NCO value based on the Baudrate and Peripheral clock.
  */
 extern const uint32_t kUartNCOValue;
+
+/**
+ * Additional pre-calculated UART NCO values.  If the pre-calculated value is
+ * zero, then the corresponding baudrate is not supported.
+ */
+extern const uint32_t kUartBaud115K;
+extern const uint32_t kUartBaud230K;
+extern const uint32_t kUartBaud460K;
+extern const uint32_t kUartBaud921K;
+extern const uint32_t kUartBaud1M33;
+extern const uint32_t kUartBaud1M50;
 
 /**
  * Helper macro to calculate the time it takes to transmit the entire UART TX

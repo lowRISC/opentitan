@@ -263,6 +263,7 @@ module kmac
   logic [MaxKeyLen-1:0] sw_key_data [Share];
   key_len_e             sw_key_len;
   logic [MaxKeyLen-1:0] key_data [Share];
+  logic                 key_valid;
   key_len_e             key_len;
 
   // SHA3 Mode, Strength, KMAC enable for app interface
@@ -325,6 +326,8 @@ module kmac
   kmac_pkg::err_t msgfifo_err;
 
   logic err_processed;
+
+  prim_mubi_pkg::mubi4_t clear_after_error;
 
   logic alert_fatal, alert_recov_operation;
   logic alert_intg_err;
@@ -565,8 +568,7 @@ module kmac
   end
 
   // Clear the error processed
-  assign err_processed = reg2hw.cfg_shadowed.err_processed.q
-                       & reg2hw.cfg_shadowed.err_processed.qe;
+  assign err_processed = reg2hw.cmd.err_processed.q & reg2hw.cmd.err_processed.qe;
 
   // Make sure the field has latch in reg_top
   `ASSERT(ErrProcessedLatched_A, $rose(err_processed) |=> !err_processed)
@@ -672,7 +674,6 @@ module kmac
   );
 
   // Error
-  // As of now, only SHA3 error exists. More error codes will be added.
 
   logic event_error;
   assign event_error = sha3_err.valid    | app_err.valid
@@ -878,8 +879,9 @@ module kmac
     .strength_i (app_keccak_strength),
 
     // Secret key interface
-    .key_data_i (key_data),
-    .key_len_i  (key_len ),
+    .key_data_i  (key_data),
+    .key_len_i   (key_len),
+    .key_valid_i (key_valid),
 
     // Controls
     .start_i   (sha3_start          ),
@@ -1002,22 +1004,26 @@ module kmac
   ) u_tlul_adapter_msgfifo (
     .clk_i,
     .rst_ni,
-    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
-    .tl_i             (tl_win_h2d[WinMsgFifo]),
-    .tl_o             (tl_win_d2h[WinMsgFifo]),
+    .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
+    .tl_i                       (tl_win_h2d[WinMsgFifo]),
+    .tl_o                       (tl_win_d2h[WinMsgFifo]),
 
-    .req_o            (tlram_req),
-    .req_type_o       (),
-    .gnt_i            (tlram_gnt),
-    .we_o             (tlram_we ),
-    .addr_o           (tlram_addr),
-    .wdata_o          (tlram_wdata),
-    .wmask_o          (tlram_wmask),
-    .intg_error_o     (           ),
-    .rdata_i          (tlram_rdata),
-    .rvalid_i         (tlram_rvalid),
-    .rerror_i         (tlram_rerror),
-    .rmw_in_progress_o()
+    .req_o                      (tlram_req),
+    .req_type_o                 (),
+    .gnt_i                      (tlram_gnt),
+    .we_o                       (tlram_we ),
+    .addr_o                     (tlram_addr),
+    .wdata_o                    (tlram_wdata),
+    .wmask_o                    (tlram_wmask),
+    .intg_error_o               (           ),
+    .rdata_i                    (tlram_rdata),
+    .rvalid_i                   (tlram_rvalid),
+    .rerror_i                   (tlram_rerror),
+    .compound_txn_in_progress_o (),
+    .readback_en_i              (prim_mubi_pkg::MuBi4False),
+    .readback_error_o           (),
+    .wr_collision_i             (1'b0),
+    .write_pending_i            (1'b0)
   );
 
   assign sw_msg_valid = tlram_req & tlram_we ;
@@ -1064,8 +1070,9 @@ module kmac
     .app_o,
 
     // Secret Key output to KMAC Core
-    .key_data_o (key_data),
-    .key_len_o  (key_len),
+    .key_data_o  (key_data),
+    .key_len_o   (key_len),
+    .key_valid_o (key_valid),
 
     // to MSG_FIFO
     .kmac_valid_o (mux2fifo_valid),
@@ -1099,6 +1106,8 @@ module kmac
 
     .error_i         (sha3_err.valid),
     .err_processed_i (err_processed),
+
+    .clear_after_error_o (clear_after_error),
 
     // Command interface
     .sw_cmd_i (checked_sw_cmd),
@@ -1203,6 +1212,7 @@ module kmac
     .lc_escalate_en_i (lc_escalate_en[4]),
 
     .err_processed_i (err_processed),
+    .clear_after_error_i (clear_after_error),
 
     .error_o            (errchecker_err),
     .sparse_fsm_error_o (kmac_errchk_state_error)

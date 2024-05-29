@@ -79,6 +79,9 @@ waive -rules TERMINAL_STATE -location {spid_jedec.sv} \
 waive -rules RESET_DRIVER -location {spi_device.sv} \
       -regexp {'rst_(spi|txfifo|rxfifo)_n' is driven} \
       -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spi_device.sv} \
+      -regexp {'rst_spi_(in|out)_n' is driven} \
+      -comment "Async reset generation is required here"
 waive -rules RESET_MUX    -location {spi_device.sv} \
       -regexp {Asynchronous reset 'rst_(spi|txfifo|rxfifo)_n' is driven} \
       -comment "The MUX is needed to control the reset during scanmode (scanmode_i == 1)"
@@ -89,10 +92,10 @@ waive -rules RESET_MUX -location {spi_device.sv} \
       -regexp {'sram_rst_n.*' is driven by a multiplexer here} \
       -comment "Scan reset mux, but need to have asynchronous reset"
 waive -rules RESET_MUX -location {spi_device.sv} \
-      -regexp {'tpm_rst_n' is driven} \
+      -regexp {'tpm_rst_in_n' is driven} \
       -comment "Async reset generation is required here"
 waive -rules RESET_DRIVER -location {spi_device.sv} \
-      -regexp {'tpm_rst_n' is driven} \
+      -regexp {'tpm_rst_(in|out)_n' is driven} \
       -comment "Async reset generation is required here"
 waive -rules RESET_DRIVER -location {spid_status.sv} \
       -regexp {'status_fifo_rst_n' is driven} \

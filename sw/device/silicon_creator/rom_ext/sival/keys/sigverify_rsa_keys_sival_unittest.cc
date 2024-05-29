@@ -80,9 +80,6 @@ constexpr hmac_digest_t kDigest = {
 
 /**
  * Keys and signatures used in tests.
- *
- * These can be generated using the `openssl dgst` command as discussed in
- * sw/device/silicon_creator/keys/README.md.
  */
 struct RsaVerifyTestCase {
   /**

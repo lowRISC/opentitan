@@ -246,7 +246,7 @@ cc_test(
     srcs = ["flash_exec_unittest.cc"],
     deps = [
         ":flash_exec",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -256,6 +256,7 @@ cc_library(
     name = "sigverify",
     hdrs = ["sigverify.h"],
     deps = [
+        ":ecdsa_p256_verify",
         ":rsa_verify",
         ":spx_verify",
         ":usage_constraints",

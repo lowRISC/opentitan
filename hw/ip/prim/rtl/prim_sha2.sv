@@ -16,7 +16,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   input rst_ni,
 
   input               wipe_secret_i,
-  input sha_word64_t  wipe_v_i,
+  input sha_word32_t  wipe_v_i,
   // control signals and message words input to the message FIFO
   input               fifo_rvalid_i, // indicates that the message FIFO (prim_sync_fifo) has words
                                      // ready to write into the SHA-2 padding buffer
@@ -27,6 +27,8 @@ module prim_sha2 import prim_sha2_pkg::*;
   input               sha_en_i,   // if disabled, it clears internal content
   input               hash_start_i, // start hashing: initialize data counter to zero and clear
                                     // digest
+  input               hash_stop_i, // stop hashing: after all data up to message length has been
+                                   // hashed, stop without padding
   input               hash_continue_i, // continue hashing: set data counter to `message_length_i`
                                        // and use current digest
   input digest_mode_e digest_mode_i,
@@ -37,6 +39,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o, // tie off unused port slice when MultimodeEn = 0
+  output logic digest_on_blk_o, // digest being computed for a complete block
   output logic hash_running_o, // `1` iff hash computation is active (as opposed to `idle_o`, which
                                // is also `0` and thus 'busy' when waiting for a FIFO input)
   output logic idle_o
@@ -66,7 +69,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       assign unused_digest_upper[i] = ^digest_i[i][63:32];
     end
     logic unused_signals;
-    assign unused_signals = ^{wipe_v_i[63:32], shaf_rdata[63:32], unused_digest_upper};
+    assign unused_signals = ^{shaf_rdata[63:32], unused_digest_upper};
   end
 
   // Most operations and control signals are identical no matter if we are starting or continuing
@@ -87,7 +90,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_w_multimode
       w_d = w_q;
       if (wipe_secret_i) begin
-        w_d = w_q ^ {16{wipe_v_i[63:0]}};
+        w_d = {32{wipe_v_i}};
       end else if (!sha_en_i || hash_go) begin
         w_d = '0;
       end else if (!run_hash && update_w_from_fifo) begin
@@ -118,9 +121,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compression_multimode
       hash_d = hash_q;
       if (wipe_secret_i) begin
-        for (int i = 0; i < 8; i++) begin
-          hash_d[i] = hash_q[i] ^ wipe_v_i;
-        end
+        hash_d = {16{wipe_v_i}};
       end else if (init_hash) begin
         hash_d = digest_q;
       end else if (run_hash) begin
@@ -143,9 +144,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_digest_multimode
       digest_d = digest_q;
       if (wipe_secret_i) begin
-        for (int i = 0 ; i < 8 ; i++) begin
-          digest_d[i] = digest_q[i] ^ wipe_v_i;
-        end
+        digest_d = {16{wipe_v_i}};
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
           if (digest_mode_i == SHA2_256) begin
@@ -165,17 +164,6 @@ module prim_sha2 import prim_sha2_pkg::*;
       end else if (update_digest) begin
         for (int i = 0 ; i < 8 ; i++) begin
           digest_d[i] = digest_q[i] + hash_q[i];
-          if (digest_mode_flag_q == SHA2_256) digest_d[i][63:32] = 32'b0;
-        end
-        if (hash_done_o == 1'b1 && digest_mode_flag_q == SHA2_384) begin
-          // final digest truncation for SHA-2 384
-          digest_d[6] = '0;
-          digest_d[7] = '0;
-        end else if (hash_done_o == 1'b1 && digest_mode_flag_q == SHA2_256) begin
-          // make sure to clear out most significant 32-bits of each digest word (zero-padding)
-          for (int i = 0 ; i < 8 ; i++) begin
-            digest_d[i][63:32] = 32'b0;
-          end
         end
       end
     end : compute_digest_multimode
@@ -202,7 +190,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       // ~MultimodeEn
       w256_d = w256_q;
       if (wipe_secret_i) begin
-        w256_d = w256_q ^ {16{wipe_v_i[31:0]}};
+        w256_d = {16{wipe_v_i}};
       end else if (!sha_en_i || hash_go) begin
         w256_d = '0;
       end else if (!run_hash && update_w_from_fifo) begin
@@ -228,9 +216,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compression_256
       hash256_d = hash256_q;
       if (wipe_secret_i) begin
-        for (int i = 0; i < 8; i++) begin
-          hash256_d[i] = hash256_q[i] ^ wipe_v_i[31:0];
-        end
+        hash256_d = {8{wipe_v_i}};
       end else if (init_hash) begin
         hash256_d = digest256_q;
       end else if (run_hash) begin
@@ -248,9 +234,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_digest_256
       digest256_d = digest256_q;
       if (wipe_secret_i) begin
-        for (int i = 0 ; i < 8 ; i++) begin
-          digest256_d[i] = digest256_q[i] ^ wipe_v_i[31:0];
-        end
+        digest256_d = {8{wipe_v_i}};
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
             digest256_d[i] = InitHash_256[i];
@@ -462,6 +446,13 @@ module prim_sha2 import prim_sha2_pkg::*;
     if (!sha_en_i || hash_go) sha_st_d  = ShaIdle;
   end
 
+  // Determine whether a digest is being computed for a complete block: when `update_digest` is set,
+  // this module is not waiting for more data from the FIFO, and `message_length_i` is zero modulo a
+  // complete block (512 bit for SHA2_256 and 1024 bit for SHA2_384 and SHA2_512).
+  assign digest_on_blk_o = update_digest && (fifo_st_q == FifoIdle) && (
+      (digest_mode_flag_q == SHA2_256                 && message_length_i[8:0] == '0) ||
+      (digest_mode_flag_q inside {SHA2_384, SHA2_512} && message_length_i[9:0] == '0));
+
   assign one_chunk_done = ((digest_mode_flag_q == SHA2_256 || ~MultimodeEn)
                           && (round_q == 7'd63)) ? 1'b1 :
                           (((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512))
@@ -480,6 +471,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .shaf_rready_i (shaf_rready), // indicates that w is ready for more words from padding buffer
     .sha_en_i,
     .hash_start_i,
+    .hash_stop_i,
     .hash_continue_i,
     .digest_mode_i,
     .hash_process_i,

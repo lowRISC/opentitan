@@ -47,7 +47,7 @@ from util.reggen.register import Register  # noqa:E402
 # should be sufficient to simply select dependencies of the ROM and ROM_EXT.
 BAZEL_PATTERN = """
 kind("^cc_(binary|library) rule$",
-     deps("//sw/device/silicon_creator/rom:rom_with_fake_keys") union
+     deps("//sw/device/silicon_creator/rom:mask_rom") union
      deps("//sw/device/silicon_creator/rom_ext:rom_ext"))
 """.strip()
 

@@ -56,7 +56,7 @@
     }
     { name: "controller_halt"
       desc: '''
-            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK.
+            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK or lost arbitration.
             Check !!CONTROLLER_EVENTS for the reason.
             The interrupt will be released when the bits in !!CONTROLLER_EVENTS are cleared.
             '''
@@ -132,6 +132,16 @@
             ''',
       type: int
       default: "268",
+    }
+    { name:    "InputDelayCycles",
+      type:    "int",
+      default: "0",
+      desc:    '''
+               Maximum number of cycles of propagation delay between a change on the cio_scl_en_o or cio_sda_en_o pins and sensing the new values on the corresponding input pins, not including the rise/fall times.
+               For the purposes of this calculation, an input delay of 0 cycles means an output pin changing at the beginning of clock edge N will be sampled and observed on the input pins at clock edge N+1.
+               '''
+      local:   "false",
+      expose:  "true"
     }
   ],
   features: [
@@ -270,6 +280,38 @@
                 ACK Control Mode works together with !!TARGET_ACK_CTRL.NBYTES to allow software to control upper-layer protocol (N)ACKing (e.g. as in SMBus).
                 This bit enables the mode when 1, and !!TARGET_ACK_CTRL.NBYTES limits how many bytes may be automatically ACK'd while the ACQ FIFO has space.
                 If it is 0, the decision to ACK or NACK is made only from stretching timeouts and !!CTRL.NACK_ADDR_AFTER_TIMEOUT.
+                '''
+        }
+        { bits: "5"
+          resval: "0"
+          name: "MULTI_CONTROLLER_MONITOR_EN"
+          desc: '''
+                Enable the bus monitor in multi-controller mode.
+
+                If a 0->1 transition happens while !!CTRL.ENABLEHOST and !!CTRL.ENABLETARGET are both 0, the bus monitor will enable and begin in the "bus busy" state.
+                To transition to a bus free state, !!HOST_TIMEOUT_CTRL must be nonzero, so the bus monitor may count out idle cycles to confirm the freedom to transmit.
+                In addition, the bus monitor will track whether the bus is free based on the enabled timeouts and detected Stop symbols.
+                For multi-controller mode, ensure !!CTRL.MULTI_CONTROLLER_MONITOR_EN becomes 1 no later than !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET.
+                This bit can be set at the same time as either or both of the other two, though.
+
+                Note that if !!CTRL.MULTI_CONTROLLER_MONITOR_EN is set after !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET, the bus monitor will begin in the "bus free" state instead.
+                This would violate the proper protocol for a controller to join a multi-controller environment.
+                However, if this controller is known to be the first to join, this ordering will enable skipping the idle wait.
+
+                When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
+                '''
+        }
+        { bits: "6"
+          resval: "0"
+          name: "TX_STRETCH_CTRL_EN"
+          desc: '''
+                If set to 1, this bit causes a read transfer addressed to this target to set the corresponding bit in !!TARGET_EVENTS.
+
+                While !!TARGET_EVENTS.TX_PENDING is 1, subsequent read transactions will stretch the clock, even if there is data in the TX FIFO.
+
+                If enabled, this function allows software to confirm the data in the TX FIFO should be released for the current read.
+                This may be useful for cases where the TX FIFO has data that does not apply to the current transfer.
+                For example, the transaction could've targeted an alternate function via another address.
                 '''
         }
       ]
@@ -440,14 +482,6 @@
           name: "TX_THRESH"
           desc: '''Threshold level for TX interrupts. Whilst the number of used entries in the
                 TX FIFO is below this setting, the tx_threshold interrupt will be asserted.
-                '''
-          resval: "0"
-        }
-        { bits: "15"
-          name: "TXRST_ON_COND"
-          desc: '''If set, automatically reset the TX FIFO (TXRST) upon seeing a RSTART/STOP condition
-                during an active transaction in Target Mode. This may be useful if the remaining data
-                in the TX FIFO becomes no longer applicable to the next transaction.
                 '''
           resval: "0"
         }
@@ -664,19 +698,53 @@
     }
     { name: "TIMEOUT_CTRL"
       desc: '''
-            I2C clock stretching timeout control.
-            This is used in I2C host mode to detect whether a connected target is stretching for too long.
+            I2C clock stretching and bus timeout control.
+            The behavior of this feature depends on the value of TIMEOUT_CTRL.BUS_TIMEOUT_EN.
+            If the bus timeout is disabled, this is used in I2C controller mode to detect whether a connected target is stretching a single low time beyond the timeout value.
+            When the bus timeout feature is disabled, this feature is more informative and doesn't do more than assert the "stretch_timeout" interrupt.
+
+            If the bus timeout feature is enabled, it is used to detect whether the clock has been held low for too long instead, inclusive of the controller's clock low time.
+            In an SMBus context, the VAL programmed should be tTIMEOUT:MIN, and EN and BUS_TIMEOUT_EN should be 1.
             '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "30:0"
+        { bits: "29:0"
           name: "VAL"
           desc: "Clock stretching timeout value (in units of input clock frequency)"
         }
+        { bits: "30"
+          name: "MODE"
+          desc: '''
+                Selects the timeout mode, between a stretch timeout and a bus timeout.
+
+                Between the two modes, the primary difference is how much of the clock low period is counted.
+                For a stretch timeout, only the time that another device holds the clock low will be counted.
+                For a bus timeout, the entire clock low time is counted, consistent with the SMBus tTIMEOUT type.
+
+                !!TIMEOUT_CTRL.EN must be 1 for either of these features to be enabled.
+                '''
+          enum: [
+            { value: "0",
+              name: "STRETCH_TIMEOUT",
+              desc: '''
+                    The timeout is a target stretch timeout.
+                    The counter will track how long the clock has been stretched by another device while the controller is active.
+                    '''
+            },
+            { value: "1",
+              name: "BUS_TIMEOUT",
+              desc: '''
+                    The timeout is a clock low timeout.
+                    The counter will track how long the clock low period is, inclusive of the controller's ordinary low count.
+                    A timeout will set !!CONTROLLER_EVENTS.BUS_TIMEOUT and cause a "controller_halt" interrupt.
+                    '''
+            },
+          ],
+        }
         { bits: "31"
           name: "EN"
-          desc: "Enable timeout feature"
+          desc: "Enable stretch timeout or bus timeout feature"
         }
       ]
     }
@@ -691,7 +759,10 @@
         }
         { bits: "13:7"
           name: "MASK0"
-          desc: "I2C target mask number 0"
+          desc: '''
+                I2C target mask number 0.
+                At least one bit in MASK0 must be set to 1 for ADDRESS0 to be used.
+                '''
         }
         { bits: "20:14"
           name: "ADDRESS1"
@@ -699,7 +770,10 @@
         }
         { bits: "27:21"
           name: "MASK1"
-          desc: "I2C target mask number 1"
+          desc: '''
+                I2C target mask number 1.
+                At least one bit in MASK1 must be set to 1 for ADDRESS1 to be used.
+                '''
         }
       ]
     }
@@ -719,7 +793,7 @@
           desc: '''
                 Indicates any control symbols associated with the ABYTE.
 
-                For the STOP symbol, a stretch timeout will cause a NACK_STOP to appear in the ACQ FIFO.
+                For the STOP symbol, a stretch timeout or other unexpected events will cause a NACK_STOP to appear in the ACQ FIFO.
                 If the ACQ FIFO doesn't have enough space to record a START and a STOP, the transaction will be dropped entirely on a stretch timeout.
                 In that case, the START byte will not appear (neither as START nor NACK_START), but a standalone NACK_STOP may, if there was space.
                 Software can discard any standalone NACK_STOP that appears.
@@ -768,9 +842,12 @@
             { value: "6",
               name: "NACK_STOP",
               desc: '''
-                    A STOP condition was received for a transaction including a transfer that addressed this Target.
-                    A transfer addressing this Target was NACK'd.
+                    A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd.
+                    The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled).
                     ABYTE contains no data.
+
+                    NACKing can occur for multiple reasons, including a stretch timeout, a SW-directed NACK, or lost arbitration.
+                    This signal is a bucket for all these error-type terminations.
                     '''
             },
           ]
@@ -796,12 +873,13 @@
             In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
             for this number of cycles then the "host_timeout" interrupt will be asserted.
 
+            In multi-controller monitoring mode, !!HOST_TIMEOUT_CTRL is required to be nonzero to transition out of the initial busy state.
             Set this CSR to 0 to disable this behaviour.
             '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "31:0" }
+        { bits: "19:0" }
       ]
     }
     { name: "TARGET_TIMEOUT_CTRL"
@@ -896,6 +974,9 @@
       fields: [
         { bits: "7:0" }
       ]
+      tags: [// Updated by the hw. Exclude from init and write-checks.
+             // Without actual I2C traffic, read from this CSR returns Xs.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "HOST_NACK_HANDLER_TIMEOUT"
       desc: '''
@@ -942,6 +1023,47 @@
         { bits: "1"
           name: "UNHANDLED_NACK_TIMEOUT"
           desc: "A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism."
+        }
+        { bits: "2"
+          name: "BUS_TIMEOUT"
+          desc: "A Host-Mode active transaction has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+        { bits: "3"
+          name: "ARBITRATION_LOST"
+          desc: "A Host-Mode active transaction has terminated due to lost arbitration."
+        }
+      ]
+    }
+    { name: "TARGET_EVENTS"
+      desc: '''
+            Latched events that can cause the target module to stretch the clock at the beginning of a read transfer.
+
+            These events cause TX FIFO-related stretching even when the TX FIFO has data available.
+            Any bits that are set must be written (with a 1) to clear the tx_stretch interrupt.
+
+            This CSR serves as a gate to prevent the Target module from responding to a read command with unrelated, leftover data.
+            '''
+      swaccess: "rw1c"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "TX_PENDING"
+          desc: '''
+                A new Target-Mode read transfer has arrived that addressed this target.
+
+                This bit is used by software to confirm the release of the contents in the TX FIFO.
+                If the contents do not apply, software should first reset the TX FIFO, then load it with the correct data, then clear this bit.
+
+                Optionally enabled by !!CTRL.TX_STRETCH_CTRL_EN.
+                '''
+        }
+        { bits: "1"
+          name: "BUS_TIMEOUT"
+          desc: "A Target-Mode read transfer has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+        { bits: "2"
+          name: "ARBITRATION_LOST"
+          desc: "A Target-Mode read transfer has terminated due to lost arbitration."
         }
       ]
     }

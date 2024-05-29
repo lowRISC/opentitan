@@ -188,7 +188,7 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [24-1:0]                       dio_in_raw;
+  logic [${len(dedicated_pads)}-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -310,6 +310,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
   % endif
+    .mux_iob_sel_i ('0), // TODO(#23280)
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
@@ -870,14 +871,6 @@ module chip_${top["name"]}_${target["name"]} #(
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
 
-  assign manual_out_ast_misc = 1'b0;
-  assign manual_oe_ast_misc = 1'b0;
-  always_comb begin
-    // constantly enable pull-down
-    manual_attr_ast_misc = '0;
-    manual_attr_ast_misc.pull_select = 1'b0;
-    manual_attr_ast_misc.pull_en = 1'b1;
-  end
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
@@ -897,11 +890,16 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // Enable schmitt trigger on POR for better signal integrity.
   assign manual_attr_por_n = '{schmitt_en: 1'b1, default: '0};
-  // These pad attributes currently tied off permanently (these are all input-only pads).
-  assign manual_attr_cc1 = '0;
-  assign manual_attr_cc2 = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
+
+  // These pad attributes are controlled through sensor_ctrl.  Update the description of
+  // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
+  prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr;
+  assign manual_attr_cc1 = sensor_ctrl_manual_pad_attr[0];
+  assign manual_attr_cc2 = sensor_ctrl_manual_pad_attr[1];
+  assign manual_attr_flash_test_mode0 = sensor_ctrl_manual_pad_attr[2];
+  assign manual_attr_flash_test_mode1 = sensor_ctrl_manual_pad_attr[3];
+
+  // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_flash_test_volt = '0;
   assign manual_attr_otp_ext_volt = '0;
 
@@ -963,6 +961,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % else:
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .I2c0InputDelayCycles(1),
+    .I2c1InputDelayCycles(1),
+    .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
 % endif
@@ -1039,6 +1040,7 @@ module chip_${top["name"]}_${target["name"]} #(
     // Pad attributes
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   ),
+    .sensor_ctrl_manual_pad_attr_o( sensor_ctrl_manual_pad_attr),
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
@@ -1104,17 +1106,12 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] in ["cw310", "cw340"]:
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(320),
+    .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
-    .KmacEnMasking(0),
-    .KmacSwKeyMasked(1),
-    .SecKmacCmdDelay(320),
-    .SecKmacIdleAcceptSwMsg(1'b1),
-    .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .SecOtbnMuteUrnd(1'b1),
-    .SecOtbnSkipUrndReseedAtStart(1'b1),
+    .SecOtbnMuteUrnd(1'b0),
+    .SecOtbnSkipUrndReseedAtStart(1'b0),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
@@ -1142,6 +1139,17 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
+% endif
+% if target["name"] == "cw340":
+    .KmacEnMasking(1),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(1),
+% elif target["name"] == "cw310":
+    .KmacEnMasking(0),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(0),
+    .SecKmacCmdDelay(0),
+    .SecKmacIdleAcceptSwMsg(1'b0),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),

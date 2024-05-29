@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_adc_ctrl
+  name: adc_ctrl
   testpoints: [
     // ADC_CTRL (pre-verified IP) integration tests:
     {

@@ -71,7 +71,8 @@ class edn_err_vseq extends edn_base_vseq;
       // If EDN is configured in Boot mode, randomly select one of the Boot states.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
                                          exp_state inside {BootLoadIns, BootInsAckWait, BootLoadGen,
-                                                           BootGenAckWait, BootPulse, BootDone};)
+                                                           BootGenAckWait, BootPulse, BootDone,
+                                                           BootLoadUni, BootUniAckWait};)
     end else if (cfg.auto_req_mode == MuBi4True) begin
       // If instead EDN is configured in Auto mode, randomly select one of the Auto states.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
@@ -80,8 +81,10 @@ class edn_err_vseq extends edn_base_vseq;
                                                            AutoCaptGenCnt, AutoSendGenCmd,
                                                            AutoCaptReseedCnt, AutoSendReseedCmd};)
     end else begin
-      // If EDN is configured neither in Boot nor in Auto mode, select the SW state.
-      exp_state = SWPortMode;
+      // If EDN is configured neither in Boot nor in Auto mode, select among the remaining non-idle
+      // states.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
+                                         exp_state inside {SWPortMode, RejectCsrngEntropy};)
     end
 
     `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s", exp_state.name()), UVM_HIGH)
@@ -137,6 +140,22 @@ class edn_err_vseq extends edn_base_vseq;
           // Set wait_cmd_req_done to 0 since we don't want to wait for the ack.
           wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(0),
                  .flags(MuBi4False), .glen(0), .mode(mode), .wait_for_ack(0));
+        end else if (cfg.boot_req_mode == MuBi4True &&
+            (exp_state == BootLoadUni || exp_state == BootUniAckWait)) begin
+          // The Uninstantiate command is automatically sent upon disabling boot mode (after
+          // entering the BootDone state).
+          ral.ctrl.boot_req_mode.set(prim_mubi_pkg::MuBi4False);
+          csr_update(.csr(ral.ctrl));
+        end
+        if (exp_state == RejectCsrngEntropy) begin
+          // Make sure the next CSRNG acknowledgement returns an error status.
+          cfg.m_csrng_agent_cfg.rsp_sts_err = csrng_pkg::CMD_STS_INVALID_ACMD;
+          // Trigger a CSRNG acknowledgement. For boot and auto mode, we should eventually get
+          // a CSRNG command acknowledgement anyway. In SW mode, we could trigger any command.
+          if (cfg.boot_req_mode != MuBi4True && cfg.auto_req_mode != MuBi4True) begin
+            wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(0),
+                   .flags(MuBi4False), .glen(0), .mode(mode), .wait_for_ack(0));
+          end
         end
       end
     join_none

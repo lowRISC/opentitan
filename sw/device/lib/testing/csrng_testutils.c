@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "csrng_regs.h"  // Generated
@@ -16,6 +17,58 @@
 enum {
   kNumOutputWordsMax = 16,
 };
+
+/**
+ * Generates randomized seed material.
+ */
+status_t csrng_testutils_seed_material_build(
+    bool disable_rand, dif_csrng_seed_material_t *seed_material) {
+  if (seed_material == NULL) {
+    return INVALID_ARGUMENT();
+  }
+  seed_material->seed_material_len =
+      disable_rand
+          ? 0
+          : rand_testutils_gen32_range(0, kDifCsrngSeedMaterialMaxWordLen);
+  for (size_t i = 0; i < seed_material->seed_material_len; ++i) {
+    seed_material->seed_material[i] = rand_testutils_gen32();
+  }
+  return OK_STATUS();
+}
+
+/**
+ * Returns a randomized CSRNG application command.
+ */
+csrng_app_cmd_t csrng_testutils_app_cmd_build(
+    bool disable_rand, csrng_app_cmd_id_t id,
+    dif_csrng_entropy_src_toggle_t entropy_src_en, unsigned int glen_val,
+    dif_csrng_seed_material_t *seed_material) {
+  CHECK_STATUS_OK(
+      csrng_testutils_seed_material_build(disable_rand, seed_material));
+
+  // If disable_rand is true, we set flag0 to the provided value.
+  // If disable_rand is false, we pick a value at random.
+  dif_csrng_entropy_src_toggle_t entropy_src_enable =
+      disable_rand                       ? entropy_src_en
+      : rand_testutils_gen32_range(0, 1) ? kDifCsrngEntropySrcToggleEnable
+                                         : kDifCsrngEntropySrcToggleDisable;
+
+  // If glen_val > 0, the generate length is set to glen_val.
+  // If disable_rand is false we pick a random value between 1 and 10 with a
+  // bias towards 1. Otherwise, if glen would be too high, we would not see
+  // any reseeds because we do not consume enough entropy.
+  unsigned int glen = glen_val ? glen_val
+                      : (disable_rand || rand_testutils_gen32_range(0, 1))
+                          ? 1
+                          : rand_testutils_gen32_range(2, 10);
+
+  return (csrng_app_cmd_t){
+      .id = id,
+      .entropy_src_enable = entropy_src_enable,
+      .seed_material = seed_material,
+      .generate_len = glen,
+  };
+}
 
 status_t csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t cmd_status;
@@ -150,7 +203,7 @@ status_t csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
       .seed_material_len = 12,
   };
   const dif_csrng_internal_state_t kExpectedState = {
-      .reseed_counter = 1,
+      .reseed_counter = 0,
       .v = {0x06b8f59e, 0x43c0b2c2, 0x21052502, 0x217b5214},
       .key = {0x941709fd, 0xd8a25860, 0x861aecf3, 0x98a701a1, 0x0eb2c33b,
               0x74c08fad, 0x632d5227, 0x8c52f901},
@@ -174,7 +227,7 @@ status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
       0x793e01c5, 0x87b107ae, 0xdb17514c, 0xa43c41b7,
   };
   const dif_csrng_internal_state_t kExpectedState = {
-      .reseed_counter = 3,
+      .reseed_counter = 2,
       .v = {0xe73e3392, 0x7d2e92b1, 0x1a0bac9d, 0x53c78ac6},
       .key = {0x66d1b85a, 0xc19d4dfd, 0x053b73e3, 0xe9dc0f90, 0x3f015bc8,
               0x4436e5fd, 0x1cccc697, 0x1a1c6e5f},

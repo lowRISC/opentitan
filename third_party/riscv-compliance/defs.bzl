@@ -4,9 +4,25 @@
 
 """Helper macros for generating RISC-V compliance test targets."""
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "cw310_params",
+    "opentitan_test",
+    "verilator_params",
+)
 
 def rv_compliance_test(name, arch):
+    """Generate a RISC-V compliance test target.
+
+    Args:
+        name: The name of the test.
+        arch: The architecture of the test.
+    """
     test_file = "@riscv-compliance//:riscv-test-suite/{}/src/{}.S".format(arch, name)
     reference_output = "@riscv-compliance//:riscv-test-suite/{}/references/{}.reference_output".format(arch, name)
     expected_signature = "{}.expected_signature.S".format(name)
@@ -24,7 +40,7 @@ def rv_compliance_test(name, arch):
         """.format(reference_output),
     )
 
-    opentitan_functest(
+    opentitan_test(
         name = name,
         srcs = [
             test_file,
@@ -34,6 +50,14 @@ def rv_compliance_test(name, arch):
         ],
         verilator = verilator_params(
             timeout = "long",
+        ),
+        # TODO(#22871): Remove "broken" tag once the tests are fixed.
+        broken = cw310_params(tags = ["broken"]),
+        exec_env = dicts.add(
+            EARLGREY_TEST_ENVS,
+            {
+                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            },
         ),
         linkopts = ["-Wl,--no-relax"],
         deps = [

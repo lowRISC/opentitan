@@ -669,6 +669,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("wake_status"));
   endtask
 
+  // Checks that wake_status meets expectations. Notice different bits of wake_status can
+  // be updated at different times, according to their arrival order. Also, whenever reset
+  // goes active this comparison stops.
   task fast_check_wake_status(wakeups_t expected_wakeups);
     logic [pwrmgr_reg_pkg::NumWkups-1:0] init_wakeup_status;
     `uvm_info(`gfn, "init wakeup", UVM_MEDIUM);
@@ -687,8 +690,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wakeup_status != init_wakeup_status);, $sformatf(
                    "wakeup_status wait timeout exp:%x init:%x", expected_wakeups, init_wakeup_status
                    ), 15_000)
-      // The various bits of wakeup_status could have different sync delays, so wait some more.
-      cfg.clk_rst_vif.wait_clks(2);
+      // The various bits of wakeup_status could have arrived at different time because they are
+      // triggered outside pwrmgr, so wait a couple more cycles until there is a match or there
+      // is a reset.
+      repeat (2) begin
+        if (cfg.pwrmgr_vif.wakeup_status == expected_wakeups || !cfg.clk_rst_vif.rst_n) return;
+        cfg.clk_rst_vif.wait_clks(1);
+      end
       `DV_CHECK_EQ(cfg.pwrmgr_vif.wakeup_status, expected_wakeups)
     end
   endtask

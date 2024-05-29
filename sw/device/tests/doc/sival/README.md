@@ -176,12 +176,14 @@ bazel test   --define DISABLE_VERILATOR_BUILD=true      \
 
 ### Silicon Creator
 
+> The following command only works in the `earlgrey_es_sival` branch.
+
 The following command runs the `SV2` test suite using the `silicon_creator`
 execution environment. The binaries are signed with the `earlgrey_a0_dev_0`
 key using the `nitrokey` signing token configuration.
 
 ```console
-bazel test --define DISABLE_VERILATOR_BUILD=true \
+bazel test \
     --//signing:token=//signing/tokens:nitrokey  \
     --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
     --build_tag_filters=silicon_creator,-broken \
@@ -197,11 +199,11 @@ bazel test --define DISABLE_VERILATOR_BUILD=true \
 
 The following command runs the `SV2` test suite using the
 `silicon_owner_sival_rom_ext` execution environment. The binaries are signed
-using the `cloud_kms` signing token configuration.
+using the `cloud_kms_sival` signing token configuration.
 
 ```console
-bazel test --define DISABLE_VERILATOR_BUILD=true    \
-    --//signing:token=//signing/tokens:cloud_kms    \
+bazel test --define DISABLE_VERILATOR_BUILD=true       \
+    --//signing:token=//signing/tokens:cloud_kms_sival \
     --build_tag_filters=silicon_owner_sival_rom_ext,-broken \
     --test_tag_filters=silicon_owner_sival_rom_ext,-broken  \
     --test_output=streamed          \

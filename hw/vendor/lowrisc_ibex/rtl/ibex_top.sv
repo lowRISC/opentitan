@@ -13,28 +13,29 @@
  * Top level module of the ibex RISC-V core
  */
 module ibex_top import ibex_pkg::*; #(
-  parameter bit          PMPEnable        = 1'b0,
-  parameter int unsigned PMPGranularity   = 0,
-  parameter int unsigned PMPNumRegions    = 4,
-  parameter int unsigned MHPMCounterNum   = 0,
-  parameter int unsigned MHPMCounterWidth = 40,
-  parameter bit          RV32E            = 1'b0,
-  parameter rv32m_e      RV32M            = RV32MFast,
-  parameter rv32b_e      RV32B            = RV32BNone,
-  parameter regfile_e    RegFile          = RegFileFF,
-  parameter bit          BranchTargetALU  = 1'b0,
-  parameter bit          WritebackStage   = 1'b0,
-  parameter bit          ICache           = 1'b0,
-  parameter bit          ICacheECC        = 1'b0,
-  parameter bit          BranchPredictor  = 1'b0,
-  parameter bit          DbgTriggerEn     = 1'b0,
-  parameter int unsigned DbgHwBreakNum    = 1,
-  parameter bit          SecureIbex       = 1'b0,
-  parameter bit          ICacheScramble   = 1'b0,
-  parameter lfsr_seed_t  RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t  RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
-  parameter int unsigned DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr  = 32'h1A110808,
+  parameter bit          PMPEnable                    = 1'b0,
+  parameter int unsigned PMPGranularity               = 0,
+  parameter int unsigned PMPNumRegions                = 4,
+  parameter int unsigned MHPMCounterNum               = 0,
+  parameter int unsigned MHPMCounterWidth             = 40,
+  parameter bit          RV32E                        = 1'b0,
+  parameter rv32m_e      RV32M                        = RV32MFast,
+  parameter rv32b_e      RV32B                        = RV32BNone,
+  parameter regfile_e    RegFile                      = RegFileFF,
+  parameter bit          BranchTargetALU              = 1'b0,
+  parameter bit          WritebackStage               = 1'b0,
+  parameter bit          ICache                       = 1'b0,
+  parameter bit          ICacheECC                    = 1'b0,
+  parameter bit          BranchPredictor              = 1'b0,
+  parameter bit          DbgTriggerEn                 = 1'b0,
+  parameter int unsigned DbgHwBreakNum                = 1,
+  parameter bit          SecureIbex                   = 1'b0,
+  parameter bit          ICacheScramble               = 1'b0,
+  parameter int unsigned ICacheScrNumPrinceRoundsHalf = 2,
+  parameter lfsr_seed_t  RndCnstLfsrSeed              = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t  RndCnstLfsrPerm              = RndCnstLfsrPermDefault,
+  parameter int unsigned DmHaltAddr                   = 32'h1A110800,
+  parameter int unsigned DmExceptionAddr              = 32'h1A110808,
   // Default seed and nonce for scrambling
   parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKey   = RndCnstIbexKeyDefault,
   parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonce = RndCnstIbexNonceDefault
@@ -551,6 +552,9 @@ module ibex_top import ibex_pkg::*; #(
   // Rams Instantiation //
   ////////////////////////
 
+  logic [IC_NUM_WAYS-1:0] icache_tag_alert;
+  logic [IC_NUM_WAYS-1:0] icache_data_alert;
+
   if (ICache) begin : gen_rams
 
     for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams_inner
@@ -560,33 +564,38 @@ module ibex_top import ibex_pkg::*; #(
         // SEC_CM: ICACHE.MEM.SCRAMBLE
         // Tag RAM instantiation
         prim_ram_1p_scr #(
-          .Width            (TagSizeECC),
-          .Depth            (IC_NUM_LINES),
-          .DataBitsPerMask  (TagSizeECC),
-          .EnableParity     (0),
-          .NumAddrScrRounds (NumAddrScrRounds)
+          .Width              (TagSizeECC),
+          .Depth              (IC_NUM_LINES),
+          .DataBitsPerMask    (TagSizeECC),
+          .EnableParity       (0),
+          .NumPrinceRoundsHalf(ICacheScrNumPrinceRoundsHalf),
+          .NumAddrScrRounds   (NumAddrScrRounds)
         ) tag_bank (
           .clk_i,
           .rst_ni,
 
-          .key_valid_i (scramble_key_valid_q),
-          .key_i       (scramble_key_q),
-          .nonce_i     (scramble_nonce_q),
+          .key_valid_i      (scramble_key_valid_q),
+          .key_i            (scramble_key_q),
+          .nonce_i          (scramble_nonce_q),
 
-          .req_i       (ic_tag_req[way]),
+          .req_i            (ic_tag_req[way]),
 
-          .gnt_o       (),
-          .write_i     (ic_tag_write),
-          .addr_i      (ic_tag_addr),
-          .wdata_i     (ic_tag_wdata),
-          .wmask_i     ({TagSizeECC{1'b1}}),
-          .intg_error_i(1'b0),
+          .gnt_o            (),
+          .write_i          (ic_tag_write),
+          .addr_i           (ic_tag_addr),
+          .wdata_i          (ic_tag_wdata),
+          .wmask_i          ({TagSizeECC{1'b1}}),
+          .intg_error_i     (1'b0),
 
-          .rdata_o     (ic_tag_rdata[way]),
-          .rvalid_o    (),
-          .raddr_o     (),
-          .rerror_o    (),
-          .cfg_i       (ram_cfg_i)
+          .rdata_o          (ic_tag_rdata[way]),
+          .rvalid_o         (),
+          .raddr_o          (),
+          .rerror_o         (),
+          .cfg_i            (ram_cfg_i),
+          .wr_collision_o   (),
+          .write_pending_o  (),
+
+          .alert_o          (icache_tag_alert[way])
         );
 
         // Data RAM instantiation
@@ -596,29 +605,34 @@ module ibex_top import ibex_pkg::*; #(
           .DataBitsPerMask    (LineSizeECC),
           .ReplicateKeyStream (1),
           .EnableParity       (0),
+          .NumPrinceRoundsHalf(ICacheScrNumPrinceRoundsHalf),
           .NumAddrScrRounds   (NumAddrScrRounds)
         ) data_bank (
           .clk_i,
           .rst_ni,
 
-          .key_valid_i (scramble_key_valid_q),
-          .key_i       (scramble_key_q),
-          .nonce_i     (scramble_nonce_q),
+          .key_valid_i      (scramble_key_valid_q),
+          .key_i            (scramble_key_q),
+          .nonce_i          (scramble_nonce_q),
 
-          .req_i       (ic_data_req[way]),
+          .req_i            (ic_data_req[way]),
 
-          .gnt_o       (),
-          .write_i     (ic_data_write),
-          .addr_i      (ic_data_addr),
-          .wdata_i     (ic_data_wdata),
-          .wmask_i     ({LineSizeECC{1'b1}}),
-          .intg_error_i(1'b0),
+          .gnt_o            (),
+          .write_i          (ic_data_write),
+          .addr_i           (ic_data_addr),
+          .wdata_i          (ic_data_wdata),
+          .wmask_i          ({LineSizeECC{1'b1}}),
+          .intg_error_i     (1'b0),
 
-          .rdata_o     (ic_data_rdata[way]),
-          .rvalid_o    (),
-          .raddr_o     (),
-          .rerror_o    (),
-          .cfg_i       (ram_cfg_i)
+          .rdata_o          (ic_data_rdata[way]),
+          .rvalid_o         (),
+          .raddr_o          (),
+          .rerror_o         (),
+          .cfg_i            (ram_cfg_i),
+          .wr_collision_o   (),
+          .write_pending_o  (),
+
+          .alert_o          (icache_data_alert[way])
         );
 
         `ifdef INC_ASSERT
@@ -691,6 +705,8 @@ module ibex_top import ibex_pkg::*; #(
           .cfg_i       (ram_cfg_i)
         );
 
+        assign icache_tag_alert  = '{default:'b0};
+        assign icache_data_alert = '{default:'b0};
       end
     end
 
@@ -709,6 +725,8 @@ module ibex_top import ibex_pkg::*; #(
     assign ic_tag_rdata      = '{default:'b0};
     assign ic_data_rdata     = '{default:'b0};
 
+    assign icache_tag_alert  = '{default:'b0};
+    assign icache_data_alert = '{default:'b0};
   end
 
   assign data_wdata_o = data_wdata_core[31:0];
@@ -1079,9 +1097,15 @@ module ibex_top import ibex_pkg::*; #(
     assign unused_scan = scan_rst_ni;
   end
 
+  // Enable or disable iCache multi bit encoding checking error generation.
+  // If enabled and a MuBi encoding error is detected, raise a major alert.
+  logic icache_alert_major_internal;
+  assign icache_alert_major_internal = (|icache_tag_alert) | (|icache_data_alert);
+
   assign alert_major_internal_o = core_alert_major_internal |
                                   lockstep_alert_major_internal |
-                                  rf_alert_major_internal;
+                                  rf_alert_major_internal |
+                                  icache_alert_major_internal;
   assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
 

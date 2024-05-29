@@ -656,7 +656,8 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
       illegal_bins illegal =
         // Only Div, Mul, Branch and Jump instructions can see an instruction stall
         (!binsof(cp_id_instr_category) intersect {InstrCategoryDiv, InstrCategoryMul,
-                                                 InstrCategoryBranch, InstrCategoryJump} &&
+                                                 InstrCategoryBranch, InstrCategoryJump,
+                                                 InstrCategoryFenceI} &&
          binsof(cp_stall_type_id) intersect {IdStallTypeInstr})
     ||
         // Only ALU, Mul, Div, Branch, Jump, Load, Store and CSR Access can see a load hazard stall
@@ -701,7 +702,8 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
       illegal_bins illegal =
         // Only Div, Mul, Branch and Jump instructions can see an instruction stall
         (!binsof(cp_id_instr_category) intersect {InstrCategoryDiv, InstrCategoryMul,
-                                                 InstrCategoryBranch, InstrCategoryJump} &&
+                                                 InstrCategoryBranch, InstrCategoryJump,
+                                                 InstrCategoryFenceI} &&
          binsof(cp_stall_type_id) intersect {IdStallTypeInstr})
     ||
         // Only ALU, Mul, Div, Branch, Jump, Load, Store and CSR Access can see a load hazard stall

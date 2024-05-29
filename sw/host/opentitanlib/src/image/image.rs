@@ -18,7 +18,7 @@ use crate::crypto::rsa::RsaPublicKey;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
 use crate::image::manifest::{
-    Manifest, CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2,
+    Manifest, ManifestKind, CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2,
     CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
@@ -85,8 +85,23 @@ impl Default for ImageData {
 
 #[derive(Debug, Default)]
 pub struct Image {
+    // TODO(cfrantz): We should use Box::new_uninit to create this, as the
+    // scheme of allowing Box::default to initialize this creates a copy on
+    // the stack and then copies it into the Box.  Unfortunately, Box::new_uninit
+    // is nightly-only (rust-lang#63291).
+    //
+    // For now, I've increased the thread stack size for opentitanlib_test to
+    // avoid the test overflowing its stack while initializing this item.
     data: Box<ImageData>,
     pub size: usize,
+}
+
+#[derive(Debug)]
+pub struct SubImage<'a> {
+    pub kind: ManifestKind,
+    pub offset: usize,
+    pub manifest: &'a Manifest,
+    pub data: &'a [u8],
 }
 
 #[derive(Debug)]
@@ -120,7 +135,7 @@ impl ToWriter for Image {
 }
 
 impl Image {
-    pub const MAX_SIZE: usize = 512 * 1024;
+    pub const MAX_SIZE: usize = 1024 * 1024;
 
     /// Perform a sanity check to ensure that the image comes with manifest.
     ///
@@ -389,6 +404,34 @@ impl Image {
         manifest.manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR2;
         manifest.manifest_version.minor = CHIP_MANIFEST_VERSION_MINOR1;
         Ok(())
+    }
+
+    pub fn subimages(&self) -> Result<Vec<SubImage<'_>>> {
+        let mut result = Vec::new();
+        let mut offset = 0;
+        while offset < self.size {
+            let m = &self.data.bytes[offset..offset + size_of::<Manifest>()];
+            let manifest: zerocopy::Ref<_, Manifest> =
+                zerocopy::Ref::new(m).ok_or(ImageError::Parse)?;
+            let kind = ManifestKind(manifest.identifier);
+            let mut size = 1;
+            if kind.is_known_value() {
+                size = manifest.length as usize;
+                result.push(SubImage {
+                    kind,
+                    offset,
+                    manifest: manifest.into_ref(),
+                    data: &self.data.bytes[offset..offset + size],
+                });
+            }
+            // Round up to next 64K offset.
+            offset += (size + 65535) & !65535;
+        }
+        Ok(result)
+    }
+
+    pub fn bytes(&self) -> &[u8] {
+        &self.data.bytes[..self.size]
     }
 
     pub fn borrow_manifest(&self) -> Result<&Manifest> {

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
 use serde_annotate::Annotate;
@@ -12,9 +12,13 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boot_svc::{BootDataSlot, NextBootBl0};
-use opentitanlib::chip::helper::OwnershipUnlockParams;
+use opentitanlib::chip::boot_svc::BootSlot;
+use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
+use opentitanlib::image::image::Image;
+use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::util::file::FromReader;
+use opentitanlib::util::parse_int::ParseInt;
 
 #[derive(Debug, serde::Serialize, Annotate)]
 pub struct RawBytes(
@@ -27,6 +31,20 @@ pub struct RawBytes(
 pub struct Firmware {
     #[command(flatten)]
     params: UartParams,
+    #[arg(long, help = "After connecting to rescue, negotiate faster baudrate")]
+    rate: Option<u32>,
+    #[arg(long, default_value = "SlotA", help = "Which flash slot to rescue")]
+    slot: BootSlot,
+    #[arg(long, value_parser = usize::from_str, help = "Offset of application image")]
+    offset: Option<usize>,
+    #[arg(long, default_value_t = false, help = "Upload the file contents as-is")]
+    raw: bool,
+    #[arg(
+        long,
+        default_value_t = false,
+        help = "Wait after upload (no automatic reboot)"
+    )]
+    wait: bool,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 }
@@ -37,11 +55,34 @@ impl CommandDispatch for Firmware {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let payload = std::fs::read(&self.filename)?;
+        let image = Image::read_from_file(&self.filename)?;
+        let payload = if self.raw {
+            image.bytes()
+        } else {
+            let subimages = image.subimages()?;
+            let subimage = subimages
+                .iter()
+                .find(|s| {
+                    s.kind == ManifestKind::Application
+                        && (self.offset.is_none() || Some(s.offset) == self.offset)
+                })
+                .ok_or_else(|| anyhow!("No application image in {:?}", self.filename))?;
+            log::info!("Found application image at offset {:#x}", subimage.offset);
+            if self.slot != BootSlot::SlotA && self.offset.is_none() {
+                log::warn!("Rescuing to {} may produce unexpected results.  Use `--offset` to select the desired application image.", self.slot);
+            }
+            subimage.data
+        };
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport)?;
-        rescue.update_firmware(payload.as_slice())?;
+        if let Some(rate) = self.rate {
+            rescue.set_baud(rate)?;
+        }
+        if self.wait {
+            rescue.wait()?;
+        }
+        rescue.update_firmware(self.slot, payload)?;
         Ok(None)
     }
 }
@@ -105,7 +146,7 @@ pub struct SetNextBl0Slot {
     #[command(flatten)]
     params: UartParams,
     #[arg(default_value = "SlotA")]
-    slot: NextBootBl0,
+    slot: BootSlot,
 }
 
 impl CommandDispatch for SetNextBl0Slot {
@@ -127,7 +168,7 @@ pub struct SetPrimaryBl0Slot {
     #[command(flatten)]
     params: UartParams,
     #[arg(default_value = "SlotA")]
-    slot: BootDataSlot,
+    slot: BootSlot,
 }
 
 impl CommandDispatch for SetPrimaryBl0Slot {
@@ -172,12 +213,64 @@ impl CommandDispatch for OwnershipUnlock {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct OwnershipActivate {
+    #[command(flatten)]
+    params: UartParams,
+    #[command(flatten)]
+    activate: OwnershipActivateParams,
+    #[arg(short, long, help = "A file containing a binary activate request")]
+    input: Option<PathBuf>,
+}
+
+impl CommandDispatch for OwnershipActivate {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let activate = self
+            .activate
+            .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
+
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport)?;
+        rescue.ownership_activate(activate)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct SetOwnerConfig {
+    #[command(flatten)]
+    params: UartParams,
+    #[arg(help = "A signed owner configuration block")]
+    input: PathBuf,
+}
+
+impl CommandDispatch for SetOwnerConfig {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let data = std::fs::read(&self.input)?;
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport)?;
+        rescue.set_owner_config(&data)?;
+        Ok(None)
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum BootSvc {
     Get(GetBootSvc),
     SetNextBl0Slot(SetNextBl0Slot),
     SetPrimaryBl0Slot(SetPrimaryBl0Slot),
     OwnershipUnlock(OwnershipUnlock),
+    OwnershipActivate(OwnershipActivate),
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]
@@ -186,4 +279,5 @@ pub enum RescueCommand {
     BootSvc(BootSvc),
     GetBootLog(GetBootLog),
     Firmware(Firmware),
+    SetOwnerConfig(SetOwnerConfig),
 }

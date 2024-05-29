@@ -47,7 +47,7 @@ typedef struct packed {
   logic [3:0] prd_2;
   logic [7:0] prd_3;
   logic [7:0] prd_4;
-} prd_in_t;
+} aes_sbox_dom_prd_in_t;
 
 // Packed struct for pseudo-random data (PRD) output. Stages 2 and 3 produce 8 bits each. Stage 1
 // produces just 4 bits.
@@ -55,7 +55,7 @@ typedef struct packed {
   logic [3:0] prd_1;
   logic [7:0] prd_2;
   logic [7:0] prd_3;
-} prd_out_t;
+} aes_sbox_dom_prd_out_t;
 
 // DOM-indep GF(2^N) multiplier, first-order masked.
 // Computes (a_q ^ b_q) = (a_x ^ b_x) * (a_y ^ b_y), i.e. q = x * y using first-order
@@ -795,16 +795,16 @@ endmodule
 module aes_dom_inverse_gf2p8 #(
   parameter bit PipelineMul = 1'b1
 ) (
-  input  logic        clk_i,
-  input  logic        rst_ni,
-  input  logic  [3:0] we_i,
-  input  logic  [7:0] a_y,     // input data masked by b_y
-  input  logic  [7:0] b_y,     // input mask
-  input  prd_in_t     prd_i,   // pseudo-random data, e.g. for intermediate masks
-  output logic  [7:0] a_y_inv, // output data masked by b_y_inv
-  output logic  [7:0] b_y_inv, // output mask
-  output prd_out_t    prd_o    // pseudo-random data, e.g. for use in another S-Box instance
-);
+  input  logic                  clk_i,
+  input  logic                  rst_ni,
+  input  logic            [3:0] we_i,
+  input  logic            [7:0] a_y,     // input data masked by b_y
+  input  logic            [7:0] b_y,     // input mask
+  input  aes_sbox_dom_prd_in_t  prd_i,   // pseudo-random data, e.g. for intermediate masks
+  output logic            [7:0] a_y_inv, // output data masked by b_y_inv
+  output logic            [7:0] b_y_inv, // output mask
+  output aes_sbox_dom_prd_out_t prd_o    // pseudo-random data, e.g. for use in another S-Box
+);                                       // instance
 
   import aes_sbox_canright_pkg::*;
 
@@ -988,7 +988,6 @@ module aes_sbox_dom
   input  logic              clk_i,
   input  logic              rst_ni,
   input  logic              en_i,
-  input  logic              prd_we_i,
   output logic              out_req_o,
   input  logic              out_ack_i,
   input  aes_pkg::ciph_op_e op_i,
@@ -1004,12 +1003,11 @@ module aes_sbox_dom
   import aes_pkg::*;
   import aes_sbox_canright_pkg::*;
 
-  logic [7:0] in_data_basis_x, out_data_basis_x;
-  logic [7:0] in_mask_basis_x, out_mask_basis_x;
-  logic [3:0] we;
-  logic [7:0] prd1_d, prd1_q;
-  prd_in_t    in_prd;
-  prd_out_t   out_prd;
+  logic            [7:0] in_data_basis_x, out_data_basis_x;
+  logic            [7:0] in_mask_basis_x, out_mask_basis_x;
+  logic            [3:0] we;
+  aes_sbox_dom_prd_in_t  in_prd;
+  aes_sbox_dom_prd_out_t out_prd;
 
   // Convert data to normal basis X.
   assign in_data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X)         :
@@ -1068,19 +1066,9 @@ module aes_sbox_dom
   assign we[2] = en_i & count_q == 3'd2;
   assign we[3] = en_i & count_q == 3'd3;
 
-  // Buffer and forward PRD for the individual stages. We get 8 bits from the PRNG for usage in the
-  // first cycle. Stages 2, 3 and 4 are driven by other S-Box instances.
-  assign prd1_d = prd_we_i ? prd_i[7:0] : prd1_q;
-  prim_flop #(
-    .Width      ( 8  ),
-    .ResetValue ( '0 )
-  ) u_prim_flop_prd1_q (
-    .clk_i  ( clk_i  ),
-    .rst_ni ( rst_ni ),
-    .d_i    ( prd1_d ),
-    .q_o    ( prd1_q )
-  );
-  assign in_prd = '{prd_1: prd1_q,
+  // PRD forwarding for the individual stages. We get 8 bits from the PRNG for usage in Stage 1.
+  // Stages 2, 3 and 4 are driven by other S-Box instances.
+  assign in_prd = '{prd_1: prd_i[7:0],
                     prd_2: prd_i[11:8],
                     prd_3: prd_i[19:12],
                     prd_4: prd_i[27:20]};

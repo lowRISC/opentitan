@@ -13,56 +13,66 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   `uvm_component_new
 
-  // If the same IR was already selected earlier, then don't resend IR based on seq item knob.
-  logic [JTAG_IRW-1:0]  selected_ir;
-  uint                  selected_ir_len;
-  // Variable to save the previous value of exit_to_rti_ir
-  bit                   exit_to_rti_ir_past = 1;
+  // The IR that we most recently selected. If a new request has the same IR and has the
+  // skip_reselected_ir flag set then don't bother sending the IR again. If the current state of the
+  // JTAG bus is unknown (because we might just have been connected), use the reset_internal_state()
+  // function to ensure we request a new IR for the next item.
+  protected logic [JTAG_IRW-1:0]  selected_ir;
+  protected uint                  selected_ir_len;
+
   // Variable to save the previous value of exit_to_rti_dr
   // Before fetching a new request, `drive_jtag_req` task waits for a clock cycle.
   // Since, in the `drive_ir` task, there is a possibility to introduce TAP reset by consecutively
   // driving `tsm` high for five cycles if previous state is UpdateDr (previous `drive_dr` exit
   // without going to Run-Test-Idle), this extra cycle must be skipped
-  bit                   exit_to_rti_dr_past = 1;
+  protected bit                   exit_to_rti_dr_past = 1;
+
+  // Reset internal model of interface state
+  //
+  // This is needed on a genuine interface reset, but is also needed when we find out our interface
+  // connection was broken (so we were shouting into the void)
+  function void reset_internal_state();
+    // Set a dummy "previous IR" value with a zero length. Note that we only consider setting IR for
+    // a new request if the length is nonzero, but skip doing so if the value and length match,
+    // which can't happen just after calling this function because you'd need the length to be both
+    // zero and nonzero.
+    selected_ir = '{default:0};
+    selected_ir_len = 0;
+  endfunction
 
   // do reset signals (function)
   virtual function void do_reset_signals();
-    if (cfg.if_mode == Host) begin
-      cfg.vif.tck_en <= 1'b0;
-      cfg.vif.tms <= 1'b0;
-      cfg.vif.tdi <= 1'b0;
-      selected_ir = '{default:0};
-      selected_ir_len = 0;
-      exit_to_rti_ir_past = 1;
-      exit_to_rti_dr_past = 1;
-    end
-    else begin
-      cfg.vif.tdo <= 1'b0;
-    end
+    `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
+
+    reset_internal_state();
+
+    cfg.vif.tck_en <= 1'b0;
+    cfg.vif.tms <= 1'b0;
+    cfg.vif.tdi <= 1'b0;
+    exit_to_rti_dr_past = 1;
   endfunction
 
-  // reset signals task
   virtual task reset_signals();
-    do_reset_signals();
-    forever begin
-      @(negedge cfg.vif.trst_n);
-      do_reset_signals();
-      @(posedge cfg.vif.trst_n);
-    end
+    fork
+      begin
+        do_reset_signals();
+        forever begin
+          @(negedge cfg.vif.trst_n);
+          do_reset_signals();
+          @(posedge cfg.vif.trst_n);
+        end
+      end
+      forever begin
+        cfg.jtag_if_connected.wait_trigger();
+        reset_internal_state();
+      end
+    join
   endtask
 
   // drive trans received from sequencer
   virtual task get_and_drive();
-    if (cfg.if_mode == Host) begin
-      get_and_drive_host_mode();
-    end
-    else begin
-      `uvm_fatal(`gfn, "Device mode driver is not supported yet.")
-    end
-  endtask
+    `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
-  // drive trans received from sequencer
-  virtual task get_and_drive_host_mode();
     forever begin
       if (!cfg.vif.trst_n) begin
         `DV_WAIT(cfg.vif.trst_n)
@@ -79,6 +89,21 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     end
   endtask
 
+  // Drive TMS, TDI to the given values and wait for a single edge of TCK.
+  task tms_tdi_step(bit tms, bit tdi);
+    // We normally expect this task to be called at the negedge of tck (synchronous with HOST_CB).
+    // But that won't quite be true if the clock has been paused for a while because tck=1 when
+    // idle. We can spot that happening because tck will be 1. In that situation, wait for HOST_CB
+    // so we can get back in sync.
+    if (cfg.vif.tck) begin
+      @(`HOST_CB);
+    end
+
+    `HOST_CB.tms <= tms;
+    `HOST_CB.tdi <= tdi;
+    @(`HOST_CB);
+  endtask
+
   // Task to drive TMS such that TAP FSM resets to Test-Logic-Reset state
   task drive_jtag_test_logic_reset();
     `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
@@ -88,14 +113,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     @(`HOST_CB);
     // Go to Test Logic Reset
     repeat (JTAG_TEST_LOGIC_RESET_CYCLES) begin
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end
     // Go to Run-Test/Idle
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
   endtask
 
   // drive jtag req and retrieve rsp
@@ -119,8 +140,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         drive_jtag_ir(req.ir_len,
                       req.ir,
                       req.ir_pause_count,
-                      req.ir_pause_cycle,
-                      req.exit_to_rti_ir);
+                      req.ir_pause_cycle);
       end
     end
     if (req.dr_len) begin
@@ -140,33 +160,22 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   task drive_jtag_ir(int len,
                      bit [JTAG_DRW-1:0] ir,
                      uint pause_count = 0,
-                     uint pause_cycle = 0,
-                     bit exit_to_rti = 1'b1);
+                     uint pause_cycle = 0);
     logic [JTAG_DRW-1:0] dout;
-    exit_to_rti_ir_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
     // Assume starting in RTI state
     // SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // SelectIR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // CaptureIR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
     // ShiftIR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
+    tms_tdi_step(0, 0);
     for(int i = 0; i < len; i++) begin
-      @(`HOST_CB);
-      // ExitIR if end of addr
-      `HOST_CB.tms <= (i == len - 1) ? 1'b1 : 1'b0;
       `HOST_CB.tdi <= ir[i];
-      // Move to PauseIR state if pause_count is non-zero
+
+      // Spend some cycles in PauseIR state if pause_count is non-zero
       if (pause_count > 0 && i == pause_cycle) begin
         `uvm_info(`gfn,
            $sformatf("jtag_pause in drive_jtag_ir with pause_count : %0d, pause_cycle:%0d",
@@ -175,39 +184,26 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
            UVM_MEDIUM)
         jtag_pause(pause_count, dout);
       end
+
+      // ExitIR if end of addr
+      tms_tdi_step(i == len - 1, ir[i]);
     end
-    @(`HOST_CB);
     // go to RTI either via
     // - PauseIR -> exit2IR -> UpdateIR -> RTI or
     // - Exit1IR -> UpdateIR -> RTI
     if (req.exit_via_pause_ir) begin
       `uvm_info(`gfn, "Exiting via PauseIR", UVM_MEDIUM)
       // Go to PauseIR
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
       // Go to Exit2IR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
-      // Go to UpdateIR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
-    end else begin
-      // UpdateIR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end
-    if (exit_to_rti) begin
-      // Go to RTI
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
-    end else begin
-      `uvm_info(`gfn, "drive_ir: skip going to RTI", UVM_MEDIUM)
-    end
+    // UpdateIR
+    tms_tdi_step(1, 0);
+
+    // Go to RTI
+    tms_tdi_step(0, 0);
+
     selected_ir = ir;
     selected_ir_len = len;
   endtask
@@ -218,29 +214,30 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                      input  uint                 pause_count,
                      input  uint                 pause_cycle,
                      input  bit                  exit_to_rti = 1'b1);
-    bit pause_injected = 0;
+    // A flag that tracks whether we injected a pause on the last iteration of the loop.
+    bit pause_just_injected = 1'b0;
+
     exit_to_rti_dr_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // go to CaptureDR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
     // go to ShiftDR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
+    tms_tdi_step(0, 0);
     for(int i = 0; i < len - 1; i++) begin
-      @(`HOST_CB);
-      // stay in ShiftDR
-      `HOST_CB.tms <= 1'b0;
+      // We're probably currently in ShiftDr and TDO will contain bit i of the output value.
+      // However, this is not true if we injected a pause on the last iteration. In that case, we
+      // prepended TDO to dout as we left ShiftDR in that iteration and we're currently in Exit2DR
+      // (and don't want to read TDO this cycle).
+      if (!pause_just_injected) begin
+        dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+      end
+      pause_just_injected = 1'b0;
       `HOST_CB.tdi <= dr[i];
-      // Skip sampling dout in case of pause, since FSM moves to ShiftDr state in next cycle
-      dout = !pause_injected ? {`HOST_CB.tdo, dout[JTAG_DRW-1:1]} : dout;
-      // Move to PauseDR state if pause_count is non-zero
+
+      // Spend some cycles in PauseDR state if pause_count is non-zero
       if (pause_count > 0 && i == pause_cycle) begin
         `uvm_info(`gfn,
            $sformatf("jtag_pause in drive_jtag_dr with pause_count : %0d, pause_cycle:%0d",
@@ -248,47 +245,33 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                     pause_cycle),
            UVM_MEDIUM)
         jtag_pause(pause_count, dout);
-        pause_injected = 1;
-      end else begin
-        pause_injected = 0;
+        pause_just_injected = 1'b1;
       end
+
+      // stay in ShiftDR
+      tms_tdi_step(0, dr[i]);
     end
-    @(`HOST_CB);
     // go to Exit1DR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= dr[len - 1];
     dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-    @(`HOST_CB);
-    // go to RTI either via
-    // - PauseDR -> exit2DR -> UpdateDR -> RTI or
-    // - Exit1DR -> UpdateDR -> RTI
+    tms_tdi_step(1, dr[len - 1]);
+
+    // Consume final bit of TDO as we enter the Exit1DR state.
+    dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+
+    // Possibly inject two extra steps (PauseDR, Exit2DR) on the way to UpdateDr.
     if (req.exit_via_pause_dr) begin
-      `uvm_info(`gfn, "Exiting via PauseDR", UVM_MEDIUM)
       // Go to PauseDR
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
       // Go to Exit2DR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
-      // Go to UpdateDR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
-    end else begin
-      // go to UpdateDR
-      `HOST_CB.tms <= 1'b1;
-      `HOST_CB.tdi <= 1'b0;
-      dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
-      @(`HOST_CB);
+      tms_tdi_step(1, 0);
     end
+
+    // go to UpdateDR
+    tms_tdi_step(1, 0);
+
     if (exit_to_rti) begin
       // go to RTI
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-      @(`HOST_CB);
+      tms_tdi_step(0, 0);
     end else begin
       `uvm_info(`gfn, "drive_dr: skip going to RTI", UVM_MEDIUM)
     end
@@ -296,24 +279,16 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   endtask
 
   // Task to drive tms such that TAP FSM transitions through
-  // CaptureIR/ CaptureDR -> Exit1IR/ Exit1DR -> UpdateIR/ UpdateDR -> RTI
+  // CaptureIR/CaptureDR -> Exit1IR/Exit1DR -> UpdateIR/UpdateDR -> RTI
   task drive_dummy_ir_dr();
-      // go to CaptureDR/ CaptureIR
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
-    // go to Exit1DR/ Exit1IR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
-    // go to UpdateDR/ UpdateIR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    // go to CaptureDR/CaptureIR
+    tms_tdi_step(0, 0);
+    // go to Exit1DR/Exit1IR
+    tms_tdi_step(1, 0);
+    // go to UpdateDR/UpdateIR
+    tms_tdi_step(1, 0);
     // go to RTI
-    `HOST_CB.tms <= 1'b0;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(0, 0);
   endtask
 
   // Task to drive tms such that TAP FSM transitions through
@@ -322,13 +297,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `uvm_info(`gfn, "Introducing dummy IR", UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
     // go to SelectIR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
+
     drive_dummy_ir_dr();
   endtask
 
@@ -338,21 +310,27 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `uvm_info(`gfn, "Introducing dummy DR", UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
-    `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= 1'b0;
-    @(`HOST_CB);
+    tms_tdi_step(1, 0);
+
     drive_dummy_ir_dr();
   endtask
 
-  // Task to drive TMS such that JTAG state machine moves to
-  // - PauseIR state if current state is ShiftIR
-  // - PauseDR state if current state is ShiftDR
-  // And then move back to ShiftIr/ShiftDr state after pause_count cycles
+  // Move the JTAG FSM from Shift* to Pause* then wait for pause_count cycles before returning.
+  //
+  // This assumes that we are currently in ShiftIR/ShiftDR and finishes in state Exit2Ir/Exit2Dr
+  // with TMS = 0, so that the next clock edge will look like the end of a cycle in
+  // ShiftIR/Shift/DR.
+  //
+  // This also samples the TDO pin just after leaving the Exit1Dr/Exit1Ir state and prepends its
+  // value to dout.
   task jtag_pause(uint pause_count, ref logic [JTAG_DRW-1:0] dout);
     // Move to Exit1Ir/Exit1Dr state
     `HOST_CB.tms <= 1'b1;
     @(`HOST_CB);
+
+    // We have just left ShiftDr/ShiftIr and tdo will contain the bit that was shifted out.
     dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+
     // Remain in PauseIR/PauseDR state for pause_count cycles
     `HOST_CB.tms <= 1'b0;
     repeat(pause_count) begin
@@ -361,7 +339,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // Move to Exit2Ir/Exit2Dr state
     `HOST_CB.tms <= 1'b1;
     @(`HOST_CB);
-    // Move to ShiftIr/ShiftDr state
+    // Set up tms so the next clock edge will move us to ShiftIr/ShiftDr state
     `HOST_CB.tms <= 1'b0;
   endtask
 

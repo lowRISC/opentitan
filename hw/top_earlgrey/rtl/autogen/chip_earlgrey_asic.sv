@@ -38,7 +38,6 @@ module chip_earlgrey_asic #(
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
   inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
   inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
-  inout AST_MISC, // Manual Pad
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -203,7 +202,7 @@ module chip_earlgrey_asic #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [24-1:0]                       dio_in_raw;
+  logic [23-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -223,7 +222,6 @@ module chip_earlgrey_asic #(
   logic manual_in_flash_test_mode0, manual_out_flash_test_mode0, manual_oe_flash_test_mode0;
   logic manual_in_flash_test_mode1, manual_out_flash_test_mode1, manual_oe_flash_test_mode1;
   logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
-  logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_usb_p;
@@ -234,7 +232,6 @@ module chip_earlgrey_asic #(
   pad_attr_t manual_attr_flash_test_mode0;
   pad_attr_t manual_attr_flash_test_mode1;
   pad_attr_t manual_attr_otp_ext_volt;
-  pad_attr_t manual_attr_ast_misc;
 
 
   //////////////////////
@@ -250,12 +247,11 @@ module chip_earlgrey_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(24),
+    .NDioPads(23),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
-      scan_role_pkg::DioPadAstMiscScanRole,
       scan_role_pkg::DioPadIor9ScanRole,
       scan_role_pkg::DioPadIor8ScanRole,
       scan_role_pkg::DioPadSpiDevCsLScanRole,
@@ -330,7 +326,6 @@ module chip_earlgrey_asic #(
       scan_role_pkg::MioPadIoa0ScanRole
     }),
     .DioPadBank ({
-      IoBankVcc, // AST_MISC
       IoBankVcc, // IOR9
       IoBankVcc, // IOR8
       IoBankVioa, // SPI_DEV_CS_L
@@ -405,7 +400,6 @@ module chip_earlgrey_asic #(
       IoBankVioa  // IOA0
     }),
     .DioPadType ({
-      InputStd, // AST_MISC
       BidirOd, // IOR9
       BidirOd, // IOR8
       InputStd, // SPI_DEV_CS_L
@@ -483,10 +477,10 @@ module chip_earlgrey_asic #(
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( ast_base_clks.clk_sys ),
     .scanmode_i   ( scanmode              ),
+    .mux_iob_sel_i ('0), // TODO(#23280)
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
-      AST_MISC,
       IOR9,
       IOR8,
       SPI_DEV_CS_L,
@@ -580,7 +574,6 @@ module chip_earlgrey_asic #(
 
     // Core-facing
     .dio_in_o ({
-        manual_in_ast_misc,
         dio_in[DioSysrstCtrlAonFlashWpL],
         dio_in[DioSysrstCtrlAonEcRstL],
         dio_in[DioSpiDeviceCsb],
@@ -606,7 +599,6 @@ module chip_earlgrey_asic #(
         manual_in_por_n
       }),
     .dio_out_i ({
-        manual_out_ast_misc,
         dio_out[DioSysrstCtrlAonFlashWpL],
         dio_out[DioSysrstCtrlAonEcRstL],
         dio_out[DioSpiDeviceCsb],
@@ -632,7 +624,6 @@ module chip_earlgrey_asic #(
         manual_out_por_n
       }),
     .dio_oe_i ({
-        manual_oe_ast_misc,
         dio_oe[DioSysrstCtrlAonFlashWpL],
         dio_oe[DioSysrstCtrlAonEcRstL],
         dio_oe[DioSpiDeviceCsb],
@@ -658,7 +649,6 @@ module chip_earlgrey_asic #(
         manual_oe_por_n
       }),
     .dio_attr_i ({
-        manual_attr_ast_misc,
         dio_attr[DioSysrstCtrlAonFlashWpL],
         dio_attr[DioSysrstCtrlAonEcRstL],
         dio_attr[DioSpiDeviceCsb],
@@ -1003,14 +993,6 @@ module chip_earlgrey_asic #(
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
 
-  assign manual_out_ast_misc = 1'b0;
-  assign manual_oe_ast_misc = 1'b0;
-  always_comb begin
-    // constantly enable pull-down
-    manual_attr_ast_misc = '0;
-    manual_attr_ast_misc.pull_select = 1'b0;
-    manual_attr_ast_misc.pull_en = 1'b1;
-  end
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
@@ -1030,11 +1012,16 @@ module chip_earlgrey_asic #(
 
   // Enable schmitt trigger on POR for better signal integrity.
   assign manual_attr_por_n = '{schmitt_en: 1'b1, default: '0};
-  // These pad attributes currently tied off permanently (these are all input-only pads).
-  assign manual_attr_cc1 = '0;
-  assign manual_attr_cc2 = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
+
+  // These pad attributes are controlled through sensor_ctrl.  Update the description of
+  // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
+  prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr;
+  assign manual_attr_cc1 = sensor_ctrl_manual_pad_attr[0];
+  assign manual_attr_cc2 = sensor_ctrl_manual_pad_attr[1];
+  assign manual_attr_flash_test_mode0 = sensor_ctrl_manual_pad_attr[2];
+  assign manual_attr_flash_test_mode1 = sensor_ctrl_manual_pad_attr[3];
+
+  // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_flash_test_volt = '0;
   assign manual_attr_otp_ext_volt = '0;
 
@@ -1093,6 +1080,9 @@ module chip_earlgrey_asic #(
   //////////////////////
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .I2c0InputDelayCycles(1),
+    .I2c1InputDelayCycles(1),
+    .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
   ) top_earlgrey (
@@ -1168,6 +1158,7 @@ module chip_earlgrey_asic #(
     // Pad attributes
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   ),
+    .sensor_ctrl_manual_pad_attr_o( sensor_ctrl_manual_pad_attr),
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),

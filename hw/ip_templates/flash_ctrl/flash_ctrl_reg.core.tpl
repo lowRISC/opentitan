@@ -9,11 +9,11 @@ virtual:
 
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:tlul:headers
     files:
       - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_core_reg_top.sv
-      - rtl/flash_ctrl_mem_reg_top.sv
-      - rtl/flash_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource
 
 targets:

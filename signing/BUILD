@@ -15,3 +15,8 @@ config_setting(
         ":token": "//signing/tokens:local",
     },
 )
+
+filegroup(
+    name = "none_key",
+    srcs = ["skip.bit"],
+)

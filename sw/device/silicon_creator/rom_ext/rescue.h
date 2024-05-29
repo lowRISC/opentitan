@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_RESCUE_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_RESCUE_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/error.h"
@@ -17,6 +18,8 @@ enum {
 };
 
 typedef enum {
+  /** `BAUD` */
+  kRescueModeBaud = 0x42415544,
   /** `BLOG` */
   kRescueModeBootLog = 0x424c4f47,
   /** `BRSP` */
@@ -27,19 +30,43 @@ typedef enum {
   kRescueModeOwnerBlock = 0x4f574e52,
   /** `RESQ` */
   kRescueModeFirmware = 0x52455351,
+  /** `RESB` */
+  kRescueModeFirmwareSlotB = 0x52455342,
   /** `REBO` */
   kRescueModeReboot = 0x5245424f,
-  /** `DWIM` */
-  kRescueModeDWIM = 0x4457494d,
+  /** `WAIT` */
+  kRescueModeWait = 0x57414954,
 } rescue_mode_t;
+
+typedef enum {
+  /** `115K` */
+  kRescueBaud115K = 0x4b353131,
+  /** `230K` */
+  kRescueBaud230K = 0x4b303332,
+  /** `460K` */
+  kRescueBaud460K = 0x4b303634,
+  /** `921K` */
+  kRescueBaud921K = 0x4b313239,
+  /** `1M33` */
+  kRescueBaud1M33 = 0x33334d31,
+  /** `1M50` */
+  kRescueBaud1M50 = 0x30354d31,
+} rescue_baud_t;
 
 typedef struct RescueState {
   rescue_mode_t mode;
+  // Whether to reboot automatically after an xmodem upload.
+  bool reboot;
+  // Current xmodem frame.
   uint32_t frame;
+  // Current data offset.
   uint32_t offset;
+  // Current flash write offset.
   uint32_t flash_offset;
+  // Range to erase and write for firmware rescue (inclusive).
   uint32_t flash_start;
   uint32_t flash_limit;
+  // Data buffer to hold xmodem upload data.
   uint8_t data[2048];
 } rescue_state_t;
 

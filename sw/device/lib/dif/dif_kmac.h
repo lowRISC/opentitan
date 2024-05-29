@@ -362,39 +362,49 @@ typedef enum dif_kmac_error {
   /**
    * No error has occured.
    */
-  kDifErrorNone,
+  kDifErrorNone = 0,
 
   /**
    * The Key Manager has raised an error because the secret key is not valid.
    */
-  kDifErrorKeyNotValid,
+  kDifErrorKeyNotValid = 1,
 
   /**
    * An attempt was made to write data into the message FIFO but the KMAC unit
    * was not in the correct state to receive the data.
    */
-  kDifErrorSoftwarePushedMessageFifo,
+  kDifErrorSoftwarePushedMessageFifo = 2,
 
   /**
-   * An invalid state transition was attempted (e.g. idle -> run without
-   * intermediate process state).
+   * SW issued a command while a HW application interface was using KMAC.
    */
-  kDifErrorSoftwarePushedWrongCommand,
+  kDifErrorSoftwareIssuedCommandWhileAppInterfaceActive = 3,
 
   /**
    * The entropy wait timer has expired.
    */
-  kDifErrorEntropyWaitTimerExpired = 0x04000000,
+  kDifErrorEntropyWaitTimerExpired = 4,
 
   /**
    * Incorrect entropy mode when entropy is ready.
    */
-  kDifErrorEntropyModeIncorrect,
+  kDifErrorEntropyModeIncorrect = 5,
 
-  /**
-   * An error was encountered but the cause is unknown.
-   */
-  kDifErrorUnknownError,
+  kDifErrorUnexpectedModeStrength = 6,
+
+  kDifErrorIncorrectFunctionName = 7,
+
+  kDifErrorSoftwareCommandSequence = 8,
+
+  kDifErrorSoftwareHashingWithoutEntropyReady = 9,
+
+  kDifErrorShadowRegisterUpdate = 0xC0,
+
+  kDifErrorFatalError = 0xC1,
+
+  kDifErrorPackerIntegrity = 0xC2,
+
+  kDifErrorMsgFifoIntegrity = 0xC3,
 } dif_kmac_error_t;
 
 /**
@@ -686,11 +696,12 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
  *
  * @param kmac A KMAC handle.
  * @param[out] error The current error code.
+ * @param[out] info Optional additional error information.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
-                                dif_kmac_error_t *error);
+dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac, dif_kmac_error_t *error,
+                                uint32_t *info);
 
 /**
  * Clear the current error code and reset the state machine to the idle state
@@ -706,6 +717,34 @@ dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
                             dif_kmac_operation_state_t *operation_state);
+
+/**
+ * Let the KMAC HW know that SW has processed the errors the HW has flagged.
+ *
+ * @param kmac A KMAC handle
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_err_processed(const dif_kmac_t *kmac);
+
+/**
+ * Report whether the hardware currently indicates an error.
+ *
+ * @param kmac A KMAC handle.
+ * @param[out] error Whether hardware currently indicates an error.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error);
+
+/**
+ * Clear the `kmac_err` IRQ.
+ *
+ * @param kmac A KMAC handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_clear_err_irq(const dif_kmac_t *kmac);
 
 /**
  * Fetch the current status of the message FIFO used to buffer absorbed data.

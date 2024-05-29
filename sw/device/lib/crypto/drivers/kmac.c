@@ -315,9 +315,6 @@ status_t kmac_hwip_default_configure(void) {
   // Mark entropy source as ready
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
-  // Err not processed
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, 0);
   // Unsupported modes: disabled
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);

@@ -1,0 +1,127 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "crypto"
+  testpoints: [
+    {
+      name: crypto_lib_hash_stress
+      desc: '''Check that the hash algorithms are correct.
+
+            Run the hash algorithms Sha256, Sha384 and Sha512 and compare the digist against
+            the NIST test vector.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:sha256_functest",
+        "//sw/device/tests/crypto:sha384_functest",
+        "//sw/device/tests/crypto:sha512_functest",
+        "//sw/device/tests/crypto:hkdf_functest",
+        "//sw/device/tests/crypto:otcrypto_hash_test",
+        "//sw/device/tests/crypto:otcrypto_export_test"
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_ecc_stress
+      desc: '''Check that the ECC implementation is correct.
+
+            Run the follow operations and compare the result against the NIST test vector:
+             - ECDSA signature.
+             - ECDSA signature verification.
+             - ECDH signature.
+             - ECDH signature verification.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:ecdsa_p256_verify_functest_hardcoded",
+        "//sw/device/tests/crypto:ecdsa_p256_functest",
+        "//sw/device/tests/crypto:ecdh_p256_functest",
+      ]
+    }
+    {
+      name: crypto_lib_rsa_key_gen_stress
+      desc: '''Check that the implementation of RSA key generation is correct.
+
+            Generate RSA key pairs with sizes 2048, 3072 and 4096 bits.
+            The key generation should take an appropriate time based on the key size and the
+            platform (FPGA or Silicon).
+            For each key pair:
+             - Sign a message with the private key.
+             - Verify the signarue with public key.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:rsa_2048_keygen_functest",
+        "//sw/device/tests/crypto:rsa_3072_keygen_functest",
+        "//sw/device/tests/crypto:rsa_4096_keygen_functest",
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_rsa_stress
+      desc: '''Check that the RSA implementation is correct.
+
+            Run the follow operations and compare the result against the NIST test vector:
+             - RSA signature.
+             - RSA signature verification.
+            With the keys sizes 2048, 3072 and 4096 bits.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:rsa_2048_encryption_functest",
+        "//sw/device/tests/crypto:rsa_2048_key_from_cofactor_functest",
+        "//sw/device/tests/crypto:rsa_2048_signature_functest",
+        "//sw/device/tests/crypto:rsa_3072_encryption_functest",
+        "//sw/device/tests/crypto:rsa_3072_signature_functest",
+        "//sw/device/tests/crypto:rsa_3072_verify_functest_hardcoded",
+        "//sw/device/tests/crypto:rsa_3072_verify_functest_wycheproof",
+        "//sw/device/tests/crypto:rsa_4096_encryption_functest",
+        "//sw/device/tests/crypto:rsa_4096_signature_functest",
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_aes_stress
+      desc: '''Check that the aes implementation is correct.
+
+            Run the following operations and compare the result against the NIST test vector:
+             - AES-CDC encryption.
+             - AES-CDC decryption.
+             - AES-GCM encryption.
+             - AES-GCM decryption.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:aes_kwp_kat_functest",
+        "//sw/device/tests/crypto:aes_kwp_functest",
+        "//sw/device/tests/crypto:aes_gcm_functest",
+        "//sw/device/tests/crypto/cryptotest:aes_kat"
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_symmetric_keygen
+      desc: '''Check that the crypton lib can generate symmetric keys using hardware entropy.
+
+            Generate symmetric keys using entropy from the CSRNG and check it quality using
+            a statistical test.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: ["//sw/device/tests/crypto:symmetric_keygen_functest"]
+      lc_states: ["PROD"]
+    }
+  ]
+}

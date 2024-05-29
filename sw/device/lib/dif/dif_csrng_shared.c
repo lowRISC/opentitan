@@ -35,22 +35,31 @@ uint32_t csrng_cmd_header_build(
 dif_result_t csrng_send_app_cmd(mmio_region_t base_addr,
                                 csrng_app_cmd_type_t cmd_type,
                                 csrng_app_cmd_t cmd) {
-  bool ready;
-  ptrdiff_t offset;
+  ptrdiff_t cmd_reg_offset;
+  ptrdiff_t sts_reg_offset;
+  uint32_t rdy_bit_offset;
+  uint32_t reg_rdy_bit_offset;
   uint32_t reg;
+  bool ready;
 
   switch (cmd_type) {
     case kCsrngAppCmdTypeCsrng:
-      offset = CSRNG_CMD_REQ_REG_OFFSET;
+      cmd_reg_offset = CSRNG_CMD_REQ_REG_OFFSET;
+      sts_reg_offset = CSRNG_SW_CMD_STS_REG_OFFSET;
+      rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
       break;
     case kCsrngAppCmdTypeEdnSw:
-      offset = EDN_SW_CMD_REQ_REG_OFFSET;
+      cmd_reg_offset = EDN_SW_CMD_REQ_REG_OFFSET;
+      sts_reg_offset = EDN_SW_CMD_STS_REG_OFFSET;
+      rdy_bit_offset = EDN_SW_CMD_STS_CMD_RDY_BIT;
+      reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
       break;
     case kCsrngAppCmdTypeEdnGen:
-      offset = EDN_GENERATE_CMD_REG_OFFSET;
+      cmd_reg_offset = EDN_GENERATE_CMD_REG_OFFSET;
       break;
     case kCsrngAppCmdTypeEdnRes:
-      offset = EDN_RESEED_CMD_REG_OFFSET;
+      cmd_reg_offset = EDN_RESEED_CMD_REG_OFFSET;
       break;
     default:
       return kDifBadArg;
@@ -79,27 +88,31 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr,
     return kDifOutOfRange;
   }
 
-  if (cmd_type == kCsrngAppCmdTypeEdnSw) {
+  if ((cmd_type == kCsrngAppCmdTypeCsrng) ||
+      (cmd_type == kCsrngAppCmdTypeEdnSw)) {
     // Wait for the status register to be ready to accept the next command.
     do {
-      reg = mmio_region_read32(base_addr, EDN_SW_CMD_STS_REG_OFFSET);
-      ready = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT);
+      reg = mmio_region_read32(base_addr, sts_reg_offset);
+      ready = bitfield_bit32_read(reg, rdy_bit_offset);
     } while (!ready);
   }
 
-  mmio_region_write32(base_addr, offset,
+  mmio_region_write32(base_addr, cmd_reg_offset,
                       csrng_cmd_header_build(cmd.id, cmd.entropy_src_enable,
                                              cmd_len, cmd.generate_len));
   for (size_t i = 0; i < cmd_len; ++i) {
-    // If the command is issued to the SW register of the EDN, the reg ready
-    // bit needs to be polled before writing each word of additional data.
-    if (cmd_type == kCsrngAppCmdTypeEdnSw) {
+    // Before writing each word of additional data, the command ready or command
+    // reg ready bit needs to be polled if the command is issued to CSRNG or the
+    // SW register of EDN, respectively.
+    if (cmd_type == kCsrngAppCmdTypeCsrng ||
+        cmd_type == kCsrngAppCmdTypeEdnSw) {
       do {
-        reg = mmio_region_read32(base_addr, EDN_SW_CMD_STS_REG_OFFSET);
-        ready = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT);
+        reg = mmio_region_read32(base_addr, sts_reg_offset);
+        ready = bitfield_bit32_read(reg, reg_rdy_bit_offset);
       } while (!ready);
     }
-    mmio_region_write32(base_addr, offset, cmd.seed_material->seed_material[i]);
+    mmio_region_write32(base_addr, cmd_reg_offset,
+                        cmd.seed_material->seed_material[i]);
   }
   return kDifOk;
 }

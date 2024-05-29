@@ -152,12 +152,13 @@ module pwrmgr
   // two flop synchronizers. There are two CDCs in the path from escalation reset to the fast fsm
   // receiving it, one to the slow clock, and one back to the fast one. And there are additional
   // cycles in the fast fsm to generate outputs. However, esc_rst_req_q can be dropped due to
-  // rst_lc_n.
+  // rst_lc_n, which will cause slow_peri_reqs_masked.rstreqs[ResetEscIdx] to drop.
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
           esc_rst_req_q |-> ##[1:5] !esc_rst_req_q || slow_peri_reqs_masked.rstreqs[ResetEscIdx],
           clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
-          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##[1:4] u_fsm.reset_reqs_i[ResetEscIdx],
+          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |->
+          ##[1:4] !slow_peri_reqs_masked.rstreqs[ResetEscIdx] || u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `else
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,

@@ -16,19 +16,23 @@
 // the version of this file matching the Bazel rule under test.
 #include "ecdsa_p256_verify_testvectors.h"
 
-static void compute_digest(size_t msg_len, const uint8_t *msg,
-                           hmac_digest_t *digest) {
-  // Compute the SHA-256 digest using the HMAC device.
-  hmac_sha_init();
-  hmac_update(msg, msg_len);
-  hmac_final(digest);
+static status_t compute_digest(size_t msg_len, const uint8_t *msg,
+                               hmac_digest_t *digest) {
+  // Compute the SHA-256 digest using the HMAC HWIP.
+  hmac_ctx_t hwip_ctx;
+  TRY(hmac_init(&hwip_ctx, kHmacModeSha256, /*key=*/NULL));
+  TRY(hmac_update(&hwip_ctx, msg, msg_len));
+  TRY(hmac_final(&hwip_ctx, digest));
+  return OTCRYPTO_OK;
 }
 
 status_t ecdsa_p256_verify_test(
     const ecdsa_p256_verify_test_vector_t *testvec) {
   // Hash message.
-  hmac_digest_t digest;
-  compute_digest(testvec->msg_len, testvec->msg, &digest);
+  hmac_digest_t digest = {
+      .len = kHmacSha256DigestBytes,
+  };
+  TRY(compute_digest(testvec->msg_len, testvec->msg, &digest));
 
   // Attempt to verify signature.
   TRY(ecdsa_p256_verify_start(&testvec->signature, digest.digest,

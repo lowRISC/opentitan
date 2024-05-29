@@ -122,7 +122,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
                                        eg_rtl_ctrl_fifo[bank].used()),
                                        UVM_MEDIUM)
 
-    // bankdoor read from memory model
+    // backdoor read from memory model
     `uvm_create_obj(flash_otf_item, obs)
     // Host can only access data partitions.
     obs.cmd.partition = FlashPartData;
@@ -331,7 +331,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     // So each pop becomes 8 times of fqs.
     int col_sz = exp.fq.size / 8;
     `uvm_info("process_write", $sformatf("process_write: addr:0x%x bank:%0d colsz:%0d ffsz:%0d",
-                       exp.cmd.otf_addr, bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
+              exp.cmd.otf_addr, bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
     eg_rtl_ctrl_fifo[bank].get(item);
 
     `uvm_create_obj(flash_otf_item, obs)
@@ -342,7 +342,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       obs.fq = {obs.fq, item.fq};
     end
 
-    `dv_info($sformatf("WDATA size: %d x 8B bank:%0d rcvd_cnt:%0d",
+    `dv_info($sformatf("WDATA size: %0d x 8B bank:%0d rcvd_cnt:%0d",
                        obs.fq.size(), bank, cfg.otf_ctrl_wr_rcvd++), UVM_MEDIUM, "process_write")
 
     compare_data(obs.fq, exp.fq, bank, $sformatf("wdata_page%0d", exp.page), exp.ecc_en);
@@ -361,7 +361,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     if (comp_off) return;
 
     foreach (obs[i]) begin
-      if(is_ecc) begin
+      if (is_ecc) begin
         if (obs[i] != exp[i]) begin
           err = 1;
           `dv_error($sformatf("%4d: obs:exp    %2x_%1x_%8x_%8x:%2x_%1x_%8x_%8x  mismatch!!", i,

@@ -436,29 +436,20 @@
       name: halt_resume
       desc: '''
             Verify debug module halt/going/resume behavior.
-            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1
-            - After a few usec, acknowledge halt by setting tl_mem_ral.halted to 0. (ack for hart index 0).
-            - Send a single valid command with following process:
-              - Write dm::DTM_WRITE to jtag_dtm_ral.dmi.op.
-              - Write dm::Command to jtag_dtm_ral.dmi.address.
-              - Write 0 to jtag_dtm_ral.dmi.data[31:24]. (Command type AccessRegister).
-            - Check jtag_dmi_ral.abstractcs.busy is 1.
-            - Check flags[0] to make sure internal state machine is at Go state by checking
-              tl_mem_ral.flags[0] is '1'.
-            - Set tl_mem_ral.going to 0(0 or 1 doesn't matter but to be more coherent to original reference). This will make internal state machine move to CmdExecuting state.
-            - After a few clock cycles, Check jtag_dmi_ral.abstractcs.busy is 1.
-            - Check tl_mem_ral.whereto is 21'h380006f.
-              (WhereTo value for absctract cmd can be calculated by
-               https://cs.opensource.google/opentitan/opentitan/+/master:hw/vendor/pulp_riscv_dbg/src/dm_mem.sv;drc=7dea7336833079820a297fd516083d6e744024d7;l=315).
-            - Send an acknowledge by setting tl_mem_ral.halted to 0.
-            - Check jtag_dmi_ral.abstractcs.busy is 0.
-            - Resuming with following process:
-              - Set jtag_dmi_ral.dmcontrol.haltreq to 0
-              - Set jtag_dmi_ral.dmcontrol.resumereq to 1
-            - Check jtag_dmi_ral.abstractcs.busy is 1.
-            - Check flag[0] to make sure internal state move to Resume state by checking
-              tl_mem_ral.flags[0] is '2'.
-            - Send an acknowledge by setting tl_mem_ral.resuming to 0.
+
+            - Request a halt over DMI, then send an abstract command.
+            - Check that the debug module reports itself to be busy.
+            - Check that the debug module's internal state machine is in the Go state.
+            - As the hart, respond to the message from the debug module to say that it has started handling it.
+            - Check the debug module still reports itself to be busy.
+            - Check that WHERETO points at the expected address (which contains the start of the abstract command)
+            - As the hart, tell the debug module that we have halted.
+            - Check the debug module no longer reports itself to be busy.
+            - Tell the debug module to resume again, by clearing the halt request and sending a resume request.
+            - Check the debug module now reports itself busy again (since it should be asking the hart to resume)
+            - Check flags to make sure the debug module is in the Resume state.
+            - As the hart, acknowledge the resume request.
+            - Check the debug module no longer reports itself to be busy.
       '''
       stage: V1
       tests: ["rv_dm_halt_resume_whereto"]

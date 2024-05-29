@@ -38,6 +38,7 @@ module otbn_rf_base
 
   input  logic                     state_reset_i,
   input  logic                     sec_wipe_stack_reset_i,
+  input  logic                     sec_wipe_running_i,
 
   input  logic [4:0]               wr_addr_i,
   input  logic                     wr_en_i,
@@ -59,7 +60,8 @@ module otbn_rf_base
   output logic                     call_stack_sw_err_o,
   output logic                     call_stack_hw_err_o,
   output logic                     intg_err_o,
-  output logic                     spurious_we_err_o
+  output logic                     spurious_we_err_o,
+  output logic                     sec_wipe_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
@@ -89,7 +91,7 @@ module otbn_rf_base
   logic rd_stack_b;
 
   logic                     stack_full;
-  logic [BaseIntgWidth-1:0] stack_data_intg;
+  logic [BaseIntgWidth-1:0] stack_data_intg, stack_data_intg_raw;
   logic                     stack_data_valid;
 
   logic state_reset;
@@ -158,7 +160,7 @@ module otbn_rf_base
 
     .pop_i         (pop_stack),
     .commit_i      (1'b1),
-    .top_data_o    (stack_data_intg),
+    .top_data_o    (stack_data_intg_raw),
     .top_valid_o   (stack_data_valid),
 
     .stack_wr_idx_o(),
@@ -169,6 +171,11 @@ module otbn_rf_base
     .next_top_data_o (),
     .next_top_valid_o()
   );
+
+  // Squash call stack read data to 0 (which means invalid ECC with the encoding we use) when
+  // there's nothing on the call stack. OTBN will raise an error when we read from an empty call
+  // stack but this prevents X propagation and exposing any previous, now invalid, stack values.
+  assign stack_data_intg = stack_data_valid ? stack_data_intg_raw : '0;
 
   if (RegFile == RegFileFF) begin : gen_rf_base_ff
     otbn_rf_base_ff #(
@@ -233,4 +240,6 @@ module otbn_rf_base
   // secure wipe.
   `ASSERT(OtbnRfBaseRdAKnown, rd_en_a_i && !pop_stack_a |-> !$isunknown(rd_data_a_raw_intg))
   `ASSERT(OtbnRfBaseRdBKnown, rd_en_b_i && !pop_stack_b |-> !$isunknown(rd_data_b_raw_intg))
+
+  assign sec_wipe_err_o = sec_wipe_stack_reset_i & ~sec_wipe_running_i;
 endmodule

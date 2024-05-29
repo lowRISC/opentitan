@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_rstmgr
+  name: rstmgr
   testpoints: [
     // RSTMGR tests:
     {
@@ -63,8 +63,8 @@
             The rv_dm is an important tool for SiVal, so the stage is set to SV2.
             '''
       stage: V2
-      si_stage: SV3
-      lc_states: ["PROD"]
+      si_stage: SV2
+      lc_states: ["DEV", "TEST_UNLOCKED", "RMA"]
       features: [
         "RSTMGR.RESET_INFO.CAPTURE",
         "RSTMGR.RESET_INFO.CLEAR",
@@ -115,7 +115,7 @@
       tests: ["chip_sw_rstmgr_sw_req"]
       bazel: [
         "//sw/device/tests:rstmgr_sw_req_test",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test",
       ]
     }
     {
@@ -202,7 +202,7 @@
         "RSTMGR.ALERT_INFO.CAPTURE",
       ]
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs"]
+      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test"]
     }
     {
       name: chip_sw_rstmgr_alert_handler_reset_enables

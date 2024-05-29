@@ -116,6 +116,23 @@ status_t keymgr_testutils_flash_init(
     const keymgr_testutils_secret_t *owner_secret);
 
 /**
+ * Initializes the key manager and its dependencies for testing.
+ *
+ * This function initializes the key manager and its dependencies for testing.
+ *
+ * This fuction will call `keymgr_testutils_try_startup()` if the boot stage is
+ * `kBootStageOwner`; otherwise, it will call `keymgr_testutils_startup()`.
+ * Additional checks are performed to ensure that the key manager is in a valid
+ * state, and ready to perform key derivations.
+ *
+ * @param keymgr A key manager handle, may be uninitialized.
+ * @param kmac A KMAC handle, may be uninitialized.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_initialize(dif_keymgr_t *keymgr, dif_kmac_t *kmac);
+
+/**
  * Wrapper function to `keymgr_testutils_startup()`.
  *
  * This function checks the state of the key manager before attempting to
@@ -131,6 +148,14 @@ status_t keymgr_testutils_flash_init(
 OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
                                       dif_keymgr_state_t *keymgr_state);
+
+/**
+ * Initialize non-volatile memory (flash and OTP) for keymgr and then reset, so
+ * that the relevant OTP partitions become accessible to keymgr.  After calling
+ * this function, keymgr can be initialized.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_init_nvm_then_reset(void);
 
 /**
  * Programs flash, restarts, and advances keymgr to CreatorRootKey state.
@@ -213,5 +238,29 @@ status_t keymgr_testutils_disable(const dif_keymgr_t *keymgr);
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr);
+
+/**
+ * Get the maximum key version supported by the key manager.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] max_key_version The maximum key version supported by the key
+ *                             manager for its current operating state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_max_key_version_get(const dif_keymgr_t *keymgr,
+                                              uint32_t *max_key_version);
+
+/**
+ * Get the current state of the key manager.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] state The current state of the key manager in C string format.
+ *
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_state_string_get(const dif_keymgr_t *keymgr,
+                                           const char **stage_name);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_

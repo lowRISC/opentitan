@@ -23,8 +23,11 @@ module top_earlgrey #(
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
   // parameters for i2c0
+  parameter int I2c0InputDelayCycles = 0,
   // parameters for i2c1
+  parameter int I2c1InputDelayCycles = 0,
   // parameters for i2c2
+  parameter int I2c2InputDelayCycles = 0,
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for otp_ctrl
@@ -182,6 +185,7 @@ module top_earlgrey #(
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
   input  logic [8:0] ast2pinmux_i,
   input  prim_mubi_pkg::mubi4_t       ast_init_done_i,
+  output prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr_o,
   output logic       sck_monitor_o,
   input  logic       usbdev_usb_rx_d_i,
   output logic       usbdev_usb_tx_d_o,
@@ -1215,7 +1219,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6]),
+    .InputDelayCycles(I2c0InputDelayCycles)
   ) u_i2c0 (
 
       // Input
@@ -1258,7 +1263,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_i2c0_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7]),
+    .InputDelayCycles(I2c1InputDelayCycles)
   ) u_i2c1 (
 
       // Input
@@ -1301,7 +1307,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_i2c1_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8]),
+    .InputDelayCycles(I2c2InputDelayCycles)
   ) u_i2c2 (
 
       // Input
@@ -2035,6 +2042,7 @@ module top_earlgrey #(
       .ast_init_done_i(ast_init_done_i),
       .ast2pinmux_i(ast2pinmux_i),
       .wkup_req_o(pwrmgr_aon_wakeups[5]),
+      .manual_pad_attr_o(sensor_ctrl_manual_pad_attr_o),
       .tl_i(sensor_ctrl_aon_tl_req),
       .tl_o(sensor_ctrl_aon_tl_rsp),
 

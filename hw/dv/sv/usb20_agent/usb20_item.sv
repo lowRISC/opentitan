@@ -3,28 +3,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class usb20_item extends uvm_sequence_item;
+  ev_type_e  m_ev_type;
   pid_type_e m_pid_type;
   pkt_type_e m_pkt_type;
   bmrequesttype_e m_bmRT;
   brequest_e m_bR;
   usb_transfer_e m_usb_transfer;
 
+  `uvm_object_utils_begin(usb20_item)
+  `uvm_object_utils_end
+
+  `uvm_object_new
+
   // Check the PID type of this item is the expected value. If not, raise a fatal error.
   function void check_pid_type(pid_type_e expected);
     `DV_CHECK_EQ_FATAL(m_pid_type, expected)
   endfunction
-
-  `uvm_object_new
 endclass
 
 class token_pkt extends usb20_item;
   rand bit [6:0] address;
   rand bit [3:0] endpoint;
   bit [4:0] crc5;
-
-  constraint endpoint_c {
-    endpoint inside {[0:11]};
-  }
 
   `uvm_object_utils_begin(token_pkt)
     `uvm_field_enum(pid_type_e, m_pid_type, UVM_DEFAULT)
@@ -38,6 +38,7 @@ class token_pkt extends usb20_item;
   function void post_randomize();
     crc5 = generate_crc5(address, endpoint);
   endfunction
+
   function bit [4:0] generate_crc5(bit [6:0] address, bit [3:0] endpoint);
     bit [4:0] crc;
     bit [4:0] crc_reg;
@@ -92,6 +93,12 @@ class data_pkt extends usb20_item;
              wVL, wVH,
              wIndex[7:0], wIndex[15:8],
              wLength[7:0], wLength[15:8]};
+    crc16 = generate_crc16(data);
+  endfunction
+
+  // Set the content of the data packet and ensure that the CRC is set accordingly.
+  function void set_data(byte unsigned content[]);
+    data = content;
     crc16 = generate_crc16(data);
   endfunction
 

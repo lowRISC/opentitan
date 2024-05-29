@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/testing/keymgr_testutils.h"
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
@@ -11,6 +12,7 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -35,6 +37,16 @@ enum {
 
   /** Owner Secret flash info page ID. */
   kFlashInfoPageIdOwnerSecret = 2,
+};
+
+const static char *kKeymgrStageNames[] = {
+    [kDifKeymgrStateReset] = "Reset",
+    [kDifKeymgrStateInitialized] = "Init",
+    [kDifKeymgrStateCreatorRootKey] = "CreatorRootKey",
+    [kDifKeymgrStateOwnerIntermediateKey] = "OwnerIntKey",
+    [kDifKeymgrStateOwnerRootKey] = "OwnerKey",
+    [kDifKeymgrStateDisabled] = "Disabled",
+    [kDifKeymgrStateInvalid] = "Invalid",
 };
 
 static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
@@ -108,6 +120,48 @@ static status_t dif_init(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   return OK_STATUS();
 }
 
+status_t keymgr_initialize_sim_dv(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  // Initialize keymgr and advance to CreatorRootKey state.
+  TRY(keymgr_testutils_startup(keymgr, kmac));
+  LOG_INFO("Keymgr entered CreatorRootKey State");
+  // Generate identity at CreatorRootKey (to follow same sequence and reuse
+  // chip_sw_keymgr_key_derivation_vseq.sv).
+  TRY(keymgr_testutils_generate_identity(keymgr));
+  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+
+  // Advance to OwnerIntermediateKey state and check that the state is correct.
+  // The sim_dv testbench expects this state.
+  TRY(keymgr_testutils_advance_state(keymgr, &kOwnerIntParams));
+  TRY(keymgr_testutils_check_state(keymgr,
+                                   kDifKeymgrStateOwnerIntermediateKey));
+  LOG_INFO("Keymgr entered OwnerIntKey State");
+  return OK_STATUS();
+}
+
+status_t keymgr_initialize_sival(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  dif_keymgr_state_t keymgr_state;
+  TRY(keymgr_testutils_try_startup(keymgr, kmac, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInitialized) {
+    TRY(keymgr_testutils_advance_state(keymgr, &kOwnerIntParams));
+    TRY(dif_keymgr_get_state(keymgr, &keymgr_state));
+  }
+
+  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
+    TRY(keymgr_testutils_advance_state(keymgr, &kOwnerRootKeyParams));
+  }
+
+  return keymgr_testutils_check_state(keymgr, kDifKeymgrStateOwnerRootKey);
+}
+
+status_t keymgr_testutils_initialize(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  if (kBootStage == kBootStageOwner) {
+    return keymgr_initialize_sival(keymgr, kmac);
+  }
+  // All other configurations use the sim_dv initialization.
+  return keymgr_initialize_sim_dv(keymgr, kmac);
+}
+
 status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
                                       dif_keymgr_state_t *keymgr_state) {
   TRY(dif_init(keymgr, kmac));
@@ -130,25 +184,17 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
   return OK_STATUS();
 }
 
-status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+status_t keymgr_testutils_init_nvm_then_reset(void) {
   dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
-  dif_rstmgr_reset_info_bitfield_t info;
 
   TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
-  info = rstmgr_testutils_reason_get();
-
-  // Check the last word of the retention SRAM creator area to determine the
-  // type of the ROM.
-  bool is_using_test_rom =
-      retention_sram_get()
-          ->creator
-          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
-      TEST_ROM_IDENTIFIER;
+  const dif_rstmgr_reset_info_bitfield_t reset_info =
+      rstmgr_testutils_reason_get();
 
   // POR reset.
-  if (info == kDifRstmgrResetInfoPor) {
+  if (reset_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
 
     TRY(dif_flash_ctrl_init_state(
@@ -159,44 +205,75 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     TRY(check_lock_otp_partition());
 
     // Reboot device.
+    LOG_INFO("Requesting a reset to make OTP partitions accessible to keymgr");
     rstmgr_testutils_reason_clear();
     TRY(dif_rstmgr_software_device_reset(&rstmgr));
 
     // Wait here until device reset.
     wait_for_interrupt();
 
+    // Should never reach this.
+    return INTERNAL();
+
   } else {
-    TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
-              info);
-    LOG_INFO(
-        "Powered up for the second time, actuate keymgr and perform test.");
-
-    TRY(dif_init(keymgr, kmac));
-
-    // Advance to Initialized state.
-    TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset));
-    TRY(keymgr_testutils_advance_state(keymgr, NULL));
-    TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateInitialized));
-    LOG_INFO("Keymgr entered Init State");
-
-    // Advance to CreatorRootKey state.
-    if (is_using_test_rom) {
-      LOG_INFO("Using test_rom, setting inputs and advancing state...");
-      TRY(keymgr_testutils_advance_state(keymgr, &kCreatorParams));
-    } else {
-      LOG_INFO("Using rom, only advancing state...");
-      TRY(dif_keymgr_advance_state_raw(keymgr));
-      TRY(keymgr_testutils_wait_for_operation_done(keymgr));
-    }
-    TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateCreatorRootKey));
-    LOG_INFO("Keymgr entered CreatorRootKey State");
-
-    // Identity generation is not really necessary for all tests, but it is
-    // added to make sure each test using this function is also compatible with
-    // the DV_WAIT sequences from keymgr_key_derivation vseq
-    TRY(keymgr_testutils_generate_identity(keymgr));
-    LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+    // Not POR reset: this function has done its job (or can't run because it's
+    // supposed to run after POR).
+    return OK_STATUS();
   }
+}
+
+status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  dif_rstmgr_t rstmgr;
+
+  // Check the last word of the retention SRAM creator area to determine the
+  // type of the ROM.
+  bool is_using_test_rom =
+      retention_sram_get()
+          ->creator
+          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+      TEST_ROM_IDENTIFIER;
+
+  TRY(keymgr_testutils_init_nvm_then_reset());
+
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+                      &rstmgr));
+  const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
+
+  TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
+            info);
+
+  LOG_INFO("Initializing entropy complex in Auto mode");
+
+  TRY(entropy_testutils_auto_mode_init());
+
+  LOG_INFO("Powered up for the second time, actuate keymgr and perform test.");
+
+  TRY(dif_init(keymgr, kmac));
+
+  // Advance to Initialized state.
+  TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset));
+  TRY(keymgr_testutils_advance_state(keymgr, NULL));
+  TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateInitialized));
+  LOG_INFO("Keymgr entered Init State");
+
+  // Advance to CreatorRootKey state.
+  if (is_using_test_rom) {
+    LOG_INFO("Using test_rom, setting inputs and advancing state...");
+    TRY(keymgr_testutils_advance_state(keymgr, &kCreatorParams));
+  } else {
+    LOG_INFO("Using rom, only advancing state...");
+    TRY(dif_keymgr_advance_state_raw(keymgr));
+    TRY(keymgr_testutils_wait_for_operation_done(keymgr));
+  }
+  TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateCreatorRootKey));
+  LOG_INFO("Keymgr entered CreatorRootKey State");
+
+  // Identity generation is not really necessary for all tests, but it is
+  // added to make sure each test using this function is also compatible with
+  // the DV_WAIT sequences from keymgr_key_derivation vseq
+  TRY(keymgr_testutils_generate_identity(keymgr));
+  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+
   return OK_STATUS();
 }
 
@@ -240,5 +317,51 @@ status_t keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr) {
   } while (status == 0);
   TRY_CHECK(status == kDifKeymgrStatusCodeIdle, "Unexpected status: %x",
             status);
+  return OK_STATUS();
+}
+
+status_t keymgr_testutils_max_key_version_get(const dif_keymgr_t *keymgr,
+                                              uint32_t *max_key_version) {
+  dif_keymgr_state_t keymgr_state;
+  TRY(dif_keymgr_get_state(keymgr, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInvalid ||
+      keymgr_state == kDifKeymgrStateDisabled ||
+      keymgr_state == kDifKeymgrStateReset) {
+    LOG_INFO("Unexpected keymgr state: 0x%x", keymgr_state);
+    return INTERNAL();
+  }
+
+  dif_keymgr_max_key_version_t versions;
+  TRY(dif_keymgr_read_max_key_version(keymgr, &versions));
+
+  switch (keymgr_state) {
+    case kDifKeymgrStateCreatorRootKey:
+      *max_key_version = versions.creator_max_key_version;
+      break;
+    case kDifKeymgrStateOwnerIntermediateKey:
+      *max_key_version = versions.owner_int_max_key_version;
+      break;
+    case kDifKeymgrStateOwnerRootKey:
+      *max_key_version = versions.owner_max_key_version;
+      break;
+    default:
+      return INTERNAL();
+  }
+
+  return OK_STATUS();
+}
+
+status_t keymgr_testutils_state_string_get(const dif_keymgr_t *keymgr,
+                                           const char **stage_name) {
+  dif_keymgr_state_t state;
+  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &state));
+
+  if (state >= ARRAYSIZE(kKeymgrStageNames)) {
+    *stage_name = NULL;
+    return INTERNAL();
+  }
+
+  *stage_name = kKeymgrStageNames[state];
   return OK_STATUS();
 }

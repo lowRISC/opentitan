@@ -36,6 +36,11 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // which is hard to handle in scb. In this case, disable the checker.
   // as long as all TPM requests can be read out and compared correctly, it's sufficient.
   bit                 en_check_tpm_not_empty_intr = 1;
+
+  // The scoreboard sets the flag below, just so certain sequences have 'busy' visibility and checks
+  // work correctly
+  bit                 last_flash_cmd_set_busy = 0;
+
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(spi_device_agent_cfg, UVM_DEFAULT)

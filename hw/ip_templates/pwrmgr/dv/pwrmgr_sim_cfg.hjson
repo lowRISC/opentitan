@@ -30,16 +30,21 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
+  // Exclusion files
+  vcs_cov_excl_files: ["{self_dir}/cov/pwrmgr_cov_manual_excl.el"]
+
   // Overrides
   overrides: [
     {
       name: design_level
       value: "top"
     }
+    // Handle generated coverage exclusion.
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/pwrmgr_tgl_excl.cfg"
+    }
   ]
-
-  // Exclusion files
-  vcs_cov_excl_files: ["{self_dir}/cov/pwrmgr_cov_manual_excl.el"]
 
   // Add additional tops for simulation.
   sim_tops: ["pwrmgr_bind",

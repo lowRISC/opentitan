@@ -16,8 +16,11 @@ module i2c_controller_fsm import i2c_pkg::*;
   output logic scl_o,  // serial clock output to i2c bus
   input        sda_i,  // serial data input from i2c bus
   output logic sda_o,  // serial data output to i2c bus
+  input        bus_free_i,     // High if the bus is free for a new transmission
+  output logic transmitting_o, // Controller is currently transmitting SDA
 
-  input        host_enable_i, // enable host functionality
+  input        host_enable_i,     // enable host functionality
+  input        halt_controller_i, // Halt the controller FSM in Idle
 
   input                      fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input [FifoDepthWidth-1:0] fmt_fifo_depth_i,  // fmt_fifo_depth
@@ -44,16 +47,16 @@ module i2c_controller_fsm import i2c_pkg::*;
   input [12:0] tsu_sta_i,  // setup time for repeated START in clock units
   input [12:0] tsu_sto_i,  // setup time for STOP in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
-  input [12:0] t_buf_i,    // bus free time between STOP and START in clock units
-  input [30:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
+  input        sda_interference_i, // High when SCL is high and SDA doesn't match while transmitting
+  input [29:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [30:0] host_nack_handler_timeout_i, // Timeout threshold for unhandled Host-Mode 'nak' irq.
   input        host_nack_handler_timeout_en_i,
 
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_unhandled_nak_timeout_o, // SW didn't handle the NACK in time
+  output logic event_arbitration_lost_o, // Lost arbitration after beginning a transaction
   output logic event_scl_interference_o, // other device forcing SCL low
-  output logic event_sda_interference_o, // other device forcing SDA low
   output logic event_stretch_timeout_o,  // target stretches clock past max time
   output logic event_sda_unstable_o,     // SDA is not constant during SCL pulse
   output logic event_cmd_complete_o      // Command is complete
@@ -63,7 +66,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   logic [15:0] tcount_q;      // current counter for setting delays
   logic [15:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
-  logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
+  logic [30:0] stretch_idle_cnt; // counter for clock being stretched by target
                                  // or clock idle by host.
   logic [30:0] unhandled_nak_cnt; // In Host-mode, count cycles where the FSM is halted awaiting
                                   // the nak irq to be handled by SW.
@@ -96,6 +99,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   logic        log_start;     // indicates start is been issued
   logic        log_stop;      // indicates stop is been issued
   logic        auto_stop_d, auto_stop_q; // Tracks whether a Stop symbol was autonomously generated.
+  logic        ctrl_symbol_failed; // If SCL pulls low before the controller can issue Start/Stop
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -108,7 +112,6 @@ module i2c_controller_fsm import i2c_pkg::*;
     tHoldBit,
     tClockStop,
     tSetupStop,
-    tHoldStop,
     tNoDelay
   } tcount_sel_e;
 
@@ -127,7 +130,6 @@ module i2c_controller_fsm import i2c_pkg::*;
         tHoldBit    : tcount_d = 13'(t_f_i) + 13'(thd_dat_i);
         tClockStop  : tcount_d = 13'(t_f_i) + 13'(tlow_i) - 13'(thd_dat_i);
         tSetupStop  : tcount_d = 13'(t_r_i) + 13'(tsu_sto_i);
-        tHoldStop   : tcount_d = 13'(t_r_i) + 13'(t_buf_i) - 13'(tsu_sta_i);
         tNoDelay    : tcount_d = 16'h0001;
         default     : tcount_d = 16'h0001;
       endcase
@@ -176,8 +178,8 @@ module i2c_controller_fsm import i2c_pkg::*;
   // 'stretch_predict_cnt_expired' becomes active once we have observed (4 + t_r) cycles of
   // delay, and if !scl_i at this point we know that the TARGET is stretching the clock.
   // > This implementation requires 'thigh >= 4' to guarantee we don't miss stretching.
-  logic [31:0] stretch_cnt_threshold;
-  assign stretch_cnt_threshold = 32'd2 + 32'(t_r_i);
+  logic [30:0] stretch_cnt_threshold;
+  assign stretch_cnt_threshold = 31'd2 + 31'(t_r_i);
 
   logic stretch_predict_cnt_expired;
   always_ff @ (posedge clk_i or negedge rst_ni) begin
@@ -269,6 +271,11 @@ module i2c_controller_fsm import i2c_pkg::*;
     end
   end
 
+  // SCL going low early is just clock synchronization. SCL switching so fast that the controller
+  // can't even sense its outputs is cause for a bus error.
+  assign event_arbitration_lost_o = event_sda_unstable_o || sda_interference_i ||
+                                    ctrl_symbol_failed;
+
   // Registers whether a transaction start has been observed.
   // A transaction start does not include a "restart", but rather
   // the first start after enabling i2c, or a start observed after a
@@ -276,7 +283,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       trans_started <= '0;
-    end else if (trans_started && !host_enable_i) begin
+    end else if (trans_started && (!host_enable_i || event_arbitration_lost_o)) begin
       trans_started <= '0;
     end else if (log_start) begin
       trans_started <= 1'b1;
@@ -329,43 +336,6 @@ module i2c_controller_fsm import i2c_pkg::*;
   state_e state_q, state_d;
 
 
-  // enable sda interference detection
-  // Detects when the controller releases sda to be pulled high, but the line
-  // is unexpectedly held low by another driver.
-  logic en_sda_interf_det;
-  logic [16:0] sda_rise_cnt;
-
-  // sda_rise_latency refers to the time between
-  // changing sda_o to 1 and sampling sda_i as 1.
-  // This value is a combination of the bus rise time and the
-  // input sychronization delay
-  logic [16:0] sda_rise_latency;
-  assign sda_rise_latency = t_r_i + 16'h2;
-
-  // When detection is enabled, count through the rise time.
-  // Once rise time count is reached, hold in place until disabled.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sda_rise_cnt <= '0;
-    end else if (!en_sda_interf_det && |sda_rise_cnt) begin
-      // When detection is disabled, 0 the count.
-      // Only 0 the count if the count is currently non-zero to avoid
-      // unnecessary toggling.
-      sda_rise_cnt <= '0;
-    end else if (en_sda_interf_det && sda_rise_cnt < sda_rise_latency) begin
-      sda_rise_cnt <= sda_rise_cnt + 1'b1;
-    end
-  end
-
-  // There are two conditions of sda interference:
-  // 1. When the host function is first enabled, but for some reason sda_i is already 0.
-  // 2. Any time the host function is trying to drive a 1 but it observes a 0 instead.
-  //
-  // When the count is reached, we are pass the rise time period.
-  // Now check for any inconsistency in the sda value.
-  assign event_sda_interference_o = (host_idle_o & host_enable_i & !sda_i) |
-                                    ((sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i));
-
   // Increment the NACK timeout count if the controller is halted in Idle and
   // the timeout hasn't yet occurred.
   assign incr_nak_cnt = unhandled_unexp_nak_i && host_enable_i && (state_q == Idle) &&
@@ -376,11 +346,15 @@ module i2c_controller_fsm import i2c_pkg::*;
     host_idle_o = 1'b1;
     sda_d = 1'b1;
     scl_d = 1'b1;
+    transmitting_o = 1'b0;
+    log_start = 1'b0;
+    log_stop = 1'b0;
     fmt_fifo_rready_o = 1'b0;
     rx_fifo_wvalid_o = 1'b0;
     rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
+    ctrl_symbol_failed = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_cmd_complete_o = 1'b0;
     stretch_en = 1'b0;
@@ -408,19 +382,33 @@ module i2c_controller_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
-        if (log_start) event_cmd_complete_o = pend_restart;
+        transmitting_o = 1'b1;
+        // If this is a restart, SCL was last low, and a target could be stretching the clock.
+        stretch_en = trans_started;
+        if (trans_started && !scl_i && scl_i_q) begin
+          // If this is a repeated Start, an early clock prevents issuing the symbol. If it's not
+          // a repeated start, the FSM will just go back to Idle and wait for the bus to go free
+          // again.
+          ctrl_symbol_failed = 1'b1;
+        end else if (tcount_q == 20'd1) begin
+          log_start = 1'b1;
+          event_cmd_complete_o = pend_restart;
+        end
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
+        if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
       end
       // ClockStart: SCL is pulled low, SDA stays low
       ClockStart : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       ClockLow : begin
         host_idle_o = 1'b0;
@@ -430,21 +418,27 @@ module i2c_controller_fsm import i2c_pkg::*;
           sda_d = fmt_byte_i[bit_index];
         end
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         host_idle_o = 1'b0;
         sda_d = fmt_byte_i[bit_index];
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
-        if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
+        if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          event_sda_unstable_o = 1'b1;
+        end
       end
       // HoldBit: SCL is pulled low
       HoldBit : begin
         host_idle_o = 1'b0;
         sda_d = fmt_byte_i[bit_index];
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // ClockLowAck: SCL pulled low, SDA is released
       ClockLowAck : begin
@@ -460,7 +454,10 @@ module i2c_controller_fsm import i2c_pkg::*;
         if (!scl_i_q && scl_i && sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
-        if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
+        if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          event_sda_unstable_o = 1'b1;
+        end
       end
       // HoldDevAck: SCL is pulled low
       HoldDevAck : begin
@@ -480,7 +477,10 @@ module i2c_controller_fsm import i2c_pkg::*;
         scl_d = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
-        if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
+        if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          event_sda_unstable_o = 1'b1;
+        end
       end
       // ReadHoldBit: SCL is pulled low
       ReadHoldBit : begin
@@ -495,6 +495,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       HostClockLowAck : begin
         host_idle_o = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
 
         // If it is the last byte of a read, send a NAK before the stop.
         // Otherwise send the ack.
@@ -509,9 +510,13 @@ module i2c_controller_fsm import i2c_pkg::*;
         else if (byte_index == 9'd1) sda_d = 1'b1;
         else sda_d = 1'b0;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
-        if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
+        if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          event_sda_unstable_o = 1'b1;
+        end
       end
       // HostHoldBitAck: SCL is pulled low
       HostHoldBitAck : begin
@@ -520,18 +525,26 @@ module i2c_controller_fsm import i2c_pkg::*;
         else if (byte_index == 9'd1) sda_d = 1'b1;
         else sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // ClockStop: SCL is pulled low, SDA stays low
       ClockStop : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // SetupStop: SDA is pulled low, SCL is released
       SetupStop : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
+        stretch_en = 1'b1;
+        if (!scl_i && scl_i_q) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          ctrl_symbol_failed = 1'b1;
+        end
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
@@ -539,6 +552,12 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b1;
         scl_d = 1'b1;
         event_cmd_complete_o = 1'b1;
+        if (!sda_i && !scl_i) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          ctrl_symbol_failed = 1'b1;
+        end else if (sda_i) begin
+          log_stop = 1'b1;
+        end
       end
       // Active: continue while keeping SCL low
       Active : begin
@@ -563,11 +582,15 @@ module i2c_controller_fsm import i2c_pkg::*;
         host_idle_o = 1'b1;
         sda_d = 1'b1;
         scl_d = 1'b1;
+        transmitting_o = 1'b0;
+        log_start = 1'b0;
+        log_stop = 1'b0;
+        event_scl_interference_o = 1'b0;
+        ctrl_symbol_failed = 1'b0;
         fmt_fifo_rready_o = 1'b0;
         rx_fifo_wvalid_o = 1'b0;
         rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
         event_nak_o = 1'b0;
-        event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
         event_cmd_complete_o = 1'b0;
       end
@@ -585,10 +608,7 @@ module i2c_controller_fsm import i2c_pkg::*;
     byte_clr = 1'b0;
     read_byte_clr = 1'b0;
     shift_data_en = 1'b0;
-    log_start = 1'b0;
-    log_stop = 1'b0;
     req_restart = 1'b0;
-    en_sda_interf_det = 1'b0;
     auto_stop_d = auto_stop_q;
 
     unique case (state_q)
@@ -596,7 +616,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       // transaction.
       Idle : begin
         if (host_enable_i) begin
-          if (unhandled_unexp_nak_i || unhandled_nak_timeout_i) begin
+          if (unhandled_unexp_nak_i || unhandled_nak_timeout_i || halt_controller_i) begin
             // If we are awaiting software to handle an unexpected NACK, halt the FSM here.
             // The current transaction does not end, and SCL remains in its current state.
             // Software typically should handle an unexpected NACK by either disabling the
@@ -607,6 +627,8 @@ module i2c_controller_fsm import i2c_pkg::*;
             // issue a Stop if software takes too long to address the NACK. A short timeout
             // could also be used to automatically issue a Stop whenever an unexpected NACK
             // occurs.
+            // Note that we may also halt here on a bus timeout or if arbitration was lost, so
+            // software may fix up the FIFOs before beginning a new transaction.
             if (trans_started && unhandled_nak_cnt_expired) begin
               // If our timeout counter expires, generate a STOP condition automatically.
               auto_stop_d = 1'b1;
@@ -615,7 +637,9 @@ module i2c_controller_fsm import i2c_pkg::*;
               tcount_sel = tClockStop;
             end
           end else if (fmt_fifo_rvalid_i) begin
-            state_d = Active;
+            if (trans_started || bus_free_i) begin
+              state_d = Active;
+            end
           end
         end else if (trans_started && !host_enable_i) begin
             auto_stop_d = 1'b1;
@@ -631,16 +655,28 @@ module i2c_controller_fsm import i2c_pkg::*;
 
       // SetupStart: SDA and SCL are released
       SetupStart : begin
-        if (tcount_q == 20'd1) begin
+        if (!trans_started && !scl_i) begin
+          // This was the start of a transaction, but another device beat us to access. Go back to
+          // Idle, and wait for the next turn.
+          state_d = Idle;
+        end else if (trans_started && !scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          state_d = SetupStart;
+          load_tcount = 1'b1;
+          // This double-counts the rise time, unfortunately.
+          tcount_sel = tSetupStart;
+        end else if (trans_started && !scl_i && scl_i_q) begin
+          // Failed to issue repeated Start. Effectively lost arbitration.
+          state_d = Idle;
+        end else if (tcount_q == 20'd1) begin
           state_d = HoldStart;
           load_tcount = 1'b1;
           tcount_sel = tHoldStart;
-          log_start = 1'b1;
         end
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
           state_d = ClockStart;
           load_tcount = 1'b1;
           tcount_sel = tClockStart;
@@ -656,7 +692,6 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockLow: SCL stays low, shift indexed bit onto SDA
       ClockLow : begin
-        en_sda_interf_det = 1'b1;
         if (tcount_q == 20'd1) begin
           load_tcount = 1'b1;
           if (pend_restart) begin
@@ -670,12 +705,16 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
-        en_sda_interf_det = 1'b1;
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
-        end else if (tcount_q == 20'd1) begin
+        end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          state_d = Idle;
+        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+          // Transition either when we finish counting our high period or
+          // another controller pulls clock low.
           state_d = HoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -683,9 +722,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HoldBit: SCL is pulled low
       HoldBit : begin
-        en_sda_interf_det = 1'b1;
         if (tcount_q == 20'd1) begin
-          en_sda_interf_det = 1'b0;
           load_tcount = 1'b1;
           tcount_sel = tClockLow;
           if (bit_index == '0) begin
@@ -708,12 +745,15 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockPulseAck: SCL is released
       ClockPulseAck : begin
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
+        end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          state_d = Idle;
         end else begin
-          if (tcount_q == 20'd1) begin
+          if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
             state_d = HoldDevAck;
             load_tcount = 1'b1;
             tcount_sel = tHoldBit;
@@ -744,11 +784,14 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ReadClockPulse: SCL is released, the indexed bit value is read off SDA
       ReadClockPulse : begin
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
-        end else if (tcount_q == 20'd1) begin
+        end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          state_d = Idle;
+        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
           state_d = ReadHoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -773,7 +816,6 @@ module i2c_controller_fsm import i2c_pkg::*;
       // HostClockLowAck: SCL is pulled low, SDA is conditional based on
       // byte position
       HostClockLowAck : begin
-        en_sda_interf_det = 1'b1;
         if (tcount_q == 20'd1) begin
           state_d = HostClockPulseAck;
           load_tcount = 1'b1;
@@ -782,12 +824,14 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HostClockPulseAck: SCL is released
       HostClockPulseAck : begin
-        en_sda_interf_det = 1'b1;
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
-        end else if (tcount_q == 20'd1) begin
+        end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
+          // Unexpected Stop / Start
+          state_d = Idle;
+        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
           state_d = HostHoldBitAck;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -795,9 +839,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HostHoldBitAck: SCL is pulled low
       HostHoldBitAck : begin
-        en_sda_interf_det = 1'b1;
         if (tcount_q == 20'd1) begin
-          en_sda_interf_det = 1'b0;
           if (byte_index == 9'd1) begin
             if (fmt_flag_stop_after_i) begin
               state_d = ClockStop;
@@ -826,18 +868,24 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // SetupStop: SDA is pulled low, SCL is released
       SetupStop : begin
-        if (tcount_q == 20'd1) begin
-          state_d = HoldStop;
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
-          tcount_sel = tHoldStop;
-          log_stop = 1'b1;
+          tcount_sel = tSetupStop;
+        end else if (!scl_i && scl_i_q) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          state_d = Idle;
+        end else if (tcount_q == 20'd1) begin
+          state_d = HoldStop;
         end
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
-        en_sda_interf_det = 1'b1;
-        if (tcount_q == 20'd1) begin
-          en_sda_interf_det = 1'b0;
+        if (!sda_i && !scl_i) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          state_d = Idle;
+          auto_stop_d = 1'b0;
+        end else if (sda_i) begin
           auto_stop_d = 1'b0;
           if (auto_stop_q) begin
             // If this Stop symbol was generated automatically, go back to Idle.
@@ -876,7 +924,8 @@ module i2c_controller_fsm import i2c_pkg::*;
           state_d = ClockStop;
           load_tcount = 1'b1;
           tcount_sel = tClockStop;
-        end else if (!host_enable_i || (fmt_fifo_depth_i == 7'h1) || unhandled_unexp_nak_i) begin
+        end else if (!host_enable_i || (fmt_fifo_depth_i == 7'h1) ||
+                     unhandled_unexp_nak_i || !trans_started) begin
           state_d = Idle;
           load_tcount = 1'b1;
           tcount_sel = tNoDelay;
@@ -898,11 +947,13 @@ module i2c_controller_fsm import i2c_pkg::*;
         byte_clr = 1'b0;
         read_byte_clr = 1'b0;
         shift_data_en = 1'b0;
-        log_start = 1'b0;
-        log_stop = 1'b0;
         auto_stop_d = 1'b0;
       end
     endcase // unique case (state_q)
+
+    if (trans_started && (sda_interference_i || ctrl_symbol_failed)) begin
+      state_d = Idle;
+    end
   end
 
   // Synchronous state transition
@@ -918,8 +969,8 @@ module i2c_controller_fsm import i2c_pkg::*;
   assign sda_o = sda_d;
 
   // Target stretched clock beyond timeout
-  assign event_stretch_timeout_o = stretch_en &&
-                                   (stretch_idle_cnt[30:0] > stretch_timeout_i) && timeout_enable_i;
+  assign event_stretch_timeout_o = stretch_en && timeout_enable_i &&
+                                   (stretch_idle_cnt > 31'(stretch_timeout_i));
 
   // Make sure we never attempt to send a single cycle glitch
   `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)

@@ -21,9 +21,9 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
   task body();
     uvm_reg_data_t rd_data;
 
-    ral.usbctrl.enable.set(1'b1);  // Set usbdev control register enable bit.
-    ral.usbctrl.device_address.set(0);
-    csr_update(ral.usbctrl);
+    usbdev_connect();
+    wait_for_link_state({LinkActive, LinkActiveNoSOF}, 10 * 1000 * 48);  // 10ms timeout, at 48MHz
+    usbdev_set_address(dev_addr);
 
     configure_out_trans(); // register configurations for OUT Trans.
 

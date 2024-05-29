@@ -97,30 +97,63 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 
 /**
  * DICE certificates exported during personalization.
+ *
+ * See the `OT_ASSERT_MEMBER_SIZE_AS_ENUM` calls in
+ * `sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/ft_personalize.c`
+ * for how these sizes are chosen.
  */
 // clang-format off
-#define STRUCT_MANUF_DICE_CERTS(field, string) \
-    field(uds_tbs_certificate, uint8_t, 714) \
+#define STRUCT_MANUF_PERSO_CERTS(field, string) \
+    field(uds_tbs_certificate, uint8_t, 680) \
     field(uds_tbs_certificate_size, size_t) \
-    field(cdi_0_certificate, uint8_t, 582) \
+    field(cdi_0_certificate, uint8_t, 580) \
     field(cdi_0_certificate_size, size_t) \
-    field(cdi_1_certificate, uint8_t, 631) \
-    field(cdi_1_certificate_size, size_t)
-UJSON_SERDE_STRUCT(ManufDiceCerts, \
-                   manuf_dice_certs_t, \
-                   STRUCT_MANUF_DICE_CERTS);
+    field(cdi_1_certificate, uint8_t, 632) \
+    field(cdi_1_certificate_size, size_t) \
+    field(tpm_ek_tbs_certificate, uint8_t, 844) \
+    field(tpm_ek_tbs_certificate_size, size_t) \
+    field(tpm_cek_tbs_certificate, uint8_t, 456) \
+    field(tpm_cek_tbs_certificate_size, size_t) \
+    field(tpm_cik_tbs_certificate, uint8_t, 456) \
+    field(tpm_cik_tbs_certificate_size, size_t)
+UJSON_SERDE_STRUCT(ManufCerts, \
+                   manuf_certs_t, \
+                   STRUCT_MANUF_PERSO_CERTS);
 // clang-format on
 
 /**
  * Endorsed certificates imported during personalization.
+ *
+ * See the `OT_ASSERT_MEMBER_SIZE_AS_ENUM` calls in
+ * `sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/ft_personalize.c`
+ * for how these sizes are chosen.
  */
 // clang-format off
 #define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
-    field(uds_certificate, uint8_t, 805) \
-    field(uds_certificate_size, size_t)
+    field(uds_certificate, uint8_t, 768) \
+    field(uds_certificate_size, size_t) \
+    field(tpm_ek_certificate, uint8_t, 936) \
+    field(tpm_ek_certificate_size, size_t) \
+    field(tpm_cek_certificate, uint8_t, 548) \
+    field(tpm_cek_certificate_size, size_t) \
+    field(tpm_cik_certificate, uint8_t, 548) \
+    field(tpm_cik_certificate_size, size_t)
 UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
                    manuf_endorsed_certs_t, \
                    STRUCT_MANUF_ENDORSED_CERTS);
+// clang-format on
+
+/**
+ * Sha256 hash
+ *
+ * A 32 byte binary.
+ */
+// clang-format off
+#define STRUCT_SHA256_HASH(field, string) \
+    field(data, uint32_t, 8)
+UJSON_SERDE_STRUCT(SerdesSha256Hash, \
+                   serdes_sha256_hash_t, \
+                   STRUCT_SHA256_HASH);
 // clang-format on
 
 #undef MODULE_ID

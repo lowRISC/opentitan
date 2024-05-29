@@ -234,25 +234,25 @@
     { name: "AttrDw",
       desc: "Pad attribute data width",
       type: "int",
-      default: "10",
+      default: "13",
       local: "true"
     },
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "33",
+      default: "57",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "32",
+      default: "75",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "32",
+      default: "47",
       local: "true"
     },
     { name: "NDioPads",
@@ -288,6 +288,32 @@
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
+    }
+    { name: "LC_DFT_EN.INTERSIG.MUBI",
+      desc: "The life cycle DFT enable signal is multibit encoded."
+    }
+    { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
+      desc: "The life cycle hardware debug enable signal is multibit encoded."
+    }
+    { name: "LC_CHECK_BYP_EN.INTERSIG.MUBI",
+      desc: "The life cycle check bypass signal is multibit encoded."
+    }
+    { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
+      desc: "The life cycle check bypass signal is multibit encoded."
+    }
+    { name: "PINMUX_HW_DEBUG_EN.INTERSIG.MUBI",
+      desc: '''In order to support the NDM reset feature in RV_DM,
+               the pinmux latches the LC_HW_DEBUG_EN signal so that it can survive
+               the NDM reset, and sends that signal on to the RV_DM for use in
+               gating circuitry. This signal is also multibit encoded
+            '''
+    }
+    { name: "TAP.MUX.LC_GATED",
+      desc: '''The TAP selection mux/demux in the strap sampling module
+               is gated by life cycle signals so that the RV_DM can only
+               be selected during when LC_HW_DEBUG_EN is asserted, and
+               the DFT TAP can only be selected when LC_DFT_EN is asserted.
+            '''
     }
   ]
 
@@ -370,7 +396,7 @@
                   regwen_multi: "true",
                   cname:        "OUT",
                   fields: [
-                    { bits: "5:0",
+                    { bits: "6:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1, 2: high-Z,
@@ -462,6 +488,13 @@
                     { bits: "6",
                       name: "od_en",
                       desc: "Enable open drain."
+                    },
+                    { bits: "7",
+                      name: "input_disable",
+                      desc: '''
+                            Disable input drivers.
+                            Setting this to 1 for pads that are not used as input can reduce their leakage current.
+                            '''
                     },
                     { bits: "17:16",
                       name: "slew_rate",
@@ -558,6 +591,13 @@
                       name: "od_en",
                       desc: "Enable open drain."
                     },
+                    { bits: "7",
+                      name: "input_disable",
+                      desc: '''
+                            Disable input drivers.
+                            Setting this to 1 for pads that are not used as input can reduce their leakage current.
+                            '''
+                    },
                     { bits: "17:16",
                       name: "slew_rate",
                       desc: "Slew rate (0x0: slowest, 0x3: fastest)."
@@ -610,7 +650,7 @@
                       name:   "EN",
                       desc:   '''
                               Register write enable bit.
-                              If this is cleared to 0, the corresponding !!MIO_OUT_SLEEP_MODE
+                              If this is cleared to 0, the corresponding !!MIO_PAD_SLEEP_MODE
                               is not writable anymore.
                               ''',
                       resval: "1",
@@ -977,7 +1017,7 @@
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).
-                      In case of MIO, the pad select index is the same as used for !!PERIPH_INSEL, meaning that index
+                      In case of MIO, the pad select index is the same as used for !!MIO_PERIPH_INSEL, meaning that index
                       0 and 1 just select constants 0 and 1, and the MIO pads live at indices >= 2. In case of DIO pads,
                       the pad select index corresponds 1:1 to the DIO pad to be selected.
                       '''

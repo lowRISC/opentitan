@@ -35,7 +35,7 @@ class FormalCfg(OneShotCfg):
             self.publish_report = False
         self.sub_flow = hjson_data['sub_flow']
         self.summary_header = [
-            "name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"
+            "name", "pass_rate", "formal_cov", "stimuli_cov", "checker_cov"
         ]
         self.results_title = self.name.upper(
         ) + " Formal " + self.sub_flow.upper() + " Results"
@@ -112,16 +112,16 @@ class FormalCfg(OneShotCfg):
             results_str = "No coverage information found\n"
             summary = ["N/A", "N/A", "N/A"]
         else:
-            cov_header = ["stimuli", "coi", "proof"]
+            cov_header = ["formal", "stimuli", "checker"]
             cov_colalign = ("center", ) * len(cov_header)
             cov_table = [cov_header]
             cov_table.append([
-                formal_coverage["stimuli"], formal_coverage["coi"],
-                formal_coverage["proof"]
+                formal_coverage["formal"], formal_coverage["stimuli"],
+                formal_coverage["checker"]
             ])
+            summary.append(formal_coverage["formal"])
             summary.append(formal_coverage["stimuli"])
-            summary.append(formal_coverage["coi"])
-            summary.append(formal_coverage["proof"])
+            summary.append(formal_coverage["checker"])
 
             if len(cov_table) > 1:
                 results_str = tabulate(cov_table,
@@ -196,9 +196,9 @@ class FormalCfg(OneShotCfg):
         # If coverage was enabled then results.hjson will also have an item that
         # shows formal coverage. It will have the following format:
         #   "coverage": {
+        #      formal:  "90 %",
         #      stimuli: "90 %",
-        #      coi    : "90 %",
-        #      proof  : "80 %"
+        #      checker: "80 %"
         #   }
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"

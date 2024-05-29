@@ -174,6 +174,13 @@ LABEL_FOR_TEST(kRomStartBootExecEn)
   li t1, (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT)
   sw t1, PWRMGR_CFG_CDC_SYNC_REG_OFFSET(t0)
 
+  // In case of waking from low power, with AON IP state intact,
+  // skip watchdog configuration.
+  li a0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  lw t0, RSTMGR_RESET_INFO_REG_OFFSET(a0)
+  li t1, (1 << RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT)
+  beq t0, t1, .L_skip_watchdog_init
+
   // Configure the watchdog's bark and bite thresholds.
   li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
   li t1, WDOG_BARK_THOLD
@@ -185,6 +192,7 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
   // Enable the watchdog timer.
   li t1, (1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT)
   sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
+.L_skip_watchdog_init:
 
   // Configure rstmgr alert and cpu info collection.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \

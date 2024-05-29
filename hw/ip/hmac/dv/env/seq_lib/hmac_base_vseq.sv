@@ -13,13 +13,22 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   bit do_back_pressure = 1'b0;
   bit do_burst_wr      = 1'b0;
 
+  bit       invalid_cfg;
+  bit [5:0] cast_key_length;
+  bit [3:0] cast_digest_size;
+
+
   rand bit [TL_AW-1:0]    wr_addr;
   rand bit [TL_DBW-1:0]   wr_mask;
   rand bit                wr_config_during_hash;
   rand bit                wr_key_during_hash;
   rand bit                hmac_en;
   rand bit [3:0]          digest_size;
-  rand bit [4:0]          key_length;
+  rand bit [31:0]         key[NUM_KEYS];
+  rand bit [5:0]          key_length;
+  rand bit                endian_swap;
+  rand bit                digest_swap;
+  rand bit                key_swap;
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
@@ -32,26 +41,35 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     };
   }
 
-  // key length only factors in for testing HMAC
-  // only testing 256-bit key now
+  // TODO: keep both blocks for key_length and digest size and toggle between both for WIP
+  // till DV stabilizes for all digest sizes and key lengths
   constraint key_digest_c {
-    key_length dist {
-      5'b0_0001 := 0,
-      5'b0_0010 := 10, // 256-bit key
-      5'b0_0100 := 0,
-      5'b0_1000 := 0,
-      5'b1_0000 := 0
+    $countones(key_length) == 1 dist {
+      1 :/ 10,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
+      0 :/ 0    // Illegal -> should get casted to Key_None in HW
     };
-  }
 
-  // only testing SHA-2 256 now
-  constraint digest_size_c {
-    digest_size dist {
-      4'b0010 := 10, // SHA-2 256
-      4'b0100 := 0, // SHA-2 384
-      4'b1000 := 0, // SHA-2 512
-      4'b0001 := 0  // SHA-2 None
+    $countones(digest_size) == 1 dist {
+      1 :/ 10,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
+      0 :/ 0    // Illegal -> should get casted to SHA2_None in HW
     };
+
+    /* key_length dist {
+      6'b00_0001 := 0,
+      6'b00_0010 := 10, // 256-bit key
+      6'b00_0100 := 0,
+      6'b00_1000 := 0,
+      6'b01_0000 := 0,
+      6'b10_0000 := 0
+    }; */
+
+  /*  // only testing SHA-2 256 now
+    digest_size dist {
+      4'b0001 := 10, // SHA-2 256
+      4'b0010 := 0,  // SHA-2 384
+      4'b0100 := 0,  // SHA-2 512
+      4'b1000 := 0   // SHA-2 None
+    }; */
   }
 
   constraint wr_mask_contiguous_c {
@@ -73,8 +91,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                          bit hmac_en            = 1'b1,
                          bit endian_swap        = 1'b1,
                          bit digest_swap        = 1'b1,
-                         bit [3:0] digest_size  = 4'b0010,   // SHA-256
-                         bit [4:0] key_length   = 5'b0_1000, // 512-bit key
+                         bit key_swap           = 1'b0,
+                         bit [3:0] digest_size  = 4'b0001, // SHA-256
+                         bit [5:0] key_length   = 6'b00_0010, // 256-bit key
                          bit intr_fifo_empty_en = 1'b1,
                          bit intr_hmac_done_en  = 1'b1,
                          bit intr_hmac_err_en   = 1'b1);
@@ -85,9 +104,25 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     ral.cfg.hmac_en.set(hmac_en);
     ral.cfg.endian_swap.set(endian_swap);
     ral.cfg.digest_swap.set(digest_swap);
+    ral.cfg.key_swap.set(key_swap);
     ral.cfg.digest_size.set(digest_size);
     ral.cfg.key_length.set(key_length);
     csr_update(.csr(ral.cfg));
+
+    // read digest size and key length after casting from CSRs and update mirrored values
+    csr_rd_digest_size(cast_digest_size);
+    csr_rd_key_length(cast_key_length);
+
+    // indicate if config is invalid and would block triggering the hash to start
+    if ((cast_digest_size == SHA2_None) ||
+        ((cast_key_length == Key_None) && hmac_en) ||
+        ((cast_digest_size == SHA2_256) && (cast_key_length == Key_1024) && hmac_en)) begin
+      invalid_cfg = 1;
+    end else begin
+      invalid_cfg = 0;
+    end
+
+    `uvm_info(`gfn, $sformatf("invalid config: %1b", invalid_cfg), UVM_LOW)
 
     // enable interrupts
     interrupts = (intr_hmac_err_en << HmacErr) | (intr_hmac_done_en << HmacDone) |
@@ -123,14 +158,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // start hash computations
   virtual task trigger_hash();
-    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
-    // If SHA is not enabled, check that an error is signaled.
-    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
     `uvm_info(`gfn, "triggering hash to start", UVM_LOW)
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
+    // If incorrectly configured or SHA is not enabled, check that an error is signaled.
+    if (invalid_cfg || !ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
   // continue hash computations
   virtual task trigger_hash_continue();
+    `uvm_info(`gfn, "triggering hash to continue", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
     // If SHA is not enabled, check that an error is signaled.
     if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
@@ -138,11 +174,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // stop hash computations
   virtual task trigger_hash_stop();
+    `uvm_info(`gfn, "triggering hash to stop", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStop));
   endtask
 
   // trigger calculation of digest at the end of a message
   virtual task trigger_process();
+    `uvm_info(`gfn, "triggering hash to process", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
     cfg.hash_process_triggered = 1;
   endtask
@@ -162,7 +200,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     cfg.wipe_secret_triggered = 0;
   endtask
 
-    // read digest value and output read value
+  // read digest value and output read value
   virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[16]);
     foreach (digest[i]) begin
       csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
@@ -173,6 +211,18 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // write digest value
   virtual task csr_wr_digest(bit [TL_DW-1:0] digest[16]);
     foreach (digest[i]) csr_wr(.ptr(ral.digest[i]), .value(digest[i]));
+  endtask
+
+  // read digest size and update mirrored value
+  virtual task csr_rd_digest_size(output bit [3:0] read_digest_size);
+    csr_rd(.ptr(ral.cfg.digest_size), .value(read_digest_size));
+    `uvm_info(`gfn, $sformatf("reading digest size: %04b", read_digest_size), UVM_MEDIUM)
+  endtask
+
+  // read key length and update mirrored value
+  virtual task csr_rd_key_length(output bit [5:0] read_key_length);
+    csr_rd(.ptr(ral.cfg.key_length), .value(read_key_length));
+    `uvm_info(`gfn, $sformatf("reading key length: %06b", read_key_length), UVM_MEDIUM)
   endtask
 
   // write 1024-bit hashed key
@@ -192,7 +242,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     `DV_CHECK_STD_RANDOMIZE_FATAL(secret_val)
     csr_wr(.ptr(ral.wipe_secret), .value(secret_val));
     cfg.wipe_secret_triggered = 1;
-    `uvm_info(`gfn, $sformatf("wipe secret triggered"), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("wiping secret triggered"), UVM_LOW)
   endtask
 
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
@@ -257,7 +307,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
         if (!do_back_pressure) begin
-          if ($urandom_range(0, 1)) check_status_intr();
+          if ($urandom_range(0, 1)) read_status_intr_clr();
         end
         // randomly change key, config regs during msg wr, should trigger error or be discarded
         write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
@@ -268,7 +318,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     // ensure all msg fifo are written before trigger hmac_process
     csr_utils_pkg::wait_no_outstanding_access();
     if ($urandom_range(0, 1)) rd_msg_length();
-    check_status_intr();
+    read_status_intr_clr();
   endtask
 
   // read fifo_depth reg and burst write a chunk of words
@@ -279,7 +329,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     while (msg_q.size() > 0) begin
       // wait until HMAC has enough space to burst write
       csr_spinwait(.ptr(ral.status.fifo_depth),
-                   .exp_data(HMAC_MSG_FIFO_DEPTH - burst_wr_length),
+                   .exp_data(HMAC_MSG_FIFO_DEPTH_WR - burst_wr_length),
                    .compare_op(CompareOpLe));
       if (msg_q.size() >= burst_wr_length * 4) begin
         repeat (burst_wr_length) begin
@@ -291,41 +341,40 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
           tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
                     .write(1'b1), .data(word), .mask(wr_mask), .blocking($urandom_range(0, 1)));
         end
-        if (ral.cfg.sha_en.get_mirrored_value()) begin
-          //clear_intr_fifo_full();
-        end else begin
+        // Expected error as we may not push message into the FIFO while SHA is disabled
+        if (!ral.cfg.sha_en.get_mirrored_value()) begin
           check_error_code();
         end
       end else begin // remaining msg is smaller than the burst_wr_length
         wr_msg(msg_q);
         break;
       end
-    csr_utils_pkg::wait_no_outstanding_access();
-    if ($urandom_range(0, 1)) rd_msg_length();
+      csr_utils_pkg::wait_no_outstanding_access();
+      if ($urandom_range(0, 1)) rd_msg_length();
+      read_status_intr_clr();
     end
   endtask
 
   // read the message length from the DUT reg (but discard it)
   virtual task rd_msg_length();
-    bit [4*TL_DW-1:0] unused;
+    bit [2*TL_DW-1:0] unused;
     csr_rd_msg_length(unused);
   endtask
 
   // read the message length from the DUT reg
-  virtual task csr_rd_msg_length(output bit [4*TL_DW-1:0] msg_length);
+  virtual task csr_rd_msg_length(output bit [2*TL_DW-1:0] msg_length);
     csr_rd(ral.msg_length_upper, msg_length[2*TL_DW-1:TL_DW]);
     csr_rd(ral.msg_length_lower, msg_length[TL_DW-1:0]);
   endtask
 
   // write message length to the DUT reg
-  virtual task csr_wr_msg_length(bit [4*TL_DW-1:0] msg_length);
+  virtual task csr_wr_msg_length(bit [2*TL_DW-1:0] msg_length);
     csr_wr(.ptr(ral.msg_length_upper), .value(msg_length[2*TL_DW-1:TL_DW]));
     csr_wr(.ptr(ral.msg_length_lower), .value(msg_length[TL_DW-1:0]));
   endtask
 
-  // read status FIFO FULL and check intr FIFO FULL
-  // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
-  virtual task check_status_intr();
+  // read status and interrupt state and clear the interrupt state
+  virtual task read_status_intr_clr();
     bit [TL_DW-1:0] rdata;
     csr_utils_pkg::wait_no_outstanding_access();
     csr_rd(ral.status, rdata);
@@ -352,8 +401,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       csr_wr(.ptr(ral.intr_state), .value(error_code));
     end
     csr_rd(ral.err_code, error_code);
+    `uvm_info(`gfn, $sformatf("Error code: 0x%0h", error_code), UVM_HIGH)
   endtask
 
+  // TODO: extend to check for SHA-2 384 and 512 once the hmac_test_vectors_sha_vseq test is
+  // extended for these digest sizes (issue #22932)
   virtual task compare_digest(bit [7:0] exp_digest[]);
     bit [TL_DW-1:0] act_digest[16];
     bit [TL_DW-1:0] packed_exp_digest[8];
@@ -362,20 +414,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     // since HMAC digest size is max 512 bits.
     packed_exp_digest = {>>byte{exp_digest}};
     if (cfg.clk_rst_vif.rst_n) begin
-      // can safely assume that `exp_digest` always has 16 elements
-      // since HMAC output digest size is 512 bits.
       foreach (act_digest[i]) begin
-        `uvm_info(`gfn, $sformatf("Actual digest %0d, 0x%0h", i, act_digest[i]), UVM_MEDIUM)
-        `uvm_info(`gfn, $sformatf("Expected digest %0d, 0x%0h", i, packed_exp_digest[i]),
-                  UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Actual digest[%0d]: 0x%0h", i, act_digest[i]), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Expected digest[%0d]: 0x%0h", i, packed_exp_digest[i]), UVM_HIGH)
       end
 
-      // comparing for SHA-2 256
+      // comparing only digest[0] to digest [7] for SHA-2 256
       foreach (act_digest[i]) begin
         if (i < 8) begin
           `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i], $sformatf("for index %0d", i))
-        end else begin
-          `DV_CHECK_EQ(act_digest[i], '0);
         end
       end
     end else begin

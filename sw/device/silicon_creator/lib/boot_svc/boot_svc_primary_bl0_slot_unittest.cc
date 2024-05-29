@@ -19,7 +19,7 @@ class BootSvcPrimaryBl0SlotTest : public rom_test::RomTest {
 
 TEST_F(BootSvcPrimaryBl0SlotTest, ReqInit) {
   boot_svc_primary_bl0_slot_req_t msg{};
-  constexpr uint32_t kPrimarySlot = kBootDataSlotB;
+  constexpr uint32_t kPrimarySlot = kBootSlotB;
   EXPECT_CALL(boot_svc_header_, Finalize(kBootSvcPrimaryBl0SlotReqType,
                                          sizeof(msg), &msg.header));
 
@@ -34,10 +34,10 @@ TEST_F(BootSvcPrimaryBl0SlotTest, ResInit) {
   EXPECT_CALL(boot_svc_header_, Finalize(kBootSvcPrimaryBl0SlotResType,
                                          sizeof(msg), &msg.header));
 
-  boot_svc_primary_bl0_slot_res_init(kBootDataSlotB, kStatus, &msg);
+  boot_svc_primary_bl0_slot_res_init(kBootSlotB, kStatus, &msg);
 
   EXPECT_EQ(msg.status, kStatus);
-  EXPECT_EQ(msg.primary_bl0_slot, kBootDataSlotB);
+  EXPECT_EQ(msg.primary_bl0_slot, kBootSlotB);
 }
 
 }  // namespace

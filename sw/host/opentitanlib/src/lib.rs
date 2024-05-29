@@ -18,6 +18,7 @@ pub mod dif;
 pub mod image;
 pub mod io;
 pub mod otp;
+pub mod ownership;
 pub mod proxy;
 pub mod rescue;
 pub mod spiflash;

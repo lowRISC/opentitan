@@ -75,7 +75,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h411f0000, 32'h411f00ff}
     }},
     '{"sram_ctrl_main__regs", '{
-        '{32'h411c0000, 32'h411c001f}
+        '{32'h411c0000, 32'h411c003f}
     }},
     '{"sram_ctrl_main__ram", '{
         '{32'h10000000, 32'h1001ffff}

@@ -25,19 +25,38 @@ Here both channels are configured for simultaneous pattern generation, but the t
   head: {text: 'Effect of the Polarity Registers',tick:0}}
 ```
 
-1. Program the length of seed pattern using the length field, [`SIZE.LEN_CH0`](registers.md#size).
+3. Program the length of seed pattern using the length field, [`SIZE.LEN_CH0`](registers.md#size).
 Note that since the allowed seed length ranges from 1-64, the value of this field should be one less than the pattern length.
 For example, to generate an 16-bit pattern, a value of 15 should be written to the field [`SIZE.LEN_CH0`](registers.md#size).
 1. Program the seed pattern (between 1 and 64 bits in length) using the multi-register [`DATA_CH0_0`](registers.md#data_ch0) and [`DATA_CH0_1`](registers.md#data_ch0).
 The first 32 bits to be transmitted, are programmed in the lower half of the multi-register (i.e. [`DATA_CH0_0`](registers.md#data_ch0)), and the latter 32 bits are programmed in the upper half of the multi-register (i.e. [`DATA_CH0_1`](registers.md#data_ch0)).
 1. Program the clock divider ratio using the register [`PREDIV_CH0.CLK_RATIO`](registers.md#prediv_ch0).
 The resulting clock frequency will be slower than the input I/O clock by a ratio of 2&times;(CLK_RATIO+1):
-$$f_{pclx}=\frac{f_\textrm{I/O clk}}{2(\textrm{CLK_RATIO}+1)}$$
+$$f_{pclx}=\frac{f_\textrm{I/O clk}}{2(\textrm{CLK\_RATIO}+1)}$$
 1. Program the desired number of pattern repetitions using the repetition field [`SIZE.REPS_CH0`](registers.md#size).
 Note that since the allowed number of pattern repetitions ranges from 1-1024, the value of this field should be one less than the desired repetition count.
 For example, to repeat a pattern 30, a value of 29 should written to the field [`SIZE.REPS_CH0`](registers.md#size).
 1. Finally to start the pattern, set the [`CTRL.ENABLE_CH0`](registers.md#ctrl).
 To start both channel patterns at the same time, configure both channels then simultaneously assert both the [`CTRL.ENABLE_CH0`](registers.md#ctrl) and [`CTRL.ENABLE_CH1`](registers.md#ctrl) bits in the same register access.
+
+## Using the *inactive level* feature
+
+By default, the `pcl` and `pda` outputs are zero when pattgen is inactive (i.e., when pattgen is disabled or after it has sent all data bits).
+Using the CSR bits [`CTRL.INACTIVE_LEVEL_PCL`](registers.md#ctrl) and [`CTRL.INACTIVE_LEVEL_PDA`](registers.md#ctrl) (one pair of bits for channel 0, the other pair for channel 1), one can set either `pcl` or `pda` or both to one when pattgen is inactive.
+The value of the output changes when these CSR fields are set, as the following example shows:
+```wavejson
+{signal: [
+  {name: 'CTRL.ENABLE',             wave: '0..|1.........|0', node: '....e'},
+  {name: 'CTRL.POLARITY',           wave: '0..|..........|.'},
+  {name: 'CTRL.INACTIVE_LEVEL_PDA', wave: '01.|..........|.', node: '.a'},
+  {name: 'CTRL.INACTIVE_LEVEL_PCL', wave: '01.|..........|.', node: '.c'},
+  {name: 'data',                    wave: 'x..|.3.4.5.6.x|.', node: '.....f', data: "[0]=1'b0 [1]=1'b1 [2]=1'b0 [3]=1'b1"},
+  {name: 'pda',                     wave: '0.1|.0.1.0.1..|.', node: '..b...'},
+  {name: 'pcl',                     wave: '0.1|.01010101.|.', node: '..d..'},
+],
+  edge: ['a~b', 'c~d', 'e~f']
+}
+```
 
 ## Device Interface Functions (DIFs)
 

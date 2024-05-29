@@ -69,6 +69,15 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
   bit avoid_ro_partitions; // Avoid partitions defined as read-only.
 
+  // Avoid creating flash program operations that cross program resolution boundaries of 64 byte.
+  bit avoid_prog_res_fault;
+
+  // Trigger program resolution error by using large fractions.
+  bit trigger_prog_res_fault;
+
+  // This is used for ecc faults to choose the target addresses.
+  flash_tgt_prefix_e ecc_err_target = TgtRd;
+
   bit op_readonly_on_info_partition;   // Make info  partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
   bit op_readonly_on_info2_partition;  // Make info2 partition read-only.
@@ -123,11 +132,14 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // States whether to wait for the flash_init to finish before starting the actual sequence.
   bit wait_init_done;
 
-  // Enable/Disable the Random Flash Inititlisation After Reset
+  // Enable/Disable the Random Flash Initialisation After Reset
   bit disable_flash_init;
 
   // Path to flash wrapper hierarchy.
   string flash_path_str;
+
+  // Restrict address to be flash word aligned
+  bit addr_flash_word_aligned;
 
   // NOTE: Make sure to keep
   // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * clk_period_ns.
@@ -213,6 +225,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     avoid_ro_partitions = 0;
 
+    avoid_prog_res_fault = 1;
+
     op_erase_type_bank_pc = 20;
     op_prog_type_repair_pc = 10;
     op_max_words = 512;
@@ -227,6 +241,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
     do_tran_prep_mem = 1'b1;
 
     check_mem_post_tran = 1'b1;
+
+    addr_flash_word_aligned = 1'b0;
 
     prog_timeout_ns                     = 10_000_000;   // 10ms
 
