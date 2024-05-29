@@ -137,8 +137,11 @@ def main():
                         required=True,
                         type=parse_hexstring_to_int)
     parser.add_argument("--ecc_priv_keyfile", required=True)
-    parser.add_argument("--ca_priv_keyfile", required=True)
-    parser.add_argument("--ca_certfile", required=True)
+    # The CA endorsement key can be either a DER file or a Cloud KMS key ID.
+    ca_key_arg_group = parser.add_mutually_exclusive_group(required=True)
+    ca_key_arg_group.add_argument("--ca_key_der_file")
+    ca_key_arg_group.add_argument("--ca_key_ckms_id")
+    parser.add_argument("--ca_certificate", required=True)
     parser.add_argument("--ca_key_id", required=True)
     parser.add_argument("--target_lc_state",
                         help="Target mission mode LC state",
@@ -212,12 +215,15 @@ def main():
           test_unlock_token: {format_hex(args.test_unlock_token, width=32)}
           test_exit_token: {format_hex(args.test_exit_token, width=32)}
 
-          [ECC PRIVATE KEYFILE]
+          [ECC PRIVATE KEY FILE]
           keyfile path: {args.ecc_priv_keyfile}
           > keyfile basename (stored in DB): {ecc_keyfile_basename}
 
-          [CA PRIVATE KEYFILE]
-          keyfile path: {args.ca_priv_keyfile}
+          [CA]
+          private key DER file path: {args.ca_key_der_file} or
+          private key Google Cloud KMS key ID: {args.ca_key_ckms_id}
+          certificate: {args.ca_certificate}
+          key ID: {args.ca_key_id}
 
           [OTHER]
           target_lc_state: {args.target_lc_state}
@@ -235,8 +241,9 @@ def main():
                     args.log_archive_root)
     chip.cp_provision(require_confirmation=not args.non_interactive)
     chip.ft_provision(args.ecc_priv_keyfile,
-                      args.ca_priv_keyfile,
-                      args.ca_certfile,
+                      args.ca_key_der_file,
+                      args.ca_key_ckms_id,
+                      args.ca_certificate,
                       args.ca_key_id,
                       require_confirmation=not args.non_interactive)
     chip.parse_logs()
