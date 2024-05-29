@@ -316,10 +316,6 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
       .individually_accessible(0));
 
     op.set_original_access("RW");
-    // Writing to op can affect the DM hardware, and result in unintended consequences.
-    // Reading op may not result in expected value to be returned, since read op value always
-    // differs from the written op value.
-    csr_excl.add_excl(op.get_full_name(), CsrExclAll, CsrAllTests);
 
     data = (dv_base_reg_field::type_id::create("data"));
     data.configure(
@@ -414,6 +410,10 @@ class jtag_dtm_reg_block extends dv_base_reg_block;
     dmi.build(csr_excl);
     default_map.add_reg(.rg(dmi),
                         .offset(32'h11));
+
+    // Disable automated CSR tests based on the dmi register. This acts as a window into a different
+    // bus and we don't guarantee "standard register behaviour" for any of its fields.
+    csr_excl.add_excl(dmi.get_full_name(), CsrExclAll, CsrAllTests);
 
     bypass1 = (jtag_dtm_reg_bypass::
                   type_id::create("bypass1"));
