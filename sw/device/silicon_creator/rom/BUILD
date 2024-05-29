@@ -104,6 +104,41 @@ cc_library(
 )
 
 cc_library(
+    name = "rom_cfi",
+    srcs = ["rom_cfi.c"],
+    hdrs = ["rom_cfi.h"],
+    deps = [
+        "//sw/device/silicon_creator/lib:cfi",
+    ],
+)
+
+cc_library(
+    name = "rom_verify",
+    srcs = [
+        "rom_verify.c",
+        "rom_verify.h",
+    ],
+    deps = [
+        ":boot_policy",
+        ":rom_cfi",
+        ":sigverify_keys_ecdsa_p256",
+        ":sigverify_keys_spx",
+        ":sigverify_otp_keys",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:cfi",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ],
+)
+
+cc_library(
     name = "rom_common",
     srcs = [
         "rom.c",
@@ -113,9 +148,9 @@ cc_library(
         ":boot_policy",
         ":boot_policy_ptrs",
         ":bootstrap",
+        ":rom_cfi",
         ":rom_epmp",
-        ":sigverify_keys_ecdsa_p256",
-        ":sigverify_keys_spx",
+        ":rom_verify",
         ":sigverify_otp_keys",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//sw/device/lib/arch:device",
@@ -133,7 +168,6 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -153,7 +187,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
-        "//sw/device/silicon_creator/lib/sigverify",
     ],
 )
 

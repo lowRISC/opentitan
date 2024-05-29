@@ -29,11 +29,13 @@
  * It is recommended to use 11-bit initial values to enable the use of load
  * immediate instructions in the generated assembly.
  *
- * Use the `CFI_DEFINE_COUNTERS()` macro to initialize the counter table as well
- * as constant values required by the CFI framework. The following example uses
- * the table definition from the previous step.
+ * Use the `CFI_DEFINE_COUNTERS()` and `CFI_DEFINE_COUNTER_CONSTANTS()` macro to
+ * initialize the counter table as well as constant values required by the CFI
+ * framework. The following example uses the table definition from the previous
+ * step.
  *
  * ```
+ * CFI_DEFINE_COUNTER_CONSTANTS(CFI_FUNC_COUNTERS_TABLE);
  * CFI_DEFINE_COUNTERS(counters_table, CFI_FUNC_COUNTERS_TABLE);
  * ```
  *
@@ -87,16 +89,30 @@
 #define CFI_FUNC_COUNTER_INDEXES_(name_, value_) name_,
 
 /**
- * Defines the counters table as well as constants required by other CFI counter
- * macros.
+ * Defines the counters constants required by other CFI counter macros.
+ *
+ * @param table_ Macro enumerating all the function identifiers and their
+ * respective initial values.
+ */
+#define CFI_DEFINE_COUNTER_CONSTANTS(table_)         \
+  enum { table_(CFI_FUNC_COUNTER_INIT_CONSTANTS_) }; \
+  enum { table_(CFI_FUNC_COUNTER_INDEXES_) };
+
+/**
+ * Declares the counters table variable required by other CFI counter macros.
+ *
+ * @param table_name_ Name of the array variable used to store all the counters.
+ */
+#define CFI_DECLARE_COUNTERS(table_name_) extern uint32_t table_name_[];
+
+/**
+ * Defines the counters table variable required by other CFI counter macros.
  *
  * @param table_name_ Name of the array variable used to store all the counters.
  * @param table_ Macro enumerating all the function identifiers and their
  * respective initial values.
  */
-#define CFI_DEFINE_COUNTERS(table_name_, table_)     \
-  enum { table_(CFI_FUNC_COUNTER_INIT_CONSTANTS_) }; \
-  enum { table_(CFI_FUNC_COUNTER_INDEXES_) };        \
+#define CFI_DEFINE_COUNTERS(table_name_, table_) \
   uint32_t table_name_[] = {table_(CFI_FUNC_COUNTERS_TABLE_INIT_)}
 
 enum {
