@@ -92,8 +92,9 @@ class OTDevice:
 
     def ft_provision(self,
                      ecc_priv_keyfile,
-                     ca_priv_keyfile,
-                     ca_certfile,
+                     ca_key_der_file,
+                     ca_key_ckms_id,
+                     ca_certificate,
                      ca_key_id,
                      require_confirmation=True):
         """Run the FT provisioning Bazel target."""
@@ -163,9 +164,9 @@ class OTDevice:
 --owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --rom-ext-security-version="0" \
 --owner-security-version="0" \
---ca-key-der-file={ca_priv_keyfile} \
+--ca-key-der-file={ca_key_der_file} \
 --ca-key-id={ca_key_id} \
---ca-certificate={ca_certfile} \
+--ca-certificate={ca_certificate} \
 """  # noqa: E501
 
         logging.info(f"Running command: {cmd}")
