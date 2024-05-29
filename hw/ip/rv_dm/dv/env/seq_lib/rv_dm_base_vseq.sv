@@ -19,9 +19,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   rand int unsigned tck_period_ps;
   constraint tck_period_ps_c {
     tck_period_ps dist {
-      [10_000:20_000] :/ 1,  // 50-100MHz
-      [20_001:42_000] :/ 1,  // 24-50MHz
-      [42_001:100_000] :/ 1  // 10-24MHz
+      [100_000:200_000] :/ 1,  // 5-10MHz
+      [200_001:420_000] :/ 1,  // 2.4-5MHz
+      [420_001:1000_000] :/ 1  // 1-2.4MHz
     };
   }
 
