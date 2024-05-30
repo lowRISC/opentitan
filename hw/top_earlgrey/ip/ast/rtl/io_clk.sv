@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // -------- W A R N I N G: A U T O - G E N E R A T E D  C O D E !! -------- //
-// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED.
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED (by closed source generator).
 //
 //############################################################################
 // *Name: io_clk
