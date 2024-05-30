@@ -90,6 +90,13 @@ typedef enum {
 } attestation_key_seed_t;
 
 /**
+ * Attestation key generation scheme version.
+ */
+enum {
+  kAttestationKeyGenVersion0 = 0,
+};
+
+/**
  * Holds an attestation public key (ECDSA-P256).
  */
 typedef struct attestation_public_key {
