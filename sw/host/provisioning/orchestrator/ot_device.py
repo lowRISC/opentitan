@@ -140,7 +140,9 @@ class OTDevice:
             bootstrap4 = perso_bin_path.format(
                 "ft_personalize_4_{}".format(bazel_suffix))
 
-            platform_bazel_flags = "--//signing:token=//signing/tokens:nitrokey"
+            platform_bazel_flags = ""
+            if ca_key_ckms_id:
+                platform_bazel_flags += "--ckms_cert_endorsement=True"
             platform_harness_flags = """--interface=teacup \
 --disable-dft-on-reset \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
@@ -164,10 +166,13 @@ class OTDevice:
 --owner-measurement=0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000  \
 --rom-ext-security-version="0" \
 --owner-security-version="0" \
---ca-key-der-file={ca_key_der_file} \
 --ca-key-id={ca_key_id} \
 --ca-certificate={ca_certificate} \
 """  # noqa: E501
+        if ca_key_der_file:
+            cmd += f"--ca-key-der-file={ca_key_der_file}"
+        else:
+            cmd += f"--ca-key-ckms-id={ca_key_ckms_id}"
 
         logging.info(f"Running command: {cmd}")
         if require_confirmation:
