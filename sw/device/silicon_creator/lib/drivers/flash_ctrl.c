@@ -704,7 +704,6 @@ static const flash_ctrl_info_page_t *kInfoPagesNoOwnerAccess[] = {
     &kFlashCtrlInfoPageCreatorSecret,
     &kFlashCtrlInfoPageOwnerSecret,
     &kFlashCtrlInfoPageWaferAuthSecret,
-    &kFlashCtrlInfoPageAttestationKeySeeds,
     // Bank 1
     &kFlashCtrlInfoPageBootData0,
     &kFlashCtrlInfoPageBootData1,
@@ -731,6 +730,7 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
 
 const flash_ctrl_info_page_t
     *kCertificateInfoPages[kFlashCtrlNumCertInfoPages] = {
+        &kFlashCtrlInfoPageAttestationKeySeeds,
         &kFlashCtrlInfoPageUdsCertificate,
         &kFlashCtrlInfoPageCdi0Certificate,
         &kFlashCtrlInfoPageCdi1Certificate,
