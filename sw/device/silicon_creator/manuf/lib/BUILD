@@ -271,7 +271,7 @@ opentitan_test(
         changes_otp = True,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_individualized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_manuf_individualized",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
             "broken",
