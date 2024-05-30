@@ -682,16 +682,11 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
-  std::array<const flash_ctrl_info_page_t *, 9> no_owner_access = {
-      &kFlashCtrlInfoPageFactoryId,
-      &kFlashCtrlInfoPageCreatorSecret,
-      &kFlashCtrlInfoPageOwnerSecret,
-      &kFlashCtrlInfoPageWaferAuthSecret,
-      &kFlashCtrlInfoPageAttestationKeySeeds,
-      &kFlashCtrlInfoPageBootData0,
-      &kFlashCtrlInfoPageBootData1,
-      &kFlashCtrlInfoPageOwnerSlot0,
-      &kFlashCtrlInfoPageOwnerSlot1,
+  std::array<const flash_ctrl_info_page_t *, 8> no_owner_access = {
+      &kFlashCtrlInfoPageFactoryId,   &kFlashCtrlInfoPageCreatorSecret,
+      &kFlashCtrlInfoPageOwnerSecret, &kFlashCtrlInfoPageWaferAuthSecret,
+      &kFlashCtrlInfoPageBootData0,   &kFlashCtrlInfoPageBootData1,
+      &kFlashCtrlInfoPageOwnerSlot0,  &kFlashCtrlInfoPageOwnerSlot1,
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
@@ -717,7 +712,8 @@ TEST_F(FlashCtrlTest, BankErasePermsSet) {
 }
 
 TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
-  std::array<const flash_ctrl_info_page_t *, 4> cert_pages = {
+  std::array<const flash_ctrl_info_page_t *, 5> cert_pages = {
+      &kFlashCtrlInfoPageAttestationKeySeeds,
       &kFlashCtrlInfoPageUdsCertificate,
       &kFlashCtrlInfoPageCdi0Certificate,
       &kFlashCtrlInfoPageCdi1Certificate,
@@ -736,7 +732,8 @@ TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
 }
 
 TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
-  std::array<const flash_ctrl_info_page_t *, 4> cert_pages = {
+  std::array<const flash_ctrl_info_page_t *, 5> cert_pages = {
+      &kFlashCtrlInfoPageAttestationKeySeeds,
       &kFlashCtrlInfoPageUdsCertificate,
       &kFlashCtrlInfoPageCdi0Certificate,
       &kFlashCtrlInfoPageCdi1Certificate,

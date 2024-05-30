@@ -81,20 +81,6 @@ enum {
 OT_WARN_UNUSED_RESULT
 static rom_error_t load_attestation_keygen_seed(
     attestation_key_seed_t additional_seed, uint32_t *seed) {
-  // Set flash page configuration and permissions.
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageAttestationKeySeeds,
-                            (flash_ctrl_perms_t){
-                                .read = kMultiBitBool4True,
-                                .write = kMultiBitBool4False,
-                                .erase = kMultiBitBool4True,
-                            });
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageAttestationKeySeeds,
-                          (flash_ctrl_cfg_t){
-                              .scrambling = kMultiBitBool4True,
-                              .ecc = kMultiBitBool4True,
-                              .he = kMultiBitBool4False,
-                          });
-
   // Read seed from flash info page.
   uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedBytes);
   rom_error_t err =
