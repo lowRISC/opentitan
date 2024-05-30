@@ -10,15 +10,14 @@ class usbdev_phy_config_eop_single_bit_handling_vseq extends usbdev_base_vseq;
   task body();
     // Set single_bit_SE0 flag then usb20_agent will drive single SE0 as EoP.
     cfg.m_usb20_agent_cfg.single_bit_SE0 = 1'b1;
-    configure_out_trans();
+    configure_out_trans(ep_default);
     // Set eop_single_bit field of phy_config register.
     csr_wr (.ptr(ral.phy_config.eop_single_bit), .value(1'b1));
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
+
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     m_usb20_item.check_pid_type(PidTypeAck);
-    check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);
+    check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
   endtask
 endclass

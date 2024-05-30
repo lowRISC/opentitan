@@ -10,10 +10,8 @@ class usbdev_link_in_err_vseq extends usbdev_base_vseq;
   virtual task body();
     bit link_error;
 
-    configure_out_trans();
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
+    configure_out_trans(ep_default);
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_data_pid_from_device(m_usb20_item, PidTypeAck);
@@ -21,8 +19,8 @@ class usbdev_link_in_err_vseq extends usbdev_base_vseq;
     // Check that link_in_err interrupt is zero.
     csr_rd(.ptr(ral.intr_state.link_in_err), .value(link_error));
     `DV_CHECK_EQ(0, link_error);
-    configure_in_trans(out_buffer_id, m_data_pkt.data.size());
-    call_token_seq(PidTypeInToken);
+    configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
+    call_token_seq(ep_default, PidTypeInToken);
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_data_pid_from_device(m_usb20_item, PidTypeData0);

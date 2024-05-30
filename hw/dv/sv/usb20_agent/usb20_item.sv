@@ -15,6 +15,9 @@ class usb20_item extends uvm_sequence_item;
   brequest_e m_bR;
   usb_transfer_e m_usb_transfer;
 
+  // Indicates that a timeout occurred when awaiting a response from the device.
+  bit timed_out = 1'b0;
+
   `uvm_object_utils_begin(usb20_item)
   `uvm_object_utils_end
 

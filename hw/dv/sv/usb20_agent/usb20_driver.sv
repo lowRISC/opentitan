@@ -433,7 +433,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       join
       `uvm_info(`gfn, $sformatf("timed_out = %d", timed_out), UVM_MEDIUM)
       // this bit will indicate if device didn't repond within timeout period.
-      cfg.timed_out = timed_out;
+      rsp_item.timed_out = timed_out;
     end join
   endtask
 

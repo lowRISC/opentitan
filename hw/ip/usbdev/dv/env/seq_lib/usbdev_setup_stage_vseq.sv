@@ -9,12 +9,12 @@ class usbdev_setup_stage_vseq extends usbdev_base_vseq;
 
   task body();
     // Configure setup transaction
-    configure_setup_trans();
+    configure_setup_trans(ep_default);
 
     // -------------------------------------------------------------------------------------
     // SETUP token packet followed by a control DATA packet of 8 bytes
     // -------------------------------------------------------------------------------------
-    call_token_seq(PidTypeSetupToken);
+    call_token_seq(ep_default, PidTypeSetupToken);
     inter_packet_delay();
     call_desc_sequence(PidTypeData0);
 

@@ -9,9 +9,11 @@ class usbdev_endpoint_access_vseq extends usbdev_in_trans_vseq;
   `uvm_object_new
 
   task body();
-    // Perform OUT and IN transactions to all endpoints 0-11
-    // Extend from usbdev_in_trans b/c its doing OUT and IN to a specific endpoint number.
-    for (endp = 0; endp <= 11; endp++) begin
+    // Perform OUT and IN transactions to all supported endpoints.
+    //
+    // Extend from usbdev_in_trans because it's doing OUT and IN traffic to a specific endpoint
+    // number, so this covers all endpoints.
+    for (ep_default = 0; ep_default < NEndpoints; ep_default++) begin
       super.body();
     end
   endtask
