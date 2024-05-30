@@ -38,15 +38,15 @@ FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
 """
 
 LOCAL_CERT_ENDORSEMENT_PARAMS = """
-  --cert-endorsement-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der)"
-  --uds-auth-key-id="0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
+  --ca-key-der-file="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der)"
+  --ca-key-id="0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
   --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem)"
 """
 
 CLOUD_KMS_CERT_ENDORSEMENT_PARAMS = """
-  --uds-auth-key-id="0x40aac5fb_2b1205f9_003f40ab_7f3df784_1d5b59f5"
+  --ca-key-ckms-id="gcs-kms-earlgrey-ze-ca-p256-sha256-key"
+  --ca-key-id="0x40aac5fb_2b1205f9_003f40ab_7f3df784_1d5b59f5"
   --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem)"
-  --ckms-ecc-key-id="gcs-kms-earlgrey-ze-ca-p256-sha256-key"
 """
 
 # TODO(#22780): Integrate real keys for A1 flows.

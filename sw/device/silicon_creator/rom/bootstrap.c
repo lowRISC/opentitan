@@ -44,7 +44,9 @@ hardened_bool_t bootstrap_requested(void) {
   HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
 
   // A single read is sufficient since we expect strong pull-ups on the strap
-  // pins.
+  // pins.  We assume pinmux has already been configured (by pinmux_init) to
+  // enable the internal pull-downs on the strap pins.  As such, an external
+  // weak pull-up will not be detected as a logic-high.
   uint32_t res = launder32(kHardenedBoolTrue) ^ SW_STRAP_BOOTSTRAP;
   res ^=
       abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &

@@ -42,14 +42,6 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long)]
     host_ecc_sk: PathBuf,
 
-    /// Certificate endorsement ECC (P256) private key DER file.
-    #[arg(long, default_value = None,  required = true, conflicts_with = "ckms_ecc_key_id")]
-    cert_endorsement_ecc_sk: Option<PathBuf>,
-
-    /// UDS authority (endorsement) key ID hexstring.
-    #[arg(long)]
-    pub uds_auth_key_id: String,
-
     /// Measurement of the ROM_EXT image to be loaded onto the device.
     #[arg(long)]
     pub rom_ext_measurement: String,
@@ -70,13 +62,21 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long, default_value = "0")]
     pub owner_security_version: u32,
 
-    /// CA certificate to be used for verifying.
+    /// CA (ECC P256) endorsement key as a DER file path.
+    #[arg(long, default_value = None,  required = true, conflicts_with = "ca_key_ckms_id")]
+    ca_key_der_file: Option<PathBuf>,
+
+    /// CA endorsement key as a Google Cloud KMS key ID string.
+    #[arg(long, default_value = None, required = true, conflicts_with = "ca_key_der_file")]
+    pub ca_key_ckms_id: Option<String>,
+
+    /// CA key ID hexstring.
+    #[arg(long)]
+    pub ca_key_id: String,
+
+    /// CA certificate to be used for verifying a cert chain.
     #[arg(long)]
     pub ca_certificate: PathBuf,
-
-    /// Cloud KMS Key ID of the key used for certificate endorsement.
-    #[arg(long, default_value = None, required = true, conflicts_with = "cert_endorsement_ecc_sk")]
-    pub ckms_ecc_key_id: Option<String>,
 }
 
 #[derive(Debug, Parser)]
@@ -126,15 +126,14 @@ fn main() -> Result<()> {
     let owner_measurement =
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
     let owner_security_version = opts.provisioning_data.owner_security_version;
-    let uds_auth_key_id =
-        hex_string_to_u8_arrayvec::<20>(opts.provisioning_data.uds_auth_key_id.as_str())?;
+    let ca_key_id = hex_string_to_u8_arrayvec::<20>(opts.provisioning_data.ca_key_id.as_str())?;
     let _perso_certgen_inputs = ManufCertgenInputs {
         rom_ext_measurement: rom_ext_measurement.clone(),
         rom_ext_security_version,
         owner_manifest_measurement: owner_manifest_measurement.clone(),
         owner_measurement: owner_measurement.clone(),
         owner_security_version,
-        auth_key_key_id: uds_auth_key_id.clone(),
+        auth_key_key_id: ca_key_id.clone(),
     };
 
     // Only run test unlock operation if we are in a locked LC state.
@@ -205,8 +204,8 @@ fn main() -> Result<()> {
     transport.ignore_dft_straps_on_reset()?;
 
     let cert_endorsement_key_wrapper = match (
-        opts.provisioning_data.ckms_ecc_key_id,
-        opts.provisioning_data.cert_endorsement_ecc_sk,
+        opts.provisioning_data.ca_key_ckms_id,
+        opts.provisioning_data.ca_key_der_file,
     ) {
         (Some(ckms), None) => KeyWrapper::CkmsKey(ckms),
         (None, Some(local)) => KeyWrapper::LocalKey(local),

@@ -763,7 +763,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       fork
         cfg.clk_rst_vif.wait_clks(max_cycles);
         forever begin
-          uvm_hdl_data_t tap_strap_value;
+          bit[1:0] tap_strap_value;
           string tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
                                    "u_pinmux_strap_sampling.tap_strap"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
