@@ -74,6 +74,13 @@ typedef struct ottf_test_config {
   bool enable_uart_flow_control;
 
   /**
+   * Indicates that this test needs an explicit clear of the RSTMGR reset_reason
+   * register.  This may be necessary for tests that execute with the OTP
+   * configuration OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN set to true.
+   */
+  bool clear_reset_reason;
+
+  /**
    * Name of the file in which `kOttfTestConfig` is defined. Most of the time,
    * this will be the file that defines `test_main()`.
    */
