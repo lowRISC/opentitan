@@ -36,6 +36,7 @@
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -52,6 +53,7 @@
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "otp_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
 
 static_assert(kCertX509Asn1SerialNumberSizeInBytes <= kHmacDigestNumBytes,
@@ -796,6 +798,15 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log->rom_ext_min_sec_ver = boot_data->min_security_version_rom_ext;
   boot_log->bl0_min_sec_ver = boot_data->min_security_version_bl0;
   boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
+
+  // On the ES chip, we need to check the reset reasons stored in retention RAM
+  // and record whether or not the ROM initialized the retention RAM.
+  uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;
+  uint32_t reset_mask =
+      (1 << kRstmgrReasonPowerOn) |
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
+  boot_log->retention_ram_initialized =
+      reset_reasons & reset_mask ? kHardenedBoolTrue : kHardenedBoolFalse;
 
   // Load OTBN attestation keygen program.
   // TODO(#21550): this should already be loaded by the ROM.
