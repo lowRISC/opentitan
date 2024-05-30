@@ -165,9 +165,9 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  * ```
  */
 enum {
-  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 18,
-  kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 8,
-  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 4,
+  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 16,
+  kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 10,
+  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 5,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
@@ -588,10 +588,13 @@ void flash_ctrl_exec_set(uint32_t exec_val);
 void flash_ctrl_creator_info_pages_lockdown(void);
 
 /**
- * Number of flash info pages reserved for storing certificates.
+ * Number of flash info pages reserved for storing:
+ *
+ * 1. any DRBG seed material needed to reproduce private keys, and
+ * 2. the certificates themselves.
  */
 enum {
-  kFlashCtrlNumCertInfoPages = 4,
+  kFlashCtrlNumCertInfoPages = 5,
 };
 
 /**
