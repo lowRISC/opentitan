@@ -30,12 +30,6 @@ build --incompatible_enable_cc_toolchain_resolution
 # accessed like we do in util/BUILD
 build --workspace_status_command=util/get_workspace_status.sh
 
-# Enable more compiler warnings.
-build --copt=-Wunused-parameter
-build --copt=-Wunused
-build --copt=-Wno-error=unused-parameter
-build --copt=-Wno-error=unused
-
 # This enables convenient building for opentitan targets with the argument
 # --config=riscv32
 build:riscv32 --platforms=@crt//platforms/riscv32:opentitan

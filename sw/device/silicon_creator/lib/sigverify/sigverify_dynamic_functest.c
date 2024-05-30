@@ -28,8 +28,8 @@ rom_error_t sigverify_test(void) {
          kHmacDigestNumWords * sizeof(uint32_t));
 
   uint32_t flash_exec = 0;
-  rom_error_t result = sigverify_rsa_verify(&testvec.sig, &testvec.key, &digest,
-                                            kLcStateRma, &flash_exec);
+  rom_error_t result =
+      sigverify_rsa_verify(&testvec.sig, &testvec.key, &digest, &flash_exec);
 
   rom_error_t test_result;
   if (testvec.valid) {

@@ -204,7 +204,7 @@ class SigverifyRsaVerify
 TEST_P(SigverifyRsaVerify, Ibex) {
   uint32_t flash_exec = 0;
   EXPECT_EQ(sigverify_rsa_verify(&GetParam().sig, GetParam().key, &kDigest,
-                                 kLcStateProd, &flash_exec),
+                                 &flash_exec),
             kErrorOk);
   EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
 }

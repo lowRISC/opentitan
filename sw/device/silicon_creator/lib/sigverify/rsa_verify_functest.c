@@ -119,7 +119,7 @@ static const sigverify_rsa_key_t kKeyExp3 = {
 rom_error_t rsa_verify_test_exp_3(void) {
   uint32_t flash_exec = 0;
   // Signature verification should fail when using exponent 3.
-  if (sigverify_rsa_verify(&kSignatureExp3, &kKeyExp3, &act_digest, kLcStateRma,
+  if (sigverify_rsa_verify(&kSignatureExp3, &kKeyExp3, &act_digest,
                            &flash_exec) == kErrorOk) {
     return kErrorUnknown;
   }
@@ -129,9 +129,8 @@ rom_error_t rsa_verify_test_exp_3(void) {
 
 rom_error_t rsa_verify_test_exp_65537(void) {
   uint32_t flash_exec = 0;
-  rom_error_t result =
-      sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537, &act_digest,
-                           kLcStateRma, &flash_exec);
+  rom_error_t result = sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537,
+                                            &act_digest, &flash_exec);
   CHECK(flash_exec == kSigverifyRsaSuccess);
   return result;
 }
@@ -140,7 +139,7 @@ rom_error_t rsa_verify_test_negative(void) {
   uint32_t flash_exec = 0;
   // Signature verification should fail when using the wrong signature.
   if (sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp3, &act_digest,
-                           kLcStateRma, &flash_exec) == kErrorOk) {
+                           &flash_exec) == kErrorOk) {
     return kErrorUnknown;
   }
   CHECK(flash_exec == UINT32_MAX);
