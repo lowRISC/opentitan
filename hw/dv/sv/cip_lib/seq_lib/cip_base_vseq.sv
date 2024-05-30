@@ -266,6 +266,8 @@ class cip_base_vseq #(
 
         csr_utils_pkg::increment_outstanding_access();
         `uvm_send_pri(tl_seq, 100)
+        csr_utils_pkg::decrement_outstanding_access();,
+
         rsp = tl_seq.rsp;
 
         if (!write) begin
@@ -286,7 +288,6 @@ class cip_base_vseq #(
         completed = rsp.rsp_completed;
         saw_err = rsp.d_error;
 
-        csr_utils_pkg::decrement_outstanding_access();,
         // thread to check timeout
         $sformatf("Timeout waiting tl_access : addr=0x%0h", addr),
         // Timeout parameter
