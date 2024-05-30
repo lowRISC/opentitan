@@ -787,7 +787,7 @@ class cip_base_vseq #(
   // accesses can also be set by derived classes for special cases. If the wait doesn't clear
   // something is probably wrong: perhaps some loop sending CSR transactions is missing a
   // break if stop_transaction_generators() is set.
-  virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
+  virtual task wait_to_issue_reset(uint reset_delay_bound);
     int cycles_with_no_accesses = 0;
     int cycles_waited;
 

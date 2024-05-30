@@ -28,7 +28,7 @@ class hmac_common_vseq extends hmac_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
-  virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
+  virtual task wait_to_issue_reset(uint reset_delay_bound);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(trig_rst_during_hash)
 
     if (trig_rst_during_hash) begin
