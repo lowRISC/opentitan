@@ -19,7 +19,15 @@ class rv_dm_base_test extends cip_base_test #(
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    test_timeout_ns = 50_000_000;  // 50ms.
+
+    // This timeout number is configured in the test, rather than vseqs (where we have more
+    // knowledge of what we're waiting for).
+    //
+    // Long vseqs include the csr_aliasing test over DMI. We have roughly 50 registers visible over
+    // DMI. So this test needs to do 50*50 = 2500 register reads. Such a register read takes roughly
+    // 50 TCK ticks, giving 125,000 TCK ticks in total. With a TCK frequency of 1MHz, comes to
+    // 125ms. Round up to 150ms to give a bit of headroom.
+    test_timeout_ns = 150_000_000;  // 150ms.
   endfunction : build_phase
 
 endclass : rv_dm_base_test
