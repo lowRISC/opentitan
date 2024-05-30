@@ -127,7 +127,7 @@ class jtag_monitor extends dv_base_monitor #(
             item.dr     = dr;
             item.dout   = dout;
             analysis_port.write(item);
-            `uvm_info(`gfn, item.sprint(uvm_default_line_printer), UVM_MEDIUM)
+            `uvm_info(`gfn, item.sprint(uvm_default_line_printer), UVM_HIGH)
           end
         end
 
@@ -166,7 +166,7 @@ class jtag_monitor extends dv_base_monitor #(
             item.dr_len = 0;
             item.ir     = ir;
             analysis_port.write(item);
-            `uvm_info(`gfn, item.sprint(uvm_default_line_printer), UVM_MEDIUM)
+            `uvm_info(`gfn, item.sprint(uvm_default_line_printer), UVM_HIGH)
           end
         end
         default: `uvm_fatal(`gfn, $sformatf("Does not support jtag state: %0s", jtag_state.name))
