@@ -7,14 +7,17 @@ Assume first the system has the power states described [above](theory_of_operati
 
 ## Programmer Sequence for Entering Low Power
 
-1. Disable interrupts
-2. Enable desired wakeup and reset sources in [`WAKEUP_EN`](registers.md#wakeup_en) and [`RESET_EN`](registers.md#reset_en).
-3. Perform any system-specific low power entry steps, e.g.
+1. Disable interrupt handling.
+2. Mask all interrupt sources that should not prevent low power entry.
+   - Note that merely *disabling* interrupt handling with the `mie` global interrupt-enable bit on the processing host is insufficient.
+   - Interrupt sources that are not masked can cause the [fall through exit](theory_of_operation.md#fall-through-handling).
+3. Enable desired wakeup and reset sources in [`WAKEUP_EN`](registers.md#wakeup_en) and [`RESET_EN`](registers.md#reset_en).
+4. Perform any system-specific low power entry steps, e.g.
    - Interrupt checks (if something became pending prior to disable)
-4. Configure low power mode in [`CONTROL`](registers.md#control).
-5. Set low power hint in [`LOW_POWER_HINT`](registers.md#control--low_power_hint).
-6. Set and poll [`CFG_CDC_SYNC`](registers.md#cfg_cdc_sync) to ensure above settings propagate across clock domains.
-7. Execute wait-for-interrupt instruction on the processing host.
+5. Configure low power mode configuration in [`CONTROL`](registers.md#control).
+   - [`LOW_POWER_HINT`](registers.md#control--low_power_hint) must be set to trigger low power entry when the CPU sleeps.
+7. Set and poll [`CFG_CDC_SYNC`](registers.md#cfg_cdc_sync) to ensure above settings propagate across clock domains.
+8. Execute wait-for-interrupt instruction on the processing host.
 
 ### Possible Exits
 
