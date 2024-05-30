@@ -390,6 +390,14 @@ status_t manuf_personalize_device_secrets(
                                        kFlashInfoFieldTpmCikAttestationKeySeed,
                                        kAttestationSeedWords));
 
+  // Provision the attestation key generation version field (at the end of the
+  // attestation seed info page).
+  uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
+  TRY(manuf_flash_info_field_write(flash_state,
+                                   kFlashInfoFieldAttestationKeyGenVersion,
+                                   /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
+                                   /*erase_page_before_write=*/false));
+
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl, wrapped_rma_token));
 

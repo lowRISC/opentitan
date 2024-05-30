@@ -47,6 +47,7 @@ extern const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldTpmEkAttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldTpmCekAttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldTpmCikAttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion;
 
 /**
  * Reads info flash page field.
