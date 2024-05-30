@@ -210,7 +210,11 @@ static rom_error_t rom_init(void) {
 
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->creator.reset_reasons = reset_reasons;
-  rstmgr_reason_clear(reset_reasons);
+  if (otp_read32(
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN_OFFSET) !=
+      kHardenedBoolTrue) {
+    rstmgr_reason_clear(reset_reasons);
+  }
 
   // This function is a NOP unless ROM is built for an fpga.
   device_fpga_version_print();

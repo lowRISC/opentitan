@@ -217,6 +217,7 @@ cc_library(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",

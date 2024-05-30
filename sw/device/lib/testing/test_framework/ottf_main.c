@@ -14,6 +14,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -147,6 +148,14 @@ static void test_wrapper(void *task_parameters) {
 
 void _ottf_main(void) {
   test_status_set(kTestStatusInTest);
+
+  // Clear reset reason register.
+  dif_rstmgr_t rstmgr;
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  if (kOttfTestConfig.clear_reset_reason) {
+    CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+  }
 
   // Initialize the console to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
