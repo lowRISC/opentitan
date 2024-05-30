@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // -------- W A R N I N G: A U T O - G E N E R A T E D  C O D E !! -------- //
-// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED.
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED (by closed source generator).
 //
 //############################################################################
 // *Name: ast
@@ -18,7 +18,7 @@ module ast #(
   parameter int unsigned EntropyStreams  = 4,
   parameter int unsigned UsbCalibWidth   = 20,
   parameter int unsigned Ast2PadOutWidth = 9,
-  parameter int unsigned Pad2AstInWidth  = 9
+  parameter int unsigned Pad2AstInWidth  = 8
 ) (
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
@@ -131,6 +131,8 @@ module ast #(
   // pad mux/pad related
   input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
   output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
+  output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
+
 
 `ifdef ANALOGSIM
   output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
@@ -299,6 +301,7 @@ vio_pgd u_viob_pok (
 
 assign viob_pok = viob_pok_int && viob_supp_i;
 assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
+assign mux_iob_sel_o = 4'h0;
 
 
 ///////////////////////////////////////
