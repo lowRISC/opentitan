@@ -9,6 +9,7 @@ use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -74,15 +75,24 @@ impl CommandDispatch for Firmware {
             subimage.data
         };
         let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let mut prev_baudrate = 0u32;
+        let rescue = RescueSerial::new(Rc::clone(&uart));
         rescue.enter(transport)?;
         if let Some(rate) = self.rate {
+            prev_baudrate = uart.get_baudrate()?;
             rescue.set_baud(rate)?;
         }
         if self.wait {
             rescue.wait()?;
         }
         rescue.update_firmware(self.slot, payload)?;
+        if self.rate.is_some() {
+            if self.wait {
+                rescue.set_baud(prev_baudrate)?;
+            } else {
+                uart.set_baudrate(prev_baudrate)?;
+            }
+        }
         Ok(None)
     }
 }
