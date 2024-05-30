@@ -18,7 +18,6 @@ load(
     "//rules:otp.bzl",
     "otp_alert_classification",
     "otp_alert_digest",
-    "otp_bytestring",
     "otp_hex",
     "otp_image",
     "otp_image_consts",
@@ -48,10 +47,11 @@ otp_json(
                 # and not listed directly in this configuration.
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 "CREATOR_SW_CFG_ROM_EXT_SKU": otp_hex(0x0),
-                # Disable SPX+ signature verification. See the definitions of
-                # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
-                # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
-                "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
+                # Enable SPX+ signature verification. See the definitions of
+                # `kSigverifySpxDisabledOtp` in
+                # sw/device/silicon_creator/lib/sigverify/spx_verify.h for
+                # details on how to disable this feature.
+                "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
                 # Enable flash data page scrambling and ECC.
                 "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
                 "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG": otp_hex(0x0),

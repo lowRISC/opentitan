@@ -6,7 +6,7 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load(
     "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
+    "ECDSA_SPX_KEY_STRUCTS",
 )
 load(
     "//rules:otp.bzl",
@@ -15,12 +15,12 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "silicon_params",
+    "spx_key_for_lc_state",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -74,7 +74,7 @@ _MANUF_TEST_LOCKED_KEY = None
     opentitan_test(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
-        ecdsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else ecdsa_key_for_lc_state(ECDSA_ONLY_KEY_STRUCTS, lc_val),
+        ecdsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else ecdsa_key_for_lc_state(ECDSA_SPX_KEY_STRUCTS, lc_val),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
@@ -309,7 +309,7 @@ opentitan_binary(
         srcs = ["flash_device_info_flash_wr_functest.c"],
         # We select the PROD key since the SRAM test program does an LC transition to DEV.
         ecdsa_key = ecdsa_key_for_lc_state(
-            ECDSA_ONLY_KEY_STRUCTS,
+            ECDSA_SPX_KEY_STRUCTS,
             CONST.LCV.PROD,
         ),
         exec_env = {
@@ -330,6 +330,10 @@ opentitan_binary(
                 --elf={sram_program}
             """,
             test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
+        ),
+        spx_key = spx_key_for_lc_state(
+            ECDSA_SPX_KEY_STRUCTS,
+            CONST.LCV.PROD,
         ),
         deps = [
             ":test_wafer_auth_secret",
