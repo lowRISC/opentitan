@@ -18,8 +18,6 @@ handshake_pkt  m_handshake_pkt;
 sof_pkt        m_sof_pkt;
 // Selected device address
 rand bit [6:0] dev_addr;
-// Chosen endpoint for current transaction
-rand bit [3:0] endp;
 // Current SETUP buffer number
 bit [4:0] setup_buffer_id = 5'd1;
 // Current OUT buffer number
@@ -27,8 +25,10 @@ bit [4:0] out_buffer_id = 5'd7;
 // Current IN buffer number
 bit [4:0] in_buffer_id = 5'd13;
 
-constraint endpoint_c {
-  endp inside {[0:11]};
+// Chosen /default/ endpoint, for those sequences concerned with only a single endpoint.
+rand bit [3:0] ep_default;
+constraint ep_default_c {
+  ep_default inside {[0:NEndpoints-1]};
 }
 
 // Bus events/stimuli to be presented during the sequence
@@ -226,13 +226,13 @@ endtask
   endtask
 
   // Construct and transmit a token packet to the USB device
-  virtual task call_token_seq(input pid_type_e pid_type, bit inject_crc_error = 0);
+  virtual task call_token_seq(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_ev_type  = EvPacket;
     m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
     assert(m_token_pkt.randomize() with {m_token_pkt.address == dev_addr;
-                                         m_token_pkt.endpoint == endp;});
+                                         m_token_pkt.endpoint == ep;});
     // Any fault injections requested?
     if (inject_crc_error) m_token_pkt.crc5 = ~m_token_pkt.crc5;
     m_usb20_item = m_token_pkt;
@@ -278,8 +278,7 @@ endtask
   // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
   virtual task send_prnd_setup_packet(bit [3:0] ep);
     // Send SETUP token packet to the selected endpoint on the specified device.
-    endp = ep;
-    call_token_seq(PidTypeSetupToken);
+    call_token_seq(ep, PidTypeSetupToken);
     // Variable delay between SETUP token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA packet with randomized content, but we'll honor the rule that SETUP DATA packets
@@ -292,8 +291,7 @@ endtask
                                     input bit randomize_length, input bit [6:0] num_of_bytes,
                                     bit isochronous_transfer = 1'b0);
     // Send OUT token packet to the selected endpoint on the specified device.
-    endp = ep;
-    call_token_seq(PidTypeOutToken);
+    call_token_seq(ep, PidTypeOutToken);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA packet with randomized content.
@@ -304,8 +302,7 @@ endtask
   virtual task send_out_packet(bit [3:0] ep, input pid_type_e pid_type, byte unsigned data[],
                                bit isochronous_transfer = 1'b0, bit [6:0] dev_address = dev_addr);
     // Send OUT token packet to the selected endpoint on the specified device.
-    endp = ep;
-    call_token_seq(PidTypeOutToken);
+    call_token_seq(ep, PidTypeOutToken);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA1 packet with the given content.
@@ -412,14 +409,14 @@ endtask
 
   // Check that a SETUP/OUT data packet with the given properties was received and stored by
   // the USB device in its packet buffer memory.
-  task check_rx_packet(bit [3:0] endp, bit setup, bit [4:0] buffer_id,
+  task check_rx_packet(bit [3:0] ep, bit setup, bit [4:0] buffer_id,
                        byte unsigned exp_byte_data[]);
     uvm_reg_data_t rx_fifo_read;
 
     // Read RX FIFO which should contain a buffer description matching the expectations
     csr_rd(.ptr(ral.rxfifo), .value(rx_fifo_read));
 
-    `DV_CHECK_EQ(get_field_val(ral.rxfifo.ep, rx_fifo_read), endp);
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.ep, rx_fifo_read), ep);
     `DV_CHECK_EQ(get_field_val(ral.rxfifo.setup, rx_fifo_read), setup);
     `DV_CHECK_EQ(get_field_val(ral.rxfifo.buffer, rx_fifo_read), buffer_id);
     `DV_CHECK_EQ(get_field_val(ral.rxfifo.size, rx_fifo_read), exp_byte_data.size());
@@ -450,22 +447,22 @@ endtask
     `DV_CHECK_EQ(act_len, exp_len, "Unexpected packet length")
   endtask
 
-  task check_in_sent();
+  task check_in_sent(bit [3:0] ep);
     bit pkt_sent;
     bit sent;
     csr_rd(.ptr(ral.intr_state.pkt_sent), .value(pkt_sent));
-    csr_rd(.ptr(ral.in_sent[0].sent[endp]), .value(sent));
+    csr_rd(.ptr(ral.in_sent[0].sent[ep]), .value(sent));
     `DV_CHECK_EQ(1, pkt_sent);
     `DV_CHECK_EQ(1, sent);
 
     // Write 1 to clear particular EP in_sent
-    csr_wr(.ptr(ral.in_sent[0].sent[endp]), .value(1'b1));
-    csr_rd(.ptr(ral.in_sent[0].sent[endp]), .value(sent));
+    csr_wr(.ptr(ral.in_sent[0].sent[ep]), .value(1'b1));
+    csr_rd(.ptr(ral.in_sent[0].sent[ep]), .value(sent));
     `DV_CHECK_EQ(sent, 0); // verify that after writing 1, the in_sent bit is cleared.
   endtask
 
   // Check that the USB device received a packet with the expected properties.
-  task check_pkt_received(bit [3:0] endp, bit setup, bit [4:0] buffer_id,
+  task check_pkt_received(bit [3:0] ep, bit setup, bit [4:0] buffer_id,
                           byte unsigned exp_byte_data[]);
     uvm_reg_data_t intr_state;
     bit pkt_received;
@@ -479,7 +476,7 @@ endtask
     `DV_CHECK_EQ(pkt_received, 1);
 
     // Read rx_fifo reg, clearing the interrupt condition.
-    check_rx_packet(endp, setup, buffer_id, exp_byte_data);
+    check_rx_packet(ep, setup, buffer_id, exp_byte_data);
 
     // Read intr_state reg
     csr_rd(.ptr(ral.intr_state), .value(intr_state));
@@ -551,12 +548,12 @@ endtask
     csr_wr(.ptr(ral.rxenable_out[0]), .value({NEndpoints{1'b1}}));
   endtask
 
-  virtual task configure_out_trans();
-    // Enable EP0 Out
-    csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
+  virtual task configure_out_trans(bit [3:0] ep);
+    // Enable endpoint for OUT packet reception.
+    csr_wr(.ptr(ral.ep_out_enable[0].enable[ep]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx out
-    ral.rxenable_out[0].out[endp].set(1'b1);
+    ral.rxenable_out[0].out[ep].set(1'b1);
     csr_update(ral.rxenable_out[0]);
     // Put buffer in Available OUT Buffer _FIFO_, so use csr_wr _not_ csr_update
     csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
@@ -572,12 +569,12 @@ endtask
     csr_wr(.ptr(ral.out_stall[0]), .value({NEndpoints{1'b1}}));
   endtask
 
-  virtual task configure_setup_trans();
+  virtual task configure_setup_trans(bit [3:0] ep);
     // Enable EP0 Out
-    csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
+    csr_wr(.ptr(ral.ep_out_enable[0].enable[ep]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx setup
-    ral.rxenable_setup[0].setup[endp].set(1'b1);
+    ral.rxenable_setup[0].setup[ep].set(1'b1);
     csr_update(ral.rxenable_setup[0]);
     // Put buffer in Available SETUP Buffer _FIFO_, so use csr_wr _not_ csr_update
     csr_wr(.ptr(ral.avsetupbuffer.buffer), .value(setup_buffer_id));
@@ -589,18 +586,20 @@ endtask
     csr_wr(.ptr(ral.ep_in_enable[0]), .value({NEndpoints{1'b1}}));
   endtask
 
-  virtual task configure_in_trans(bit [4:0] buffer_id, bit [6:0] num_of_bytes);
-    // Enable Endp IN
-    csr_wr(.ptr(ral.ep_in_enable[0].enable[endp]),  .value(1'b1));
+  // Configure an IN transaction on a specific endpoint.
+  virtual task configure_in_trans(bit [3:0] ep, bit [4:0] buffer_id, bit [6:0] num_of_bytes);
+    // Enable EP0 IN
+    csr_wr(.ptr(ral.ep_in_enable[0].enable[ep]),  .value(1'b1));
     csr_update(ral.ep_in_enable[0]);
     // Configure IN Transaction
-    ral.configin[endp].rdy.set(1'b1);
-    ral.configin[endp].size.set(num_of_bytes);
-    ral.configin[endp].buffer.set(buffer_id);
-    csr_update(ral.configin[endp]);
+    ral.configin[ep].rdy.set(1'b1);
+    ral.configin[ep].size.set(num_of_bytes);
+    ral.configin[ep].buffer.set(buffer_id);
+    csr_update(ral.configin[ep]);
   endtask
 
-  virtual task call_sof_seq(input pid_type_e pid_type);
+  // Send 'Start Of Frame' packet (bus frame/timing referenace).
+  virtual task send_sof_packet(input pid_type_e pid_type);
     `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
     m_sof_pkt.m_ev_type  = EvPacket;
     m_sof_pkt.m_pkt_type = PktTypeSoF;

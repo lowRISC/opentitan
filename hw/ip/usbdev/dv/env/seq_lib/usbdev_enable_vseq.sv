@@ -25,21 +25,19 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     wait_for_link_state({LinkActive, LinkActiveNoSOF}, 10 * 1000 * 48);  // 10ms timeout, at 48MHz
     usbdev_set_address(dev_addr);
 
-    configure_out_trans(); // register configurations for OUT Trans.
+    configure_out_trans(ep_default); // register configurations for OUT Trans.
 
     // Enable pkt_received interrupt
     ral.intr_enable.pkt_received.set(1'b1);
     csr_update(ral.intr_enable);
 
-    call_token_seq(PidTypeOutToken);
-    cfg.clk_rst_vif.wait_clks(10);
-    call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     m_usb20_item.check_pid_type(PidTypeAck);
 
     // Check that the USB device received a packet with the expected properties.
-    check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);
+    check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
   endtask
 
 endclass

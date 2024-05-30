@@ -100,10 +100,8 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     usb20_item response;
     `uvm_info(`gfn, $sformatf("Requesting IN packet from EP%d", ep), UVM_HIGH)
     claim_driver();
-    // TODO: base tasks still need parameterising for endpoint number.
-    endp = ep;
     // Send IN token packet
-    call_token_seq(PidTypeInToken);
+    call_token_seq(ep, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     case (response.m_pid_type)

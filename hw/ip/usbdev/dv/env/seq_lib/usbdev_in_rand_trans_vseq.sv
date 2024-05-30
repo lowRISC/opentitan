@@ -20,24 +20,24 @@ class usbdev_in_rand_trans_vseq extends usbdev_base_vseq;
 
     // For IN transaction need to do first OUT transaction
     // to store data in buffer memory for read through IN.
-    configure_out_trans(); // register configurations for OUT Trans.
+    configure_out_trans(ep_default); // register configurations for OUT Trans.
     // Out token packet followed by a data packet
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(PidTypeData0, 1'b0, num_of_bytes);
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b0),
+                         .num_of_bytes(num_of_bytes));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     m_usb20_item.check_pid_type(PidTypeAck);
     inter_packet_delay();
     // IN Trans configurations
-    configure_in_trans(out_buffer_id, m_data_pkt.data.size());
+    configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
     // Token pkt followed by handshake pkt
-    call_token_seq(PidTypeInToken);
+    call_token_seq(ep_default, PidTypeInToken);
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_data_pid_from_device(m_usb20_item, PidTypeData0);
-    inter_packet_delay();
+    response_delay();
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+
     for (int i = 0; i < 10; i++) begin
       csr_rd(ral.intr_state.pkt_sent, .value(pkt_sent));
       if (pkt_sent) break;

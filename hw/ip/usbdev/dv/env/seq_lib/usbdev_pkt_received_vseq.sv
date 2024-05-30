@@ -10,21 +10,19 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
 
   task body();
     // Configure transaction
-    configure_out_trans();
+    configure_out_trans(ep_default);
     // Enable pkt_received interrupt
     ral.intr_enable.pkt_received.set(1'b1);
     csr_update(ral.intr_enable);
 
     // Out token packet followed by a data packet
-    call_token_seq(PidTypeOutToken);
-    cfg.clk_rst_vif.wait_clks(10);
-    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     m_usb20_item.check_pid_type(PidTypeAck);
 
     // Check that the USB device received a packet with the expected properties.
-    check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);
+    check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
   endtask
 
 endclass

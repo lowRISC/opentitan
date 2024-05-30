@@ -9,14 +9,12 @@ class usbdev_stall_trans_vseq extends usbdev_base_vseq;
 
   task body();
     // Configure out transaction
-    configure_out_trans();
+    configure_out_trans(ep_default);
     // Set stall on endp
-    csr_wr(.ptr(ral.out_stall[0].endpoint[endp]), .value(1'b1));
+    csr_wr(.ptr(ral.out_stall[0].endpoint[ep_default]), .value(1'b1));
 
     // Out token packet followed by a data packet
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
 
     // Check that the DUT reponds with the PidTypeStall
     get_response(m_response_item);

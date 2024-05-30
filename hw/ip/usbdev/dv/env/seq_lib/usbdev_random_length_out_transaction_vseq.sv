@@ -16,18 +16,18 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
 
   task body();
     // Configure out transaction
-    configure_out_trans();
+    configure_out_trans(ep_default);
+
     // Out token packet followed by a data packet of random bytes
-    call_token_seq(PidTypeOutToken);
-    cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, .randomize_length(randomize_length), .num_of_bytes(num_of_bytes));
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(randomize_length),
+                         .num_of_bytes(num_of_bytes));
+
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     m_usb20_item.check_pid_type(PidTypeAck);
-    cfg.clk_rst_vif.wait_clks(20);
 
     // Check that the USB device received a packet with the expected properties.
-    check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);
+    check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
   endtask
 
 endclass

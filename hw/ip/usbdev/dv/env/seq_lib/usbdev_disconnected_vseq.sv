@@ -15,8 +15,8 @@ class usbdev_disconnected_vseq extends usbdev_base_vseq;
     // Clear disconnected interrupt to make sure it's in reset state.
     csr_wr(.ptr(ral.intr_state.disconnected), .value(1'b1));
     // send pkt to device
-    configure_out_trans();
-    call_sof_seq(PidTypeSofToken);
+    configure_out_trans(ep_default);
+    send_sof_packet(PidTypeSofToken);
     for (int i = 0; i < 4; i++) begin
       @(posedge cfg.m_usb20_agent_cfg.bif.clk_i);
       if (cfg.m_usb20_agent_cfg.bif.usb_ref_val_o) break;

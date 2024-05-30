@@ -9,13 +9,13 @@ class usbdev_rx_crc_err_vseq extends usbdev_base_vseq;
 
   task body();
     // Configure transaction
-    configure_out_trans();
+    configure_out_trans(ep_default);
 
     // Enable rx_crc_err interrupt
     csr_wr(.ptr(ral.intr_enable.rx_crc_err), .value(1'b1));
 
     // Out Token packet with corrupted CRC5
-    call_token_seq(PidTypeOutToken, .inject_crc_error(1));
+    call_token_seq(ep_default, PidTypeOutToken, .inject_crc_error(1));
 
     // Wait a little while for the interrupt signal to become asserted.
     for (int i = 0; i < 16; i++) begin

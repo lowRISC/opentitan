@@ -25,21 +25,19 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // ---------------------------------------------------------------------------------------------
     // SETUP token packet followed by a DATA packet of 8 bytes
     // ---------------------------------------------------------------------------------------------
-    call_token_seq(PidTypeSetupToken);
+    call_token_seq(ep_default, PidTypeSetupToken);
     inter_packet_delay();
     call_desc_sequence(PktTypeData, PidTypeData0);
     cfg.clk_rst_vif.wait_clks(20);
     // Check the contents of the packet buffer memory against the SETUP packet that was sent.
-    check_rx_packet(endp, 1'b1, setup_buffer_id, m_data_pkt.data);
+    check_rx_packet(ep_default, 1'b1, setup_buffer_id, m_data_pkt.data);
 
     // ---------------------------------------------------------------------------------------------
     // OUT data packet
     // ---------------------------------------------------------------------------------------------
     csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));  // use csr_wr to guarantee write.
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(PidTypeData1, 1, 0);  // Using DATA1 for second packet, randomized length
-    cfg.clk_rst_vif.wait_clks(20);
+    // Using DATA1 for second packet, randomized length
+    send_prnd_out_packet(ep_default, PidTypeData1, 1, 0);
 
     // Check that the packet was accepted (ACKnowledged) by the USB device.
     get_response(m_response_item);
@@ -48,7 +46,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
 
     // Check the contents of the packet buffer memory against the OUT packet that was sent.
-    check_rx_packet(endp, 1'b0, out_buffer_id, m_data_pkt.data);
+    check_rx_packet(ep_default, 1'b0, out_buffer_id, m_data_pkt.data);
 
     // ---------------------------------------------------------------------------------------------
     // Retrieve a data packet using an IN transaction.
@@ -58,16 +56,16 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
     // Declare that there is an IN packet available for collection, initially leaving the RDY bit
     // clear, to mimic the behavior of the DIF.
-    ral.configin[endp].size.set(tx_data.size());
-    ral.configin[endp].buffer.set(in_buffer_id);
-    ral.configin[endp].rdy.set(1'b0);
-    csr_update(ral.configin[endp]);
+    ral.configin[ep_default].size.set(tx_data.size());
+    ral.configin[ep_default].buffer.set(in_buffer_id);
+    ral.configin[ep_default].rdy.set(1'b0);
+    csr_update(ral.configin[ep_default]);
     // Now set the RDY bit
-    ral.configin[endp].rdy.set(1'b1);
-    csr_update(ral.configin[endp]);
+    ral.configin[ep_default].rdy.set(1'b1);
+    csr_update(ral.configin[ep_default]);
 
     // Send IN request and collect DATA packet in response.
-    call_token_seq(PidTypeInToken);
+    call_token_seq(ep_default, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
@@ -79,7 +77,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // in_sent register/interrupt assertion occurs a few cycles after the ACK has been received.
     cfg.clk_rst_vif.wait_clks(20);
     // Verify Transaction reads register status and verifies that IN transaction is successful.
-    check_in_sent();
+    check_in_sent(ep_default);
 
   endtask
 

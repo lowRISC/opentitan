@@ -31,16 +31,11 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
   // receives the expected handshake response.
   task send_and_check_packet(bit [3:0] ep, bit data_toggle, bit exp_ack,
                              inout uvm_reg_data_t exp_out_data_toggles);
-    endp = ep;  // TODO: should be a parameter to tasks in base sequence.
-
     // Set up the OUT EP and supply a randomly-chosen buffer.
     `DV_CHECK_STD_RANDOMIZE_FATAL(out_buffer_id);
-    configure_out_trans();
+    configure_out_trans(ep);
 
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(data_toggle ? PidTypeData1 : PidTypeData0, 1, 0);
-    cfg.clk_rst_vif.wait_clks(20);
+    send_prnd_out_packet(ep, data_toggle ? PidTypeData1 : PidTypeData0, 1, 0);
 
     // Check that the transaction received the expected response, which should either be ACK
     // for an accepted packet (matching data toggle) or no response (packet dropped).
@@ -69,13 +64,11 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
     usb20_item response;
     data_pkt in_data;
 
-    endp = ep; // TODO: should be a parameter to tasks in base sequence.
-
     // Present an IN buffer for collection.
-    configure_in_trans(out_buffer_id, exp_data.size());
+    configure_in_trans(ep, out_buffer_id, exp_data.size());
 
     // Perform the IN transaction.
-    call_token_seq(PidTypeInToken);
+    call_token_seq(ep, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);

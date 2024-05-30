@@ -25,6 +25,9 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
   // simultaneous packet buffer accesses from CSR and USB sides.
   constraint num_trans_c { num_trans inside {[256:1024]}; }
 
+  // Endpoint number being tested.
+  bit [3:0] ep;
+
   // Amount of valid/defined data in each of the packet buffers; zero initialized and the
   // values increase as the sequence advances.
   int unsigned valid_len[NumBuffers];
@@ -57,10 +60,7 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     //       vseqs where it will be susceptible to oversight.
     inter_packet_delay();
 
-    call_token_seq(PidTypeOutToken);
-    inter_packet_delay();
-    call_data_seq(exp_out_toggle[endp] ? PidTypeData1 : PidTypeData0, 0, usb_len);
-    cfg.clk_rst_vif.wait_clks(20);
+    send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0, 0, usb_len);
 
     // Check that the packet was accepted (ACKnowledged) by the USB device.
     get_response(m_response_item);
@@ -69,10 +69,10 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
 
     // Given that the packet has been accepted, we must flip the OUT Data Toggle.
-    exp_out_toggle[endp] ^= 1;
+    exp_out_toggle[ep] ^= 1;
 
     // Check the contents of the packet buffer memory against the OUT packet that was sent.
-    check_rx_packet(endp, 1'b0, usb_buf, m_data_pkt.data);
+    check_rx_packet(ep, 1'b0, usb_buf, m_data_pkt.data);
 
     // This is now the expected content of the packet buffer
     valid_len[usb_buf] = pkt_data.size();
@@ -94,26 +94,26 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     if (usb_len > 0) pkt_data = exp_data[usb_buf][0:usb_len-1];
 
     // Present the IN packet for collection.
-    ral.configin[endp].size.set(usb_len);
-    ral.configin[endp].buffer.set(usb_buf);
-    ral.configin[endp].rdy.set(1'b0);
-    csr_update(ral.configin[endp]);
+    ral.configin[ep].size.set(usb_len);
+    ral.configin[ep].buffer.set(usb_buf);
+    ral.configin[ep].rdy.set(1'b0);
+    csr_update(ral.configin[ep]);
     // Now set the RDY bit
-    ral.configin[endp].rdy.set(1'b1);
-    csr_update(ral.configin[endp]);
+    ral.configin[ep].rdy.set(1'b1);
+    csr_update(ral.configin[ep]);
 
     // Token pkt followed by handshake pkt
-    call_token_seq(PidTypeInToken);
+    call_token_seq(ep, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
     $cast(in_data, response);
-    check_tx_packet(in_data, exp_in_toggle[endp] ? PidTypeData1 : PidTypeData0, pkt_data);
+    check_tx_packet(in_data, exp_in_toggle[ep] ? PidTypeData1 : PidTypeData0, pkt_data);
     cfg.clk_rst_vif.wait_clks(20);
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
 
     // Flip the IN side Data Toggle in anticipation of the next packet transfer.
-    exp_in_toggle[endp] ^= 1;
+    exp_in_toggle[ep] ^= 1;
   endtask
 
   // USB side of test.
@@ -123,7 +123,7 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(usb_wr)
 
     // Choose a new endpoint
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endp, endp inside {[0:NEndpoints-1]};)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ep, ep inside {[0:NEndpoints-1]};)
 
     // Initiate writing of the buffer
     if (usb_wr) begin

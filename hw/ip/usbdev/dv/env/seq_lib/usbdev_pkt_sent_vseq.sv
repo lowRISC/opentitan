@@ -14,15 +14,13 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     // OUT TRANS
     // -------------------------------
     // Configure out transaction
-    configure_out_trans();
+    configure_out_trans(ep_default);
     // Enable pkt_sent interrupt
     ral.intr_enable.pkt_sent.set(1'b1);
     csr_update(ral.intr_enable);
 
     // Out token packet followed by a data packet
-    call_token_seq(PidTypeOutToken);
-    cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
+    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     // Get response from DUT
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
@@ -36,9 +34,9 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     // --------------------------------
     // Configure in transaction
     // Note: data should have been written into the current OUT buffer by the above transaction
-    configure_in_trans(out_buffer_id, m_data_pkt.data.size());
+    configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
     // Token pkt followed by handshake pkt
-    call_token_seq(PidTypeInToken);
+    call_token_seq(ep_default, PidTypeInToken);
     // Get response from DUT
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);

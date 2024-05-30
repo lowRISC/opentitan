@@ -11,19 +11,20 @@ class usbdev_setup_trans_ignored_vseq extends usbdev_base_vseq;
     uvm_reg_data_t rx_depth;
     bit pkt_received = 1;
 
-    csr_wr(.ptr(ral.rxenable_setup[0].setup[endp]), .value(1'b0)); // Disable rx_enable setup
-    csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1)); // Enable OUT EP
+    csr_wr(.ptr(ral.rxenable_setup[0].setup[ep_default]), .value(1'b0)); // Disable rx_enable setup
+    csr_wr(.ptr(ral.ep_out_enable[0].enable[ep_default]), .value(1'b1)); // Enable OUT EP
 
     // Enable pkt_received interrupt
     ral.intr_enable.pkt_received.set(1'b1);
     csr_update(ral.intr_enable);
 
     // Send a randomized SETUP packet to the selected endpoint.
-    send_prnd_setup_packet(endp);
+    send_prnd_setup_packet(ep_default);
     get_response(m_response_item);
+    $cast(m_usb20_item, m_response_item);
 
     // An ignored SETUP packet shall receive no response.
-    `DV_CHECK_EQ(cfg.m_usb20_agent_cfg.timed_out, 1);
+    `DV_CHECK_EQ(m_usb20_item.timed_out, 1);
 
     csr_rd(.ptr(ral.intr_state.pkt_received), .value(pkt_received));
     // Verify the packet received bit is zero.
