@@ -85,7 +85,7 @@ dif_result_t dif_otp_ctrl_check_consistency(const dif_otp_ctrl_t *otp) {
   return kDifOk;
 }
 
-dif_result_t dif_otp_ctrl_lock_dai(const dif_otp_ctrl_t *otp) {
+dif_result_t dif_otp_ctrl_dai_lock(const dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
     return kDifBadArg;
   }
@@ -199,13 +199,6 @@ dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
   bitfield_bit32_index_t index;
   if (!sw_read_lock_reg_offset(partition, &offset, &index)) {
     return kDifBadArg;
-  }
-
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
   }
 
   uint32_t reg = bitfield_bit32_write(0, index, false);
@@ -494,13 +487,6 @@ dif_result_t dif_otp_ctrl_dai_read_start(const dif_otp_ctrl_t *otp,
     return kDifOutOfRange;
   }
 
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
-  }
-
   address += kPartitions[partition].start_addr;
   mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                       address);
@@ -519,13 +505,6 @@ dif_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
     return kDifBadArg;
   }
 
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
-  }
-
   *value = mmio_region_read32(otp->base_addr,
                               OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
   return kDifOk;
@@ -535,13 +514,6 @@ dif_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
                                          uint64_t *value) {
   if (otp == NULL || value == NULL) {
     return kDifBadArg;
-  }
-
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
   }
 
   *value = mmio_region_read32(otp->base_addr,
@@ -579,13 +551,6 @@ dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
   size_t digest_size = kPartitions[partition].has_digest * sizeof(uint64_t);
   if (address >= kPartitions[partition].len - digest_size) {
     return kDifOutOfRange;
-  }
-
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
   }
 
   address += kPartitions[partition].start_addr;
@@ -627,13 +592,6 @@ dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
     return kDifOutOfRange;
   }
 
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
-  }
-
   address += kPartitions[partition].start_addr;
   mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                       address);
@@ -668,13 +626,6 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
   bool is_sw = kPartitions[partition].is_software;
   if (is_sw == (digest == 0)) {
     return kDifBadArg;
-  }
-
-  uint32_t busy = mmio_region_read32(otp->base_addr,
-                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifUnavailable;
   }
 
   uint32_t address = kPartitions[partition].start_addr;

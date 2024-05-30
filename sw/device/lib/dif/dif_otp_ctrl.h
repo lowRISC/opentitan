@@ -409,13 +409,13 @@ dif_result_t dif_otp_ctrl_check_consistency(const dif_otp_ctrl_t *otp);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otp_ctrl_lock_dai(const dif_otp_ctrl_t *otp);
+dif_result_t dif_otp_ctrl_dai_lock(const dif_otp_ctrl_t *otp);
 
 /**
  * Checks whether access to the direct access interface is locked.
  *
  * Note that besides locking the DAI out until the next reset using the
- * dif_otp_ctrl_lock_dai function, the DAI is also temporarily locked by the
+ * dif_otp_ctrl_dai_lock function, the DAI is also temporarily locked by the
  * HW itself when it is busy processing a DAI command. In such a case, the
  * kDifOtpCtrlStatusCodeDaiIdle status bit will be set to 0 as well.
  *
