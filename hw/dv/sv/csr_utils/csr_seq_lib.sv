@@ -88,14 +88,14 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
     end_idx = test_csr_chunk * chunk_size;
     if (end_idx >= all_csrs.size()) end_idx = all_csrs.size() - 1;
 
-    `uvm_info(`gtn, $sformatf("Testing %0d csrs [%0d - %0d] in all supplied models.",
-                              test_csrs.size(), start_idx, end_idx), UVM_MEDIUM)
     test_csrs.delete();
     for (int i = start_idx; i <= end_idx; i++) begin
       test_csrs.push_back(all_csrs[i]);
       `uvm_info(`gtn, $sformatf("Testing CSR %0s, reset: 0x%0x.", all_csrs[i].get_full_name(),
                                 all_csrs[i].get_mirrored_value()), UVM_HIGH)
     end
+    `uvm_info(`gtn, $sformatf("Testing %0d csrs [%0d - %0d] in all supplied models.",
+                              test_csrs.size(), start_idx, end_idx), UVM_MEDIUM)
     test_csrs.shuffle();
   endfunction
 
