@@ -123,7 +123,7 @@ opentitan_test(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_empty",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_unlocked0_manuf_empty",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
             "broken",
@@ -291,7 +291,7 @@ opentitan_test(
         changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
             "broken",
