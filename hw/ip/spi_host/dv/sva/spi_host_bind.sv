@@ -20,4 +20,6 @@ module spi_host_bind;
     .d2h    (tl_o)
   );
 
+  bind spi_host spi_host_data_stable_sva spi_host_data_stable_assert (.*);
+
 endmodule

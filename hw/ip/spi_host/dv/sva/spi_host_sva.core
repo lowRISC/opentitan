@@ -9,13 +9,12 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:spi_host
     files:
+      - spi_host_data_stable_sva.sv
       - spi_host_bind.sv
     file_type: systemVerilogSource
 
-  files_formal:
-    depend:
-      - lowrisc:ip:spi_host
 
 generate:
   csr_assert_gen:
