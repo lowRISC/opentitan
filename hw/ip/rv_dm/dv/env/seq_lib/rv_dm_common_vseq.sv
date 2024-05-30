@@ -22,6 +22,14 @@ class rv_dm_common_vseq extends rv_dm_base_vseq;
     unavailable == 0;
   }
 
+  // This function controls how long we will wait for a quiet period when we want to issue a reset
+  // in the wait_to_issue_reset task. Some of our existing vseqs do lots of back-to-back CSR
+  // operations. Bumping this up from the default 10k cycles guarantees that we will find a good
+  // time to inject the reset.
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return 50_000;
+  endfunction
+
   // This is a thin wrapper around the base class version of run_csr_vseq, but setting the timeout
   // for the CSR operations to be larger. This is needed because the timeout counts from (roughly)
   // the start of the CSR sequence and isn't enough to allow for slow values of the JTAG clock.
