@@ -284,6 +284,7 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -306,6 +307,7 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
