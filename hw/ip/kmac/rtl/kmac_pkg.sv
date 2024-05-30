@@ -421,9 +421,4 @@ package kmac_pkg;
     conv_endian32 = (swap) ? conv_data : v ;
   endfunction : conv_endian32
 
-  function automatic logic [63:0] conv_endian64( input logic [63:0] v, input logic swap);
-    logic [63:0] conv_data = {<<8{v}};
-    conv_endian64 = (swap) ? conv_data : v ;
-  endfunction : conv_endian64
-
 endpackage : kmac_pkg

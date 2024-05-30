@@ -117,11 +117,6 @@ package prim_sha2_pkg;
     conv_endian32 = (swap) ? conv_data : v;
   endfunction : conv_endian32
 
-  function automatic sha_word64_t conv_endian64(input sha_word64_t v, input logic swap);
-    sha_word64_t conv_data = {<<8{v}};
-    conv_endian64 = (swap) ? conv_data : v;
-  endfunction : conv_endian64
-
   function automatic sha_word32_t rotr32(input sha_word32_t v, input integer amt);
     rotr32 = (v >> amt) | (v << (32-amt));
   endfunction : rotr32
