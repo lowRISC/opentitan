@@ -104,6 +104,13 @@ const flash_info_field_t kFlashInfoFieldTpmCikAttestationKeySeed = {
     .byte_offset = (5 * kAttestationSeedBytes),
 };
 
+const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion = {
+    .partition = 0,
+    .bank = 0,
+    .page = 4,
+    .byte_offset = FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(uint32_t),
+};
+
 status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
                                      flash_info_field_t field,
                                      uint32_t *data_out, size_t num_words) {
