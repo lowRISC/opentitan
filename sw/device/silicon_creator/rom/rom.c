@@ -211,6 +211,14 @@ static rom_error_t rom_init(void) {
     retention_sram_get()->creator.last_shutdown_reason = kErrorOk;
   }
 
+  // Initialize boot_log
+  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
+  memset(boot_log, 0, sizeof(*boot_log));
+  boot_log->identifier = kBootLogIdentifier;
+  boot_log->chip_version = kChipInfo.scm_revision;
+  boot_log->retention_ram_initialized =
+      reset_reasons & reset_mask ? kHardenedBoolTrue : kHardenedBoolFalse;
+
   // Always store the retention RAM version so the ROM_EXT can depend on its
   // accuracy even after scrambling.
   retention_sram_get()->version = kRetentionSramVersion4;
@@ -470,11 +478,11 @@ static rom_error_t rom_measure_otp_partitions(
  * @return rom_error_t Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_boot(boot_log_t *boot_log, const manifest_t *manifest,
-                            uint32_t flash_exec) {
+static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
 
+  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
   boot_log->rom_ext_slot =
       manifest == boot_policy_manifest_a_get() ? kBootSlotA : kBootSlotB;
   boot_log_digest_update(boot_log);
@@ -615,19 +623,12 @@ static rom_error_t rom_try_boot(void) {
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
 
-  // Initialize boot_log
-  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
-  boot_log->identifier = kBootLogIdentifier;
-  boot_log->chip_version = kChipInfo.scm_revision;
-  boot_log->bl0_slot = 0;  // Unknown at this point in the boot process.
-
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
-    HARDENED_RETURN_IF_ERROR(
-        rom_boot(boot_log, manifests.ordered[0], flash_exec));
+    HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
     return kErrorRomBootFailed;
   }
 
@@ -637,8 +638,7 @@ static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
-  HARDENED_RETURN_IF_ERROR(
-      rom_boot(boot_log, manifests.ordered[1], flash_exec));
+  HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
   return kErrorRomBootFailed;
 }
 

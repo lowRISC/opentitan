@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -76,6 +77,9 @@ rom_error_t retention_ram_keep_test(void) {
   if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {
     // This branch runs after the POR after initializing the testing environment
 
+    LOG_INFO("Checking boot_log.retention_ram_initialized: %x",
+             ret->creator.boot_log.retention_ram_initialized);
+    CHECK(ret->creator.boot_log.retention_ram_initialized == kHardenedBoolTrue);
     LOG_INFO("Writing known pattern to ret RAM");
     memset(ret, kPattern, sizeof(retention_sram_t));
 
@@ -113,6 +117,10 @@ rom_error_t retention_ram_keep_test(void) {
     wait_for_interrupt();  // Enter low-power
   } else if (bitfield_bit32_read(reset_reasons, kRstmgrReasonLowPowerExit)) {
     LOG_INFO("Woke up from low power exit");
+    LOG_INFO("Checking boot_log.retention_ram_initialized: %x",
+             ret->creator.boot_log.retention_ram_initialized);
+    CHECK(ret->creator.boot_log.retention_ram_initialized ==
+          kHardenedBoolFalse);
     CHECK(check_ram_unchanged(ret));
 
     // Request a SW reset
@@ -120,6 +128,10 @@ rom_error_t retention_ram_keep_test(void) {
     rstmgr_reset();
   } else if (bitfield_bit32_read(reset_reasons, kRstmgrReasonSoftwareRequest)) {
     LOG_INFO("Resuming from SW reset");
+    LOG_INFO("Checking boot_log.retention_ram_initialized: %x",
+             ret->creator.boot_log.retention_ram_initialized);
+    CHECK(ret->creator.boot_log.retention_ram_initialized ==
+          kHardenedBoolFalse);
     // This branch runs after the SW-requested reset
     CHECK(check_ram_unchanged(ret));
     return kErrorOk;
