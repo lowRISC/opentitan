@@ -247,51 +247,47 @@ class cip_base_vseq #(
                              input                   mubi4_t instr_type = MuBi4False,
                                                      tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h,
                              input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone);
-    `DV_SPINWAIT(
-        // thread to read/write tlul
-        cip_tl_host_single_seq tl_seq;
-        `uvm_create_on(tl_seq, tl_sequencer_h)
-        tl_seq.instr_type = instr_type;
-        tl_seq.tl_intg_err_type = tl_intg_err_type;
-        if (cfg.zero_delays) begin
-          tl_seq.min_req_delay = 0;
-          tl_seq.max_req_delay = 0;
-        end
-        tl_seq.req_abort_pct = req_abort_pct;
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
-            addr  == local::addr;
-            write == local::write;
-            mask  == local::mask;
-            data  == local::data;)
 
-        csr_utils_pkg::increment_outstanding_access();
-        `uvm_send_pri(tl_seq, 100)
-        csr_utils_pkg::decrement_outstanding_access();,
+    cip_tl_host_single_seq tl_seq;
+    `uvm_create_on(tl_seq, tl_sequencer_h)
+    tl_seq.instr_type = instr_type;
+    tl_seq.tl_intg_err_type = tl_intg_err_type;
+    if (cfg.zero_delays) begin
+      tl_seq.min_req_delay = 0;
+      tl_seq.max_req_delay = 0;
+    end
+    tl_seq.req_abort_pct = req_abort_pct;
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
+        addr  == local::addr;
+        write == local::write;
+        mask  == local::mask;
+        data  == local::data;)
 
-        rsp = tl_seq.rsp;
+    csr_utils_pkg::increment_outstanding_access();
+    `DV_SPINWAIT(`uvm_send_pri(tl_seq, 100),
+                 $sformatf("Timeout waiting tl_access : addr=0x%0h", addr),
+                 tl_access_timeout_ns)
+    csr_utils_pkg::decrement_outstanding_access();
 
-        if (!write) begin
-          data = rsp.d_data;
-          if (check_exp_data && !cfg.under_reset) begin
-            bit [BUS_DW-1:0] masked_data = data & compare_mask;
-            exp_data &= compare_mask;
-            `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
-          end
-        end
-        if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
-          `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
-                       $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
-        end
+    rsp = tl_seq.rsp;
 
-        // Expose whether the transaction ran and whether it generated an error. Note that we
-        // probably only want to do a RAL update if it ran and caused no error.
-        completed = rsp.rsp_completed;
-        saw_err = rsp.d_error;
+    if (!write) begin
+      data = rsp.d_data;
+      if (check_exp_data && !cfg.under_reset) begin
+        bit [BUS_DW-1:0] masked_data = data & compare_mask;
+        exp_data &= compare_mask;
+        `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+      end
+    end
+    if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
+      `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
+                   $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
+    end
 
-        // thread to check timeout
-        $sformatf("Timeout waiting tl_access : addr=0x%0h", addr),
-        // Timeout parameter
-        tl_access_timeout_ns)
+    // Expose whether the transaction ran and whether it generated an error. Note that we
+    // probably only want to do a RAL update if it ran and caused no error.
+    completed = rsp.rsp_completed;
+    saw_err = rsp.d_error;
   endtask
 
   // CIP spec indicates all comportable IPs will have the same standardized interrupt csrs. We can
