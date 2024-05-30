@@ -14,8 +14,8 @@ def secver_write_selection():
 # because of how the bazel rule accepts attributes.
 ROM_EXT_VERSION = struct(
     MAJOR = "0",
-    MINOR = "2",
-    SECURITY = "1",
+    MINOR = "3",
+    SECURITY = "3",
 )
 
 SLOTS = [
