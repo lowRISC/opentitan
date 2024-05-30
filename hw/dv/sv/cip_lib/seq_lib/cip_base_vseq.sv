@@ -691,7 +691,9 @@ class cip_base_vseq #(
     int had_stress_seq_plusarg = $value$plusargs("stress_seq=%0s", stress_seq_name);
     `DV_CHECK_FATAL(had_stress_seq_plusarg)
 
-    run_seq_with_rand_reset_vseq(create_seq_by_name(stress_seq_name), num_times);
+    run_seq_with_rand_reset_vseq(.seq(create_seq_by_name(stress_seq_name)),
+                                 .num_times(num_times),
+                                 .reset_delay_bound(10_000_000));
   endtask
 
   // Some blocks needs input ports and status / intr csr clean up
@@ -704,8 +706,8 @@ class cip_base_vseq #(
   // reset_delay_bound cycles. When we come out of reset, check all CSR values to ensure they are
   // the documented reset values.
   virtual task run_seq_with_rand_reset_vseq(uvm_sequence seq,
-                                            int          num_times = 1,
-                                            uint         reset_delay_bound = 10_000_000);
+                                            int          num_times,
+                                            uint         reset_delay_bound);
     `DV_CHECK_FATAL(seq != null)
     `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq for sequence %s",
                                seq.get_full_name()), UVM_MEDIUM)
