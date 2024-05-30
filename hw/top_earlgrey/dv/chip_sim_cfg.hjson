@@ -29,6 +29,7 @@
              "rstmgr_bind",
              "sec_cm_prim_onehot_check_bind",
              "sec_cm_prim_sparse_fsm_flop_bind",
+             "spi_host_bind",
              "top_earlgrey_error_injection_ifs_bind",
              "top_earlgrey_bind",
              "xbar_main_bind",

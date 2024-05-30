@@ -23,6 +23,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:ralgen
       - lowrisc:dv:spi_agent
+      - lowrisc:dv:spi_host_sva
       - lowrisc:dv:str_utils
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
