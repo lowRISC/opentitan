@@ -31,8 +31,7 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     send_token_packet(ep_default, PidTypeInToken);
     check_response_matches(PidTypeData0);
     // ACKnowledge successful reception of the IN DATA packet.
-    response_delay();
-    call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+    send_handshake(PidTypeAck);
 
     // We need to wait a few clock cycles for the interrupt state to change.
     for (int unsigned try = 0; try < 4; try++) begin

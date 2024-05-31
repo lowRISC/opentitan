@@ -30,8 +30,7 @@ class usbdev_in_rand_trans_vseq extends usbdev_base_vseq;
     // Token pkt followed by handshake pkt
     send_token_packet(ep_default, PidTypeInToken);
     check_response_matches(PidTypeData0);
-    response_delay();
-    call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+    send_handshake(PidTypeAck);
 
     for (int i = 0; i < 10; i++) begin
       csr_rd(ral.intr_state.pkt_sent, .value(pkt_sent));

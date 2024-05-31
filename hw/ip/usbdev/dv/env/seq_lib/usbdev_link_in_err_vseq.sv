@@ -19,10 +19,9 @@ class usbdev_link_in_err_vseq extends usbdev_base_vseq;
     configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
     send_token_packet(ep_default, PidTypeInToken);
     check_response_matches(PidTypeData0);
-    response_delay();
     // Send unexpected PID to USB device and device will assert link_in_err interrupt.
     // Expected pkt is ACK but send NYET packet.
-    call_handshake_sequence(PktTypeHandshake, PidTypeNyet);
+    send_handshake(PidTypeNyet);
     // The 'link_in_err' interrupt will take a few cycles to be asserted.
     for (uint i = 0; i < 16; i++) begin
       csr_rd(.ptr(ral.intr_state.link_in_err), .value(link_error));

@@ -324,11 +324,15 @@ endtask
     check_tx_packet(in_data, pid_type, data);
   endtask
 
-  virtual task call_handshake_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
+  // Send handshake to DUT after an appropriate turn-around delay.
+  virtual task send_handshake(input pid_type_e pid_type);
+    // Must delay for a few bit intervals before responding.
+    response_delay();
+    // Construct and send handshake response.
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_handshake_pkt);
     m_handshake_pkt.m_ev_type  = EvPacket;
-    m_handshake_pkt.m_pkt_type = pkt_type;
+    m_handshake_pkt.m_pkt_type = PktTypeHandshake;
     m_handshake_pkt.m_pid_type = pid_type;
     m_usb20_item = m_handshake_pkt;
     finish_item(m_handshake_pkt);

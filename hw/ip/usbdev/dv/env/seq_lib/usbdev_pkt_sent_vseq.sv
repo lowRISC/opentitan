@@ -36,8 +36,7 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     send_token_packet(ep_default, PidTypeInToken);
     // Get response from DUT
     check_response_matches(PidTypeData0);
-    response_delay();
-    call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+    send_handshake(PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
 
     // Check transaction accuracy
