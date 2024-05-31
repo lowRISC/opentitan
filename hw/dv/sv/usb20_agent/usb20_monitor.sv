@@ -106,7 +106,7 @@ class usb20_monitor extends dv_base_monitor #(
     // bits to binary conversion
     sof_result = sof_p'(bit_destuffed);
     m_sof_pkt.m_pid_type = pid_type_e'(packet_type);
-    m_sof_pkt.framecnt = {<<{sof_result[18:8]}};
+    m_sof_pkt.framenum = {<<{sof_result[18:8]}};
     m_sof_pkt.crc5 = {<<{sof_result[7:3]}};
     req_analysis_port.write(m_sof_pkt);
   endtask

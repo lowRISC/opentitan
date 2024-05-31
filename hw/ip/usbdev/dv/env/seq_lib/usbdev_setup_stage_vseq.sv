@@ -29,10 +29,8 @@ class usbdev_setup_stage_vseq extends usbdev_base_vseq;
     m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
-    m_data_pkt.m_bmRT = bmrequesttype_e'(bmRequestType3);
-    m_data_pkt.m_bR = brequest_e'(bRequestGET_DESCRIPTOR);
     // Send control data for GET_DESCRIPTOR request
-    m_data_pkt.make_device_request(m_data_pkt.m_bmRT, m_data_pkt.m_bR,
+    m_data_pkt.make_device_request(bmRequestType3, bRequestGET_DESCRIPTOR,
                                    8'h00, 8'h01, 16'h0, 16'd18);
     finish_item(m_data_pkt);
   endtask

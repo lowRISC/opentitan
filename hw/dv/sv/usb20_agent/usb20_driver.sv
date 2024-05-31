@@ -187,7 +187,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.print();
     // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
-    pkt.framecnt = {<<{pkt.framecnt}};
+    pkt.framenum = {<<{pkt.framenum}};
     pkt.crc5 = {<<{pkt.crc5}};
     void'(pkt.pack(driver_sof_pkt));
     // to make complete packet need to attach SYNC at start of packet
