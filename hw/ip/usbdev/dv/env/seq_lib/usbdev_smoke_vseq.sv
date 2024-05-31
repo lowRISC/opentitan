@@ -80,10 +80,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     m_data_pkt.m_pkt_type = pkt_type;
     m_data_pkt.m_pid_type = pid_type;
     // Construct a GET DESCRIPTOR request that retrieves the Device descriptor
-    m_data_pkt.m_bmRT = bmRequestType3;
-    m_data_pkt.m_bR = bRequestGET_DESCRIPTOR;
     assert(m_data_pkt.randomize());
-    m_data_pkt.make_device_request(m_data_pkt.m_bmRT, m_data_pkt.m_bR,
+    m_data_pkt.make_device_request(bmRequestType3, bRequestGET_DESCRIPTOR,
                                    8'h00, 8'h01,
                                    16'h0, 16'd18);  // Device descriptor >= 18 bytes.
     finish_item(m_data_pkt);
