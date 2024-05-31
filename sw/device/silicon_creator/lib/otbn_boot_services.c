@@ -28,6 +28,9 @@ OTBN_DECLARE_SYMBOL_ADDR(boot, x_r);   // ECDSA verification result.
 OTBN_DECLARE_SYMBOL_ADDR(boot, ok);    // ECDSA verification status.
 OTBN_DECLARE_SYMBOL_ADDR(
     boot, attestation_additional_seed);  // Additional seed for ECDSA keygen.
+OTBN_DECLARE_SYMBOL_ADDR(boot, d0);     // Private key part 0.
+OTBN_DECLARE_SYMBOL_ADDR(boot, d1);     // Private key part 1.
+
 
 static const otbn_app_t kOtbnAppBoot = OTBN_APP_T_INIT(boot);
 static const otbn_addr_t kOtbnVarBootMode = OTBN_ADDR_T_INIT(boot, mode);
@@ -40,6 +43,8 @@ static const otbn_addr_t kOtbnVarBootXr = OTBN_ADDR_T_INIT(boot, x_r);
 static const otbn_addr_t kOtbnVarBootOk = OTBN_ADDR_T_INIT(boot, ok);
 static const otbn_addr_t kOtbnVarBootAttestationAdditionalSeed =
     OTBN_ADDR_T_INIT(boot, attestation_additional_seed);
+static const otbn_addr_t kOtbnVarBootD0 = OTBN_ADDR_T_INIT(boot, d0);
+static const otbn_addr_t kOtbnVarBootD1 = OTBN_ADDR_T_INIT(boot, d1);
 
 enum {
   /*
@@ -109,6 +114,18 @@ static rom_error_t load_attestation_keygen_seed(
 
 rom_error_t otbn_boot_app_load(void) { return otbn_load_app(kOtbnAppBoot); }
 
+rom_error_t otbn_boot_attestation_private_key(
+    attestation_key_seed_t additional_seed,
+    otbn_boot_attestation_key_type_t key_type,
+    keymgr_diversification_t diversification, uint32_t *d0, uint32_t *d1) {
+  // Trigger key manager to sideload the attestation key into OTBN.
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(additional_seed, key_type,
+                                                 diversification));
+  RETURN_IF_ERROR(otbn_dmem_read(10, kOtbnVarBootD0, d0));
+  RETURN_IF_ERROR(otbn_dmem_read(10, kOtbnVarBootD1, d1));
+  return otbn_boot_attestation_key_clear();
+}
+
 rom_error_t otbn_boot_attestation_keygen(
     attestation_key_seed_t additional_seed,
     otbn_boot_attestation_key_type_t key_type,
@@ -157,6 +174,7 @@ rom_error_t otbn_boot_attestation_key_save(
     attestation_key_seed_t additional_seed,
     otbn_boot_attestation_key_type_t key_type,
     keymgr_diversification_t diversification) {
+
   // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(
       keymgr_generate_key_otbn((keymgr_key_type_t)key_type, diversification));
@@ -166,11 +184,14 @@ rom_error_t otbn_boot_attestation_key_save(
   HARDENED_RETURN_IF_ERROR(
       otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
+
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
+
   HARDENED_RETURN_IF_ERROR(load_attestation_keygen_seed(additional_seed, seed));
   // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
   // (since data is aligned to 256-bit words).
+
   uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {
       0};
   HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
@@ -184,9 +205,7 @@ rom_error_t otbn_boot_attestation_key_save(
   // Run the OTBN program (blocks until OTBN is done).
   HARDENED_RETURN_IF_ERROR(otbn_execute());
   SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
-
   // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
-
   return kErrorOk;
 }
 
