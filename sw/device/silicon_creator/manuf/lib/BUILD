@@ -6,6 +6,7 @@ load("//rules:linker.bzl", "ld_library")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
+    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )

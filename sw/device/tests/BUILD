@@ -27,6 +27,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "dv_params",
     "fpga_params",
     "opentitan_binary",

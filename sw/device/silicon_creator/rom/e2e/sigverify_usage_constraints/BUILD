@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
+    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
