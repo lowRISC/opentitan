@@ -32,7 +32,7 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
 
     // Attempt to collect IN DATA packet in response.
-    call_token_seq(ep_default, PidTypeInToken);
+    send_token_packet(ep_default, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     get_data_pid_from_device(response, PidTypeData0);

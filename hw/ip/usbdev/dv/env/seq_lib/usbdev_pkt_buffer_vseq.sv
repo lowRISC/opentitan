@@ -103,7 +103,7 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     csr_update(ral.configin[ep]);
 
     // Token pkt followed by handshake pkt
-    call_token_seq(ep, PidTypeInToken);
+    send_token_packet(ep, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);

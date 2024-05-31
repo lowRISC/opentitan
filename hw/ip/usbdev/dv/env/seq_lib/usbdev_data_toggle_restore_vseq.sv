@@ -68,7 +68,7 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
     configure_in_trans(ep, out_buffer_id, exp_data.size());
 
     // Perform the IN transaction.
-    call_token_seq(ep, PidTypeInToken);
+    send_token_packet(ep, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
