@@ -219,4 +219,22 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(tl_mem_ral.halted), .value(0));
   endtask
 
+  // Look to see whether we are currently in reset. If so, return immediately. If not, check whether
+  // cfg.will_reset is set (showing that a higher-level sequence would like to inject a reset). If
+  // so, allow the reset to be injected by pausing for a while without sending any CSR requests.
+  //
+  // In either reset situation, write 1 to the should_stop output argument so that a caller can
+  // choose to stop afterwards.
+  task spot_resets(output bit should_stop);
+    should_stop = 1'b0;
+    if (!cfg.clk_rst_vif.rst_n) begin
+      should_stop = 1'b1;
+      return;
+    end
+    if (cfg.stop_transaction_generators()) begin
+      cfg.clk_rst_vif.wait_clks(CyclesWithNoAccessesThreshold * 2);
+      should_stop = 1'b1;
+    end
+  endtask
+
 endclass : rv_dm_base_vseq
