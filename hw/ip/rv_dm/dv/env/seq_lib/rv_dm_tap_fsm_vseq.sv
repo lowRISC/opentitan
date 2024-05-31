@@ -59,29 +59,53 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
     finish_item(req);
   endtask
 
+  // Use the spot_resets task and return from the current task if spot_resets saw a reset
+`define RUN_SPOT_RESETS         \
+    begin                       \
+      bit should_stop;          \
+      spot_resets(should_stop); \
+      if (should_stop) return;  \
+    end
+
   task body();
     // Read the JTAG IDCODE register and verify that it matches the expected value.
     run_smoke();
     `uvm_info(`gfn, "Starting fsm_tap sequence", UVM_LOW)
 
+    `RUN_SPOT_RESETS
+
     `uvm_info(`gfn, "Test TAP FSM transition from CaptureIr->Exit1Ir", UVM_LOW)
     send_req(.dummy_ir(1'b1));
+
+    `RUN_SPOT_RESETS
 
     `uvm_info(`gfn, "Test TAP FSM transition from UpdateIr->SelectDrScan", UVM_LOW)
     send_req();
 
+    `RUN_SPOT_RESETS
+
     `uvm_info(`gfn, "Test TAP FSM transition from UpdateDr->SelectDrScan", UVM_LOW)
     send_req(.skip_reselected_ir(1));
 
+    `RUN_SPOT_RESETS
+
     run_smoke();
+
+    `RUN_SPOT_RESETS
 
     `uvm_info(`gfn, "Test TAP FSM transition from CaptureDr->Exit1Dr", UVM_LOW)
     send_req(.skip_reselected_ir(1), .dummy_dr(1));
 
+    `RUN_SPOT_RESETS
+
     run_smoke();
+
+    `RUN_SPOT_RESETS
 
     `uvm_info(`gfn, "Test TAP FSM reset", UVM_LOW)
     send_req(.reset_tap_fsm(1));
+
+    `RUN_SPOT_RESETS
 
     run_smoke();
   endtask : body
@@ -91,5 +115,7 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
     `uvm_info(`gfn, "Starting rv_dm_tap_fsm_vseq smoke test", UVM_LOW)
     `uvm_do(seq)
   endtask
+
+`undef RUN_SPOT_RESETS
 
 endclass : rv_dm_tap_fsm_vseq
