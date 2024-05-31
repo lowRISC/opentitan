@@ -8,6 +8,7 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_params",
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
