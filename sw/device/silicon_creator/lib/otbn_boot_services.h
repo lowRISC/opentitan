@@ -69,6 +69,12 @@ rom_error_t otbn_boot_attestation_keygen(
     keymgr_diversification_t diversification,
     attestation_public_key_t *public_key);
 
+OT_WARN_UNUSED_RESULT
+rom_error_t otbn_boot_attestation_private_key(
+    attestation_key_seed_t additional_seed,
+    otbn_boot_attestation_key_type_t key_type,
+    keymgr_diversification_t diversification,
+    uint32_t *d0, uint32_t *d1);
 /**
  * Saves an attestation private key to OTBN's scratchpad.
  *
