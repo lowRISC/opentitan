@@ -4,7 +4,11 @@
 
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_verify.h"
 
+#include <stdint.h>
+
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 

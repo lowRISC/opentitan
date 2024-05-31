@@ -131,7 +131,10 @@ cc_library(
     hdrs = ["ecdsa_p256_verify.h"],
     deps = [
         ":ecdsa_p256_key",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],

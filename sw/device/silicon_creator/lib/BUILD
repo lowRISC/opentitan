@@ -466,25 +466,37 @@ cc_library(
     deps = ["//sw/device/silicon_creator/lib/drivers:keymgr"],
 )
 
-cc_library(
+dual_cc_library(
     name = "otbn_boot_services",
-    srcs = ["otbn_boot_services.c"],
-    hdrs = ["otbn_boot_services.h"],
-    # This target uses OTBN pointers internally, so it cannot work host-side.
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":attestation",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/drivers:otbn",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/otbn/crypto:boot",
-    ],
+    srcs = dual_inputs(
+        device = ["otbn_boot_services.c"],
+        host = ["mock_otbn_boot_services.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_otbn_boot_services.h"],
+        shared = ["otbn_boot_services.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib:dbg_print",
+            "//sw/device/silicon_creator/lib:error",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:otbn",
+            "//sw/otbn/crypto:boot",
+        ],
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":attestation",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:keymgr",
+        ],
+    ),
 )
 
 opentitan_test(
