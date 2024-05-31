@@ -17,28 +17,28 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
-  /* Number of 32-bit words in a SHA256 digest. */
-  kSha256DigestWords = 256 / 32,
-  /* Number of 32-bit words in a P-256 public key. */
-  kP256PublicKeyWords = 512 / 32,
-  /* Number of 32-bit words in a P-256 signature. */
-  kP256SignatureWords = 512 / 32,
-  /* Number of bytes in a P-256 private key. */
-  kP256PrivateKeyBytes = 256 / 8,
+  /* Number of 32-bit words in a SHA384 digest. */
+  kSha384DigestWords = 384 / 32,
+  /* Number of 32-bit words in a P-384 public key. */
+  kP384PublicKeyWords = 768 / 32,
+  /* Number of 32-bit words in a P-384 signature. */
+  kP384SignatureWords = 768 / 32,
+  /* Number of bytes in a P-384 private key. */
+  kP384PrivateKeyBytes = 384 / 8,
 };
 
 // Message
 static const char kMessage[] = "test message";
 
-static const otcrypto_ecc_curve_t kCurveP256 = {
-    .curve_type = kOtcryptoEccCurveTypeNistP256,
+static const otcrypto_ecc_curve_t kCurveP384 = {
+    .curve_type = kOtcryptoEccCurveTypeNistP384,
     .domain_parameter = NULL,
 };
 
 static const otcrypto_key_config_t kPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdsa,
-    .key_length = kP256PrivateKeyBytes,
+    .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
@@ -63,7 +63,7 @@ status_t sign_then_verify_test(void) {
                              &private_key));
 
   // Allocate space for a public key.
-  uint32_t pk[kP256PublicKeyWords] = {0};
+  uint32_t pk[kP384PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdsa,
       .key_length = sizeof(pk),
@@ -72,41 +72,42 @@ status_t sign_then_verify_test(void) {
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
-  TRY(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key));
+  CHECK_STATUS_OK(
+      otcrypto_ecdsa_keygen(&kCurveP384, &private_key, &public_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t message = {
+  otcrypto_const_byte_buf_t msg = {
       .len = sizeof(kMessage) - 1,
       .data = (unsigned char *)&kMessage,
   };
-  uint32_t message_digest_data[kSha256DigestWords];
-  otcrypto_hash_digest_t message_digest = {
-      .data = message_digest_data,
-      .len = ARRAYSIZE(message_digest_data),
-      .mode = kOtcryptoHashModeSha256,
+  uint32_t msg_digest_data[kSha384DigestWords];
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = kOtcryptoHashModeSha384,
   };
-  TRY(otcrypto_hash(message, message_digest));
+  TRY(otcrypto_hash(msg, msg_digest));
 
   // Allocate space for the signature.
-  uint32_t sig[kP256SignatureWords] = {0};
+  uint32_t sig[kP384SignatureWords] = {0};
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
   CHECK_STATUS_OK(otcrypto_ecdsa_sign(
-      &private_key, message_digest, &kCurveP256,
+      &private_key, msg_digest, &kCurveP384,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ecdsa_verify(
-      &public_key, message_digest,
+      &public_key, msg_digest,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &kCurveP256, &verification_result));
+      &kCurveP384, &verification_result));
 
   // The signature should pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
-  return OK_STATUS();
+  return OTCRYPTO_OK;
 }
 
 static status_t test_setup(void) {
@@ -143,4 +144,6 @@ bool test_main(void) {
   EXECUTE_TEST(result, sign_then_verify_test);
 
   return status_ok(result);
+
+  return true;
 }

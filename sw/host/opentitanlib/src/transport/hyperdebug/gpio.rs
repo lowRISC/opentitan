@@ -13,8 +13,9 @@ use std::time::Duration;
 use zerocopy::{FromBytes, FromZeroes};
 
 use crate::io::gpio::{
-    BitbangEntry, ClockNature, Edge, GpioBitbanging, GpioError, GpioMonitoring, GpioPin,
-    MonitoringEvent, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
+    BitbangEntry, ClockNature, Edge, GpioBitbangOperation, GpioBitbanging, GpioError,
+    GpioMonitoring, GpioPin, MonitoringEvent, MonitoringReadResponse, MonitoringStartResponse,
+    PinMode, PullMode,
 };
 use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
@@ -483,18 +484,6 @@ pub struct HyperdebugGpioBitbanging {
 }
 
 impl HyperdebugGpioBitbanging {
-    /// CMSIS extension for HyperDebug GPIO.
-    const CMSIS_DAP_CUSTOM_COMMAND_GPIO: u8 = 0x83;
-
-    /// Sub-command for HyperDebug GPIO bitbanging.
-    const GPIO_BITBANG: u8 = 0x10;
-    const GPIO_BITBANG_STREAMING: u8 = 0x11;
-
-    /// Device status (whether there is an ongoing bitbang operation)
-    const STATUS_BITBANG_IDLE: u8 = 0x00;
-    const STATUS_BITBANG_ONGOING: u8 = 0x01;
-    const STATUS_BITBANG_ERROR_WAVEFORM: u8 = 0x80;
-
     pub fn open(inner: &Rc<Inner>, cmsis_interface: BulkInterface) -> Result<Self> {
         // Exclusively claim CMSIS-DAP interface, preparing for bulk transfers.
         inner
@@ -509,44 +498,64 @@ impl HyperdebugGpioBitbanging {
 }
 
 impl GpioBitbanging for HyperdebugGpioBitbanging {
-    fn run(
+    fn start<'a>(
         &self,
         pins: &[&dyn GpioPin],
         clock_tick: Duration,
-        waveform: &mut [BitbangEntry],
-    ) -> Result<()> {
-        // Verify that `waveform` is valid, by converting into the binary representation to send
-        // to HyperDebug.
-        let mut encoded_waveform = encode_waveform(waveform, pins.len())?;
+        waveform: Box<[BitbangEntry<'a, 'a>]>,
+    ) -> Result<Box<dyn GpioBitbangOperation<'a, 'a> + 'a>> {
+        Ok(Box::new(HyperdebugGpioBitbangOperation::new(
+            Rc::clone(&self.inner),
+            self.cmsis_interface,
+            pins,
+            clock_tick,
+            waveform,
+        )?))
+    }
+}
 
-        // Tell HyperDebug about the set of pins to manipulate, and the clock speed, using the
-        // textual console protocol.
-        let mut pin_names = Vec::new();
-        for pin in pins {
-            pin_names.push(
-                pin.get_internal_pin_name()
-                    .ok_or(TransportError::InvalidOperation)?,
-            );
-        }
-        self.inner.cmd_no_output(&format!(
-            "gpio bit-bang {} {}",
-            clock_tick.as_nanos(),
-            pin_names.join(" ")
-        ))?;
+/// Represents a two-way streaming binary data transfer operation, as is used for bit-banging, or
+/// for outputting arbitrary waveforms via a DAC.
+pub struct HyperdebugDataOperation {
+    inner: Rc<Inner>,
+    cmsis_interface: BulkInterface,
+    encoded_waveform: Vec<u8>,
+    free_bytes: usize,
+    out_ptr: usize,
+    in_ptr: usize,
+}
 
+impl HyperdebugDataOperation {
+    /// CMSIS extension for HyperDebug GPIO.
+    const CMSIS_DAP_CUSTOM_COMMAND_GPIO: u8 = 0x83;
+
+    /// Sub-command for HyperDebug GPIO bitbanging.
+    const GPIO_BITBANG: u8 = 0x10;
+    const GPIO_BITBANG_STREAMING: u8 = 0x11;
+
+    /// Device status (whether there is an ongoing bitbang operation)
+    const STATUS_BITBANG_IDLE: u8 = 0x00;
+    const STATUS_BITBANG_ONGOING: u8 = 0x01;
+    const STATUS_BITBANG_ERROR_WAVEFORM: u8 = 0x80;
+
+    fn new(
+        inner: Rc<Inner>,
+        cmsis_interface: BulkInterface,
+        encoded_waveform: Vec<u8>,
+    ) -> Result<HyperdebugDataOperation> {
         // Send an initial request, to ask how much buffer space HyperDebug has, so that we can
         // fill the buffer, while avoiding overflows.
-        let usb = self.inner.usb_device.borrow();
-        let mut free_bytes: usize = {
+        let free_bytes: usize = {
+            let usb = inner.usb_device.borrow();
             let mut pkt = Vec::<u8>::new();
             pkt.write_u8(Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO)?;
             pkt.write_u8(Self::GPIO_BITBANG)?;
             pkt.write_u16::<LittleEndian>(0)?;
-            usb.write_bulk(self.cmsis_interface.out_endpoint, &pkt)?;
+            usb.write_bulk(cmsis_interface.out_endpoint, &pkt)?;
 
             let mut databytes = [0u8; 64];
 
-            let c = usb.read_bulk(self.cmsis_interface.in_endpoint, &mut databytes)?;
+            let c = usb.read_bulk(cmsis_interface.in_endpoint, &mut databytes)?;
             let mut rdr = Cursor::new(&databytes[..c]);
             ensure!(
                 rdr.read_u8()? == Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO,
@@ -563,6 +572,123 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
             let free_bytes = rdr.read_u16::<LittleEndian>()?;
             free_bytes as usize
         };
+        Ok(Self {
+            inner,
+            cmsis_interface,
+            encoded_waveform,
+            free_bytes,
+            out_ptr: 0,
+            in_ptr: 0,
+        })
+    }
+
+    fn query(&mut self) -> Result<bool> {
+        if self.in_ptr >= self.encoded_waveform.len() {
+            return Ok(true);
+        }
+
+        let usb = self.inner.usb_device.borrow();
+        let chunk_size = std::cmp::min(self.encoded_waveform.len() - self.out_ptr, self.free_bytes);
+
+        let mut pkt = Vec::<u8>::new();
+        pkt.write_u8(Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO)?;
+        if self.out_ptr + chunk_size < self.encoded_waveform.len() {
+            // We prefer partial response, in order to be able to fill up buffer before
+            // HyperDebug runs out of data to clock out.
+            pkt.write_u8(Self::GPIO_BITBANG_STREAMING)?;
+        } else {
+            // We want response only after every byte is transmitted
+            pkt.write_u8(Self::GPIO_BITBANG)?;
+        }
+        pkt.write_u16::<LittleEndian>(chunk_size as u16)?;
+        pkt.extend_from_slice(&self.encoded_waveform[self.out_ptr..self.out_ptr + chunk_size]);
+        usb.write_bulk(self.cmsis_interface.out_endpoint, &pkt)?;
+
+        let mut databytes = [0u8; 64];
+
+        let c = usb.read_bulk(self.cmsis_interface.in_endpoint, &mut databytes)?;
+        let mut rdr = Cursor::new(&databytes[..c]);
+        ensure!(
+            rdr.read_u8()? == Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO,
+            TransportError::CommunicationError(
+                "Incorrect CMSIS-DAP header in response to GPIO request".to_string()
+            )
+        );
+        match rdr.read_u8()? {
+            Self::STATUS_BITBANG_ONGOING => (),
+            Self::STATUS_BITBANG_IDLE => bail!(TransportError::CommunicationError(
+                "GPIO request aborted".to_string()
+            )),
+            Self::STATUS_BITBANG_ERROR_WAVEFORM => bail!(TransportError::CommunicationError(
+                "HyperDebug reports encoding error".to_string()
+            )),
+            status => bail!(TransportError::CommunicationError(std::format!(
+                "Unrecognized status code: {}",
+                status
+            ))),
+        }
+
+        self.free_bytes = rdr.read_u16::<LittleEndian>()? as usize;
+        let response_size = rdr.read_u16::<LittleEndian>()? as usize;
+
+        let final_in_ptr = self.in_ptr + response_size;
+
+        // Copy any data in initial packet
+        let data_in_header = c - rdr.position() as usize;
+        self.encoded_waveform[self.in_ptr..self.in_ptr + data_in_header]
+            .copy_from_slice(&databytes[rdr.position() as usize..][..data_in_header]);
+        self.in_ptr += data_in_header;
+
+        while self.in_ptr < final_in_ptr {
+            self.in_ptr += usb.read_bulk(
+                self.cmsis_interface.in_endpoint,
+                &mut self.encoded_waveform[self.in_ptr..final_in_ptr],
+            )?;
+        }
+
+        self.out_ptr += chunk_size;
+
+        if self.in_ptr >= self.encoded_waveform.len() {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+}
+
+/// Represents an ongoing operation of bit-banging a number of GPIO pins.
+pub struct HyperdebugGpioBitbangOperation<'a> {
+    num_pins: usize,
+    waveform: Box<[BitbangEntry<'a, 'a>]>,
+    operation: HyperdebugDataOperation,
+}
+
+impl<'a> HyperdebugGpioBitbangOperation<'a> {
+    fn new(
+        inner: Rc<Inner>,
+        cmsis_interface: BulkInterface,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: Box<[BitbangEntry<'a, 'a>]>,
+    ) -> Result<Self> {
+        // Verify that `waveform` is valid, by converting into the binary representation to send
+        // to HyperDebug.
+        let encoded_waveform = encode_waveform(&waveform, pins.len())?;
+
+        // Tell HyperDebug about the set of pins to manipulate, and the clock speed, using the
+        // textual console protocol.
+        let mut pin_names = Vec::new();
+        for pin in pins {
+            pin_names.push(
+                pin.get_internal_pin_name()
+                    .ok_or(TransportError::InvalidOperation)?,
+            );
+        }
+        inner.cmd_no_output(&format!(
+            "gpio bit-bang {} {}",
+            clock_tick.as_nanos(),
+            pin_names.join(" ")
+        ))?;
 
         // Here is the main two-way transfer logic.  At each iteration we send a number of bytes,
         // capped at what HyperDebug has most recently indicated was available.  In response we
@@ -572,76 +698,33 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
         // (relevant for slow clock speeds).  With this scheme, the bit-banging of waveforms
         // longer than what fits in HyperDebug memory can be produced, without HyperDebug ever
         // needing to "stop the clock" waiting for more data.
-        let mut out_ptr = 0usize;
-        let mut in_ptr = 0usize;
-        while in_ptr < encoded_waveform.len() {
-            let chunk_size = std::cmp::min(encoded_waveform.len() - out_ptr, free_bytes);
+        Ok(Self {
+            num_pins: pins.len(),
+            waveform,
+            operation: HyperdebugDataOperation::new(inner, cmsis_interface, encoded_waveform)?,
+        })
+    }
+}
 
-            let mut pkt = Vec::<u8>::new();
-            pkt.write_u8(Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO)?;
-            if out_ptr + chunk_size < encoded_waveform.len() {
-                // We prefer partial response, in order to be able to fill up buffer before
-                // HyperDebug runs out of data to clock out.
-                pkt.write_u8(Self::GPIO_BITBANG_STREAMING)?;
-            } else {
-                // We want response only after every byte is transmitted
-                pkt.write_u8(Self::GPIO_BITBANG)?;
-            }
-            pkt.write_u16::<LittleEndian>(chunk_size as u16)?;
-            pkt.extend_from_slice(&encoded_waveform[out_ptr..out_ptr + chunk_size]);
-            usb.write_bulk(self.cmsis_interface.out_endpoint, &pkt)?;
-
-            let mut databytes = [0u8; 64];
-
-            let c = usb.read_bulk(self.cmsis_interface.in_endpoint, &mut databytes)?;
-            let mut rdr = Cursor::new(&databytes[..c]);
-            ensure!(
-                rdr.read_u8()? == Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO,
-                TransportError::CommunicationError(
-                    "Incorrect CMSIS-DAP header in response to GPIO request".to_string()
-                )
-            );
-            match rdr.read_u8()? {
-                Self::STATUS_BITBANG_ONGOING => (),
-                Self::STATUS_BITBANG_IDLE => bail!(TransportError::CommunicationError(
-                    "GPIO request aborted".to_string()
-                )),
-                Self::STATUS_BITBANG_ERROR_WAVEFORM => bail!(TransportError::CommunicationError(
-                    "HyperDebug reports encoding error".to_string()
-                )),
-                status => bail!(TransportError::CommunicationError(std::format!(
-                    "Unrecognized status code: {}",
-                    status
-                ))),
-            }
-
-            free_bytes = rdr.read_u16::<LittleEndian>()? as usize;
-            let response_size = rdr.read_u16::<LittleEndian>()? as usize;
-
-            let final_in_ptr = in_ptr + response_size;
-
-            // Copy any data in initial packet
-            let data_in_header = c - rdr.position() as usize;
-            encoded_waveform[in_ptr..in_ptr + data_in_header]
-                .copy_from_slice(&databytes[rdr.position() as usize..][..data_in_header]);
-            in_ptr += data_in_header;
-
-            while in_ptr < final_in_ptr {
-                in_ptr += usb.read_bulk(
-                    self.cmsis_interface.in_endpoint,
-                    &mut encoded_waveform[in_ptr..final_in_ptr],
-                )?;
-            }
-
-            out_ptr += chunk_size;
+impl<'a> GpioBitbangOperation<'a, 'a> for HyperdebugGpioBitbangOperation<'a> {
+    fn query(&mut self) -> Result<bool> {
+        if self.operation.query()? {
+            // Decode the binary representation from HyperDebug into any `BitbangEntry::Both()`
+            // entries in `waveform`, allowing the caller to inspect data sampled at bitbanging
+            // clock ticks (useful with open drain or pure input pins).
+            decode_waveform(
+                &mut self.waveform,
+                &self.operation.encoded_waveform,
+                self.num_pins,
+            )?;
+            Ok(true)
+        } else {
+            Ok(false)
         }
+    }
 
-        // Decode the binary representation from HyperDebug into any `BitbangEntry::Both()`
-        // entries in `waveform`, allowing the caller to inspect data sampled at bitbanging clock
-        // ticks (useful with open drain or pure input pins).
-        decode_waveform(waveform, encoded_waveform, pins.len())?;
-
-        Ok(())
+    fn get_result(self: Box<Self>) -> Result<Box<[BitbangEntry<'a, 'a>]>> {
+        Ok(self.waveform)
     }
 }
 
@@ -680,9 +763,37 @@ fn encode_waveform(waveform: &[BitbangEntry], num_pins: usize) -> Result<Vec<u8>
                 encoded_waveform.extend_from_slice(wbuf);
                 delay = 0;
             }
+            BitbangEntry::WriteOwned(wbuf) | BitbangEntry::BothOwned(wbuf) => {
+                if delay > 1 {
+                    // Delays are encoded using one or more bytes with the MSB set to one.  Each
+                    // containing 7 bits of the delay value, with the least significant bits in
+                    // the first byte.
+                    let encoded_delay = delay - 1;
+                    let mut shift = 0;
+                    while (encoded_delay >> shift) != 0 {
+                        encoded_waveform.push(0x80 | ((encoded_delay >> shift) & 0x7F) as u8);
+                        shift += 7;
+                    }
+                }
+                // A sequence of samples using up to 7 of the lowest bits, with the MSB set to
+                // zero.
+                for byte in wbuf.iter() {
+                    ensure!(
+                        (byte >> num_pins) == 0,
+                        GpioError::InvalidBitbangData(num_pins)
+                    );
+                }
+                encoded_waveform.extend_from_slice(wbuf);
+                delay = 0;
+            }
             BitbangEntry::Delay(0) => bail!(GpioError::InvalidBitbangDelay),
             BitbangEntry::Delay(n @ 1..) => {
                 delay += *n;
+            }
+            BitbangEntry::Await { mask, pattern } => {
+                ensure!(delay == 0, GpioError::InvalidBitbangDelay);
+                encoded_waveform.extend_from_slice(&[0x80, 0x80, *mask, *pattern]);
+                delay = 0;
             }
         }
     }
@@ -698,7 +809,7 @@ fn encode_waveform(waveform: &[BitbangEntry], num_pins: usize) -> Result<Vec<u8>
 /// open drain or pure input pins).
 fn decode_waveform(
     waveform: &mut [BitbangEntry],
-    encoded_response: Vec<u8>,
+    encoded_response: &Vec<u8>,
     num_pins: usize,
 ) -> Result<()> {
     ensure!(
@@ -712,6 +823,9 @@ fn decode_waveform(
             BitbangEntry::Write(wbuf) => {
                 index += wbuf.len();
             }
+            BitbangEntry::WriteOwned(wbuf) => {
+                index += wbuf.len();
+            }
             BitbangEntry::Both(wbuf, rbuf) => {
                 ensure!(
                     rbuf.len() == wbuf.len(),
@@ -720,10 +834,17 @@ fn decode_waveform(
                 rbuf.copy_from_slice(&encoded_response[index..][..rbuf.len()]);
                 index += wbuf.len();
             }
+            BitbangEntry::BothOwned(rbuf) => {
+                rbuf.copy_from_slice(&encoded_response[index..][..rbuf.len()]);
+                index += rbuf.len();
+            }
             BitbangEntry::Delay(_) => {
                 while encoded_response[index] & 0x80 != 0 {
                     index += 1;
                 }
+            }
+            BitbangEntry::Await { .. } => {
+                index += 4;
             }
         }
     }

@@ -74,30 +74,47 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
     forever begin
+      // Wait until we either go into reset or we get an item to drive.
+      fork : isolation_fork
+        begin
+          fork
+            wait (! cfg.vif.trst_n);
+            seq_item_port.get_next_item(req);
+          join_any
+          disable fork;
+        end
+      join
+
       if (!cfg.vif.trst_n) begin
         `DV_WAIT(cfg.vif.trst_n)
-        cfg.vif.wait_tck(1);
-        drive_jtag_test_logic_reset();
+      end else begin
+        // Since trst_n is not 0, the get_next_item() task must have completed and has written the
+        // request to req
+        $cast(rsp, req.clone());
+        rsp.set_id_info(req);
+
+        // Make sure that we're aligned to HOST_CB (on the negedge of TCK). If we have just finished
+        // the previous item, this delay is going to add a cycle of TCK, but we're in RunTest/IDLE,
+        // so it won't cause any harm.
+        cfg.vif.tck_en <= 1'b1;
+        @(`HOST_CB);
+
+        `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
+        `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
+                          wait (!cfg.vif.trst_n);)
+
+        // Mark the item as having been handled. This passes the response (rsp) back to the
+        // sequencer, and also pops the request that we have been handling.
+        seq_item_port.item_done(rsp);
       end
-      seq_item_port.get_next_item(req);
-      $cast(rsp, req.clone());
-      rsp.set_id_info(req);
-      `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
-      `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
-                        wait (!cfg.vif.trst_n);)
-      seq_item_port.item_done(rsp);
     end
   endtask
 
   // Drive TMS, TDI to the given values and wait for a single edge of TCK.
   task tms_tdi_step(bit tms, bit tdi);
-    // We normally expect this task to be called at the negedge of tck (synchronous with HOST_CB).
-    // But that won't quite be true if the clock has been paused for a while because tck=1 when
-    // idle. We can spot that happening because tck will be 1. In that situation, wait for HOST_CB
-    // so we can get back in sync.
-    if (cfg.vif.tck) begin
-      @(`HOST_CB);
-    end
+    // When everything is in sync, this task will be called just after the negedge of TCK
+    // (synchronous with HOST_CB). In particular, TCK should be low: check that this is true.
+    `DV_CHECK_FATAL(!cfg.vif.tck);
 
     `HOST_CB.tms <= tms;
     `HOST_CB.tdi <= tdi;
@@ -105,18 +122,32 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   endtask
 
   // Task to drive TMS such that TAP FSM resets to Test-Logic-Reset state
+  //
+  // If there is a trst_n reset in the meantime, wait until the signal goes high again. After its
+  // does, we'll be in the test-logic-reset state by a different route, so the task can terminate.
   task drive_jtag_test_logic_reset();
     `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
-    // Enable clock
-    cfg.vif.tck_en <= 1'b1;
-    `HOST_CB.tms <= 1'b0;
-    @(`HOST_CB);
-    // Go to Test Logic Reset
-    repeat (JTAG_TEST_LOGIC_RESET_CYCLES) begin
-      tms_tdi_step(1, 0);
-    end
-    // Go to Run-Test/Idle
-    tms_tdi_step(0, 0);
+    fork begin : isolation_fork
+      fork
+        begin
+          // Enable clock
+          cfg.vif.tck_en <= 1'b1;
+          `HOST_CB.tms <= 1'b0;
+          @(`HOST_CB);
+          // Go to Test Logic Reset
+          repeat (JTAG_TEST_LOGIC_RESET_CYCLES) begin
+            tms_tdi_step(1, 0);
+          end
+          // Go to Run-Test/Idle
+          tms_tdi_step(0, 0);
+        end
+        begin
+          wait (!cfg.vif.trst_n);
+          wait (cfg.vif.trst_n);
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
   // drive jtag req and retrieve rsp

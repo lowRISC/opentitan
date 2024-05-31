@@ -389,6 +389,17 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_boolean_to_arithmetic_test",
+    srcs = [
+        "p384_boolean_to_arithmetic_test.s",
+    ],
+    exp = "p384_boolean_to_arithmetic_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_b2a",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_arithmetic_to_boolean_test",
     srcs = [
         "p384_arithmetic_to_boolean_test.s",
@@ -487,6 +498,19 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "p384_keygen_from_seed_test",
+    srcs = [
+        "p384_keygen_from_seed_test.s",
+    ],
+    exp = "p384_keygen_from_seed_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_b2a",
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_keygen_from_seed",
     ],
 )
 

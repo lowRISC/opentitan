@@ -155,8 +155,8 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
                         kOtcryptoEccCurveTypeNistP384);
       if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-        // TODO: Implement sideloaded key generation.
-        return OTCRYPTO_NOT_IMPLEMENTED;
+        HARDENED_TRY(sideload_key_seed(private_key));
+        return ecdsa_p384_sideload_keygen_start();
       } else if (launder32(private_key->config.hw_backed) ==
                  kHardenedBoolFalse) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
@@ -392,9 +392,12 @@ static status_t internal_ecdsa_p384_keygen_finalize(
   p384_point_t *pk = (p384_point_t *)public_key->key;
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    // Note: This operation wipes DMEM after retrieving the keys, so if an error
+    // occurs after this point then the keys would be unrecoverable. This should
+    // be the last potentially error-causing line before returning to the
+    // caller.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    // TODO: Implement sideloaded key generation.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    HARDENED_TRY(ecdsa_p384_sideload_keygen_finalize(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
     // Note: This operation wipes DMEM after retrieving the keys, so if an error
@@ -520,8 +523,8 @@ static status_t internal_ecdsa_p384_sign_start(
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    // TODO: Implement sideloaded signature generation.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    HARDENED_TRY(sideload_key_seed(private_key));
+    return ecdsa_p384_sideload_sign_start(message_digest.data);
   }
 
   // Invalid value for private_key->hw_backed.
@@ -839,6 +842,7 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
                         kOtcryptoEccCurveTypeNistP256);
       if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+        HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
         HARDENED_TRY(sideload_key_seed(private_key));
         return ecdh_p256_sideload_keypair_start();
       } else if (launder32(private_key->config.hw_backed) ==
@@ -851,8 +855,8 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
                         kOtcryptoEccCurveTypeNistP384);
       if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-        // TODO: Implement sideloaded key generation.
-        return OTCRYPTO_NOT_IMPLEMENTED;
+        HARDENED_TRY(sideload_key_seed(private_key));
+        return ecdh_p384_sideload_keypair_start();
       } else if (launder32(private_key->config.hw_backed) ==
                  kHardenedBoolFalse) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
@@ -942,8 +946,7 @@ static status_t internal_ecdh_p384_keygen_finalize(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    // TODO: Implement sideloaded key generation.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    HARDENED_TRY(ecdh_p384_sideload_keypair_finalize(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
     p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
@@ -1048,8 +1051,8 @@ static status_t internal_ecdh_p384_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    // TODO: Implement sideloaded shared key generation.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    HARDENED_TRY(sideload_key_seed(private_key));
+    return ecdh_p384_sideload_shared_key_start(pk);
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
     p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;

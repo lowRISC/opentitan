@@ -88,18 +88,6 @@ const epmp_region_t kFlashRegion = {
     .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES,
 };
 
-const epmp_region_t kAstRegion = {
-    .start = TOP_EARLGREY_AST_BASE_ADDR,
-    .end = TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES,
-};
-
-const epmp_region_t kOtpRegion = {
-    // We only want to lock out the register, not the memory mapped interface.
-    // The size of the register space is 0x1000 bytes.
-    .start = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
-    .end = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + 0x1000,
-};
-
 // Certificate data.
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
@@ -489,19 +477,6 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   for (int8_t i = (int8_t)rxindex - 1; i >= 0; --i) {
     rom_ext_epmp_clear((uint8_t)i);
   }
-
-  // Use the ePMP to forbid access to the OTP DAI interface.
-  // TODO(cfrantz): This lockout is for silicon validation testing.
-  // We want to prevent accidental OTP programming by test programs before we
-  // commit to a finalized OTP configuration on test chips.  Since the OTP
-  // controller doesn't have a per-boot register lockout, we'll use the ePMP to
-  // disable access to the programming interface.
-  rom_ext_epmp_set_napot(0, kOtpRegion, kEpmpPermLockedNoAccess);
-
-  // TODO(cfrantz): This lockout is for silicon validation testing.
-  // We want to prevent access to the AST by test programs before we commit
-  // to a finalized AST configuration set in OTP.
-  rom_ext_epmp_set_napot(1, kAstRegion, kEpmpPermLockedNoAccess);
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Configure address translation, compute the epmp regions and the entry

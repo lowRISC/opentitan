@@ -1786,7 +1786,7 @@ p256_key_from_seed:
 
   /* Compute d0 with a modular subtraction. First we add (n << 64) to protect
      against underflow, then conditionally subtract it again if needed.
-       [w21,w20] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d1 */
+       [w21,w20] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d0 */
   bn.add    w20, w20, w28
   bn.addc   w21, w21, w29
   bn.sub    w20, w20, w24

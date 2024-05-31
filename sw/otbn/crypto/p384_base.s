@@ -27,6 +27,7 @@
  * Clobbered registers: w18 to w20
  * Clobbered flag groups: FG0
  */
+.globl mul384
 mul384:
   bn.mulqacc.z          w10.0, w16.0,   0
   bn.mulqacc            w10.0, w16.1,  64

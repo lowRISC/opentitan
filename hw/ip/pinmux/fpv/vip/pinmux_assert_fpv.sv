@@ -281,7 +281,7 @@ module pinmux_assert_fpv
             ($past(!$rose(sleep_en_i) || !mio_pad_sleep_en.q) && mio_pad_sleep_status.q)))
 
   // ------ Mio_attr_o ------
-  pinmux_reg_pkg::pinmux_reg2hw_mio_pad_attr_mreg_t mio_pad_attr;
+  pad_attr_t mio_pad_attr;
   assign mio_pad_attr = pinmux.mio_pad_attr_q[mio_sel_i];
 
   pad_attr_t mio_pad_attr_mask;
@@ -296,7 +296,7 @@ module pinmux_assert_fpv
   assign mio_pad_attr_mask.keep_en = 0;
   assign mio_pad_attr_mask.schmitt_en = 0;
   assign mio_pad_attr_mask.od_en = 0;
-  assign mio_pad_attr_mask.input_disable = 0;
+  assign mio_pad_attr_mask.input_disable = 1'b1;
   assign mio_pad_attr_mask.slew_rate = '0;
   assign mio_pad_attr_mask.drive_strength[3:1] = '0;
 
@@ -323,7 +323,7 @@ module pinmux_assert_fpv
   assign dio_pad_attr_mask.keep_en     = 0;
   assign dio_pad_attr_mask.schmitt_en = 0;
   assign dio_pad_attr_mask.od_en = 0;
-  assign dio_pad_attr_mask.input_disable = 0;
+  assign dio_pad_attr_mask.input_disable = 1;
   assign dio_pad_attr_mask.slew_rate = '0;
   assign dio_pad_attr_mask.drive_strength[3:1] = '0;
 

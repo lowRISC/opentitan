@@ -99,5 +99,28 @@ TEST_F(ManifestTest, EntryPointUnaligned) {
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadEntryPoint);
 }
 
+TEST_F(ManifestTest, ExtSpxKeyGet) {
+  char flash[CHIP_ROM_EXT_RESIZABLE_SIZE_MAX];
+  memset(flash, 0, sizeof(flash));
+  size_t ext_offset = CHIP_ROM_EXT_SIZE_MAX;
+
+  manifest_t *manifest = reinterpret_cast<manifest_t *>(&flash[0]);
+  memcpy(manifest, &manifest_, sizeof(manifest_));
+  manifest->length = ext_offset + sizeof(manifest_ext_spx_key_t);
+
+  manifest_ext_table_entry_t *entry = &manifest->extensions.entries[0];
+  entry->identifier = kManifestExtIdSpxKey;
+  entry->offset = ext_offset;
+
+  manifest_ext_header_t *header =
+      reinterpret_cast<manifest_ext_header_t *>(&flash[ext_offset]);
+  header->identifier = kManifestExtIdSpxKey;
+  header->name = kManifestExtNameSpxKey;
+
+  const manifest_ext_spx_key_t *result = nullptr;
+  EXPECT_EQ(manifest_ext_get_spx_key(manifest, &result), kErrorOk);
+  EXPECT_EQ(&result->header, header);
+}
+
 }  // namespace
 }  // namespace manifest_unittest

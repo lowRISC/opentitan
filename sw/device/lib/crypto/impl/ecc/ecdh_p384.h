@@ -75,6 +75,44 @@ status_t ecdh_p384_shared_key_start(const p384_masked_scalar_t *private_key,
 OT_WARN_UNUSED_RESULT
 status_t ecdh_p384_shared_key_finalize(ecdh_p384_shared_key_t *shared_key);
 
+/**
+ * Start an async ECDH/P-384 sideloaded keypair generation operation on OTBN.
+ *
+ * Generates the keypair from a key manager seed. The key manager should
+ * already have sideloaded the key into OTBN before this operation is called.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t ecdh_p384_sideload_keypair_start(void);
+
+/**
+ * Finish an async ECDH/P-384 sideloaded keypair generation operation on OTBN.
+ *
+ * Blocks until OTBN is idle. Returns only the public key.
+ *
+ * @param[out] public_key Generated public key.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t ecdh_p384_sideload_keypair_finalize(p384_point_t *public_key);
+
+/**
+ * Start an async ECDH/P-384 shared key generation operation on OTBN.
+ *
+ * Uses a private key generated from a key manager seed. The key manager should
+ * already have sideloaded the key into OTBN before this operation is called.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key Public key (Q).
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t ecdh_p384_sideload_shared_key_start(const p384_point_t *public_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

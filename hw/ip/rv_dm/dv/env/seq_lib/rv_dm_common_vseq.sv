@@ -22,6 +22,21 @@ class rv_dm_common_vseq extends rv_dm_base_vseq;
     unavailable == 0;
   }
 
+  // This is a thin wrapper around the base class version of run_csr_vseq, but setting the timeout
+  // for the CSR operations to be larger. This is needed because the timeout counts from (roughly)
+  // the start of the CSR sequence and isn't enough to allow for slow values of the JTAG clock.
+  virtual task run_csr_vseq(string csr_test_type,
+                            int    num_test_csrs = 0,
+                            bit    do_rand_wr_and_reset = 1,
+                            dv_base_reg_block models[$] = {},
+                            string ral_name = "");
+    uint old_dtn = csr_utils_pkg::default_timeout_ns;
+
+    csr_utils_pkg::default_timeout_ns = 10 * old_dtn;
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, models, ral_name);
+    csr_utils_pkg::default_timeout_ns = old_dtn;
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body

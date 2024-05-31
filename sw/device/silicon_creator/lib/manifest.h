@@ -552,7 +552,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
                                               const type_ **name_) {           \
     enum {                                                                     \
       kMinSize = CHIP_MANIFEST_SIZE,                                           \
-      kMaxSize = CHIP_ROM_EXT_SIZE_MAX - sizeof(type_),                        \
+      kMaxSize = CHIP_ROM_EXT_RESIZABLE_SIZE_MAX - sizeof(type_),              \
     };                                                                         \
     const manifest_ext_table_entry_t *entry =                                  \
         &manifest->extensions.entries[index_];                                 \

@@ -19,9 +19,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   rand int unsigned tck_period_ps;
   constraint tck_period_ps_c {
     tck_period_ps dist {
-      [10_000:20_000] :/ 1,  // 50-100MHz
-      [20_001:42_000] :/ 1,  // 24-50MHz
-      [42_001:100_000] :/ 1  // 10-24MHz
+      [100_000:200_000] :/ 1,  // 5-10MHz
+      [200_001:420_000] :/ 1,  // 2.4-5MHz
+      [420_001:1000_000] :/ 1  // 1-2.4MHz
     };
   }
 
@@ -77,6 +77,13 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
+
+    // We would like to do a DMI transaction here. If this vseq is the first with debug enabled, the
+    // "enable" signal will need to make it through the a prim_lc_sync in the design before it takes
+    // effect. Fortunately, we can see that this has happened by looking at the trst_n signal: it
+    // will go high once everything has been connected. *That* signal is exposed through jtag_mon_if
+    // in the tb, which is visible through the jtag agent's mon_vif interface.
+    wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
 
     // "Activate" the DM to facilitate ease of testing.
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));

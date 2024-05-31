@@ -8,8 +8,8 @@ use std::time::Duration;
 
 use super::ProxyError;
 use crate::io::gpio::{
-    BitbangEntry, ClockNature, GpioBitbanging, GpioError, GpioMonitoring, GpioPin,
-    MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
+    BitbangEntry, ClockNature, GpioBitbangOperation, GpioBitbanging, GpioError, GpioMonitoring,
+    GpioPin, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
 use crate::proxy::protocol::{
     BitbangEntryRequest, BitbangEntryResponse, GpioBitRequest, GpioBitResponse, GpioMonRequest,
@@ -182,12 +182,12 @@ impl GpioBitbangingImpl {
 }
 
 impl GpioBitbanging for GpioBitbangingImpl {
-    fn run(
+    fn start<'a>(
         &self,
         pins: &[&dyn GpioPin],
         clock_tick: Duration,
-        waveform: &mut [BitbangEntry],
-    ) -> Result<()> {
+        waveform: Box<[BitbangEntry<'a, 'a>]>,
+    ) -> Result<Box<dyn GpioBitbangOperation<'a, 'a> + 'a>> {
         let pins = pins
             .iter()
             .map(|p| p.get_internal_pin_name().unwrap().to_string())
@@ -208,35 +208,80 @@ impl GpioBitbanging for GpioBitbangingImpl {
                         data: wbuf.to_vec(),
                     })
                 }
+                BitbangEntry::WriteOwned(buf) => {
+                    req.push(BitbangEntryRequest::Write { data: buf.to_vec() })
+                }
+                BitbangEntry::BothOwned(buf) => {
+                    req.push(BitbangEntryRequest::Both { data: buf.to_vec() })
+                }
                 BitbangEntry::Delay(ticks) => req.push(BitbangEntryRequest::Delay {
                     clock_ticks: *ticks,
                 }),
+                BitbangEntry::Await { mask, pattern } => req.push(BitbangEntryRequest::Await {
+                    mask: *mask,
+                    pattern: *pattern,
+                }),
             }
         }
-        match self.execute_command(GpioBitRequest::Run {
+        match self.execute_command(GpioBitRequest::Start {
             pins,
             clock_ns: clock_tick.as_nanos() as u64,
             entries: req,
         })? {
-            GpioBitResponse::Run { entries: resp } => {
+            GpioBitResponse::Start => Ok(Box::new(GpioBitbangOperationImpl {
+                inner: Rc::clone(&self.inner),
+                waveform,
+            })),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
+pub struct GpioBitbangOperationImpl<'a> {
+    inner: Rc<Inner>,
+    waveform: Box<[BitbangEntry<'a, 'a>]>,
+}
+
+impl<'a> GpioBitbangOperationImpl<'a> {
+    // Convenience method for issuing GPIO bitbanging commands via proxy protocol.
+    fn execute_command(&self, command: GpioBitRequest) -> Result<GpioBitResponse> {
+        match self
+            .inner
+            .execute_command(Request::GpioBitbanging { command })?
+        {
+            Response::GpioBitbanging(resp) => Ok(resp),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
+impl<'a> GpioBitbangOperation<'a, 'a> for GpioBitbangOperationImpl<'a> {
+    fn query(&mut self) -> Result<bool> {
+        match self.execute_command(GpioBitRequest::Query)? {
+            GpioBitResponse::QueryNotDone => Ok(false),
+            GpioBitResponse::QueryDone { entries: resp } => {
                 ensure!(
-                    resp.len() == waveform.len(),
+                    resp.len() == self.waveform.len(),
                     ProxyError::UnexpectedReply()
                 );
-                for pair in resp.iter().zip(waveform.iter_mut()) {
+                for pair in resp.iter().zip(self.waveform.iter_mut()) {
                     match pair {
                         (BitbangEntryResponse::Both { data }, BitbangEntry::Both(_, rbuf)) => {
                             rbuf.clone_from_slice(data);
                         }
                         (BitbangEntryResponse::Write, BitbangEntry::Write(_)) => (),
                         (BitbangEntryResponse::Delay, BitbangEntry::Delay(_)) => (),
+                        (BitbangEntryResponse::Await, BitbangEntry::Await { .. }) => (),
                         _ => bail!(ProxyError::UnexpectedReply()),
                     }
                 }
-                Ok(())
+                Ok(true)
             }
-            // Insert the below line, when a second kind of bitbanging request is added:
-            // _ => bail!(ProxyError::UnexpectedReply()),
+            _ => bail!(ProxyError::UnexpectedReply()),
         }
+    }
+
+    fn get_result(self: Box<Self>) -> Result<Box<[BitbangEntry<'a, 'a>]>> {
+        Ok(self.waveform)
     }
 }
