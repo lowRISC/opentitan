@@ -677,7 +677,7 @@ jobs:
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw340
-  timeoutInMinutes: 60
+  timeoutInMinutes: 90
   dependsOn:
     - chip_earlgrey_cw340
     - sw_build
@@ -704,7 +704,7 @@ jobs:
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw340
-  timeoutInMinutes: 45
+  timeoutInMinutes: 90
   dependsOn:
     - chip_earlgrey_cw340
     - sw_build
