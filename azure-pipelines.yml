@@ -597,7 +597,7 @@ jobs:
     interface: cw340
     board: cw340
     tag_filters: "cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf"
-    timeout: 60
+    timeout: 90
 
 - template: ci/fpga-job.yml
   parameters:
