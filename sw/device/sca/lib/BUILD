@@ -55,6 +55,7 @@ cc_library(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",

@@ -250,12 +250,12 @@ static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
   // Start AES operation (this triggers the capture) and go to sleep.
   if (fpga_mode) {
     // On the FPGA, the AES block automatically sets and unsets the trigger.
-    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false);
+    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false, false);
   } else {
     // On the chip, we need to manually set and unset the trigger. This is done
     // in this function to have the trigger as close as possible to the AES
     // operation.
-    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true);
+    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true, false);
   }
 
   return aesScaOk;

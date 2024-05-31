@@ -197,9 +197,10 @@ typedef void (*sca_callee)(void);
  * @param callee Function to call before putting Ibex to sleep.
  * @param sleep_cycles Number of cycles to sleep.
  * @param sw_trigger Raise trigger before calling the target function.
+ * @param otbn Wait until OTBN execution has finished.
  */
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles,
-                        bool sw_trigger);
+                        bool sw_trigger, bool otbn);
 
 /**
  * Seeds the software LFSR usable e.g. for key masking.

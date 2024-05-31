@@ -19,6 +19,7 @@ extern "C" {
     value(_, IbexFi) \
     value(_, IbexSca) \
     value(_, KmacSca) \
+    value(_, OtbnSca) \
     value(_, OtbnFi) \
     value(_, PrngSca) \
     value(_, Sha3Sca) \
