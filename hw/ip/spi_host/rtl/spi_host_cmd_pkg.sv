@@ -42,6 +42,7 @@ package spi_host_cmd_pkg;
     logic       cmd_rd_en;
     logic [8:0] len;
     logic       csaat;
+    logic       idle_clk;
   } segment_t;
 
   typedef struct packed {

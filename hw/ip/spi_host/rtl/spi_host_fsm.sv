@@ -67,6 +67,8 @@ module spi_host_fsm
   logic [8:0]       cmd_len_d, cmd_len_q;
   logic             csaat;
   logic             csaat_q;
+  logic             idle_clk;
+  logic             idle_clk_q;
 
   logic [2:0]       bit_cntr_d, bit_cntr_q;
   logic [8:0]       byte_cntr_cpha0_d, byte_cntr_cpha1_d, byte_cntr_cpha0_q, byte_cntr_cpha1_q;
@@ -141,6 +143,7 @@ module spi_host_fsm
     csntrail  = new_command ? command_i.configopts.csntrail : csntrail_q;
     clkdiv    = new_command ? command_i.configopts.clkdiv : clkdiv_q;
     csaat     = new_command ? command_i.segment.csaat : csaat_q;
+    idle_clk  = new_command ? command_i.segment.idle_clk : idle_clk_q;
     cmd_len_d   = new_command ? command_i.segment.len : cmd_len_q;
     cmd_wr_en_d = new_command ? command_i.segment.cmd_wr_en : cmd_wr_en_q;
     cmd_rd_en_d = new_command ? command_i.segment.cmd_rd_en : cmd_rd_en_q;
@@ -158,6 +161,7 @@ module spi_host_fsm
       csntrail_q  <= 4'h0;
       clkdiv_q    <= 16'h0;
       csaat_q     <= 1'b0;
+      idle_clk_q  <= 1'b0;
       cmd_rd_en_q <= 1'b0;
       cmd_wr_en_q <= 1'b0;
       cmd_speed_q <= 2'b00;
@@ -172,6 +176,7 @@ module spi_host_fsm
       csntrail_q  <= (new_command && !stall) ? csntrail : csntrail_q;
       clkdiv_q    <= (new_command && !stall) ? clkdiv : clkdiv_q;
       csaat_q     <= (new_command && !stall) ? csaat : csaat_q;
+      idle_clk_q  <= (new_command && !stall) ? idle_clk : idle_clk_q;
       cmd_wr_en_q <= (new_command && !stall) ? cmd_wr_en_d : cmd_wr_en_q;
       cmd_rd_en_q <= (new_command && !stall) ? cmd_rd_en_d : cmd_rd_en_q;
       cmd_speed_q <= (new_command && !stall) ? cmd_speed_d : cmd_speed_q;
@@ -531,8 +536,17 @@ module spi_host_fsm
     endcase
   end
 
-  assign sck_d = cpol ? (state_d != InternalClkHigh) :
-                        (state_d == InternalClkHigh);
+  always_comb begin
+    if (idle_clk) begin
+      sck_d = cpol;
+    end else begin
+      if (cpol) begin
+        sck_d = (state_d != InternalClkHigh);
+      end else begin
+        sck_d = (state_d == InternalClkHigh);
+      end
+    end
+  end
 
   assign sck_o = sck_q;
 

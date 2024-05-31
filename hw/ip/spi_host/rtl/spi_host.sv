@@ -236,6 +236,7 @@ module spi_host
 
   assign command.segment.len         = reg2hw.command.len.q;
   assign command.segment.csaat       = reg2hw.command.csaat.q;
+  assign command.segment.idle_clk    = reg2hw.command.clkidle.q;
   assign command.segment.speed       = reg2hw.command.speed.q;
 
 
@@ -245,7 +246,8 @@ module spi_host
       reg2hw.command.len.qe,
       reg2hw.command.speed.qe,
       reg2hw.command.direction.qe,
-      reg2hw.command.csaat.qe
+      reg2hw.command.csaat.qe,
+      reg2hw.command.clkidle.qe
   };
 
   // Any qe pin from COMMAND will suffice.

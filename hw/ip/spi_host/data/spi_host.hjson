@@ -410,6 +410,16 @@
       hwext: "true",
       hwqe: "true",
       fields: [
+        { bits: "14",
+          name: "CLKIDLE",
+          desc: '''Suppress output clock edges for this command.
+
+                   This keeps SCK at the idle value throughout this command.
+                   As a result, different patterns can be created on the pins without clocking data.
+                   This could be used for software control of the chip select, for example.
+                '''
+          resval: "0x0"
+        }
         { bits: "13:12",
           name: "DIRECTION",
           desc: '''The direction for the following command: "0" = Dummy cycles

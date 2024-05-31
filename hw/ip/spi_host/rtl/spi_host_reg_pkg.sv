@@ -103,6 +103,10 @@ package spi_host_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        q;
+      logic        qe;
+    } clkidle;
+    struct packed {
       logic [1:0]  q;
       logic        qe;
     } direction;
@@ -279,14 +283,14 @@ package spi_host_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_host_reg2hw_intr_state_reg_t intr_state; // [126:125]
-    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [124:123]
-    spi_host_reg2hw_intr_test_reg_t intr_test; // [122:119]
-    spi_host_reg2hw_alert_test_reg_t alert_test; // [118:117]
-    spi_host_reg2hw_control_reg_t control; // [116:98]
-    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [97:67]
-    spi_host_reg2hw_csid_reg_t csid; // [66:35]
-    spi_host_reg2hw_command_reg_t command; // [34:17]
+    spi_host_reg2hw_intr_state_reg_t intr_state; // [128:127]
+    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [126:125]
+    spi_host_reg2hw_intr_test_reg_t intr_test; // [124:121]
+    spi_host_reg2hw_alert_test_reg_t alert_test; // [120:119]
+    spi_host_reg2hw_control_reg_t control; // [118:100]
+    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [99:69]
+    spi_host_reg2hw_csid_reg_t csid; // [68:37]
+    spi_host_reg2hw_command_reg_t command; // [36:17]
     spi_host_reg2hw_error_enable_reg_t error_enable; // [16:12]
     spi_host_reg2hw_error_status_reg_t error_status; // [11:6]
     spi_host_reg2hw_event_enable_reg_t event_enable; // [5:0]
@@ -319,11 +323,12 @@ package spi_host_reg_pkg;
   parameter logic [0:0] SPI_HOST_INTR_TEST_SPI_EVENT_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_HOST_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_HOST_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
-  parameter logic [13:0] SPI_HOST_COMMAND_RESVAL = 14'h 0;
+  parameter logic [14:0] SPI_HOST_COMMAND_RESVAL = 15'h 0;
   parameter logic [8:0] SPI_HOST_COMMAND_LEN_RESVAL = 9'h 0;
   parameter logic [0:0] SPI_HOST_COMMAND_CSAAT_RESVAL = 1'h 0;
   parameter logic [1:0] SPI_HOST_COMMAND_SPEED_RESVAL = 2'h 0;
   parameter logic [1:0] SPI_HOST_COMMAND_DIRECTION_RESVAL = 2'h 0;
+  parameter logic [0:0] SPI_HOST_COMMAND_CLKIDLE_RESVAL = 1'h 0;
 
   // Window parameters
   parameter logic [BlockAw-1:0] SPI_HOST_RXDATA_OFFSET = 6'h 24;
