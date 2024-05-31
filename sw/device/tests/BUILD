@@ -1133,7 +1133,6 @@ opentitan_test(
 opentitan_test(
     name = "edn_kat",
     srcs = ["edn_kat.c"],
-    # Remove this line when fixed.
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
