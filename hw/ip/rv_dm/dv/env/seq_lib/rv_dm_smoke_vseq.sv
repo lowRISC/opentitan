@@ -104,12 +104,19 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
         1: check_ndmreset();
         1: check_unavailable();
       endcase
+
+      spot_resets(should_stop);
+      if (should_stop) return;
+
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
 
     repeat ($urandom_range(1, 5)) begin
       check_dmactive(should_stop);
+      spot_resets(should_stop);
+
       if (should_stop) return;
+
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
 
