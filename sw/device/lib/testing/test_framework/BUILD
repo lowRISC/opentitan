@@ -6,6 +6,7 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",

@@ -9,6 +9,7 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "silicon_params",

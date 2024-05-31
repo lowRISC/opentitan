@@ -28,6 +28,7 @@ load(
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",

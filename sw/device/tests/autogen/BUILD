@@ -9,6 +9,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "silicon_params",

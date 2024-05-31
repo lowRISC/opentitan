@@ -64,6 +64,9 @@ fpga_cw310 = _fpga_cw310
 fpga_cw340 = _fpga_cw340
 fpga_params = _fpga_params
 
+# Temporary export of the old name to prevent merge skew breakage.
+cw310_params = _fpga_params
+
 silicon = _silicon
 silicon_params = _silicon_params
 
@@ -203,6 +206,7 @@ def opentitan_test(
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
+        "cw310": fpga,
         "fpga": fpga,
         "dv": dv,
         "silicon": silicon,
@@ -214,6 +218,12 @@ def opentitan_test(
     all_tests = []
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
+
+        # Temporary fallback to "cw310" if "fpga" parameters were not provided.
+        # Prevents merge skew problems while the default parameter name changes.
+        if pname == "fpga" and pname not in kwargs_unused:
+            pname = "cw310"
+
         extra_tags = _hacky_tags(env)
         tparam = test_parameters[pname]
         if pname in kwargs_unused:
