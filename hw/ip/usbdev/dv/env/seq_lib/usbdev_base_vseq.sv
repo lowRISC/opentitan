@@ -228,6 +228,7 @@ endtask
   // Construct and transmit a token packet to the USB device
   virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
+    start_item(m_token_pkt);
     m_token_pkt.m_ev_type  = EvPacket;
     m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
@@ -236,7 +237,6 @@ endtask
     // Any fault injections requested?
     if (inject_crc_error) m_token_pkt.crc5 = ~m_token_pkt.crc5;
     m_usb20_item = m_token_pkt;
-    start_item(m_token_pkt);
     finish_item(m_token_pkt);
   endtask
 
@@ -244,6 +244,7 @@ endtask
   virtual task send_data_packet(input pid_type_e pid_type, input byte unsigned data[],
                                 input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    start_item(m_data_pkt);
     m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
@@ -252,7 +253,6 @@ endtask
     end
     m_data_pkt.set_data(data);  // This also completes the CRC16.
     m_usb20_item = m_data_pkt;
-    start_item(m_data_pkt);
     finish_item(m_data_pkt);
   endtask
 
@@ -262,6 +262,7 @@ endtask
                              input bit randomize_length, input bit [6:0] num_of_bytes,
                              input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    start_item(m_data_pkt);
     m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
@@ -271,7 +272,6 @@ endtask
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_data_pkt,
                                    !randomize_length -> m_data_pkt.data.size() == num_of_bytes;)
     m_usb20_item = m_data_pkt;
-    start_item(m_data_pkt);
     finish_item(m_data_pkt);
   endtask
 
@@ -309,21 +309,28 @@ endtask
     send_data_packet(pid_type, data, isochronous_transfer);
   endtask
 
-  virtual task get_data_pid_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
-    `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
-    m_data_pkt.m_pid_type = pid_type;
-    m_usb20_item = m_data_pkt;
-    // DV_CHECK on device reponse
-    `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
+  // Retrieve the DUT response and check the Packet IDentifier against expectations.
+  virtual task check_response_matches(input pid_type_e pid_type);
+    get_response(m_response_item);
+    $cast(m_usb20_item, m_response_item);
+    m_usb20_item.check_pid_type(pid_type);
+  endtask
+
+  // Retrieve the DUT response to an IN transaction, and check that it matches expectations.
+  virtual task check_in_packet(input pid_type_e pid_type, input byte unsigned data[]);
+    data_pkt in_data;
+    check_response_matches(pid_type);
+    $cast(in_data, m_response_item);
+    check_tx_packet(in_data, pid_type, data);
   endtask
 
   virtual task call_handshake_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
+    start_item(m_handshake_pkt);
     m_handshake_pkt.m_ev_type  = EvPacket;
     m_handshake_pkt.m_pkt_type = pkt_type;
     m_handshake_pkt.m_pid_type = pid_type;
     m_usb20_item = m_handshake_pkt;
-    start_item(m_handshake_pkt);
     finish_item(m_handshake_pkt);
   endtask
 
@@ -601,12 +608,12 @@ endtask
   // Send 'Start Of Frame' packet (bus frame/timing referenace).
   virtual task send_sof_packet(input pid_type_e pid_type);
     `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
+    start_item(m_sof_pkt);
     m_sof_pkt.m_ev_type  = EvPacket;
     m_sof_pkt.m_pkt_type = PktTypeSoF;
     m_sof_pkt.m_pid_type = pid_type;
     assert(m_sof_pkt.randomize());
     m_usb20_item = m_sof_pkt;
-    start_item(m_sof_pkt);
     finish_item(m_sof_pkt);
   endtask
 

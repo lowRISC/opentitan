@@ -24,17 +24,12 @@ class usbdev_in_rand_trans_vseq extends usbdev_base_vseq;
     // Out token packet followed by a data packet
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b0),
                          .num_of_bytes(num_of_bytes));
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeAck);
-    inter_packet_delay();
+    check_response_matches(PidTypeAck);
     // IN Trans configurations
     configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
     // Token pkt followed by handshake pkt
     send_token_packet(ep_default, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    get_data_pid_from_device(m_usb20_item, PidTypeData0);
+    check_response_matches(PidTypeData0);
     response_delay();
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
 

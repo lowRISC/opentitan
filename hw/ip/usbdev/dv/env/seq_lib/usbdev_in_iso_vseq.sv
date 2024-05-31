@@ -10,20 +10,15 @@ class usbdev_in_iso_vseq extends usbdev_base_vseq;
   task body();
     configure_out_trans(ep_default);
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
     // check OUT response
-    m_usb20_item.check_pid_type(PidTypeAck);
-    inter_packet_delay();
+    check_response_matches(PidTypeAck);
     // register configurations for IN Trans.
     configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
     // ISO EP1 OUT
     csr_wr(.ptr(ral.in_iso[0].iso[ep_default]), .value(1'b1));
     // Token pkt followed by handshake pkt
     send_token_packet(ep_default, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    get_data_pid_from_device(m_usb20_item, PidTypeData0);
+    check_response_matches(PidTypeData0);
     // For completion of IN transaction and assertion of in_sent interrupt
     // after succesful IN. ACK from Host is not required because the endpoint
     // hase been configured for isochronous traffic.

@@ -150,11 +150,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     // Check that the packet was accepted (ACKnowledged) by the USB device.
     // An Isochronous endpoint returns no handshake and no data toggle bit, so do not wait.
     if (!ep_iso_enabled[ep]) begin
-      usb20_item response;
-      get_response(m_response_item);
-      $cast(response, m_response_item);
-      `DV_CHECK_EQ(response.m_pkt_type, PktTypeHandshake);
-      `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
+      check_response_matches(PidTypeAck);
       // Packet successfully received and ACKnowledged; flip the data toggle.
       exp_out_toggle[ep] ^= 1'b1;
     end

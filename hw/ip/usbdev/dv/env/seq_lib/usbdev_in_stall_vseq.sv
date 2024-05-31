@@ -14,8 +14,6 @@ class usbdev_in_stall_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.in_stall[0].endpoint[ep_default]),  .value(1'b1)); // Stall EP IN
     // Token pkt followed by handshake pkt
     send_token_packet(ep_default, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeStall);
+    check_response_matches(PidTypeStall);
   endtask
 endclass

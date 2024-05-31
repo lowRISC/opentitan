@@ -17,10 +17,7 @@ class usbdev_stall_trans_vseq extends usbdev_base_vseq;
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
 
     // Check that the DUT reponds with the PidTypeStall
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    `DV_CHECK_EQ(m_usb20_item.m_pkt_type, PktTypeHandshake);
-    `DV_CHECK_EQ(m_usb20_item.m_pid_type, PidTypeStall);
+    check_response_matches(PidTypeStall);
   endtask
 
 endclass

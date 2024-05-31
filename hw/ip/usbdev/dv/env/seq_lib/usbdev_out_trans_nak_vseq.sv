@@ -16,8 +16,6 @@ class usbdev_out_trans_nak_vseq extends usbdev_base_vseq;
     csr_update(ral.rxenable_out[0]);
     // Out token packet followed by a data packet
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeNak);
+    check_response_matches(PidTypeNak);
   endtask
 endclass

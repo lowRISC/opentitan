@@ -10,8 +10,6 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
   task body();
     byte unsigned tx_data[];
-    usb20_item response;
-    data_pkt in_data;
 
     // Enable all endpoints for SETUP, IN and OUT
     configure_out_all();
@@ -40,10 +38,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     send_prnd_out_packet(ep_default, PidTypeData1, 1, 0);
 
     // Check that the packet was accepted (ACKnowledged) by the USB device.
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    `DV_CHECK_EQ(response.m_pkt_type, PktTypeHandshake);
-    `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
+    check_response_matches(PidTypeAck);
 
     // Check the contents of the packet buffer memory against the OUT packet that was sent.
     check_rx_packet(ep_default, 1'b0, out_buffer_id, m_data_pkt.data);
@@ -66,12 +61,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
     // Send IN request and collect DATA packet in response.
     send_token_packet(ep_default, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
-    $cast(in_data, response);
-    check_tx_packet(in_data, PidTypeData1, tx_data);
-    cfg.clk_rst_vif.wait_clks(20);
+    check_in_packet(PidTypeData1, tx_data);
+    response_delay();
     // ACKnowledge receipt of the data packet.
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
     // in_sent register/interrupt assertion occurs a few cycles after the ACK has been received.
@@ -83,9 +74,9 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
   // Construct and transmit a DATA packet containing a SETUP descriptor to the USB device
   task call_desc_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
-    usb20_item response;
     RSP rsp_item;
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    start_item(m_data_pkt);
     m_data_pkt.m_ev_type  = EvPacket;
     m_data_pkt.m_pkt_type = pkt_type;
     m_data_pkt.m_pid_type = pid_type;
@@ -96,11 +87,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     m_data_pkt.make_device_request(m_data_pkt.m_bmRT, m_data_pkt.m_bR,
                                    8'h00, 8'h01,
                                    16'h0, 16'd18);  // Device descriptor >= 18 bytes.
-    start_item(m_data_pkt);
     finish_item(m_data_pkt);
-    get_response(rsp_item);
-    $cast(response, rsp_item);
-    response.check_pid_type(PidTypeAck);
+    check_response_matches(PidTypeAck);
   endtask
 
 endclass : usbdev_smoke_vseq
