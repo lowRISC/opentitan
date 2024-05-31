@@ -250,6 +250,23 @@
       tests: []
     }
     {
+      name: chip_sw_otp_ctrl_dai_lock
+      desc: '''Verify DAI lock functionality.
+
+            - Try write/read through DAI accessible partitions.
+            - Disable DAI by clearing the DIRECT_ACCESS_REGWEN register.
+            - OTP data must not be accessible to software through DAI when it is disabled.
+      '''
+      features: [
+        "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK",
+        "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
+        "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"
+      ]
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_otp_ctrl_dai_lock"]
+    }
+    {
       name: otp_ctrl_check_timeout
       desc: '''Verify check_tiemout feature.
 
