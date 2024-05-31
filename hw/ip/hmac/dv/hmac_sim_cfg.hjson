@@ -92,16 +92,30 @@
     }
 
     {
-      name: hmac_test_sha_vectors
+      name: hmac_test_sha256_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
       // Increase timeout for all test iterations to pass
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=800_000_000"]
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=800_000_000 +sha2_digest_size=SHA2_256"]
+    }
+
+    {
+      name: hmac_test_sha384_vectors
+      uvm_test_seq: hmac_test_vectors_sha_vseq
+      // Increase timeout for all test iterations to pass
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=1_000_000_000 +sha2_digest_size=SHA2_384"]
+    }
+
+    {
+      name: hmac_test_sha512_vectors
+      uvm_test_seq: hmac_test_vectors_sha_vseq
+      // Increase timeout for all test iterations to pass
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=1_000_000_000 +sha2_digest_size=SHA2_512"]
     }
 
     {
       name: hmac_test_hmac_vectors
       uvm_test_seq: hmac_test_vectors_hmac_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +sha2_digest_size=SHA2_256"]
     }
 
     {
@@ -122,7 +136,12 @@
   regressions: [
     {
       name: smoke
-      tests: ["hmac_smoke", "hmac_test_sha_vectors"]
+      tests: ["hmac_smoke", "hmac_test_sha256_vectors",
+              "hmac_test_sha384_vectors", "hmac_test_sha512_vectors"]
+    }
+     {
+      name: sha_test_vectors
+      tests: ["hmac_test_sha256_vectors", "hmac_test_sha384_vectors", "hmac_test_sha512_vectors"]
     }
   ]
 }

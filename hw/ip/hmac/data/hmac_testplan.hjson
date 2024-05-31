@@ -48,8 +48,8 @@
             and SHA test vectors to check if the reference model predicts correct data, and check if
             DUT returns correct data.'''
       stage: V2
-      tests: ["hmac_test_sha256_vectors", "hmac_test_sha384_vectors", "hmac_test_sha512_vectors",
-              "hmac_test_hmac_vectors"]
+      tests: ["hmac_test_sha256_vectors", "hmac_test_sha384_vectors",
+              "hmac_test_sha512_vectors", "hmac_test_hmac_vectors"]
     }
     {
       name: burst_wr

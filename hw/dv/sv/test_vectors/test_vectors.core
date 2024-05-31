@@ -13,6 +13,10 @@ filesets:
       - vectors/hmac/HMAC_RFC4868.rsp: {is_include_file: true}
       - vectors/sha/sha256/SHA256ShortMsg.rsp: {is_include_file: true}
       - vectors/sha/sha256/SHA256LongMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha384/SHA384ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha384/SHA384LongMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha512/SHA512ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha512/SHA512LongMsg.rsp: {is_include_file: true}
       - vectors/sha/sha3/SHA3_224ShortMsg.rsp: {is_include_file: true}
       - vectors/sha/sha3/SHA3_224LongMsg.rsp: {is_include_file: true}
       - vectors/sha/sha3/SHA3_256ShortMsg.rsp: {is_include_file: true}
