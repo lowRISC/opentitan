@@ -17,10 +17,17 @@ package test_vectors_pkg;
 
   // declare string and vectors
   string header                 = "test_vectors_pkg";
-  string sha_file_list[]        = {"vectors/sha/sha256/SHA256ShortMsg.rsp",
+  string sha2_256_file_list[]   = {"vectors/sha/sha256/SHA256ShortMsg.rsp",
                                    "vectors/sha/sha256/SHA256LongMsg.rsp"
                                   };
-  string hmac_file_list[]       = {"vectors/hmac/HMAC_RFC4868.rsp"};
+  string sha2_384_file_list[]   = {"vectors/sha/sha384/SHA384ShortMsg.rsp",
+                                   "vectors/sha/sha384/SHA384LongMsg.rsp"
+                                  };
+  string sha2_512_file_list[]   = {"vectors/sha/sha512/SHA512ShortMsg.rsp",
+                                   "vectors/sha/sha512/SHA512LongMsg.rsp"
+                                  };
+  string hmac_256_file_list[]   = {"vectors/hmac/HMAC_RFC4868.rsp"};
+  // TODO (issue #22932) add HMAC test vectors for 384/512 for all key lengths
   string sha3_224_file_list[]   = {"vectors/sha/sha3/SHA3_224ShortMsg.rsp",
                                    "vectors/sha/sha3/SHA3_224LongMsg.rsp"
                                   };
@@ -141,11 +148,11 @@ package test_vectors_pkg;
     end
   endfunction : open_file
 
-  // This function parses all NIST test vectors for SHA256/HMAC/SHA3SHAKE/CSHAKE/KMAC.
+  // This function parses all NIST test vectors for SHA256/SHA384/SHA512/HMAC/SHA3SHAKE/CSHAKE/KMAC.
   //
   // The test vectors for these algorithms can be formatted in a variety of ways:
   //
-  // 1) This format is used for SHA256/SHA3 test vectors.
+  // 1) This format is used for SHA-2 256/SHA-2 384/SHA-2 512/SHA3 test vectors.
   //
   // Len = ...
   // Msg = ...

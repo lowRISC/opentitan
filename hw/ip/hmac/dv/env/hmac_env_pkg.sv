@@ -181,14 +181,12 @@ package hmac_env_pkg;
 
   function automatic int get_key_length(int key_length_reg);
     case (key_length_reg)
-      'h01: return 128;   // 128-bit secret key
-      'h02: return 256;   // 256-bit secret key
-      'h04: return 384;   // 384-bit secret key
-      'h08: return 512;   // 512-bit secret key
-      'h10: return 1024;  // 1024-bit secret key
-      'h20: return 0;     // Unsupported/invalid values and all-zero values are mapped to Key_None
-      default: `uvm_fatal("get_key_length", $sformatf("Invalid key length register value: %0h",
-                          key_length_reg))
+      'h01:    return 128;   // 128-bit secret key
+      'h02:    return 256;   // 256-bit secret key
+      'h04:    return 384;   // 384-bit secret key
+      'h08:    return 512;   // 512-bit secret key
+      'h10:    return 1024;  // 1024-bit secret key
+      default: return 0;     // Unsupported/invalid/all-zero values are mapped to Key_None
     endcase
   endfunction : get_key_length
 

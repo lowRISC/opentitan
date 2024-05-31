@@ -14,8 +14,16 @@ The following is a list of common properties and methods:
 * **parse_sha**: A method to parse SHA vectors files. Return an array of
   test_vectors_t.
 
-## SHA256 vectors
+## SHA-2 256 vectors
 The test vector files inside of `vectors/sha/sha256/` are downloaded from the
+[NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs).
+
+## SHA-2 384 vectors
+The test vector files inside of `vectors/sha/sha384/` are downloaded from the
+[NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs).
+
+## SHA-2 512 vectors
+The test vector files inside of `vectors/sha/sha512/` are downloaded from the
 [NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs).
 
 ## SHA3 vectors

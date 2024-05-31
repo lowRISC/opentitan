@@ -2,47 +2,36 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This vseq will read a few NIST vector format sha or hmac test vectors
-// and compare the expected result
+// This vseq will read SHA-2 NIST vectors and compare computed results with the expected values
+// https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing
+
 class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_test_vectors_sha_vseq)
   `uvm_object_new
-  // TODO (#22932): remove this and use the constraints from hmac_base_vseq once
-  // this test is adapted for all digest sizes and key lengths
-  rand bit [5:0]  key_length;
-  rand bit [3:0]  digest_size;
 
-  string vector_list[] = test_vectors_pkg::sha_file_list;
+  string vector_list_256[] = test_vectors_pkg::sha2_256_file_list;
+  string vector_list_384[] = test_vectors_pkg::sha2_384_file_list;
+  string vector_list_512[] = test_vectors_pkg::sha2_512_file_list;
+
+  string digest_size_arg;
 
   constraint hmac_disabled_c {
     soft hmac_en == 0;
   }
 
-  // TODO (#22932): remove this constraint and use the constraints from hmac_base_vseq once
-  // this test is adapted for all digest sizes and key lengths
-  constraint key_length_c {
-    key_length == 'h2;  // test only with key_256
-    // $countones(key_length) == 1 dist {
-    //   1 :/ 8,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
-    //   0 :/ 2   // Illegal -> should get casted to Key_None in HW
-    // };
-  }
-
-  constraint digest_size_c {
-    digest_size == 'h1;  // test only with SHA2-256
-    // $countones(digest_size) == 1 dist {
-    //   1 :/ 8,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
-    //   0 :/ 2   // Illegal -> should get casted to SHA2_None in HW
-    // };
-  }
-
   virtual task pre_start();
     cfg.save_and_restore_pct  = 0;    // Should not be triggered for this test
     do_hmac_init              = 1'b0;
+    // grab SHA-2 digest size from the command-line argument
+    void'($value$plusargs("sha2_digest_size=%s", digest_size_arg));
+    if (digest_size_arg == "") begin
+      `uvm_fatal(`gfn, {"This test sequence requires a command-line argument: ",
+                        "sha2_digest_size=SHA2_256/SHA2_384/SHA2_512"})
+    end
     super.pre_start();
   endtask
 
-  task body();
+  task feed_vectors (string vector_list[], bit [3:0] digest_size, bit [5:0] key_length);
     test_vectors_pkg::test_vectors_t parsed_vectors[];
 
     foreach (vector_list[i]) begin
@@ -93,9 +82,34 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
         csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
         // read digest and compare with the expected result, scb will calculate and check too
-        compare_digest(parsed_vectors[j].exp_digest, digest_size);   // TODO (#23288)
+        compare_digest(parsed_vectors[j].exp_digest, digest_size);
       end
     end
+  endtask
+
+  task body();
+    string vector_list[];
+    if (digest_size_arg == "SHA2_256") begin
+      digest_size = SHA2_256;
+      // TODO: fix key_length for now until we add HMAC test vectors with other key lengths
+      key_length  = Key_256;
+      vector_list = vector_list_256;
+    end else if (digest_size_arg == "SHA2_384" && !hmac_en) begin
+      // TODO (issue #22932): release the constraints to run HMAC test vectors as well
+      // once HMAC test vectors with different key lengths are added
+      digest_size = SHA2_384;
+      key_length  = Key_256;
+      vector_list = vector_list_384;
+    end else if (digest_size_arg == "SHA2_512" && !hmac_en) begin
+      // TODO (issue #22932): release the constraints to run HMAC test vectors as well
+      // once HMAC test vectors with different key lengths are added
+      digest_size = SHA2_512;
+      key_length  = Key_256;
+      vector_list = vector_list_512;
+    end
+    feed_vectors (vector_list, digest_size, key_length);
+    `uvm_info(`gfn, $sformatf("Starting SHA-2/HMAC %s and %s NIST test vectors...",
+              digest_size_arg, "Key_256"), UVM_LOW)
   endtask : body
 
 endclass : hmac_test_vectors_sha_vseq

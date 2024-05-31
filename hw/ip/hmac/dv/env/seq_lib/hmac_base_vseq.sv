@@ -54,19 +54,17 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     };
   }
 
-  // TODO: keep both blocks for key_length and digest size and toggle between both for WIP
-  // till DV stabilizes for all digest sizes and key lengths
   constraint key_length_c {
     $countones(key_length) == 1 dist {
-      1 :/ 10,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
-      0 :/ 0    // Illegal -> should get casted to Key_None in HW TODO #23592
+      1 :/ 4,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
+      0 :/ 1   // Illegal -> should get casted to Key_None in HW
     };
   }
 
   constraint digest_size_c {
     $countones(digest_size) == 1 dist {
-      1 :/ 10,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
-      0 :/ 0    // Illegal -> should get casted to SHA2_None in HW TODO #23592
+      1 :/ 4,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
+      0 :/ 1   // Illegal -> should get casted to SHA2_None in HW
     };
   }
 
@@ -460,24 +458,22 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // TODO (#23288): remove this check from the seq
   virtual task compare_digest(bit [7:0] exp_digest[], bit [3:0] digest_size_i);
     bit [TL_DW-1:0] act_digest[16];
-    bit [TL_DW-1:0] packed_exp_digest[8];
+    bit [TL_DW-1:0] packed_exp_digest[16];
     csr_rd_digest(act_digest);
     // `exp_digest` is guaranteed to always contain 16 words (64 bytes) of data
     // since HMAC digest size is max 512 bits.
     packed_exp_digest = {>>byte{exp_digest}};
     if (cfg.clk_rst_vif.rst_n) begin
-      foreach (act_digest[i]) begin
-        `uvm_info(`gfn, $sformatf("Actual digest[%0d]: 0x%0h", i, act_digest[i]), UVM_HIGH)
-        `uvm_info(`gfn, $sformatf("Expected digest[%0d]: 0x%0h", i, packed_exp_digest[i]), UVM_HIGH)
-      end
-
       // comparing only digest[0] to digest [7] for SHA-2 256
       // comparing only digest[0] to digest [12] for SHA-2 384
       // comparing all digest for SHA-2 512
       foreach (act_digest[i]) begin
-        if ( (i < 8) ||
+        if ((i  < 8) ||
             ((i >= 8 && i < 12) && (digest_size_i == SHA2_384 || digest_size_i == SHA2_512)) ||
             ((i >= 12)          && (digest_size_i == SHA2_512))) begin
+          `uvm_info(`gfn, $sformatf("Actual digest[%0d]: 0x%0h", i, act_digest[i]), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("Expected digest[%0d]: 0x%0h", i,
+                    packed_exp_digest[i]), UVM_HIGH)
           `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i], $sformatf("for index %0d", i))
         end
       end
