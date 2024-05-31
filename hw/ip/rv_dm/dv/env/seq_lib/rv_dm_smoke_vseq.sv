@@ -66,15 +66,33 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   endtask
 
   // Verify that writing to dmactive causes dmactive output to be set.
+  //
+  // If a reset is asserted somewhere in the middle, the DMI write to dmcontrol will have been
+  // ignored. Skip the check.
   task check_dmactive();
+    bit seen_reset = 1'b0;
     uvm_reg_data_t data = $urandom_range(0, 1);
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
 
-    // Wait for the DMI transaction to make it from the JTAG clock domain to the system clock. This
-    // goes through a dmi_cdc module and takes two JTAG clock cycles.
-    cfg.jtag_vif.wait_tck(2);
+    fork begin : isolation_fork
+      fork
+        begin
+          wait (!cfg.clk_rst_vif.rst_n);
+          seen_reset = 1'b1;
+        end
+        begin
+          csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
 
-    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
+          // Wait for the DMI transaction to make it from the JTAG clock domain to the system clock.
+          // This goes through a dmi_cdc module and takes two JTAG clock cycles.
+          cfg.m_jtag_agent_cfg.vif.wait_tck(2);
+        end
+      join_any
+      if (!seen_reset) disable fork;
+    end join
+
+    if (!seen_reset) begin
+      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
+    end
   endtask
 
   task body();
