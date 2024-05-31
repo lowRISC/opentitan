@@ -109,8 +109,7 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
     $cast(in_data, response);
     check_tx_packet(in_data, exp_in_toggle[ep] ? PidTypeData1 : PidTypeData0, pkt_data);
-    cfg.clk_rst_vif.wait_clks(20);
-    call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+    send_handshake(PidTypeAck);
 
     // Flip the IN side Data Toggle in anticipation of the next packet transfer.
     exp_in_toggle[ep] ^= 1;

@@ -114,11 +114,10 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
         `DV_CHECK(packets_in_flight[ep].size() > 0)
         exp_data = packets_in_flight[ep].pop_front();
         check_tx_packet(in_data, exp_in_toggle[ep] ? PidTypeData1 : PidTypeData0, exp_data.data);
-        response_delay();
         if (!ep_iso_enabled[ep]) begin
           // Since we're acknowledging successful receipt, we flip our toggle.
           exp_in_toggle[ep] ^= 1'b1;
-          call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+          send_handshake(PidTypeAck);
         end
         // Update the count of received packets.
         packets_received[ep] = packets_received[ep] + 1;

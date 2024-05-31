@@ -62,9 +62,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // Send IN request and collect DATA packet in response.
     send_token_packet(ep_default, PidTypeInToken);
     check_in_packet(PidTypeData1, tx_data);
-    response_delay();
     // ACKnowledge receipt of the data packet.
-    call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+    send_handshake(PidTypeAck);
     // in_sent register/interrupt assertion occurs a few cycles after the ACK has been received.
     cfg.clk_rst_vif.wait_clks(20);
     // Verify Transaction reads register status and verifies that IN transaction is successful.

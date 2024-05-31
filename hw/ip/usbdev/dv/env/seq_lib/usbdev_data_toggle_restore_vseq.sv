@@ -69,17 +69,16 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
     $cast(in_data, response);
     check_tx_packet(in_data, exp_in_data_toggles[ep] ? PidTypeData1 : PidTypeData0, exp_data);
-    cfg.clk_rst_vif.wait_clks(20);
 
     // Respond as chosen to the DATA packet sent by the DUT.
     case (rsp)
       InResponseAck: begin
-        call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+        send_handshake(PidTypeAck);
         // The IN data toggle should now have flipped.
         exp_in_data_toggles[ep] ^= 1;
       end
       InResponseNak: begin
-        call_handshake_sequence(PktTypeHandshake, PidTypeNak);
+        send_handshake(PidTypeNak);
       end
       default: begin
         // No response, nothing to do; the test may proceed to send another a packet within the
