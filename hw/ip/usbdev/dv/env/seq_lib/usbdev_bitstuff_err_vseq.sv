@@ -56,7 +56,7 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
     // Disable the bit stuffing logic in the driver.
     cfg.m_usb20_agent_cfg.disable_bitstuffing = 1'b1;
 
-    call_token_seq(ep_default, PidTypeOutToken);
+    send_token_packet(ep_default, PidTypeOutToken);
     inter_packet_delay();
     `DV_CHECK_EQ(cfg.intr_vif.pins[IntrRxBitstuffErr], 0)
     send_data_packet(PidTypeData0, data);

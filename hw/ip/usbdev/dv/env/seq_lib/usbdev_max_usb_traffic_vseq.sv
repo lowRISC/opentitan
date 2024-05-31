@@ -101,7 +101,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     `uvm_info(`gfn, $sformatf("Requesting IN packet from EP%d", ep), UVM_HIGH)
     claim_driver();
     // Send IN token packet
-    call_token_seq(ep, PidTypeInToken);
+    send_token_packet(ep, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     case (response.m_pid_type)

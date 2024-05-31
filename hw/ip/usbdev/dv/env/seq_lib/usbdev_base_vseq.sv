@@ -226,7 +226,7 @@ endtask
   endtask
 
   // Construct and transmit a token packet to the USB device
-  virtual task call_token_seq(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0);
+  virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_ev_type  = EvPacket;
     m_token_pkt.m_pkt_type = PktTypeToken;
@@ -258,7 +258,7 @@ endtask
 
   // Construct and transmit a randomized DATA packet to the USB device, retaining a copy for
   // subsequent checks.
-  virtual task call_data_seq(input pid_type_e pid_type,
+  virtual task send_prnd_data_packet(input pid_type_e pid_type,
                              input bit randomize_length, input bit [6:0] num_of_bytes,
                              input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
@@ -278,12 +278,12 @@ endtask
   // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
   virtual task send_prnd_setup_packet(bit [3:0] ep);
     // Send SETUP token packet to the selected endpoint on the specified device.
-    call_token_seq(ep, PidTypeSetupToken);
+    send_token_packet(ep, PidTypeSetupToken);
     // Variable delay between SETUP token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA packet with randomized content, but we'll honor the rule that SETUP DATA packets
     // are 8 bytes in length. The DUT does not attempt to interpret the packet content.
-    call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
+    send_prnd_data_packet(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
   endtask
 
   // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
@@ -291,18 +291,18 @@ endtask
                                     input bit randomize_length, input bit [6:0] num_of_bytes,
                                     bit isochronous_transfer = 1'b0);
     // Send OUT token packet to the selected endpoint on the specified device.
-    call_token_seq(ep, PidTypeOutToken);
+    send_token_packet(ep, PidTypeOutToken);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA packet with randomized content.
-    call_data_seq(pid_type, randomize_length, num_of_bytes, isochronous_transfer);
+    send_prnd_data_packet(pid_type, randomize_length, num_of_bytes, isochronous_transfer);
   endtask
 
   // Construct and transmit an OUT DATA packet containing the supplied data.
   virtual task send_out_packet(bit [3:0] ep, input pid_type_e pid_type, byte unsigned data[],
                                bit isochronous_transfer = 1'b0, bit [6:0] dev_address = dev_addr);
     // Send OUT token packet to the selected endpoint on the specified device.
-    call_token_seq(ep, PidTypeOutToken);
+    send_token_packet(ep, PidTypeOutToken);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA1 packet with the given content.

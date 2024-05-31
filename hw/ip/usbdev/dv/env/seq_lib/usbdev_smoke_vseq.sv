@@ -25,7 +25,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // ---------------------------------------------------------------------------------------------
     // SETUP token packet followed by a DATA packet of 8 bytes
     // ---------------------------------------------------------------------------------------------
-    call_token_seq(ep_default, PidTypeSetupToken);
+    send_token_packet(ep_default, PidTypeSetupToken);
     inter_packet_delay();
     call_desc_sequence(PktTypeData, PidTypeData0);
     cfg.clk_rst_vif.wait_clks(20);
@@ -65,7 +65,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     csr_update(ral.configin[ep_default]);
 
     // Send IN request and collect DATA packet in response.
-    call_token_seq(ep_default, PidTypeInToken);
+    send_token_packet(ep_default, PidTypeInToken);
     get_response(m_response_item);
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
