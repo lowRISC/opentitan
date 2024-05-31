@@ -163,6 +163,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_mio_dio_val"]
+      bazel: ["//sw/device/tests:sleep_pin_mio_dio_val_test"]
     }
     {
       name: chip_sw_sleep_pin_wake
