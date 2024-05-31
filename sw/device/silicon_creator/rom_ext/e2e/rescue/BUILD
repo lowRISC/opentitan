@@ -6,6 +6,7 @@ load(
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",

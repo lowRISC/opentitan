@@ -4,6 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_binary",

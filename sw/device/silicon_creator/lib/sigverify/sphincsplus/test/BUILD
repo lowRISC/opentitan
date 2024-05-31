@@ -10,6 +10,7 @@ load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",

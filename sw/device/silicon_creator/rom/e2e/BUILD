@@ -42,6 +42,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "cw310_params",
     "dv_params",
     "ecdsa_key_by_name",
     "fpga_params",

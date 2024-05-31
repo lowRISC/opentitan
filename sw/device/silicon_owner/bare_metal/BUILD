@@ -5,7 +5,7 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_binary", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "cw310_params", "fpga_params", "opentitan_binary", "opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
