@@ -40,12 +40,7 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
     // Check that the transaction received the expected response, which should either be ACK
     // for an accepted packet (matching data toggle) or no response (packet dropped).
     if (exp_ack) begin
-      usb20_item response;
-
-      get_response(m_response_item);
-      $cast(response, m_response_item);
-      `DV_CHECK_EQ(response.m_pkt_type, PktTypeHandshake);
-      `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
+      check_response_matches(PidTypeAck);
 
       // Check the contents of the packet buffer memory against the OUT packet that was sent.
       check_rx_packet(ep, 1'b0, out_buffer_id, m_data_pkt.data);

@@ -16,9 +16,7 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     configure_out_trans(ep_default);
     // Out token packet followed by a data packet of 8 bytes
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
-    get_response(rsp_item);
-    $cast(item, rsp_item);
-    item.check_pid_type(PidTypeAck);
+    check_response_matches(PidTypeAck);
 
     // Check that the USB device received a packet with the expected properties.
     check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);

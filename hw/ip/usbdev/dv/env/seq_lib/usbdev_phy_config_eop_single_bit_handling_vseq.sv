@@ -15,9 +15,7 @@ class usbdev_phy_config_eop_single_bit_handling_vseq extends usbdev_base_vseq;
     csr_wr (.ptr(ral.phy_config.eop_single_bit), .value(1'b1));
 
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeAck);
+    check_response_matches(PidTypeAck);
     check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
   endtask
 endclass

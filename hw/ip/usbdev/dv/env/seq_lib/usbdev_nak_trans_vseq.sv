@@ -23,9 +23,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
 
     // Check first transaction accuracy
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeAck);
+    check_response_matches(PidTypeAck);
 
     // Read rxenable_out
     csr_rd(.ptr(ral.rxenable_out[0]), .value(rx_enable));
@@ -43,9 +41,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     send_prnd_out_packet(ep_default, PidTypeData1, .randomize_length(1'b1), .num_of_bytes(0));
 
     // Check second transaction accuracy
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeNak);
+    check_response_matches(PidTypeNak);
   endtask
 
 endclass

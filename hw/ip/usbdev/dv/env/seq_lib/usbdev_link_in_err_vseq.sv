@@ -12,18 +12,13 @@ class usbdev_link_in_err_vseq extends usbdev_base_vseq;
 
     configure_out_trans(ep_default);
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    get_data_pid_from_device(m_usb20_item, PidTypeAck);
-    inter_packet_delay();
+    check_response_matches(PidTypeAck);
     // Check that link_in_err interrupt is zero.
     csr_rd(.ptr(ral.intr_state.link_in_err), .value(link_error));
     `DV_CHECK_EQ(0, link_error);
     configure_in_trans(ep_default, out_buffer_id, m_data_pkt.data.size());
     send_token_packet(ep_default, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    get_data_pid_from_device(m_usb20_item, PidTypeData0);
+    check_response_matches(PidTypeData0);
     response_delay();
     // Send unexpected PID to USB device and device will assert link_in_err interrupt.
     // Expected pkt is ACK but send NYET packet.

@@ -20,9 +20,7 @@ class usbdev_pending_in_trans_vseq extends usbdev_base_vseq;
     // to cancel any pending IN transactions. The device will prioritize
     // the setup transaction by clearing the 'rdy' bit in the configin register.
     send_prnd_setup_packet(ep_default);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeAck);
+    check_response_matches(PidTypeAck);
     // Verify that after the setup transaction, the waiting IN transction is canceled
     // by checking 'rdy' and 'pend' bit of configin register.
     csr_rd(ral.configin[ep_default], config_in);

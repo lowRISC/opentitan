@@ -21,10 +21,7 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
 
     // Out token packet followed by a data packet
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    // Get response from DUT
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(PidTypeAck);
+    check_response_matches(PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
 
     // Read rxfifo reg
@@ -38,10 +35,8 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     // Token pkt followed by handshake pkt
     send_token_packet(ep_default, PidTypeInToken);
     // Get response from DUT
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    get_data_pid_from_device(m_usb20_item, PidTypeData0);
-    cfg.clk_rst_vif.wait_clks(20);
+    check_response_matches(PidTypeData0);
+    response_delay();
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
 

@@ -10,7 +10,6 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
 
   virtual task body();
     int unsigned max_tries = 4;
-    usb20_item response;
     bit pkt_sent;
     bit in_sent;
 
@@ -21,10 +20,7 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     configure_out_trans(ep_default); // register configurations for OUT Trans.
 
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    `DV_CHECK_EQ(response.m_pkt_type, PktTypeHandshake);
-    `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
+    check_response_matches(PidTypeAck);
 
     check_rx_packet(ep_default, 1'b0, out_buffer_id, m_data_pkt.data);
 
@@ -33,9 +29,7 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
 
     // Attempt to collect IN DATA packet in response.
     send_token_packet(ep_default, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    get_data_pid_from_device(response, PidTypeData0);
+    check_response_matches(PidTypeData0);
     // ACKnowledge successful reception of the IN DATA packet.
     response_delay();
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
