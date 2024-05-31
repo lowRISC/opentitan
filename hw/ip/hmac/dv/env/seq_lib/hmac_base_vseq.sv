@@ -18,7 +18,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   bit [5:0] cast_key_length;
   bit [3:0] cast_digest_size;
 
-
   rand bit [TL_AW-1:0]    wr_addr;
   rand bit [TL_DBW-1:0]   wr_mask;
   rand bit                wr_config_during_hash;
@@ -511,12 +510,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       csr_rd_digest(digest_a);
       // Read message length and save it.
       csr_rd_msg_length(msg_length_a);
+      save_ctx_ongoing = 0;
       // Disable SHA so we can write digest and message length.
       csr_wr(.ptr(ral.cfg.sha_en), .value(1'b0));
       // Clearing the message length is not strictly necessary but currently done to ensure the
       // previous value does not persist.
       csr_wr_msg_length('0); //
-      save_ctx_ongoing = 0;
       // Reload the digest by writing it back.
       csr_wr_digest(digest_a);
       // Reload the message length by writing it back.
@@ -531,9 +530,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     //      1- config registers for A, run A hash, stop A hash
     //      2- save A context
     //      3- config registers for B, run B hash, stop B hash
-    //      4- save B context, restore A context, resume A hash until the end
-    //      5- restore B context, resume B hash until the end
+    //      4- restore A context, resume A hash until the end
     end else begin
+      // ----- 1- config registers for A, run A hash, stop A hash
       // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
       // or 1024 bits SHA-2 384/512)
       sar_window.wait_trigger();
@@ -547,50 +546,54 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
       // Clear the interrupt.
       csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+
+      // ----- 2- save A context
       // Read the digest and save it.
       csr_rd_digest(digest_a);
       // Read message length and save it.
       csr_rd_msg_length(msg_length_a);
-      save_and_restore_cfg(1, 0);   // Save config A, generate config B and config DUT
       save_ctx_ongoing = 0;
+
+      // ----- 3- config registers for B, run B hash, wait B hash completion
+      // Disable SHA so we can write digest and message length.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b0));
+      // Save config A, generate config B and config DUT
+      save_and_restore_cfg(1, 0);
       // Re-enable SHA and continue hashing.
       csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
-      trigger_hash_continue();
-      // Wait a block boundary
-      sar_window.wait_trigger();
-      // Stop hash operations.
-      trigger_hash_stop();
-      // Expose ongoing Save and Restore triggered to avoid to request a new hash process
-      save_ctx_ongoing = 1;
+      // Start processing message stream
+      trigger_hash();
+      // Generate random message for B context
+      msg_b = new[$urandom_range(0, 400)];
+      foreach (msg_b[i]) msg_b[i] = $urandom();
+      `uvm_info(`gfn, $sformatf("SAR context B - message size %0d bits", msg_b.size()*8), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("SAR context B - msg_b=%p", msg_b), UVM_LOW)
+      // Set this flag to tell the SCB to skip ongoing things
+      cfg.sar_skip_ctxt = 1;
+      // Write complete message for B context
+      wr_msg(msg_b, 1);
+      // Start HASH
+      trigger_process();
       // Wait for hash to be done so the digest is updated.
       csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
       // Clear the interrupt.
       csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
-      // Read the digest and save it.
-      csr_rd_digest(digest_b);
-      // Read message length and save it.
-      csr_rd_msg_length(msg_length_b);
-      save_and_restore_cfg(1, 1);   // Save config B and restore config A
+      // Clear this flag to tell the SCB to proceed with the prediction and checks
+      cfg.sar_skip_ctxt = 0;
       save_ctx_ongoing = 0;
+
+      // ----- 4- restore A context, resume A hash until the end
+      // Disable SHA so we can write digest and message length.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b0));
+      // Restore config A without saving config B as not required
+      save_and_restore_cfg(0, 1);
+      // Reload the digest by writing it back.
+      csr_wr_digest(digest_a);
+      // Reload the message length by writing it back.
+      csr_wr_msg_length(msg_length_a);
       // Re-enable SHA and continue hashing.
       csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
       trigger_hash_continue();
-      // Wait message A completion
-      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-      // Wait for hash to be done so the digest is updated.
-      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-      // Clear the interrupt.
-      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
-      save_and_restore_cfg(0, 1);   // Restore config B without saving config A as hash completed
-      // Re-enable SHA and continue hashing.
-      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
-      trigger_hash_continue();
-      // Wait message B completion
-      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-      // Wait for hash to be done so the digest is updated.
-      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-      // Clear the interrupt.
-      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
       sar_different_ctxt_ev.trigger();
     end
     sar_ongoing = 0;
@@ -635,13 +638,28 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end else begin
       rand_cfg = hmac_base_vseq::type_id::create("rand_cfg");
       rand_cfg.set_sequencer(p_sequencer);  // Won't be used but needed to avoid error
-      `DV_CHECK_FATAL(rand_cfg.randomize())
+      // Randomize valid configuration only
+      `DV_CHECK_FATAL(rand_cfg.randomize() with {
+        solve digest_size before key_length;
+        $countones(digest_size) == 1;
+        $countones(key_length)  == 1;
+        digest_size != SHA2_None;
+        (local::hmac_en) -> (key_length != Key_None);
+        (local::hmac_en && digest_size == SHA2_256) -> (key_length != Key_1024);
+      })
+      // Write into registers
       ral.cfg.endian_swap.set(rand_cfg.endian_swap);
       ral.cfg.digest_swap.set(rand_cfg.digest_swap);
       ral.cfg.digest_size.set(rand_cfg.digest_size);
       ral.cfg.key_length.set(rand_cfg.key_length);
       csr_update(.csr(ral.cfg));
       wr_key(rand_cfg.key);
+      `uvm_info(`gfn, $sformatf("SAR context B - digest size=%s, key length=%0d",
+                get_digest_size(rand_cfg.digest_size),
+                get_key_length(rand_cfg.key_length)), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("SAR context B - endian/digest_swap=%b",
+                {rand_cfg.endian_swap, rand_cfg.digest_swap}), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("SAR context B - key=%p", rand_cfg.key), UVM_LOW)
     end
 
     // Copy over into the previous config variables

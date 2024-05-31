@@ -19,6 +19,10 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   // continue hashing.
   int save_and_restore_pct;
 
+  // TODO (#23562): will be removed when tackling this issue
+  // Flag to notify the scoreboard to skip the current message writes and don't flush its variables
+  bit sar_skip_ctxt = 0;
+
   hmac_vif hmac_vif;
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
