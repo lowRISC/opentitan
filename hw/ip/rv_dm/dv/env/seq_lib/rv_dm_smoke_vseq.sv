@@ -69,7 +69,11 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   task check_dmactive();
     uvm_reg_data_t data = $urandom_range(0, 1);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+
+    // Wait for the DMI transaction to make it from the JTAG clock domain to the system clock. This
+    // goes through a dmi_cdc module and takes two JTAG clock cycles.
+    cfg.jtag_vif.wait_tck(2);
+
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
   endtask
 
