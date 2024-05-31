@@ -68,9 +68,8 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   // Verify that writing to dmactive causes dmactive output to be set.
   //
   // If a reset is asserted somewhere in the middle, the DMI write to dmcontrol will have been
-  // ignored. Skip the check.
-  task check_dmactive();
-    bit seen_reset = 1'b0;
+  // ignored. Skip the check and write 1 to seen_reset.
+  task check_dmactive(output bit seen_reset);
     uvm_reg_data_t data = $urandom_range(0, 1);
 
     fork begin : isolation_fork
@@ -96,6 +95,8 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   endtask
 
   task body();
+    bit should_stop = 1'b0;
+
     repeat ($urandom_range(20, 50)) begin
       randcase
         1: check_idcode();
@@ -107,7 +108,8 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     end
 
     repeat ($urandom_range(1, 5)) begin
-      check_dmactive();
+      check_dmactive(should_stop);
+      if (should_stop) return;
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
 
