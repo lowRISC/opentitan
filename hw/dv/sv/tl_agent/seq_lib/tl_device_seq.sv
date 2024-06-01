@@ -183,6 +183,13 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
 
   // Stop running this seq and wait until it has finished gracefully.
   virtual task seq_stop();
+    // We want to tell the sequence to stop by setting the stop flag. The current implementation of
+    // pre_body clears the stop signal. To avoid our stop flag getting cleared before it has any
+    // effect, wait until pre_body is out of the way.
+    if (get_sequence_state() inside {UVM_CREATED, UVM_PRE_START}) begin
+      wait_for_sequence_state(UVM_BODY);
+    end
+
     stop = 1'b1;
     wait_for_sequence_state(UVM_FINISHED);
   endtask
