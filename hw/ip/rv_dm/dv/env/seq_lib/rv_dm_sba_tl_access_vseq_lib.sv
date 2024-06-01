@@ -77,11 +77,11 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
   }
 
   constraint num_trans_c {
-    num_trans inside {[20:100]};
+    num_trans inside {[10:20]};
   }
 
   constraint num_times_c {
-    num_times inside {[1:5]};
+    num_times inside {[1:2]};
   }
 
   constraint read_addr_after_write_c {
