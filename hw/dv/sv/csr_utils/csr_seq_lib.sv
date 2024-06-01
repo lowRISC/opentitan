@@ -404,7 +404,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       no_cmp = is_excl(fields[j], CsrExclInitCheck, CsrBitBashTest) ||
                is_excl(fields[j], CsrExclWriteCheck, CsrBitBashTest) ;
 
-      // Any unused bits on the right side of the LSB?
+      // Any unused bits below the LSB of this field?
       while (next_lsb < lsb) mode[next_lsb++] = "RO";
 
       repeat (w) begin
@@ -415,8 +415,8 @@ class csr_bit_bash_seq extends csr_base_seq;
       end
     end
 
-    // Any unused bits on the left side of the MSB?
-    while (next_lsb < `UVM_REG_DATA_WIDTH) begin
+    // Any unused bits above the top field, but that we will still look at with bash_kth_bit?
+    while (next_lsb < n_bits) begin
       mode[next_lsb++] = "RO";
     end
 
