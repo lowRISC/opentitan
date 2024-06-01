@@ -350,72 +350,81 @@ class csr_bit_bash_seq extends csr_base_seq;
         continue;
       end
 
-      begin
-        uvm_reg_field   fields[$];
-        string          mode[`UVM_REG_DATA_WIDTH];
-        uvm_reg_data_t  dc_mask;  // dont write or read
-        uvm_reg_data_t  cmp_mask; // read but dont compare
-        int             n_bits;
-        string          field_access;
-        int             next_lsb;
+      bash_register(test_csrs[i]);
+    end
 
-        n_bits = test_csrs[i].get_n_bytes() * 8;
+  endtask
 
-        // Let's see what kind of bits we have...
-        test_csrs[i].get_fields(fields);
+  // Run bit bash test on the given register.
+  //
+  // The basic idea is that we test each bit of the register with the bash_kth_bit task, checking
+  // that we can set and clear the register as expected. This task takes field exclusions and
+  // read/write masks into account when calculating how to run the bash_kth_bit task across the
+  // register.
+  virtual task bash_register(uvm_reg csr);
+    uvm_reg_field   fields[$];
+    string          mode[`UVM_REG_DATA_WIDTH];
+    uvm_reg_data_t  dc_mask;  // dont write or read
+    uvm_reg_data_t  cmp_mask; // read but dont compare
+    int             n_bits;
+    string          field_access;
+    int             next_lsb;
 
-        next_lsb = 0;
-        dc_mask  = 0;
-        cmp_mask = 0;
+    n_bits = csr.get_n_bytes() * 8;
 
-        foreach (fields[j]) begin
-          int lsb, w, dc, cmp;
+    // Let's see what kind of bits we have...
+    csr.get_fields(fields);
 
-          field_access = fields[j].get_access(test_csrs[i].get_default_map());
-          cmp = (fields[j].get_compare() == UVM_NO_CHECK);
-          lsb = fields[j].get_lsb_pos();
-          w   = fields[j].get_n_bits();
+    next_lsb = 0;
+    dc_mask  = 0;
+    cmp_mask = 0;
 
-          // Exclude write-only fields from compare because you are not supposed to read them
-          case (field_access)
-            "WO", "WOC", "WOS", "WO1", "NOACCESS", "": cmp = 1;
-          endcase
+    foreach (fields[j]) begin
+      int lsb, w, dc, cmp;
 
-          // skip fields that are wr-excluded
-          if (is_excl(fields[j], CsrExclWrite, CsrBitBashTest)) begin
-            `uvm_info(`gtn, $sformatf("Skipping field %0s due to CsrExclWrite exclusion",
-                                      fields[j].get_full_name()), UVM_MEDIUM)
-            dc = 1;
-          end
+      field_access = fields[j].get_access(csr.get_default_map());
+      cmp = (fields[j].get_compare() == UVM_NO_CHECK);
+      lsb = fields[j].get_lsb_pos();
+      w   = fields[j].get_n_bits();
 
-          // ignore fields that are init or rd-excluded
-          cmp = is_excl(fields[j], CsrExclInitCheck, CsrBitBashTest) ||
-                is_excl(fields[j], CsrExclWriteCheck, CsrBitBashTest) ;
+      // Exclude write-only fields from compare because you are not supposed to read them
+      case (field_access)
+        "WO", "WOC", "WOS", "WO1", "NOACCESS", "": cmp = 1;
+      endcase
 
-          // Any unused bits on the right side of the LSB?
-          while (next_lsb < lsb) mode[next_lsb++] = "RO";
+      // skip fields that are wr-excluded
+      if (is_excl(fields[j], CsrExclWrite, CsrBitBashTest)) begin
+        `uvm_info(`gtn, $sformatf("Skipping field %0s due to CsrExclWrite exclusion",
+                                  fields[j].get_full_name()), UVM_MEDIUM)
+        dc = 1;
+      end
 
-          repeat (w) begin
-            mode[next_lsb] = field_access;
-            dc_mask[next_lsb] = dc;
-            cmp_mask[next_lsb] = cmp;
-            next_lsb++;
-          end
-        end
+      // ignore fields that are init or rd-excluded
+      cmp = is_excl(fields[j], CsrExclInitCheck, CsrBitBashTest) ||
+            is_excl(fields[j], CsrExclWriteCheck, CsrBitBashTest) ;
 
-        // Any unused bits on the left side of the MSB?
-        while (next_lsb < `UVM_REG_DATA_WIDTH)
-          mode[next_lsb++] = "RO";
+      // Any unused bits on the right side of the LSB?
+      while (next_lsb < lsb) mode[next_lsb++] = "RO";
 
-        // Bash the kth bit
-        for (int k = 0; k < n_bits; k++) begin
-          // Cannot test unpredictable bit behavior
-          if (dc_mask[k]) continue;
-          bash_kth_bit(test_csrs[i], k, mode[k], cmp_mask);
-        end
+      repeat (w) begin
+        mode[next_lsb] = field_access;
+        dc_mask[next_lsb] = dc;
+        cmp_mask[next_lsb] = cmp;
+        next_lsb++;
       end
     end
 
+    // Any unused bits on the left side of the MSB?
+    while (next_lsb < `UVM_REG_DATA_WIDTH) begin
+      mode[next_lsb++] = "RO";
+    end
+
+    // Bash the kth bit
+    for (int k = 0; k < n_bits; k++) begin
+      // Cannot test unpredictable bit behavior
+      if (dc_mask[k]) continue;
+      bash_kth_bit(csr, k, mode[k], cmp_mask);
+    end
   endtask
 
   // A bit bashing sequence for bit k of register rg.
