@@ -418,10 +418,19 @@ class csr_bit_bash_seq extends csr_base_seq;
 
   endtask
 
-  task bash_kth_bit(uvm_reg       rg,
-                   int            k,
-                   string         mode,
-                   uvm_reg_data_t mask);
+  // A bit bashing sequence for bit k of register rg.
+  //
+  // This works by writing the bit as one value and reading it back, then writing the other value
+  // and reading that back, checking that each write sets the value as expected.
+  //
+  // The mask argument gives bits that won't be compared when reading the value back. Note that this
+  // task is still worth running even if the k'th bit of mask is set: it might be that writes to
+  // that bit of the register mess up other bits/fields in the register, and this task will spot if
+  // that happens.
+  task bash_kth_bit(uvm_reg        rg,
+                    int            k,
+                    string         mode,
+                    uvm_reg_data_t mask);
 
     uvm_reg_data_t val;
     string          err_msg;
