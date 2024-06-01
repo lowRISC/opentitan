@@ -365,7 +365,7 @@ class csr_bit_bash_seq extends csr_base_seq;
     uvm_reg_field   fields[$];
     string          mode[`UVM_REG_DATA_WIDTH];
     uvm_reg_data_t  dc_mask;  // dont write or read
-    uvm_reg_data_t  cmp_mask; // read but dont compare
+    uvm_reg_data_t  no_cmp_mask; // read but dont compare
     int             n_bits;
     string          field_access;
     int             next_lsb;
@@ -375,22 +375,22 @@ class csr_bit_bash_seq extends csr_base_seq;
     // Let's see what kind of bits we have...
     csr.get_fields(fields);
 
-    next_lsb = 0;
-    dc_mask  = 0;
-    cmp_mask = 0;
+    next_lsb    = 0;
+    dc_mask     = 0;
+    no_cmp_mask = 0;
 
     foreach (fields[j]) begin
-      int lsb, w, dc, cmp;
+      int lsb, w, dc, no_cmp;
 
       field_access = fields[j].get_access(csr.get_default_map());
-      cmp = (fields[j].get_compare() == UVM_NO_CHECK);
-      lsb = fields[j].get_lsb_pos();
-      w   = fields[j].get_n_bits();
+      no_cmp = (fields[j].get_compare() == UVM_NO_CHECK);
+      lsb    = fields[j].get_lsb_pos();
+      w      = fields[j].get_n_bits();
 
       // Exclude write-only fields from compare because you are not supposed to read them
       case (field_access)
-        "WO", "WOC", "WOS", "WO1", "NOACCESS", "": cmp = 1;
-        default:                                   cmp = 0;
+        "WO", "WOC", "WOS", "WO1", "NOACCESS", "": no_cmp = 1;
+        default:                                   no_cmp = 0;
       endcase
 
       // skip fields that are wr-excluded
@@ -401,8 +401,8 @@ class csr_bit_bash_seq extends csr_base_seq;
       end
 
       // ignore fields that are init or rd-excluded
-      cmp = is_excl(fields[j], CsrExclInitCheck, CsrBitBashTest) ||
-            is_excl(fields[j], CsrExclWriteCheck, CsrBitBashTest) ;
+      no_cmp = is_excl(fields[j], CsrExclInitCheck, CsrBitBashTest) ||
+               is_excl(fields[j], CsrExclWriteCheck, CsrBitBashTest) ;
 
       // Any unused bits on the right side of the LSB?
       while (next_lsb < lsb) mode[next_lsb++] = "RO";
@@ -410,7 +410,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       repeat (w) begin
         mode[next_lsb] = field_access;
         dc_mask[next_lsb] = dc;
-        cmp_mask[next_lsb] = cmp;
+        no_cmp_mask[next_lsb] = no_cmp;
         next_lsb++;
       end
     end
@@ -424,7 +424,7 @@ class csr_bit_bash_seq extends csr_base_seq;
     for (int k = 0; k < n_bits; k++) begin
       // Cannot test unpredictable bit behavior
       if (dc_mask[k]) continue;
-      bash_kth_bit(csr, k, mode[k], cmp_mask);
+      bash_kth_bit(csr, k, mode[k], no_cmp_mask);
     end
   endtask
 
