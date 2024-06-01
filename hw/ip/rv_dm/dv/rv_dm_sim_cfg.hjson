@@ -140,8 +140,15 @@
       name: rv_dm_jtag_dmi_csr_bit_bash
       uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_bit_bash", "+test_timeout_ns=100_000_000"]
-      reseed: 5
+      run_opts: ["+en_scb=0", "+csr_bit_bash",
+                 // Constrain the set of CSRs that we test in one iteration. DMI access is quite
+                 // slow and doing the bit bash sequence for each of the 47 registers takes ages.
+                 // Splitting into smaller chunks and running with more seeds should give us the
+                 // same coverage, but allow the tests to run in parallel.
+                 "+num_test_csrs=5"]
+      // With 47 registers and num_test_csrs=5, we'll have 10 chunks. Setting reseed to 20 means we
+      // should expect each chunk to be tested twice.
+      reseed: 20
     }
     {
       name: rv_dm_jtag_dmi_csr_aliasing
