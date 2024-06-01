@@ -390,6 +390,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       // Exclude write-only fields from compare because you are not supposed to read them
       case (field_access)
         "WO", "WOC", "WOS", "WO1", "NOACCESS", "": cmp = 1;
+        default:                                   cmp = 0;
       endcase
 
       // skip fields that are wr-excluded
