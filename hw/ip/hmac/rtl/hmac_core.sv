@@ -79,6 +79,9 @@ module hmac_core import prim_sha2_pkg::*; (
 
   logic hmac_sha_rvalid;
 
+  logic idle_d, idle_q;
+  logic reg_hash_stop_d, reg_hash_stop_q;
+
   typedef enum logic [1:0] {
     SelIPad,
     SelOPad,
@@ -233,9 +236,9 @@ module hmac_core import prim_sha2_pkg::*; (
 
   always_comb begin
     unique case (digest_size_i)
-      SHA2_256: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA256:0] == BlockSizeBSBSHA256);
-      SHA2_384: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512:0] == BlockSizeBSBSHA512);
-      SHA2_512: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512:0] == BlockSizeBSBSHA512);
+      SHA2_256: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA256-1:0] == '0) && (txcount != '0);
+      SHA2_384: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512-1:0] == '0) && (txcount != '0);
+      SHA2_512: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512-1:0] == '0) && (txcount != '0);
       default : txcnt_eq_blksz = '0;
     endcase
   end
@@ -323,13 +326,21 @@ module hmac_core import prim_sha2_pkg::*; (
 
     unique case (st_q)
       StIdle: begin
+        // reset round to Inner
+        // we always switch context into inner round since outer round computes once over
+        // single block at the end (outer key pad + inner hash)
+        update_round = 1'b1;
+        round_d      = Inner;
         if (hmac_en_i && reg_hash_start_i) begin
-          st_d = StIPad;
+          st_d = StIPad; // start at StIPad if told to start
 
           clr_txcount  = 1'b1;
-          update_round = 1'b1;
-          round_d      = Inner;
           hash_start   = 1'b1;
+        end else if (hmac_en_i && reg_hash_continue_i) begin
+          st_d = StMsg; // skip StIPad if told to continue - assumed it finished StIPad
+
+          load_txcount  = 1'b1;
+          hash_continue = 1'b1;
         end else begin
           st_d = StIdle;
         end
@@ -353,16 +364,15 @@ module hmac_core import prim_sha2_pkg::*; (
         sel_rdata   = SelFifo;
         fifo_wsel_o = (round_q == Outer);
 
-        if (round_q == Inner && reg_hash_continue_i) begin
-          load_txcount  = 1'b1;
-          hash_continue = 1'b1;
-        end
-
         if ( (((round_q == Inner) && reg_hash_process_flag) || (round_q == Outer))
             && (txcount >= sha_message_length_o)) begin
           st_d    = StWaitResp;
           hmac_sha_rvalid = 1'b0; // block
           hash_process = (round_q == Outer);
+        end else if (txcnt_eq_blksz && reg_hash_stop_q && (round_q == Inner)) begin
+          st_d =  StWaitResp; // to wait on sha_hash_done_i
+
+          hmac_sha_rvalid = 1'b0;
         end else begin
           st_d            = StMsg;
           hmac_sha_rvalid = fifo_rvalid_i;
@@ -376,7 +386,11 @@ module hmac_core import prim_sha2_pkg::*; (
           if (round_q == Outer) begin
             st_d = StDone;
           end else begin // round_q == Inner
-            st_d = StPushToMsgFifo;
+            if (reg_hash_stop_q) begin
+              st_d = StDone;
+            end else begin
+              st_d = StPushToMsgFifo;
+            end
           end
         end else begin
           st_d = StWaitResp;
@@ -389,7 +403,7 @@ module hmac_core import prim_sha2_pkg::*; (
         fifo_wvalid_o      = 1'b1;
         clr_fifo_wdata_sel = 1'b0;
 
-        if (fifo_wready_i && (((fifo_wdata_sel_o == 4'd7)  && (digest_size_i == SHA2_256)) ||
+        if (fifo_wready_i && (((fifo_wdata_sel_o == 4'd7) && (digest_size_i == SHA2_256)) ||
                              ((fifo_wdata_sel_o == 4'd15) && (digest_size_i == SHA2_512)) ||
                              ((fifo_wdata_sel_o == 4'd11) && (digest_size_i == SHA2_384)))) begin
 
@@ -434,15 +448,29 @@ module hmac_core import prim_sha2_pkg::*; (
     endcase
   end
 
+  // raise reg_hash_stop_d flag at reg_hash_stop_i and keep it until sha_hash_done_i is asserted
+  // to indicate the hashing operation on current block has completed
+  assign reg_hash_stop_d = (reg_hash_stop_i == 1'b1)                            ? 1'b1 :
+                           (sha_hash_done_i == 1'b1 && reg_hash_stop_q == 1'b1) ? 1'b0 :
+                                                                                  reg_hash_stop_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      reg_hash_stop_q <= 1'b0;
+    end else begin
+      reg_hash_stop_q <= reg_hash_stop_d;
+    end
+  end
+
   // Idle status signaling: This module ..
-  logic idle_d, idle_q;
   assign idle_d =
       // .. is not idle when told to start or continue
       (reg_hash_start_i || reg_hash_continue_i) ? 1'b0 :
       // .. is idle when the FSM is in the Idle state
       (st_q == StIdle) ? 1'b1 :
-      // .. is idle when it has processed a complete block of a message and is told to stop
-      (st_q == StMsg && txcnt_eq_blksz && reg_hash_stop_i) ? 1'b1 :
+      // .. is idle when it has processed a complete block of a message and is told to stop in any
+      // FSM state
+      (txcnt_eq_blksz && reg_hash_stop_d) ? 1'b1 :
       // .. and keeps the current idle state in all other cases.
       idle_q;
 
