@@ -245,6 +245,35 @@
       bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test"]
    }
    {
+      name: chip_sw_alert_handler_ping_ok
+      desc: '''Verify alert ping mechanism doesn't trigger spurious alerts.
+
+            Check that the alert handler ping mechanism doesn't trigger any unexpected NMI
+            interrupts once enabled.
+
+            **Ping timeout calculation**
+            See timout calcuations described in the
+            `chip_sw_alert_handler_reverse_ping_in_deep_sleep` test.
+
+            **Procedure**
+
+            - On POR reset:
+              - Enable an alert and assign it to to ClassA.
+              - Set escalation configuration to trigger before test wake up time.
+              - Set ping timeout to 0x100
+              - Lock alert configuration and enable ping mechanism.
+              - Wait for polling counters to cycle through by busy polling on Ibex for
+                5 milliseconds.
+              - Check there are no alert_handler NMI interrupts triggered.
+            '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_alert_handler_ping_ok"]
+      bazel: ["//sw/device/tests:alert_handler_ping_ok_test"]
+    }
+   {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
       desc: '''Verify escalation reverse ping timer disabled in sleep mode.
 
