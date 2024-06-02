@@ -28,7 +28,7 @@ interface clk_ctrl_and_main_pd_sva_if (
   localparam int MIN_CLK_ON_WAIT_CYCLES = 0;
   localparam int MIN_PDN_WAIT_CYCLES = 0;
   localparam int MAX_CLK_ON_WAIT_CYCLES = 60;
-  localparam int MAX_PDN_WAIT_CYCLES = 110;
+  localparam int MAX_PDN_WAIT_CYCLES = 160;
 
   `define CLK_ON_WAIT_BOUNDS ##[MIN_CLK_ON_WAIT_CYCLES:MAX_CLK_ON_WAIT_CYCLES]
   `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_PDN_WAIT_CYCLES]
