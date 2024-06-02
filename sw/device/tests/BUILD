@@ -5974,3 +5974,51 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "pwrmgr_wfi_test",
+    srcs = ["pwrmgr_wfi_test.c"],
+    cw310 = cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:adc_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
