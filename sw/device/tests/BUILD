@@ -28,7 +28,6 @@ load(
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
@@ -350,6 +349,37 @@ opentitan_test(
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "alert_handler_ping_ok_test",
+    srcs = ["alert_handler_ping_ok_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+        },
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
