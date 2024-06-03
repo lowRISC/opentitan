@@ -43,7 +43,7 @@ impl<T: Read + AsFd> ReadAsFd for T {}
 impl UartConsole {
     const CTRL_B: u8 = 2;
     const CTRL_C: u8 = 3;
-    const BUFFER_LEN: usize = 16384;
+    const BUFFER_LEN: usize = 65536;
 
     // Runs an interactive console until CTRL_C is received.
     pub fn interact<T>(
@@ -199,23 +199,37 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let mut buf = [0u8; 1];
+        let mut buf = [0u8; 256];
         let len = device.console_read(&mut buf, timeout)?;
         if len == 0 {
             return Ok(false);
         }
-        for i in 0..len {
-            if self.timestamp && self.newline {
-                let t = humantime::format_rfc3339_millis(SystemTime::now());
-                stdout.as_mut().map_or(Ok(()), |out| {
-                    out.write_fmt(format_args!("[{}  console]", t))
-                })?;
-                self.newline = false;
+        if self.timestamp {
+            let mut last_new_line: usize = 0;
+            for i in 0..len {
+                if self.newline {
+                    // Print since previous newline
+                    stdout
+                        .as_mut()
+                        .map_or(Ok(()), |out| out.write_all(&buf[last_new_line..i + 1]))?;
+                    let t = humantime::format_rfc3339_millis(SystemTime::now());
+                    stdout.as_mut().map_or(Ok(()), |out| {
+                        out.write_fmt(format_args!("[{}  console]", t))
+                    })?;
+                    self.newline = false;
+                }
+                if buf[i] == b'\n' {
+                    self.newline = true;
+                    last_new_line = i + 1;
+                }
             }
-            self.newline = buf[i] == b'\n';
             stdout
                 .as_mut()
-                .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
+                .map_or(Ok(()), |out| out.write_all(&buf[last_new_line..len]))?;
+        } else {
+            stdout
+                .as_mut()
+                .map_or(Ok(()), |out| out.write_all(&buf[..len]))?;
         }
         stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
 

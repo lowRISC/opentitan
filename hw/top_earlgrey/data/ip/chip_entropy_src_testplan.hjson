@@ -244,6 +244,41 @@
       bazel: ["//sw/device/tests:entropy_src_fw_observe_many_contiguous_test"]
     },
     {
+      name: chip_sw_entropy_src_fw_observe_retrieve
+      desc: '''Retrieve large number of contiguous samples and dump them for analysis.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Disable health checks.
+            - Enable ENTROPY_SRC in FIPS mode
+            - Enable Firmware Override - Observe.
+            - Drain the observe FIFO.
+            - Collect 31250 (1,000,000 bits) contiguous 32-bit samples from the observe FIFO:
+              - Verify after reading each sample that the observe FIFO overflow status has not been set.
+              - Drain the observe FIFO.
+              - When internal buffer is full, dump its content as hex dump on UART console and check
+	        that FIFO overflow took place.
+
+            Tests:
+            - The procedure must be run once with ENTROPY_SRC.RNG_BIT_ENABLE disabled (4-bit / sample) and
+              four times with the ENTROPY_SRC.RNG_BIT_ENABLE feature being enabled (once for every channel).
+
+            Notes for silicon targets:
+            - This test requires access to the ENTROPY_SRC.FW_OV.OBSERVE feature, which is gated by OTP.
+              This test might thus need to be done in a secure facility.
+            '''
+      features: [
+        "ENTROPY_SRC.MODE.FIPS",
+        "ENTROPY_SRC.FW_OV.OBSERVE"
+        "ENTROPY_SRC.RNG_BIT_ENABLE",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:entropy_src_fw_observe_many_contiguous_test"]
+    },
+    {
       name: chip_sw_entropy_src_fw_extract_and_insert
       desc: '''Verify that the software can observe samples fast enough to extract many contiguous samples.
 

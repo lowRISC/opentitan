@@ -539,15 +539,28 @@ dif_result_t dif_entropy_src_observe_fifo_nonblocking_read(
 
   // Read until FIFO is empty or we have read `*len` words.
   size_t read_count = 0;
-  while (read_count < *len &&
-         mmio_region_read32(entropy_src->base_addr,
-                            ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET) > 0) {
-    uint32_t reg = mmio_region_read32(entropy_src->base_addr,
-                                      ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
-    if (buf != NULL) {
-      buf[read_count++] = reg;
+  const size_t buf_len = *len;
+  if (buf == NULL) {
+    // Discard FIFO
+    while (mmio_region_read32(entropy_src->base_addr,
+                              ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET) > 0) {
+
+      (void)mmio_region_read32(entropy_src->base_addr,
+                         ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
+      if (mmio_region_read32(entropy_src->base_addr,
+                             ENTROPY_SRC_ERR_CODE_REG_OFFSET) != 0)
+        return kDifError;
     }
-  }
+  } else
+    while (read_count < buf_len &&
+           mmio_region_read32(entropy_src->base_addr,
+                              ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET) > 0) {
+      if (mmio_region_read32(entropy_src->base_addr,
+                             ENTROPY_SRC_ERR_CODE_REG_OFFSET) != 0)
+        return kDifError;
+      buf[read_count++] = mmio_region_read32(
+          entropy_src->base_addr, ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
+    }
   // Update `*len`.
   *len = read_count;
 
