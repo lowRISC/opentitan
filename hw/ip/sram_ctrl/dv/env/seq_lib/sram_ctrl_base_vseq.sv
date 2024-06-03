@@ -73,6 +73,12 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
             cfg.clk_rst_vif.wait_clks($urandom_range(10, 10_000));
             std::randomize(readback_en) with {
               readback_en inside {MuBi4True, MuBi4False};};
+            // Wait until cfg.in_key_req == 0 as writing to the readback CSR
+            // issues a TL-UL transaction to the register interface of the
+            // module, which triggers the following assertion inside
+            // the sram_ctrl_scoreboard:
+            // `DV_CHECK_EQ(cfg.in_key_req, 0, "No item is accepted during key req")
+            `DV_SPINWAIT(wait (cfg.in_key_req == 0);)
             csr_utils_pkg::wait_no_outstanding_access();
             csr_wr(.ptr(ral.readback), .value(readback_en));
             `uvm_info(`gfn, "Update READBACK Value", UVM_MEDIUM)
