@@ -672,25 +672,6 @@ void rom_interrupt_handler(void) {
   OT_UNREACHABLE();
 }
 
-void rom_exception_handler(void) {
-  uint32_t mcause;
-  CSR_READ(CSR_REG_MCAUSE, &mcause);
-  ibex_exception_code_t exception_code =
-      (ibex_exception_code_t)(mcause & kIbexExceptionCodeMax);
-
-  if (launder32(exception_code) == kIbexExceptionCodeLoadAccessFault) {
-    HARDENED_CHECK_EQ(exception_code, kIbexExceptionCodeLoadAccessFault);
-    // Clear recoverable alert.
-    flash_ctrl_fault_status_code_t status_code;
-    flash_ctrl_fault_status_code_get(&status_code);
-    if (status_code.phy_storage_err || status_code.phy_relbl_err) {
-      flash_ctrl_fault_status_clear();
-      return;
-    }
-  }
-  rom_interrupt_handler();
-}
-
 // We only need a single handler for all ROM interrupts, but we want to
 // keep distinct symbols to make writing tests easier.  In the ROM,
 // alias all interrupt handler symbols to the single handler.
