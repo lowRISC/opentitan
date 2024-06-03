@@ -203,7 +203,8 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Review        | [V2S_CHECKLIST_SCOPED][]                | Not Started |
+Review        | [V3_FUNCTIONAL_CHECKLIST_SCOPED][]      | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          /doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   /doc/project_governance/checklist/README.md#dv_doc_completed
@@ -224,7 +225,8 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    /doc/project_governance/checklist/README.md#no_high_priority_issues_pending
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:/doc/project_governance/checklist/README.md#all_low_priority_issues_root_caused
 [DV_DOC_TESTPLAN_REVIEWED]:           /doc/project_governance/checklist/README.md#dv_doc_testplan_reviewed
-[V3_CHECKLIST_SCOPED]:                /doc/project_governance/checklist/README.md#v3_checklist_scoped
+[V2S_CHECKLIST_SCOPED]:               /doc/project_governance/checklist/README.md#v2s_checklist_scoped
+[V3_FUNCTIONAL_CHECKLIST_SCOPED]:     /doc/project_governance/checklist/README.md#v3_functional_checklist_scoped
 
 <%text>### V2S</%text>
 
@@ -235,12 +237,14 @@ Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
 Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          /doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                /doc/project_governance/checklist/README.md#fpv_sec_cm_verified
 [SIM_SEC_CM_VERIFIED]:                /doc/project_governance/checklist/README.md#sim_sec_cm_verified
 [SIM_COVERAGE_REVIEWED]:              /doc/project_governance/checklist/README.md#sim_coverage_reviewed
 [SEC_CM_DV_REVIEWED]:                 /doc/project_governance/checklist/README.md#sec_cm_dv_reviewed
+[V3_CHECKLIST_SCOPED]:                /doc/project_governance/checklist/README.md#v3_checklist_scoped
 
 <%text>### V3</%text>
 

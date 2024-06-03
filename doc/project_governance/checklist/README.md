@@ -524,9 +524,13 @@ The DV document and testplan are complete and have been reviewed by key stakehol
 This review will focus on the design deltas captured in the testplan since the last review.
 In addition, the fully implemented functional coverage plan, the observed coverage and the coverage exclusions are expected to be scrutinized to ensure there are no verification holes or any gaps in achieving the required verification quality, before the work towards progressing to V3 can commence.
 
-### V3_CHECKLIST_SCOPED
+### V2S_CHECKLIST_SCOPED
 
-The V3 checklist has been reviewed to understand the scope and estimate effort.
+The V2S checklist has been reviewed to understand the scope and estimate effort.
+
+### V3_FUNCTIONAL_CHECKLIST_SCOPED
+
+The functional verification parts of the V3 checklist have been reviewed to understand the scope and estimate effort.
 
 ## V2S
 
@@ -571,6 +575,10 @@ The security countermeasures testplan and the overall DV effort has been reviewe
 - Security architect (optional)
 
 This review may be waived if not deemed necessary.
+
+### V3_CHECKLIST_SCOPED
+
+The V3 checklist has been reviewed to understand the scope and estimate full V3 effort, building on the scoping already done as part of V2 signoff.
 
 ## V3
 
