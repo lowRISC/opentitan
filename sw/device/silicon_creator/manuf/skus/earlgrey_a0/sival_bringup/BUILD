@@ -123,7 +123,7 @@ opentitan_test(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_unlocked0_manuf_empty",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked0_manuf_empty",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
             "broken",
@@ -197,7 +197,7 @@ opentitan_test(
             "//sw/device/silicon_creator/manuf/lib:individualize",
             "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",
-            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_{}".format(otp_sw_cfgs),
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_{}".format(otp_sw_cfgs),
         ],
     )
     for otp_sw_cfgs in EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS
@@ -249,7 +249,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
         "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
@@ -290,7 +290,7 @@ opentitan_test(
         changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
             "broken",
