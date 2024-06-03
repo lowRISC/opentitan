@@ -1,0 +1,48 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "ottf"
+  testpoints: [
+    {
+        name: ottf_crt
+        desc: '''Check that the crt for correctness.
+
+                 - Check that the .bss is zeroed.
+                 - Check that the .data (SRAM) was initialized with the .data_init (Flash)
+                 - Check that aligned sections are zeroed.
+                 - Check that data is correctly copied across word aligned sections.
+        '''
+        stage: NA
+        tests: []
+        si_stage: SV3
+        bazel: ["//sw/device/tests:crt_test"]
+        lc_states: ["PROD"]
+    }
+    {
+        name: ottf_coverage functionality
+        desc: '''Check that the coverage functionality for correctness.
+
+                 - Run a know number of function calls and verify the converge data.
+        '''
+        stage: NA
+        tests: []
+        si_stage: SV3
+        bazel: ["//sw/device/tests:coverage_test"]
+        lc_states: ["PROD"]
+    }
+    {
+        name: ottf_concurrency
+        desc: '''Check that the concurrency for correctness.
+
+                 - Run more than 2 concurrently tasks.
+                 - Check that all of them execute correctly.
+        '''
+        stage: NA
+        tests: []
+        si_stage: SV3
+        bazel: ["//sw/device/tests:example_concurrency_test"]
+        lc_states: ["PROD"]
+    }
+  ]
+}
