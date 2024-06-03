@@ -516,7 +516,7 @@ In addition, the fully implemented functional coverage plan, the observed covera
 
 ### V3_CHECKLIST_SCOPED
 
-The V3 checklist has been reviewed to understand the scope and estimate effort.
+The V2S and V3 checklists have been reviewed to understand the scope and estimate effort.
 
 ## V2S
 
