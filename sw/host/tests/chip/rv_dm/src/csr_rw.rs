@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::time::Duration;
+
 use anyhow::{ensure, Context, Result};
 use clap::Parser;
 use rand::prelude::*;
@@ -10,6 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::uart::console::UartConsole;
 
 use bindgen::dif;
 use top_earlgrey::top_earlgrey;
@@ -19,9 +22,16 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
+    #[arg(long)]
+    rv_dm_delayed_enable: bool,
+
     /// Seed for random number generator.
     #[arg(long)]
     seed: Option<u64>,
+
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "100s")]
+    timeout: Duration,
 }
 
 fn test(jtag: &mut dyn Jtag, base: usize, offset: u32) -> Result<()> {
@@ -48,11 +58,18 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     log::info!("Random number generator seed is {:x}", seed);
     let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
 
-    // Avoid watchdog timeout by entering bootstrap mode.
-    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    let uart = &*transport.uart("console")?;
+    uart.set_flow_control(true)?;
+
+    if opts.rv_dm_delayed_enable {
+        UartConsole::wait_for(uart, r"DEBUG_MODE_ENABLED", opts.timeout)?;
+    } else {
+        // Avoid watchdog timeout by entering bootstrap mode.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
+        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    }
 
     let jtag = &mut *opts
         .init
