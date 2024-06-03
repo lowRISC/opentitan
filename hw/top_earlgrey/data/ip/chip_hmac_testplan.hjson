@@ -43,6 +43,49 @@
       bazel: ["//sw/device/tests:hmac_enc_idle_test"]
     }
     {
+      name: chip_sw_hmac_all_configurations
+      desc: '''Verify HMAC 256/384 and 512 modes of operation.
+
+            - Verify the following security configurations:
+              - SHA2-256
+              - SHA2-384
+              - SHA2-512
+              - HMAC-SHA2-256
+              - HMAC-SHA2-384
+              - HMAC-SHA2-512
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes.
+            - Use endianness configuration used in the crypto library.
+            '''
+      features: [
+        "HMAC.MODE.HMAC",
+        "HMAC.MODE.SHA2",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_hmac_multistream"]
+      bazel: ["//sw/device/tests/crypto:hmac_functest"]
+    }
+    {
+      name: chip_sw_hmac_stream_mode
+      desc: '''Verify HMAC context save/restore functionality.
+
+            - Verify that the HMAC block is able to support context save/restore accross the following
+              modes of operation:
+              - HMAC versus SHA2
+              - Different internal block size, e.g. 32 vs 64 bit for SHA2-256 versus SHA2-384/512.
+            - Ensure that this can be supported by initializing multiple operations and interleaving the
+              HMAC update and final calls.
+            '''
+      features: ["HMAC.STREAM_MODE"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
       name: chip_sw_hmac_sha2_stress
       desc: '''Verify SHA2 mode of operation.
 
