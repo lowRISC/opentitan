@@ -863,6 +863,38 @@ cc_test(
 )
 
 cc_library(
+    name = "rv_dm",
+    srcs = [
+        "autogen/dif_rv_dm_autogen.c",
+        "autogen/dif_rv_dm_autogen.h",
+        "dif_rv_dm.c",
+    ],
+    hdrs = [
+        "dif_rv_dm.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/rv_dm/data:rv_dm_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "rv_dm_unittest",
+    srcs = [
+        "autogen/dif_rv_dm_autogen_unittest.cc",
+        "dif_rv_dm_unittest.cc",
+    ],
+    deps = [
+        ":rv_dm",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "rv_plic",
     srcs = [
         "autogen/dif_rv_plic_autogen.c",
