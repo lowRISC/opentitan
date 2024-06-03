@@ -42,7 +42,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
+        ":individualize_sw_cfg_earlgrey_a0_sku_sival",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
@@ -84,7 +84,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
+        ":individualize_sw_cfg_earlgrey_a0_sku_sival",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
