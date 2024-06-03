@@ -164,5 +164,21 @@
       stage: V2S
       tests: ["otbn_mem_gnt_acc_err"]
     }
+    {
+      name: otbn_non_sec_partial_wipe
+      desc: '''
+
+        See a local wipe signal be raised when a secure wipe is not running. When this happens, we
+        expect the RTL to stop with a fatal alert. The signals tracked are:
+
+          - sec_wipe_mod_urnd_i in otbn_alu_bignum
+          - sec_wipe_zero_i in otbn_controller
+          - sec_wipe_base in otbn_core
+          - sec_wipe_wdr_q in otbn_core
+          - sec_wipe_stack_reset_i in otbn_rf_base
+      '''
+      stage: V2S
+      tests: ["otbn_partial_wipe"]
+    }
   ]
 }
