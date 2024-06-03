@@ -74,9 +74,13 @@ cc_library(
     name = "rom_isrs",
     srcs = [
         "rom_isrs.S",
-        "//sw/device/lib/base:macros.h",
     ],
     target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+    ],
 )
 
 cc_library(
@@ -87,7 +91,6 @@ cc_library(
         ":linker_script",
         ":rom_common",
         ":rom_epmp",
-        ":rom_isrs",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/ip/csrng/data:csrng_c_regs",
         "//hw/ip/edn/data:edn_c_regs",
@@ -190,6 +193,10 @@ opentitan_binary(
     linker_script = ":linker_script",
     deps = [
         ":mask_rom_lib",
+        # We depend on rom_isrs here rather than in mask_rom_lib so that the
+        # `rom_exception_handler` symbol remains unresolved and can be supplied
+        # by tests such as `rom_epmp_test`.
+        ":rom_isrs",
     ],
 )
 
