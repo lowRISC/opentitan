@@ -41,6 +41,8 @@
         "//sw/device/tests/crypto:ecdsa_p256_verify_functest_hardcoded",
         "//sw/device/tests/crypto:ecdsa_p256_functest",
         "//sw/device/tests/crypto:ecdh_p256_functest",
+        "//sw/device/tests/crypto/cryptotest:ecdsa_kat",
+        "//sw/device/tests/crypto/cryptotest:ecdh_kat"
       ]
     }
     {
@@ -112,7 +114,7 @@
     }
     {
       name: crypto_lib_symmetric_keygen
-      desc: '''Check that the crypton lib can generate symmetric keys using hardware entropy.
+      desc: '''Check that the crypto lib can generate symmetric keys using hardware entropy.
 
             Generate symmetric keys using entropy from the CSRNG and check it quality using
             a statistical test.
@@ -121,6 +123,18 @@
       si_stage: SV3
       tests: []
       bazel: ["//sw/device/tests/crypto:symmetric_keygen_functest"]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_entropy
+      desc: '''Check the correctness of the PRNGs.
+
+            Initialize the PRNG with a known seed and compare the entropy generated against a test vector.
+      '''
+      stage: NA
+      si_stage: SV3
+      tests: []
+      bazel: ["//sw/device/tests/crypto/cryptotest:drbg_kat"]
       lc_states: ["PROD"]
     }
   ]
