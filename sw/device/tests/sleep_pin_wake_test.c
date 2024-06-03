@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
@@ -21,7 +22,9 @@
 #include "flash_ctrl_regs.h"
 #include "pinmux_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+/* We need control flow for the ujson messages exchanged
+ * with the host in OTTF_WAIT_FOR on real devices. */
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 // PLIC structures
 static dif_pwrmgr_t pwrmgr;
@@ -46,7 +49,12 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .is_only_irq = true};
 
 // Preserve wakeup_detector_selected over multiple resets
-OT_SECTION(".non_volatile_scratch") uint32_t wakeup_detector_idx;
+OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t wakeup_detector_idx;)
+
+OT_SECTION(".data") int8_t sival_mio_pad = -1;  // -1 means not assigned yet.
+OT_SECTION(".data")
+int8_t sival_wakeup_detector_idx = -1;  // -1 means not assigned yet.
+OT_SECTION(".data") bool sival_ready_to_sleep = 0;
 
 /**
  * External interrupt handler.
@@ -83,15 +91,19 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  // Enable access to flash for storing info across resets.
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
+
+  if (kDeviceType == kDeviceSimDV) {
+    // Enable access to flash for storing info across resets.
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                   /*rd_en*/ true,
+                                                   /*prog_en*/ true,
+                                                   /*erase_en*/ true,
+                                                   /*scramble_en*/ false,
+                                                   /*ecc_en*/ false,
+                                                   /*he_en*/ false));
+  }
+
   // Randomly pick one of the wakeup detectors
   // only after the first boot.
   dif_pinmux_index_t wakeup_detector_selected = 0;
@@ -103,12 +115,14 @@ bool test_main(void) {
     // store to non volatile area to preserve from the reset event.
     wakeup_detector_selected =
         rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
-    CHECK_STATUS_OK(flash_ctrl_testutils_write(
-        &flash_ctrl_state,
-        (uint32_t)(&wakeup_detector_idx) -
-            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
-    LOG_INFO("detector %0d is selected", wakeup_detector_selected);
+    if (kDeviceType == kDeviceSimDV) {
+      CHECK_STATUS_OK(flash_ctrl_testutils_write(
+          &flash_ctrl_state,
+          (uint32_t)(&wakeup_detector_idx) -
+              TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+          0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
+    }
+    LOG_INFO("detector %d is selected", wakeup_detector_selected);
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
@@ -125,8 +139,10 @@ bool test_main(void) {
     // Random choose low power or deep powerdown
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
 
-    // Prepare which PAD SW want to select
-    uint32_t mio0_dio1 = rand_testutils_gen32_range(0, 1);
+    // Prepare which PAD SW want to select. In SiVal we only test the MIO pads,
+    // as the DIO ones are generally not testable with our setup.
+    uint32_t mio0_dio1 =
+        (kDeviceType == kDeviceSimDV) ? rand_testutils_gen32_range(0, 1) : 0;
     uint32_t pad_sel = 0;
 
     // Enable AonWakeup Interrupt if normal sleep
@@ -154,7 +170,13 @@ bool test_main(void) {
       LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
     } else {
       // MIO: 0, 1 are tie-0, tie-1
-      pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
+      if (kDeviceType == kDeviceSimDV) {
+        pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
+      } else {
+        OTTF_WAIT_FOR(sival_mio_pad != -1, 1000000);
+        pad_sel = (uint32_t)sival_mio_pad + 2;  // skip 0, 1 (see above)
+      }
+
       LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel - 2);
     }
 
@@ -181,6 +203,11 @@ bool test_main(void) {
       pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
                           kDifPwrmgrDomainOptionUsbClockInActivePower;
     }
+
+    if (kDeviceType != kDeviceSimDV) {
+      OTTF_WAIT_FOR(sival_ready_to_sleep != 0, 1000000);
+    }
+
     // Enter low power
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg));
@@ -195,7 +222,15 @@ bool test_main(void) {
     uint32_t wakeup_cause;
     CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
     // Get the wakeup dectector index from stored variable.
-    wakeup_detector_selected = wakeup_detector_idx;
+    if (kDeviceType == kDeviceSimDV) {
+      wakeup_detector_selected = wakeup_detector_idx;
+    } else {
+      OTTF_WAIT_FOR(sival_wakeup_detector_idx != -1, 1000000);
+      wakeup_detector_selected = (uint32_t)sival_wakeup_detector_idx;
+    }
+
+    LOG_INFO("wakeup_cause: %x %d %d", wakeup_cause,
+             1 << wakeup_detector_selected, wakeup_detector_selected);
     CHECK(wakeup_cause == 1 << wakeup_detector_selected);
     CHECK_DIF_OK(
         dif_pinmux_wakeup_detector_disable(&pinmux, wakeup_detector_selected));
