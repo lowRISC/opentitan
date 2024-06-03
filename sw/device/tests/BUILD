@@ -4433,51 +4433,88 @@ _RV_DM_JTAG_LC_STATES = get_lc_items(
     CONST.LCV.RMA,
 )
 
+_RV_DM_TEST_CONFIGURATIONS = [
+    {
+        "name": "test_unlocked1",
+        "lc_state": "test_unlocked1",
+        "rv_dm_delayed_en": "",
+        "otp": _SIVAL_OTP_IMAGE["test_unlocked1"],
+    },
+    {
+        "name": "dev_rv_dm_default_enabled",
+        "lc_state": "dev",
+        "rv_dm_delayed_en": "",
+        "otp": _SIVAL_OTP_IMAGE["dev"],
+    },
+    {
+        "name": "dev_rv_dm_delayed_enabled",
+        "lc_state": "dev",
+        "rv_dm_delayed_en": "--rv-dm-delayed-enable",
+        "otp": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
+    },
+    {
+        "name": "rma",
+        "lc_state": "rma",
+        "rv_dm_delayed_en": "",
+        "otp": _SIVAL_OTP_IMAGE["rma"],
+    },
+]
+
 [
     opentitan_test(
-        name = "rv_dm_csr_rw_{}".format(lc_state),
-        srcs = ["example_test_from_flash.c"],
+        name = "rv_dm_csr_rw_{}".format(test_cfg["name"]),
+        srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
-            otp = _SIVAL_OTP_IMAGE[lc_state],
+            otp = test_cfg["otp"],
+            rv_dm_delayed_en = test_cfg["rv_dm_delayed_en"],
             tags = [
-                "lc_{}".format(lc_state),
+                "lc_{}".format(test_cfg["lc_state"]),
             ],
+            test_cmd = """
+                --bootstrap="{firmware}"
+                {rv_dm_delayed_en}
+            """,
             test_harness = "//sw/host/tests/chip/rv_dm:csr_rw",
         ),
         deps = [
+            "//sw/device/lib/base:multibits",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:rv_dm",
+            "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    for test_cfg in _RV_DM_TEST_CONFIGURATIONS
 ]
 
 test_suite(
     name = "rv_dm_csr_rw",
     tags = ["manual"],
     tests = [
-        ":rv_dm_csr_rw_{}".format(lc_state)
-        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+        ":rv_dm_csr_rw_{}".format(test_cfg["name"])
+        for test_cfg in _RV_DM_TEST_CONFIGURATIONS
     ],
 )
 
 [
     opentitan_test(
-        name = "rv_dm_mem_access_{}".format(lc_state),
+        name = "rv_dm_mem_access_{}".format(test_cfg["name"]),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             timeout = "moderate",
             needs_jtag = True,
-            otp = _SIVAL_OTP_IMAGE[lc_state],
+            otp = test_cfg["otp"],
             tags = [
-                "lc_{}".format(lc_state),
+                "lc_{}".format(test_cfg["lc_state"]),
             ],
             test_cmd = " --rom={rom:binary}",
             test_harness = "//sw/host/tests/chip/rv_dm:mem_access",
@@ -4487,15 +4524,15 @@ test_suite(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    for test_cfg in _RV_DM_TEST_CONFIGURATIONS
 ]
 
 test_suite(
     name = "rv_dm_mem_access",
     tags = ["manual"],
     tests = [
-        ":rv_dm_mem_access_{}".format(lc_state)
-        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+        ":rv_dm_mem_access_{}".format(test_cfg["name"])
+        for test_cfg in _RV_DM_TEST_CONFIGURATIONS
     ],
 )
 
@@ -4504,7 +4541,7 @@ test_suite(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -4547,7 +4584,7 @@ _RV_DM_TAP_SEL_LC_STATES = get_lc_items(
         exec_env = dicts.add(
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
+                "//hw/top_earlgrey:fpga_cw340_sival": None,
             },
         ),
         fpga = fpga_params(
@@ -4613,7 +4650,7 @@ _LC_STATES_DEBUG_DISALLOWED = [
         exec_env = dicts.add(
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
+                "//hw/top_earlgrey:fpga_cw340_sival": None,
             },
         ),
         fpga = fpga_params(
@@ -4649,7 +4686,7 @@ test_suite(
         exec_env = dicts.add(
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
+                "//hw/top_earlgrey:fpga_cw340_sival": None,
             },
         ),
         fpga = fpga_params(

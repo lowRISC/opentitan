@@ -17,6 +17,7 @@ rust_binary(
         "//sw/host/opentitanlib/bindgen",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
+        "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:rand",
         "@crate_index//:rand_chacha",
