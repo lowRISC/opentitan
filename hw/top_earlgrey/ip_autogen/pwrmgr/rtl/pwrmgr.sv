@@ -23,6 +23,8 @@ module pwrmgr
   input rst_lc_ni,
   input clk_esc_i,
   input rst_esc_ni,
+  input clk_cpu_i,
+  input rst_cpu_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -273,7 +275,8 @@ module pwrmgr
   prim_mubi_pkg::mubi4_t rom_ctrl_done;
   prim_mubi_pkg::mubi4_t rom_ctrl_good;
 
-  logic core_sleeping;
+  logic core_sleep_entry_req, fallthrough_exit_req;
+  logic core_sleep_pending_clr;
 
   ////////////////////////////
   ///  clk_slow_i domain declarations
@@ -344,7 +347,7 @@ module pwrmgr
     end
   end
 
-  assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
+  assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen & !core_sleep_pending_clr;
 
   assign hw2reg.fault_status.reg_intg_err.de    = reg_intg_err;
   assign hw2reg.fault_status.reg_intg_err.d     = 1'b1;
@@ -404,6 +407,8 @@ module pwrmgr
     .rst_ni,
     .clk_slow_i,
     .rst_slow_ni,
+    .clk_cpu_i,
+    .rst_cpu_ni,
 
     // slow domain signals
     .slow_req_pwrup_i(slow_req_pwrup),
@@ -430,6 +435,7 @@ module pwrmgr
     // fast domain signals
     .req_pwrdn_i(req_pwrdn),
     .ack_pwrup_i(ack_pwrup),
+    .low_power_hint_i(low_power_hint),
     .cfg_cdc_sync_i(reg2hw.cfg_cdc_sync.qe & reg2hw.cfg_cdc_sync.q),
     .cdc_sync_done_o(hw2reg.cfg_cdc_sync.de),
     .wakeup_en_i(reg2hw.wakeup_en),
@@ -468,8 +474,9 @@ module pwrmgr
 
     // core sleeping
     .core_sleeping_i(pwr_cpu_i.core_sleeping),
-    .core_sleeping_o(core_sleeping)
-
+    .core_sleep_entry_o(core_sleep_entry_req),
+    .core_sleep_exit_o(fallthrough_exit_req),
+    .core_sleep_pending_clr_o(core_sleep_pending_clr)
   );
   // rom_ctrl_i.good is not synchronized as it acts as a "payload" signal
   // to "done". Good is only observed if "done" is high.
@@ -590,7 +597,8 @@ module pwrmgr
     .ack_pwrup_o         (ack_pwrup),
     .req_pwrdn_o         (req_pwrdn),
     .ack_pwrdn_i         (ack_pwrdn),
-    .low_power_entry_i   (core_sleeping & low_power_hint),
+    .low_power_entry_i   (core_sleep_entry_req & low_power_hint),
+    .fallthrough_exit_i  (fallthrough_exit_req || !low_power_hint),
     .reset_reqs_i        (peri_reqs_masked.rstreqs),
     .fsm_invalid_i       (fsm_invalid),
     .clr_slow_req_o      (clr_slow_req),

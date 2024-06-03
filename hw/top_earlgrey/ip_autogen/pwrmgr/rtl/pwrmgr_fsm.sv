@@ -20,6 +20,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   output logic req_pwrdn_o,
   input ack_pwrdn_i,
   input low_power_entry_i,
+  input fallthrough_exit_i,
   input main_pd_ni,
   input [TotalResetWidth-1:0] reset_reqs_i,
   input fsm_invalid_i,
@@ -390,7 +391,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         clr_hint_o = 1'b1;
 
         // The processor was interrupted after it asserted WFI and is executing again
-        if (!low_power_entry_i) begin
+        if (fallthrough_exit_i) begin
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           fall_through_o = 1'b1;

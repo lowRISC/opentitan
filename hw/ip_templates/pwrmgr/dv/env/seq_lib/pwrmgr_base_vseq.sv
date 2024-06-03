@@ -208,6 +208,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       end
       cfg.esc_clk_rst_vif.apply_reset();
       cfg.lc_clk_rst_vif.apply_reset();
+      cfg.cpu_clk_rst_vif.apply_reset();
       // Escalation resets are cleared when reset goes active.
       clear_escalation_reset();
       clear_ndm_reset();
@@ -224,10 +225,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.slow_clk_rst_vif.drive_rst_pin(0);
     cfg.esc_clk_rst_vif.drive_rst_pin(0);
     cfg.lc_clk_rst_vif.drive_rst_pin(0);
+    cfg.cpu_clk_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.slow_clk_rst_vif.clk_period_ps);
     cfg.esc_clk_rst_vif.drive_rst_pin(1);
     cfg.lc_clk_rst_vif.drive_rst_pin(1);
     cfg.slow_clk_rst_vif.drive_rst_pin(1);
+    cfg.cpu_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // setup basic pwrmgr features
@@ -243,6 +246,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
     cfg.esc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     cfg.lc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
+    cfg.cpu_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     set_ndmreset_req('0);
     control_assertions(0);
   endtask
@@ -361,10 +365,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
             cfg.clk_rst_vif.start_clk();
             cfg.lc_clk_rst_vif.start_clk();
             cfg.esc_clk_rst_vif.start_clk();
+            cfg.cpu_clk_rst_vif.start_clk();
           end else begin
             cfg.clk_rst_vif.stop_clk();
             cfg.lc_clk_rst_vif.stop_clk();
             cfg.esc_clk_rst_vif.stop_clk();
+            cfg.cpu_clk_rst_vif.stop_clk();
           end
         end
       forever
@@ -424,6 +430,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               @(posedge cfg.pwrmgr_vif.pwr_rst_rsp.rst_lc_src_n[1]);
             cfg.esc_clk_rst_vif.drive_rst_pin(1);
             cfg.lc_clk_rst_vif.drive_rst_pin(1);
+            cfg.cpu_clk_rst_vif.drive_rst_pin(1);
           end else begin
             // And clear all reset requests when rst_lc_src_n[1] goes active, because when
             // peripherals are reset they should drop their reset requests.
@@ -431,6 +438,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               @(negedge cfg.pwrmgr_vif.pwr_rst_rsp.rst_lc_src_n[1]);
             cfg.esc_clk_rst_vif.drive_rst_pin(0);
             cfg.lc_clk_rst_vif.drive_rst_pin(0);
+            cfg.cpu_clk_rst_vif.drive_rst_pin(0);
             clear_escalation_reset();
             clear_ndm_reset();
             cfg.pwrmgr_vif.update_resets('0);

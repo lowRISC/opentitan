@@ -144,15 +144,15 @@
       }
       rg_clks:
       {
+        clk_main_infra:
+        {
+          src_name: main
+          endpoint_ip: pwrmgr_aon
+        }
         clk_io_div4_infra:
         {
           src_name: io_div4
           endpoint_ip: ast
-        }
-        clk_main_infra:
-        {
-          src_name: main
-          endpoint_ip: flash_ctrl
         }
         clk_usb_infra:
         {

@@ -696,17 +696,6 @@
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
-  assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div4_infra (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_io_div4_ni),
-    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div4_infra)
-  );
   assign clocks_o.clk_main_infra = clk_main_root;
 
   // clock gated indication for alert handler
@@ -717,6 +706,17 @@
     .rst_ni(rst_main_ni),
     .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.main_infra)
+  );
+  assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
+
+  // clock gated indication for alert handler
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div4_infra (
+    .clk_i(clk_io_div4),
+    .rst_ni(rst_io_div4_ni),
+    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div4_infra)
   );
   assign clocks_o.clk_usb_infra = clk_usb_root;
 

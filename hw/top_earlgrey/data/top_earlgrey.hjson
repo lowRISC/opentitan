@@ -355,6 +355,10 @@
         clk_i: "io_div4",
         clk_slow_i: "aon",
         clk_lc_i: "io_div4",
+        clk_cpu_i: {
+          clock: "main",
+          group: "infra",
+        },
         clk_esc_i: {
           clock: "io_div4",
           group: "secure"
@@ -371,6 +375,10 @@
         },
         rst_lc_ni: {
           name: "lc_io_div4",
+          domain: "Aon"
+        },
+        rst_cpu_ni: {
+          name: "lc",
           domain: "Aon"
         },
         rst_esc_ni: {

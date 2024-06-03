@@ -12,8 +12,10 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // Clocks and resets
   input clk_slow_i,
   input clk_i,
+  input clk_cpu_i,
   input rst_slow_ni,
   input rst_ni,
+  input rst_cpu_ni,
 
   // slow domain signals,
   input slow_req_pwrup_i,
@@ -75,10 +77,29 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output prim_mubi_pkg::mubi4_t rom_ctrl_done_o,
 
   // core sleeping
+  input low_power_hint_i,
   input core_sleeping_i,
-  output logic core_sleeping_o
-
+  output logic core_sleep_entry_o,
+  output logic core_sleep_exit_o,
+  output logic core_sleep_pending_clr_o
 );
+
+  /////////////////////////////////
+  // Track synchronization requests
+  /////////////////////////////////
+
+  logic cdc_sync_pending, slow_cdc_sync_pending, cpu_cdc_sync_pending;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cdc_sync_pending <= 1'b0;
+    end else if (cfg_cdc_sync_i) begin
+      cdc_sync_pending <= 1'b1;
+    end else if (cdc_sync_done_o) begin
+      cdc_sync_pending <= 1'b0;
+    end
+  end
+
+  assign cdc_sync_done_o = cdc_sync_pending && !slow_cdc_sync_pending && !cpu_cdc_sync_pending;
 
   ////////////////////////////////
   // Sync from clk_i to clk_slow_i
@@ -241,23 +262,167 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(usb_ip_clk_en_o)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_sleeping_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(core_sleeping_i),
-    .q_o(core_sleeping_o)
+  // Synchronize qualified core_sleeping events into the pwrmgr fast domain. Use a handshake with
+  // software for activating the monitoring of core_sleeping events for low-power entry and fall
+  // through exit. Use a hardware-only mechanism to prevent reactivation of the monitoring until
+  // both domains have reset (using the REGWEN for CONTROL). Software may busy-poll this CSR before
+  // writing LOW_POWER_HINT again, as the synchronization is guaranteed to make forward progress.
+  //
+  // Strategy bullet points:
+  //   - CPU low power entry/exit request events are ignored in the pwrmgr fast domain if
+  //     low_power_hint is 0.
+  //   - After low_power_hint drops to 0 and the "unlock CONTROL" REGWEN change is staged, a reqack
+  //     for "all clear" is used to...
+  //     - clear requests in CPU domain
+  //     - unlock CONTROL in the fast domain after the ACK
+  //   - When low_power_hint is 1 and we get cdc_cfg_sync_i, a reqack for "enable" is used to...
+  //     - Turn on events (monitoring core_sleeping)
+  //   - Use a prim_flop_2sync for the entry and exit requests.
+  //     - For the clearing case, low_power_hint cannot become 1 ahead of the
+  //       cleared requests crossing domains. This is guaranteed by sending
+  //       the ACK after clearing and forbidding TL-UL writes to CONTROL until
+  //       the ACK comes back.
+  //     - For the setting case, cdc_sync_done doesn't go high until the ACK
+  //       returns. Software should not enter WFI until it performs this
+  //       synchronization.
+  logic low_power_hint_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      low_power_hint_q <= 1'b0;
+    end else begin
+      low_power_hint_q <= low_power_hint_i;
+    end
+  end
+
+  logic low_power_hint_sync_req, low_power_hint_sync_ack;
+  logic low_power_hint_sync_reqdata;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      low_power_hint_sync_req <= 1'b0;
+      low_power_hint_sync_reqdata <= 1'b0;
+      cpu_cdc_sync_pending <= 1'b0;
+      core_sleep_pending_clr_o <= 1'b0;
+    end else if ((low_power_hint_i && cfg_cdc_sync_i) ||
+                 (!low_power_hint_i && low_power_hint_q)) begin
+      low_power_hint_sync_req <= 1'b1;
+      low_power_hint_sync_reqdata <= low_power_hint_i;
+      cpu_cdc_sync_pending <= cfg_cdc_sync_i;
+      core_sleep_pending_clr_o <= !low_power_hint_i;
+    end else if (low_power_hint_sync_ack) begin
+      low_power_hint_sync_req <= 1'b0;
+      cpu_cdc_sync_pending <= 1'b0;
+      core_sleep_pending_clr_o <= 1'b0;
+    end
+  end
+
+  logic cpu_low_power_hint_qe, cpu_low_power_hint_q, cpu_low_power_hint_d;
+  logic cpu_low_power_hint_ack;
+  prim_sync_reqack_data #(
+    .Width (1),
+    .EnRzHs(1'b1)
+  ) u_cpu_low_power_hint_reqack (
+    .clk_src_i  (clk_i),
+    .rst_src_ni (rst_ni),
+    .clk_dst_i  (clk_cpu_i),
+    .rst_dst_ni (rst_cpu_ni),
+    .req_chk_i  (1'b1),
+    .src_req_i  (low_power_hint_sync_req),
+    .src_ack_o  (low_power_hint_sync_ack),
+    .dst_req_o  (cpu_low_power_hint_qe),
+    .dst_ack_i  (cpu_low_power_hint_ack),
+    .data_i     (low_power_hint_sync_reqdata),
+    .data_o     (cpu_low_power_hint_d)
   );
 
+  always_ff @(posedge clk_cpu_i or negedge rst_cpu_ni) begin
+    if (!rst_cpu_ni) begin
+      cpu_low_power_hint_q <= 1'b0;
+    end else if (cpu_low_power_hint_qe) begin
+      cpu_low_power_hint_q <= cpu_low_power_hint_d;
+    end
+  end
+
+  always_ff @(posedge clk_cpu_i or negedge rst_cpu_ni) begin
+    if (!rst_cpu_ni) begin
+      cpu_low_power_hint_ack <= 1'b0;
+    end else if (!cpu_low_power_hint_ack) begin
+      cpu_low_power_hint_ack <= cpu_low_power_hint_qe;
+    end else begin
+      cpu_low_power_hint_ack <= 1'b0;
+    end
+  end
+
+  // Qualify core_sleeping events with low_power_hint in the CPU domain, and
+  // return the requests to the pwrmgr fast domain.
+  logic core_sleep_entry_set, core_sleep_entry_clr;
+  assign core_sleep_entry_set = cpu_low_power_hint_q && core_sleeping_i;
+  assign core_sleep_entry_clr = !cpu_low_power_hint_q ||
+                               (!cpu_low_power_hint_d && cpu_low_power_hint_qe);
+
+  logic core_sleep_entry;
+  always_ff @(posedge clk_cpu_i or negedge rst_cpu_ni) begin
+    if (!rst_cpu_ni) begin
+      core_sleep_entry <= 1'b0;
+    end else if (core_sleep_entry_clr) begin
+      core_sleep_entry <= 1'b0;
+    end else if (core_sleep_entry_set) begin
+      core_sleep_entry <= 1'b1;
+    end
+  end
+
+  logic core_sleep_exit_set, core_sleep_exit_clr;
+  assign core_sleep_exit_set = core_sleep_entry && !core_sleeping_i;
+  assign core_sleep_exit_clr = !cpu_low_power_hint_q ||
+                               (!cpu_low_power_hint_d && cpu_low_power_hint_qe);
+  logic core_sleep_exit;
+  always_ff @(posedge clk_cpu_i or negedge rst_cpu_ni) begin
+    if (!rst_cpu_ni) begin
+      core_sleep_exit <= 1'b0;
+    end else if (core_sleep_exit_clr) begin
+      core_sleep_exit <= 1'b0;
+    end else if (core_sleep_exit_set) begin
+      core_sleep_exit <= 1'b1;
+    end
+  end
+
+  prim_flop_2sync #(
+    .Width (1'b1)
+  ) u_core_sleep_entry_cdc (
+    .clk_i,
+    .rst_ni,
+    .d_i (core_sleep_entry),
+    .q_o (core_sleep_entry_o)
+  );
+
+  prim_flop_2sync #(
+    .Width (1'b1)
+  ) u_core_sleep_exit_cdc (
+    .clk_i,
+    .rst_ni,
+    .d_i (core_sleep_exit),
+    .q_o (core_sleep_exit_o)
+  );
+
+  logic slow_cdc_sync_ack;
   prim_pulse_sync u_scdc_sync (
     .clk_src_i(clk_slow_i),
     .rst_src_ni(rst_slow_ni),
     .src_pulse_i(slow_cdc_sync),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(cdc_sync_done_o)
+    .dst_pulse_o(slow_cdc_sync_ack)
   );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      slow_cdc_sync_pending <= 1'b0;
+    end else if (cfg_cdc_sync_i) begin
+      slow_cdc_sync_pending <= 1'b1;
+    end else if (slow_cdc_sync_ack) begin
+      slow_cdc_sync_pending <= 1'b0;
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

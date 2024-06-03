@@ -126,8 +126,8 @@
         unique: no
         clocks:
         {
-          clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_io_div4_infra: io_div4
           clk_usb_infra: usb
           clk_io_infra: io
           clk_io_div2_infra: io_div2
@@ -2778,6 +2778,11 @@
         clk_i: io_div4
         clk_slow_i: aon
         clk_lc_i: io_div4
+        clk_cpu_i:
+        {
+          clock: main
+          group: infra
+        }
         clk_esc_i:
         {
           clock: io_div4
@@ -2799,6 +2804,11 @@
         rst_lc_ni:
         {
           name: lc_io_div4
+          domain: Aon
+        }
+        rst_cpu_ni:
+        {
+          name: lc
           domain: Aon
         }
         rst_esc_ni:
@@ -2823,6 +2833,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
         clk_lc_i: clkmgr_aon_clocks.clk_io_div4_powerup
+        clk_cpu_i: clkmgr_aon_clocks.clk_main_infra
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       param_decl: {}
@@ -15713,8 +15724,8 @@
         unique: no
         clocks:
         {
-          clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_io_div4_infra: io_div4
           clk_usb_infra: usb
           clk_io_infra: io
           clk_io_div2_infra: io_div2
@@ -15737,8 +15748,8 @@
         unique: no
         clocks:
         {
-          clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_io_div4_infra: io_div4
           clk_usb_infra: usb
           clk_io_infra: io
           clk_io_div2_infra: io_div2
@@ -15761,8 +15772,8 @@
         unique: no
         clocks:
         {
-          clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_io_div4_infra: io_div4
           clk_usb_infra: usb
           clk_io_infra: io
           clk_io_div2_infra: io_div2
@@ -15785,8 +15796,8 @@
         unique: no
         clocks:
         {
-          clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_io_div4_infra: io_div4
           clk_usb_infra: usb
           clk_io_infra: io
           clk_io_div2_infra: io_div2
