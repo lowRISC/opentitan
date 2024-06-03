@@ -217,7 +217,7 @@ opentitan_test(
     ),
     deps = [
         ":flash_info_fields",
-        ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
+        ":individualize_sw_cfg_earlgrey_a0_sku_sival",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",

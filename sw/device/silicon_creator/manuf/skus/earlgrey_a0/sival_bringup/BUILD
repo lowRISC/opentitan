@@ -209,7 +209,6 @@ filegroup(
     srcs = [
         ":sram_ft_individualize_prodc",
         ":sram_ft_individualize_sival",
-        ":sram_ft_individualize_sival_bringup",
     ],
 )
 
@@ -250,13 +249,13 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival",
         "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
 
 _FT_PROVISIONING_BINARIES = {
-    ":sram_ft_individualize_sival_bringup": "sram_ft_individualize",
+    ":sram_ft_individualize_sival": "sram_ft_individualize",
     ":ft_personalize": "ft_personalize",
 }
 
