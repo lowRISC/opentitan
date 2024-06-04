@@ -103,6 +103,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     fork
       process_model_fifo();
       process_trace_fifo();
+      watch_escalate_if();
     join_none
   endtask
 
@@ -647,6 +648,18 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     super.process_mem_read(item, ral_name);
     if (model_status == 'b1 && item.d_data != 0) begin
       `uvm_error(`gfn, "read data is non zero when memory is accessed while otbn is busy")
+    end
+  endtask
+
+  // This task watches the escalate interface and collects coverage whenever it changes
+  //
+  virtual task watch_escalate_if();
+    // The 'enable' signal is connected to the lc_escalate_en_i top-level input
+    forever begin
+      if (cfg.clk_rst_vif.rst_n) begin
+        cov.escalate_en_cg.sample(cfg.escalate_vif.enable);
+      end
+      @(cfg.escalate_vif.enable or cfg.clk_rst_vif.rst_n);
     end
   endtask
 
