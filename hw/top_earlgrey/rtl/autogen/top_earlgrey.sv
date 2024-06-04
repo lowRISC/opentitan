@@ -372,7 +372,7 @@ module top_earlgrey #(
   // rv_core_ibex
 
 
-  logic [181:0]  intr_vector;
+  logic [185:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -382,6 +382,7 @@ module top_earlgrey #(
   logic intr_uart0_rx_break_err;
   logic intr_uart0_rx_timeout;
   logic intr_uart0_rx_parity_err;
+  logic intr_uart0_tx_empty;
   logic intr_uart1_tx_watermark;
   logic intr_uart1_rx_watermark;
   logic intr_uart1_tx_done;
@@ -390,6 +391,7 @@ module top_earlgrey #(
   logic intr_uart1_rx_break_err;
   logic intr_uart1_rx_timeout;
   logic intr_uart1_rx_parity_err;
+  logic intr_uart1_tx_empty;
   logic intr_uart2_tx_watermark;
   logic intr_uart2_rx_watermark;
   logic intr_uart2_tx_done;
@@ -398,6 +400,7 @@ module top_earlgrey #(
   logic intr_uart2_rx_break_err;
   logic intr_uart2_rx_timeout;
   logic intr_uart2_rx_parity_err;
+  logic intr_uart2_tx_empty;
   logic intr_uart3_tx_watermark;
   logic intr_uart3_rx_watermark;
   logic intr_uart3_tx_done;
@@ -406,6 +409,7 @@ module top_earlgrey #(
   logic intr_uart3_rx_break_err;
   logic intr_uart3_rx_timeout;
   logic intr_uart3_rx_parity_err;
+  logic intr_uart3_tx_empty;
   logic [31:0] intr_gpio_gpio;
   logic intr_spi_device_upload_cmdfifo_not_empty;
   logic intr_spi_device_upload_payload_not_empty;
@@ -1040,6 +1044,7 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart0_rx_break_err),
       .intr_rx_timeout_o    (intr_uart0_rx_timeout),
       .intr_rx_parity_err_o (intr_uart0_rx_parity_err),
+      .intr_tx_empty_o      (intr_uart0_tx_empty),
       // [0]: fatal_fault
       .alert_tx_o  ( alert_tx[0:0] ),
       .alert_rx_i  ( alert_rx[0:0] ),
@@ -1072,6 +1077,7 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart1_rx_break_err),
       .intr_rx_timeout_o    (intr_uart1_rx_timeout),
       .intr_rx_parity_err_o (intr_uart1_rx_parity_err),
+      .intr_tx_empty_o      (intr_uart1_tx_empty),
       // [1]: fatal_fault
       .alert_tx_o  ( alert_tx[1:1] ),
       .alert_rx_i  ( alert_rx[1:1] ),
@@ -1104,6 +1110,7 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart2_rx_break_err),
       .intr_rx_timeout_o    (intr_uart2_rx_timeout),
       .intr_rx_parity_err_o (intr_uart2_rx_parity_err),
+      .intr_tx_empty_o      (intr_uart2_tx_empty),
       // [2]: fatal_fault
       .alert_tx_o  ( alert_tx[2:2] ),
       .alert_rx_i  ( alert_rx[2:2] ),
@@ -1136,6 +1143,7 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart3_rx_break_err),
       .intr_rx_timeout_o    (intr_uart3_rx_timeout),
       .intr_rx_parity_err_o (intr_uart3_rx_parity_err),
+      .intr_tx_empty_o      (intr_uart3_tx_empty),
       // [3]: fatal_fault
       .alert_tx_o  ( alert_tx[3:3] ),
       .alert_rx_i  ( alert_rx[3:3] ),
@@ -2654,148 +2662,152 @@ module top_earlgrey #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_edn1_edn_fatal_err, // IDs [181 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [180 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [179 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [178 +: 1]
-      intr_entropy_src_es_fatal_err, // IDs [177 +: 1]
-      intr_entropy_src_es_observe_fifo_ready, // IDs [176 +: 1]
-      intr_entropy_src_es_health_test_failed, // IDs [175 +: 1]
-      intr_entropy_src_es_entropy_valid, // IDs [174 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [173 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [172 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [171 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [170 +: 1]
-      intr_keymgr_op_done, // IDs [169 +: 1]
-      intr_otbn_done, // IDs [168 +: 1]
-      intr_kmac_kmac_err, // IDs [167 +: 1]
-      intr_kmac_fifo_empty, // IDs [166 +: 1]
-      intr_kmac_kmac_done, // IDs [165 +: 1]
-      intr_hmac_hmac_err, // IDs [164 +: 1]
-      intr_hmac_fifo_empty, // IDs [163 +: 1]
-      intr_hmac_hmac_done, // IDs [162 +: 1]
-      intr_flash_ctrl_corr_err, // IDs [161 +: 1]
-      intr_flash_ctrl_op_done, // IDs [160 +: 1]
-      intr_flash_ctrl_rd_lvl, // IDs [159 +: 1]
-      intr_flash_ctrl_rd_full, // IDs [158 +: 1]
-      intr_flash_ctrl_prog_lvl, // IDs [157 +: 1]
-      intr_flash_ctrl_prog_empty, // IDs [156 +: 1]
-      intr_sensor_ctrl_aon_init_status_change, // IDs [155 +: 1]
-      intr_sensor_ctrl_aon_io_status_change, // IDs [154 +: 1]
-      intr_aon_timer_aon_wdog_timer_bark, // IDs [153 +: 1]
-      intr_aon_timer_aon_wkup_timer_expired, // IDs [152 +: 1]
-      intr_adc_ctrl_aon_match_pending, // IDs [151 +: 1]
-      intr_sysrst_ctrl_aon_event_detected, // IDs [150 +: 1]
-      intr_pwrmgr_aon_wakeup, // IDs [149 +: 1]
-      intr_usbdev_av_setup_empty, // IDs [148 +: 1]
-      intr_usbdev_link_out_err, // IDs [147 +: 1]
-      intr_usbdev_powered, // IDs [146 +: 1]
-      intr_usbdev_frame, // IDs [145 +: 1]
-      intr_usbdev_rx_bitstuff_err, // IDs [144 +: 1]
-      intr_usbdev_rx_pid_err, // IDs [143 +: 1]
-      intr_usbdev_rx_crc_err, // IDs [142 +: 1]
-      intr_usbdev_link_in_err, // IDs [141 +: 1]
-      intr_usbdev_av_overflow, // IDs [140 +: 1]
-      intr_usbdev_rx_full, // IDs [139 +: 1]
-      intr_usbdev_av_out_empty, // IDs [138 +: 1]
-      intr_usbdev_link_resume, // IDs [137 +: 1]
-      intr_usbdev_link_suspend, // IDs [136 +: 1]
-      intr_usbdev_link_reset, // IDs [135 +: 1]
-      intr_usbdev_host_lost, // IDs [134 +: 1]
-      intr_usbdev_disconnected, // IDs [133 +: 1]
-      intr_usbdev_pkt_sent, // IDs [132 +: 1]
-      intr_usbdev_pkt_received, // IDs [131 +: 1]
-      intr_spi_host1_spi_event, // IDs [130 +: 1]
-      intr_spi_host1_error, // IDs [129 +: 1]
-      intr_spi_host0_spi_event, // IDs [128 +: 1]
-      intr_spi_host0_error, // IDs [127 +: 1]
-      intr_alert_handler_classd, // IDs [126 +: 1]
-      intr_alert_handler_classc, // IDs [125 +: 1]
-      intr_alert_handler_classb, // IDs [124 +: 1]
-      intr_alert_handler_classa, // IDs [123 +: 1]
-      intr_otp_ctrl_otp_error, // IDs [122 +: 1]
-      intr_otp_ctrl_otp_operation_done, // IDs [121 +: 1]
-      intr_rv_timer_timer_expired_hart0_timer0, // IDs [120 +: 1]
-      intr_pattgen_done_ch1, // IDs [119 +: 1]
-      intr_pattgen_done_ch0, // IDs [118 +: 1]
-      intr_i2c2_host_timeout, // IDs [117 +: 1]
-      intr_i2c2_unexp_stop, // IDs [116 +: 1]
-      intr_i2c2_acq_stretch, // IDs [115 +: 1]
-      intr_i2c2_tx_threshold, // IDs [114 +: 1]
-      intr_i2c2_tx_stretch, // IDs [113 +: 1]
-      intr_i2c2_cmd_complete, // IDs [112 +: 1]
-      intr_i2c2_sda_unstable, // IDs [111 +: 1]
-      intr_i2c2_stretch_timeout, // IDs [110 +: 1]
-      intr_i2c2_sda_interference, // IDs [109 +: 1]
-      intr_i2c2_scl_interference, // IDs [108 +: 1]
-      intr_i2c2_controller_halt, // IDs [107 +: 1]
-      intr_i2c2_rx_overflow, // IDs [106 +: 1]
-      intr_i2c2_acq_threshold, // IDs [105 +: 1]
-      intr_i2c2_rx_threshold, // IDs [104 +: 1]
-      intr_i2c2_fmt_threshold, // IDs [103 +: 1]
-      intr_i2c1_host_timeout, // IDs [102 +: 1]
-      intr_i2c1_unexp_stop, // IDs [101 +: 1]
-      intr_i2c1_acq_stretch, // IDs [100 +: 1]
-      intr_i2c1_tx_threshold, // IDs [99 +: 1]
-      intr_i2c1_tx_stretch, // IDs [98 +: 1]
-      intr_i2c1_cmd_complete, // IDs [97 +: 1]
-      intr_i2c1_sda_unstable, // IDs [96 +: 1]
-      intr_i2c1_stretch_timeout, // IDs [95 +: 1]
-      intr_i2c1_sda_interference, // IDs [94 +: 1]
-      intr_i2c1_scl_interference, // IDs [93 +: 1]
-      intr_i2c1_controller_halt, // IDs [92 +: 1]
-      intr_i2c1_rx_overflow, // IDs [91 +: 1]
-      intr_i2c1_acq_threshold, // IDs [90 +: 1]
-      intr_i2c1_rx_threshold, // IDs [89 +: 1]
-      intr_i2c1_fmt_threshold, // IDs [88 +: 1]
-      intr_i2c0_host_timeout, // IDs [87 +: 1]
-      intr_i2c0_unexp_stop, // IDs [86 +: 1]
-      intr_i2c0_acq_stretch, // IDs [85 +: 1]
-      intr_i2c0_tx_threshold, // IDs [84 +: 1]
-      intr_i2c0_tx_stretch, // IDs [83 +: 1]
-      intr_i2c0_cmd_complete, // IDs [82 +: 1]
-      intr_i2c0_sda_unstable, // IDs [81 +: 1]
-      intr_i2c0_stretch_timeout, // IDs [80 +: 1]
-      intr_i2c0_sda_interference, // IDs [79 +: 1]
-      intr_i2c0_scl_interference, // IDs [78 +: 1]
-      intr_i2c0_controller_halt, // IDs [77 +: 1]
-      intr_i2c0_rx_overflow, // IDs [76 +: 1]
-      intr_i2c0_acq_threshold, // IDs [75 +: 1]
-      intr_i2c0_rx_threshold, // IDs [74 +: 1]
-      intr_i2c0_fmt_threshold, // IDs [73 +: 1]
-      intr_spi_device_tpm_rdfifo_drop, // IDs [72 +: 1]
-      intr_spi_device_tpm_rdfifo_cmd_end, // IDs [71 +: 1]
-      intr_spi_device_tpm_header_not_empty, // IDs [70 +: 1]
-      intr_spi_device_readbuf_flip, // IDs [69 +: 1]
-      intr_spi_device_readbuf_watermark, // IDs [68 +: 1]
-      intr_spi_device_upload_payload_overflow, // IDs [67 +: 1]
-      intr_spi_device_upload_payload_not_empty, // IDs [66 +: 1]
-      intr_spi_device_upload_cmdfifo_not_empty, // IDs [65 +: 1]
-      intr_gpio_gpio, // IDs [33 +: 32]
-      intr_uart3_rx_parity_err, // IDs [32 +: 1]
-      intr_uart3_rx_timeout, // IDs [31 +: 1]
-      intr_uart3_rx_break_err, // IDs [30 +: 1]
-      intr_uart3_rx_frame_err, // IDs [29 +: 1]
-      intr_uart3_rx_overflow, // IDs [28 +: 1]
-      intr_uart3_tx_done, // IDs [27 +: 1]
-      intr_uart3_rx_watermark, // IDs [26 +: 1]
-      intr_uart3_tx_watermark, // IDs [25 +: 1]
-      intr_uart2_rx_parity_err, // IDs [24 +: 1]
-      intr_uart2_rx_timeout, // IDs [23 +: 1]
-      intr_uart2_rx_break_err, // IDs [22 +: 1]
-      intr_uart2_rx_frame_err, // IDs [21 +: 1]
-      intr_uart2_rx_overflow, // IDs [20 +: 1]
-      intr_uart2_tx_done, // IDs [19 +: 1]
-      intr_uart2_rx_watermark, // IDs [18 +: 1]
-      intr_uart2_tx_watermark, // IDs [17 +: 1]
-      intr_uart1_rx_parity_err, // IDs [16 +: 1]
-      intr_uart1_rx_timeout, // IDs [15 +: 1]
-      intr_uart1_rx_break_err, // IDs [14 +: 1]
-      intr_uart1_rx_frame_err, // IDs [13 +: 1]
-      intr_uart1_rx_overflow, // IDs [12 +: 1]
-      intr_uart1_tx_done, // IDs [11 +: 1]
-      intr_uart1_rx_watermark, // IDs [10 +: 1]
-      intr_uart1_tx_watermark, // IDs [9 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [185 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [184 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [183 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [182 +: 1]
+      intr_entropy_src_es_fatal_err, // IDs [181 +: 1]
+      intr_entropy_src_es_observe_fifo_ready, // IDs [180 +: 1]
+      intr_entropy_src_es_health_test_failed, // IDs [179 +: 1]
+      intr_entropy_src_es_entropy_valid, // IDs [178 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [177 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [176 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [175 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [174 +: 1]
+      intr_keymgr_op_done, // IDs [173 +: 1]
+      intr_otbn_done, // IDs [172 +: 1]
+      intr_kmac_kmac_err, // IDs [171 +: 1]
+      intr_kmac_fifo_empty, // IDs [170 +: 1]
+      intr_kmac_kmac_done, // IDs [169 +: 1]
+      intr_hmac_hmac_err, // IDs [168 +: 1]
+      intr_hmac_fifo_empty, // IDs [167 +: 1]
+      intr_hmac_hmac_done, // IDs [166 +: 1]
+      intr_flash_ctrl_corr_err, // IDs [165 +: 1]
+      intr_flash_ctrl_op_done, // IDs [164 +: 1]
+      intr_flash_ctrl_rd_lvl, // IDs [163 +: 1]
+      intr_flash_ctrl_rd_full, // IDs [162 +: 1]
+      intr_flash_ctrl_prog_lvl, // IDs [161 +: 1]
+      intr_flash_ctrl_prog_empty, // IDs [160 +: 1]
+      intr_sensor_ctrl_aon_init_status_change, // IDs [159 +: 1]
+      intr_sensor_ctrl_aon_io_status_change, // IDs [158 +: 1]
+      intr_aon_timer_aon_wdog_timer_bark, // IDs [157 +: 1]
+      intr_aon_timer_aon_wkup_timer_expired, // IDs [156 +: 1]
+      intr_adc_ctrl_aon_match_pending, // IDs [155 +: 1]
+      intr_sysrst_ctrl_aon_event_detected, // IDs [154 +: 1]
+      intr_pwrmgr_aon_wakeup, // IDs [153 +: 1]
+      intr_usbdev_av_setup_empty, // IDs [152 +: 1]
+      intr_usbdev_link_out_err, // IDs [151 +: 1]
+      intr_usbdev_powered, // IDs [150 +: 1]
+      intr_usbdev_frame, // IDs [149 +: 1]
+      intr_usbdev_rx_bitstuff_err, // IDs [148 +: 1]
+      intr_usbdev_rx_pid_err, // IDs [147 +: 1]
+      intr_usbdev_rx_crc_err, // IDs [146 +: 1]
+      intr_usbdev_link_in_err, // IDs [145 +: 1]
+      intr_usbdev_av_overflow, // IDs [144 +: 1]
+      intr_usbdev_rx_full, // IDs [143 +: 1]
+      intr_usbdev_av_out_empty, // IDs [142 +: 1]
+      intr_usbdev_link_resume, // IDs [141 +: 1]
+      intr_usbdev_link_suspend, // IDs [140 +: 1]
+      intr_usbdev_link_reset, // IDs [139 +: 1]
+      intr_usbdev_host_lost, // IDs [138 +: 1]
+      intr_usbdev_disconnected, // IDs [137 +: 1]
+      intr_usbdev_pkt_sent, // IDs [136 +: 1]
+      intr_usbdev_pkt_received, // IDs [135 +: 1]
+      intr_spi_host1_spi_event, // IDs [134 +: 1]
+      intr_spi_host1_error, // IDs [133 +: 1]
+      intr_spi_host0_spi_event, // IDs [132 +: 1]
+      intr_spi_host0_error, // IDs [131 +: 1]
+      intr_alert_handler_classd, // IDs [130 +: 1]
+      intr_alert_handler_classc, // IDs [129 +: 1]
+      intr_alert_handler_classb, // IDs [128 +: 1]
+      intr_alert_handler_classa, // IDs [127 +: 1]
+      intr_otp_ctrl_otp_error, // IDs [126 +: 1]
+      intr_otp_ctrl_otp_operation_done, // IDs [125 +: 1]
+      intr_rv_timer_timer_expired_hart0_timer0, // IDs [124 +: 1]
+      intr_pattgen_done_ch1, // IDs [123 +: 1]
+      intr_pattgen_done_ch0, // IDs [122 +: 1]
+      intr_i2c2_host_timeout, // IDs [121 +: 1]
+      intr_i2c2_unexp_stop, // IDs [120 +: 1]
+      intr_i2c2_acq_stretch, // IDs [119 +: 1]
+      intr_i2c2_tx_threshold, // IDs [118 +: 1]
+      intr_i2c2_tx_stretch, // IDs [117 +: 1]
+      intr_i2c2_cmd_complete, // IDs [116 +: 1]
+      intr_i2c2_sda_unstable, // IDs [115 +: 1]
+      intr_i2c2_stretch_timeout, // IDs [114 +: 1]
+      intr_i2c2_sda_interference, // IDs [113 +: 1]
+      intr_i2c2_scl_interference, // IDs [112 +: 1]
+      intr_i2c2_controller_halt, // IDs [111 +: 1]
+      intr_i2c2_rx_overflow, // IDs [110 +: 1]
+      intr_i2c2_acq_threshold, // IDs [109 +: 1]
+      intr_i2c2_rx_threshold, // IDs [108 +: 1]
+      intr_i2c2_fmt_threshold, // IDs [107 +: 1]
+      intr_i2c1_host_timeout, // IDs [106 +: 1]
+      intr_i2c1_unexp_stop, // IDs [105 +: 1]
+      intr_i2c1_acq_stretch, // IDs [104 +: 1]
+      intr_i2c1_tx_threshold, // IDs [103 +: 1]
+      intr_i2c1_tx_stretch, // IDs [102 +: 1]
+      intr_i2c1_cmd_complete, // IDs [101 +: 1]
+      intr_i2c1_sda_unstable, // IDs [100 +: 1]
+      intr_i2c1_stretch_timeout, // IDs [99 +: 1]
+      intr_i2c1_sda_interference, // IDs [98 +: 1]
+      intr_i2c1_scl_interference, // IDs [97 +: 1]
+      intr_i2c1_controller_halt, // IDs [96 +: 1]
+      intr_i2c1_rx_overflow, // IDs [95 +: 1]
+      intr_i2c1_acq_threshold, // IDs [94 +: 1]
+      intr_i2c1_rx_threshold, // IDs [93 +: 1]
+      intr_i2c1_fmt_threshold, // IDs [92 +: 1]
+      intr_i2c0_host_timeout, // IDs [91 +: 1]
+      intr_i2c0_unexp_stop, // IDs [90 +: 1]
+      intr_i2c0_acq_stretch, // IDs [89 +: 1]
+      intr_i2c0_tx_threshold, // IDs [88 +: 1]
+      intr_i2c0_tx_stretch, // IDs [87 +: 1]
+      intr_i2c0_cmd_complete, // IDs [86 +: 1]
+      intr_i2c0_sda_unstable, // IDs [85 +: 1]
+      intr_i2c0_stretch_timeout, // IDs [84 +: 1]
+      intr_i2c0_sda_interference, // IDs [83 +: 1]
+      intr_i2c0_scl_interference, // IDs [82 +: 1]
+      intr_i2c0_controller_halt, // IDs [81 +: 1]
+      intr_i2c0_rx_overflow, // IDs [80 +: 1]
+      intr_i2c0_acq_threshold, // IDs [79 +: 1]
+      intr_i2c0_rx_threshold, // IDs [78 +: 1]
+      intr_i2c0_fmt_threshold, // IDs [77 +: 1]
+      intr_spi_device_tpm_rdfifo_drop, // IDs [76 +: 1]
+      intr_spi_device_tpm_rdfifo_cmd_end, // IDs [75 +: 1]
+      intr_spi_device_tpm_header_not_empty, // IDs [74 +: 1]
+      intr_spi_device_readbuf_flip, // IDs [73 +: 1]
+      intr_spi_device_readbuf_watermark, // IDs [72 +: 1]
+      intr_spi_device_upload_payload_overflow, // IDs [71 +: 1]
+      intr_spi_device_upload_payload_not_empty, // IDs [70 +: 1]
+      intr_spi_device_upload_cmdfifo_not_empty, // IDs [69 +: 1]
+      intr_gpio_gpio, // IDs [37 +: 32]
+      intr_uart3_tx_empty, // IDs [36 +: 1]
+      intr_uart3_rx_parity_err, // IDs [35 +: 1]
+      intr_uart3_rx_timeout, // IDs [34 +: 1]
+      intr_uart3_rx_break_err, // IDs [33 +: 1]
+      intr_uart3_rx_frame_err, // IDs [32 +: 1]
+      intr_uart3_rx_overflow, // IDs [31 +: 1]
+      intr_uart3_tx_done, // IDs [30 +: 1]
+      intr_uart3_rx_watermark, // IDs [29 +: 1]
+      intr_uart3_tx_watermark, // IDs [28 +: 1]
+      intr_uart2_tx_empty, // IDs [27 +: 1]
+      intr_uart2_rx_parity_err, // IDs [26 +: 1]
+      intr_uart2_rx_timeout, // IDs [25 +: 1]
+      intr_uart2_rx_break_err, // IDs [24 +: 1]
+      intr_uart2_rx_frame_err, // IDs [23 +: 1]
+      intr_uart2_rx_overflow, // IDs [22 +: 1]
+      intr_uart2_tx_done, // IDs [21 +: 1]
+      intr_uart2_rx_watermark, // IDs [20 +: 1]
+      intr_uart2_tx_watermark, // IDs [19 +: 1]
+      intr_uart1_tx_empty, // IDs [18 +: 1]
+      intr_uart1_rx_parity_err, // IDs [17 +: 1]
+      intr_uart1_rx_timeout, // IDs [16 +: 1]
+      intr_uart1_rx_break_err, // IDs [15 +: 1]
+      intr_uart1_rx_frame_err, // IDs [14 +: 1]
+      intr_uart1_rx_overflow, // IDs [13 +: 1]
+      intr_uart1_tx_done, // IDs [12 +: 1]
+      intr_uart1_rx_watermark, // IDs [11 +: 1]
+      intr_uart1_tx_watermark, // IDs [10 +: 1]
+      intr_uart0_tx_empty, // IDs [9 +: 1]
       intr_uart0_rx_parity_err, // IDs [8 +: 1]
       intr_uart0_rx_timeout, // IDs [7 +: 1]
       intr_uart0_rx_break_err, // IDs [6 +: 1]

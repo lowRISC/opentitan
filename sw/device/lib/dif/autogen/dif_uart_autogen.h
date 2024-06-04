@@ -108,6 +108,10 @@ typedef enum dif_uart_irq {
    * Raised if the receiver has detected a parity error.
    */
   kDifUartIrqRxParityErr = 7,
+  /**
+   * Raised if the transmit FIFO is empty.
+   */
+  kDifUartIrqTxEmpty = 8,
 } dif_uart_irq_t;
 
 /**

@@ -73,7 +73,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(dif_uart_irq_get_type(
-      &uart_, static_cast<dif_uart_irq_t>(kDifUartIrqRxParityErr + 1), &type));
+      &uart_, static_cast<dif_uart_irq_t>(kDifUartIrqTxEmpty + 1), &type));
 }
 
 TEST_F(IrqGetTypeTest, Success) {
@@ -148,9 +148,9 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the last IRQ state.
   irq_state = true;
   EXPECT_READ32(UART_INTR_STATE_REG_OFFSET,
-                {{UART_INTR_STATE_RX_PARITY_ERR_BIT, false}});
+                {{UART_INTR_STATE_TX_EMPTY_BIT, false}});
   EXPECT_DIF_OK(
-      dif_uart_irq_is_pending(&uart_, kDifUartIrqRxParityErr, &irq_state));
+      dif_uart_irq_is_pending(&uart_, kDifUartIrqTxEmpty, &irq_state));
   EXPECT_FALSE(irq_state);
 }
 
@@ -162,7 +162,7 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  constexpr uint32_t num_irqs = 8;
+  constexpr uint32_t num_irqs = 9;
   constexpr uint32_t irq_mask = (uint64_t{1} << num_irqs) - 1;
   dif_uart_irq_state_snapshot_t irq_snapshot = 1;
 
@@ -215,8 +215,8 @@ TEST_F(IrqAcknowledgeTest, Success) {
 
   // Clear the last IRQ state.
   EXPECT_WRITE32(UART_INTR_STATE_REG_OFFSET,
-                 {{UART_INTR_STATE_RX_PARITY_ERR_BIT, true}});
-  EXPECT_DIF_OK(dif_uart_irq_acknowledge(&uart_, kDifUartIrqRxParityErr));
+                 {{UART_INTR_STATE_TX_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(dif_uart_irq_acknowledge(&uart_, kDifUartIrqTxEmpty));
 }
 
 class IrqForceTest : public UartTest {};
@@ -238,8 +238,8 @@ TEST_F(IrqForceTest, Success) {
 
   // Force last IRQ.
   EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
-                 {{UART_INTR_TEST_RX_PARITY_ERR_BIT, true}});
-  EXPECT_DIF_OK(dif_uart_irq_force(&uart_, kDifUartIrqRxParityErr, true));
+                 {{UART_INTR_TEST_TX_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(dif_uart_irq_force(&uart_, kDifUartIrqTxEmpty, true));
 }
 
 class IrqGetEnabledTest : public UartTest {};
@@ -278,9 +278,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(UART_INTR_ENABLE_REG_OFFSET,
-                {{UART_INTR_ENABLE_RX_PARITY_ERR_BIT, false}});
+                {{UART_INTR_ENABLE_TX_EMPTY_BIT, false}});
   EXPECT_DIF_OK(
-      dif_uart_irq_get_enabled(&uart_, kDifUartIrqRxParityErr, &irq_state));
+      dif_uart_irq_get_enabled(&uart_, kDifUartIrqTxEmpty, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
@@ -313,9 +313,9 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;
   EXPECT_MASK32(UART_INTR_ENABLE_REG_OFFSET,
-                {{UART_INTR_ENABLE_RX_PARITY_ERR_BIT, 0x1, false}});
+                {{UART_INTR_ENABLE_TX_EMPTY_BIT, 0x1, false}});
   EXPECT_DIF_OK(
-      dif_uart_irq_set_enabled(&uart_, kDifUartIrqRxParityErr, irq_state));
+      dif_uart_irq_set_enabled(&uart_, kDifUartIrqTxEmpty, irq_state));
 }
 
 class IrqDisableAllTest : public UartTest {};

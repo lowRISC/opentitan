@@ -16,6 +16,7 @@ module uart_core (
   output logic           tx,
 
   output logic           intr_tx_watermark_o,
+  output logic           intr_tx_empty_o,
   output logic           intr_rx_watermark_o,
   output logic           intr_tx_done_o,
   output logic           intr_rx_overflow_o,
@@ -64,8 +65,9 @@ module uart_core (
   logic           break_err;
   logic   [4:0]   allzero_cnt_d, allzero_cnt_q;
   logic           allzero_err, not_allzero_char;
-  logic           event_tx_watermark, event_rx_watermark, event_tx_done, event_rx_overflow;
-  logic           event_rx_frame_err, event_rx_break_err, event_rx_timeout, event_rx_parity_err;
+  logic           event_tx_watermark, event_tx_empty, event_rx_watermark, event_tx_done;
+  logic           event_rx_overflow, event_rx_frame_err, event_rx_break_err, event_rx_timeout;
+  logic           event_rx_parity_err;
   logic           tx_uart_idle_q;
 
   assign tx_enable        = reg2hw.ctrl.tx.q;
@@ -317,6 +319,8 @@ module uart_core (
     event_tx_watermark = tx_fifo_depth < tx_watermark_thresh;
   end
 
+  assign event_tx_empty = tx_fifo_depth == '0;
+
   assign event_tx_done = ~tx_fifo_rvalid & ~tx_uart_idle_q & tx_uart_idle;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -397,6 +401,19 @@ module uart_core (
     .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_watermark.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_watermark.d),
     .intr_o                 (intr_tx_watermark_o)
+  );
+
+  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_tx_empty (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (event_tx_empty),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_empty.d),
+    .intr_o                 (intr_tx_empty_o)
   );
 
   prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_rx_watermark (

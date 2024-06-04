@@ -21,6 +21,9 @@ package uart_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } tx_empty;
+    struct packed {
+      logic        q;
     } rx_parity_err;
     struct packed {
       logic        q;
@@ -48,6 +51,9 @@ package uart_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } tx_empty;
+    struct packed {
+      logic        q;
     } rx_parity_err;
     struct packed {
       logic        q;
@@ -73,6 +79,10 @@ package uart_reg_pkg;
   } uart_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } tx_empty;
     struct packed {
       logic        q;
       logic        qe;
@@ -249,6 +259,10 @@ package uart_reg_pkg;
       logic        d;
       logic        de;
     } rx_parity_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tx_empty;
   } uart_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -302,9 +316,9 @@ package uart_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    uart_reg2hw_intr_state_reg_t intr_state; // [127:120]
-    uart_reg2hw_intr_enable_reg_t intr_enable; // [119:112]
-    uart_reg2hw_intr_test_reg_t intr_test; // [111:96]
+    uart_reg2hw_intr_state_reg_t intr_state; // [131:123]
+    uart_reg2hw_intr_enable_reg_t intr_enable; // [122:114]
+    uart_reg2hw_intr_test_reg_t intr_test; // [113:96]
     uart_reg2hw_alert_test_reg_t alert_test; // [95:94]
     uart_reg2hw_ctrl_reg_t ctrl; // [93:69]
     uart_reg2hw_status_reg_t status; // [68:57]
@@ -317,7 +331,7 @@ package uart_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    uart_hw2reg_intr_state_reg_t intr_state; // [69:54]
+    uart_hw2reg_intr_state_reg_t intr_state; // [71:54]
     uart_hw2reg_status_reg_t status; // [53:48]
     uart_hw2reg_rdata_reg_t rdata; // [47:40]
     uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [39:32]
@@ -341,7 +355,7 @@ package uart_reg_pkg;
   parameter logic [BlockAw-1:0] UART_TIMEOUT_CTRL_OFFSET = 6'h 30;
 
   // Reset values for hwext registers and their fields
-  parameter logic [7:0] UART_INTR_TEST_RESVAL = 8'h 0;
+  parameter logic [8:0] UART_INTR_TEST_RESVAL = 9'h 0;
   parameter logic [0:0] UART_INTR_TEST_TX_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_TX_DONE_RESVAL = 1'h 0;
@@ -350,6 +364,7 @@ package uart_reg_pkg;
   parameter logic [0:0] UART_INTR_TEST_RX_BREAK_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_TIMEOUT_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_PARITY_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] UART_INTR_TEST_TX_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] UART_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] UART_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [5:0] UART_STATUS_RESVAL = 6'h 3c;
@@ -380,9 +395,9 @@ package uart_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] UART_PERMIT [13] = '{
-    4'b 0001, // index[ 0] UART_INTR_STATE
-    4'b 0001, // index[ 1] UART_INTR_ENABLE
-    4'b 0001, // index[ 2] UART_INTR_TEST
+    4'b 0011, // index[ 0] UART_INTR_STATE
+    4'b 0011, // index[ 1] UART_INTR_ENABLE
+    4'b 0011, // index[ 2] UART_INTR_TEST
     4'b 0001, // index[ 3] UART_ALERT_TEST
     4'b 1111, // index[ 4] UART_CTRL
     4'b 0001, // index[ 5] UART_STATUS

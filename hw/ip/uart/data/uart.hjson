@@ -80,6 +80,10 @@
     }
     { name: "rx_parity_err"
       desc: "raised if the receiver has detected a parity error."}
+    { name:   "tx_empty",
+      type:   "status",
+      default: "1",
+      desc:    "raised if the transmit FIFO is empty."}
   ],
   alert_list: [
     { name: "fatal_fault",

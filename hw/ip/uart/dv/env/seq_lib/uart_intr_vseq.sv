@@ -41,7 +41,7 @@ class uart_intr_vseq extends uart_base_vseq;
         // tx may have unfinished transaction
         spinwait_txidle();
         dut_shutdown();
-        csr_wr(.ptr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value((1 << NumUartIntr) - 1));
       end
       `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
     end
@@ -82,6 +82,39 @@ class uart_intr_vseq extends uart_base_vseq;
         csr_wr(.ptr(ral.intr_state), .value(1 << uart_intr));
         check_one_intr(.uart_intr(uart_intr), .exp(1));
         drive_tx_bytes(.num_bytes(watermark_bytes + 1));
+        check_one_intr(.uart_intr(uart_intr), .exp(0));
+        cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
+      end
+
+      TxEmpty: begin
+        if (!en_tx) return;
+        // Interrupt should begin high, before we push anything to the TX FIFO
+        check_one_intr(.uart_intr(uart_intr), .exp(1));
+        // Write a single byte to the TX FIFO which will immediately begin transmission
+        drive_tx_bytes(.num_bytes(1));
+        // Need a brief delay while the data byte is popped and the interrupt returns high
+        cfg.clk_rst_vif.wait_clks(1);
+        // Interrupt should now be high as TX FIFO will be empty (but TX of first byte on-going)
+        check_one_intr(.uart_intr(uart_intr), .exp(1));
+        // Drive a second byte
+        drive_tx_bytes(.num_bytes(1));
+        // Interrupt should now be low as second byte will be in TX FIFO whilst TX of first byte is
+        // ongoing
+        check_one_intr(.uart_intr(uart_intr), .exp(0));
+        // wait until TX FIFO empties again
+        csr_spinwait(.ptr(ral.fifo_status.txlvl),
+                     .exp_data(0),
+                     .compare_op(CompareOpEq));
+        // Interrupt should now be high
+        check_one_intr(.uart_intr(uart_intr), .exp(1));
+        cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
+        // interrupt should remain asserted whilst FIFO is empty, writes to intr_state to clear have
+        // no effect
+        csr_wr(.ptr(ral.intr_state), .value(1 << uart_intr));
+        check_one_intr(.uart_intr(uart_intr), .exp(1));
+        // check interrupt clears when FIFO is non-empty again (2 bytes needed as first will be
+        // popped for transmission).
+        drive_tx_bytes(.num_bytes(2));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
       end
@@ -144,11 +177,12 @@ class uart_intr_vseq extends uart_base_vseq;
         drive_rx_bytes(.num_bytes(1));
         // clear rx fifo and interrupts triggered by above driving
         clear_fifos(.clear_tx_fifo(0), .clear_rx_fifo(1));
-        csr_wr(.ptr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value((1 << NumUartIntr) - 1));
 
         // Don't attempt to predict Tx/Rx watermark when testing RxBreakErr so we don't need to
         // predict TX/RX FIFO levels for this test.
         exp_intr_state_mask[TxWatermark] = 1'b0;
+        exp_intr_state_mask[TxEmpty] = 1'b0;
         exp_intr_state_mask[RxWatermark] = 1'b0;
 
         fork
@@ -215,11 +249,11 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         wait_for_baud_clock_cycles(2);
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx & en_timeout));
-        csr_wr(.ptr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value((1 << NumUartIntr) - 1));
         // expect timeout again since no fifo activity
         wait_for_baud_clock_cycles(timeout_val + 1);
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx & en_timeout));
-        csr_wr(.ptr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value((1 << NumUartIntr) - 1));
 
         if (!en_rx) return;
         // reset timeout timer by issuing a rdata read

@@ -37,7 +37,8 @@ package uart_env_pkg;
     RxBreakErr  = 5,
     RxTimeout   = 6,
     RxParityErr = 7,
-    NumUartIntr = 8
+    TxEmpty     = 8,
+    NumUartIntr = 9
   } uart_intr_e;
 
   // get the number of bytes that triggers watermark interrupt
