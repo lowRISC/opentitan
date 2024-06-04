@@ -46,15 +46,13 @@
       name: chip_sw_hmac_all_configurations
       desc: '''Verify HMAC 256/384 and 512 modes of operation.
 
-            - Verify the following security configurations:
+            - Verify the following security configurations for 6 hardcoded vectors:
               - SHA2-256
               - SHA2-384
               - SHA2-512
               - HMAC-SHA2-256
               - HMAC-SHA2-384
               - HMAC-SHA2-512
-            - Verify input message size of 0 bytes.
-            - Verify multiple input message sizes.
             - Use endianness configuration used in the crypto library.
             '''
       features: [
@@ -64,26 +62,37 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_hmac_multistream"]
+      tests: ["chip_sw_hmac_oneshot"]
       bazel: ["//sw/device/tests/crypto:hmac_functest"]
     }
     {
-      name: chip_sw_hmac_stream_mode
+      name: chip_sw_hmac_multistream_mode
       desc: '''Verify HMAC context save/restore functionality.
 
-            - Verify that the HMAC block is able to support context save/restore accross the following
-              modes of operation:
-              - HMAC versus SHA2
-              - Different internal block size, e.g. 32 vs 64 bit for SHA2-256 versus SHA2-384/512.
-            - Ensure that this can be supported by initializing multiple operations and interleaving the
-              HMAC update and final calls.
+            - Verify that HMAC block can stream 6 SHA-2/HMAC operations in parallel:
+              - One test vector for each configuration:
+                - SHA2-256
+                - SHA2-384
+                - SHA2-512
+                - HMAC-SHA2-256
+                - HMAC-SHA2-384
+                - HMAC-SHA2-512
+              - For each vector, message input is split into two chunks, and each
+              operation is completed with 2 update calls.
+                - Initiate all 6 operations.
+                - Feed the first message chunk to each stream, by resuming,
+                updating and removing context for each operation.
+                - Once all streams receive their first chunk, then feed their
+                second message chunk similarly.
+                - Once all streams receive all their message inputs, then finalize
+                them in a loop and check their result.
             '''
       features: ["HMAC.STREAM_MODE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_hmac_multistream"]
+      bazel: ["//sw/device/tests/crypto:hmac_multistream_functest"]
     }
     {
       name: chip_sw_hmac_sha2_stress
