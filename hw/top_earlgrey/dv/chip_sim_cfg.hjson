@@ -1498,9 +1498,15 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_hmac_multistream
+      name: chip_sw_hmac_oneshot
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/crypto:hmac_functest:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_hmac_multistream
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/crypto:hmac_multistream_functest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
