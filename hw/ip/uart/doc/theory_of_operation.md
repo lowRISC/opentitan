@@ -53,7 +53,7 @@ TX pin on positive edges of the baud clock.
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
 
-When the FIFO becomes empty as part of transmission, a TX FIFO done interrupt will be raised with the final byte has finished transmitting.
+When the FIFO becomes empty as part of transmission, a TX FIFO done interrupt will be raised when the final byte has finished transmitting.
 This is separate from the TX FIFO water mark interrupt.
 
 
