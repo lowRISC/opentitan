@@ -1855,6 +1855,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_pwrmgr_lowpower_cancel
+      uvm_test_seq: "chip_sw_base_vseq"
+      sw_images: ["//sw/device/tests:pwrmgr_lowpower_cancel_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
       uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
       sw_images: ["//sw/device/tests:pwrmgr_deep_sleep_all_wake_ups:1:new_rules"]
