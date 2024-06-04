@@ -327,46 +327,6 @@ void flash_ctrl_error_code_get(flash_ctrl_error_code_t *error_code) {
       bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_OP_ERR_BIT);
 }
 
-void flash_ctrl_fault_status_code_get(
-    flash_ctrl_fault_status_code_t *status_code) {
-  // Read flash fault status code.
-  uint32_t code = abs_mmio_read32(kBase + FLASH_CTRL_FAULT_STATUS_REG_OFFSET);
-
-  // Extract flash controller fault status code bits.
-  status_code->host_gnt_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_HOST_GNT_ERR_BIT);
-  status_code->arb_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_ARB_ERR_BIT);
-  status_code->spurious_ack =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_SPURIOUS_ACK_BIT);
-  status_code->phy_storage_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_PHY_STORAGE_ERR_BIT);
-  status_code->phy_relbl_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_PHY_RELBL_ERR_BIT);
-  status_code->seed_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_SEED_ERR_BIT);
-  status_code->prog_type_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT);
-  status_code->prog_win_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_PROG_WIN_ERR_BIT);
-  status_code->prog_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_PROG_ERR_BIT);
-  status_code->rd_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_RD_ERR_BIT);
-  status_code->mp_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_MP_ERR_BIT);
-  status_code->op_err =
-      bitfield_bit32_read(code, FLASH_CTRL_FAULT_STATUS_OP_ERR_BIT);
-}
-
-void flash_ctrl_fault_status_clear(void) {
-  uint32_t clear_code = bitfield_bit32_write(
-      0, FLASH_CTRL_FAULT_STATUS_PHY_STORAGE_ERR_BIT, true);
-  clear_code = bitfield_bit32_write(
-      clear_code, FLASH_CTRL_FAULT_STATUS_PHY_RELBL_ERR_BIT, true);
-  abs_mmio_write32(kBase + FLASH_CTRL_FAULT_STATUS_REG_OFFSET, clear_code);
-}
-
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
                                  void *data) {
   transaction_start((transaction_params_t){
