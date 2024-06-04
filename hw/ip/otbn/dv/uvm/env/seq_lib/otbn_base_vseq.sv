@@ -509,20 +509,15 @@ class otbn_base_vseq extends cip_base_vseq #(
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
   // register until completion. On reset, this returns immediately.
   protected task _run_otbn_cmd(logic [7:0] cmd_i);
-
-    logic [7:0] exp_data_status;
     case (cmd_i)
       otbn_pkg::CmdSecWipeDmem: begin
         `uvm_info(`gfn, "\n\t ----| Starting OTBN SecWipeDmem", UVM_MEDIUM)
-        exp_data_status = otbn_pkg::StatusBusySecWipeDmem;
       end
       otbn_pkg::CmdSecWipeImem: begin
         `uvm_info(`gfn, "\n\t ----| Starting OTBN SecWipeImem", UVM_MEDIUM)
-        exp_data_status = otbn_pkg::StatusBusySecWipeImem;
       end
       otbn_pkg::CmdExecute: begin
         `uvm_info(`gfn, "\n\t ----| Starting OTBN Execution", UVM_MEDIUM)
-        exp_data_status = otbn_pkg::StatusBusyExecute;
       end
       default: `uvm_fatal(`gfn, "Invalid operation")
     endcase
@@ -532,16 +527,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     wait_for_run_completion(UVM_MEDIUM);
 
     if (cfg.clk_rst_vif.rst_n) begin
-      if (exp_data_status == otbn_pkg::StatusBusyExecute) begin
-        `uvm_info(`gfn, "\n\t ----| OTBN completed execution", UVM_MEDIUM)
-        // After execution, OTBN securely wipes its internal state, so wait until that is complete.
-        exp_data_status = otbn_pkg::StatusBusySecWipeInt;
-        csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(exp_data_status),
-                                    .compare_op(CompareOpNe));
-        `uvm_info(`gfn, "\n\t ----| OTBN completed secure wipe", UVM_MEDIUM)
-      end else begin
-        `uvm_info(`gfn, "\n\t ----| OTBN finished", UVM_MEDIUM)
-      end
+      `uvm_info(`gfn, "\n\t ----| OTBN finished", UVM_MEDIUM)
     end else begin
       `uvm_info(`gfn, "\n\t ----| OTBN reset", UVM_MEDIUM)
     end
