@@ -198,11 +198,27 @@ static void context_save(hmac_ctx_t *ctx) {
 /**
  * Write given byte array into the `MSG_FIFO`. This function should only be
  * called when HWIP is already running and expecting further message bytes.
+ *
+ * @param message The incoming message buffer to be fed into HMAC_FIFO.
+ * @param message_len The length of `message` in bytes.
  */
-static void msg_fifo_write(const uint8_t *msg, size_t msg_len) {
-  // TODO(#23191): Improve message copying by writing them in 32b at a time.
-  for (size_t i = 0; i < msg_len; i++) {
-    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, msg[i]);
+static void msg_fifo_write(const uint8_t *message, size_t message_len) {
+  // Begin by writing a one byte at a time until the data is aligned.
+  size_t i = 0;
+  for (; misalignment32_of((uintptr_t)(&message[i])) > 0 && i < message_len;
+       i++) {
+    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
+  }
+
+  // Write one word at a time as long as there is a full word available.
+  for (; i + sizeof(uint32_t) <= message_len; i += sizeof(uint32_t)) {
+    uint32_t next_word = read_32(&message[i]);
+    abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, next_word);
+  }
+
+  // For the last few bytes, we need to write one byte at a time again.
+  for (; i < message_len; i++) {
+    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
 }
 
