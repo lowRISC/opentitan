@@ -141,6 +141,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
     uint watermark = get_tx_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
     intr_exp[TxWatermark] = (tx_q_size < watermark) || status_intr_test[TxWatermark];
+    intr_exp[TxEmpty] = (tx_q_size == 0) || status_intr_test[TxEmpty];
   endfunction
 
   virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
@@ -311,6 +312,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           // then call the prediction functions for those interrupts to determine the interrupt
           // status.
           status_intr_test[TxWatermark] = item.a_data[TxWatermark];
+          status_intr_test[TxEmpty] = item.a_data[TxEmpty];
           status_intr_test[RxWatermark] = item.a_data[RxWatermark];
 
           intr_exp |= item.a_data;
@@ -404,6 +406,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             // Watermark interrupt state based upon current level of TX/RX fifos. They cannot be
             // cleared by writes to intr_state.
             intr_wdata[TxWatermark] = 1'b0;
+            intr_wdata[TxEmpty] = 1'b0;
             intr_wdata[RxWatermark] = 1'b0;
             intr_exp &= ~intr_wdata;
           end join_none
@@ -425,7 +428,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               end
             end
             // don't check it when it's in ignored period
-            if (intr inside {TxWatermark, TxDone}) begin // TX interrupts
+            if (intr inside {TxWatermark, TxEmpty, TxDone}) begin // TX interrupts
               if (is_in_ignored_period(UartTx)) continue;
             end else begin // RX interrupts
               // RxTimeout, RxBreakErr is checked in seq

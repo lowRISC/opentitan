@@ -13580,6 +13580,14 @@
       default_val: false
     }
     {
+      name: uart0_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart0
+      intr_type: IntrType.Status
+      default_val: true
+    }
+    {
       name: uart1_tx_watermark
       width: 1
       type: interrupt
@@ -13642,6 +13650,14 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+    }
+    {
+      name: uart1_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart1
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: uart2_tx_watermark
@@ -13708,6 +13724,14 @@
       default_val: false
     }
     {
+      name: uart2_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart2
+      intr_type: IntrType.Status
+      default_val: true
+    }
+    {
       name: uart3_tx_watermark
       width: 1
       type: interrupt
@@ -13770,6 +13794,14 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+    }
+    {
+      name: uart3_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart3
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: gpio_gpio

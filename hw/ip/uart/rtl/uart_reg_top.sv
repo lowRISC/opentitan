@@ -136,6 +136,7 @@ module uart_reg_top (
   logic intr_state_rx_timeout_wd;
   logic intr_state_rx_parity_err_qs;
   logic intr_state_rx_parity_err_wd;
+  logic intr_state_tx_empty_qs;
   logic intr_enable_we;
   logic intr_enable_tx_watermark_qs;
   logic intr_enable_tx_watermark_wd;
@@ -153,6 +154,8 @@ module uart_reg_top (
   logic intr_enable_rx_timeout_wd;
   logic intr_enable_rx_parity_err_qs;
   logic intr_enable_rx_parity_err_wd;
+  logic intr_enable_tx_empty_qs;
+  logic intr_enable_tx_empty_wd;
   logic intr_test_we;
   logic intr_test_tx_watermark_wd;
   logic intr_test_rx_watermark_wd;
@@ -162,6 +165,7 @@ module uart_reg_top (
   logic intr_test_rx_break_err_wd;
   logic intr_test_rx_timeout_wd;
   logic intr_test_rx_parity_err_wd;
+  logic intr_test_tx_empty_wd;
   logic alert_test_we;
   logic alert_test_wd;
   logic ctrl_we;
@@ -435,6 +439,33 @@ module uart_reg_top (
     .qs     (intr_state_rx_parity_err_qs)
   );
 
+  //   F[tx_empty]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_intr_state_tx_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.tx_empty.de),
+    .d      (hw2reg.intr_state.tx_empty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.tx_empty.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_tx_empty_qs)
+  );
+
 
   // R[intr_enable]: V(False)
   //   F[tx_watermark]: 0:0
@@ -653,10 +684,37 @@ module uart_reg_top (
     .qs     (intr_enable_rx_parity_err_qs)
   );
 
+  //   F[tx_empty]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable_tx_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_tx_empty_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.tx_empty.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_tx_empty_qs)
+  );
+
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [7:0] intr_test_flds_we;
+  logic [8:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[tx_watermark]: 0:0
   prim_subreg_ext #(
@@ -785,6 +843,22 @@ module uart_reg_top (
     .qs     ()
   );
   assign reg2hw.intr_test.rx_parity_err.qe = intr_test_qe;
+
+  //   F[tx_empty]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_tx_empty (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_tx_empty_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[8]),
+    .q      (reg2hw.intr_test.tx_empty.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.tx_empty.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
@@ -1555,6 +1629,8 @@ module uart_reg_top (
   assign intr_enable_rx_timeout_wd = reg_wdata[6];
 
   assign intr_enable_rx_parity_err_wd = reg_wdata[7];
+
+  assign intr_enable_tx_empty_wd = reg_wdata[8];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_tx_watermark_wd = reg_wdata[0];
@@ -1572,6 +1648,8 @@ module uart_reg_top (
   assign intr_test_rx_timeout_wd = reg_wdata[6];
 
   assign intr_test_rx_parity_err_wd = reg_wdata[7];
+
+  assign intr_test_tx_empty_wd = reg_wdata[8];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -1652,6 +1730,7 @@ module uart_reg_top (
         reg_rdata_next[5] = intr_state_rx_break_err_qs;
         reg_rdata_next[6] = intr_state_rx_timeout_qs;
         reg_rdata_next[7] = intr_state_rx_parity_err_qs;
+        reg_rdata_next[8] = intr_state_tx_empty_qs;
       end
 
       addr_hit[1]: begin
@@ -1663,6 +1742,7 @@ module uart_reg_top (
         reg_rdata_next[5] = intr_enable_rx_break_err_qs;
         reg_rdata_next[6] = intr_enable_rx_timeout_qs;
         reg_rdata_next[7] = intr_enable_rx_parity_err_qs;
+        reg_rdata_next[8] = intr_enable_tx_empty_qs;
       end
 
       addr_hit[2]: begin
@@ -1674,6 +1754,7 @@ module uart_reg_top (
         reg_rdata_next[5] = '0;
         reg_rdata_next[6] = '0;
         reg_rdata_next[7] = '0;
+        reg_rdata_next[8] = '0;
       end
 
       addr_hit[3]: begin

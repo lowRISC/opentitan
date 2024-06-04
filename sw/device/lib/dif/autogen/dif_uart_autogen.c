@@ -76,6 +76,9 @@ static bool uart_get_irq_bit_index(dif_uart_irq_t irq,
     case kDifUartIrqRxParityErr:
       *index_out = UART_INTR_COMMON_RX_PARITY_ERR_BIT;
       break;
+    case kDifUartIrqTxEmpty:
+      *index_out = UART_INTR_COMMON_TX_EMPTY_BIT;
+      break;
     default:
       return false;
   }
@@ -84,14 +87,15 @@ static bool uart_get_irq_bit_index(dif_uart_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeStatus,
 };
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_irq_get_type(const dif_uart_t *uart, dif_uart_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (uart == NULL || type == NULL || irq == kDifUartIrqRxParityErr + 1) {
+  if (uart == NULL || type == NULL || irq == kDifUartIrqTxEmpty + 1) {
     return kDifBadArg;
   }
 

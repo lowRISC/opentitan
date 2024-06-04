@@ -165,13 +165,14 @@ and below if the system clock is over 31MHz.
 UART module has a few interrupts including general data flow interrupts
 and unexpected event interrupts.
 
-#### tx_watermark / rx_watermark
+#### tx_watermark / tx_empty / rx_watermark
 If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl)), the `tx_watermark` interrupt is raised to inform SW.
+If the TX FIFO is empty, the `tx_empty` interrupt is raised to inform SW.
 If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl)), the `rx_watermark` interrupt is raised to inform SW.
 
-Note that the watermark interrupts are level-based status interrupts.
+Note that the watermark interrupts and the empty interrupt are level-based status interrupts.
 They will stay asserted for as long as the FIFO levels are in violation of the configured level and cannot be cleared by writing to the status register.
-This also means that the `tx_watermark` starts off in an asserted state (resets high).
+This also means that `tx_watermark` and `tx_empty` start off in an asserted state (reset high).
 
 #### tx_done
 If TX FIFO becomes empty as part of transmit, the interrupt `tx_done` is asserted once the final byte has been transmitted.
