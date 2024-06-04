@@ -474,18 +474,36 @@ class otbn_base_vseq extends cip_base_vseq #(
   endtask
 
   // Wait for OTBN to finish, either by polling or by waiting on the interrupt pins
+  //
+  // When polling, this waits up to 1ms before failing with a timeout.
   task wait_for_run_completion(input bit verbosity);
-    if (_pick_use_interrupt()) begin
-      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (interrupt)", verbosity)
-      wait_for_interrupt();
-    end else begin
-      uvm_reg_data_t run_status;
+    fork begin : isolation_fork
+      fork
+        begin
+          `DV_WAIT_TIMEOUT(1_000_000, ,
+                           "Timed out waiting for OTBN run to complete by polling status")
+        end
+        begin
+          if (_pick_use_interrupt()) begin
+            `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (interrupt)", verbosity)
+            wait_for_interrupt();
+          end else begin
+            uvm_reg_data_t run_status;
 
-      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (polling)", verbosity)
-      csr_utils_pkg::csr_rd(.ptr(ral.status), .value(run_status), .backdoor(1));
-      csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(run_status),
-                                  .compare_op(CompareOpNe));
-    end
+            `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (polling)", verbosity)
+            while (cfg.clk_rst_vif.rst_n) begin
+              uvm_reg_data_t rdata;
+              csr_rd(.ptr(ral.status), .value(rdata), .blocking(1));
+              if (rdata inside {otbn_pkg::StatusIdle, otbn_pkg::StatusLocked}) begin
+                `uvm_info(`gfn, $sformatf("Seen end of OTBN run (status is %0x)", rdata), UVM_HIGH)
+                break;
+              end
+            end
+          end
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
