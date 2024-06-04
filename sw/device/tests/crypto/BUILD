@@ -454,7 +454,6 @@ opentitan_test(
     deps = [
         ":hmac_testvectors_random_header",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/testing/test_framework:check",

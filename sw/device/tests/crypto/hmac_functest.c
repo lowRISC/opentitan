@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
@@ -57,12 +56,10 @@ static status_t run_test_vector(void) {
   current_test_vector->key.checksum =
       integrity_blinded_checksum(&current_test_vector->key);
 
-  otcrypto_hmac_context_t hmac_ctx;
-  otcrypto_hash_context_t hash_ctx;
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;
-  // Allocate the buffer for the maximum digest size.
-  uint32_t act_tag[kHmacMaxDigestWords];
+  // Allocate the buffer for the maximum digest size (which comes from SHA-512).
+  uint32_t act_tag[kSha512DigestWords];
   otcrypto_word32_buf_t tag_buf = {
       .data = act_tag,
       .len = digest_len,
@@ -72,15 +69,6 @@ static status_t run_test_vector(void) {
       .data = act_tag,
       .len = digest_len,
   };
-  size_t break_index = current_test_vector->message.len / 2;
-  otcrypto_const_byte_buf_t msg_part1 = {
-      .data = current_test_vector->message.data,
-      .len = break_index,
-  };
-  otcrypto_const_byte_buf_t msg_part2 = {
-      .data = &current_test_vector->message.data[break_index],
-      .len = current_test_vector->message.len - break_index,
-  };
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
       OT_FALLTHROUGH_INTENDED;
@@ -88,20 +76,15 @@ static status_t run_test_vector(void) {
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
       TRY(get_hash_mode(current_test_vector, &hash_digest.mode));
-      TRY(otcrypto_hash_init(&hash_ctx, hash_digest.mode));
-      TRY(otcrypto_hash_update(&hash_ctx, msg_part1));
-      TRY(otcrypto_hash_update(&hash_ctx, msg_part2));
-      TRY(otcrypto_hash_final(&hash_ctx, hash_digest));
+      TRY(otcrypto_hash(current_test_vector->message, hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_init(&hmac_ctx, &current_test_vector->key));
-      TRY(otcrypto_hmac_update(&hmac_ctx, msg_part1));
-      TRY(otcrypto_hmac_update(&hmac_ctx, msg_part2));
-      TRY(otcrypto_hmac_final(&hmac_ctx, tag_buf));
+      TRY(otcrypto_hmac(&current_test_vector->key, current_test_vector->message,
+                        tag_buf));
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
