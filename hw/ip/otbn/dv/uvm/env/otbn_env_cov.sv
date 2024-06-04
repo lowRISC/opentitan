@@ -383,6 +383,17 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   // Non-core covergroups //////////////////////////////////////////////////////
 
+  // Tracking for the escalate_en_i input
+  covergroup escalate_en_cg with function sample(lc_ctrl_pkg::lc_tx_t value);
+    // Any value other than Off should be treated as an escalation request. We want to make sure we
+    // see genuine On and Off, but also an invalid value (which will be treated as On)
+    value_cp: coverpoint {value} {
+      bins off = {lc_ctrl_pkg::Off};
+      bins on  = {lc_ctrl_pkg::On};
+      bins bad = {[0:$]} with (!(item inside {lc_ctrl_pkg::Off, lc_ctrl_pkg::On}));
+    }
+  endgroup
+
   // CMD external CSR
   covergroup ext_csr_cmd_cg
     with function sample(otbn_pkg::cmd_e     value,
@@ -2099,6 +2110,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
+
+    escalate_en_cg = new;
 
     ext_csr_cmd_cg = new;
     ext_csr_ctrl_cg = new;
