@@ -228,6 +228,20 @@ otp_json(
 )
 
 otp_json(
+    name = "otp_json_hw_cfg1_enable_rv_dm_late_debug",
+    partitions = [
+        otp_partition(
+            name = "HW_CFG1",
+            items = {
+                # Use legacy behavior and disable late debug enable.
+                "DIS_RV_DM_LATE_DEBUG": False,
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
     name = "otp_json_secret1",
     partitions = [
         otp_partition(
@@ -384,6 +398,12 @@ otp_image(
     )
     for lc_state, _ in LC_MISSION_STATES
 ]
+
+otp_image(
+    name = "otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
+    src = "//hw/ip/otp_ctrl/data:otp_json_dev",
+    overlays = MANUF_PERSONALIZED + [":otp_json_hw_cfg1_enable_rv_dm_late_debug"],
+)
 
 # `MANUF_PERSONALIZED` configuration for RMA. Only available in secure environments.
 otp_image(
