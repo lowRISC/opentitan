@@ -103,8 +103,11 @@ module prim_sync_reqack_data #(
     logic effective_rst_n;
     assign effective_rst_n = rst_src_ni && rst_dst_ni;
 
+    // Set the check flag on the REQ and hold it until the ACK. On the ACK
+    // cycle and any subsequent cycle with REQ low, the data may change from
+    // its prior cycle's value.
     logic chk_flag_d, chk_flag_q;
-    assign chk_flag_d = src_req_i && !chk_flag_q ? 1'b1 : chk_flag_q;
+    assign chk_flag_d = (src_req_i | chk_flag_q) & ~src_ack_o;
 
     always_ff @(posedge clk_src_i or negedge effective_rst_n) begin
       if (!effective_rst_n) begin
@@ -118,7 +121,7 @@ module prim_sync_reqack_data #(
 
     // SRC domain cannot change data while waiting for ACK.
     `ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) && chk_flag_q |->
-        (!src_req_i || (src_req_i && src_ack_o)),
+        (!src_req_i || src_ack_o),
         clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag_q)
 
     // Register stage cannot be used.
