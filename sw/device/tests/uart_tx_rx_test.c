@@ -120,6 +120,8 @@ static volatile uart_cfg_params_t uart_cfg;
  */
 static volatile bool exp_uart_irq_tx_watermark;
 static volatile bool uart_irq_tx_watermark_fired;
+static volatile bool exp_uart_irq_tx_empty;
+static volatile bool uart_irq_tx_empty_fired;
 static volatile bool exp_uart_irq_rx_watermark;
 static volatile bool uart_irq_rx_watermark_fired;
 static volatile bool exp_uart_irq_tx_done;
@@ -156,6 +158,12 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
     uart_irq_tx_watermark_fired = true;
     uart_irq = kDifUartIrqTxWatermark;
+  } else if (plic_irq_id == uart_cfg.irq_tx_empty_id) {
+    CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqTxEmpty,
+                                          kDifToggleDisabled));
+    CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
+    uart_irq_tx_empty_fired = true;
+    uart_irq = kDifUartIrqTxEmpty;
   } else if (plic_irq_id == uart_cfg.irq_rx_watermark_id) {
     CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxWatermark,
                                           kDifToggleDisabled));
@@ -240,6 +248,8 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   CHECK_DIF_OK(
       dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_watermark_id, 0x1));
   CHECK_DIF_OK(
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_empty_id, 0x1));
+  CHECK_DIF_OK(
       dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_watermark_id, 0x2));
   CHECK_DIF_OK(
       dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_done_id, 0x3));
@@ -260,6 +270,10 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
 
   // Enable all UART interrupts at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_tx_watermark_id,
+                                           kTopEarlgreyPlicTargetIbex0,
+                                           kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_tx_empty_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
@@ -321,6 +335,8 @@ static bool uart_transfer_ongoing_bytes(const dif_uart_t *uart,
 
       CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
                                             kDifToggleEnabled));
+      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty,
+                                            kDifToggleEnabled));
       break;
     case kUartReceive:
       result =
@@ -342,6 +358,7 @@ static void execute_test(const dif_uart_t *uart) {
   bool uart_tx_done = false;
   size_t uart_tx_bytes_written = 0;
   exp_uart_irq_tx_watermark = true;
+  exp_uart_irq_tx_empty = true;
   // Set the flag below to true to allow TX data to be sent the first time in
   // the if comdition below. Subsequently, TX watermark interrupt will trigger
   // more data to be sent.
@@ -408,7 +425,10 @@ static void execute_test(const dif_uart_t *uart) {
 
     if (uart_irq_tx_done_fired) {
       exp_uart_irq_tx_watermark = false;
+      exp_uart_irq_tx_empty = false;
       exp_uart_irq_tx_done = false;
+      // To reach this point the TX empty interrupt must have fired
+      CHECK(uart_irq_tx_empty_fired == true, "TX empty interrupt did not fire");
     }
 
     if (uart_irq_rx_overflow_fired) {
