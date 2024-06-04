@@ -23,12 +23,12 @@ void hmac_sha256_init(void) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    UINT32_MAX);
 
+  // Configure the HMAC block to run SHA2-256 with a 256-bit key.
   uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
-  // configure to run SHA-2 256 with 256-bit key
   reg = bitfield_field32_write(reg, HMAC_CFG_DIGEST_SIZE_FIELD,
                                HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
   reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD,
@@ -75,11 +75,9 @@ void hmac_sha256_final(hmac_digest_t *digest) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    reg);
 
-  // Read the digest in reverse to preserve the numerical value.
-  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
   for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
     digest->digest[i] =
-        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
+        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET +
                         (i * sizeof(uint32_t)));
   }
 }

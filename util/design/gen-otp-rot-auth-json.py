@@ -152,7 +152,8 @@ class RotCreatorAuthCodesign:
         partition_buffer += self.build_key_type_buffer(_STRUCT_ITEM_NAMES_SPX,
                                                        _SPX_KEY_COUNT)
         digest = SHA256.new(partition_buffer).digest()
-        return partition_buffer, bytes(digest)
+        digest = bytes(reversed(digest))
+        return partition_buffer, digest
 
     def update_json_with_partition_digest(self, digest):
         """Update the JSON with the partition digest.

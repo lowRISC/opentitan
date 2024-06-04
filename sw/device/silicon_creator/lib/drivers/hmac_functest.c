@@ -29,11 +29,12 @@ static const char kGettysburgPrelude[] =
 // $ echo -n "Four score and seven years ago our fathers brought forth on this
 // continent, a new nation, conceived in Liberty, and dedicated to the
 // proposition that all men are created equal." |
-//     sha256sum - | cut -f1 -d' ' | sed -e "s/......../0x&,\n/g" | tac
+//     sha256sum - | cut -f1 -d' '  | fold -w2 | tac | tr -d "\n" |
+//     sed -e "s/......../0x&,\n/g" | tac
 //
 static const uint32_t kGettysburgDigest[] = {
-    0x8b8cc7ba, 0xe29f6ac0, 0xeb3dd433, 0x420ec587,
-    0x96c324ed, 0x775708a3, 0x0f9034cd, 0x1e6fd403,
+    0x03d46f1e, 0xcd34900f, 0xa3085777, 0xed24c396,
+    0x87c50e42, 0x33d43deb, 0xc06a9fe2, 0xbac78c8b,
 };
 
 rom_error_t hmac_test(void) {

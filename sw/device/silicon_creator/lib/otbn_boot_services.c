@@ -211,6 +211,31 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
   return kErrorOk;
 }
 
+/**
+ * Set the message digest for signature generation or verification.
+ *
+ * OTBN requires the digest in little-endian form, so this routine flips the
+ * bytes.
+ *
+ * @param digest Digest to set (big-endian).
+ * @return OK or error.
+ */
+static rom_error_t set_message_digest(const hmac_digest_t *digest) {
+  // Set the message digest. We swap all the bytes so that OTBN can interpret
+  // the digest as a little-endian integer, which is a more natural fit for the
+  // architecture than the big-endian form requested by the specification (FIPS
+  // 186-5, section B.2.1).
+  uint32_t digest_little_endian[kHmacDigestNumWords];
+  size_t i = 0;
+  for (; launder32(i) < kHmacDigestNumWords; i++) {
+    digest_little_endian[i] =
+        __builtin_bswap32(digest->digest[kHmacDigestNumWords - 1 - i]);
+  }
+  HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
+  return sc_otbn_dmem_write(kHmacDigestNumWords, digest_little_endian,
+                            kOtbnVarBootMsg);
+}
+
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
                                           attestation_signature_t *sig) {
   // Write the mode.
@@ -219,8 +244,7 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
       sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Write the message digest.
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
+  set_message_digest(digest);
 
   // Run the OTBN program (blocks until OTBN is done).
   HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
@@ -253,8 +277,7 @@ rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
                                               key->y, kOtbnVarBootY));
 
   // Write the message digest.
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
+  set_message_digest(digest);
 
   // Write the signature.
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
