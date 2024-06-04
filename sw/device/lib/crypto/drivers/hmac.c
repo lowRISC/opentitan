@@ -64,21 +64,9 @@ OT_ASSERT_ENUM_VALUE(HMAC_DIGEST_13_REG_OFFSET, HMAC_DIGEST_12_REG_OFFSET + 4);
 OT_ASSERT_ENUM_VALUE(HMAC_DIGEST_14_REG_OFFSET, HMAC_DIGEST_13_REG_OFFSET + 4);
 OT_ASSERT_ENUM_VALUE(HMAC_DIGEST_15_REG_OFFSET, HMAC_DIGEST_14_REG_OFFSET + 4);
 
-/**
- * The following values are the only key sizes supported natively bw HWIP.
- */
 enum {
   /* The beginning of the address space of HMAC. */
   kHmacBaseAddr = TOP_EARLGREY_HMAC_BASE_ADDR,
-  /* Internal block size for SHA-256/HMAC-256 in bits. */
-  kHmacSha256InternalBlockBits = 512,
-  kHmacSha256InternalBlockBytes = kHmacSha256InternalBlockBits / 8,
-  /* Internal block size for SHA-384/HMAC-384 in bits. */
-  kHmacSha384InternalBlockBits = 1024,
-  kHmacSha384InternalBlockBytes = kHmacSha384InternalBlockBits / 8,
-  /* Internal block size for SHA-512/HMAC-512 in bits. */
-  kHmacSha512InternalBlockBits = 1024,
-  kHmacSha512InternalBlockBytes = kHmacSha512InternalBlockBits / 8,
 };
 
 /**
@@ -120,6 +108,42 @@ static void hmac_hwip_clear(void) {
 }
 
 /**
+ * Write given key to HMAC HWIP.
+ *
+ * This function does not return error, so it is the responsibility of the
+ * caller to check that `key` and `key_len` are correctly set. Moreover, the
+ * caller must ensure that HMAC HWIP is in an idle state that accepts writing
+ * key words.
+ *
+ * @param key The buffer that points to the key.
+ * @param key_wordlen The length of the key in words.
+ */
+static void key_write(const uint32_t *key, size_t key_wordlen) {
+  for (size_t i = 0; i < key_wordlen; i++) {
+    abs_mmio_write32(kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET + 4 * i, key[i]);
+  }
+}
+
+/**
+ * Copy the digest result from HMAC HWIP to given `digest` buffer.
+ *
+ * This function does not return error, so it is the responsibility of the
+ * caller to check that `digest` and `digest_wordlen` are correctly set.
+ * Moreover, the caller must ensure that HMAC HWIP is in a state that permits
+ * reading the digest value, that is, either of stop or process commands is
+ * issued.
+ *
+ * @param[out] digest The digest buffer to copy to the result.
+ * @param digest_wordlen The length of the digest buffer in words.
+ */
+static void digest_read(uint32_t *digest, size_t digest_wordlen) {
+  for (size_t i = 0; i < digest_wordlen; i++) {
+    digest[i] =
+        abs_mmio_read32(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + 4 * i);
+  }
+}
+
+/**
  * Restore the internal state of HWIP from `ctx` struct, and resume the
  * operation.
  *
@@ -138,10 +162,7 @@ static void context_restore(hmac_ctx_t *ctx) {
 
   // Write to KEY registers for HMAC operations. If the operation is SHA-2,
   // `key_wordlen` is set to 0 during `ctx` initialization.
-  for (size_t i = 0; i < ctx->key_wordlen; i++) {
-    abs_mmio_write32(kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET + 4 * i,
-                     ctx->key[i]);
-  }
+  key_write(ctx->key, ctx->key_wordlen);
 
   uint32_t cmd_reg = HMAC_CMD_REG_RESVAL;
   // Decide if we need to invoke `start` or `continue` command.
@@ -185,10 +206,7 @@ static void context_restore(hmac_ctx_t *ctx) {
 static void context_save(hmac_ctx_t *ctx) {
   // For SHA-256 and HMAC-256, we do not need to save to the second half of
   // DIGEST registers, but we do it anyway to keep the driver simple.
-  for (size_t i = 0; i < kHmacMaxDigestWords; i++) {
-    ctx->H[i] =
-        abs_mmio_read32(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + 4 * i);
-  }
+  digest_read(ctx->H, kHmacMaxDigestWords);
   ctx->lower =
       abs_mmio_read32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
   ctx->upper =
@@ -222,6 +240,76 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
   }
 }
 
+/**
+ * For given `hmac_mode`, derive the matching CFG value and block/digest
+ * lengths.
+ *
+ * @param hmac_mode The input `hmac_mode_t` value that determines which
+ * SHA-2/HMAC algorithm is being used.
+ * @param[out] cfg_reg The value that needs to be set to HMAC HWIP for given
+ * `hmac_mode`.
+ * @param[out] msg_block_bytelen The internal block length associated with
+ * `hmac_mode` in bytes.
+ * @param[out] digest_wordlen The digest length associated with `hmac_mode` in
+ * words.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t cfg_derive(hmac_mode_t hmac_mode, uint32_t *cfg_reg,
+                           size_t *msg_block_bytelen, size_t *digest_wordlen) {
+  *cfg_reg = HMAC_CFG_REG_RESVAL;
+  // The endianness is fixed at driver level and not exposed to the caller.
+  // Digest should be big-endian to match the SHA-256 specification.
+  *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_KEY_SWAP_BIT, true);
+  *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_DIGEST_SWAP_BIT, true);
+  // Message should be little-endian to match Ibex's endianness.
+  *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
+
+  // We need to keep `sha_en` low until context is restored, see #23014.
+  *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_SHA_EN_BIT, false);
+
+  // Default value for `hmac_en` is false, HMAC calls set it to true below.
+  *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_HMAC_EN_BIT, false);
+
+  switch (hmac_mode) {
+    case kHmacModeHmac256:
+      *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
+      *cfg_reg = bitfield_field32_write(*cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                                        HMAC_CFG_KEY_LENGTH_VALUE_KEY_512);
+      OT_FALLTHROUGH_INTENDED;
+    case kHmacModeSha256:
+      *cfg_reg = bitfield_field32_write(*cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                                        HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
+      *msg_block_bytelen = kHmacSha256BlockBytes;
+      *digest_wordlen = kHmacSha256DigestWords;
+      break;
+    case kHmacModeHmac384:
+      *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
+      *cfg_reg = bitfield_field32_write(*cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                                        HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
+      OT_FALLTHROUGH_INTENDED;
+    case kHmacModeSha384:
+      *cfg_reg = bitfield_field32_write(*cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                                        HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_384);
+      *msg_block_bytelen = kHmacSha512BlockBytes;
+      *digest_wordlen = kHmacSha384DigestWords;
+      break;
+    case kHmacModeHmac512:
+      *cfg_reg = bitfield_bit32_write(*cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
+      *cfg_reg = bitfield_field32_write(*cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                                        HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
+      OT_FALLTHROUGH_INTENDED;
+    case kHmacModeSha512:
+      *cfg_reg = bitfield_field32_write(*cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                                        HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_512);
+      *msg_block_bytelen = kHmacSha512BlockBytes;
+      *digest_wordlen = kHmacSha512DigestWords;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_OK;
+}
+
 status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
                    const uint32_t *key, size_t key_wordlen) {
   if (ctx == NULL) {
@@ -229,71 +317,8 @@ status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
   }
   // TODO(#23191) Zeroise or randomly populate ctx struct during init.
 
-  // Prepare cfg_reg in context.
-  ctx->cfg_reg = HMAC_CFG_REG_RESVAL;
-  // The endianness is fixed at driver level and not exposed to the caller.
-  // Digest should be big-endian to match the SHA-256 specification.
-  ctx->cfg_reg =
-      bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_KEY_SWAP_BIT, true);
-  ctx->cfg_reg =
-      bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SWAP_BIT, true);
-  // Message should be little-endian to match Ibex's endianness.
-  ctx->cfg_reg =
-      bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
-
-  // We need to keep `sha_en` low until context is restored, see #23014.
-  ctx->cfg_reg = bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_SHA_EN_BIT, false);
-
-  // Default value for `hmac_en` is false, HMAC calls set it to true below.
-  ctx->cfg_reg =
-      bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, false);
-
-  switch (hmac_mode) {
-    case kHmacModeHmac256:
-      ctx->cfg_reg =
-          bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
-      ctx->cfg_reg =
-          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                 HMAC_CFG_KEY_LENGTH_VALUE_KEY_512);
-      OT_FALLTHROUGH_INTENDED;
-    case kHmacModeSha256:
-      ctx->cfg_reg =
-          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
-                                 HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
-      ctx->msg_block_bytelen = kHmacSha256InternalBlockBytes;
-      ctx->digest_wordlen = kHmacSha256DigestWords;
-      break;
-    case kHmacModeHmac384:
-      ctx->cfg_reg =
-          bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
-      ctx->cfg_reg =
-          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                 HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
-      OT_FALLTHROUGH_INTENDED;
-    case kHmacModeSha384:
-      ctx->cfg_reg =
-          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
-                                 HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_384);
-      ctx->msg_block_bytelen = kHmacSha384InternalBlockBytes;
-      ctx->digest_wordlen = kHmacSha384DigestWords;
-      break;
-    case kHmacModeHmac512:
-      ctx->cfg_reg =
-          bitfield_bit32_write(ctx->cfg_reg, HMAC_CFG_HMAC_EN_BIT, true);
-      ctx->cfg_reg =
-          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_KEY_LENGTH_FIELD,
-                                 HMAC_CFG_KEY_LENGTH_VALUE_KEY_1024);
-      OT_FALLTHROUGH_INTENDED;
-    case kHmacModeSha512:
-      ctx->cfg_reg =
-          bitfield_field32_write(ctx->cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD,
-                                 HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_512);
-      ctx->msg_block_bytelen = kHmacSha512InternalBlockBytes;
-      ctx->digest_wordlen = kHmacSha512DigestWords;
-      break;
-    default:
-      return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(cfg_derive(hmac_mode, &ctx->cfg_reg, &ctx->msg_block_bytelen,
+                          &ctx->digest_wordlen));
 
   if (hmac_mode == kHmacModeHmac256 || hmac_mode == kHmacModeHmac384 ||
       hmac_mode == kHmacModeHmac512) {
@@ -406,10 +431,7 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest, size_t digest_wordlen) {
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
   hmac_done_wait();
 
-  for (size_t i = 0; i < ctx->digest_wordlen; i++) {
-    digest[i] =
-        abs_mmio_read32(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + 4 * i);
-  }
+  digest_read(digest, ctx->digest_wordlen);
 
   // Clean up HWIP so it can be reused by other driver calls.
   hmac_hwip_clear();
@@ -421,12 +443,67 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest, size_t digest_wordlen) {
 status_t hmac(const hmac_mode_t hmac_mode, const uint32_t *key,
               size_t key_wordlen, const uint8_t *data, size_t len,
               uint32_t *digest, size_t digest_wordlen) {
-  // This particular implementation of `hmac_oneshot` is a placeholder, so that
-  // it does not clutter upper layer Hash and Mac functions. The eventual idea
-  // is to avoid handling large `ctx` for one-shot calls.
-  // TODO(#23191): Implement oneshot for HMAC.
-  hmac_ctx_t hmac_ctx;
-  HARDENED_TRY(hmac_init(&hmac_ctx, hmac_mode, key, key_wordlen));
-  HARDENED_TRY(hmac_update(&hmac_ctx, data, len));
-  return hmac_final(&hmac_ctx, digest, digest_wordlen);
+  if (data == NULL && len > 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // The previous caller should have left it clean, but it doesn't hurt to
+  // clear again.
+  hmac_hwip_clear();
+
+  uint32_t cfg_reg;
+  // Derived values below are only used for verifying their corresponding input
+  // arguments.
+  size_t derived_msg_block_bytelen;
+  size_t derived_digest_wordlen;
+
+  HARDENED_TRY(cfg_derive(hmac_mode, &cfg_reg, &derived_msg_block_bytelen,
+                          &derived_digest_wordlen));
+
+  // We need to write CFG before key, because it includes `key_swap` endiannes
+  // option.
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg_reg);
+
+  if (digest_wordlen != derived_digest_wordlen) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (hmac_mode == kHmacModeHmac256 || hmac_mode == kHmacModeHmac384 ||
+      hmac_mode == kHmacModeHmac512) {
+    if (key == NULL ||
+        derived_msg_block_bytelen != key_wordlen * sizeof(uint32_t)) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    key_write(key, key_wordlen);
+  } else {
+    // Ensure that `key` is NULL and `key_wordlen = 0` for hashing operations.
+    if (key != NULL || key_wordlen != 0) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  }
+
+  // `sha_en` is not set by `cfg_derive` so we need to explicity set it now.
+  cfg_reg = bitfield_bit32_write(cfg_reg, HMAC_CFG_SHA_EN_BIT, true);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg_reg);
+
+  uint32_t cmd_reg =
+      bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_START_BIT, 1);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
+
+  msg_fifo_write(data, len);
+
+  cmd_reg =
+      bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Wait for HWIP to be done.
+  hmac_done_wait();
+
+  digest_read(digest, digest_wordlen);
+
+  // Clean up HWIP so it can be reused by other driver calls.
+  hmac_hwip_clear();
+
+  // TODO(#23191): Destroy sensitive values in the ctx object.
+  return OTCRYPTO_OK;
 }
