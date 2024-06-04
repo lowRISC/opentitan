@@ -462,6 +462,23 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "hmac_multistream_functest",
+    srcs = ["hmac_multistream_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":hmac_testvectors_random_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "kdf_kmac_sideload_functest_hardcoded",
     srcs = ["kdf_kmac_sideload_functest.c"],
     broken = fpga_params(tags = ["broken"]),
