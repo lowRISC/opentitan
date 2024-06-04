@@ -102,24 +102,32 @@ fn run_hmac_testcase(
     .send(&*uart)?;
 
     let hmac_tag = CryptotestHmacTag::recv(&*uart, opts.timeout, false)?;
-    let success = if test_case.tag.len() > hmac_tag.tag_len {
-        // If we got a shorter tag back then the test asks for, we can't accept the tag, even if
-        // the beginning bytes match.
-        false
-    } else {
-        // Some of the NIST test cases only specify the beginning bytes of the expected tag, so we
-        // only check up to what the test specifies.
-        test_case.tag[..] == hmac_tag.tag[..test_case.tag.len()]
-    };
-    if test_case.result != success {
-        log::info!(
-            "FAILED test #{}: expected = {}, actual = {}",
-            test_case.test_case_id,
-            test_case.result,
-            success
-        );
+    let mut failed = false;
+    for (mode, actual_tag) in [
+        ("oneshot", hmac_tag.oneshot_tag),
+        ("streaming", hmac_tag.streaming_tag),
+    ] {
+        let success = if test_case.tag.len() > hmac_tag.tag_len {
+            // If we got a shorter tag back then the test asks for, we can't accept the tag, even if
+            // the beginning bytes match.
+            false
+        } else {
+            // Some of the NIST test cases only specify the beginning bytes of the expected tag, so we
+            // only check up to what the test specifies.
+            test_case.tag[..] == actual_tag[..test_case.tag.len()]
+        };
+        if test_case.result != success {
+            log::info!(
+                "FAILED test #{} in {} mode: expected = {}, actual = {}",
+                test_case.test_case_id,
+                mode,
+                test_case.result,
+                success
+            );
+            failed = true;
+        }
     }
-    if success != test_case.result {
+    if failed {
         *fail_counter += 1;
     }
     Ok(())

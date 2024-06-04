@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -13,11 +14,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 
-const unsigned int kOtcryptoHmacTagBytesSha256 = 32;
-const unsigned int kOtcryptoHmacTagBytesSha384 = 48;
-const unsigned int kOtcryptoHmacTagBytesSha512 = 64;
-
-const int MaxTagBytes = kOtcryptoHmacTagBytesSha512;
+const int MaxTagBytes = kSha512DigestBytes;
 const int MaxTagWords = MaxTagBytes / sizeof(uint32_t);
 
 // Random value for masking, as large as the longest test key. This value
@@ -48,15 +45,15 @@ status_t handle_hmac(ujson_t *uj) {
   switch (uj_hash_alg) {
     case kCryptotestHmacHashAlgSha256:
       key_mode = kOtcryptoKeyModeHmacSha256;
-      tag_bytes = kOtcryptoHmacTagBytesSha256;
+      tag_bytes = kSha256DigestBytes;
       break;
     case kCryptotestHmacHashAlgSha384:
       key_mode = kOtcryptoKeyModeHmacSha384;
-      tag_bytes = kOtcryptoHmacTagBytesSha384;
+      tag_bytes = kSha384DigestBytes;
       break;
     case kCryptotestHmacHashAlgSha512:
       key_mode = kOtcryptoKeyModeHmacSha512;
-      tag_bytes = kOtcryptoHmacTagBytesSha512;
+      tag_bytes = kSha512DigestBytes;
       break;
     default:
       LOG_ERROR("Unsupported HMAC key mode: %d", uj_hash_alg);
@@ -97,16 +94,51 @@ status_t handle_hmac(ujson_t *uj) {
       .len = tag_bytes / sizeof(uint32_t),
       .data = tag_buf,
   };
+  // Test oneshot API
   otcrypto_status_t status = otcrypto_hmac(&key, input_message, tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
-  // Copy tag to uJSON type
+  // Copy oneshot tag to uJSON type
   cryptotest_hmac_tag_t uj_tag;
-  memcpy(uj_tag.tag, tag_buf, tag_bytes);
+  memcpy(uj_tag.oneshot_tag, tag_buf, tag_bytes);
   uj_tag.tag_len = tag_bytes;
 
-  // Send tag to host via UART
+  // Zero out tag_buf to mitigate chance of a false positive in the
+  // stepwise test
+  memset(tag_buf, 0, tag_bytes);
+  // Test streaming API
+  otcrypto_hmac_context_t ctx;
+  status = otcrypto_hmac_init(&ctx, &key);
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+  // Split up input message into 2 shares for better coverage of
+  // streaming API
+  otcrypto_const_byte_buf_t input_message_share1 = {
+      .len = uj_message.message_len / 2,
+      .data = msg_buf,
+  };
+  otcrypto_const_byte_buf_t input_message_share2 = {
+      .len = ceil_div(uj_message.message_len, 2),
+      .data = &msg_buf[uj_message.message_len / 2],
+  };
+  status = otcrypto_hmac_update(&ctx, input_message_share1);
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+  status = otcrypto_hmac_update(&ctx, input_message_share2);
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+  status = otcrypto_hmac_final(&ctx, tag);
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+  // Copy streaming tag to uJSON output
+  memcpy(uj_tag.streaming_tag, tag_buf, tag_bytes);
+
+  // Send tags to host via UART
   RESP_OK(ujson_serialize_cryptotest_hmac_tag_t, uj, &uj_tag);
   return OK_STATUS(0);
 }
