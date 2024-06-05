@@ -95,48 +95,186 @@ cryptotest(
     test_vectors = ECDH_TESTVECTOR_TARGETS,
 )
 
-HASH_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_{}_{}_{}_json".format(
-        src_repo,
-        algorithm.lower(),
+SHA256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha256_{}_json".format(
         msg_type.lower(),
     )
-    for algorithm, src_repo, extra_msg_types in [
-        ("SHA256", "sha2_fips_180_4", []),
-        ("SHA384", "sha2_fips_180_4", []),
-        ("SHA512", "sha2_fips_180_4", []),
-        ("SHA3_256", "sha3_fips_202", []),
-        ("SHA3_384", "sha3_fips_202", []),
-        ("SHA3_512", "sha3_fips_202", []),
-        (
-            "SHAKE128",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
-        (
-            "SHAKE256",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
-    ]
     for msg_type in [
         "ShortMsg",
         "LongMsg",
-    ] + extra_msg_types
-] + [
-    "//sw/host/cryptotest/testvectors/data:hjson_hash",
+    ]
 ]
 
-HASH_TESTVECTOR_ARGS = " ".join([
+SHA256_TESTVECTOR_ARGS = " ".join([
     "--hash-json=\"$(rootpath {})\"".format(target)
-    for target in HASH_TESTVECTOR_TARGETS
+    for target in SHA256_TESTVECTOR_TARGETS
 ])
 
 cryptotest(
-    name = "hash_kat",
-    test_args = HASH_TESTVECTOR_ARGS,
+    name = "sha256_kat",
+    test_args = SHA256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
-    test_vectors = HASH_TESTVECTOR_TARGETS,
+    test_vectors = SHA256_TESTVECTOR_TARGETS,
+)
+
+SHA384_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha384_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ]
+]
+
+SHA384_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHA384_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sha384_kat",
+    test_args = SHA384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA384_TESTVECTOR_TARGETS,
+)
+
+SHA512_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha512_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ]
+]
+
+SHA512_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHA512_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sha512_kat",
+    test_args = SHA512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA512_TESTVECTOR_TARGETS,
+)
+
+SHA3_256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_256_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ]
+]
+
+SHA3_256_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHA3_256_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sha3_256_kat",
+    test_args = SHA3_256_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA3_256_TESTVECTOR_TARGETS,
+)
+
+SHA3_384_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_384_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ]
+]
+
+SHA3_384_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHA3_384_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sha3_384_kat",
+    test_args = SHA3_384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA3_384_TESTVECTOR_TARGETS,
+)
+
+SHA3_512_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_512_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ]
+]
+
+SHA3_512_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHA3_512_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sha3_512_kat",
+    test_args = SHA3_512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA3_512_TESTVECTOR_TARGETS,
+)
+
+SHAKE128_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_shake_fips_202_shake128_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+        "VariableOut",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:hjson_shake128",
+]
+
+SHAKE128_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHAKE128_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "shake128_kat",
+    test_args = SHAKE128_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHAKE128_TESTVECTOR_TARGETS,
+)
+
+SHAKE256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_shake_fips_202_shake256_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+        "VariableOut",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:hjson_shake256",
+]
+
+SHAKE256_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHAKE256_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "shake256_kat",
+    test_args = SHAKE256_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHAKE256_TESTVECTOR_TARGETS,
 )
 
 DRBG_TESTVECTOR_TARGETS = [
@@ -217,8 +355,15 @@ test_suite(
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
-        ":hash_kat",
         ":hmac_kat",
         ":kmac_kat",
+        ":sha256_kat",
+        ":sha384_kat",
+        ":sha3_256_kat",
+        ":sha3_384_kat",
+        ":sha3_512_kat",
+        ":sha512_kat",
+        ":shake128_kat",
+        ":shake256_kat",
     ],
 )

@@ -1,0 +1,32 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// The following vectors are obtained from two different sources:
+// SHAKE: https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing
+// CSHAKE: https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+
+[
+  {
+    vector_identifier: "NIST CAVP, byte-oriented, SHAKE256ShortMsg.rsp, Len = 312"
+    operation: SHAKE
+    security_str: 256
+    input_msg: 0xf532d0ece583bebaec55d030c93fcd43ad7c96a493ef15e7d06470e5eb19825fae7d8be47d3726
+    digest: 0x225ace4d5140a3d75993ca8c7b993662030d046fa0201ee9c5c335d92b4d5801
+  }
+  {
+    vector_identifier: "NIST CAVP, byte-oriented, SHAKE256VariableOut.rsp, Count = 1245, Len = 2000"
+    operation: SHAKE
+    security_str: 256
+    input_msg: 0x8d8001e2c096f1b88e7c9224a086efd4797fbf74a8033a2d422a2b6b8f6747e4
+    digest: 0x2e975f6a8a14f0704d51b13667d8195c219f71e6345696c49fa4b9d08e9225d3d39393425152c97e71dd24601c11abcfa0f12f53c680bd3ae757b8134a9c10d429615869217fdd5885c4db174985703a6d6de94a667eac3023443a8337ae1bc601b76d7d38ec3c34463105f0d3949d78e562a039e4469548b609395de5a4fd43c46ca9fd6ee29ada5efc07d84d553249450dab4a49c483ded250c9338f85cd937ae66bb436f3b4026e859fda1ca571432f3bfc09e7c03ca4d183b741111ca0483d0edabc03feb23b17ee48e844ba2408d9dcfd0139d2e8c7310125aee801c61ab7900d1efc47c078281766f361c5e6111346235e1dc38325666c
+  }
+  {
+    vector_identifier: "NIST SP 800-185, cSHAKE_samples.pdf, Sample #3"
+    operation: CSHAKE
+    security_str: 256
+    input_msg: 0x00010203
+    cust_str: 0x456d61696c205369676e6174757265
+    digest: 0xd008828e2b80ac9d2218ffee1d070c48b8e4c87bff32c9699d5b6896eee0edd164020e2be0560858d9c00c037e34a96937c561a74c412bb4c746469527281c8c
+  }
+]

@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Source: https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing
+
+[
+  {
+    vector_identifier: "NIST CAVP, byte-oriented, SHA3_256ShortMsg.rsp, Len = 152"
+    operation: SHA3
+    security_str: 256
+    input_msg: 0xd751ccd2cd65f27db539176920a70057a08a6b
+    digest: 0x7aaca80dbeb8dc3677d18b84795985463650d72f2543e0ec709c9e70b8cd7b79
+  }
+]
