@@ -306,7 +306,7 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, None, Some(&config.output))?;
+    PinmuxConfig::configure(&*uart, None, Some(&config.output), None)?;
 
     log::info!("Configuring debugger GPIOs as inputs");
     // The outputs (with respect to pinmux config) correspond to the input pins on the debug board.
@@ -336,7 +336,7 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, Some(&config.input), None)?;
+    PinmuxConfig::configure(&*uart, Some(&config.input), None, None)?;
 
     log::info!("Configuring debugger GPIOs as outputs");
     // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
