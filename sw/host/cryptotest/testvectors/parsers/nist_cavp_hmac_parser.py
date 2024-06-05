@@ -24,15 +24,21 @@ LENGTH_TO_HASH = {
     "64": "sha-512",
 }
 
+HASH_TO_LENGTH = {
+    "sha256": "32",
+    "sha384": "48",
+    "sha512": "64",
+}
+
 
 def parse_testcases(args) -> None:
     raw_testcases = parse_rsp(args.src)
     test_cases = list()
-
+    length = HASH_TO_LENGTH[args.hash]
     for test_vec in raw_testcases:
         # Tag length indicates which hash function should be used
         mac_len = test_vec["L"]
-        if mac_len not in LENGTH_TO_HASH:
+        if length != mac_len or mac_len not in LENGTH_TO_HASH:
             # Some hash functions in the test vector (e.g. SHA-1) are not
             # supported by OpenTitan.
             continue
@@ -75,6 +81,11 @@ def main() -> int:
         "--schema",
         type = str,
         help = "Test vector schema file"
+    )
+    parser.add_argument(
+        "--hash",
+        help="Which hash algorithm to output test vectors for",
+        choices=["sha256", "sha384", "sha512"]
     )
     args = parser.parse_args()
     parse_testcases(args)
