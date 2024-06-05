@@ -9,13 +9,12 @@ set -e
 . util/build_consts.sh
 
 if [ $# == 0 ]; then
-    echo >&2 "Usage: run-fpga-tests.sh <fpga> <tags or test set name>"
-    echo >&2 "E.g. ./run-fpga-tests.sh cw310 manuf"
-    echo >&2 "E.g. ./run-fpga-tests.sh cw310 cw310_rom_tests"
+    echo >&2 "Usage: run-fpga-tests.sh <fpga> <target_pattern_file>"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt"
     exit 1
 fi
 fpga="$1"
-fpga_tags="$2"
+target_pattern_file="$2"
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
@@ -55,5 +54,4 @@ ci/bazelisk.sh test \
     --build_tests_only \
     --define "$fpga"=lowrisc \
     --flaky_test_attempts=2 \
-    --test_tag_filters=${fpga_tags},-broken,-skip_in_ci \
-    //... @manufacturer_test_hooks//...
+    --target_pattern_file="${target_pattern_file}"
