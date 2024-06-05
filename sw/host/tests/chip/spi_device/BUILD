@@ -85,3 +85,20 @@ rust_binary(
         "@crate_index//:object",
     ],
 )
+
+rust_binary(
+    name = "spi_device_sleep_test",
+    srcs = [
+        "src/spi_device_sleep_test.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+        "@crate_index//:serde_json",
+    ],
+)
