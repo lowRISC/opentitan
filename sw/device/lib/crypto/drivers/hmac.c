@@ -70,35 +70,49 @@ enum {
 };
 
 /**
- * Wait until HMAC raises `hmac_done` interrupt. After interrupt is observed,
- * clear it.
+ * Wait until HMAC becomes idle.
  *
- * TODO(#23191): Avoid constant loop and use to-be-implemented Idle/status bit
- * instead.
+ * It returns error if HMAC HWIP becomes idle without firing `hmac_done`
+ * interrupt.
+ *
+ * TODO(#23191): It might be beneficial to have a timeout value for the polling.
+ *
+ * @return Result of the operation.
  */
-static void hmac_done_wait(void) {
-  uint32_t intr_reg = 0;
-  while (bitfield_bit32_read(intr_reg, HMAC_INTR_STATE_HMAC_DONE_BIT) == 0) {
-    intr_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET);
+OT_WARN_UNUSED_RESULT
+static status_t hmac_idle_wait(void) {
+  // Verify that HMAC HWIP is idle.
+  // Initialize `status_reg = 0` so that the loop starts with the assumption
+  // that HMAC HWIP is not idle.
+  uint32_t status_reg = 0;
+  while (bitfield_bit32_read(status_reg, HMAC_STATUS_HMAC_IDLE_BIT) == 0) {
+    status_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_STATUS_REG_OFFSET);
+  }
+
+  // Verify that HMAC HWIP raises `hmac_done` bit.
+  uint32_t intr_reg =
+      abs_mmio_read32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET);
+  if (bitfield_bit32_read(intr_reg, HMAC_INTR_STATE_HMAC_DONE_BIT) == 0) {
+    return OTCRYPTO_FATAL_ERR;
   }
 
   // Clear the interrupt by writing 1, because `INTR_STATE` is rw1c type.
   abs_mmio_write32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET, intr_reg);
+  return OTCRYPTO_OK;
 }
 
 /**
  * Clear the state of HMAC HWIP so that further driver calls can use it.
  *
- * This function cannot force stop HWIP, and ongoing operations will not simply
- * stop by deasserting `sha_en` bit. Instead it should be used after HWIP
- * raises `hmac_done` interrupt (see `hmac_done_wait` function).
+ * This function cannot force stop HMAC HWIP, and ongoing operations will not
+ * simply stop by deasserting `sha_en` bit. Instead it should be used after
+ * HMAC HWIP indicates that it is idle (see `hmac_idle_wait`).
  *
- * It also clears the internal state of HWIP by overwriting sensitive values
- * with 1s.
+ * It also clears the internal state of HMAC HWIP by overwriting sensitive
+ * values with 1s.
  */
 static void hmac_hwip_clear(void) {
   // Do not clear the config yet, we just need to deassert sha_en, see #23014.
-  // TODO handle digest size changes.
   uint32_t cfg_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET);
   cfg_reg = bitfield_bit32_write(cfg_reg, HMAC_CFG_SHA_EN_BIT, false);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg_reg);
@@ -144,12 +158,13 @@ static void digest_read(uint32_t *digest, size_t digest_wordlen) {
 }
 
 /**
- * Restore the internal state of HWIP from `ctx` struct, and resume the
+ * Restore the internal state of HMAC HWIP from `ctx` struct, and resume the
  * operation.
  *
- * The first HWIP operation requires the call of `start` instead of `continue`.
- * Therefore, `ctx->hw_started` flag is used to distinguish the first call. This
- * function also updated `ctx->hw_started` after the first such call.
+ * The first HMAC HWIP operation requires the call of `start` instead of
+ * `continue`. Therefore, `ctx->hw_started` flag is used to distinguish
+ * the first call. This function also updated `ctx->hw_started` after
+ * the first such call.
  *
  * If this function is being called from `ctx` object with previously stored
  * context (i.e. `ctx->hw_started = true`), then this state is restored.
@@ -196,10 +211,10 @@ static void context_restore(hmac_ctx_t *ctx) {
 }
 
 /**
- * Save the context from HWIP into `ctx` object.
+ * Save the context from HMAC HWIP into `ctx` object.
  *
- * This function should be called only after `stop` command is invoked and HWIP
- * confirms that it stopped via interrupt.
+ * This function should be called only after `stop` command is invoked and
+ * HMAC HWIP is idle.
  *
  * @param[out] ctx Context to which values are written.
  */
@@ -215,12 +230,13 @@ static void context_save(hmac_ctx_t *ctx) {
 
 /**
  * Write given byte array into the `MSG_FIFO`. This function should only be
- * called when HWIP is already running and expecting further message bytes.
+ * called when HMAC HWIP is already running and expecting further message bytes.
  *
  * @param message The incoming message buffer to be fed into HMAC_FIFO.
  * @param message_len The length of `message` in bytes.
  */
 static void msg_fifo_write(const uint8_t *message, size_t message_len) {
+  // TODO(#23191): Should we handle backpressure here?
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
   for (; misalignment32_of((uintptr_t)(&message[i])) > 0 && i < message_len;
@@ -357,7 +373,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   // Check if incoming message bits with `ctx->partial_block` together has
   // enough bits to fill an internal SHA-2 block. Otherwise, this function just
   // appends the incoming bits to partial_block and returns without invoking
-  // HWIP operation.
+  // HMAC HWIP operation.
   if (ctx->partial_block_len + len < ctx->msg_block_bytelen) {
     memcpy(ctx->partial_block + ctx->partial_block_len, data, len);
     ctx->partial_block_len += len;
@@ -379,27 +395,26 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   msg_fifo_write(ctx->partial_block, ctx->partial_block_len);
 
   // Keep writing incoming bytes
-  // TODO(#23191): Should we handle backpressure here?
   msg_fifo_write(data, len - leftover_len);
 
-  // Time to tell HWIP to stop, because we do not have enough message bytes for
-  // another round.
+  // Time to tell HMAC HWIP to stop, because we do not have enough message
+  // bytes for another round.
   uint32_t cmd_reg =
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_STOP_BIT, 1);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Wait for HWIP to be done.
-  hmac_done_wait();
+  // Wait for HMAC HWIP operation to be completed.
+  HARDENED_TRY(hmac_idle_wait());
 
   // Store context into `ctx`.
   context_save(ctx);
 
   // Write leftover bytes to `partial_block`, so that future update/final call
-  // can feed them to HWIP.
+  // can feed them to HMAC HWIP.
   memcpy(ctx->partial_block, data + len - leftover_len, leftover_len);
   ctx->partial_block_len = leftover_len;
 
-  // Clean up HWIP so it can be reused by other driver calls.
+  // Clean up HMAC HWIP so it can be reused by other driver calls.
   hmac_hwip_clear();
   return OTCRYPTO_OK;
 }
@@ -422,18 +437,18 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest, size_t digest_wordlen) {
   // button as necessary.
   context_restore(ctx);
 
-  // Feed the final leftover bytes to HWIP.
+  // Feed the final leftover bytes to HMAC HWIP.
   msg_fifo_write(ctx->partial_block, ctx->partial_block_len);
 
   // All message bytes are fed, now hit the process button.
   uint32_t cmd_reg =
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
-  hmac_done_wait();
+  HARDENED_TRY(hmac_idle_wait());
 
   digest_read(digest, ctx->digest_wordlen);
 
-  // Clean up HWIP so it can be reused by other driver calls.
+  // Clean up HMAC HWIP so it can be reused by other driver calls.
   hmac_hwip_clear();
 
   // TODO(#23191): Destroy sensitive values in the ctx object.
@@ -496,12 +511,12 @@ status_t hmac(const hmac_mode_t hmac_mode, const uint32_t *key,
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Wait for HWIP to be done.
-  hmac_done_wait();
+  // Wait for HMAC HWIP operation to be completed.
+  HARDENED_TRY(hmac_idle_wait());
 
   digest_read(digest, digest_wordlen);
 
-  // Clean up HWIP so it can be reused by other driver calls.
+  // Clean up HMAC HWIP so it can be reused by other driver calls.
   hmac_hwip_clear();
 
   // TODO(#23191): Destroy sensitive values in the ctx object.
