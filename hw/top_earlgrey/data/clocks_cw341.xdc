@@ -350,4 +350,4 @@ set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
-set_false_path -from [get_clocks clk_usb_48] -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/gen_*/q_o_reg[0]/D]
+set_false_path -from [get_clocks clk_usb_48] -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/gen_generic.u_impl_generic/u_sync_1/gen_*/q_o_reg[0]/D]

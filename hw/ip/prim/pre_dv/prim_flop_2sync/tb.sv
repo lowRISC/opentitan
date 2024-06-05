@@ -27,7 +27,7 @@ module tb;
     clk_rst_if.apply_reset(.reset_width_clks(10));
 
     $display("Using prim_cdc_rand_delay_mode slow");
-    dut.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_mode(1);
+    dut.gen_generic.u_impl_generic.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_mode(1);
     repeat (100) begin
       src_d <= $urandom();
       clk_rst_if.wait_clks($urandom_range(1, 20));
@@ -35,7 +35,7 @@ module tb;
     clk_rst_if.wait_clks(200);
 
     $display("Using prim_cdc_rand_delay_mode once");
-    dut.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_mode(2);
+    dut.gen_generic.u_impl_generic.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_mode(2);
     repeat (100) begin
       src_d <= $urandom();
       clk_rst_if.wait_clks($urandom_range(1, 20));
@@ -43,8 +43,8 @@ module tb;
     clk_rst_if.wait_clks(200);
 
     $display("Using prim_cdc_rand_delay_mode interval = 10");
-    dut.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_mode(3);
-    dut.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_interval(10);
+    dut.gen_generic.u_impl_generic._prim_cdc_rand_delay.set_prim_cdc_rand_delay_mode(3);
+    dut.gen_generic.u_impl_generic.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_interval(10);
     repeat (100) begin
       src_d <= $urandom();
       clk_rst_if.wait_clks($urandom_range(1, 20));
@@ -52,7 +52,7 @@ module tb;
     clk_rst_if.wait_clks(200);
 
     $display("Using prim_cdc_rand_delay_mode interval = 1");
-    dut.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_interval(1);
+    dut.gen_generic.u_impl_generic.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_interval(1);
     repeat (100) begin
       src_d <= $urandom();
       clk_rst_if.wait_clks($urandom_range(1, 20));
@@ -60,7 +60,7 @@ module tb;
     clk_rst_if.wait_clks(200);
 
     $display("Using prim_cdc_rand_delay_mode interval = 0");
-    dut.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_interval(0);
+    dut.gen_generic.u_impl_generic.u_prim_cdc_rand_delay.set_prim_cdc_rand_delay_interval(0);
     repeat (100) begin
       src_d <= $urandom();
       clk_rst_if.wait_clks($urandom_range(1, 20));
