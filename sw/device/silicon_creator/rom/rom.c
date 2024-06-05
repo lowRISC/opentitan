@@ -96,23 +96,49 @@ static sigverify_otp_key_ctx_t sigverify_ctx;
 // A ram copy of the OTP word controlling how to handle flash ECC errors.
 uint32_t flash_ecc_exc_handler_en;
 
+static inline bool rom_console_enabled(void) {
+  return otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BANNER_EN_OFFSET) !=
+         kHardenedBoolFalse;
+}
+
+/**
+ * Prints a banner during bootup.
+ */
+static void rom_banner(void) {
+  if (!rom_console_enabled()) {
+    return;
+  }
+  //                          a t i T n e p O
+  const uint64_t kTitle1 = 0x617469546e65704f;
+  //                          : n
+  const uint32_t kTitle2 = 0x3a6e;
+  //                       : T I G
+  const uint32_t kGit = 0x3a544947;
+  const uint32_t kNewline = 0x0a0d;
+  lifecycle_hw_rev_t hw;
+  lifecycle_hw_rev_get(&hw);
+  uart_write_imm(kTitle1);
+  uart_write_imm(kTitle2);
+  uart_write_hex(hw.silicon_creator_id, sizeof(hw.silicon_creator_id), '-');
+  uart_write_hex(hw.product_id, sizeof(hw.product_id), '-');
+  uart_write_hex(hw.revision_id, sizeof(hw.revision_id), kNewline);
+
+  uart_write_imm(kGit);
+  uart_write_hex(kChipInfo.scm_revision.scm_revision_high, sizeof(uint32_t), 0);
+  uart_write_hex(kChipInfo.scm_revision.scm_revision_low, sizeof(uint32_t),
+                 kNewline);
+}
+
 /**
  * Prints a status message indicating that the ROM is entering bootstrap mode.
  */
 static void rom_bootstrap_message(void) {
-  uart_putchar('b');
-  uart_putchar('o');
-  uart_putchar('o');
-  uart_putchar('t');
-  uart_putchar('s');
-  uart_putchar('t');
-  uart_putchar('r');
-  uart_putchar('a');
-  uart_putchar('p');
-  uart_putchar(':');
-  uart_putchar('1');
-  uart_putchar('\r');
-  uart_putchar('\n');
+  //                              a r t s t o o b
+  const uint64_t kBootstrap1 = 0x61727473746f6f62;
+  //                             \n\r 1 : p
+  const uint64_t kBootstrap2 = 0x0a0d313a70;
+  uart_write_imm(kBootstrap1);
+  uart_write_imm(kBootstrap2);
 }
 
 /**
@@ -211,6 +237,9 @@ static rom_error_t rom_init(void) {
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->creator.reset_reasons = reset_reasons;
   rstmgr_reason_clear(reset_reasons);
+
+  // Print a nice message.
+  rom_banner();
 
   // This function is a NOP unless ROM is built for an fpga.
   device_fpga_version_print();

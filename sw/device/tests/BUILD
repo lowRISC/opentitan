@@ -5636,6 +5636,7 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )

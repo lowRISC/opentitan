@@ -97,14 +97,30 @@ int uart_getchar(uint32_t timeout_ms) {
   return n ? (int)ch : -1;
 }
 
-size_t uart_write(const uint8_t *data, size_t len) {
-  size_t total = len;
+void uart_write(const void *data, size_t len) {
+  const uint8_t *d = (const uint8_t *)data;
   while (len) {
-    uart_putchar(*data);
-    data++;
+    uart_putchar(*d++);
     len--;
   }
-  return total;
+}
+
+void uart_write_hex(uint32_t val, size_t len, uint32_t after) {
+  HARDENED_CHECK_LE(len, sizeof(uint32_t));
+  static const uint8_t kHexTable[16] = "0123456789abcdef";
+  size_t i = len * 8;
+  do {
+    i -= 4;
+    uart_putchar(kHexTable[(val >> i) & 0xF]);
+  } while (i > 0);
+  uart_write_imm(after);
+}
+
+void uart_write_imm(uint64_t imm) {
+  while (imm) {
+    uart_putchar(imm & 0xFF);
+    imm >>= 8;
+  }
 }
 
 size_t uart_read(uint8_t *data, size_t len, uint32_t timeout_ms) {
@@ -143,5 +159,9 @@ hardened_bool_t uart_break_detect(uint32_t timeout_us) {
 
 size_t uart_sink(void *uart, const char *data, size_t len) {
   (void)uart;
-  return uart_write((const uint8_t *)data, len);
+  uart_write((const uint8_t *)data, len);
+  return len;
 }
+
+// Provide link locations for inline functions.
+extern void uart_write_newline(void);
