@@ -866,3 +866,33 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
+
+cc_library(
+    name = "sensor_ctrl",
+    srcs = ["sensor_ctrl.c"],
+    hdrs = ["sensor_ctrl.h"],
+    deps = [
+        ":lifecycle",
+        ":otp",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_test(
+    name = "sensor_ctrl_unittest",
+    srcs = ["sensor_ctrl_unittest.cc"],
+    deps = [
+        ":sensor_ctrl",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "@googletest//:gtest_main",
+    ],
+)
