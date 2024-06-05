@@ -256,6 +256,7 @@ rust_library(
         "//conditions:default": [
             "src/chip/autogen/earlgrey.rs",
             "src/dif/clkmgr.rs",
+            "src/dif/pinmux.rs",
             "src/test_utils/extclk.rs",
             "src/test_utils/pinmux_config.rs",
         ],
