@@ -15,6 +15,7 @@ _ENGLISH_BREAKFAST_DEPS = [
     "//sw/device/lib/dif:clkmgr",
     "//sw/device/lib/dif:lc_ctrl",
     "//sw/device/lib/dif:otp_ctrl",
+    "//sw/device/lib/dif:pinmux",
     "//sw/device/lib/dif:rstmgr",
     "//sw/device/lib/dif:uart",
 ]
@@ -106,6 +107,7 @@ rust_bindgen_library(
         "--allowlist-var=OTP_CTRL_.*_SIZE",
         "--allowlist-var=PATTGEN_.*_REG_OFFSET",
         "--allowlist-var=PINMUX_.*_REG_OFFSET",
+        "--allowlist-var=PINMUX_.*_BIT",
         "--allowlist-var=PWM_.*_REG_OFFSET",
         "--allowlist-var=PWRMGR_.*_REG_OFFSET",
         "--allowlist-type=dif_rstmgr_reset_info",
