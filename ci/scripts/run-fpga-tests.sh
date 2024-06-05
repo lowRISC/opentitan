@@ -44,56 +44,6 @@ trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
 
-pattern_file=$(mktemp)
-# Recognize special test set names, otherwise we interpret it as a list of tags.
-test_args=""
-echo "tags: ${fpga_tags}"
-if [ "${fpga_tags}" == "cw310_sival_but_not_rom_ext_tests" ]
-then
-    # Only consider tests that are tagged `cw310_sival` but that do not have corresponding
-    # test tagged `cw310_sival_rom_ext`.
-
-    # The difficulty is that, technically, they are different tests since `opentitan_test` creates
-    # one target for each execution environment. The following query relies on the existence
-    # of the test suite created by `opentitan_test` that depends on all per-exec-env tests.
-    # This query only removes all tests that have sibling tagged `cw310_sival_rom_ext`. We
-    # then rely on test tag filters to only consider `cw310_sival`.
-    ci/bazelisk.sh query \
-    "
-        `# Find all tests that are dependencies of the test suite identified`
-        deps(
-            `# Find all test suites`
-            kind(
-                \"test_suite\",
-                //...
-            )
-            except
-            `# Remove all test suites depending on a test tagged cw310_sival_rom_ext`
-            `# but ignore those marked as broken or manual`
-            rdeps(
-                //...
-                except
-                attr(\"tags\",\"broken|manual\", //...),
-                `# Find all tests tagged cw310_sival_rom_ext`
-                attr(\"tags\",\"cw310_sival_rom_ext\", //...),
-                1
-            ),
-            1
-        )
-    " \
-    > "${pattern_file}"
-    # We need to remove tests tagged as manual since we are not using a wildcard target.
-    test_args="${test_args} --test_tag_filters=cw310_sival,-broken,-skip_in_ci,-manual"
-elif [ "${fpga_tags}" == "fpga_hyper310_rom_ext_tests" ]
-then
-    test_args="${test_args} --test_tag_filters=hyper310_rom_ext,-broken,-skip_in_ci"
-    echo "//sw/device/silicon_creator/rom_ext/e2e/..." > "${pattern_file}"
-else
-    test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci"
-    echo "//..." > "${pattern_file}"
-    echo "@manufacturer_test_hooks//..." >> "${pattern_file}"
-fi
-
 ci/bazelisk.sh test \
     --define DISABLE_VERILATOR_BUILD=true \
     --nokeep_going \
@@ -102,5 +52,5 @@ ci/bazelisk.sh test \
     --build_tests_only \
     --define "$fpga"=lowrisc \
     --flaky_test_attempts=2 \
-    --target_pattern_file="${pattern_file}" \
-    ${test_args}
+    --test_tag_filters=${fpga_tags},-broken,-skip_in_ci \
+    //... @manufacturer_test_hooks//...
