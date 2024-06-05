@@ -174,10 +174,16 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "verify_test_kat0",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat0_header",
         "//sw/device/lib/base:memory",
@@ -191,10 +197,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat1",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat1_header",
         "//sw/device/lib/base:memory",
@@ -208,10 +220,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat2",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat2_header",
         "//sw/device/lib/base:memory",
@@ -225,10 +243,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat3",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat3_header",
         "//sw/device/lib/base:memory",
@@ -242,10 +266,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat4",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat4_header",
         "//sw/device/lib/base:memory",
@@ -259,10 +289,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat5",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat5_header",
         "//sw/device/lib/base:memory",
@@ -276,10 +312,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat6",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat6_header",
         "//sw/device/lib/base:memory",
@@ -293,10 +335,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat7",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat7_header",
         "//sw/device/lib/base:memory",
@@ -310,10 +358,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat8",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat8_header",
         "//sw/device/lib/base:memory",
@@ -327,10 +381,16 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat9",
     srcs = ["verify_test.c"],
-    exec_env = {
-        # Test set is too large for Verilator or as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Test set is too large for Verilator.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat9_header",
         "//sw/device/lib/base:memory",
