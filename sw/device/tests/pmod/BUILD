@@ -5,11 +5,13 @@
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
     "silicon_params",
 )
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -311,18 +313,20 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+    ),
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    silicon_owner = silicon_params(
+    silicon = silicon_params(
         tags = [
             "pmod",
         ],  # Requires the PMOD::BoB.
