@@ -201,6 +201,16 @@
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
                     value: "0x36ed9cb0",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG",
+                    // Configure all of the sensors as
+                    // Recov=True(6) Enabled=False(9)
+                    value: [
+                        "0x69696969",
+                        "0x69696969",
+                        "0x69696969",
+                    ],
                 }
             ],
         }

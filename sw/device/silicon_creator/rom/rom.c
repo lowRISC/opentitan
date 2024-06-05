@@ -35,6 +35,7 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/drivers/sensor_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -170,6 +171,10 @@ static rom_error_t rom_init(void) {
     // previous configuration).
     watchdog_init(lc_state);
     SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
+
+    // Re-initialize sensor_ctrl.
+    HARDENED_RETURN_IF_ERROR(sensor_ctrl_configure(lc_state));
+    sensor_ctrl_sync(kSensorCtrlSyncCycles);
   }
 
   // Initialize the shutdown policy.
