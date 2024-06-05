@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Generic double-synchronizer flop
-// This may need to be moved to prim_generic if libraries have a specific cell
-// for synchronization
+// Double-flop-based synchronizer
 
-module prim_flop_2sync #(
+module prim_generic_flop_2sync #(
   parameter int               Width      = 16,
   parameter logic [Width-1:0] ResetValue = '0,
   parameter bit               EnablePrimCdcRand = 1
@@ -58,4 +56,4 @@ module prim_flop_2sync #(
     .q_o
   );
 
-endmodule : prim_flop_2sync
+endmodule : prim_generic_flop_2sync
