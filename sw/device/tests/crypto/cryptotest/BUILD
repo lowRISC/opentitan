@@ -294,30 +294,55 @@ cryptotest(
     test_vectors = DRBG_TESTVECTOR_TARGETS,
 )
 
-HMAC_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_{}.json".format(config)
-    for config in [
-        "sha256",
-        "sha384",
-        "sha512",
-        # TODO uncomment when cryptolib supports HMAC with SHA3
-        # "sha3_256",
-        # "sha3_512",
-    ]
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_fips_198_1_json",
+HMAC_SHA256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha256.json",
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha256_fips_198_1_json",
 ]
 
-HMAC_TESTVECTOR_ARGS = " ".join([
+HMAC_SHA256_TESTVECTOR_ARGS = " ".join([
     "--hmac-json=\"$(rootpath {})\"".format(target)
-    for target in HMAC_TESTVECTOR_TARGETS
+    for target in HMAC_SHA256_TESTVECTOR_TARGETS
 ])
 
 cryptotest(
-    name = "hmac_kat",
-    test_args = HMAC_TESTVECTOR_ARGS,
+    name = "hmac_sha256_kat",
+    test_args = HMAC_SHA256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
-    test_vectors = HMAC_TESTVECTOR_TARGETS,
+    test_vectors = HMAC_SHA256_TESTVECTOR_TARGETS,
+)
+
+HMAC_SHA384_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha384.json",
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha384_fips_198_1_json",
+]
+
+HMAC_SHA384_TESTVECTOR_ARGS = " ".join([
+    "--hmac-json=\"$(rootpath {})\"".format(target)
+    for target in HMAC_SHA384_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "hmac_sha384_kat",
+    test_args = HMAC_SHA384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
+    test_vectors = HMAC_SHA384_TESTVECTOR_TARGETS,
+)
+
+HMAC_SHA512_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha512.json",
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha512_fips_198_1_json",
+]
+
+HMAC_SHA512_TESTVECTOR_ARGS = " ".join([
+    "--hmac-json=\"$(rootpath {})\"".format(target)
+    for target in HMAC_SHA512_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "hmac_sha512_kat",
+    test_args = HMAC_SHA512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
+    test_vectors = HMAC_SHA512_TESTVECTOR_TARGETS,
 )
 
 KMAC_TESTVECTOR_TARGETS = [
@@ -355,7 +380,9 @@ test_suite(
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
-        ":hmac_kat",
+        ":hmac_sha256_kat",
+        ":hmac_sha384_kat",
+        ":hmac_sha512_kat",
         ":kmac_kat",
         ":sha256_kat",
         ":sha384_kat",
