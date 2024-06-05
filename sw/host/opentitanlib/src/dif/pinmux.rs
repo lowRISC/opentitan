@@ -6,7 +6,7 @@ use bindgen::dif;
 use bitflags::bitflags;
 
 bitflags! {
-    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
     pub struct PinmuxPadAttr: u32 {
         const OD_EN = 0b1 << dif::PINMUX_MIO_PAD_ATTR_1_OD_EN_1_BIT;
         const SCHMITT_EN = 0b1 << dif::PINMUX_MIO_PAD_ATTR_1_SCHMITT_EN_1_BIT;
