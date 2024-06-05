@@ -1,0 +1,93 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for an FPGA test job.
+# This script runs an FPGA test job given the specified parameters. The job will
+# depend on the require bitstream and publish the results of the test as an artefact.
+
+parameters:
+# Name to display for the jobs.
+- name: display_name
+  type: string
+# Name of the job that other jobs can rely depend on.
+- name: job_name
+  type: string
+# Timeout for the job in minutes.
+- name: timeout
+  type: number
+# Bazel tag filters for the tests.
+- name: tag_filters
+  type: string
+# Bitstream to use.
+- name: bitstream
+  type: string
+# Azure pool board to use.
+- name: board
+  type: string
+# Opentitantool interface to use.
+- name: interface
+  type: string
+# Name of the file that holds the target patterns.
+- name: target_pattern_file
+  type: string
+  default: $(Pipeline.Workspace)/target_pattern_file.txt
+
+jobs:
+- job: ${{ parameters.job_name }}
+  displayName: ${{ parameters.display_name }}
+  pool:
+    name: $(fpga_pool)
+    demands: BOARD -equals ${{ parameters.board }}
+  timeoutInMinutes: ${{ parameters.timeout }}
+  dependsOn:
+    - ${{ parameters.bitstream }}
+    - sw_build
+  #condition: succeeded( ${{ parameters.bitstream }}, 'sw_build' )
+  condition: and(in(dependencies.${{ parameters.bitstream }}.result, 'Succeeded', 'SucceededWithIssues'), succeeded('sw_build'))
+  steps:
+  - template: ./checkout-template.yml
+  - template: ./install-package-dependencies.yml
+  - template: ./download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - ${{ parameters.bitstream }}
+        - sw_build
+  - template: ./load-bazel-cache-write-creds.yml
+  # We run the update command twice to workaround an issue with udev on the container,
+  # where rusb cannot dynamically update its device list in CI (udev is not completely
+  # functional). If the device is in normal mode, the first thing that opentitantool
+  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
+  # never detected. But if we run the tool another time, the device list is queried again
+  # and opentitantool can finish the update. The device will now reboot in normal mode
+  # and work for the hyperdebug job.
+  - ${{ if eq(parameters.interface, 'hyper310') }}:
+    - bash: |
+        ci/bazelisk.sh run \
+            //sw/host/opentitantool:opentitantool -- \
+            --interface=hyperdebug_dfu transport update-firmware \
+        || ci/bazelisk.sh run \
+            //sw/host/opentitantool:opentitantool -- \
+            --interface=hyperdebug_dfu transport update-firmware || true
+      displayName: "Update the hyperdebug firmware"
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      # Execute a query to find all targets that match the test tags and store them in a file.
+      ci/scripts/run-bazel-test-query.sh \
+        "${{ parameters.target_pattern_file }}" \
+        "${{ parameters.tag_filters }}",-manual,-broken,-skip_in_ci \
+        //... @manufacturer_test_hooks//...
+      # Run FPGA tests.
+      if [ -s "${{ parameters.target_pattern_file }}" ]; then
+        ci/scripts/run-fpga-tests.sh "${{ parameters.interface }}" "${{ parameters.target_pattern_file }}" || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      else
+        echo "No tests to run after filtering"
+      fi
+    displayName: Execute tests
+  - template: ./publish-bazel-test-results.yml
+  - publish: "${{ parameters.target_pattern_file }}"
+    artifact: ${{ parameters.job_name }}
+    displayName: "Upload target pattern file"
+    condition: succeededOrFailed()

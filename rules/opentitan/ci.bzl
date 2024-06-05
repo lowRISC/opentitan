@@ -6,6 +6,10 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 
 # List of execution environments among which only one should run. The list
 # is sorted by priority: the first available will be picked.
+#
+# Important note: since only one of the those will be chosen, it is important
+# that every one of the execution environments be run in some CI job, otherwise
+# some tests will not run at all in CI.
 _ONLY_RUN_ONE_IN_CI_SORTED = [
     "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
     "//hw/top_earlgrey:fpga_cw310_rom_ext",
