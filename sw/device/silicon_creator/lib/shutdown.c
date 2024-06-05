@@ -330,7 +330,7 @@ enum {
   /**
    * UART TX FIFO size.
    */
-  kUartFifoSize = 128,
+  kUartFifoSize = UART_PARAM_TX_FIFO_DEPTH,
 };
 
 /**
@@ -362,6 +362,21 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
 
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\r');
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\n');
+
+#ifdef OT_PLATFORM_RV32
+  // Wait until UART TX is complete.
+  static_assert(kErrorMsgLen <= kUartFifoSize,
+                "Total message length must be less than TX FIFO size.");
+  CSR_WRITE(CSR_REG_MCYCLE, 0);
+  uint32_t mcycle;
+  bool tx_idle;
+  do {
+    tx_idle =
+        bitfield_bit32_read(abs_mmio_read32(kUartBase + UART_STATUS_REG_OFFSET),
+                            UART_STATUS_TXIDLE_BIT);
+    CSR_READ(CSR_REG_MCYCLE, &mcycle);
+  } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
+#endif
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
@@ -394,21 +409,6 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   shutdown_print(kShutdownLogPrefixLifecycle, raw_state);
   shutdown_print(kShutdownLogPrefixVersion,
                  kChipInfo.scm_revision.scm_revision_high);
-
-#ifdef OT_PLATFORM_RV32
-  // Wait until UART TX is complete.
-  static_assert(3 * kErrorMsgLen <= kUartFifoSize,
-                "Total message length must be less than TX FIFO size.");
-  CSR_WRITE(CSR_REG_MCYCLE, 0);
-  uint32_t mcycle;
-  bool tx_idle;
-  do {
-    tx_idle =
-        bitfield_bit32_read(abs_mmio_read32(kUartBase + UART_STATUS_REG_OFFSET),
-                            UART_STATUS_TXIDLE_BIT);
-    CSR_READ(CSR_REG_MCYCLE, &mcycle);
-  } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
-#endif
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
