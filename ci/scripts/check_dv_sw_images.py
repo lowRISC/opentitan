@@ -11,6 +11,7 @@ import sys
 import hjson
 from enum import Enum
 from pathlib import Path
+from typing import List
 
 from lib.bazel_query import BazelQueryRunner
 
@@ -30,7 +31,7 @@ class SwType(Enum):
     DEBUG = 5  # Debug SW - injected into SRAM.
 
 
-def check_sw_image(name: str, sw_image: str, valid_bazel_targets: list[str]) -> list[str]:
+def check_sw_image(name: str, sw_image: str, valid_bazel_targets: List[str]) -> List[str]:
     """
     Check that a sw_image is valid.
 
@@ -73,7 +74,7 @@ def check_sw_image(name: str, sw_image: str, valid_bazel_targets: list[str]) -> 
     return []
 
 
-def check_links(cfg_hjson: Path, valid_bazel_targets: list[str]) -> list[str]:
+def check_links(cfg_hjson: Path, valid_bazel_targets: List[str]) -> List[str]:
     """
     Check all sw_images links in a sim DV cfg hsjon file.
 
