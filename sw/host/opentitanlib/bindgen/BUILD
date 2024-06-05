@@ -106,6 +106,7 @@ rust_bindgen_library(
         "--allowlist-var=OTP_CTRL_.*_SIZE",
         "--allowlist-var=PATTGEN_.*_REG_OFFSET",
         "--allowlist-var=PINMUX_.*_REG_OFFSET",
+        "--allowlist-var=PINMUX_.*_BIT",
         "--allowlist-var=PWM_.*_REG_OFFSET",
         "--allowlist-var=PWRMGR_.*_REG_OFFSET",
         "--allowlist-type=dif_rstmgr_reset_info",
