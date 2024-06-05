@@ -37,9 +37,16 @@ UJSON_SERDE_STRUCT(PinmuxInputSelection, pinmux_input_selection_t,
 UJSON_SERDE_STRUCT(PinmuxOutputSelection, pinmux_output_selection_t,
                    STRUCT_PINMUX_OUTPUT_SELECTION, RUST_DERIVE);
 
-#define STRUCT_PINMUX_CONFIG(field, string) \
-    field(input, pinmux_input_selection_t)  \
-    field(output, pinmux_output_selection_t)
+# define STRUCT_PINMUX_ATTR_CONFIG(field, string) \
+    field(mio, pinmux_mio_out_t, 16)              \
+    field(flags, uint32_t, 16)
+UJSON_SERDE_STRUCT(PinmuxAttrConfig, pinmux_attr_config_t,
+                   STRUCT_PINMUX_ATTR_CONFIG, RUST_DERIVE);
+
+#define STRUCT_PINMUX_CONFIG(field, string)  \
+    field(input, pinmux_input_selection_t)   \
+    field(output, pinmux_output_selection_t) \
+    field(attrs, pinmux_attr_config_t)
 UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t,
                    STRUCT_PINMUX_CONFIG, RUST_DERIVE);
 
