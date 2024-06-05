@@ -6,12 +6,14 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
 load("//rules:linker.bzl", "ld_library")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -334,10 +336,12 @@ _FLOW_CONTROL_MESSAGE = (
 opentitan_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     fpga = fpga_params(
         flow_control_message = _FLOW_CONTROL_MESSAGE,
         test_cmd = """
