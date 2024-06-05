@@ -11,6 +11,7 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -63,9 +64,12 @@ opentitan_test(
 opentitan_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     fpga = fpga_params(
         tags = [
             "manual",
