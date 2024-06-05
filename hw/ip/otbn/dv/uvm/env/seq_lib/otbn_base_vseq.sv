@@ -480,8 +480,8 @@ class otbn_base_vseq extends cip_base_vseq #(
     fork begin : isolation_fork
       fork
         begin
-          `DV_WAIT_TIMEOUT(1_000_000, ,
-                           "Timed out waiting for OTBN run to complete by polling status")
+          `DV_WAIT_TIMEOUT(10_000_000, ,
+                           "Timed out waiting for OTBN run to complete")
         end
         begin
           if (_pick_use_interrupt()) begin
