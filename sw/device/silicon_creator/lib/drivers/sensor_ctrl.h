@@ -24,10 +24,11 @@ enum {
 
 /**
  * Number of cycles to wait for sensor_ctrl to synchronize.
- * See opentitan#23150.
+ * See opentitan#23150.  Since each CDC synchronize event takes
+ * 4 AON clocks, we need 5 cycles.
  */
 enum {
-  kSensorCtrlSyncCycles = 20,
+  kSensorCtrlSyncCycles = 5,
 };
 
 /**
