@@ -43,6 +43,11 @@ class flash_ctrl_config_regwen_vseq extends flash_ctrl_otf_base_vseq;
 
     // Launch long operation
     flash_program_data_c.constraint_mode(0);
+
+    // Added to avoid contradiction and to follow the constraint ctrl_num_c in
+    // flash_ctrl_otf_base_vseq line 95 (at 5/6/2024):
+    // if (rand_op.partition == FlashPartData) ctrl_num == ctrl_data_num;
+    ctrl_num = ctrl_data_num;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
         rand_op,
         rand_op.op == FlashOpProgram;
