@@ -8,6 +8,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
+#include "uart_regs.h"
 
 /**
  * Device-specific symbol definitions for the DV simulation device.
@@ -50,8 +51,8 @@ const uint32_t kUartBaud1M33 =
 const uint32_t kUartBaud1M50 =
     CALCULATE_UART_NCO(1500000, kClockFreqPeripheralHz);
 
-const uint32_t kUartTxFifoCpuCycles =
-    CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
+const uint32_t kUartTxFifoCpuCycles = CALCULATE_UART_TX_FIFO_CPU_CYCLES(
+    kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH);
 
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);

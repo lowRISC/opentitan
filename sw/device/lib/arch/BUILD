@@ -40,6 +40,7 @@ cc_library(
     srcs = ["device_fpga_cw305.c"],
     deps = [
         ":device",
+        "//hw/ip/uart/data:uart_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:uart",
@@ -51,6 +52,7 @@ cc_library(
     srcs = ["device_fpga_cw310.c"],
     deps = [
         ":device",
+        "//hw/ip/uart/data:uart_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:uart",
@@ -62,6 +64,7 @@ cc_library(
     srcs = ["device_fpga_cw340.c"],
     deps = [
         ":device",
+        "//hw/ip/uart/data:uart_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:uart",
@@ -74,6 +77,7 @@ cc_library(
     deps = [
         ":device",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
@@ -84,6 +88,7 @@ cc_library(
     deps = [
         ":device",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
@@ -94,6 +99,7 @@ cc_library(
     deps = [
         ":device",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
