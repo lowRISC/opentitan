@@ -250,7 +250,7 @@ def opentitan_test(
     # Find all exec_envs which are not marked as broken.
     non_broken_exec_env = []
     for (env, pname, tparam, extra_tags) in all_test_params:
-        if not ('broken' in tparam.tags + extra_tags):
+        if not ("broken" in tparam.tags + extra_tags):
             non_broken_exec_env.append(env)
 
     if run_in_ci == None:
