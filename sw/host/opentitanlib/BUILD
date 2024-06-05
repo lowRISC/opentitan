@@ -242,6 +242,7 @@ rust_library(
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
             "src/chip/autogen/earlgrey.rs",
+            "src/dif/pinmux.rs",
             "src/test_utils/pinmux_config.rs",
         ],
     }),
