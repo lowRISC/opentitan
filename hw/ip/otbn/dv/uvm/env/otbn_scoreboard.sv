@@ -104,6 +104,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       process_model_fifo();
       process_trace_fifo();
       watch_escalate_if();
+      watch_rma_if();
     join_none
   endtask
 
@@ -660,6 +661,18 @@ class otbn_scoreboard extends cip_base_scoreboard #(
         cov.escalate_en_cg.sample(cfg.escalate_vif.enable);
       end
       @(cfg.escalate_vif.enable or cfg.clk_rst_vif.rst_n);
+    end
+  endtask
+
+  // This task watches the rma interface and collects coverage whenever it changes
+  //
+  virtual task watch_rma_if();
+    // The 'req' signal is connected to the lc_rma_req_i top-level input
+    forever begin
+      if (cfg.clk_rst_vif.rst_n) begin
+        cov.rma_req_cg.sample(cfg.escalate_vif.req);
+      end
+      @(cfg.escalate_vif.req or cfg.clk_rst_vif.rst_n);
     end
   endtask
 
