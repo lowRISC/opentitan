@@ -517,275 +517,127 @@ jobs:
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
 
-- job: execute_test_rom_fpga_tests_cw310
-  displayName: CW310 Test ROM Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw310
-  timeoutInMinutes: 60
-  dependsOn:
-    - chip_earlgrey_cw310
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 cw310_test_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+# CW310 FPGA jobs.
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_test_rom_fpga_tests_cw310
+    display_name: CW310 Test ROM Tests
+    bitstream: chip_earlgrey_cw310
+    interface: cw310
+    board: cw310
+    tag_filters: cw310_test_rom
+    timeout: 60
 
-- job: execute_rom_fpga_tests_cw310
-  displayName: CW310 ROM Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw310
-  timeoutInMinutes: 90
-  dependsOn:
-    - chip_earlgrey_cw310
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 cw310_rom_with_fake_keys,cw310_rom_with_real_keys || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_rom_fpga_tests_cw310
+    display_name: CW310 ROM Tests
+    bitstream: chip_earlgrey_cw310
+    interface: cw310
+    board: cw310
+    tag_filters: "cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf"
+    timeout: 60
 
-- job: execute_sival_fpga_tests_cw310
-  displayName: CW310 SiVal non-ROM_EXT Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw310
-  timeoutInMinutes: 75
-  dependsOn:
-    - chip_earlgrey_cw310_hyperdebug
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310_hyperdebug
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  # We run the update command twice to workaround an issue with udev on the container,
-  # where rusb cannot dynamically update its device list in CI (udev is not completely
-  # functional). If the device is in normal mode, the first thing that opentitantool
-  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-  # never detected. But if we run the tool another time, the device list is queried again
-  # and opentitantool can finish the update. The device will now reboot in normal mode
-  # and work for the hyperdebug job.
-  - bash: |
-      ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware \
-      || ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware || true
-    displayName: "Update the hyperdebug firmware"
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh hyper310 cw310_sival || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_rom_ext_fpga_tests_cw310
+    display_name: CW310 ROM_EXT Tests
+    bitstream: chip_earlgrey_cw310
+    interface: cw310
+    board: cw310
+    tag_filters: cw310_rom_ext
+    timeout: 60
 
-- job: execute_sival_rom_ext_fpga_tests_cw310
-  displayName: CW310 SiVal ROM_EXT Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw310
-  timeoutInMinutes: 45
-  dependsOn:
-    - chip_earlgrey_cw310_hyperdebug
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310_hyperdebug
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  # We run the update command twice to workaround an issue with udev on the container,
-  # where rusb cannot dynamically update its device list in CI (udev is not completely
-  # functional). If the device is in normal mode, the first thing that opentitantool
-  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-  # never detected. But if we run the tool another time, the device list is queried again
-  # and opentitantool can finish the update. The device will now reboot in normal mode
-  # and work for the hyperdebug job.
-  - bash: |
-      ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware \
-      || ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware || true
-    displayName: "Update the hyperdebug firmware"
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh hyper310 cw310_sival_rom_ext || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_sival_fpga_tests_cw310
+    display_name: CW310 SiVal Tests
+    bitstream: chip_earlgrey_cw310_hyperdebug
+    interface: hyper310
+    board: cw310
+    tag_filters: "cw310_sival,-manuf"
+    timeout: 60
 
-- job: execute_rom_fpga_tests_cw340
-  displayName: CW340 ROM Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw340
-  timeoutInMinutes: 60
-  dependsOn:
-    - chip_earlgrey_cw340
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw340', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw340
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw340 cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_sival_rom_ext_fpga_tests_cw310
+    display_name: CW310 SiVal ROM_EXT Tests
+    bitstream: chip_earlgrey_cw310_hyperdebug
+    interface: hyper310
+    board: cw310
+    tag_filters: cw310_sival_rom_ext
+    timeout: 60
 
-- job: execute_sival_rom_ext_fpga_tests_cw340
-  displayName: CW340 SiVal ROM_EXT Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw340
-  timeoutInMinutes: 45
-  dependsOn:
-    - chip_earlgrey_cw340
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw340', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw340
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  # We run the update command twice to workaround an issue with udev on the container,
-  # where rusb cannot dynamically update its device list in CI (udev is not completely
-  # functional). If the device is in normal mode, the first thing that opentitantool
-  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-  # never detected. But if we run the tool another time, the device list is queried again
-  # and opentitantool can finish the update. The device will now reboot in normal mode
-  # and work for the hyperdebug job.
-  - bash: |
-      ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware \
-      || ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware || true
-    displayName: "Update the hyperdebug firmware"
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw340 cw340_sival_rom_ext || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_manuf_fpga_tests_cw310
+    display_name: CW310 Manufacturing Tests
+    bitstream: chip_earlgrey_cw310_hyperdebug
+    interface: hyper310
+    board: cw310
+    tag_filters: "manuf,-cw340"
+    timeout: 60
 
-- job: execute_fpga_manuf_tests_cw310
-  displayName: CW310 Manufacturing Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw310
-  timeoutInMinutes: 60
-  dependsOn:
-    - chip_earlgrey_cw310_hyperdebug
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310_hyperdebug
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  # We run the update command for the same reasons stated above.
-  - bash: |
-      ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware \
-      || ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware || true
-    displayName: "Update the hyperdebug firmware"
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh hyper310 manuf,-cw310_sival,-broken,-cw340 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+# CW340 FPGA jobs.
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_test_rom_fpga_tests_cw340
+    display_name: CW340 Test ROM Tests
+    bitstream: chip_earlgrey_cw340
+    interface: cw340
+    board: cw340
+    tag_filters: cw340_test_rom
+    timeout: 60
 
-- job: execute_fpga_manuf_tests_cw340
-  displayName: CW340 Manufacturing Tests
-  pool:
-    name: $(fpga_pool)
-    demands: BOARD -equals cw340
-  timeoutInMinutes: 60
-  dependsOn:
-    - chip_earlgrey_cw340
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw340', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw340
-        - sw_build
-  - template: ci/load-bazel-cache-write-creds.yml
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw340 manuf,-cw340_sival,-broken,-hyper310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-  - template: ci/publish-bazel-test-results.yml
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_rom_fpga_tests_cw340
+    display_name: CW340 ROM Tests
+    bitstream: chip_earlgrey_cw340
+    interface: cw340
+    board: cw340
+    tag_filters: "cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf"
+    timeout: 60
+
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_rom_ext_fpga_tests_cw340
+    display_name: CW340 ROM_EXT Tests
+    bitstream: chip_earlgrey_cw340
+    interface: cw340
+    board: cw340
+    tag_filters: cw340_rom_ext
+    timeout: 60
+
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_sival_fpga_tests_cw340
+    display_name: CW340 SiVal Tests
+    bitstream: chip_earlgrey_cw340
+    interface: cw340
+    board: cw340
+    tag_filters: "cw340_sival,-manuf"
+    timeout: 60
+
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_sival_rom_ext_fpga_tests_cw340
+    display_name: CW340 SiVal ROM_EXT Tests
+    bitstream: chip_earlgrey_cw340
+    interface: cw340
+    board: cw340
+    tag_filters: cw340_sival_rom_ext
+    timeout: 60
+
+- template: ci/fpga-job.yml
+  parameters:
+    job_name: execute_manuf_fpga_tests_cw340
+    display_name: CW340 Manufacturing Tests
+    bitstream: chip_earlgrey_cw340
+    interface: cw340
+    board: cw340
+    tag_filters: "manuf,-hyper310"
+    timeout: 60
 
 - job: deploy_release_artifacts
   displayName: Package & deploy release
