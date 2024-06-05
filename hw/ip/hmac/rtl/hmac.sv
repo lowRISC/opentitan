@@ -906,9 +906,9 @@ module hmac
   // are used in Assertion only
   logic in_process;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)               in_process <= 1'b0;
-    else if (hash_process)     in_process <= 1'b1;
-    else if (reg_hash_done)    in_process <= 1'b0;
+    if (!rst_ni)                              in_process <= 1'b0;
+    else if (hash_process || reg_hash_stop)   in_process <= 1'b1;
+    else if (reg_hash_done)                   in_process <= 1'b0;
   end
 
   logic initiated;
@@ -921,10 +921,10 @@ module hmac
   // the host doesn't write data after hash_process until hash_start_or_continue.
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
-  // `hash_process` shall be toggled and paired with `hash_start_or_continue`.
   // Below condition is covered by the design (2020-02-19)
   //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
-  `ASSERT(ValidHashProcessAssert, hash_process |-> initiated)
+  // `hash_process` or `reg_hash_stop` should be toggled and paired with `hash_start_or_continue`
+  `ASSERT(ValidHashProcessAssert, (hash_process || reg_hash_stop) |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,
