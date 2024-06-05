@@ -67,12 +67,16 @@ cc_test(
 opentitan_test(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
+    exec_env = dicts.add(
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Not intended for ROM_EXT environments.
+            ["//hw/top_earlgrey:fpga_cw310_sival_rom_ext"],
+        ),
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
@@ -491,11 +495,15 @@ cc_library(
 opentitan_test(
     name = "otbn_boot_services_functest",
     srcs = ["otbn_boot_services_functest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
+    broken = fpga_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # See #21706, expects keymgr state 0 so not working after ROM_EXT.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",
