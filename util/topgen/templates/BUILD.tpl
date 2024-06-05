@@ -9,12 +9,15 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
     "silicon_params",
     "verilator_params",
 )
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,15 +29,15 @@ package(default_visibility = ["//visibility:public"])
             "-DTEST_MIN_IRQ_PERIPHERAL={}".format(min),
             "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
         ],
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
+        exec_env = dicts.add(
+            EARLGREY_TEST_ENVS,
+            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+            {
+                "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+                "//hw/top_earlgrey:fpga_cw310_sival": None,
+                "//hw/top_earlgrey:silicon_creator": None,
+            },
+        ),
         verilator = verilator_params(
             timeout = "eternal",
             tags = ["flaky"],
@@ -72,15 +75,16 @@ opentitan_test(
     srcs = ["alert_test.c"],
     # TODO(#22871): Remove "broken" tag once the tests are fixed.
     broken = fpga_params(tags = ["broken"]),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
