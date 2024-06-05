@@ -656,26 +656,57 @@ module flash_phy_rd
   logic [PlainDataWidth-1:0] data_out_muxed;
   assign data_out_muxed = |buf_rsp_match ? buf_rsp_data : muxed_data;
 
-  logic [BusWidth-1:0] data_out_pre;
+  logic [BusFullWidth-1:0] data_out_intg;
   if (WidthMultiple == 1) begin : gen_width_one_rd
     // When multiple is 1, just pass the read through directly
     logic unused_word_sel;
-    assign data_out_pre = data_err_o ? {BusWidth{1'b1}} : data_out_muxed[DataWidth-1:0];
+
+    // use the tlul integrity module directly for bus integrity
+    // SEC_CM: MEM.BUS.INTEGRITY
+    tlul_data_integ_enc u_bus_intg (
+      .data_i(data_out_muxed[DataWidth-1:0]),
+      .data_intg_o(data_out_intg)
+    );
+
     assign unused_word_sel = rsp_fifo_rdata.word_sel;
 
   end else begin : gen_rd
     // Re-arrange data into packed array to pick the correct one
     logic [WidthMultiple-1:0][BusWidth-1:0] bus_words_packed;
+    logic [WidthMultiple-1:0][BusFullWidth-1:0] bus_words_packed_intg;
+    logic [WidthMultiple-1:0][BusFullWidth-1:0] bus_words_packed_intg_buf;
     assign bus_words_packed = data_out_muxed[DataWidth-1:0];
-    assign data_out_pre = data_err_o ? {BusWidth{1'b1}} : bus_words_packed[rsp_fifo_rdata.word_sel];
+
+    for (genvar i = 0; i < WidthMultiple; i++) begin: gen_bus_words_intg
+      // use the tlul integrity module directly for bus integrity
+      // SEC_CM: MEM.BUS.INTEGRITY
+      tlul_data_integ_enc u_bus_intg (
+        .data_i(bus_words_packed[i]),
+        .data_intg_o(bus_words_packed_intg[i])
+      );
+
+      // This primitive is used to place a size-only constraint on the
+      // buffers to act as a synthesis optimization barrier.
+      prim_buf #(
+        .Width(BusFullWidth)
+      ) u_prim_buf_intg (
+        .in_i(bus_words_packed_intg[i]),
+        .out_o(bus_words_packed_intg_buf[i])
+      );
+    end
+    // Mux based on selected word.
+    assign data_out_intg = bus_words_packed_intg_buf[rsp_fifo_rdata.word_sel];
+
   end
 
-  // use the tlul integrity module directly for bus integrity
-  // SEC_CM: MEM.BUS.INTEGRITY
-  tlul_data_integ_enc u_bus_intg (
-    .data_i(data_out_pre),
-    .data_intg_o(data_o)
+  // On a data_err_o, send back '1 with data integrity tag on top of this data.
+  logic [BusFullWidth-1:0] inv_data_integ;
+  tlul_data_integ_enc u_bus_inv_data_intg (
+    .data_i({BusWidth{1'b1}}),
+    .data_intg_o(inv_data_integ)
   );
+
+  assign data_o = data_err_o ? inv_data_integ : data_out_intg;
 
   // add plaintext decoding here
   // plaintext error
