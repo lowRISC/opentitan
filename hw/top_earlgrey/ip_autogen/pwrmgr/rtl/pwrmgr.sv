@@ -274,6 +274,7 @@ module pwrmgr
   prim_mubi_pkg::mubi4_t rom_ctrl_good;
 
   logic core_sleeping;
+  logic low_power_entry;
 
   ////////////////////////////
   ///  clk_slow_i domain declarations
@@ -339,7 +340,7 @@ module pwrmgr
       lowpwr_cfg_wen <= 1'b1;
     end else if (!lowpwr_cfg_wen && (clr_cfg_lock || wkup)) begin
       lowpwr_cfg_wen <= 1'b1;
-    end else if (low_power_hint) begin
+    end else if (low_power_entry) begin
       lowpwr_cfg_wen <= 1'b0;
     end
   end
@@ -577,6 +578,7 @@ module pwrmgr
   ////////////////////////////
 
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
+  assign low_power_entry = core_sleeping & low_power_hint;
 
   pwrmgr_fsm u_fsm (
     .clk_i,
@@ -590,7 +592,7 @@ module pwrmgr
     .ack_pwrup_o         (ack_pwrup),
     .req_pwrdn_o         (req_pwrdn),
     .ack_pwrdn_i         (ack_pwrdn),
-    .low_power_entry_i   (core_sleeping & low_power_hint),
+    .low_power_entry_i   (low_power_entry),
     .reset_reqs_i        (peri_reqs_masked.rstreqs),
     .fsm_invalid_i       (fsm_invalid),
     .clr_slow_req_o      (clr_slow_req),

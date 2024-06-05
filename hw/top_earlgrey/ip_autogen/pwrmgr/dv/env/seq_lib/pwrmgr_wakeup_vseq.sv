@@ -69,8 +69,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       update_control_csr();
 
       // Initiate low power transition.
-      cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
-      set_nvms_idle();
+      initiate_low_power_transition();
 
       if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
         wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
@@ -124,4 +123,8 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
     clear_wake_info();
   endtask
 
+  virtual task initiate_low_power_transition();
+    cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
+    set_nvms_idle();
+  endtask
 endclass : pwrmgr_wakeup_vseq
