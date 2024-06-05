@@ -99,8 +99,7 @@ class BytesSendTest : public UartTest {
 TEST_F(BytesSendTest, SendBuffer) {
   ExpectSendBytes();
   // Calling uart_write implicitly tests uart_putchar.
-  EXPECT_EQ(uart_write(kBytesArray.data(), kBytesArray.size()),
-            kBytesArray.size());
+  uart_write(kBytesArray.data(), kBytesArray.size());
 }
 
 TEST_F(BytesSendTest, SendByteBusy) {

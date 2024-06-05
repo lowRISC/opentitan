@@ -331,7 +331,8 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Execute code
     for c in "GDB-OK\r\n".bytes() {
-        dbg.call("uart_putchar", &[c as u32], opts.breakpoint_timeout)?;
+        // `uart_write_imm` takes a uint64_t as an argument.
+        dbg.call("uart_write_imm", &[c as u32, 0u32], opts.breakpoint_timeout)?;
     }
 
     dbg.resume()?;
