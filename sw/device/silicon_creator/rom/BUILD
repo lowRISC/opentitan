@@ -157,11 +157,17 @@ cc_library(
     ],
 )
 
-_ROM_DEVICES = [
-    "sim_dv",
-    "sim_verilator",
-    "fpga_cw310",
-    "fpga_cw340",
+[
+    # Generate targets with `sim_dv` and `sim_verilator` suffixes as expected
+    # by dvsim.
+    alias(
+        name = "mask_rom_{}".format(env),
+        actual = ":mask_rom",
+    )
+    for env in [
+        "sim_dv",
+        "sim_verilator",
+    ]
 ]
 
 opentitan_binary(
@@ -182,7 +188,10 @@ opentitan_binary(
 # Create the legacy ROM target names so that existing splicing rules can find
 # the rom VMEM files.
 legacy_rom_targets(
-    suffixes = _ROM_DEVICES,
+    suffixes = [
+        "fpga_cw310",
+        "fpga_cw340",
+    ],
     target = "mask_rom",
 )
 
