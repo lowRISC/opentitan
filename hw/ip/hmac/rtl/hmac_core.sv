@@ -367,10 +367,15 @@ module hmac_core import prim_sha2_pkg::*; (
         if ( (((round_q == Inner) && reg_hash_process_flag) || (round_q == Outer))
             && (txcount >= sha_message_length_o)) begin
           st_d    = StWaitResp;
-          hmac_sha_rvalid = 1'b0; // block
-          hash_process = (round_q == Outer);
-        end else if (txcnt_eq_blksz && reg_hash_stop_q && (round_q == Inner)) begin
-          st_d =  StWaitResp; // to wait on sha_hash_done_i
+
+          hmac_sha_rvalid = 1'b0; // block reading words from MSG FIFO
+          hash_process    = (round_q == Outer);
+        end else if (txcnt_eq_blksz && (txcount >= sha_message_length_o)
+                     && reg_hash_stop_q && (round_q == Inner)) begin
+          // wait till all MSG words are pushed out from FIFO (txcount reaches msg length)
+          // before transitioning to StWaitResp to wait on sha_hash_done_i and disabling
+          // reading from MSG FIFO
+          st_d =  StWaitResp;
 
           hmac_sha_rvalid = 1'b0;
         end else begin
