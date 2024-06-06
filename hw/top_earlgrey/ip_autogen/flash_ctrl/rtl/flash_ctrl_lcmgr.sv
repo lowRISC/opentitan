@@ -257,7 +257,7 @@ module flash_ctrl_lcmgr
   // address + a counter. As this counter is not available at this point, the
   // page address is used for the data XOR address infection.
   assign rma_addr_xor = {rma_addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
-  assign seed_addr_xor = addr[BusBankAddrW-1:0];
+  assign seed_addr_xor = {addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
   assign addr_xor = seed_phase ? seed_addr_xor : rma_addr_xor;
   assign rdata = {rdata_i[BusFullWidth-1:BusWidth], rdata_i[BusWidth-1:0] ^ addr_xor};
 
