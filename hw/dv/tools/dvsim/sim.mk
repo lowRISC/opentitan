@@ -122,9 +122,7 @@ ifneq (${sw_images},)
 				--ui_event_filters=-info \
 				--noshow_progress \
 				--output=label_kind | cut -f1 -d' '); \
-			if [[ $${kind} == "opentitan_test" \
-					|| $${bazel_label} == "//sw/device/lib/testing/test_rom:test_rom_sim_dv" \
-					|| $${bazel_label} == "//sw/device/silicon_creator/rom:mask_rom_sim_dv" ]]; then \
+			if [[ $${kind} == "opentitan_test" ]]; then \
 				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
 					$${bazel_label} \
 					--ui_event_filters=-info \
@@ -132,6 +130,21 @@ ifneq (${sw_images},)
 					--output=starlark \
 					`# An opentitan_test rule has all of its needed files in its runfiles.` \
 					--starlark:expr='"\n".join([f.path for f in target.data_runfiles.files.to_list()])'); do \
+						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
+						if [[ $$artifact == *.bin && \
+							-f "$$(echo $${artifact} | cut -d. -f 1).elf" ]]; then \
+							cp -f "$$(echo $${artifact} | cut -d. -f 1).elf" \
+								$${run_dir}/$$(basename -s .bin $${artifact}).elf; \
+						fi; \
+				done; \
+			elif [[ $${kind} == "alias" || $${kind} == "opentitan_binary" ]]; then \
+				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
+					$${bazel_label} \
+					--ui_event_filters=-info \
+					--noshow_progress \
+					--output=starlark \
+					`# An opentitan_binary rule has all of its needed files in its runfiles.` \
+					--starlark:expr='"\n".join([f.path for f in target.files.to_list()])'); do \
 						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
 						if [[ $$artifact == *.bin && \
 							-f "$$(echo $${artifact} | cut -d. -f 1).elf" ]]; then \

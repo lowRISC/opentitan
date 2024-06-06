@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "EARLGREY_TEST_ENVS",
     "OPENTITAN_CPU",
     "opentitan_binary",
     "opentitan_test",
@@ -42,6 +41,19 @@ opentitan_binary(
     ],
 )
 
+[
+    # Generate targets with `sim_dv` and `sim_verilator` suffixes as expected
+    # by dvsim.
+    alias(
+        name = "test_rom_{}".format(env),
+        actual = ":test_rom",
+    )
+    for env in [
+        "sim_dv",
+        "sim_verilator",
+    ]
+]
+
 # Create the legacy ROM target names so that existing splicing rules
 # can find the test_rom VMEM files.
 legacy_rom_targets(
@@ -49,8 +61,6 @@ legacy_rom_targets(
         "fpga_cw310",
         "fpga_cw305",
         "fpga_cw340",
-        "sim_dv",
-        "sim_verilator",
     ],
     target = "test_rom",
 )

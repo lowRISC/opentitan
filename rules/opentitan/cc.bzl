@@ -240,6 +240,7 @@ def _opentitan_binary(ctx):
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(**provides))
         default_info.append(provides["default"])
+        default_info.append(provides["elf"])
 
         # FIXME(cfrantz): logs are a special case and get added into
         # the DefaultInfo provider.
