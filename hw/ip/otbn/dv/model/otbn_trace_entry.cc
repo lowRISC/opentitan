@@ -217,7 +217,8 @@ bool OtbnTraceEntry::is_partial() const {
 
 bool OtbnTraceEntry::is_final() const {
   return ((trace_type_ == OtbnTraceEntry::Exec) ||
-          (trace_type_ == OtbnTraceEntry::WipeComplete));
+          (trace_type_ == OtbnTraceEntry::WipeComplete) ||
+          (trace_type_ == OtbnTraceEntry::Stray));
 }
 
 bool OtbnTraceEntry::check_entries_compatible(
@@ -286,6 +287,8 @@ OtbnTraceEntry::trace_type_t OtbnTraceEntry::hdr_to_trace_type(
       return WipeInProgress;
     case 'V':
       return WipeComplete;
+    case 'Z':
+      return Stray;
     default:
       return Invalid;
   }
