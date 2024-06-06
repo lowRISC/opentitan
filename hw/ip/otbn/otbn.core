@@ -57,7 +57,6 @@ filesets:
       - lowrisc:ip:otbn_pkg
       - lowrisc:ip:otp_ctrl_pkg
     files:
-      - rtl/otbn_reg_pkg.sv
       - rtl/otbn_reg_top.sv
       - rtl/otbn_scramble_ctrl.sv
       - rtl/otbn.sv
