@@ -69,6 +69,10 @@
       name: keymgr_dpe_smoke
       uvm_test_seq: keymgr_dpe_smoke_vseq
     }
+    {
+      name: keymgr_dpe_allow_child
+      uvm_test_seq: keymgr_dpe_allow_child_vseq
+    }
   ]
 
   // List of regressions.
