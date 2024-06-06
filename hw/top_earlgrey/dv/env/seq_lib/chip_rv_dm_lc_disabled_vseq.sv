@@ -22,6 +22,9 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   jtag_dmi_reg_block jtag_dmi_ral;
   rand lc_state_e lc_state;
 
+  rand bit dis_late_debug_en_otp;
+  rand bit late_debug_en_reg;
+
   constraint num_trans_c {
     num_trans inside {[5:10]};
   }
@@ -62,6 +65,8 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     // the strap sampling pulse is released a few cycles after the ROM check completes.
     cfg.clk_rst_vif.wait_clks(100);
 
+    late_debug_en_reg_update();
+
     `uvm_info(`gfn, "Attempt to activate RV_DM via JTAG.", UVM_MEDIUM)
     // RV_DM needs to be activated for the registers to work properly.
     // We always attempt to write this via the JTAG - even in states where the RV_DM is locked
@@ -70,23 +75,65 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     cfg.clk_rst_vif.wait_clks(5);
   endtask
 
+  virtual task late_debug_en_reg_update();
+    if (late_debug_en_reg) begin
+      csr_wr(.ptr(ral.rv_dm_regs.late_debug_enable), .value(prim_mubi_pkg::MuBi32True));
+      return;
+    end
+    csr_wr(.ptr(ral.rv_dm_regs.late_debug_enable), .value(prim_mubi_pkg::MuBi32False));
+  endtask
+
   virtual function void backdoor_override_otp();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_state)
+    prim_mubi_pkg::mubi8_t dis_late_dbg = prim_mubi_pkg::MuBi8False;
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
+
+    if (dis_late_debug_en_otp) begin
+      dis_late_dbg = prim_mubi_pkg::MuBi8True;
+    end
+    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
+      .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
+      .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True),
+      .dis_rv_dm_late_debug(dis_late_dbg));
   endfunction
 
   virtual function void initialize_otp_lc_state();
     backdoor_override_otp();
   endfunction
 
-  // Returns true if the RV_DM is accessible in a certain life cycle state.
-  virtual function bit allow_rv_dm_access();
+  // Returns true if the RV_DM MEM is gated in a certain life cycle state.
+  // This function also takes into account the late debug enable configuration.
+  virtual function bit gate_rv_dm_mem_access();
+    if (lc_state inside {LcStTestUnlocked0, LcStTestUnlocked1, LcStTestUnlocked2,
+        LcStTestUnlocked3, LcStTestUnlocked4, LcStTestUnlocked5, LcStTestUnlocked6,
+        LcStTestUnlocked7, LcStRma}) begin
+      return 0;
+    end
+
+    if (lc_state == LcStDev) begin
+      // Late debug is disabled in OTP, which defaults to rv_dm enabled in DEV lc_state.
+      if (dis_late_debug_en_otp) begin
+        return 0;
+      end
+
+      // Late debug is enabled via OTP and the rv_dm late debug enablement register
+      // is set to true.
+      if (~dis_late_debug_en_otp && late_debug_en_reg) begin
+        return 0;
+      end
+    end
+
+    // All other permutations should result in rv_dm disabled.
+    return 1;
+  endfunction
+
+  // Returns true if the RV_DM DMI is gated in a certain life cycle state.
+  virtual function bit gate_rv_dm_dmi_access();
     if (lc_state inside {LcStTestUnlocked0, LcStTestUnlocked1, LcStTestUnlocked2,
         LcStTestUnlocked3, LcStTestUnlocked4, LcStTestUnlocked5, LcStTestUnlocked6,
         LcStTestUnlocked7, LcStRma, LcStDev}) begin
-      return 1;
-    end else begin
       return 0;
+    end else begin
+      return 1;
     end
   endfunction
 
@@ -140,24 +187,61 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   endtask
 
   virtual task body();
+    uvm_reg rv_dm_mem_regs[$];
+
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
-      uvm_reg rv_dm_mem_regs[$];
       // Re-randomize the life cycle state in most iterations.
-      if (trans_i > 1 && $urandom_range(0, 4)) dut_init();
+      if (trans_i > 1 && $urandom_range(0, 4)) begin
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dis_late_debug_en_otp);
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(late_debug_en_reg);
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_state)
+        dut_init();
+      end
       `uvm_info(`gfn, $sformatf("Run iterations %0d/%0d with lc_state %0s", trans_i, num_trans,
-                lc_state.name), UVM_LOW)
+                lc_state.name), UVM_LOW);
+
+      if (lc_state == LcStDev) begin
+        `uvm_info(`gfn, $sformatf(
+                  "Disable late debug enable in otp: %0d, enable debug in rv_dm: %0d",
+                  dis_late_debug_en_otp, late_debug_en_reg), UVM_LOW);
+      end
+
       // Check the RV_DM gating via JTAG. Since the serial JTAG interface wires are gated with the
       // lc_dft_en signal, it is sufficient to check an RW'able register to verify whether the
       // gating works or not.
       if ($urandom_range(0, 1)) begin
-        rv_dm_jtag_access_check(~allow_rv_dm_access());
+        // TODO: Verify that when gate_rv_dm_mem_access() is true and
+        // gate_rv_dm_dmi_access() is false, SBA transactions are blocked by
+        // rv_dm.
+        rv_dm_jtag_access_check(gate_rv_dm_dmi_access());
       end
+
       // Check RV_DM gating via the TL-UL bus.
       if ($urandom_range(0, 1)) begin
         ral.rv_dm_mem.get_registers(rv_dm_mem_regs);
-        rand_rw_regs(rv_dm_mem_regs, ~allow_rv_dm_access());
+        rand_rw_regs(rv_dm_mem_regs, gate_rv_dm_mem_access());
       end
     end
+
+    // Force LcStDev with late debug disabled followed by enabled. This is to
+    // ensure rv_dm will support the late debug enablement during the same
+    // power cycle.
+    lc_state = LcStDev;
+    dis_late_debug_en_otp = 0;
+    late_debug_en_reg = 0;
+    dut_init();
+    ral.rv_dm_mem.get_registers(rv_dm_mem_regs);
+
+    // This sequence verifies to rv_dm disabled.
+    rv_dm_jtag_access_check(gate_rv_dm_dmi_access());
+    rand_rw_regs(rv_dm_mem_regs, gate_rv_dm_mem_access());
+
+    late_debug_en_reg = 1;
+    late_debug_en_reg_update();
+
+    // This sequence verifies rv_dm enabled.
+    rv_dm_jtag_access_check(gate_rv_dm_dmi_access());
+    rand_rw_regs(rv_dm_mem_regs, gate_rv_dm_mem_access());
   endtask : body
 
 endclass

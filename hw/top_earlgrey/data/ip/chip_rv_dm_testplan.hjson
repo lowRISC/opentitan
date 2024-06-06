@@ -219,6 +219,8 @@
       name: chip_rv_dm_lc_disabled
       desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
 
+            ## Procedure
+
             - Put life cycle in a random life cycle state.
             - Verify that the rv_dm bus device is inaccessible from the CPU as well as external JTAG
               if the life cycle state is not in TEST_UNLOCKED*, DEV or RMA.
@@ -228,6 +230,17 @@
               accessible via the TAP/DMI inside the RV_DM. If the JTAG wires are gated, it is
               expected that the RV_DM returns all-zero instead of the written value.
             - X-ref'ed with `chip_tap_strap_sampling`
+
+            ### Late debug enable
+            - In DEV life cycle stage test the following scenarios:
+              - rv_dm is accessible via CPU and JTAG when OTP DIS_RV_DM_LATE_DEBUG is set to true.
+              - rv_dm is accessible via CPU only when OTP DIS_RV_DM_LATE_DEBUG is set to false and
+                the late_debug_enable register is set to false.
+              - rv_dm is accessible via CPU and JTAG when OTP DIS_RV_DM_LATE_DEBUG is set to false
+                and the late_debug_enable register is set to true.
+
+            ## Silicon validation
+
             - For post silicon validation the test cannot change lifecycle mode. Instead it must
               discover the lifecycle of the device it is being run against and act appropriately
               (noting in particular it will not be able to execute code on Ibex in some life cycle
