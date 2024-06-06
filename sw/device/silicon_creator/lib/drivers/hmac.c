@@ -13,7 +13,7 @@
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void hmac_sha256_init(void) {
+void hmac_sha256_init(hmac_config_t config) {
   // Clear the config, stopping the SHA engine.
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, 0u);
 
@@ -24,7 +24,8 @@ void hmac_sha256_init(void) {
                    UINT32_MAX);
 
   uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT,
+                             config.big_endian_digest);
   reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
@@ -75,17 +76,28 @@ void hmac_sha256_final(hmac_digest_t *digest) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    reg);
 
-  // Read the digest in reverse to preserve the numerical value.
-  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
+  // Read the endianness from the configuration register.
+  uint32_t cfg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  bool big_endian = bitfield_bit32_read(cfg, HMAC_CFG_DIGEST_SWAP_BIT);
+
+  // Read the digest. The endianness only affects the order of bytes within
+  // words, so in little-endian mode read in reverse word order.
   for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
-    digest->digest[i] =
-        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
-                        (i * sizeof(uint32_t)));
+    if (big_endian) {
+      digest->digest[i] =
+          abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
+                          HMAC_DIGEST_0_REG_OFFSET + (i * sizeof(uint32_t)));
+    } else {
+      digest->digest[i] =
+          abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
+                          HMAC_DIGEST_7_REG_OFFSET - (i * sizeof(uint32_t)));
+    }
   }
 }
 
 void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
   hmac_sha256_update(data, len);
   hmac_sha256_final(digest);
 }

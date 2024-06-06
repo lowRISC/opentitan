@@ -303,7 +303,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   memset(boot_measurements.rom_ext.data, (int)rnd_uint32(),
          sizeof(boot_measurements.rom_ext.data));
   // Add anti-rollback poisoning word to measurement.
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
   hmac_sha256_update(anti_rollback, anti_rollback_len);
   HARDENED_CHECK_GE(manifest->security_version,
                     boot_data.min_security_version_rom_ext);
@@ -440,7 +440,7 @@ static rom_error_t rom_measure_otp_partitions(
   // These is no need to harden these data copies as any poisoning of the OTP
   // measurements will result in the derivation of a different UDS identity
   // which will not be endorsed. Hence we save the cycles of using sec_mmio.
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
   static_assert(
       (OTP_CTRL_CREATOR_SW_CFG_DIGEST_CREATOR_SW_CFG_DIGEST_FIELD_WIDTH *
        OTP_CTRL_CREATOR_SW_CFG_DIGEST_MULTIREG_COUNT / 8) == sizeof(uint64_t),

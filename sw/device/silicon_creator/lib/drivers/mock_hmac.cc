@@ -6,7 +6,9 @@
 
 namespace rom_test {
 extern "C" {
-void hmac_sha256_init(void) { MockHmac::Instance().sha256_init(); }
+void hmac_sha256_init(hmac_config_t config) {
+  MockHmac::Instance().sha256_init(config);
+}
 
 void hmac_sha256_update(const void *data, size_t len) {
   MockHmac::Instance().sha256_update(data, len);

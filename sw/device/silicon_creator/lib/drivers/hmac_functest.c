@@ -24,7 +24,7 @@ static const char kGettysburgPrelude[] =
     "proposition that all men are created equal.";
 
 // The following shell command will produce the sha256sum and convert the
-// digest into valid C hexadecimal constants:
+// digest into valid C hexadecimal constants (little-endian form):
 //
 // $ echo -n "Four score and seven years ago our fathers brought forth on this
 // continent, a new nation, conceived in Liberty, and dedicated to the
@@ -36,7 +36,7 @@ static const uint32_t kGettysburgDigest[] = {
     0x96c324ed, 0x775708a3, 0x0f9034cd, 0x1e6fd403,
 };
 
-rom_error_t hmac_test(void) {
+rom_error_t sha256_little_endian_test(void) {
   hmac_digest_t digest;
   hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, &digest);
 
@@ -50,10 +50,33 @@ rom_error_t hmac_test(void) {
   return kErrorOk;
 }
 
+rom_error_t sha256_big_endian_test(void) {
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = true});
+  hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_digest_t digest;
+  hmac_sha256_final(&digest);
+
+  // Reverse the expected digest to get the big-endian form.
+  const size_t len = ARRAYSIZE(kGettysburgDigest);
+  uint32_t expected_digest[len];
+  for (size_t i = 0; i < len; ++i) {
+    expected_digest[i] = __builtin_bswap32(kGettysburgDigest[len - 1 - i]);
+  }
+
+  for (size_t i = 0; i < len; ++i) {
+    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
+    if (digest.digest[i] != expected_digest[i]) {
+      return kErrorUnknown;
+    }
+  }
+  return kErrorOk;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
-  EXECUTE_TEST(result, hmac_test);
+  EXECUTE_TEST(result, sha256_little_endian_test);
+  EXECUTE_TEST(result, sha256_big_endian_test);
   return status_ok(result);
 }

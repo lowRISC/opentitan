@@ -239,7 +239,7 @@ static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
  */
 static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   hmac_digest_t combined_measurements;
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
   hmac_sha256_update((unsigned char *)inputs->owner_measurement,
                      kDiceMeasurementSizeInBytes);
   hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
@@ -326,7 +326,7 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
   uint32_t cert_size;
   uint32_t page_offset = 0;
   serdes_sha256_hash_t hash;
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
 
   // Push DICE certificates into the hash (each resides on a separate page).
   TRY(hash_certificate(&kFlashCtrlInfoPageUdsCertificate, 0, NULL));

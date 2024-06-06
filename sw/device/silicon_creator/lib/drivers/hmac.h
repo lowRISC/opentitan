@@ -32,13 +32,20 @@ typedef struct hmac_digest {
 } hmac_digest_t;
 
 /**
- * Initializes the HMAC in SHA256 mode.
+ * HMAC block configuration.
+ */
+typedef struct hmac_config {
+  bool big_endian_digest;
+} hmac_config_t;
+
+/**
+ * Initializes the HMAC block in SHA256 mode.
  *
  * This function resets the HMAC module to clear the digest register.
  * It then configures the HMAC block in SHA256 mode with little endian
  * data input and digest output.
  */
-void hmac_sha256_init(void);
+void hmac_sha256_init(hmac_config_t config);
 
 /**
  * Sends `len` bytes from `data` to the SHA2-256 function.

@@ -237,7 +237,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
          sizeof(boot_measurements.bl0.data));
 
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
   // Hash usage constraints.
   manifest_usage_constraints_t usage_constraints_from_hw;
   sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,

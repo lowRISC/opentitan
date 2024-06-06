@@ -82,9 +82,10 @@ class HmacTest : public rom_test::RomTest {
 class Sha256InitTest : public HmacTest {};
 
 TEST_F(Sha256InitTest, Initialize) {
-  ExpectInit();
+  hmac_config_t config = {.big_endian_digest = false};
+  ExpectInit(config);
 
-  hmac_sha256_init();
+  hmac_sha256_init(config);
 }
 
 class Sha256UpdateTest : public HmacTest {};

@@ -51,7 +51,7 @@ extern const char _chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
-  hmac_sha256_init();
+  hmac_sha256_init((hmac_config_t){.big_endian_digest = false});
   hmac_sha256_update((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes);
   hmac_digest_t rom_hash;
   hmac_sha256_final(&rom_hash);
