@@ -350,6 +350,12 @@ name:
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 5
     }
+    {
+      name: "otbn_partial_wipe"
+      uvm_test_seq: "otbn_partial_wipe_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 10
+    }
   ]
 
   // List of regressions.
