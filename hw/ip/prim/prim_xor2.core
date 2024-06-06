@@ -6,11 +6,16 @@ CAPI=2:
 name: "lowrisc:prim:xor2"
 description: "Generic 2-input xor"
 filesets:
-  primgen_dep:
+  files_rtl:
     depend:
       - lowrisc:prim:prim_pkg
-      - lowrisc:prim:primgen
       - lowrisc:prim:assert
+      - lowrisc:prim_xilinx_ultrascale:xor2:0
+      - lowrisc:prim_xilinx:xor2:0
+      - lowrisc:prim_generic:xor2:0
+    files:
+      - rtl/prim_xor2.sv
+    file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
@@ -31,18 +36,10 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
-generate:
-  impl:
-    generator: primgen
-    parameters:
-      prim_name: xor2
-
 targets:
   default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - primgen_dep
-    generate:
-      - impl
+      - files_rtl

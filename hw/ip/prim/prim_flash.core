@@ -6,16 +6,13 @@ CAPI=2:
 name: "lowrisc:prim:flash"
 description: "Flash memory"
 filesets:
-  primgen_dep:
+  files_rtl:
     depend:
       - lowrisc:prim:prim_pkg
-      - lowrisc:prim:primgen
-      # TODO olofk/fusesoc#404: The below dependency is already added to prim_generic_flash.core.
-      # However, the generator for the prim:ram1p does not kick in, causing compile errors.
-      - lowrisc:prim:ram_1p
-      - lowrisc:prim:clock_inv
-      - lowrisc:prim:clock_gating
-
+      - lowrisc:prim_generic:flash:0
+    files:
+      - rtl/prim_flash.sv
+    file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
@@ -35,18 +32,10 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
-generate:
-  impl:
-    generator: primgen
-    parameters:
-      prim_name: flash
-
 targets:
   default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - primgen_dep
-    generate:
-      - impl
+      - files_rtl

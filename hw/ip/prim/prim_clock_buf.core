@@ -6,11 +6,16 @@ CAPI=2:
 name: "lowrisc:prim:clock_buf"
 description: "Generic clock buffer"
 filesets:
-  primgen_dep:
+  files_rtl:
     depend:
       - lowrisc:prim:prim_pkg
-      - lowrisc:prim:primgen
       - lowrisc:prim:assert
+      - lowrisc:prim_xilinx:clock_buf:0
+      - lowrisc:prim_xilinx_ultrascale:clock_buf:0
+      - lowrisc:prim_generic:clock_buf:0
+    files:
+      - rtl/prim_clock_buf.sv
+    file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
@@ -30,18 +35,10 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
-generate:
-  impl:
-    generator: primgen
-    parameters:
-      prim_name: clock_buf
-
 targets:
   default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - primgen_dep
-    generate:
-      - impl
+      - files_rtl
