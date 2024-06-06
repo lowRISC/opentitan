@@ -116,6 +116,11 @@
     }
 
     {
+      name: i2c_host_perf_precise
+      uvm_test_seq: i2c_host_perf_precise_vseq
+    }
+
+    {
       name: i2c_host_stretch_timeout
       uvm_test_seq: i2c_host_stretch_timeout_vseq
     }

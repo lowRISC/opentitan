@@ -521,7 +521,7 @@
               - Ensure that SCL frequency during data bytes matches expectation
             '''
       stage: V2
-      tests: ["i2c_host_perf"]
+      tests: ["i2c_host_perf", "i2c_host_perf_precise"]
     }
     {
       name: host_mode_clock_stretching

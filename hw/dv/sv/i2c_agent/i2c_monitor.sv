@@ -79,12 +79,52 @@ class i2c_monitor extends dv_base_monitor #(
               `uvm_info(`gfn, $sformatf("Monitor is reset, dropping item now:\n%s",
                                         mon_dut_item.sprint()), UVM_DEBUG)
             end
+            forever perf_monitor(cfg.vif, cfg.start_perf_monitor, cfg.stop_perf_monitor);
           join_any
           disable fork;
         end: iso_fork join
       end
     end
   endtask : run_phase
+
+  // Monitor SCL to measure the actual frequency of an I2C transaction.
+  virtual task automatic perf_monitor(virtual i2c_if vif, ref uvm_event start, ref uvm_event stop);
+
+    `uvm_info(`gfn, "perf_monitor(): Waiting for start event.", UVM_HIGH)
+    start.wait_trigger();
+    `uvm_info(`gfn, "perf_monitor(): Got start event.", UVM_HIGH)
+
+    // Clear out any captured measurements from the previous sample (this limits the size
+    // of the queue, and prevents measuring the same period twice)
+    cfg.period_q.delete();
+
+    fork begin : iso_fork
+      fork
+        // Measure the elapsed simulation time between sucessive posedges of SCL. Push each
+        // value into the 'period_q[$]' to be consumed elsewhere for checking.
+        begin
+          realtime last_posedge, current_posedge;
+          forever begin
+            @(posedge vif.cb.scl_i);
+            current_posedge = $realtime;
+            if (last_posedge != 0) begin
+              cfg.period_q.push_back(time'(current_posedge - last_posedge));
+              `uvm_info(`gfn, $sformatf("perf_monitor(): scl_period_observed = %0t",
+                                        cfg.period_q[$]), UVM_HIGH)
+            end
+            last_posedge = current_posedge;
+          end
+        end
+        // Wait for the trigger event that stops the performance monitor. When this occurs,
+        // join and disable the parallel monitoring process.
+        begin
+          stop.wait_trigger();
+          `uvm_info(`gfn, "perf_monitor(): Got stop event.", UVM_HIGH)
+        end
+      join_any
+      disable fork;
+    end : iso_fork join
+  endtask
 
   virtual protected task target_collect_thread();
     i2c_item full_item;
@@ -119,6 +159,8 @@ class i2c_monitor extends dv_base_monitor #(
     i2c_item clone_item;
     bit rw_req = 1'b0;
 
+    cfg.start_perf_monitor.trigger();
+
     // sample address and r/w bit
     for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
       cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_dut_item.addr[i]);
@@ -128,6 +170,9 @@ class i2c_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("target_address_thread(), address %0x", mon_dut_item.addr), UVM_HIGH)
     cfg.vif.get_bit_data("host", cfg.timing_cfg, rw_req);
     `uvm_info(`gfn, $sformatf("target_address_thread(): rw %d", rw_req), UVM_HIGH)
+
+    cfg.stop_perf_monitor.trigger();
+
     mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
     // get ack after transmitting address
     mon_dut_item.drv_type = DevAck;
@@ -154,12 +199,18 @@ class i2c_monitor extends dv_base_monitor #(
       `downcast(clone_item, mon_dut_item.clone());
       `uvm_info(`gfn, "Req analysis port: read thread", UVM_HIGH)
       req_analysis_port.write(clone_item);
+
+      cfg.start_perf_monitor.trigger();
+
       // sample read data
       for (int i = 7; i >= 0; i--) begin
         cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
         `uvm_info(`gfn, $sformatf("target_read_thread() trans %0d, byte %0d, bit[%0d] %0b",
             mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_HIGH)
       end
+
+      cfg.stop_perf_monitor.trigger();
+
       mon_dut_item.data_q.push_back(mon_data);
       mon_dut_item.num_data++;
       `uvm_info(`gfn, $sformatf("target_read_thread() trans %0d, byte %0d 0x%0x",
@@ -196,9 +247,15 @@ class i2c_monitor extends dv_base_monitor #(
           fork
             begin
               bit ack_nack;
+
+              cfg.start_perf_monitor.trigger();
+
               for (int i = 7; i >= 0; i--) begin
                 cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_data[i]);
               end
+
+              cfg.stop_perf_monitor.trigger();
+
               `uvm_info(`gfn, $sformatf("target_write_thread() collected data %0x",
                 mon_data), UVM_HIGH)
               mon_dut_item.num_data++;
