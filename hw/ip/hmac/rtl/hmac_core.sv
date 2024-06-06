@@ -56,11 +56,6 @@ module hmac_core import prim_sha2_pkg::*; (
   localparam bit [63:0] BlockSizeSHA256in64  = 64'(BlockSizeSHA256);
   localparam bit [63:0] BlockSizeSHA512in64  = 64'(BlockSizeSHA512);
 
-  localparam bit [BlockSizeBitsSHA256:0] BlockSizeBSBSHA256 =
-                                                            BlockSizeSHA256[BlockSizeBitsSHA256:0];
-  localparam bit [BlockSizeBitsSHA512:0] BlockSizeBSBSHA512 =
-                                                            BlockSizeSHA512[BlockSizeBitsSHA512:0];
-
   logic hash_start;    // generated from internal state machine
   logic hash_continue; // generated from internal state machine
   logic hash_process;  // generated from internal state machine to trigger hash
