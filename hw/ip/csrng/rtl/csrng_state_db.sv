@@ -47,6 +47,7 @@ module csrng_state_db import csrng_pkg::*; #(
   output logic               state_db_sts_ack_o,
   output csrng_cmd_sts_e     state_db_sts_sts_o,
   output logic [StateId-1:0] state_db_sts_id_o,
+  input logic [NApps-1:0]    int_state_read_enable_i,
 
   // The reseed counters are always readable via register interface.
   output logic [NApps-1:0][31:0] reseed_counter_o
@@ -114,7 +115,8 @@ module csrng_state_db import csrng_pkg::*; #(
     assign int_st_out_sel[rd] = (state_db_rd_inst_id_i == rd);
     assign int_st_dump_sel[rd] = (int_st_dump_id_q == rd);
     assign internal_states_out[rd] = int_st_out_sel[rd] ? internal_states_q[rd] : '0;
-    assign internal_states_dump[rd] = int_st_dump_sel[rd] ? internal_states_q[rd] : '0;
+    assign internal_states_dump[rd] =
+        int_st_dump_sel[rd] && int_state_read_enable_i[rd] ? internal_states_q[rd] : '0;
   end
 
   // since only one of the internal states is active at a time, a

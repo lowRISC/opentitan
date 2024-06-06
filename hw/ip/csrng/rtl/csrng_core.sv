@@ -340,6 +340,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        state_db_reg_rd_id_pulse;
   logic [StateId-1:0]          state_db_reg_rd_id;
   logic [31:0]                 state_db_reg_rd_val;
+  logic [NApps-1:0]            int_state_read_enable;
 
   logic [30:0]                 err_code_test_bit;
   logic                        ctr_drbg_upd_es_ack;
@@ -1226,7 +1227,7 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_reg_rd_id_pulse = reg2hw.int_state_num.qe;
   assign hw2reg.int_state_val.d = state_db_reg_rd_val;
   assign state_db_is_dump_en = cs_enable_fo[40] && read_int_state && efuse_sw_app_enable[1];
-
+  assign int_state_read_enable = reg2hw.int_state_read_enable.q;
 
   csrng_state_db #(
     .NApps(NApps),
@@ -1264,6 +1265,7 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_sts_ack_o(state_db_sts_ack),
     .state_db_sts_sts_o(state_db_sts_sts),
     .state_db_sts_id_o(state_db_sts_id),
+    .int_state_read_enable_i(int_state_read_enable),
 
     .reseed_counter_o(reseed_counter)
   );

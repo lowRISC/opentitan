@@ -303,6 +303,7 @@
                   Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
                   Reading the internal state of the enable instances will be enabled
                   only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
+                  Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                   '''
           resval: false
         },
@@ -497,6 +498,40 @@
         }
       ]
     },
+    {
+      name: "INT_STATE_READ_ENABLE",
+      desc: "Internal state read enable register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "INT_STATE_READ_ENABLE_REGWEN",
+      fields: [
+        { bits: "2:0",
+          name: "INT_STATE_READ_ENABLE",
+          desc: '''
+                Per-instance internal state read enable.
+                Defines whether the internal state of the corresponding instance is readable via !!INT_STATE_VAL.
+                Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
+                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+                '''
+          resval: 0x7
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_READ_ENABLE_REGWEN",
+      desc: "Internal state read enable REGWEN register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                INT_STATE_READ_ENABLE register configuration enable bit.
+                If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore.
+                '''
+          resval: 1,
+        }
+      ]
+    },
     { name: "INT_STATE_NUM",
       desc: "Internal state number register",
       swaccess: "rw",
@@ -539,6 +574,7 @@
                 another internal state field can be read.
                 Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
                 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+                Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                 Otherwise, the register reads as 0.
                 '''
         }
