@@ -128,6 +128,12 @@ module hmac_core import prim_sha2_pkg::*; (
 
   // adjust inner and outer padding depending on key length and block size
   always_comb begin : adjust_key_pad_length
+    // set defaults
+    i_pad_256 = '{default: '0};
+    i_pad_512 = '{default: '0};
+    o_pad_256 = '{default: '0};
+    o_pad_512 = '{default: '0};
+
     unique case (key_length_i)
       Key_128: begin
         i_pad_256 = {secret_key_i[1023:896],
@@ -175,11 +181,7 @@ module hmac_core import prim_sha2_pkg::*; (
         o_pad_256 = '{default: '0};
         o_pad_512 = secret_key_i[1023:0]   ^ {(BlockSizeSHA512/8){8'h5c}};
       end
-      default: begin // set default
-        i_pad_256 = '{default: '0};
-        i_pad_512 = '{default: '0};
-        o_pad_256 = '{default: '0};
-        o_pad_512 = '{default: '0};
+      default: begin
       end
     endcase
   end
@@ -230,11 +232,13 @@ module hmac_core import prim_sha2_pkg::*; (
   assign sha_message_length_o = sha_msg_len;
 
   always_comb begin
+    txcnt_eq_blksz = '0;
+
     unique case (digest_size_i)
       SHA2_256: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA256-1:0] == '0) && (txcount != '0);
       SHA2_384: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512-1:0] == '0) && (txcount != '0);
       SHA2_512: txcnt_eq_blksz = (txcount[BlockSizeBitsSHA512-1:0] == '0) && (txcount != '0);
-      default : txcnt_eq_blksz = '0;
+      default;
     endcase
   end
 
@@ -318,6 +322,7 @@ module hmac_core import prim_sha2_pkg::*; (
     hash_start         = 1'b0;
     hash_continue      = 1'b0;
     hash_process       = 1'b0;
+    st_d               = st_q;
 
     unique case (st_q)
       StIdle: begin

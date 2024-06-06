@@ -147,7 +147,7 @@ module hmac
   done_state_e done_state_d, done_state_q;
 
   always_comb begin
-    done_state_d = done_state_q;
+    done_state_d    = done_state_q;
     hash_done_event = 1'b0;
 
     unique case (done_state_q)
@@ -284,6 +284,8 @@ module hmac
 
   assign digest_size_supplied = digest_mode_e'(cfg_reg.digest_size.q);
   always_comb begin : cast_digest_size
+    digest_size = SHA2_None;
+
     unique case (digest_size_supplied)
       SHA2_256:  digest_size = SHA2_256;
       SHA2_384:  digest_size = SHA2_384;
@@ -305,6 +307,8 @@ module hmac
 
   assign key_length_supplied  = key_length_e'(cfg_reg.key_length.q);
   always_comb begin : cast_key_length
+    key_length = Key_None;
+
     unique case (key_length_supplied)
       Key_128:  key_length = Key_128;
       Key_256:  key_length = Key_256;
@@ -530,6 +534,9 @@ module hmac
 
   logic index;
   always_comb begin : select_fifo_wdata
+    // default when !hmac_fifo_wsel
+    fifo_wdata = reg_fifo_wentry;
+
     if (hmac_fifo_wsel) begin
       fifo_wdata = '0;
       if (digest_size == SHA2_256) begin
@@ -540,8 +547,6 @@ module hmac
         index = !hmac_fifo_wdata_sel[0];
         fifo_wdata = '{data: digest[hmac_fifo_wdata_sel >> 1][32*index+:32], mask: '1};
       end
-    end else begin
-      fifo_wdata = reg_fifo_wentry;
     end
   end
 
@@ -823,7 +828,9 @@ module hmac
                    | hash_start_active | msg_push_not_allowed | invalid_config_atstart);
 
   always_comb begin
+    // default
     err_code = NoError;
+
     priority case (1'b1)
       // SwInvalidConfig has the highest priority: SW configures HMAC incorrectly
       invalid_config_atstart: begin
