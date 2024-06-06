@@ -103,6 +103,7 @@ module edn_core import edn_pkg::*;
   logic                    send_gencmd, send_gencmd_gated;
   logic                    cs_cmd_handshake, gencmd_handshake, rescmd_handshake;
   logic                    cs_hw_cmd_handshake;
+  logic                    cs_hw_cmd_handshake_1st;
   logic                    main_sm_idle;
   logic                    cmd_sent;
   logic                    boot_wr_ins_cmd;
@@ -201,6 +202,7 @@ module edn_core import edn_pkg::*;
   logic                               cs_cmd_req_vld_q, cs_cmd_req_vld_d;
   logic [31:0]                        cs_cmd_req_out_q, cs_cmd_req_out_d;
   logic                               cs_cmd_req_vld_out_q, cs_cmd_req_vld_out_d;
+  logic                               cs_cmd_req_vld_hold_q, cs_cmd_req_vld_hold_d;
   logic [RescmdFifoIdxWidth-1:0]      cmd_fifo_cnt_q, cmd_fifo_cnt_d;
   logic                               csrng_fips_q, csrng_fips_d;
   logic [NumEndPoints-1:0]            edn_fips_q, edn_fips_d;
@@ -215,6 +217,7 @@ module edn_core import edn_pkg::*;
                                       auto_mode_q, auto_mode_d;
   logic [3:0]                         cmd_type_q, cmd_type_d;
   logic                               cmd_reg_rdy_d, cmd_reg_rdy_q;
+  logic                               cmd_hdr_busy_d, cmd_hdr_busy_q;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -222,6 +225,7 @@ module edn_core import edn_pkg::*;
       cs_cmd_req_vld_q  <= '0;
       cs_cmd_req_out_q  <= '0;
       cs_cmd_req_vld_out_q  <= '0;
+      cs_cmd_req_vld_hold_q <= '0;
       cmd_fifo_cnt_q <= '0;
       csrng_fips_q <= '0;
       edn_fips_q <= '0;
@@ -235,11 +239,13 @@ module edn_core import edn_pkg::*;
       auto_mode_q   <= '0;
       cmd_type_q   <= {1'b0, csrng_pkg::INV};
       cmd_reg_rdy_q   <= '0;
+      cmd_hdr_busy_q <= 1'b0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
       cs_cmd_req_vld_q  <= cs_cmd_req_vld_d;
       cs_cmd_req_out_q <= cs_cmd_req_out_d;
       cs_cmd_req_vld_out_q <= cs_cmd_req_vld_out_d;
+      cs_cmd_req_vld_hold_q <= cs_cmd_req_vld_hold_d;
       cmd_fifo_cnt_q <= cmd_fifo_cnt_d;
       csrng_fips_q <= csrng_fips_d;
       edn_fips_q <= edn_fips_d;
@@ -254,6 +260,7 @@ module edn_core import edn_pkg::*;
       auto_mode_q   <= auto_mode_d;
       cmd_type_q   <= cmd_type_d;
       cmd_reg_rdy_q   <= cmd_reg_rdy_d;
+      cmd_hdr_busy_q <= cmd_hdr_busy_d;
     end
 
   //--------------------------------------------
@@ -531,8 +538,15 @@ module edn_core import edn_pkg::*;
          (cs_cmd_req_vld_q && !cs_cmd_handshake) ? cs_cmd_req_q :
          cs_cmd_req_out_q;
 
+  // Hold the valid until completing the valid/ready handshake. This is required to not violate
+  // the valid/ready protocol in case of acknowledgement errors received from CSRNG.
+  assign cs_cmd_req_vld_hold_d =
+         (!edn_enable_fo[CsrngCmdReqValidOut]) ? 1'b0 :
+         (cs_cmd_req_vld_hold_q || cs_cmd_req_vld_out_q) && !csrng_cmd_i.csrng_req_ready;
+
   // The cs_cmd_req_vld_out register handles the valid signal that is sent along with
-  // cs_cmd_req_out.
+  // cs_cmd_req_out. Unless EDN is disabled, the valid must not be dropped before seeing the
+  // ready.
   assign cs_cmd_req_vld_out_d =
          (!edn_enable_fo[CsrngCmdReqValidOut]) ? '0 :
          cmd_sent ? '0 :
@@ -541,7 +555,8 @@ module edn_core import edn_pkg::*;
          cs_cmd_req_vld_q && !cs_cmd_handshake;
 
   // drive outputs
-  assign csrng_cmd_o.csrng_req_valid = cs_cmd_req_vld_out_q && !reject_csrng_entropy;
+  assign csrng_cmd_o.csrng_req_valid =
+         (cs_cmd_req_vld_out_q && !reject_csrng_entropy) || cs_cmd_req_vld_hold_q;
   assign csrng_cmd_o.csrng_req_bus = cs_cmd_req_out_q;
 
   // Accept a new command only if no command is currently being written to SW_CMD_REQ
@@ -597,44 +612,56 @@ module edn_core import edn_pkg::*;
   assign main_sm_idle = (edn_main_sm_state == Idle);
   assign cs_hw_cmd_handshake = !sw_cmd_mode && csrng_cmd_o.csrng_req_valid &&
                                csrng_cmd_i.csrng_req_ready;
+  assign cs_hw_cmd_handshake_1st = cs_hw_cmd_handshake &&
+                                   ((send_rescmd || capt_rescmd_fifo_cnt ||
+                                     send_gencmd || capt_gencmd_fifo_cnt) ? cmd_hdr_busy_q : 1'b1);
+
   // Set the boot_mode field to one when boot mode is entered and to zero when it is left.
   assign hw2reg.hw_cmd_sts.boot_mode.de = 1'b1;
   assign hw2reg.hw_cmd_sts.boot_mode.d = boot_mode_d;
   assign boot_mode_d = main_sm_done_pulse || main_sm_idle ? 1'b0 :
                        boot_send_ins_cmd && cs_hw_cmd_handshake ? 1'b1 :
                        boot_mode_q;
-  // Set the auto_mode field to one when auto mode is entered and to zero when it is left.
+  // Set the auto_mode field to one when auto mode is entered and to zero when it is left. In case
+  // the first handshake in automode leads to an error, we still set the auto_mode field to know
+  // that the error happened upon entering auto mode.
   assign hw2reg.hw_cmd_sts.auto_mode.de = 1'b1;
   assign hw2reg.hw_cmd_sts.auto_mode.d = auto_mode_d;
   assign auto_mode_d = main_sm_done_pulse || main_sm_idle ? 1'b0 :
                        auto_req_mode_busy && cs_hw_cmd_handshake ? 1'b1 :
                        auto_mode_q;
   // Record the cmd_sts signal each time a hardware command is acknowledged.
-  // Reset it each time a new hardware command is issued.
+  // Reset it each time a new hardware command is issued. In case we saw an error previously,
+  // keep status returned with the error.
   assign hw2reg.hw_cmd_sts.cmd_sts.de = 1'b1;
   assign hw2reg.hw_cmd_sts.cmd_sts.d = csrng_hw_cmd_sts_d;
   assign csrng_hw_cmd_sts_d =
          !edn_enable_fo[HwCmdSts] ? csrng_pkg::CMD_STS_SUCCESS :
          csrng_cmd_i.csrng_rsp_ack && !sw_cmd_mode &&
             !reject_csrng_entropy ? csrng_cmd_i.csrng_rsp_sts :
+         reject_csrng_entropy ? csrng_hw_cmd_sts_q :
          cs_hw_cmd_handshake ? csrng_pkg::CMD_STS_SUCCESS :
          csrng_hw_cmd_sts_q;
   // Set the cmd_ack signal to high whenever a hardware command is acknowledged and set it
-  // to low whenever a new hardware command is issued to the CSRNG.
+  // to low whenever a new hardware command is issued to the CSRNG. Don't clear it in case we saw
+  // an error previously.
   assign hw2reg.hw_cmd_sts.cmd_ack.de = 1'b1;
   assign hw2reg.hw_cmd_sts.cmd_ack.d = csrng_hw_cmd_ack_d;
   assign csrng_hw_cmd_ack_d =
          !edn_enable_fo[HwCmdSts] ? 1'b0 :
          csrng_cmd_i.csrng_rsp_ack && !sw_cmd_mode && !reject_csrng_entropy ? 1'b1 :
+         reject_csrng_entropy ? csrng_hw_cmd_ack_q :
          cs_hw_cmd_handshake ? 1'b0 :
          csrng_hw_cmd_ack_q;
   // Set the cmd_type to the application command type value of the hardware controlled
-  // command issued last.
+  // command issued last. Only the command header but not the additional data matters.
+  // Don't update it in case we saw an error previously.
   assign hw2reg.hw_cmd_sts.cmd_type.de = 1'b1;
   assign hw2reg.hw_cmd_sts.cmd_type.d = cmd_type_d;
   assign cmd_type_d =
          !edn_enable_fo[HwCmdSts] ? {1'b0, csrng_pkg::INV} :
-         cs_hw_cmd_handshake ? cs_cmd_req_out_q[3:0] : cmd_type_q;
+         reject_csrng_entropy ? cmd_type_q :
+         cs_hw_cmd_handshake_1st ? cs_cmd_req_out_q[3:0] : cmd_type_q;
 
   // rescmd fifo
   // SEC_CM: FIFO.CTR.REDUN
@@ -796,6 +823,12 @@ module edn_core import edn_pkg::*;
   // and the handshake with CSRNG happend for the last word.
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1)) &&
                     (gencmd_handshake || rescmd_handshake);
+
+  // Track whether we're currently sending the command header of a hardware Reseed or Generate
+  // command.
+  assign cmd_hdr_busy_d =
+      capt_gencmd_fifo_cnt || capt_rescmd_fifo_cnt ? 1'b1 :
+      cs_hw_cmd_handshake                          ? 1'b0 : cmd_hdr_busy_q;
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_boot_req_mode;
@@ -966,9 +999,11 @@ module edn_core import edn_pkg::*;
   // Do not accept new genbits into the CSRNG interface genbits FIFO if we are in the alert state
   // due to a CSRNG status error response.
   `ASSERT(CsErrAcceptNoEntropy_A, reject_csrng_entropy |-> packer_cs_push == 0)
-  // Do not issue new commands to the CSRNG if we are in the alert state
-  // due to a CSRNG status error response.
-  `ASSERT(CsErrIssueNoCommands_A, reject_csrng_entropy |-> csrng_cmd_o.csrng_req_valid == 0)
+  // Do not issue new commands to the CSRNG if we are in the alert state due to a CSRNG status
+  // error response. The only exception is if we need to hold the valid to complete a started
+  // handshake.
+  `ASSERT(CsErrIssueNoCommands_A, reject_csrng_entropy |->
+      csrng_cmd_o.csrng_req_valid == 0 || cs_cmd_req_vld_hold_q == 1'b1)
 
   //--------------------------------------------
   // unused signals
