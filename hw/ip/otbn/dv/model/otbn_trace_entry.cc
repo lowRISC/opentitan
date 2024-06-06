@@ -230,16 +230,32 @@ bool OtbnTraceEntry::check_entries_compatible(
   assert(err_desc);
 
   if (type == WipeComplete && key != "FLAGS0" && key != "FLAGS1") {
-    if (rtl_lines.size() != 2) {
+    // As a quick check: make sure that there are at least 2 lines for
+    // the key. We will also check that they are different, but
+    // debugging is probably easier if the error message comments that
+    // there aren't two lines *to* be different.
+    if (rtl_lines.size() < 2) {
       std::ostringstream oss;
-      oss << "There are " << rtl_lines.size() << "RTL lines for key `" << key
-          << "'; we expected 2.";
+      oss << "There are " << rtl_lines.size() << " RTL lines for key `" << key
+          << "'; we expected at least 2.";
       *err_desc = oss.str();
       return false;
     }
-    if (!no_sec_wipe_data_chk && rtl_lines.front() == rtl_lines.back()) {
+
+    // Make sure that the multiple writes to key actually contain
+    // different values. This checks that we don't (e.g.) just write
+    // zero to the key many times.
+    bool seen_change = false;
+    for (size_t i = 1; i < rtl_lines.size(); i++) {
+      if (!(rtl_lines[i] == rtl_lines[0])) {
+        seen_change = true;
+        break;
+      }
+    }
+
+    if (!seen_change && !no_sec_wipe_data_chk) {
       std::ostringstream oss;
-      oss << "Repeated identical RTL lines for key `" << key << "'.";
+      oss << "All RTL lines for key `" << key << "' are identical.";
       *err_desc = oss.str();
       return false;
     }
