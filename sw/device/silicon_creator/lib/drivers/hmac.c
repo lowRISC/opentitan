@@ -13,7 +13,7 @@
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void hmac_sha256_init(void) {
+void hmac_sha256_init_endian(bool big_endian_digest) {
   // Clear the config, stopping the SHA engine.
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, 0u);
 
@@ -24,7 +24,7 @@ void hmac_sha256_init(void) {
                    UINT32_MAX);
 
   uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, big_endian_digest);
   reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
@@ -75,12 +75,22 @@ void hmac_sha256_final(hmac_digest_t *digest) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    reg);
 
-  // Read the digest in reverse to preserve the numerical value.
-  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
-  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
-    digest->digest[i] =
-        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
-                        (i * sizeof(uint32_t)));
+  uint32_t result, incr;
+  reg = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  if (bitfield_bit32_read(reg, HMAC_CFG_DIGEST_SWAP_BIT)) {
+    // Big-endian output.
+    result = HMAC_DIGEST_0_REG_OFFSET;
+    incr = sizeof(uint32_t);
+  } else {
+    // Little-endian output.
+    // Note: we rely on 32-bit integer wraparound to cause the result register
+    // index to count down from 7 to 0.
+    result = HMAC_DIGEST_7_REG_OFFSET;
+    incr = (uint32_t) - sizeof(uint32_t);
+  }
+
+  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i, result += incr) {
+    digest->digest[i] = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + result);
   }
 }
 
@@ -89,3 +99,5 @@ void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
   hmac_sha256_update(data, len);
   hmac_sha256_final(digest);
 }
+
+extern void hmac_sha256_init(void);

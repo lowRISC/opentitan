@@ -62,6 +62,10 @@ class HmacTest : public rom_test::RomTest {
                        {
                            {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
                        });
+    // The `final` function checks the DIGEST_SWAP bit to know
+    // the endianness of the result.  We're testing little-endian
+    // in the unit test.
+    EXPECT_ABS_READ32(base_ + HMAC_CFG_REG_OFFSET, 0u);
 
     // Set expectations explicitly to ensure that the registers
     // are contiguous.

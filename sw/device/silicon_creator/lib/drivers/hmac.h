@@ -35,10 +35,22 @@ typedef struct hmac_digest {
  * Initializes the HMAC in SHA256 mode.
  *
  * This function resets the HMAC module to clear the digest register.
+ * It then configures the HMAC block in SHA256 mode with digest output
+ * in the requested endianness.
+ *
+ * @param big_endian Whether or not to initialize the peripheral for big-endian
+ *                   results.
+ */
+void hmac_sha256_init_endian(bool big_endian_digest);
+
+/**
+ * Initializes the HMAC in SHA256 mode with little-endian output.
+ *
+ * This function resets the HMAC module to clear the digest register.
  * It then configures the HMAC block in SHA256 mode with little endian
  * data input and digest output.
  */
-void hmac_sha256_init(void);
+inline void hmac_sha256_init(void) { hmac_sha256_init_endian(false); }
 
 /**
  * Sends `len` bytes from `data` to the SHA2-256 function.

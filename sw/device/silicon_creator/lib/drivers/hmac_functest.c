@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/hexstr.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -36,6 +37,19 @@ static const uint32_t kGettysburgDigest[] = {
     0x96c324ed, 0x775708a3, 0x0f9034cd, 0x1e6fd403,
 };
 
+/*
+ * For the big-endian version of the test, we use the unmodified output of
+ * sha256sum:
+ *
+ $ echo -n "Four score and seven years ago our fathers brought forth on this\
+ continent, a new nation, conceived in Liberty, and dedicated to the\
+ proposition that all men are created equal." | sha256sum -
+
+ 1e6fd4030f9034cd775708a396c324ed420ec587eb3dd433e29f6ac08b8cc7ba  -
+ */
+static const char kGettysburgDigestBigEndian[] =
+    "1e6fd4030f9034cd775708a396c324ed420ec587eb3dd433e29f6ac08b8cc7ba";
+
 rom_error_t hmac_test(void) {
   hmac_digest_t digest;
   hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, &digest);
@@ -50,10 +64,30 @@ rom_error_t hmac_test(void) {
   return kErrorOk;
 }
 
+rom_error_t hmac_bigendian_test(void) {
+  uint32_t result[8];
+  hexstr_decode(&result, sizeof(result), kGettysburgDigestBigEndian);
+
+  hmac_digest_t digest;
+  hmac_sha256_init_endian(true);
+  hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_final(&digest);
+
+  const size_t len = ARRAYSIZE(digest.digest);
+  for (int i = 0; i < len; ++i) {
+    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
+    if (digest.digest[i] != result[i]) {
+      return kErrorUnknown;
+    }
+  }
+  return kErrorOk;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, hmac_test);
+  EXECUTE_TEST(result, hmac_bigendian_test);
   return status_ok(result);
 }
