@@ -734,10 +734,12 @@ module chip_earlgrey_cw340 #(
   // conversion from ast structure to memory centric structures
   assign ram_1p_cfg = '{
     ram_cfg: '{
+                test:   ast_ram_1p_cfg.test,
                 cfg_en: ast_ram_1p_cfg.marg_en,
                 cfg:    ast_ram_1p_cfg.marg
               },
     rf_cfg:  '{
+                test:   ast_rf_cfg.test,
                 cfg_en: ast_rf_cfg.marg_en,
                 cfg:    ast_rf_cfg.marg
               }
@@ -745,10 +747,12 @@ module chip_earlgrey_cw340 #(
 
   assign usb_ram_1p_cfg = '{
     ram_cfg: '{
+                test:   ast_ram_1p_cfg.test,
                 cfg_en: ast_ram_1p_cfg.marg_en,
                 cfg:    ast_ram_1p_cfg.marg
               },
     rf_cfg:  '{
+                test:   ast_rf_cfg.test,
                 cfg_en: ast_rf_cfg.marg_en,
                 cfg:    ast_rf_cfg.marg
               }
@@ -758,10 +762,12 @@ module chip_earlgrey_cw340 #(
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
   assign spi_ram_2p_cfg = '{
     a_ram_lcfg: '{
+                   test:   ast_ram_2p_lcfg.test_a,
                    cfg_en: ast_ram_2p_lcfg.marg_en_a,
                    cfg:    ast_ram_2p_lcfg.marg_a
                  },
     b_ram_lcfg: '{
+                   test:   ast_ram_2p_lcfg.test_b,
                    cfg_en: ast_ram_2p_lcfg.marg_en_b,
                    cfg:    ast_ram_2p_lcfg.marg_b
                  },

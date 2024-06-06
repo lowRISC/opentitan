@@ -6,6 +6,7 @@
 package prim_ram_1p_pkg;
 
   typedef struct packed {
+    logic       test;
     logic       cfg_en;
     logic [3:0] cfg;
   } cfg_t;
