@@ -58,15 +58,19 @@ const dif_rv_core_ibex_addr_translation_slot_t kSlots[] = {
     kDifRvCoreIbexAddrTranslationSlot_0, kDifRvCoreIbexAddrTranslationSlot_1};
 
 // Translation descriptions to use.
+// Junk bits (0xDEADBEEF) are added to the `remap_addr` fields to ensure they
+// are ignored by the translation mechanism.
 static const dif_rv_core_ibex_addr_translation_mapping_t kMakeLowerCaseMapping =
     {
         .matching_addr = (uintptr_t)remapped_function,
-        .remap_addr = (uintptr_t)make_lower_case,
+        .remap_addr = (uintptr_t)make_lower_case +
+                      (uintptr_t)(0xDEADBEEF & (kRemapAlignment - 1)),
         .size = kRemapAlignment,
 };
 static const dif_rv_core_ibex_addr_translation_mapping_t kGetNameMapping = {
     .matching_addr = (uintptr_t)remapped_function,
-    .remap_addr = (uintptr_t)get_name,
+    .remap_addr =
+        (uintptr_t)get_name + (uintptr_t)(0xDEADBEEF & (kRemapAlignment - 1)),
     .size = kRemapAlignment,
 };
 
