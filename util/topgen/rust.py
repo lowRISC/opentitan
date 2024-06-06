@@ -9,30 +9,9 @@ from datetime import datetime
 from mako.template import Template
 from reggen.ip_block import IpBlock
 
-from .lib import Name, get_base_and_size
+from .lib import Name, get_base_and_size, MemoryRegion, init_subranges
 
 RUST_FILE_EXTENSIONS = (".rs")
-
-
-class MemoryRegion(object):
-    def __init__(self, name: Name, base_addr: int, size_bytes: int):
-        assert isinstance(base_addr, int)
-        self.name = name
-        self.base_addr = base_addr
-        self.size_bytes = size_bytes
-        self.size_words = (size_bytes + 3) // 4
-
-    def base_addr_name(self):
-        return self.name + Name(["base", "addr"])
-
-    def offset_name(self):
-        return self.name + Name(["offset"])
-
-    def size_bytes_name(self):
-        return self.name + Name(["size", "bytes"])
-
-    def size_words_name(self):
-        return self.name + Name(["size", "words"])
 
 
 class RustEnum(object):
@@ -214,7 +193,7 @@ class TopGenRust:
         self._init_rstmgr_sw_rsts()
         self._init_pwrmgr_reset_requests()
         self._init_clkmgr_clocks()
-        self._init_mmio_region()
+        self.subranges = init_subranges(self.top, self._top_name, self.devices(), self.addr_space)
 
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
         '''Return a list of MemoryRegion objects for devices on the bus
@@ -597,29 +576,3 @@ class TopGenRust:
 
         self.clkmgr_gateable_clocks = gateable_clocks
         self.clkmgr_hintable_clocks = hintable_clocks
-
-    def _init_mmio_region(self):
-        """
-        Computes the bounds of the MMIO region.
-
-        MMIO region excludes any memory that is separate from the module configuration
-        space, i.e. ROM, main SRAM, and flash are excluded but retention SRAM,
-        spi_device memory, or usbdev memory are included.
-        """
-        memories = [region.base_addr for (_, region) in self.memories()]
-        # TODO(#14345): Remove the hardcoded "rv_dm" name check below.
-        # TODO: we need a cleaner way to define which buses are visible
-        # by the CPU and which ones are not. For now, exclude every
-        # interface with the name `dbg`, since that is attached to the
-        # debug bus which is not connected to the CPU LSU.
-        regions = [
-            region for ((dev_name, if_name), region) in self.devices()
-            if region.base_addr not in memories and dev_name != "rv_dm" and
-            (if_name is None or if_name != 'dbg')
-        ]
-        # Note: The memory interface of the retention RAM is in the MMIO address space,
-        # which we prefer since it reduces the number of ePMP regions we need.
-        mmio = range(min([r.base_addr for r in regions]),
-                     max([r.base_addr + r.size_bytes for r in regions]))
-        self.mmio = MemoryRegion(self._top_name + Name(["mmio"]), mmio.start,
-                                 mmio.stop - mmio.start)

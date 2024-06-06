@@ -1675,8 +1675,8 @@ typedef enum top_darjeeling_hintable_clocks {
  * MMIO Region
  *
  * MMIO region excludes any memory that is separate from the module
- * configuration space, i.e. ROM, main SRAM, and flash are excluded but
- * retention SRAM, spi_device memory, or usbdev memory are included.
+ * configuration space, i.e. ROM, main SRAM, and mbx SRAM are excluded but
+ * retention SRAM or spi_device are included.
  */
 #define TOP_DARJEELING_MMIO_BASE_ADDR 0x21100000u
 #define TOP_DARJEELING_MMIO_SIZE_BYTES 0xF501000u
