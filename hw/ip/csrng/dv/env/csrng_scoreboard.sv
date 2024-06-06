@@ -341,6 +341,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      "int_state_read_enable": begin
+      end
+      "int_state_read_enable_regwen": begin
+      end
       "int_state_num": begin
       end
       "int_state_val": begin
