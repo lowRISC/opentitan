@@ -69,29 +69,37 @@ virtual sequence is extended from `cip_base_vseq` and serves as a starting point
 All test sequences are extended from `hmac_base_vseq`. It provides commonly used handles,
 variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* `hmac_init`     : initialize hmac settings including configurations and interrupt
+* `hmac_init`       : initialize hmac settings including configurations and interrupt
   enables
-* `csr_rd_digest` : read digest values from the CSR registers
-* `wr_key`        : write key values into the CSR registers
-* `wr_msg`        : write messages into the hmac_msg_fifo
-* `compare_digest`: compare the read digest result with the expected values
+* `csr_rd_digest`   : read digest values from the CSR registers
+* `wr_key`          : write key values into the CSR registers
+* `wr_msg`          : write messages into the hmac_msg_fifo
+* `burst_wr_msg`    : burst write messages into the hmac_msg_fifo
+* `compare_digest`  : compare the read digest result with the expected values
+* `save_and_restore`: execute Save and Restore as described in the [SW Guide](https://opentitan.org/book/hw/ip/hmac/doc/programmers_guide.html#saving-and-restoring-the-context)
 
 ##### Standard test vectors
-Besides constrained random test sequences, hmac test sequences also includes [standard
-SHA256 and HMAC test vectors](../../../dv/sv/test_vectors/README.md) from
-[NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
-and [IETF](https://tools.ietf.org/html/rfc4868).
-The standard test vectors provide messages, keys (for HMAC only), and expected
-results. The expected results are used to cross verify both the DUT and DPI-C model outputs.
+Besides constrained random test sequences, HMAC test sequences also include standard SHA-2 256 and
+HMAC test vectors from [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
+and [IETF](https://tools.ietf.org/html/rfc4868) to test SHA-2 256/384/512 and HMAC using SHA-2 256/(384/512 TODO #22932))
+with 256-bit keys. The standard test vectors provide messages, keys (for the keyed HMAC tests only), and expected
+results. The expected results are used to verify the DUT outputs.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop
 functional coverage model. The following covergroups have been developed to prove
 that the test intent has been adequately met:
-* `cfg_cg`: Covers configuration registers in HMAC
-* `intr_cg`: Covers interrupt registers in HMAC
-* `status_cg`: Covers status registers in HMAC
-* `msg_len_cg`: Covers streamed-in message length in HMAC
+* `cfg_cg`: covers configuration registers in HMAC
+* `status_cg`: covers status registers in HMAC
+* `msg_len_cg`: covers streamed-in message length in HMAC
+* `err_code_cg`: covers possible error codes raising
+* `wr_config_during_hash_cg`: covers writing CFG register during ongoing HASH
+* `wr_key_during_hash_cg`: covers writing KEY register during ongoing HASH
+* `wr_key_during_sha_only_cg`: covers writing key length should be seamless while HMAC disabled
+* `wr_msg_during_hash_cg`: covers writing a message while HASH is ongoing
+* `trig_rst_during_hash_cg`: covers triggering a reset during HASH is ongoing
+* `rd_digest_during_hmac_en_cg`: covers read and check DIGEST while HMAC is enabled/disabled
+* `save_and_restore_cg`: covers Save and Restore with: same context, different contexts and only stop/continue without saving and restoring
 
 ### Self-checking strategy
 #### Scoreboard

@@ -98,17 +98,17 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Done        |
-RTL           | [TODO_COMPLETE][]       | Done        |
-Code Quality  | [LINT_COMPLETE][]       | Done        |
-Code Quality  | [CDC_COMPLETE][]        | N/A         |
-Code Quality  | [RDC_COMPLETE][]        | N/A         |
-Review        | [REVIEW_RTL][]          | Done        |
-Review        | [REVIEW_DELETED_FF][]   | N/A         |
-Review        | [REVIEW_SW_CHANGE][]    | N/A         |
-Review        | [REVIEW_SW_ERRATA][]    | N/A         |
-Review        | Reviewer(s)             | Done        | @rswarbrick @cindychip @jadephilipoom
-Review        | Signoff date            | Done        | 2022-07-27
+Documentation | [NEW_FEATURES_D3][]     | Not started |
+RTL           | [TODO_COMPLETE][]       | Not started |
+Code Quality  | [LINT_COMPLETE][]       | Not started |
+Code Quality  | [CDC_COMPLETE][]        | Not started |
+Code Quality  | [RDC_COMPLETE][]        | Not started |
+Review        | [REVIEW_RTL][]          | Not started |
+Review        | [REVIEW_DELETED_FF][]   | Not started |
+Review        | [REVIEW_SW_CHANGE][]    | Not started |
+Review        | [REVIEW_SW_ERRATA][]    | Not started |
+Review        | Reviewer(s)             | Not started |
+Review        | Signoff date            | Not started |
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
@@ -178,28 +178,26 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        | Updated testplan to reflect D3 changes
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
 Documentation | [DV_DOC_COMPLETED][]                    | Done        |
 Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | No planned assertions for DV
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | It would be best to add more DV assertions, OK to move it to M5
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
 Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        | Note: that 1 test marked as V3 is not passing
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Resolved: [#820][]
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Note: once PR #23116 will be merged to confirm the results
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | Note: once PR #23116 will be merged to confirm the results
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Waived      |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
-
-[#820]: https://github.com/lowRISC/opentitan/pull/820
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../doc/project_governance/checklist/README.md#dv_doc_completed
@@ -230,7 +228,7 @@ Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | N/A         |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
 Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived the V2S review meeting, since only 1 standard sec_cm - bus integrity.
+Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived the design has only 1 standard countermeasure - bus integrity
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                ../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified
@@ -242,28 +240,21 @@ Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived t
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Done        |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      |
-Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        |
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | [pr #1042][]. prim_fifo_sync revised [hmac_cov_excl.el][]
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        |
-Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
-Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
-Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        | [issue #385][] item 3 not related / Resolved: [pr #749][]
-Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
-Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
-Issues        | [NO_ISSUES_PENDING][]             | Done        | [issue #991][] [issue #860][] fixed
-Review        | Reviewer(s)                       | Done        | @eunchan @sjgitty @sriyerg
-Review        | Signoff date                      | Done        | 2019-11-22
-
-[issue #385]: https://github.com/loWRISC/opentitan/issues/385
-[pr #749]:    https://github.com/loWRISC/opentitan/pull/749
-[pr #1042]:   https://github.com/loWRISC/opentitan/pull/1042
-[hmac_cov_excl.el]: https://github.com/lowRISC/opentitan/blob/8fc17aac1dff9c5622fae2f5eb9203ef348c1ff5/hw/ip/hmac/dv/cov/hmac_cov_excl.el
-[issue #991]: https://github.com/loWRISC/opentitan/issues/523
-[issue #860]: https://github.com/loWRISC/opentitan/issues/860
+Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not started |
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not started |
+Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | Not started |
+Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Not started |
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Not started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Not started |
+Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not started |
+Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not started |
+Code Quality  | [ALL_TODOS_RESOLVED][]            | Not started |
+Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not started |
+Code Quality  | [TB_LINT_COMPLETE][]              | Not started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not started |
+Issues        | [NO_ISSUES_PENDING][]             | Not started |
+Review        | Reviewer(s)                       | Not started |
+Review        | Signoff date                      | Not started |
 
 [DESIGN_DELTAS_CAPTURED_V3]:     ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v3
 [X_PROP_ANALYSIS_COMPLETED]:     ../../../../doc/project_governance/checklist/README.md#x_prop_analysis_completed

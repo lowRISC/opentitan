@@ -48,7 +48,8 @@
             and SHA test vectors to check if the reference model predicts correct data, and check if
             DUT returns correct data.'''
       stage: V2
-      tests: ["hmac_test_sha_vectors", "hmac_test_hmac_vectors"]
+      tests: ["hmac_test_sha256_vectors", "hmac_test_sha384_vectors", "hmac_test_sha512_vectors",
+              "hmac_test_hmac_vectors"]
     }
     {
       name: burst_wr
@@ -97,17 +98,21 @@
     {
       name: save_and_restore
       desc: '''Verify save & restore, which allows SW to switch between different parallel message streams.
-
-               TODO(lowRISC/opentitan#21307)
+            - This feature is randomly exercised during most of the tests.
+            - When triggered it could go into 3 different scenarios:
+              - Stop and Continue without Saving and Restoring
+              - Save and Restore with same context
+              - Save and Restore with different contexts
             '''
       stage: V2
-      tests: []
+      tests: ["hmac_smoke", "hmac_long_msg", "hmac_back_pressure", "hmac_burst_wr",
+              "hmac_stress_all", "hmac_datapath_stress"]
     }
     {
       name: fifo_empty_status_interrupt
       desc: '''Verify the FIFO empty status interrupt.
 
-               TODO(lowRISC/opentitan#21815)
+               TODO(lowRISC/opentitan#21815) -> moved into M5
             '''
       stage: V2
       tests: []
@@ -115,11 +120,13 @@
     {
       name: wide_digest_configurable_key_length
       desc: '''Verify wider (SHA-384 and SHA-512) digests as well as configurable key lengths.
-
-               TODO(lowRISC/opentitan#22102)
+            - This feature is randomly exercised during most of the tests.
             '''
       stage: V2
-      tests: []
+      tests: ["hmac_smoke", "hmac_long_msg", "hmac_back_pressure", "hmac_burst_wr",
+              "hmac_stress_all", "hmac_datapath_stress", "hmac_error", "hmac_wipe_secret",
+              "hmac_test_sha256_vectors", "hmac_test_sha384_vectors", "hmac_test_sha512_vectors",
+              "hmac_test_hmac_vectors"]
     }
     {
       name: stress_all
@@ -135,7 +142,6 @@
     }
   ]
 
-  // TODO (issue #22102): need to extend cfg_cg to include digest_size and key_length or add another cg
   covergroups: [
     {
       name: cfg_cg
@@ -167,6 +173,40 @@
     {
       name: msg_len_cg
       desc: "Covers the length of the streamed in message."
+    }
+
+    {
+      name: wr_config_during_hash_cg
+      desc: "Covers writing CFG register during ongoing HASH"
+    }
+    {
+      name: wr_key_during_hash_cg
+      desc: "Covers writing KEY register during ongoing HASH"
+    }
+    {
+      name: wr_key_during_sha_only_cg
+      desc: "Covers writing key length should be seamless while HMAC is disabled"
+    }
+    {
+      name: wr_msg_during_hash_cg
+      desc: "Covers writing a message while HASH is ongoing"
+    }
+    {
+      name: trig_rst_during_hash_cg
+      desc: "Covers triggering a reset during HASH is ongoing"
+    }
+    {
+      name: rd_digest_during_hmac_en_cg
+      desc: "Covers read and check DIGEST while HMAC is enabled/disabled"
+    }
+    {
+      name: save_and_restore_cg
+      desc: '''Covers Save and Restore with:
+            - same context
+            - different contexts
+            - only stop/continue without saving and restoring
+            - Cross all those types with digest sizes
+            '''
     }
   ]
 }
