@@ -2,8 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
-#define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+<%
+    if helper.addr_space == helper.default_addr_space:
+        header_suffix = top["name"].upper()
+    else:
+        header_suffix = "_".join([top["name"], helper.addr_space]).upper()
+%>\
+#ifndef ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
+#define ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
 
 ## TODO(opentitan-integrated/issues/332): Remove this workaround
 ## once SW has been refactored to work without flash_ctrl.
@@ -112,4 +118,4 @@
 
 #endif  // __ASSEMBLER__
 
-#endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+#endif  // ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_

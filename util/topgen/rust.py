@@ -195,15 +195,23 @@ class RustFileHeader(object):
 
 
 class TopGenRust:
-    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], version_stamp: Dict[str, str]):
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], version_stamp: Dict[str, str],
+                 addr_space: str):
         self.top = top_info
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
         self._name_to_block = name_to_block
         self.regwidth = int(top_info["datawidth"])
         self.file_header = RustFileHeader("foo.tpl", version_stamp, len(version_stamp) == 0)
 
-        # TODO: Don't hardcode the address space used for software.
-        self.addr_space = "hart"
+        self.addr_space = addr_space
+
+        # Determine default address space from the top config
+        self.default_addr_space = None
+        for addr_space in top_info['addr_spaces']:
+            default = addr_space.get('default', False)
+            if default:
+                self.default_addr_space = addr_space['name']
+        assert self.default_addr_space is not None, "Missing default addr_space"
 
         self._init_plic_targets()
         self._init_plic_mapping()
