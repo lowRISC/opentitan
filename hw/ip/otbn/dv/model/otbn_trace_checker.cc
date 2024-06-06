@@ -60,6 +60,20 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
     return;
   }
 
+  // If the trace type is Stray then this is a change that happened at an
+  // unexpected time. We're expecting the RTL and model to lock shortly and can
+  // discard this trace entry otherwise.
+  //
+  // To avoid things being really mysterious, write this to stderr as well. It
+  // shouldn't happen very often, so we won't generate much text.
+  if (trace_entry.trace_type() == OtbnTraceEntry::Stray) {
+    std::cerr << "INFO: RTL trace entry with header 'Z':\n";
+    trace_entry.print("  ", std::cerr);
+    std::cerr << "Discarding the entry: "
+              << "we expect to lock shortly afterwards anyway.\n";
+    return;
+  }
+
   // Check we don't already have a pending RTL final entry
   if (rtl_pending_) {
     std::cerr

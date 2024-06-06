@@ -46,6 +46,7 @@ class OtbnTraceEntry {
     Exec,
     WipeInProgress,
     WipeComplete,
+    Stray,
   };
 
   virtual ~OtbnTraceEntry(){};
