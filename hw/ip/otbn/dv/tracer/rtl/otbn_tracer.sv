@@ -22,6 +22,7 @@ module otbn_tracer (
   parameter string InsnStallPrefix = "S";
   parameter string WipeInProgressPrefix = "U";
   parameter string WipeCompletePrefix = "V";
+  parameter string StrayChangePrefix = "Z";
   parameter string RegReadPrefix = "<";
   parameter string RegWritePrefix = ">";
   parameter string MemWritePrefix = "W";
@@ -101,6 +102,11 @@ module otbn_tracer (
   // Called by other trace functions to append their trace lines to the output buffer
   function automatic string output_trace(string work, string prefix, string trace_line);
     return $sformatf("%s%s %s\n", work, prefix, trace_line);
+  endfunction
+
+  // Called by some trace functions to prepend their trace lines to the output buffer
+  function automatic string prepend_trace(string work, string prefix, string trace_line);
+    return $sformatf("%s %s\n%s", prefix, trace_line, work);
   endfunction
 
   function automatic string trace_base_rf(string work);
@@ -201,26 +207,36 @@ module otbn_tracer (
     return work;
   endfunction
 
-  function automatic string trace_header(string work);
+  function automatic string prepend_trace_header(string work);
+    bit added_header = 1'b0;
+
+    if (otbn_trace.secure_wipe_ack_r) begin
+      work = prepend_trace(work, WipeCompletePrefix, "");
+      added_header = 1'b1;
+    end else if (otbn_trace.secure_wipe_req || !otbn_trace.initial_secure_wipe_done) begin
+      work = prepend_trace(work, WipeInProgressPrefix, "");
+      added_header = 1'b1;
+    end
+
     if (otbn_trace.insn_valid) begin
       if (otbn_trace.insn_fetch_err) begin
         // This means that we've seen an IMEM integrity error. Squash the reported instruction bits
         // and ignore any stall: this will be the last cycle of the instruction either way.
-        work = output_trace(work, InsnExecutePrefix,
-                            $sformatf("PC: 0x%08x, insn: ??", otbn_trace.insn_addr));
+        work = prepend_trace(work, InsnExecutePrefix,
+                             $sformatf("PC: 0x%08x, insn: ??", otbn_trace.insn_addr));
       end else begin
         // We have a valid instruction, either stalled or completing its execution
-        work = output_trace(work, otbn_trace.insn_stall ? InsnStallPrefix : InsnExecutePrefix,
-                            $sformatf("PC: 0x%08x, insn: 0x%08x", otbn_trace.insn_addr,
-                                      otbn_trace.insn_data));
+        work = prepend_trace(work, otbn_trace.insn_stall ? InsnStallPrefix : InsnExecutePrefix,
+                             $sformatf("PC: 0x%08x, insn: 0x%08x", otbn_trace.insn_addr,
+                                       otbn_trace.insn_data));
       end
+      added_header = 1'b1;
     end
 
-    if (otbn_trace.secure_wipe_ack_r) begin
-      work = output_trace(work, WipeCompletePrefix, "");
-    end else if (otbn_trace.secure_wipe_req || !otbn_trace.initial_secure_wipe_done) begin
-      work = output_trace(work, WipeInProgressPrefix, "");
+    if (work != "" && !added_header) begin
+      work = prepend_trace(work, StrayChangePrefix, "");
     end
+
     return work;
   endfunction
 
@@ -229,11 +245,12 @@ module otbn_tracer (
   function automatic void do_trace();
     string work;
 
-    work = trace_header(work);
     work = trace_bignum_rf(work);
     work = trace_base_rf(work);
     work = trace_bignum_mem(work);
     work = trace_ispr_accesses(work);
+
+    work = prepend_trace_header(work);
 
     if (work != "") begin
       accept_otbn_trace_string(work, cycle_count);
