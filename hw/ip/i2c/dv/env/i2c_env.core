@@ -36,6 +36,7 @@ filesets:
       - seq_lib/i2c_host_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_fifo_full_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_perf_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_host_perf_precise_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_stretch_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_error_intr_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_stress_all_vseq.sv: {is_include_file: true}

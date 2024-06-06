@@ -17,6 +17,10 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   virtual i2c_if  vif;
 
+  // Performance Monitoring Variables
+  uvm_event start_perf_monitor, stop_perf_monitor;
+  time period_q[$];
+
   bit     host_scl_start;
   bit     host_scl_stop;
   bit     host_scl_force_high;
@@ -101,6 +105,10 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(i2c_host_max_data_rw,                      UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new(string name = "");
+    super.new(name);
+    start_perf_monitor = new("start_perf_monitor");
+    stop_perf_monitor = new("stop_perf_monitor");
+  endfunction
 
 endclass : i2c_agent_cfg

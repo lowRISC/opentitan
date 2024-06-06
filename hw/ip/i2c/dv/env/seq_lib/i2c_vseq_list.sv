@@ -17,6 +17,7 @@
 `include "i2c_host_rx_oversample_vseq.sv"
 `include "i2c_host_fifo_full_vseq.sv"
 `include "i2c_host_perf_vseq.sv"
+`include "i2c_host_perf_precise_vseq.sv"
 `include "i2c_host_stretch_timeout_vseq.sv"
 `include "i2c_host_error_intr_vseq.sv"
 `include "i2c_host_stress_all_vseq.sv"
