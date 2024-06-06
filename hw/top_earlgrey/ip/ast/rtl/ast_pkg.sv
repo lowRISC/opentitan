@@ -54,13 +54,16 @@ parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 
 // Memories Read-Write Margin Interface
 typedef struct packed {
+  logic          test_a;
   logic          marg_en_a;
   logic [4-1:0]  marg_a;
+  logic          test_b;
   logic          marg_en_b;
   logic [4-1:0]  marg_b;
 } dpm_rm_t;
 
 typedef struct packed {
+  logic          test;
   logic          marg_en;
   logic [4-1:0]  marg;
 } spm_rm_t;
