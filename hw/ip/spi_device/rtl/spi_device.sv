@@ -284,6 +284,7 @@ module spi_device
   // Important status bits for tracking in the upload module
   logic cmd_sync_status_busy;
   logic cmd_sync_status_wel;
+  logic sck_status_busy;
 
   // Read Status input and broadcast
   logic sck_status_busy_set;       // set by HW (upload)
@@ -1114,6 +1115,8 @@ module spi_device
 
     .cmd_info_i   (cmd_info),
 
+    .sck_status_busy_i(sck_status_busy),
+
     .io_mode_o    (sub_iomode[IoModeCmdParse]),
 
     .sel_dp_o          (cmd_dp_sel),
@@ -1250,6 +1253,7 @@ module spi_device
     .inclk_status_commit_i  (s2p_data_valid),
     .cmd_sync_status_busy_o (cmd_sync_status_busy),
     .cmd_sync_status_wel_o  (cmd_sync_status_wel),
+    .sck_status_busy_o      (sck_status_busy),
     .csb_busy_broadcast_o   (csb_status_busy_broadcast) // SCK domain
   );
 

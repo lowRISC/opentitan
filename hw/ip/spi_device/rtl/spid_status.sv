@@ -76,6 +76,9 @@ module spid_status
   output logic cmd_sync_status_busy_o,
   output logic cmd_sync_status_wel_o,
 
+  // Represents current busy bit, for cmdparse to block commands.
+  output logic sck_status_busy_o,
+
   // indicator of busy for blocking passthrough
   output logic csb_busy_broadcast_o // CSB domain
 );
@@ -216,6 +219,7 @@ module spid_status
 
   assign cmd_sync_status_busy_o = sck_status_to_commit[BitBusy];
   assign cmd_sync_status_wel_o = sck_status_to_commit[BitWe];
+  assign sck_status_busy_o = sck_status_committed[BitBusy];
 
   // Staged to Committed at CSb de-assertion
   // SW and the passthrough gate only receive the final values of
