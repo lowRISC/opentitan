@@ -313,9 +313,9 @@ HMAC Error Code
 {"reg": [{"name": "err_code", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                         |
-|:------:|:------:|:-------:|:---------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |   0x0   | err_code | If an error interrupt occurs, this register has information of error cause. Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type. |
+|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                              |
+|:------:|:------:|:-------:|:---------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |   0x0   | err_code | If an error interrupt occurs, this register has information of error cause. Please take a look at `hw/ip/prim/rtl/prim_sha2_pkg.sv:err_code_e enum type. |
 
 ## WIPE_SECRET
 Clear internal secret registers.
