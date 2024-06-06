@@ -52,9 +52,9 @@ module csrng_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [18:0] reg_we_check;
+  logic [21:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(19)
+    .OneHotWidth(22)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -164,6 +164,12 @@ module csrng_reg_top (
   logic reseed_interval_we;
   logic [31:0] reseed_interval_qs;
   logic [31:0] reseed_interval_wd;
+  logic reseed_counter_0_re;
+  logic [31:0] reseed_counter_0_qs;
+  logic reseed_counter_1_re;
+  logic [31:0] reseed_counter_1_qs;
+  logic reseed_counter_2_re;
+  logic [31:0] reseed_counter_2_qs;
   logic sw_cmd_sts_cmd_rdy_qs;
   logic sw_cmd_sts_cmd_ack_qs;
   logic [2:0] sw_cmd_sts_cmd_sts_qs;
@@ -779,6 +785,57 @@ module csrng_reg_top (
     .qs     (reseed_interval_qs)
   );
   assign reg2hw.reseed_interval.qe = reseed_interval_qe;
+
+
+  // Subregister 0 of Multireg reseed_counter
+  // R[reseed_counter_0]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_reseed_counter_0 (
+    .re     (reseed_counter_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.reseed_counter[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (reseed_counter_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg reseed_counter
+  // R[reseed_counter_1]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_reseed_counter_1 (
+    .re     (reseed_counter_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.reseed_counter[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (reseed_counter_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg reseed_counter
+  // R[reseed_counter_2]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_reseed_counter_2 (
+    .re     (reseed_counter_2_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.reseed_counter[2].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (reseed_counter_2_qs)
+  );
 
 
   // R[sw_cmd_sts]: V(False)
@@ -2048,7 +2105,7 @@ module csrng_reg_top (
 
 
 
-  logic [18:0] addr_hit;
+  logic [21:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -2059,17 +2116,20 @@ module csrng_reg_top (
     addr_hit[ 5] = (reg_addr == CSRNG_CTRL_OFFSET);
     addr_hit[ 6] = (reg_addr == CSRNG_CMD_REQ_OFFSET);
     addr_hit[ 7] = (reg_addr == CSRNG_RESEED_INTERVAL_OFFSET);
-    addr_hit[ 8] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
-    addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
-    addr_hit[10] = (reg_addr == CSRNG_GENBITS_OFFSET);
-    addr_hit[11] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
-    addr_hit[12] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
-    addr_hit[13] = (reg_addr == CSRNG_FIPS_FORCE_OFFSET);
-    addr_hit[14] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
-    addr_hit[15] = (reg_addr == CSRNG_RECOV_ALERT_STS_OFFSET);
-    addr_hit[16] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
-    addr_hit[17] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
-    addr_hit[18] = (reg_addr == CSRNG_MAIN_SM_STATE_OFFSET);
+    addr_hit[ 8] = (reg_addr == CSRNG_RESEED_COUNTER_0_OFFSET);
+    addr_hit[ 9] = (reg_addr == CSRNG_RESEED_COUNTER_1_OFFSET);
+    addr_hit[10] = (reg_addr == CSRNG_RESEED_COUNTER_2_OFFSET);
+    addr_hit[11] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
+    addr_hit[12] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
+    addr_hit[13] = (reg_addr == CSRNG_GENBITS_OFFSET);
+    addr_hit[14] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
+    addr_hit[15] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
+    addr_hit[16] = (reg_addr == CSRNG_FIPS_FORCE_OFFSET);
+    addr_hit[17] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
+    addr_hit[18] = (reg_addr == CSRNG_RECOV_ALERT_STS_OFFSET);
+    addr_hit[19] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
+    addr_hit[20] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
+    addr_hit[21] = (reg_addr == CSRNG_MAIN_SM_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2095,7 +2155,10 @@ module csrng_reg_top (
                (addr_hit[15] & (|(CSRNG_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(CSRNG_PERMIT[16] & ~reg_be))) |
                (addr_hit[17] & (|(CSRNG_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(CSRNG_PERMIT[18] & ~reg_be)))));
+               (addr_hit[18] & (|(CSRNG_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(CSRNG_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(CSRNG_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(CSRNG_PERMIT[21] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2149,19 +2212,22 @@ module csrng_reg_top (
   assign reseed_interval_we = addr_hit[7] & reg_we & !reg_error;
 
   assign reseed_interval_wd = reg_wdata[31:0];
-  assign genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
-  assign genbits_re = addr_hit[10] & reg_re & !reg_error;
-  assign int_state_num_we = addr_hit[11] & reg_we & !reg_error;
+  assign reseed_counter_0_re = addr_hit[8] & reg_re & !reg_error;
+  assign reseed_counter_1_re = addr_hit[9] & reg_re & !reg_error;
+  assign reseed_counter_2_re = addr_hit[10] & reg_re & !reg_error;
+  assign genbits_vld_re = addr_hit[12] & reg_re & !reg_error;
+  assign genbits_re = addr_hit[13] & reg_re & !reg_error;
+  assign int_state_num_we = addr_hit[14] & reg_we & !reg_error;
 
   assign int_state_num_wd = reg_wdata[3:0];
-  assign int_state_val_re = addr_hit[12] & reg_re & !reg_error;
-  assign fips_force_we = addr_hit[13] & reg_we & !reg_error;
+  assign int_state_val_re = addr_hit[15] & reg_re & !reg_error;
+  assign fips_force_we = addr_hit[16] & reg_we & !reg_error;
 
   assign fips_force_wd = reg_wdata[2:0];
-  assign hw_exc_sts_we = addr_hit[14] & reg_we & !reg_error;
+  assign hw_exc_sts_we = addr_hit[17] & reg_we & !reg_error;
 
   assign hw_exc_sts_wd = reg_wdata[15:0];
-  assign recov_alert_sts_we = addr_hit[15] & reg_we & !reg_error;
+  assign recov_alert_sts_we = addr_hit[18] & reg_we & !reg_error;
 
   assign recov_alert_sts_enable_field_alert_wd = reg_wdata[0];
 
@@ -2180,7 +2246,7 @@ module csrng_reg_top (
   assign recov_alert_sts_cmd_stage_invalid_cmd_seq_alert_wd = reg_wdata[14];
 
   assign recov_alert_sts_cmd_stage_reseed_cnt_alert_wd = reg_wdata[15];
-  assign err_code_test_we = addr_hit[17] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[20] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
 
@@ -2198,14 +2264,17 @@ module csrng_reg_top (
     reg_we_check[8] = 1'b0;
     reg_we_check[9] = 1'b0;
     reg_we_check[10] = 1'b0;
-    reg_we_check[11] = int_state_num_we;
+    reg_we_check[11] = 1'b0;
     reg_we_check[12] = 1'b0;
-    reg_we_check[13] = fips_force_gated_we;
-    reg_we_check[14] = hw_exc_sts_we;
-    reg_we_check[15] = recov_alert_sts_we;
-    reg_we_check[16] = 1'b0;
-    reg_we_check[17] = err_code_test_gated_we;
-    reg_we_check[18] = 1'b0;
+    reg_we_check[13] = 1'b0;
+    reg_we_check[14] = int_state_num_we;
+    reg_we_check[15] = 1'b0;
+    reg_we_check[16] = fips_force_gated_we;
+    reg_we_check[17] = hw_exc_sts_we;
+    reg_we_check[18] = recov_alert_sts_we;
+    reg_we_check[19] = 1'b0;
+    reg_we_check[20] = err_code_test_gated_we;
+    reg_we_check[21] = 1'b0;
   end
 
   // Read data return
@@ -2258,37 +2327,49 @@ module csrng_reg_top (
       end
 
       addr_hit[8]: begin
+        reg_rdata_next[31:0] = reseed_counter_0_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:0] = reseed_counter_1_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = reseed_counter_2_qs;
+      end
+
+      addr_hit[11]: begin
         reg_rdata_next[1] = sw_cmd_sts_cmd_rdy_qs;
         reg_rdata_next[2] = sw_cmd_sts_cmd_ack_qs;
         reg_rdata_next[5:3] = sw_cmd_sts_cmd_sts_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = genbits_vld_genbits_vld_qs;
         reg_rdata_next[1] = genbits_vld_genbits_fips_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[13]: begin
         reg_rdata_next[31:0] = genbits_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[14]: begin
         reg_rdata_next[3:0] = int_state_num_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[15]: begin
         reg_rdata_next[31:0] = int_state_val_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[16]: begin
         reg_rdata_next[2:0] = fips_force_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[17]: begin
         reg_rdata_next[15:0] = hw_exc_sts_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = recov_alert_sts_enable_field_alert_qs;
         reg_rdata_next[1] = recov_alert_sts_sw_app_enable_field_alert_qs;
         reg_rdata_next[2] = recov_alert_sts_read_int_state_field_alert_qs;
@@ -2300,7 +2381,7 @@ module csrng_reg_top (
         reg_rdata_next[15] = recov_alert_sts_cmd_stage_reseed_cnt_alert_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = err_code_sfifo_cmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_genbits_err_qs;
         reg_rdata_next[2] = err_code_sfifo_cmdreq_err_qs;
@@ -2329,11 +2410,11 @@ module csrng_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[20]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[21]: begin
         reg_rdata_next[7:0] = main_sm_state_qs;
       end
 

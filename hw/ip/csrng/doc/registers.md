@@ -13,17 +13,20 @@
 | csrng.[`CTRL`](#ctrl)                       | 0x14     |        4 | Control register                                                           |
 | csrng.[`CMD_REQ`](#cmd_req)                 | 0x18     |        4 | Command request register                                                   |
 | csrng.[`RESEED_INTERVAL`](#reseed_interval) | 0x1c     |        4 | CSRNG maximum number of generate requests allowed between reseeds register |
-| csrng.[`SW_CMD_STS`](#sw_cmd_sts)           | 0x20     |        4 | Application interface command status register                              |
-| csrng.[`GENBITS_VLD`](#genbits_vld)         | 0x24     |        4 | Generate bits returned valid register                                      |
-| csrng.[`GENBITS`](#genbits)                 | 0x28     |        4 | Generate bits returned register                                            |
-| csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x2c     |        4 | Internal state number register                                             |
-| csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x30     |        4 | Internal state read access register                                        |
-| csrng.[`FIPS_FORCE`](#fips_force)           | 0x34     |        4 | FIPS/CC compliance flag forcing register                                   |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x38     |        4 | Hardware instance exception status register                                |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x3c     |        4 | Recoverable alert status register                                          |
-| csrng.[`ERR_CODE`](#err_code)               | 0x40     |        4 | Hardware detection of error conditions status register                     |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x44     |        4 | Test error conditions register                                             |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x48     |        4 | Main state machine state debug register                                    |
+| csrng.[`RESEED_COUNTER_0`](#reseed_counter) | 0x20     |        4 | Reseed counter.                                                            |
+| csrng.[`RESEED_COUNTER_1`](#reseed_counter) | 0x24     |        4 | Reseed counter.                                                            |
+| csrng.[`RESEED_COUNTER_2`](#reseed_counter) | 0x28     |        4 | Reseed counter.                                                            |
+| csrng.[`SW_CMD_STS`](#sw_cmd_sts)           | 0x2c     |        4 | Application interface command status register                              |
+| csrng.[`GENBITS_VLD`](#genbits_vld)         | 0x30     |        4 | Generate bits returned valid register                                      |
+| csrng.[`GENBITS`](#genbits)                 | 0x34     |        4 | Generate bits returned register                                            |
+| csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x38     |        4 | Internal state number register                                             |
+| csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x3c     |        4 | Internal state read access register                                        |
+| csrng.[`FIPS_FORCE`](#fips_force)           | 0x40     |        4 | FIPS/CC compliance flag forcing register                                   |
+| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x44     |        4 | Hardware instance exception status register                                |
+| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x48     |        4 | Recoverable alert status register                                          |
+| csrng.[`ERR_CODE`](#err_code)               | 0x4c     |        4 | Hardware detection of error conditions status register                     |
+| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x50     |        4 | Test error conditions register                                             |
+| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x54     |        4 | Main state machine state debug register                                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -184,9 +187,35 @@ will be acknowledged with a status error.
 If the violating command was issued by a HW instance, an interrupt will
 be triggered.
 
+## RESEED_COUNTER
+Reseed counter.
+
+The per-instance reseed counter indicates the number of Generate requests that have been completed since new entropy input has been obtained with an Instantiate or a Reseed command.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name             | Offset   |
+|:-----------------|:---------|
+| RESEED_COUNTER_0 | 0x20     |
+| RESEED_COUNTER_1 | 0x24     |
+| RESEED_COUNTER_2 | 0x28     |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "RESEED_COUNTER", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                       |
+|:------:|:------:|:-------:|:---------------|:------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |   0x0   | RESEED_COUNTER | Reseed Counter indicating the number of completed Generate requests since the last Instantiate or Reseed command. |
+
 ## SW_CMD_STS
 Application interface command status register
-- Offset: `0x20`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x3e`
 
@@ -235,7 +264,7 @@ Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this fiel
 
 ## GENBITS_VLD
 Generate bits returned valid register
-- Offset: `0x24`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -253,7 +282,7 @@ Generate bits returned valid register
 
 ## GENBITS
 Generate bits returned register
-- Offset: `0x28`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -279,7 +308,7 @@ Otherwise, the register reads as 0.
 
 ## INT_STATE_NUM
 Internal state number register
-- Offset: `0x2c`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -307,7 +336,7 @@ that the [`INT_STATE_VAL`](#int_state_val) read back is accurate.
 
 ## INT_STATE_VAL
 Internal state read access register
-- Offset: `0x30`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -334,7 +363,7 @@ Otherwise, the register reads as 0.
 
 ## FIPS_FORCE
 FIPS/CC compliance flag forcing register
-- Offset: `0x34`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 - Register enable: [`REGWEN`](#regwen)
@@ -360,7 +389,7 @@ Note that for this to work, [`CTRL.FIPS_FORCE_ENABLE`](#ctrl) needs to be set to
 
 ## HW_EXC_STS
 Hardware instance exception status register
-- Offset: `0x38`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -385,7 +414,7 @@ resets the status bits.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x3c`
+- Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0xf01f`
 
@@ -460,7 +489,7 @@ Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0x40`
+- Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0x77f0ffff`
 
@@ -661,7 +690,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x44`
+- Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 - Register enable: [`REGWEN`](#regwen)
@@ -687,7 +716,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0x48`
+- Offset: `0x54`
 - Reset default: `0x4e`
 - Reset mask: `0xff`
 
