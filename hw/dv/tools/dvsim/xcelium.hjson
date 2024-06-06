@@ -68,7 +68,7 @@
                "-64bit -xmlibdirname {build_db_dir}",
                // Use the same snapshot name set during the build step.
                "-r {tb}",
-               "+SVSEED={svseed}",
+               "+SVSEED={short_seed}",
                "{uvm_testname_plusarg}",
                "{uvm_testseq_plusarg}",
                // Ignore "IEEE 1800-2009 SystemVerilog simulation semantics" warning
@@ -129,7 +129,7 @@
 
   // Individual test specific coverage data - this will be deleted if the test fails
   // so that coverage from failiing tests is not included in the final report.
-  cov_db_test_dir_name: "{run_dir_name}.{svseed}"
+  cov_db_test_dir_name: "{run_dir_name}.{seed}"
   cov_db_test_dir:      "{cov_db_dir}/{cov_db_test_dir_name}"
 
   // Merging coverage.
