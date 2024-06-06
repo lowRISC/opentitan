@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
-// Used parser: Fallback (regex)
-
-
 // This is to prevent AscentLint warnings in the generated
 // abstract prim wrapper. These warnings occur due to the .*
 // use. TODO: we may want to move these inline waivers

@@ -116,24 +116,6 @@ implemented by as many other libraries as needed.
 
 Technology libraries are referenced by their name.
 
-### Technology library discovery
-
-In many cases, technology libraries contain vendor-specific code which cannot be
-shared widely or openly. Therefore, a FuseSoC looks for available technology
-libraries at build time, and makes all libraries it finds available.
-
-The discovery is performed based on the agreed-on naming scheme for primitives.
-
-- FuseSoC scans all libraries (e.g. as specified by its `--cores-root` command
-  line argument) for cores.
-- All cores with a name matching `lowrisc:prim_TECHLIBNAME:PRIMNAME`
-  are considered. `TECHLIBNAME` is then added to the list of technology
-  libraries.
-
-After the discovery process has completed, a script (`primgen`) creates
-- an abstract primitive (see above), and
-- an entry in the `prim_pkg` package in the form of `prim_pkg::ImplTechlibname`
-  to identify the technology library by its name.
 
 ## User Guide
 
@@ -201,29 +183,15 @@ targets:
 
 To create a technology library follow these steps:
 
-- Choose a name for the new technology library. Names are all lower-case.
-  To ease sharing of technology libraries it is encouraged to pick a very
-  specific name, e.g. `tsmc40lp`, and not `asic`.
-- Copy the `prim_generic` folder into an arbitrary location (can be outside
-  of this repository). Name the folder `prim_YOURLIBRARYNAME`.
-- Replace the word `generic` everywhere with the name of your technology
-  library. This includes
-  - file and directory names (e.g. `prim_generic_ram1p.sv` becomes
-    `prim_tsmc40lp_ram1p.sv`),
-  - module names (e.g. `prim_generic_ram1p` becomes `prim_tsmc40lp_ram1p`), and
-  - all other references (grep for it!).
-- Implement all primitives. Replace the module body of the generic
-  implementation with a technology-specific implementation as needed. Do *not*
-  modify the list of ports or parameters in any way!
-
-## Implementation details
-
-Technology-dependent primitives are implemented as a FuseSoC generator. The
-core of the primitive (e.g. `lowrisc:prim:rom` in `prim/prim_rom.core`) calls
-a FuseSoC generator. This generator is the script `util/primgen.py`. As input,
-the script receives a list of all cores found by FuseSoC anywhere in its search
-path. The script then looks through the cores FuseSoC discovered and extracts
-a list of technology libraries out of it. It then goes on to create the
-abstract primitive (copying over the list of parameters and ports from the
-generic implementation), and an associated core file, which depends on all
-technology-dependent libraries that were found.
+1. Choose a name for the new technology library. Names are all lower-case.
+   To ease sharing of technology libraries it is encouraged to pick a very specific name, e.g. `tsmc40lp`, and not `asic`.
+2. Copy the `prim_generic` folder into an arbitrary location (can be outside of this repository). Name the folder `prim_YOURLIBRARYNAME`.
+3. Replace the word `generic` everywhere with the name of your technology library. This includes
+    - file and directory names (e.g. `prim_generic_ram1p.sv` becomes
+      `prim_tsmc40lp_ram1p.sv`),
+    - module names (e.g. `prim_generic_ram1p` becomes `prim_tsmc40lp_ram1p`), and
+    - all other references (grep for it!).
+4. Implement all primitives. Replace the module body of the generic implementation with a technology-specific implementation as needed.
+   Do *not* modify the list of ports or parameters in any way!
+5. Add the new technology library to the enum in `prim_pkg.sv` with a value in the form `prim_pkg::ImplTechlibname`.
+6. For each of the technology library's primitives add an instantiation to the associated wrapper module in `rtl/`.
