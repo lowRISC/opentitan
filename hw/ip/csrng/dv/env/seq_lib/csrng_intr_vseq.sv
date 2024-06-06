@@ -196,6 +196,15 @@ class csrng_intr_vseq extends csrng_base_vseq;
     fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
     fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
 
+    // Turn off some SVAs which are likely triggering when injecting fatal errors.
+    `define CMD_STAGE_0 tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage
+    `define CMD_STAGE_1 tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage
+    `define CMD_STAGE_2 tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage
+    `define HIER_PATH(prefix, suffix) `"prefix.suffix`"
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_0, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
+
     // Enable CSRNG
     ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
@@ -315,6 +324,16 @@ class csrng_intr_vseq extends csrng_base_vseq;
     endcase // case (cfg.which_fatal_err)
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
+
+    // Turn SVAs back on.
+    $asserton(0, `HIER_PATH(`CMD_STAGE_0, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
+    $asserton(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
+    `undef CMD_STAGE_0
+    `undef CMD_STAGE_1
+    `undef CMD_STAGE_2
+    `undef HIER_PATH
+
   endtask // test_cs_fatal_err
 
   task body();
