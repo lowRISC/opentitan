@@ -30,6 +30,10 @@ module spi_cmdparse
   // Read Status module as Index 0 is pre-assigned to Read Status.
   input cmd_info_t [NumTotalCmdInfo-1:0] cmd_info_i,
 
+  // Busy status at the beginning of the transaction.
+  // Used to block some commands.
+  input sck_status_busy_i,
+
   // control to spi_s2p
   output io_mode_e io_mode_o,
 
@@ -191,13 +195,13 @@ module spi_cmdparse
                           && (data_i == cmd_info_i[CmdInfoReadJedecId].opcode);
   assign opcode_readsfdp = cmd_info_i[CmdInfoReadSfdp].valid
                          && (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
-  assign opcode_en4b = cmd_info_i[CmdInfoEn4B].valid
+  assign opcode_en4b = !sck_status_busy_i && cmd_info_i[CmdInfoEn4B].valid
                      && (data_i == cmd_info_i[CmdInfoEn4B].opcode);
-  assign opcode_ex4b = cmd_info_i[CmdInfoEx4B].valid
+  assign opcode_ex4b = !sck_status_busy_i && cmd_info_i[CmdInfoEx4B].valid
                      && (data_i == cmd_info_i[CmdInfoEx4B].opcode);
-  assign opcode_wren = cmd_info_i[CmdInfoWrEn].valid
+  assign opcode_wren = !sck_status_busy_i && cmd_info_i[CmdInfoWrEn].valid
                      && (data_i == cmd_info_i[CmdInfoWrEn].opcode);
-  assign opcode_wrdi = cmd_info_i[CmdInfoWrDi].valid
+  assign opcode_wrdi = !sck_status_busy_i && cmd_info_i[CmdInfoWrDi].valid
                      && (data_i == cmd_info_i[CmdInfoWrDi].opcode);
 
   always_comb begin
@@ -272,7 +276,7 @@ module spi_cmdparse
 
   // Check upload field in the cmd_info
   logic upload;
-  assign upload = cmd_info_d.upload;
+  assign upload = cmd_info_d.upload && !sck_status_busy_i;
 
   // Intercept: Latched in SCK
   always_ff @(posedge clk_i or negedge rst_ni) begin
