@@ -268,6 +268,15 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "reseed_interval": begin
       end
+      "reseed_counter_0": begin
+        do_read_check = 1'b0;
+      end
+      "reseed_counter_1": begin
+        do_read_check = 1'b0;
+      end
+      "reseed_counter_2": begin
+        do_read_check = 1'b0;
+      end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
       end

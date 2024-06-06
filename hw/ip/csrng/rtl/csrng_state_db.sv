@@ -46,7 +46,10 @@ module csrng_state_db import csrng_pkg::*; #(
   output logic [31:0]        state_db_reg_rd_val_o,
   output logic               state_db_sts_ack_o,
   output csrng_cmd_sts_e     state_db_sts_sts_o,
-  output logic [StateId-1:0] state_db_sts_id_o
+  output logic [StateId-1:0] state_db_sts_id_o,
+
+  // The reseed counters are always readable via register interface.
+  output logic [NApps-1:0][31:0] reseed_counter_o
 );
 
   localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
@@ -168,6 +171,11 @@ module csrng_state_db import csrng_pkg::*; #(
          state_db_reg_rd_id_pulse_i ? state_db_reg_rd_id_i :
          int_st_dump_id_q;
 
+  // The reseed counters are always readable via register interface.
+  for (genvar i = 0; i < NApps; i++) begin : gen_reseed_counter
+    assign reseed_counter_o[i] = internal_states_q[i][31:0];
+  end
+
   //--------------------------------------------
   // write state logic
   //--------------------------------------------
@@ -212,7 +220,6 @@ module csrng_state_db import csrng_pkg::*; #(
   assign state_db_sts_sts_o = state_db_sts_sts_q;
   assign state_db_sts_id_o = state_db_sts_id_q;
   assign state_db_wr_req_rdy_o = 1'b1;
-
 
   // Assertions
   `ASSERT_KNOWN(IntStOutSelOneHot_A, $onehot(int_st_out_sel))
