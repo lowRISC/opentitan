@@ -25,7 +25,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     bit [31:0] peripheral_clock_period_ns; // `peripheral_clock_period_ns` in SW
     bit [31:0] half_cycles_in_i2c_period;
     // Hard-coded from `sw/top_darjeeling/sw/device/arch/device_sim_dv.c`.
-    peripheral_clock_freq_hz = 24 * 1000 * 1000;
+    peripheral_clock_freq_hz = 250 * 1000 * 1000;
     peripheral_clock_period_ns = 1_000_000_000 / peripheral_clock_freq_hz;
     `uvm_info(`gfn, $sformatf("peripheral_clock_period_ns = %0d", peripheral_clock_period_ns),
       UVM_LOW);
@@ -123,8 +123,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
 
     // Wait for max-power indicator GPIO pin to go up.
     wait (cfg.chip_vif.dios[top_darjeeling_pkg::DioPadGpio0]);
-    // Wait for 10 clock cycles.
-    cfg.clk_rst_vif.wait_clks(10);
+    // Wait for 12 clock cycles.
+    cfg.clk_rst_vif.wait_clks(12);
 
     `_DV_PROBE_AND_CHECK_IDLE(spi_device_cio_csb_i, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(spi_host_0_cio_csb_o, 1'b1)

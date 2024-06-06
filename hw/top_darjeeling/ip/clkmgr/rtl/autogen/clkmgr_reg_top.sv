@@ -187,7 +187,7 @@ module clkmgr_reg_top (
   logic io_meas_ctrl_en_busy;
   logic io_meas_ctrl_shadowed_re;
   logic io_meas_ctrl_shadowed_we;
-  logic [19:0] io_meas_ctrl_shadowed_qs;
+  logic [27:0] io_meas_ctrl_shadowed_qs;
   logic io_meas_ctrl_shadowed_busy;
   logic io_meas_ctrl_shadowed_hi_storage_err;
   logic io_meas_ctrl_shadowed_hi_update_err;
@@ -198,7 +198,7 @@ module clkmgr_reg_top (
   logic io_div2_meas_ctrl_en_busy;
   logic io_div2_meas_ctrl_shadowed_re;
   logic io_div2_meas_ctrl_shadowed_we;
-  logic [17:0] io_div2_meas_ctrl_shadowed_qs;
+  logic [25:0] io_div2_meas_ctrl_shadowed_qs;
   logic io_div2_meas_ctrl_shadowed_busy;
   logic io_div2_meas_ctrl_shadowed_hi_storage_err;
   logic io_div2_meas_ctrl_shadowed_hi_update_err;
@@ -209,7 +209,7 @@ module clkmgr_reg_top (
   logic io_div4_meas_ctrl_en_busy;
   logic io_div4_meas_ctrl_shadowed_re;
   logic io_div4_meas_ctrl_shadowed_we;
-  logic [15:0] io_div4_meas_ctrl_shadowed_qs;
+  logic [23:0] io_div4_meas_ctrl_shadowed_qs;
   logic io_div4_meas_ctrl_shadowed_busy;
   logic io_div4_meas_ctrl_shadowed_hi_storage_err;
   logic io_div4_meas_ctrl_shadowed_hi_update_err;
@@ -220,7 +220,7 @@ module clkmgr_reg_top (
   logic main_meas_ctrl_en_busy;
   logic main_meas_ctrl_shadowed_re;
   logic main_meas_ctrl_shadowed_we;
-  logic [19:0] main_meas_ctrl_shadowed_qs;
+  logic [27:0] main_meas_ctrl_shadowed_qs;
   logic main_meas_ctrl_shadowed_busy;
   logic main_meas_ctrl_shadowed_hi_storage_err;
   logic main_meas_ctrl_shadowed_hi_update_err;
@@ -310,25 +310,25 @@ module clkmgr_reg_top (
   assign unused_io_io_meas_ctrl_en_wdata =
       ^io_io_meas_ctrl_en_wdata;
 
-  logic [9:0]  io_io_meas_ctrl_shadowed_hi_qs_int;
-  logic [9:0]  io_io_meas_ctrl_shadowed_lo_qs_int;
-  logic [19:0] io_io_meas_ctrl_shadowed_qs;
-  logic [19:0] io_io_meas_ctrl_shadowed_wdata;
+  logic [13:0]  io_io_meas_ctrl_shadowed_hi_qs_int;
+  logic [13:0]  io_io_meas_ctrl_shadowed_lo_qs_int;
+  logic [27:0] io_io_meas_ctrl_shadowed_qs;
+  logic [27:0] io_io_meas_ctrl_shadowed_wdata;
   logic io_io_meas_ctrl_shadowed_we;
   logic unused_io_io_meas_ctrl_shadowed_wdata;
   logic io_io_meas_ctrl_shadowed_re;
   logic io_io_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_io_meas_ctrl_shadowed_qs = 20'h759ea;
-    io_io_meas_ctrl_shadowed_qs[9:0] = io_io_meas_ctrl_shadowed_hi_qs_int;
-    io_io_meas_ctrl_shadowed_qs[19:10] = io_io_meas_ctrl_shadowed_lo_qs_int;
+    io_io_meas_ctrl_shadowed_qs = 28'h4df9392;
+    io_io_meas_ctrl_shadowed_qs[13:0] = io_io_meas_ctrl_shadowed_hi_qs_int;
+    io_io_meas_ctrl_shadowed_qs[27:14] = io_io_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(20),
-    .ResetVal(20'h759ea),
-    .BitMask(20'hfffff),
+    .DataWidth(28),
+    .ResetVal(28'h4df9392),
+    .BitMask(28'hfffffff),
     .DstWrReq(0)
   ) u_io_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -338,7 +338,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (io_meas_ctrl_shadowed_we),
     .src_re_i     (io_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[19:0]),
+    .src_wd_i     (reg_wdata[27:0]),
     .src_busy_o   (io_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -396,25 +396,25 @@ module clkmgr_reg_top (
   assign unused_io_div2_io_div2_meas_ctrl_en_wdata =
       ^io_div2_io_div2_meas_ctrl_en_wdata;
 
-  logic [8:0]  io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int;
-  logic [8:0]  io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int;
-  logic [17:0] io_div2_io_div2_meas_ctrl_shadowed_qs;
-  logic [17:0] io_div2_io_div2_meas_ctrl_shadowed_wdata;
+  logic [12:0]  io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int;
+  logic [12:0]  io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int;
+  logic [25:0] io_div2_io_div2_meas_ctrl_shadowed_qs;
+  logic [25:0] io_div2_io_div2_meas_ctrl_shadowed_wdata;
   logic io_div2_io_div2_meas_ctrl_shadowed_we;
   logic unused_io_div2_io_div2_meas_ctrl_shadowed_wdata;
   logic io_div2_io_div2_meas_ctrl_shadowed_re;
   logic io_div2_io_div2_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_div2_io_div2_meas_ctrl_shadowed_qs = 18'h1ccfa;
-    io_div2_io_div2_meas_ctrl_shadowed_qs[8:0] = io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int;
-    io_div2_io_div2_meas_ctrl_shadowed_qs[17:9] = io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int;
+    io_div2_io_div2_meas_ctrl_shadowed_qs = 26'h13749ce;
+    io_div2_io_div2_meas_ctrl_shadowed_qs[12:0] = io_div2_io_div2_meas_ctrl_shadowed_hi_qs_int;
+    io_div2_io_div2_meas_ctrl_shadowed_qs[25:13] = io_div2_io_div2_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(18),
-    .ResetVal(18'h1ccfa),
-    .BitMask(18'h3ffff),
+    .DataWidth(26),
+    .ResetVal(26'h13749ce),
+    .BitMask(26'h3ffffff),
     .DstWrReq(0)
   ) u_io_div2_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -424,7 +424,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (io_div2_meas_ctrl_shadowed_we),
     .src_re_i     (io_div2_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[17:0]),
+    .src_wd_i     (reg_wdata[25:0]),
     .src_busy_o   (io_div2_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_div2_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -482,25 +482,25 @@ module clkmgr_reg_top (
   assign unused_io_div4_io_div4_meas_ctrl_en_wdata =
       ^io_div4_io_div4_meas_ctrl_en_wdata;
 
-  logic [7:0]  io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
-  logic [7:0]  io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
-  logic [15:0] io_div4_io_div4_meas_ctrl_shadowed_qs;
-  logic [15:0] io_div4_io_div4_meas_ctrl_shadowed_wdata;
+  logic [11:0]  io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
+  logic [11:0]  io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
+  logic [23:0] io_div4_io_div4_meas_ctrl_shadowed_qs;
+  logic [23:0] io_div4_io_div4_meas_ctrl_shadowed_wdata;
   logic io_div4_io_div4_meas_ctrl_shadowed_we;
   logic unused_io_div4_io_div4_meas_ctrl_shadowed_wdata;
   logic io_div4_io_div4_meas_ctrl_shadowed_re;
   logic io_div4_io_div4_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_div4_io_div4_meas_ctrl_shadowed_qs = 16'h6e82;
-    io_div4_io_div4_meas_ctrl_shadowed_qs[7:0] = io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
-    io_div4_io_div4_meas_ctrl_shadowed_qs[15:8] = io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_qs = 24'h4d84ec;
+    io_div4_io_div4_meas_ctrl_shadowed_qs[11:0] = io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_qs[23:12] = io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(16),
-    .ResetVal(16'h6e82),
-    .BitMask(16'hffff),
+    .DataWidth(24),
+    .ResetVal(24'h4d84ec),
+    .BitMask(24'hffffff),
     .DstWrReq(0)
   ) u_io_div4_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -510,7 +510,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (io_div4_meas_ctrl_shadowed_we),
     .src_re_i     (io_div4_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[15:0]),
+    .src_wd_i     (reg_wdata[23:0]),
     .src_busy_o   (io_div4_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_div4_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -568,25 +568,25 @@ module clkmgr_reg_top (
   assign unused_main_main_meas_ctrl_en_wdata =
       ^main_main_meas_ctrl_en_wdata;
 
-  logic [9:0]  main_main_meas_ctrl_shadowed_hi_qs_int;
-  logic [9:0]  main_main_meas_ctrl_shadowed_lo_qs_int;
-  logic [19:0] main_main_meas_ctrl_shadowed_qs;
-  logic [19:0] main_main_meas_ctrl_shadowed_wdata;
+  logic [13:0]  main_main_meas_ctrl_shadowed_hi_qs_int;
+  logic [13:0]  main_main_meas_ctrl_shadowed_lo_qs_int;
+  logic [27:0] main_main_meas_ctrl_shadowed_qs;
+  logic [27:0] main_main_meas_ctrl_shadowed_wdata;
   logic main_main_meas_ctrl_shadowed_we;
   logic unused_main_main_meas_ctrl_shadowed_wdata;
   logic main_main_meas_ctrl_shadowed_re;
   logic main_main_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    main_main_meas_ctrl_shadowed_qs = 20'h7a9fe;
-    main_main_meas_ctrl_shadowed_qs[9:0] = main_main_meas_ctrl_shadowed_hi_qs_int;
-    main_main_meas_ctrl_shadowed_qs[19:10] = main_main_meas_ctrl_shadowed_lo_qs_int;
+    main_main_meas_ctrl_shadowed_qs = 28'h4df9392;
+    main_main_meas_ctrl_shadowed_qs[13:0] = main_main_meas_ctrl_shadowed_hi_qs_int;
+    main_main_meas_ctrl_shadowed_qs[27:14] = main_main_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(20),
-    .ResetVal(20'h7a9fe),
-    .BitMask(20'hfffff),
+    .DataWidth(28),
+    .ResetVal(28'h4df9392),
+    .BitMask(28'hfffffff),
     .DstWrReq(0)
   ) u_main_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -596,7 +596,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (main_meas_ctrl_shadowed_we),
     .src_re_i     (main_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[19:0]),
+    .src_wd_i     (reg_wdata[27:0]),
     .src_busy_o   (main_meas_ctrl_shadowed_busy),
     .src_qs_o     (main_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -1289,7 +1289,7 @@ module clkmgr_reg_top (
   logic io_io_meas_ctrl_shadowed_gated_we;
   assign io_io_meas_ctrl_shadowed_gated_we =
     io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 9:0
+  //   F[hi]: 13:0
   logic async_io_meas_ctrl_shadowed_hi_err_update;
   logic async_io_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1314,9 +1314,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (10),
+    .DW      (14),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1ea),
+    .RESVAL  (14'h1392),
     .Mubi    (1'b0)
   ) u_io_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_i),
@@ -1326,7 +1326,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_io_meas_ctrl_shadowed_re),
     .we     (io_io_meas_ctrl_shadowed_gated_we),
-    .wd     (io_io_meas_ctrl_shadowed_wdata[9:0]),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[13:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1348,7 +1348,7 @@ module clkmgr_reg_top (
     .err_storage (async_io_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 19:10
+  //   F[lo]: 27:14
   logic async_io_meas_ctrl_shadowed_lo_err_update;
   logic async_io_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1373,9 +1373,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (10),
+    .DW      (14),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1d6),
+    .RESVAL  (14'h137e),
     .Mubi    (1'b0)
   ) u_io_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_i),
@@ -1385,7 +1385,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_io_meas_ctrl_shadowed_re),
     .we     (io_io_meas_ctrl_shadowed_gated_we),
-    .wd     (io_io_meas_ctrl_shadowed_wdata[19:10]),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[27:14]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1447,7 +1447,7 @@ module clkmgr_reg_top (
   logic io_div2_io_div2_meas_ctrl_shadowed_gated_we;
   assign io_div2_io_div2_meas_ctrl_shadowed_gated_we =
     io_div2_io_div2_meas_ctrl_shadowed_we & io_div2_io_div2_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 8:0
+  //   F[hi]: 12:0
   logic async_io_div2_meas_ctrl_shadowed_hi_err_update;
   logic async_io_div2_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1472,9 +1472,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_div2_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (9),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'hfa),
+    .RESVAL  (13'h9ce),
     .Mubi    (1'b0)
   ) u_io_div2_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_div2_i),
@@ -1484,7 +1484,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
     .we     (io_div2_io_div2_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[8:0]),
+    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[12:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1506,7 +1506,7 @@ module clkmgr_reg_top (
     .err_storage (async_io_div2_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 17:9
+  //   F[lo]: 25:13
   logic async_io_div2_meas_ctrl_shadowed_lo_err_update;
   logic async_io_div2_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1531,9 +1531,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_div2_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (9),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'he6),
+    .RESVAL  (13'h9ba),
     .Mubi    (1'b0)
   ) u_io_div2_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_div2_i),
@@ -1543,7 +1543,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_div2_io_div2_meas_ctrl_shadowed_re),
     .we     (io_div2_io_div2_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[17:9]),
+    .wd     (io_div2_io_div2_meas_ctrl_shadowed_wdata[25:13]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1605,7 +1605,7 @@ module clkmgr_reg_top (
   logic io_div4_io_div4_meas_ctrl_shadowed_gated_we;
   assign io_div4_io_div4_meas_ctrl_shadowed_gated_we =
     io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 7:0
+  //   F[hi]: 11:0
   logic async_io_div4_meas_ctrl_shadowed_hi_err_update;
   logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1630,9 +1630,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_div4_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (8),
+    .DW      (12),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h82),
+    .RESVAL  (12'h4ec),
     .Mubi    (1'b0)
   ) u_io_div4_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_div4_i),
@@ -1642,7 +1642,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
     .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[7:0]),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[11:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1664,7 +1664,7 @@ module clkmgr_reg_top (
     .err_storage (async_io_div4_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 15:8
+  //   F[lo]: 23:12
   logic async_io_div4_meas_ctrl_shadowed_lo_err_update;
   logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1689,9 +1689,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_div4_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (8),
+    .DW      (12),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h6e),
+    .RESVAL  (12'h4d8),
     .Mubi    (1'b0)
   ) u_io_div4_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_div4_i),
@@ -1701,7 +1701,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
     .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[15:8]),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[23:12]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1763,7 +1763,7 @@ module clkmgr_reg_top (
   logic main_main_meas_ctrl_shadowed_gated_we;
   assign main_main_meas_ctrl_shadowed_gated_we =
     main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 9:0
+  //   F[hi]: 13:0
   logic async_main_meas_ctrl_shadowed_hi_err_update;
   logic async_main_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1788,9 +1788,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(main_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (10),
+    .DW      (14),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1fe),
+    .RESVAL  (14'h1392),
     .Mubi    (1'b0)
   ) u_main_meas_ctrl_shadowed_hi (
     .clk_i   (clk_main_i),
@@ -1800,7 +1800,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
     .we     (main_main_meas_ctrl_shadowed_gated_we),
-    .wd     (main_main_meas_ctrl_shadowed_wdata[9:0]),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[13:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1822,7 +1822,7 @@ module clkmgr_reg_top (
     .err_storage (async_main_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 19:10
+  //   F[lo]: 27:14
   logic async_main_meas_ctrl_shadowed_lo_err_update;
   logic async_main_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1847,9 +1847,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(main_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (10),
+    .DW      (14),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1ea),
+    .RESVAL  (14'h137e),
     .Mubi    (1'b0)
   ) u_main_meas_ctrl_shadowed_lo (
     .clk_i   (clk_main_i),
@@ -1859,7 +1859,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
     .we     (main_main_meas_ctrl_shadowed_gated_we),
-    .wd     (main_main_meas_ctrl_shadowed_wdata[19:10]),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[27:14]),
 
     // from internal hardware
     .de     (1'b0),

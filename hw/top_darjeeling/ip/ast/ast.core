@@ -42,8 +42,6 @@ filesets:
       - rtl/ast_alert.sv
       - rtl/aon_clk.sv
       - rtl/aon_osc.sv
-      - rtl/io_clk.sv
-      - rtl/io_osc.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv

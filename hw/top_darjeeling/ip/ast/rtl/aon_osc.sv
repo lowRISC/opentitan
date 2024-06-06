@@ -45,11 +45,12 @@ assign en_osc_re = en_osc_re_buf && init_start;
 ////////////////////////////////////////
 real CalAonClkPeriod, UncAonClkPeriod, AonClkPeriod;
 
-initial CalAonClkPeriod = $itor( 5000 );                         // 5000ns (200KHz)
-initial UncAonClkPeriod = $itor( $urandom_range(10000, 5555) );  // 10000-5555ps (100-180KHz)
+initial CalAonClkPeriod = $itor( 16000 );                         // 16000ps (62.5MHz)
+initial UncAonClkPeriod = $itor( $urandom_range(43243, 98765) );  // 43243ps-98765ps
+                                                                  // (10.125MHz-23.125MHz)
 
 assign AonClkPeriod = (aon_osc_cal_i && init_start) ? CalAonClkPeriod : UncAonClkPeriod;
-assign CLK_PERIOD = AonClkPeriod/ckmul;
+assign CLK_PERIOD = AonClkPeriod/ckmul/1000;
 
 // Free running oscillator
 reg clk_osc;

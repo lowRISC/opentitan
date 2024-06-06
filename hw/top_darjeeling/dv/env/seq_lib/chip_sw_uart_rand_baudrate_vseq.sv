@@ -34,8 +34,8 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
         uart_clk_freq_khz = uart_clk_freq_khz * 2;  // div2
       end
     end else begin
-      // internal uart bus clock is 24Mhz
-      uart_clk_freq_khz = 24_000;
+      // internal uart bus clock is 250Mhz
+      uart_clk_freq_khz = 250_000;
     end
   endfunction
 

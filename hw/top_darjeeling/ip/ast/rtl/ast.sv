@@ -467,33 +467,15 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 ///////////////////////////////////////
 // IO Clock (Always ON)
 ///////////////////////////////////////
-logic rst_io_clk_n, clk_io_pd_n;
-logic clk_src_io_en, clk_osc_io, clk_osc_io_val;
-
-assign rst_io_clk_n = vcmain_pok_por && vcc_pok;
-assign clk_io_pd_n  = scan_mode || !deep_sleep;
+logic clk_osc_io, clk_osc_io_val;
 
 `ifdef AST_BYPASS_CLK
 logic clk_io_ext;
 assign clk_io_ext = clk_osc_byp_i.io;
 `endif
 
-assign clk_src_io_en = clk_src_io_en_i;
-
-io_clk u_io_clk (
-  .vcore_pok_h_i ( vcaon_pok_h ),
-  .clk_io_pd_ni ( clk_io_pd_n ),
-  .rst_io_clk_ni ( rst_io_clk_n ),
-  .clk_src_io_en_i ( clk_src_io_en ),
-  .scan_mode_i ( scan_mode ),
-  .io_osc_cal_i ( sys_io_osc_cal ),
-`ifdef AST_BYPASS_CLK
-  .clk_io_ext_i ( clk_io_ext ),
-`endif
-  .clk_src_io_o ( clk_osc_io ),
-  .clk_src_io_val_o ( clk_osc_io_val )
-);
-
+assign clk_osc_io_val = clk_osc_sys_val;
+assign clk_osc_io = clk_osc_sys;
 
 ///////////////////////////////////////
 // AST Clocks Bypass
@@ -968,8 +950,8 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(ClkSrcAonKnownO_A, clk_src_aon_o, 1, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, rst_aon_clk_n)
 `ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, ast_pwst_o.main_pok)
-`ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
-`ASSERT_KNOWN(ClkSrcIo48mKnownO_A, clk_src_io_48m_o, clk_src_io_o, rst_io_clk_n)
+`ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_sys_clk_n)
+`ASSERT_KNOWN(ClkSrcIo48mKnownO_A, clk_src_io_48m_o, clk_src_io_o, rst_sys_clk_n)
 `ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
 `ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, ast_pwst_o.main_pok)
