@@ -86,8 +86,7 @@ Interrupt State Register
 
 ### INTR_STATE . av_setup_empty
 Raised when the Available SETUP Buffer FIFO is empty and the device interface is enabled.
-This interrupt is directly tied to the FIFO status, so the Available SETUP Buffer FIFO must be provided a free buffer before the interrupt is cleared.
-If the condition is not cleared, the interrupt can re-assert.
+This interrupt is directly tied to the FIFO status, so the Available SETUP Buffer FIFO must be provided with a free buffer before the interrupt can be cleared.
 
 ### INTR_STATE . link_out_err
 Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
@@ -125,8 +124,7 @@ If the condition is not cleared, the interrupt can re-assert.
 
 ### INTR_STATE . av_out_empty
 Raised when the Available OUT Buffer FIFO is empty and the device interface is enabled.
-This interrupt is directly tied to the FIFO status, so the Available OUT Buffer FIFO must be provided a free buffer before the interrupt is cleared.
-If the condition is not cleared, the interrupt can re-assert.
+This interrupt is directly tied to the FIFO status, so the Available OUT Buffer FIFO must be provided with a free buffer before the interrupt can be cleared.
 
 ### INTR_STATE . link_resume
 Raised when the link becomes active again after being suspended.
