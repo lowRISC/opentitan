@@ -250,11 +250,6 @@ test_suite(
     ],
 )
 
-LC_STATES_DEBUG_DISALLOWED = [
-    CONST.LCV.PROD,
-    CONST.LCV.PROD_END,
-]
-
 [
     opentitan_test(
         name = "openocd_debug_test_otp_" + lc_state,
@@ -268,7 +263,7 @@ LC_STATES_DEBUG_DISALLOWED = [
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
-            test_cmd = " --elf={rom:elf}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
+            test_cmd = " --elf={rom:elf}",
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:debug_test",
         ),
         deps = [
@@ -282,8 +277,6 @@ LC_STATES_DEBUG_DISALLOWED = [
         CONST.LCV.TEST_UNLOCKED0,
         CONST.LCV.DEV,
         CONST.LCV.RMA,
-        CONST.LCV.PROD,
-        CONST.LCV.PROD_END,
     )
 ]
 
@@ -296,8 +289,6 @@ test_suite(
             CONST.LCV.TEST_UNLOCKED0,
             CONST.LCV.DEV,
             CONST.LCV.RMA,
-            CONST.LCV.PROD,
-            CONST.LCV.PROD_END,
         )
     ],
 )
