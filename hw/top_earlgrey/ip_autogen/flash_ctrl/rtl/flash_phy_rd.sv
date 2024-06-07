@@ -759,13 +759,13 @@ module flash_phy_rd
   // protection of the data XOR address infection covers flash pages. This implies that within a
   // flash page, no protection is given.
 
-  assign ctrl_addr_xor = {fifo_addr_xor[BankAddrW-1:BusWordW-LsbAddrBit], {BusWordW{1'b0}}};
+  assign ctrl_addr_xor = '0;//{fifo_addr_xor[BankAddrW-1:BusWordW-LsbAddrBit], {BusWordW{1'b0}}};
   assign fifo_addr_xor_muxed = host_req ? {fifo_addr_xor, rsp_fifo_rdata.word_sel} :
-       ctrl_addr_xor;
+      ctrl_addr_xor;
 
-  assign ctrl_buf_addr_xor = {buf_addr_xor[BankAddrW-1:BusWordW-LsbAddrBit], {BusWordW{1'b0}}};
+  assign ctrl_buf_addr_xor = '0;//{buf_addr_xor[BankAddrW-1:BusWordW-LsbAddrBit], {BusWordW{1'b0}}};
   assign buf_addr_xor_muxed = host_req ? {buf_addr_xor, rsp_fifo_rdata.word_sel} :
-       ctrl_buf_addr_xor;
+      ctrl_buf_addr_xor;
 
   assign addr_xor_muxed = |buf_rsp_match ? buf_addr_xor_muxed : fifo_addr_xor_muxed;
 

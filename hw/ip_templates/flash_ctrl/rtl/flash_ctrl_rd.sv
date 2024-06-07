@@ -186,7 +186,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   // As the flash consumers remove the address from the data also when an error is signaled,
   // add the XOR also to the error data. Use the page aligned address as this address was
   // used for the data XOR address infection.
-  assign addr_xor = {flash_addr_o[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
+  assign addr_xor = '0;//{flash_addr_o[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
   assign inv_data_integ_xor_addr = {inv_data_integ[BusFullWidth-1:BusWidth],
       inv_data_integ[BusWidth-1:0] ^ addr_xor};
 

@@ -687,7 +687,7 @@ module flash_ctrl
   // address is generated inside the flash_ctrl_rd module using the page aligned
   // address + a counter. As this counter is not available at this point, the
   // page address is used for the data XOR address infection.
-  assign addr_xor = {rd_flash_addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
+  assign addr_xor = '0;//{rd_flash_addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
   assign sw_rfifo_wdata_wo_addr = {sw_rfifo_wdata[BusFullWidth-1:BusWidth],
       sw_rfifo_wdata[BusWidth-1:0] ^ addr_xor};
 
