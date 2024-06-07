@@ -67,7 +67,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
     for (int i = 0; i < 5; i++) begin
       `DV_CHECK_EQ_FATAL(get_rw_en_signals(i), lc_ctrl_pkg::Off,
-                         "Mismatch for exepcted rw_en value [%0d] in Scrap LC state", i)
+                         "Mismatch for expected rw_en value [%0d] in Scrap LC state", i)
     end
 
     override_test_status_and_finish(.passed(1'b 1));

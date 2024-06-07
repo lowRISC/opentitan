@@ -17,6 +17,10 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_flash_ctrl_state_t flash;
+static dif_keymgr_t keymgr;
+static dif_kmac_t kmac;
+static dif_lc_ctrl_t lc;
+static dif_otp_ctrl_t otp;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -49,72 +53,117 @@ const uint32_t kIsoPartData[kPartSize] = {
     0x19fefa95, 0x4ceb421b, 0xa57d74c4, 0xaf1d723d,
 };
 
-// For Dev LC state before personalization the
-// expected enabled values should be as follows :
-// 0 - seed hw read = 0
-// 1 - iso partition read = 0
-// 2 - iso partition write = 1
-// 3 - owner seed  = 1
-// 4 - creator seed = 1
-const bool kDevExpectedAccess[5] = {false, false, true, true, true};
+typedef enum check_id {
+  // Unprovisioned state checks.
+  kCheckIdUnprovisionedCreatorSeed = 0,
+  kCheckIdUnprovisonedOwnerSeed,
+  kCheckIdLcDevIsoPartAccess,
 
-// For Prod LC state (after personalization) the
-// expected enabled values should be as follows :
-// 0 - seed hw read = 1
-// 1 - iso partition read = 1
-// 2 - iso partition write = 1
-// 3 - owner seed = 1
-// 4 - creator seed = 0
-const bool kProdExpectedAccess[5] = {true, true, true, true, false};
+  // Provisioned state checks.
+  kCheckIdProvisionedCreatorSeed,
+  kCheckIdProvisionedOwnerSeed,
+  kCheckIdLcProdIsoPartAccess,
+} check_id_t;
 
-static bool access_partitions(bool do_write, bool do_read, uint32_t page_id,
-                              const uint32_t *data, uint32_t size) {
-  uint32_t address = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
-      &flash, page_id, kBankId, kPartitionId, &address));
+typedef struct partition_check_cfg {
+  // Test identifier.
+  check_id_t check_id;
 
-  bool retval = true;
+  // Page ID of the partition to check.
+  uint32_t page_id;
 
-  if (do_write == true) {
-    // Erase and write page.
-    retval &= status_ok(flash_ctrl_testutils_erase_and_write_page(
-        &flash, address, kPartitionId, data, kDifFlashCtrlPartitionTypeInfo,
-        size));
-  }
+  // Data to write to the partition.
+  const uint32_t *data;
 
-  if (do_read == true) {
-    // Read page.
-    uint32_t readback_data[size];
-    retval &= status_ok(
-        flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
-                                  kDifFlashCtrlPartitionTypeInfo, size, 0));
-    if (retval) {
-      CHECK_ARRAYS_EQ(data, readback_data, size);
-    }
-  }
-  return retval;
-}
+  // Size of the data to write.
+  uint32_t size;
 
-static bool keymgr_advance_state(dif_keymgr_t *keymgr,
-                                 dif_keymgr_state_params_t *params,
-                                 dif_keymgr_state_t expected_state) {
-  CHECK_DIF_OK(dif_keymgr_advance_state(keymgr, params));
-  dif_keymgr_status_codes_t keymgr_status_codes;
-  do {
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &keymgr_status_codes));
-  } while (!(keymgr_status_codes & kDifKeymgrStatusCodeIdle));
+  // Whether to write to the partition.
+  bool do_write;
 
-  dif_keymgr_state_t keymgr_state;
-  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &keymgr_state));
-  return (keymgr_state == expected_state);
-}
+  // Whether to expect the read operation to succeed.
+  bool expect_read_ok;
 
-bool test_main(void) {
-  dif_otp_ctrl_t otp;
-  dif_kmac_t kmac;
-  dif_lc_ctrl_t lc;
-  dif_keymgr_t keymgr;
+  // Whether to read from the partition.
+  bool do_read;
 
+  // Whether to expect the write operation to succeed.
+  bool expect_write_ok;
+} partition_check_cfg_t;
+
+static const partition_check_cfg_t kTest[] = {
+    [kCheckIdUnprovisionedCreatorSeed] =
+        {
+            .check_id = kCheckIdUnprovisionedCreatorSeed,
+            .page_id = kFlashInfoPageIdCreatorSecret,
+            .data = kCreatorSecret,
+            .size = kPartSize,
+            .do_write = true,
+            .expect_write_ok = true,
+            .do_read = true,
+            .expect_read_ok = true,
+        },
+    [kCheckIdUnprovisonedOwnerSeed] =
+        {
+            .check_id = kCheckIdUnprovisonedOwnerSeed,
+            .page_id = kFlashInfoPageIdOwnerSecret,
+            .data = kOwnerSecret,
+            .size = kPartSize,
+            .do_write = true,
+            .expect_write_ok = true,
+            .do_read = true,
+            .expect_read_ok = true,
+        },
+    [kCheckIdLcDevIsoPartAccess] =
+        {
+            .check_id = kCheckIdLcDevIsoPartAccess,
+            .page_id = kFlashInfoPageIdIsoPart,
+            .data = kIsoPartData,
+            .size = kPartSize,
+            .do_write = true,
+            .expect_write_ok = true,
+            .do_read = true,
+            .expect_read_ok = false,
+        },
+    [kCheckIdProvisionedCreatorSeed] =
+        {
+            .check_id = kCheckIdProvisionedCreatorSeed,
+            .page_id = kFlashInfoPageIdCreatorSecret,
+            .data = kCreatorSecret,
+            .size = kPartSize,
+            .do_write = true,
+            .expect_write_ok = false,
+            .do_read = false,
+            .expect_read_ok = false,
+        },
+    [kCheckIdProvisionedOwnerSeed] =
+        {
+            .check_id = kCheckIdProvisionedOwnerSeed,
+            .page_id = kFlashInfoPageIdOwnerSecret,
+            .data = kOwnerSecret,
+            .size = kPartSize,
+            .do_write = true,
+            .expect_write_ok = true,
+            .do_read = true,
+            .expect_read_ok = true,
+        },
+    [kCheckIdLcProdIsoPartAccess] =
+        {
+            .check_id = kCheckIdLcProdIsoPartAccess,
+            .page_id = kFlashInfoPageIdIsoPart,
+            .data = kIsoPartData,
+            .size = kPartSize,
+            .do_write = false,
+            .expect_write_ok = false,
+            .do_read = true,
+            .expect_read_ok = true,
+        },
+};
+
+/**
+ * Initializes all DIF handles for each peripheral used in this test.
+ */
+static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
   CHECK_DIF_OK(dif_otp_ctrl_init(
@@ -125,51 +174,115 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+}
 
+static void partition_check(const partition_check_cfg_t cfg) {
+  uint32_t address = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash, cfg.page_id, kBankId, kPartitionId, &address));
+
+  if (cfg.do_write) {
+    status_t result = flash_ctrl_testutils_erase_and_write_page(
+        &flash, address, kPartitionId, cfg.data, kDifFlashCtrlPartitionTypeInfo,
+        cfg.size);
+
+    if (cfg.expect_write_ok) {
+      CHECK_STATUS_OK(result);
+    } else {
+      CHECK_STATUS_NOT_OK(result);
+    }
+  }
+
+  if (cfg.do_read) {
+    uint32_t readback_data[cfg.size];
+    status_t result =
+        flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
+                                  kDifFlashCtrlPartitionTypeInfo, cfg.size, 0);
+
+    if (cfg.expect_read_ok) {
+      CHECK_STATUS_OK(result);
+      CHECK_ARRAYS_EQ(cfg.data, readback_data, cfg.size);
+    } else {
+      CHECK_STATUS_NOT_OK(result);
+      CHECK_ARRAYS_NE(cfg.data, readback_data, cfg.size);
+    }
+  }
+}
+
+// Advance the keymgr state to the expected state.
+static void keymgr_advance_state(dif_keymgr_t *keymgr,
+                                 dif_keymgr_state_params_t *params,
+                                 dif_keymgr_state_t expected_state) {
+  CHECK_DIF_OK(dif_keymgr_advance_state(keymgr, params));
+  dif_keymgr_status_codes_t keymgr_status_codes;
+  do {
+    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &keymgr_status_codes));
+  } while (!(keymgr_status_codes & kDifKeymgrStatusCodeIdle));
+
+  dif_keymgr_state_t keymgr_state;
+  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &keymgr_state));
+  LOG_INFO("Keymgr state: 0x%x", keymgr_state);
+  CHECK(keymgr_state == expected_state,
+        "Expected keymgr state not reached. got: %d, expected: %d",
+        keymgr_state, expected_state);
+}
+
+// Provision the creator secrets in the OTP. This signals the DUT that the
+// creator secrets are provisioned and the DUT will not allow further writes to
+// the creator secrets.
+static void dut_provision_creator_secrets(void) {
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
+  dif_otp_ctrl_status_t otp_status;
+  do {
+    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &otp_status));
+  } while (
+      !(bitfield_bit32_read(otp_status.codes, kDifOtpCtrlStatusCodeDaiIdle)));
+}
+
+bool test_main(void) {
+  init_peripheral_handles();
+
+  CHECK_DIF_OK(
+      dif_keymgr_configure(&keymgr, (dif_keymgr_config_t){
+                                        .entropy_reseed_interval = 0xFFFF,
+                                    }));
+
+  CHECK_DIF_OK(
+      dif_kmac_configure(&kmac, (dif_kmac_config_t){
+                                    .sideload = true,
+                                    .entropy_mode = kDifKmacEntropyModeSoftware,
+                                }));
+
+  // chip_sw_flash_ctrl_lc_rw_en_vseq steps through DEV and PROD LC states.
+  // DEV LC state:
+  //  - Initial state: Unprovisioned.
+  //  - Final state: Provisioned.
+  // PROD LC state:
+  //  - Initial state: Provisioned.
+  //
+  // Even though the DUT does not support transitions from DEV to PROD, the
+  // test does this to check the expected behavior of the Isolation Partition.
+  // In practice, the DUT will go from TEST_UNLOCKED to either DEV or PROD.
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
-
-  dif_keymgr_config_t keymgr_config = {.entropy_reseed_interval = 0xFFFF};
-  CHECK_DIF_OK(dif_keymgr_configure(&keymgr, keymgr_config));
-
-  dif_keymgr_state_params_t keymgr_params = {
-      .binding_value = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF},
-      .max_key_version = 0xFFFFFFFF};
-
-  dif_kmac_config_t kmac_config = (dif_kmac_config_t){
-      .sideload = true,
-      .entropy_mode = kDifKmacEntropyModeSoftware,
-  };
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, kmac_config));
-
-  bool access_checks[5];
-
-  access_checks[4] = access_partitions(
-      true, true, kFlashInfoPageIdCreatorSecret, kCreatorSecret, kPartSize);
-  access_checks[3] = access_partitions(true, true, kFlashInfoPageIdOwnerSecret,
-                                       kOwnerSecret, kPartSize);
-  access_checks[2] = access_partitions(true, false, kFlashInfoPageIdIsoPart,
-                                       kIsoPartData, kPartSize);
-  access_checks[1] = access_partitions(false, true, kFlashInfoPageIdIsoPart,
-                                       kIsoPartData, kPartSize);
-  access_checks[0] =
-      keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInitialized);
-  access_checks[0] &= keymgr_advance_state(&keymgr, &keymgr_params,
-                                           kDifKeymgrStateCreatorRootKey);
-
   if (curr_state == kDifLcCtrlStateDev) {
-    CHECK_ARRAYS_EQ(access_checks, kDevExpectedAccess,
-                    ARRAYSIZE(access_checks));
+    partition_check(kTest[kCheckIdUnprovisionedCreatorSeed]);
+    partition_check(kTest[kCheckIdUnprovisonedOwnerSeed]);
+    partition_check(kTest[kCheckIdLcDevIsoPartAccess]);
 
-    CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
-    dif_otp_ctrl_status_t otp_status;
-    do {
-      CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &otp_status));
-    } while (
-        !(bitfield_bit32_read(otp_status.codes, kDifOtpCtrlStatusCodeDaiIdle)));
+    // The DUT has not been personalized, so we expect this to fail.
+    keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInvalid);
+    dut_provision_creator_secrets();
   } else if (curr_state == kDifLcCtrlStateProd) {
-    CHECK_ARRAYS_EQ(access_checks, kProdExpectedAccess,
-                    ARRAYSIZE(access_checks));
+    partition_check(kTest[kCheckIdProvisionedCreatorSeed]);
+    partition_check(kTest[kCheckIdProvisionedOwnerSeed]);
+    partition_check(kTest[kCheckIdLcProdIsoPartAccess]);
+    keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInitialized);
+
+    dif_keymgr_state_params_t params = {
+        .binding_value = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF},
+        .max_key_version = 0xFFFFFFFF};
+    keymgr_advance_state(&keymgr, &params, kDifKeymgrStateCreatorRootKey);
   }
 
   test_status_set(kTestStatusInWfi);
