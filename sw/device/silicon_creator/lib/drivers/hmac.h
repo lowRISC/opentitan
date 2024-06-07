@@ -65,11 +65,36 @@ inline void hmac_sha256_init(void) { hmac_sha256_init_endian(false); }
 void hmac_sha256_update(const void *data, size_t len);
 
 /**
+ * Sends `len` 32-bit words from `data` to the SHA2-256 function.
+ *
+ * This function does not check for the size of the available HMAC
+ * FIFO. Since the this function is meant to run in blocking mode,
+ * polling for FIFO status is equivalent to stalling on FIFO write.
+ *
+ * @param data Buffer to copy data from.
+ * @param len Size of the `data` buffer in words.
+ */
+void hmac_sha256_update_words(const uint32_t *data, size_t len);
+
+/**
+ * Finalizes SHA256 operation and copies truncated output.
+ *
+ * Copies only the first `len` 32-bit words of the digest. The caller must
+ * ensure enough space is available in the buffer.
+ *
+ * @param[out] digest Buffer to copy digest to.
+ * @param[out] len Requested word-length.
+ */
+void hmac_sha256_final_truncated(uint32_t *digest, size_t len);
+
+/**
  * Finalizes SHA256 operation and writes `digest` buffer.
  *
  * @param[out] digest Buffer to copy digest to.
  */
-void hmac_sha256_final(hmac_digest_t *digest);
+inline void hmac_sha256_final(hmac_digest_t *digest) {
+  hmac_sha256_final_truncated(digest->digest, ARRAYSIZE(digest->digest));
+}
 
 /**
  * Convenience function for computing the SHA-256 digest of a contiguous buffer.
