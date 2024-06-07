@@ -327,6 +327,7 @@ module ibex_multdiv_slow
     end // (mult_sel_i || div_sel_i)
   end
 
+
   //////////////////////////////////////////
   // Mutliplier / Divider state registers //
   //////////////////////////////////////////
@@ -368,6 +369,17 @@ module ibex_multdiv_slow
   `ASSERT(IbexMultDivStateValid, md_state_q inside {
       MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
       }, clk_i, !rst_ni)
+
+`ifdef INC_ASSERT
+  logic sva_fsm_idle;
+  logic unused_sva_fsm_idle;
+
+  // This is intended to be accessed via hierarchal references so isn't output from this module nor
+  // used in any logic in this module
+  assign sva_fsm_idle = (md_state_q == MD_IDLE);
+  // Mark the sva_fsm_idle as unused to avoid lint issues
+  assign unused_sva_fsm_idle = sva_fsm_idle;
+`endif
 
 `ifdef FORMAL
   `ifdef YOSYS

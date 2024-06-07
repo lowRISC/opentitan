@@ -84,6 +84,9 @@ module ibex_multdiv_fast #(
   logic        mult_en_internal;
   logic        div_en_internal;
 
+  // Used for SVA purposes, no functional relevance
+  logic        sva_mul_fsm_idle;
+
   typedef enum logic [2:0] {
     MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
   } md_fsm_e;
@@ -254,6 +257,8 @@ module ibex_multdiv_fast #(
     // States must be knwon/valid.
     `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
 
+    assign sva_mul_fsm_idle = mult_state_q == MULL;
+
   // The fast multiplier uses one 17 bit multiplier to compute MUL instructions in 3 cycles
   // and MULH instructions in 4 cycles.
   end else begin : gen_mult_fast
@@ -371,6 +376,8 @@ module ibex_multdiv_fast #(
 
     // States must be knwon/valid.
     `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
+
+    assign sva_mul_fsm_idle = mult_state_q == ALBL;
 
   end // gen_mult_fast
 
@@ -518,11 +525,27 @@ module ibex_multdiv_fast #(
     endcase // md_state_q
   end
 
+
   assign valid_o = mult_valid | div_valid;
 
   // States must be knwon/valid.
   `ASSERT(IbexMultDivStateValid, md_state_q inside {
       MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH})
+
+`ifdef INC_ASSERT
+  logic sva_fsm_idle;
+  logic unused_sva_fsm_idle;
+
+  // This is intended to be accessed via hierarchal references so isn't output from this module nor
+  // used in any logic in this module
+  assign sva_fsm_idle = (md_state_q == MD_IDLE) && sva_mul_fsm_idle;
+  // Mark the sva_fsm_idle as unused to avoid lint issues
+  assign unused_sva_fsm_idle = sva_fsm_idle;
+`else
+  logic unused_sva_mul_fsm_idle;
+
+  assign unused_sva_mul_fsm_idle = sva_mul_fsm_idle;
+`endif
 
 `ifdef FORMAL
   `ifdef YOSYS

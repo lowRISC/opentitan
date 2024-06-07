@@ -60,12 +60,12 @@ Some categories are just a single instruction, which is named without further de
 * **CSRAccess** - Any instruction from Zicsr.
 * **EBreakDbg**/**EBreakExc** - An ``EBREAK`` instruction that either enters debug mode (Dbg) or causes an exception (Exc).
   Which occurs depends upon the setting of ``dcsr.ebreakm`` / ``dcsr.ebreaku`` combined with the privilege level of executed instruction.
-* ``ECALL``
-* ``MRET``
-* ``DRET``
-* ``WFI``
-* ``FENCE``
-* ``FENCE.I``
+* **ECall** - ``ECALL`` is an environment call used for escalation of privilege.
+* **MRet** - ``MRET`` return out of M-mode
+* **DRet** - ``DRET`` ruturn from debug mode.
+* **WFI** - wait for interrupt.
+* **Fence** - ``FENCE`` memory fence on the data side.
+* **FenceI** - ``FENCE.I`` instruction fence instruction.
 * **FetchError** - Any instruction that saw a fetch error.
 * **CompressedIllegal** - Any compressed instruction with an illegal encoding.
 * **UncompressedIllegal** - Any uncompressed instruction with an illegal encoding.
@@ -199,12 +199,13 @@ Each pipeline stage has some associated state.
 Exceptions/Interrupts/Debug
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Exceptions, interrupts and debug entry can all cause control flow changes combined with CSR writes and privilege level changes and work quite similarly within the controller but not identically.
-Furthermore they can all occur together and must be appropriately prioritised (consider a instruction with hardware trigger point matching it, that causes some exception and an interrupt is raised the cycle it enters the ID/EX stage)
+Furthermore they can all occur together and must be appropriately prioritised (consider an instruction with hardware trigger point matching it, that causes some exception and an interrupt is raised the cycle it enters the ID/EX stage).
 
 * Exception from instruction fetch error (covered by the **FetchError** instruction category).
 * ``pmp_iside_mode_cross`` - Exception from instruction PMP violation.
 * Exception from illegal instruction (covered by the illegal instruction categories).
 * ``cp_ls_error_exception`` - Exception from memory fetch error.
+* ``cp_ls_pmp_exception`` - Load store unit exception from PMP.
 * ``pmp_dside_mode_cross`` - Exception from memory access PMP violation.
 * Unaligned memory access
 
@@ -223,6 +224,7 @@ Furthermore they can all occur together and must be appropriately prioritised (c
 * ``cp_single_step_exception`` - Single step over an instruction that takes an exception.
 * ``cp_insn_trigger_enter_debug`` - Instruction matches hardware trigger point.
 * ``cp_debug_mode`` - Ibex operating in debug mode.
+* ``cp_debug_wakeup`` - Ibex wakes up after being halted from debug request.
 * ``irq_wfi_cross``, ``debug_wfi_cross`` - Debug and Interrupt whilst sleeping with WFI
 
   * Cover with global interrupts enabled and disabled
@@ -262,11 +264,11 @@ PMP
   * ``cp_pmp_iside_region_override``, ``cp_pmp_iside2_region_override``, ``cp_pmp_dside_region_override`` - Higher priority entry allows access that lower priority entry prevents.
   * ``pmp_instr_edge_cross`` - Compressed instruction access (16-bit) passes PMP but 32-bit access at same address crosses PMP region boundary.
 
-* Each field of mssecfg enabled/disabled with relevant functionality tested.
+* Each field of mssecfg enabled/disabled, as well as written to using a CSR write, with relevant functionality tested.
 
   * RLB - rule locking bypass.
 
-    * ``cp_edit_locked_pmpcfg``,``cp_edit_locked_pmpaddr`` - Modify locked region with RLB set.
+    * ``cp_edit_locked_pmpcfg``, ``cp_edit_locked_pmpaddr`` - Modify locked region with RLB set.
     * ``rlb_csr_cross`` - Try to enable RLB when RLB is disabled and locked regions present.
 
   * MMWP - machine mode whitelist policy.
@@ -276,7 +278,7 @@ PMP
 
   * MML - machine mode lockdown policy.
 
-    * ``rlb_csr_cross`` - Try to disable when enabled.
+    * ``mml_sticky_cross`` - Try to disable when enabled.
 
 * Access close to PMP region modification that allows/disallows that access.
 
@@ -289,8 +291,8 @@ CSRs
 ^^^^
 Basic read/write functionality must be tested on all implemented CSRs.
 
-* ``cp_csr_read_only`` - Read from CSR.
-* ``cp_csr_write`` -  Write to CSR.
+* ``cp_csr_read_only`` - Read from CSR, there is also ``cp_csr_invalid_read_only`` for illegal CSRs.
+* ``cp_csr_write`` -  Write to CSR, there is also ``cp_csr_invalid_write`` for illegal CSRs.
 
   * Write to read only CSR.
     Covered by ensuring ``cp_csr_write`` is seen for read-only CSRs

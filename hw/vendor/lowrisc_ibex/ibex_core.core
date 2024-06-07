@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:clock_gating
       - lowrisc:prim:lfsr
+      - lowrisc:prim:mubi
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_icache
       - lowrisc:dv:dv_fcov_macros
