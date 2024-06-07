@@ -15,6 +15,13 @@ class usb20_item extends uvm_sequence_item;
   // Indicates that a timeout occurred when awaiting a response from the device.
   bit timed_out = 1'b0;
 
+  // Validity indicators that apply to all packet types; used by the monitor at metadata for the
+  // scoreboard.
+  bit valid_sync;      // SYNC signal properly formed.
+  bit valid_length;    // Appropriate number of bits.
+  bit valid_stuffing;  // No bit stuffing violations.
+  bit valid_eop;       // End Of Packet correct.
+
   `uvm_object_utils_begin(usb20_item)
   `uvm_object_utils_end
 

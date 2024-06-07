@@ -26,7 +26,7 @@ interface usb20_block_if (
   logic usb_tx_use_d_se0_o;
   logic drive_vbus;          // to drive usb_vbus from driver
   logic drive_n;             // to drive usb_n from driver
-  logic drive_p;             // to drive usb_n from driver
+  logic drive_p;             // to drive usb_p from driver
   logic usb_ref_val_o;
   logic usb_ref_pulse_o;
 

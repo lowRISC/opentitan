@@ -12,7 +12,13 @@ package usb20_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // usb20_item enums
+  // USB 2.0 Bus Symbols
+  typedef enum {
+    USB20Sym_SE0,     // EOP, Bus Reset.
+    USB20Sym_J,       // Idle.
+    USB20Sym_K,       // SOP, Resume Signaling.
+    USB20Sym_Invalid  // Not Used.
+  } usb_symbol_e;
 
   // USB-level events; the DP/DN wires are used for transmitting packet data but also held for
   // extended intervals to signal specific bus-level events.
