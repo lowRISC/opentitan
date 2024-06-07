@@ -673,6 +673,24 @@ module flash_ctrl
   assign sw_rfifo_wdata = rd_ctrl_wdata;
   assign sw_rfifo_rready = adapter_rvalid;
 
+  // Remove the address from the data which was XORed inside the flash_phy_rd module.
+  // If the address was manipulated, e.g. using FI, this XOR produces faulty data, which
+  // is detected by the integrity check inside the tlul_adapter_sram.
+  // The XOR is done at this place because the address buffered inside reg2hw.addr is
+  // only available here.
+  // SEC_CM: MEM.ADDR_INFECTION
+  logic [BusFullWidth-1:0] sw_rfifo_wdata_wo_addr;
+  logic [BusBankAddrW-1:0] addr_xor;
+
+  // Convert address into page aligned address as this address was used inside
+  // flash_phy_rd for the data XOR address infection. For controller requests, the
+  // address is generated inside the flash_ctrl_rd module using the page aligned
+  // address + a counter. As this counter is not available at this point, the
+  // page address is used for the data XOR address infection.
+  assign addr_xor = {rd_flash_addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
+  assign sw_rfifo_wdata_wo_addr =
+      {sw_rfifo_wdata[BusFullWidth-1:BusWidth], sw_rfifo_wdata[BusWidth-1:0] ^ addr_xor};
+
   // the read fifo below is dedicated to the software read path.
   prim_fifo_sync #(
     .Width(BusFullWidth),
@@ -683,7 +701,7 @@ module flash_ctrl
     .clr_i   (reg2hw.fifo_rst.q),
     .wvalid_i(sw_rfifo_wen),
     .wready_o(sw_rfifo_wready),
-    .wdata_i (sw_rfifo_wdata),
+    .wdata_i (sw_rfifo_wdata_wo_addr),
     .full_o  (sw_rfifo_full),
     .depth_o (sw_rfifo_depth),
     .rvalid_o(sw_rfifo_rvalid),
@@ -1297,6 +1315,7 @@ module flash_ctrl
   );
 
   // SEC_CM: HOST.BUS.INTEGRITY
+  // SEC_CM: MEM.ADDR_INFECTION
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
