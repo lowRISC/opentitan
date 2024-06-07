@@ -132,6 +132,49 @@ pub fn parse_clock_frequency(input: &str) -> Result<Duration> {
     }
 }
 
+pub fn parse_delay(num: &str, time_unit: &str, clock: Duration) -> Result<u32> {
+    if time_unit == "ticks" {
+        let Ok(ticks) = num.parse::<u32>() else {
+            bail!("Delay must use integer number of ticks, try increasing clock frequency");
+        };
+        ensure!(
+            ticks > 0,
+            "Zero length delay requested: {} {}",
+            num,
+            time_unit
+        );
+        return Ok(ticks);
+    }
+
+    // Attempt parsing an expression such as "17 ms", and calculate how many ticks at the given
+    // clock frequency best approximates the requested delay.
+    let duration = match time_unit {
+        "us" => num.parse::<f64>().unwrap() / 1000000.0,
+        "ms" => num.parse::<f64>().unwrap() / 1000.0,
+        "s" => num.parse::<f64>().unwrap(),
+        unit => bail!("Unrecognized time unit: '{}'", unit),
+    };
+    ensure!(
+        duration > 0.0,
+        "Zero length delay requested: {} {}",
+        num,
+        time_unit
+    );
+    let duration_in_ticks = duration / clock.as_secs_f64();
+    ensure!(
+        duration_in_ticks <= u32::MAX as f64,
+        "Requested delay exceeds range, try lower clock frequency",
+    );
+    let closest_ticks = duration_in_ticks.round() as u32;
+    let actual_duration = clock.mul(closest_ticks);
+    let ratio = actual_duration.as_secs_f64() / duration;
+    ensure!(
+        0.99 <= ratio && ratio <= 1.01,
+        "Requested delay cannot be approximated to within 1%, try increasing clock frequency",
+    );
+    Ok(closest_ticks)
+}
+
 /// This function parses the main string argument to `opentitantool gpio bit-bang`, producing a
 /// list of `BitbangEntry` corresponding to the parsed instructions.  The slices in the entries
 /// will refer to one of the two "accumulator vectors" provided by the caller, which this function
@@ -265,27 +308,7 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
                 result.push(BitbangEntry::Await { mask, pattern });
             }
             [Token::Numeric(num), Token::Alphabetic(time_unit), rest @ ..] => {
-                let ticks = if *time_unit == "ticks" {
-                    num.parse::<u32>().unwrap()
-                } else {
-                    let duration = match *time_unit {
-                        "us" => num.parse::<f64>().unwrap() / 1000000.0,
-                        "ms" => num.parse::<f64>().unwrap() / 1000.0,
-                        "s" => num.parse::<f64>().unwrap(),
-                        unit => bail!("Unrecognized time unit: '{}'", unit),
-                    };
-                    let closest_ticks = (duration / clock.as_secs_f64()).round() as u32; // TODO overflow
-                    let actual_duration = clock.mul(closest_ticks);
-                    let _ = actual_duration; //TODO Verify precision to 1%
-                    closest_ticks
-                };
-                ensure!(
-                    ticks > 0,
-                    "Zero length delay requested: {} {}",
-                    num,
-                    time_unit
-                );
-                result.push(BitbangEntry::Delay(ticks));
+                result.push(BitbangEntry::Delay(parse_delay(num, time_unit, clock)?));
                 tokens = rest;
             }
             [Token::Numeric(bits), rest @ ..] => {
