@@ -90,7 +90,8 @@ module flash_phy
   logic [ProgTypes-1:0] prog_type_avail;
 
   // common interface
-  logic [BusFullWidth-1:0] rd_data [NumBanks];
+  logic [BusFullWidth-1:0] rd_data_host [NumBanks];
+  logic [BusFullWidth-1:0] rd_data_ctrl [NumBanks];
   logic [NumBanks-1:0] rd_err;
   logic [NumBanks-1:0] spurious_acks;
 
@@ -133,7 +134,7 @@ module flash_phy
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
-  assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
+  assign flash_ctrl_o.rd_data = rd_data_ctrl[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = init_busy;
   assign flash_ctrl_o.prog_intg_err = |prog_intg_err;
@@ -239,7 +240,7 @@ module flash_phy
       .clr_i   (1'b0),
       .wvalid_i(host_req_done[bank]),
       .wready_o(host_rsp_avail[bank]),
-      .wdata_i ({rd_err[bank], rd_data[bank]}),
+      .wdata_i ({rd_err[bank], rd_data_host[bank]}),
       .depth_o (),
       .full_o (),
       .rvalid_o(host_rsp_vld[bank]),
@@ -285,7 +286,8 @@ module flash_phy
       .rd_done_o(rd_done[bank]),
       .prog_done_o(prog_done[bank]),
       .erase_done_o(erase_done[bank]),
-      .rd_data_o(rd_data[bank]),
+      .rd_data_host_o(rd_data_host[bank]),
+      .rd_data_ctrl_o(rd_data_ctrl[bank]),
       .rd_err_o(rd_err[bank]),
       .flash_disable_i(flash_disable[bank]),
       .scramble_req_o(scramble_req[bank]),

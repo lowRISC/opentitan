@@ -24,6 +24,8 @@ module tlul_adapter_sram
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
   parameter int Outstanding       = 1,  // Only one request is accepted
+  parameter int SramBusBankAW     = 12, // SRAM bus address width of the SRAM bank. Only used
+                                        // when DataXorAddr=1.
   parameter bit ByteAccess        = 1,  // 1: Enables sub-word write transactions. Note that this
                                         //    results in read-modify-write operations for integrity
                                         //    re-generation if EnableDataIntgPt is set to 1.
@@ -35,6 +37,7 @@ module tlul_adapter_sram
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
   parameter bit EnableReadback    = 0,  // 1: Readback and check written/read data.
+  parameter bit DataXorAddr       = 0,  // 1: XOR data and address for address protection
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
@@ -218,6 +221,10 @@ module tlul_adapter_sram
     logic [WoffsetWidth-1:0]    woffset ; // Offset of the TL-UL word within the SRAM word
   } sram_req_t ;
 
+  typedef struct packed {
+    logic [SramBusBankAW-1:0] addr; // Address of the request going to the memory.
+  } sram_req_addr_t ;
+
   typedef enum logic [1:0] {
     OpWrite,
     OpRead,
@@ -242,6 +249,8 @@ module tlul_adapter_sram
   localparam int ReqFifoWidth = $bits(req_t) ;
   localparam int RspFifoWidth = $bits(rsp_t) ;
 
+  localparam int SramReqAddrFifoWidth = $bits(sram_req_addr_t) ;
+
   // FIFO signal in case OutStand is greater than 1
   // If request is latched, {write, source} is pushed to req fifo.
   // Req fifo is popped when D channel is acknowledged (v & r)
@@ -253,6 +262,9 @@ module tlul_adapter_sram
   logic sramreqfifo_wvalid, sramreqfifo_wready;
   logic sramreqfifo_rready;
   sram_req_t sramreqfifo_wdata, sramreqfifo_rdata;
+
+  logic sramreqaddrfifo_wready;
+  sram_req_addr_t sramreqaddrfifo_wdata, sramreqaddrfifo_rdata;
 
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
@@ -366,7 +378,8 @@ module tlul_adapter_sram
       d_data   : d_data,
       d_user   : '{default: '0, data_intg: data_intg},
       d_error  : d_valid && d_error,
-      a_ready  : (gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready
+      a_ready  : (gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready &
+                  sramreqaddrfifo_wready
   };
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
@@ -465,6 +478,10 @@ module tlul_adapter_sram
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
 
+  assign sramreqaddrfifo_wdata = '{
+    addr    : tl_i_int.a_address[DataBitWidth+:SramBusBankAW]
+  };
+
   // Make sure only requested bytes are forwarded
   logic [WidthMult-1:0][DataWidth-1:0] rdata_reshaped;
   logic [DataWidth-1:0] rdata_tlword;
@@ -482,7 +499,20 @@ module tlul_adapter_sram
       // will not calculate correctly.
       if (|sramreqfifo_rdata.mask) begin
         // Select correct word.
-        rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset];
+        if (DataXorAddr) begin : gen_data_xor_addr
+          // When DataXorAddr is enabled, on a read, the address is XORed with the data fetched from
+          // the memory in the underlying memory controller (e.g., flash controller). At this point,
+          // the address is again removed. If the address in the read transaction has been modified,
+          // e.g., due to a fault, rdata now contains faulty data, which is detected by the integrity
+          // mechanism.
+          logic [SramBusBankAW-1:0] addr_xor;
+          addr_xor = sramreqaddrfifo_rdata.addr[SramBusBankAW-1:0];
+          // data XOR address.
+          rdata_tlword = {rdata_reshaped[sramreqfifo_rdata.woffset][DataWidth-1:top_pkg::TL_DW],
+              rdata_reshaped[sramreqfifo_rdata.woffset][top_pkg::TL_DW-1:0] ^ addr_xor};
+        end else begin: gen_no_data_xor_addr
+          rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset];
+        end
       end
     end
   end else begin : gen_rmask
@@ -562,6 +592,32 @@ module tlul_adapter_sram
     .depth_o (),
     .err_o   (sramreqfifo_error)
   );
+
+  // sramreqaddrfifo:
+  //    This fifo holds the address used for undoing the address XOR data infection.
+  if (DataXorAddr) begin : gen_data_xor_addr_fifo
+    prim_fifo_sync #(
+      .Width              (SramReqAddrFifoWidth),
+      .Pass               (1'b0),
+      .Depth              (Outstanding),
+      .OutputZeroIfEmpty  (1)
+    ) u_sramreqaddrfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(sramreqfifo_wvalid),
+      .wready_o(sramreqaddrfifo_wready),
+      .wdata_i (sramreqaddrfifo_wdata),
+      .rvalid_o(),
+      .rready_i(sramreqfifo_rready),
+      .rdata_o (sramreqaddrfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   ()
+    );
+  end else begin : gen_no_data_xor_addr_fifo
+    assign sramreqaddrfifo_wready = 1'b1;
+  end
 
   // Rationale having #Outstanding depth in response FIFO.
   //    In normal case, if the host or the crossbar accepts the response data,

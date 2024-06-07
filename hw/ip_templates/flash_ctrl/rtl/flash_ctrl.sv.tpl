@@ -1300,6 +1300,7 @@ module flash_ctrl
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
+    .SramBusBankAW(BusBankAddrW),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1),
@@ -1307,7 +1308,8 @@ module flash_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1),
-    .SecFifoPtr(1)
+    .SecFifoPtr(1),
+    .DataXorAddr(1)
   ) u_tl_adapter_eflash (
     .clk_i,
     .rst_ni,
