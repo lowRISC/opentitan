@@ -123,7 +123,9 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
           st_d = StErr;
         end else if (op_start_i) begin
           op_err_d.oob_err = op_addr_oob_i;
-          st_d = |op_err_d ? StErr : StNorm;
+          // Enter error state when mp_err or oob_err. For rd_err, proceed
+          // fetching data as we return it to the host.
+          st_d = op_err_d.mp_err || op_err_d.oob_err ? StErr : StNorm;
         end
       end
 
@@ -142,7 +144,9 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
             op_done_o = 1'b1;
             st_d = StIdle;
           end else begin
-            st_d = |op_err_d ? StErr : StNorm;
+            // Enter error state when mp_err or oob_err. For rd_err, proceed
+            // fetching data as we return it to the host.
+            st_d = op_err_d.mp_err || op_err_d.oob_err ? StErr : StNorm;
           end
         end
       end
@@ -177,7 +181,20 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
     .data_intg_o(inv_data_integ)
   );
 
-  assign data_o = ~err_sel | (err_sel & op_err_o.rd_err) ? flash_data_i : inv_data_integ;
+  logic [BusFullWidth-1:0] inv_data_integ_xor_addr;
+  logic [BusBankAddrW-1:0] addr_xor;
+  // As the flash consumers remove the address from the data also when an error is signaled,
+  // add the XOR also to the error data. Use the page aligned address as this address was
+  // used for the data XOR address infection.
+  assign addr_xor = {flash_addr_o[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
+  assign inv_data_integ_xor_addr = {inv_data_integ[BusFullWidth-1:BusWidth],
+      inv_data_integ[BusWidth-1:0] ^ addr_xor};
+
+  // Return data when there was no error. Also return data when only a rd_err
+  // occurred as we still send out read requests to the flash. For the other errors
+  // return the inv_data_integ data.
+  assign data_o = ~err_sel | (err_sel & op_err_o.rd_err & ~op_err_o.mp_err &
+      ~op_err_o.oob_err) ? flash_data_i : inv_data_integ_xor_addr;
 
   assign op_err_o = op_err_q | op_err_d;
 
