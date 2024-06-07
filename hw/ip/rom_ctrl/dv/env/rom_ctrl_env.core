@@ -39,6 +39,7 @@ generate:
     parameters:
       name: rom_ctrl
       ip_hjson: ../../data/rom_ctrl.hjson
+    position: prepend
 
 targets:
   default:

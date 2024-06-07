@@ -180,10 +180,10 @@ module tb;
 
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_impl_generic
     `define MEM_MODULE_PATH \
-        tb.dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv
+        tb.dut.u_otp.u_prim_ram_1p_adv
 
     `define MEM_ARRAY_PATH \
-        `MEM_MODULE_PATH.u_mem.gen_generic.u_impl_generic.mem
+        `MEM_MODULE_PATH.u_mem.mem
 
     initial begin : mem_bkdr_util_gen
       mem_bkdr_util m_mem_bkdr_util;

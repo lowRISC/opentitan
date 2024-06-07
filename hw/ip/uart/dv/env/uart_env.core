@@ -44,6 +44,7 @@ generate:
     parameters:
       name: uart
       ip_hjson: ../../data/uart.hjson
+    position: prepend
 
 targets:
   default:

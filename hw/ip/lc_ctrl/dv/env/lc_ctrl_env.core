@@ -48,6 +48,7 @@ generate:
     parameters:
       name: lc_ctrl
       ip_hjson: ../../data/lc_ctrl.hjson
+    position: prepend
 
 targets:
   default:

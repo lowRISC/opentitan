@@ -13,12 +13,12 @@ load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 package(default_visibility = ["//visibility:public"])
 
 # The readmem directives in the fusesoc-ized build tree will be in the subdir
-# ${build_root}/src/lowrisc_prim_util_memload_0/rtl/prim_util_memload.svh,
+# ${build_root}/${core}/${target}-${tool}/src/lowrisc_prim_util_memload_0/rtl/prim_util_memload.svh,
 # and ${build_root} will be a subdirectory called `build.fpga_cw310` inside of
 # bazel-out/k8-{configname}/bin/hw/bitstream/vivado.
 # Therefore, the relative path between prim_util_memload.svh and the project-root
 # relative $(location ...) resolved labels is up 10 subdirectories.
-_PREFIX = "../../../../../../../../../.."
+_PREFIX = "../../../../../../../../../../.."
 
 _CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
 

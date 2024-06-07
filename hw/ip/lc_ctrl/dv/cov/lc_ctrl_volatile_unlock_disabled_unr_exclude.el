@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "1599929061 1913160869"
-INSTANCE: tb.dut.u_dmi_jtag.i_dmi_cdc.u_combined_rstn_sync.gen_generic.u_impl_generic.u_prim_cdc_rand_delay
+INSTANCE: tb.dut.u_dmi_jtag.i_dmi_cdc.u_combined_rstn_sync.u_prim_cdc_rand_delay
 ANNOTATION: "VC_COV_UNR"
 Toggle 0to1 dst_data_o [0] "logic dst_data_o[0:0]"
 ANNOTATION: "VC_COV_UNR"

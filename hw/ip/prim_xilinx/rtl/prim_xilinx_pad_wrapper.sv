@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module prim_xilinx_pad_wrapper
+module prim_pad_wrapper
   import prim_pad_wrapper_pkg::*;
 #(
   // These parameters are ignored in this Xilinx variant.
@@ -123,4 +123,4 @@ module prim_xilinx_pad_wrapper
         assert_static_in_generate_config_not_available();
   end
 
-endmodule : prim_xilinx_pad_wrapper
+endmodule : prim_pad_wrapper

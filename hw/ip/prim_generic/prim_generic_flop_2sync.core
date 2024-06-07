@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:flop_2sync"
 description: "Generic implementation of a flop-based synchronizer"
+virtual:
+  - lowrisc:prim:flop_2sync
+
 filesets:
   files_rtl:
     depend:

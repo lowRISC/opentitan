@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx_ultrascale:buf"
 description: "buffer"
+virtual:
+  - lowrisc:prim:buf
+
 filesets:
   files_rtl:
     files:

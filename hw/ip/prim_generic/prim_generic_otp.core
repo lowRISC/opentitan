@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:otp"
 description: "Technology-independent One-Time Programmable (OTP) memory emulation"
+virtual:
+  - lowrisc:prim:otp
+
 filesets:
   files_rtl:
     depend:

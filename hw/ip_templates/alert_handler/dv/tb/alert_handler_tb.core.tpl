@@ -2,15 +2,14 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:alert_handler_test:0.1"
-description: "ALERT_HANDLER DV UVM test"
+name: ${instance_vlnv("lowrisc:dv:alert_handler_tb:0.1")}
+description: "ALERT_HANDLER UVM TB environment"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:alert_handler_env
+      - ${instance_vlnv("lowrisc:dv:alert_handler_test:0.1")}
     files:
-      - alert_handler_test_pkg.sv
-      - alert_handler_base_test.sv: {is_include_file: true}
+      - tb.sv
     file_type: systemVerilogSource
 
 targets:

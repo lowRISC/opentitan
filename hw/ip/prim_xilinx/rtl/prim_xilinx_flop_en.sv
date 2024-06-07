@@ -6,7 +6,7 @@
 
 // Prevent Vivado from performing optimizations on/across this module.
 (* DONT_TOUCH = "yes" *)
-module prim_xilinx_flop_en #(
+module prim_flop_en #(
   parameter int               Width      = 1,
   // This parmaeter does nothing for prim_xilinx
   parameter bit               EnSecBuf   = 0,

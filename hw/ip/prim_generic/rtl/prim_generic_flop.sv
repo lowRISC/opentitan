@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_flop #(
+module prim_flop #(
   parameter int               Width      = 1,
   parameter logic [Width-1:0] ResetValue = 0
 ) (

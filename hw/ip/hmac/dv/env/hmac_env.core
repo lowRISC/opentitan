@@ -42,6 +42,7 @@ generate:
     parameters:
       name: hmac
       ip_hjson: ../../data/hmac.hjson
+    position: prepend
 
 targets:
   default:

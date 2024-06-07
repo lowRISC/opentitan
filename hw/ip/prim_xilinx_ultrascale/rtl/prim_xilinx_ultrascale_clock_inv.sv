@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module prim_xilinx_ultrascale_clock_inv #(
+module prim_clock_inv #(
   parameter bit HasScanMode = 1'b1,
   parameter bit NoFpgaBufG = 1'b0
 ) (

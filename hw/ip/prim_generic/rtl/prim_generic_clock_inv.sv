@@ -5,7 +5,7 @@
 // Clock inverter
 //   Varies on the process
 
-module prim_generic_clock_inv #(
+module prim_clock_inv #(
   parameter bit HasScanMode = 1'b1,
   parameter bit NoFpgaBufG  = 1'b0 // only used in FPGA case
 ) (
@@ -29,4 +29,4 @@ module prim_generic_clock_inv #(
     assign clk_no = ~clk_i;
   end
 
-endmodule : prim_generic_clock_inv
+endmodule : prim_clock_inv

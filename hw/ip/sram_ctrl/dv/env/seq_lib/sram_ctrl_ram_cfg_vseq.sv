@@ -12,7 +12,7 @@ class sram_ctrl_ram_cfg_vseq extends sram_ctrl_base_vseq;
     prim_ram_1p_pkg::ram_1p_cfg_t src_ram_cfg, dst_ram_cfg;
     string src_path = "tb.dut.cfg_i";
     string dst_path =
-        "tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.cfg_i";
+        "tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.cfg_i";
 
     repeat (100) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(src_ram_cfg)

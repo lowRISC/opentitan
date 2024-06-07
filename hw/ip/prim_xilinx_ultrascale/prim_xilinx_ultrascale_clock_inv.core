@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx_ultrascale:clock_inv"
 description: "clock buffer"
+virtual:
+  - lowrisc:prim:clock_inv
+
 filesets:
   files_rtl:
     files:

@@ -55,6 +55,7 @@ generate:
     parameters:
       name: kmac
       ip_hjson: ../../data/kmac.hjson
+    position: prepend
 
 targets:
   default:
