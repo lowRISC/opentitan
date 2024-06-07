@@ -50,7 +50,7 @@ py_binary(
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_hardcoded_header",
     hjson = "//sw/device/tests/crypto/testvectors:sphincsplus_shake_128s_simple_testvectors_hardcoded",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
@@ -104,70 +104,70 @@ opentitan_test(
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat0_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat0.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat1_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat1.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat2_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat2.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat3_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat3.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat4_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat4.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat5_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat5.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat6_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat6.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat7_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat7.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat8_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat8.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
 autogen_cryptotest_header(
     name = "sphincsplus_shake_128s_simple_testvectors_kat9_header",
     hjson = "//sw/device/tests/crypto/testvectors/sphincsplus_kat:sphincsplus_shake_128s_simple_testvectors_kat9.hjson",
-    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    template = ":sphincsplus_testvectors.h.tpl",
     tool = ":sphincsplus_set_testvectors",
 )
 
