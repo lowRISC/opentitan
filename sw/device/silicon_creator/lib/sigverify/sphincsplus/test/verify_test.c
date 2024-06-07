@@ -18,7 +18,7 @@
 // after the rule, then manipulates the include path in the
 // cc_compilation_context to include that directory, so the compiler will find
 // the version of this file matching the Bazel rule under test.
-#include "sphincsplus_shake_128s_simple_testvectors.h"
+#include "sphincsplus_testvectors.h"
 
 // Index of the test vector currently under test
 static uint32_t test_index = 0;
