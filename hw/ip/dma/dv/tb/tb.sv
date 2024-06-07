@@ -56,7 +56,6 @@ module tb;
     .lsio_trigger_i (handshake_i),
     .intr_dma_done_o (interrupts[DMA_DONE]),
     .intr_dma_error_o (interrupts[DMA_ERROR]),
-    .intr_dma_memory_buffer_limit_o (interrupts[DMA_MEM_LIMIT]),
     .alert_rx_i (alert_rx),
     .alert_tx_o (alert_tx),
     // TL Interface to OT Internal address space

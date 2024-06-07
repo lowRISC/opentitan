@@ -96,22 +96,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
     `DMA_ENV_COV_32B_ADDR_BINS
   }
 
-  cp_dst_addr_limit: coverpoint dma_config.dst_addr_limit {
-    `DMA_ENV_COV_64B_ADDR_BINS
-  }
-
-  cp_dst_addr_limit_exceeded: coverpoint (
-      dma_config.dst_addr + dma_config.total_data_size >= dma_config.dst_addr_limit
-  );
-
-  cp_dst_addr_almost_limit: coverpoint dma_config.dst_addr_almost_limit {
-    `DMA_ENV_COV_64B_ADDR_BINS
-  }
-
-  cp_dst_addr_almost_limit_exceeded: coverpoint (
-      dma_config.dst_addr + dma_config.total_data_size >= dma_config.dst_addr_almost_limit
-  );
-
   cp_handshake: coverpoint dma_config.handshake;
 
   cp_data_direction: coverpoint dma_config.direction {
@@ -187,12 +171,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
       cp_dst_addr_alignment,
       cp_total_data_size_alignment,
       cp_transfer_width;
-
-  cr_mem_buffer_auto_inc_X_data_direction_X_address_limits_exceeded: cross
-      cp_mem_buffer_auto_inc,
-      cp_data_direction,
-      cp_dst_addr_limit_exceeded,
-      cp_dst_addr_almost_limit_exceeded;
 
 endgroup
 

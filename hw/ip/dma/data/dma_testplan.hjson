@@ -226,13 +226,9 @@
               Stimulus:
               - Configure DMA for 'hardware handshake' mode
               - Set memory_buffer_addr_auto_increment
-              - Set memory_buffer_threshold and memory_buffer_limit such that
-                * Threshold is less than the limit and
-                * Threshold and limit are within the DMA memory region
               - Start DMA operation by setting DMAC.GO bit
               - Assert Low Speed IO (LSIO) interrupt
               - Wait for TLUL transaction on the output interface
-              - Respond with random number of data items such that the amount exceeds either the memory_buffer_threshold or memory_buffer_limit
               - Deassert LSIO interrupt
               - Wait for the operation to complete
               - Repeat the operation with different source and destination parameters
@@ -245,7 +241,7 @@
               - Check if PLIC interrupt is asserted when memory_buffer_auto_increment is enabled
               '''
         stage: V2
-        tests: ["dma_handshake_stress", "dma_mem_limit"]
+        tests: ["dma_handshake_stress"]
       }
       {
         name: dma_abort
@@ -308,8 +304,6 @@
                  * Total data size
                  * Chunk data size
                  * Transfer width
-                 * Destination address limit
-                 * Destination address almost limit
                  * Control register fields:
                    + opcode
                    + hardware handshake enable
@@ -330,7 +324,7 @@
                  * opcode, hardware handshake enable, data direction, and initial transfer
                  * source and destination address, DMA-enabled memory range base and limit, and data direction
                  * source and destination address alignment, total data size alignment, and transfer width
-                 * memory buffer auto increment enable, data direction, and the results of (destination address + total data size) compared to {destination address limit, destination address almost limit}
+                 * memory buffer auto increment enable, data direction, and the results of (destination address + total data size)
                '''
       }
       {

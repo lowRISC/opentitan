@@ -35,7 +35,6 @@ filesets:
       - seq_lib/dma_abort_vseq.sv: {is_include_file: true}
       - seq_lib/dma_short_transfer_vseq.sv: {is_include_file: true}
       - seq_lib/dma_longer_transfer_vseq.sv: {is_include_file: true}
-      - seq_lib/dma_mem_limit_vseq.sv: {is_include_file: true}
       - seq_lib/dma_mem_enabled_vseq.sv: {is_include_file: true}
       - seq_lib/dma_intr_vseq.sv: {is_include_file: true}
       - seq_lib/dma_generic_stress_vseq.sv: {is_include_file: true}

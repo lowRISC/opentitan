@@ -104,9 +104,6 @@
     { name: "dma_error"
       desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
     }
-    { name: "dma_memory_buffer_limit"
-      desc: "Memory buffer limit address reached."
-    }
   ]
   alert_list: [
     { name: "fatal_fault"
@@ -423,86 +420,6 @@
         }
       ]
     }
-    { name: "DST_ADDR_LIMIT_LO"
-      desc: "Lower 32 bits of DMA memory buffer limit address."
-      swaccess: "rw"
-      hwaccess: "hro"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { bits: "31:0"
-          name: "addr_limit_lo"
-          resval: 0x0
-          desc: '''
-                Limit address configuration.
-
-                Used in conjunction with the address auto-increment mode for hardware handshake operation to
-                generate an interrupt when memory buffer address approaches memory buffer address limit.
-                This field is optional.
-                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
-                '''
-        }
-      ]
-    }
-    { name: "DST_ADDR_LIMIT_HI"
-      desc: "Upper 32 bits of DMA memory buffer limit address."
-      swaccess: "rw"
-      hwaccess: "hro"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { bits: "31:0"
-          name: "addr_limit_hi"
-          resval: 0x0
-          desc: '''
-                Limit address configuration.
-
-                Used in conjunction with the address auto-increment mode for hardware handshake operation to
-                generate an interrupt when memory buffer address approaches memory buffer address limit.
-                This field is optional.
-                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
-                '''
-        }
-      ]
-    }
-    { name: "DST_ADDR_ALMOST_LIMIT_LO"
-      desc: "Lower 32 bits of DMA memory buffer limit address."
-      swaccess: "rw"
-      hwaccess: "hro"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { bits: "31:0"
-          name: "addr_limit_lo"
-          resval: 0x0
-          desc: '''
-                Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
-                Used in conjunction with the address auto-increment mode for hardware handshake operation to generate an
-                interrupt when the buffer address approaches close to the buffer (i.e. reaches this threshold) address limit.
-                Enables firmware to take appropriate action prior to reaching the final limit.
-                This field is optional.
-                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
-                '''
-        }
-      ]
-    }
-    { name: "DST_ADDR_ALMOST_LIMIT_HI"
-      desc: "Upper 32 bits of DMA memory buffer limit address."
-      swaccess: "rw"
-      hwaccess: "hro"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { bits: "31:0"
-          name: "addr_limit_hi"
-          resval: 0x0
-          desc: '''
-                Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
-                Used in conjunction with the address auto-increment mode for hardware handshake operation to generate an
-                interrupt when the buffer address approaches close to the buffer (i.e. reaches this threshold) address limit.
-                Enables firmware to take appropriate action prior to reaching the final limit.
-                This field is optional.
-                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
-                '''
-        }
-      ]
-    }
     { name: "CONTROL"
       desc: "Control register for DMA data movement."
       swaccess: "rw"
@@ -804,7 +721,7 @@
         ]
       }
     }
-    { skipto: "0x12C" }
+    { skipto: "0x11C" }
     { multireg: {
         name: "INTR_SRC_WR_VAL"
         desc: "Write value for interrupt clearing write."

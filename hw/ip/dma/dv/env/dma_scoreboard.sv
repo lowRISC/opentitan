@@ -356,22 +356,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                     $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
         end
 
-        // Update the expected value of destination address limit interrupt for this address;
-        // applicable only to reading from FIFO hardware when auto-incrementing is enabled for the
-        // memory address.
-        if ((dma_config.handshake & dma_config.direction == DmaRcvData &&
-             dma_config.auto_inc_buffer) &&
-            (a_addr >= dma_config.dst_addr_limit ||
-             a_addr >= dma_config.dst_addr_almost_limit)) begin
-          `uvm_info(`gfn,
-                    $sformatf("Memory address: 0x%0x crosses almost limit: 0x%0x limit: 0x%0x",
-                              a_addr, dma_config.dst_addr_almost_limit, dma_config.dst_addr_limit),
-                    UVM_HIGH)
-
-          // Interrupt is expected only if enabled.
-          predict_interrupts(MemLimitToIntrLatency, 1 << DMA_MEM_LIMIT, intr_enable);
-        end
-
         // Update number of bytes transferred only in case of write txn - refer #338
         num_bytes_transferred += num_bytes_this_txn;
 
@@ -623,7 +607,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
             unique case (i)
               DMA_DONE:      rsn = {rsn, "Done "};
               DMA_ERROR:     rsn = {rsn, "Error "};
-              DMA_MEM_LIMIT: rsn = {rsn, "Mem limit"};
               default:       rsn = {rsn, "Unknown intr"};
             endcase
           end
@@ -911,18 +894,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                             `gmv(ral.transfer_width.transaction_width));
         `uvm_info(`gfn, $sformatf("Got transfer_width = %s",
                                   dma_config.per_transfer_width.name()), UVM_HIGH)
-      end
-      "dst_addr_limit_lo": begin
-        dma_config.dst_addr_limit[31:0] = `gmv(ral.dst_addr_limit_lo.addr_limit_lo);
-      end
-      "dst_addr_limit_hi": begin
-        dma_config.dst_addr_limit[63:32] = `gmv(ral.dst_addr_limit_hi.addr_limit_hi);
-      end
-      "dst_addr_almost_limit_lo": begin
-        dma_config.dst_addr_almost_limit[31:0] = `gmv(ral.dst_addr_almost_limit_lo.addr_limit_lo);
-      end
-      "dst_addr_almost_limit_hi": begin
-        dma_config.dst_addr_almost_limit[63:32] = `gmv(ral.dst_addr_almost_limit_hi.addr_limit_hi);
       end
       "clear_intr_bus": begin
         dma_config.clear_intr_bus = `gmv(ral.clear_intr_bus.bus);
