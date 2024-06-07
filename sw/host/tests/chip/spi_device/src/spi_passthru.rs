@@ -10,6 +10,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::eeprom::AddressMode;
 use opentitanlib::io::spi::{Target, Transfer};
+use opentitanlib::io::uart::Uart;
 use opentitanlib::spiflash::sfdp::SectorErase;
 use opentitanlib::spiflash::{EraseMode, ReadMode, Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -38,15 +39,14 @@ struct Opts {
     spi: String,
 }
 
-fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_jedec_id(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     let config = ConfigJedecId {
         device_id: 0x1234,
         manufacturer_id: 0x56,
         continuation_code: 0x7f,
         continuation_len: 3,
     };
-    config.execute(&*uart)?;
+    config.execute(uart)?;
 
     let spi = transport.spi(&opts.spi)?;
     let jedec_id = SpiFlash::read_jedec_id(&*spi, 16)?;
@@ -65,30 +65,36 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn test_enter_exit_4b_mode(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_enter_exit_4b_mode(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
 
     log::info!("Entering 4B address mode");
     spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::ENTER_4B])])?;
-    let sr = StatusRegister::read(&*uart)?;
+    let sr = StatusRegister::read(uart)?;
     assert!(sr.addr_4b, "expected to be in 4b mode");
 
     log::info!("Exiting 4B address mode");
     spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::EXIT_4B])])?;
-    let sr = StatusRegister::read(&*uart)?;
+    let sr = StatusRegister::read(uart)?;
     assert!(!sr.addr_4b, "expected to be in 3b mode");
     Ok(())
 }
 
-fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_write_enable_disable(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
 
     log::info!("Sending WRITE_ENABLE");
     spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::WRITE_ENABLE])])?;
     let status = SpiFlash::read_status(&*spi)?;
-    let sr = StatusRegister::read(&*uart)?;
+    let sr = StatusRegister::read(uart)?;
     assert!(
         status as u32 & FLASH_STATUS_WEL != 0,
         "expected WEL set via read_status"
@@ -101,7 +107,7 @@ fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Resul
     log::info!("Sending WRITE_DISABLE");
     spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::WRITE_DISABLE])])?;
     let status = SpiFlash::read_status(&*spi)?;
-    let sr = StatusRegister::read(&*uart)?;
+    let sr = StatusRegister::read(uart)?;
     assert!(
         status as u32 & FLASH_STATUS_WEL == 0,
         "expected WEL clear via read_status"
@@ -113,15 +119,18 @@ fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Resul
     Ok(())
 }
 
-fn test_read_status_extended(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_read_status_extended(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
 
     let sr = StatusRegister {
         status: 0x5A55AA,
         addr_4b: false,
     };
-    sr.write(&*uart)?;
+    sr.write(uart)?;
     // Note: because we're programming the flash_status register in firmware,
     // we require one CS low-to-high transition to latch the values from the
     // CSR into the spi device.  We'd normally expect this type of register
@@ -152,14 +161,13 @@ fn read_sfdp(spi: &dyn Target, offset: u32) -> Result<Vec<u8>> {
     Ok(buf)
 }
 
-fn test_read_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_read_sfdp(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
 
     let sfdp = SfdpData {
         data: (0..256).map(|x| x as u8).collect(),
     };
-    sfdp.write(&*uart)?;
+    sfdp.write(uart)?;
 
     // Read and compare the whole SFDP buffer.
     let buf = read_sfdp(&*spi, 0)?;
@@ -176,11 +184,10 @@ fn test_read_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_chip_erase(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
     let flash = SpiFlash::default();
-    let info = UploadInfo::execute(&*uart, || {
+    let info = UploadInfo::execute(uart, || {
         flash.chip_erase(&*spi)?;
         Ok(())
     })?;
@@ -198,11 +205,11 @@ fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 fn test_sector_erase(
     opts: &Opts,
     transport: &TransportWrapper,
+    uart: &dyn Uart,
     address: u32,
     size: u32,
     force_4b: bool,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
     let mut flash = SpiFlash {
         // Double the flash size so we can test 3b and 4b addresses.
@@ -258,7 +265,7 @@ fn test_sector_erase(
         AddressMode::Mode3b
     };
     flash.set_address_mode(&*spi, mode)?;
-    let info = UploadInfo::execute(&*uart, || {
+    let info = UploadInfo::execute(uart, || {
         flash.erase(&*spi, address, size)?;
         Ok(())
     })?;
@@ -275,8 +282,12 @@ fn test_sector_erase(
     Ok(())
 }
 
-fn test_page_program(opts: &Opts, transport: &TransportWrapper, address: u32) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_page_program(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+    address: u32,
+) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
     let data = (0..256).map(|x| x as u8).collect::<Vec<u8>>();
     let mut flash = SpiFlash {
@@ -292,7 +303,7 @@ fn test_page_program(opts: &Opts, transport: &TransportWrapper, address: u32) ->
         AddressMode::Mode4b
     };
     flash.set_address_mode(&*spi, mode)?;
-    let info = UploadInfo::execute(&*uart, || {
+    let info = UploadInfo::execute(uart, || {
         flash.program(&*spi, address, &data)?;
         Ok(())
     })?;
@@ -310,10 +321,14 @@ fn test_page_program(opts: &Opts, transport: &TransportWrapper, address: u32) ->
     Ok(())
 }
 
-fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_write_status(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+    opcode: u8,
+) -> Result<()> {
     let spi = transport.spi(&opts.spi)?;
-    let info = UploadInfo::execute(&*uart, || {
+    let info = UploadInfo::execute(uart, || {
         spi.run_transaction(&mut [Transfer::Write(&[opcode])])?;
         Ok(())
     })?;
@@ -325,7 +340,12 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
     Ok(())
 }
 
-fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) -> Result<()> {
+fn test_read_flash(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+    mode: ReadMode,
+) -> Result<()> {
     log::info!("using read mode {:?}", mode);
     let capability = match mode {
         ReadMode::Standard => Ok(()),
@@ -341,14 +361,13 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         return Ok(());
     }
 
-    let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
 
     let sfdp_read = SpiFlashReadSfdp {
         address: 0u32,
         length: 256u16,
     };
-    let sfdp_data = sfdp_read.execute(&*uart)?;
+    let sfdp_data = sfdp_read.execute(uart)?;
     let sfdp = Sfdp::try_from(sfdp_data.data.as_slice())?;
     let spi_flash = {
         let mut flash = SpiFlash::from_sfdp(sfdp);
@@ -362,7 +381,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         address: address_inc,
         addr4b: false,
     };
-    erase_op.execute(&*uart)?;
+    erase_op.execute(uart)?;
 
     let write_op_inc = SpiFlashWrite {
         address: address_inc,
@@ -370,7 +389,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         data: (0..256).map(|x| x as u8).collect(),
         length: 256,
     };
-    write_op_inc.execute(&*uart)?;
+    write_op_inc.execute(uart)?;
 
     // Put decreasing count at 0x11000.
     let address_dec = 0x11000u32;
@@ -378,7 +397,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         address: address_dec,
         addr4b: false,
     };
-    erase_op.execute(&*uart)?;
+    erase_op.execute(uart)?;
 
     let write_op_dec = SpiFlashWrite {
         address: address_dec,
@@ -386,7 +405,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         data: (0..256).map(|x| 255u8 - (x as u8)).collect(),
         length: 256,
     };
-    write_op_dec.execute(&*uart)?;
+    write_op_dec.execute(uart)?;
 
     // Put count of evens in mailbox
     let write_op_mbox = SpiMailboxWrite {
@@ -394,7 +413,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         data: (0..256).map(|x| (x << 1) as u8).collect(),
         length: 256,
     };
-    write_op_mbox.execute(&*uart)?;
+    write_op_mbox.execute(uart)?;
 
     // Read from flash with no special mapping.
     let mut read_data = vec![0; 256];
@@ -410,7 +429,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         mask: 0x10000u32,
         value: 0x00000u32,
     };
-    address_swap.apply_address_swap(&*uart)?;
+    address_swap.apply_address_swap(uart)?;
 
     let mut read_data = vec![0; 256];
     spi_flash.read(&*spi, address_dec, &mut read_data)?;
@@ -422,20 +441,20 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         mask: 0u32,
         value: 0u32,
     };
-    address_swap.apply_address_swap(&*uart)?;
+    address_swap.apply_address_swap(uart)?;
 
     // Enable the mailbox at the increasing count's address, and check the read.
     let mbox_map = SpiMailboxMap {
         address: address_inc,
     };
-    mbox_map.apply(&*uart)?;
+    mbox_map.apply(uart)?;
     let mut read_data = vec![0; 256];
     spi_flash.read(&*spi, address_inc, &mut read_data)?;
     assert_eq!(read_data.as_slice(), write_op_mbox.data.as_slice());
     assert_ne!(read_data.as_slice(), write_op_inc.data.as_slice());
 
     // Disable the mailbox.
-    SpiMailboxMap::disable(&*uart)?;
+    SpiMailboxMap::disable(uart)?;
     Ok(())
 }
 
@@ -449,22 +468,29 @@ fn main() -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Standard);
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Fast);
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Dual);
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Quad);
-    execute_test!(test_jedec_id, &opts, &transport);
-    execute_test!(test_enter_exit_4b_mode, &opts, &transport);
-    execute_test!(test_write_enable_disable, &opts, &transport);
-    execute_test!(test_read_status_extended, &opts, &transport);
-    execute_test!(test_read_sfdp, &opts, &transport);
-    execute_test!(test_chip_erase, &opts, &transport);
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        &*uart,
+        ReadMode::Standard
+    );
+    execute_test!(test_read_flash, &opts, &transport, &*uart, ReadMode::Fast);
+    execute_test!(test_read_flash, &opts, &transport, &*uart, ReadMode::Dual);
+    execute_test!(test_read_flash, &opts, &transport, &*uart, ReadMode::Quad);
+    execute_test!(test_jedec_id, &opts, &transport, &*uart);
+    execute_test!(test_enter_exit_4b_mode, &opts, &transport, &*uart);
+    execute_test!(test_write_enable_disable, &opts, &transport, &*uart);
+    execute_test!(test_read_status_extended, &opts, &transport, &*uart);
+    execute_test!(test_read_sfdp, &opts, &transport, &*uart);
+    execute_test!(test_chip_erase, &opts, &transport, &*uart);
     // Test each of the erase opcodes based on the erase size.
     // Automatically switch into 4B mode based on the address.
     execute_test!(
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0000_4000,
         4096,
         false
@@ -473,6 +499,7 @@ fn main() -> Result<()> {
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0100_4000,
         4096,
         false
@@ -481,6 +508,7 @@ fn main() -> Result<()> {
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0001_0000,
         65536,
         false
@@ -489,6 +517,7 @@ fn main() -> Result<()> {
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0100_8000,
         32768,
         false
@@ -498,6 +527,7 @@ fn main() -> Result<()> {
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0000_4000,
         4096,
         true
@@ -506,6 +536,7 @@ fn main() -> Result<()> {
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0001_0000,
         65536,
         true
@@ -514,23 +545,32 @@ fn main() -> Result<()> {
         test_sector_erase,
         &opts,
         &transport,
+        &*uart,
         0x0100_8000,
         32768,
         true
     );
-    execute_test!(test_page_program, &opts, &transport, 0x0000_4000);
-    execute_test!(test_page_program, &opts, &transport, 0x0100_4000);
-    execute_test!(test_write_status, &opts, &transport, SpiFlash::WRITE_STATUS);
+    execute_test!(test_page_program, &opts, &transport, &*uart, 0x0000_4000);
+    execute_test!(test_page_program, &opts, &transport, &*uart, 0x0100_4000);
     execute_test!(
         test_write_status,
         &opts,
         &transport,
+        &*uart,
+        SpiFlash::WRITE_STATUS
+    );
+    execute_test!(
+        test_write_status,
+        &opts,
+        &transport,
+        &*uart,
         SpiFlash::WRITE_STATUS2
     );
     execute_test!(
         test_write_status,
         &opts,
         &transport,
+        &*uart,
         SpiFlash::WRITE_STATUS3
     );
     Ok(())
