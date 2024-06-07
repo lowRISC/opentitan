@@ -4,6 +4,7 @@
 #ifndef OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_ENTRY_H_
 #define OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_ENTRY_H_
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
