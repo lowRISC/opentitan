@@ -18,6 +18,7 @@ use cryptotest_commands::hash_commands::{
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
@@ -54,7 +55,7 @@ const HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES: usize = 16;
 fn run_hash_testcase(
     test_case: &HashTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    uart: &dyn Uart,
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
@@ -63,9 +64,8 @@ fn run_hash_testcase(
         test_case.algorithm,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
 
-    CryptotestCommand::Hash.send(&*uart)?;
+    CryptotestCommand::Hash.send(uart)?;
 
     assert!(
         test_case.message.len() <= HASH_CMD_MAX_MESSAGE_BYTES,
@@ -95,14 +95,14 @@ fn run_hash_testcase(
         "cshake-256" => CryptotestHashAlgorithm::Cshake256,
         _ => panic!("Unsupported hash algorithm"),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     // Send required digest size for SHAKE tests (this value is
     // ignored for SHA2/3)
     CryptotestHashShakeDigestLength {
         length: test_case.digest.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     // Send hash preimage
     CryptotestHashMessage {
@@ -112,10 +112,10 @@ fn run_hash_testcase(
             .unwrap(),
         customization_string_len: test_case.customization_string.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     // Get hash output
-    let hash_output = CryptotestHashOutput::recv(&*uart, opts.timeout, false)?;
+    let hash_output = CryptotestHashOutput::recv(uart, opts.timeout, false)?;
     // Stepwise hashing is currently supported by SHA2 only.
     let mut failed = false;
     match test_case.algorithm.as_str() {
@@ -172,7 +172,7 @@ fn test_hash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for hash_test in &hash_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_hash_testcase(hash_test, opts, transport, &mut fail_counter)?;
+            run_hash_testcase(hash_test, opts, &*uart, &mut fail_counter)?;
         }
     }
     assert_eq!(
