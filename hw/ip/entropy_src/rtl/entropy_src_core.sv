@@ -165,6 +165,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                      sfifo_esfinal_int_err;
   logic [2:0]                sfifo_esfinal_err;
 
+  logic                   es_sfifo_int_err;
+
   logic [SeedLen-1:0]     esfinal_data;
   logic                   esfinal_fips_flag;
 
@@ -880,6 +882,21 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sfifo_esfinal_not_empty && es_route_to_sw && es_data_reg_rd_en && es_enable_fo[2];
 
 
+  // Collect all internal FIFO errors.
+  assign es_sfifo_int_err = sfifo_esrng_int_err ||
+                            sfifo_distr_int_err ||
+                            sfifo_observe_int_err ||
+                            sfifo_esfinal_int_err;
+
+  // Counter, internal FIFO errors and FSM errors are structural errors and are always active
+  // regardless of the functional state.
+  logic fatal_loc_events;
+  assign fatal_loc_events = es_cntr_err_sum ||
+                            es_sfifo_int_err ||
+                            es_main_sm_err_sum ||
+                            es_ack_sm_err_sum ||
+                            sha3_state_error_sum;
+
   // set the interrupt sources
   assign event_es_fatal_err = (es_enable_fo[3] &&
                                  (sfifo_esrng_err_sum   ||
@@ -887,11 +904,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                   sfifo_observe_err_sum ||
                                   sfifo_esfinal_err_sum ||
                                   sfifo_test_err_sum) ) ||
-                              es_ack_sm_err_sum ||
-                              es_main_sm_err_sum ||
-                              es_cntr_err_sum || // prim_count err is always active
                               sha3_rst_storage_err_sum ||
-                              sha3_state_error_sum;
+                              fatal_loc_events;
 
   // set fifo errors that are single instances of source
   assign sfifo_esrng_err_sum = (|sfifo_esrng_err) ||
@@ -2836,7 +2850,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_start_o         (sha3_start_raw),
     .sha3_process_o       (sha3_process),
     .sha3_done_o          (sha3_done),
-    .local_escalate_i     (es_cntr_err_sum),
+    .local_escalate_i     (fatal_loc_events),
     .main_sm_alert_o      (es_main_sm_alert),
     .main_sm_idle_o       (es_main_sm_idle),
     .main_sm_state_o      (es_main_sm_state),
