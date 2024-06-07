@@ -147,7 +147,7 @@ end
 
 `endif
 
-  
+
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
 
