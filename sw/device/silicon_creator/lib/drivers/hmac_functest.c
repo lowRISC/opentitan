@@ -64,6 +64,22 @@ rom_error_t hmac_test(void) {
   return kErrorOk;
 }
 
+rom_error_t hmac_truncated_test(void) {
+  uint32_t digest[3];
+  hmac_sha256_init();
+  hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_final_truncated(digest, ARRAYSIZE(digest));
+
+  const size_t len = ARRAYSIZE(digest);
+  for (int i = 0; i < len; ++i) {
+    LOG_INFO("word %d = 0x%08x", i, digest[i]);
+    if (digest[i] != kGettysburgDigest[i]) {
+      return kErrorUnknown;
+    }
+  }
+  return kErrorOk;
+}
+
 rom_error_t hmac_bigendian_test(void) {
   uint32_t result[8];
   hexstr_decode(&result, sizeof(result), kGettysburgDigestBigEndian);
@@ -83,11 +99,32 @@ rom_error_t hmac_bigendian_test(void) {
   return kErrorOk;
 }
 
+rom_error_t hmac_bigendian_truncated_test(void) {
+  uint32_t result[8];
+  hexstr_decode(&result, sizeof(result), kGettysburgDigestBigEndian);
+
+  hmac_sha256_init_endian(true);
+  hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  uint32_t digest[3];
+  hmac_sha256_final_truncated(digest, ARRAYSIZE(digest));
+
+  const size_t len = ARRAYSIZE(digest);
+  for (int i = 0; i < len; ++i) {
+    LOG_INFO("word %d = 0x%08x", i, digest[i]);
+    if (digest[i] != result[i]) {
+      return kErrorUnknown;
+    }
+  }
+  return kErrorOk;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, hmac_test);
+  EXECUTE_TEST(result, hmac_truncated_test);
   EXECUTE_TEST(result, hmac_bigendian_test);
+  EXECUTE_TEST(result, hmac_bigendian_truncated_test);
   return status_ok(result);
 }

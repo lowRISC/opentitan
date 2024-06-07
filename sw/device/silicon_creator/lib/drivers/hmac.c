@@ -63,7 +63,14 @@ void hmac_sha256_update(const void *data, size_t len) {
   }
 }
 
-void hmac_sha256_final(hmac_digest_t *digest) {
+void hmac_sha256_update_words(const uint32_t *data, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_FIFO_REG_OFFSET,
+                     data[i]);
+  }
+}
+
+void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, HMAC_CMD_HASH_PROCESS_BIT, true);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
@@ -89,8 +96,12 @@ void hmac_sha256_final(hmac_digest_t *digest) {
     incr = (uint32_t) - sizeof(uint32_t);
   }
 
-  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i, result += incr) {
-    digest->digest[i] = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + result);
+  // Ensure len is at most the digest length; this function should never be
+  // called with a `len` that is too big, but this helps ensure it at runtime
+  // just in case.
+  len = len <= kHmacDigestNumWords ? len : kHmacDigestNumWords;
+  for (uint32_t i = 0; i < len; ++i, result += incr) {
+    digest[i] = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + result);
   }
 }
 
@@ -101,3 +112,4 @@ void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
 }
 
 extern void hmac_sha256_init(void);
+extern void hmac_sha256_final(hmac_digest_t *digest);
