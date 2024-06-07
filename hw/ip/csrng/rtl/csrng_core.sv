@@ -490,6 +490,17 @@ module csrng_core import csrng_pkg::*; #(
     .intr_o                 (intr_cs_fatal_err_o)
   );
 
+  // Counter and FSM errors are structural errors and are always active regardless of the
+  // functional state. main_sm_err_sum is not included here to prevent some tools from
+  // inferring combo loops.
+  logic fatal_loc_events;
+  assign fatal_loc_events = cmd_gen_cnt_err_sum ||
+                            cmd_stage_sm_err_sum ||
+                            drbg_gen_sm_err_sum ||
+                            drbg_updbe_sm_err_sum ||
+                            drbg_updob_sm_err_sum ||
+                            aes_cipher_sm_err_sum;
+
   // set the interrupt sources
   assign event_cs_fatal_err = (cs_enable_fo[1]  && (
          (|cmd_stage_sfifo_cmd_err_sum) ||
@@ -512,13 +523,8 @@ module csrng_core import csrng_pkg::*; #(
          fifo_read_err_sum ||
          fifo_status_err_sum)) ||
          // errs not gated by cs_enable
-         cmd_stage_sm_err_sum ||
          main_sm_err_sum ||
-         drbg_gen_sm_err_sum ||
-         drbg_updbe_sm_err_sum ||
-         drbg_updob_sm_err_sum ||
-         aes_cipher_sm_err_sum ||
-         cmd_gen_cnt_err_sum;
+         fatal_loc_events;
 
   // set fifo errors that are single instances of source
   assign ctr_drbg_cmd_sfifo_cmdreq_err_sum = (|ctr_drbg_cmd_sfifo_cmdreq_err) ||
@@ -1160,7 +1166,7 @@ module csrng_core import csrng_pkg::*; #(
     .uninstant_req_o        (uninstant_req),
     .clr_adata_packer_o     (clr_adata_packer),
     .cmd_complete_i         (state_db_wr_req),
-    .local_escalate_i       (cmd_gen_cnt_err_sum),
+    .local_escalate_i       (fatal_loc_events),
     .main_sm_state_o        (cs_main_sm_state),
     .main_sm_err_o          (cs_main_sm_err)
   );
