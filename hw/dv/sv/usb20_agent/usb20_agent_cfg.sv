@@ -13,6 +13,11 @@ class usb20_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_new
 
+  // Exchange the DP/DN signals when driving/monitoring the USB.
+  bit pinflip = 1'b0;
+  // Use the D/SE0 TX outputs from the DUT rather than DP/DN.
+  bit tx_use_d_se0 = 1'b0;
+
   // If this is set then the driver will not perform bitstuffing on the supplied
   // data, so if the caller supplies a sequence of more than six '1' bits,
   // a bitstuffing violation will occur.

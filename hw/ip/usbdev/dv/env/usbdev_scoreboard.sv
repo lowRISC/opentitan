@@ -79,17 +79,26 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     usb20_item item;
     forever begin
       req_usb20_fifo.get(item);
-      if (item.m_pid_type != PidTypeSofToken) begin
-        m_packetiser.pack_pkt(item);
-        usbdev_expected_pkt();
-        void'(item.pack(actual_pkt));
-        actual_pkt_q.push_back(actual_pkt);
-        for (int i = 0; i <= 7; i++) begin
-          act_pid = {act_pid, actual_pkt[i]};
-        end
-        `uvm_info(`gfn, $sformatf("req port item :\n%0s", item.sprint()), UVM_DEBUG)
-        compare_usb20_pkt(item);
-      end
+      case (item.m_ev_type)
+        EvBusReset:   `uvm_info(`gfn, "Bus Reset received from monitor", UVM_MEDIUM)
+        EvSuspend:    `uvm_info(`gfn, "Suspend Signaling received from monitor", UVM_MEDIUM)
+        EvResume:     `uvm_info(`gfn, "Resume Signaling received from monitor", UVM_MEDIUM)
+        EvDisconnect: `uvm_info(`gfn, "VBUS Disconnection received from monitor", UVM_MEDIUM)
+        EvConnect:    `uvm_info(`gfn, "VBUS Connection received from monitor", UVM_MEDIUM)
+        EvPacket:
+          if (item.m_pid_type != PidTypeSofToken) begin
+            m_packetiser.pack_pkt(item);
+            usbdev_expected_pkt();
+            void'(item.pack(actual_pkt));
+            actual_pkt_q.push_back(actual_pkt);
+            for (int i = 0; i <= 7; i++) begin
+              act_pid = {act_pid, actual_pkt[i]};
+            end
+            `uvm_info(`gfn, $sformatf("req port item :\n%0s", item.sprint()), UVM_DEBUG)
+            compare_usb20_pkt(item);
+          end
+        default: `uvm_fatal(`gfn, $sformatf("Invalid/unexpected event type %p", item.m_ev_type))
+      endcase
     end
   endtask
 
