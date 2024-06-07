@@ -211,10 +211,13 @@ module ibex_core import ibex_pkg::*; #(
   exc_cause_t  exc_cause;                      // Exception cause
 
   logic        instr_intg_err;
-  logic        lsu_load_err;
-  logic        lsu_store_err;
+  logic        lsu_load_err, lsu_load_err_raw;
+  logic        lsu_store_err, lsu_store_err_raw;
   logic        lsu_load_resp_intg_err;
   logic        lsu_store_resp_intg_err;
+
+  logic        expecting_load_resp_id;
+  logic        expecting_store_resp_id;
 
   // LSU signals
   logic        lsu_addr_incr_req;
@@ -290,6 +293,7 @@ module ibex_core import ibex_pkg::*; #(
   logic [1:0]  lsu_type;
   logic        lsu_sign_ext;
   logic        lsu_req;
+  logic        lsu_rdata_valid;
   logic [31:0] lsu_wdata;
   logic        lsu_req_done;
 
@@ -637,6 +641,9 @@ module ibex_core import ibex_pkg::*; #(
     .lsu_store_err_i          (lsu_store_err),
     .lsu_store_resp_intg_err_i(lsu_store_resp_intg_err),
 
+    .expecting_load_resp_o (expecting_load_resp_id),
+    .expecting_store_resp_o(expecting_store_resp_id),
+
     // Interrupt Signals
     .csr_mstatus_mie_i(csr_mstatus_mie),
     .irq_pending_i    (irq_pending_o),
@@ -774,7 +781,7 @@ module ibex_core import ibex_pkg::*; #(
     .lsu_sign_ext_i(lsu_sign_ext),
 
     .lsu_rdata_o      (rf_wdata_lsu),
-    .lsu_rdata_valid_o(rf_we_lsu),
+    .lsu_rdata_valid_o(lsu_rdata_valid),
     .lsu_req_i        (lsu_req),
     .lsu_req_done_o   (lsu_req_done),
 
@@ -787,9 +794,9 @@ module ibex_core import ibex_pkg::*; #(
     .lsu_resp_valid_o(lsu_resp_valid),
 
     // exception signals
-    .load_err_o           (lsu_load_err),
+    .load_err_o           (lsu_load_err_raw),
     .load_resp_intg_err_o (lsu_load_resp_intg_err),
-    .store_err_o          (lsu_store_err),
+    .store_err_o          (lsu_store_err_raw),
     .store_resp_intg_err_o(lsu_store_resp_intg_err),
 
     .busy_o(lsu_busy),
@@ -843,6 +850,28 @@ module ibex_core import ibex_pkg::*; #(
 
     .instr_done_wb_o(instr_done_wb)
   );
+
+  if (SecureIbex) begin : g_check_mem_response
+    // For secure configurations only process load/store responses if we're expecting them to guard
+    // against false responses being injected on to the bus
+    assign lsu_load_err  = lsu_load_err_raw  & (outstanding_load_wb  | expecting_load_resp_id);
+    assign lsu_store_err = lsu_store_err_raw & (outstanding_store_wb | expecting_store_resp_id);
+    assign rf_we_lsu     = lsu_rdata_valid   & (outstanding_load_wb  | expecting_load_resp_id);
+  end else begin : g_no_check_mem_response
+    // For non-secure configurations trust the bus protocol is being followed and we'll only ever
+    // see a response if we have an outstanding request.
+    assign lsu_load_err  = lsu_load_err_raw;
+    assign lsu_store_err = lsu_store_err_raw;
+    assign rf_we_lsu     = lsu_rdata_valid;
+
+    // expected_load_resp_id/expected_store_resp_id signals are only used to guard against false
+    // responses so they are unused in non-secure configurations
+    logic unused_expecting_load_resp_id;
+    logic unused_expecting_store_resp_id;
+
+    assign unused_expecting_load_resp_id  = expecting_load_resp_id;
+    assign unused_expecting_store_resp_id = expecting_store_resp_id;
+  end
 
   /////////////////////////////
   // Register file interface //
@@ -1809,6 +1838,9 @@ module ibex_core import ibex_pkg::*; #(
 
   // Certain parameter combinations are not supported
   `ASSERT_INIT(IllegalParamSecure, !(SecureIbex && (RV32M == RV32MNone)))
+
+  // If the ID stage signals its ready the mult/div FSMs must be idle in the following cycle
+  `ASSERT(MultDivFSMIdleOnIdReady, id_in_ready |=> ex_block_i.sva_multdiv_fsm_idle)
 
   //////////
   // FCOV //

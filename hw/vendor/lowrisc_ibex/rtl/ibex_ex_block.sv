@@ -196,4 +196,22 @@ module ibex_ex_block #(
   // final cycle of ALU operation).
   assign ex_valid_o = multdiv_sel ? multdiv_valid : ~(|alu_imd_val_we);
 
+`ifdef INC_ASSERT
+  // This is intended to be accessed via hierarchal references so isn't output from this module nor
+  // used in any logic in this module
+  logic sva_multdiv_fsm_idle;
+
+  if (RV32M == RV32MSlow) begin : gen_multdiv_sva_idle_slow
+    assign sva_multdiv_fsm_idle = gen_multdiv_slow.multdiv_i.sva_fsm_idle;
+  end else if (RV32M == RV32MFast || RV32M == RV32MSingleCycle) begin : gen_multdiv_sva_idle_fast
+    assign sva_multdiv_fsm_idle = gen_multdiv_fast.multdiv_i.sva_fsm_idle;
+  end else begin : gen_multdiv_sva_idle_none
+    assign sva_multdiv_fsm_idle = 1'b1;
+  end
+
+  // Mark the sva_multdiv_fsm_idle as unused to avoid lint issues
+  logic unused_sva_multdiv_fsm_idle;
+  assign unused_sva_multdiv_fsm_idle = sva_multdiv_fsm_idle;
+`endif
+
 endmodule
