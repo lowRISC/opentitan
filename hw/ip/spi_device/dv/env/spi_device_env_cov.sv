@@ -22,6 +22,14 @@ class tpm_read_hw_reg_cg_wrap;
   endfunction : sample
 endclass
 
+covergroup busy_blocks_command_cg with function sample (bit command_blocked);
+  option.per_instance = 1;
+  cp_blocked_or_allowed: coverpoint command_blocked {
+    bins allowed = {0};
+    bins blocked = {1};
+  }
+endgroup
+
 class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
   `uvm_component_utils(spi_device_env_cov)
   tpm_read_hw_reg_cg_wrap tpm_read_hw_reg_cg_wraps[string];
@@ -276,6 +284,12 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     }
   endgroup
 
+  busy_blocks_command_cg en4b_block_cmd_cg;
+  busy_blocks_command_cg ex4b_block_cmd_cg;
+  busy_blocks_command_cg wren_block_cmd_cg;
+  busy_blocks_command_cg wrdi_block_cmd_cg;
+  busy_blocks_command_cg upload_block_cmd_cg;
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     // add more covergroup here
@@ -306,6 +320,13 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     tpm_interleave_with_flash_item_cg = new();
     en4b_flash_cmd_clash_with_addr_mode_write_cg = new();
     ex4b_flash_cmd_clash_with_addr_mode_write_cg = new();
+
+
+    en4b_block_cmd_cg = new();
+    ex4b_block_cmd_cg = new();
+    wren_block_cmd_cg = new();
+    wrdi_block_cmd_cg = new();
+    upload_block_cmd_cg = new();
 
   endfunction : new
 

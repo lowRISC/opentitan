@@ -220,116 +220,139 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 InternalProcessCfgCmd: begin
                   bit prev_wel = `gmv(ral.flash_status.wel);
                   if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, item.opcode)) begin
-                    if (cfg.en_cov) begin
-                      cov.spi_device_addr_4b_enter_exit_command_cg.sample(
-                          .addr_4b_en(1), .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
-                    end
-                    void'(ral.addr_mode.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
-                    `uvm_info(`gfn, "Enable 4b addr due to cmd EN4B", UVM_MEDIUM)
-                    spi_side_addr_mode_addr_4b_en = 1;
-                    if (tl_ul_side_addr_mode_pending && tl_ul_side_addr_mode_addr_4b_en != 1) begin
-                      `uvm_info(`gfn, "Write to ADDR_mode colliding with this EN4B flash command",
-                                UVM_DEBUG)
-                      tl_ul_side_addr_mode_addr_4b_en = 1;
+                    if (cfg.en_cov)
+                      cov.en4b_block_cmd_cg.sample(spi_side_flash_status.busy);
+
+                    if (!spi_side_flash_status.busy) begin
                       if (cfg.en_cov) begin
-                        cov.en4b_flash_cmd_clash_with_addr_mode_write_cg.sample(1);
+                        cov.spi_device_addr_4b_enter_exit_command_cg.sample( .addr_4b_en(1),
+                          .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
+                      end
+                      void'(ral.addr_mode.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
+                      `uvm_info(`gfn, "Enable 4b addr due to cmd EN4B", UVM_MEDIUM)
+                      spi_side_addr_mode_addr_4b_en = 1;
+                      if (tl_ul_side_addr_mode_pending &&
+                          tl_ul_side_addr_mode_addr_4b_en != 1) begin
+                        `uvm_info(`gfn, "Write to ADDR_mode colliding with this EN4B flash command",
+                                  UVM_DEBUG)
+                        tl_ul_side_addr_mode_addr_4b_en = 1;
+                        if (cfg.en_cov) begin
+                          cov.en4b_flash_cmd_clash_with_addr_mode_write_cg.sample(1);
+                        end
                       end
                     end
                   end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, item.opcode)) begin
-                    if (cfg.en_cov) begin
-                      cov.spi_device_addr_4b_enter_exit_command_cg.sample(
-                          .addr_4b_en(0), .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
-                    end
-                    void'(ral.addr_mode.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
-                    spi_side_addr_mode_addr_4b_en = 0;
-                    if (tl_ul_side_addr_mode_pending && tl_ul_side_addr_mode_addr_4b_en != 0) begin
-                      `uvm_info(`gfn, "Write to ADDR_mode colliding with this EX4B flash command",
-                                UVM_DEBUG)
-                      tl_ul_side_addr_mode_addr_4b_en = 0;
+                    if (cfg.en_cov)
+                      cov.ex4b_block_cmd_cg.sample(spi_side_flash_status.busy);
+                    if (!spi_side_flash_status.busy) begin
                       if (cfg.en_cov) begin
-                        cov.ex4b_flash_cmd_clash_with_addr_mode_write_cg.sample(1);
+                        cov.spi_device_addr_4b_enter_exit_command_cg.sample(.addr_4b_en(0),
+                          .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
                       end
-                    end
+                      void'(ral.addr_mode.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+                      spi_side_addr_mode_addr_4b_en = 0;
+                      if (tl_ul_side_addr_mode_pending && tl_ul_side_addr_mode_addr_4b_en != 0) begin
+                        `uvm_info(`gfn, "Write to ADDR_mode colliding with this EX4B flash command",
+                                  UVM_DEBUG)
+                        tl_ul_side_addr_mode_addr_4b_en = 0;
+                        if (cfg.en_cov) begin
+                          cov.ex4b_flash_cmd_clash_with_addr_mode_write_cg.sample(1);
+                        end
+                      end
+                    end // if (!spi_side_flash_status.busy)
+
                   end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, item.opcode)) begin
-                    // It could happen there is a flash_status write prior to WREN command finishing.
-                    // What happens depends on when exactly the written flash value crosses
-                    // boundaries towards the SCK side. So, in some cases, the WEL bit will be set
-                    // on that written value, and in others it won't.
-                    // SW note: This is not an actual concern since SW won't operate this way. In
-                    // reality, SW won't be changing busy/wel bits unless the host is known to be
-                    // waiting for busy/wel to drop (via sending flash READ_STATUS commands) os the
-                    // host is held in reset.
-                    `uvm_info(`gfn, "Updating WEL (0x1)", UVM_DEBUG)
-                    update_wel = 1;
-                    wel_val = 1;
-                    spi_side_flash_status.wel = 1;
-                    rtl_committed_flash_status = fetch_flash_status_rtl_committed_value();
 
-                    // Update flash_status.wel predicted value
-                    `DV_CHECK_EQ_FATAL(ral.flash_status.wel.predict(.value(
-                                       spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
-                                       "ral.flash_status.predict did not succeed")
-                    `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
-                                             spi_side_flash_status.wel), UVM_DEBUG)
+                    if (cfg.en_cov)
+                      cov.wren_block_cmd_cg.sample(spi_side_flash_status.busy);
+                    if (!spi_side_flash_status.busy) begin
+                      // It could happen there is a flash_status write prior to WREN command finishing.
+                      // What happens depends on when exactly the written flash value crosses
+                      // boundaries towards the SCK side. So, in some cases, the WEL bit will be set
+                      // on that written value, and in others it won't.
+                      // SW note: This is not an actual concern since SW won't operate this way. In
+                      // reality, SW won't be changing busy/wel bits unless the host is known to be
+                      // waiting for busy/wel to drop (via sending flash READ_STATUS commands) os the
+                      // host is held in reset.
+                      `uvm_info(`gfn, "Updating WEL (0x1)", UVM_DEBUG)
+                      update_wel = 1;
+                      wel_val = 1;
+                      spi_side_flash_status.wel = 1;
+                      rtl_committed_flash_status = fetch_flash_status_rtl_committed_value();
 
-                    foreach (tl_ul_fuzzy_flash_status_q[i]) begin
-                      if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i]) begin
-                        `uvm_info(`gfn, {$sformatf("The last flash_status written value (0x%0x)",
-                                                   tl_ul_fuzzy_flash_status_q[i]),
-                                         "ocurred before this WREN command - but hasn't crossed",
-                                         "CDC boundaries until now and hence WEL won't be set"},
-                                  UVM_DEBUG)
-                        break;
-                      end // if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i])
-                      if ((rtl_committed_flash_status.other_status ==
-                            tl_ul_fuzzy_flash_status_q[i].other_status) &&
-                           rtl_committed_flash_status.wel &&
-                           !tl_ul_fuzzy_flash_status_q[i].wel) begin
-                        `uvm_info(`gfn, {"Setting WEL bit in tl_ul_fuzzy_flash_status_q[i]",
-                                         $sformatf("=0x%0x", tl_ul_fuzzy_flash_status_q[i])},
-                                  UVM_DEBUG)
-                        tl_ul_fuzzy_flash_status_q[i].wel = 1;
-                      end
+                      // Update flash_status.wel predicted value
+                      `DV_CHECK_EQ_FATAL(ral.flash_status.wel.predict(.value(
+                        spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
+                                         "ral.flash_status.predict did not succeed")
+                      `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
+                                               spi_side_flash_status.wel), UVM_DEBUG)
 
-                    end
+                      foreach (tl_ul_fuzzy_flash_status_q[i]) begin
+                        if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i]) begin
+                          `uvm_info(`gfn, {$sformatf("The last flash_status written value (0x%0x)",
+                                                     tl_ul_fuzzy_flash_status_q[i]),
+                                           "ocurred before this WREN command - but hasn't crossed",
+                                           "CDC boundaries until now and hence WEL won't be set"},
+                                    UVM_DEBUG)
+                          break;
+                        end // if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i])
+                        if ((rtl_committed_flash_status.other_status ==
+                             tl_ul_fuzzy_flash_status_q[i].other_status) &&
+                            rtl_committed_flash_status.wel &&
+                            !tl_ul_fuzzy_flash_status_q[i].wel) begin
+                          `uvm_info(`gfn, {"Setting WEL bit in tl_ul_fuzzy_flash_status_q[i]",
+                                           $sformatf("=0x%0x", tl_ul_fuzzy_flash_status_q[i])},
+                                    UVM_DEBUG)
+                          tl_ul_fuzzy_flash_status_q[i].wel = 1;
+                        end
+
+                      end // foreach (tl_ul_fuzzy_flash_status_q[i])
+                      end // if (!spi_side_flash_status.busy)
+
                   end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wrdi, item.opcode)) begin
-                    `uvm_info(`gfn, "Updating WEL (0x0)", UVM_DEBUG)
-                    update_wel = 1;
-                    wel_val = 0;
-                    spi_side_flash_status.wel = 0;
-                    rtl_committed_flash_status = fetch_flash_status_rtl_committed_value();
 
-                    foreach (tl_ul_fuzzy_flash_status_q[i]) begin
-                      if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i]) begin
+                    if (cfg.en_cov)
+                      cov.wrdi_block_cmd_cg.sample(spi_side_flash_status.busy);
+                    if (!spi_side_flash_status.busy) begin
+                      `uvm_info(`gfn, "Updating WEL (0x0)", UVM_DEBUG)
+                      update_wel = 1;
+                      wel_val = 0;
+                      spi_side_flash_status.wel = 0;
+                      rtl_committed_flash_status = fetch_flash_status_rtl_committed_value();
 
-                        `uvm_info(`gfn, {$sformatf("The last flash_status written value (0x%0x)",
-                                                   tl_ul_fuzzy_flash_status_q[i]),
-                                         "ocurred before this WRDI command - but hasn't crossed",
-                                         "CDC boundaries until now and hence WEL won't be set"
-                                         }
-                                  ,
-                                  UVM_DEBUG)
-                        break;
+                      foreach (tl_ul_fuzzy_flash_status_q[i]) begin
+                        if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i]) begin
+
+                          `uvm_info(`gfn, {$sformatf("The last flash_status written value (0x%0x)",
+                                                     tl_ul_fuzzy_flash_status_q[i]),
+                                           "ocurred before this WRDI command - but hasn't crossed",
+                                           "CDC boundaries until now and hence WEL won't be set"
+                                           }
+                                    ,
+                                    UVM_DEBUG)
+                          break;
+                        end
+                        if ( (rtl_committed_flash_status.other_status ==
+                              tl_ul_fuzzy_flash_status_q[i].other_status) &&
+                             !rtl_committed_flash_status.wel &&
+                             tl_ul_fuzzy_flash_status_q[i].wel) begin
+                          `uvm_info(`gfn, {"Setting WEL bit in tl_ul_fuzzy_flash_status_q[i]",
+                                           $sformatf("=0x%0x", tl_ul_fuzzy_flash_status_q[i])},
+                                    UVM_DEBUG)
+                          tl_ul_fuzzy_flash_status_q[i].wel = 0;
+                        end
                       end
-                      if ( (rtl_committed_flash_status.other_status ==
-                            tl_ul_fuzzy_flash_status_q[i].other_status) &&
-                           !rtl_committed_flash_status.wel &&
-                          tl_ul_fuzzy_flash_status_q[i].wel) begin
-                        `uvm_info(`gfn, {"Setting WEL bit in tl_ul_fuzzy_flash_status_q[i]",
-                                         $sformatf("=0x%0x", tl_ul_fuzzy_flash_status_q[i])},
-                                  UVM_DEBUG)
-                        tl_ul_fuzzy_flash_status_q[i].wel = 0;
-                      end
-                    end
 
 
-                    // Update flash_status.wel predicted value
-                    `DV_CHECK_EQ_FATAL( ral.flash_status.wel.predict(.value(
-                                        spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
-                                        "ral.flash_status.predict did not succeed")
-                    `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
-                                             spi_side_flash_status.wel), UVM_DEBUG)
+                      // Update flash_status.wel predicted value
+                      `DV_CHECK_EQ_FATAL( ral.flash_status.wel.predict(.value(
+                        spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
+                                          "ral.flash_status.predict did not succeed")
+                      `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
+                                               spi_side_flash_status.wel), UVM_DEBUG)
 
+
+                    end // if (!spi_side_flash_status.busy)
 
                   end else begin
                     `uvm_fatal(`gfn, $sformatf("shouldn't enter here, opcode 0x%0x", item.opcode))
@@ -623,8 +646,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     set_busy = 0;
     if (reg_cmd_info != null && `gmv(reg_cmd_info.upload)) begin
-      if (`gmv(reg_cmd_info.busy)) set_busy = 1;
-      return UploadCmd;
+
+      if (cfg.en_cov)
+        cov.upload_block_cmd_cg.sample(spi_side_flash_status.busy);
+
+      if (!spi_side_flash_status.busy) begin
+        if (`gmv(reg_cmd_info.busy)) set_busy = 1;
+        return UploadCmd;
+      end
     end
 
     is_status = opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3} &&
