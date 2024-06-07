@@ -14,3 +14,18 @@ lint_off -rule UNUSED -file "*/rtl/otbn_decoder.sv" -match "Bits of signal are n
 lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wmask_bus'"
 
 split_var -module "otbn_controller" -var "err_bits"
+
+// Without some hints, Verilator's conservative combo-loop detection check flags a combinational
+// loop caused by the fact that a requested secure wipe appears as the "stop" signal in the module.
+// This feeds into the big always_comb block, which drives sec_wipe_base_o. Seeing a (false)
+// dependency from the secure wipe request to the requested wipe address, it then sees a (true) path
+// from there to the secure wipe request (because too many writes to x1 cause an error).
+//
+// Break the apparent loop by telling Verilator to factor the writes to sec_wipe_base_o into their
+// own always_comb block, which will not depend on the stop signal.
+isolate_assignments -module "otbn_start_stop_control" -var "sec_wipe_base_o"
+
+// This is an analogous problem, where a secure wipe request feeds into the always_comb block that
+// can write to state_error_d (when state_q is invalid), which then (correctly) feeds into an error
+// condition that can start a secure wipe.
+isolate_assignments -module "otbn_start_stop_control" -var "state_error_d"
