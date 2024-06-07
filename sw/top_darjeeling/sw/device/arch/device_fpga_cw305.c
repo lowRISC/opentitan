@@ -36,6 +36,11 @@ const uint32_t kUartNCOValue =
 const uint32_t kUartTxFifoCpuCycles =
     CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
 
+const uint64_t kSpiHostFreqHz = 50 * 1000 * 1000;  // 50MHz
+
+const uint32_t kSpiHostDivValue =
+    CALCULATE_SPI_HOST_DIV(kSpiHostFreqHz, kClockFreqPeripheralHz);
+
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 

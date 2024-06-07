@@ -333,3 +333,25 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
+
+cc_library(
+    name = "spi_nor_flash",
+    srcs = ["//sw/lib/sw/device/silicon_creator:spi_nor_flash.c"],
+    hdrs = ["//sw/lib/sw/device/silicon_creator:spi_nor_flash.h"],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/silicon_creator/lib/drivers:spi_host",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:rom_print",
+    ],
+)
+
+cc_test(
+    name = "spi_nor_flash_unittest",
+    srcs = ["//sw/lib/sw/device/silicon_creator:spi_nor_flash_unittest.cc"],
+    deps = [
+        ":spi_nor_flash",
+        "@googletest//:gtest_main",
+    ],
+)
