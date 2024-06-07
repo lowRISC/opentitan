@@ -601,7 +601,7 @@ impl CommandDispatch for GpioBitbang {
         let gpio_pins = transport.gpio_pins(&self.pins)?;
         let mut outbound_data_accumulator: Vec<u8> = Vec::new();
         let mut inbound_data_accumulator: Vec<u8> = Vec::new();
-        let (mut sequence, output_map) = opentitanlib::util::bitbang::parse_sequence(
+        let (sequence, output_map) = opentitanlib::util::bitbang::parse_sequence(
             &self.sequence,
             gpio_pins.len(),
             self.clock,
@@ -614,7 +614,7 @@ impl CommandDispatch for GpioBitbang {
                 .map(Rc::borrow)
                 .collect::<Vec<&dyn GpioPin>>(),
             self.clock,
-            &mut sequence,
+            sequence,
         )?;
         let mut samples = HashMap::new();
         for (label, byte_index) in output_map {

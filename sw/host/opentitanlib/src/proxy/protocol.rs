@@ -114,6 +114,7 @@ pub enum BitbangEntryRequest {
     Write { data: Vec<u8> },
     Both { data: Vec<u8> },
     Delay { clock_ticks: u32 },
+    Await { mask: u8, pattern: u8 },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -121,20 +122,25 @@ pub enum BitbangEntryResponse {
     Write,
     Both { data: Vec<u8> },
     Delay,
+    Await,
 }
 
 #[derive(Serialize, Deserialize)]
 pub enum GpioBitRequest {
-    Run {
+    Start {
         pins: Vec<String>,
         clock_ns: u64,
         entries: Vec<BitbangEntryRequest>,
     },
+    Query,
 }
 
 #[derive(Serialize, Deserialize)]
 pub enum GpioBitResponse {
-    Run { entries: Vec<BitbangEntryResponse> },
+    Start,
+    // GpioBitRequest::Query will be answered by either QueryNotDone or QueryDone.
+    QueryNotDone,
+    QueryDone { entries: Vec<BitbangEntryResponse> },
 }
 
 #[derive(Serialize, Deserialize)]

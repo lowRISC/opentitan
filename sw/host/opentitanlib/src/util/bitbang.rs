@@ -15,6 +15,11 @@ enum Token<'a> {
     Numeric(&'a str),
     Alphabetic(&'a str),
     Quoted(&'a str),
+
+    Await,
+
+    LParen,
+    RParen,
 }
 
 fn get_token<'a>(
@@ -53,7 +58,10 @@ fn get_token<'a>(
                 None => break input.len(),
             }
         };
-        Ok(Some(Token::Alphabetic(&input[token_start..token_end])))
+        match &input[token_start..token_end] {
+            "await" => Ok(Some(Token::Await)),
+            other => Ok(Some(Token::Alphabetic(other))),
+        }
     } else if first_char == '\'' {
         let token_end = loop {
             match iter.next() {
@@ -84,6 +92,10 @@ fn get_token<'a>(
             }
         };
         Ok(Some(Token::Quoted(&input[token_start..token_end])))
+    } else if first_char == '(' {
+        Ok(Some(Token::LParen))
+    } else if first_char == ')' {
+        Ok(Some(Token::RParen))
     } else {
         bail!("Unexpected character `{}`", first_char);
     }
@@ -124,13 +136,18 @@ pub fn parse_clock_frequency(input: &str) -> Result<Duration> {
 /// list of `BitbangEntry` corresponding to the parsed instructions.  The slices in the entries
 /// will refer to one of the two "accumulator vectors" provided by the caller, which this function
 /// will clear out and resize according to need.
+#[allow(clippy::type_complexity)]
 pub fn parse_sequence<'a, 'wr, 'rd>(
     input: &'a str,
     num_pins: usize,
     clock: Duration,
     accumulator_rd: &'rd mut Vec<u8>,
     accumulator_wr: &'wr mut Vec<u8>,
-) -> Result<(Vec<BitbangEntry<'rd, 'wr>>, HashMap<&'a str, usize>)> {
+) -> Result<(Box<[BitbangEntry<'rd, 'wr>]>, HashMap<&'a str, usize>)> {
+    ensure!(
+        num_pins > 0,
+        "Must specify at least one GPIO pin for bitbanging"
+    );
     let all_tokens = get_all_tokens(input)?;
 
     let mut token_map: HashMap<&'a str, usize> = HashMap::new();
@@ -141,6 +158,31 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
     let mut tokens: &[Token] = &all_tokens;
     loop {
         match tokens {
+            [Token::Await, Token::LParen, rest @ ..] => {
+                ensure!(
+                    !last_token_was_capture,
+                    "Capturing GPIO samples only supported immediately preceeding output, not `await`.  (Consider repeating the previous output values before the `await`.)",
+                );
+                tokens = rest;
+                loop {
+                    match tokens {
+                        [Token::Numeric(_), rest @ ..] => {
+                            tokens = rest;
+                        }
+                        [Token::Alphabetic(_), rest @ ..] => {
+                            tokens = rest;
+                        }
+                        [Token::RParen, rest @ ..] => {
+                            tokens = rest;
+                            break;
+                        }
+                        _ => {
+                            bail!("Mismatched parenthesis");
+                        }
+                    }
+                }
+                last_token_was_capture = false;
+            }
             [Token::Numeric(_), Token::Alphabetic(_), rest @ ..] => {
                 ensure!(
                     !last_token_was_capture,
@@ -181,6 +223,47 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
     let mut tokens: &[Token] = &all_tokens;
     loop {
         match tokens {
+            [Token::Await, Token::LParen, rest @ ..] => {
+                tokens = rest;
+                let mut pattern = String::new();
+                loop {
+                    match tokens {
+                        [Token::Numeric(p), rest @ ..] => {
+                            pattern = pattern + p;
+                            tokens = rest;
+                        }
+                        [Token::Alphabetic(p), rest @ ..] => {
+                            pattern = pattern + p;
+                            tokens = rest;
+                        }
+                        [Token::RParen, rest @ ..] => {
+                            tokens = rest;
+                            break;
+                        }
+                        _ => {
+                            bail!("Mismatched parenthesis");
+                        }
+                    }
+                }
+                let pattern_str = pattern.as_bytes();
+                let mut mask = 0u8;
+                let mut pattern = 0u8;
+                for (i, ch) in pattern_str.iter().enumerate() {
+                    match pattern_str[i] {
+                        b'0' => {
+                            mask |= 1 << i;
+                        }
+                        b'1' => {
+                            pattern |= 1 << i;
+                            mask |= 1 << i;
+                        }
+                        b'x' | b'X' => (),
+                        _ => bail!("Unexpected character in await pattern: `{}`", ch),
+                    }
+                }
+                ensure!(mask != 0, "Pattern consisting of only x'es not allowed");
+                result.push(BitbangEntry::Await { mask, pattern });
+            }
             [Token::Numeric(num), Token::Alphabetic(time_unit), rest @ ..] => {
                 let ticks = if *time_unit == "ticks" {
                     num.parse::<u32>().unwrap()
@@ -233,7 +316,7 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
         }
     }
 
-    Ok((result, token_map))
+    Ok((result.into(), token_map))
 }
 
 #[cfg(test)]
@@ -278,6 +361,23 @@ mod tests {
                 Token::Alphabetic("ms"),
                 Token::Numeric("10"),
                 Token::Quoted("'s7'"),
+            ],
+        );
+        assert_eq!(
+            // Combined example, using "await(...)".
+            get_all_tokens("01 25ms await(x1) 100us 11").unwrap(),
+            [
+                Token::Numeric("01"),
+                Token::Numeric("25"),
+                Token::Alphabetic("ms"),
+                Token::Await,
+                Token::LParen,
+                Token::Alphabetic("x"),
+                Token::Numeric("1"),
+                Token::RParen,
+                Token::Numeric("100"),
+                Token::Alphabetic("us"),
+                Token::Numeric("11"),
             ],
         );
     }

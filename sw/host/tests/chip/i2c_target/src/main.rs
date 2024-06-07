@@ -197,7 +197,7 @@ fn test_write_repeated_start(
         test_utils::bitbanging::i2c::encoder::Transfer::Write(REFERENCE_DATA),
         test_utils::bitbanging::i2c::encoder::Transfer::Stop,
     ]);
-    let mut waveform = [BitbangEntry::Write(transaction)];
+    let waveform = Box::new([BitbangEntry::Write(transaction)]);
 
     log::info!("Testing write transaction at I2C address {address:02x}");
     let transfer = I2cTransferStart::execute_write(&*uart, || {
@@ -207,7 +207,7 @@ fn test_write_repeated_start(
                 .map(Rc::borrow)
                 .collect::<Vec<&dyn GpioPin>>(),
             Duration::from_micros(10),
-            &mut waveform,
+            waveform,
         )?;
         Ok(())
     })?;
@@ -259,7 +259,7 @@ fn test_write_read_repeated_start(
     // Extend the number of samples to make sure that the stop bit will be captured in the read buffer.
     transfer.extend([0x03; 5]);
     let mut buffer = vec![0u8; transfer.len()];
-    let mut waveform = [BitbangEntry::Both(&transfer, &mut buffer)];
+    let waveform = Box::new([BitbangEntry::Both(&transfer, &mut buffer)]);
 
     log::info!("Testing write transaction at I2C address 0x{address:02x}");
     let txn = I2cTransferStart::new(address, READ_REFERENCE_DATA, false);
@@ -270,7 +270,7 @@ fn test_write_read_repeated_start(
                 .map(Rc::borrow)
                 .collect::<Vec<&dyn GpioPin>>(),
             Duration::from_micros(10),
-            &mut waveform,
+            waveform,
         )?;
         Ok(())
     })?;
