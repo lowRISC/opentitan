@@ -738,7 +738,7 @@ module flash_phy_rd
   logic [BusFullWidth-1:0] data_out_pre_xor;
   assign data_out_pre_xor = data_err_o ? inv_data_integ : data_out_intg;
 
-  assign data_ctrl_o = data_out_pre_xor;
+  assign data_ctrl_o = host_req ? inv_data_integ : data_out_pre_xor;
 
   logic [BusBankAddrW-1:0] addr_xor_muxed;
   logic [BusBankAddrW-1:0] fifo_addr_xor_muxed;
