@@ -26,14 +26,17 @@
   .global rom_exception_handler
   .type rom_exception_handler, @function
 rom_exception_handler:
-  // Save all registers to the stack.  Although we adjust SP by the full
-  // exception context size, we really only need to save 4 registers to
-  // handle flash ECC faults.
-  addi sp, sp, -OT_CONTEXT_SIZE
-  sw   t0,  2 * OT_WORD_SIZE(sp)
-  sw   t1,  3 * OT_WORD_SIZE(sp)
-  sw   t2,  4 * OT_WORD_SIZE(sp)
-  sw   t3,  5 * OT_WORD_SIZE(sp)
+  // Save all registers to an exception stack.  The ROM locates its initial
+  // stack at `ram_end - 16` and the stack grows downwards from there, leaving
+  // 16 bytes at the top of RAM.  We need exactly 16 bytes to handle the flash
+  // exception, so we save `sp` into `mscratch` and use those 16 bytes to save
+  // the 4 registers we need to handle the flash exception.
+  csrw mscratch, sp
+  la   sp, (_stack_end - 16)
+  sw   t0,  0 * OT_WORD_SIZE(sp)
+  sw   t1,  1 * OT_WORD_SIZE(sp)
+  sw   t2,  2 * OT_WORD_SIZE(sp)
+  sw   t3,  3 * OT_WORD_SIZE(sp)
 
   /**
    * Compute the MEPC of the instruction after the fault.
@@ -86,12 +89,12 @@ rom_exception_handler:
   // Load the correct MEPC for the next instruction in the current task.
   csrw mepc, t0
 
-  // Restore all registers from the stack and adjust SP to its former value.
-  lw   t0,  2 * OT_WORD_SIZE(sp)
-  lw   t1,  3 * OT_WORD_SIZE(sp)
-  lw   t2,  4 * OT_WORD_SIZE(sp)
-  lw   t3,  5 * OT_WORD_SIZE(sp)
-  addi sp, sp, OT_CONTEXT_SIZE
+  // Restore all registers from the stack and restore SP to its former value.
+  lw   t0,  0 * OT_WORD_SIZE(sp)
+  lw   t1,  1 * OT_WORD_SIZE(sp)
+  lw   t2,  2 * OT_WORD_SIZE(sp)
+  lw   t3,  3 * OT_WORD_SIZE(sp)
+  csrr sp, mscratch
   mret
 
 .L_not_a_flash_error:
@@ -99,6 +102,10 @@ rom_exception_handler:
   // handler for all other exceptiosn and interrupts.  That handler emits
   // the fault info to the UART and initiates shutdown.  No register state
   // preservation is necessary because we're not coming back.
+  //
+  // Note: we _also_ do not restore SP - we'll restart the stack at
+  // `ram_end - 16`.  This allows us to report exceptions after jumping
+  // to the next stage if the next stage has trashed its SP register.
   j rom_interrupt_handler
   unimp
   unimp
