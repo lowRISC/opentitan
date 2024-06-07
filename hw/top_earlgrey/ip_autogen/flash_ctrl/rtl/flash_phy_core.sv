@@ -46,7 +46,8 @@ module flash_phy_core
   output logic                       rd_done_o,
   output logic                       prog_done_o,
   output logic                       erase_done_o,
-  output logic [BusFullWidth-1:0]    rd_data_o,
+  output logic [BusFullWidth-1:0]    rd_data_host_o,
+  output logic [BusFullWidth-1:0]    rd_data_ctrl_o,
   output logic                       rd_err_o,
   output logic                       ecc_single_err_o,
   output logic [BusBankAddrW-1:0]    ecc_addr_o,
@@ -433,6 +434,7 @@ module flash_phy_core
     .buf_en_i(rd_buf_en_i),
     //.req_i(reqs[PhyRead] | host_req),
     .req_i(phy_req & (rd_i | host_req)),
+    .host_req_i(host_req),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),
@@ -445,7 +447,8 @@ module flash_phy_core
     .rdy_o(rd_stage_rdy),
     .data_valid_o(rd_stage_data_valid),
     .data_err_o(phy_rd_err),
-    .data_o(rd_data_o),
+    .data_host_o(rd_data_host_o),
+    .data_ctrl_o(rd_data_ctrl_o),
     .idle_o(rd_stage_idle),
      // a catastrophic arbitration error has been observed, just dump
      // dump returns until all transactions are flushed.
