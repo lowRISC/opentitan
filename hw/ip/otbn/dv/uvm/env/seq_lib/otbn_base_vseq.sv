@@ -786,6 +786,14 @@ class otbn_base_vseq extends cip_base_vseq #(
     // 10 times and each run has taken less than 75% of the time of the previous run. This shouldn't
     // happen!
     `DV_CHECK_FATAL(timed_out, "Failed to pick a working time-out")
+
+    // We have stopped the run_otbn process that was running. Update the "internal state to the
+    // vseq" so that we can safely call this task another time. The running_ status is used to track
+    // the fact that run_otbn is going (not true because we just killed the process). Similarly,
+    // stop_tokens is positive because _run_sideload_sequence was running when it was killed. Zero
+    // that.
+    running_ = 1'b0;
+    stop_tokens = 0;
   endtask
 
   // Wait for (the one and only) interrupt to strike. Returns early on reset
