@@ -414,9 +414,6 @@ class OTBNState:
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
 
-        # Clear RMA request flag
-        self.rma_req = False
-
     def get_fsm_state(self) -> FsmState:
         return self._fsm_state
 
