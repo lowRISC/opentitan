@@ -162,26 +162,41 @@ class otbn_common_vseq extends otbn_base_vseq;
       $assertoff(0, "tb.MatchingReqURND_A");
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid_A");
     end
+
     if (if_proxy.sec_cm_type == SecCmPrimCount) begin
+      // If we are injecting an error into a prim_count inside a prim_fifo_sync, we need to disable
+      // the DataKnown_A assertion inside the fifo. The problem is that we're telling the FIFO that
+      // it contains some elements that it doesn't really contain, so the backing memory is probably
+      // 'X, which fails an !$isunknown() check. The touching_fifo bit is computed to figure out
+      // whether this is happening.
+      string dmem_path = "tb.dut.u_tlul_adapter_sram_dmem";
+      string imem_path = "tb.dut.u_tlul_adapter_sram_imem";
+      string fifo_paths[] = '{{dmem_path, ".u_reqfifo"},
+                              {dmem_path, ".u_rspfifo"},
+                              {imem_path, ".u_sramreqfifo"},
+                              {imem_path, ".u_rspfifo"}};
+      bit    touching_fifo = 1'b0;
+
       cfg.model_agent_cfg.vif.otbn_disable_stack_check();
-      if (if_proxy.path == {"tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
-                            "gen_secure_ptrs.u_wptr"} ||
-          if_proxy.path == {"tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
-                            "gen_secure_ptrs.u_rptr"}) begin
-        if (enable) begin
-          $asserton(0, "tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.DataKnown_A");
-        end else begin
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.DataKnown_A");
+
+      // Compute touching_fifo (are we corrupting a prim_fifo_sync?)
+      foreach (fifo_paths[i]) begin
+        string cnt_path = {fifo_paths[i], ".gen_normal_fifo.u_fifo_cnt"};
+        string ptr_rel_paths[] = '{"gen_secure_ptrs.u_rptr", "gen_secure_ptrs.u_wptr"};
+
+        foreach (ptr_rel_paths[j]) begin
+          if (if_proxy.path == {cnt_path, ".", ptr_rel_paths[j]}) begin
+            touching_fifo = 1'b1;
+          end
         end
       end
-      if (if_proxy.path == {"tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
-                            "gen_secure_ptrs.u_wptr"} ||
-          if_proxy.path == {"tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
-                            "gen_secure_ptrs.u_rptr"}) begin
-        if (enable) begin
-          $asserton(0, "tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.DataKnown_A");
+
+      if (touching_fifo) begin
+        if (!enable) begin
+          `uvm_info(`gfn, "Doing FI on a prim_fifo_sync. Disabling related assertions", UVM_HIGH)
+          $assertoff(0, "prim_fifo_sync");
         end else begin
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.DataKnown_A");
+          $asserton(0, "prim_fifo_sync");
         end
       end
     end
