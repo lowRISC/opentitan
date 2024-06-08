@@ -16,21 +16,56 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
   // This will normally just be a couple of cycles (because most instructions read from the register
   // file), but it might be a bit longer if we happen to be stalled waiting for the EDN, which
   // happens on a RND read.
-  task await_use();
+  task await_use(ref bit seen_use);
     logic rd_en;
     `uvm_info(`gfn, "Waiting for selected RF to be used", UVM_LOW)
-    `DV_SPINWAIT_EXIT(
-      do begin
-        @(cfg.clk_rst_vif.cbn);
-        rd_en = insert_intg_err_to_a ? cfg.trace_vif.rf_base_rd_en_a :
-                                       cfg.trace_vif.rf_base_rd_en_b;
-      end while(!rd_en);,
-      cfg.clk_rst_vif.wait_clks(20000);)
-    if (!rd_en) begin
-      `uvm_fatal(`gfn,
-                 $sformatf("Timeout while waiting for register file %s to be used",
-                           insert_intg_err_to_a ? "A" : "B"))
+    fork begin : isolation_fork
+      fork
+        // Wait until we can see a read on the expected side
+        do begin
+          @(cfg.clk_rst_vif.cbn);
+          rd_en = insert_intg_err_to_a ?
+                  cfg.trace_vif.rf_base_rd_en_a : cfg.trace_vif.rf_base_rd_en_b;
+        end while(!rd_en);
+        // Wait until the program stops running. If it has stopped, there definitely won't be a read
+        // in the future.
+        wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+      join_any
+      disable fork;
+    end join
+    seen_use = rd_en;
+  endtask
+
+  // Start running a program through OTBN and finish the task on a cycle when the selected register
+  // file is being used.
+  task run_until_use();
+    int num_tries = 4;
+
+    repeat (num_tries) begin
+      bit seen_use;
+
+      // Start running OTBN. When this task returns, we'll be in the middle of a run.
+      start_running_otbn(.check_end_addr(1'b0));
+
+      // Now wait until the register file is being used
+      await_use(seen_use);
+
+      // We expect that to have worked (so seen_use is true). In that case, we can return.
+      if (seen_use) return;
+
+      // The program run has completed. Before we try again, we need to allow OTBN to finish its
+      // current operation (to allow it to do the secure wipe after the run). Wait until we get to
+      // Idle. In theory, we might get to Locked, but that shouldn't happen when running a standard
+      // binary without outside interference!
+      wait (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle);
     end
+
+    // The test run completed several times while we were waiting to see a read on the expected
+    // side. This shouldn't really happen, because it means that start_running_otbn() picked a time
+    // that was "almost at the end" of the program several times in a row.
+    `uvm_fatal(`gfn,
+               $sformatf("Program completed %d times before using register file %0s.",
+                         num_tries, insert_intg_err_to_a ? "A" : "B"))
   endtask
 
   function bit [otbn_pkg::BaseIntgWidth-1:0] corrupt_data(
@@ -74,11 +109,9 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
     `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
     load_elf(elf_path, 1'b1);
 
-    // Start running OTBN. When this task returns, we'll be in the middle of a run.
-    start_running_otbn(.check_end_addr(1'b0));
-
-    // Wait until the register containing the integrity-checked value is being used.
-    await_use();
+    // Start running OTBN. When this task returns, we'll be in the middle of a run and executing an
+    // instruction that reads from the selected register file.
+    run_until_use();
 
     inject_errors();
 
