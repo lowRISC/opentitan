@@ -374,8 +374,6 @@ module otbn_start_stop_control
     end
     if (mubi4_test_invalid(rma_ack_q)) begin
       rma_ack_d = MuBi4False;
-      mubi_err_d = 1'b1;
-      state_d = OtbnStartStopStateLocked;
     end
   end
 
