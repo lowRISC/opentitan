@@ -150,6 +150,52 @@ class otbn_common_vseq extends otbn_base_vseq;
     csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF));
   endtask : check_sec_cm_fi_resp
 
+  // Return 1 if path is a pointer in the prim_count associated with the fifo at fifo_path
+  function bit is_ptr_in_prim_counts_fifo(string path, string fifo_path);
+    string cnt_path = {fifo_path, ".gen_normal_fifo.u_fifo_cnt"};
+    string ptr_rel_paths[] = '{"gen_secure_ptrs.u_rptr", "gen_secure_ptrs.u_wptr"};
+
+    foreach (ptr_rel_paths[i]) begin
+      if (path == {cnt_path, ".", ptr_rel_paths[i]}) begin
+        return 1'b1;
+      end
+    end
+    return 1'b0;
+  endfunction
+
+  // Return 1 if path is a pointer in a prim_count for a fifo in with the adapter at adapter_path.
+  //
+  // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
+  // request fifo.
+  function bit is_ptr_in_adapters_fifo(string path, string adapter_path, output bit in_req_fifo);
+    string fifo_paths[] = '{{adapter_path, ".u_reqfifo"},
+                            {adapter_path, ".u_sramreqfifo"},
+                            {adapter_path, ".u_rspfifo"}};
+
+    foreach (fifo_paths[i]) begin
+      if (is_ptr_in_prim_counts_fifo(path, fifo_paths[i])) begin
+        in_req_fifo = (i == 0 || i == 1);
+        return 1'b1;
+      end
+    end
+    return 1'b0;
+  endfunction
+
+  // Return 1 if path is a pointer for a prim_count associated with an sram adapter.
+  //
+  // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
+  // request fifo.
+  function bit is_ptr_in_fifo(string path, output bit in_req_fifo);
+    string adapter_paths[] = {{"tb.dut.u_tlul_adapter_sram_dmem"},
+                              {"tb.dut.u_tlul_adapter_sram_imem"}};
+
+    foreach (adapter_paths[i]) begin
+      if (is_ptr_in_adapters_fifo(path, adapter_paths[i], in_req_fifo)) return 1'b1;
+    end
+
+    return 1'b0;
+  endfunction
+
   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
     if (enable) begin
       $asserton(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
@@ -169,34 +215,29 @@ class otbn_common_vseq extends otbn_base_vseq;
       // it contains some elements that it doesn't really contain, so the backing memory is probably
       // 'X, which fails an !$isunknown() check. The touching_fifo bit is computed to figure out
       // whether this is happening.
-      string dmem_path = "tb.dut.u_tlul_adapter_sram_dmem";
-      string imem_path = "tb.dut.u_tlul_adapter_sram_imem";
-      string fifo_paths[] = '{{dmem_path, ".u_reqfifo"},
-                              {dmem_path, ".u_rspfifo"},
-                              {imem_path, ".u_sramreqfifo"},
-                              {imem_path, ".u_rspfifo"}};
-      bit    touching_fifo = 1'b0;
 
-      cfg.model_agent_cfg.vif.otbn_disable_stack_check();
+      bit touching_fifo = 1'b0, touching_req_fifo = 1'b0;
 
-      // Compute touching_fifo (are we corrupting a prim_fifo_sync?)
-      foreach (fifo_paths[i]) begin
-        string cnt_path = {fifo_paths[i], ".gen_normal_fifo.u_fifo_cnt"};
-        string ptr_rel_paths[] = '{"gen_secure_ptrs.u_rptr", "gen_secure_ptrs.u_wptr"};
-
-        foreach (ptr_rel_paths[j]) begin
-          if (if_proxy.path == {cnt_path, ".", ptr_rel_paths[j]}) begin
-            touching_fifo = 1'b1;
-          end
-        end
-      end
-
-      if (touching_fifo) begin
+      if (is_ptr_in_fifo(if_proxy.path, touching_req_fifo)) begin
         if (!enable) begin
           `uvm_info(`gfn, "Doing FI on a prim_fifo_sync. Disabling related assertions", UVM_HIGH)
           $assertoff(0, "prim_fifo_sync");
         end else begin
           $asserton(0, "prim_fifo_sync");
+        end
+
+        // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes a
+        // reasonable amount of chaos, because we end up with 'X values in our requests, that then
+        // travel all over the dut and are also exposed on external interfaces (TL interfaces).
+        if (touching_req_fifo) begin
+          if (!enable) begin
+            `uvm_info(`gfn, "Doing FI on a request fifo. Disabling related assertions", UVM_HIGH)
+            cfg.m_tl_agent_cfg.check_tl_errs = 1'b0;
+            $assertoff(0, "tb.dut.tlul_checker");
+          end else begin
+            $asserton(0, "tb.dut.tlul_checker");
+            cfg.m_tl_agent_cfg.check_tl_errs = 1'b1;
+          end
         end
       end
     end
