@@ -13,25 +13,38 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
   task body();
     do_end_addr_check = 0;
 
-    // Run the otbn_single_vseq body, which runs a single OTBN application to completion. At the
-    // same time, try to inject an error and check that the RTL (and model) both spot the error. If
-    // we didn't find a good moment to inject the error, fail the test: sadly, it hasn't actually
-    // tested anything.
-    have_injected_error = 1'b0;
-    fork
-      begin
-        super.body();
-      end
-      begin
-        inject_redun_err();
-      end
-    join_any
-
+    // Try to run an OTBN application to completion, injecting an error in the middle. We might be
+    // unlucky and fail to find a good time to inject an error. In that case, try_once will tidy up
+    // and we can try again.
+    repeat (4) begin
+      try_once();
+      if (have_injected_error) break;
+    end
     if (!have_injected_error) begin
       `uvm_fatal(`gfn, "Never found a time to inject an error.")
     end
 
   endtask: body
+
+  // Run the otbn_single_vseq body, which runs a single OTBN application to completion. At the
+  // same time, try to inject an error and check that the RTL (and model) both spot the error.
+  task try_once();
+    fork begin : isolation_fork
+      fork
+        // Run the otbn_single_vseq body
+        super.body();
+        // Try to inject an error
+        inject_redun_err();
+      join_any
+
+      // If have_injected_error is false then super.body() has run to completion and we should kill
+      // the inject_redun_err process (since it isn't going to find a time now). If it is true then
+      // we managed to inject an error. In that case, wait until super.body() has run to completion,
+      // which lets the run_otbn task tidy up properly.
+      if (!have_injected_error) disable fork;
+      else wait fork;
+    end join
+  endtask
 
   // Wait until the value at path becomes nonzero
   task wait_for_flag(string path);
