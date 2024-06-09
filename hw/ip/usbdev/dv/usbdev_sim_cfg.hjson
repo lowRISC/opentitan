@@ -241,6 +241,11 @@
       reseed: 5
     }
     {
+      name: usbdev_spurious_pids_ignored
+      uvm_test_seq: usbdev_bad_traffic_vseq
+      run_opts: ["+wt_spurious_pids=1"]
+    }
+    {
       name: usbdev_stall_trans
       uvm_test_seq: usbdev_stall_trans_vseq
     }

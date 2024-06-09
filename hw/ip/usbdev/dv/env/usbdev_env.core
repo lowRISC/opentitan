@@ -25,6 +25,7 @@ filesets:
       - usbdev_scoreboard.sv: {is_include_file: true}
       - usbdev_env.sv: {is_include_file: true}
       - seq_lib/usbdev_vseq_list.sv: {is_include_file: true}
+      - seq_lib/usbdev_bad_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_base_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_bitstuff_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_bus_rand_vseq.sv: {is_include_file: true}

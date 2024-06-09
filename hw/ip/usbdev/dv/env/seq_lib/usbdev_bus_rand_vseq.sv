@@ -102,7 +102,7 @@ class usbdev_bus_rand_vseq extends usbdev_max_usb_traffic_vseq;
     end
 
     // Generate bus events randomly until asked to stop.
-    while (!traffic_stop) begin
+    while (event_mask && !traffic_stop) begin
       bit [17:0] event_delay;
       bit [2:0] event_type;
       `DV_CHECK_STD_RANDOMIZE_FATAL(event_delay)

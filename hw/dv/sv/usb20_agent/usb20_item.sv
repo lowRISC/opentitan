@@ -31,6 +31,12 @@ class usb20_item extends uvm_sequence_item;
     m_pkt_type = pkt_type;
   endfunction
 
+  // Check whether the Packet IDentifier passes its self-check (upper and lower nibbles are bitwise
+  // complementary).
+  function bit valid_pid();
+    return !(m_pid_type[3:0] ^ m_pid_type[7:4]);
+  endfunction
+
   // Check the PID type of this item is the expected value. If not, raise a fatal error.
   function void check_pid_type(pid_type_e expected);
     `DV_CHECK_EQ_FATAL(m_pid_type, expected)

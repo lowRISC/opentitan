@@ -299,7 +299,7 @@ endtask
   // Construct and transmit a randomized DATA packet to the USB device, retaining a copy for
   // subsequent checks.
   virtual task send_prnd_data_packet(input pid_type_e pid_type,
-                             input bit randomize_length, input bit [6:0] num_of_bytes,
+                             input bit randomize_length = 1'b1, input bit [6:0] num_of_bytes = 0,
                              input bit isochronous_transfer = 1'b0);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_data_pkt);

@@ -75,6 +75,12 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
+  // TODO: This is an incomplete placeholder; in time a BFM shall model what the DUT shall
+  // consider to be a valid packet.
+  function valid_packet(ref usb20_item item);
+    return (item.m_pid_type != PidTypeSofToken && item.valid_pid());
+  endfunction
+
   virtual task process_usb20_fifo();
     usb20_item item;
     forever begin
@@ -86,7 +92,10 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         EvDisconnect: `uvm_info(`gfn, "VBUS Disconnection received from monitor", UVM_MEDIUM)
         EvConnect:    `uvm_info(`gfn, "VBUS Connection received from monitor", UVM_MEDIUM)
         EvPacket:
-          if (item.m_pid_type != PidTypeSofToken) begin
+          // TODO: This check is temporary and prevents simulations from failing as a result of this
+          // code assuming the validity of the USB traffic, now that sequences are deliberately
+          // injecting bad traffic.
+          if (valid_packet(item)) begin
             m_packetiser.pack_pkt(item);
             usbdev_expected_pkt();
             void'(item.pack(actual_pkt));
@@ -96,6 +105,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
             end
             `uvm_info(`gfn, $sformatf("req port item :\n%0s", item.sprint()), UVM_DEBUG)
             compare_usb20_pkt(item);
+          end else begin
+            `uvm_info(`gfn, "Invalid packet received from monitor", UVM_MEDIUM)
           end
         default: `uvm_fatal(`gfn, $sformatf("Invalid/unexpected event type %p", item.m_ev_type))
       endcase
