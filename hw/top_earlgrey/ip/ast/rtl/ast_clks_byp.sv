@@ -87,7 +87,7 @@ always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   end
 end
 
-logic rst_sw_ckbpe_n, clk_ast_ext_scn, da_rst_sw_ckbpe_n, sw_clk_byp_en;
+logic rst_sw_ckbpe_n, clk_ast_ext_scn, sw_ckbpe_sync_n, rst_sw_ckbpe_syn_n, sw_clk_byp_en;
 
 assign rst_sw_ckbpe_n = scan_mode_i ? scan_reset_ni : rst_sw_clk_byp_en;
 `ifndef AST_BYPASS_CLK
@@ -104,12 +104,14 @@ prim_flop_2sync #(
   .clk_i ( clk_ast_ext_scn ),
   .rst_ni ( rst_sw_ckbpe_n ),
   .d_i ( 1'b1 ),
-  .q_o ( da_rst_sw_ckbpe_n )
+  .q_o ( sw_ckbpe_sync_n )
 );
 
+assign rst_sw_ckbpe_syn_n = scan_mode_i ? scan_reset_ni : sw_ckbpe_sync_n;
+
 // De-assert with external clock input
-always_ff @( negedge clk_ast_ext_scn, negedge da_rst_sw_ckbpe_n ) begin
-  if ( !da_rst_sw_ckbpe_n ) begin
+always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_syn_n ) begin
+  if ( !rst_sw_ckbpe_syn_n ) begin
     sw_clk_byp_en <= 1'b0;
   end else begin
     sw_clk_byp_en <= 1'b1;
