@@ -261,8 +261,8 @@ prim_flop #(
 
 // Replace Latch for the OS code
 assign vcaon_pok_por_lat = rglssm_brout || por_sync_n;
-assign ast_pwst_o.aon_pok = vcaon_pok_por_lat;
 assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
+assign ast_pwst_o.aon_pok = vcaon_pok_por;
 
 
 ////////////////////////////////////////
@@ -271,8 +271,8 @@ assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 logic rglssm_vmppr, vcmain_pok_por_src;
 
 assign vcmain_pok_por_src = vcaon_pok_por_lat && vcmain_pok && !rglssm_vmppr;
-assign ast_pwst_o.main_pok = vcmain_pok_por_src;
 assign vcmain_pok_por = scan_mode ? scan_reset_n : vcmain_pok_por_src;
+assign ast_pwst_o.main_pok = vcmain_pok_por;
 
 
 ///////////////////////////////////////
