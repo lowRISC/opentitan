@@ -946,7 +946,7 @@
       tests: []
     }
     {
-      name: spurious_tokens_ignored
+      name: spurious_pids_ignored
       desc: '''
             Check that the device ignores packets with unexpected tokens such as NYET, PRE...
             Also test ACK and NAK when not in response to a transmitted IN packet.
@@ -960,7 +960,7 @@
               a preceding SETUP, OUT or IN token packet.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_spurious_pids_ignored"]
     }
     {
       name: low_speed_traffic

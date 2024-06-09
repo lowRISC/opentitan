@@ -66,3 +66,5 @@
 // These must follow usbdev_max_usb_traffic_vseq.sv
 `include "usbdev_bus_rand_vseq.sv"
 `include "usbdev_streaming_vseq.sv"
+// This must follow usbdev_bus_rand_vseq.sv
+`include "usbdev_bad_traffic_vseq.sv"
