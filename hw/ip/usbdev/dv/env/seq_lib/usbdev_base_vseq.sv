@@ -524,9 +524,15 @@ endtask
     if (!device_address) begin
       device_address = dev_addr;
     end
-    `uvm_info(`gfn, $sformatf("Setting device address to 0x%02x", device_address), UVM_MEDIUM)
+    // Instruct the driver to assert VBUS to the DUT; this is akin to being plugged in.
+    set_vbus_state(1);
     usbdev_connect();
-    wait_for_link_state({LinkActive, LinkActiveNoSOF}, 10 * 1000 * 48);  // 10ms timeout, at 48MHz
+    // Instruct the driver to perform Bus Reset Signaling; keep this to 100us since there's no
+    // point wasting simulation time on all sequences. Full length resets are exercised in
+    // usbdev_bus_rand_vseq.
+    send_bus_reset(100);
+    // Now that the Bus Reset has been completed we may set the device address without losing it.
+    `uvm_info(`gfn, $sformatf("Setting device address to 0x%02x", device_address), UVM_MEDIUM)
     usbdev_set_address(device_address);
   endtask
 
@@ -701,6 +707,12 @@ endtask
       csr_rd(.ptr(ral.wake_events.module_active), .value(active));
       if (active == exp_active) break;
     end
+  endtask
+
+  // It takes a little whilst for the register state to propagate out and back in through the
+  // synchronizers, eg. pull up assertion or software direct drive.
+  virtual task loopback_delay();
+    cfg.clk_rst_vif.wait_clks(5);
   endtask
 
   virtual task inter_packet_delay(int delay = 0);

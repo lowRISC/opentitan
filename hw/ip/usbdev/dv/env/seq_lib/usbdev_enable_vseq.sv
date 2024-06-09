@@ -18,24 +18,37 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     super.pre_start();
   endtask
 
+  // Sense the pins, checking against expectations.
+  task sense_pins(bit exp_dp, bit exp_dn, bit exp_vbus);
+    uvm_reg_data_t sense;
+    // Check that both of the lines are low.
+    csr_rd(.ptr(ral.phy_pins_sense), .value(sense));
+    `DV_CHECK_EQ(get_field_val(ral.phy_pins_sense.rx_dp_i, sense), exp_dp, "DP not as expected")
+    `DV_CHECK_EQ(get_field_val(ral.phy_pins_sense.rx_dn_i, sense), exp_dn, "DN not as expected")
+    // Also, just to be thorough, VBUS should be high.
+    `DV_CHECK_EQ(get_field_val(ral.phy_pins_sense.pwr_sense, sense), exp_vbus,
+                               "VBUS not as expected")
+  endtask
+
   task body();
-    uvm_reg_data_t rd_data;
+    uvm_reg_data_t enabled;
 
-    usbdev_connect();
-    wait_for_link_state({LinkActive, LinkActiveNoSOF}, 10 * 1000 * 48);  // 10ms timeout, at 48MHz
-    usbdev_set_address(dev_addr);
+    // First ensure that the driver has asserted VBUS.
+    set_vbus_state(1);
 
-    configure_out_trans(ep_default); // register configurations for OUT Trans.
+    // Check that connection has not been requested and that the DUT is _not_ connected.
+    csr_rd(.ptr(ral.usbctrl.enable), .value(enabled));
+    `DV_CHECK_EQ(enabled, 0, "DUT connect has been unexpectedly requested")
+    sense_pins(.exp_dp(0), .exp_dn(0), .exp_vbus(1));
+    // ...okay, so we may reasonably infer that neither pull up is asserted.
 
-    // Enable pkt_received interrupt
-    ral.intr_enable.pkt_received.set(1'b1);
-    csr_update(ral.intr_enable);
+    // Now request connection.
+    ral.usbctrl.enable.set(1'b1);
+    csr_update(ral.usbctrl);
+    loopback_delay();
 
-    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
-    check_response_matches(PidTypeAck);
-
-    // Check that the USB device received a packet with the expected properties.
-    check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
+    // Try the pins again.
+    sense_pins(.exp_dp(1), .exp_dn(0), .exp_vbus(1));
   endtask
 
 endclass

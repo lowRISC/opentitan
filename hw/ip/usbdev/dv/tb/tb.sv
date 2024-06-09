@@ -190,8 +190,8 @@ module tb;
   assign (strong0, strong1) usb_p = cio_usb_dp_en ? cio_usb_dp : 1'bZ;
   assign (strong0, strong1) usb_n = cio_usb_dn_en ? cio_usb_dn : 1'bZ;
   // Implement pull ups for the physical USB connection to USBDPI model.
-  assign (weak0, pull1) usb_p = (usb20_if.connected & usb_dp_pullup_en) ? 1'b1 : 1'bz;
-  assign (weak0, pull1) usb_n = (usb20_if.connected & usb_dn_pullup_en) ? 1'b1 : 1'bz;
+  assign (weak0, pull1) usb_p = usb_dp_pullup_en ? 1'b1 : 1'bz;
+  assign (weak0, pull1) usb_n = usb_dn_pullup_en ? 1'b1 : 1'bz;
 
   // Instantiate & connect the USB DPI model for additional block-level testing and coverage.
   usb20_usbdpi u_usb20_usbdpi (

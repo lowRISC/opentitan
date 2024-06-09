@@ -10,6 +10,17 @@ class usbdev_phy_pins_sense_vseq extends usbdev_base_vseq;
   rand bit set_dp;
   rand bit set_dn;
 
+  task pre_start();
+    // Prevent normal device initialization.
+    //
+    // This sequence is designed to drive the USB lines without valid USB traffic, so the
+    // last thing we need is the driver and monitor connecting. The monitor would reject the bus
+    // state or apparent traffic.
+    do_usbdev_init = 1'b0;
+
+    super.pre_start();
+  endtask
+
   task body();
     bit rx_dp;
     bit rx_dn;
@@ -20,7 +31,7 @@ class usbdev_phy_pins_sense_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.phy_pins_drive.dn_o), .value(set_dn));
     csr_wr(.ptr(ral.phy_pins_drive.oe_o), .value(1'b1));
     csr_wr(.ptr(ral.phy_pins_drive.en), .value(1'b1));
-    cfg.clk_rst_vif.wait_clks(5);
+    loopback_delay();
 
     // Read phy_pins_sense reg
     csr_rd(.ptr(ral.phy_pins_sense.rx_dp_i), .value(rx_dp));
