@@ -80,7 +80,11 @@ module spid_status
   output logic sck_status_busy_o,
 
   // indicator of busy for blocking passthrough
-  output logic csb_busy_broadcast_o // CSB domain
+  output logic csb_busy_broadcast_o, // CSB domain
+
+  // Mux in scan reset for the async FIFO that carries SW status reg updates
+  input scan_rst_ni,
+  input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
   ///////////////
@@ -263,7 +267,15 @@ module spid_status
       status_fifo_clr_n <= !sys_update_clr_i;
     end
   end
-  assign status_fifo_rst_n = sys_rst_ni & status_fifo_clr_n;
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_csb_rst_scan_mux (
+    .clk0_i(status_fifo_clr_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
+    .clk_o(status_fifo_rst_n)
+  );
 
   prim_fifo_async #(
     .Width             (StatusW),

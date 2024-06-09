@@ -555,6 +555,7 @@ package spi_device_pkg;
     CsbRstMuxSel,
     ClkMuxSel,
     TpmRstSel,
+    StatusFifoRstSel,
     ScanModeUseLast
   } scan_mode_e;
 

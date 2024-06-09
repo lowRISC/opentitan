@@ -706,7 +706,7 @@ module spi_device
     .clk_o(rst_spi_n)
   );
 
-  logic rst_spi_in_n, rst_spi_out_n;
+  logic rst_spi_in_n, rst_spi_out_sync_n, rst_spi_out_n;
   assign rst_spi_in_n = rst_spi_n;
 
   // Synchronizes reset de-assertion to safely occur in the outclk domain.
@@ -717,10 +717,19 @@ module spi_device
     .clk_i (clk_spi_in_buf),
     .rst_ni(rst_spi_n),
     .d_i   (1'b1),
-    .q_o   (rst_spi_out_n)
+    .q_o   (rst_spi_out_sync_n)
   );
 
-  logic tpm_rst_in_n, tpm_rst_out_n, sys_tpm_rst_n;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_csb_rst_out_scan_mux (
+    .clk0_i(rst_spi_out_sync_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[CsbRstMuxSel])),
+    .clk_o(rst_spi_out_n)
+  );
+
+  logic tpm_rst_in_n, tpm_rst_out_sync_n, tpm_rst_out_n, sys_tpm_rst_n;
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
@@ -739,7 +748,16 @@ module spi_device
     .clk_i (clk_spi_in_buf),
     .rst_ni(tpm_rst_in_n),
     .d_i   (1'b1),
-    .q_o   (tpm_rst_out_n)
+    .q_o   (tpm_rst_out_sync_n)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_tpm_rst_out_scan_mux (
+    .clk0_i (tpm_rst_out_sync_n),
+    .clk1_i (scan_rst_ni),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[TpmRstSel])),
+    .clk_o  (tpm_rst_out_n)
   );
 
   // TPM Read FIFO uses TPM CSb as a reset.
@@ -1254,7 +1272,9 @@ module spi_device
     .cmd_sync_status_busy_o (cmd_sync_status_busy),
     .cmd_sync_status_wel_o  (cmd_sync_status_wel),
     .sck_status_busy_o      (sck_status_busy),
-    .csb_busy_broadcast_o   (csb_status_busy_broadcast) // SCK domain
+    .csb_busy_broadcast_o   (csb_status_busy_broadcast), // SCK domain
+    .scan_rst_ni,
+    .scanmode_i             (scanmode[StatusFifoRstSel])
   );
 
   // Tie unused
