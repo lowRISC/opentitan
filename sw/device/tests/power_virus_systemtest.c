@@ -118,8 +118,8 @@ enum {
    */
   kEdn0SeedMaterialNumWords = 0,
   kEdn1SeedMaterialNumWords = 12,
-  kEdn0ReseedInterval = 128,
-  kEdn1ReseedInterval = 32,
+  kEdn0ReseedInterval = 64,
+  kEdn1ReseedInterval = 16,
   /**
    * KMAC parameters.
    */
@@ -818,10 +818,14 @@ static void configure_entropy_complex(void) {
           },
       .generate_cmd =
           {
+              // The the generate_len to 1 to force CSRNG reseeds to occur more
+              // often. Setting this to a large value may cause the test case to
+              // fail. See `check_ip_activity()` in
+              // `chip_sw_power_virus_vseq.sv` for more details.
               .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
                                             kDifCsrngEntropySrcToggleEnable,
                                             /*cmd_len=*/0,
-                                            /*generate_len=*/4095),
+                                            /*generate_len=*/1),
               .seed_material = edn_empty_seed,
           },
       .reseed_interval = 0,
@@ -1180,6 +1184,13 @@ static void comms_data_load_task(void *task_parameters) {
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
 
+// Block until CSRNG is ready to accept the next command.
+static void csrng_wait_ready(void) {
+  while (!mmio_region_get_bit32(csrng.base_addr, CSRNG_SW_CMD_STS_REG_OFFSET,
+                                CSRNG_SW_CMD_STS_CMD_RDY_BIT)) {
+  }
+}
+
 static void max_power(void) {
   LOG_INFO("Starting the max power task ...");
   // ***************************************************************************
@@ -1273,8 +1284,17 @@ static void max_power(void) {
 
   // Request entropy during max power epoch. Since AES is so fast, realistically
   // we will only be able to request a single block of entropy.
+  csrng_wait_ready();
   mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
                       csrng_instantiate_cmd_header);
+
+  uint32_t csrng_reseed_cmd = csrng_cmd_header_build(
+      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable, /*cmd_len=*/0,
+      /*generate_len=*/0);
+
+  csrng_wait_ready();
+  mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                      csrng_reseed_cmd);
 
   // Issue HMAC process and KMAC squeeze commands.
   kmac_operation_state.squeezing = true;
