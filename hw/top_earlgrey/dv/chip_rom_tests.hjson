@@ -647,16 +647,17 @@
       name: rom_e2e_jtag_inject_test_unlocked0
       uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_test_unlocked0_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
+        "+sw_test_timeout_ns=40_000_000",
         "+use_jtag_dmi=1",
         "+use_otp_image=OtpTypeCustom",
       ]
       reseed: 1
-      run_timeout_mins: 200
+      run_timeout_mins: 240
     }
     {
       name: rom_e2e_jtag_inject_dev
@@ -667,26 +668,28 @@
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
+        "+sw_test_timeout_ns=40_000_000",
         "+use_jtag_dmi=1",
         "+use_otp_image=OtpTypeCustom",
       ]
       reseed: 1
-      run_timeout_mins: 200
+      run_timeout_mins: 240
     }
     {
       name: rom_e2e_jtag_inject_rma
       uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_rma_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
+        "+sw_test_timeout_ns=40_000_000",
         "+use_jtag_dmi=1",
         "+use_otp_image=OtpTypeCustom",
       ]
       reseed: 1
-      run_timeout_mins: 200
+      run_timeout_mins: 240
     }
     {
       name: rom_e2e_static_critical
