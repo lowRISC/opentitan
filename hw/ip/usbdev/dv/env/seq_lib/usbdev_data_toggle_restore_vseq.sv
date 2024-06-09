@@ -19,14 +19,6 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
     InResponseNak
   } in_response_e;
 
-  task pre_start();
-    // Disable automatic connection of the USB device to the USB; we want to exercise the
-    // data toggle restore functionality without interference from the USB host initially.
-    do_usbdev_init = 1'b0;
-
-    super.pre_start();
-  endtask
-
   // Send an OUT packet with the specified DATAx token to the DUT and check that it
   // receives the expected handshake response.
   task send_and_check_packet(bit [3:0] ep, bit data_toggle, bit exp_ack,
@@ -194,13 +186,10 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.ep_out_enable[0]), .value(0));
     csr_wr(.ptr(ral.ep_in_enable[0]), .value(0));
 
-    // Connect the USB device to the USB
-    usbdev_connect();
-
-    // Do not proceed further until the device has exited the Bus Reset signaling of the
-    // usb20_driver module; a Bus Reset will cause the data toggles to be reset automatically by
-    // the DUT.
-    wait_for_link_state({LinkActive, LinkActiveNoSOF}, 10 * 1000 * 48);  // 10ms timeout, at 48MHz
+    // Ask the driver to perform Bus Reset Signaling; only a short reset of 100us because anything
+    // longer just wastes simulation time. This also clears the device address.
+    send_bus_reset(100);
+    // After a Bus Reset we must reinstate the device address before traffic will be accepted.
     usbdev_set_address(dev_addr);
 
     // A Bus Reset should have occurred above, which resets all of the Data Toggle bits to zero.

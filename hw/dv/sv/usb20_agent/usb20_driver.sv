@@ -26,8 +26,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endfunction
 
   virtual task run_phase(uvm_phase phase);
+    reset_signals();
     forever begin
-      reset_signals();
       get_and_drive();
     end
   endtask
@@ -332,22 +332,9 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     // Bus is unpowered and inactive.
     cfg.bif.drive_vbus = 1'b0;
     cfg.bif.usb_rx_d_i = 1'b0;
-    cfg.bif.drive_p  = 1'b0;
-    cfg.bif.drive_n = 1'b0;
+    cfg.bif.drive_p  = 1'bZ;
+    cfg.bif.drive_n = 1'bZ;
     @(posedge cfg.bif.rst_ni);
-    if (cfg.bif.active) begin
-      // Idle period post DUT reset.
-      repeat (usb_idle_clk_cycles) begin
-        drive_bit_interval(1'b0, 1'b0);
-      end
-      cfg.bif.drive_vbus = 1'b1;
-      repeat (usb_pwr_good_clk_cycles) begin
-        drive_bit_interval(1'b1, 1'b0);
-      end
-      // Waitfor device active state
-      `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
-      bus_reset();
-    end
   endtask
 
   // USB Bus Reset
