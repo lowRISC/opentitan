@@ -117,7 +117,7 @@
               device in the data packet of the OUT transaction.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_pkt_buffer"]
     }
     {
       name: phy_config_tx_osc_test_mode
@@ -206,7 +206,7 @@
               bit stuffing errors and with a correct CRC16.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_max_length_in_transaction"]
     }
     {
       name: min_length_out_transaction
@@ -236,10 +236,10 @@
               bit stuffing errors and with a correct CRC16.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_min_length_in_transaction"]
     }
     {
-      name: random_length_out_trans
+      name: random_length_out_transaction
       desc: '''
             Verify the reception of random length OUT data packets.
 
@@ -250,10 +250,10 @@
             - Verify that the DUT acknowledges receipt with an ACK handshake packet.
             '''
       stage: V2
-      tests: ["usbdev_random_length_out_trans"]
+      tests: ["usbdev_random_length_out_transaction"]
     }
     {
-      name: random_length_in_trans
+      name: random_length_in_transaction
       desc: '''
             Verify the transmission of random length IN data packets.
 
@@ -264,7 +264,7 @@
               corresponding bit of the 'in_sent' register.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_random_length_in_transaction"]
     }
     {
       name: out_stall
@@ -300,7 +300,7 @@
             - Verify that the device does not send any handshake packet in response.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_out_iso"]
     }
     {
       name: in_iso
@@ -519,12 +519,12 @@
     {
       name: resume_link_active
       desc: '''
-            Verify that when Write a 1 to this bit to instruct usbdev to jump to the LinkResuming state
-            then write will only have an effect when the device is in the LinkPowered state.
+            Verify that the DUT moves from the LinkPowered state to the LinkResuming state in response to
+            the 'resume_link_active' bit being set.
 
             - Perform no operation in J state for more than 3 ms.
-            - Read the link state from usbstate register to see if it is in powered state and then send the
-              resume signal (K state) for 20 ms and set the usbctrl.resume_link_active.
+            - Read the link state from `usbstat` register to see if it is in powered state and then send
+              the resume signal (K state) for 20 ms and set the usbctrl.resume_link_active.
             - Verify that the resume_link_active interrupt goes high and device will be resumed.
             '''
       stage: V2
@@ -998,7 +998,7 @@
               stuck or hold persistent inappropriate state.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_rand_bus_resets"]
     }
     {
       name: rand_disconnects
@@ -1016,7 +1016,7 @@
               configuration completes successfully this time when no disconnection occurs.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_rand_bus_disconnects"]
     }
     {
       name: max_usb_traffic
@@ -1027,7 +1027,7 @@
             interrupts.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_max_usb_traffic"]
     }
     {
       name: stress_usb_traffic
@@ -1037,7 +1037,7 @@
             not interfere with the transmission and reception of valid traffic.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_stress_usb_traffic"]
     }
     {
       name: in_packet_retraction

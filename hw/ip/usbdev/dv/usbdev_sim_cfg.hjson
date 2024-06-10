@@ -173,7 +173,7 @@
       reseed: 10
     }
     {
-      name: usbdev_random_length_out_trans
+      name: usbdev_random_length_out_transaction
       uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
@@ -233,16 +233,16 @@
       uvm_test_seq: usbdev_in_iso_vseq
     }
     {
-      name: random_length_in_trans
+      name: usbdev_random_length_in_transaction
       uvm_test_seq: usbdev_in_rand_trans_vseq
     }
     {
-      name: min_length_in_transaction
+      name: usbdev_min_length_in_transaction
       uvm_test_seq: usbdev_in_rand_trans_vseq
       run_opts: ["+num_of_bytes=0"]
     }
     {
-      name: max_length_in_transaction
+      name: usbdev_max_length_in_transaction
       uvm_test_seq: usbdev_in_rand_trans_vseq
       run_opts: ["+num_of_bytes=64"]
     }
