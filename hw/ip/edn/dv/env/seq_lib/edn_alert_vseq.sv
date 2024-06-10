@@ -31,12 +31,22 @@ class edn_alert_vseq extends edn_base_vseq;
   endtask
 
   task test_edn_cs_hw_sts_alert();
-    string state_path;
+    string state_path, state_path_current, state_path_next;
     state_e exp_state;
     bit [31:0] exp_cmd_sts;
     bit send_generate;
-    bit state_reached_during_cs_handshake;
-    state_path = cfg.edn_vif.sm_err_path("edn_main_sm_next");
+    bit ack_err_during_hs = 1'b0;
+    bit ack_err_before_hs = 1'b0;
+    bit ack_err_after_hs = 1'b0;
+    bit valid_d;
+    bit valid, ready;
+    bit [31:0] hw_cmd_sts_prev;
+    bit [CMD_TYPE_SIZE-1:0] cmd_type_prev;
+    bit auto_mode_prev;
+    bit precise;
+    csrng_pkg::acmd_e exp_cmd_type;
+    state_path_current = cfg.edn_vif.sm_err_path("edn_main_sm");
+    state_path_next = cfg.edn_vif.sm_err_path("edn_main_sm_next");
     // Re-randomize config without invalid mubi values and without clearing the FIFOs.
     cfg.use_invalid_mubi  = 0;
     cfg.cmd_fifo_rst_pct  = 0;
@@ -44,6 +54,10 @@ class edn_alert_vseq extends edn_base_vseq;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endpoint_port,
                                        endpoint_port inside { [0:cfg.num_endpoints - 1] };)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(precise)
+    // When triggering ack errors precisely, trigger on the next state. The agent used for
+    // triggering the ack error has a latency of one clock cycle.
+    state_path = precise ? state_path_next : state_path_current;
 
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");
@@ -78,7 +92,7 @@ class edn_alert_vseq extends edn_base_vseq;
     fork
       `DV_SPINWAIT(
         `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s",
-                                  exp_state.name()), UVM_HIGH)
+                                  exp_state.name()), UVM_MEDIUM)
         forever begin
           uvm_hdl_data_t val;
           state_e act_state;
@@ -87,17 +101,71 @@ class edn_alert_vseq extends edn_base_vseq;
           act_state = state_e'(val);
           if (act_state == exp_state) break;
         end
-        `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("State %s reached", exp_state.name()), UVM_MEDIUM)
+        // In case, we're waiting for a valid/ready handshake or if we're about to start a new
+        // handshake, wait for the handshake to complete before forcing an ack error. Otherwise,
+        // the valid/ready handshake may overwrite the just recorded rsp_sts_err.
+        if (!uvm_hdl_read("tb.dut.u_edn_core.cs_cmd_req_vld_out_d", valid_d)) begin
+          `uvm_fatal(`gfn, "failed to read u_edn_core.cs_cmd_req_vld_out_d");
+        end
+        if (!uvm_hdl_read("tb.dut.csrng_cmd_o.csrng_req_valid", valid)) begin
+          `uvm_fatal(`gfn, "failed to read csrng_cmd_o.csrng_req_valid");
+        end
+        if (!uvm_hdl_read("tb.dut.csrng_cmd_i.csrng_req_ready", ready)) begin
+          `uvm_fatal(`gfn, "failed to read csrng_cmd_i.csrng_req_ready");
+        end
+        `uvm_info(`gfn, $sformatf("Triggering ack error precisely? %d", precise), UVM_MEDIUM)
+        if (!precise) begin
+          // The err ack isn't inserted precisely in the expected state as we want to wait for
+          // outstanding handshakes to finish first.
+          if (valid || valid_d) begin
+            `uvm_info(`gfn, "Waiting for outstandind valid/ready handshake to finish first",
+                UVM_MEDIUM)
+            forever begin
+              if (!uvm_hdl_read("tb.dut.csrng_cmd_o.csrng_req_valid", valid) ||
+                  !uvm_hdl_read("tb.dut.csrng_cmd_i.csrng_req_ready", ready)) begin
+                `uvm_fatal(`gfn, "failed to read valid/ready");
+              end
+              if (valid && ready) begin
+                break;
+              end else begin
+                cfg.clk_rst_vif.wait_n_clks(1);
+              end
+            end
+            ack_err_after_hs = 1'b1;
+          end else begin
+            `uvm_info(`gfn, "No outstandind valid/ready handshake", UVM_MEDIUM)
+            ack_err_before_hs = 1'b1;
+          end
+        end else begin
+          // We insert the err ack precisely now.
+          ack_err_after_hs = valid && ready;
+          ack_err_before_hs = ack_err_after_hs ? 1'b0 : 1'b1;
+        end
+        // Back up the previous value of hw_cmd_sts for the prediction.
+        csr_rd(.ptr(ral.hw_cmd_sts), .value(hw_cmd_sts_prev), .backdoor(1));
+        cmd_type_prev = hw_cmd_sts_prev[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type];
+        auto_mode_prev = hw_cmd_sts_prev[hw_cmd_auto_mode];
         // The next acknowledgement should return an error status.
         cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
         cfg.m_csrng_agent_cfg.cmd_zero_delays = 1;
         cfg.m_csrng_agent_cfg.cmd_force_ack = 1;
-        cfg.clk_rst_vif.wait_n_clks(2);
-        // If the state was reached during the handshake,
-        // the hw_cmd_type in hw_cmd_sts should not have been recorded yet.
-        state_reached_during_cs_handshake =
-            cfg.m_csrng_agent_cfg.vif.mon_cb.cmd_req.csrng_req_valid &&
-            cfg.m_csrng_agent_cfg.vif.mon_cb.cmd_rsp.csrng_req_ready;
+        cfg.clk_rst_vif.wait_n_clks(1);
+        if (precise) begin
+          if (!uvm_hdl_read("tb.dut.csrng_cmd_o.csrng_req_valid", valid) ||
+              !uvm_hdl_read("tb.dut.csrng_cmd_i.csrng_req_ready", ready)) begin
+            `uvm_fatal(`gfn, "failed to read valid/ready");
+          end
+          ack_err_during_hs = valid && ready;
+          ack_err_before_hs = ack_err_during_hs ? 1'b0 : ack_err_before_hs;
+        end
+        // Reintroduce delays for CSRNG acknowledgements and stop forcing the acknowledgement.
+        cfg.m_csrng_agent_cfg.cmd_zero_delays = 0;
+        cfg.m_csrng_agent_cfg.cmd_force_ack = 0;
+        // From now on we want the CSRNG status responses to be valid again.
+        cfg.m_csrng_agent_cfg.rsp_sts_err = csrng_pkg::CMD_STS_SUCCESS;
+        `uvm_info(`gfn, $sformatf("before %d, during %d, after %d",
+            ack_err_before_hs, ack_err_during_hs, ack_err_after_hs), UVM_MEDIUM)
       )
     join_none
 
@@ -139,64 +207,84 @@ class edn_alert_vseq extends edn_base_vseq;
     // If the expected state is AutoLoadIns or AutoFirstAckWait we are expecting a SW command
     // status failure instead of a HW command status failure.
     if (exp_state inside {AutoLoadIns, AutoFirstAckWait}) begin
+      `uvm_info(`gfn, "Backdoor polling sw_cmd_sts for error", UVM_MEDIUM)
       csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
       exp_cmd_sts[hw_cmd_sts+CMD_STS_SIZE-1:hw_cmd_sts] = csrng_pkg::CMD_STS_SUCCESS;
       exp_cmd_sts[hw_cmd_ack] = 1'b0;
     end else begin
+      `uvm_info(`gfn, "Backdoor polling hw_cmd_sts for error", UVM_MEDIUM)
       csr_spinwait(.ptr(ral.hw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
       exp_cmd_sts[hw_cmd_sts+CMD_STS_SIZE-1:hw_cmd_sts] = cfg.which_cmd_sts_err;
       exp_cmd_sts[hw_cmd_ack] = 1'b1;
     end
     cfg.clk_rst_vif.wait_clks(10);
+
     // Expect the csrng_ack_err bit to be set in the recov_alert_sts register.
+    `uvm_info(`gfn, "Checking recov_alert_sts for error", UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[csrng_ack_err] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+
     // Check the hw_cmd_sts.
+    `uvm_info(`gfn, "Checking hw_cmd_sts for error", UVM_MEDIUM)
     exp_cmd_sts[hw_cmd_boot_mode] =
-        (exp_state == BootLoadIns)       ? 1'b0 :
-        (exp_state == BootInsAckWait) && !state_reached_during_cs_handshake ? 1'b0 :
-        (cfg.boot_req_mode == MuBi4True) ? 1'b1 : 1'b0;
+        (exp_state == BootLoadIns)                                    ? 1'b0 :
+        (exp_state == BootInsAckWait) && precise && ack_err_before_hs ? 1'b0 :
+        (cfg.boot_req_mode == MuBi4True)                              ? 1'b1 : 1'b0;
     exp_cmd_sts[hw_cmd_auto_mode] =
-        (exp_state inside {AutoLoadIns, AutoFirstAckWait, AutoDispatch, AutoCaptGenCnt}) ? 1'b0 :
-        (exp_state == AutoSendGenCmd) && !state_reached_during_cs_handshake ? 1'b0 :
-        (cfg.auto_req_mode == MuBi4True) ? 1'b1 : 1'b0;
+        // auto_mode_q is set upon the first Generate in auto mode.
+        (exp_state inside {AutoLoadIns, AutoFirstAckWait, AutoDispatch}) ? 1'b0           :
+        (exp_state == AutoCaptGenCnt) && precise && ack_err_before_hs    ? auto_mode_prev :
+        (exp_state == AutoSendGenCmd) && precise && ack_err_before_hs    ? auto_mode_prev :
+        // Boot mode takes precedence over auto mode.
+        (cfg.auto_req_mode == MuBi4True) &&
+            (cfg.boot_req_mode == MuBi4False)                            ? 1'b1           : 1'b0;
 
     unique case (exp_state)
-      BootLoadIns, AutoLoadIns, AutoFirstAckWait, AutoDispatch, AutoCaptGenCnt: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::INV;
+      BootLoadIns: begin
+        // The Instantiate command in boot mode isn't actually sent out in this state.
+        exp_cmd_type = csrng_pkg::INV;
       end
       BootInsAckWait: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
-            state_reached_during_cs_handshake ? csrng_pkg::INS : csrng_pkg::INV;
+        exp_cmd_type = precise && ack_err_before_hs ? csrng_pkg::INV : csrng_pkg::INS;
       end
-      BootLoadGen: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::INS;
+      AutoLoadIns,
+      AutoFirstAckWait,
+      AutoDispatch: begin
+        // The Instantiate command in auto mode is software driven.
+        exp_cmd_type = csrng_pkg::INV;
       end
+      BootLoadGen,
       BootGenAckWait: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
-            state_reached_during_cs_handshake ? csrng_pkg::GEN : csrng_pkg::INS;
+        exp_cmd_type = ack_err_during_hs || ack_err_after_hs ? csrng_pkg::GEN : cmd_type_prev;
       end
-      BootPulse, BootDone, BootLoadUni, AutoAckWait, AutoCaptReseedCnt: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::GEN;
+      BootPulse,
+      BootDone: begin
+        exp_cmd_type = csrng_pkg::GEN;
       end
+      AutoCaptGenCnt,
       AutoSendGenCmd: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
-            state_reached_during_cs_handshake ? csrng_pkg::GEN : csrng_pkg::INV;
+        exp_cmd_type = ack_err_during_hs || ack_err_after_hs ? csrng_pkg::GEN : cmd_type_prev;
       end
+      AutoCaptReseedCnt,
       AutoSendReseedCmd: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
-            state_reached_during_cs_handshake ? csrng_pkg::RES : csrng_pkg::GEN;
+        exp_cmd_type = ack_err_during_hs || ack_err_after_hs ? csrng_pkg::RES : cmd_type_prev;
+      end
+      AutoAckWait: begin
+        exp_cmd_type = precise && ack_err_after_hs ? csrng_pkg::GEN : cmd_type_prev;
+      end
+      BootLoadUni: begin
+        // The Uninstantiate command in boot mode isn't actually sent out in this state.
+        exp_cmd_type = csrng_pkg::GEN;
       end
       BootUniAckWait: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] =
-            state_reached_during_cs_handshake ? csrng_pkg::UNI : csrng_pkg::GEN;
+        exp_cmd_type = precise && ack_err_before_hs ? csrng_pkg::GEN : csrng_pkg::UNI;
       end
       default: begin
-        exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = csrng_pkg::INV;
+        exp_cmd_type = csrng_pkg::INV;
       end
     endcase
-
+    exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = {exp_cmd_type};
     csr_rd_check(.ptr(ral.hw_cmd_sts), .compare_value(exp_cmd_sts));
     // If coverage is enabled, record the values of the hw_cmd_sts register.
     if (cfg.en_cov) begin
@@ -206,8 +294,10 @@ class edn_alert_vseq extends edn_base_vseq;
           .cmd_ack(exp_cmd_sts[hw_cmd_ack]),
           .acmd(csrng_pkg::acmd_e'(exp_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE])));
     end
+
     // Check the sw_cmd_sts. If the expected state is AutoLoadIns or AutoFirstAckWait
     // we are expecting a SW command status failure instead of a HW command status failure.
+    `uvm_info(`gfn, "Checking sw_cmd_sts for error", UVM_MEDIUM)
     exp_cmd_sts = '0;
     if (exp_state inside {AutoLoadIns, AutoFirstAckWait}) begin
       exp_cmd_sts[sw_cmd_sts+CMD_STS_SIZE-1:sw_cmd_sts] = cfg.which_cmd_sts_err;
@@ -218,19 +308,18 @@ class edn_alert_vseq extends edn_base_vseq;
     exp_cmd_sts[sw_cmd_rdy] = 1'b0;
     exp_cmd_sts[sw_cmd_reg_rdy] = 1'b0;
     csr_rd_check(.ptr(ral.sw_cmd_sts), .compare_value(exp_cmd_sts));
+
     // Check if the current main SM state is RejectCsrngEntropy.
+    `uvm_info(`gfn, "Checking main SM state for RejectCsrngEntropy", UVM_MEDIUM)
     csr_rd_check(.ptr(ral.main_sm_state), .compare_value(edn_pkg::RejectCsrngEntropy));
-    // Reintroduce delays for CSRNG acknowledgements and stop forcing the acknowledgement.
-    cfg.m_csrng_agent_cfg.cmd_zero_delays = 0;
-    cfg.m_csrng_agent_cfg.cmd_force_ack = 0;
+
     // See if we can request some data if the generate has been issued.
     if (send_generate) begin
       m_endpoint_pull_seq.num_trans =
           csrng_pkg::GENBITS_BUS_WIDTH/edn_pkg::ENDPOINT_BUS_WIDTH;
       m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
     end
-    // From now on we want the CSRNG status responses to be valid again.
-    cfg.m_csrng_agent_cfg.rsp_sts_err = csrng_pkg::CMD_STS_SUCCESS;
+
     // Force the genbits valid signal to high and verify that the EDN does not accept
     // any further genbits.
     `DV_SPINWAIT_EXIT(`DV_CHECK(uvm_hdl_force(cfg.edn_vif.genbits_valid_path(), 1'b1));
@@ -242,6 +331,7 @@ class edn_alert_vseq extends edn_base_vseq;
     // Clear the genbits user data to prepare for the next test.
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.clear_h_user_data();
     // Disable the EDN to prepare for the next test.
+    `uvm_info(`gfn, "Disabling EDN for the next test", UVM_MEDIUM)
     value = {prim_mubi_pkg::MuBi4False,  // edn_enable
              prim_mubi_pkg::MuBi4False,  // boot_req_mode
              prim_mubi_pkg::MuBi4False,  // auto_req_mode
