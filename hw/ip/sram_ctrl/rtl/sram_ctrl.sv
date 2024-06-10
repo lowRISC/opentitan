@@ -606,10 +606,6 @@ module sram_ctrl
       u_tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
 
-  // Alert assertions for sparse FSM.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlSramByteFsm_A,
-      u_tlul_adapter_sram.u_sram_byte.gen_integ_handling.u_state_regs, alert_tx_o[0])
-
   // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that
   // `tlul_gnt` is the same as `sram_gnt` when there's an active `tlul_req` that isn't being ignored
   // because the SRAM is initializing.
