@@ -38,7 +38,7 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual function void write_test_phase(input test_phases_e phase);
-    sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
+    sw_symbol_backdoor_overwrite("kTestPhaseDV", {<<8{phase}});
   endfunction
 
   virtual function void set_loopback_pads(input bit [3:0] pad_values);
