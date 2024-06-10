@@ -79,7 +79,7 @@ module prim_fifo_sync #(
     // The latter can be '0' when under reset, while the former is an indication that no more
     // entries can be written.
     assign wready_o = ~full_o & ~under_rst;
-    assign rvalid_o = ~empty & ~under_rst;
+    assign rvalid_o = ~empty & ~under_rst & ~err_o;
 
     prim_fifo_sync_cnt #(
       .Depth(Depth),
@@ -135,7 +135,7 @@ module prim_fifo_sync #(
     end
 
     if (OutputZeroIfEmpty == 1'b1) begin : gen_output_zero
-      assign rdata_o = empty ? Width'(0) : rdata_int;
+      assign rdata_o = empty || err_o ? Width'(0) : rdata_int;
     end else begin : gen_no_output_zero
       assign rdata_o = rdata_int;
     end
