@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
 
 #ifdef __cplusplus
@@ -19,13 +20,18 @@ extern "C" {
 /**
  * Context object for the SPHINCS+ operation.
  *
- * The reference implementation has more fields here: `sk_seed` and
- * hash-specific precomputed values for Haraka and SHA2 hash functions. Since
- * we are only using SHAKE-based SPHINCS+ in this context, and only performing
- * verification, all we need is the public key seed.
+ * The reference implementation stores `sk_seed` here as well, but we only
+ * performing verification so we don't need it.
  */
 typedef struct spx_ctx {
+  /**
+   * Public key seed.
+   */
   uint32_t pub_seed[kSpxNWords];
+  /**
+   * SHA256 state that absorbed pub_seed and padding.
+   */
+  hmac_context_t state_seeded;
 } spx_ctx_t;
 
 #ifdef __cplusplus

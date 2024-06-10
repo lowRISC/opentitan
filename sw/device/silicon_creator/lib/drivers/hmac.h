@@ -32,6 +32,19 @@ typedef struct hmac_digest {
 } hmac_digest_t;
 
 /**
+ * Stored SHA256 operation state.
+ *
+ * Does not store the configuration of the block, so it is important that
+ * configuration parameters such as digest endianness match up when the
+ * operation is restarted.
+ */
+typedef struct hmac_context {
+  uint32_t msg_len_upper;
+  uint32_t msg_len_lower;
+  uint32_t digest[kHmacDigestNumWords];
+} hmac_context_t;
+
+/**
  * Configure the HMAC block in SHA256 mode.
  *
  * This function resets the HMAC module to clear the digest register.
@@ -115,6 +128,33 @@ inline void hmac_sha256_final(hmac_digest_t *digest) {
  * @param[out] digest Buffer to copy digest to.
  */
 void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest);
+
+/**
+ * Save an operation's working state for later.
+ *
+ * This function issues the `stop` command and then waits for HMAC's `done`
+ * interrupt.
+ *
+ * IMPORTANT: the caller must ensure that the amount of message input written
+ * between `start` or `restore` and this function is a *nonzero* number of full
+ * message blocks (512 bits for SHA256). Otherwise, the hardware will wait for
+ * more input before issuing the `done` interrupt, and the computation will
+ * spin forever.
+ *
+ * @param[out] ctx Saved operation state.
+ */
+void hmac_sha256_save(hmac_context_t *ctx);
+
+/**
+ * Restore an operation's working state.
+ *
+ * Issues the `continue` command after restoring the state. Call
+ * `hmac_sha256_configure()` to set the HMAC configuration before calling this
+ * function.
+ *
+ * @param ctx Saved operation state.
+ */
+void hmac_sha256_restore(const hmac_context_t *ctx);
 
 #ifdef __cplusplus
 }
