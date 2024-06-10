@@ -54,7 +54,9 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
       // if in smoke_regression mode, to reduce the run time, we will randomly pick 2 vectors to
       // run this sequence
-      if (cfg.smoke_test) parsed_vectors = parsed_vectors[0:1];
+      if (cfg.smoke_test) begin
+        parsed_vectors = parsed_vectors[0:1];
+      end
 
       foreach (parsed_vectors[j]) begin
         bit [TL_DW-1:0] intr_state_val;

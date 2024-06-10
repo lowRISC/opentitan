@@ -76,7 +76,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    if (do_hmac_init) hmac_init();
+    if (do_hmac_init) begin
+      hmac_init();
+    end
     `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), 1'b1)
   endtask
 
@@ -129,7 +131,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
   virtual task write_discard_config_and_key(bit do_wr_config, bit do_wr_key);
-    if (do_wr_config) write_discard_config();
+    if (do_wr_config) begin
+      write_discard_config();
+    end
     if (do_wr_key) begin
       write_discard_key();
       check_error_code(0);
@@ -159,7 +163,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     `uvm_info(`gfn, "triggering hash to start", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
     // If incorrectly configured or SHA is not enabled, check that an error is signaled.
-    if (invalid_cfg || !ral.cfg.sha_en.get_mirrored_value()) check_error_code();
+    if (invalid_cfg || !ral.cfg.sha_en.get_mirrored_value()) begin
+      check_error_code();
+    end
   endtask
 
   // continue hash computations
@@ -167,7 +173,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     `uvm_info(`gfn, "triggering hash to continue", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
     // If SHA is not enabled, check that an error is signaled.
-    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
+    if (!ral.cfg.sha_en.get_mirrored_value()) begin
+      check_error_code();
+    end
     hash_continue.trigger();
   endtask
 
@@ -272,8 +280,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
           foreach (wr_mask[i]) begin
             // wr_mask is a packed array, word_unpacked is unpack, has different index
-            if (wr_mask[i]) word_unpack[3 - i] = msg_q.pop_front();
-            else word_unpack[3 - i] = $urandom();
+            if (wr_mask[i]) begin
+              word_unpack[3 - i] = msg_q.pop_front();
+            end else begin
+              word_unpack[3 - i] = $urandom();
+            end
           end
           word = {>>byte{word_unpack}};
           `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %04b, words = 0x%0h",
@@ -300,7 +311,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
           if (ral.cfg.sha_en.get_mirrored_value()) begin
             if (!do_back_pressure) begin
-              if ($urandom_range(0, 1)) read_status_intr_clr();
+              if ($urandom_range(0, 1)) begin
+                read_status_intr_clr();
+              end
             end
             // randomly change key, config regs during msg wr, should trigger error or be discarded
             write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
@@ -317,7 +330,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     join
     sar_window.reset();
     // ensure all msg fifo are written before trigger hmac_process
-    if ($urandom_range(0, 1)) rd_msg_length();
+    if ($urandom_range(0, 1)) begin
+      rd_msg_length();
+    end
     read_status_intr_clr();
   endtask : wr_msg
 
@@ -378,7 +393,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
             wr_msg(msg_q, 1); // Do not S&R on the last piece as message boundary could be wrong
             msg_q.delete();   // Flush the queue to avoid infinite loop
           end
-          if ($urandom_range(0, 1)) rd_msg_length();
+          if ($urandom_range(0, 1)) begin
+            rd_msg_length();
+          end
           read_status_intr_clr();
         end
         // Keep it alive only if needed

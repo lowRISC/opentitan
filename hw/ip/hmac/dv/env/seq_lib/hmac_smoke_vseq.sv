@@ -106,14 +106,18 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       wr_key(key);
 
       // randomly read previous digest, if the previous digest is not corrupted by wipe_secret
-      if (i != 1 && $urandom_range(0, 1)) rd_digest();
+      if (i != 1 && $urandom_range(0, 1)) begin
+        rd_digest();
+      end
 
       if (do_wipe_secret == WipeSecretBeforeStart) begin
         `uvm_info(`gfn, $sformatf("wiping before start"), UVM_HIGH)
         wipe_secrets();
         // Here the wipe secret will only corrupt secret keys and current digests.
         // If HMAC is not enabled, check if digest is corrupted.
-        if (!hmac_en) rd_digest();
+        if (!hmac_en) begin
+          rd_digest();
+        end
       end
 
       if (sha_en || $urandom_range(0, 1)) begin
@@ -121,9 +125,14 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         // start stream in msg
         fork
           begin
-            if (do_hash_start) trigger_hash();
-            if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
-            else             wr_msg(msg);
+            if (do_hash_start) begin
+              trigger_hash();
+            end
+            if (do_burst_wr) begin
+              burst_wr_msg(msg, burst_wr_length);
+            end else begin
+              wr_msg(msg);
+            end
           end
 
           begin
@@ -140,7 +149,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         end else if (!sha_en) begin
           if (re_enable_sha) begin // restream in the message
             sha_enable();
-            if (do_hash_start) trigger_hash();
+            if (do_hash_start) begin
+              trigger_hash();
+            end
             wr_msg(msg);
           end else begin // discard current transaction
             continue;
@@ -206,7 +217,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
 
       // if disable sha, digest should be cleared
       // read msg fifo length
-      if ($urandom_range(0, 1)) rd_msg_length();
+      if ($urandom_range(0, 1)) begin
+        rd_msg_length();
+      end
 
       // read digest from DUT
       `uvm_info(`gfn, $sformatf("reading digest"), UVM_LOW)

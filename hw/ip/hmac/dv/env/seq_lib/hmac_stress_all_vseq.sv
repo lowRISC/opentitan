@@ -29,8 +29,11 @@ class hmac_stress_all_vseq extends hmac_base_vseq;
       `downcast(hmac_vseq, seq)
 
       // dut_init (reset) can be skipped
-      if (do_apply_reset) hmac_vseq.do_apply_reset = $urandom_range(0, 1);
-      else hmac_vseq.do_apply_reset = 0;
+      if (do_apply_reset) begin
+        hmac_vseq.do_apply_reset = $urandom_range(0, 1);
+      end else begin
+        hmac_vseq.do_apply_reset = 0;
+      end
 
       hmac_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(hmac_vseq)
