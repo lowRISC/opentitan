@@ -493,8 +493,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.key[app] = 'h0;
     cfg.v[app]   = 'h0;
     cfg.reseed_counter[app] = 1'b0;
-    cfg.compliance[app]     =  ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
-                                 `gmv(ral.fips_force)[app]);
+    cfg.compliance[app]     = 1'b0;
     cfg.status[app]         = 1'b0;
   endfunction
 
