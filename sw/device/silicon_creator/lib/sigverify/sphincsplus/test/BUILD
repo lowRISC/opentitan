@@ -59,6 +59,7 @@ opentitan_test(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:sha2",
     ],
 )
