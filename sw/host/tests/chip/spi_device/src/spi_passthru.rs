@@ -332,6 +332,7 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
     let spi = transport.spi(&opts.spi)?;
     let info = UploadInfo::execute(&*uart, || {
         spi.run_transaction(&mut [Transfer::Write(&[opcode])])?;
+        SpiFlash::wait_for_busy_clear(&*spi)?;
         Ok(())
     })?;
 
