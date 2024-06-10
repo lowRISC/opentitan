@@ -144,6 +144,11 @@ class OTBNState:
         # stop_at_end_of_cycle method and this flag.
         self.rma_req = False
 
+        # This flag gets set as soon as we leave the Idle state for the first
+        # time. It reflects the behaviour of wipe_after_urnd_refresh_q in
+        # otbn_start_stop_control.sv, which skips a round of secure wiping
+        self.has_state_to_wipe = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -312,6 +317,7 @@ class OTBNState:
 
         self._fsm_state = FsmState.PRE_EXEC
         self._next_fsm_state = FsmState.PRE_EXEC
+        self.has_state_to_wipe = True
 
         self.pc = 0
 
