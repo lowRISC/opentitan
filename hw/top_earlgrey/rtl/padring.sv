@@ -60,7 +60,7 @@ module padring
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_pads
     logic dio_out, dio_oe;
 
-    if (k == top_earlgrey_pkg::DioSpiHost0Sd2) begin : gen_mux_spi_host_sd2
+    if (k == top_earlgrey_pkg::DioPadSpiHostD2) begin : gen_mux_spi_host_d2
       // Connect output towards muxed pad IOB0 to pad SPI_HOST_D2.
       prim_clock_mux2 #(
         .NoFpgaBufG(1'b1)
@@ -79,7 +79,7 @@ module padring
         .clk_o  (dio_oe)
       );
 
-    end else if (k == top_earlgrey_pkg::DioSpiHost0Sd3) begin : gen_mux_spi_host_sd3
+    end else if (k == top_earlgrey_pkg::DioPadSpiHostD3) begin : gen_mux_spi_host_d3
       // Connect output towards muxed pad IOB1 to pad SPI_HOST_D3.
       prim_clock_mux2 #(
         .NoFpgaBufG(1'b1)
@@ -98,7 +98,7 @@ module padring
         .clk_o  (dio_oe)
       );
 
-    end else if (k == top_earlgrey_pkg::DioSpiDeviceSd2) begin : gen_mux_spi_device_sd2
+    end else if (k == top_earlgrey_pkg::DioPadSpiDevD2) begin : gen_mux_spi_dev_d2
       // Connect output towards muxed pad IOB2 to pad SPI_DEV_D2.
       prim_clock_mux2 #(
         .NoFpgaBufG(1'b1)
@@ -117,7 +117,7 @@ module padring
         .clk_o  (dio_oe)
       );
 
-    end else if (k == top_earlgrey_pkg::DioSpiDeviceSd3) begin : gen_mux_spi_device_sd3
+    end else if (k == top_earlgrey_pkg::DioPadSpiDevD3) begin : gen_mux_spi_dev_d3
       // Connect output towards muxed pad IOB3 to pad SPI_DEV_D3.
       prim_clock_mux2 #(
         .NoFpgaBufG(1'b1)
@@ -173,7 +173,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in (
         .clk0_i (mio_in),
-        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiHost0Sd2]),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioPadSpiHostD2]),
         .sel_i  (mux_iob_sel_i[0]),
         .clk_o  (mio_in_o[k])
       );
@@ -181,7 +181,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in_raw (
         .clk0_i (mio_in_raw),
-        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiHost0Sd2]),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioPadSpiHostD2]),
         .sel_i  (mux_iob_sel_i[0]),
         .clk_o  (mio_in_raw_o[k])
       );
@@ -192,7 +192,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in (
         .clk0_i (mio_in),
-        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiHost0Sd3]),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioPadSpiHostD3]),
         .sel_i  (mux_iob_sel_i[1]),
         .clk_o  (mio_in_o[k])
       );
@@ -200,7 +200,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in_raw (
         .clk0_i (mio_in_raw),
-        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiHost0Sd3]),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioPadSpiHostD3]),
         .sel_i  (mux_iob_sel_i[1]),
         .clk_o  (mio_in_raw_o[k])
       );
@@ -211,7 +211,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in (
         .clk0_i (mio_in),
-        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiDeviceSd2]),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioPadSpiDevD2]),
         .sel_i  (mux_iob_sel_i[2]),
         .clk_o  (mio_in_o[k])
       );
@@ -219,7 +219,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in_raw (
         .clk0_i (mio_in_raw),
-        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiDeviceSd2]),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioPadSpiDevD2]),
         .sel_i  (mux_iob_sel_i[2]),
         .clk_o  (mio_in_raw_o[k])
       );
@@ -230,7 +230,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in (
         .clk0_i (mio_in),
-        .clk1_i (dio_in_o[top_earlgrey_pkg::DioSpiDeviceSd3]),
+        .clk1_i (dio_in_o[top_earlgrey_pkg::DioPadSpiDevD3]),
         .sel_i  (mux_iob_sel_i[3]),
         .clk_o  (mio_in_o[k])
       );
@@ -238,7 +238,7 @@ module padring
         .NoFpgaBufG(1'b1)
       ) u_mux_mio_in_raw (
         .clk0_i (mio_in_raw),
-        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioSpiDeviceSd3]),
+        .clk1_i (dio_in_raw_o[top_earlgrey_pkg::DioPadSpiDevD3]),
         .sel_i  (mux_iob_sel_i[3]),
         .clk_o  (mio_in_raw_o[k])
       );
