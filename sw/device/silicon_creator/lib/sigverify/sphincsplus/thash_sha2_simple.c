@@ -13,7 +13,7 @@
 
 void thash(const uint32_t *in, size_t inblocks, const spx_ctx_t *ctx,
            const spx_addr_t *addr, uint32_t *out) {
-  hmac_sha256_init_endian(/*big_endian=*/true);
+  hmac_sha256_start();
   hmac_sha256_update_words(ctx->pub_seed, kSpxNWords);
   uint32_t padding[kSpxSha2BlockNumWords - kSpxNWords];
   memset(padding, 0, sizeof(padding));

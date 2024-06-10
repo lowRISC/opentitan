@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/hexstr.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -64,6 +65,25 @@ rom_error_t hmac_test(void) {
   return kErrorOk;
 }
 
+rom_error_t hmac_process_test(void) {
+  hmac_digest_t digest;
+  hmac_sha256_init();
+  hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_process();
+  // Wait for 1ms (1000 us).
+  busy_spin_micros(1000);
+  hmac_sha256_final_truncated(digest, ARRAYSIZE(digest));
+
+  const size_t len = ARRAYSIZE(digest.digest);
+  for (int i = 0; i < len; ++i) {
+    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
+    if (digest.digest[i] != kGettysburgDigest[i]) {
+      return kErrorUnknown;
+    }
+  }
+  return kErrorOk;
+}
+
 rom_error_t hmac_truncated_test(void) {
   uint32_t digest[3];
   hmac_sha256_init();
@@ -85,7 +105,8 @@ rom_error_t hmac_bigendian_test(void) {
   hexstr_decode(&result, sizeof(result), kGettysburgDigestBigEndian);
 
   hmac_digest_t digest;
-  hmac_sha256_init_endian(true);
+  hmac_sha256_configure(true);
+  hmac_sha256_start();
   hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
   hmac_sha256_final(&digest);
 
@@ -103,7 +124,8 @@ rom_error_t hmac_bigendian_truncated_test(void) {
   uint32_t result[8];
   hexstr_decode(&result, sizeof(result), kGettysburgDigestBigEndian);
 
-  hmac_sha256_init_endian(true);
+  hmac_sha256_configure(true);
+  hmac_sha256_start();
   hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
   uint32_t digest[3];
   hmac_sha256_final_truncated(digest, ARRAYSIZE(digest));

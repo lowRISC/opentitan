@@ -7,6 +7,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/sha2.h"
 
@@ -39,6 +40,10 @@ static const uint32_t kExpectedOutput[kMgf1OutputWords] = {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t mgf1_test(void) {
+  // Run spx_hash_initialize() to configure the HMAC block.
+  spx_ctx_t ctx;
+  HARDENED_RETURN_IF_ERROR(spx_hash_initialize(&ctx));
+
   uint32_t actual_output[kMgf1OutputWords];
   mgf1_sha256(kTestInput, ARRAYSIZE(kTestInput), ARRAYSIZE(actual_output),
               actual_output);

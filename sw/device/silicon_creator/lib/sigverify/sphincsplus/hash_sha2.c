@@ -49,7 +49,10 @@ static_assert(
     kSpxLeafBits <= 32,
     "For the given height, 32 bits is not large enough for a leaf index.");
 
-inline rom_error_t spx_hash_initialize(spx_ctx_t *ctx) { return kErrorOk; }
+inline rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
+  hmac_sha256_configure(/*big_endian_digest=*/true);
+  return kErrorOk;
+}
 
 rom_error_t spx_hash_message(const uint32_t *R, const uint32_t *pk,
                              const uint8_t *msg_prefix_1,
@@ -62,7 +65,7 @@ rom_error_t spx_hash_message(const uint32_t *R, const uint32_t *pk,
   // H_msg: MGF1-SHA256(R || PK.seed || SHA256(R || PK.seed || PK.root || M))
   memcpy(seed, R, kSpxN);
   memcpy(&seed[kSpxNWords], pk, kSpxN);
-  hmac_sha256_init_endian(/*big_endian=*/true);
+  hmac_sha256_start();
   hmac_sha256_update_words(R, kSpxNWords);
   hmac_sha256_update_words(pk, kSpxPkWords);
   hmac_sha256_update(msg_prefix_1, msg_prefix_1_len);

@@ -49,12 +49,14 @@ static void gen_chain(const uint32_t *in, uint8_t start, const spx_ctx_t *ctx,
   // performance-critical.
   for (uint8_t i = start; i + 1 < kSpxWotsW; i++) {
     // This loop body is essentially just `thash`, inlined for performance.
-    spx_addr_hash_set(addr, i);
-    hmac_sha256_init_endian(/*big_endian=*/true);
+    hmac_sha256_start();
     hmac_sha256_update_words(ctx->pub_seed, kSpxNWords);
     hmac_sha256_update_words(padding, ARRAYSIZE(padding));
     hmac_sha256_update((unsigned char *)addr->addr, kSpxSha256AddrBytes);
     hmac_sha256_update_words(out, kSpxNWords);
+    hmac_sha256_process();
+    // Update the address while HMAC is processing for performance reasons.
+    spx_addr_hash_set(addr, i+1);
     hmac_sha256_final_truncated(out, kSpxNWords);
   }
 }

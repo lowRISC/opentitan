@@ -32,7 +32,7 @@ typedef struct hmac_digest {
 } hmac_digest_t;
 
 /**
- * Initializes the HMAC in SHA256 mode.
+ * Configure the HMAC block in SHA256 mode.
  *
  * This function resets the HMAC module to clear the digest register.
  * It then configures the HMAC block in SHA256 mode with digest output
@@ -41,16 +41,22 @@ typedef struct hmac_digest {
  * @param big_endian Whether or not to initialize the peripheral for big-endian
  *                   results.
  */
-void hmac_sha256_init_endian(bool big_endian_digest);
+void hmac_sha256_configure(bool big_endian_digest);
 
 /**
- * Initializes the HMAC in SHA256 mode with little-endian output.
+ * Starts a new operation on the pre-configured HMAC block.
  *
- * This function resets the HMAC module to clear the digest register.
- * It then configures the HMAC block in SHA256 mode with little endian
- * data input and digest output.
+ * Call `hmac_sha256_configure` first.
  */
-inline void hmac_sha256_init(void) { hmac_sha256_init_endian(false); }
+void hmac_sha256_start(void);
+
+/**
+ * Configures and starts HMAC in SHA256 mode with little-endian output.
+ */
+inline void hmac_sha256_init(void) {
+  hmac_sha256_configure(false);
+  hmac_sha256_start();
+}
 
 /**
  * Sends `len` bytes from `data` to the SHA2-256 function.
@@ -75,6 +81,11 @@ void hmac_sha256_update(const void *data, size_t len);
  * @param len Size of the `data` buffer in words.
  */
 void hmac_sha256_update_words(const uint32_t *data, size_t len);
+
+/**
+ * Begin processing the final digest for HMAC.
+ */
+void hmac_sha256_process(void);
 
 /**
  * Finalizes SHA256 operation and copies truncated output.

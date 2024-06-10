@@ -13,7 +13,7 @@ void mgf1_sha256(const uint32_t *in, size_t in_len, size_t out_len,
   // Append SHA256(in || counter) to the output until the requested length is
   // reached.
   for (uint32_t ctr = 0; ctr * kHmacDigestNumWords < out_len; ctr++) {
-    hmac_sha256_init_endian(/*big_endian=*/true);
+    hmac_sha256_start();
     hmac_sha256_update_words(in, in_len);
     uint32_t ctr_be = __builtin_bswap32(ctr);
     hmac_sha256_update_words(&ctr_be, 1);

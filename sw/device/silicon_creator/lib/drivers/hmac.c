@@ -13,7 +13,7 @@
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void hmac_sha256_init_endian(bool big_endian_digest) {
+void hmac_sha256_configure(bool big_endian_digest) {
   // Clear the config, stopping the SHA engine.
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, 0u);
 
@@ -34,10 +34,11 @@ void hmac_sha256_init_endian(bool big_endian_digest) {
   reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD,
                                HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, reg);
+}
 
-  reg = 0;
-  reg = bitfield_bit32_write(reg, HMAC_CMD_HASH_START_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
+inline void hmac_sha256_start(void) {
+  uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_START_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
 }
 
 void hmac_sha256_update(const void *data, size_t len) {
@@ -70,11 +71,17 @@ void hmac_sha256_update_words(const uint32_t *data, size_t len) {
   }
 }
 
-void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
-  uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, HMAC_CMD_HASH_PROCESS_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
+inline void hmac_sha256_process(void) {
+  uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_PROCESS_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
+}
 
+void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
+  // Send the process command in case it hasn't been sent yet (it's harmless to
+  // send it twice).
+  hmac_sha256_process();
+
+  uint32_t reg = 0;
   do {
     reg = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
                           HMAC_INTR_STATE_REG_OFFSET);
