@@ -94,6 +94,8 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
       end
       sec_cm_fi_ctrl_svas(if_proxy, .enable(1));
       // issue hard reset for fatal alert to recover
+      `uvm_info(`gfn, $sformatf("issue a reset"), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("issue a reset"), UVM_HIGH)
       prim_tl_intg_error = 0;
       dut_init("HARD");
     end
@@ -133,9 +135,14 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (!uvm_re_match("*.u_host_rsp_fifo.*", if_proxy.path) |
-            !uvm_re_match("*.u_to_rd_fifo.*", if_proxy.path) |
             !uvm_re_match("*.u_rd_storage.*", if_proxy.path)) begin
           collect_err_cov_status(ral.std_fault_status);
+          csr_rd_check(.ptr(ral.std_fault_status.fifo_err), .compare_value(1));
+        end
+        if (!uvm_re_match("*.u_to_rd_fifo.*", if_proxy.path)) begin
+          collect_err_cov_status(ral.std_fault_status);
+          // skip debug state check because state TL-UL state could be corrupted.
+          flash_dis = 0;
           csr_rd_check(.ptr(ral.std_fault_status.fifo_err), .compare_value(1));
         end
         if (!uvm_re_match("*.u_flash_ctrl_rd.u_cnt*", if_proxy.path) |
@@ -183,10 +190,46 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_host_rsp_fifo");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rsp_order_fifo");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rsp_order_fifo");
-          $asserton(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.u_rspfifo");
+          $asserton(0, "tb.dut.u_to_rd_fifo.u_reqfifo");
+          $asserton(0, "tb.dut.u_to_rd_fifo.u_sramreqfifo");
+          $asserton(0, "tb.dut.u_to_rd_fifo.TlOutValidKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.TlOutKnownIfFifoKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.ReqOutKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.WeOutKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.AddrOutKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.WdataOutKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.WmaskOutKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.rvalidHighWhenRspFifoFull");
+          $asserton(0, "tb.dut.u_to_rd_fifo.rvalidHighReqFifoEmpty");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.u_rspfifo");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.u_sramreqfifo");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.u_reqfifo");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.TlOutValidKnown_A");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.TlOutKnownIfFifoKnown_A");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.ReqOutKnown_A");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.WeOutKnown_A");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.AddrOutKnown_A");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.WdataOutKnown_A");
+          $asserton(0, "tb.dut.u_tl_adapter_eflash.WmaskOutKnown_A");
+          $asserton(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.DataKnown_A");
+          $asserton(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.RvalidKnown_A");
+          $asserton(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.DepthKnown_A");
+          $asserton(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.WreadyKnown_A");
+          $asserton(0, "tb.dut.MemTlDValidKnownO_A");
+          $asserton(0, "tb.dut.MemTlAReadyKnownO_A");
+          $asserton(0, "tb.dut.MemRspPayLoad_AKnownEnable");
+          $asserton(0, "tb.dut.u_tl_gate.u_err_en_sync.gen_no_flops.OutputDelay_A");
+          $asserton(0, "tb.dut.u_tl_gate.u_err_en_sync.OutputsKnown_A");
           $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
+          $asserton(0, "tb.dut.u_eflash.u_bank_sequence_fifo");
+          $asserton(0, "tb.dut.u_reg_core.u_socket");
           $asserton(0, "tb.dut.RspPayLoad_A");
         end else begin
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rd_storage");
@@ -195,11 +238,46 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_host_rsp_fifo");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rsp_order_fifo");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rsp_order_fifo");
-          $assertoff(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.u_rspfifo");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.u_reqfifo");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.u_sramreqfifo");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.TlOutValidKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.TlOutKnownIfFifoKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.ReqOutKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.WeOutKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.AddrOutKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.WdataOutKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.WmaskOutKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.rvalidHighWhenRspFifoFull");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.rvalidHighReqFifoEmpty");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.u_rspfifo");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.u_sramreqfifo");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.u_reqfifo");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.TlOutValidKnown_A");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.TlOutKnownIfFifoKnown_A");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.ReqOutKnown_A");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.WeOutKnown_A");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.AddrOutKnown_A");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.WdataOutKnown_A");
+          $assertoff(0, "tb.dut.u_tl_adapter_eflash.WmaskOutKnown_A");
+          $assertoff(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.DataKnown_A");
+          $assertoff(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.RvalidKnown_A");
+          $assertoff(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.DepthKnown_A");
+          $assertoff(0,
+            "tb.dut.u_tl_adapter_eflash.gen_data_xor_addr_fifo.u_sramreqaddrfifo.WreadyKnown_A");
+          $assertoff(0, "tb.dut.MemTlDValidKnownO_A");
+          $assertoff(0, "tb.dut.MemTlAReadyKnownO_A");
+          $assertoff(0, "tb.dut.MemRspPayLoad_AKnownEnable");
+          $assertoff(0, "tb.dut.u_tl_gate.u_err_en_sync.gen_no_flops.OutputDelay_A");
+          $assertoff(0, "tb.dut.u_tl_gate.u_err_en_sync.OutputsKnown_A");
           $assertoff(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
-          $assertoff(0, "tb.dut.u_to_rd_fifo.rvalidHighWhenRspFifoFull");
+          $assertoff(0, "tb.dut.u_eflash.u_bank_sequence_fifo");
+          $assertoff(0, "tb.dut.u_reg_core.u_socket");
           $assertoff(0, "tb.dut.RspPayLoad_A");
         end
       end
