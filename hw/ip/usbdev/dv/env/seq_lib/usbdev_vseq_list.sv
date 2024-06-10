@@ -33,6 +33,7 @@
 `include "usbdev_phy_config_usb_ref_disable_vseq.sv"
 `include "usbdev_phy_pins_sense_vseq.sv"
 `include "usbdev_phy_config_eop_single_bit_handling_vseq.sv"
+`include "usbdev_phy_config_tx_osc_test_mode_vseq.sv"
 `include "usbdev_pkt_buffer_vseq.sv"
 `include "usbdev_pkt_received_vseq.sv"
 `include "usbdev_pkt_sent_vseq.sv"

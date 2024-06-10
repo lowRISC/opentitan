@@ -261,6 +261,12 @@
     {
       name: usbdev_phy_config_eop_single_bit_handling
       uvm_test_seq: usbdev_phy_config_eop_single_bit_handling_vseq
+      reseed: 1
+    }
+    {
+      name: usbdev_phy_config_tx_osc_test_mode
+      uvm_test_seq: usbdev_phy_config_tx_osc_test_mode_vseq
+      reseed: 1
     }
     {
       name: usbdev_setup_stage
