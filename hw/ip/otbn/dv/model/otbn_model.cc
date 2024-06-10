@@ -633,13 +633,13 @@ int OtbnModel::send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
   return 0;
 }
 
-int OtbnModel::send_rma_req() {
+int OtbnModel::set_rma_req(svBitVecVal *rma_req /* bit [3:0] */) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
 
   try {
-    iss->send_rma_req();
+    iss->set_rma_req(rma_req[0] & 0xf);
   } catch (const std::exception &err) {
     std::cerr << "Error when sending RMA req to ISS: " << err.what() << "\n";
     return -1;
@@ -1056,9 +1056,10 @@ int otbn_model_send_err_escalation(OtbnModel *model,
   return model->send_err_escalation(err_val, lock_immediately);
 }
 
-int otbn_model_send_rma_req(OtbnModel *model) {
+int otbn_model_set_rma_req(OtbnModel *model,
+                           svBitVecVal *rma_req /* bit [3:0] */) {
   assert(model);
-  return model->send_rma_req();
+  return model->set_rma_req(rma_req);
 }
 
 int otbn_model_initial_secure_wipe(OtbnModel *model) {

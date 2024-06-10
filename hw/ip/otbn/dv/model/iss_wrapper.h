@@ -138,8 +138,8 @@ struct ISSWrapper {
   // Send an error escalation
   void send_err_escalation(uint32_t err_val, bool lock_immediately);
 
-  // Send RMA request
-  void send_rma_req();
+  // Set the RMA request input
+  void set_rma_req(uint8_t rma_req);
 
   const MirroredRegs &get_mirrored() const { return mirrored_; }
 

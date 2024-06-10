@@ -9,7 +9,7 @@ from shared.mem_layout import get_memory_layout
 
 from .csr import CSRFile
 from .dmem import Dmem
-from .constants import ErrBits, Status
+from .constants import ErrBits, LcTx, Status
 from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
@@ -139,10 +139,23 @@ class OTBNState:
         # current fsm_state.
         self.cycles_in_this_state = 0
 
-        # RMA request changes state to LOCKED, basically an escalation from
-        # lifecycle controller. Initiates secure wiping through
-        # stop_at_end_of_cycle method and this flag.
-        self.rma_req = False
+        # An RMA request is seen if the rma_req_i signal (tracked as rma_req
+        # here) is ON at a particular time.
+        #
+        # The signal is observed by OTBN at a few specific times:
+        #
+        #   - When OTBN is idle (the 'initial' and 'halt' states in
+        #     otbn_start_stop_control)
+        #
+        #   - At the end of a secure wipe (the 'wipe complete' state in
+        #     otbn_start_stop_control). It gets sampled at that particular
+        #     point to allow an RMA to be chosen after triggering an error but
+        #     before the secure wipe is completed and the module locks
+        #     completely.
+        #
+        # When the signal is observed to be LcTx.ON, the response is to change
+        # state to LOCKED (a bit like an escalation from lifecycle controller).
+        self.rma_req = LcTx.OFF
 
         # This flag gets set as soon as we leave the Idle state for the first
         # time. It reflects the behaviour of wipe_after_urnd_refresh_q in
@@ -368,7 +381,7 @@ class OTBNState:
         should_lock = (((self._err_bits >> 16) != 0) or
                        ((self._err_bits >> 10) & 1) or
                        (self._err_bits and self.software_errs_fatal) or
-                       self.rma_req)
+                       self.rma_req == LcTx.ON)
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
