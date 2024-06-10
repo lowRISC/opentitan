@@ -221,38 +221,39 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // state machine to process command
   //---------------------------------------------------------
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
-  //      -s 170131814 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 8 \
+  //     -s 170131814 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||| (28.89%)
-  //  4: |||||||||||||||||||| (35.56%)
-  //  5: |||||||||||| (22.22%)
-  //  6: ||||| (8.89%)
-  //  7: | (2.22%)
-  //  8: | (2.22%)
+  //  3: |||||||||||| (21.82%)
+  //  4: |||||||||||||||||||| (36.36%)
+  //  5: ||||||||||||||||| (30.91%)
+  //  6: ||||| (9.09%)
+  //  7: | (1.82%)
+  //  8: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 8
+  // Maximum Hamming distance: 7
   // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 7
+  // Maximum Hamming weight: 6
   //
   localparam int StateWidth = 8;
-  typedef    enum logic [StateWidth-1:0] {
-    Idle      = 8'b00011011, // idle
-    ArbGnt    = 8'b11110101, // general arbiter request
-    SendSOP   = 8'b00011100, // send sop (start of packet)
-    SendMOP   = 8'b00000001, // send mop (middle of packet)
-    GenCmdChk = 8'b01010110, // gen cmd check
-    CmdAck    = 8'b10001101, // wait for command ack
-    GenReq    = 8'b11000000, // process gen requests
-    GenArbGnt = 8'b11111110, // generate subsequent arb request
-    GenSOP    = 8'b10110010, // generate subsequent request
-    Error     = 8'b10111001  // illegal state reached and hang
+  typedef enum logic [StateWidth-1:0] {
+    Idle      = 8'b11110101, // idle
+    Flush     = 8'b01011011, // flush command FIFO and start over
+    ArbGnt    = 8'b00011100, // general arbiter request
+    SendSOP   = 8'b00000001, // send sop (start of packet)
+    SendMOP   = 8'b01010110, // send mop (middle of packet)
+    GenCmdChk = 8'b10001101, // gen cmd check
+    CmdAck    = 8'b11000000, // wait for command ack
+    GenReq    = 8'b10010011, // process gen requests
+    GenArbGnt = 8'b11101110, // generate subsequent arb request
+    GenSOP    = 8'b10111010, // generate subsequent request
+    Error     = 8'b01100111  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -284,8 +285,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     end else if (local_escalate) begin
       // In case local escalate is high we must transition to the error state.
       state_d = Error;
-    end else if (!cs_enable_i && state_q inside {Idle, ArbGnt, SendSOP, SendMOP, GenCmdChk, CmdAck,
-                                                 GenReq, GenArbGnt, GenSOP}) begin
+    end else if (!cs_enable_i && state_q inside {Idle, Flush, ArbGnt, SendSOP, SendMOP, GenCmdChk,
+                                                 CmdAck, GenReq, GenArbGnt, GenSOP}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = Idle;
       instantiated_d = 1'b0;
@@ -350,8 +351,22 @@ module csrng_cmd_stage import csrng_pkg::*; #(
               invalid_acmd = 1'b1;
               state_d = Idle;
             end
-            // If we received an invalid command, pop it from the FIFO.
-            cmd_fifo_pop = cmd_err_ack;
+            // If we received an invalid command, pop it from the FIFO. Afterwards, absorb any
+            // additional data belonging to the same invalid command and empty the FIFO.
+            if (cmd_err_ack) begin
+              cmd_fifo_pop = 1'b1;
+              state_d = Flush;
+            end
+          end
+        end
+        Flush: begin
+          // Keep popping the FIFO until it's empty and we're not getting new command input.
+          // The decision whether a command is invalid is taken based on the command header but
+          // EDN might continue and send additional data belonging to the same command. We have
+          // to absorb the full invalid command before we can continue.
+          cmd_fifo_pop = sfifo_cmd_not_empty;
+          if (!sfifo_cmd_not_empty && !cmd_stage_vld_i) begin
+            state_d = Idle;
           end
         end
         ArbGnt: begin
