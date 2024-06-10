@@ -270,7 +270,7 @@
               - Ensure rx/tx_qd and rx/tx_full/empty match predictions.
             '''
       stage: V2
-      tests: []
+      tests: ["spi_host_overflow_underflow"]
     }
     {
       name: winbond
