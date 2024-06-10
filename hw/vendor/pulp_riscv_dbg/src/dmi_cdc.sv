@@ -67,8 +67,8 @@ module dmi_cdc (
     .ResetValue(0)
   ) u_combined_rstn_sync (
     .clk_i,
-    .rst_ni(rst_ni & jtag_combined_rstn),
-    .d_i(1'b1),
+    .rst_ni(rst_ni),
+    .d_i(jtag_combined_rstn),
     .q_o(combined_rstn_premux)
   );
 
