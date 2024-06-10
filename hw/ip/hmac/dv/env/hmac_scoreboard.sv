@@ -115,7 +115,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end else if (item.a_data[HashStart]) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
                 // Clear this variable when context has to be skipped as HASH continue won't be set
-                if (cfg.sar_skip_ctxt) hmac_stopped = 0;
+                if (cfg.sar_skip_ctxt) begin
+                  hmac_stopped = 0;
+                end
                 if (invalid_cfg) begin
                   update_err_intr_code(SwInvalidConfig);
                 end else begin
@@ -310,7 +312,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     if (!write) begin
       case (csr_name)
         "intr_state": begin
-          if (!do_cycle_accurate_check) do_read_check = 0;
+          if (!do_cycle_accurate_check) begin
+            do_read_check = 0;
+          end
           if (cfg.en_cov) begin
             bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
             hmac_intr_e     intr;
@@ -403,14 +407,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           return;
         end
         "status": begin
-          if (!do_cycle_accurate_check || cfg.sar_skip_ctxt) do_read_check = 0;
+          if (!do_cycle_accurate_check || cfg.sar_skip_ctxt) begin
+            do_read_check = 0;
+          end
           if (cfg.en_cov) cov.status_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
           // TODO (issue #23380): Verify idle status now exposed to SW
           hmac_idle = item.d_data[HmacStaIdle];
           void'(ral.status.hmac_idle.predict(.value(hmac_idle), .kind(UVM_PREDICT_READ)));
         end
         "msg_length_lower": begin
-          if (cfg.sar_skip_ctxt) do_read_check = 0;
+          if (cfg.sar_skip_ctxt) begin
+            do_read_check = 0;
+          end
           if (cfg.en_cov) begin
             cov.msg_len_cg.sample(.msg_len_lower(item.d_data),
                                   .msg_len_upper('x),
@@ -418,7 +426,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
         end
         "msg_length_upper": begin
-          if (cfg.sar_skip_ctxt) do_read_check = 0;
+          if (cfg.sar_skip_ctxt) begin
+            do_read_check = 0;
+          end
           if (cfg.en_cov) begin
             cov.msg_len_cg.sample(.msg_len_lower('x),
                                   .msg_len_upper(item.d_data),
@@ -491,12 +501,16 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               bit has_unprocessed_msg = 1;
               wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() > 0));
               // Ensure that current context has to be taken into account or skipped
-              if (cfg.sar_skip_ctxt) wait(!cfg.sar_skip_ctxt);
+              if (cfg.sar_skip_ctxt) begin
+                wait(!cfg.sar_skip_ctxt);
+              end
               // if hmac process is issued and there are still unprocessed word (can hold up to at
               // most one word), then the hmac_wr_cnt will increment
               // if all the written msgs have been process, will skip the counter incrementation
               if (hmac_process) begin
-                if (msg_q.size() <= hmac_wr_cnt * 4) has_unprocessed_msg = 0;
+                if (msg_q.size() <= hmac_wr_cnt * 4) begin
+                  has_unprocessed_msg = 0;
+                end
                 msg_q.delete();
                 msg_part_q.delete();
               end
@@ -600,7 +614,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           fork
             begin : hmac_fifo_rd
               // Ensure that current context has to be taken into account or skipped
-              if (cfg.sar_skip_ctxt) wait(!cfg.sar_skip_ctxt);
+              if (cfg.sar_skip_ctxt) begin
+                wait(!cfg.sar_skip_ctxt);
+              end
               wait((hmac_wr_cnt > hmac_rd_cnt) && (sha_en));
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
                 `uvm_info(`gfn, $sformatf("waiting on key processing to complete"), UVM_HIGH)
