@@ -402,6 +402,8 @@ int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
   if (!iss)
     return -1;
 
+  bool finished = false;
+
   try {
     switch (iss->step(has_rtl())) {
       case -1:
@@ -421,7 +423,8 @@ int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
         set_sv_u32(insn_cnt, iss->get_mirrored().insn_cnt);
         set_sv_u32(err_bits, iss->get_mirrored().err_bits);
         set_sv_u32(stop_pc, iss->get_mirrored().stop_pc);
-        return 1;
+        finished = true;
+        break;
 
       case 0:
         // The simulation is still running. Update status, rnd_req and insn_cnt.
@@ -431,7 +434,7 @@ int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
         set_sv_u8(status, iss->get_mirrored().status);
         svPutBitselBit(rnd_req, 0, (iss->get_mirrored().rnd_req & 1));
         set_sv_u32(insn_cnt, iss->get_mirrored().insn_cnt);
-        return 0;
+        break;
 
       default:
         // This shouldn't happen
@@ -441,6 +444,8 @@ int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
     std::cerr << "Error when stepping ISS: " << err.what() << "\n";
     return -1;
   }
+
+  return finished ? 1 : 0;
 }
 
 int OtbnModel::check() const {
