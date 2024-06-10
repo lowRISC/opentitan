@@ -41,3 +41,20 @@ class ErrBits(IntEnum):
     LIFECYCLE_ESCALATION = 1 << 22
     FATAL_SOFTWARE = 1 << 23
     MASK = (1 << 24) - 1
+
+
+class LcTx(IntEnum):
+    r'''The same encoding as lc_tx_t in the RTL'''
+    ON = 0b0101
+    OFF = 0b1010
+    INVALID = 0
+
+
+def read_lc_tx_t(value: int) -> LcTx:
+    assert 0 <= value <= 15
+    if value == LcTx.ON:
+        return LcTx.ON
+    elif value == LcTx.OFF:
+        return LcTx.OFF
+    else:
+        return LcTx.INVALID

@@ -382,9 +382,10 @@ def on_send_err_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
-def on_send_rma_req(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    check_arg_count('send_rma_req', 0, args)
-    sim.send_rma_req()
+def on_set_rma_req(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('set_rma_req', 1, args)
+    rma_req = read_word('rma_req', args[0], 4)
+    sim.set_rma_req(rma_req)
     return None
 
 
@@ -424,7 +425,7 @@ _HANDLERS = {
     'set_keymgr_value': on_set_keymgr_value,
     'step_crc': on_step_crc,
     'send_err_escalation': on_send_err_escalation,
-    'send_rma_req': on_send_rma_req,
+    'set_rma_req': on_set_rma_req,
     'initial_secure_wipe': on_initial_secure_wipe,
     'set_software_errs_fatal': on_set_software_errs_fatal
 }

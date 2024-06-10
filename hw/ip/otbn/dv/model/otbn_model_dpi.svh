@@ -70,7 +70,8 @@ import "DPI-C" function int otbn_model_send_err_escalation(chandle    model,
                                                            bit [31:0] err_val,
                                                            bit        lock_immediately);
 
-import "DPI-C" function int otbn_model_send_rma_req(chandle model);
+import "DPI-C" function int otbn_model_set_rma_req(chandle   model,
+                                                   bit [3:0] rma_req);
 
 import "DPI-C" function int otbn_model_initial_secure_wipe(chandle model);
 

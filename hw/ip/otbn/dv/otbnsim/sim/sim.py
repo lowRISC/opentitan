@@ -4,12 +4,14 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .constants import ErrBits, Status
+from .constants import ErrBits, LcTx, Status, read_lc_tx_t
 from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
+
+import sys
 
 # A dictionary that defines a function of the form "address -> from -> to". If
 # PC is the current PC and cnt is the count for the innermost loop then
@@ -199,7 +201,9 @@ class OTBNSim:
                 # be low. Jump straight to the LOCKED state and skip the
                 # WIPING_BAD state (since there is nothing that needs wiping
                 # anyway).
-                if self.state.rma_req and not self.state.has_state_to_wipe:
+                start_of_time_rma = (self.state.rma_req == LcTx.ON and
+                                     not self.state.has_state_to_wipe)
+                if start_of_time_rma:
                     self.state.complete_init_sec_wipe()
                     self.state.set_fsm_state(FsmState.LOCKED)
                     self.state.ext_regs.write('STATUS', Status.LOCKED, True)
@@ -333,6 +337,9 @@ class OTBNSim:
                 # Zero INSN_CNT in the *next* cycle to match RTL control flow.
                 self.state.zero_insn_cnt_next = True
 
+        final_wipe_round = (self.state.rma_req == LcTx.ON or
+                            not self.state.first_round_of_wipe)
+
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to
             # model the behaviour that we expect "at the end of a wipe round".
@@ -346,8 +353,6 @@ class OTBNSim:
             #
             # RMA requests are a special case where the "last round" might
             # actually be the first one as well.
-            final_wipe_round = (self.state.rma_req or
-                                not self.state.first_round_of_wipe)
             if final_wipe_round:
                 next_status = Status.IDLE if is_good else Status.LOCKED
                 self.state.ext_regs.write('STATUS', next_status, True)
@@ -358,7 +363,7 @@ class OTBNSim:
 
         if self.state.wipe_cycles == 0:
             # This is the final clock cycle of a wipe round.
-            if self.state.first_round_of_wipe and not self.state.rma_req:
+            if not final_wipe_round:
                 # This is the first wipe round and since there's no RMA
                 # request, a second round must follow after URND refresh
                 # acknowledgment.
@@ -370,7 +375,7 @@ class OTBNSim:
                 # an RMA request. If the wipe was good, set the next state to
                 # IDLE; otherwise set it to LOCKED.
                 if is_good:
-                    assert not self.state.rma_req
+                    assert self.state.rma_req != LcTx.ON
                     next_state = FsmState.IDLE
                     if self.state.init_sec_wipe_is_running():
                         self.state.complete_init_sec_wipe()
@@ -413,9 +418,12 @@ class OTBNSim:
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 
-    def send_rma_req(self) -> None:
-        # Incoming RMA request basically acts like a fatal error.
-        # It does not immediately change the status to LOCKED just like any
-        # fatal error except spurious URND ack.
-        self.state.rma_req = True
-        self.state.pending_halt = True
+    def set_rma_req(self, rma_req: int) -> None:
+        '''Set the rma request pin state, based on a given integer input.
+
+        This gets read later, on the special cycles when it should have an
+        effect.
+        '''
+        self.state.rma_req = read_lc_tx_t(rma_req)
+        # TODO: Remove this debug print
+        print(f'set_rma_req {self.state.rma_req!r}', file=sys.stderr)

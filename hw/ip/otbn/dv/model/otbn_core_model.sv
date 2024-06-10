@@ -113,15 +113,12 @@ module otbn_core_model
   // its behaviour is easy to predict).
   // We model those delays in the SystemVerilog here, since it's much easier than handling it
   // in the Python.
-  logic [2:0] escalate_fifo;
-  logic [2:0] rma_req_fifo;
-  logic       new_escalation;
-  logic       new_rma_req;
-  logic       valid_lc_rma_req;
-  logic       valid_lc_esc_req;
+  logic [2:0]      escalate_fifo;
+  logic [2:0][3:0] rma_req_fifo;
+  logic            new_escalation;
+  logic            rma_req_changed;
+  logic            valid_lc_esc_req;
 
-  // Anything else than ON is OFF.
-  assign valid_lc_rma_req = lc_ctrl_pkg::lc_tx_test_true_strict(lc_rma_req_i);
   // Anything else than OFF is ON.
   assign valid_lc_esc_req = lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i);
 
@@ -131,11 +128,11 @@ module otbn_core_model
       rma_req_fifo <= '0;
     end else begin
       escalate_fifo <= {escalate_fifo[1:0], valid_lc_esc_req};
-      rma_req_fifo <= {rma_req_fifo[1:0], valid_lc_rma_req};
+      rma_req_fifo <= {rma_req_fifo[1:0], lc_rma_req_i};
     end
   end
   assign new_escalation = escalate_fifo[1] & ~escalate_fifo[2];
-  assign new_rma_req = rma_req_fifo[1] & ~rma_req_fifo[2];
+  assign rma_req_changed = rma_req_fifo[1] != rma_req_fifo[2];
 
   // Currently, the OTBN core model doesn't ever set the lock_immediately_d/q signals. However,
   // the OTBN model agent provides a function (see lock_immediately() in otbn_model_if.sv) to
@@ -295,7 +292,7 @@ module otbn_core_model
   end
 
   assign reset_busy_counter = |{running, cmd_en_i, check_due, new_escalation, edn_rnd_cdc_done_i,
-                                ~init_sec_wipe_done_i, wakeup_iss, new_rma_req};
+                                ~init_sec_wipe_done_i, wakeup_iss, rma_req_changed};
   assign step_iss = reset_busy_counter || (busy_counter_q != 0);
 
   always_comb begin
@@ -350,8 +347,9 @@ module otbn_core_model
                                                               1'b0)
                                != 0);
       end
-      if (new_rma_req) begin
-        failed_lc_rma_req <= (otbn_model_send_rma_req(model_handle) != 0);
+      if (rma_req_changed) begin
+        $display("%0t: set rma_req to %0x", $time, rma_req_fifo[1]);
+        failed_lc_rma_req <= (otbn_model_set_rma_req(model_handle, rma_req_fifo[1]) != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
         failed_keymgr_value <= (otbn_model_set_keymgr_value(model_handle,
