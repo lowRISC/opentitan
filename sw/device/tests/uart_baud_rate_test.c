@@ -24,8 +24,10 @@ static const uint32_t kBaseAddrs[4] = {
     TOP_EARLGREY_UART2_BASE_ADDR,
     TOP_EARLGREY_UART3_BASE_ADDR,
 };
-static const uint32_t kBauds[9] = {4800,   9600,   19200,  38400, 57600,
-                                   115200, 230400, 128000, 256000};
+static const uint32_t kBauds[11] = {
+    4800, 9600, 19200, 38400, 57600, 115200, 230400, 128000, 256000, 1000000,
+    // This baud rate will only work on silicon, the FPGA cannot go fast enough:
+    1500000};
 
 enum {
   kTestTimeoutMillis = 500000,
@@ -107,9 +109,17 @@ bool test_main(void) {
   CHECK_STATUS_OK(
       uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
 
+  size_t baud_count = ARRAYSIZE(kBauds);
+
+  // We only want to run the highest bauds (1MBd and 1.5MBd) on chips going
+  // at the real speed (24MHz). FPGAs clocking slower cannot test these.
+  if (kClockFreqPeripheralHz < 24 * 1000 * 1000) {
+    baud_count -= 2;
+  }
+
   // Check every baud rate is sent and received okay.
   status_t result = OK_STATUS();
-  for (size_t baud_idx = 0; baud_idx < ARRAYSIZE(kBauds); ++baud_idx) {
+  for (size_t baud_idx = 0; baud_idx < baud_count; ++baud_idx) {
     baud_rate = kBauds[baud_idx];
     EXECUTE_TEST(result, test_uart_baud);
   }
