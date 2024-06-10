@@ -22,7 +22,12 @@ package(default_visibility = ["//visibility:public"])
 opentitan_test(
     name = "fors_test",
     srcs = ["fors_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -62,6 +67,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
@@ -81,7 +87,12 @@ opentitan_test(
 opentitan_test(
     name = "wots_test",
     srcs = ["wots_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
