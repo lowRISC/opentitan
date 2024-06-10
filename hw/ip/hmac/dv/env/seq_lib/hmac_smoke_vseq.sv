@@ -181,7 +181,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         // for such corner cases, because it is hard to align the scb with the fifo_empty interrupt.
         // Since prim_packer can hold more data, the ignored period of time is extended by * 2.
         // TODO revisit this and understand why this particular delay is selected
-        if (ral.cfg.digest_size.get_mirrored_value() == SHA2_256) begin
+        if (`gmv(ral.cfg.digest_size) == SHA2_256) begin
           key_process_cycles = HMAC_KEY_PROCESS_CYCLES_256;
         end else begin
           key_process_cycles = HMAC_KEY_PROCESS_CYCLES_512;
