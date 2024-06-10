@@ -170,8 +170,12 @@ class OTBNSim:
     def _step_idle(self, verbose: bool) -> StepRes:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
         self.state.stop_if_pending_halt()
-        if ((self.state._fsm_state == FsmState.LOCKED and
-             self.state.cycles_in_this_state == 0)):
+
+        # If we are locked then zero the INSN_CNT register. It can never change
+        # again, so we only do the write on the first cycle (to avoid sending a
+        # line to stdout on every cycle)
+        is_locked = self.state._fsm_state == FsmState.LOCKED
+        if is_locked and self.state.cycles_in_this_state == 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
         if self.state.init_sec_wipe_is_running():
