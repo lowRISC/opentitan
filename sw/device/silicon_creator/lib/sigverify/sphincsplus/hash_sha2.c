@@ -51,6 +51,14 @@ static_assert(
 
 inline rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
   hmac_sha256_configure(/*big_endian_digest=*/true);
+
+  // Save state for the first part of `thash`: public key seed + padding.
+  hmac_sha256_start();
+  hmac_sha256_update_words(ctx->pub_seed, kSpxNWords);
+  uint32_t padding[kSpxSha2BlockNumWords - kSpxNWords];
+  memset(padding, 0, sizeof(padding));
+  hmac_sha256_update_words(padding, ARRAYSIZE(padding));
+  hmac_sha256_save(&ctx->state_seeded);
   return kErrorOk;
 }
 

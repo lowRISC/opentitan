@@ -76,11 +76,12 @@ inline void hmac_sha256_process(void) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
 }
 
-void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
-  // Send the process command in case it hasn't been sent yet (it's harmless to
-  // send it twice).
-  hmac_sha256_process();
-
+/**
+ * Wait for the `hmac_done` interrupt and then clear it.
+ *
+ * Should only be called after a `process` or `stop` command.
+ */
+static void wait_for_done(void) {
   uint32_t reg = 0;
   do {
     reg = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
@@ -88,9 +89,17 @@ void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
   } while (!bitfield_bit32_read(reg, HMAC_INTR_STATE_HMAC_DONE_BIT));
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    reg);
+}
+
+void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
+  // Send the process command in case it hasn't been sent yet (it's harmless to
+  // send it twice).
+  hmac_sha256_process();
+  wait_for_done();
 
   uint32_t result, incr;
-  reg = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  uint32_t reg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
   if (bitfield_bit32_read(reg, HMAC_CFG_DIGEST_SWAP_BIT)) {
     // Big-endian output.
     result = HMAC_DIGEST_0_REG_OFFSET;
@@ -116,6 +125,72 @@ void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
   hmac_sha256_init();
   hmac_sha256_update(data, len);
   hmac_sha256_final(digest);
+}
+
+void hmac_sha256_save(hmac_context_t *ctx) {
+  // Issue the STOP command to halt the operation and compute the intermediate
+  // digest.
+  uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_STOP_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
+  wait_for_done();
+
+  // Read the digest registers. Note that endianness does not matter here,
+  // because we will simply restore the registers in the same order as we saved
+  // them.
+  for (uint32_t i = 0; i < kHmacDigestNumWords; i++) {
+    ctx->digest[i] =
+        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET +
+                        i * sizeof(uint32_t));
+  }
+
+  // Read the message length registers.
+  ctx->msg_len_lower = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
+                                       HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
+  ctx->msg_len_upper = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
+                                       HMAC_MSG_LENGTH_UPPER_REG_OFFSET);
+
+  // Momentarily clear the `sha_en` bit, which clears the digest.
+  uint32_t cfg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET,
+                   bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false));
+
+  // Restore the full original configuration.
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
+}
+
+void hmac_sha256_restore(const hmac_context_t *ctx) {
+  // Clear the `sha_en` bit to ensure the message length registers are
+  // writeable. Leave the rest of the configuration unchanged.
+  uint32_t cfg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
+
+  // Write the digest registers. Note that endianness does not matter here,
+  // because we will simply restore the registers in the same order as we saved
+  // them.
+  for (uint32_t i = 0; i < kHmacDigestNumWords; i++) {
+    abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET +
+                         i * sizeof(uint32_t),
+                     ctx->digest[i]);
+  }
+
+  // Write the message length registers.
+  abs_mmio_write32(
+      TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
+      ctx->msg_len_lower);
+  abs_mmio_write32(
+      TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_LENGTH_UPPER_REG_OFFSET,
+      ctx->msg_len_upper);
+
+  // Re-enable the SHA engine.
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
+
+  // Issue the CONTINUE command to restart the operation.
+  uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_CONTINUE_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
 }
 
 extern void hmac_sha256_init(void);

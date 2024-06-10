@@ -40,23 +40,17 @@ static void gen_chain(const uint32_t *in, uint8_t start, const spx_ctx_t *ctx,
   // Initialize out with the value at position `start`.
   memcpy(out, in, kSpxN);
 
-  // Initialize padding.
-  uint32_t padding[kSpxSha2BlockNumWords - kSpxNWords];
-  memset(padding, 0, sizeof(padding));
-
-  spx_addr_hash_set(addr, start);
   // Iterate `kSpxWotsW - 1` calls to the hash function. This loop is
   // performance-critical.
+  spx_addr_hash_set(addr, start);
   for (uint8_t i = start; i + 1 < kSpxWotsW; i++) {
     // This loop body is essentially just `thash`, inlined for performance.
-    hmac_sha256_start();
-    hmac_sha256_update_words(ctx->pub_seed, kSpxNWords);
-    hmac_sha256_update_words(padding, ARRAYSIZE(padding));
+    hmac_sha256_restore(&ctx->state_seeded);
     hmac_sha256_update((unsigned char *)addr->addr, kSpxSha256AddrBytes);
     hmac_sha256_update_words(out, kSpxNWords);
     hmac_sha256_process();
     // Update the address while HMAC is processing for performance reasons.
-    spx_addr_hash_set(addr, i+1);
+    spx_addr_hash_set(addr, i + 1);
     hmac_sha256_final_truncated(out, kSpxNWords);
   }
 }
