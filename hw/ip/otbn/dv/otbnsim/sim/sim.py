@@ -175,11 +175,31 @@ class OTBNSim:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
         if self.state.init_sec_wipe_is_running():
-            # Wait for the URND seed. Once that appears, switch to WIPING_GOOD
-            # unless the FSM state is already LOCKED, in which case we change
-            # it to WIPING_BAD.
+            # Wait for the URND seed. If there is some genuine state to wipe
+            # (because self.state.has_state_to_wipe is true), then we switch to
+            # WIPING_GOOD unless the FSM state is already LOCKED, in which case
+            # we change it to WIPING_BAD.
+            #
+            # As a special case, there might be an RMA request and this might
+            # be just after reset. In that case, we don't need to worry about
+            # wiping state (because the entropy complex might not have been set
+            # up yet, we might not even be able to seed URND). In that case, we
+            # jump straight to the LOCKED state.
             if self.state.wsrs.URND.running:
-                if self.state.get_fsm_state() == FsmState.LOCKED:
+                cur_fsm_state = self.state.get_fsm_state()
+
+                # If URND finishes, it's probably the seed for a secure wipe.
+                # But there's an extra possibility: we might have seen an RMA
+                # request before any instructions get run. In that case, the
+                # rma_req flag will be high and the has_state_to_wipe flag will
+                # be low. Jump straight to the LOCKED state and skip the
+                # WIPING_BAD state (since there is nothing that needs wiping
+                # anyway).
+                if self.state.rma_req and not self.state.has_state_to_wipe:
+                    self.state.complete_init_sec_wipe()
+                    self.state.set_fsm_state(FsmState.LOCKED)
+                    self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+                elif cur_fsm_state == FsmState.LOCKED:
                     self.state.set_fsm_state(FsmState.WIPING_BAD)
                 else:
                     self.state.set_fsm_state(FsmState.WIPING_GOOD)
