@@ -163,7 +163,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     `uvm_info(`gfn, "triggering hash to start", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
     // If incorrectly configured or SHA is not enabled, check that an error is signaled.
-    if (invalid_cfg || !ral.cfg.sha_en.get_mirrored_value()) begin
+    if (invalid_cfg || !`gmv(ral.cfg.sha_en)) begin
       check_error_code();
     end
   endtask
@@ -173,7 +173,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     `uvm_info(`gfn, "triggering hash to continue", UVM_LOW)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
     // If SHA is not enabled, check that an error is signaled.
-    if (!ral.cfg.sha_en.get_mirrored_value()) begin
+    if (!`gmv(ral.cfg.sha_en)) begin
       check_error_code();
     end
     hash_continue.trigger();
@@ -309,7 +309,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
             end
           end
 
-          if (ral.cfg.sha_en.get_mirrored_value()) begin
+          if (`gmv(ral.cfg.sha_en)) begin
             if (!do_back_pressure) begin
               if ($urandom_range(0, 1)) begin
                 read_status_intr_clr();
@@ -385,7 +385,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
               end
             end
             // Expected error as we may not push message into the FIFO while SHA is disabled
-            if (!ral.cfg.sha_en.get_mirrored_value()) begin
+            if (!`gmv(ral.cfg.sha_en)) begin
               check_error_code();
             end
           // remaining msg is smaller than the burst_wr_length
@@ -441,7 +441,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task check_error_code(bit check_err = 1);
     bit [TL_DW-1:0] error_code;
     if (check_err) begin
-      if (ral.intr_enable.hmac_err.get_mirrored_value()) begin
+      if (`gmv(ral.intr_enable.hmac_err)) begin
         check_interrupts(.interrupts((1 << HmacErr)), .check_set(1'b1));
       end else begin
         csr_rd_check(.ptr(ral.intr_state), .compare_value(1 << HmacErr));
