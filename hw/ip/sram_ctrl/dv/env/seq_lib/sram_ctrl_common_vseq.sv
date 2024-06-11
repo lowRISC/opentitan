@@ -60,6 +60,31 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     super.pre_start();
   endtask
 
+  task dut_init(string reset_kind = "HARD");
+    // Disable fault injection on the prim_count module associated with the TL-UL
+    // adapter SRAM request and sramreqfifo fifo.
+    //
+    // This is because injecting a fault causes a spurious TL transaction whose response
+    // eventually causes a fatal alert (good). Unfortunately, the FIFOs might actually have
+    // been empty, so lots of signals in the design become X. This includes SRAM_CTRL's
+    // bus_integ_error signal than then cannot be reliably sensed in the DV environment.
+    // The code here disables fault injection at that location.
+    sec_cm_pkg::find_sec_cm_if_proxy(
+      .path("*u_tlul_adapter_sram*u_reqfifo*u_fifo_cnt*u_rptr"),
+      .is_regex(1)).disable_fi();
+    sec_cm_pkg::find_sec_cm_if_proxy(
+      .path("*u_tlul_adapter_sram*u_reqfifo*u_fifo_cnt*u_wptr"),
+      .is_regex(1)).disable_fi();
+    sec_cm_pkg::find_sec_cm_if_proxy(
+      .path("*u_tlul_adapter_sram*u_sramreqfifo*u_fifo_cnt*u_rptr"),
+      .is_regex(1)).disable_fi();
+    sec_cm_pkg::find_sec_cm_if_proxy(
+      .path("*u_tlul_adapter_sram*u_sramreqfifo*u_fifo_cnt*u_wptr"),
+      .is_regex(1)).disable_fi();
+
+    super.dut_init(reset_kind);
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
