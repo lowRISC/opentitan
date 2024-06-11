@@ -315,7 +315,7 @@ alias(
 
 alias(
     name = "rsa",
-    actual = "@crate_index__rsa-0.8.2//:rsa",
+    actual = "@crate_index__rsa-0.9.6//:rsa",
     tags = ["manual"],
 )
 
