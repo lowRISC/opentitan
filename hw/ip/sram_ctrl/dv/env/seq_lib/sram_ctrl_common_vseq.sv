@@ -100,11 +100,41 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   endtask : check_sram_access_blocked_after_fi
 
   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    if (!uvm_re_match("*u_tlul_adapter_sram.u_rspfifo.*", if_proxy.path)) begin
+    if (!uvm_re_match("*u_tlul_adapter_sram.*", if_proxy.path)) begin
+      `uvm_info(`gfn, "INSIDE CHECK", UVM_LOW)
+      `uvm_info(`gfn, "INSIDE CHECK", UVM_HIGH)
       if (enable) begin
         $asserton(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.u_reqfifo");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.u_sramreqfifo");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.TlOutValidKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.TlOutKnownIfFifoKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.ReqOutKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.WeOutKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.AddrOutKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.WdataOutKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.WmaskOutKnown_A");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.rvalidHighWhenRspFifoFull");
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.rvalidHighReqFifoEmpty");
+        $asserton(0, "tb.dut.tlul_assert_device_ram.dKnown_AKnownEnable");
+        $asserton(0, "tb.dut.RamTlOutKnown_A");
+        $asserton(0, "tb.dut.RamTlOutPayLoadKnown_AKnownEnable");
       end else begin
         $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_reqfifo");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_sramreqfifo");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.TlOutValidKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.TlOutKnownIfFifoKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.ReqOutKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.WeOutKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.AddrOutKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.WdataOutKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.WmaskOutKnown_A");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.rvalidHighWhenRspFifoFull");
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.rvalidHighReqFifoEmpty");
+        $assertoff(0, "tb.dut.tlul_assert_device_ram.dKnown_AKnownEnable");
+        $assertoff(0, "tb.dut.RamTlOutKnown_A");
+        $assertoff(0, "tb.dut.RamTlOutPayLoadKnown_AKnownEnable");
       end
     end
   endfunction
@@ -118,6 +148,10 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     super.check_sec_cm_fi_resp(if_proxy);
 
     if (!uvm_re_match("*.u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.*",
+                      if_proxy.path) |
+        !uvm_re_match("*.u_tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt.*",
+                      if_proxy.path) |            
+        !uvm_re_match("*.u_tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.*",
                       if_proxy.path)) begin
       csr_rd_check(.ptr(ral.status.bus_integ_error), .compare_value(1));
     end else begin
