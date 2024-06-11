@@ -393,7 +393,6 @@ class usb20_monitor extends dv_base_monitor #(
     for (i = 0; i < packet.size(); i++) begin
       if (consecutive_ones_count >= 6) begin
         if (packet[i] != 1'b0) begin
-          // TODO: record and forward the bit stuffing violation for error-injection sequences.
           `uvm_info(`gfn, $sformatf("Bit stuffing violation detected in %p at bit %d",
                                     packet, i), UVM_LOW)
           valid_stuffing = 0;
@@ -406,7 +405,6 @@ class usb20_monitor extends dv_base_monitor #(
       end
     end
     if (consecutive_ones_count >= 6) begin
-      // TODO: record and forward the bit stuffing violation for error-injection sequences.
       `uvm_info(`gfn, $sformatf("Bit stuffing violation detected in %p at bit %d", packet, i),
                 UVM_LOW)
       valid_stuffing = 0;

@@ -490,8 +490,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
     case (rsp_item.m_pid_type)
       PidTypeData0, PidTypeData1: begin
-        // TODO: Ignoring the 16-bits of CRC, and we have possibly captured some additional bit(s)
-        // from the EOP (SE0) signaling.
         bit [15:0] calc_crc16;
         bit [15:0] rx_crc16;
         int unsigned len = (decoded_received_pkt.size() - 32) & ~7;  // integral byte count
