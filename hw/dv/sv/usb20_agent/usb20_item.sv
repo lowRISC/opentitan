@@ -25,7 +25,11 @@ class usb20_item extends uvm_sequence_item;
   `uvm_object_utils_begin(usb20_item)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new(string name = "", pkt_type_e pkt_type = PktTypeEvent);
+    super.new(name);
+    m_ev_type  = EvPacket;
+    m_pkt_type = pkt_type;
+  endfunction
 
   // Check the PID type of this item is the expected value. If not, raise a fatal error.
   function void check_pid_type(pid_type_e expected);
@@ -45,6 +49,7 @@ class usb20_item extends uvm_sequence_item;
   endfunction
 endclass
 
+// Token Packet (SETUP, IN, OUT, but not SOF which uses 'sof_pkt' because of differing composition).
 class token_pkt extends usb20_item;
   // Device Address of the intended recipient.
   rand bit [6:0] address;
@@ -60,7 +65,14 @@ class token_pkt extends usb20_item;
     `uvm_field_int(crc5,                    UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new(string name = "", pid_type_e pid = PidTypeOutToken, bit [6:0] addr = 0,
+               bit [3:0] ep = 0);
+    super.new(name, PktTypeToken);
+    m_pid_type = pid;
+    address = addr;
+    endpoint = ep;
+    crc5 = generate_crc5({endpoint, address});
+  endfunction
 
   function void post_randomize();
     // Calculate the CRC of non-SOF Token packets.
@@ -68,6 +80,7 @@ class token_pkt extends usb20_item;
   endfunction
 endclass
 
+// Data Packet (DATA0, DATA1, DATA2, MDATA).
 class data_pkt extends usb20_item;
   bit [15:0] crc16;
   rand byte unsigned data[]; // Dynamic array
@@ -78,7 +91,12 @@ class data_pkt extends usb20_item;
     `uvm_field_int(crc16,                   UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new(string name = "", byte unsigned d[] = {}, pid_type_e pid = PidTypeData0);
+    super.new(name, PktTypeToken);
+    m_pid_type = pid;
+    data = d;
+    crc16 = generate_crc16(data);
+  endfunction
 
   constraint data_c {
     data.size() <= 64;
@@ -138,6 +156,7 @@ class data_pkt extends usb20_item;
   endfunction
 endclass
 
+// Start Of Frame token packet (SOF).
 class sof_pkt extends usb20_item;
   // Frame Number of this SOF packet.
   rand bit [10:0] framenum;
@@ -147,21 +166,30 @@ class sof_pkt extends usb20_item;
   `uvm_object_utils_begin(sof_pkt)
     `uvm_field_enum(pid_type_e, m_pid_type, UVM_DEFAULT)
     `uvm_field_int(framenum,                UVM_DEFAULT)
-    `uvm_field_int(crc5 ,                   UVM_DEFAULT)
+    `uvm_field_int(crc5,                    UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new(string name = "", bit [10:0] frame = 0);
+    super.new(name, PktTypeSoF);
+    m_pid_type = PidTypeSofToken;
+    framenum = frame;
+    crc5 = generate_crc5(framenum);
+  endfunction
 
   function void post_randomize();
     crc5 = generate_crc5(framenum);
   endfunction
 endclass
 
+// Handshake packet (ACK, NAK, STALL, NYET).
 class handshake_pkt extends usb20_item;
   // Handshake packets have no payload being the Packet IDentifier.
   `uvm_object_utils_begin(handshake_pkt)
     `uvm_field_enum(pid_type_e, m_pid_type, UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new(string name = "", pid_type_e pid = PidTypeAck);
+    super.new(name, PktTypeToken);
+    m_pid_type = pid;
+  endfunction
 endclass
