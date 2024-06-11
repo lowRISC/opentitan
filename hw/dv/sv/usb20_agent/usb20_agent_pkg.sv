@@ -20,6 +20,18 @@ package usb20_agent_pkg;
     USB20Sym_Invalid  // Not Used.
   } usb_symbol_e;
 
+  // TODO: rename this enumeration type; not all usb20_item instances are packets any longer.
+  //
+  // Item Types
+  typedef enum bit [2:0] {
+      // Packet objects.
+      PktTypeSoF,
+      PktTypeToken,
+      PktTypeData,
+      PktTypeHandshake,
+      // Non-packet items.
+      PktTypeEvent} pkt_type_e;
+
   // USB-level events; the DP/DN wires are used for transmitting packet data but also held for
   // extended intervals to signal specific bus-level events.
   typedef enum bit [2:0] {
@@ -29,8 +41,7 @@ package usb20_agent_pkg;
       EvDisconnect, // VBUS low when disconnected.
       EvConnect,    // VBUS high after connection.
       EvPacket} ev_type_e;
-  // Packet Types
-  typedef enum bit [2:0] {PktTypeSoF, PktTypeToken, PktTypeData, PktTypeHandshake} pkt_type_e;
+
   // Packet IDentifiers; the 4 LSBs identify the Packet type, and are reflected in inverted
   //   form as the 4 MSBs to provide some internal error checking.
   typedef enum bit [7:0] {
