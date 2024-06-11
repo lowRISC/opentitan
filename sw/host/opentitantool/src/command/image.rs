@@ -10,7 +10,7 @@ use std::convert::TryInto;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use zerocopy::{AsBytes, LayoutVerified};
+use zerocopy::AsBytes;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -194,7 +194,7 @@ impl CommandDispatch for ManifestUpdateCommand {
                         identifier: MANIFEST_EXT_ID_SPX_KEY,
                         name: MANIFEST_EXT_NAME_SPX_KEY,
                     },
-                    key: *LayoutVerified::<_, SigverifySpxKey>::new(&buf.bytes[0..key_bytes.len()])
+                    key: *zerocopy::Ref::<_, SigverifySpxKey>::new(&buf.bytes[0..key_bytes.len()])
                         .unwrap()
                         .into_ref(),
                 }

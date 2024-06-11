@@ -6,12 +6,16 @@
 #     bazel run //third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
-rust_proc_macro(
-    name = "zerocopy_derive",
+# licenses([
+#     "TODO",  # BSD-2-Clause OR Apache-2.0 OR MIT
+# ])
+
+rust_library(
+    name = "zerocopy",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -24,12 +28,21 @@ rust_proc_macro(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "byteorder",
+        "default",
+        "derive",
+        "zerocopy-derive",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
+    proc_macro_deps = [
+        "@crate_index__zerocopy-derive-0.7.34//:zerocopy_derive",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=zerocopy-derive",
+        "crate-name=zerocopy",
         "manual",
         "noclippy",
         "norustfmt",
@@ -68,10 +81,8 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.2",
+    version = "0.7.34",
     deps = [
-        "@crate_index__proc-macro2-1.0.67//:proc_macro2",
-        "@crate_index__quote-1.0.26//:quote",
-        "@crate_index__syn-1.0.107//:syn",
+        "@crate_index__byteorder-1.4.3//:byteorder",
     ],
 )
