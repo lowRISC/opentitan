@@ -95,6 +95,7 @@
       name: edn_alert
       uvm_test: edn_alert_test
       uvm_test_seq: edn_alert_vseq
+      reseed: 200
     }
 
     {
