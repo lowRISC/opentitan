@@ -25,6 +25,9 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
     csr_rd(.ptr(ral.usbstat.link_state), .value(link_state));
     `DV_CHECK_EQ(usbdev_link_state_e'(link_state), LinkActiveNoSOF)
 
+    // Ensure the interrupt is not presently asserted.
+    csr_wr(.ptr(ral.intr_state), .value(1 << IntrLinkSuspend));
+
     // Wait for longer than 3ms, generating no activity; bus remains Idle.
     cfg.clk_rst_vif.wait_clks(link_rst_suspend_ns);
 
@@ -33,9 +36,9 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
     csr_rd(.ptr(ral.usbstat.link_state), .value(link_state));
     `DV_CHECK_EQ(usbdev_link_state_e'(link_state), LinkSuspended)
 
-    // Read USB interrupt register to check link suspend interrupt is set
-    // Link Supended Interrupt
-    csr_rd(.ptr(ral.intr_state.link_suspend), .value(link_suspend));
-    `DV_CHECK_EQ(link_suspend, 1'b1);
+    // Check that the link suspend interrupt has been asserted.
+    wait_for_interrupt(1 << IntrLinkSuspend, .timeout_clks(1), .clear(1), .enforce(1));
+    // Disable the interrupt before completing.
+    csr_wr(.ptr(ral.intr_enable), .value(0));
   endtask
 endclass : usbdev_link_suspend_vseq
