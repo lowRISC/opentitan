@@ -241,12 +241,6 @@ SEC_VERS = [
             otp = ":otp_img_boot_policy_flash_ecc_error",
             slot_a = SLOTS["a"],
             slot_b = SLOTS["b"],
-            # TODO(opentitan#21353): These tests are currently broken.
-            # Re-enable after we fix the exception handling scheme.
-            tags = [
-                "broken",
-                "manual",
-            ],
         ),
     )
     for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
