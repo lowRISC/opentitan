@@ -167,6 +167,11 @@ module flash_ctrl_lcmgr
   logic rma_phase;
   logic seed_err_q, seed_err_d;
 
+  logic [BusAddrW-1:0] addr;
+  logic rma_start;
+  logic start;
+  logic [BusAddrW-1:0] rma_addr;
+
   assign seed_phase = phase == PhaseSeed;
   assign rma_phase = phase == PhaseRma;
 
@@ -236,16 +241,40 @@ module flash_ctrl_lcmgr
   // read data integrity check
   logic data_err;
   logic data_intg_ok;
+
+  // Inside the flash_phy_rd module, the address is XORed on top of the read data.
+  // At this point, we remove the address. A faulty address results in a faulty rdata,
+  // that is detected by the data integrity check below.
+  // SEC_CM: MEM.ADDR_INFECTION
+  logic [BusFullWidth-1:0] rdata;
+  logic [BusBankAddrW-1:0] rma_addr_xor;
+  logic [BusBankAddrW-1:0] seed_addr_xor;
+  logic [BusBankAddrW-1:0] addr_xor;
+
+  // Convert RMA address to page aligned address as this address was used inside
+  // flash_phy_rd for the data XOR address infection. For RMA requests, the
+  // address is generated inside the flash_ctrl_rd module using the page aligned
+  // address + a counter. As this counter is not available at this point, the
+  // page address is used for the data XOR address infection.
+  assign rma_addr_xor = {rma_addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
+  assign seed_addr_xor = {addr[BusBankAddrW-1:BusWordW], {BusWordW{1'b0}}};
+  assign addr_xor = seed_phase ? seed_addr_xor : rma_addr_xor;
+  assign rdata = {rdata_i[BusFullWidth-1:BusWidth], rdata_i[BusWidth-1:0] ^ addr_xor};
+
   tlul_data_integ_dec u_data_intg_chk (
-    .data_intg_i(rdata_i),
+    .data_intg_i(rdata),
     .data_err_o(data_err)
   );
   assign data_intg_ok = ~data_err;
 
   // hold on to failed integrity until reset
   logic data_invalid_d, data_invalid_q;
+  // Ignore data_intg_ok if there is a read err_i. This is necessary because
+  // on a read err_i, the data XOR address infection inside flash_phy_rd is not
+  // conducted but we still do the reverse operation at this point. So ignore this
+  // error.
   assign data_invalid_d = data_invalid_q |
-                          (rvalid_i & ~data_intg_ok);
+                          (rvalid_i & ~data_intg_ok & ~|err_i);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -266,9 +295,9 @@ module flash_ctrl_lcmgr
     end else if (seed_phase && validate_q && rvalid_i) begin
       // validate current value
       seeds_q[seed_idx][rd_idx] <= seeds_q[seed_idx][rd_idx] &
-                                   rdata_i[BusWidth-1:0];
+                                   rdata[BusWidth-1:0];
     end else if (seed_phase && rvalid_i) begin
-      seeds_q[seed_idx][rd_idx] <= rdata_i[BusWidth-1:0];
+      seeds_q[seed_idx][rd_idx] <= rdata[BusWidth-1:0];
     end
   end
 
@@ -279,14 +308,12 @@ module flash_ctrl_lcmgr
   assign seed_info_sel = seed_page.sel;
   assign seed_page_addr = BusAddrW'({seed_page.addr, BusWordW'(0)});
 
-  logic start;
   flash_op_e op;
   flash_prog_e prog_type;
   flash_erase_e erase_type;
   flash_part_e part_sel;
   logic [InfoTypesWidth-1:0] info_sel;
   logic [11:0] num_words;
-  logic [BusAddrW-1:0] addr;
 
   assign prog_type = FlashProgNormal;
   assign erase_type = FlashErasePage;
@@ -727,8 +754,6 @@ module flash_ctrl_lcmgr
     .q_o(err_sts_raw_q)
   );
 
-  logic rma_start;
-  logic [BusAddrW-1:0] rma_addr;
   flash_op_e rma_op;
   flash_part_e rma_part_sel;
   logic [InfoTypesWidth-1:0] rma_info_sel;
@@ -860,7 +885,7 @@ module flash_ctrl_lcmgr
         end
 
         if (rvalid_i && rready_o) begin
-          err_sts_set = prog_data[beat_cnt] != rdata_i[BusWidth-1:0];
+          err_sts_set = prog_data[beat_cnt] != rdata[BusWidth-1:0];
         end
       end
 
@@ -936,7 +961,7 @@ module flash_ctrl_lcmgr
   //VCS coverage on
   // pragma coverage on
 
-  assign rma_data = {rdata_i, rma_data_q[MaxRmaDataWidth-1 -: ShiftWidth]};
+  assign rma_data = {rdata, rma_data_q[MaxRmaDataWidth-1 -: ShiftWidth]};
 
   // check the rma programmed value actually matches what was read back
   `ASSERT(ProgRdVerify_A, rma_start & rd_cnt_en & done_i |-> prog_data == rma_data)

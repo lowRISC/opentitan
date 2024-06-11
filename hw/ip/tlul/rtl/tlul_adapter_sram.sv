@@ -249,7 +249,7 @@ module tlul_adapter_sram
   localparam int ReqFifoWidth = $bits(req_t) ;
   localparam int RspFifoWidth = $bits(rsp_t) ;
 
-  localparam int SramReqAddrFifoWidth = $bits(sram_req_addr_t) ;
+  localparam int SramReqAddrFifoWidth = SramBusBankAW ;
 
   // FIFO signal in case OutStand is greater than 1
   // If request is latched, {write, source} is pushed to req fifo.
