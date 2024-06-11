@@ -74,6 +74,6 @@ rust_library(
     }),
     version = "0.13.1",
     deps = [
-        "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
+        "@crate_index__elliptic-curve-0.13.8//:elliptic_curve",
     ],
 )

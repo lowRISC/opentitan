@@ -18,7 +18,7 @@ rust_library(
     name = "p256",
     srcs = glob(["**/*.rs"]),
     aliases = {
-        "@crate_index__ecdsa-0.16.6//:ecdsa": "ecdsa_core",
+        "@crate_index__ecdsa-0.16.9//:ecdsa": "ecdsa_core",
     },
     compile_data = glob(
         include = ["**"],
@@ -90,8 +90,8 @@ rust_library(
     }),
     version = "0.13.2",
     deps = [
-        "@crate_index__ecdsa-0.16.6//:ecdsa",
-        "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
+        "@crate_index__ecdsa-0.16.9//:ecdsa",
+        "@crate_index__elliptic-curve-0.13.8//:elliptic_curve",
         "@crate_index__primeorder-0.13.1//:primeorder",
         "@crate_index__sha2-0.10.6//:sha2",
     ],
