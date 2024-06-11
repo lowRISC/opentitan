@@ -6,8 +6,9 @@ use anyhow::{anyhow, bail, Result};
 use num_bigint_dig::{traits::ModInverse, BigInt, BigUint, Sign::Minus};
 use rand::rngs::OsRng;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
+use rsa::pkcs1v15::Pkcs1v15Sign;
 use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
-use rsa::{pkcs1v15::Pkcs1v15Sign, PublicKey, PublicKeyParts};
+use rsa::traits::PublicKeyParts;
 use sha2::Sha256;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -66,7 +67,7 @@ pub enum Error {
 }
 
 /// Ensure the components of `key` have the correct bit length.
-fn validate_key(key: &impl rsa::PublicKeyParts) -> Result<()> {
+fn validate_key(key: &impl PublicKeyParts) -> Result<()> {
     if key.n().bits() != MODULUS_BIT_LEN || key.e() != &BigUint::from(65537u32) {
         bail!(Error::InvalidPublicKey(None))
     } else {
