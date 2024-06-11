@@ -24,6 +24,7 @@ chrono = "0.4"
 crc = "3.0"
 deser-hjson = "1.0.2"
 directories = "4.0.1"
+ecdsa = { version = "0.16.9", features = ["pkcs8", "pem", "signing", "verifying", "sha2", "std"] }
 env_logger = "0.10"
 elliptic-curve = { version = "0.13.4", features = ["ecdh", "pkcs8", "sec1", "std"] }
 erased-serde = "0.3.12"
