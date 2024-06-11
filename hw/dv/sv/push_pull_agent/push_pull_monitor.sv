@@ -93,7 +93,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
       @(cfg.vif.mon_cb);
       `WAIT_FOR_RESET
       if (cfg.vif.mon_cb.req) begin
-        `uvm_info(`gfn, $sformatf("[%0s] pull req detected", cfg.agent_type), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("[%0s] pull req detected", cfg.agent_type.name()), UVM_HIGH)
         // TODO: sample any covergroups
         item = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create("item");
         item.h_data = cfg.vif.mon_cb.h_data;
@@ -139,7 +139,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     item.h_data = cfg.vif.mon_cb.h_data;
     `uvm_info(`gfn,
               $sformatf("[%0s] transaction detected: h_data[0x%0x], d_data[0x%0x]",
-                        cfg.agent_type, item.h_data, item.d_data), UVM_HIGH)
+                        cfg.agent_type.name(), item.h_data, item.d_data), UVM_HIGH)
     analysis_port.write(item);
   endfunction
 
