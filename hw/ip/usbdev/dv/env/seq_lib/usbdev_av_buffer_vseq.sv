@@ -8,18 +8,29 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  usb20_item      item;
-  RSP             rsp_item;
+  // Shall we exercise the SETUP FIFO rather than the OUT FIFO?
+  rand bit setup;
+  // Buffer to be used.
+  rand bit [4:0] buf_num;
 
   task body();
-    // Configure support for OUT transaction
-    configure_out_trans(ep_default);
-    // Out token packet followed by a data packet of 8 bytes
-    send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
-    check_response_matches(PidTypeAck);
+    if (setup) begin
+      // Choose a buffer to receive our packet.
+      setup_buffer_id = buf_num;
+      // Configure support for SETUP transactions.
+      configure_setup_trans(ep_default);
+      // Send SETUP packet.
+      send_prnd_setup_packet(ep_default);
+    end else begin
+      // Choose a buffer to receive our packet.
+      out_buffer_id = buf_num;
+      // Configure support for OUT transactions.
+      configure_out_trans(ep_default);
+      // Send OUT packet.
+      send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
+    end
 
     // Check that the USB device received a packet with the expected properties.
-    check_pkt_received(ep_default, 0, out_buffer_id, m_data_pkt.data);
+    check_pkt_received(ep_default, setup, buf_num, m_data_pkt.data);
   endtask
-
-endclass
+endclass : usbdev_av_buffer_vseq
