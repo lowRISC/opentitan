@@ -10,6 +10,7 @@ use std::path::Path;
 use anyhow::{anyhow, bail, Result};
 
 use serde::de::{self, Unexpected};
+use serde::ser::SerializeSeq;
 use serde::{Deserialize, Serialize};
 
 use serde_annotate::Annotate;
@@ -19,6 +20,7 @@ use serde_annotate::Annotate;
 pub enum OtpImgValue {
     Word(u64),
     Bool(bool),
+    #[serde(serialize_with = "serialize_vec_u32_hex")]
     Sequence(Vec<u32>),
     #[serde(serialize_with = "serialize_random")]
     Random,
@@ -29,6 +31,17 @@ where
     S: serde::Serializer,
 {
     serializer.serialize_str("<random>")
+}
+
+fn serialize_vec_u32_hex<S>(vec: &[u32], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut seq = serializer.serialize_seq(Some(vec.len()))?;
+    for num in vec {
+        seq.serialize_element(&format!("0x{:08x}", num))?;
+    }
+    seq.end()
 }
 
 impl<'de> Deserialize<'de> for OtpImgValue {
@@ -278,9 +291,9 @@ mod tests {
         {
           name: \"CREATOR_SEQ\",
           value: [
-            171,
-            205,
-            239
+            \"0x000000ab\",
+            \"0x000000cd\",
+            \"0x000000ef\"
           ]
         }
       ]
