@@ -45,6 +45,10 @@ virtual task test_sec_cm_fi();
   while (if_proxy_q.size) begin
     sec_cm_base_if_proxy if_proxy = if_proxy_q.pop_front();
 
+    // If fault injection is disabled at this instance of the interface, skip it (and don't inject
+    // anything)
+    if (if_proxy.fi_disabled) continue;
+
     sec_cm_fi_ctrl_svas(if_proxy, .enable(0));
     sec_cm_inject_fault(if_proxy);
 
