@@ -10,6 +10,24 @@ class otbn_common_vseq extends otbn_base_vseq;
   }
   `uvm_object_new
 
+  task dut_init(string reset_kind = "HARD");
+    // Disable fault injection on the prim_count module associated with the DMEM request fifo.
+    //
+    // This is because injecting a fault causes a spurious TL transaction whose response eventually
+    // causes a fatal alert (good). Unfortunately, the FIFO might actually have been empty, so lots
+    // of signals in the design become X. This includes OTBN's status signal and we never get to the
+    // "LOCKED" status because we're stuck at X. The code here disables fault injection at that
+    // location.
+    sec_cm_pkg::find_sec_cm_if_proxy(
+      .path("*u_tlul_adapter_sram_dmem*u_reqfifo*u_fifo_cnt*u_rptr"),
+      .is_regex(1)).disable_fi();
+    sec_cm_pkg::find_sec_cm_if_proxy(
+      .path("*u_tlul_adapter_sram_dmem*u_sramreqfifo*u_fifo_cnt*u_rptr"),
+      .is_regex(1)).disable_fi();
+
+    super.dut_init(reset_kind);
+  endtask
+
   virtual task body();
     enable_base_alert_checks = 1'b1;
 
