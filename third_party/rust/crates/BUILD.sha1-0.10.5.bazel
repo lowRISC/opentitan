@@ -79,7 +79,7 @@ rust_library(
     version = "0.10.5",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__digest-0.10.6//:digest",
+        "@crate_index__digest-0.10.7//:digest",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))

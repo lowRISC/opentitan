@@ -84,7 +84,7 @@ rust_library(
     version = "0.9.6",
     deps = [
         "@crate_index__const-oid-0.9.2//:const_oid",
-        "@crate_index__digest-0.10.6//:digest",
+        "@crate_index__digest-0.10.7//:digest",
         "@crate_index__num-bigint-dig-0.8.2//:num_bigint_dig",
         "@crate_index__num-integer-0.1.45//:num_integer",
         "@crate_index__num-traits-0.2.15//:num_traits",
@@ -94,6 +94,6 @@ rust_library(
         "@crate_index__signature-2.1.0//:signature",
         "@crate_index__spki-0.7.3//:spki",
         "@crate_index__subtle-2.4.1//:subtle",
-        "@crate_index__zeroize-1.6.0//:zeroize",
+        "@crate_index__zeroize-1.8.1//:zeroize",
     ],
 )

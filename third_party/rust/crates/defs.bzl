@@ -310,7 +310,8 @@ _NORMAL_DEPENDENCIES = {
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.4//:cryptoki_sys",
             "deser-hjson": "@crate_index__deser-hjson-1.1.0//:deser_hjson",
             "directories": "@crate_index__directories-4.0.1//:directories",
-            "elliptic-curve": "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
+            "ecdsa": "@crate_index__ecdsa-0.16.9//:ecdsa",
+            "elliptic-curve": "@crate_index__elliptic-curve-0.13.8//:elliptic_curve",
             "env_logger": "@crate_index__env_logger-0.10.0//:env_logger",
             "erased-serde": "@crate_index__erased-serde-0.3.24//:erased_serde",
             "hex": "@crate_index__hex-0.4.3//:hex",
@@ -1157,12 +1158,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__digest-0.10.6",
-        sha256 = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f",
+        name = "crate_index__digest-0.10.7",
+        sha256 = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/digest/0.10.6/download"],
-        strip_prefix = "digest-0.10.6",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.digest-0.10.6.bazel"),
+        urls = ["https://static.crates.io/crates/digest/0.10.7/download"],
+        strip_prefix = "digest-0.10.7",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.digest-0.10.7.bazel"),
     )
 
     maybe(
@@ -1197,12 +1198,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__ecdsa-0.16.6",
-        sha256 = "a48e5d537b8a30c0b023116d981b16334be1485af7ca68db3a2b7024cbc957fd",
+        name = "crate_index__ecdsa-0.16.9",
+        sha256 = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ecdsa/0.16.6/download"],
-        strip_prefix = "ecdsa-0.16.6",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ecdsa-0.16.6.bazel"),
+        urls = ["https://static.crates.io/crates/ecdsa/0.16.9/download"],
+        strip_prefix = "ecdsa-0.16.9",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ecdsa-0.16.9.bazel"),
     )
 
     maybe(
@@ -1217,12 +1218,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__elliptic-curve-0.13.4",
-        sha256 = "75c71eaa367f2e5d556414a8eea812bc62985c879748d6403edabd9cb03f16e7",
+        name = "crate_index__elliptic-curve-0.13.8",
+        sha256 = "b5e6043086bf7973472e0c7dff2142ea0b680d30e18d9cc40f267efbf222bd47",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/elliptic-curve/0.13.4/download"],
-        strip_prefix = "elliptic-curve-0.13.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.elliptic-curve-0.13.4.bazel"),
+        urls = ["https://static.crates.io/crates/elliptic-curve/0.13.8/download"],
+        strip_prefix = "elliptic-curve-0.13.8",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.elliptic-curve-0.13.8.bazel"),
     )
 
     maybe(
@@ -4201,10 +4202,10 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__zeroize-1.6.0",
-        sha256 = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9",
+        name = "crate_index__zeroize-1.8.1",
+        sha256 = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/zeroize/1.6.0/download"],
-        strip_prefix = "zeroize-1.6.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zeroize-1.6.0.bazel"),
+        urls = ["https://static.crates.io/crates/zeroize/1.8.1/download"],
+        strip_prefix = "zeroize-1.8.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zeroize-1.8.1.bazel"),
     )
