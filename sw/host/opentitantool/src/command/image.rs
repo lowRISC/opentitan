@@ -111,6 +111,9 @@ impl CommandDispatch for ManifestShowCommand {
 pub struct ManifestUpdateCommand {
     /// Filename for the image to update.
     image: PathBuf,
+    /// Filename for the image's ELF representation.
+    #[arg(short, long)]
+    elf: Option<PathBuf>,
     /// Filename for an HJSON configuration specifying manifest fields.
     #[arg(short, long)]
     manifest: Option<PathBuf>,
@@ -169,7 +172,7 @@ fn load_ecdsa_key(key_file: &Path) -> Result<(EcdsaPublicKey, Option<EcdsaPrivat
     }
 }
 
-impl CommandDispatch for ManifestUpdateCommand {
+impl CommandDispatch for Box<ManifestUpdateCommand> {
     fn run(
         &self,
         _context: &dyn Any,
@@ -197,6 +200,11 @@ impl CommandDispatch for ManifestUpdateCommand {
             .map(ManifestExtSpec::read_from_file)
             .unwrap_or(Ok(Default::default()))?;
         image.add_signed_manifest_extensions(&ext)?;
+
+        // Update the code region fields based on the image's ELF file, if provided.
+        if let Some(elf) = &self.elf {
+            image.update_code_sections(elf)?;
+        }
 
         // Update the manifest fields that are in the signed region.
         // Load / write RSA public key.
@@ -414,7 +422,7 @@ impl CommandDispatch for SpxMessageCommand {
 /// Manifest manipulation commands.
 pub enum ManifestCommand {
     Show(ManifestShowCommand),
-    Update(ManifestUpdateCommand),
+    Update(Box<ManifestUpdateCommand>),
     Verify(ManifestVerifyCommand),
 }
 

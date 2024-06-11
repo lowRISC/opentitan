@@ -4,6 +4,7 @@
 
 use anyhow::{ensure, Result};
 use memoffset::offset_of;
+use object::{Object, ObjectSection};
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
@@ -32,6 +33,10 @@ pub enum ImageError {
     IncompleteRead(usize, usize),
     #[error("Failed to parse image manifest.")]
     Parse,
+    #[error("Value {0} is out of range for field {1}.")]
+    OutOfRange(u64, &'static str),
+    #[error("ELF file is missing section {0}")]
+    MissingElfSection(&'static str),
     #[error("Extension data overflows flash image.")]
     ExtensionOverflow,
     #[error("Extension table index is out of bounds.")]
@@ -310,6 +315,49 @@ impl Image {
                 e.identifier = 0;
             }
         });
+
+        Ok(())
+    }
+
+    /// Updates the "code_start", "code_end", and "entry_point" in the `Manifest`.
+    pub fn update_code_sections(&mut self, elf_file: impl AsRef<Path>) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+
+        let elf_file = std::fs::read(elf_file)?;
+        let elf = object::File::parse(elf_file.as_slice())?;
+
+        // Get the .text and .manifest sections from the ELF. The .manifest
+        // section is at the start of the binary so the address of this section
+        // can be used as a relative offset.
+        let text_section = elf
+            .section_by_name(".text")
+            .ok_or(ImageError::MissingElfSection(".text"))?;
+        let manifest_section = elf
+            .section_by_name(".manifest")
+            .ok_or(ImageError::MissingElfSection(".manifest"))?;
+
+        // Update the "entry_point" in the manifest.
+        let entry_point = elf.entry() - manifest_section.address();
+        ensure!(
+            entry_point < u32::MAX as u64,
+            ImageError::OutOfRange(entry_point, "entry_point")
+        );
+        manifest.entry_point = entry_point as u32;
+
+        // Set the "code_start" and "code_end" in the manifest to align with the .text section.
+        let code_start = text_section.address() - manifest_section.address();
+        ensure!(
+            code_start < u32::MAX as u64,
+            ImageError::OutOfRange(code_start, "code_start")
+        );
+        manifest.code_start = code_start as u32;
+
+        let code_end = code_start + text_section.size();
+        ensure!(
+            code_end < u32::MAX as u64,
+            ImageError::OutOfRange(code_end, "code_end")
+        );
+        manifest.code_end = code_end as u32;
 
         Ok(())
     }
