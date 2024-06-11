@@ -19,10 +19,12 @@ use std::str::FromStr;
 use super::Error;
 use crate::crypto::sha256::{sha256, Sha256Digest};
 
+#[derive(Clone, Debug)]
 pub struct EcdsaPrivateKey {
     pub key: SigningKey,
 }
 
+#[derive(Clone, Debug)]
 pub struct EcdsaPublicKey {
     pub key: VerifyingKey,
 }
