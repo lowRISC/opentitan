@@ -185,8 +185,6 @@ class tl_host_driver extends tl_base_driver;
     tl_seq_item rsp;
 
     forever begin
-      bit req_found;
-
       if ((cfg.vif.host_cb.d2h.d_valid && cfg.vif.h2d_int.d_ready && !reset_asserted) ||
           ((pending_a_req.size() != 0) & reset_asserted)) begin
         // Use the source ID to find the matching request
@@ -208,16 +206,22 @@ class tl_host_driver extends tl_base_driver;
             pending_a_req.delete(i);
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
-            req_found         = 1;
             rsp.rsp_completed = !reset_asserted;
             break;
           end
         end
 
-        if (!req_found && !reset_asserted) begin
-          `uvm_error(get_full_name(), $sformatf(
-                     "Cannot find request matching d_source 0x%0x", cfg.vif.host_cb.d2h.d_source))
-        end
+        // If there was a matching request, we responded to it above. If not, the device seems to
+        // have sent a response without a request (and we won't have done anything yet).
+        //
+        // If we're in reset, we might have forgotten the request (and can ignore the response). If
+        // not, we wouldn't normally expect this to happen. This is a property that is checked in
+        // the tlul_assert module, which should be bound in. But it *might* happen if we're doing
+        // fault injection and disabling assertions in that module.
+        //
+        // Ignore the response either way: we're a driver and there is definitely no sequence that
+        // is waiting for the response here. If there's a bug in the design and we're generating
+        // spurious responses, we expect something to fail in tlul_assert.
       end else if (reset_asserted) begin
         wait(!reset_asserted);
       end
