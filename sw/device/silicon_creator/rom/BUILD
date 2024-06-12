@@ -74,12 +74,16 @@ cc_library(
     name = "rom_isrs",
     srcs = [
         "rom_isrs.S",
+        "rom_isrs.c",
     ],
+    hdrs = ["rom_isrs.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
     ],
 )
 
