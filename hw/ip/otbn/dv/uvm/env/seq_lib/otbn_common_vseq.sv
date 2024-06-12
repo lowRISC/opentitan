@@ -10,20 +10,23 @@ class otbn_common_vseq extends otbn_base_vseq;
   }
   `uvm_object_new
 
+  function void disable_fi_for_prim_count(string path);
+    sec_cm_pkg::find_sec_cm_if_proxy(.path({path, "*u_rptr"}), .is_regex(1)).disable_fi();
+    sec_cm_pkg::find_sec_cm_if_proxy(.path({path, "*u_wptr"}), .is_regex(1)).disable_fi();
+  endfunction
+
   task dut_init(string reset_kind = "HARD");
-    // Disable fault injection on the prim_count module associated with the DMEM request fifo.
+    // Disable fault injection on the prim_count module associated with the DMEM/IMEM request fifos.
     //
     // This is because injecting a fault causes a spurious TL transaction whose response eventually
     // causes a fatal alert (good). Unfortunately, the FIFO might actually have been empty, so lots
     // of signals in the design become X. This includes OTBN's status signal and we never get to the
     // "LOCKED" status because we're stuck at X. The code here disables fault injection at that
     // location.
-    sec_cm_pkg::find_sec_cm_if_proxy(
-      .path("*u_tlul_adapter_sram_dmem*u_reqfifo*u_fifo_cnt*u_rptr"),
-      .is_regex(1)).disable_fi();
-    sec_cm_pkg::find_sec_cm_if_proxy(
-      .path("*u_tlul_adapter_sram_dmem*u_sramreqfifo*u_fifo_cnt*u_rptr"),
-      .is_regex(1)).disable_fi();
+    disable_fi_for_prim_count("*u_tlul_adapter_sram_dmem*u_reqfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_tlul_adapter_sram_dmem*u_sramreqfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_tlul_adapter_sram_imem*u_reqfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_tlul_adapter_sram_imem*u_sramreqfifo*u_fifo_cnt");
 
     super.dut_init(reset_kind);
   endtask
