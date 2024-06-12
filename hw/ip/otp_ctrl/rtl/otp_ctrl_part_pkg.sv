@@ -427,7 +427,8 @@ package otp_ctrl_part_pkg;
     }),
     5312'({
       64'hE29749216775E8A5,
-      864'h0, // unallocated space
+      832'h0, // unallocated space
+      32'h0,
       32'h0,
       96'h0,
       32'h0,
