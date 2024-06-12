@@ -52,6 +52,8 @@ enum {
 DEFINE_BACKDOOR_VAR(uint8_t, kChannelEnable, 3)
 
 DEFINE_BACKDOOR_VAR(uint8_t, kPattPol0, kDifPattgenPolarityLow)
+DEFINE_BACKDOOR_VAR(uint8_t, kPattInactiveLevelPda0, 0)
+DEFINE_BACKDOOR_VAR(uint8_t, kPattInactiveLevelPcl0, 0)
 DEFINE_BACKDOOR_VAR(uint32_t, kPattDiv0, 0)
 DEFINE_BACKDOOR_VAR(uint32_t, kPattLower0, 0x76543210)
 DEFINE_BACKDOOR_VAR(uint32_t, kPattUpper0, 0x76543210)
@@ -59,6 +61,8 @@ DEFINE_BACKDOOR_VAR(uint8_t, kPattLen0, 40)
 DEFINE_BACKDOOR_VAR(uint16_t, kPattRep0, 3)
 
 DEFINE_BACKDOOR_VAR(uint8_t, kPattPol1, kDifPattgenPolarityLow)
+DEFINE_BACKDOOR_VAR(uint8_t, kPattInactiveLevelPda1, 0)
+DEFINE_BACKDOOR_VAR(uint8_t, kPattInactiveLevelPcl1, 0)
 DEFINE_BACKDOOR_VAR(uint32_t, kPattDiv1, 0)
 DEFINE_BACKDOOR_VAR(uint32_t, kPattLower1, 0x76543210)
 DEFINE_BACKDOOR_VAR(uint32_t, kPattUpper1, 0x76543210)
@@ -216,6 +220,8 @@ static void run_test(void) {
   dif_pattgen_channel_config_t patt_cfg;
   if (BACKDOOR_VAR(kChannelEnable) & 0x1) {
     patt_cfg.polarity = BACKDOOR_VAR(kPattPol0);
+    patt_cfg.inactive_level_pda = BACKDOOR_VAR(kPattInactiveLevelPda0);
+    patt_cfg.inactive_level_pcl = BACKDOOR_VAR(kPattInactiveLevelPcl0);
     patt_cfg.clock_divisor = BACKDOOR_VAR(kPattDiv0);
     patt_cfg.seed_pattern_lower_word = BACKDOOR_VAR(kPattLower0);
     patt_cfg.seed_pattern_upper_word = BACKDOOR_VAR(kPattUpper0);
@@ -227,6 +233,8 @@ static void run_test(void) {
 
   if (BACKDOOR_VAR(kChannelEnable) & 0x2) {
     patt_cfg.polarity = BACKDOOR_VAR(kPattPol1);
+    patt_cfg.inactive_level_pda = BACKDOOR_VAR(kPattInactiveLevelPda1);
+    patt_cfg.inactive_level_pcl = BACKDOOR_VAR(kPattInactiveLevelPcl1);
     patt_cfg.clock_divisor = BACKDOOR_VAR(kPattDiv1);
     patt_cfg.seed_pattern_lower_word = BACKDOOR_VAR(kPattLower1);
     patt_cfg.seed_pattern_upper_word = BACKDOOR_VAR(kPattUpper1);

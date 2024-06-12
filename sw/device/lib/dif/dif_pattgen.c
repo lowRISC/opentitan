@@ -21,6 +21,8 @@ dif_result_t dif_pattgen_configure_channel(
 
   bitfield_bit32_index_t enable_bit_idx;
   bitfield_bit32_index_t polarity_bit_idx;
+  bitfield_bit32_index_t inactive_level_pda_bit_idx;
+  bitfield_bit32_index_t inactive_level_pcl_bit_idx;
   ptrdiff_t clock_divisor_reg_offset;
   ptrdiff_t seed_lower_reg_offset;
   ptrdiff_t seed_upper_reg_offset;
@@ -31,6 +33,10 @@ dif_result_t dif_pattgen_configure_channel(
   case kDifPattgenChannel##channel_:                                        \
     enable_bit_idx = PATTGEN_CTRL_ENABLE_CH##channel_##_BIT;                \
     polarity_bit_idx = PATTGEN_CTRL_POLARITY_CH##channel_##_BIT;            \
+    inactive_level_pda_bit_idx =                                            \
+        PATTGEN_CTRL_INACTIVE_LEVEL_PDA_CH##channel_##_BIT;                 \
+    inactive_level_pcl_bit_idx =                                            \
+        PATTGEN_CTRL_INACTIVE_LEVEL_PCL_CH##channel_##_BIT;                 \
     clock_divisor_reg_offset = PATTGEN_PREDIV_CH##channel_##_REG_OFFSET;    \
     seed_lower_reg_offset = PATTGEN_DATA_CH##channel_##_0_REG_OFFSET;       \
     seed_upper_reg_offset = PATTGEN_DATA_CH##channel_##_1_REG_OFFSET;       \
@@ -53,8 +59,12 @@ dif_result_t dif_pattgen_configure_channel(
     return kDifError;
   }
 
-  // Set the polarity.
+  // Set the polarity and inactive levels.
   ctrl_reg = bitfield_bit32_write(ctrl_reg, polarity_bit_idx, config.polarity);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, inactive_level_pda_bit_idx,
+                                  config.inactive_level_pda);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, inactive_level_pcl_bit_idx,
+                                  config.inactive_level_pcl);
   mmio_region_write32(pattgen->base_addr, PATTGEN_CTRL_REG_OFFSET, ctrl_reg);
 
   // Set the clock divisor.
