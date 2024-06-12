@@ -545,7 +545,7 @@
             - Verify that the device ignores all packets that are sent to other addresses.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_device_address"]
     }
     {
       name: invalid_data1_data0_toggle_test
@@ -597,7 +597,7 @@
               particular endpoint will be ignored.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_disable_endpoint"]
     }
     {
       name: out_trans_nak

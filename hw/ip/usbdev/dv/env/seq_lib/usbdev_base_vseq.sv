@@ -18,6 +18,12 @@ handshake_pkt  m_handshake_pkt;
 sof_pkt        m_sof_pkt;
 // Selected device address
 rand bit [6:0] dev_addr;
+
+// Bitmap of available buffers that are not presently assigned to the DUT; software is requied to
+// keep track of the allocated buffers in order to prevent contention/corruption, and as such a
+// number of sequences require this functionality.
+bit [NumBuffers-1:0] buf_avail;
+
 // Current SETUP buffer number
 bit [4:0] setup_buffer_id = 5'd1;
 // Current OUT buffer number
@@ -247,13 +253,14 @@ endtask
   endtask
 
   // Construct and transmit a token packet to the USB device
-  virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0);
+  virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0,
+                                 bit [6:0] target_addr = dev_addr);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_token_pkt);
     m_token_pkt.m_ev_type  = EvPacket;
     m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
-    assert(m_token_pkt.randomize() with {m_token_pkt.address == dev_addr;
+    assert(m_token_pkt.randomize() with {m_token_pkt.address == target_addr;
                                          m_token_pkt.endpoint == ep;});
     // Any fault injections requested?
     if (inject_crc_error) m_token_pkt.crc5 = ~m_token_pkt.crc5;
@@ -307,6 +314,17 @@ endtask
     send_prnd_data_packet(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
   endtask
 
+  // Construct and transmit a SETUP DATA packet containing the supplied data.
+  virtual task send_setup_packet(bit [3:0] ep, byte unsigned data[],
+                                 bit [6:0] target_addr = dev_addr);
+    // Send SETUP token packet to the selected endpoint on the specified device.
+    send_token_packet(ep, PidTypeSetupToken, 0, target_addr);
+    // Variable delay between OUT token packet and the ensuing DATA packet.
+    inter_packet_delay();
+    // DATA0/DATA1 packet with the given content.
+    send_data_packet(PidTypeData0, data);
+  endtask
+
   // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
   virtual task send_prnd_out_packet(bit [3:0] ep, input pid_type_e pid_type,
                                     input bit randomize_length = 1,
@@ -322,9 +340,9 @@ endtask
 
   // Construct and transmit an OUT DATA packet containing the supplied data.
   virtual task send_out_packet(bit [3:0] ep, input pid_type_e pid_type, byte unsigned data[],
-                               bit isochronous_transfer = 1'b0, bit [6:0] dev_address = dev_addr);
+                               bit isochronous_transfer = 1'b0, bit [6:0] target_addr = dev_addr);
     // Send OUT token packet to the selected endpoint on the specified device.
-    send_token_packet(ep, PidTypeOutToken);
+    send_token_packet(ep, PidTypeOutToken, 0, target_addr);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA1 packet with the given content.
@@ -344,6 +362,31 @@ endtask
     $cast(m_usb20_item, m_response_item);
     `DV_CHECK_EQ(m_usb20_item.timed_out, 1,
                  $sformatf("Response from DUT was unexpected (PID 0x%0x)", m_usb20_item.m_pid_type))
+  endtask
+
+  // Attempt to collect IN packet from the specified endpoint, optionally ACKnowledging the receipt
+  // of any DATA packet returned.
+  virtual task retrieve_in_packet(bit [3:0] ep, output usb20_item reply, input bit ack = 1,
+                                  input bit [6:0] target_addr = dev_addr);
+    send_token_packet(ep, PidTypeInToken, 0, target_addr);
+    // Collect the response, if any, from the DUT
+    get_response(m_response_item);
+    $cast(reply, m_response_item);
+    // For any DATA packet received we may optionally ACKnowledge receipt; it's up to the caller
+    // to determine whether this is a duplicate transmission because our previous ACKnowledgement
+    // somehow got lost.
+    if (ack) begin
+      case (reply.m_pid_type)
+        PidTypeData0:
+        PidTypeData1:
+          // ACKnowledge successful reception of the IN DATA packet.
+          send_handshake(PidTypeAck);
+        default: begin
+          // We leave the caller to deal appropriately with any other response;
+          // could be a time out (invalid device/endpoint) or could be a NAK.
+        end
+      endcase
+    end
   endtask
 
   // Retrieve the DUT response to an IN transaction, and check that it matches expectations.
@@ -393,7 +436,7 @@ endtask
   task write_buffer(bit [4:0] buffer_id, byte unsigned pkt_data[]);
     int unsigned pkt_size = pkt_data.size();
     int unsigned offset;
-    `DV_CHECK(pkt_size <= MaxPktSizeByte);
+    `DV_CHECK(pkt_size <= MaxPktSizeByte)
 
     // Calculate start address (in 32-bit words) of buffer.
     offset = buffer_id * 'h10;
@@ -428,7 +471,7 @@ endtask
     // Calculate start address (in 32-bit words) of buffer
     int unsigned offset = buffer_id * 'h10;
 
-    `DV_CHECK_FATAL(len <= MaxPktSizeByte);
+    `DV_CHECK_FATAL(len <= MaxPktSizeByte)
     data = new [len];
 
     for (int unsigned idx = 0; idx < len; idx += 4) begin
@@ -448,32 +491,87 @@ endtask
     end
   endtask
 
+  // Buffer management routines
+  //
+  // Software is required to keep track of the allocated buffers in order to prevent contention
+  // corruption, and as such a number of sequences require this functionality. These routines
+  // track which buffers remain available for use as IN transactions or to be supplied to the
+  // 'Available Buffer' FIFOs for receiving OUT transactions.
+
+  // Initiailize buffer management.
+  task buf_init();
+    buf_avail = {NumBuffers{1'b1}}; // All buffers are initially available.
+    // Reset the FIFOs, to ensure that the DUT and our buffer allocation are in step.
+    ral.fifo_ctrl.avout_rst.set(1'b1);
+    ral.fifo_ctrl.avsetup_rst.set(1'b1);
+    ral.fifo_ctrl.rx_rst.set(1'b1);
+    csr_update(.csr(ral.fifo_ctrl));
+  endtask
+
+  // Allocate a new buffer, if one is available. Returns the buffer number or -ve if none available.
+  function int buf_alloc();
+    int b = NumBuffers - 1;
+    while (b >= 0 && !buf_avail[b]) b--;
+    if (b >= 0) buf_avail[b] = 1'b0;
+    return b;
+  endfunction
+
+  // Release an allocated buffer; buffer must be unavailable currently.
+  function void buf_release(int unsigned b);
+    `DV_CHECK_LT(b, NumBuffers)
+    `DV_CHECK_EQ(buf_avail[b], 1'b0)
+    buf_avail[b] = 1'b1;
+  endfunction
+
+  // Claim a specific buffer; buffer must be available currently.
+  function void buf_claim(int unsigned b);
+    `DV_CHECK_LT(b, NumBuffers)
+    `DV_CHECK_EQ(buf_avail[b], 1'b1)
+    buf_avail[b] = 1'b0;
+  endfunction
+
+  // Check that the supplied RX FIFO entry describes a SETUP/OUT data packet with the given
+  // properties.
+  task check_rxfifo_packet(bit [3:0] ep, bit setup, ref byte unsigned exp_byte_data[],
+                           input uvm_reg_data_t rx_fifo_read);
+    bit [4:0] act_buffer_id;
+    act_buffer_id = get_field_val(ral.rxfifo.buffer, rx_fifo_read);
+
+    // Check the fields of the RX FIFO entry against expectations.
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.ep, rx_fifo_read), ep)
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.setup, rx_fifo_read), setup)
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.size, rx_fifo_read), exp_byte_data.size())
+
+    read_check_buffer(act_buffer_id, exp_byte_data);
+  endtask
+
   // Check that a SETUP/OUT data packet with the given properties was received and stored by
-  // the USB device in its packet buffer memory.
-  task check_rx_packet(bit [3:0] ep, bit setup, bit [4:0] buffer_id,
-                       byte unsigned exp_byte_data[]);
+  // the USB device in its packet buffer memory. The buffer number may be known or unknown.
+  task check_rx_packet(bit [3:0] ep, bit setup, bit [4:0] exp_buffer_id,
+                       ref byte unsigned exp_byte_data[], input bit buffer_known = 1);
     uvm_reg_data_t rx_fifo_read;
+    bit [4:0] act_buffer_id;
 
     // Read RX FIFO which should contain a buffer description matching the expectations
     csr_rd(.ptr(ral.rxfifo), .value(rx_fifo_read));
-
-    `DV_CHECK_EQ(get_field_val(ral.rxfifo.ep, rx_fifo_read), ep);
-    `DV_CHECK_EQ(get_field_val(ral.rxfifo.setup, rx_fifo_read), setup);
-    `DV_CHECK_EQ(get_field_val(ral.rxfifo.buffer, rx_fifo_read), buffer_id);
-    `DV_CHECK_EQ(get_field_val(ral.rxfifo.size, rx_fifo_read), exp_byte_data.size());
-
-    read_check_buffer(buffer_id, exp_byte_data);
+    // Check the buffer ID too, if the caller knows into which buffer the packet should have been
+    // received.
+    act_buffer_id = get_field_val(ral.rxfifo.buffer, rx_fifo_read);
+    if (buffer_known) begin
+      `DV_CHECK_EQ(act_buffer_id, exp_buffer_id)
+    end
+    check_rxfifo_packet(ep, setup, exp_byte_data, rx_fifo_read);
   endtask
 
   // Check that the IN DATA packet transmitted by the USB device matches our expectations
-  task check_tx_packet(data_pkt pkt, pid_type_e exp_pid, input byte unsigned exp_data[]);
+  function void check_tx_packet(data_pkt pkt, pid_type_e exp_pid, input byte unsigned exp_data[]);
     int unsigned act_len = pkt.data.size();
     int unsigned exp_len = exp_data.size();
     int unsigned len = (act_len < exp_len) ? act_len : exp_len;
 
     `uvm_info(`gfn, $sformatf("IN packet PID 0x%x len %d expected PID 0x%x len %d",
                               pkt.m_pid_type, act_len, exp_pid, exp_len), UVM_HIGH)
-    `DV_CHECK_EQ(pkt.m_pid_type, exp_pid);
+    `DV_CHECK_EQ(pkt.m_pid_type, exp_pid)
 
     // Report all of the actual and expected bytes before checking, to aid diagnosis.
     for (int unsigned i = 0; i < exp_data.size(); i++) begin
@@ -486,20 +584,20 @@ endtask
       `DV_CHECK_EQ(pkt.data[i], exp_data[i], "Mismatch in packet data")
     end
     `DV_CHECK_EQ(act_len, exp_len, "Unexpected packet length")
-  endtask
+  endfunction
 
   task check_in_sent(bit [3:0] ep);
     bit pkt_sent;
     bit sent;
     csr_rd(.ptr(ral.intr_state.pkt_sent), .value(pkt_sent));
     csr_rd(.ptr(ral.in_sent[0].sent[ep]), .value(sent));
-    `DV_CHECK_EQ(1, pkt_sent);
-    `DV_CHECK_EQ(1, sent);
+    `DV_CHECK_EQ(1, pkt_sent)
+    `DV_CHECK_EQ(1, sent)
 
     // Write 1 to clear particular EP in_sent
     csr_wr(.ptr(ral.in_sent[0].sent[ep]), .value(1'b1));
     csr_rd(.ptr(ral.in_sent[0].sent[ep]), .value(sent));
-    `DV_CHECK_EQ(sent, 0); // verify that after writing 1, the in_sent bit is cleared.
+    `DV_CHECK_EQ(sent, 0) // verify that after writing 1, the in_sent bit is cleared.
   endtask
 
   // Check that the USB device received a packet with the expected properties.
@@ -514,7 +612,7 @@ endtask
     pkt_received = bit'(get_field_val(ral.intr_state.pkt_received, intr_state));
     // DV_CHECK on pkt_received interrupt; this is a Status type interrupt,
     // so it will be asserted only whilst the RX FIFO is non-empty.
-    `DV_CHECK_EQ(pkt_received, 1);
+    `DV_CHECK_EQ(pkt_received, 1)
 
     // Read rx_fifo reg, clearing the interrupt condition.
     check_rx_packet(ep, setup, buffer_id, exp_byte_data);
@@ -524,7 +622,7 @@ endtask
     // Get pkt_received interrupt status
     pkt_received = bit'(get_field_val(ral.intr_state.pkt_received, intr_state));
     // DV_CHECK on pkt_received interrupt
-    `DV_CHECK_EQ(pkt_received, 0);
+    `DV_CHECK_EQ(pkt_received, 0)
   endtask
 
   virtual task dut_shutdown();
@@ -750,7 +848,7 @@ endtask
     if (delay == 0) delay = $urandom_range(8, 26);
     else begin
       // Delay in host-side clock cycles may be specified explicitly to achieve min or max value.
-      `DV_CHECK(delay >= 8 && delay <= 26);
+      `DV_CHECK(delay >= 8 && delay <= 26)
     end
     cfg.host_clk_rst_vif.wait_clks(delay);
   endtask
@@ -760,7 +858,7 @@ endtask
     if (delay == 0) delay = $urandom_range(8, 30);
     else begin
       // Delay in host-side clock cycles may be specified explicitly to achieve min or max value.
-      `DV_CHECK(delay >= 8 && delay <= 30);
+      `DV_CHECK(delay >= 8 && delay <= 30)
     end
     cfg.host_clk_rst_vif.wait_clks(delay);
   endtask
