@@ -135,19 +135,32 @@ class otbn_common_vseq extends otbn_base_vseq;
     uvm_reg_field fatal_cause;
     super.check_sec_cm_fi_resp(if_proxy);
 
+    // We expect the fault injection to have caused the module to go into the LOCKED state. Wait
+    // until it changes from the current execute / secure wipe state and then check that we have
+    // locked, as expected.
+    //
+    // Note that we do the waiting by looking at the model interface. This is safe (because we have
+    // assertions to check that it matches the genuine status).
+    //
+    // The CSR read uses a back-door interface because then we will get a response, even if TL
+    // access is frozen.
+    `DV_WAIT(!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
+                                                      otbn_pkg::StatusBusySecWipeInt}));
+    cfg.clk_rst_vif.wait_clks(1);
+    csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF), .backdoor(1));
+
+    // We know that we've locked. Check that the FATAL_ALERT_CAUSE register has the explanation that
+    // we expect. This is normally a bad internal state, but there is a special case for faults
+    // injected into the counters of a TLUL adapter. These cause a TileLink error which is
+    // registered as a bus integrity violation.
     if (if_proxy.sec_cm_type == SecCmPrimCount &&
         !uvm_re_match("*.u_tlul_adapter_sram_*", if_proxy.path)) begin
-      // Faults injected into the counters of an OTBN TLUL adapter manifest as bus integrity
-      // violation.
       fatal_cause = ral.fatal_alert_cause.bus_intg_violation;
     end else begin
       fatal_cause = ral.fatal_alert_cause.bad_internal_state;
     end
 
-    csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1));
-    `DV_WAIT(!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
-                                                      otbn_pkg::StatusBusySecWipeInt}));
-    csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF));
+    csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1), .backdoor(1));
   endtask : check_sec_cm_fi_resp
 
   // Return 1 if path is a pointer in the prim_count associated with the fifo at fifo_path
