@@ -174,7 +174,7 @@ static rom_error_t rom_init(void) {
 
     // Re-initialize sensor_ctrl.
     HARDENED_RETURN_IF_ERROR(sensor_ctrl_configure(lc_state));
-    sensor_ctrl_sync(kSensorCtrlSyncCycles);
+    pwrmgr_cdc_sync(kSensorCtrlSyncCycles);
   }
 
   // Initialize the shutdown policy.

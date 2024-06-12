@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
@@ -23,13 +24,35 @@ static_assert(
     PWRMGR_RESET_EN_EN_FIELD_WIDTH == 1,
     "RESET_EN field width changed, kAllResetsEnable may need to be updated");
 
+void pwrmgr_cdc_sync(uint32_t n) {
+  // We want to timeout if the CDC bit doesn't self clear.  It should take
+  // approximately 4 AON ticks to complete.  We wait 25% longer (5 ticks).
+  uint32_t cpu_cycle_timeout =
+      (uint32_t)kClockFreqCpuHz / (uint32_t)kClockFreqAonHz * 5;
+
+  // Ensure the bit is clear before requesting another sync.
+  ibex_mcycle_zero();
+  while (abs_mmio_read32(kBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET)) {
+    if (ibex_mcycle32() > cpu_cycle_timeout) {
+      // If the sync bit isn't clear, we shouldn't set it again.  Abort.
+      return;
+    }
+  }
+  // Perform the sync procedure the requested number of times.
+  while (n--) {
+    ibex_mcycle_zero();
+    abs_mmio_write32(kBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, kSyncConfig);
+    while (abs_mmio_read32(kBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET)) {
+      if (ibex_mcycle32() > cpu_cycle_timeout)
+        // If the sync bit isn't clear, we shouldn't set it again.  Abort.
+        return;
+    }
+  }
+}
+
 void pwrmgr_all_resets_enable(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kPwrmgrSecMmioAllResetsEnable, 1);
   // Enable all resets.
   sec_mmio_write32(kBase + PWRMGR_RESET_EN_REG_OFFSET, kAllResetsEnable);
-  // Sync configuration across clock domains.
-  // Note: This synchronization can take several clock cycles. Ideally we should
-  // wait for the `SYNC` bit to clear but we don't do that since this is our
-  // second try and we want to avoid loops as much as possible.
-  abs_mmio_write32(kBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, kSyncConfig);
+  pwrmgr_cdc_sync(1);
 }

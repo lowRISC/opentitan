@@ -27,6 +27,16 @@ enum {
 };
 
 /**
+ * Synchronize across clock domain.
+ *
+ * Synchronizes across clock domains by setting the CDC_SYNC register and
+ * waiting for it to clear.
+ *
+ * @param n Number of synchronizations to perform.
+ */
+void pwrmgr_cdc_sync(uint32_t n);
+
+/**
  * Enable all resets.
  */
 void pwrmgr_all_resets_enable(void);
