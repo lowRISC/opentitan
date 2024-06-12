@@ -232,6 +232,7 @@ otp_json(
                 ),
                 # By default, ROM_EXT's bootstrap feature should be disabled.
                 "OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN": otp_hex(CONST.HARDENED_FALSE),
+                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE),
             },
         ),
     ],
