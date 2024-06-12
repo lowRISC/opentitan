@@ -170,8 +170,10 @@ class tl_host_driver extends tl_base_driver;
       bit req_found;
       d_ready_delay = $urandom_range(cfg.d_ready_delay_min, cfg.d_ready_delay_max);
       // if a_valid high then d_ready must be high, exit the delay when a_valid is set
-      `DV_SPINWAIT_EXIT(repeat (d_ready_delay) @(cfg.vif.host_cb);,
-         wait(!cfg.host_can_stall_rsp_when_a_valid_high && cfg.vif.h2d_int.a_valid))
+      repeat (d_ready_delay) begin
+        if (!cfg.host_can_stall_rsp_when_a_valid_high && cfg.vif.h2d_int.a_valid) break;
+        @(cfg.vif.host_cb);
+      end
 
       cfg.vif.host_cb.h2d_int.d_ready <= 1'b1;
       @(cfg.vif.host_cb);
