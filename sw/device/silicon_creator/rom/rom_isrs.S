@@ -107,7 +107,8 @@ rom_exception_handler:
   // `ram_end - 16`.  This allows us to report exceptions after jumping
   // to the next stage if the next stage has trashed its SP register.
   j rom_interrupt_handler
-  unimp
-  unimp
 
+  // Normally, we'd put an `unimp` sled here, however, we know by inspecting
+  // the disassembly of the linked ROM binary that the very next instruction
+  // is the beginning of `rom_interrupt_handler`.
   .size rom_exception_handler, .-rom_exception_handler

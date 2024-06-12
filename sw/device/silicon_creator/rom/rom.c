@@ -94,25 +94,6 @@ static hardened_bool_t waking_from_low_power = 0;
 // First stage (ROM-->ROM_EXT) secure boot keys loaded from OTP.
 static sigverify_otp_key_ctx_t sigverify_ctx;
 
-OT_ALWAYS_INLINE
-OT_WARN_UNUSED_RESULT
-static rom_error_t rom_irq_error(void) {
-  uint32_t mcause;
-  CSR_READ(CSR_REG_MCAUSE, &mcause);
-  // Shuffle the mcause bits into the uppermost byte of the word and report
-  // the cause as kErrorInterrupt.
-  // Based on the ibex verilog, it appears that the most significant bit
-  // indicates whether the cause is an exception (0) or external interrupt (1),
-  // and the 5 least significant bits indicate which exception/interrupt.
-  //
-  // Preserve the MSB and shift the 7 LSBs into the upper byte.
-  // (we preserve 7 instead of 5 because the verilog hardcodes the unused bits
-  // as zero and those would be the next bits used should the number of
-  // interrupt causes increase).
-  mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
-  return kErrorInterrupt + mcause;
-}
-
 /**
  * Prints a status message indicating that the ROM is entering bootstrap mode.
  */
@@ -665,15 +646,3 @@ void rom_main(void) {
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
   shutdown_finalize(rom_try_boot());
 }
-
-void rom_interrupt_handler(void) {
-  register rom_error_t error asm("a0") = rom_irq_error();
-  asm volatile("tail shutdown_finalize;" ::"r"(error));
-  OT_UNREACHABLE();
-}
-
-// We only need a single handler for all ROM interrupts, but we want to
-// keep distinct symbols to make writing tests easier.  In the ROM,
-// alias all interrupt handler symbols to the single handler.
-OT_ALIAS("rom_interrupt_handler")
-noreturn void rom_nmi_handler(void);
