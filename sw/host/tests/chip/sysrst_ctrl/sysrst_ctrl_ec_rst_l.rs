@@ -200,8 +200,8 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
             ensure!(first_index == gpio_mon.signal_index("ec_rst_l").unwrap() as u8);
             ensure!(second_index == gpio_mon.signal_index("ec_rst_l").unwrap() as u8);
             // Make sure the pulse width matches what we expect.
-            let pulse_width_us = (gpio_mon.timestamp_ns(rise_timestamp)
-                - gpio_mon.timestamp_ns(fall_timestamp))
+            let pulse_width_us = (gpio_mon.timestamp_to_ns(rise_timestamp)
+                - gpio_mon.timestamp_to_ns(fall_timestamp))
                 / 1000;
             let delta = EC_RST_STRETCH_PULSE_WIDTH_USEC.abs_diff(pulse_width_us);
             log::info!("reset pulse width =  {pulse_width_us} us, delta = {delta} us");
