@@ -188,6 +188,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_earlgrey:silicon_creator",
     ],
     kind = "rom",
     linker_script = ":linker_script",
@@ -420,6 +421,10 @@ output_groups(
         "sim_verilator_elf",
         "sim_verilator_rom",
         "sim_verilator_mapfile",
+        "silicon_creator_binary",
+        "silicon_creator_elf",
+        "silicon_creator_rom",
+        "silicon_creator_mapfile",
     ],
 )
 
@@ -447,6 +452,7 @@ output_groups(
         "fpga_cw340_binary",
         "sim_dv_binary",
         "sim_verilator_binary",
+        "silicon_creator_binary",
     ],
 )
 
@@ -458,6 +464,7 @@ output_groups(
         "fpga_cw340_disassembly",
         "sim_dv_disassembly",
         "sim_verilator_disassembly",
+        "silicon_creator_disassembly",
     ],
 )
 

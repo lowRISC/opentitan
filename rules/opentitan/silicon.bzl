@@ -18,6 +18,10 @@ load(
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_scrambled_rom_vmem",
+)
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
@@ -43,10 +47,23 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     Returns:
       dict: A dict of fields to create in the provider.
     """
-    if ctx.attr.kind == "ram":
+    if ctx.attr.kind == "rom":
+        rom = convert_to_scrambled_rom_vmem(
+            ctx,
+            name = name,
+            src = elf,
+            suffix = "39.scr.vmem",
+            rom_scramble_config = exec_env.rom_scramble_config,
+            rom_scramble_tool = ctx.executable.rom_scramble_tool,
+        )
+        default = rom
+        vmem = rom
+    elif ctx.attr.kind == "ram":
         default = elf
+        rom = None
     elif ctx.attr.kind == "flash":
         default = signed_bin if signed_bin else binary
+        rom = None
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
@@ -54,6 +71,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "elf": elf,
         "binary": binary,
         "default": default,
+        "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
