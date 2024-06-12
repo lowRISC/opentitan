@@ -989,7 +989,8 @@ void configure_pattgen(void) {
             .seed_pattern_upper_word = kPattgenSeedPatternUpperWord,
             .seed_pattern_length = kPattgenSeedPatternLength,
             .num_pattern_repetitions = kPattgenNumPatternRepetitions,
-
+            .inactive_level_pda = false,
+            .inactive_level_pcl = false,
         }));
   }
 }
