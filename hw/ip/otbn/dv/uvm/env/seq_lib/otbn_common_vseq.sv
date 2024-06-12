@@ -10,23 +10,24 @@ class otbn_common_vseq extends otbn_base_vseq;
   }
   `uvm_object_new
 
-  function void disable_fi_for_prim_count(string path);
-    sec_cm_pkg::find_sec_cm_if_proxy(.path({path, "*u_rptr"}), .is_regex(1)).disable_fi();
-    sec_cm_pkg::find_sec_cm_if_proxy(.path({path, "*u_wptr"}), .is_regex(1)).disable_fi();
+  // Write zero to the storage backing memory for a prim_fifo_sync
+  function void zero_fifo_storage(string fifo_path, int unsigned depth);
+    for (int unsigned i = 0; i < depth; i++) begin
+      string storage_path = $sformatf("%0s.gen_normal_fifo.storage[%0d]", fifo_path, i);
+      `DV_CHECK_FATAL(uvm_hdl_deposit(storage_path, 0))
+    end
   endfunction
 
   task dut_init(string reset_kind = "HARD");
-    // Disable fault injection on the prim_count module associated with the DMEM/IMEM request fifos.
-    //
-    // This is because injecting a fault causes a spurious TL transaction whose response eventually
-    // causes a fatal alert (good). Unfortunately, the FIFO might actually have been empty, so lots
-    // of signals in the design become X. This includes OTBN's status signal and we never get to the
-    // "LOCKED" status because we're stuck at X. The code here disables fault injection at that
-    // location.
-    disable_fi_for_prim_count("*u_tlul_adapter_sram_dmem*u_reqfifo*u_fifo_cnt");
-    disable_fi_for_prim_count("*u_tlul_adapter_sram_dmem*u_sramreqfifo*u_fifo_cnt");
-    disable_fi_for_prim_count("*u_tlul_adapter_sram_imem*u_reqfifo*u_fifo_cnt");
-    disable_fi_for_prim_count("*u_tlul_adapter_sram_imem*u_sramreqfifo*u_fifo_cnt");
+    // Zero the contents of the DMEM/IMEM request fifos if we're about to do fault injection on
+    // their counters. This avoids a problem where we generate a spurious request when the FIFO was
+    // actually empty and lots of signals in the design become X. This includes OTBN's status signal
+    // and we would never get to the "LOCKED" status because we're stuck at X. Zeroing the backing
+    // memory avoids that problem.
+    zero_fifo_storage("tb.dut.u_tlul_adapter_sram_dmem.u_reqfifo", 1);
+    zero_fifo_storage("tb.dut.u_tlul_adapter_sram_dmem.u_sramreqfifo", 1);
+    zero_fifo_storage("tb.dut.u_tlul_adapter_sram_imem.u_reqfifo", 1);
+    zero_fifo_storage("tb.dut.u_tlul_adapter_sram_imem.u_sramreqfifo", 1);
 
     super.dut_init(reset_kind);
   endtask
