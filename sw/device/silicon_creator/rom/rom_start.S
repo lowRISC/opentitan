@@ -406,6 +406,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // any other value to enable.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t2, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET(a0)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
   beq t0, t1, .L_sram_key_renew_skip
@@ -413,6 +414,8 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 .L_sram_key_renew_skip:
+  // Depending on OTP, enable the SRAM readback feature.
+  sw   t2, SRAM_CTRL_READBACK_REG_OFFSET(a0)
 
   /**
    * Clean Device State Part 1 (Please refer to `boot.md` section "Cleaning Device

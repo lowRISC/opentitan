@@ -184,6 +184,7 @@ otp_json(
                 "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN": otp_hex(0x0),
                 # Disable ROM_EXT recovery feature.
                 "OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN": otp_hex(0x0),
+                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE),
             },
         ),
     ],
