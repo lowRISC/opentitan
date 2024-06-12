@@ -35,6 +35,8 @@ pub struct Waves {
     initial_levels: Vec<bool>,
     // Initial timestamp.
     initial_timestamp: u64,
+    // Final timestamp.
+    final_timestamp: u64,
     // Clock resolution.
     resolution: u64,
     // Complete trace since the beginning.
@@ -84,24 +86,20 @@ impl<'a> GpioMon<'a> {
         })
     }
 
-    pub fn timestamp_ns(&self, timestamp: u64) -> u64 {
-        timestamp * 1000000000u64 / self.waves.resolution
+    pub fn timestamp_to_ns(&self, timestamp: u64) -> u64 {
+        self.waves.timestamp_to_ns(timestamp)
     }
 
     pub fn signal_index(&self, name: &str) -> Option<usize> {
-        self.waves.pin_names.iter().position(|x| x == name)
+        self.waves.signal_index(name)
     }
 
     pub fn initial_levels(&self) -> Vec<bool> {
-        self.waves.initial_levels.clone()
+        self.waves.initial_levels()
     }
 
-    pub fn all_events(&self) -> Vec<MonitoringEvent> {
-        self.waves.events.clone()
-    }
-
-    pub fn timestamp_to_ns(&self, timestamp: u64) -> u64 {
-        (timestamp - self.waves.initial_timestamp) * 1000000000u64 / self.waves.resolution
+    pub fn all_events(&self) -> impl Iterator<Item = &MonitoringEvent> {
+        self.waves.all_events()
     }
 
     pub fn read(&mut self, continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
@@ -111,12 +109,13 @@ impl<'a> GpioMon<'a> {
         );
         let gpio_pins = self.transport.gpio_pins(&self.pins)?;
         let gpios_pins = &gpio_pins.iter().map(Rc::borrow).collect::<Vec<_>>();
-        let events = self
+        let resp = self
             .monitor
             .monitoring_read(gpios_pins, continue_monitoring)?;
         self.still_monitoring = continue_monitoring;
-        self.waves.add_events(&events.events);
-        Ok(events.events)
+        self.waves.add_events(&resp.events);
+        self.waves.final_timestamp = resp.timestamp;
+        Ok(resp.events)
     }
 
     pub fn dump_on_drop(&mut self, dump_on_drop: bool) {
@@ -125,6 +124,25 @@ impl<'a> GpioMon<'a> {
 
     pub fn dump_vcd(&self) -> String {
         self.waves.dump_vcd()
+    }
+}
+
+/// Consume a GpioMon and return a copy of the waves. If the monitor
+/// is still active, this function will try to stop it (and return an
+/// error if this is not possible).
+impl TryFrom<GpioMon<'_>> for Waves {
+    type Error = anyhow::Error;
+
+    fn try_from(mut gpio_mon: GpioMon<'_>) -> Result<Waves> {
+        if gpio_mon.still_monitoring {
+            let _ = gpio_mon.read(false)?;
+        }
+        gpio_mon.dump_on_drop = false;
+        let waves = std::mem::replace(
+            &mut gpio_mon.waves,
+            Waves::new(Vec::new(), Vec::new(), 0, 1),
+        );
+        Ok(waves)
     }
 }
 
@@ -139,9 +157,17 @@ impl Waves {
             pin_names,
             initial_levels,
             initial_timestamp,
+            final_timestamp: initial_timestamp,
             resolution,
             events: vec![],
         }
+    }
+
+    // Returns the index of the signal created.
+    pub fn add_signal(&mut self, name: String, initial_level: bool) -> usize {
+        self.pin_names.push(name);
+        self.initial_levels.push(initial_level);
+        self.pin_names.len() - 1
     }
 
     pub fn add_event(&mut self, event: MonitoringEvent) {
@@ -152,6 +178,35 @@ impl Waves {
         self.events.extend_from_slice(event)
     }
 
+    pub fn signal_index(&self, name: &str) -> Option<usize> {
+        self.pin_names.iter().position(|x| x == name)
+    }
+
+    pub fn initial_levels(&self) -> Vec<bool> {
+        self.initial_levels.clone()
+    }
+
+    pub fn set_final_timestamp(&mut self, ts: u64) {
+        self.final_timestamp = ts;
+    }
+
+    pub fn timestamp_to_ns(&self, timestamp: u64) -> u64 {
+        (timestamp - self.initial_timestamp) * 1000000000u64 / self.resolution
+    }
+
+    pub fn ns_to_timestamp(&self, ns: u64) -> u64 {
+        self.initial_timestamp + self.resolution * ns / 1000000000u64
+    }
+
+    pub fn all_events(&self) -> impl Iterator<Item = &MonitoringEvent> {
+        self.events.iter()
+    }
+
+    pub fn sort_events(&mut self) {
+        self.events.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+    }
+
+    // This function assumes that the events are sorted.
     pub fn dump_vcd(&self) -> String {
         const SYMBOLS: &[char] = &['!', '#', '$', '%', '&', '(', ')'];
         assert!(self.pin_names.len() < SYMBOLS.len());
@@ -171,19 +226,16 @@ impl Waves {
         vcd.push('\n');
 
         for event in &self.events {
-            let ns = (event.timestamp - self.initial_timestamp) * 1000000000u64 / self.resolution;
+            let ns = self.timestamp_to_ns(event.timestamp);
+            let val = event.edge == Edge::Rising;
             vcd.push_str(&format!(
                 "#{ns} {}{}\n",
-                if event.edge == Edge::Rising { 1 } else { 0 },
-                SYMBOLS[event.signal_index as usize]
+                val as u8, SYMBOLS[event.signal_index as usize]
             ));
         }
-        // Add a final time to make sure that the last edge is visible.
-        vcd.push_str(&format!(
-            "#{}",
-            1000 + (self.events.last().unwrap().timestamp - self.initial_timestamp) * 1000000000u64
-                / self.resolution
-        ));
+        // Make sure that the final timestamp is after the last event.
+        let final_ts = std::cmp::max(self.events.last().unwrap().timestamp, self.final_timestamp);
+        vcd.push_str(&format!("#{}", self.timestamp_to_ns(final_ts),));
 
         vcd
     }
