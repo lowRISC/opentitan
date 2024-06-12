@@ -66,9 +66,13 @@ virtual task test_sec_cm_fi();
       check_sec_cm_fi_resp(if_proxy);
     end
 
-    sec_cm_fi_ctrl_svas(if_proxy, .enable(1));
     // issue hard reset for fatal alert to recover
     dut_init("HARD");
+
+    // Finally, turn SVAs back on again. Note that this must be done after reset because the fault
+    // injection might have put the device in a state that will fail assertions: we only want to put
+    // the assertions back after the internal state has been reset again.
+    sec_cm_fi_ctrl_svas(if_proxy, .enable(1));
   end
 endtask : test_sec_cm_fi
 
