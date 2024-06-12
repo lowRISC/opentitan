@@ -226,15 +226,22 @@ class otbn_common_vseq extends otbn_base_vseq;
           $asserton(0, "prim_fifo_sync");
         end
 
-        // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes a
-        // reasonable amount of chaos, because we end up with 'X values in our requests, that then
-        // travel all over the dut and are also exposed on external interfaces (TL interfaces).
+        // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes us to
+        // generate spurious TL transactions. Disable the TL checker (which, quite reasonably, will
+        // have assertions that fire).
+        //
+        // Also disable assertions in the tlul_socket_1n in our register block. This gets confused
+        // because of an unexpected response, which causes our num_req_outstanding counter to be
+        // decremented to -1 (which is more than MaxOutstanding when considered as an unsigned
+        // integer).
         if (touching_req_fifo) begin
           if (!enable) begin
             `uvm_info(`gfn, "Doing FI on a request fifo. Disabling related assertions", UVM_HIGH)
             cfg.m_tl_agent_cfg.check_tl_errs = 1'b0;
             $assertoff(0, "tb.dut.tlul_checker");
+            $assertoff(0, "tb.dut.u_reg.u_socket");
           end else begin
+            $asserton(0, "tb.dut.u_reg.u_socket");
             $asserton(0, "tb.dut.tlul_checker");
             cfg.m_tl_agent_cfg.check_tl_errs = 1'b1;
           end
