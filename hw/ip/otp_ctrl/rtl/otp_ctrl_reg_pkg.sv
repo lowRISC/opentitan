@@ -130,6 +130,8 @@ package otp_ctrl_reg_pkg;
   parameter int OwnerSwCfgRomSensorCtrlAlertCfgSize = 12;
   parameter int OwnerSwCfgRomSensorCtrlAlertDigestOffset = 1024;
   parameter int OwnerSwCfgRomSensorCtrlAlertDigestSize = 4;
+  parameter int OwnerSwCfgRomSramReadbackEnOffset = 1028;
+  parameter int OwnerSwCfgRomSramReadbackEnSize = 4;
   parameter int OwnerSwCfgDigestOffset = 1136;
   parameter int OwnerSwCfgDigestSize = 8;
   parameter int RotCreatorAuthCodesignOffset = 1144;

@@ -335,6 +335,10 @@
                     name: "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_DIGEST",
                     size: "4"
                 }
+                {
+                    name: "OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition.
             This contains data that changes software behavior in the ROM, for

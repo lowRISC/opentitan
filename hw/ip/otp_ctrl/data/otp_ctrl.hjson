@@ -871,6 +871,18 @@
       default: "4",
       local: "true"
     },
+    { name: "OwnerSwCfgRomSramReadbackEnOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
+      type: "int",
+      default: "1028",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomSramReadbackEnSize",
+      desc: "Size of OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "OwnerSwCfgDigestOffset",
       desc: "Offset of OWNER_SW_CFG_DIGEST",
       type: "int",
