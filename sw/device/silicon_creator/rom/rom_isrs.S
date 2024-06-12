@@ -26,13 +26,12 @@
   .global rom_exception_handler
   .type rom_exception_handler, @function
 rom_exception_handler:
-  // Save all registers to an exception stack.  The ROM locates its initial
-  // stack at `ram_end - 16` and the stack grows downwards from there, leaving
-  // 16 bytes at the top of RAM.  We need exactly 16 bytes to handle the flash
-  // exception, so we save `sp` into `mscratch` and use those 16 bytes to save
-  // the 4 registers we need to handle the flash exception.
+  // Save all registers to the exception frame.  The ROM locates its initial
+  // stack_end at `ram_end - 128` and the stack grows downwards from there.
+  // Save `sp` into `mscratch` and use the 128 bytes reserved at the top of
+  // RAM as the exception frame.
   csrw mscratch, sp
-  la   sp, (_stack_end - 16)
+  la   sp,  _exception_frame_start
   sw   t0,  0 * OT_WORD_SIZE(sp)
   sw   t1,  1 * OT_WORD_SIZE(sp)
   sw   t2,  2 * OT_WORD_SIZE(sp)
@@ -104,7 +103,7 @@ rom_exception_handler:
   // preservation is necessary because we're not coming back.
   //
   // Note: we _also_ do not restore SP - we'll restart the stack at
-  // `ram_end - 16`.  This allows us to report exceptions after jumping
+  // `ram_end - 128`.  This allows us to report exceptions after jumping
   // to the next stage if the next stage has trashed its SP register.
   j rom_interrupt_handler
   unimp

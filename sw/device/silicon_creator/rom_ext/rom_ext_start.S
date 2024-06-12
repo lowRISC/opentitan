@@ -110,14 +110,12 @@ _rom_ext_start_boot:
    * Set up the stack pointer.
    *
    * In RISC-V, the stack grows downwards, so we load the address of the highest
-   * word in the stack into sp. We don't load in `_stack_end`, as that points
-   * beyond the end of RAM, and we always want it to be valid to dereference
-   * `sp`, and we need this to be 128-bit (16-byte) aligned to meet the psABI.
+   * word in the stack into sp.
    *
    * If an exception fires, the handler is conventionaly only allowed to clobber
    * memory at addresses below `sp`.
    */
-  la   sp, (_stack_end - 16)
+  la   sp, _stack_end
 
   /**
    * Setup C Runtime
