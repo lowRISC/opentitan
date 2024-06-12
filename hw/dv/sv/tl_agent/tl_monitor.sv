@@ -193,10 +193,19 @@ class tl_monitor extends dv_base_monitor#(
     if (cfg.vif.mon_cb.d2h.d_valid && cfg.vif.mon_cb.h2d.d_ready) begin
       tl_seq_item rsp;
 
-      // A matching request must exist
-      `DV_CHECK_FATAL(pending_a_req.exists(cfg.vif.mon_cb.d2h.d_source),
-                      $sformatf("Cannot find request matching d_source 0x%0x",
-                                cfg.vif.mon_cb.d2h.d_source))
+      // We expect a matching request to exist. If it doesn't, this is a "spurious response" that
+      // the dut has generated itself. We don't expect that to happen (a property that is checked in
+      // the tlul_assert module, which should be bound in), but it *might* happen if we're doing
+      // fault injection and disabling assertions in that module. In that case, print a debug
+      // message and ignore the response in the monitor: we would normally expect the error to be
+      // caught in tlul_assert.
+      if (!pending_a_req.exists(cfg.vif.mon_cb.d2h.d_source)) begin
+        `uvm_info(`gfn,
+                  $sformatf("Ignoring TL response with no matching request (d_source 0x%0x)",
+                            cfg.vif.mon_cb.d2h.d_source),
+                  UVM_HIGH)
+        return;
+      end
 
       rsp = pending_a_req[cfg.vif.mon_cb.d2h.d_source];
       pending_a_req.delete(cfg.vif.mon_cb.d2h.d_source);
