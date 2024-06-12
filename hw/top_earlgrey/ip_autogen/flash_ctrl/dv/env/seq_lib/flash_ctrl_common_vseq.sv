@@ -34,6 +34,29 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     end
   endtask // pre_start
 
+  function void disable_fi_for_prim_count(string path);
+    sec_cm_pkg::find_sec_cm_if_proxy(.path({path, "*u_rptr"}), .is_regex(1)).disable_fi();
+    sec_cm_pkg::find_sec_cm_if_proxy(.path({path, "*u_wptr"}), .is_regex(1)).disable_fi();
+  endfunction
+
+  task dut_init(string reset_kind = "HARD");
+    // Disable fault injection on the prim_count module associated with the TL-UL
+    // adapter SRAM request and sramreqfifo fifo.
+    //
+    // This is because injecting a fault causes a spurious TL transaction whose response
+    // eventually causes a fatal alert (good). Unfortunately, the FIFOs might actually have
+    // been empty, so lots of signals in the design become X. This includes FLASH_CTRL's
+    // bus_integ_error signal than then cannot be reliably sensed in the DV environment.
+    // The code here disables fault injection at that location.
+    disable_fi_for_prim_count("*u_tl_adapter_eflash*u_rspfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_tl_adapter_eflash*u_reqfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_tl_adapter_eflash*u_sramreqfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_to_rd_fifo*u_reqfifo*u_fifo_cnt");
+    disable_fi_for_prim_count("*u_to_rd_fifo*u_sramreqfifo*u_fifo_cnt");
+
+    super.dut_init(reset_kind);
+  endtask // dut_init
+
   virtual task body();
     string path[] = {
       {"tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd",
@@ -68,6 +91,10 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     if_proxy_q.shuffle();
     while (if_proxy_q.size) begin
       sec_cm_base_if_proxy if_proxy = if_proxy_q.pop_front();
+
+      // If fault injection is disabled at this instance of the interface, skip it (and don't inject
+      // anything)
+      if (if_proxy.fi_disabled) continue;
 
       sec_cm_fi_ctrl_svas(if_proxy, .enable(0));
       sec_cm_inject_fault(if_proxy);
