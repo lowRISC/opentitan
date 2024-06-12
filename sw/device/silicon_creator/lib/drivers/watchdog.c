@@ -8,6 +8,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 
 #include "aon_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -77,7 +78,7 @@ void watchdog_configure(watchdog_config_t config) {
       bitfield_bit32_write(
           0, kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq,
           true));
-  abs_mmio_write32(kPwrMgrBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
+  pwrmgr_cdc_sync(1);
 
   // Set the watchdog bite and bark thresholds.
   sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
@@ -105,7 +106,7 @@ void watchdog_configure(watchdog_config_t config) {
 
   // Redundantly re-request the pwrmgr configuration sync since it isn't
   // possible to use sec_mmio for it.
-  abs_mmio_write32(kPwrMgrBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
+  pwrmgr_cdc_sync(1);
 }
 
 void watchdog_disable(void) {

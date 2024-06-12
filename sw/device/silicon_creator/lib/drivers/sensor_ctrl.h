@@ -40,13 +40,6 @@ enum {
 OT_WARN_UNUSED_RESULT
 rom_error_t sensor_ctrl_configure(lifecycle_state_t lc_state);
 
-/**
- * Wait for sensor_ctrl to synchronize.
- *
- * @param cycles Number of slow-domain cycles to wait.
- */
-void sensor_ctrl_sync(uint32_t cycles);
-
 #ifdef __cplusplus
 }
 #endif

@@ -11,12 +11,10 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
-#include "pwrmgr_regs.h"
 #include "sensor_ctrl_regs.h"
 
 enum {
   kBase = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
-  kPwrMgrBase = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR,
   kSensorCtrlAlertConfig =
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG_OFFSET,
   kSensorCtrlAlertSize = SENSOR_CTRL_ALERT_EN_MULTIREG_COUNT,
@@ -74,12 +72,4 @@ rom_error_t sensor_ctrl_configure(lifecycle_state_t lc_state) {
   }
   sec_mmio_write32(kBase + SENSOR_CTRL_FATAL_ALERT_EN_REG_OFFSET, fatal);
   return kErrorOk;
-}
-
-void sensor_ctrl_sync(uint32_t cycles) {
-  for (uint32_t i = 0; i < cycles; ++i) {
-    abs_mmio_write32(kPwrMgrBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
-    while (abs_mmio_read32(kPwrMgrBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET) != 0)
-      ;
-  }
 }

@@ -24,6 +24,13 @@ using ::testing::Return;
 
 class WatchdogTest : public rom_test::RomTest {
  protected:
+  void ExpectCdcSync() {
+    // The pwrmgr_cdc_sync function reads to check that the sync bit is clear,
+    // writes to the sync bit and then reads back waiting for it to clear.
+    EXPECT_ABS_READ32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 0);
+    EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
+    EXPECT_ABS_READ32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 0);
+  }
   /**
    * Sets up expectations for `watchdog_init()`.
    *
@@ -41,7 +48,7 @@ class WatchdogTest : public rom_test::RomTest {
                        {
                            {PWRMGR_RESET_EN_EN_1_BIT, true},
                        });
-    EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
+    ExpectCdcSync();
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,
                        0 << AON_TIMER_WDOG_CTRL_ENABLE_BIT);
     EXPECT_ABS_WRITE32(wdog_ + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
@@ -51,7 +58,7 @@ class WatchdogTest : public rom_test::RomTest {
                        kBiteThreshold);
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,
                        enabled << AON_TIMER_WDOG_CTRL_ENABLE_BIT);
-    EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
+    ExpectCdcSync();
   }
 
   uint32_t pwrmgr_ = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR;

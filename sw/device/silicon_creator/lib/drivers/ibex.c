@@ -82,5 +82,7 @@ void ibex_addr_remap_lockdown(uint32_t index) {
 
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.
+extern void ibex_mcycle_zero(void);
+extern uint32_t ibex_mcycle32(void);
 extern uint64_t ibex_mcycle(void);
 extern uint64_t ibex_time_to_cycles(uint64_t time_us);
