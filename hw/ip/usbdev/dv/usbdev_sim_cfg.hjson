@@ -96,6 +96,14 @@
       uvm_test_seq: usbdev_data_toggle_restore_vseq
     }
     {
+      name: usbdev_device_address
+      uvm_test_seq: usbdev_device_address_vseq
+    }
+    {
+      name: usbdev_disable_endpoint
+      uvm_test_seq: usbdev_disable_endpoint_vseq
+    }
+    {
       name: usbdev_endpoint_access
       uvm_test_seq: usbdev_endpoint_access_vseq
     }
