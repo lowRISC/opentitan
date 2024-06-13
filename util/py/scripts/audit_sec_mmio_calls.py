@@ -63,12 +63,12 @@ class BazelTool:
         bazel.try_escape_sandbox()
 
     def query_hjson_sources(self) -> list[Path]:
-        """Find hjson files associated with autogen_hjson_header targets."""
-        log.info("Querying Bazel for autogen_hjson_header srcs")
+        """Find hjson files associated with autogen_hjson_c_header targets."""
+        log.info("Querying Bazel for autogen_hjson_c_header srcs")
         query_lines = run.run(
             "./bazelisk.sh",
             "cquery",
-            "labels(srcs, kind(autogen_hjson_header, //...))",
+            "labels(srcs, kind(autogen_hjson_c_header, //...))",
             "--output=starlark",
             "--starlark:expr='\\n'.join([f.path for f in target.files.to_list()])",
         )

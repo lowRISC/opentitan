@@ -176,7 +176,7 @@ class RegisterTokenPattern:
     def find_first_match(
             patterns: list['RegisterTokenPattern'], tokens: list[str],
             function_name: str,
-            call_site: clang.cindex.Cursor) -> RegisterUsageReport:
+            call_site: clang.cindex.Cursor) -> Optional[RegisterUsageReport]:
         for pattern in patterns:
             report = RegisterUsageReport(
                 function_name=function_name,
@@ -199,8 +199,9 @@ class RegisterTokenPattern:
                 report.unparsed_callsites.add(extent)
             return report
 
-        raise Exception("No pattern matched tokens at call-site for " +
-                        f"{call_site.displayname}: {tokens}")
+        print("No pattern matched tokens at call-site for " +
+              f"{call_site.displayname}: {tokens}")
+        return None
 
 
 @functools.cache
@@ -292,6 +293,7 @@ class CallSiteAnalyzer:
 
             report = RegisterTokenPattern.find_first_match(
                 self._patterns, tokens, cursor.displayname, cursor)
-            reports.append(report)
+            if report is not None:
+                reports.append(report)
 
         return RegisterUsageReport.merge_reports(reports)
