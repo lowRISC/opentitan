@@ -318,7 +318,6 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: ["Aon"],
       base_addr: "0x40470000",
-      attr: "templated",
     },
     { name: "ast",
       type: "ast",
