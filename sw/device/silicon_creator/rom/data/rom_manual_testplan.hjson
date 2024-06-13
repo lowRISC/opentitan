@@ -48,6 +48,34 @@
       tests: ["rom_e2e_c_init"]
     }
     {
+      name: rom_manual_sec_mmio_audit
+      desc: '''Verify that the registers accessed by `sec_mmio` functions are not modifiable by
+            hardware.
+
+            See https://github.com/lowRISC/opentitan/issues/18634 for additional context.
+
+            The following utility may be helpful in auditing the code:
+
+            bazel run //util/py/scripts:audit_sec_mmio_calls -- --log-level info
+            '''
+    }
+    {
+      name: rom_manual_stack_utilization
+      desc: '''Verify stack utilization.
+
+            Ensure that the worst case utilization paths are below the space allocated for the
+            stack.
+            '''
+    }
+    {
+      name: rom_manual_alert_handler_ping_disabled
+      desc: '''Ensure the alert handler ping mechanism is not enabled in the ROM.
+
+            The alert handler ping mechanism has not been qualified to work with the ROM. The
+            earliest stage in which it can be used is the ROM_EXT.
+            '''
+    }
+    {
       name: rom_manual_open_issues_tasks
       desc: '''Verify that there are no blocking issues on GitHub or tasks in the tracker.'''
       tags: ["manual"]
