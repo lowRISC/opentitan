@@ -503,7 +503,8 @@ module tlul_adapter_sram
           // integrity mechanism.
           rdata_tlword = {
               rdata_reshaped[sramreqfifo_rdata.woffset][DataWidth-1:top_pkg::TL_DW],
-              rdata_reshaped[sramreqfifo_rdata.woffset][top_pkg::TL_DW-1:0] ^ sramreqaddrfifo_rdata
+              rdata_reshaped[sramreqfifo_rdata.woffset][top_pkg::TL_DW-1:0] ^
+                  {{(top_pkg::TL_DW-SramBusBankAW){1'b0}}, sramreqaddrfifo_rdata}
           };
         end else begin: gen_no_data_xor_addr
           rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset];
