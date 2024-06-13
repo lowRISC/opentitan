@@ -166,6 +166,14 @@ def elaborate_instance(instance, block: IpBlock):
     # to convert and copy them here.
     instance["inter_signal_list"] = [s.as_dict() for s in block.inter_signals]
 
+    # If we have width-parametrized intersignal, we need to update the intersignal param name
+    # the the instance mangled param name
+    for s in instance["inter_signal_list"]:
+        if isinstance(s['width'], Parameter):
+            for p in instance["param_list"]:
+                if p['name'] == s['width'].name:
+                    s['width'].name_top = p['name_top']
+
     # An instance must either have a 'base_addr' address or a 'base_addrs'
     # address, but can't have both.
     base_addrs = instance.get('base_addrs')

@@ -5,6 +5,7 @@ ${gencmd}
 <%
 import re
 import topgen.lib as lib
+from reggen.params import Parameter
 from topgen.clocks import Clocks
 from topgen.resets import Resets
 
@@ -22,7 +23,13 @@ num_dio_total = top['pinmux']['io_counts']['dedicated']['inouts'] + \
                 top['pinmux']['io_counts']['dedicated']['inputs'] + \
                 top['pinmux']['io_counts']['dedicated']['outputs']
 
-num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
+num_im = 0
+for x in top["inter_signal"]["external"]:
+    width = 1
+    if "width" in x:
+      width = (x["width"].default
+               if isinstance(x["width"], Parameter) else x["width"])
+    num_im += width
 
 max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
 max_sigwidth = len("{}".format(max_sigwidth))
@@ -52,7 +59,7 @@ module top_${top["name"]} #(
 <% continue %>
   % endif
   // parameters for ${m['name']}
-  % for p_exp in [p for p in m["param_list"] if p.get("expose") == "true" ]:
+  % for p_exp in [p for p in m["param_list"] if p.get("local") == "false" and p.get("expose") == "true" ]:
 <%
     p_type = p_exp.get('type')
     p_type_word = p_type + ' ' if p_type else ''
@@ -67,7 +74,7 @@ module top_${top["name"]} #(
     params_follow = not loop.last or loop.parent.index < last_modidx_with_params
     comma_char = ',' if params_follow else ''
 %>\
-    % if 12 + len(p_lhs) + 3 + len(p_rhs) + 1 < 100:
+    % if 12 + len(p_lhs) + 3 + len(str(p_rhs)) + 1 < 100:
   parameter ${p_lhs} = ${p_rhs}${comma_char}
     % else:
   parameter ${p_lhs} =
@@ -99,7 +106,11 @@ module top_${top["name"]} #(
 
   // Inter-module Signal External type
   % for sig in top["inter_signal"]["external"]:
+    % if isinstance(sig["width"], Parameter):
+  ${lib.get_direction(sig)} ${lib.im_defname(sig)} [${sig["width"].name_top}-1:0] ${sig["signame"]},
+    % else:
   ${lib.get_direction(sig)} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
+    % endif
   % endfor
 
 % endif
@@ -124,6 +135,34 @@ module top_${top["name"]} #(
   import top_${top["name"]}_pkg::*;
   // Compile-time random constants
   import top_${top["name"]}_rnd_cnst_pkg::*;
+
+  // Local Parameters
+% for m in top["module"]:
+  % if not lib.is_inst(m):
+<% continue %>
+  % endif
+<%
+    localparams = [p for p in m["param_list"] if p.get("local") == "true" and p.get("expose") == "true"]
+    if not len(localparams):
+        continue
+%>\
+  // local parameters for ${m['name']}
+  % for p_exp in localparams:
+<%
+    p_type = p_exp.get('type')
+    p_type_word = p_type + ' ' if p_type else ''
+
+    p_lhs = f'{p_type_word}{p_exp["name_top"]}'
+    p_rhs = p_exp['default']
+%>\
+    % if 13 + len(p_lhs) + 3 + len(str(p_rhs)) + 1 < 100:
+  localparam ${p_lhs} = ${p_rhs};
+    % else:
+  localparam ${p_lhs} =
+      ${p_rhs};
+    % endif
+  % endfor
+% endfor
 
   // Signals
   logic [${num_mio_inputs - 1}:0] mio_p2d;
@@ -191,7 +230,11 @@ module top_${top["name"]} #(
   // define inter-module signals
 % endif
 % for sig in top["inter_signal"]["definitions"]:
+  % if isinstance(sig["width"], Parameter):
+  ${lib.im_defname(sig)} [${sig["width"].name_top}-1:0] ${sig["signame"]};
+  % else:
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
+  % endif
 % endfor
 
 ## Mixed connection to port
@@ -217,19 +260,29 @@ module top_${top["name"]} #(
 ## Partial inter-module definition tie-off
   // define partial inter-module tie-off
 % for sig in unused_im_defs:
-  % for idx in range(sig['end_idx'], sig['width']):
+<%
+  width = sig['width'].default if isinstance(sig['width'], Parameter) else sig['width']
+%>\
+  % for idx in range(sig['end_idx'], width):
   ${lib.im_defname(sig)} unused_${sig["signame"]}${idx};
   % endfor
 % endfor
 
   // assign partial inter-module tie-off
+
 % for sig in unused_im_defs:
-  % for idx in range(sig['end_idx'], sig['width']):
+<%
+  width = sig['width'].default if isinstance(sig['width'], Parameter) else sig['width']
+%>\
+  % for idx in range(sig['end_idx'], width):
   assign unused_${sig["signame"]}${idx} = ${sig["signame"]}[${idx}];
   % endfor
 % endfor
 % for sig in undriven_im_defs:
-  % for idx in range(sig['end_idx'], sig['width']):
+<%
+  width = sig['width'].default if isinstance(sig['width'], Parameter) else sig['width']
+%>\
+  % for idx in range(sig['end_idx'], width):
   assign ${sig["signame"]}[${idx}] = ${sig["default"]};
   % endfor
 % endfor
