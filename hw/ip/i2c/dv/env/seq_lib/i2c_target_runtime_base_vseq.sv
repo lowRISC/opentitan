@@ -23,13 +23,24 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
   // CONTROL KNOBS //
   ///////////////////
 
+  // Stimulus is generated until either of the following two conditions are met:
+  // - The runtime 'seq_runtime_us' is reached.
+  // - The stimulus sequence has been run to completion 'stim_cnt_limit' times.
+  // Setting either control knob to 0 will disable it.
+
   // Sequence run time in us.
   // Derived sequences should set this to an appropriate value in 'pre_start'.
   int seq_runtime_us = 0;
 
+  // Curtail the stimulus after the following number of iterations.
+  uint stim_cnt_limit = 0;
+
   /////////////////////
   // CLASS VARIABLES //
   /////////////////////
+
+  // Increment this counter for each controller stimulus sequence that is run on the agent.
+  protected uint stim_cnt = 0;
 
   // This bit is set when a timer that runs for 'seq_runtime_us' expires.
   // When this occurs, the test is about to end.
@@ -77,7 +88,7 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
   endtask: wait_for_runtime_state
 
   virtual task body();
-    `DV_CHECK(seq_runtime_us > 0)
+    `DV_CHECK(seq_runtime_us > 0 || stim_cnt_limit > 0)
 
     initialization();
 
@@ -93,7 +104,10 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
       begin
         // Count out the time delay specified by 'seq_runtime_us', then bring the stimulus to
         // a close.
-        #(seq_runtime_us * 1us);
+        fork
+          if (seq_runtime_us) #(seq_runtime_us * 1us);
+          if (stim_cnt_limit) wait(stim_cnt == stim_cnt_limit);
+        join_any
         timer_expired = 1;
         `uvm_info(`gfn, "Runtime_base_vseq timer expired", UVM_MEDIUM)
         // Only stop the interrupt handler once the stimulus generation and checking routines
@@ -122,6 +136,7 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
 
     // Run the stimulus sequence on the agent
     m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+    stim_cnt++;
   endtask
 
   // Child vseq's should implement these routines to perform checks before and
