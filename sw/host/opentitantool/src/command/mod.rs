@@ -45,6 +45,12 @@ pub struct NoOp {
     /// Delay execution.
     #[arg(short = 'd', long, value_parser = humantime::parse_duration)]
     delay: Option<Duration>,
+    /// Log a string at the `info` level.
+    #[arg(long)]
+    info: Option<String>,
+    /// Log a string at the `error` level.
+    #[arg(long)]
+    error: Option<String>,
 }
 
 impl CommandDispatch for NoOp {
@@ -55,6 +61,12 @@ impl CommandDispatch for NoOp {
     ) -> Result<Option<Box<dyn Annotate>>> {
         if let Some(d) = self.delay {
             std::thread::sleep(d);
+        }
+        if let Some(info) = &self.info {
+            log::info!("{info}");
+        }
+        if let Some(error) = &self.error {
+            log::error!("{error}");
         }
         Ok(None)
     }

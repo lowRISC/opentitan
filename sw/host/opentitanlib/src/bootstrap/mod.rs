@@ -88,6 +88,10 @@ pub struct BootstrapOptions {
     /// Duration of the reset pulse.
     #[arg(long, value_parser = parse_duration, default_value = "100ms")]
     pub reset_delay: Duration,
+    /// If set, keep the bootstrap strapping applied and do not perform the post-bootstrap reset
+    /// sequence.
+    #[arg(long)]
+    pub leave_in_bootstrap: bool,
     /// If set, leave the reset signal asserted after completed bootstrapping.
     #[arg(long)]
     pub leave_in_reset: bool,
@@ -108,6 +112,7 @@ pub struct Bootstrap<'a> {
     reset_pin: Rc<dyn GpioPin>,
     reset_delay: Duration,
     leave_in_reset: bool,
+    leave_in_bootstrap: bool,
 }
 
 impl<'a> Bootstrap<'a> {
@@ -160,6 +165,7 @@ impl<'a> Bootstrap<'a> {
             reset_pin: transport.gpio_pin("RESET")?,
             reset_delay: options.reset_delay,
             leave_in_reset: options.leave_in_reset,
+            leave_in_bootstrap: options.leave_in_bootstrap,
         }
         .do_update(updater, transport, payload, progress)
     }
@@ -183,7 +189,7 @@ impl<'a> Bootstrap<'a> {
         }
         let result = updater.update(self, transport, payload, progress);
 
-        if perform_bootstrap_reset {
+        if !self.leave_in_bootstrap && perform_bootstrap_reset {
             if self.leave_in_reset {
                 log::info!("Releasing bootstrap pins, leaving device in reset...");
                 transport.pin_strapping("RESET")?.apply()?;

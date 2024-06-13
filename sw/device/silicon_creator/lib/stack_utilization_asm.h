@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_STACK_UTILIZATION_ASM_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_STACK_UTILIZATION_ASM_H_
+
+#define STACK_UTILIZATION_FREE_PATTERN 0xCAFECAFE
+
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_STACK_UTILIZATION_ASM_H_

@@ -42,6 +42,7 @@
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/lib/stack_utilization.h"
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
@@ -618,8 +619,11 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
     HARDENED_CHECK_EQ(manifest_entry_point_get(manifest_check), entry_point);
   }
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 5);
-  ((rom_ext_entry_point *)entry_point)();
 
+  // In a normal build, this function inlines to nothing.
+  stack_utilization_print();
+
+  ((rom_ext_entry_point *)entry_point)();
   return kErrorRomBootFailed;
 }
 

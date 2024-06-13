@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/stack_utilization.h"
 
 #include "flash_ctrl_regs.h"
 
@@ -294,6 +295,8 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
                                      cmd.payload);
       break;
     case kSpiDeviceOpcodeReset:
+      // In a normal build, this function inlines to nothing.
+      stack_utilization_print();
       rstmgr_reset();
 #ifdef OT_PLATFORM_RV32
       HARDENED_TRAP();

@@ -361,6 +361,7 @@ dual_cc_library(
             ":chip_info",
             ":error",
             ":epmp_defs",
+            ":stack_utilization",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -403,6 +404,7 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
+        ":stack_utilization",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
@@ -565,5 +567,17 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+    ],
+)
+
+cc_library(
+    name = "stack_utilization",
+    srcs = ["stack_utilization.c"],
+    hdrs = [
+        "stack_utilization.h",
+        "stack_utilization_asm.h",
+    ],
+    deps = [
+        "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
