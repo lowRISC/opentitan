@@ -12,3 +12,6 @@ waive -rules {PARAM_NOT_USED} -location {prim_flop_2sync.sv} -regexp {Parameter 
 
 waive -rules {SAME_NAME_TYPE} -location {prim_flop_2sync.sv} -regexp {'ResetValue' is used as a parameter here, and as an enumeration value at prim.*} \
       -comment "Parameter name reuse."
+
+waive -rules {STAR_PORT_CONN_USE} -location {prim_flop_2sync.sv} -regexp {.*wild card port connection encountered on instance.*} \
+      -comment "Generated prims may have wildcard connections."
