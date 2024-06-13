@@ -4,7 +4,7 @@
 
 import re
 from collections.abc import MutableMapping
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from reggen.lib import check_keys, check_str, check_int, check_bool, check_list
 
@@ -45,7 +45,7 @@ class BaseParam:
                       'default value for parameter {} '
                       '(which has type {})'
                       .format(self.name, self.param_type))
-        self.default = value
+        self.default: Union[str, int] = value
 
     def as_dict(self) -> Dict[str, object]:
         rd = {}  # type: Dict[str, object]
@@ -90,14 +90,17 @@ class Parameter(BaseParam):
                  param_type: str,
                  unpacked_dimensions: Optional[str],
                  default: str,
+                 local: bool,
                  expose: bool):
         super().__init__(name, desc, param_type, unpacked_dimensions)
         self.default = default
+        self.local = local
         self.expose = expose
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
         rd['default'] = self.default
+        rd['local'] = 'true' if self.local else 'false'
         rd['expose'] = 'true' if self.expose else 'false'
         return rd
 
@@ -276,16 +279,12 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                       'default field of {}, (an integer parameter)'
                       .format(name))
 
-    if local:
-        if expose:
-            raise ValueError('At {}, the localparam {} cannot be exposed to '
-                             'the top-level.'
-                             .format(where, name))
-        return LocalParam(name, desc, param_type, unpacked_dimensions,
-                          value=default)
+    if local and expose:
+        return Parameter(name, desc, param_type, unpacked_dimensions, default, local, expose)
+    elif local:
+        return LocalParam(name, desc, param_type, unpacked_dimensions, default)
     else:
-        return Parameter(name, desc, param_type, unpacked_dimensions,
-                         default, expose)
+        return Parameter(name, desc, param_type, unpacked_dimensions, default, local, expose)
 
 
 # Note: With a modern enough Python, we'd like this to derive from
@@ -402,4 +401,5 @@ class ReggenParams(Params):
         for param in self.by_name.values():
             if isinstance(param, LocalParam):
                 ret.append(param)
+
         return ret

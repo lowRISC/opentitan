@@ -882,6 +882,7 @@
           desc: Instantiates 2-flop synchronizers on all GPIO inputs if set to 1.
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: GpioGpioAsyncOn
         }
@@ -890,6 +891,7 @@
           desc: Enable HW straps sampling logic for GPIO inputs at initial cold boot
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: GpioGpioAsHwStrapsEn
         }
@@ -977,6 +979,7 @@
           desc: Sram Entries. Word size is 32bit width.
           type: spi_device_pkg::sram_type_e
           default: spi_device_pkg::DefaultSramType
+          local: "false"
           expose: "true"
           name_top: SpiDeviceSramType
         }
@@ -1091,6 +1094,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: I2c0InputDelayCycles
         }
@@ -1183,6 +1187,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: I2c1InputDelayCycles
         }
@@ -1275,6 +1280,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: I2c2InputDelayCycles
         }
@@ -1483,6 +1489,7 @@
           desc: VMEM file to initialize the OTP macro.
           type: ""
           default: '''""'''
+          local: "false"
           expose: "true"
           name_top: OtpCtrlMemInitFile
         }
@@ -1930,6 +1937,7 @@
             '''
           type: bit
           default: top_pkg::SecVolatileRawUnlockEn
+          local: "false"
           expose: "true"
           name_top: SecLcCtrlVolatileRawUnlockEn
         }
@@ -1938,6 +1946,7 @@
           desc: When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: LcCtrlUseDmiInterface
         }
@@ -2006,6 +2015,7 @@
           desc: Chip generation number.
           type: logic [15:0]
           default: 16'h 4001
+          local: "false"
           expose: "true"
           name_top: LcCtrlSiliconCreatorId
         }
@@ -2014,6 +2024,7 @@
           desc: Chip revision number.
           type: logic [15:0]
           default: 16'h 0002
+          local: "false"
           expose: "true"
           name_top: LcCtrlProductId
         }
@@ -2022,6 +2033,7 @@
           desc: Chip revision number.
           type: logic [7:0]
           default: 8'h 01
+          local: "false"
           expose: "true"
           name_top: LcCtrlRevisionId
         }
@@ -2030,6 +2042,7 @@
           desc: JTAG ID code.
           type: logic [31:0]
           default: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
+          local: "false"
           expose: "true"
           name_top: LcCtrlIdcodeValue
         }
@@ -2821,6 +2834,7 @@
           desc: Stub out the core of entropy_src logic
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: UsbdevStub
         }
@@ -2829,6 +2843,7 @@
           desc: Maximum number of microseconds for the differential receiver to become operational
           type: int
           default: "100"
+          local: "false"
           expose: "true"
           name_top: UsbdevRcvrWakeTimeUs
         }
@@ -3484,6 +3499,7 @@
             '''
           type: bit
           default: 1'b1
+          local: "false"
           expose: "true"
           name_top: SecRstmgrAonCheck
         }
@@ -3492,6 +3508,7 @@
           desc: The maximum synchronization delay for parent / child reset checks.
           type: int
           default: "2"
+          local: "false"
           expose: "true"
           name_top: SecRstmgrAonMaxSyncDelay
         }
@@ -4240,6 +4257,7 @@
             '''
           type: bit
           default: top_pkg::SecVolatileRawUnlockEn
+          local: "false"
           expose: "true"
           name_top: SecPinmuxAonVolatileRawUnlockEn
         }
@@ -4248,6 +4266,7 @@
           desc: Target specific pinmux configuration.
           type: pinmux_pkg::target_cfg_t
           default: pinmux_pkg::DefaultTargetCfg
+          local: "false"
           expose: "true"
           name_top: PinmuxAonTargetCfg
         }
@@ -5119,6 +5138,7 @@
           desc: Support execution from SRAM
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SramCtrlRetAonInstrExec
         }
@@ -5127,6 +5147,7 @@
           desc: Number of PRINCE half rounds for the SRAM scrambling feature
           type: int
           default: "3"
+          local: "false"
           expose: "true"
           name_top: SramCtrlRetAonNumPrinceRoundsHalf
         }
@@ -5350,6 +5371,7 @@
           desc: Compile-time option to enable flash scrambling
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: SecFlashCtrlScrambleEn
         }
@@ -5358,6 +5380,7 @@
           desc: Depth of program fifo
           type: int
           default: "4"
+          local: "false"
           expose: "true"
           name_top: FlashCtrlProgFifoDepth
         }
@@ -5366,6 +5389,7 @@
           desc: Depth of read fifo
           type: int
           default: "16"
+          local: "false"
           expose: "true"
           name_top: FlashCtrlRdFifoDepth
         }
@@ -5730,6 +5754,7 @@
           desc: RISC-V debug module JTAG ID code.
           type: logic [31:0]
           default: jtag_id_pkg::RV_DM_JTAG_IDCODE
+          local: "false"
           expose: "true"
           name_top: RvDmIdcodeValue
         }
@@ -5738,6 +5763,7 @@
           desc: When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvDmUseDmiInterface
         }
@@ -5753,6 +5779,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecRvDmVolatileRawUnlockEn
         }
@@ -6158,6 +6185,7 @@
           desc: Disable (0) or enable (1) support for 192-bit key lengths (AES-192).
           type: bit
           default: 1'b1
+          local: "false"
           expose: "false"
           name_top: AesAES192Enable
         }
@@ -6170,6 +6198,7 @@
             '''
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: SecAesMasking
         }
@@ -6178,6 +6207,7 @@
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           type: aes_pkg::sbox_impl_e
           default: aes_pkg::SBoxImplDom
+          local: "false"
           expose: "true"
           name_top: SecAesSBoxImpl
         }
@@ -6190,6 +6220,7 @@
             '''
           type: int unsigned
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecAesStartTriggerDelay
         }
@@ -6203,6 +6234,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecAesAllowForcingMasks
         }
@@ -6216,6 +6248,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecAesSkipPRNGReseeding
         }
@@ -6449,6 +6482,7 @@
           desc: Disable(0) or enable(1) first-order masking of Keccak round.
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: KmacEnMasking
         }
@@ -6463,6 +6497,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: KmacSwKeyMasked
         }
@@ -6477,6 +6512,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecKmacCmdDelay
         }
@@ -6490,6 +6526,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecKmacIdleAcceptSwMsg
         }
@@ -6694,6 +6731,7 @@
           desc: Stub out the core of Otbn logic
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: OtbnStub
         }
@@ -6702,6 +6740,7 @@
           desc: Selection of the register file implementation. See otbn_pkg.sv.
           type: otbn_pkg::regfile_e
           default: otbn_pkg::RegFileFF
+          local: "false"
           expose: "true"
           name_top: OtbnRegFile
         }
@@ -6725,6 +6764,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecOtbnMuteUrnd
         }
@@ -6738,6 +6778,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecOtbnSkipUrndReseedAtStart
         }
@@ -6941,6 +6982,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: KeymgrUseOtpSeedsInsteadOfFlash
         }
@@ -6949,6 +6991,7 @@
           desc: Flag indicating with kmac masking is enabled
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: KeymgrKmacEnMasking
         }
@@ -7321,6 +7364,7 @@
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           type: aes_pkg::sbox_impl_e
           default: aes_pkg::SBoxImplCanright
+          local: "false"
           expose: "true"
           name_top: CsrngSBoxImpl
         }
@@ -7452,6 +7496,7 @@
           desc: Number of 384-bit entries in the esfinal FIFO
           type: int
           default: "3"
+          local: "false"
           expose: "true"
           name_top: EntropySrcEsFifoDepth
         }
@@ -7460,6 +7505,7 @@
           desc: Number of 32-bit entries in the distr FIFO
           type: int unsigned
           default: "2"
+          local: "false"
           expose: "true"
           name_top: EntropySrcDistrFifoDepth
         }
@@ -7468,6 +7514,7 @@
           desc: Stub out the core of entropy_src logic
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: EntropySrcStub
         }
@@ -7873,6 +7920,7 @@
           desc: Support execution from SRAM
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: SramCtrlMainInstrExec
         }
@@ -7881,6 +7929,7 @@
           desc: Number of PRINCE half rounds for the SRAM scrambling feature
           type: int
           default: "2"
+          local: "false"
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
         }
@@ -8034,6 +8083,7 @@
           desc: Contents of ROM
           type: ""
           default: '''""'''
+          local: "false"
           expose: "true"
           name_top: RomCtrlBootRomInitFile
         }
@@ -8068,6 +8118,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecRomCtrlDisableScrambling
         }
@@ -8290,6 +8341,7 @@
           desc: Enable PMP
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPEnable
         }
@@ -8298,6 +8350,7 @@
           desc: PMP Granularity
           type: int unsigned
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPGranularity
         }
@@ -8306,6 +8359,7 @@
           desc: PMP number of regions
           type: int unsigned
           default: "16"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPNumRegions
         }
@@ -8314,6 +8368,7 @@
           desc: "Number of the MHPM counter "
           type: int unsigned
           default: "2"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexMHPMCounterNum
         }
@@ -8322,6 +8377,7 @@
           desc: "Width of the MHPM Counter "
           type: int unsigned
           default: "32"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexMHPMCounterWidth
         }
@@ -8331,6 +8387,7 @@
           type: ibex_pkg::pmp_cfg_t
           unpacked_dimensions: "[16]"
           default: ibex_pmp_reset_pkg::PmpCfgRst
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstCfg
         }
@@ -8340,6 +8397,7 @@
           type: logic [33:0]
           unpacked_dimensions: "[16]"
           default: ibex_pmp_reset_pkg::PmpAddrRst
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstAddr
         }
@@ -8348,6 +8406,7 @@
           desc: Reset value of MSECCFG CSR
           type: ibex_pkg::pmp_mseccfg_t
           default: ibex_pmp_reset_pkg::PmpMseccfgRst
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstMsecCfg
         }
@@ -8356,6 +8415,7 @@
           desc: RV32E
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRV32E
         }
@@ -8364,6 +8424,7 @@
           desc: RV32M
           type: ibex_pkg::rv32m_e
           default: ibex_pkg::RV32MSingleCycle
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRV32M
         }
@@ -8372,6 +8433,7 @@
           desc: RV32B
           type: ibex_pkg::rv32b_e
           default: ibex_pkg::RV32BOTEarlGrey
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRV32B
         }
@@ -8380,6 +8442,7 @@
           desc: Reg file
           type: ibex_pkg::regfile_e
           default: ibex_pkg::RegFileFF
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRegFile
         }
@@ -8388,6 +8451,7 @@
           desc: Branch target ALU
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexBranchTargetALU
         }
@@ -8396,6 +8460,7 @@
           desc: Write back stage
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexWritebackStage
         }
@@ -8404,6 +8469,7 @@
           desc: Instruction cache
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexICache
         }
@@ -8412,6 +8478,7 @@
           desc: Instruction cache ECC
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexICacheECC
         }
@@ -8420,6 +8487,7 @@
           desc: Scramble instruction cach
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexICacheScramble
         }
@@ -8428,6 +8496,7 @@
           desc: Branch predictor
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexBranchPredictor
         }
@@ -8436,6 +8505,7 @@
           desc: Enable degug trigger
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDbgTriggerEn
         }
@@ -8444,6 +8514,7 @@
           desc: Number of debug hardware break
           type: int
           default: "4"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDbgHwBreakNum
         }
@@ -8452,6 +8523,7 @@
           desc: "Width of the MHPM Counter "
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexSecureIbex
         }
@@ -8460,6 +8532,7 @@
           desc: Halt address
           type: int unsigned
           default: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDmHaltAddr
         }
@@ -8468,6 +8541,7 @@
           desc: Exception address
           type: int unsigned
           default: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDmExceptionAddr
         }
@@ -8476,6 +8550,7 @@
           desc: Pipe line
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPipeLine
         }

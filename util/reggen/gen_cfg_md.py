@@ -9,6 +9,7 @@ from reggen.ip_block import IpBlock
 from reggen.md_helpers import (
     title, url, italic, coderef, regref_to_link, name_width, table, list_item,
 )
+from reggen.params import Parameter
 
 
 def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = None) -> None:
@@ -78,7 +79,10 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
             pkg_struct = ims.package + "::" + ims.struct if ims.package is not None else ims.struct
             sig_type = ims.signal_type
             act = ims.act
-            width = str(ims.width) if ims.width is not None else "1"
+            if isinstance(ims.width, Parameter):
+                width = ims.width.name
+            else:
+                width = str(ims.width) if ims.width is not None else "1"
             desc = ims.desc if ims.desc is not None else ""
             rows.append([name, pkg_struct, sig_type, act, width, desc])
 

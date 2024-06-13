@@ -26,6 +26,7 @@ from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
+from reggen.params import ReggenParams
 from reggen.lib import check_list
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
@@ -151,6 +152,7 @@ def generate_xbars(top: Dict[str, object], out_path: Path) -> None:
                 "inter_signal_list field")
             obj["inter_signal_list"] = [
                 InterSignal.from_raw(
+                    ReggenParams(),
                     "entry {} of the inter_signal_list field".format(idx + 1),
                     entry) for idx, entry in enumerate(r_inter_signal_list)
             ]
@@ -1134,7 +1136,7 @@ def main():
 """.format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
 
     genhjson_path.write_text(genhdr + gencmd +
-                             hjson.dumps(completecfg, for_json=True) + '\n')
+                             hjson.dumps(completecfg, for_json=True, default=vars) + '\n')
 
     # Generate Rust toplevel definitions
     if not args.no_rust:

@@ -340,6 +340,7 @@ class IpBlock:
                                      'inter_signal_list field')
         inter_signals = [
             InterSignal.from_raw(
+                params,
                 'entry {} of the inter_signal_list field'.format(idx + 1),
                 entry) for idx, entry in enumerate(r_inter_signals)
         ]

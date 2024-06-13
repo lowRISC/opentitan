@@ -227,6 +227,8 @@ module top_earlgrey #(
   // Compile-time random constants
   import top_earlgrey_rnd_cnst_pkg::*;
 
+  // Local Parameters
+
   // Signals
   logic [56:0] mio_p2d;
   logic [74:0] mio_d2p;
@@ -784,6 +786,7 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
+
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
   assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
