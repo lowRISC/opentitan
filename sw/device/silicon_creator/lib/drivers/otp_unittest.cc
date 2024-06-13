@@ -141,11 +141,11 @@ class OtpDaiReadTest : public OtpReadTest,
 
 TEST_F(OtpDaiReadTest, Read32) {
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                      OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET);
   EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x1);
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
                     0x00010203);
   EXPECT_EQ(otp_dai_read32(kOtpPartitionCreatorSwCfg, 0), 0x00010203);
 }
@@ -154,25 +154,25 @@ TEST_F(OtpDaiReadTest, Read32WithIdleWait) {
   ExpectDaiIdleCheck(false);
   ExpectDaiIdleCheck(false);
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                      OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET);
   EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x1);
   ExpectDaiIdleCheck(false);
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
                     0x00010203);
   EXPECT_EQ(otp_dai_read32(kOtpPartitionCreatorSwCfg, 0), 0x00010203);
 }
 
 TEST_F(OtpDaiReadTest, Read64) {
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                      OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET + 4);
   EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x1);
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET,
                     0x00010203);
-  EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
                     0x00040506);
   EXPECT_EQ(otp_dai_read64(kOtpPartitionOwnerSwCfg, 4), 0x0001020300040506);
 }
@@ -180,15 +180,15 @@ TEST_F(OtpDaiReadTest, Read64) {
 TEST_F(OtpDaiReadTest, Read64WithIdleWait) {
   ExpectDaiIdleCheck(false);
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                      OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET);
   EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x1);
   ExpectDaiIdleCheck(false);
   ExpectDaiIdleCheck(false);
   ExpectDaiIdleCheck(true);
-  EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET,
                     0x00010203);
-  EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
+  EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
                     0x00040506);
   EXPECT_EQ(otp_dai_read64(kOtpPartitionCreatorSwCfg, 0), 0x0001020300040506);
 }
@@ -197,12 +197,12 @@ TEST_P(OtpDaiReadTest, ReadLenN32bitWords) {
   size_t num_words_to_read = GetParam();
   for (size_t i = 0; i < num_words_to_read; ++i) {
     ExpectDaiIdleCheck(true);
-    EXPECT_SEC_WRITE32(
+    EXPECT_ABS_WRITE32(
         base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
         OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET + i * sizeof(uint32_t));
     EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x1);
     ExpectDaiIdleCheck(true);
-    EXPECT_SEC_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
+    EXPECT_ABS_READ32(base_ + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET,
                       0x01020300 + i);
   }
 

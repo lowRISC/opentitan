@@ -106,7 +106,7 @@ static void dai_read_blocking(otp_partition_t partition,
                               uint32_t relative_address) {
   wait_for_dai_idle();
   HARDENED_CHECK_EQ(relative_address & kOtpPartitions[partition].align_mask, 0);
-  sec_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                    kOtpPartitions[partition].start_addr + relative_address);
   uint32_t cmd =
       bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true);
@@ -115,18 +115,16 @@ static void dai_read_blocking(otp_partition_t partition,
 }
 
 uint32_t otp_dai_read32(otp_partition_t partition, uint32_t relative_address) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioDaiRead32, 1);
   dai_read_blocking(partition, relative_address);
-  return sec_mmio_read32(kBase + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
+  return abs_mmio_read32(kBase + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
 }
 
 uint64_t otp_dai_read64(otp_partition_t partition, uint32_t relative_address) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioDaiRead64, 1);
   dai_read_blocking(partition, relative_address);
   uint64_t value =
-      sec_mmio_read32(kBase + OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET);
+      abs_mmio_read32(kBase + OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET);
   value <<= 32;
-  value |= sec_mmio_read32(kBase + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
+  value |= abs_mmio_read32(kBase + OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
   return value;
 }
 
