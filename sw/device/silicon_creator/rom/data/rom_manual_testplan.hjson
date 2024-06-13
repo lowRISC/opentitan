@@ -27,7 +27,7 @@
     }
     {
       name: rom_manual_cpuctrl_layout
-      desc: '''Verify that the mask for the `cputctrl` CSR in `rom_init()` is up to date.
+      desc: '''Verify that the mask for the `cpuctrl` CSR in `rom_init()` is up to date.
 
             See [Ibex documentation][1] for details.
 
@@ -58,6 +58,9 @@
 
             bazel run //util/py/scripts:audit_sec_mmio_calls -- --log-level info
             '''
+      tags: ["manual"]
+      stage: V2
+      tests: []
     }
     {
       name: rom_manual_stack_utilization
@@ -66,6 +69,9 @@
             Ensure that the worst case utilization paths are below the space allocated for the
             stack.
             '''
+      tags: ["manual"]
+      stage: V2
+      tests: []
     }
     {
       name: rom_manual_alert_handler_ping_disabled
@@ -74,6 +80,9 @@
             The alert handler ping mechanism has not been qualified to work with the ROM. The
             earliest stage in which it can be used is the ROM_EXT.
             '''
+      tags: ["manual"]
+      stage: V2
+      tests: []
     }
     {
       name: rom_manual_open_issues_tasks
