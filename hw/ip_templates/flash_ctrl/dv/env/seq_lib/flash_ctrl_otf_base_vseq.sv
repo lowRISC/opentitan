@@ -128,8 +128,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // transaction creates prog_win error.
     // To prevent that, make full size access always start from address[2:0] == 0.
     if (fractions == 16) rand_op.addr[2] == 0;
+    // Make sure that the operation will not cross the selected partition boundries.
     if (rand_op.partition != FlashPartData) {
-      rand_op.addr inside {[0:InfoTypeBytes[rand_op.partition>>1]-1]};
+      rand_op.addr inside
+        {[0:InfoTypeBytes[rand_op.partition>>1]-(FlashBankBytesPerWord*fractions)]};
       rand_op.prog_sel == 1;
     } else {
       rand_op.prog_sel == 0;
