@@ -352,7 +352,7 @@ class OTBNState:
         # externally-visible registers). We want to roll back any of those
         # changes.
         insn_failed = self._err_bits and self._fsm_state == FsmState.EXEC
-        if insn_failed or self.rma_req:
+        if insn_failed:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
