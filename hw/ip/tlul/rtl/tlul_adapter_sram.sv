@@ -503,8 +503,8 @@ module tlul_adapter_sram
           // When DataXorAddr is enabled, on a read, the address is XORed with the data fetched from
           // the memory in the underlying memory controller (e.g., flash controller). At this point,
           // the address is again removed. If the address in the read transaction has been modified,
-          // e.g., due to a fault, rdata now contains faulty data, which is detected by the integrity
-          // mechanism.
+          // e.g., due to a fault, rdata now contains faulty data, which is detected by the
+          // integrity mechanism.
           logic [SramBusBankAW-1:0] addr_xor;
           addr_xor = sramreqaddrfifo_rdata.addr[SramBusBankAW-1:0];
           // data XOR address.
@@ -617,6 +617,11 @@ module tlul_adapter_sram
     );
   end else begin : gen_no_data_xor_addr_fifo
     assign sramreqaddrfifo_wready = 1'b1;
+    assign sramreqaddrfifo_rdata = '0;
+
+    // Tie-off unused signals
+    logic unused_sramreqaddrfifo;
+    assign unused_sramreqaddrfifo = ^{sramreqaddrfifo_wdata, sramreqaddrfifo_rdata};
   end
 
   // Rationale having #Outstanding depth in response FIFO.
