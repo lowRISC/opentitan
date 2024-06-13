@@ -8,6 +8,8 @@
 `include "usbdev_smoke_vseq.sv"
 
 `include "usbdev_av_buffer_vseq.sv"
+`include "usbdev_av_empty_vseq.sv"
+`include "usbdev_av_overflow_vseq.sv"
 `include "usbdev_bitstuff_err_vseq.sv"
 `include "usbdev_csr_test_vseq.sv"
 `include "usbdev_data_toggle_restore_vseq.sv"
@@ -36,6 +38,7 @@
 `include "usbdev_pkt_sent_vseq.sv"
 `include "usbdev_random_length_out_transaction_vseq.sv"
 `include "usbdev_resume_link_active_vseq.sv"
+`include "usbdev_rx_full_vseq.sv"
 `include "usbdev_stall_trans_vseq.sv"
 `include "usbdev_rx_crc_err_vseq.sv"
 `include "usbdev_setup_trans_ignored_vseq.sv"
