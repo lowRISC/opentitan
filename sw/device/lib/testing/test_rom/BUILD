@@ -85,6 +85,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:rstmgr_intf",
+        "//sw/device/silicon_creator/lib:stack_utilization",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],

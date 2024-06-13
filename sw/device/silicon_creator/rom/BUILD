@@ -8,7 +8,7 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:opentitan_test.bzl", "manual_test")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "fpga_params", "opentitan_binary", "opentitan_test")
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
@@ -150,6 +150,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib:stack_utilization",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
@@ -499,4 +500,80 @@ genrule(
         fi
     done
     """,
+)
+
+genrule(
+    name = "empty_flash",
+    testonly = True,
+    outs = ["empty_flash.bin"],
+    cmd = """
+        head --bytes=65536 /dev/zero | tr '\\0' '\\377' > $@
+    """,
+)
+
+opentitan_test(
+    name = "stack_utilization_test",
+    cw310 = fpga_params(
+        binaries = {
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
+            ":empty_flash": "empty",
+        },
+        stack_usage = "STK:[0-9A-Fa-f/]+\r\n",
+        tags = ["manual"],
+        test_cmd = """
+            --exec="no-op --info '
+            ###########################################################################
+            # This is a manual test.  Run it with:
+            #     --test_output=streamed --copt=-DSTACK_UTILIZATION_CHECK
+            ###########################################################################'"
+            --exec="transport init"
+            --exec="fpga load-bitstream {bitstream}"
+
+            --exec="no-op --info '### Measuring stack utilization for bootstrap slot A'"
+            --exec="bootstrap --clear-uart=true --leave-in-bootstrap {good_a}"
+            --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
+
+            --exec="gpio remove ROM_BOOTSTRAP"
+            --exec="gpio apply RESET"
+            --exec="gpio remove RESET"
+            --exec="no-op --info '### Measuring stack utilization for booting slot A'"
+            --exec="console --non-interactive --exit-success='PASS.*\r\n' --exit-failure='{exit_failure}'"
+
+            --exec="no-op --info '### Measuring stack utilization for bootstrap slot B'"
+            --exec="bootstrap --mirror=false --clear-uart=true --leave-in-bootstrap {good_b}@0x80000"
+            --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
+
+            --exec="gpio remove ROM_BOOTSTRAP"
+            --exec="gpio apply RESET"
+            --exec="gpio remove RESET"
+            --exec="no-op --info '### Measuring stack utilization for booting slot A'"
+            --exec="console --non-interactive --exit-success='PASS.*\r\n' --exit-failure='{exit_failure}'"
+
+            --exec="no-op --info '### Measuring stack utilization for bootstrap slot A (corrupted image)'"
+            --exec="bootstrap --clear-uart=true --leave-in-bootstrap {bad_a}"
+            --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
+
+            --exec="gpio remove ROM_BOOTSTRAP"
+            --exec="gpio apply RESET"
+            --exec="gpio remove RESET"
+            --exec="no-op --info '### Measuring stack utilization for failed boot of slot A'"
+            --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='PASS|FAIL'"
+
+            --exec="no-op --info '### Measuring stack utilization for bootstrap slot A (empty image)'"
+            --exec="bootstrap --clear-uart=true --leave-in-bootstrap {empty}"
+            --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
+
+            --exec="gpio remove ROM_BOOTSTRAP"
+            --exec="gpio apply RESET"
+            --exec="gpio remove RESET"
+            --exec="no-op --info '### Measuring stack utilization for empty flash'"
+            --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='PASS|FAIL'"
+            no-op
+        """,
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
 )
