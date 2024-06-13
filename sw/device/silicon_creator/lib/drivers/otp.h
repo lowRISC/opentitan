@@ -33,8 +33,6 @@ enum {
    * Individual register reads/writes.
    */
   kOtpSecMmioCreatorSwCfgLockDown = 1,
-  kOtpSecMmioDaiRead32 = 1,
-  kOtpSecMmioDaiRead64 = 1,
 };
 
 /**
