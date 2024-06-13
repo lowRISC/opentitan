@@ -434,7 +434,6 @@ module flash_phy_core
     .buf_en_i(rd_buf_en_i),
     //.req_i(reqs[PhyRead] | host_req),
     .req_i(phy_req & (rd_i | host_req)),
-    .host_req_i(host_req),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),

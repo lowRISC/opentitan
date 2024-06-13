@@ -38,7 +38,6 @@ module flash_phy_rd
 
   // interface with arbitration unit
   input req_i,
-  input host_req_i,
   input descramble_i,
   input ecc_i,
   input prog_i,
@@ -467,7 +466,6 @@ module flash_phy_rd
 
   logic fifo_data_ready;
   logic fifo_data_valid;
-  logic fifo_addr_xor_valid;
   logic fifo_forward_pop;
   logic rd_and_mask_fifo_pop;
   logic mask_valid;
@@ -568,9 +566,8 @@ module flash_phy_rd
     .err_o   ()
   );
 
-  logic host_req;
   prim_fifo_sync #(
-    .Width   (1+BankAddrW),
+    .Width   (BankAddrW),
     .Pass    (0),
     .Depth   (RspOrderDepth),
     .OutputZeroIfEmpty (1)
@@ -580,12 +577,12 @@ module flash_phy_rd
     .clr_i   (1'b0),
     .wvalid_i(rsp_order_fifo_wr),
     .wready_o(addr_xor_fifo_rdy),
-    .wdata_i ({host_req_i, flash_word_addr}),
+    .wdata_i (flash_word_addr),
     .depth_o (unused_addr_xor_depth),
     .full_o  (),
-    .rvalid_o(fifo_addr_xor_valid),
+    .rvalid_o(),
     .rready_i(data_valid_o),
-    .rdata_o ({host_req, fifo_addr_xor}),
+    .rdata_o (fifo_addr_xor),
     .err_o   ()
   );
 
