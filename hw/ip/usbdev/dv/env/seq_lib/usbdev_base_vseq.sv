@@ -309,7 +309,8 @@ endtask
 
   // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
   virtual task send_prnd_out_packet(bit [3:0] ep, input pid_type_e pid_type,
-                                    input bit randomize_length, input bit [6:0] num_of_bytes,
+                                    input bit randomize_length = 1,
+                                    input bit [6:0] num_of_bytes = 0,
                                     bit isochronous_transfer = 1'b0);
     // Send OUT token packet to the selected endpoint on the specified device.
     send_token_packet(ep, PidTypeOutToken);
@@ -335,6 +336,14 @@ endtask
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     m_usb20_item.check_pid_type(pid_type);
+  endtask
+
+  // Await for a DUT response and check that there is none; transaction time-out occurs.
+  virtual task check_no_response();
+    get_response(m_response_item);
+    $cast(m_usb20_item, m_response_item);
+    `DV_CHECK_EQ(m_usb20_item.timed_out, 1,
+                 $sformatf("Response from DUT was unexpected (PID 0x%0x)", m_usb20_item.m_pid_type))
   endtask
 
   // Retrieve the DUT response to an IN transaction, and check that it matches expectations.

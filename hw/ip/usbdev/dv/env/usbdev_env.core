@@ -37,6 +37,8 @@ filesets:
       - seq_lib/usbdev_pkt_received_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_disconnected_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_av_buffer_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_av_empty_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_av_overflow_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_setup_trans_ignored_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_pkt_buffer_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_setup_stage_vseq.sv: {is_include_file: true}
@@ -53,6 +55,7 @@ filesets:
       - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_resume_link_active_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_full_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_streaming_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}

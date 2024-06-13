@@ -415,7 +415,7 @@
             - Verify that this interrupt pin goes high once the Av OUT/SETUP Buffer FIFO is empty.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_av_empty"]
     }
     {
       name: rx_full
@@ -428,7 +428,7 @@
             - Verify that this interrupt pin goes high once the received fifo is full.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_rx_full"]
     }
     {
       name: av_overflow
@@ -443,7 +443,7 @@
               reached the overflowing condition.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_av_overflow"]
     }
     {
       name: link_in_err

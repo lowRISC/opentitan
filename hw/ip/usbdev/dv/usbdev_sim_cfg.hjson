@@ -74,6 +74,18 @@
       uvm_test_seq: usbdev_bitstuff_err_vseq
     }
     {
+      name: usbdev_av_empty
+      uvm_test_seq: usbdev_av_empty_vseq
+      // Limited need for randomization; two FIFOs.
+      reseed: 5
+    }
+    {
+      name: usbdev_av_overflow
+      uvm_test_seq: usbdev_av_overflow_vseq
+      // Limited need for randomization; two FIFOs.
+      reseed: 5
+    }
+    {
       name: usbdev_dpi_config_host
       uvm_test_seq: usbdev_dpi_config_host_vseq
       // Limited use of randomization presently
@@ -191,6 +203,12 @@
     {
       name: usbdev_resume_link_active
       uvm_test_seq: usbdev_resume_link_active_vseq
+      // No need for randomization.
+      reseed: 1
+    }
+    {
+      name: usbdev_rx_full
+      uvm_test_seq: usbdev_rx_full_vseq
       // No need for randomization.
       reseed: 1
     }
