@@ -121,6 +121,7 @@ Error                        | Value | Description
 `SwUpdateSecretKeyInProcess` | `0x3` | Secret Key CSRs should not be modified during the hashing. This error is reported when those CSRs are revised in active.
 `SwHashStartWhenActive`      | `0x4` | The error is reported when CMD.start is received while HMAC is running.
 `SwPushMsgWhenDisallowed`    | `0x5` | After CMD.process is received, the MSG_FIFO should not by updated by SW. This error is reported in that case.
+`SwInvalidConfig`            | `0x6` | SW has configured HMAC incorrectly.
 
 ## FIFO Depth and Empty status
 

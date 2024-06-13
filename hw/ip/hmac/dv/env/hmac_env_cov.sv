@@ -58,7 +58,6 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
 
   covergroup err_code_cg with function sample (bit [TL_DW-1:0] err_code);
     hmac_errors: coverpoint err_code {
-      // TODO extend with new error code
       bins no_error                     = {NoError};
       // This error code is not used in this version. PR #13854.
       // bins push_msg_when_sha_disabled   = {SwPushMsgWhenShaDisabled};
@@ -66,7 +65,7 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
       bins update_secret_key_in_process = {SwUpdateSecretKeyInProcess};
       bins hash_start_when_active       = {SwHashStartWhenActive};
       bins push_msg_when_disallowed     = {SwPushMsgWhenDisallowed};
-      bins key_length_higher_blk_size   = {SwInvalidConfig};
+      bins invalid_config               = {SwInvalidConfig};
       illegal_bins illegalvalue         = default;
     }
   endgroup : err_code_cg
@@ -124,11 +123,20 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     cp: coverpoint rd_digest_during_hmac_en {bins true = {1'b1};}
   endgroup : rd_digest_during_hmac_en_cg
 
-  covergroup save_and_restore_cg with function sample (save_and_restore_e sar_ctxt);
+  covergroup save_and_restore_cg with function sample (save_and_restore_e sar_ctxt,
+                                                       bit [TL_DW-1:0] cfg);
     save_and_restore_cp : coverpoint sar_ctxt {
       bins same_context       = {SameContext};
       bins different_context  = {DifferentContext};
+      bins stop_and_continue  = {StopAndContinue};
     }
+    digest_size_cp : coverpoint cfg[DigestSizeMsb:DigestSizeLsb] {
+      bins sha2_256     = {4'h1};
+      bins sha2_384     = {4'h2};
+      bins sha2_512     = {4'h4};
+      // sha2_none and sha2_invalid are not valid here
+    }
+    sar_type_x_digest_size : cross save_and_restore_cp, digest_size_cp;
   endgroup : save_and_restore_cg
 
   function new(string name, uvm_component parent);

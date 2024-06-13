@@ -742,12 +742,44 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   endfunction
 
   virtual task monitor_cov();
+    save_and_restore_e  sar_ctxt;
+    uvm_event           sar_same_ctxt_ev;
+    uvm_event           sar_different_ctxt_ev;
+    uvm_event           sar_stop_continue_ev;
+    sar_same_ctxt_ev      = uvm_event_sar_pool::get_global("sar_same_context_event");
+    sar_different_ctxt_ev = uvm_event_sar_pool::get_global("sar_different_context_event");
+    sar_stop_continue_ev  = uvm_event_sar_pool::get_global("sar_stop_and_continue_event");
+
     fork
       // Collect coverage for register CFG
       begin
         forever begin
           @(sample_cfg);
           if (cfg.en_cov) cov.cfg_cg.sample(`gmv(ral.cfg));
+        end
+      end
+      // Save and Restore with same context
+      begin
+        forever begin
+          sar_same_ctxt_ev.wait_trigger();
+          if (cfg.en_cov) cov.save_and_restore_cg.sample(.sar_ctxt(SameContext),
+                                                         .cfg(`gmv(ral.cfg)));
+        end
+      end
+      // Save and Restore with different contexts
+      begin
+        forever begin
+          sar_different_ctxt_ev.wait_trigger();
+          if (cfg.en_cov) cov.save_and_restore_cg.sample(.sar_ctxt(DifferentContext),
+                                                         .cfg(`gmv(ral.cfg)));
+        end
+      end
+      // Stop and Continue without Saving and Restoring
+      begin
+        forever begin
+          sar_stop_continue_ev.wait_trigger();
+          if (cfg.en_cov) cov.save_and_restore_cg.sample(.sar_ctxt(StopAndContinue),
+                                                         .cfg(`gmv(ral.cfg)));
         end
       end
     join_none
