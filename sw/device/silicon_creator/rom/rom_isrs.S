@@ -4,6 +4,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/hardened_asm.h"
 #include "flash_ctrl_regs.h"
 
 .equ LOAD_ACCESS_FAULT, 5
@@ -25,15 +26,25 @@
   .balign 4
   .global rom_exception_handler
   .type rom_exception_handler, @function
+  .extern flash_ecc_exc_handler_en
 rom_exception_handler:
   // Save all registers to the exception frame.  The ROM locates its initial
   // stack_end at `ram_end - 128` and the stack grows downwards from there.
   // Save `sp` into `mscratch` and use the 128 bytes reserved at the top of
   // RAM as the exception frame.
+  csrw mscratch, sp
+
+  // Before saving the stack frame, check if handling of flash exceptions is
+  // enabled.  Determine this with just the stack pointer so that if not enabled,
+  // we don't have to do any other register save/restore.
+  la   sp, flash_ecc_exc_handler_en
+  lw   sp, 0(sp)
+  xori sp, sp, HARDENED_BOOL_TRUE
+  bnez sp, .L_no_flash_exceptions
+
   // Note: we save the exception frame in RISCV register number order so that
   // we can extract the destination register from the faulting instruction and
   // use it as an index into the exception frame.
-  csrw mscratch, sp
   la   sp, _exception_frame_start
   sw   x1,  1 * OT_WORD_SIZE(sp)
   sw   x2,  2 * OT_WORD_SIZE(sp)
@@ -200,6 +211,8 @@ rom_exception_handler:
   csrr sp, mscratch
   mret
 
+.L_no_flash_exceptions:
+  csrr sp, mscratch
 .L_not_a_flash_error:
   // Since we aren't dealing with a flash error, we'll jump to the normal
   // handler for all other exceptiosn and interrupts.  That handler emits

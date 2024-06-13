@@ -93,6 +93,8 @@ boot_data_t boot_data = {0};
 static hardened_bool_t waking_from_low_power = 0;
 // First stage (ROM-->ROM_EXT) secure boot keys loaded from OTP.
 static sigverify_otp_key_ctx_t sigverify_ctx;
+// A ram copy of the OTP word controlling how to handle flash ECC errors.
+uint32_t flash_ecc_exc_handler_en;
 
 /**
  * Prints a status message indicating that the ROM is entering bootstrap mode.
@@ -175,6 +177,8 @@ static rom_error_t rom_init(void) {
 
   flash_ctrl_init();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
+  flash_ecc_exc_handler_en = otp_read32(
+      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
 
   // Initialize in-memory copy of the ePMP register configuration.
   rom_epmp_state_init(lc_state);

@@ -6,6 +6,7 @@ load(
     "//rules:const.bzl",
     "CONST",
     "hex",
+    "hex_digits",
 )
 load(
     "//rules:manifest.bzl",
@@ -130,10 +131,32 @@ otp_json(
     ],
 )
 
+otp_json(
+    name = "otp_json_flash_exc_handler_disabled",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {
+                "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_FALSE),
+            },
+        ),
+    ],
+)
+
 otp_image(
     name = "otp_img_boot_policy_flash_ecc_error",
     src = "//hw/ip/otp_ctrl/data:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [":otp_json_flash_data_cfg_default_scr_and_ecc_enabled"],
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_flash_exc_handler_disabled",
+    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
+        ":otp_json_flash_exc_handler_disabled",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -246,6 +269,27 @@ SEC_VERS = [
     for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
     for c in FLASH_ECC_ERROR_CAUSES
 ]
+
+opentitan_test(
+    name = "flash_exc_handler_disabled_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
+        binaries = {
+            ":flash_ecc_self_corruption_slot_a_manifest_identifier": "fw_a",
+            ":uncorrupted_test_slot_b": "fw_b",
+        },
+        # Since the flash ecc exception handler is disabled in this test,
+        # we expect to see a load access fault when the ROM accesses the
+        # corrupted flash word.
+        exit_success = "BFV:{}".format(hex_digits(CONST.BFV.INTERRUPT.LOAD_ACCESS)),
+        otp = ":otp_img_flash_exc_handler_disabled",
+        slot_a = SLOTS["a"],
+        slot_b = SLOTS["b"],
+    ),
+)
 
 test_suite(
     name = "boot_policy_flash_ecc_error",

@@ -82,6 +82,7 @@ CONST = struct(
         INTERRUPT = struct(
             INSTRUCTION_ACCESS = 0x01495202,
             ILLEGAL_INSTRUCTION = 0x02495202,
+            LOAD_ACCESS = 0x05495202,
             STORE_ACCESS = 0x07495202,
         ),
         SIGVERIFY = struct(
