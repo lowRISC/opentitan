@@ -328,15 +328,32 @@
                     size: "4"
                 }
                 {
+                    // Datatype: packed bytes per alert.  Each byte is a pair
+                    // of Mubi4: [Recoverable, Enabled].
                     name: "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG",
                     size: "12" // 2 settings per alert (disabled, fatal), 4 bit per setting, space for 12 alerts (currently 11 used)
                 }
                 {
-                    name: "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_DIGEST",
+                    // Datatype: Mubi4.
+                    name: "OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
                     size: "4"
                 }
                 {
-                    name: "OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
+                    // Datatype: hardened_bool_t.
+                    // True preserves, all other values default behavior.
+                    name: "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN",
+                    size: "4"
+                }
+                {
+                    // Datatype: hardened_bool_t.
+                    // False disables, all other values default behavior.
+                    name: "OWNER_SW_CFG_ROM_BANNER_EN",
+                    size: "4"
+                }
+                {
+                    // Datatype: hardended_bool_t
+                    // True enables, all other values default behavior.
+                    name: "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN",
                     size: "4"
                 }
             ],
