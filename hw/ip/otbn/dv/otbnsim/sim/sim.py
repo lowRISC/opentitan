@@ -310,20 +310,27 @@ class OTBNSim:
                 self.state.zero_insn_cnt_next = True
 
         if self.state.wipe_cycles == 1:
-            # This is the penultimate clock cycle of a wipe round.
-            if self.state.first_round_of_wipe:
-                # This is the first round.
-                self.state.wsrs.URND.running = False
-                if not self.state.rma_req:
-                    # If not wiping because of an RMA request, request an URND
-                    # refresh.
-                    self.state._urnd_client.request()
-            if (not self.state.first_round_of_wipe) or self.state.rma_req:
-                # This is the second wipe round or the only round of a wipe
-                # during an RMA request, so wipe all registers and set STATUS.
+            # This is the penultimate clock cycle of a wipe round. We want to
+            # model the behaviour that we expect "at the end of a wipe round".
+            #
+            # On the last wipe round, we actually perform a wipe on the model
+            # side and set STATUS (to IDLE or LOCKED) to show that the wiping
+            # has finished .
+            #
+            # If there's another wipe round to follow, we mark the URND
+            # register as not available and request a new seed.
+            #
+            # RMA requests are a special case where the "last round" might
+            # actually be the first one as well.
+            final_wipe_round = (self.state.rma_req or
+                                not self.state.first_round_of_wipe)
+            if final_wipe_round:
                 next_status = Status.IDLE if is_good else Status.LOCKED
                 self.state.ext_regs.write('STATUS', next_status, True)
                 self.state.wipe()
+            else:
+                self.state.wsrs.URND.running = False
+                self.state._urnd_client.request()
 
         if self.state.wipe_cycles == 0:
             # This is the final clock cycle of a wipe round.
