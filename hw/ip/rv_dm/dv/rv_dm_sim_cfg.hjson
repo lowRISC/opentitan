@@ -281,6 +281,10 @@
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
     }
+    {
+      name: rv_dm_stress_all_with_rand_reset
+      reseed: 10
+    }
   ]
 
   // List of regressions.

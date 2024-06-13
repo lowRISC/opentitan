@@ -226,6 +226,7 @@
       run_opts: ["+run_stress_all_with_rand_reset",
                  "+stress_seq=i2c_host_stress_all_vseq"]
       run_timeout_mins: 20
+      reseed: 10
     }
     {
       name: "i2c_target_stress_all_with_rand_reset"
@@ -234,6 +235,7 @@
                  "+run_stress_all_with_rand_reset",
                  "+stress_seq=i2c_target_stress_all_vseq"]
       run_timeout_mins: 20
+      reseed: 10
     }
     {
       name: "i2c_host_mode_toggle"

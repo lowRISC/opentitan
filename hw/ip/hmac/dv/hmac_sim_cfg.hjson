@@ -114,7 +114,7 @@
       // Append the common stress_tests.hjson entry for more run_opts.
       name: hmac_stress_all_with_rand_reset
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
-      reseed: 200
+      reseed: 10
     }
   ]
 

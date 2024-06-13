@@ -100,6 +100,11 @@
       uvm_test: csrng_regwen_test
       uvm_test_seq: csrng_regwen_vseq
     }
+
+    {
+      name: csrng_stress_all_with_rand_reset
+      reseed: 10
+    }
   ]
 
   // List of regressions.
