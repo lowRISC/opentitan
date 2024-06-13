@@ -262,6 +262,52 @@ module top_darjeeling #(
   // Compile-time random constants
   import top_darjeeling_rnd_cnst_pkg::*;
 
+  // Local Parameters
+  // local parameters for uart0
+  // local parameters for gpio
+  // local parameters for spi_device
+  // local parameters for i2c0
+  // local parameters for rv_timer
+  // local parameters for otp_ctrl
+  localparam int OtpCtrlNumSramKeyReqSlots = 4;
+  // local parameters for lc_ctrl
+  // local parameters for alert_handler
+  // local parameters for spi_host0
+  // local parameters for pwrmgr_aon
+  // local parameters for rstmgr_aon
+  // local parameters for clkmgr_aon
+  // local parameters for pinmux_aon
+  // local parameters for aon_timer_aon
+  // local parameters for sensor_ctrl
+  // local parameters for soc_proxy
+  // local parameters for sram_ctrl_ret_aon
+  // local parameters for rv_dm
+  // local parameters for rv_plic
+  // local parameters for aes
+  // local parameters for hmac
+  // local parameters for kmac
+  // local parameters for otbn
+  // local parameters for keymgr_dpe
+  // local parameters for csrng
+  // local parameters for edn0
+  // local parameters for edn1
+  // local parameters for sram_ctrl_main
+  // local parameters for sram_ctrl_mbox
+  // local parameters for rom_ctrl0
+  // local parameters for rom_ctrl1
+  // local parameters for dma
+  // local parameters for mbx0
+  // local parameters for mbx1
+  // local parameters for mbx2
+  // local parameters for mbx3
+  // local parameters for mbx4
+  // local parameters for mbx5
+  // local parameters for mbx6
+  // local parameters for mbx_jtag
+  // local parameters for mbx_pcie0
+  // local parameters for mbx_pcie1
+  // local parameters for rv_core_ibex
+
   // Signals
   logic [3:0] mio_p2d;
   logic [4:0] mio_d2p;
@@ -463,8 +509,8 @@ module top_darjeeling #(
   logic       aon_timer_aon_nmi_wdog_timer_bark;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
-  otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
-  otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
+  otp_ctrl_pkg::sram_otp_key_req_t [OtpCtrlNumSramKeyReqSlots-1:0] otp_ctrl_sram_otp_key_req;
+  otp_ctrl_pkg::sram_otp_key_rsp_t [OtpCtrlNumSramKeyReqSlots-1:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
@@ -1102,7 +1148,8 @@ module top_darjeeling #(
     .MemInitFile(OtpCtrlMemInitFile),
     .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm),
-    .RndCnstScrmblKeyInit(RndCnstOtpCtrlScrmblKeyInit)
+    .RndCnstScrmblKeyInit(RndCnstOtpCtrlScrmblKeyInit),
+    .NumSramKeyReqSlots(OtpCtrlNumSramKeyReqSlots)
   ) u_otp_ctrl (
 
       // Output

@@ -154,6 +154,7 @@ def generate_xbars(top, out_path):
                 "inter_signal_list field")
             obj["inter_signal_list"] = [
                 InterSignal.from_raw(
+                    {},
                     "entry {} of the inter_signal_list field".format(idx + 1),
                     entry) for idx, entry in enumerate(r_inter_signal_list)
             ]
@@ -1265,7 +1266,7 @@ def main():
 """.format(topname=topname, seed=completecfg["rnd_cnst_seed"])
 
     genhjson_path.write_text(genhdr + gencmd +
-                             hjson.dumps(completecfg, for_json=True) + '\n')
+                             hjson.dumps(completecfg, for_json=True, default=vars) + '\n')
 
     # Generate Rust toplevel definitions
     if not args.no_rust:

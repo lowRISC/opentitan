@@ -78,14 +78,17 @@ class Parameter(BaseParam):
                  desc: Optional[str],
                  param_type: str,
                  default: str,
+                 local: bool,
                  expose: bool):
         super().__init__(name, desc, param_type)
         self.default = default
+        self.local = local
         self.expose = expose
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
         rd['default'] = self.default
+        rd['local'] = 'true' if self.local else 'false'
         rd['expose'] = 'true' if self.expose else 'false'
         return rd
 
@@ -256,14 +259,12 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                       'default field of {}, (an integer parameter)'
                       .format(name))
 
-    if local:
-        if expose:
-            raise ValueError('At {}, the localparam {} cannot be exposed to '
-                             'the top-level.'
-                             .format(where, name))
-        return LocalParam(name, desc, param_type, value=default)
+    if local and expose:
+        return Parameter(name, desc, param_type, default, local, expose)
+    elif local:
+        return LocalParam(name, desc, param_type, default)
     else:
-        return Parameter(name, desc, param_type, default, expose)
+        return Parameter(name, desc, param_type, default, local, expose)
 
 
 # Note: With a modern enough Python, we'd like this to derive from
