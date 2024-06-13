@@ -522,13 +522,15 @@
             Verify that the DUT moves from the LinkPowered state to the LinkResuming state in response to
             the 'resume_link_active' bit being set.
 
-            - Perform no operation in J state for more than 3 ms.
-            - Read the link state from `usbstat` register to see if it is in powered state and then send
-              the resume signal (K state) for 20 ms and set the usbctrl.resume_link_active.
-            - Verify that the resume_link_active interrupt goes high and device will be resumed.
+            - Disconnect VBUS.
+            - Read the link state from `usbstat` register to see if it is in Disconnected state and
+              restore VBUS and the pull up.
+            - The DUT should move to the Powered state.
+            - Send resume signaling (K state) for 20 ms and set the usbctrl.resume_link_active.
+            - Verify that the DUT moves into the Resuming state and subsequently ActiveNoSOF.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_resume_link_active"]
     }
     {
       name: device_address

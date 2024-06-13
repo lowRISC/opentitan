@@ -189,6 +189,12 @@
       uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
+      name: usbdev_resume_link_active
+      uvm_test_seq: usbdev_resume_link_active_vseq
+      // No need for randomization.
+      reseed: 1
+    }
+    {
       name: usbdev_stall_trans
       uvm_test_seq: usbdev_stall_trans_vseq
     }

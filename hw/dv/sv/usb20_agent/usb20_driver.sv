@@ -213,6 +213,16 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     @(posedge cfg.bif.clk_i);
   endtask
 
+  // Leave the USB undriven for a single bit interval.
+  task idle_bit_interval();
+    @(posedge cfg.bif.clk_i)
+    cfg.bif.drive_p = 1'bZ;
+    cfg.bif.drive_n = 1'bZ;
+    @(posedge cfg.bif.clk_i);
+    @(posedge cfg.bif.clk_i);
+    @(posedge cfg.bif.clk_i);
+  endtask
+
   // Wait for the given number of host clks.
   // TODO: we should probably have access to the host_clk_rst_if!
   task wait_clks(int unsigned n);
@@ -244,7 +254,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       drive_bit_interval(EOP[j], EOP[j]);
     end
     `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
-    drive_bit_interval(1'b1, 1'b0);
+    idle_bit_interval();
   endtask
 
   // Bit Stuffing/Unstuffing Task
@@ -332,8 +342,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     // Bus is unpowered and inactive.
     cfg.bif.drive_vbus = 1'b0;
     cfg.bif.usb_rx_d_i = 1'b0;
-    cfg.bif.drive_p  = 1'bZ;
-    cfg.bif.drive_n = 1'bZ;
+    cfg.bif.drive_p    = 1'bZ;
+    cfg.bif.drive_n    = 1'bZ;
     @(posedge cfg.bif.rst_ni);
   endtask
 
@@ -352,7 +362,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, $sformatf("Reset for %d bits completed", duration_bits), UVM_MEDIUM)
     // After reset change state to IDLE
     repeat(usb_idle_clk_cycles) begin
-      drive_bit_interval(1'b1, 1'b0);
+      idle_bit_interval();
     end
   endtask
 
@@ -364,9 +374,9 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   task suspend_signaling(int unsigned duration_usecs = 0);
     int unsigned duration_bits = usb_suspend_time;
     if (duration_usecs != 0) duration_bits = duration_usecs * 12;
-    // K state signaling required for the specified number of bit intervals.
+    // Idle signaling required for the specified number of bit intervals.
     repeat (duration_bits) begin
-      drive_bit_interval(1'b1, 1'b0);
+      idle_bit_interval();
     end
     `uvm_info(`gfn, $sformatf("Suspend Signaling for %d bits completed", duration_bits), UVM_MEDIUM)
   endtask
@@ -386,8 +396,11 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, $sformatf("Resume Signaling for %d bits completed", duration_bits), UVM_MEDIUM)
     // _Low_ Speed EOP (SE0 for two bit intervals, J for one); LS is 1.5Mbps,
     // so 8x longer than FS signaling.
-    for (int unsigned i = 0; i < 24; i++) begin
-      drive_bit_interval((i >= 16), 1'b0);
+    for (int unsigned i = 0; i < 16; i++) begin
+      drive_bit_interval(1'b0, 1'b0);
+    end
+    for (int unsigned i = 0; i < 8; i++) begin
+      idle_bit_interval();
     end
   endtask
 

@@ -35,6 +35,7 @@
 `include "usbdev_pkt_received_vseq.sv"
 `include "usbdev_pkt_sent_vseq.sv"
 `include "usbdev_random_length_out_transaction_vseq.sv"
+`include "usbdev_resume_link_active_vseq.sv"
 `include "usbdev_stall_trans_vseq.sv"
 `include "usbdev_rx_crc_err_vseq.sv"
 `include "usbdev_setup_trans_ignored_vseq.sv"
