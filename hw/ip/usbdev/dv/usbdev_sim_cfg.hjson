@@ -246,6 +246,11 @@
       uvm_test_seq: usbdev_in_rand_trans_vseq
       run_opts: ["+num_of_bytes=64"]
     }
+
+    {
+      name: usbdev_stress_all_with_rand_reset
+      reseed: 10
+    }
   ]
 
   // List of regressions.
