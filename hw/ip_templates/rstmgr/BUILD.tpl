@@ -11,16 +11,16 @@ load(
 )
 
 autogen_hjson_c_header(
-    name = "pwrmgr_c_regs",
+    name = "rstmgr_c_regs",
     srcs = [
-        "pwrmgr.hjson",
+        "data/rstmgr.hjson",
     ],
 )
 
 autogen_hjson_rust_header(
-    name = "pwrmgr_rust_regs",
+    name = "rstmgr_rust_regs",
     srcs = [
-        "pwrmgr.hjson",
+        "data/rstmgr.hjson",
     ],
 )
 

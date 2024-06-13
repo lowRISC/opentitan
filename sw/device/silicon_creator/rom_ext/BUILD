@@ -33,7 +33,7 @@ cc_library(
     srcs = ["rescue.c"],
     hdrs = ["rescue.h"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
@@ -115,7 +115,7 @@ cc_test(
     srcs = ["bootstrap_unittest.cc"],
     deps = [
         ":bootstrap",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",

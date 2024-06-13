@@ -1686,7 +1686,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1712,7 +1712,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -2801,7 +2801,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -2833,7 +2833,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -2873,7 +2873,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pwrmgr",
@@ -2919,7 +2919,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pwrmgr",
@@ -2941,7 +2941,7 @@ opentitan_test(
     srcs = ["pwrmgr_sensor_ctrl_deep_sleep_wake_up.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -4773,7 +4773,7 @@ test_suite(
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
             "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
-            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:adc_ctrl",
@@ -5672,7 +5672,7 @@ opentitan_test(
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
-        "//hw/top_earlgrey/ip_autogen/clkmgr/data:clkmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -5963,7 +5963,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",

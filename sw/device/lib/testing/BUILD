@@ -152,7 +152,7 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -169,7 +169,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",

@@ -171,7 +171,7 @@ cc_library(
     hdrs = ["dif_clkmgr.h"],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip_autogen/clkmgr/data:clkmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -329,7 +329,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -737,7 +737,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -808,7 +808,7 @@ cc_library(
     deps = [
         ":base",
         ":rstmgr_intf",
-        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
