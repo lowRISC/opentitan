@@ -33,8 +33,10 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
   // PageAddrMask would be 0xF_FFFF_0000
   // BankAddrMask would be 0xF_0000_0000
   //
-  localparam logic[BusAddrW-1:0] PageAddrMask = ~(('h1 << WordsBitWidth) - 1'b1);
-  localparam logic[BusAddrW-1:0] BankAddrMask = ~(('h1 << (PagesBitWidth + WordsBitWidth)) - 1'b1);
+  localparam int unsigned PageAddrMaskInt = ~(('h1 << WordsBitWidth) - 1'b1);
+  localparam int unsigned BankAddrMaskInt = ~(('h1 << (PagesBitWidth + WordsBitWidth)) - 1'b1);
+  localparam logic [BusAddrW-1:0] PageAddrMask = PageAddrMaskInt[BusAddrW-1:0];
+  localparam logic [BusAddrW-1:0] BankAddrMask = BankAddrMaskInt[BusAddrW-1:0];
 
   // out of bounds condition, the initial starting address is beyond the flash
   logic oob_err;

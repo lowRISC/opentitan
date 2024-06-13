@@ -748,7 +748,8 @@ module flash_phy_rd
 
   logic [BusWidth-1:0] data_out_xor;
   logic [BusWidth-1:0] data_out_xor_buf;
-  assign data_out_xor = data_out_pre_xor[BusWidth-1:0] ^ addr_xor_muxed;
+  assign data_out_xor =
+      data_out_pre_xor[BusWidth-1:0] ^ {{(BusWidth-BusBankAddrW){1'b0}}, addr_xor_muxed};
 
   // Buffer to ensure that synthesis tool does not optimize the XOR.
   prim_buf #(
