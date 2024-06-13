@@ -10,7 +10,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   bit             sha_en, fifo_empty, hmac_idle;
   bit [7:0]       msg_q[$];
-  bit [7:0]       msg_part[$];  // Queue containing partial piece of the message if HASH interrupted
+  bit [7:0]       msg_part_q[$];  // Queue containing piece of the message if HASH is interrupted
   bit             hmac_start, hmac_process, hmac_stopped, hmac_continue;
   int             hmac_wr_cnt, hmac_rd_cnt;
   int             fifo_rd_depth;
@@ -173,11 +173,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
               // Push partial message into a new queue to be processed by the digest predictor
               for (int i=0; i<msg_slice_length; i++) begin
-                msg_part.push_back(msg_q[i]);
+                msg_part_q.push_back(msg_q[i]);
               end
               // Process digest only when configuration is valid, otherwise retain the previous
               if (!invalid_cfg) begin
-                predict_digest(msg_part);
+                predict_digest(msg_part_q);
               end
             end
             if (item.a_data[HashContinue]) begin
@@ -461,7 +461,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     key_length   = ral.cfg.key_length.get_reset();
     hmac_stopped = 0;
     msg_q.delete();
-    msg_part.delete();
+    msg_part_q.delete();
     cfg.wipe_secret_triggered = 0;
   endfunction
 
@@ -498,7 +498,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (hmac_process) begin
                 if (msg_q.size() <= hmac_wr_cnt * 4) has_unprocessed_msg = 0;
                 msg_q.delete();
-                msg_part.delete();
+                msg_part_q.delete();
               end
               if (sha_en && has_unprocessed_msg) begin
                 // if fifo full, tlul will not write next data until fifo has space again
