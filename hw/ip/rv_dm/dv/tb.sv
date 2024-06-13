@@ -36,6 +36,10 @@ module tb;
     .clk_lc_i                  (clk_lc  ),
     .rst_lc_ni                 (rst_lc_n),
 
+    // We don't currently model systems with multiple debug modules. Tie this port off with the same
+    // value as given as a default for next_dm_addr in rv_dm.hjson.
+    .next_dm_addr_i            ('0),
+
     .lc_hw_debug_en_i          (rv_dm_if.lc_hw_debug_en           ),
     .pinmux_hw_debug_en_i      (rv_dm_if.pinmux_hw_debug_en       ),
     .lc_dft_en_i               (rv_dm_if.lc_dft_en                ),
