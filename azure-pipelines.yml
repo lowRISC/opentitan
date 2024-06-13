@@ -225,6 +225,22 @@ jobs:
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
       echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/clkmgr/data:clkmgr_c_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/clkmgr/data:clkmgr_rust_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/flash_ctrl/data:flash_ctrl_c_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/flash_ctrl/data:flash_ctrl_rust_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/pwrmgr/data:pwrmgr_c_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/pwrmgr/data:pwrmgr_rust_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/rstmgr/data:rstmgr_c_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/rstmgr/data:rstmgr_rust_regs \
+        >> "${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh cquery \
         --noinclude_aspects \
         --output=starlark \
