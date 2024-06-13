@@ -249,8 +249,6 @@ module tlul_adapter_sram
   localparam int ReqFifoWidth = $bits(req_t) ;
   localparam int RspFifoWidth = $bits(rsp_t) ;
 
-  localparam int SramReqAddrFifoWidth = $bits(sram_req_addr_t) ;
-
   // FIFO signal in case OutStand is greater than 1
   // If request is latched, {write, source} is pushed to req fifo.
   // Req fifo is popped when D channel is acknowledged (v & r)
@@ -264,7 +262,7 @@ module tlul_adapter_sram
   sram_req_t sramreqfifo_wdata, sramreqfifo_rdata;
 
   logic sramreqaddrfifo_wready;
-  sram_req_addr_t sramreqaddrfifo_wdata, sramreqaddrfifo_rdata;
+  logic [SramBusBankAW-1:0] sramreqaddrfifo_wdata, sramreqaddrfifo_rdata;
 
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
@@ -478,9 +476,7 @@ module tlul_adapter_sram
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
 
-  assign sramreqaddrfifo_wdata = '{
-    addr    : tl_i_int.a_address[DataBitWidth+:SramBusBankAW]
-  };
+  assign sramreqaddrfifo_wdata = tl_i_int.a_address[DataBitWidth+:SramBusBankAW];
 
   // Make sure only requested bytes are forwarded
   logic [WidthMult-1:0][DataWidth-1:0] rdata_reshaped;
@@ -505,11 +501,10 @@ module tlul_adapter_sram
           // the address is again removed. If the address in the read transaction has been modified,
           // e.g., due to a fault, rdata now contains faulty data, which is detected by the
           // integrity mechanism.
-          logic [SramBusBankAW-1:0] addr_xor;
-          addr_xor = sramreqaddrfifo_rdata.addr[SramBusBankAW-1:0];
-          // data XOR address.
-          rdata_tlword = {rdata_reshaped[sramreqfifo_rdata.woffset][DataWidth-1:top_pkg::TL_DW],
-              rdata_reshaped[sramreqfifo_rdata.woffset][top_pkg::TL_DW-1:0] ^ addr_xor};
+          rdata_tlword = {
+              rdata_reshaped[sramreqfifo_rdata.woffset][DataWidth-1:top_pkg::TL_DW],
+              rdata_reshaped[sramreqfifo_rdata.woffset][top_pkg::TL_DW-1:0] ^ sramreqaddrfifo_rdata
+          };
         end else begin: gen_no_data_xor_addr
           rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset];
         end
@@ -597,7 +592,7 @@ module tlul_adapter_sram
   //    This fifo holds the address used for undoing the address XOR data infection.
   if (DataXorAddr) begin : gen_data_xor_addr_fifo
     prim_fifo_sync #(
-      .Width              (SramReqAddrFifoWidth),
+      .Width              (SramBusBankAW),
       .Pass               (1'b0),
       .Depth              (Outstanding),
       .OutputZeroIfEmpty  (1)
