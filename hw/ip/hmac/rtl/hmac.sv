@@ -535,6 +535,7 @@ module hmac
   logic index;
   always_comb begin : select_fifo_wdata
     // default when !hmac_fifo_wsel
+    index      = 1'b0;
     fifo_wdata = reg_fifo_wentry;
 
     if (hmac_fifo_wsel) begin
