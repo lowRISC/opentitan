@@ -231,7 +231,7 @@ typedef struct manifest {
      * immediately after the end of the union encapsulating this field and ends
      * at the end of the image.
      */
-    sigverify_ecdsa_p256_buffer_t ecdsa_signature;
+    ecdsa_p256_signature_t ecdsa_signature;
   };
   /**
    * Usage constraints.
@@ -251,7 +251,7 @@ typedef struct manifest {
     /**
      * Signer's ECDSA NIST P256 ECC public key.
      */
-    sigverify_ecdsa_p256_buffer_t ecdsa_public_key;
+    ecdsa_p256_public_key_t ecdsa_public_key;
   };
   /**
    * Address translation (hardened boolean).

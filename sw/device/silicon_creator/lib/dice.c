@@ -37,7 +37,7 @@ enum {
 };
 
 static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
-static attestation_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
+static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
@@ -91,14 +91,14 @@ static void le_be_buf_format(unsigned char *buf, size_t num_bytes) {
  * Helper function to convert an attestation public key from little to big
  * endian in place.
  */
-static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey) {
-  le_be_buf_format((unsigned char *)pubkey->x, kAttestationPublicKeyCoordBytes);
-  le_be_buf_format((unsigned char *)pubkey->y, kAttestationPublicKeyCoordBytes);
+static void curr_pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
+  le_be_buf_format((unsigned char *)pubkey->x, kEcdsaP256PublicKeyCoordBytes);
+  le_be_buf_format((unsigned char *)pubkey->y, kEcdsaP256PublicKeyCoordBytes);
 }
 
 rom_error_t dice_attestation_keygen(dice_key_t desired_key,
                                     hmac_digest_t *pubkey_id,
-                                    attestation_public_key_t *pubkey) {
+                                    ecdsa_p256_public_key_t *pubkey) {
   otbn_boot_attestation_key_type_t key_type;
   attestation_key_seed_t otbn_ecc_keygen_seed;
   const sc_keymgr_diversification_t *keymgr_diversifier;
@@ -161,7 +161,7 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
   // Note: the certificate generation functions expect the digest to be in big
   // endian form, but the HMAC driver returns the digest in little endian, so we
   // re-format it.
-  hmac_sha256(pubkey, kAttestationPublicKeyCoordBytes * 2, pubkey_id);
+  hmac_sha256(pubkey, kEcdsaP256PublicKeyCoordBytes * 2, pubkey_id);
   le_be_buf_format((unsigned char *)pubkey_id, kHmacDigestNumBytes);
 
   return kErrorOk;
@@ -171,11 +171,9 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
  * Helper function to convert an attestation certificate signature from little
  * to big endian.
  */
-static void curr_tbs_signature_le_to_be_convert(attestation_signature_t *sig) {
-  le_be_buf_format((unsigned char *)sig->r,
-                   kAttestationSignatureComponentBytes);
-  le_be_buf_format((unsigned char *)sig->s,
-                   kAttestationSignatureComponentBytes);
+static void curr_tbs_signature_le_to_be_convert(ecdsa_p256_signature_t *sig) {
+  le_be_buf_format((unsigned char *)sig->r, kEcdsaP256SignatureComponentBytes);
+  le_be_buf_format((unsigned char *)sig->s, kEcdsaP256SignatureComponentBytes);
 }
 
 /**
@@ -203,7 +201,7 @@ static void measure_otp_partition(otp_partition_t partition,
 }
 
 rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
-                                    attestation_public_key_t *uds_pubkey,
+                                    ecdsa_p256_public_key_t *uds_pubkey,
                                     uint8_t *tbs_cert, size_t *tbs_cert_size) {
   // Measure OTP partitions.
   //
@@ -241,9 +239,9 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
       .auth_key_key_id = (unsigned char *)key_ids->endorsement->digest,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .creator_pub_key_ec_x = (unsigned char *)uds_pubkey->x,
-      .creator_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .creator_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .creator_pub_key_ec_y = (unsigned char *)uds_pubkey->y,
-      .creator_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+      .creator_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
   };
   HARDENED_RETURN_IF_ERROR(
       uds_build_tbs(&uds_cert_tbs_params, tbs_cert, tbs_cert_size));
@@ -254,7 +252,7 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
 rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   uint32_t rom_ext_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
-                                  attestation_public_key_t *cdi_0_pubkey,
+                                  ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
@@ -266,9 +264,9 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
       .creator_pub_key_id = (unsigned char *)key_ids->endorsement->digest,
       .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_ec_x = (unsigned char *)cdi_0_pubkey->x,
-      .owner_intermediate_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .owner_intermediate_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .owner_intermediate_pub_key_ec_y = (unsigned char *)cdi_0_pubkey->y,
-      .owner_intermediate_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+      .owner_intermediate_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
   };
   HARDENED_RETURN_IF_ERROR(cdi_0_build_tbs(&cdi_0_cert_tbs_params,
                                            cdi_0_cert_params.tbs,
@@ -299,7 +297,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   hmac_digest_t *owner_manifest_measurement,
                                   uint32_t owner_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
-                                  attestation_public_key_t *cdi_1_pubkey,
+                                  ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
@@ -315,9 +313,9 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
           (unsigned char *)key_ids->endorsement->digest,
       .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .owner_pub_key_ec_x = (unsigned char *)cdi_1_pubkey->x,
-      .owner_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .owner_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .owner_pub_key_ec_y = (unsigned char *)cdi_1_pubkey->y,
-      .owner_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+      .owner_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
   };
   HARDENED_RETURN_IF_ERROR(cdi_1_build_tbs(&cdi_1_cert_tbs_params,
                                            cdi_1_cert_params.tbs,
@@ -345,16 +343,16 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 }
 
 rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
-                                       attestation_public_key_t *tpm_ek_pubkey,
+                                       ecdsa_p256_public_key_t *tpm_ek_pubkey,
                                        uint8_t *tpm_ek_tbs,
                                        size_t *tpm_ek_tbs_size) {
   tpm_ek_tbs_values_t tpm_ek_tbs_params = {
       .auth_key_key_id = (unsigned char *)key_ids->endorsement,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_ek_pub_key_ec_x = (unsigned char *)tpm_ek_pubkey->x,
-      .tpm_ek_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .tpm_ek_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_ek_pub_key_ec_y = (unsigned char *)tpm_ek_pubkey->y,
-      .tpm_ek_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+      .tpm_ek_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_ek_pub_key_id = (unsigned char *)key_ids->cert,
       .tpm_ek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_version = "0.0.1",
@@ -371,16 +369,17 @@ rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_cek_tbs_cert_build(
-    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cek_pubkey,
-    uint8_t *tpm_cek_tbs, size_t *tpm_cek_tbs_size) {
+rom_error_t dice_tpm_cek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                        ecdsa_p256_public_key_t *tpm_cek_pubkey,
+                                        uint8_t *tpm_cek_tbs,
+                                        size_t *tpm_cek_tbs_size) {
   tpm_cek_tbs_values_t tpm_cek_tbs_params = {
       .auth_key_key_id = (unsigned char *)key_ids->endorsement,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_cek_pub_key_ec_x = (unsigned char *)tpm_cek_pubkey->x,
-      .tpm_cek_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .tpm_cek_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_cek_pub_key_ec_y = (unsigned char *)tpm_cek_pubkey->y,
-      .tpm_cek_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+      .tpm_cek_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_cek_pub_key_id = (unsigned char *)key_ids->cert,
       .tpm_cek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
   };
@@ -391,16 +390,17 @@ rom_error_t dice_tpm_cek_tbs_cert_build(
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_cik_tbs_cert_build(
-    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cik_pubkey,
-    uint8_t *tpm_cik_tbs, size_t *tpm_cik_tbs_size) {
+rom_error_t dice_tpm_cik_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                        ecdsa_p256_public_key_t *tpm_cik_pubkey,
+                                        uint8_t *tpm_cik_tbs,
+                                        size_t *tpm_cik_tbs_size) {
   tpm_cik_tbs_values_t tpm_cik_tbs_params = {
       .auth_key_key_id = (unsigned char *)key_ids->endorsement,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_cik_pub_key_ec_x = (unsigned char *)tpm_cik_pubkey->x,
-      .tpm_cik_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .tpm_cik_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_cik_pub_key_ec_y = (unsigned char *)tpm_cik_pubkey->y,
-      .tpm_cik_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+      .tpm_cik_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_cik_pub_key_id = (unsigned char *)key_ids->cert,
       .tpm_cik_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
   };

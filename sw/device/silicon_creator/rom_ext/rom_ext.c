@@ -44,6 +44,7 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_unlock.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
@@ -100,7 +101,7 @@ static dice_cert_key_id_pair_t cdi_1_key_ids = {
     .endorsement = &cdi_0_pubkey_id,
     .cert = &cdi_1_pubkey_id,
 };
-static attestation_public_key_t curr_attestation_pubkey = {.x = {0}, .y = {0}};
+static ecdsa_p256_public_key_t curr_attestation_pubkey = {.x = {0}, .y = {0}};
 static uint8_t cdi_0_cert[kCdi0MaxCertSizeBytes] = {0};
 static uint8_t cdi_1_cert[kCdi1MaxCertSizeBytes] = {0};
 

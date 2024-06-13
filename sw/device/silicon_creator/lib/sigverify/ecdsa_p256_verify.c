@@ -4,16 +4,11 @@
 
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_verify.h"
 
-#include "sw/device/silicon_creator/lib/attestation.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 #include "otp_ctrl_regs.h"
-
-enum {
-  kP256SignatureWords = kP256PublicKeyWords,
-  kP256SignatureCordWords = kP256SignatureWords / 2,
-};
 
 /*
  * Shares for producing the `kSigverifyEcdsaSuccess` value in
@@ -38,7 +33,7 @@ enum {
  * Minimum Hamming weight: 14
  * Maximum Hamming weight: 23
  */
-static const uint32_t kSigverifyShares[kP256SignatureCordWords] = {
+static const uint32_t kSigverifyShares[kEcdsaP256SignatureComponentWords] = {
     0xaf28073b, 0x5eb7dcfb, 0x177240b5, 0xa8469df3,
     0x2e92e9c0, 0x83ed133b, 0x0c9e99f0, 0xc04cd16d,
 };
@@ -53,8 +48,8 @@ static const uint32_t kSigverifyShares[kP256SignatureCordWords] = {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t sigverify_encoded_message_check(
-    sigverify_ecdsa_p256_buffer_t *recovered_r,
-    const sigverify_ecdsa_p256_buffer_t *signature, uint32_t *flash_exec) {
+    ecdsa_p256_signature_t *recovered_r,
+    const ecdsa_p256_signature_t *signature, uint32_t *flash_exec) {
   // The algorithm below uses shares, i.e. trivial secret sharing, to check an
   // encoded message and produce two values: `flash_exec` and `result`.
   // `flash_exec` is the value to write to the flash_ctrl EXEC register to
@@ -81,18 +76,24 @@ static rom_error_t sigverify_encoded_message_check(
 
   // Step 1: Process `recovered_r` so that it becomes `kSigverifyShares` if it's
   // correct, garbage otherwise.
-  uint32_t *recovered_r_ptr = recovered_r->data;
+  static_assert(sizeof(recovered_r->r) == sizeof(signature->r),
+                "Signature sizes must match");
+  static_assert(ARRAYSIZE(signature->r) == kEcdsaP256SignatureComponentWords,
+                "Signature sizes must match");
+
+  uint32_t *recovered_r_ptr = recovered_r->r;
   size_t i = 0;
-  for (size_t j = 0; launder32(j) < kP256SignatureCordWords; ++j, ++i) {
-    recovered_r_ptr[i] ^= signature->data[j] ^ kSigverifyShares[i];
+  for (size_t j = 0; launder32(j) < kEcdsaP256SignatureComponentWords;
+       ++j, ++i) {
+    recovered_r_ptr[i] ^= signature->r[j] ^ kSigverifyShares[i];
   }
-  HARDENED_CHECK_EQ(i, kP256SignatureCordWords);
+  HARDENED_CHECK_EQ(i, kEcdsaP256SignatureComponentWords);
 
   // Step 2: Reduce `recovered_r` to produce the value to write to flash_ctrl
   // EXEC register (`flash_exec`) and the return value (`result`).
   uint32_t flash_exec_ecdsa = 0;
   uint32_t diff = 0;
-  for (i = 0; launder32(i) < kP256SignatureCordWords; ++i) {
+  for (i = 0; launder32(i) < kEcdsaP256SignatureComponentWords; ++i) {
     // Following three statements set `diff` to `UINT32_MAX` if `recovered_r[i]`
     // is incorrect, no change otherwise.
     diff |= recovered_r_ptr[i] ^ kSigverifyShares[i];
@@ -103,7 +104,7 @@ static rom_error_t sigverify_encoded_message_check(
     // Set `flash_exec_ecdsa` to `UINT32_MAX` if `recovered_r` is incorrect.
     flash_exec_ecdsa |= diff;
   }
-  HARDENED_CHECK_EQ(i, kP256SignatureCordWords);
+  HARDENED_CHECK_EQ(i, kEcdsaP256SignatureComponentWords);
 
   // Note: `kSigverifyEcdsaSuccess` is defined such that the following operation
   // produces `kErrorOk`.
@@ -117,25 +118,13 @@ static rom_error_t sigverify_encoded_message_check(
   return kErrorSigverifyBadEcdsaSignature;
 }
 
-rom_error_t sigverify_ecdsa_p256_verify(
-    const sigverify_ecdsa_p256_buffer_t *signature,
-    const sigverify_ecdsa_p256_buffer_t *key, const hmac_digest_t *act_digest,
-    uint32_t *flash_exec) {
-  // TODO(#22134): Unify key and signature structures.
-  static_assert(
-      sizeof(sigverify_ecdsa_p256_buffer_t) == sizeof(attestation_public_key_t),
-      "Size of sigverify_ecdsa_p256_buffer_t and attestation_public_key_t must "
-      "match");
-  static_assert(
-      sizeof(sigverify_ecdsa_p256_buffer_t) == sizeof(attestation_signature_t),
-      "Size of sigverify_ecdsa_p256_buffer_t and attestation_signature_t must "
-      "match");
-
-  sigverify_ecdsa_p256_buffer_t recovered_r;
+rom_error_t sigverify_ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
+                                        const ecdsa_p256_public_key_t *key,
+                                        const hmac_digest_t *act_digest,
+                                        uint32_t *flash_exec) {
+  ecdsa_p256_signature_t recovered_r;
   rom_error_t error =
-      otbn_boot_sigverify((const attestation_public_key_t *)key,
-                          (const attestation_signature_t *)signature,
-                          act_digest, (uint32_t *)&recovered_r);
+      otbn_boot_sigverify(key, signature, act_digest, (uint32_t *)&recovered_r);
   if (launder32(error) != kErrorOk) {
     *flash_exec ^= UINT32_MAX;
     return error;

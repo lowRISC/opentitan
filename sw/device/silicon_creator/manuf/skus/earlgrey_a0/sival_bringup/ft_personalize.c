@@ -109,7 +109,7 @@ static hmac_digest_t tpm_endorsement_key_id;
 static hmac_digest_t tpm_pubkey_id;
 static dice_cert_key_id_pair_t tpm_key_ids = {
     .endorsement = &tpm_endorsement_key_id, .cert = &tpm_pubkey_id};
-static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
+static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static manuf_certs_t tbs_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,

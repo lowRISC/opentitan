@@ -12,7 +12,6 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
@@ -487,6 +486,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:otbn",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/otbn/crypto:boot",
     ],
@@ -564,5 +564,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
     ],
 )

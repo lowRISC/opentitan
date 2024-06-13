@@ -4,13 +4,10 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "EARLGREY_TEST_ENVS",
     "opentitan_test",
-    "verilator_params",
 )
 load(
     "//rules:cross_platform.bzl",
-    "dual_cc_device_library_of",
     "dual_cc_library",
     "dual_inputs",
 )
