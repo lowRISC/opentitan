@@ -1,0 +1,17 @@
+[spdx] Fix SPDX headers spacing
+
+This comment was incorrectly spaced and therefore cannot be parsed
+by automated tools.
+
+--- a/uvm/core_ibex/directed_tests/custom_macros.h
++++ b/uvm/core_ibex/directed_tests/custom_macros.h
+@@ -1,6 +1,6 @@
+-#Copyright lowRISC contributors.
+-#Licensed under the Apache License, Version 2.0, see LICENSE for details.
+-#SPDX - License - Identifier : Apache - 2.0
++# Copyright lowRISC contributors.
++# Licensed under the Apache License, Version 2.0, see LICENSE for details.
++# SPDX-License-Identifier: Apache-2.0
+ 
+ ############################################################################## #
+ 

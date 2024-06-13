@@ -5,9 +5,11 @@
 
 add_license_banner() {
   local outfile="$1"
+# REUSE-IgnoreStart
   local license_banner="# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0"
+# REUSE-IgnoreEnd
   TMP=$(mktemp)
   echo -e "$license_banner" > "$TMP"
   cat "$outfile" >> "$TMP"

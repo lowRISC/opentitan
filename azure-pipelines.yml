@@ -70,7 +70,7 @@ jobs:
   - bash: ci/scripts/lint-commits.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Commit metadata
-  - bash: ci/scripts/check-licence-headers.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+  - bash: reuse --suppress-deprecation lint
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Licence Headers
   - bash: ci/scripts/exec-check.sh
