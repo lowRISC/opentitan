@@ -495,14 +495,16 @@ module csrng_core import csrng_pkg::*; #(
 
   // Counter and FSM errors are structural errors and are always active regardless of the
   // functional state. main_sm_err_sum is not included here to prevent some tools from
-  // inferring combo loops.
+  // inferring combo loops. However, to include the state machine error for testing,
+  // we use the error code test bit (index 21) directly.
   logic fatal_loc_events;
   assign fatal_loc_events = cmd_gen_cnt_err_sum ||
                             cmd_stage_sm_err_sum ||
                             drbg_gen_sm_err_sum ||
                             drbg_updbe_sm_err_sum ||
                             drbg_updob_sm_err_sum ||
-                            aes_cipher_sm_err_sum;
+                            aes_cipher_sm_err_sum ||
+                            err_code_test_bit[21];
 
   // set the interrupt sources
   assign event_cs_fatal_err = (cs_enable_fo[1]  && (
