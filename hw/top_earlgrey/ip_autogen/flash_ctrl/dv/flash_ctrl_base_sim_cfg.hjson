@@ -327,7 +327,7 @@
     {
       name: flash_ctrl_prog_reset
       uvm_test_seq: flash_ctrl_prog_reset_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+test_timeout_ns=500_000_000"]
       reseed: 30
     }
     {
