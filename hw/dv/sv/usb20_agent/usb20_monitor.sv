@@ -95,13 +95,18 @@ class usb20_monitor extends dv_base_monitor #(
       if (!got_sym) collect_symbol(sym);
       case (sym)
         // K state indicate SOP, or beginning of Resume Signaling.
-        USB20Sym_K:
-          if (suspended) begin
+        USB20Sym_K: begin
+          // Packet collection may bail and fall back to interpreting a sustained K state as
+          // Resume Signaling.
+          bit resuming = 0;
+          if (!suspended) begin
+            collect_packet(resuming);
+          end
+          if (suspended || resuming) begin
             collect_resume_signaling();
             suspended = 0;
-          end else begin
-            collect_packet();
           end
+        end
         // Detection of Bus Resets.
         USB20Sym_SE0: collect_bus_reset();
         USB20Sym_J: `uvm_fatal(`gfn, "J state should be impossible here")
@@ -196,22 +201,35 @@ class usb20_monitor extends dv_base_monitor #(
   endtask
 
 //----------------------------------------Collect Packet------------------------------------------//
-  virtual task collect_packet();
+  virtual task collect_packet(output bit resuming);
     // The first byte of every packet is the SYNC signal to permit DPLLs to lock.
     byte unsigned sync = 8'h2a;
     int unsigned eop_bits = 0;
     bit monitored_decoded_packet[];
     bit destuffed_packet[$];
+    int bit_intervals = 0;
     bit valid_stuffing;
     usb_symbol_e sym;
     bit valid_eop;
     bit packet[$];
 
+    // Assume Resume Signaling until we see a further state change.
+    resuming = 1'b1;
+
     // We have already detected the first K state of the SYNC signaling.
     packet.push_back(1'b0);
-    // Keep collecting symbols until we detect something that is neither J nor K.
+    // Keep collecting symbols until we detect something that is neither J nor K,
+    // or K state is sufficiently prolonged that we're seeing Resume Signaling.
     collect_symbol(sym);
     while (sym == USB20Sym_J || sym == USB20Sym_K) begin
+      // Check whether we have seen only K state for a number of bit intervals.
+      if (resuming && sym == USB20Sym_K) begin
+        if (++bit_intervals >= 8) begin
+          resuming = 1'b1;
+          return;
+        end
+      end else resuming = 1'b0;
+      // Collect symbol for packet.
       packet.push_back(sym == USB20Sym_J);
       collect_symbol(sym);
     end
