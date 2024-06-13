@@ -276,8 +276,8 @@ class usb20_monitor extends dv_base_monitor #(
     m_sof_pkt.valid_eop = valid_eop;
     m_sof_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 32) begin
-      m_sof_pkt.framenum = {<<{destuffed_packet[18:8]}};
-      m_sof_pkt.crc5 = {<<{destuffed_packet[7:3]}};
+      m_sof_pkt.framenum = {<<{destuffed_packet[8:18]}};
+      m_sof_pkt.crc5 = {<<{destuffed_packet[3:7]}};
       m_sof_pkt.valid_length = 1;
     end else m_sof_pkt.valid_length = 0;
 
@@ -292,9 +292,9 @@ class usb20_monitor extends dv_base_monitor #(
     m_token_pkt.valid_eop = valid_eop;
     m_token_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 32) begin
-      m_token_pkt.address = {<<{destuffed_packet[18:12]}};
-      m_token_pkt.endpoint = {<<{destuffed_packet[11:8]}};
-      m_token_pkt.crc5 = {<<{destuffed_packet[7:3]}};
+      m_token_pkt.address = {<<{destuffed_packet[12:18]}};
+      m_token_pkt.endpoint = {<<{destuffed_packet[8:11]}};
+      m_token_pkt.crc5 = {<<{destuffed_packet[3:7]}};
       m_token_pkt.valid_length = 1;
     end else m_token_pkt.valid_length = 0;
 
