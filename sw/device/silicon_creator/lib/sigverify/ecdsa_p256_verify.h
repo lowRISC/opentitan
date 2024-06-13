@@ -34,10 +34,10 @@ enum {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sigverify_ecdsa_p256_verify(
-    const sigverify_ecdsa_p256_buffer_t *signature,
-    const sigverify_ecdsa_p256_buffer_t *key, const hmac_digest_t *act_digest,
-    uint32_t *flash_exec);
+rom_error_t sigverify_ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
+                                        const ecdsa_p256_public_key_t *key,
+                                        const hmac_digest_t *act_digest,
+                                        uint32_t *flash_exec);
 
 /**
  * Transforms `kSigverifyEcdsaSuccess` into `kErrorOk`.

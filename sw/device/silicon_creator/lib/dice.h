@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 enum {
   /**
@@ -83,7 +84,7 @@ typedef struct dice_cert_key_id_pair {
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_attestation_keygen(dice_key_t desired_key,
                                     hmac_digest_t *pubkey_id,
-                                    attestation_public_key_t *pubkey);
+                                    ecdsa_p256_public_key_t *pubkey);
 
 /**
  * Generates the UDS attestation keypair and (unendorsed) X.509 TBS certificate.
@@ -98,7 +99,7 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
-                                    attestation_public_key_t *uds_pubkey,
+                                    ecdsa_p256_public_key_t *uds_pubkey,
                                     uint8_t *tbs_cert, size_t *tbs_cert_size);
 
 /**
@@ -118,7 +119,7 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   uint32_t rom_ext_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
-                                  attestation_public_key_t *cdi_0_pubkey,
+                                  ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size);
 
 /**
@@ -140,7 +141,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   hmac_digest_t *owner_manifest_measurement,
                                   uint32_t owner_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
-                                  attestation_public_key_t *cdi_1_pubkey,
+                                  ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size);
 
 /**
@@ -156,7 +157,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
-                                       attestation_public_key_t *tpm_ek_pubkey,
+                                       ecdsa_p256_public_key_t *tpm_ek_pubkey,
                                        uint8_t *tbs_cert,
                                        size_t *tbs_cert_size);
 
@@ -172,9 +173,10 @@ rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_tpm_cek_tbs_cert_build(
-    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cek_pubkey,
-    uint8_t *tbs_cert, size_t *tbs_cert_size);
+rom_error_t dice_tpm_cek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                        ecdsa_p256_public_key_t *tpm_cek_pubkey,
+                                        uint8_t *tbs_cert,
+                                        size_t *tbs_cert_size);
 
 /**
  * Generates an X.509 TBS section of a TPM CIK certificate.
@@ -188,7 +190,8 @@ rom_error_t dice_tpm_cek_tbs_cert_build(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_tpm_cik_tbs_cert_build(
-    dice_cert_key_id_pair_t *key_ids, attestation_public_key_t *tpm_cik_pubkey,
-    uint8_t *tbs_cert, size_t *tbs_cert_size);
+rom_error_t dice_tpm_cik_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                        ecdsa_p256_public_key_t *tpm_cik_pubkey,
+                                        uint8_t *tbs_cert,
+                                        size_t *tbs_cert_size);
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DICE_H_

@@ -170,7 +170,7 @@ typedef struct owner_application_key {
     uint32_t id;
     sigverify_rsa_key_t rsa;
     sigverify_spx_key_t spx;
-    sigverify_ecdsa_p256_buffer_t ecdsa;
+    ecdsa_p256_public_key_t ecdsa;
   } data;
 } owner_application_key_t;
 

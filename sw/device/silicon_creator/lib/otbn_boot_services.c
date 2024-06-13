@@ -113,7 +113,7 @@ rom_error_t otbn_boot_attestation_keygen(
     attestation_key_seed_t additional_seed,
     otbn_boot_attestation_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
-    attestation_public_key_t *public_key) {
+    ecdsa_p256_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(sc_keymgr_generate_key_otbn(
       (sc_keymgr_key_type_t)key_type, diversification));
@@ -145,9 +145,9 @@ rom_error_t otbn_boot_attestation_keygen(
   // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
 
   // Retrieve the public key.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kAttestationPublicKeyCoordWords,
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256PublicKeyCoordWords,
                                              kOtbnVarBootX, public_key->x));
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kAttestationPublicKeyCoordWords,
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256PublicKeyCoordWords,
                                              kOtbnVarBootY, public_key->y));
 
   return kErrorOk;
@@ -212,7 +212,7 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
 }
 
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          attestation_signature_t *sig) {
+                                          ecdsa_p256_signature_t *sig) {
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationEndorse;
   HARDENED_RETURN_IF_ERROR(
@@ -229,16 +229,16 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
   // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
 
   // Retrieve the signature (in two parts, r and s).
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(
-      kAttestationSignatureComponentWords, kOtbnVarBootR, sig->r));
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(
-      kAttestationSignatureComponentWords, kOtbnVarBootS, sig->s));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords,
+                                             kOtbnVarBootR, sig->r));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords,
+                                             kOtbnVarBootS, sig->s));
 
   return kErrorOk;
 }
 
-rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
-                                const attestation_signature_t *sig,
+rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
+                                const ecdsa_p256_signature_t *sig,
                                 const hmac_digest_t *digest,
                                 uint32_t *recovered_r) {
   // Write the mode.
@@ -247,20 +247,20 @@ rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
       sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Write the public key.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(kAttestationPublicKeyCoordWords,
-                                              key->x, kOtbnVarBootX));
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(kAttestationPublicKeyCoordWords,
-                                              key->y, kOtbnVarBootY));
+  HARDENED_RETURN_IF_ERROR(
+      sc_otbn_dmem_write(kEcdsaP256PublicKeyCoordWords, key->x, kOtbnVarBootX));
+  HARDENED_RETURN_IF_ERROR(
+      sc_otbn_dmem_write(kEcdsaP256PublicKeyCoordWords, key->y, kOtbnVarBootY));
 
   // Write the message digest.
   HARDENED_RETURN_IF_ERROR(
       sc_otbn_dmem_write(kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
 
   // Write the signature.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
-      kAttestationSignatureComponentWords, sig->r, kOtbnVarBootR));
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
-      kAttestationSignatureComponentWords, sig->s, kOtbnVarBootS));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(kEcdsaP256SignatureComponentWords,
+                                              sig->r, kOtbnVarBootR));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(kEcdsaP256SignatureComponentWords,
+                                              sig->s, kOtbnVarBootS));
 
   // Start the OTBN routine.
   HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
@@ -280,6 +280,6 @@ rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
   // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
 
   // Read the recovered `r` value from DMEM.
-  return sc_otbn_dmem_read(kAttestationSignatureComponentWords, kOtbnVarBootXr,
+  return sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords, kOtbnVarBootXr,
                            recovered_r);
 }

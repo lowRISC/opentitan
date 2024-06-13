@@ -14,18 +14,67 @@ extern "C" {
 #endif  // __cplusplus
 
 enum {
-  /** Number of 32-bit words in a P-256 public key. */
-  kP256PublicKeyWords = 512 / 32,
+  /**
+   * Size of a coordinate for an attestation public key in bits.
+   */
+  kEcdsaP256PublicKeyCoordBits = 256,
+  /**
+   * Size of a coordinate for an attestation public key in bytes.
+   */
+  kEcdsaP256PublicKeyCoordBytes = kEcdsaP256PublicKeyCoordBits / 8,
+  /**
+   * Size of a coordinate for an attestation public key in 32b words.
+   */
+  kEcdsaP256PublicKeyCoordWords =
+      kEcdsaP256PublicKeyCoordBytes / sizeof(uint32_t),
+  /**
+   * Size of an attestation signature component in bits.
+   */
+  kEcdsaP256SignatureComponentBits = 256,
+  /**
+   * Size of an attestation signature component in bytes.
+   */
+  kEcdsaP256SignatureComponentBytes = kEcdsaP256SignatureComponentBits / 8,
+  /**
+   * Size of an attestation signature component in 32b words.
+   */
+  kEcdsaP256SignatureComponentWords =
+      kEcdsaP256SignatureComponentBytes / sizeof(uint32_t),
+  /**
+   * Size of an attestation signature in bits.
+   */
+  kAttestationSignatureBits = kEcdsaP256SignatureComponentBits * 2,
+  /**
+   * Size of an attestation signature in bytes.
+   */
+  kAttestationSignatureBytes = kAttestationSignatureBits / 8,
+  /**
+   * Size of an attestation signature in 32b words.
+   */
+  kAttestationSignatureWords = kAttestationSignatureBytes / sizeof(uint32_t),
 };
 
 /**
- * A type that holds `kP256PublicKeyWords` words.
- *
- * This can be used to store ECDSA P256 public keys or signatures.
+ * Holds an attestation public key (ECDSA-P256).
  */
-typedef struct sigverify_ecdsa_p256_buffer {
-  uint32_t data[kP256PublicKeyWords];
-} sigverify_ecdsa_p256_buffer_t;
+typedef struct ecdsa_p256_public_key {
+  /**
+   * Affine x-coordinate of the point.
+   */
+  uint32_t x[kEcdsaP256PublicKeyCoordWords];
+  /**
+   * Affine y-coordinate of the point.
+   */
+  uint32_t y[kEcdsaP256PublicKeyCoordWords];
+} ecdsa_p256_public_key_t;
+
+/**
+ * Holds an attestation signature (ECDSA-P256).
+ */
+typedef struct ecdsa_p256_signature {
+  uint32_t r[kEcdsaP256SignatureComponentWords];
+  uint32_t s[kEcdsaP256SignatureComponentWords];
+} ecdsa_p256_signature_t;
 
 /**
  * Gets the ID of an ECDSA public key.
@@ -38,8 +87,8 @@ typedef struct sigverify_ecdsa_p256_buffer {
  */
 OT_WARN_UNUSED_RESULT
 inline uint32_t sigverify_ecdsa_p256_key_id_get(
-    const sigverify_ecdsa_p256_buffer_t *pub_key) {
-  return pub_key->data[0];
+    const ecdsa_p256_public_key_t *pub_key) {
+  return pub_key->x[0];
 }
 
 #ifdef __cplusplus

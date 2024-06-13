@@ -32,7 +32,7 @@ extern "C" {
 OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_ecdsa_p256_key_get(
     const sigverify_otp_key_ctx_t *sigverify_ctx, uint32_t key_id,
-    lifecycle_state_t lc_state, const sigverify_ecdsa_p256_buffer_t **key);
+    lifecycle_state_t lc_state, const ecdsa_p256_public_key_t **key);
 
 #ifdef __cplusplus
 }  // extern "C"

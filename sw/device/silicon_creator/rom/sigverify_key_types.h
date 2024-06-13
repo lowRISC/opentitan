@@ -139,15 +139,15 @@ typedef struct sigverify_rom_ecdsa_p256_key_entry {
   /**
    * An ECDSA P256 public key.
    */
-  sigverify_ecdsa_p256_buffer_t key;
+  ecdsa_p256_public_key_t key;
 } sigverify_rom_ecdsa_p256_key_entry_t;
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key_type, 0);
-OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key.data[0], 4);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key.x[0], 4);
 static_assert(offsetof(sigverify_rom_key_header_t, key_type) ==
                   offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key_type),
               "Invalid key_type offset.");
 static_assert(offsetof(sigverify_rom_key_header_t, key_id) ==
-                  offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key.data[0]),
+                  offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key.x[0]),
               "Invalid key_id offset.");
 
 /**

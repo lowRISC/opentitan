@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
@@ -67,7 +68,7 @@ rom_error_t otbn_boot_attestation_keygen(
     attestation_key_seed_t additional_seed,
     otbn_boot_attestation_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
-    attestation_public_key_t *public_key);
+    ecdsa_p256_public_key_t *public_key);
 
 /**
  * Saves an attestation private key to OTBN's scratchpad.
@@ -127,7 +128,7 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          attestation_signature_t *sig);
+                                          ecdsa_p256_signature_t *sig);
 
 /**
  * Computes an ECDSA-P256 signature verification on OTBN.
@@ -147,8 +148,8 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
-                                const attestation_signature_t *sig,
+rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
+                                const ecdsa_p256_signature_t *sig,
                                 const hmac_digest_t *digest,
                                 uint32_t *recovered_r);
 

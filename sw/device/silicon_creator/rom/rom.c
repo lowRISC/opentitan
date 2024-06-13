@@ -256,7 +256,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   // Load secure boot keys from OTP into RAM.
   HARDENED_RETURN_IF_ERROR(sigverify_otp_keys_init(&sigverify_ctx));
   // ECDSA key.
-  const sigverify_ecdsa_p256_buffer_t *ecdsa_key = NULL;
+  const ecdsa_p256_public_key_t *ecdsa_key = NULL;
   HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_key_get(
       &sigverify_ctx,
       sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key), lc_state,

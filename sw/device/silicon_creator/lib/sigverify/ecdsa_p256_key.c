@@ -5,4 +5,4 @@
 
 // `extern` declarations for `inline` functions in the header.
 extern uint32_t sigverify_ecdsa_p256_key_id_get(
-    const sigverify_ecdsa_p256_buffer_t *pub_key);
+    const ecdsa_p256_public_key_t *pub_key);

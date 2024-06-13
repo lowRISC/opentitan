@@ -40,10 +40,8 @@ hardened_bool_t ecdsa_verify_digest(const owner_key_t *pubkey,
                                     const owner_signature_t *signature,
                                     const hmac_digest_t *digest) {
 #if USE_OTBN == 1
-  const attestation_public_key_t *key =
-      (const attestation_public_key_t *)pubkey;
-  const attestation_signature_t *sig =
-      (const attestation_signature_t *)signature;
+  const ecdsa_p256_public_key_t *key = (const ecdsa_p256_public_key_t *)pubkey;
+  const ecdsa_p256_signature_t *sig = (const ecdsa_p256_signature_t *)signature;
   uint32_t rr[8];
   rom_error_t error = otbn_boot_sigverify(key, sig, digest, rr);
   if (error != kErrorOk) {
