@@ -282,9 +282,12 @@ class csrng_err_vseq extends csrng_base_vseq;
     csr_wr(.ptr(ral.intr_state), .value(32'd15));
     cfg.clk_rst_vif.wait_clks(100);
 
-    if (cfg.which_err_code inside {cmd_stage_sm_err, main_sm_err,
-                                   drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err,
-                                   aes_cipher_sm_err,
+    if (cfg.which_err_code inside {cmd_stage_sm_err, cmd_stage_sm_err_test,
+                                   main_sm_err, main_sm_err_test,
+                                   drbg_gen_sm_err, drbg_gen_sm_err_test,
+                                   drbg_updbe_sm_err, drbg_updbe_sm_err_test,
+                                   drbg_updob_sm_err, drbg_updob_sm_err_test,
+                                   aes_cipher_sm_err, aes_cipher_sm_err_test,
                                    cmd_gen_cnt_err, cmd_gen_cnt_err_test}) begin
       // These errors are either not gated with the module enable or they cause the main FSM to
       // escalate of which the alert output itself isn't gated with the module enable. After
