@@ -195,6 +195,27 @@ endtask
     end
   endtask
 
+  // Wait for the DUT to assert one of the specified interrupts, with an optional timeout
+  //   (the default of -1 disables the timeout).
+  //
+  // If 'enforce' is set then it is required that at least one of the interrupts shall be
+  // asserted within the timeout interval.
+  // If 'clear' is set then all of the asserted interrupts shall be cleared.
+  virtual task wait_for_interrupt(bit [31:0] snapshot, int timeout_clks = -1, bit clear = 1,
+                                  bit enforce = 1);
+    uvm_reg_data_t data;
+    do begin
+      // Delay and if timeout was requested, decrease the cycle count.
+      cfg.clk_rst_vif.wait_clks(128);
+      if (timeout_clks >= 0) timeout_clks -= (timeout_clks > 128) ? 128 : timeout_clks;
+      csr_rd(.ptr(ral.intr_state), .value(data));
+    end while (!(data & snapshot) && (timeout_clks != 0));
+    if (enforce && !(data & snapshot)) begin
+      `dv_fatal($sformatf("DUT did not generate any of the expected interrupt(s) 0x%x", snapshot))
+    end
+    if (clear) csr_wr(.ptr(ral.intr_state), .value(data & snapshot));
+  endtask
+
   // Wait for the DUT to enter one of the given link states, with an optional timeout
   //   (the default of -1 disables the timeout).
   // Link state transitions occur in response to bus activity from the host driving the USB.

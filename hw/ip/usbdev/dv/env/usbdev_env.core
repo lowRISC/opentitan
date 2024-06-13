@@ -44,10 +44,12 @@ filesets:
       - seq_lib/usbdev_nak_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_enable_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_endpoint_access_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_host_lost_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_rand_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_in_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_suspend_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_link_reset_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}

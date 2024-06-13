@@ -96,12 +96,24 @@
       uvm_test_seq: usbdev_fifo_rst_vseq
     }
     {
+      name: usbdev_host_lost
+      uvm_test_seq: usbdev_host_lost_vseq
+      // No need for randomization.
+      reseed: 1
+    }
+    {
       name: usbdev_in_trans
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
       name: usbdev_link_in_err
       uvm_test_seq: usbdev_link_in_err_vseq
+    }
+    {
+      name: usbdev_link_reset
+      uvm_test_seq: usbdev_link_reset_vseq
+      // No need for randomization.
+      reseed: 1
     }
     {
       name: usbdev_link_suspend

@@ -362,7 +362,7 @@
             - SOF should normally be received every 1 ms.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_host_lost"]
     }
     {
       name: link_reset
@@ -375,7 +375,7 @@
             - Verify that the interrupt pin link_reset goes high once the link reset.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_link_reset"]
     }
     {
       name: link_suspend
