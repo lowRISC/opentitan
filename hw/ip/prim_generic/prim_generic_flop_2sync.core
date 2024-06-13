@@ -25,6 +25,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/prim_generic_flop_2sync.waiver
+    file_type: waiver
 
   files_veriblelint_waiver:
     depend:
