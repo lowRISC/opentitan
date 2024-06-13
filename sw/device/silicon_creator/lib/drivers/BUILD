@@ -101,8 +101,8 @@ opentitan_test(
         ":rstmgr",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey:alert_handler_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -164,7 +164,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -657,7 +657,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
+            "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -757,7 +757,7 @@ cc_library(
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -821,7 +821,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//hw/ip/spi_device/data:spi_device_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
@@ -860,7 +860,7 @@ cc_library(
     srcs = ["pwrmgr.c"],
     hdrs = ["pwrmgr.h"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",

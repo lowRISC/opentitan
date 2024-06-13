@@ -4,9 +4,27 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
+
+autogen_hjson_c_header(
+    name = "clkmgr_c_regs",
+    srcs = [
+        "data/clkmgr.hjson",
+    ],
+)
+
+autogen_hjson_rust_header(
+    name = "clkmgr_rust_regs",
+    srcs = [
+        "data/clkmgr.hjson",
+    ],
+)
+
 filegroup(
     name = "all_files",
-    srcs = glob(["**"]) + [
-        "//hw/ip_templates/clkmgr/data:all_files",
-    ],
+    srcs = glob(["**"]),
 )

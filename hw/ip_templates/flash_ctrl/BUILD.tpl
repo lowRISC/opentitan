@@ -11,17 +11,19 @@ load(
 )
 
 autogen_hjson_c_header(
-    name = "clkmgr_c_regs",
+    name = "flash_ctrl_c_regs",
     srcs = [
-        "clkmgr.hjson",
+        "data/flash_ctrl.hjson",
     ],
+    node = "core",
 )
 
 autogen_hjson_rust_header(
-    name = "clkmgr_rust_regs",
+    name = "flash_ctrl_rust_regs",
     srcs = [
-        "clkmgr.hjson",
+        "data/flash_ctrl.hjson",
     ],
+    node = "core",
 )
 
 filegroup(
