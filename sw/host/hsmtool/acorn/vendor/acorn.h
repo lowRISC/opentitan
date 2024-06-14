@@ -1,3 +1,7 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * acorn.h: dynamic library interface for acorn.
  * @file
@@ -131,6 +135,7 @@ acorn_cmd_getVersion
  * @see acorn_command_getVersion
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_getVersion
 (struct acorn_request_getVersion *request,
@@ -198,6 +203,7 @@ acorn_cmd_list
  * @see acorn_command_list
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_list
 (struct acorn_request_list *request,
@@ -269,6 +275,7 @@ acorn_cmd_getPublic
  * @see acorn_command_getPublic
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_getPublic
 (struct acorn_request_getPublic *request,
@@ -338,6 +345,7 @@ acorn_cmd_getPublicHash
  * @see acorn_command_getPublicHash
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_getPublicHash
 (struct acorn_request_getPublicHash *request,
@@ -418,6 +426,7 @@ acorn_cmd_getKeyInfo
  * @see acorn_command_getKeyInfo
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_getKeyInfo
 (struct acorn_request_getKeyInfo *request,
@@ -534,6 +543,7 @@ acorn_cmd_generate
  * @see acorn_command_generate
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_generate
 (struct acorn_request_generate *request,
@@ -645,6 +655,7 @@ acorn_cmd_importKeypair
  * @see acorn_command_importKeypair
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_importKeypair
 (struct acorn_request_importKeypair *request,
@@ -728,6 +739,7 @@ acorn_cmd_sign
  * @see acorn_command_sign
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_sign
 (struct acorn_request_sign *request,
@@ -818,6 +830,7 @@ acorn_cmd_verify
  * @see acorn_command_verify
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_verify
 (struct acorn_request_verify *request,
@@ -904,6 +917,7 @@ acorn_cmd_signImmediate
  * @see acorn_command_signImmediate
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_signImmediate
 (struct acorn_request_signImmediate *request,
@@ -994,6 +1008,7 @@ acorn_cmd_verifyImmediate
  * @see acorn_command_verifyImmediate
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_verifyImmediate
 (struct acorn_request_verifyImmediate *request,
@@ -1044,6 +1059,7 @@ acorn_cmd_see_getVersion
  * @see acorn_command_see_getVersion
  * @param request (Optional) request data to free
  * @param response (Optional) response data to free */
+typedef
 void EXPORT
 acorn_free_see_getVersion
 (struct acorn_request_see_getVersion *request,
@@ -1085,6 +1101,7 @@ struct acorn_cmdlist {
  *
  * @param list function pointer list to be populated
  * @returns EXIT_SUCCESS (0) or a non-zero failure code */
+typedef
 int EXPORT
 acorn_getcommandlist
 (struct acorn_commandlist *list,
@@ -1096,6 +1113,7 @@ acorn_getcommandlist
  *
  * @param list function pointer list to be populated
  * @returns EXIT_SUCCESS (0) or a non-zero failure code */
+typedef
 int EXPORT
 acorn_getcmdlist
 (struct acorn_cmdlist *list,
