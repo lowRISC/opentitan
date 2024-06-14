@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 
 from reggen.ip_block import IpBlock
 from reggen.inter_signal import InterSignal
+from reggen.params import Parameter
 from reggen.validate import check_int
 from topgen import lib
 
@@ -644,6 +645,9 @@ def check_intermodule_field(sig: OrderedDict,
     width = 1
     if "width" not in sig:
         sig["width"] = 1
+    elif isinstance(sig["width"], Parameter):
+        # FIME check for int
+        pass
     elif not isinstance(sig["width"], int):
         width, err = check_int(sig["width"], sig["name"])
         if err:
@@ -821,20 +825,26 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
 
         # Determine if broadcast or one-to-N
         log.debug("Handling inter-sig {} {}".format(req_struct['name'], total_width))
+
+        if isinstance(req_struct["width"], Parameter):
+            width = int(req_struct["width"].default)
+        else:
+            width = req_struct["width"]
+
         req_struct["end_idx"] = -1
-        if req_struct["width"] > 1 or len(rsps) != 1:
+        if width > 1 or len(rsps) != 1:
             # If req width is same to the every width of rsps ==> broadcast
-            if len(rsps) * [req_struct["width"]] == widths:
+            if len(rsps) * [width] == widths:
                 log.debug("broadcast type")
                 req_struct["top_type"] = "broadcast"
 
             # If req width is same as total width of rsps ==> one-to-N
-            elif req_struct["width"] == total_width:
+            elif width == total_width:
                 log.debug("one-to-N type")
                 req_struct["top_type"] = "one-to-N"
 
             # one-to-N connection is not fully populated
-            elif req_struct["width"] > total_width:
+            elif width > total_width:
                 log.debug("partial one-to-N type")
                 req_struct["top_type"] = "partial-one-to-N"
                 req_struct["end_idx"] = len(rsps)
@@ -950,8 +960,13 @@ def im_netname(sig: OrderedDict,
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
-            return "{package}::{struct}_DEFAULT".format(
-                package=obj["package"], struct=obj["struct"].upper())
+            if isinstance(sig["width"], Parameter):
+                return "{{{param}{{{package}::{struct}_DEFAULT}}}}".format(
+                    param=sig["width"].name_top, package=obj["package"],
+                    struct=obj["struct"].upper())
+            else:
+                return "{package}::{struct}_DEFAULT".format(
+                    package=obj["package"], struct=obj["struct"].upper())
 
         return ""
 

@@ -6,6 +6,7 @@ from typing import Dict, Optional
 
 from reggen.lib import (check_keys, check_name,
                         check_str, check_optional_str, check_int)
+from reggen.params import Parameter
 
 
 class InterSignal:
@@ -16,9 +17,12 @@ class InterSignal:
                  package: Optional[str],
                  signal_type: str,
                  act: str,
-                 width: int,
+                 width,
                  default: Optional[str]):
-        assert 0 < width
+        if isinstance(width, Parameter):
+            assert 0 < width.default
+        else:
+            assert 0 < width
         self.name = name
         self.desc = desc
         self.struct = struct
@@ -29,7 +33,7 @@ class InterSignal:
         self.default = default
 
     @staticmethod
-    def from_raw(what: str, raw: object) -> 'InterSignal':
+    def from_raw(params: dict, what: str, raw: object) -> 'InterSignal':
         rd = check_keys(raw, what,
                         ['name', 'struct', 'type', 'act'],
                         ['desc', 'package', 'width', 'default'])
@@ -52,9 +56,21 @@ class InterSignal:
 
         signal_type = check_name(rd['type'], 'type field of ' + what)
         act = check_name(rd['act'], 'act field of ' + what)
-        width = check_int(rd.get('width', 1), 'width field of ' + what)
-        if width <= 0:
-            raise ValueError('width field of {} is not positive.'.format(what))
+
+        try:
+            width = check_int(rd.get('width', 1), 'width field of ' + what)
+            if width <= 0:
+                raise ValueError('width field of {} is not positive.'.format(what))
+        except ValueError:
+            # Value error raised since it is not an int, lets try toi find out if it is a parameter
+            width = params.get(rd.get('width', ''))
+            width.default = check_int(width.default, 'width field of ' + what)
+            if width.default <= 0:
+                raise ValueError('width field of {} is not positive.'.format(what))
+            # Parameter must be exposed to create a top-level (local) param
+            if not width.expose:
+                raise ValueError('width field of {} is not exposed.'.format(what))
+
 
         default = check_optional_str(rd.get('default'),
                                      'default field of ' + what)
