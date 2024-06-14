@@ -773,7 +773,7 @@
             - Verify that the packet is received, decoded correctly and ACKnowledged by the DUT.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_min_inter_pkt_delay"]
     }
     {
       name: max_inter_pkt_delay
@@ -786,7 +786,7 @@
             - Verify that the packet is received, decoded correctly and ACKnowledged by the DUT.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_max_inter_pkt_delay"]
     }
     {
       name: device_timeout_missing_host_handshake

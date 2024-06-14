@@ -148,6 +148,16 @@
       uvm_test_seq: usbdev_max_usb_traffic_vseq
     }
     {
+      name: usbdev_min_inter_pkt_delay
+      uvm_test_seq: usbdev_streaming_vseq
+      run_opts: ["+setup_data_delay=8", "+out_data_delay=8"]
+    }
+    {
+      name: usbdev_max_inter_pkt_delay
+      uvm_test_seq: usbdev_streaming_vseq
+      run_opts: ["+setup_data_delay=26", "+out_data_delay=26"]
+    }
+    {
       name: usbdev_nak_trans
       uvm_test_seq: usbdev_nak_trans_vseq
     }
