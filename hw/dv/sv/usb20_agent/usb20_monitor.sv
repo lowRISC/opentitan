@@ -135,12 +135,8 @@ class usb20_monitor extends dv_base_monitor #(
     @(posedge cfg.bif.clk_i);
     // Return the symbol currently on the bus, according to the pin configuration.
     if (cfg.tx_use_d_se0) begin
-      casez ({cfg.bif.usb_tx_d_o, cfg.bif.usb_tx_se0_o})
-        2'b00:   sym = USB20Sym_K;
-        2'b01:   sym = USB20Sym_SE0;
-        2'b10:   sym = USB20Sym_J;
-        default: sym = USB20Sym_Invalid;
-      endcase
+      // SE0 takes precedence over the data line.
+      sym = cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : (cfg.bif.usb_tx_d_o ? USB20Sym_J : USB20Sym_K);
     end else begin
       casez ({cfg.bif.usb_n, cfg.bif.usb_p})
         2'b00:   sym = USB20Sym_SE0;
