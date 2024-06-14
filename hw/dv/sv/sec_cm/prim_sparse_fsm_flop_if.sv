@@ -23,7 +23,7 @@ interface prim_sparse_fsm_flop_if #(
   string msg_id = $sformatf("%m");
 
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
-  string signal_forced = $sformatf("%s.u_state_flop.q_o", path);
+  string signal_forced = $sformatf("%s.state_o", path);
 
   // The prim_sparse_fsm_flop module is usually created with the PRIM_FLOP_SPARSE_FSM macro, which
   // (when in simulation) passes an extra CustomForceName parameter to control how it should be
