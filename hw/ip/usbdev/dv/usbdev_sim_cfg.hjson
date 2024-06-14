@@ -235,6 +235,12 @@
       reseed: 1
     }
     {
+      name: usbdev_setup_priority
+      uvm_test_seq: usbdev_setup_priority_vseq
+      // Simple sequence, limited need of randomization.
+      reseed: 5
+    }
+    {
       name: usbdev_stall_trans
       uvm_test_seq: usbdev_stall_trans_vseq
     }
