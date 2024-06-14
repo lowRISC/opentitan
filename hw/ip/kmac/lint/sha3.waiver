@@ -21,3 +21,24 @@ waive -rules {ARITH_CONTEXT} -location {sha3pad.sv} -regexp {.*Bitlength of arit
 
 waive -rules {VAR_INDEX_RANGE} -location {keccak_2share.sv} -regexp {.*of length 32 excluding the sign bit is larger than the.*bits required to address.*} \
       -comment "Indexing range does not match."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'bitarray_to_box' is referenced before its declaration at keccak_2share.sv} \
+      -comment "bitarray_to_box is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'box_to_bitarray' is referenced before its declaration at keccak_2share.sv} \
+      -comment "box_to_bitarray is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'theta' is referenced before its declaration at keccak_2share.sv} \
+      -comment "theta is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'pi' is referenced before its declaration at keccak_2share.sv} \
+      -comment "pi is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'iota' is referenced before its declaration at keccak_2share.sv} \
+      -comment "iota is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'rot_int' is referenced before its declaration at keccak_2share.sv} \
+      -comment "rot_int is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keccak_2share.sv} -msg {'chi' is referenced before its declaration at keccak_2share.sv} \
+      -comment "chi is a function defined towards the end of the file."
