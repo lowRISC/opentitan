@@ -6,3 +6,5 @@
 
 waive -rules {SAME_NAME_TYPE} -location {*} -regexp {'prim_secded_.*' is used as a module here, and as a function at prim_secded_pkg.sv.*} \
       -comment "The secded functions and primitives may have the same name."
+waive -rules {SAME_NAME_TYPE} -location {*} -regexp {'prim_secded_.*' is used as a function here, and as a module at prim_secded_.*} \
+      -comment "The secded functions and primitives may have the same name."
