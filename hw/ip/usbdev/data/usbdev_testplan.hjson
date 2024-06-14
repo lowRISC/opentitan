@@ -1112,7 +1112,7 @@
               DATA packets and the final 1 SETUP DATA packet in turn.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_setup_priority"]
     }
     {
       name: fifo_resets

@@ -75,6 +75,7 @@ filesets:
       - seq_lib/usbdev_phy_pins_sense_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_eop_single_bit_handling_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_stall_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_setup_priority_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_priority_over_nak_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_iso_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource

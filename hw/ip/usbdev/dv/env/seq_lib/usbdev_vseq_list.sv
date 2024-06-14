@@ -40,12 +40,13 @@
 `include "usbdev_random_length_out_transaction_vseq.sv"
 `include "usbdev_resume_link_active_vseq.sv"
 `include "usbdev_rx_full_vseq.sv"
-`include "usbdev_spray_packets_vseq.sv"
-`include "usbdev_stall_trans_vseq.sv"
 `include "usbdev_rx_crc_err_vseq.sv"
-`include "usbdev_setup_trans_ignored_vseq.sv"
-`include "usbdev_stall_priority_over_nak_vseq.sv"
+`include "usbdev_setup_priority_vseq.sv"
 `include "usbdev_setup_stage_vseq.sv"
+`include "usbdev_setup_trans_ignored_vseq.sv"
+`include "usbdev_spray_packets_vseq.sv"
+`include "usbdev_stall_priority_over_nak_vseq.sv"
+`include "usbdev_stall_trans_vseq.sv"
 
 // These depend on usbdev_spray_packets_vseq, so need to come after it.
 `include "usbdev_device_address_vseq.sv"
