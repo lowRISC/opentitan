@@ -926,7 +926,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     item.clear_qs();
   endfunction
 
-  // Create bit error follwing flash_op and  ecc_mode.
+  // Create bit error following flash_op and ecc_mode.
   // @caller : 0 controller,  1: host
   virtual function void add_bit_err(flash_op_t flash_op, read_task_e caller = ReadTaskCtrl,
                             flash_otf_item item = null);

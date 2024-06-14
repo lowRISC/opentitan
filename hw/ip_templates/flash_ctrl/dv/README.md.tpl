@@ -99,9 +99,9 @@ Some of the most commonly used tasks / functions are as follows: From `hw/top_${
 * do_direct_read
   Task to read flash from the host interface. Transaction size is 4 byte per transaction.
 * flash_ctrl_intr_read
-  Task to program flash with interrupt mode.
-* flash_ctrl_intr_write
   Task to read flash with interrupt mode.
+* flash_ctrl_intr_write
+  Task to program flash with interrupt mode.
 * send_rma_req
   Task to initiate rma request. Once rma started, task polls `rma ack` until it completes.
 
