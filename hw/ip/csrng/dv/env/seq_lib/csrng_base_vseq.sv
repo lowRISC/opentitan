@@ -198,7 +198,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     `DV_CHECK(uvm_hdl_release(path1));
     `DV_CHECK(uvm_hdl_release(path2));
     `DV_CHECK(uvm_hdl_release(path3));
-  endtask // force_fifo_err
+  endtask // force_fifo_readwrite_err
 
   task force_fifo_err(string path1, string path2, bit value1, bit value2,
                       uvm_reg_field reg_field, bit exp_data);

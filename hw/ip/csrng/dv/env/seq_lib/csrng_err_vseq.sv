@@ -22,6 +22,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        fifo_base_path;
     string        path_exts [6] = {"push", "full", "wdata", "pop", "not_empty", "rdata"};
     string        fifo_forced_paths [6];
+    string        fifo_forced_path_ds;
     bit           fifo_forced_values [6] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
@@ -117,6 +118,35 @@ class csrng_err_vseq extends csrng_base_vseq;
             cfg.which_err_code == sfifo_pdata_err || cfg.which_err_code == sfifo_ggenreq_err) begin
           force_all_fifo_errs_exception(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                                         1'b1, cfg.which_fifo_err);
+
+        // For sfifo_gadstage_err the down stream FIFO also takes inputs from sources other than
+        // sfifo_gadstage. To avoid the propagation of undefined data through CSRNG we need to
+        // force the input of sfifo_gbencack to zero. Otherwise this will cause a lot of assertions
+        // to trigger and eventually CSRNG will output undefined bits which causes some tlul checks
+        // to fail.
+        end else if ((cfg.which_err_code == sfifo_gadstage_err) &&
+                     (cfg.which_fifo_err == fifo_read)) begin
+          fifo_forced_path_ds = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
+                                                                 "sfifo_gbencack", "rdata");
+          uvm_hdl_force(fifo_forced_path_ds, 'b0);
+          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
+                              1'b1, cfg.which_fifo_err);
+          uvm_hdl_release(fifo_forced_path_ds);
+
+        // For sfifo_gbencack_err the downstream arbiter receives an undefined signal if we
+        // force the write signal of sfifo_gbencack. This causes some assertions to trigger.
+        // For this reason we need to force adstage_glast to zero such that the request signal
+        // to the downstream arbiter doesn't go high.
+        end else if ((cfg.which_err_code == sfifo_gbencack_err) &&
+                     (cfg.which_fifo_err == fifo_write)) begin
+          fifo_forced_path_ds =
+              cfg.csrng_path_vif.csrng_core_path("u_csrng_ctr_drbg_gen.adstage_glast");
+          uvm_hdl_force(fifo_forced_path_ds, 'b0);
+          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
+                              1'b1, cfg.which_fifo_err);
+          cfg.clk_rst_vif.wait_clks(1);
+          uvm_hdl_release(fifo_forced_path_ds);
+
         end else begin
           force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                               1'b1, cfg.which_fifo_err);
@@ -237,6 +267,33 @@ class csrng_err_vseq extends csrng_base_vseq;
             (cfg.which_fifo == sfifo_bencack) || (cfg.which_fifo == sfifo_updreq)))
         begin
           force_fifo_err_exception(path1, path2, 1'b1, 1'b0, 1'b0, fld, 1'b1);
+
+        // For sfifo_gadstage the down stream FIFO also takes inputs from sources other than
+        // sfifo_gadstage. To avoid the propagation of undefined data through CSRNG we need to
+        // force the input of sfifo_gbencack to zero. Otherwise this will cause a lot of assertions
+        // to trigger and eventually CSRNG will output undefined bits which causes some tlul checks
+        // to fail.
+        end else if ((cfg.which_err_code == fifo_read_error) &&
+                     (cfg.which_fifo == sfifo_gadstage)) begin
+          fifo_forced_path_ds = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
+                                                                 "sfifo_gbencack", "rdata");
+          uvm_hdl_force(fifo_forced_path_ds, 'b0);
+          force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
+          uvm_hdl_release(fifo_forced_path_ds);
+
+        // For sfifo_gbencack_err the downstream arbiter receives an undefined signal if we
+        // force the write signal of sfifo_gbencack. This causes some assertions to trigger.
+        // For this reason we need to force adstage_glast to zero such that the request signal
+        // to the downstream arbiter doesn't go high.
+        end else if ((cfg.which_err_code == fifo_write_error) &&
+                     (cfg.which_fifo == sfifo_gbencack)) begin
+          fifo_forced_path_ds =
+              cfg.csrng_path_vif.csrng_core_path("u_csrng_ctr_drbg_gen.adstage_glast");
+          uvm_hdl_force(fifo_forced_path_ds, 'b0);
+          force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
+          cfg.clk_rst_vif.wait_clks(1);
+          uvm_hdl_release(fifo_forced_path_ds);
+
         end else if (cfg.which_err_code == fifo_write_error ||
                      cfg.which_err_code == fifo_read_err) begin
           force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);

@@ -74,4 +74,8 @@ interface csrng_path_if
   function automatic string drbg_gen_cnt_err_path();
     return {core_path, ".u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg.cnt_q[1]"};
   endfunction // drbg_gen_cnt_err_path
+
+  function automatic string csrng_core_path(string path_ext);
+    return {core_path, ".", path_ext};
+  endfunction // core_path
 endinterface // csrng_path_if
