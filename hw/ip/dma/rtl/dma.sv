@@ -76,7 +76,7 @@ module dma
 
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
-  logic clear_go, clear_status, clear_sha_status;
+  logic set_error_code, clear_go, clear_status, clear_sha_status;
 
   logic [INTR_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                                clear_index_en, intr_clear_tlul_rsp_valid;
@@ -1297,15 +1297,18 @@ module dma
       end
     end
 
+    // Set the error code only when entering the error state
+    set_error_code = (ctrl_state_q != DmaError) && (ctrl_state_d == DmaError);
+
     // Fiddle out error signals
-    hw2reg.error_code.src_addr_error.de    = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.dst_addr_error.de    = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.opcode_error.de      = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.size_error.de        = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.bus_error.de         = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.base_limit_error.de  = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.range_valid_error.de = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.src_addr_error.de    = set_error_code | clear_status;
+    hw2reg.error_code.dst_addr_error.de    = set_error_code | clear_status;
+    hw2reg.error_code.opcode_error.de      = set_error_code | clear_status;
+    hw2reg.error_code.size_error.de        = set_error_code | clear_status;
+    hw2reg.error_code.bus_error.de         = set_error_code | clear_status;
+    hw2reg.error_code.base_limit_error.de  = set_error_code | clear_status;
+    hw2reg.error_code.range_valid_error.de = set_error_code | clear_status;
+    hw2reg.error_code.asid_error.de        = set_error_code | clear_status;
 
     hw2reg.error_code.src_addr_error.d     = clear_status? '0 : next_error[DmaSrcAddrErr];
     hw2reg.error_code.dst_addr_error.d     = clear_status? '0 : next_error[DmaDstAddrErr];
