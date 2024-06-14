@@ -144,11 +144,14 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
       // Choose the packet length and content pseudo-randomly.
       send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0,
                            1'b1, 0, ep_iso_enabled[ep]);
-      inter_packet_delay();
     end
     // Check that the packet was accepted (ACKnowledged) by the USB device.
     // An Isochronous endpoint returns no handshake and no data toggle bit, so do not wait.
-    if (!ep_iso_enabled[ep]) begin
+    if (ep_iso_enabled[ep]) begin
+      // Ensure a sufficient gap before the next transaction.
+      // TODO: this should probably be guaranteed within the driver.
+      inter_packet_delay();
+    end else begin
       check_response_matches(PidTypeAck);
       // Packet successfully received and ACKnowledged; flip the data toggle.
       exp_out_toggle[ep] ^= 1'b1;

@@ -31,6 +31,10 @@ constraint ep_default_c {
   ep_default inside {[0:NEndpoints-1]};
 }
 
+// Configured inter-packet delays; 0 = randomize across valid range.
+int unsigned setup_data_delay = 0;
+int unsigned out_data_delay   = 0;
+
 // Bus events/stimuli to be presented during the sequence
 //   (these are used in the `aon_wake_` and `rand_bus...` tests points).
 bit do_reset_signaling  = 1'b0;
@@ -155,6 +159,12 @@ endtask
   // Give derived sequences the opportunity to override the connection of the usb20_agent via the
   // the interface.
   virtual task pre_start();
+    // These options constrain the inter-packet delays for DATA packets following SETUP and OUT
+    // token packets; default to zero (above) for randomized delays across the valid range.
+    // The values are specified in 48MHz clock ticks (1/4 bit intervals) because we need 0.5 bit
+    // interval granularity.
+    void'($value$plusargs("setup_data_delay=%0d", setup_data_delay));
+    void'($value$plusargs("out_data_delay=%0d", out_data_delay));
     // These options are common to a few tests, but will not be specified for most so they default
     // to zero (above).
     void'($value$plusargs("do_reset_signaling=%0b",  do_reset_signaling));
@@ -280,7 +290,7 @@ endtask
     // Send SETUP token packet to the selected endpoint on the specified device.
     send_token_packet(ep, PidTypeSetupToken);
     // Variable delay between SETUP token packet and the ensuing DATA packet.
-    inter_packet_delay();
+    inter_packet_delay(setup_data_delay);
     // DATA0/DATA packet with randomized content, but we'll honor the rule that SETUP DATA packets
     // are 8 bytes in length. The DUT does not attempt to interpret the packet content.
     send_prnd_data_packet(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
@@ -293,7 +303,7 @@ endtask
     // Send OUT token packet to the selected endpoint on the specified device.
     send_token_packet(ep, PidTypeOutToken);
     // Variable delay between OUT token packet and the ensuing DATA packet.
-    inter_packet_delay();
+    inter_packet_delay(out_data_delay);
     // DATA0/DATA packet with randomized content.
     send_prnd_data_packet(pid_type, randomize_length, num_of_bytes, isochronous_transfer);
   endtask
@@ -304,7 +314,7 @@ endtask
     // Send OUT token packet to the selected endpoint on the specified device.
     send_token_packet(ep, PidTypeOutToken);
     // Variable delay between OUT token packet and the ensuing DATA packet.
-    inter_packet_delay();
+    inter_packet_delay(out_data_delay);
     // DATA0/DATA1 packet with the given content.
     send_data_packet(pid_type, data, isochronous_transfer);
   endtask
