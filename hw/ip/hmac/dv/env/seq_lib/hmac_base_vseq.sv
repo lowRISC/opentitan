@@ -492,7 +492,24 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       1:  sar_ctxt = DifferentContext;
     endcase
 
-    if (sar_ctxt == SameContext) begin
+    if (sar_ctxt == StopAndContinue) begin
+      // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
+      // or 1024 bits SHA-2 384/512)
+      sar_window.wait_trigger();
+      `uvm_info(`gfn, $sformatf("Stop and trigger continue only"), UVM_LOW)
+      sar_ongoing = 1;
+      // Stop hash operations.
+      trigger_hash_stop();
+      // Expose ongoing Save and Restore triggered to avoid to request a new hash process
+      save_ctx_ongoing = 1;
+      // Wait for hash to be done so the digest is updated.
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Clear the interrupt.
+      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+      save_ctx_ongoing = 0;
+      trigger_hash_continue();
+      sar_stop_continue_ev.trigger();
+    end else if (sar_ctxt == SameContext) begin
       // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
       // or 1024 bits SHA-2 384/512)
       sar_window.wait_trigger();
