@@ -457,6 +457,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                                      bit fips);
 
     bit [CSRNG_BUS_WIDTH-1:0] seed_material;
+    bit [CSRNG_BUS_WIDTH-1:0] fips_force;
     bit compliance_previous = cfg.compliance[app];
 
     `uvm_info(`gfn, $sformatf("Instantiate of app %0d", app), UVM_MEDIUM)
@@ -465,8 +466,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.v[app]   = 'h0;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b0;
+    fips_force = `gmv(ral.fips_force);
     cfg.compliance[app]     = fips || ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
-                                        `gmv(ral.fips_force)[app]);
+                                       fips_force[app]);
     cfg.status[app]         = 1'b1;
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
@@ -477,14 +479,16 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                                 bit fips);
 
     bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
+    bit [CSRNG_BUS_WIDTH-1:0] fips_force;
     bit compliance_previous = cfg.compliance[app];
 
     `uvm_info(`gfn, $sformatf("Reseed of app %0d", app), UVM_MEDIUM)
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b0;
+    fips_force = `gmv(ral.fips_force);
     cfg.compliance[app]     = fips || ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
-                                        `gmv(ral.fips_force)[app]);
+                                       fips_force[app]);
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
 
