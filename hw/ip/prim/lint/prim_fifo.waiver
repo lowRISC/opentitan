@@ -29,3 +29,7 @@ waive -rules EXPLICIT_BITLEN      -location {prim_fifo_*sync.sv} -regexp {Bit le
 waive -rules ARITH_CONTEXT -location {prim_fifo_async_sram_adapter.sv} \
       -regexp {(r|w)_wptr_v.*_rptr_v} \
       -comment "The pointer value width is determined. Remove the casting for readability"
+waive -rules USE_BEFORE_DECL -location {prim_fifo_async_sram_adapter.sv} -msg {'dec2gray' is referenced before its declaration at prim_fifo_async_sram_adapter.sv} \
+      -comment "dec2gray is a function defined towards the end of the file."
+waive -rules USE_BEFORE_DECL -location {prim_fifo_async_sram_adapter.sv} -msg {'gray2dec' is referenced before its declaration at prim_fifo_async_sram_adapter.sv} \
+      -comment "gray2dec is a function defined towards the end of the file."

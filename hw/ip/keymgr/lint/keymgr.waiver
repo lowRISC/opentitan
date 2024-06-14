@@ -15,3 +15,9 @@ waive -rules {MISSING_STATE} -location {keymgr_ctrl.sv} -regexp {.*StCtrlInvalid
 
 waive -rules {TERMINAL_STATE} -location {keymgr_sideload_key_ctrl.sv} -regexp {.*StSideloadStop.*} \
       -comment "Intentional terminal state."
+
+waive -rules USE_BEFORE_DECL -location {keymgr_ctrl.sv} -msg {'valid_data_chk' is referenced before its declaration at keymgr_ctrl.sv} \
+      -comment "valid_data_chk is a function defined towards the end of the file."
+
+waive -rules USE_BEFORE_DECL -location {keymgr_input_checks.sv} -msg {'valid_chk' is referenced before its declaration at keymgr_input_checks.sv} \
+      -comment "valid_chk is a function defined towards the end of the file."
