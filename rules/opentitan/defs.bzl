@@ -13,6 +13,7 @@ load(
 load(
     "@lowrisc_opentitan//rules/opentitan:cc.bzl",
     _opentitan_binary = "opentitan_binary",
+    _opentitan_example = "opentitan_example",
     _opentitan_test = "opentitan_test",
 )
 load(
@@ -276,3 +277,101 @@ def opentitan_test(
         tests = all_tests,
         tags = ["manual"],
     )
+
+def opentitan_example(
+        name,
+        srcs = [],
+        kind = "flash",
+        deps = [],
+        copts = [],
+        defines = [],
+        local_defines = [],
+        includes = [],
+        linkopts = [],
+        linker_script = None,
+        rsa_key = None,
+        spx_key = None,
+        manifest = None,
+        exec_env = {},
+        cw310 = _cw310_params(),
+        dv = _dv_params(),
+        verilator = _verilator_params(),
+        **kwargs):
+    """Instantiate a test per execution environment.
+
+    Args:
+      name: The base name of the test.  The name will be extended with the name
+            of the execution environment.
+      srcs: The source files for this test.
+      kind: The kind of test (flash, ram, rom).
+      deps: Dependecies for this test.
+      copts: Compiler options for this test.
+      defines: Compiler defines for this test.
+      local_defines: Compiler defines for this test.
+      includes: Additional compiler include dirs for this test.
+      linker_script: Linker script for this test.
+      rsa_key: RSA key to sign the binary for this test.
+      spx_key: SPX key to sign the binary for this test.
+      manifest: manifest used during signing for this test.
+      linkopts: Linker options for this test.
+      exec_env: A dictionary of execution environments.  The keys are labels to
+                execution environments.  The values are the kwargs parameter names
+                of the exec_env override or None.  If None, the default parameter
+                names of `cw310`, `dv` or `verilator` will be guessed.
+      cw310: Execution overrides for a CW310-based test.
+      dv: Execution overrides for a DV-based test.
+      verilator: Execution overrides for a verilator-based test.
+      kwargs: Additional execution overrides identified by the `exec_env` dict.
+    """
+    test_parameters = {
+        "cw310": cw310,
+        "dv": dv,
+        "verilator": verilator,
+    }
+    test_parameters.update(kwargs)
+    kwargs_unused = kwargs.keys()
+
+    all_tests = []
+    for (env, pname) in exec_env.items():
+        pname = _parameter_name(env, pname)
+        extra_tags = _hacky_tags(env)
+        tparam = test_parameters[pname]
+        if pname in kwargs_unused:
+            kwargs_unused.remove(pname)
+        (_, suffix) = env.split(":")
+        test_name = "{}_{}".format(name, suffix)
+        all_tests.append(":" + test_name)
+        _opentitan_example(
+            name = test_name,
+            srcs = srcs,
+            kind = kind,
+            deps = deps,
+            copts = copts,
+            defines = defines,
+            local_defines = local_defines,
+            includes = includes,
+            linker_script = linker_script,
+            linkopts = linkopts,
+            exec_env = env,
+            naming_convention = "{name}",
+            # Tagging and timeout info always comes from a param block.
+            tags = tparam.tags + extra_tags,
+            # Override parameters in the test rule.
+            test_harness = tparam.test_harness,
+            binaries = tparam.binaries,
+            rom = tparam.rom,
+            rom_ext = tparam.rom_ext,
+            otp = tparam.otp,
+            bitstream = tparam.bitstream,
+            test_cmd = tparam.test_cmd,
+            param = tparam.param,
+            data = tparam.data,
+            rsa_key = rsa_key,
+            spx_key = spx_key,
+            manifest = manifest,
+            testonly = True,
+        )
+
+    # Make sure that we used all elements in kwargs
+    if len(kwargs_unused) > 0:
+        fail("the following arguments passed to opentitan_test were not used: {}".format(", ".join(kwargs_unused)))

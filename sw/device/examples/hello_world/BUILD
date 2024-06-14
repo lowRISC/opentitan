@@ -2,11 +2,30 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules/opentitan:defs.bzl", "cw310_params", "opentitan_binary", "opentitan_example", "verilator_params")
 load("//rules:files.bzl", "exclude_files")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
+
+opentitan_example(
+    name = "hello_world_example",
+    cw310 = cw310_params(
+        binaries = {
+            ":hello_world": "firmware",
+        },
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    verilator = verilator_params(
+        binaries = {
+            ":hello_world": "firmware",
+        },
+    ),
+)
 
 opentitan_binary(
     name = "hello_world",
@@ -23,6 +42,7 @@ opentitan_binary(
         # For some reason, this target makes englishbreakfast builds fail.
         #"//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
         ":hello_world_lib",
         "//sw/device/lib/base:mmio",

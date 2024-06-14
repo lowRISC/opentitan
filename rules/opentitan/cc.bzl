@@ -452,3 +452,57 @@ opentitan_test = rv_rule(
     toolchains = ["@rules_cc//cc:toolchain_type"],
     test = True,
 )
+
+opentitan_example = rv_rule(
+    implementation = _opentitan_test,
+    attrs = dict(common_binary_attrs.items() + {
+        "exec_env": attr.label(
+            providers = [ExecEnvInfo],
+            doc = "List of exeuction environments for this target.",
+        ),
+        "test_harness": attr.label(
+            default = "//sw/host/opentitantool:opentitantool",
+            executable = True,
+            cfg = "exec",
+        ),
+        "binaries": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = "Opentitan binaries to use with this test (keys are labels, values are the string to use as a subsitution parameter in test_cmd)",
+        ),
+        "rom": attr.label(
+            allow_files = True,
+            doc = "ROM image override for this test",
+        ),
+        "rom_ext": attr.label(
+            allow_files = True,
+            doc = "ROM_EXT image override for this test",
+        ),
+        "otp": attr.label(
+            allow_single_file = True,
+            doc = "OTP image override for this test",
+        ),
+        "bitstream": attr.label(
+            allow_single_file = True,
+            doc = "Bitstream override for this test",
+        ),
+        # Note: an `args` attr exists as an override for exec_env.args.  It is
+        # not listed here because all test rules have an implicit `args`
+        # attribute which is a list of strings subject to location and make
+        # variable substitution.
+        "test_cmd": attr.string(
+            doc = "Test command override for this test",
+        ),
+        "param": attr.string_dict(
+            doc = "Additional parameters for this test",
+        ),
+        "data": attr.label_list(
+            doc = "Additonal dependencies for this test",
+            allow_files = True,
+            cfg = "exec",
+        ),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+    }.items()),
+    fragments = ["cpp"],
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+    executable = True,
+)
