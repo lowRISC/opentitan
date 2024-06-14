@@ -15,7 +15,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   int usb_pwr_good_clk_cycles = 100;  // arbitrary short delay post-VBUS assertion.
 
   bit [7:0] SYNC_PATTERN = 8'b1000_0000;
-  bit [1:0] EOP = 2'b00;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -93,7 +92,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   task prepare_token_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_token_pkt[];
-    bit comp_token_pkt[];
     // Protect sender from modifications to the request item.
     token_pkt pkt;
     $cast(pkt, req_item.clone());
@@ -104,16 +102,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.endpoint = {<<{pkt.endpoint}};
     pkt.crc5 = {<<{pkt.crc5}};
     void'(pkt.pack(driver_token_pkt));
-    // to make complete packet need to attach SYNC at start of packet
-    comp_token_pkt = new[driver_token_pkt.size() + 8];
-    for (int i = 0; i < 8; i++) begin
-      comp_token_pkt[i] = SYNC_PATTERN[i];
-    end
-    for (int i = 0; i < driver_token_pkt.size(); i++) begin
-      comp_token_pkt[i + 8] = driver_token_pkt[i];
-    end
-    `uvm_info(`gfn, $sformatf("Complete Token_Packet = %p", comp_token_pkt), UVM_DEBUG)
-    drive_pkt(comp_token_pkt);
+    drive_packet("Token", driver_token_pkt);
     if (req_item.m_pid_type == PidTypeInToken) begin
       device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
@@ -125,7 +114,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   task prepare_data_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_data_pkt[];
-    bit comp_data_pkt[];
     // Protect sender from modifications to the request item.
     data_pkt pkt;
     $cast(pkt, req_item.clone());
@@ -136,17 +124,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.data = {<<{pkt.data}};
     pkt.crc16 = {<<{pkt.crc16}};
     void'(pkt.pack(driver_data_pkt));
-    `uvm_info(`gfn, $sformatf("Driver Data_Packet = %p", driver_data_pkt), UVM_DEBUG)
-    // To make complete packet need to attach SYNC at start of packet
-    comp_data_pkt = new[driver_data_pkt.size() + 8];
-    for (int i = 0; i < 8; i++) begin
-      comp_data_pkt[i] = SYNC_PATTERN[i];
-    end
-    for (int i = 0; i < driver_data_pkt.size(); i++) begin
-      comp_data_pkt[i + 8] = driver_data_pkt[i];
-    end
-    `uvm_info(`gfn, $sformatf("Complete Data_Packet = %p", comp_data_pkt), UVM_DEBUG)
-    drive_pkt(comp_data_pkt);
+    drive_packet("Data", driver_data_pkt);
     if (req_item.m_usb_transfer == IsoTrans) begin
       seq_item_port.item_done();
     end else begin
@@ -157,30 +135,18 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   task prepare_handshake_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_handshake_pkt[];
-    bit comp_handshake_pkt[];
     // Protect sender from modifications to the request item.
     handshake_pkt pkt;
     $cast(pkt, req_item.clone());
     // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
     void'(pkt.pack(driver_handshake_pkt));
-    `uvm_info(`gfn, $sformatf("Driver Handshake_Packet = %p", driver_handshake_pkt), UVM_DEBUG)
-    // To make complete packet need to attach SYNC at start of packet
-    comp_handshake_pkt = new[driver_handshake_pkt.size() + 8];
-    for (int i = 0; i < 8; i++) begin
-      comp_handshake_pkt[i] = SYNC_PATTERN[i];
-    end
-    for (int i = 0; i < driver_handshake_pkt.size(); i++) begin
-      comp_handshake_pkt[i + 8] = driver_handshake_pkt[i];
-    end
-    `uvm_info(`gfn, $sformatf("Complete Handshake_Packet = %p", comp_handshake_pkt), UVM_DEBUG)
-    drive_pkt(comp_handshake_pkt);
+    drive_packet("Handshake", driver_handshake_pkt);
     seq_item_port.item_done();
   endtask
 
   task prepare_sof_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_sof_pkt[];
-    bit comp_sof_pkt[];
     // Protect sender from modifications to the request item.
     sof_pkt pkt;
     $cast(pkt, req_item.clone());
@@ -190,16 +156,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.framenum = {<<{pkt.framenum}};
     pkt.crc5 = {<<{pkt.crc5}};
     void'(pkt.pack(driver_sof_pkt));
-    // to make complete packet need to attach SYNC at start of packet
-    comp_sof_pkt = new[driver_sof_pkt.size() + 8];
-    for (int i = 0; i < 8; i++) begin
-      comp_sof_pkt[i] = SYNC_PATTERN[i];
-    end
-    for (int i = 0; i < driver_sof_pkt.size(); i++) begin
-      comp_sof_pkt[i + 8] = driver_sof_pkt[i];
-    end
-    `uvm_info(`gfn, $sformatf("Complete Sof_Packet = %p", comp_sof_pkt), UVM_HIGH)
-    drive_pkt(comp_sof_pkt);
+    drive_packet("SOF", driver_sof_pkt);
     seq_item_port.item_done();
   endtask
 
@@ -236,9 +193,19 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       @(posedge cfg.bif.clk_i);
   endtask
 
-  task drive_pkt(bit comp_pkt[]);
+  task drive_packet(string pkt_type, ref bit driver_pkt[]);
+    bit comp_pkt[];
     bit nrzi_out[];
     bit bit_stuff_out[];
+    // To form the complete packet we need to attach SYNC at the start.
+    comp_pkt = new [driver_pkt.size() + 8];
+    for (int i = 0; i < 8; i++) begin
+      comp_pkt[i] = SYNC_PATTERN[i];
+    end
+    for (int i = 0; i < driver_pkt.size(); i++) begin
+      comp_pkt[i + 8] = driver_pkt[i];
+    end
+    `uvm_info(`gfn, $sformatf("Complete %s Packet = %p", pkt_type, comp_pkt), UVM_DEBUG)
     // Bit Stuffing performed on packet
     bit_stuffing(comp_pkt, bit_stuff_out);
     `uvm_info(`gfn, $sformatf("Complete Packet after BIT STUFFING = %p", bit_stuff_out), UVM_DEBUG)
