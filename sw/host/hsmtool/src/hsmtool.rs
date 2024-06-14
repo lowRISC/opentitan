@@ -47,6 +47,10 @@ struct Args {
     #[arg(long, env = "HSMTOOL_MODULE")]
     module: String,
 
+    /// Path to the `acorn` shared library.
+    #[arg(long, env = "HSMTOOL_ACORN")]
+    acorn: Option<String>,
+
     /// HSM Token to use.
     #[arg(short, long, env = "HSMTOOL_TOKEN")]
     token: Option<String>,
@@ -79,7 +83,9 @@ fn main() -> Result<()> {
         .as_ref()
         .map(hsmtool::util::helper::lockfile)
         .transpose()?;
-    let hsm = Module::initialize(&args.module).context(
+
+    // Initialize the HSM module interface.
+    let mut hsm = Module::initialize(&args.module, args.acorn.as_deref()).context(
         "Loading the PKCS11 module usually depends on several environent variables.  Check HSMTOOL_MODULE, SOFTHSM2_CONF or your HSM's documentation.")?;
 
     // Initialize the list of all valid attribute types early.  Disable logging
