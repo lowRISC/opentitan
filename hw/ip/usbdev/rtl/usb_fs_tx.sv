@@ -402,14 +402,13 @@ module usb_fs_tx (
       end else begin
         usb_d_d = !usb_d_q;
       end
-
-      // Set to J state when OE=0 to avoid
-      // glitches
-      if (!oe_d) begin
-        usb_d_d = 1;
-      end
     end
 
+    // Set to J state when OE=0 to avoid
+    // glitches
+    if (!oe_d) begin
+      usb_d_d = 1;
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_diff_reg
@@ -440,7 +439,7 @@ module usb_fs_tx (
   ) u_usb_d_flop (
     .clk_i,
     .rst_ni,
-    .d_i(link_reset_i ? 1'b0 : usb_d_d),
+    .d_i(link_reset_i ? 1'b1 : usb_d_d),
     .q_o(usb_d_q)
   );
 
@@ -458,8 +457,8 @@ module usb_fs_tx (
   always_comb begin
     if (link_reset_i) begin
       usb_se0_flipped = 1'b0;
-      usb_dp_flipped = 1'b0 ^ cfg_pinflip_i;
-      usb_dn_flipped = 1'b1 ^ cfg_pinflip_i;
+      usb_dp_flipped = !cfg_pinflip_i;
+      usb_dn_flipped =  cfg_pinflip_i;
     end else begin
       usb_se0_flipped = usb_se0_d;
       usb_dp_flipped = (cfg_pinflip_i ? ~usb_d_d :  usb_d_d) & ~usb_se0_d;
