@@ -224,6 +224,12 @@ alias(
 )
 
 alias(
+    name = "libloading",
+    actual = "@crate_index__libloading-0.8.3//:libloading",
+    tags = ["manual"],
+)
+
+alias(
     name = "log",
     actual = "@crate_index__log-0.4.20//:log",
     tags = ["manual"],

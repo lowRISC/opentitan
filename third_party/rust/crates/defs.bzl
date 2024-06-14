@@ -326,6 +326,7 @@ _NORMAL_DEPENDENCIES = {
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
             "indexmap": "@crate_index__indexmap-2.0.0//:indexmap",
             "indicatif": "@crate_index__indicatif-0.17.6//:indicatif",
+            "libloading": "@crate_index__libloading-0.8.3//:libloading",
             "log": "@crate_index__log-0.4.20//:log",
             "mdbook": "@crate_index__mdbook-0.4.34//:mdbook",
             "memchr": "@crate_index__memchr-2.6.4//:memchr",
@@ -1719,6 +1720,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/libloading/0.7.4/download"],
         strip_prefix = "libloading-0.7.4",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.libloading-0.7.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__libloading-0.8.3",
+        sha256 = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/libloading/0.8.3/download"],
+        strip_prefix = "libloading-0.8.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.libloading-0.8.3.bazel"),
     )
 
     maybe(

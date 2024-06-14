@@ -86,6 +86,7 @@ cryptoki-sys = "0.1.6"
 indexmap = { version = "2.0", features = ["serde"] }
 secrecy = "0.8"
 strum = { version = "0.25", features = ["derive"] }
+libloading = "0.8"
 
 # We'd like to reference serde_annotate by its Git repo, but we also need to
 # support airgapped builds and bazel does not support git repo references
