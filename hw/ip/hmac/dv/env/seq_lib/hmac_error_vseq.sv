@@ -10,6 +10,11 @@ class hmac_error_vseq extends hmac_long_msg_vseq;
 
   function void pre_randomize();
     this.legal_seq_c.constraint_mode(0);
-  endfunction
+  endfunction : pre_randomize
 
+  virtual task pre_body();
+    // No need to trigger Save and Restore for this test
+    cfg.save_and_restore_pct = 0;
+    super.pre_body();
+  endtask : pre_body
 endclass : hmac_error_vseq

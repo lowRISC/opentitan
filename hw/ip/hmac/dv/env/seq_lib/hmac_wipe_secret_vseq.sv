@@ -23,4 +23,9 @@ class hmac_wipe_secret_vseq extends hmac_smoke_vseq;
     this.wipe_secret_c.constraint_mode(0);
   endfunction
 
+  virtual task pre_body();
+    // No need to trigger Save and Restore for this test
+    cfg.save_and_restore_pct = 0;
+    super.pre_body();
+  endtask : pre_body
 endclass : hmac_wipe_secret_vseq
