@@ -251,14 +251,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
   // Spawn a Save and Restore thread only when needed (as burst_wr_msg might call this task also
   // while the sar_thread is already ongoing)
-  virtual task wr_msg(bit [7:0] msg[]);
+  virtual task wr_msg(bit [7:0] msg[], bit no_sar=0);
     int bits_written = 0;
     bit [7:0] msg_q[$] = msg;
 
     // Spawn save and restore task only on some occasions
     fork : sar_simple_thread
       begin
-        if (!sar_ongoing && (cfg.save_and_restore_pct > $urandom_range(0, 99))) begin
+        if (!invalid_cfg && !no_sar && !sar_ongoing && (sar_window.get_num_waiters() == 0) &&
+            (cfg.save_and_restore_pct > $urandom_range(0, 99)) && (msg_q.size() > 0)) begin
           save_and_restore();
         end
       end
@@ -308,47 +309,88 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
             check_error_code();
           end
         end
-        if (!sar_ongoing) disable sar_simple_thread;
+        // Keep it alive only if needed
+        if (!sar_ongoing) begin
+          disable sar_simple_thread;
+          sar_window.reset();
+        end
       end
     join
+    sar_window.reset();
     // ensure all msg fifo are written before trigger hmac_process
     if ($urandom_range(0, 1)) rd_msg_length();
     read_status_intr_clr();
-  endtask
+  endtask : wr_msg
 
   // read fifo_depth reg and burst write a chunk of words
   virtual task burst_wr_msg(bit [7:0] msg[], int burst_wr_length);
     bit [7:0]       msg_q[$] = msg;
     bit [7:0]       word_unpack[4];
     bit [TL_DW-1:0] word;
-    while (msg_q.size() > 0) begin
-      // wait until HMAC has enough space to burst write
-      csr_spinwait(.ptr(ral.status.fifo_depth),
-                   .exp_data(HMAC_MSG_FIFO_DEPTH_WR - burst_wr_length),
-                   .compare_op(CompareOpLe));
-      if (msg_q.size() >= burst_wr_length * 4) begin
-        repeat (burst_wr_length) begin
-          for (int i = 0; i < 4; i++) word_unpack[i] = msg_q.pop_front();
-          word = {>>byte{word_unpack}};
-          `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
-                                    wr_addr, wr_mask, word), UVM_HIGH)
-          `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {wr_mask == '1;})
-          tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
-                    .write(1'b1), .data(word), .mask(wr_mask), .blocking($urandom_range(0, 1)));
+    int             bits_written = 0;
+
+    // Spawn save and restore task only on some occasions
+    fork : sar_burst_thread
+      begin
+        if (!invalid_cfg && !sar_ongoing && (sar_window.get_num_waiters() == 0) &&
+            (cfg.save_and_restore_pct > $urandom_range(0, 99)) && (msg_q.size() > 0)) begin
+          save_and_restore();
         end
-        // Expected error as we may not push message into the FIFO while SHA is disabled
-        if (!ral.cfg.sha_en.get_mirrored_value()) begin
-          check_error_code();
-        end
-      end else begin // remaining msg is smaller than the burst_wr_length
-        wr_msg(msg_q);
-        break;
       end
-      csr_utils_pkg::wait_no_outstanding_access();
-      if ($urandom_range(0, 1)) rd_msg_length();
-      read_status_intr_clr();
-    end
-  endtask
+      begin
+        while (msg_q.size() > 0) begin
+          // wait until HMAC has enough space to burst write
+          csr_spinwait(.ptr(ral.status.fifo_depth),
+                      .exp_data(HMAC_MSG_FIFO_DEPTH_WR - burst_wr_length),
+                      .compare_op(CompareOpLe));
+          if (msg_q.size() >= burst_wr_length * 4) begin
+            repeat (burst_wr_length) begin
+              for (int i = 0; i < 4; i++) word_unpack[i] = msg_q.pop_front();
+              word = {>>byte{word_unpack}};
+              `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
+                                        wr_addr, wr_mask, word), UVM_HIGH)
+              `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {wr_mask == '1;})
+              tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
+                        .write(1'b1), .data(word), .mask(wr_mask), .blocking(1));
+              bits_written += $countones(wr_mask) * 8;
+
+              `uvm_info(`gfn, $sformatf("bits written: %0d", bits_written), UVM_HIGH)
+
+              // Block size has to be not zero to avoid to divide by zero
+              if (get_block_size(digest_size) != 0) begin
+                // Multiple of block size reached => opportunity to trigger a S&R sequence
+                // Only when message is not completely yet transmitted, as it doesn't make sense
+                if ((bits_written % get_block_size(digest_size) == 0) && (msg_q.size() > 0)) begin
+                  // Trigger the event only if someone is waiting for it, this is to prevent
+                  // infinite wait in case of a S&R is triggered 2 times for a same message
+                  if (sar_window.get_num_waiters() > 0) begin
+                    sar_window.trigger();
+                    hash_continue.wait_trigger();
+                  end
+                end
+              end
+            end
+            // Expected error as we may not push message into the FIFO while SHA is disabled
+            if (!ral.cfg.sha_en.get_mirrored_value()) begin
+              check_error_code();
+            end
+          // remaining msg is smaller than the burst_wr_length
+          end else begin
+            wr_msg(msg_q, 1); // Do not S&R on the last piece as message boundary could be wrong
+            msg_q.delete();   // Flush the queue to avoid infinite loop
+          end
+          if ($urandom_range(0, 1)) rd_msg_length();
+          read_status_intr_clr();
+        end
+        // Keep it alive only if needed
+        if (!sar_ongoing) begin
+          disable sar_burst_thread;
+          sar_window.reset();
+        end
+      end
+    join
+    sar_window.reset();
+  endtask : burst_wr_msg
 
   // read the message length from the DUT reg (but discard it)
   virtual task rd_msg_length();
