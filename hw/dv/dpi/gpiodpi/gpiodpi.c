@@ -21,6 +21,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "tcp_server.h"
+
 // The number of ticks of host_to_device_tick between making syscalls.
 #define TICKS_PER_SYSCALL 2048
 
@@ -37,6 +39,9 @@ struct gpiodpi_ctx {
   // The number of pins we're driving.
   int n_bits;
 
+  // Signal used for chip reset.
+  svBit rst_n;
+
   // The last known value of the pins, in little-endian order.
   uint32_t driven_pin_values;
   // Whether or not the pin is being driven weakly or strongly.
@@ -44,6 +49,9 @@ struct gpiodpi_ctx {
   // A counter of calls into the host_to_device_tick function; used to
   // avoid excessive `read` syscalls to the pipe fd.
   uint32_t counter;
+
+  // Server context
+  struct tcp_server_ctx *sock;
 
   // File descriptors and paths for the device-to-host and host-to-device
   // FIFOs.
@@ -105,45 +113,59 @@ static void print_usage(char *rfifo, char *wfifo, int n_bits) {
          wfifo);
 }
 
-void *gpiodpi_create(const char *name, int n_bits) {
+void *gpiodpi_create(const char *name, int listen_port, int n_bits) {
   struct gpiodpi_ctx *ctx =
-      (struct gpiodpi_ctx *)malloc(sizeof(struct gpiodpi_ctx));
+      (struct gpiodpi_ctx *)calloc(1, sizeof(struct gpiodpi_ctx));
   assert(ctx);
 
   // n_bits > 32 requires more sophisticated handling of svBitVecVal which we
   // currently don't do.
   assert(n_bits <= 32 && "n_bits must be <= 32");
   ctx->n_bits = n_bits;
+  ctx->rst_n = 1;
 
   ctx->driven_pin_values = 0;
   ctx->weak_pins = 0;
   ctx->counter = 0;
 
-  char cwd_buf[PATH_MAX];
-  char *cwd = getcwd(cwd_buf, sizeof(cwd_buf));
-  assert(cwd != NULL);
+  if (listen_port >= 0 && listen_port <= 0xffff) {
+    // Create socket
+    ctx->sock = tcp_server_create(name, listen_port);
+    assert(ctx->sock);
 
-  int path_len;
-  path_len = snprintf(ctx->dev_to_host_path, PATH_MAX, "%s/%s-read", cwd, name);
-  assert(path_len > 0 && path_len <= PATH_MAX);
-  path_len =
-      snprintf(ctx->host_to_dev_path, PATH_MAX, "%s/%s-write", cwd, name);
-  assert(path_len > 0 && path_len <= PATH_MAX);
+    printf(
+        "\n"
+        "GPIO: FIFO pipes created at %s:%d (read) and %s:%d (write) for %d-bit "
+        "wide GPIO. Connect them with any telnet terminal program.\n",
+        "localhost", listen_port, "localhost", listen_port, n_bits);
+  } else {
+    char cwd_buf[PATH_MAX];
+    char *cwd = getcwd(cwd_buf, sizeof(cwd_buf));
+    assert(cwd != NULL);
 
-  ctx->dev_to_host_fifo = open_fifo(ctx->dev_to_host_path, O_RDWR);
-  if (ctx->dev_to_host_fifo < 0) {
-    return NULL;
+    int path_len;
+    path_len =
+        snprintf(ctx->dev_to_host_path, PATH_MAX, "%s/%s-read", cwd, name);
+    assert(path_len > 0 && path_len <= PATH_MAX);
+    path_len =
+        snprintf(ctx->host_to_dev_path, PATH_MAX, "%s/%s-write", cwd, name);
+    assert(path_len > 0 && path_len <= PATH_MAX);
+
+    ctx->dev_to_host_fifo = open_fifo(ctx->dev_to_host_path, O_RDWR);
+    if (ctx->dev_to_host_fifo < 0) {
+      return NULL;
+    }
+
+    ctx->host_to_dev_fifo = open_fifo(ctx->host_to_dev_path, O_RDWR);
+    if (ctx->host_to_dev_fifo < 0) {
+      return NULL;
+    }
+
+    int flags = fcntl(ctx->host_to_dev_fifo, F_GETFL, 0);
+    fcntl(ctx->host_to_dev_fifo, F_SETFL, flags | O_NONBLOCK);
+
+    print_usage(ctx->dev_to_host_path, ctx->host_to_dev_path, ctx->n_bits);
   }
-
-  ctx->host_to_dev_fifo = open_fifo(ctx->host_to_dev_path, O_RDWR);
-  if (ctx->host_to_dev_fifo < 0) {
-    return NULL;
-  }
-
-  int flags = fcntl(ctx->host_to_dev_fifo, F_GETFL, 0);
-  fcntl(ctx->host_to_dev_fifo, F_SETFL, flags | O_NONBLOCK);
-
-  print_usage(ctx->dev_to_host_path, ctx->host_to_dev_path, ctx->n_bits);
 
   return (void *)ctx;
 }
@@ -169,7 +191,15 @@ void gpiodpi_device_to_host(void *ctx_void, svBitVecVal *gpio_data,
   }
   *pin_char = '\n';
 
-  ssize_t written = write(ctx->dev_to_host_fifo, gpio_str, ctx->n_bits + 1);
+  ssize_t written = 0;
+  if (ctx->sock) {
+    for (int i = 0; i < ctx->n_bits + 1; i++) {
+      tcp_server_write(ctx->sock, gpio_str[i]);
+      written++;
+    }
+  } else {
+    written = write(ctx->dev_to_host_fifo, gpio_str, ctx->n_bits + 1);
+  }
   assert(written == ctx->n_bits + 1);
 }
 
@@ -211,14 +241,28 @@ static void set_bit_val(uint32_t *word, uint32_t idx, bool val) {
 
 uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
                                      svBitVecVal *gpio_pull_en,
-                                     svBitVecVal *gpio_pull_sel) {
+                                     svBitVecVal *gpio_pull_sel,
+                                     svBit *gpio_rst_n) {
   struct gpiodpi_ctx *ctx = (struct gpiodpi_ctx *)ctx_void;
   assert(ctx);
 
   if (ctx->counter % TICKS_PER_SYSCALL == 0) {
     char gpio_str[256];
-    ssize_t read_len =
-        read(ctx->host_to_dev_fifo, gpio_str, sizeof(gpio_str) - 1);
+    ssize_t read_len = 0;
+    if (ctx->sock) {
+      bool rv;
+      do {
+        rv = tcp_server_read(ctx->sock, &gpio_str[read_len]);
+        if (rv) {
+          read_len++;
+        }
+      } while (read_len > 0 && read_len < 256 &&
+               (gpio_str[read_len - 1] != '\0' &&
+                gpio_str[read_len - 1] != '\r' &&
+                gpio_str[read_len - 1] != '\n'));
+    } else {
+      read_len = read(ctx->host_to_dev_fifo, gpio_str, sizeof(gpio_str) - 1);
+    }
     if (read_len > 0) {
       gpio_str[read_len] = '\0';
 
@@ -245,6 +289,8 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
               }
               CLR_BIT(ctx->driven_pin_values, idx);
               set_bit_val(&ctx->weak_pins, idx, weak);
+            } else if (idx == 255) {
+              ctx->rst_n = 0;
             } else {
               fprintf(stderr,
                       "GPIO: Host tried to pull invalid pin low: pin %2d\n",
@@ -265,6 +311,8 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
               }
               SET_BIT(ctx->driven_pin_values, idx);
               set_bit_val(&ctx->weak_pins, idx, weak);
+            } else if (idx == 255) {
+              ctx->rst_n = 1;
             } else {
               fprintf(stderr,
                       "GPIO: Host tried to pull invalid pin high: pin %2d\n",
@@ -281,6 +329,7 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
   }
 
 parse_loop_end:
+  *gpio_rst_n = ctx->rst_n;
   ctx->counter += 1;
   // The verilated module simulates logic, but the weak/strong inputs result
   // from the properties of the IO pads and the selection of external pull
@@ -303,22 +352,26 @@ void gpiodpi_close(void *ctx_void) {
     return;
   }
 
-  if (close(ctx->dev_to_host_fifo) != 0) {
-    printf("GPIO: Failed to close FIFO file at %s: %s\n", ctx->dev_to_host_path,
-           strerror(errno));
-  }
-  if (close(ctx->host_to_dev_fifo) != 0) {
-    printf("GPIO: Failed to close FIFO file at %s: %s\n", ctx->host_to_dev_path,
-           strerror(errno));
-  }
+  if (ctx->sock) {
+    tcp_server_close(ctx->sock);
+  } else {
+    if (close(ctx->dev_to_host_fifo) != 0) {
+      printf("GPIO: Failed to close FIFO file at %s: %s\n",
+             ctx->dev_to_host_path, strerror(errno));
+    }
+    if (close(ctx->host_to_dev_fifo) != 0) {
+      printf("GPIO: Failed to close FIFO file at %s: %s\n",
+             ctx->host_to_dev_path, strerror(errno));
+    }
 
-  if (unlink(ctx->dev_to_host_path) != 0) {
-    printf("GPIO: Failed to unlink FIFO file at %s: %s\n",
-           ctx->dev_to_host_path, strerror(errno));
-  }
-  if (unlink(ctx->host_to_dev_path) != 0) {
-    printf("GPIO: Failed to unlink FIFO file at %s: %s\n",
-           ctx->host_to_dev_path, strerror(errno));
+    if (unlink(ctx->dev_to_host_path) != 0) {
+      printf("GPIO: Failed to unlink FIFO file at %s: %s\n",
+             ctx->dev_to_host_path, strerror(errno));
+    }
+    if (unlink(ctx->host_to_dev_path) != 0) {
+      printf("GPIO: Failed to unlink FIFO file at %s: %s\n",
+             ctx->host_to_dev_path, strerror(errno));
+    }
   }
 
   free(ctx);

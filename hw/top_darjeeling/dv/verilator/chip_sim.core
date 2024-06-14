@@ -100,6 +100,8 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
+          # Ensure the async resets trigger at time 0, so initial values are correct.
+          - '--x-initial-edge'
           # This increase became necessary: for simplicity do it everywhere.
           - '--max-num-width 131072'
           # TODO: Variable expansion depends on edalize internals. Find better solution.

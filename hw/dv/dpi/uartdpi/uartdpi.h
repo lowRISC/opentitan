@@ -9,15 +9,10 @@ extern "C" {
 
 #include <stdio.h>
 
-struct uartdpi_ctx {
-  char ptyname[64];
-  int host;
-  int device;
-  char tmp_read;
-  FILE *log_file;
-};
+struct uartdpi_ctx;
 
-void *uartdpi_create(const char *name, const char *log_file_path);
+void *uartdpi_create(const char *name, int listen_port,
+                     const char *log_file_path);
 void uartdpi_close(void *ctx_void);
 int uartdpi_can_read(void *ctx_void);
 char uartdpi_read(void *ctx_void);

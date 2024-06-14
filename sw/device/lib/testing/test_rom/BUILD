@@ -76,6 +76,7 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/rom:bootstrap",
         "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
@@ -182,6 +183,7 @@ cc_library(
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/rom:bootstrap",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",

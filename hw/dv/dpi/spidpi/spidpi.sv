@@ -11,6 +11,7 @@
 module spidpi
   #(
   parameter string NAME = "spi0",
+  parameter int ListenPort = -1,
   parameter MODE = 0,
   parameter LOG_LEVEL = 9
   )(
@@ -24,7 +25,8 @@ module spidpi
 
 );
   import "DPI-C" function
-    chandle spidpi_create(input string name, input int mode, input int loglevel);
+    chandle spidpi_create(input string name, input int listen_port,
+                          input int mode, input int loglevel);
 
   import "DPI-C" function
     void spidpi_close(input chandle ctx);
@@ -35,7 +37,7 @@ module spidpi
   chandle ctx;
 
   initial begin
-    ctx = spidpi_create(NAME, MODE, LOG_LEVEL);
+    ctx = spidpi_create(NAME, ListenPort, MODE, LOG_LEVEL);
   end
 
   final begin

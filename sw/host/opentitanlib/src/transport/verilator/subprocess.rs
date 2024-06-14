@@ -15,10 +15,10 @@ use crate::util::printer;
 pub struct Options {
     /// The verilator executable.
     pub executable: String,
-    /// The ROM image used to boot the CPU.
+    /// The Base ROM image used to boot the CPU.
     pub rom_image: String,
     /// The optional second ROM image.
-    pub second_rom_image: Option<String>,
+    pub rom1_image: Option<String>,
     /// The flash images stored in internal flash memory, one file per bank.
     pub flash_images: Vec<String>,
     /// The OTP settings.
@@ -46,9 +46,9 @@ impl Subprocess {
             args.push(format!("--meminit=rom,{}", options.rom_image));
         }
 
-        if let Some(second_rom_image) = options.second_rom_image {
-            if !second_rom_image.is_empty() {
-                args.push(format!("--meminit=second_rom,{}", second_rom_image));
+        if let Some(rom1_image) = options.rom1_image {
+            if !rom1_image.is_empty() {
+                args.push(format!("--meminit=rom1,{}", rom1_image));
             }
         }
 
@@ -141,7 +141,7 @@ mod test {
         let options = Options {
             executable: "/bin/echo".to_owned(),
             rom_image: "".to_owned(),
-            second_rom_image: Some("".to_owned()),
+            rom1_image: Some("".to_owned()),
             flash_images: vec!["/dev/null:1".to_owned()],
             otp_image: "".to_owned(),
             ram_ctn_image: "".to_owned(),
