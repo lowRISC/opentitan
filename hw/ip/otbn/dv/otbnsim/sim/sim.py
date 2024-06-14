@@ -336,6 +336,7 @@ class OTBNSim:
             self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
 
         is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
+        locking = self.state.rma_req == LcTx.ON or not is_good
 
         # Clear the WIPE_START register if it was set.
         if self.state.ext_regs.read('WIPE_START', True):
@@ -351,8 +352,7 @@ class OTBNSim:
                 # Zero INSN_CNT in the *next* cycle to match RTL control flow.
                 self.state.zero_insn_cnt_next = True
 
-        final_wipe_round = (self.state.rma_req == LcTx.ON or
-                            not self.state.first_round_of_wipe)
+        final_wipe_round = not self.state.first_round_of_wipe
 
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to
@@ -368,7 +368,7 @@ class OTBNSim:
             # RMA requests are a special case where the "last round" might
             # actually be the first one as well.
             if final_wipe_round:
-                next_status = Status.IDLE if is_good else Status.LOCKED
+                next_status = Status.LOCKED if locking else Status.IDLE
                 self.state.ext_regs.write('STATUS', next_status, True)
                 self.state.wipe()
             else:
@@ -388,8 +388,7 @@ class OTBNSim:
                 # This is the second wipe round or the only wipe round during
                 # an RMA request. If the wipe was good, set the next state to
                 # IDLE; otherwise set it to LOCKED.
-                if is_good:
-                    assert self.state.rma_req != LcTx.ON
+                if not locking:
                     next_state = FsmState.IDLE
                     if self.state.init_sec_wipe_is_running():
                         self.state.complete_init_sec_wipe()
