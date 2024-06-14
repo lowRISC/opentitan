@@ -12,3 +12,7 @@ waive -rules {HIER_NET_NOT_READ INPUT_NOT_READ} \
       -location {tlul_adapter_host.sv} \
       -regexp {'tl_i.d_(error|opcode|param|sink|size|source|user)' is not read from} \
       -comment "Not all fields of response needed"
+waive -rules {ASSIGN_SIGN} \
+      -location {tlul_adapter_host.sv} \
+      -regexp {Unsigned target 'a_size' assigned signed value 'top_pkg::TL_SZW'\(WordSize\)'} \
+      -comment "'WordSize' is always greater than 0 (obtained using \$clog2()). It's safe to assign this to 'a_size'."
