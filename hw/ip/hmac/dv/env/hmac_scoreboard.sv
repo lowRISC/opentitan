@@ -589,8 +589,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 // break if hmac is done or if invalid config error is triggered or if SHA is
                 // being disabled as HMAC enable configuration could be changed and thus
                 // key_process_cycles might need to be updated
-                if (ral.intr_state.hmac_done.get_mirrored_value() == 1 ||
-                   (ral.intr_state.hmac_err.get_mirrored_value()  == 1 &&
+                if (ral.intr_state.hmac_done.get_mirrored_value() ||
+                   (ral.intr_state.hmac_err.get_mirrored_value() &&
                     ral.err_code.get_mirrored_value() == SwInvalidConfig) ||
                     !sha_en) break;
                 cfg.clk_rst_vif.wait_clks(1);
