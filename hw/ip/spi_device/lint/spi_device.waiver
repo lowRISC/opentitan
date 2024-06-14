@@ -103,12 +103,36 @@ waive -rules RESET_DRIVER -location {spid_status.sv} \
 waive -rules RESET_DRIVER -location {spi_device.sv} \
       -regexp {'spi_dpram_rst_n' is driven} \
       -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spi_device.sv} \
+      -regexp {'rst_spi_out_sync_n' is driven by instance 'u_rst_spi_out_sync' of module 'prim_flop', and used as an asynchronous reset 'rst_spi_out_n'} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spi_device.sv} \
+      -regexp {'tpm_rst_out_sync_n' is driven by instance 'u_tpm_rst_out_sync' of module 'prim_flop', and used as an asynchronous reset 'rst_out_ni'} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spid_status.sv} \
+      -regexp {'status_fifo_clr_n' is driven here, and used as an asynchronous reset 'rst_wr_ni'} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_MUX -location {spi_device.sv} \
+      -regexp {Asynchronous reset 'rst_spi_out_n' is driven by a multiplexer here, used as a reset} \
+      -comment "Scan reset mux, but need to have asynchronous reset"
+waive -rules RESET_MUX -location {spi_device.sv} \
+      -regexp {Asynchronous reset 'tpm_rst_out_n' is driven by a multiplexer here, used as a reset 'rst_out_ni'} \
+      -comment "Scan reset mux, but need to have asynchronous reset"
+waive -rules RESET_MUX -location {spid_status.sv} \
+      -regexp {Asynchronous reset 'status_fifo_rst_n' is driven by a multiplexer here, used as a reset 'rst_wr_ni'} \
+      -comment "Scan reset mux, but need to have asynchronous reset"
 
 # clock inverter and muxes
-waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is driven by a multiplexer here, used as a clock 'clk_(out|src)_i'} \
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is driven by a multiplexer here, used as a clock 'clk_i'} \
       -comment "The multiplexer is needed to bypass the clock inverter during testing"
-waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_in_buf' reaches a multiplexer here, used as a clock.*} \
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_(in|out)_muxed' is driven by a multiplexer here, used as a clock 'clk_(src_|)i'} \
       -comment "These multiplexers are needed to select between inverted and non-inverted clock based on configuration"
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_csb_muxed' is driven by a multiplexer here, used as a clock 'csb_i'} \
+      -comment "The multiplexer is needed to select between the CSb clock and scan clock during testing"
+waive -rules INV_CLOCK -location {spi_device.sv} -regexp {'rst_csb_buf' is inverted, used as clock 'csb_i'} \
+      -comment "This inverter is required"
+waive -rules INV_CLOCK -location {spi_device.sv} -regexp {'sck_csb' is inverted, used as clock 'csb_i'} \
+      -comment "This inverter is required"
 
 ## For Generic Ascentlint only
 waive -rules CLOCK_MUX -location {spi_device.sv} \
@@ -152,9 +176,20 @@ waive -rules {ONE_BIT_MEM_WIDTH} -location {spi_device.sv} \
 #### Clock use
 ####
 waive -rules {CLOCK_USE} -location {spi_device.sv} \
-      -regexp {clk_i' is connected to 'prim_clock_mux2' port 'clk1_i', and used as a clock 'CK' at} \
-      -comment "This clock mux is required."
-
+      -regexp {'rst_csb_buf' is used for some other purpose, and as clock 'csb_i'} \
+      -comment "cio_csb_i feeds both into rst_csb_buf and clk_csb_buf"
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'sys_csb' is connected to 'prim_flop_2sync' port 'd_i\[0\]', and used as a clock 'csb_i'} \
+      -comment "cio_csb_i feeds both into sys_csb and clk_csb_buf"
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'sck_csb' is used for some other purpose, and as clock 'csb_i'} \
+      -comment "cio_csb_i feeds both into sck_csb and clk_csb_buf"
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'sck_csb' is connected to 'spi_p2s' port 'csb_i', and used as a clock 'csb_i'} \
+      -comment "cio_csb_i feeds both into sck_csb and clk_csb_buf"
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'cio_csb_i' is connected to 'spi_passthrough' port 'host_csb_i', and used as a clock 'csb_i'} \
+      -comment "cio_csb_i is used as clock directly, but also feeds into other modules"
 
 #### Passthrough
 waive -rules {TERMINAL_STATE} -location {spi_passthrough.sv} \
