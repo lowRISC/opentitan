@@ -2,17 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This test creates read buffer eviction by program_flash operation.
+// This test creates read buffer eviction by program_flash operation,
+// careful not to reuse evict addresses since they would cause a
+// double write, leading to integrity errors. This means the items in
+// addr_q are always popped, and addr_q needs to be replenished.
 class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
   `uvm_object_utils(flash_ctrl_rw_evict_vseq)
   `uvm_object_new
+
+  // We keep up to this many items in addr_q.
+  parameter int TargetAddrQSize = 4;
+
+  // This holds the collection of addresses that are candidates for eviction.
+  rd_cache_t addr_q[$];
+
+  local function void add_to_addr_q(rd_cache_t entry);
+    addr_q.push_back(entry);
+    if (addr_q.size > TargetAddrQSize) begin
+      rd_cache_t old_ent = addr_q.pop_front();
+    end
+  endfunction
 
   virtual task body();
     int page;
     int evict_trans, idx = 0;
     int evict_start = 0;
-
-    rd_cache_t addr_q[$];
 
     flash_op_t init_ctrl;
     flash_dv_part_e part;
@@ -29,14 +43,15 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
         while (idx < 50 && cfg.flash_ctrl_vif.fatal_err == 0) begin
           int num;
           `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
-          ctrl.addr[OTFBankId] = bank;
-          `uvm_info(`gfn, $sformatf("Randomize addr 0x%x to addr_q", ctrl.addr), UVM_MEDIUM)
-          `DV_CHECK(ctrl.addr[2] == 0)
-          if (evict_start) begin
+          ctrl.num_words = fractions;
+          if (evict_start && addr_q.size >= TargetAddrQSize) begin
             addr_q.shuffle();
-            entry = addr_q[0];
+            entry = addr_q.pop_front();
+            ctrl.addr = entry.addr;
             ctrl.otf_addr = entry.addr;
-            `uvm_info(`gfn, $sformatf("The address to evict is 0x%x", entry.addr), UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf(
+                      "The address to evict is 0x%x, chosen from %p", entry.addr, addr_q),
+                      UVM_MEDIUM)
             ctrl.partition = entry.part;
             init_ctrl = ctrl;
             send_evict(ctrl, bank);
@@ -58,50 +73,27 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
             if (ctrl.partition == FlashPartData) begin
               randcase
                 1: begin
-                  int size, is_odd, tail;
-                  is_odd = ctrl.addr[2];
-                  size = (fractions + is_odd) / 2;
-                  tail = (fractions + is_odd) % 2;
+                  int size;
+                  `DV_CHECK(!ctrl.addr[2], "Unexpected addr[2] set")
+                  size = fractions  / 2;
                   repeat (size) begin
-                    addr_q.push_back(entry);
-                    if (addr_q.size > 4) begin
-                      rd_cache_t old_ent = addr_q.pop_front();
-                    end
+                    add_to_addr_q(entry);
                     entry.addr += 8;
-                  end
-                  if (tail) begin
-                    addr_q.push_back(entry);
-                    if (addr_q.size > 4) begin
-                      rd_cache_t old_ent = addr_q.pop_front();
-                    end
                   end
                   readback_flash(ctrl, bank, 1, fractions);
                 end
                 3: begin
-                  addr_q.push_back(entry);
-                  if (addr_q.size > 4) begin
-                    rd_cache_t old_ent = addr_q.pop_front();
-                  end
+                  add_to_addr_q(entry);
                   direct_readback(ctrl.otf_addr, bank, 1);
                 end
               endcase
             end else begin
-              int size, is_odd, tail;
-              is_odd = ctrl.addr[2];
-              size = (fractions + is_odd) / 2;
-              tail = (fractions + is_odd) % 2;
+              int size;
+              size = fractions / 2;
+              `DV_CHECK(!ctrl.addr[2] && !fractions[0], "Odd address or fractions")
               repeat (size) begin
-                addr_q.push_back(entry);
-                if (addr_q.size > 4) begin
-                  rd_cache_t old_ent = addr_q.pop_front();
-                end
+                add_to_addr_q(entry);
                 entry.addr += 8;
-              end
-              if (tail) begin
-                addr_q.push_back(entry);
-                if (addr_q.size > 4) begin
-                  rd_cache_t old_ent = addr_q.pop_front();
-                end
               end
               readback_flash(ctrl, bank, 1, fractions);
             end
@@ -126,9 +118,9 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
     cfg.seq_cfg.disable_flash_init = 1;
   endtask : body
 
+  // We evict two bus words (one flash word).
   virtual task send_evict(flash_op_t ctrl, int bank);
-    prog_flash(ctrl, bank, 1, fractions);
+    prog_flash(ctrl, bank, /*num=*/1, /*wd=*/2);
   endtask : send_evict
-
 
 endclass : flash_ctrl_rw_evict_vseq
