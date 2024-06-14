@@ -16,6 +16,7 @@ mod ecdsa;
 mod exec;
 mod object;
 mod rsa;
+mod spx;
 mod token;
 
 #[typetag::serde(tag = "command")]
@@ -45,6 +46,8 @@ pub enum Commands {
     #[command(subcommand)]
     Rsa(rsa::Rsa),
     #[command(subcommand)]
+    Spx(spx::Spx),
+    #[command(subcommand)]
     Token(token::Token),
 }
 
@@ -60,6 +63,7 @@ impl Dispatch for Commands {
             Commands::Ecdsa(x) => x.run(context, hsm, session),
             Commands::Exec(x) => x.run(context, hsm, session),
             Commands::Object(x) => x.run(context, hsm, session),
+            Commands::Spx(x) => x.run(context, hsm, session),
             Commands::Rsa(x) => x.run(context, hsm, session),
             Commands::Token(x) => x.run(context, hsm, session),
         }
@@ -73,6 +77,7 @@ impl Dispatch for Commands {
             Commands::Ecdsa(x) => x.leaf(),
             Commands::Exec(x) => x.leaf(),
             Commands::Object(x) => x.leaf(),
+            Commands::Spx(x) => x.leaf(),
             Commands::Rsa(x) => x.leaf(),
             Commands::Token(x) => x.leaf(),
         }
