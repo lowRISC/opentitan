@@ -8,7 +8,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  task body();
+  virtual task body();
     byte unsigned tx_data[];
 
     // Enable all endpoints for SETUP, IN and OUT

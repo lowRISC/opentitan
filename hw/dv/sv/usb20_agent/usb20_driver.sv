@@ -410,6 +410,30 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end join
   endtask
 
+  // Sample the USB according to the current bus configuration, when the DUT is transmitting.
+  function usb_symbol_e current_symbol();
+    if (cfg.tx_use_d_se0) begin
+      // SE0 takes precedence over the data line.
+      return cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : (cfg.bif.usb_tx_d_o ? USB20Sym_J : USB20Sym_K);
+    end else if (cfg.pinflip) begin
+      // J and K encodings are transposed when the pins are flipped, but SE0 is unaltered.
+      case ({cfg.bif.usb_n, cfg.bif.usb_p})
+        2'b00:   return USB20Sym_SE0;
+        2'b01:   return USB20Sym_K;
+        2'b10:   return USB20Sym_J;
+        default: return USB20Sym_Invalid;
+      endcase
+    end else begin
+      // Normal pin configuration.
+      case ({cfg.bif.usb_n, cfg.bif.usb_p})
+        2'b00:   return USB20Sym_SE0;
+        2'b01:   return USB20Sym_J;
+        2'b10:   return USB20Sym_K;
+        default: return USB20Sym_Invalid;
+      endcase
+    end
+  endfunction
+
   task get_device_response(ref usb20_item rsp_item);
     bit received_pkt[];
     bit nrzi_out_pkt[];
@@ -423,12 +447,14 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
     while (cfg.bif.usb_dp_en_o) begin
+      usb_symbol_e sym;
       @(posedge cfg.bif.clk_i);
       @(posedge cfg.bif.clk_i);
       // Detect SE0 signaling which indicates End Of Packet
-      if (cfg.bif.usb_p === 1'b0 && cfg.bif.usb_n === 1'b0) break;
+      sym = current_symbol();
+      if (sym == USB20Sym_SE0) break;
       received_pkt = new[received_pkt.size() + 1](received_pkt);
-      received_pkt[receive_index] = cfg.bif.usb_p;
+      received_pkt[receive_index] = (sym == USB20Sym_J);
       receive_index = receive_index + 1;
       @(posedge cfg.bif.clk_i);
       @(posedge cfg.bif.clk_i);
@@ -439,11 +465,11 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     // may differ.
     for (int unsigned clks = 0; clks < 4; clks++) begin
       @(posedge cfg.bif.clk_i);
-      `DV_CHECK_FATAL(cfg.bif.usb_p === 1'b0 && cfg.bif.usb_n === 1'b0);
+      `DV_CHECK_FATAL(USB20Sym_SE0 == current_symbol());
     end
     // Check Idle signaling for a single bit interval, which also prevents us transmitting too soon.
     wait_clks(4);
-    `DV_CHECK_FATAL(cfg.bif.usb_p == 1'b1 && cfg.bif.usb_n == 1'b0);
+    `DV_CHECK_FATAL(USB20Sym_J == current_symbol());
     // Wait for the Idle bit interval to complete.
     wait_clks(2);
     `uvm_info(`gfn, $sformatf("Received Packet = %p", received_pkt), UVM_LOW)

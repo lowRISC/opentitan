@@ -269,10 +269,6 @@
       uvm_test_seq: usbdev_stall_priority_over_nak_vseq
     }
     {
-      name: usbdev_phy_config_usb_ref_disable
-      uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
-    }
-    {
       name: usbdev_phy_config_eop_single_bit_handling
       uvm_test_seq: usbdev_phy_config_eop_single_bit_handling_vseq
       reseed: 1
@@ -281,6 +277,15 @@
       name: usbdev_phy_config_tx_osc_test_mode
       uvm_test_seq: usbdev_phy_config_tx_osc_test_mode_vseq
       reseed: 1
+    }
+    {
+      name: usbdev_phy_config_pinflip
+      uvm_test_seq: usbdev_phy_config_pinflip_vseq
+      run_opts: ["+pin_flip=1"]
+    }
+    {
+      name: usbdev_phy_config_usb_ref_disable
+      uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
     }
     {
       name: usbdev_setup_stage

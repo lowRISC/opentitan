@@ -159,7 +159,7 @@
               being transferred.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_phy_config_pinflip"]
     }
     {
       name: phy_config_usb_ref_disable

@@ -63,7 +63,6 @@ bit apply_post_reset_delays_for_sync = 1'b1;
 bit phy_eop_single_bit = 1'b0;  // Note: the default reset value is 1
 bit phy_usb_ref_disable = 1'b0;
 bit phy_tx_osc_test_mode = 1'b0;
-// TODO: support pin-flipping through the DV including the usb20_driver and usb20_monitor.
 bit phy_pinflip = 1'b0;
 
 // Approx. over-estimate of the USBDEV:AON/Wake clock ratio; we expect the USB device to be
@@ -206,6 +205,9 @@ endtask
       void'($value$plusargs("pin_flip=%d", pin_flip)); // Flip pins on the USB?
       void'($value$plusargs("en_diff_rcvr=%d", en_diff_rcvr)); // Enable differential receiver?
       void'($value$plusargs("tx_use_d_se0=%d", tx_use_d_se0)); // Use D/SE0 for transmission?
+      // Inform the USB agent of the bus configuration.
+      cfg.m_usb20_agent_cfg.pinflip = pin_flip;
+      cfg.m_usb20_agent_cfg.tx_use_d_se0 = tx_use_d_se0;
       // Initialize the device via its registers.
       usbdev_init(dev_addr, en_diff_rcvr, tx_use_d_se0, pin_flip);
     end
