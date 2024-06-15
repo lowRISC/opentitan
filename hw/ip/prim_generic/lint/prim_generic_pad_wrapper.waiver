@@ -2,28 +2,28 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# waiver file for prim_generic_pad_wrapper
+# waiver file for prim_pad_wrapper
 # note that this code is NOT synthesizable and meant for sim only
 
-waive -rules TRI_DRIVER -regexp {'inout_io' is driven by a tristate driver} -location {prim_generic_pad_wrapper.sv} \
+waive -rules TRI_DRIVER -regexp {'inout_io' is driven by a tristate driver} -location {prim_pad_wrapper.sv} \
       -comment "This is a bidirectional pad inout."
 waive -rules TRI_DRIVER -regexp {'in_raw_o' is driven by a tristate driver} \
       -comment "This is a bidirectional pad inout."
-waive -rules MULTI_DRIVEN -regexp {.* drivers on 'inout_io' here} -location {prim_generic_pad_wrapper.sv} \
+waive -rules MULTI_DRIVEN -regexp {.* drivers on 'inout_io' here} -location {prim_pad_wrapper.sv} \
       -comment "The pad simulation model has multiple drivers to emulate different IO terminations."
-waive -rules SELF_ASSIGN -regexp {LHS signal 'inout_io' encountered on the RHS of a continuous assignment statement} -location {prim_generic_pad_wrapper.sv} \
+waive -rules SELF_ASSIGN -regexp {LHS signal 'inout_io' encountered on the RHS of a continuous assignment statement} -location {prim_pad_wrapper.sv} \
       -comment "This implements a keeper termination (it's basically an explicit TRIREG)"
-waive -rules DRIVE_STRENGTH -regexp {Drive strength .* encountered on assignment to 'inout_io'} -location {prim_generic_pad_wrapper.sv} \
+waive -rules DRIVE_STRENGTH -regexp {Drive strength .* encountered on assignment to 'inout_io'} -location {prim_pad_wrapper.sv} \
       -comment "The pad simulation model uses driving strength attributes to emulate different IO terminations."
-waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i*' is not read from} -location {prim_generic_pad_wrapper.sv} \
+waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i*' is not read from} -location {prim_pad_wrapper.sv} \
       -comment "Some IO attributes may not be implemented."
-waive -rules Z_USE -regexp {Constant with 'Z literal value '1'bz' encountered} -location {prim_generic_pad_wrapper.sv} \
+waive -rules Z_USE -regexp {Constant with 'Z literal value '1'bz' encountered} -location {prim_pad_wrapper.sv} \
       -comment "This z assignment is correct."
-waive -rules PARAM_NOT_USED -regexp {Parameter 'Variant' not used in module 'prim_generic_pad_wrapper'} -location {prim_generic_pad_wrapper.sv} \
+waive -rules PARAM_NOT_USED -regexp {Parameter 'Variant' not used in module 'prim_pad_wrapper'} -location {prim_pad_wrapper.sv} \
       -comment "This parameter has been provisioned for later and is currently unused."
-waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'prim_generic_pad_wrapper'} -location {prim_generic_pad_wrapper.sv} \
+waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'prim_pad_wrapper'} -location {prim_pad_wrapper.sv} \
       -comment "This parameter has been provisioned for later and is currently unused."
-waive -rules INPUT_NOT_READ -msg {Input port 'clk_scan_i' is not read from in module 'prim_generic_pad_wrapper'} \
+waive -rules INPUT_NOT_READ -msg {Input port 'clk_scan_i' is not read from in module 'prim_pad_wrapper'} \
       -comment "This clock is not read in RTL since it will be connected after synthesis during DFT insertion"
 waive -rules {CLOCK_DRIVER CLOCK_USE INV_CLOCK} -regexp {'gen_bidir.out' is (driven here|used for some other purpose|inverted), (and used|and|used) as( a)? clock} \
       -comment "The pad simulation model may also be used for simulating clock pads"

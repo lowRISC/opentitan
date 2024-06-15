@@ -15,7 +15,7 @@ filesets:
       - lowrisc:prim_generic:rom_pkg
       - lowrisc:prim:util_memload
     files:
-      - rtl/prim_generic_rom.sv
+      - rtl/prim_rom.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
