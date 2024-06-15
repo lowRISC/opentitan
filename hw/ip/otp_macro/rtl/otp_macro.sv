@@ -501,7 +501,6 @@ module otp_macro
               $stable(rst_ni) == 0 |-> u_tlul_lc_gate.u_state_regs.unused_err_o == 0 [*10])
 
 
-<<<<<<< HEAD:hw/ip/otp_macro/rtl/otp_macro.sv
 //  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
 //      u_reg_top, otp_o.fatal_alert)
   `ASSERT_ERROR_TRIGGER_ERR(PrimRegWeOnehotCheck_A,
@@ -511,8 +510,3 @@ module otp_macro
               $stable(rst_ni) == 0 |-> u_state_regs.err_o == 0 [*10])
 
 endmodule : otp_macro
-||||||| parent of cab28d3033 ([prim] Replace primgen with virtual prim cores):hw/ip/prim_generic/rtl/prim_generic_otp.sv
-endmodule : prim_generic_otp
-=======
-endmodule : prim_otp
->>>>>>> cab28d3033 ([prim] Replace primgen with virtual prim cores):hw/ip/prim_generic/rtl/prim_generic_otp.sv
