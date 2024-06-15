@@ -11,7 +11,7 @@ virtual:
 filesets:
   files_rtl:
     files:
-      - rtl/prim_xilinx_ultrascale_clock_buf.sv
+      - rtl/prim_clock_buf.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
