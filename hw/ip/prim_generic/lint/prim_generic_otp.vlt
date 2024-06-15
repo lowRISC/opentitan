@@ -6,5 +6,5 @@
 `verilator_config
 
 // The generic OTP module doesn't use vendor-specific parameters
-lint_off -rule UNUSED -file "*/rtl/prim_generic_otp.sv" -match "*VendorTestOffset*"
-lint_off -rule UNUSED -file "*/rtl/prim_generic_otp.sv" -match "*VendorTestSize*"
+lint_off -rule UNUSED -file "*/rtl/prim_otp.sv" -match "*VendorTestOffset*"
+lint_off -rule UNUSED -file "*/rtl/prim_otp.sv" -match "*VendorTestSize*"

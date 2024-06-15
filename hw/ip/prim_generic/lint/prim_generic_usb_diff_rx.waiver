@@ -2,12 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# waiver file for prim_generic_usb_diff_rx
+# waiver file for prim_usb_diff_rx
 # note that this code is NOT synthesizable and meant for sim only
 
-waive -rules TRI_DRIVER -regexp {'(input_pi|input_ni)' is driven by a tristate driver} -location {prim_generic_usb_diff_rx.sv} \
+waive -rules TRI_DRIVER -regexp {'(input_pi|input_ni)' is driven by a tristate driver} -location {prim_usb_diff_rx.sv} \
       -comment "This models the pullup behavior, hence the TRI driver."
-waive -rules MULTI_DRIVEN -regexp {'(input_pi|input_ni)' has 2 drivers, also driven at} -location {prim_generic_usb_diff_rx.sv} \
+waive -rules MULTI_DRIVEN -regexp {'(input_pi|input_ni)' has 2 drivers, also driven at} -location {prim_usb_diff_rx.sv} \
       -comment "The simulation model has multiple drivers to emulate different IO terminations."
-waive -rules DRIVE_STRENGTH -regexp {Drive strength '\(weak0,pull1\)' encountered on assignment to '(input_pi|input_ni)'} -location {prim_generic_usb_diff_rx.sv} \
+waive -rules DRIVE_STRENGTH -regexp {Drive strength '\(weak0,pull1\)' encountered on assignment to '(input_pi|input_ni)'} -location {prim_usb_diff_rx.sv} \
       -comment "The simulation model uses driving strength attributes to emulate different IO terminations."

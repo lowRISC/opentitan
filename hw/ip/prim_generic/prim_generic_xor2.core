@@ -11,7 +11,7 @@ virtual:
 filesets:
   files_rtl:
     files:
-      - rtl/prim_generic_xor2.sv
+      - rtl/prim_xor2.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -11,7 +11,7 @@ virtual:
 filesets:
   files_rtl:
     files:
-      - rtl/prim_generic_usb_diff_rx.sv
+      - rtl/prim_usb_diff_rx.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
