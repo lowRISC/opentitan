@@ -13,7 +13,7 @@ filesets:
     depend:
       - lowrisc:prim:sec_anchor
     files:
-      - rtl/prim_generic_flop_en.sv
+      - rtl/prim_flop_en.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

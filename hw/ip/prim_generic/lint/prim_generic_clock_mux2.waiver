@@ -4,5 +4,5 @@
 #
 # waiver file for prim_clock_mux2
 
-waive -rules PARAM_NOT_USED -location {prim_generic_clock_mux2.sv} -regexp {.*Parameter 'NoFpgaBufG' not used in.*} \
+waive -rules PARAM_NOT_USED -location {prim_clock_mux2.sv} -regexp {.*Parameter 'NoFpgaBufG' not used in.*} \
       -comment "This parameter serves no function in the generic model"

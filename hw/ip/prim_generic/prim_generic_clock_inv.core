@@ -14,7 +14,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:clock_mux2
     files:
-      - rtl/prim_generic_clock_inv.sv
+      - rtl/prim_clock_inv.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

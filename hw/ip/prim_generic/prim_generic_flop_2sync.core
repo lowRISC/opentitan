@@ -16,7 +16,7 @@ filesets:
       # Needed for DV.
       - lowrisc:prim:cdc_rand_delay
     files:
-      - rtl/prim_generic_flop_2sync.sv
+      - rtl/prim_flop_2sync.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
