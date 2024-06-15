@@ -8,7 +8,7 @@ description: "Xilinx 2-input xnor"
 filesets:
   files_rtl:
     files:
-      - rtl/prim_xilinx_xnor2.sv
+      - rtl/prim_xnor2.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
