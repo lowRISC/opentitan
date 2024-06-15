@@ -63,10 +63,18 @@ steps:
 - bash: |
     . util/build_consts.sh
     echo "Synthesis log"
-    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/synth_1/runme.log || true
+    vlnv_path=lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1
+    design_name=chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/${design_name}/build.fpga_${{ parameters.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/synth_1/runme.log || true
 
     echo "Implementation log"
-    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/impl_1/runme.log || true
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/${design_name}/build.fpga_${{ parameters.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/runme.log || true
+
+    echo "Utilization report"
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/${design_name}/build.fpga_${{ parameters.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/${design_name}_utilization_placed.rpt || true
+
+    echo "Timing summary report"
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/${design_name}/build.fpga_${{ parameters.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/${design_name}_timing_summary_routed.rpt || true
   condition: ne(variables.bitstreamStrategy, 'cached')
   displayName: Display synthesis & implementation logs
 - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
