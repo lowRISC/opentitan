@@ -5,5 +5,5 @@
 
 `verilator_config
 
-lint_off -rule UNUSED -file "*/rtl/prim_generic_clock_gating.sv" -match "Parameter is not used: 'NoFpgaGate'"
-lint_off -rule UNUSED -file "*/rtl/prim_generic_clock_gating.sv" -match "Parameter is not used: 'FpgaBufGlobal'"
+lint_off -rule UNUSED -file "*/rtl/prim_clock_gating.sv" -match "Parameter is not used: 'NoFpgaGate'"
+lint_off -rule UNUSED -file "*/rtl/prim_clock_gating.sv" -match "Parameter is not used: 'FpgaBufGlobal'"

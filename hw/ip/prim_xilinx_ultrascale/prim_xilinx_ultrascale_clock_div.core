@@ -16,7 +16,7 @@ filesets:
       - lowrisc:prim:clock_inv
       - lowrisc:prim:clock_buf
     files:
-      - rtl/prim_xilinx_ultrascale_clock_div.sv
+      - rtl/prim_clock_div.sv
     file_type: systemVerilogSource
 
   files_ascentlint_waiver:
