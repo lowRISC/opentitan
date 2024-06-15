@@ -19,7 +19,7 @@ filesets:
       - lowrisc:prim:otp_pkg
       - lowrisc:ip:otp_ctrl_prim_reg_top
     files:
-      - rtl/prim_generic_otp.sv
+      - rtl/prim_otp.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

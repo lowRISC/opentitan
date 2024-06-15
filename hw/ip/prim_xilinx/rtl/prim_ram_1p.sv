@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
+module prim_ram_1p import prim_ram_1p_pkg::*; #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
@@ -27,21 +27,47 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
 
   localparam int PrimMaxWidth = prim_xilinx_pkg::get_ram_max_width(Width, Depth);
 
+  logic unused_cfg_i;
+  assign unused_cfg_i = ^cfg_i;
+
   if (PrimMaxWidth <= 0) begin : gen_generic
-    prim_generic_ram_1p #(
-      .Width(Width),
-      .Depth(Depth),
-      .DataBitsPerMask(DataBitsPerMask),
-      .MemInitFile(MemInitFile)
-    ) u_ram_1p (
-      .*
-    );
+    // Width of internal write mask. Note wmask_i input into the module is always assumed
+    // to be the full bit mask
+    localparam int MaskWidth = Width / DataBitsPerMask;
+
+    logic [Width-1:0]     mem [Depth];
+    logic [MaskWidth-1:0] wmask;
+
+    for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
+      assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
+
+      // Ensure that all mask bits within a group have the same value for a write
+      `ASSERT(MaskCheck_A, req_i && write_i |->
+          wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
+          clk_i, '0)
+    end
+
+    // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
+    // thrown when using $readmemh system task to backdoor load an image
+    always @(posedge clk_i) begin
+      if (req_i) begin
+        if (write_i) begin
+          for (int i=0; i < MaskWidth; i = i + 1) begin
+            if (wmask[i]) begin
+              mem[addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
+                wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
+            end
+          end
+        end else begin
+          rdata_o <= mem[addr_i];
+        end
+      end
+    end
+
+    `include "prim_util_memload.svh"
   end else begin : gen_xpm
     logic wr_en;
     assign wr_en = write_i & wmask_i[0];
-
-    logic unused_cfg_i;
-    assign unused_cfg_i = cfg_i;
 
     for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
       localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;
@@ -49,7 +75,7 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
 
       xpm_memory_spram #(
         .ADDR_WIDTH_A(Aw),
-        .BYTE_WRITE_WIDTH_A(PrimWidth), // Masks are not supported
+        .BYTE_WRITE_WIDTH_A(PrimWidth), // Masks are not supported at this time
         .MEMORY_INIT_FILE(PrimMemoryInitFile),
         .MEMORY_SIZE(Depth * PrimWidth),
         .READ_DATA_WIDTH_A(PrimWidth),
