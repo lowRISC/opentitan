@@ -15,7 +15,7 @@ filesets:
       - lowrisc:prim_generic:ram_2p_pkg
       - lowrisc:prim:util_memload
     files:
-      - rtl/prim_generic_ram_2p.sv
+      - rtl/prim_ram_2p.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
