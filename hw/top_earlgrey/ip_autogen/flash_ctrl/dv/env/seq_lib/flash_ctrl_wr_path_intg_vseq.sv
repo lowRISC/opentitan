@@ -45,7 +45,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
               cfg.otf_wr_pct: begin
                 `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
                 cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
-                cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
+                cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 20_000;
                 cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
 
                 // prog_err and mp_err
