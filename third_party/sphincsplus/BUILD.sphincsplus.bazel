@@ -38,15 +38,24 @@ THASHES = [
 ]
 
 RNG_MODES = [
-    [
-        "random",
-        "randombytes",
-    ],
-    [
-        "deterministic",
-        "rng",
-    ],
+    "random",
+    "deterministic",
 ]
+
+cc_library(
+    name = "random",
+    srcs = ["randombytes.c"],
+    hdrs = ["randombytes.h"],
+)
+
+cc_library(
+    name = "deterministic",
+    srcs = ["rng.c"],
+    hdrs = [
+        "randombytes.h",
+        "rng.h",
+    ],
+)
 
 [
     cc_library(
@@ -55,7 +64,6 @@ RNG_MODES = [
             "address.c",
             "fors.c",
             "merkle.c",
-            "{}.c".format(rng_mode_c),
             "sign.c",
             "utils.c",
             "utilsx1.c",
@@ -73,7 +81,6 @@ RNG_MODES = [
             "hash.h",
             "merkle.h",
             "params.h",
-            "randombytes.h",
             "rng.h",
             "thash.h",
             "utils.h",
@@ -86,9 +93,13 @@ RNG_MODES = [
         ],
         copts = [
             "-DPARAMS=sphincs-{}-{}{}".format(hash_alg, level, letter),
+            "-DNAMESPACE=SPX_{}_{}{}_{}_".format(hash_alg, level, letter, thash),
+        ],
+        deps = [
+            ":{}".format(rng_mode),
         ],
     )
-    for rng_mode, rng_mode_c in RNG_MODES
+    for rng_mode in RNG_MODES
     for hash_alg, hash_c in HASHES
     for level in LEVELS
     for letter in LETTERS
