@@ -42,6 +42,9 @@ class i2c_target_fifo_watermarks_tx_vseq extends i2c_target_runtime_base_vseq;
 
     // Disable ACK-Control mode ('acqstretch' can only be due to acqfull)
     cfg.ack_ctrl_en = 0;
+
+    // Use a basic Agent sequence that drives all items it is passed.
+    i2c_base_seq::type_id::set_type_override(i2c_target_base_seq::get_type());
   endtask: pre_start
 
   virtual task body();

@@ -62,8 +62,8 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
 
   // The stimulus sequence that will be run on the agent.
   // Derived testcases can observe the generated stimulus before it is driven by the agent
-  // by examining the items in 'm_i2c_host_seq.req_q' during the start_of_stim_hook().
-  protected i2c_target_base_seq m_i2c_host_seq;
+  // by examining the items in 'm_i2c_controller_seq.req_q' during the start_of_stim_hook().
+  protected i2c_base_seq m_i2c_controller_seq;
 
   ///////////////////
   // CLASS METHODS //
@@ -126,16 +126,16 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
     // for this test.
     begin
       i2c_item txn_q[$];
-      `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
+      `uvm_create_obj(i2c_base_seq, m_i2c_controller_seq)
       create_txn(txn_q);
-      fetch_txn(txn_q, m_i2c_host_seq.req_q);
+      fetch_txn(txn_q, m_i2c_controller_seq.req_q);
     end
 
     advance_runtime_state(.to(StPreHook));
     wait_for_runtime_state(.await(StStim));
 
     // Run the stimulus sequence on the agent
-    m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+    m_i2c_controller_seq.start(p_sequencer.i2c_sequencer_h);
     stim_cnt++;
   endtask
 
