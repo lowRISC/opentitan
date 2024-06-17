@@ -37,10 +37,10 @@ static spx_addr_t kTestAddr = {.addr = {0}};
 // This test data was generated using a third-party implementation of SPHINCS+
 // (slh-dsa-py).
 static uint32_t kExpectedResult[kSpxNWords] = {
-    0xe8aa6964,
-    0xea613de3,
-    0x6a8c1960,
-    0x657b7527,
+    0x3ea2808a,
+    0x090d2a51,
+    0x9193afcc,
+    0x93a58ed8,
 };
 
 OT_WARN_UNUSED_RESULT
@@ -49,7 +49,7 @@ static rom_error_t thash_test(void) {
 
   size_t msg_blocks = sizeof(kTestMsg) / kSpxN;
   uint32_t result[kSpxNWords];
-  RETURN_IF_ERROR(thash(kTestMsg, msg_blocks, &kTestCtx, &kTestAddr, result));
+  thash(kTestMsg, msg_blocks, &kTestCtx, &kTestAddr, result);
 
   CHECK_ARRAYS_EQ(result, kExpectedResult, kSpxNWords);
   return kErrorOk;

@@ -19,11 +19,9 @@
  * @param ctx Context object.
  * @param fors_leaf_addr Leaf address.
  * @param[out] leaf Resulting leaf (`kSpxNWords` words).
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-static rom_error_t fors_sk_to_leaf(const uint32_t *sk, const spx_ctx_t *ctx,
-                                   spx_addr_t *fors_leaf_addr, uint32_t *leaf) {
+static void fors_sk_to_leaf(const uint32_t *sk, const spx_ctx_t *ctx,
+                            spx_addr_t *fors_leaf_addr, uint32_t *leaf) {
   return thash(sk, /*inblocks=*/1, ctx, fors_leaf_addr, leaf);
 }
 
@@ -48,9 +46,9 @@ static void message_to_indices(const uint8_t *m, uint32_t *indices) {
   }
 }
 
-rom_error_t fors_pk_from_sig(const uint32_t *sig, const uint8_t *m,
-                             const spx_ctx_t *ctx, const spx_addr_t *fors_addr,
-                             uint32_t *pk) {
+void fors_pk_from_sig(const uint32_t *sig, const uint8_t *m,
+                      const spx_ctx_t *ctx, const spx_addr_t *fors_addr,
+                      uint32_t *pk) {
   // Initialize the FORS tree address.
   spx_addr_t fors_tree_addr = {.addr = {0}};
   spx_addr_keypair_copy(&fors_tree_addr, fors_addr);
@@ -73,17 +71,16 @@ rom_error_t fors_pk_from_sig(const uint32_t *sig, const uint8_t *m,
 
     // Derive the leaf from the included secret key part.
     uint32_t leaf[kSpxNWords];
-    HARDENED_RETURN_IF_ERROR(fors_sk_to_leaf(sig, ctx, &fors_tree_addr, leaf));
+    fors_sk_to_leaf(sig, ctx, &fors_tree_addr, leaf);
     sig += kSpxNWords;
 
     // Derive the corresponding root node of this tree.
     uint32_t *root = &roots[i * kSpxNWords];
-    HARDENED_RETURN_IF_ERROR(
-        spx_utils_compute_root(leaf, indices[i], idx_offset, sig,
-                               kSpxForsHeight, ctx, &fors_tree_addr, root));
+    spx_utils_compute_root(leaf, indices[i], idx_offset, sig, kSpxForsHeight,
+                           ctx, &fors_tree_addr, root);
     sig += kSpxNWords * kSpxForsHeight;
   }
 
   // Hash horizontally across all tree roots to derive the public key.
-  return thash(roots, kSpxForsTrees, ctx, &fors_pk_addr, pk);
+  thash(roots, kSpxForsTrees, ctx, &fors_pk_addr, pk);
 }

@@ -8,10 +8,11 @@
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/wots.h"
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
+#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/sha2.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/thash.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/utils.h"
 
@@ -33,33 +34,29 @@ static_assert(sizeof(uint8_t) <= kSpxWotsLogW,
  * @param steps Number of steps.
  * @param addr Hypertree address.
  * @param[out] Output buffer (`kSpxNWords` words).
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT static rom_error_t gen_chain(const uint32_t *in,
-                                                   uint8_t start,
-                                                   const spx_ctx_t *ctx,
-                                                   spx_addr_t *addr,
-                                                   uint32_t *out) {
+static void gen_chain(const uint32_t *in, uint8_t start, const spx_ctx_t *ctx,
+                      spx_addr_t *addr, uint32_t *out) {
   // Initialize out with the value at position `start`.
   memcpy(out, in, kSpxN);
+
+  // Initialize padding.
+  uint32_t padding[kSpxSha2BlockNumWords - kSpxNWords];
+  memset(padding, 0, sizeof(padding));
 
   spx_addr_hash_set(addr, start);
   // Iterate `kSpxWotsW - 1` calls to the hash function. This loop is
   // performance-critical.
   for (uint8_t i = start; i + 1 < kSpxWotsW; i++) {
     // This loop body is essentially just `thash`, inlined for performance.
-    HARDENED_RETURN_IF_ERROR(kmac_shake256_start());
-    kmac_shake256_absorb_words(ctx->pub_seed, kSpxNWords);
-    kmac_shake256_absorb_words(addr->addr, ARRAYSIZE(addr->addr));
-    kmac_shake256_absorb_words(out, kSpxNWords);
-    kmac_shake256_squeeze_start();
-    // This address change is located here for performance reasons; we update
-    // it while the Keccak core is processing.
-    spx_addr_hash_set(addr, i + 1);
-    HARDENED_RETURN_IF_ERROR(kmac_shake256_squeeze_end(out, kSpxNWords));
+    spx_addr_hash_set(addr, i);
+    hmac_sha256_init_endian(/*big_endian=*/true);
+    hmac_sha256_update_words(ctx->pub_seed, kSpxNWords);
+    hmac_sha256_update_words(padding, ARRAYSIZE(padding));
+    hmac_sha256_update((unsigned char *)addr->addr, kSpxSha256AddrBytes);
+    hmac_sha256_update_words(out, kSpxNWords);
+    hmac_sha256_final_truncated(out, kSpxNWords);
   }
-
-  return kErrorOk;
 }
 
 /**
@@ -144,18 +141,14 @@ static void chain_lengths(const uint32_t *msg, uint8_t *lengths) {
 
 static_assert(kSpxWotsLen - 1 <= UINT8_MAX,
               "Maximum chain value must fit into a `uint8_t`");
-rom_error_t wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
-                             const spx_ctx_t *ctx, spx_addr_t *addr,
-                             uint32_t *pk) {
+void wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
+                      const spx_ctx_t *ctx, spx_addr_t *addr, uint32_t *pk) {
   uint8_t lengths[kSpxWotsLen];
   chain_lengths(msg, lengths);
 
   for (uint8_t i = 0; i < kSpxWotsLen; i++) {
     spx_addr_chain_set(addr, i);
     size_t word_offset = i * kSpxNWords;
-    HARDENED_RETURN_IF_ERROR(
-        gen_chain(sig + word_offset, lengths[i], ctx, addr, pk + word_offset));
+    gen_chain(sig + word_offset, lengths[i], ctx, addr, pk + word_offset);
   }
-
-  return kErrorOk;
 }

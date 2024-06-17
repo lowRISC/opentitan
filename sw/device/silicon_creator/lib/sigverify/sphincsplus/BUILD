@@ -43,14 +43,15 @@ cc_library(
 
 cc_library(
     name = "hash",
-    srcs = ["hash_shake.c"],
+    srcs = ["hash_sha2.c"],
     hdrs = ["hash.h"],
     deps = [
         ":address",
         ":context",
         ":params",
+        ":sha2",
         ":utils",
-        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
 
@@ -71,14 +72,15 @@ cc_library(
 
 cc_library(
     name = "thash",
-    srcs = ["thash_shake_simple.c"],
+    srcs = ["thash_sha2_simple.c"],
     hdrs = ["thash.h"],
     deps = [
         ":address",
         ":context",
         ":params",
+        ":sha2",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
 
@@ -121,10 +123,11 @@ cc_library(
         ":address",
         ":hash",
         ":params",
+        ":sha2",
         ":thash",
         ":utils",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )

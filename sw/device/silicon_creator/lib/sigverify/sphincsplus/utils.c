@@ -8,7 +8,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/utils.h"
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
@@ -22,11 +22,10 @@ uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen) {
   return retval;
 }
 
-rom_error_t spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
-                                   uint32_t idx_offset,
-                                   const uint32_t *auth_path,
-                                   uint8_t tree_height, const spx_ctx_t *ctx,
-                                   spx_addr_t *addr, uint32_t *root) {
+void spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
+                            uint32_t idx_offset, const uint32_t *auth_path,
+                            uint8_t tree_height, const spx_ctx_t *ctx,
+                            spx_addr_t *addr, uint32_t *root) {
   // Initialize working buffer.
   uint32_t buffer[2 * kSpxNWords];
   // Pointer to second half of buffer for convenience.
@@ -54,19 +53,9 @@ rom_error_t spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
     uint32_t *hash_dst = (leaf_idx & 1) ? buffer_second : buffer;
     uint32_t *auth_dst = (leaf_idx & 1) ? buffer : buffer_second;
 
-    // This is an inlined `thash` operation.
-    HARDENED_RETURN_IF_ERROR(kmac_shake256_start());
-    kmac_shake256_absorb_words(ctx->pub_seed, kSpxNWords);
-    kmac_shake256_absorb_words(addr->addr, ARRAYSIZE(addr->addr));
-    kmac_shake256_absorb_words(buffer, 2 * kSpxNWords);
-    kmac_shake256_squeeze_start();
-
-    // Copy the auth path while KMAC is processing for performance reasons.
+    thash(buffer, /*inblocks=*/2, ctx, addr, hash_dst);
     memcpy(auth_dst, auth_path, kSpxN);
     auth_path += kSpxNWords;
-
-    // Get the `thash` output.
-    HARDENED_RETURN_IF_ERROR(kmac_shake256_squeeze_end(hash_dst, kSpxNWords));
   }
 
   // The last iteration is exceptional; we do not copy an auth_path node.
@@ -74,5 +63,5 @@ rom_error_t spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
   idx_offset >>= 1;
   spx_addr_tree_height_set(addr, tree_height);
   spx_addr_tree_index_set(addr, leaf_idx + idx_offset);
-  return thash(buffer, 2, ctx, addr, root);
+  thash(buffer, 2, ctx, addr, root);
 }
