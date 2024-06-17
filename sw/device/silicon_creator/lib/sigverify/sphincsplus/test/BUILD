@@ -43,6 +43,26 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "mgf1_test",
+    srcs = ["mgf1_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:sha2",
+    ],
+)
+
 py_binary(
     name = "sphincsplus_set_testvectors",
     srcs = ["sphincsplus_set_testvectors.py"],
@@ -67,7 +87,6 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
