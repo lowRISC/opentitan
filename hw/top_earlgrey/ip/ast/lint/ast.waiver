@@ -49,7 +49,7 @@ waive -rules CLOCK_EDGE -location {ast_clks_byp.sv} \
       -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
 
 waive -rules CLOCK_DRIVER -location {ast.sv} \
-      -regexp {'clk_src_(aon|io|sys)' is driven by instance 'u_ast_clks_byp' of module 'ast_clks_byp', and used as a clock 'clk_i' at} \
+      -regexp {'clk_src_(aon|io|sys|usb)' is driven by instance 'u_ast_clks_byp' of module 'ast_clks_byp', and used as a clock 'clk_i' at} \
       -comment {This is clock generation logic, hence it needs to drive this clock signal.}
 
 waive -rules CLOCK_DRIVER -location {ast.sv} \
@@ -280,6 +280,10 @@ waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
       -regexp {'q_o[0]' driven in module 'prim_generic_flop' at prim_generic_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
+waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
+      -regexp {'sw_ckbpe_sync_n' is driven by instance 'u_no_scan_rst_sw_ckbpe_dasrt' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_sw_ckbpe_syn_n' at ast_clks_byp.sv} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
 waive -rules RESET_MUX -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
       -msg {Asynchronous reset 'rst_val_n' is driven by a multiplexer here, used as a reset} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
@@ -306,6 +310,10 @@ waive -rules RESET_MUX -location {rglts_pdm_3p3v.sv} \
 
 waive -rules RESET_MUX -location {usb_clk.sv} \
       -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_generic_flop.sv} \
+      -comment {This is reset generation logic, hence reset muxes are allowed.}
+
+waive -rules RESET_MUX -location {ast_clks_byp.sv} \
+      -regexp {Asynchronous reset 'rst_sw_ckbpe_syn_n' is driven by a multiplexer here, used as a reset at ast_clks_byp.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
