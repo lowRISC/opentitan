@@ -53,6 +53,7 @@ openssl = "0.10.64"
 openssl-sys = "0.9.102"
 p256 = "0.13.2"
 p384 = "0.13.0"
+paste = "1.0"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
 proc-macro2 = "1.0.45"
 quote = "1.0"
