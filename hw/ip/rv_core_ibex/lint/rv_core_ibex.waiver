@@ -54,6 +54,12 @@ waive -rules CONST_OUTPUT         -location {rv_core_ibex.sv} -regexp {Output 't
       -comment "not all bus constructs are used"
 waive -rules SIGNED_RANGE         -location {ibex_controller.sv} -msg {Part select of signed signal 'i[3:0]' encountered} \
       -comment "switching the loop variable i to unsigned would require loop restructuring to not change interrupt priorities, making the code less readable"
+waive -rules SIGNED_RANGE         -location {ibex_cs_registers.sv} -regexp {Part select of signed signal 'i\[11:0\]' encountered} \
+      -comment "'i' is the loop variable of a genvar loop running from 0 to 'PMPNumRegions' which is an unsigned integer number. There is no issue with the part select."
+waive -rules SIGNED_RANGE         -location {ibex_cs_registers.sv} -regexp {Part select of signed signal 'i\[DbgHwNumLen \- 1:0\]' encountered} \
+      -comment "'i' is the loop variable of a genvar loop running from 0 to 'DbgHwBreakNum' which is an unsigned integer number. There is no issue with the part select."
+waive -rules SIGNED_RANGE         -location {ibex_icache.sv} -regexp {Part select of signed signal 'b\[IC_LINE_BEATS_W \- 1:0\]' encountered} \
+      -comment "'b' is the loop variable of a genvar loop running from 0 to 'IC_LINE_BEATS' which is an unsigned integer number. There is no issue with the part select."
 waive -rules CONST_OUTPUT         -location {ibex_controller.sv} -regexp {Output 'exc_cause_o.5.' is driven by constant} \
       -comment "easier to write with enum, not all causes used yet"
 waive -rules CONST_OUTPUT         -location {ibex_decoder.sv} -regexp {Output 'data_reg_offset_o' is driven by constant} \
@@ -92,6 +98,8 @@ waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_
       -comment "Declaration of signal and assignment to it are in same `else block"
 waive -rules IFDEF_CODE -location {rv_core_ibex.sv} -regexp {Assignment to 'tl_win_d2h' contained within `else block} \
       -comment "DV environment will drive things when `else block isn't used so assignment only occurs in `else block"
+waive -rules IFDEF_CODE -location {ibex_multdiv_fast.sv} -regexp {Assignment to 'unused_sva_mul_fsm_idle' contained within `else block at ibex_multdiv_fast.sv} \
+      -comment "Declaration of signal and assignment to it are in same `else block"
 waive -rules CLOCK_USE -location {ibex_id_stage.sv} -regexp {'clk_i' is connected to 'ibex_decoder' port 'clk_i'} \
       -comment "clk_i is unused in ibex_decoder configurations without RV32B and isn't connected to logic"
 waive -rules RESET_USE -location {ibex_id_stage.sv} -regexp {'rst_ni' is connected to 'ibex_decoder' port 'rst_ni'} \
