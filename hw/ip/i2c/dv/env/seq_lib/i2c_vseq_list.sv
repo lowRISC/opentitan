@@ -41,4 +41,5 @@
 `include "i2c_target_tx_stretch_ctrl_vseq.sv"
 `include "i2c_target_smbus_maxlen_vseq.sv"
 `include "i2c_target_nack_acqfull_vseq.sv"
+`include "i2c_target_nack_acqfull_addr_vseq.sv"
 `include "i2c_target_nack_txstretch_vseq.sv"
