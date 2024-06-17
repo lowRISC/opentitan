@@ -36,22 +36,22 @@ otp_json_rot_keys(
 
                 # //sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0": otp_hex(CONST.SIGVERIFY.KEY_TYPE.TEST),
-                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0": "0xe202fb8327bfd3b24970920cf92093cb3af233b1070e42321d8088c79bd30901",
+                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0": "0xa7fd92541005bf04f172710eaafa228220ce5b2a73e009c74fdc04eefa2a1ba6",
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0": otp_hex(CONST.SPX_CONFIG_ID.SHAKE_128S),
 
                 # //sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1": otp_hex(CONST.SIGVERIFY.KEY_TYPE.DEV),
-                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1": "0xbdb32442347a3384bec586d69364a4ae9f60f360473ce5929e27e0db8d098a72",
+                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1": "0x594087c53775908295afa7000d11eec6fc430f8e7858e774e595f1d161f34ce4",
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1": otp_hex(CONST.SPX_CONFIG_ID.SHAKE_128S),
 
                 # //sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2": otp_hex(CONST.SIGVERIFY.KEY_TYPE.PROD),
-                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2": "0x16fa2a9ca646ec95d1561e5396599d445329ec12a629c27c8542ae8669fc0e38",
+                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2": "0x789b490a8c50f4dadee29c091dfe267bfedece98519c46bdb2ade5d32d3e6e02",
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2": otp_hex(CONST.SPX_CONFIG_ID.SHAKE_128S),
 
                 # //sw/device/silicon_creator/rom/keys/fake/spx:prod_key_1_spx
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3": otp_hex(CONST.SIGVERIFY.KEY_TYPE.PROD),
-                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3": "0xd7aa1829d5a7158e4615c2ee4bb9d0204f58d90d42d832c85c4cee6ed89bea85",
+                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3": "0x4d83c8d10356fbb033ae5f9a3ee242a21f5a1a8b8c9a5579496271faad63458a",
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3": otp_hex(CONST.SPX_CONFIG_ID.SHAKE_128S),
             },
         ),
