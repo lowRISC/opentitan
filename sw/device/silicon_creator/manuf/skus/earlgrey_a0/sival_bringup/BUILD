@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
@@ -20,7 +20,6 @@ load(
     "FT_PROVISIONING_INPUTS",
     "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -124,11 +123,7 @@ opentitan_test(
         changes_otp = True,
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked0_manuf_empty",
-        # TODO(#22823): Remove "broken" tag once the test is fixed.
-        tags = [
-            "broken",
-            "manuf",
-        ],
+        tags = ["manuf"],
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = _CP_PROVISIONING_HARNESS,
     ),
@@ -291,9 +286,7 @@ opentitan_test(
         data = FT_PERSONALIZE_KEYS,
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
-        # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
-            "broken",
             "lc_test_locked0",
             "manuf",
         ],
