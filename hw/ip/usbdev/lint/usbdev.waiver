@@ -10,3 +10,5 @@ waive -rules NOT_READ -regexp {Signal 'reg_wdata\[[0-9]+:[0-9]+\]' is not read f
       -comment "The TL-UL socket outputs the full 32 bits of write data to both the register interface and the SRAM window, but only the SRAM window uses the full width."
 waive -rules CONST_FF -regexp {Flip-flop 'usb_out_of_rst_o' is driven by constant one} \
       -comment "This FF is functioning as intended, it is driven to zero when in reset"
+waive -rules INTEGER -location {usbdev.sv} -regexp {'i' of type int used as a non-constant value} \
+      -comment "The loop variable 'i' is compared against a signal, this is okay."
