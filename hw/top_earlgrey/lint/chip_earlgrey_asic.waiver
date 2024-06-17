@@ -98,6 +98,9 @@ waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv}  -msg {'mio_in_raw[28
 waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_earlgrey_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_earlgrey_asic'} \
       -comment "Not all POK signals are used inside top_earlgrey"
 
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_earlgrey_asic.sv} -regexp {(Signal|Net) 'ast_rom_cfg.test' is not read from in module 'chip_earlgrey_asic'} \
+      -comment "The ROM doesn't feature a TEST port"
+
 # Clock / reset connections going back into AST
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port '(sns_clks_i..*|clk_ast_usb_i)', and used as a clock} \
       -comment "This is a clock struct that is fed back into AST."
