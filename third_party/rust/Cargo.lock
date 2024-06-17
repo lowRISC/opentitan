@@ -321,6 +321,7 @@ dependencies = [
  "openssl-sys",
  "p256",
  "p384",
+ "paste",
  "pem-rfc7468",
  "pest",
  "pest_derive",

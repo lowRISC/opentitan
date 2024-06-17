@@ -399,6 +399,7 @@ _NORMAL_DEV_ALIASES = {
 _PROC_MACRO_DEPENDENCIES = {
     "third_party/rust": {
         _COMMON_CONDITION: {
+            "paste": "@crate_index__paste-1.0.14//:paste",
             "pest_derive": "@crate_index__pest_derive-2.7.3//:pest_derive",
         },
     },
@@ -958,7 +959,7 @@ def crate_repositories():
         name = "crate_index__const-oid-0.9.6",
         sha256 = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/const-oid/0.9.6/download"],
+        urls = ["https://static.crates.io/crates/const-oid/0.9.6/download"],
         strip_prefix = "const-oid-0.9.6",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.const-oid-0.9.6.bazel"),
     )

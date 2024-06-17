@@ -308,6 +308,12 @@ alias(
 )
 
 alias(
+    name = "paste",
+    actual = "@crate_index__paste-1.0.14//:paste",
+    tags = ["manual"],
+)
+
+alias(
     name = "pem-rfc7468",
     actual = "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
     tags = ["manual"],
