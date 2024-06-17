@@ -18,3 +18,27 @@ waive -rules CLOCK_USE -location {prim_generic_clock_div.sv} -regexp {'clk_i' is
 
 waive -rules SAME_NAME_TYPE -location {prim_generic_clock_div.sv} -regexp {'ResetValue' is used as a parameter here, and as an enumeration value at} \
       -comment "Reused parameter name."
+
+waive -rules CLOCK_DRIVER -location {prim_generic_clock_div.sv} -regexp {'gen_div2.q_p' is driven by instance 'gen_div2\^u_div2' of module 'prim_flop', and used as a clock 'clk_i'} \
+      -comment "A 'prim_flop' is used together with a 'prim_clock_inv' to implement a division by 2"
+
+waive -rules CLOCK_USE -location {prim_generic_clock_div.sv} -regexp {'gen_div2.q_n' is connected to 'prim_flop' port 'd_i\[0\]', and used as a clock 'clk_i'} \
+      -comment "A 'prim_flop' is used together with a 'prim_clock_inv' to implement a division by 2"
+
+waive -rules INV_CLOCK -location {prim_generic_clock_div.sv} -regexp {'gen_div2.q_p' is inverted, used as clock 'clk_i'} \
+      -comment "A 'prim_flop' is used together with a 'prim_clock_inv' to implement a division by 2"
+
+waive -rules CLOCK_DRIVER -location {prim_generic_clock_div.sv} -regexp {'clk_int' is driven here, and used as a clock} \
+      -comment "The division by more than 2 is implemented using a behavioral toggle counter"
+
+waive -rules CLOCK_MUX -location {prim_generic_clock_div.sv} -regexp {Clock 'clk_int' is driven by a multiplexer here, used as a clock 'clk_i'} \
+      -comment "This clock mux usage is OK."
+
+waive -rules CLOCK_MUX -location {prim_generic_clock_div.sv} -regexp {Clock 'clk_muxed' is driven by a multiplexer here, used as a clock} \
+      -comment "This clock mux usage is OK."
+
+waive -rules CLOCK_USE -location {prim_generic_clock_div.sv} -regexp {'clk_muxed' is used for some other purpose, and as clock} \
+      -comment "The division by more than 2 is implemented using a behavioral toggle counter driven by 'clk_muxed'"
+
+waive -rules INV_CLOCK -location {prim_generic_clock_div.sv} -regexp {'clk_muxed' is inverted, used as clock} \
+      -comment "The division by more than 2 is implemented using a behavioral toggle counter driven by 'clk_muxed'"
