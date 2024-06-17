@@ -39,6 +39,22 @@ waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
       -msg {'clk_src_io_o' driven in module 'ast_dft' at ast_dft} \
       -comment "This is a clock source."
 
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -regexp {'dio_in\[12\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal."
+
+waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} \
+      -regexp {Clock 'dio_in\[12\]' reaches a multiplexer here, used as a clock}
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's fed into a clock mux."
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
+      -regexp {'sck_monitor' is connected to 'ast' port 'sns_spi_ext_clk_i', and used as a clock} \
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's connected to 'sck_monitor' which is fed into ast for monitoring."
+
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
+      -regexp {'dio_in\[13\]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'csb_i' at spid_csb_sync.sv} \
+      -comment "'DioSpiDeviceCsb' is the dedicated IO for the spi_device chip select signal. Inside spi_device, it's used as a clock for detecting toggles."
+
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
       -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_i' at ast_dft} \
       -comment "This is due to the external clock input pin."
