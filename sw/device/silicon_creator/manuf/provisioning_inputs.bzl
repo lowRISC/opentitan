@@ -47,6 +47,3 @@ CLOUD_KMS_CERT_ENDORSEMENT_PARAMS = """
   --ca-key-id="0x40aac5fb_2b1205f9_003f40ab_7f3df784_1d5b59f5"
   --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem)"
 """
-
-# TODO(#22780): Integrate real keys for A1 flows.
-FT_PERSONALIZE_SIGNING_KEYS = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"}
