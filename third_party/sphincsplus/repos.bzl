@@ -24,4 +24,8 @@ def sphincsplus_repos(local = None):
         strip_prefix = "sphincsplus-129b72c80e122a22a61f71b5d2b042770890ccee/ref",
         build_file = "//third_party/sphincsplus:BUILD.sphincsplus.bazel",
         sha256 = "b301faa7a42ef538323a732929d49341b1cbd8375f643f7d98ca32cd6efacc32",
+        patches = [
+            Label("//third_party/sphincsplus:sphincsplus-namespace.patch"),
+        ],
+        patch_args = ["-p2"],
     )

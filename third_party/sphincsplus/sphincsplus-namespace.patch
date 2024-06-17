@@ -1,0 +1,324 @@
+diff --git a/ref/api.h b/ref/api.h
+index d57a148..29d3090 100644
+--- a/ref/api.h
++++ b/ref/api.h
+@@ -16,21 +16,25 @@
+ /*
+  * Returns the length of a secret key, in bytes
+  */
++#define crypto_sign_secretkeybytes SPX_NAMESPACE(crypto_sign_secretkeybytes)
+ unsigned long long crypto_sign_secretkeybytes(void);
+ 
+ /*
+  * Returns the length of a public key, in bytes
+  */
++#define crypto_sign_publickeybytes SPX_NAMESPACE(crypto_sign_publickeybytes)
+ unsigned long long crypto_sign_publickeybytes(void);
+ 
+ /*
+  * Returns the length of a signature, in bytes
+  */
++#define crypto_sign_bytes SPX_NAMESPACE(crypto_sign_bytes)
+ unsigned long long crypto_sign_bytes(void);
+ 
+ /*
+  * Returns the length of the seed required to generate a key pair, in bytes
+  */
++#define crypto_sign_seedbytes SPX_NAMESPACE(crypto_sign_seedbytes)
+ unsigned long long crypto_sign_seedbytes(void);
+ 
+ /*
+@@ -38,6 +42,7 @@ unsigned long long crypto_sign_seedbytes(void);
+  * Format sk: [SK_SEED || SK_PRF || PUB_SEED || root]
+  * Format pk: [root || PUB_SEED]
+  */
++#define crypto_sign_seed_keypair SPX_NAMESPACE(crypto_sign_seed_keypair)
+ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
+                              const unsigned char *seed);
+ 
+@@ -46,23 +51,27 @@ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
+  * Format sk: [SK_SEED || SK_PRF || PUB_SEED || root]
+  * Format pk: [root || PUB_SEED]
+  */
++#define crypto_sign_keypair SPX_NAMESPACE(crypto_sign_keypair)
+ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk);
+ 
+ /**
+  * Returns an array containing a detached signature.
+  */
++#define crypto_sign_signature SPX_NAMESPACE(crypto_sign_signature)
+ int crypto_sign_signature(uint8_t *sig, size_t *siglen,
+                           const uint8_t *m, size_t mlen, const uint8_t *sk);
+ 
+ /**
+  * Verifies a detached signature and message under a given public key.
+  */
++#define crypto_sign_verify SPX_NAMESPACE(crypto_sign_verify)
+ int crypto_sign_verify(const uint8_t *sig, size_t siglen,
+                        const uint8_t *m, size_t mlen, const uint8_t *pk);
+ 
+ /**
+  * Returns an array containing the signature followed by the message.
+  */
++#define crypto_sign SPX_NAMESPACE(crypto_sign)
+ int crypto_sign(unsigned char *sm, unsigned long long *smlen,
+                 const unsigned char *m, unsigned long long mlen,
+                 const unsigned char *sk);
+@@ -70,6 +79,7 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen,
+ /**
+  * Verifies a given signature-message pair under a given public key.
+  */
++#define crypto_sign_open SPX_NAMESPACE(crypto_sign_open)
+ int crypto_sign_open(unsigned char *m, unsigned long long *mlen,
+                      const unsigned char *sm, unsigned long long smlen,
+                      const unsigned char *pk);
+diff --git a/ref/params.h b/ref/params.h
+index 1d7f9c9..cda8002 100644
+--- a/ref/params.h
++++ b/ref/params.h
+@@ -1,5 +1,11 @@
+ #define str(s) #s
+ #define xstr(s) str(s)
+ 
++#ifndef NAMESPACE
++#define NAMESPACE SPX_
++#endif
++#define PASTE_(a, b) a ## b
++#define PASTE(a, b) PASTE_(a, b)
++
+ #include xstr(params/params-PARAMS.h)
+ 
+diff --git a/ref/params/params-sphincs-haraka-128f.h b/ref/params/params-sphincs-haraka-128f.h
+index a9bb1cf..0b90980 100644
+--- a/ref/params/params-sphincs-haraka-128f.h
++++ b/ref/params/params-sphincs-haraka-128f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 16
+diff --git a/ref/params/params-sphincs-haraka-128s.h b/ref/params/params-sphincs-haraka-128s.h
+index 73372ee..dc3fd44 100644
+--- a/ref/params/params-sphincs-haraka-128s.h
++++ b/ref/params/params-sphincs-haraka-128s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 16
+diff --git a/ref/params/params-sphincs-haraka-192f.h b/ref/params/params-sphincs-haraka-192f.h
+index 9eb356a..c92e86b 100644
+--- a/ref/params/params-sphincs-haraka-192f.h
++++ b/ref/params/params-sphincs-haraka-192f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 24
+diff --git a/ref/params/params-sphincs-haraka-192s.h b/ref/params/params-sphincs-haraka-192s.h
+index 00b6b70..e9d5885 100644
+--- a/ref/params/params-sphincs-haraka-192s.h
++++ b/ref/params/params-sphincs-haraka-192s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 24
+diff --git a/ref/params/params-sphincs-haraka-256f.h b/ref/params/params-sphincs-haraka-256f.h
+index 7491b66..b283e8f 100644
+--- a/ref/params/params-sphincs-haraka-256f.h
++++ b/ref/params/params-sphincs-haraka-256f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 32
+diff --git a/ref/params/params-sphincs-haraka-256s.h b/ref/params/params-sphincs-haraka-256s.h
+index 6ef3a5c..4fb61ad 100644
+--- a/ref/params/params-sphincs-haraka-256s.h
++++ b/ref/params/params-sphincs-haraka-256s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 32
+diff --git a/ref/params/params-sphincs-sha2-128f.h b/ref/params/params-sphincs-sha2-128f.h
+index 3f7a60f..f100e74 100644
+--- a/ref/params/params-sphincs-sha2-128f.h
++++ b/ref/params/params-sphincs-sha2-128f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 16
+diff --git a/ref/params/params-sphincs-sha2-128s.h b/ref/params/params-sphincs-sha2-128s.h
+index 8ef8608..35fc800 100644
+--- a/ref/params/params-sphincs-sha2-128s.h
++++ b/ref/params/params-sphincs-sha2-128s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 16
+diff --git a/ref/params/params-sphincs-sha2-192f.h b/ref/params/params-sphincs-sha2-192f.h
+index d4d98a2..2689684 100644
+--- a/ref/params/params-sphincs-sha2-192f.h
++++ b/ref/params/params-sphincs-sha2-192f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 24
+diff --git a/ref/params/params-sphincs-sha2-192s.h b/ref/params/params-sphincs-sha2-192s.h
+index 0070e59..d7e3412 100644
+--- a/ref/params/params-sphincs-sha2-192s.h
++++ b/ref/params/params-sphincs-sha2-192s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 24
+diff --git a/ref/params/params-sphincs-sha2-256f.h b/ref/params/params-sphincs-sha2-256f.h
+index 53c5bef..fc69e3c 100644
+--- a/ref/params/params-sphincs-sha2-256f.h
++++ b/ref/params/params-sphincs-sha2-256f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 32
+diff --git a/ref/params/params-sphincs-sha2-256s.h b/ref/params/params-sphincs-sha2-256s.h
+index 10c3663..6e0feba 100644
+--- a/ref/params/params-sphincs-sha2-256s.h
++++ b/ref/params/params-sphincs-sha2-256s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 32
+diff --git a/ref/params/params-sphincs-shake-128f.h b/ref/params/params-sphincs-shake-128f.h
+index 8f77692..f071000 100644
+--- a/ref/params/params-sphincs-shake-128f.h
++++ b/ref/params/params-sphincs-shake-128f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 16
+diff --git a/ref/params/params-sphincs-shake-128s.h b/ref/params/params-sphincs-shake-128s.h
+index a4d1e13..ca834aa 100644
+--- a/ref/params/params-sphincs-shake-128s.h
++++ b/ref/params/params-sphincs-shake-128s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 16
+diff --git a/ref/params/params-sphincs-shake-192f.h b/ref/params/params-sphincs-shake-192f.h
+index b1e73d1..b3f8c7b 100644
+--- a/ref/params/params-sphincs-shake-192f.h
++++ b/ref/params/params-sphincs-shake-192f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 24
+diff --git a/ref/params/params-sphincs-shake-192s.h b/ref/params/params-sphincs-shake-192s.h
+index 0882e1c..0dc1e61 100644
+--- a/ref/params/params-sphincs-shake-192s.h
++++ b/ref/params/params-sphincs-shake-192s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 24
+diff --git a/ref/params/params-sphincs-shake-256f.h b/ref/params/params-sphincs-shake-256f.h
+index e301c28..fe21b8f 100644
+--- a/ref/params/params-sphincs-shake-256f.h
++++ b/ref/params/params-sphincs-shake-256f.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 32
+diff --git a/ref/params/params-sphincs-shake-256s.h b/ref/params/params-sphincs-shake-256s.h
+index 0a96894..d9daa5c 100644
+--- a/ref/params/params-sphincs-shake-256s.h
++++ b/ref/params/params-sphincs-shake-256s.h
+@@ -1,7 +1,7 @@
+ #ifndef SPX_PARAMS_H
+ #define SPX_PARAMS_H
+ 
+-#define SPX_NAMESPACE(s) SPX_##s
++#define SPX_NAMESPACE(s) PASTE(NAMESPACE, s)
+ 
+ /* Hash output length in bytes. */
+ #define SPX_N 32
