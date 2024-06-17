@@ -126,6 +126,11 @@
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
+      name: usbdev_invalid_sync
+      uvm_test_seq: usbdev_bad_traffic_vseq
+      run_opts: ["+wt_bad_syncs=1"]
+    }
+    {
       name: usbdev_link_in_err
       uvm_test_seq: usbdev_link_in_err_vseq
     }

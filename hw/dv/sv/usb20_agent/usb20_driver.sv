@@ -91,7 +91,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   task prepare_token_packet(usb20_item req_item, usb20_item rsp_item);
-    bit driver_token_pkt[];
     // Protect sender from modifications to the request item.
     token_pkt pkt;
     $cast(pkt, req_item.clone());
@@ -101,8 +100,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.address = {<<{pkt.address}};
     pkt.endpoint = {<<{pkt.endpoint}};
     pkt.crc5 = {<<{pkt.crc5}};
-    void'(pkt.pack(driver_token_pkt));
-    drive_packet("Token", driver_token_pkt);
+    drive_packet("Token", pkt);
     if (req_item.m_pid_type == PidTypeInToken) begin
       device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
@@ -113,7 +111,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   task prepare_data_packet(usb20_item req_item, usb20_item rsp_item);
-    bit driver_data_pkt[];
     // Protect sender from modifications to the request item.
     data_pkt pkt;
     $cast(pkt, req_item.clone());
@@ -123,8 +120,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.data = {<<8{pkt.data}};
     pkt.data = {<<{pkt.data}};
     pkt.crc16 = {<<{pkt.crc16}};
-    void'(pkt.pack(driver_data_pkt));
-    drive_packet("Data", driver_data_pkt);
+    drive_packet("Data", pkt);
     if (req_item.m_usb_transfer == IsoTrans) begin
       seq_item_port.item_done();
     end else begin
@@ -134,19 +130,16 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   task prepare_handshake_packet(usb20_item req_item, usb20_item rsp_item);
-    bit driver_handshake_pkt[];
     // Protect sender from modifications to the request item.
     handshake_pkt pkt;
     $cast(pkt, req_item.clone());
     // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
-    void'(pkt.pack(driver_handshake_pkt));
-    drive_packet("Handshake", driver_handshake_pkt);
+    drive_packet("Handshake", pkt);
     seq_item_port.item_done();
   endtask
 
   task prepare_sof_packet(usb20_item req_item, usb20_item rsp_item);
-    bit driver_sof_pkt[];
     // Protect sender from modifications to the request item.
     sof_pkt pkt;
     $cast(pkt, req_item.clone());
@@ -155,8 +148,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
     pkt.framenum = {<<{pkt.framenum}};
     pkt.crc5 = {<<{pkt.crc5}};
-    void'(pkt.pack(driver_sof_pkt));
-    drive_packet("SOF", driver_sof_pkt);
+    drive_packet("SOF", pkt);
     seq_item_port.item_done();
   endtask
 
@@ -193,14 +185,25 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       @(posedge cfg.bif.clk_i);
   endtask
 
-  task drive_packet(string pkt_type, ref bit driver_pkt[]);
+  task drive_packet(string pkt_type, usb20_item item);
+    bit driver_pkt[];
     bit comp_pkt[];
     bit nrzi_out[];
     bit bit_stuff_out[];
+    // Pack into bitstream format.
+    void'(item.pack(driver_pkt));
     // To form the complete packet we need to attach SYNC at the start.
     comp_pkt = new [driver_pkt.size() + 8];
     for (int i = 0; i < 8; i++) begin
       comp_pkt[i] = SYNC_PATTERN[i];
+    end
+    if (!item.valid_sync) begin
+      // For resilience in the presence of frequency/phase difference, the DUT responds only to the
+      // final 6 bits of the SYNC signal, so if we want to generate an invalid SYNC we must toggle
+      // one of those final 6 bits.
+      int unsigned b = $urandom_range(2, 7);
+      comp_pkt[b] ^= 1'b1;
+      `uvm_info(`gfn, $sformatf("Driver chose to corrupt bit %0d of SYNC signal", b), UVM_MEDIUM)
     end
     for (int i = 0; i < driver_pkt.size(); i++) begin
       comp_pkt[i + 8] = driver_pkt[i];
@@ -216,13 +219,15 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     for (int i = 0; i < nrzi_out.size(); i++) begin
       drive_bit_interval(nrzi_out[i] ? USB20Sym_J : USB20Sym_K);
     end
-    end_of_packet();
+    end_of_packet(item.valid_eop);
   endtask
 
   // EOP Task
   // -------------------------------
-  task end_of_packet();
+  task end_of_packet(bit valid_eop);
     int se0_bits = cfg.single_bit_SE0 ? 1 : 2;
+    // TODO: We should introduce the ability to generate and test invalid EOPs.
+    `DV_CHECK_EQ_FATAL(valid_eop, 1)
     for (int j = 0; j < se0_bits; j++) begin
       drive_bit_interval(USB20Sym_SE0);
     end

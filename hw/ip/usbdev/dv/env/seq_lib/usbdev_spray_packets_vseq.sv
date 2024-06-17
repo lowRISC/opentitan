@@ -136,7 +136,7 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
     end
     // An IN transaction shall be tested immediately, and we shall ACKnowledge any DATA packet
     // that is received.
-    send_token_packet(target_ep, PidTypeInToken, 0, target_addr);
+    send_token_packet(target_ep, PidTypeInToken, target_addr);
     if (acceptable) begin
       check_in_packet(exp_in_toggles[target_ep] ? PidTypeData1 : PidTypeData0, data);
       send_handshake(PidTypeAck);
