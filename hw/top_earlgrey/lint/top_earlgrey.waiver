@@ -51,13 +51,13 @@ waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.c
 
 # Most SAME_NAME_TYPE issues have been fixed. There are however some that overlap due to similar terminology.
 # Since these functions / parameters / signals live in different scopes, this is acceptable, and we can waive them.
-waive -rules SAME_NAME_TYPE -location {aes_sbox_canright_pkg.sv} -msg {'theta' is used as a reg here, and as a function at} \
+waive -rules SAME_NAME_TYPE -location {aes_sbox_canright_pkg.sv keccak_2share.sv} -regexp {'theta' is used as a (reg|function) here, and as a (function|reg) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
-waive -rules SAME_NAME_TYPE -location {keccak_round.sv} -msg {'L' is used as a parameter here, and as a reg at} \
+waive -rules SAME_NAME_TYPE -location {keccak_round.sv otbn_pkg.sv} -regexp {'L' is used as a (parameter|reg) here, and as a (reg|parameter) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
-waive -rules SAME_NAME_TYPE -location {spi_device.sv} -msg {'spi_device' is used as a module here, and as a reg at } \
+waive -rules SAME_NAME_TYPE -location {spi_device.sv rstmgr_pkg.sv} -regexp {'spi_device' is used as a (module|reg) here, and as a (reg|module) at } \
       -comment {This is acceptable, since these are used in different hierarchies.}
-waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv} -msg {'M' is used as a parameter here, and as a reg at} \
+waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv otbn_pkg.sv} -regexp {'M' is used as a (parameter|reg) here, and as a (reg|parameter) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
-waive -rules SAME_NAME_TYPE -location {prim_trivium.sv} -msg {'state_update' is used as a reg here, and as a function at} \
+waive -rules SAME_NAME_TYPE -location {prim_trivium.sv prim_xoshiro256pp.sv} -regexp {'state_update' is used as a (reg|function) here, and as a (function|reg) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
