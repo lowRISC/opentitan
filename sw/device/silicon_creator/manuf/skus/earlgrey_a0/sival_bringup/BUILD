@@ -16,7 +16,6 @@ load(
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
     "FT_PERSONALIZE_KEYS",
-    "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
     "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
@@ -211,12 +210,13 @@ opentitan_binary(
     name = "ft_personalize",
     testonly = True,
     srcs = ["ft_personalize.c"],
-    ecdsa_key = FT_PERSONALIZE_SIGNING_KEYS,
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
