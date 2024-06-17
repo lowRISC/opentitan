@@ -814,4 +814,8 @@ module otp_ctrl_part_buf
       |=>
       state_q == ErrorSt && error_o == $past(otp_err))
 
+  // The partition size must be greater than one scrambling block for the address calculation
+  // and muxing to work correctly.
+  `ASSERT_INIT(OtpPartBufSize_A, Info.size > (ScrmblBlockWidth/8))
+
 endmodule : otp_ctrl_part_buf
