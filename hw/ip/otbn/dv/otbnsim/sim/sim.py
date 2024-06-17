@@ -173,12 +173,22 @@ class OTBNSim:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
         self.state.stop_if_pending_halt()
 
+        cur_fsm_state = self.state.get_fsm_state()
+        is_locked = cur_fsm_state == FsmState.LOCKED
+
         # If we are locked then zero the INSN_CNT register. It can never change
         # again, so we only do the write on the first cycle (to avoid sending a
         # line to stdout on every cycle)
-        is_locked = self.state._fsm_state == FsmState.LOCKED
         if is_locked and self.state.cycles_in_this_state == 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
+
+        # If we are IDLE and rma_req is not a valid lc_ctrl signal, we expect a
+        # MUBI error inside the machine which causes us to jump to the locked
+        # state.
+        if not is_locked:
+            if self.state.rma_req == LcTx.INVALID:
+                self.state.set_fsm_state(FsmState.LOCKED)
+                self.state.ext_regs.write('STATUS', Status.LOCKED, True)
 
         if self.state.init_sec_wipe_is_running():
             # Wait for the URND seed. If there is some genuine state to wipe
@@ -192,8 +202,6 @@ class OTBNSim:
             # up yet, we might not even be able to seed URND). In that case, we
             # jump straight to the LOCKED state.
             if self.state.wsrs.URND.running:
-                cur_fsm_state = self.state.get_fsm_state()
-
                 # If URND finishes, it's probably the seed for a secure wipe.
                 # But there's an extra possibility: we might have seen an RMA
                 # request before any instructions get run. In that case, the
