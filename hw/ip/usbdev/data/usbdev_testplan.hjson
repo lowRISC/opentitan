@@ -943,7 +943,7 @@
               to operate correctly, ignoring all of the invalid signaling.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_invalid_sync"]
     }
     {
       name: spurious_pids_ignored

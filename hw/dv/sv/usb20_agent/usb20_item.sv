@@ -29,6 +29,32 @@ class usb20_item extends uvm_sequence_item;
     super.new(name);
     m_ev_type  = EvPacket;
     m_pkt_type = pkt_type;
+    // When passing requests to the driver the validity bits may be cleared to request fault
+    // injection; the default behavior shall be to generate valid packets.
+    valid_sync = 1'b1;
+    valid_length = 1'b1;
+    valid_stuffing = 1'b1;
+    valid_eop = 1'b1;
+  endfunction
+
+  // Copy the common fields that are not declared as uvm object fields because of the way that
+  // packing is used to convert objects to bit streams.
+  virtual function void do_copy(uvm_object rhs);
+    usb20_item rhs_;
+    `downcast(rhs_, rhs);
+    super.do_copy(rhs);
+    m_ev_type           = rhs_.m_ev_type;
+    m_ev_duration_usecs = rhs_.m_ev_duration_usecs;
+    m_pid_type          = rhs_.m_pid_type;
+    m_pkt_type          = rhs_.m_pkt_type;
+    m_usb_transfer      = rhs_.m_usb_transfer;
+    timed_out           = rhs_.timed_out;
+    // Validity indicators; used to instruct the driver to perform fault injection, and completed
+    // by the monitor when constructing objects from the observed USB signaling.
+    valid_sync          = rhs_.valid_sync;
+    valid_length        = rhs_.valid_length;
+    valid_stuffing      = rhs_.valid_stuffing;
+    valid_eop           = rhs_.valid_eop;
   endfunction
 
   // Check whether the Packet IDentifier passes its self-check (upper and lower nibbles are bitwise

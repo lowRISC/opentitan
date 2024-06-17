@@ -41,6 +41,12 @@ constraint ep_default_c {
 int unsigned setup_data_delay = 0;
 int unsigned out_data_delay   = 0;
 
+// Fault injection state.
+bit inject_invalid_token_sync = 1'b0;
+bit inject_invalid_data_sync = 1'b0;
+bit inject_bad_token_crc5 = 1'b0;
+bit inject_bad_data_crc16 = 1'b0;
+
 // Bus events/stimuli to be presented during the sequence
 //   (these are used in the `aon_wake_` and `rand_bus...` tests points).
 bit do_reset_signaling  = 1'b0;
@@ -265,7 +271,7 @@ endtask
   endtask
 
   // Construct and transmit a token packet to the USB device
-  virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type, bit inject_crc_error = 0,
+  virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type,
                                  bit [6:0] target_addr = dev_addr);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_token_pkt);
@@ -275,7 +281,8 @@ endtask
     assert(m_token_pkt.randomize() with {m_token_pkt.address == target_addr;
                                          m_token_pkt.endpoint == ep;});
     // Any fault injections requested?
-    if (inject_crc_error) m_token_pkt.crc5 = ~m_token_pkt.crc5;
+    if (inject_invalid_token_sync) m_token_pkt.valid_sync = 1'b0;
+    if (inject_bad_token_crc5) m_token_pkt.crc5 = ~m_token_pkt.crc5;
     m_usb20_item = m_token_pkt;
     finish_item(m_token_pkt);
   endtask
@@ -292,6 +299,9 @@ endtask
       m_data_pkt.m_usb_transfer = usb_transfer_e'(IsoTrans);
     end
     m_data_pkt.set_data(data);  // This also completes the CRC16.
+    // Any fault injections requested?
+    if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
+    if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
     m_usb20_item = m_data_pkt;
     finish_item(m_data_pkt);
   endtask
@@ -311,6 +321,9 @@ endtask
     end
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_data_pkt,
                                    !randomize_length -> m_data_pkt.data.size() == num_of_bytes;)
+    // Any fault injections requested?
+    if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
+    if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
     m_usb20_item = m_data_pkt;
     finish_item(m_data_pkt);
   endtask
@@ -330,7 +343,7 @@ endtask
   virtual task send_setup_packet(bit [3:0] ep, byte unsigned data[],
                                  bit [6:0] target_addr = dev_addr);
     // Send SETUP token packet to the selected endpoint on the specified device.
-    send_token_packet(ep, PidTypeSetupToken, 0, target_addr);
+    send_token_packet(ep, PidTypeSetupToken, target_addr);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay();
     // DATA0/DATA1 packet with the given content.
@@ -354,7 +367,7 @@ endtask
   virtual task send_out_packet(bit [3:0] ep, input pid_type_e pid_type, byte unsigned data[],
                                bit isochronous_transfer = 1'b0, bit [6:0] target_addr = dev_addr);
     // Send OUT token packet to the selected endpoint on the specified device.
-    send_token_packet(ep, PidTypeOutToken, 0, target_addr);
+    send_token_packet(ep, PidTypeOutToken, target_addr);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay(out_data_delay);
     // DATA0/DATA1 packet with the given content.
@@ -380,7 +393,7 @@ endtask
   // of any DATA packet returned.
   virtual task retrieve_in_packet(bit [3:0] ep, output usb20_item reply, input bit ack = 1,
                                   input bit [6:0] target_addr = dev_addr);
-    send_token_packet(ep, PidTypeInToken, 0, target_addr);
+    send_token_packet(ep, PidTypeInToken, target_addr);
     // Collect the response, if any, from the DUT
     get_response(m_response_item);
     $cast(reply, m_response_item);
@@ -763,6 +776,9 @@ endtask
     m_sof_pkt.m_pkt_type = PktTypeSoF;
     m_sof_pkt.m_pid_type = pid_type;
     assert(m_sof_pkt.randomize());
+    // Any fault injections requested?
+    if (inject_invalid_token_sync) m_sof_pkt.valid_sync = 1'b0;
+    if (inject_bad_token_crc5) m_sof_pkt.crc5 = ~m_sof_pkt.crc5;
     m_usb20_item = m_sof_pkt;
     finish_item(m_sof_pkt);
   endtask

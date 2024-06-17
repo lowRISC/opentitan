@@ -23,8 +23,21 @@ class usbdev_bad_traffic_vseq extends usbdev_bus_rand_vseq;
   int unsigned wt_bad_crc16 = 0;
   int unsigned wt_bitstuff_errs = 0;
 
+  // Generate invalid SYNC signaling on the token packet and/or the data packet of an OUT
+  // transaction to the chosen endpoint.
   virtual task generate_bad_sync(bit [3:0] ep);
-    `uvm_fatal(`gfn, "Stimulus not yet implemented")
+    int unsigned corrupt = $urandom_range(1, 3);  // bit 1 = corrupt data, bit 0 = corrupt out.
+    `uvm_info(`gfn, "Generating transaction with invalid SYNC", UVM_MEDIUM)
+    claim_driver();
+    // Instruct the driver to scramble one or both of the SYNC signals.
+    inject_invalid_token_sync = corrupt[0];
+    inject_invalid_data_sync  = corrupt[1];
+    send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0);
+    check_no_response();
+    // Reinstate normal operation.
+    inject_invalid_token_sync = 1'b0;
+    inject_invalid_data_sync  = 1'b0;
+    release_driver();
   endtask
 
   typedef enum {

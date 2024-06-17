@@ -206,6 +206,7 @@ class usb20_monitor extends dv_base_monitor #(
     int bit_intervals = 0;
     bit valid_stuffing;
     usb_symbol_e sym;
+    bit valid_sync;
     bit valid_eop;
     bit packet[$];
 
@@ -242,17 +243,22 @@ class usb20_monitor extends dv_base_monitor #(
     // We never expect to receive invalid SYNC signals at present; at some point we may generate
     // them from the driver, but the DUT should never generate them.
     `DV_CHECK_GT(packet.size(), 8, "Incomplete SYNC signal detected")
+    valid_sync = 1'b1;
     for (int unsigned b = 0; b < 8; b++) begin
-      `DV_CHECK_EQ(packet[b], sync[b], $sformatf("Invalid SYNC signal detected %p", packet))
+      if (packet[b] != sync[b]) begin
+        `uvm_info(`gfn, $sformatf("Invalid SYNC signal detected %p", packet), UVM_MEDIUM)
+        valid_sync = 1'b0;
+      end
     end
 
     nrzi_decoder(packet, monitored_decoded_packet);
     bit_destuffing(monitored_decoded_packet, valid_stuffing, destuffed_packet);
-    classifies_packet(valid_eop, valid_stuffing, destuffed_packet);
+    classifies_packet(valid_sync, valid_eop, valid_stuffing, destuffed_packet);
   endtask
 
 //----------------------------------------Classifies Trans----------------------------------------//
-  function classifies_packet(bit valid_eop, bit valid_stuffing, ref bit destuffed_packet[$]);
+  function classifies_packet(bit valid_sync, bit valid_eop, bit valid_stuffing,
+                             ref bit destuffed_packet[$]);
     // Read the Packet IDentifier and check its validity.
     pid_type_e pid_e;
     bit [7:0] pid;
@@ -265,28 +271,30 @@ class usb20_monitor extends dv_base_monitor #(
       // Token PID Types.
       PidTypeOutToken,
       PidTypeInToken,
-      PidTypeSetupToken: token_packet(pid_e, valid_eop, valid_stuffing, destuffed_packet);
-      PidTypeSofToken: sof_packet(pid_e, valid_eop, valid_stuffing, destuffed_packet);
+      PidTypeSetupToken: token_packet(pid_e, valid_sync, valid_eop, valid_stuffing,
+                                      destuffed_packet);
+      PidTypeSofToken: sof_packet(pid_e, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
       // Data PID Types.
       PidTypeData0,
       PidTypeData1,
       PidTypeData2,
-      PidTypeMData: data_packet(pid_e, valid_eop, valid_stuffing, destuffed_packet);
+      PidTypeMData: data_packet(pid_e, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
       // Handshake PID Types.
       PidTypeAck,
       PidTypeNak,
       PidTypeStall,
-      PidTypeNyet: handshake_packet(pid_e, valid_eop, valid_stuffing, destuffed_packet);
+      PidTypeNyet: handshake_packet(pid_e, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
       // TODO: Special PID Types not yet relevant.
-      default: invalid_packet_pid(pid_e, valid_eop, valid_stuffing, destuffed_packet);
+      default: invalid_packet_pid(pid_e, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
     endcase
   endfunction
 
 //-------------------------------------------SOF Packet-------------------------------------------//
-  function sof_packet(pid_type_e pid, bit valid_eop, bit valid_stuffing,
+  function sof_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                       ref bit destuffed_packet[$]);
     // bits to binary conversion
     m_sof_pkt.m_pid_type = pid;
+    m_sof_pkt.valid_sync = valid_sync;
     m_sof_pkt.valid_eop = valid_eop;
     m_sof_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 32) begin
@@ -299,10 +307,11 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
 //------------------------------------------Token Packet------------------------------------------//
-  function token_packet(pid_type_e pid, bit valid_eop, bit valid_stuffing,
+  function token_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                         ref bit destuffed_packet[$]);
     // bits to binary conversion
     m_token_pkt.m_pid_type = pid;
+    m_token_pkt.valid_sync = valid_sync;
     m_token_pkt.valid_eop = valid_eop;
     m_token_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 32) begin
@@ -316,7 +325,7 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
 //------------------------------------------Data Packet-------------------------------------------//
-  function data_packet(pid_type_e pid, bit valid_eop, bit valid_stuffing,
+  function data_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                        ref bit destuffed_packet[$]);
     bit data[];
     bit [15:0] data_crc16;
@@ -325,6 +334,7 @@ class usb20_monitor extends dv_base_monitor #(
     // Converting complete packet into transaction level (field wise)
     // Data_PID
     m_data_pkt.m_pid_type = pid;
+    m_data_pkt.valid_sync = valid_sync;
     m_data_pkt.valid_eop = valid_eop;
     m_data_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() >= 32 && !(destuffed_packet.size() & 7)) begin
@@ -351,10 +361,11 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
 //----------------------------------------Handshake Packet----------------------------------------//
-  function handshake_packet(pid_type_e pid, bit valid_eop, bit valid_stuffing,
+  function handshake_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                             ref bit destuffed_packet[$]);
     // bits to binary conversion
     m_handshake_pkt.m_pid_type = pid;
+    m_handshake_pkt.valid_sync = valid_sync;
     m_handshake_pkt.valid_eop = valid_eop;
     m_handshake_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 16) begin
@@ -366,14 +377,14 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
   //----------------------------------------Invalid Packet----------------------------------------//
-  function invalid_packet_pid(pid_type_e pid, bit valid_eop, bit valid_stuffing,
+  function invalid_packet_pid(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                                   ref bit destuffed_packet[$]);
     int unsigned size = destuffed_packet.size();
     `uvm_info(`gfn, $sformatf("packet size = %d", size), UVM_HIGH)
     case (size)
-      16:      handshake_packet(pid, valid_eop, valid_stuffing, destuffed_packet);
-      32:      token_packet(pid, valid_eop, valid_stuffing, destuffed_packet);
-      default: data_packet(pid, valid_eop, valid_stuffing, destuffed_packet);
+      16:      handshake_packet(pid, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+      32:      token_packet(pid, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+      default: data_packet(pid, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
     endcase
   endfunction
 
