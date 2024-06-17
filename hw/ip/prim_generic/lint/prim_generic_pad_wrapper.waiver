@@ -25,3 +25,9 @@ waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'pr
       -comment "This parameter has been provisioned for later and is currently unused."
 waive -rules INPUT_NOT_READ -msg {Input port 'clk_scan_i' is not read from in module 'prim_generic_pad_wrapper'} \
       -comment "This clock is not read in RTL since it will be connected after synthesis during DFT insertion"
+waive -rules {CLOCK_DRIVER CLOCK_USE INV_CLOCK} -regexp {'gen_bidir.out' is (driven here|used for some other purpose|inverted), (and used|and|used) as( a)? clock} \
+      -comment "The pad simulation model may also be used for simulating clock pads"
+waive -rules {CLOCK_DRIVER} -regexp {'inout_io' is driven here, and used as a clock}
+      -comment "The pad simulation model may also be used for simulating clock pads"
+waive -rules {CLOCK_USE} -regexp {'in_raw_o' is used for some other purpose, and as clock}
+      -comment "The pad simulation model may also be used for simulating clock pads"
