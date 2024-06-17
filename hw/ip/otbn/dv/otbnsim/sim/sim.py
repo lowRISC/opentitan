@@ -234,6 +234,13 @@ class OTBNSim:
 
         changes = self._on_stall(verbose, fetch_next=False)
 
+        # Correctly handle an RMA request when when we're still waiting to
+        # start by jumping immediately to the LOCKED state
+        if self.state.rma_req == LcTx.ON:
+            self.state.set_fsm_state(FsmState.LOCKED)
+            self.state.ext_regs.write('STATUS',
+                                      Status.LOCKED, True, immediately=True)
+
         # Zero INSN_CNT the cycle after we are told to start
         if self.state.ext_regs.read('INSN_CNT', True) != 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
