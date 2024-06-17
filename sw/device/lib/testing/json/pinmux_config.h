@@ -22,22 +22,26 @@ extern "C" {
 #endif
 // clang-format off
 
+// Derive `Default` on top of the default derives.
+#define RUST_DERIVE RUST_DEFAULT_DERIVE, Default
+
 #define STRUCT_PINMUX_INPUT_SELECTION(field, string) \
     field(peripheral, pinmux_peripheral_in_t, 16)    \
     field(selector, pinmux_insel_t, 16)
 UJSON_SERDE_STRUCT(PinmuxInputSelection, pinmux_input_selection_t,
-                   STRUCT_PINMUX_INPUT_SELECTION);
+                   STRUCT_PINMUX_INPUT_SELECTION, RUST_DERIVE);
 
 #define STRUCT_PINMUX_OUTPUT_SELECTION(field, string) \
     field(mio, pinmux_mio_out_t, 16)                  \
     field(selector, pinmux_outsel_t, 16)
 UJSON_SERDE_STRUCT(PinmuxOutputSelection, pinmux_output_selection_t,
-                   STRUCT_PINMUX_OUTPUT_SELECTION);
+                   STRUCT_PINMUX_OUTPUT_SELECTION, RUST_DERIVE);
 
 #define STRUCT_PINMUX_CONFIG(field, string) \
     field(input, pinmux_input_selection_t)  \
     field(output, pinmux_output_selection_t)
-UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
+UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t,
+                   STRUCT_PINMUX_CONFIG, RUST_DERIVE);
 
 #undef MODULE_ID
 
