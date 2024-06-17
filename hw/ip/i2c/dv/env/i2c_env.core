@@ -60,6 +60,7 @@ filesets:
       - seq_lib/i2c_target_tx_stretch_ctrl_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_smbus_maxlen_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_nack_acqfull_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_target_nack_txstretch_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
