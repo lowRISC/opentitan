@@ -60,6 +60,17 @@ cc_library(
 )
 
 cc_library(
+    name = "sha2",
+    srcs = ["sha2.c"],
+    hdrs = ["sha2.h"],
+    deps = [
+        ":params",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+)
+
+
+cc_library(
     name = "thash",
     srcs = ["thash_shake_simple.c"],
     hdrs = ["thash.h"],

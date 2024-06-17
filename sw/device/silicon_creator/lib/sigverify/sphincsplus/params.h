@@ -47,6 +47,10 @@ enum {
    */
   kSpxWotsW = 16,
   /**
+   * Whether SHA-512 is required (boolean).
+   */
+  kSpxSha512 = 0,
+  /**
    * Number of bytes in a hypertree address (for clarity).
    */
   kSpxAddrBytes = 32,
