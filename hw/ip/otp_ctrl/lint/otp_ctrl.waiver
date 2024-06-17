@@ -21,3 +21,6 @@ waive -rules {INVALID_COMPARE} -location {otp_ctrl.sv} -regexp {.*tlul_addr.* >=
 
 waive -rules {LOOP_VAR_OP FOR_LOOP_BOUNDS} -location {prim_cipher_pkg.sv} -regexp {Loop.*round_cnt.*constant.*} \
       -comment "This function needs to iterate over the key schedule function in order to derive the decryption key."
+
+waive -rules {ASSIGN_SIGN} -location {otp_ctrl_part_buf.sv} -regexp {Unsigned target 'step_i' assigned signed value 'CntWidth'\(1\)'} \
+      -comment "This is fine as long as CntWidth is greater equal 2 which is checked using an SVA."
