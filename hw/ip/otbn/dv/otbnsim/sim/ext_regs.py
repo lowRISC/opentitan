@@ -146,7 +146,10 @@ class RGReg:
             new_val |= field_new_val << field.lsb
         return new_val
 
-    def write(self, value: int, from_hw: bool) -> None:
+    def write(self,
+              value: int,
+              from_hw: bool,
+              immediately: bool = False) -> None:
         '''Stage the effects of writing a value.
 
         If from_hw is true, this write is from OTBN hardware (rather than the
@@ -155,7 +158,8 @@ class RGReg:
         '''
         assert value >= 0
         now = self._apply_fields(lambda fld, fv: fld.write(fv, from_hw), value)
-        changes = self._next_changes if self.double_flopped else self._changes
+        delayed = self.double_flopped and not immediately
+        changes = self._next_changes if delayed else self._changes
         changes.append(ExtRegChange('=', value, from_hw, now))
 
     def set_bits(self, value: int) -> None:
@@ -287,10 +291,14 @@ class OTBNExtRegs:
             raise ValueError('Unknown register name: {!r}.'.format(reg_name))
         return reg
 
-    def write(self, reg_name: str, value: int, from_hw: bool) -> None:
+    def write(self,
+              reg_name: str,
+              value: int,
+              from_hw: bool,
+              immediately: bool = False) -> None:
         '''Stage the effects of writing a value to a register'''
         assert value >= 0
-        self._get_reg(reg_name).write(value, from_hw)
+        self._get_reg(reg_name).write(value, from_hw, immediately)
         self._dirty = 2
 
     def set_bits(self, reg_name: str, value: int) -> None:
