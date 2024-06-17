@@ -323,6 +323,13 @@ class OTBNSim:
         if self.state.wipe_cycles > 0:
             self.state.wipe_cycles -= 1
 
+        # Correctly handle an RMA request when we're already wiping by ensuring
+        # we're in the WIPING_BAD state (since we're going to lock when we're
+        # done)
+        if ((self.state.get_fsm_state() == FsmState.WIPING_GOOD and
+             self.state.rma_req == LcTx.ON)):
+            self.state.set_fsm_state(FsmState.WIPING_BAD)
+
         # If something bad happened asynchronously (because of an escalation),
         # we want to finish the secure wipe but accept no further commands.  To
         # this end, turn this into a "wipe because something bad happended".
