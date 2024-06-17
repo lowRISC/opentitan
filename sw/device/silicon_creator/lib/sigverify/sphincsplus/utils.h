@@ -47,14 +47,11 @@ uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen);
  * @param ctx Context object.
  * @param addr Hypertree address.
  * @param[out] root Resulting root node.
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
-                                   uint32_t idx_offset,
-                                   const uint32_t *auth_path,
-                                   uint8_t tree_height, const spx_ctx_t *ctx,
-                                   spx_addr_t *addr, uint32_t *root);
+void spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
+                            uint32_t idx_offset, const uint32_t *auth_path,
+                            uint8_t tree_height, const spx_ctx_t *ctx,
+                            spx_addr_t *addr, uint32_t *root);
 
 #ifdef __cplusplus
 }
