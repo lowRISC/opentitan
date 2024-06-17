@@ -456,6 +456,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       cov.sample_i2c_b2b_cg(obs_wr.addr, `gmv(ral.ctrl.enablehost));
     end
 
+    if (!cfg.en_scb) return; // Skip comparison
+
     target_wr_comp(obs_wr, exp_wr);
   endtask: compare_target_write_trans
 
@@ -492,6 +494,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     if (cfg.en_cov) begin
       cov.sample_i2c_b2b_cg(obs_rd.addr, `gmv(ral.ctrl.enablehost));
     end
+
+    if (!cfg.en_scb) return; // Skip comparison
 
     obs_rd.pname = "obs_rd";
     exp_rd.pname = "exp_rd";
