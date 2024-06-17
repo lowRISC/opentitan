@@ -63,6 +63,30 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "thash_test",
+    srcs = ["thash_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:thash",
+    ],
+)
+
 py_binary(
     name = "sphincsplus_set_testvectors",
     srcs = ["sphincsplus_set_testvectors.py"],

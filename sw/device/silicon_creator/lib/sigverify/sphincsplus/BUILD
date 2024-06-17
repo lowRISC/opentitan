@@ -69,7 +69,6 @@ cc_library(
     ],
 )
 
-
 cc_library(
     name = "thash",
     srcs = ["thash_shake_simple.c"],
