@@ -281,7 +281,13 @@
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
     }
-
+    {
+      name: i2c_target_nack_txstretch
+      uvm_test_seq: i2c_target_nack_txstretch_vseq
+      run_opts: ["+i2c_agent_mode=Host",
+                 "+test_timeout_ns=20_000_000",
+                 "+use_intr_handler=1"]
+    }
   ]
 
   // List of regressions.
