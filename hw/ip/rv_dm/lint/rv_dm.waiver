@@ -23,7 +23,8 @@ waive -rules CLOCK_USE -location {rv_dm.sv} \
 waive -rules RESET_MUX -location {rv_dm.sv} \
       -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at} \
       -comment "This is needed such that the reset can be properly controlled during scanmode."
-waive -rules CLOCK_MUX -location {rv_dm.sv} -msg {Clock 'jtag_in_int.tck' is driven by a multiplexer here, used as a clock 'tck_i' at} \
+waive -rules {CLOCK_MUX CLOCK_DRIVER} -location {rv_dm.sv} \
+      -regexp {(Clock |)'jtag_in_int.tck' is driven(| by a multiplexer) here,( and|) used as a clock 'tck_i' at} \
       -comment "This mux gates the JTAG interface based on life cycle."
 waive -rules RESET_MUX -location {rv_dm.sv} \
       -msg {Asynchronous reset 'jtag_in_int.trst_n' is driven by a multiplexer here, used as a reset 'trst_ni' at} \
@@ -114,6 +115,8 @@ waive -rules NOT_READ -location {dmi_jtag.sv} -regexp {Signal 'dmi_resp.resp' is
       -comment "This part of the struct is not read from within this module."
 waive -rules STRUCT_INDEX -location {dmi_jtag.sv} -msg {Bit select '[0]' of 'dtmcs_q' of struct type} \
       -comment "dtmcs is a vector that is continuously shifted into where its lsb is then fed to tdo"
+waive -rules RESET_MUX -location {dmi_jtag.sv} -regexp {Asynchronous reset 'dmi_rst_no' is driven by a multiplexer here, used as a reset} \
+      -comment "This mux gates the DMI reset based on the 'testmode_i' input."
 
 # dmi_cdc
 waive -rules RESET_MUX -location {dmi_cdc.sv} \
