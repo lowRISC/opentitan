@@ -14,6 +14,9 @@ class i2c_target_fifo_reset_acq_vseq extends i2c_target_runtime_base_vseq;
 
     cfg.read_rnd_data = 1;
     seq_runtime_us = 10000;
+
+    // Use a basic Agent sequence that drives all items it is passed.
+    i2c_base_seq::type_id::set_type_override(i2c_target_base_seq::get_type());
   endtask
 
   virtual task body();
