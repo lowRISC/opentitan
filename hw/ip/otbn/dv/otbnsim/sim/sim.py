@@ -253,6 +253,20 @@ class OTBNSim:
             self.state.take_injected_err_bits()
             return (None, self._on_stall(verbose, fetch_next=True))
 
+        # If there is an RMA request, we treat it a bit like a fatal error, and
+        # abort any instruction that's currently running
+        if self.state.rma_req == LcTx.ON:
+            # TODO: Passing a nonzero value in ErrBits is incorrect: we don't
+            #       actually expect anything to get set in the ERR_BITS
+            #       register. But there's a bug somewhere in the Python code
+            #       here and we don't properly stop execution when the err_bits
+            #       register is nonzero. This is an ugly hack, and will die if
+            #       someone reads ERR_BITS after we've stopped. But it gets the
+            #       test working for now.
+            self.state.stop_at_end_of_cycle(1)
+            self.state.set_fsm_state(FsmState.WIPING_BAD)
+            self._execute_generator = None
+
         # Whether or not we're currently executing an instruction, we fetched
         # an instruction on the previous cycle. If that fetch failed then
         # insn.has_bits will be false. In that case, generate an error by
