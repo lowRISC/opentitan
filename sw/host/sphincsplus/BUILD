@@ -14,8 +14,8 @@ rust_bindgen_library(
         "--allowlist-var=CRYPTO_.*",
         "--allowlist-var=SPX_.*",
     ],
-    cc_lib = "@sphincsplus_fips205_ipd//:sphincs_random_shake_128s_simple",
-    clang_flags = ["-DPARAMS=sphincs-shake-128s"],
+    cc_lib = "@sphincsplus_fips205_ipd//:sphincs_random_sha2_128s_simple",
+    clang_flags = ["-DPARAMS=sphincs-sha2-128s"],
     header = "@sphincsplus_fips205_ipd//:api.h",
 )
 
