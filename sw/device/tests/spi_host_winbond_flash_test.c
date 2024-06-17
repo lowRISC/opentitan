@@ -30,10 +30,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
 
-  uint16_t device_id = 0x2180;
   uint32_t spi_speed = 10000000;  // 10MHz
   if (kDeviceType == kDeviceSilicon) {
-    device_id = 0x1870;
     spi_speed = 16000000;  // 16MHz
 
     dif_pinmux_t pinmux;
@@ -78,7 +76,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_software_reset, &spi_host);
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
-  EXECUTE_TEST(result, test_read_jedec, &spi_host, device_id, kManufactureId);
+  EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufactureId);
   EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
   EXECUTE_TEST(result, test_page_program, &spi_host);
   if (is_4_bytes_address_mode_supported()) {
