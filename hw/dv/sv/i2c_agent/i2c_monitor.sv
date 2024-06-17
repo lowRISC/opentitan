@@ -392,61 +392,64 @@ class i2c_monitor extends dv_base_monitor #(
     bit r_bit = 1'b0;
     bit do_skip = 0; // ref variable update is not supported in fork-join_any/none
     skip = 0;
-    fork begin
-       fork
-         begin // address capture thread
-           cfg.vif.drv_phase = DrvAddr;
-           // collecting address
-           for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
-             cfg.vif.p_edge_scl();
-             mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
-             `uvm_info(`gfn, $sformatf("controller_address_thread() address[%0d] %b",
-               i, mon_dut_item.addr[i]), UVM_HIGH)
-           end
-           `uvm_info(`gfn, $sformatf("controller_address_thread() address %0x",
-             mon_dut_item.addr), UVM_MEDIUM)
-           cfg.vif.p_edge_scl();
-           r_bit = cfg.vif.cb.sda_i;
-           `uvm_info(`gfn, $sformatf("controller_address_thread() rw %d", r_bit), UVM_MEDIUM)
-           mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
-           cfg.valid_addr = is_target_addr(mon_dut_item.addr);
-           cfg.is_read = r_bit;
 
-           if (mon_dut_item.bus_op == BusOpRead) begin
-             cfg.read_addr_q.push_back(cfg.valid_addr);
-           end
-           `uvm_info(`gfn, $sformatf("allow_bad_addr: %0d valid_addr:%0d",
-             cfg.allow_bad_addr, cfg.valid_addr), UVM_MEDIUM)
+    fork begin : iso_fork
+      fork
+        begin // address capture thread
+          cfg.vif.drv_phase = DrvAddr;
+          // collecting address
+          for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
+            cfg.vif.p_edge_scl();
+            mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
+            `uvm_info(`gfn, $sformatf("controller_address_thread() address[%0d] %b",
+                                      i, mon_dut_item.addr[i]), UVM_HIGH)
+          end
+          `uvm_info(`gfn, $sformatf("controller_address_thread() address %0x",
+                                    mon_dut_item.addr), UVM_MEDIUM)
 
-           if (cfg.allow_bad_addr & !cfg.valid_addr) begin
+          cfg.vif.p_edge_scl();
+          r_bit = cfg.vif.cb.sda_i;
+          `uvm_info(`gfn, $sformatf("controller_address_thread() rw %d", r_bit), UVM_MEDIUM)
 
-             // skip rest of transaction and wait for next start
-             `uvm_info(`gfn, $sformatf("illegal address :0x%x", mon_dut_item.addr), UVM_MEDIUM)
-             mon_dut_item.clear_all();
-             do_skip = 1;
+          mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
+          cfg.valid_addr = is_target_addr(mon_dut_item.addr);
+          cfg.is_read = r_bit;
 
-           end else begin
-             bit acknack_bit;
+          if (mon_dut_item.bus_op == BusOpRead) begin
+            cfg.read_addr_q.push_back(cfg.valid_addr);
+          end
+          `uvm_info(`gfn, $sformatf("allow_bad_addr: %0d valid_addr:%0d",
+                                    cfg.allow_bad_addr, cfg.valid_addr), UVM_MEDIUM)
 
-             // Get ACK/NACK bit
-             cfg.vif.p_edge_scl();
-             acknack_bit = cfg.vif.cb.sda_i;
-             `uvm_info(`gfn, $sformatf("controller_address_thread() saw %0s",
-                                       (!acknack_bit) ? "ACK" : "NACK"), UVM_MEDIUM)
-             if (acknack_bit) cfg.got_nack.trigger();
-           end
-         end
-         begin
-           begin
-             wait(cfg.monitor_rst);
-             handle_rst("controller_address_thread()");
-           end
-           do_skip = 1; // Skip processing rest of the transaction
-         end
-       join_any
-       disable fork;
-      end
-    join
+          if (cfg.allow_bad_addr & !cfg.valid_addr) begin
+
+            // skip rest of transaction and wait for next start
+            `uvm_info(`gfn, $sformatf("illegal address :0x%x", mon_dut_item.addr), UVM_MEDIUM)
+            mon_dut_item.clear_all();
+            do_skip = 1;
+
+          end else begin
+            bit acknack_bit;
+
+            // Get ACK/NACK bit
+            cfg.vif.p_edge_scl();
+            acknack_bit = cfg.vif.cb.sda_i;
+            `uvm_info(`gfn, $sformatf("controller_address_thread() saw %0s",
+                                      (!acknack_bit) ? "ACK" : "NACK"), UVM_MEDIUM)
+            if (acknack_bit) cfg.got_nack.trigger();
+
+          end
+        end
+        begin
+          begin
+            wait(cfg.monitor_rst);
+            handle_rst("controller_address_thread()");
+          end
+          do_skip = 1; // Skip processing rest of the transaction
+        end
+      join_any
+      disable fork;
+    end : iso_fork join
     skip = do_skip;
   endtask: controller_address_thread
 
