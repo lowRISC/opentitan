@@ -289,15 +289,13 @@ class i2c_reference_model extends uvm_component;
 
       "acqdata": begin
         i2c_item obs;
-        `uvm_create_obj(i2c_item, obs);
-
         obs = acq2item(data);
-        cfg.rcvd_acq_cnt++;
-
         `uvm_info(`gfn, $sformatf("Pushing obs[%0d] to target_mode_wr_obs_port now!",
                                   obs.tran_id), UVM_MEDIUM)
 
         target_mode_wr_obs_port.write(obs);
+
+        cfg.rcvd_acq_cnt++;
       end
 
       default:;

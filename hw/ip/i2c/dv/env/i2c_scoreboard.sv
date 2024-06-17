@@ -45,7 +45,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   uvm_event reset_dut_target_rd_compare;
 
   // (Coverage only) Queue for fmtfifo data to be sampled
-  i2c_item  fmt_fifo_data_q[$];
+  i2c_item fmt_fifo_data_q[$];
 
   `uvm_component_new
 
@@ -448,10 +448,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     join
     target_mode_wr_obs_fifo.get(obs_wr);
     obs_wr.tran_id = dut_target_obs_write_transfer_id++;
-    `uvm_info(`gfn, $sformatf("Popped obs_wr item %0d.", obs_wr.tran_id), UVM_HIGH)
     target_mode_wr_exp_fifo.get(exp_wr);
     exp_wr.tran_id = dut_target_exp_write_transfer_id++;
-    `uvm_info(`gfn, $sformatf("Popped exp_wr item %0d.", exp_wr.tran_id), UVM_HIGH)
 
     // Sample the covergroup before doing the comparison.
     if (cfg.en_cov) begin
@@ -485,12 +483,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       target_mode_rd_obs_fifo.get(temp);
       `downcast(obs_rd, temp.clone())
       obs_rd.tran_id = dut_target_obs_read_transfer_id++;
-      `uvm_info(`gfn, $sformatf("Got obs_rd item %0d.", obs_rd.tran_id), UVM_HIGH)
     end
     target_mode_rd_exp_fifo.get(exp_rd);
     // Don't use the trans_id from the monitor, use our own local counter value.
     exp_rd.tran_id = dut_target_exp_read_transfer_id++;
-    `uvm_info(`gfn, $sformatf("Got exp_rd item %0d.", exp_rd.tran_id), UVM_HIGH)
 
     // Sample the covergroup before doing the comparison.
     if (cfg.en_cov) begin
@@ -510,6 +506,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     fork
       begin
+        `uvm_info(`gfn, $sformatf("Awaiting obs_%0s item.", dir.name()), UVM_HIGH)
+
         // Get OBS item
         case (dir)
           BusOpWrite: controller_mode_wr_obs_fifo.get(obs);
@@ -529,6 +527,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           void'(obs.data_q.pop_back());
           obs.num_data--;
         end
+
+        `uvm_info(`gfn, $sformatf("Got obs_%0s item %0d.", dir.name(), obs.tran_id), UVM_HIGH)
       end
       begin
         `uvm_info(`gfn, $sformatf("Awaiting exp_%0s item.", dir.name()), UVM_HIGH)
@@ -540,7 +540,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         endcase
         // Increment the counter for each expected DUT-Controller transaction
         exp.tran_id = dut_controller_transfer_id++;
-        `uvm_info(`gfn, $sformatf("Got exp_%0s item %0d.", dir.name(), exp.tran_id), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Got exp_%0s item %0d.", dir.name(), exp.tran_id), UVM_HIGH)
       end
     join
 
@@ -558,19 +558,23 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end else begin
       `uvm_info(`gfn, $sformatf(
         "Compare succeeded: DUT-Controller, dir:%0s\n--> EXP:\n%0s\--> OBS:\n%0s",
-        dir.name(), exp.sprint(), obs.sprint()), UVM_MEDIUM)
+        dir.name(), exp.sprint(), obs.sprint()), UVM_DEBUG)
     end
   endtask : compare_controller_trans
 
   // Compare seq_items for DUT-Target Write Transactions
   //
-  // Compare start, stop and wdata only
+  // We currently only check the following fields:
+  // - tran_id
+  // - start
+  // - stop
+  // - wdata (for non-rstart/stop items)
   function void target_wr_comp(i2c_item obs, i2c_item exp);
     string str = (exp.start) ? "addr" : (exp.stop) ? "stop" : "";
     `uvm_info(`gfn, $sformatf("target_wr_comp() exp_wr_txn (%0s) %0d\n%s",
-      str, exp.tran_id, exp.sprint()), UVM_MEDIUM)
+      str, exp.tran_id, exp.sprint()), UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("target_wr_comp() obs_wr_txn (%0s) %0d\n%s",
-      str, obs.tran_id, obs.sprint()), UVM_MEDIUM)
+      str, obs.tran_id, obs.sprint()), UVM_DEBUG)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.start, exp.start)
@@ -582,16 +586,20 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   // Compare seq_items for DUT-Target Read Transactions
   //
+  // We currently only check the following fields:
+  // - tran_id
+  // - num_data
+  // - data_q
   function void target_rd_comp(i2c_item obs, i2c_item exp);
     `uvm_info(`gfn, $sformatf("target_rd_comp() exp_rd_txn %0d\n%s",
-      exp.tran_id, exp.sprint()), UVM_MEDIUM)
+      exp.tran_id, exp.sprint()), UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("target_rd_comp() obs_rd_txn %0d\n%s",
-      obs.tran_id, obs.sprint()), UVM_MEDIUM)
+      obs.tran_id, obs.sprint()), UVM_DEBUG)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.num_data, exp.num_data)
-    `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
 
+    `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
     foreach (exp.data_q[i]) begin
       `DV_CHECK_EQ(obs.data_q[i], exp.data_q[i])
     end
