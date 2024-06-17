@@ -129,7 +129,7 @@ waive -rules {RESET_MUX} -location {usb_clk.sv} \
       -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_generic_flop.sv} \
       -comment "This is reset generation logic, hence reset muxes are allowed."
 
-# REMOVE FOR PRODUCTION, see https://github.com/lowRISC/opentitan/issues/15674
+# See https://github.com/lowRISC/opentitan/issues/15674
 waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
       -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'AesSecAllowForcingMasksNonDefault'\(1'b1\)' length 2} \
-      -comment "For ES we want to be able to switch off the masking inside AES, see https://github.com/lowRISC/opentitan/issues/14240. REMOVE FOR PRODUCTION!"
+      -comment "We want to be able to switch off the masking inside AES, see https://github.com/lowRISC/opentitan/issues/14240."
