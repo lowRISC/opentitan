@@ -6,7 +6,6 @@ load("//rules:linker.bzl", "ld_library")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -264,7 +263,6 @@ cc_library(
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
@@ -273,9 +271,7 @@ opentitan_test(
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_individualized",
-        # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
-            "broken",
             "lc_dev",
             "manuf",
         ],
