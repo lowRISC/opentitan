@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use clap::Parser;
-use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::time::Duration;
 
+use anyhow::{Context, Result};
+use clap::Parser;
+use once_cell::sync::Lazy;
+
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::dif::pinmux::PinmuxPadAttr;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::gpio::{GpioGet, GpioSet};
@@ -331,6 +333,7 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     for i in 0..32 {
         write_all_verify(transport, &*uart, 1 << i, 1 << i, &config.output)?;
     }
+
     Ok(())
 }
 
@@ -365,6 +368,68 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_pad_inversion(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let interface = opts.init.backend_opts.interface.as_str();
+    log::info!("Configuring pinmux for {interface}");
+
+    let config = CONFIG
+        .get(interface)
+        .with_context(|| format!("interface '{interface}' is not yet supported"))?;
+
+    let invert_all: HashMap<_, _> = config
+        .output
+        .keys()
+        .map(|&mio| (mio, PinmuxPadAttr::INVERT))
+        .collect();
+
+    log::info!("Configuring pads as inverted inputs");
+    PinmuxConfig::configure(&*uart, Some(&config.input), None, Some(&invert_all))?;
+
+    log::info!("Configuring debugger GPIOs as outputs");
+    // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
+    for pin in config.input.values() {
+        transport
+            .gpio_pin(&pin.to_string())?
+            .set_mode(PinMode::PushPull)?;
+    }
+
+    log::info!("Disabling outputs on the DUT");
+    GpioSet::set_enabled_all(&*uart, 0x0)?;
+
+    log::info!("Testing inverted device inputs");
+    read_all_verify(transport, &*uart, 0x5555_5555, !0x5555_5555, &config.input)?;
+    read_all_verify(transport, &*uart, 0xAAAA_AAAA, !0xAAAA_AAAA, &config.input)?;
+
+    for i in 0..32 {
+        read_all_verify(transport, &*uart, 1 << i, !(1 << i), &config.input)?;
+    }
+
+    log::info!("Configuring pads as inverted outputs");
+    PinmuxConfig::configure(&*uart, None, Some(&config.output), Some(&invert_all))?;
+
+    log::info!("Configuring debugger GPIOs as inputs");
+    // The outputs (with respect to pinmux config) correspond to the input pins on the debug board.
+    for pin in config.output.keys() {
+        transport
+            .gpio_pin(&pin.to_string())?
+            .set_mode(PinMode::Input)?;
+    }
+
+    log::info!("Enabling outputs on the DUT");
+    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
+
+    log::info!("Testing inverted device outputs");
+    write_all_verify(transport, &*uart, 0x5555_5555, !0x5555_5555, &config.output)?;
+    write_all_verify(transport, &*uart, 0xAAAA_AAAA, !0xAAAA_AAAA, &config.output)?;
+
+    for i in 0..32 {
+        write_all_verify(transport, &*uart, 1 << i, !(1 << i), &config.output)?;
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -376,5 +441,7 @@ fn main() -> Result<()> {
 
     execute_test!(test_gpio_outputs, &opts, &transport);
     execute_test!(test_gpio_inputs, &opts, &transport);
+    execute_test!(test_pad_inversion, &opts, &transport);
+
     Ok(())
 }
