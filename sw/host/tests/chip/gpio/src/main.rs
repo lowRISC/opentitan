@@ -228,72 +228,71 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
 fn write_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
-    value: u32,
+    write: u32,
+    read: u32,
     config: &HashMap<PinmuxMioOut, PinmuxOutsel>,
 ) -> Result<()> {
     let mask = config.values().fold(0, |acc, v| {
         let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
         acc | 1u32 << i
     });
-    let masked_value = value & mask;
-    log::info!(
-        "write & verify pattern: {:08x} & {:08x} -> {:08x}",
-        value,
-        mask,
-        masked_value
-    );
-    if masked_value == 0 {
-        log::info!(
-            "skipping: {:08x} has no bits in common with the pinmux configuration",
-            value
-        );
-    } else {
-        GpioSet::write_all(uart, masked_value)?;
-        let mut result = 0u32;
-        for (k, v) in config.iter() {
-            let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
-            let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
-            result |= n << i;
-        }
-        log::info!("result = {:08x}", result);
-        assert_eq!(masked_value, result);
+
+    let (write, read) = (write & mask, read & mask);
+
+    log::info!("write & verify pattern with mask {mask:08x}: {write:08x} -> {read:08x}");
+
+    if write == 0 {
+        log::info!("skipping: {write:08x} has no bits in common with the pinmux configuration");
+        return Ok(());
     }
+
+    GpioSet::write_all(uart, write)?;
+
+    let mut result = 0u32;
+    for (k, v) in config.iter() {
+        let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
+        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        result |= n << i;
+    }
+
+    log::info!("result = {result:08x}");
+    assert_eq!(read, result);
+
     Ok(())
 }
 
 fn read_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
-    value: u32,
+    write: u32,
+    read: u32,
     config: &HashMap<PinmuxPeripheralIn, PinmuxInsel>,
 ) -> Result<()> {
     let mask = config.keys().fold(0, |acc, k| {
         let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
         acc | 1u32 << i
     });
-    let masked_value = value & mask;
-    log::info!(
-        "read & verify pattern: {:08x} & {:08x} -> {:08x}",
-        value,
-        mask,
-        masked_value
-    );
-    if masked_value == 0 {
-        log::info!(
-            "skipping: {:08x} has no bits in common with the pinmux configuration",
-            value
-        );
-    } else {
-        for (k, v) in config.iter() {
-            let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
-            transport
-                .gpio_pin(&v.to_string())?
-                .write((masked_value >> i) & 1 != 0)?;
-        }
-        let result = GpioGet::read_all(uart)? & mask;
-        log::info!("result = {:08x}", result);
-        assert_eq!(masked_value, result);
+
+    let (write, read) = (write & mask, read & mask);
+
+    log::info!("read & verify pattern with mask {mask:08x}: {write:08x} -> {read:08x}");
+
+    if write == 0 {
+        log::info!("skipping: {write:08x} has no bits in common with the pinmux configuration");
+        return Ok(());
     }
+
+    for (k, v) in config.iter() {
+        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+        transport
+            .gpio_pin(&v.to_string())?
+            .write((write >> i) & 1 != 0)?;
+    }
+
+    let result = GpioGet::read_all(uart)? & mask;
+    log::info!("result = {result:08x}");
+    assert_eq!(read, result);
+
     Ok(())
 }
 
@@ -317,11 +316,11 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart)
 
     log::info!("Enabling outputs on the DUT");
     GpioSet::set_enabled_all(uart, 0xFFFFFFFF)?;
-    write_all_verify(transport, uart, 0x5555_5555, &config.output)?;
-    write_all_verify(transport, uart, 0xAAAA_AAAA, &config.output)?;
+    write_all_verify(transport, uart, 0x5555_5555, 0x5555_5555, &config.output)?;
+    write_all_verify(transport, uart, 0xAAAA_AAAA, 0xAAAA_AAAA, &config.output)?;
 
     for i in 0..32 {
-        write_all_verify(transport, uart, 1 << i, &config.output)?;
+        write_all_verify(transport, uart, 1 << i, 1 << i, &config.output)?;
     }
     Ok(())
 }
@@ -347,11 +346,11 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) 
     log::info!("Disabling outputs on the DUT");
     GpioSet::set_enabled_all(uart, 0x0)?;
 
-    read_all_verify(transport, uart, 0x5555_5555, &config.input)?;
-    read_all_verify(transport, uart, 0xAAAA_AAAA, &config.input)?;
+    read_all_verify(transport, uart, 0x5555_5555, 0x5555_5555, &config.input)?;
+    read_all_verify(transport, uart, 0xAAAA_AAAA, 0xAAAA_AAAA, &config.input)?;
 
     for i in 0..32 {
-        read_all_verify(transport, uart, 1 << i, &config.input)?;
+        read_all_verify(transport, uart, 1 << i, 1 << i, &config.input)?;
     }
     Ok(())
 }
