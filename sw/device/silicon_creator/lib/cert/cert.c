@@ -11,6 +11,25 @@
 
 static uint8_t actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes] = {0};
 
+uint32_t cert_x509_asn1_decode_size_header(const uint8_t *header) {
+  if (header[0] != 0x30 || header[1] != 0x82) {
+    return 0;
+  }
+  return (((uint32_t)header[2]) << 8) + header[3] + 4 /* size of the header */;
+}
+
+rom_error_t cert_x509_asn1_get_size_in_bytes(
+    const flash_ctrl_info_page_t *info_page, uint32_t offset, uint32_t *size) {
+  uint8_t asn1_header[sizeof(uint32_t)];
+  RETURN_IF_ERROR(
+      flash_ctrl_info_read(info_page, offset, /*word_count=*/1, &asn1_header));
+  *size = cert_x509_asn1_decode_size_header(asn1_header);
+  if (*size == 0) {
+    return kErrorCertInvalidSize;
+  }
+  return kErrorOk;
+}
+
 rom_error_t cert_x509_asn1_check_serial_number(
     const flash_ctrl_info_page_t *info_page, uint8_t *expected_sn_bytes,
     hardened_bool_t *matches) {
@@ -52,7 +71,7 @@ rom_error_t cert_x509_asn1_check_serial_number(
     }
   }
 
-  // Extract tag and length.
+  // Extract tag and length of serial number field.
   unsigned char *cert_bytes = (unsigned char *)cert_words;
   uint8_t asn1_tag = cert_bytes[kCertX509Asn1SerialNumberTagByteOffset];
   size_t asn1_integer_length =

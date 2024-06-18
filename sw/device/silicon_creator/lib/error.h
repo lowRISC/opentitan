@@ -200,6 +200,7 @@ enum module_ {
   \
   X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
   X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
+  X(kErrorCertInvalidSize,            ERROR_(2, kModuleCert, kDataLoss)), \
   \
   X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \

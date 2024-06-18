@@ -20,8 +20,10 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
-#include "sw/device/silicon_creator/lib/cert/cdi_0.h"    // Generated.
-#include "sw/device/silicon_creator/lib/cert/cdi_1.h"    // Generated.
+#include "sw/device/silicon_creator/lib/base/util.h"
+#include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_cik.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"   // Generated.
@@ -251,35 +253,6 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
 }
 
 /**
- *  A helper function to round up the passed in value to get it aligned to the
- *  requested number of bits.
- */
-static uint32_t round_up_to(uint32_t input, uint32_t align_bits) {
-  uint32_t mask = (1 << align_bits) - 1;
-
-  return (input + mask) & ~mask;
-}
-
-/**
- * Calculate the number of 32-bit words necessary to fit the input number bytes.
- */
-static uint32_t size_to_words(uint32_t bytes) {
-  return round_up_to(bytes, 2) / sizeof(uint32_t);
-}
-
-/**
- * Retrieve the certificate size from the passed in pointer to its ASN1 header.
- * Perform some basic sanity checks.
- */
-static uint32_t get_cert_size(const uint8_t *header) {
-  if (header[0] != 0x30 || header[1] != 0x82) {
-    return 0;
-  }
-
-  return (((uint32_t)header[2]) << 8) + header[3] + 4 /* size of the header */;
-}
-
-/**
  * Read a certificate from the passed in location in a flash INFO page and hash
  * its contents on the existing sha256 hashing stream. Determine the actual
  * certificate size from its ASN1 header.
@@ -295,7 +268,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   // Read the first word of the certificate which contains it's size.
   TRY(flash_ctrl_info_read(page, offset, 1, buffer));
   bytes_read = sizeof(uint32_t);
-  cert_size = get_cert_size(buffer);
+  cert_size = cert_x509_asn1_decode_size_header(buffer);
   if (cert_size == 0) {
     LOG_ERROR("Inconsistent certificate header %02x %02x page %x:%x", buffer[0],
               buffer[1], page->base_addr, offset);
@@ -313,7 +286,8 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   }
 
   offset += bytes_read;
-  TRY(flash_ctrl_info_read(page, offset, size_to_words(cert_size - bytes_read),
+  TRY(flash_ctrl_info_read(page, offset,
+                           util_size_to_words(cert_size - bytes_read),
                            buffer + bytes_read));
   hmac_sha256_update(buffer, cert_size);
 
@@ -333,16 +307,16 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
   for (size_t i = 0; i < ARRAYSIZE(kEndorsedDiceCerts); i++) {
     TRY(hash_certificate(&kFlashCtrlInfoPageDiceCerts, page_offset,
                          &cert_size));
-    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
-    page_offset = round_up_to(page_offset, 3);
+    page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
+    page_offset = util_round_up_to(page_offset, 3);
   }
 
   // Push TPM certificates into the hash (all reside on the same page).
   page_offset = 0;
   for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
-    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
-    page_offset = round_up_to(page_offset, 3);
+    page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
+    page_offset = util_round_up_to(page_offset, 3);
   }
 
   // Log the final hash of all certificates to the host and console.
@@ -476,8 +450,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   for (size_t i = 0; i < ARRAYSIZE(kEndorsedDiceCerts); i++) {
     const char *names[] = {"UDS", "CDI_0", "CDI_1"};
     // Number of words necessary for certificate storage.
-    uint32_t cert_size_words =
-        size_to_words(get_cert_size(kEndorsedDiceCerts[i]));
+    uint32_t cert_size_words = util_size_to_words(
+        cert_x509_asn1_decode_size_header(kEndorsedDiceCerts[i]));
     uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
 
     if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
@@ -491,7 +465,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
     page_offset += cert_size_bytes;
 
     // Each certificate must be 8 bytes aligned (flash word size).
-    page_offset = round_up_to(page_offset, 3);
+    page_offset = util_round_up_to(page_offset, 3);
   }
 
   // TPM Certificates (all on the same flash INFO page).
@@ -499,8 +473,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     const char *names[] = {"EK", "CEK", "CIK"};
     // Number of words necessary for certificate storage.
-    uint32_t cert_size_words =
-        size_to_words(get_cert_size(kEndorsedTpmCerts[i]));
+    uint32_t cert_size_words = util_size_to_words(
+        cert_x509_asn1_decode_size_header(kEndorsedTpmCerts[i]));
     uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
 
     if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
@@ -513,7 +487,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
     page_offset += cert_size_bytes;
 
     // Each certificate must be 8 bytes aligned (flash word size).
-    page_offset = round_up_to(page_offset, 3);
+    page_offset = util_round_up_to(page_offset, 3);
   }
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
