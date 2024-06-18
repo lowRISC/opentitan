@@ -20,14 +20,6 @@ waive -rules RESET_USE -location {pinmux_strap_sampling.sv} -regexp {'rst_ni' is
 waive -rules RESET_MUX -location {pinmux_strap_sampling.sv} -regexp {Asynchronous reset 'rst_ni' reaches a multiplexer here, used as a reset at pinmux_strap_sampling} \
       -comment "This is a clock mux for DFT."
 
-# temporary waiver for #15602. This waiver needs to be removed once rst_sys_n is connected in pinmux_strap_sampling
-waive -rules HIER_NET_NOT_READ -location {pinmux.sv} -regexp {.*'rst_sys_ni'.*is not read from.*'} \
-      -comment "Temporary waiver for #15602. This waiver needs to be removed once rst_sys_n is connected in pinmux_strap_sampling"
-
-waive -rules INPUT_NOT_READ -location {pinmux_strap_sampling.sv} -regexp {Input port 'rst_sys_ni' is not read from in module 'pinmux_strap_sampling'} \
-      -comment "Temporary waiver for #15602. This waiver needs to be removed once rst_sys_n is connected in pinmux_strap_sampling"
-'rst_sys_ni' is not read from in module 'pinmux_strap_sampling'
-
 waive -rules {CLOCK_DRIVER CLOCK_MUX} -location {pinmux_strap_sampling.sv} -regexp {'(lc|rv)_jtag_req.tck' is driven( by a multiplexer)? here,( and)? used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "These signals are muxed using the JTAG Selection Mux."
 
