@@ -22,6 +22,7 @@
 `include "spi_device_flash_mode_vseq.sv"
 `include "spi_device_read_buffer_direct_vseq.sv"
 `include "spi_device_flash_all_vseq.sv"
+`include "spi_device_flash_mode_ignore_cmds_vseq.sv"
 `include "spi_device_flash_and_tpm_vseq.sv"
 `include "spi_device_flash_and_tpm_min_idle_vseq.sv"
 `include "spi_device_stress_all_vseq.sv"
