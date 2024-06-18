@@ -23,3 +23,8 @@ waive -rules {CLOCK_DRIVER} \
       -location {padring.sv} \
       -regexp {'gen_mio_pads\[38\].mio_in' is driven by instance 'gen_mio_pads\[38\]\^u_mio_pad' of module 'prim_pad_wrapper', and used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "The 'mio_in[TckPadIdx]' input signal driven by a prim_pad_wrapper eventually feeds in to the JTAG Selection Mux."
+
+waive -rules {CLOCK_DRIVER} \
+      -location {padring.sv} \
+      -regexp {'gen_mio_pads\[28\].mio_in_raw' is driven by instance 'gen_mio_pads\[28\]\^u_mio_pad' of module 'prim_pad_wrapper', and used as a clock} \
+      -comment "'MioPadIoc6' at index 28 may also serve as an external clock input."
