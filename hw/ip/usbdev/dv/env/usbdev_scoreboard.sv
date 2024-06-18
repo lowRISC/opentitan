@@ -487,6 +487,26 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       "fifo_ctrl": begin
         // TODO
       end
+      "count_out": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_in": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_nodata_in": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_errors": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
       "buffer": begin
         do_read_check = 1'b1;
       end
