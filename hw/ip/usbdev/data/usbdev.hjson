@@ -1131,6 +1131,8 @@
                 Regardless of the state of this field usb_rx_dp and usb_rx_dn are always used to detect SE0.
                 This bit also feeds the rx_enable pin, activating the receiver when the device is not suspended.
                 '''
+          tags: [// Writing can provoke state changes in the receiver logic and thus raise errors.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         {
           bits: "1",
@@ -1150,6 +1152,8 @@
           desc: '''
                 Recognize a single SE0 bit as an end of packet, otherwise two successive bits are required.
                 '''
+          tags: [// Writing can provoke state changes in the receiver logic and thus raise errors.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         {
           bits: "5",
@@ -1160,6 +1164,8 @@
                 Particularly useful if D+/D- are mapped to SBU1/SBU2 pins of USB-C.
 
                 '''
+          tags: [// Writing can provoke state changes in the receiver logic and thus raise errors.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         {
           bits: "6",
@@ -1181,6 +1187,8 @@
                 The clock might drift off.
 
                 '''
+          tags: [// Writing can provoke state changes in the receiver logic and thus raise errors.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
     }
