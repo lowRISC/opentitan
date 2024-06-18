@@ -77,6 +77,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -101,6 +102,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -136,6 +138,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -197,6 +200,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(timeout = "moderate"),
@@ -237,6 +241,7 @@ opentitan_test(
         {
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     deps = [
@@ -283,6 +288,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -335,6 +341,7 @@ opentitan_test(
         {
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -443,6 +450,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -470,6 +478,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -544,15 +553,15 @@ opentitan_test(
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
-    silicon_owner = silicon_params(
+    silicon = silicon_params(
         tags = ["broken"],
     ),
     # TODO(#16374): test doesn't make progress after enabling PWM
@@ -583,6 +592,7 @@ opentitan_test(
         {
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     # TODO(#16374): test doesn't make progress after enabling PWM
@@ -635,9 +645,15 @@ opentitan_test(
         # changing the key for a single environment.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys"],
+            [
+                "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            ],
         ),
-        {"//hw/top_earlgrey:fpga_cw310_sival": None},
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+        },
     ),
     fpga = fpga_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
@@ -676,6 +692,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -721,6 +738,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -776,6 +794,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -790,6 +809,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -804,6 +824,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -818,6 +839,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     deps = ["clkmgr_off_trans_impl"],
@@ -831,6 +853,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -858,6 +881,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -952,14 +976,14 @@ opentitan_test(
     srcs = ["csrng_edn_concurrency_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
         },
     ),
-    silicon_owner = silicon_params(
+    silicon = silicon_params(
         tags = ["broken"],
     ),
     verilator = verilator_params(timeout = "eternal"),
@@ -1279,6 +1303,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1488,6 +1513,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     deps = [
@@ -1547,6 +1573,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
@@ -1584,6 +1611,7 @@ test_suite(
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_{}_manuf_personalized".format(lc_state),
@@ -1633,6 +1661,7 @@ opentitan_test(
         {
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -1661,6 +1690,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -1708,6 +1738,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -1729,6 +1760,7 @@ opentitan_test(
     srcs = ["flash_ctrl_rma_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -1769,6 +1801,7 @@ opentitan_test(
 opentitan_test(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         # Not compatible with the verilated top level.
@@ -1778,6 +1811,9 @@ opentitan_test(
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -1792,11 +1828,15 @@ opentitan_test(
 opentitan_test(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -1824,11 +1864,15 @@ opentitan_test(
 opentitan_test(
     name = "gpio_intr_test",
     srcs = ["gpio_intr_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -1889,6 +1933,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1913,6 +1958,8 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
     ),
     deps = [
@@ -1935,6 +1982,8 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1961,6 +2010,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -2073,6 +2123,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2132,6 +2183,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2196,6 +2248,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2218,6 +2271,7 @@ opentitan_test(
         {
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     deps = [
@@ -2331,6 +2385,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2384,6 +2439,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2409,6 +2465,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2428,6 +2485,7 @@ opentitan_test(
     exec_env = {
         # This test needs to program OTP which is blocked by rom_ext.
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2454,7 +2512,9 @@ opentitan_test(
     exec_env = {
         # This test needs to program OTP which is blocked by rom_ext.
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2571,6 +2631,7 @@ opentitan_test(
         {
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2715,6 +2776,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -2753,6 +2815,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -2791,6 +2854,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2823,6 +2887,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2857,6 +2922,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2902,6 +2968,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2963,6 +3030,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -2989,6 +3057,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     verilator = verilator_params(tags = ["broken"]),
@@ -3011,6 +3080,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     deps = [
@@ -3082,6 +3152,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -3103,6 +3174,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -3339,9 +3411,15 @@ cc_library(
 opentitan_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+        },
     ),
     fpga = fpga_params(timeout = "moderate"),
     deps = [
@@ -3364,9 +3442,15 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_winbond_flash_test",
     srcs = ["spi_host_winbond_flash_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+        },
     ),
     deps = [
         ":spi_host_flash_test_impl",
@@ -3562,6 +3646,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -3582,6 +3667,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -3943,12 +4029,18 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     data = [
         ":usbdev_stream_host_harness",
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+        },
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -3982,12 +4074,18 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     data = [
         ":usbdev_stream_host_harness",
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+        },
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -4021,12 +4119,18 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     data = [
         ":usbdev_stream_host_harness",
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # See #23558: needs porting to work on the CW340.
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+        },
     ),
     fpga = fpga_params(
         test_cmd = """
@@ -4062,6 +4166,7 @@ opentitan_test(
     srcs = ["usbdev_logging_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -4095,6 +4200,8 @@ opentitan_test(
             # TODO(lowrisc/opentitan#20589): Enable _sival* tests when bug is fixed
             "//hw/top_earlgrey:fpga_cw310_sival": "broken",
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -4151,6 +4258,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -4177,7 +4285,9 @@ opentitan_test(
     exec_env = {
         # This test needs access address translation unit which is blocked by rom_ext.
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -4201,6 +4311,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -4246,6 +4357,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -4302,6 +4414,8 @@ opentitan_test(
             # test program doesn't fit inside the ROM_EXT partition size (~64KB).
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
@@ -4369,11 +4483,15 @@ opentitan_test(
 opentitan_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyperdebug",
+            # See #23558: needs porting to work on CW340 boards.
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     fpga = fpga_params(
@@ -4383,7 +4501,7 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
-    hyper310 = fpga_params(
+    hyperdebug = fpga_params(
         tags = ["manual"],  # TODO: QE bit handling
         test_cmd = """
             --bootstrap="{firmware}"
@@ -4754,6 +4872,7 @@ test_suite(
         srcs = ["rv_dm_ndm_reset_req.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         fpga = fpga_params(
@@ -4808,6 +4927,7 @@ test_suite(
         srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         fpga = fpga_params(
@@ -4849,6 +4969,7 @@ test_suite(
         srcs = ["example_test_from_flash.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         fpga = fpga_params(
@@ -4890,6 +5011,7 @@ test_suite(
         srcs = ["example_test_from_flash.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         fpga = fpga_params(
@@ -4931,6 +5053,7 @@ test_suite(
         srcs = ["rv_dm_access_after_wakeup.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         fpga = fpga_params(
@@ -4990,6 +5113,7 @@ test_suite(
         srcs = ["rv_dm_access_after_hw_reset.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -5031,7 +5155,9 @@ opentitan_test(
     srcs = ["example_test_from_flash.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         needs_jtag = True,
@@ -5056,6 +5182,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         test_cmd = """
@@ -5087,6 +5214,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -5131,6 +5259,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
         },
     ),
     fpga = fpga_params(
@@ -5177,6 +5306,7 @@ opentitan_test(
     srcs = ["status_report_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS!",
@@ -5202,6 +5332,7 @@ opentitan_test(
     srcs = ["status_report_overflow_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS!",
@@ -5221,6 +5352,7 @@ opentitan_test(
     # compatible with both pre- and post-silicon test environments.
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -5244,6 +5376,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5281,6 +5414,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5319,6 +5453,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5358,6 +5493,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5396,6 +5532,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5438,6 +5575,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5494,14 +5632,13 @@ opentitan_test(
     name = "rv_core_ibex_isa_test_test_unlocked0",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
-        # This test is not compatible with the test_rom because the test_rom
-        # does not respect the exec_disabled OTP config word.
-        dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_test_rom"],
-        ),
+        EARLGREY_TEST_ENVS,
         {
+            # This test is not compatible with the test_rom because the test_rom
+            # does not respect the exec_disabled OTP config word.
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # TODO: Enable when `fpga_params.binaries` supportes multiple exec envs.
+            #"//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -5580,14 +5717,13 @@ opentitan_test(
     name = "rv_core_ibex_epmp_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
-        # This test is not compatible with the test_rom because the test_rom
-        # does not respect the exec_disabled OTP config word.
-        dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_test_rom"],
-        ),
+        EARLGREY_TEST_ENVS,
         {
+            # This test is not compatible with the test_rom because the test_rom
+            # does not respect the exec_disabled OTP config word.
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # TODO: Enable when `fpga_params.binaries` supportes multiple exec envs.
+            #"//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -5650,10 +5786,14 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
             # See #23468, currently broken on SAM3X execution environments.
             "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
+            # DUT UART currently broken on CW340s.
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     fpga = fpga_params(
@@ -5695,15 +5835,14 @@ opentitan_test(
     name = "rv_core_ibex_mem_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
-        # This test is not compatible with the test_rom because the test_rom
-        # does not respect the exec_disabled OTP config word.
-        dicts.omit(
-            EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_test_rom"],
-        ),
+        EARLGREY_TEST_ENVS,
         {
+            # This test is not compatible with the test_rom because the test_rom
+            # does not respect the exec_disabled OTP config word.
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # TODO: Enable when `fpga_params.binaries` supportes multiple exec envs.
+            #"//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -5768,6 +5907,10 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        },
     ),
     fpga = fpga_params(
         # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
@@ -5810,6 +5953,9 @@ opentitan_test(
             # See #23468: currently broken over the SAM3X interface.
             "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
+            # DUT UART currently broken on CW340s.
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     fpga = fpga_params(
@@ -5882,9 +6028,13 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             # See #23468: currently broken over the SAM3X interface.
             "//hw/top_earlgrey:fpga_cw310_test_rom": "broken",
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
+            # DUT UART currently broken on CW340s.
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
         },
     ),
     fpga = fpga_params(
@@ -5986,6 +6136,7 @@ opentitan_test(
     srcs = ["sram_ctrl_lc_escalation_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         timeout = "moderate",
