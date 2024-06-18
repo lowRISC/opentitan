@@ -42,6 +42,9 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   // Controls address size for flash_cmd_info of type SpiFlashAddrCfg.
   bit              flash_addr_4b_en;
 
+  // If set to null then CSB is high - variable only valid for flash
+  spi_item ongoing_flash_cmd;
+
   // set this mode before starting an item
   spi_func_mode_e  spi_func_mode;
 

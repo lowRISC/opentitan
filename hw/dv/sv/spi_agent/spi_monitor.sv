@@ -51,6 +51,7 @@ class spi_monitor extends dv_base_monitor#(
     cfg.vif.sck_phase = cfg.sck_phase[active_csb];
     host_item   = spi_item::type_id::create("host_item", this);
     device_item = spi_item::type_id::create("device_item", this);
+    cfg.ongoing_flash_cmd = null;
     fork
       begin : isolation_thread
         fork
@@ -249,6 +250,8 @@ class spi_monitor extends dv_base_monitor#(
                                      // output
                                      num_addr_bytes, item.write_command, item.num_lanes,
                                      item.dummy_cycles, item.read_pipeline_mode);
+    // Assigned right after op-code is recieved
+    cfg.ongoing_flash_cmd = item;
     `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
     item.terminated_before_dummy_cycles = 1;
     if (item.read_pipeline_mode>0)
@@ -265,6 +268,7 @@ class spi_monitor extends dv_base_monitor#(
     repeat (item.dummy_cycles) begin
       cfg.wait_sck_edge(SamplingEdge, active_csb);
     end
+    item.past_dummies = 1;
     `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
                               item.opcode, item.address_q), UVM_DEBUG)
     item.terminated_before_dummy_cycles = 0;
@@ -295,8 +299,13 @@ class spi_monitor extends dv_base_monitor#(
       sample_and_check_byte(item.num_lanes, !item.write_command, byte_data);
       `uvm_info(`gfn, $sformatf("Sampled: 0x%0x data", byte_data), UVM_DEBUG)
       item.payload_q.push_back(byte_data);
-      `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling a data byte", UVM_DEBUG)
-      -> host_item.byte_sampled_ev;
+
+      // Note: in spi-device there are some read commands(QUAD+specific dummy cycles) in which the
+      // S2P module stops signalling byte-beats past the address phase
+      if (item.spi_beat_signalled) begin
+        `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling a data byte", UVM_DEBUG)
+        -> host_item.byte_sampled_ev;
+      end
     end
   endtask : collect_flash_trans
 

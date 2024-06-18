@@ -86,6 +86,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     `DV_SPINWAIT(
       while (1) begin
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
+        `uvm_info(`gfn, "Sending READ_STATUS#1", UVM_DEBUG)
         `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                       opcode == READ_STATUS_1;
                                       address_q.size() == 0;

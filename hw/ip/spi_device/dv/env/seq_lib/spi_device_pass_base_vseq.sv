@@ -557,16 +557,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                                    read_size == payload_size;)
     `uvm_send(m_spi_host_seq)
 
-    if (op == `gmv(ral.cmd_info_en4b.opcode) && `gmv(ral.cmd_info_en4b.valid)) begin
-      cfg.spi_device_agent_cfg.flash_addr_4b_en = 1;
-      cfg.spi_host_agent_cfg.flash_addr_4b_en   = 1;
-      schedule_en_4b_predict(1);
-    end else if (op == `gmv(ral.cmd_info_ex4b.opcode) && `gmv(ral.cmd_info_ex4b.valid)) begin
-      cfg.spi_device_agent_cfg.flash_addr_4b_en = 0;
-      cfg.spi_host_agent_cfg.flash_addr_4b_en   = 0;
-      schedule_en_4b_predict(0);
-    end
-
     if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin
       cfg.next_read_buffer_addr = convert_addr_from_byte_queue(m_spi_host_seq.rsp.address_q) +
                              m_spi_host_seq.rsp.payload_q.size();
@@ -624,19 +614,35 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     uint num_sck_pulses = 5;
     uint wait_sck_count = num_sck_pulses;
     flash_status_t old_flash_status, new_flash_status;
+    uvm_hdl_data_t rtl_sck_committed_status;
     `uvm_info(`gfn, "Clearing flash busy bit", UVM_MEDIUM)
     // clear busy bit
     ral.flash_status.busy.set(0);
     csr_rd(.ptr(ral.flash_status), .value(old_flash_status), .backdoor(1));
 
     csr_update(ral.flash_status);
+    `uvm_info(`gfn, $sformatf("%m - After updating flash_status - 0x%0x",`gmv(ral.flash_status)),
+              UVM_DEBUG)
+
     // The intent here is to check the flash_status after csr_wr and then read the register
     // after end of SPI transaction (since flash_status gets update after CSB is deasserted)
     // First, ensure enough SPI clock cycles occur to make the transition into
     // the SPI domain.
 
+    if(cfg.vseq_txn_finished) begin
+      // For flash_status.busy bit to be propagated towards the TL-UL side there must be a
+      // flash_command. If there aren't more txns we just exit to avoid blocking
+      `uvm_info(`gfn, {$sformatf("%m - exiting since this test won't generate more flash_txns"),
+                       "- hence busy bit won't drop"}, UVM_DEBUG)
+      return;
+    end
+
     while (wait_sck_count > 0) begin
+      `uvm_info(`gfn, $sformatf("Waiting 'wait_sck_count=%0d' SCK ticks",wait_sck_count), UVM_DEBUG)
+
       @(posedge cfg.spi_host_agent_cfg.vif.sck);
+      `uvm_info(`gfn, "%m - WAITING FOR BUSY BIT TO CLEAR", UVM_DEBUG)
+
       if (cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID] == 0) begin
         if (wait_sck_count == num_sck_pulses) begin
           // On the first SCK clock, we check if the value has already made it
@@ -649,12 +655,37 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           if (new_flash_status != old_flash_status)
             busy_unset_early = 1;
 
-        end
+        end // if (wait_sck_count == num_sck_pulses)
+        if (cfg.spi_host_agent_cfg.ongoing_flash_cmd != null) begin
+          if (new_flash_status[0] == 1 && // Busy is set
+              cfg.spi_host_agent_cfg.ongoing_flash_cmd.past_dummies && //CMD is past dummy cycles
+              !cfg.spi_host_agent_cfg.ongoing_flash_cmd.spi_beat_signalled()) begin
+            // We're past the dummies stage - point in which this flash_command (READ) won't cause
+            // the RTL to continue updating flash_status on a byte-basis. This flash_status SW write
+            // will only make it through in the following command, so wait for next negedge on CSB
+            @(negedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
+          end
+        end // if (cfg.spi_host_agent_cfg.ongoing_flash_cmd != null)
+
         wait_sck_count--;
-      end else begin
-        wait_sck_count = 5;
+        if (wait_sck_count == 0 && busy_unset_early == 0) begin
+          uvm_hdl_read("tb.dut.u_spid_status.sck_status_committed", rtl_sck_committed_status);
+          // The busy clear hasn't made it towards the SCK committed value yet - so there's a chance
+          // if we're towards the end of a flash_cmd the flash_status write wasn't taken for that
+          // command and hence the busy bit won't be unset until the next command, since the write
+          // hasn't made it to the committed value yet.
+          if (rtl_sck_committed_status[0] == 1) begin
+            // We wait until the bit is dropped on the committed value, just so after CSB goes high
+            // SW can read the bit is unset
+            wait_sck_count = num_sck_pulses;
+          end
+        end
+      end else begin // if (cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID] == 0)
+        wait_sck_count = num_sck_pulses;
       end
     end
+
+
     // Wait for the SPI transaction to end.
     @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
     `uvm_info(`gfn, "Detected end of SPI transaction", UVM_HIGH)

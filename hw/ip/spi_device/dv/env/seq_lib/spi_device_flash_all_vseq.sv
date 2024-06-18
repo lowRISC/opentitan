@@ -10,6 +10,7 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
   int write_flash_status_pct = 20;
   int read_flash_status_pct  = 20;
   int read_addr4b_pct        = 20;
+  bit wait_on_busy = 1;
 
   constraint device_mode_c {
     device_mode inside {PassthroughMode, FlashMode};
@@ -41,12 +42,18 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
     join
   endtask : body
 
+  // Empty task to be overriden by child sequences in case any different configuration is needed
+  virtual task knobs_before_randomize_op_addr_size();
+  endtask
+
   virtual task main_seq();
     for (int i = 0; i < num_trans; ++i) begin
-      `uvm_info(`gfn, $sformatf("running iteration %0d/%0d", i, num_trans), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("%m - running iteration %0d/%0d", i, num_trans), UVM_LOW)
 
       spi_device_flash_pass_init();
       for (int j = 0; j < 20; ++j) begin
+        knobs_before_randomize_op_addr_size();
+
         if ($urandom_range(0, 99) < write_flash_status_pct) begin
           random_access_flash_status(.write(1), .busy(1));
         end
@@ -57,11 +64,14 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
           read_and_check_4b_en();
         end
 
+        knobs_before_randomize_op_addr_size();
         randomize_op_addr_size();
         `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, opcode), UVM_MEDIUM)
-
-        spi_host_xfer_flash_item(opcode, payload_size, read_start_addr);
+        spi_host_xfer_flash_item(opcode, payload_size, read_start_addr, wait_on_busy);
       end
-    end
+      `uvm_info(`gfn, $sformatf("%m - END:running iteration %0d/%0d", i, num_trans), UVM_LOW)
+
+    end // for (int i = 0; i < num_trans; ++i)
+    cfg.vseq_txn_finished = 1;
   endtask : main_seq
 endclass : spi_device_flash_all_vseq

@@ -35,6 +35,9 @@ class spi_item extends uvm_sequence_item;
   // of wait until the entire item is collected. This indicates item has collected all data.
   bit mon_item_complete;
 
+  // Set to 1 after the item has sampled the dummy cycles
+  bit past_dummies;
+
   // Triggered for each byte sampled and when CSB becomes inactive
   event byte_sampled_ev, dummy_cycles_ev, item_finished_ev;
 
@@ -102,5 +105,20 @@ class spi_item extends uvm_sequence_item;
     return txt;
   endfunction // convert2string
 
+
+  // The RTL updates flash_status on each spi-beat, but for some READS the s2p module stops sending
+  //  the updates. We model here the same RTL behaviour, so the TB doesn't update flash_status
+  //  when the RTL doesn't
+  function bit spi_beat_signalled();
+    if (num_lanes == 4) begin
+      case(dummy_cycles)
+        5,6,2: begin
+          return 0;
+        end
+        default: ;
+      endcase
+    end
+    return 1;
+  endfunction
 
 endclass : spi_item
