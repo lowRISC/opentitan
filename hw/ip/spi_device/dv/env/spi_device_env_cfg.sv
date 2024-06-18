@@ -41,6 +41,10 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // work correctly
   bit                 last_flash_cmd_set_busy = 0;
 
+  // vseq_txn_finished is used to avoid blocking on flash_status.busy being set
+  // If the busy set
+  bit                 vseq_txn_finished;
+
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(spi_device_agent_cfg, UVM_DEFAULT)

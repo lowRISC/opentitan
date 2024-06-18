@@ -39,6 +39,7 @@ filesets:
       - seq_lib/spi_device_flash_mode_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_read_buffer_direct_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_flash_all_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_flash_mode_ignore_cmds_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_flash_and_tpm_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_flash_and_tpm_min_idle_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_stress_all_vseq.sv: {is_include_file: true}

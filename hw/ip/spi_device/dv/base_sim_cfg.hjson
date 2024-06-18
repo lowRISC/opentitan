@@ -143,6 +143,11 @@
     }
 
     {
+      name: spi_device_flash_mode_ignore_cmds
+      uvm_test_seq: spi_device_flash_mode_ignore_cmds_vseq
+    }
+
+    {
       name: spi_device_read_buffer_direct
       uvm_test_seq: spi_device_read_buffer_direct_vseq
       // it's a direct test, and checking is done in seq
