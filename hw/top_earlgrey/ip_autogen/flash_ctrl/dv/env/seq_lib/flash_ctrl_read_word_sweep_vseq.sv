@@ -13,8 +13,18 @@ class flash_ctrl_read_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     int num, bank;
     int mywd;
 
-    ctrl = rand_op;
-    bank = rand_op.addr[OTFBankId];
+    begin
+      flash_op_t prog_op;
+      int progwd = 16;
+      ctrl_num = 12;
+      ctrl_num.rand_mode(0);
+      fractions = 16;
+      fractions.rand_mode(0);
+      `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
+      prog_op = ctrl;
+      print_flash_op(prog_op, UVM_MEDIUM);
+      prog_flash(prog_op, bank, num, fractions);
+    end
     num = 1;
     mywd = 1;
     repeat(20) begin
@@ -23,4 +33,4 @@ class flash_ctrl_read_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     end
   endtask
 
-endclass // flash_ctrl_read_word_sweep_vseq
+endclass : flash_ctrl_read_word_sweep_vseq
