@@ -18,3 +18,8 @@ waive -rules {HIER_BRANCH_NOT_READ} \
       -location {padring.sv} \
       -regexp   {Net 'clk_scan_i' in module 'padring'.*} \
       -comment "This net is not read from if no scan role is defined for the pads (which is the case in the opensource view)."
+
+waive -rules {CLOCK_DRIVER} \
+      -location {padring.sv} \
+      -regexp {'gen_mio_pads\[38\].mio_in' is driven by instance 'gen_mio_pads\[38\]\^u_mio_pad' of module 'prim_pad_wrapper', and used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "The 'mio_in[TckPadIdx]' input signal driven by a prim_pad_wrapper eventually feeds in to the JTAG Selection Mux."

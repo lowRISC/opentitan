@@ -27,6 +27,15 @@ waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.c
 waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
+      -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
+
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'pinmux_aon_(lc|rv)_jtag_req.tck' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "Inside lc_ctrl/rv_dm, either the JTAG clock is muxed and forward to the DMI JTAG TAP depending on the scanmode/testmode signals."
+
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'mio_in_i\[38\]' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "Inside pinmux_strap_sampling.sv, 'mio_in_i[TckPadIdx]' is connected to 'jtag_req' which is then muxed in the JTAG Selection Mux."
+
 # scan reset is a legal asynchronous reset
 waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
       -comment "Scan reset is a legal asynchronous reset"
