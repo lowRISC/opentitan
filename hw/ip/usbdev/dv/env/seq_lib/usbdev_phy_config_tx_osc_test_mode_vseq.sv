@@ -51,6 +51,11 @@ class usbdev_phy_config_tx_osc_test_mode_vseq extends usbdev_base_vseq;
 
     // For the TX OSC test mode to work, the bus must not be in reset.
     set_vbus_state(1);
+
+    // Ensure that the DUT is driving the pull up enable because otherwise the logic will sit in
+    // 'link reset' as both DP and DN are weakly pulled low by the host.
+    usbdev_connect();
+
     // Instruct the driver to perform Bus Reset Signaling; keep this to 100us since there's no
     // point wasting simulation time on all sequences. Full length resets are exercised in
     // usbdev_bus_rand_vseq.
