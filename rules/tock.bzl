@@ -18,6 +18,12 @@ load(
 )
 load("@tockloader_deps//:requirements.bzl", "entry_point")
 
+# Exec environments that we can run Tock on, for use with opentitan_test.
+TOCK_ENVS = {
+    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+}
+
 TockApplication = provider(
     fields = {
         "tab": "TAB file for this application",

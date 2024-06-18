@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//rules/opentitan:defs.bzl", "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS", "OPENTITAN_CPU", "cw310_params", "opentitan_test", "silicon_params")
-load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
+load("//rules/opentitan:defs.bzl", "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS", "OPENTITAN_CPU", "fpga_params", "opentitan_test", "silicon_params")
+load("//rules:tock.bzl", "TOCK_ENVS", "tock_elf2tab", "tock_image")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -30,18 +30,32 @@ tock_elf2tab(
 )
 
 tock_image(
-    name = "image",
+    name = "image_fpga",
+    testonly = True,
+    apps = [":tab"],
+    exec_env = "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+    kernel = "//sw/device/silicon_owner/tock/tests:test_kernel_fpga",
+)
+
+tock_image(
+    name = "image_silicon",
     apps = [":tab"],
     exec_env = "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
-    kernel = "//sw/device/silicon_owner/tock/kernel",
+    kernel = "//sw/device/silicon_owner/tock/tests:test_kernel_silicon",
 )
 
 opentitan_test(
     name = "uart_test",
-    # Note: tock_image currently create a sival_rom_ext-only image.
-    exec_env = {"//hw/top_earlgrey:silicon_owner_sival_rom_ext": None},
+    exec_env = TOCK_ENVS,
+    fpga = fpga_params(
+        binaries = {":image_fpga": "firmware"},
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/tock/uart",
+    ),
     silicon = silicon_params(
-        binaries = {":image": "firmware"},
+        binaries = {":image_silicon": "firmware"},
         test_cmd = """
             --bootstrap="{firmware}"
         """,
