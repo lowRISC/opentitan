@@ -129,16 +129,66 @@ class usbdev_bad_traffic_vseq extends usbdev_bus_rand_vseq;
     // TODO: Check that a PID error interrupt is raised by the DUT?
   endtask
 
+  // Transmit a SETUP token packet, an IN token packet or an OUT token packet with an invalid CRC5.
   virtual task generate_bad_crc5(bit [3:0] ep);
-    `uvm_fatal(`gfn, "Stimulus not yet implemented")
+    int unsigned pkt_type = $urandom_range(0, 2);
+    `uvm_info(`gfn, $sformatf("Generating bad CRC5 token packet type %0d", pkt_type), UVM_MEDIUM)
+    claim_driver();
+    // Ensure that the CRC5 value is incorrect; this should prevent the DUT responding to the
+    // (apparent) SETUP token packet.
+    inject_bad_token_crc5 = 1'b1;
+    case (pkt_type)
+      0: begin
+        send_prnd_setup_packet(ep);
+        check_no_response();
+      end
+      1: begin
+        send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0);
+        check_no_response();
+      end
+      default: begin
+        usb20_item reply;
+        retrieve_in_packet(ep, reply, .ack(0));
+        `DV_CHECK_EQ(reply.timed_out, 1, "Response to corrupted IN request was unexpected")
+      end
+    endcase
+    // Restore normal operation.
+    inject_bad_token_crc5 = 1'b0;
+    release_driver();
   endtask
 
+  // Perform an OUT DATA transaction with an invalid CRC16.
+  //
+  // Note: If were to use a SETUP DATA transaction with just an invalid CRC16, the DUT would still
+  // respond to the SETUP token packet and alter its internal state.
   virtual task generate_bad_crc16(bit [3:0] ep);
-    `uvm_fatal(`gfn, "Stimulus not yet implemented")
+    `uvm_info(`gfn, "Generating bad CRC16 data packet", UVM_MEDIUM)
+    claim_driver();
+    // Ensure that the CRC16 value is incorrect; this should prevent the DUT responding to the
+    // (apparent) SETUP token packet.
+    inject_bad_data_crc16 = 1'b1;
+    send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0);
+    check_no_response();
+    // Restore normal operation.
+    inject_bad_data_crc16 = 1'b0;
+    release_driver();
   endtask
 
+  // Induce a bit stuffing violation
   virtual task generate_bitstuff_error(bit [3:0] ep);
-    `uvm_fatal(`gfn, "Stimulus not yet implemented")
+    byte unsigned data[];
+    build_prnd_bitstuff_packet(data);
+    `uvm_info(`gfn, "Generating data packet with bit stuffing violation", UVM_MEDIUM)
+    claim_driver();
+    // Disable the bit stuffing logic in the driver.
+    cfg.m_usb20_agent_cfg.disable_bitstuffing = 1'b1;
+    // Send the packet with the bit stuffing violation; the DUT should ignore it.
+    send_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0, data);
+    check_no_response();
+    // Restore normal operation.
+    cfg.m_usb20_agent_cfg.disable_bitstuffing = 1'b0;
+    release_driver();
+    // TODO: Check that a bitstuff error interrupt is raised by the DUT?
   endtask
 
   // Parallel process that injects bad traffic; the streaming test should continue unimpacted aside
