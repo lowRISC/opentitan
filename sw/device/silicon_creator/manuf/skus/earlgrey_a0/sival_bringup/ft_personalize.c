@@ -125,6 +125,11 @@ static manuf_certs_t tbs_certs = {
     .tpm_cik_tbs_certificate_size = kTpmCikMaxTbsSizeBytes,
 };
 static manuf_endorsed_certs_t endorsed_certs;
+static const unsigned char *kEndorsedDiceCerts[] = {
+    endorsed_certs.uds_certificate,
+    tbs_certs.cdi_0_certificate,
+    tbs_certs.cdi_1_certificate,
+};
 static const unsigned char *kEndorsedTpmCerts[] = {
     endorsed_certs.tpm_ek_certificate,
     endorsed_certs.tpm_cek_certificate,
@@ -175,11 +180,7 @@ static void sw_reset(void) {
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
   flash_ctrl_cert_info_pages_creator_cfg();
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageTpmCerts,
                             kFlashCtrlEraseTypePage));
@@ -324,16 +325,20 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
 
 static status_t log_hash_of_all_certs(ujson_t *uj) {
   uint32_t cert_size;
-  uint32_t page_offset = 0;
   serdes_sha256_hash_t hash;
   hmac_sha256_init();
 
   // Push DICE certificates into the hash (each resides on a separate page).
-  TRY(hash_certificate(&kFlashCtrlInfoPageUdsCertificate, 0, NULL));
-  TRY(hash_certificate(&kFlashCtrlInfoPageCdi0Certificate, 0, NULL));
-  TRY(hash_certificate(&kFlashCtrlInfoPageCdi1Certificate, 0, NULL));
+  uint32_t page_offset = 0;
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedDiceCerts); i++) {
+    TRY(hash_certificate(&kFlashCtrlInfoPageDiceCerts, page_offset,
+                         &cert_size));
+    page_offset += size_to_words(cert_size) * sizeof(uint32_t);
+    page_offset = round_up_to(page_offset, 3);
+  }
 
   // Push TPM certificates into the hash (all reside on the same page).
+  page_offset = 0;
   for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
     page_offset += size_to_words(cert_size) * sizeof(uint32_t);
@@ -409,10 +414,6 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       (hmac_digest_t *)certgen_inputs.rom_ext_measurement,
       certgen_inputs.rom_ext_security_version, &cdi_0_key_ids, &curr_pubkey,
       tbs_certs.cdi_0_certificate, &tbs_certs.cdi_0_certificate_size));
-  TRY(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageCdi0Certificate,
-      /*offset=*/0, size_to_words(get_cert_size(tbs_certs.cdi_0_certificate)),
-      tbs_certs.cdi_0_certificate));
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
@@ -426,10 +427,6 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
       certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
       tbs_certs.cdi_1_certificate, &tbs_certs.cdi_1_certificate_size));
-  TRY(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageCdi1Certificate,
-      /*offset=*/0, size_to_words(get_cert_size(tbs_certs.cdi_1_certificate)),
-      tbs_certs.cdi_1_certificate));
   LOG_INFO("Generated CDI_1 certificate.");
 
   /*****************************************************************************
@@ -474,15 +471,31 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
-  // DICE UDS Certificate.
-  TRY(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageUdsCertificate, /*offset=*/0,
-      size_to_words(get_cert_size(endorsed_certs.uds_certificate)),
-      endorsed_certs.uds_certificate));
-  LOG_INFO("Imported DICE UDS certificate.");
+  // DICE Certificates (all on the same page).
+  uint32_t page_offset = 0;
+  for (size_t i = 0; i < ARRAYSIZE(kEndorsedDiceCerts); i++) {
+    const char *names[] = {"UDS", "CDI_0", "CDI_1"};
+    // Number of words necessary for certificate storage.
+    uint32_t cert_size_words =
+        size_to_words(get_cert_size(kEndorsedDiceCerts[i]));
+    uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
+
+    if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+      LOG_ERROR("DICE %s Certificate did not fit into the info page.",
+                names[i]);
+      return OUT_OF_RANGE();
+    }
+    TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageDiceCerts, page_offset,
+                              cert_size_words, kEndorsedDiceCerts[i]));
+    LOG_INFO("Imported DICE %s certificate.", names[i]);
+    page_offset += cert_size_bytes;
+
+    // Each certificate must be 8 bytes aligned (flash word size).
+    page_offset = round_up_to(page_offset, 3);
+  }
 
   // TPM Certificates (all on the same flash INFO page).
-  uint32_t page_offset = 0;
+  page_offset = 0;
   for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
     const char *names[] = {"EK", "CEK", "CIK"};
     // Number of words necessary for certificate storage.
@@ -499,7 +512,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
     LOG_INFO("Imported TPM %s certificate.", names[i]);
     page_offset += cert_size_bytes;
 
-    // Each certificate must be 8 bytes aligned.
+    // Each certificate must be 8 bytes aligned (flash word size).
     page_offset = round_up_to(page_offset, 3);
   }
 
