@@ -784,8 +784,9 @@ module chip_earlgrey_cw310 #(
   };
 
   assign rom_cfg = '{
+    test:   ast_rom_cfg.test,
     cfg_en: ast_rom_cfg.marg_en,
-    cfg: ast_rom_cfg.marg
+    cfg:    ast_rom_cfg.marg
   };
 
   // unused cfg bits

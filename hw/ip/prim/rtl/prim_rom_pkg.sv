@@ -6,6 +6,7 @@
 package prim_rom_pkg;
 
   typedef struct packed {
+    logic       test;
     logic       cfg_en;
     logic [3:0] cfg;
   } rom_cfg_t;
