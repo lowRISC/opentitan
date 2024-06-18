@@ -99,6 +99,7 @@ rust_library(
         "src/dif/lc_ctrl.rs",
         "src/dif/mod.rs",
         "src/dif/otp_ctrl.rs",
+        "src/dif/pinmux.rs",
         "src/dif/rstmgr.rs",
         "src/dif/uart.rs",
         "src/image/image.rs",

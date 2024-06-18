@@ -27,6 +27,7 @@ extern "C" {
     value(_, MemWrite) \
     value(_, MemWrite32) \
     value(_, PinmuxConfig) \
+    value(_, PinmuxAttrConfig) \
     value(_, SpiConfigureJedecId) \
     value(_, SpiReadStatus) \
     value(_, SpiWaitForUpload) \

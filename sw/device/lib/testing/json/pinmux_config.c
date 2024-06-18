@@ -12,6 +12,8 @@
 #include "sw/device/lib/testing/json/pinmux_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux) {
   pinmux_config_t config;
   TRY(ujson_deserialize_pinmux_config_t(uj, &config));
@@ -29,6 +31,15 @@ status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux) {
     }
     TRY(dif_pinmux_output_select(pinmux, config.output.mio[i],
                                  config.output.selector[i]));
+  }
+  for (size_t i = 0; i < ARRAYSIZE(config.attrs.mio); ++i) {
+    if (config.attrs.mio[i] == kPinmuxMioOutEnd) {
+      break;
+    }
+    dif_pinmux_pad_attr_t pad_attr = {.flags = config.attrs.flags[i]};
+    dif_pinmux_pad_attr_t attrs_out;
+    TRY(dif_pinmux_pad_write_attrs(pinmux, config.attrs.mio[i],
+                                   kDifPinmuxPadKindMio, pad_attr, &attrs_out));
   }
   return RESP_OK_STATUS(uj);
 }
