@@ -85,6 +85,12 @@ fn main() -> Result<()> {
         );
     }
 
+    // Reset baud rate to the default.
+    // HyperDebug doesn't seem to clear this properly between tests.
+    let uart = transport.uart("dut")?;
+    uart.set_baudrate(115200)?;
+    uart.clear_rx_buffer()?;
+
     Ok(())
 }
 
@@ -122,6 +128,7 @@ fn uart_baud_rate(
         }
 
         // Read the configured baud rate and configure our side of the UART.
+        UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
         let baud_rate = MemRead32Req::execute(console, *baud_rate_addr)?;
         uart.set_baudrate(baud_rate)?;
         uart.clear_rx_buffer()?;
