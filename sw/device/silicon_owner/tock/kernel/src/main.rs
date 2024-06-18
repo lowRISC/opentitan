@@ -99,6 +99,17 @@ const FAULT_RESPONSE: PanicFaultPolicy = PanicFaultPolicy {};
 pub static mut STACK_MEMORY: [u8; 0x1400] = [0; 0x1400];
 
 enum ChipConfig {}
+
+#[cfg(feature = "fpga")]
+impl EarlGreyConfig for ChipConfig {
+    const NAME: &'static str = "fpga_cw310";
+    const CPU_FREQ: u32 = 24_000_000;
+    const PERIPHERAL_FREQ: u32 = 6_000_000;
+    const AON_TIMER_FREQ: u32 = 250_000;
+    const UART_BAUDRATE: u32 = 115200;
+}
+
+#[cfg(feature = "silicon")]
 impl EarlGreyConfig for ChipConfig {
     const NAME: &'static str = "silicon";
     const CPU_FREQ: u32 = 100_000_000;

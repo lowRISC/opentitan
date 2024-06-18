@@ -21,9 +21,14 @@ config_setting(
 )
 
 alias(
-    name = "test_kernel",
+    name = "test_kernel_silicon",
+    actual = "//sw/device/silicon_owner/tock/kernel:kernel_silicon",
+)
+
+alias(
+    name = "test_kernel_fpga",
     actual = select({
         ":upstream_kernel": "//sw/device/silicon_owner/tock/upstream_kernel:kernel",
-        "//conditions:default": "//sw/device/silicon_owner/tock/kernel",
+        "//conditions:default": "//sw/device/silicon_owner/tock/kernel:kernel_fpga",
     }),
 )

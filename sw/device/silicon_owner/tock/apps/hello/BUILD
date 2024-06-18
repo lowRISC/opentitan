@@ -30,8 +30,8 @@ tock_elf2tab(
 )
 
 tock_image(
-    name = "image",
+    name = "image_silicon",
     apps = [":tab"],
     exec_env = "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
-    kernel = "//sw/device/silicon_owner/tock/kernel",
+    kernel = "//sw/device/silicon_owner/tock/tests:test_kernel_silicon",
 )
