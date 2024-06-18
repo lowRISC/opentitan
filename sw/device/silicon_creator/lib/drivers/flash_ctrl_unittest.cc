@@ -712,11 +712,9 @@ TEST_F(FlashCtrlTest, BankErasePermsSet) {
 }
 
 TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
-  std::array<const flash_ctrl_info_page_t *, 5> cert_pages = {
+  std::array<const flash_ctrl_info_page_t *, 3> cert_pages = {
       &kFlashCtrlInfoPageAttestationKeySeeds,
-      &kFlashCtrlInfoPageUdsCertificate,
-      &kFlashCtrlInfoPageCdi0Certificate,
-      &kFlashCtrlInfoPageCdi1Certificate,
+      &kFlashCtrlInfoPageDiceCerts,
       &kFlashCtrlInfoPageTpmCerts,
   };
   for (auto page : cert_pages) {
@@ -732,11 +730,9 @@ TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
 }
 
 TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
-  std::array<const flash_ctrl_info_page_t *, 5> cert_pages = {
+  std::array<const flash_ctrl_info_page_t *, 3> cert_pages = {
       &kFlashCtrlInfoPageAttestationKeySeeds,
-      &kFlashCtrlInfoPageUdsCertificate,
-      &kFlashCtrlInfoPageCdi0Certificate,
-      &kFlashCtrlInfoPageCdi1Certificate,
+      &kFlashCtrlInfoPageDiceCerts,
       &kFlashCtrlInfoPageTpmCerts,
   };
   for (auto page : cert_pages) {

@@ -731,9 +731,7 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
 const flash_ctrl_info_page_t
     *kCertificateInfoPages[kFlashCtrlNumCertInfoPages] = {
         &kFlashCtrlInfoPageAttestationKeySeeds,
-        &kFlashCtrlInfoPageUdsCertificate,
-        &kFlashCtrlInfoPageCdi0Certificate,
-        &kFlashCtrlInfoPageCdi1Certificate,
+        &kFlashCtrlInfoPageDiceCerts,
         &kFlashCtrlInfoPageTpmCerts,
 };
 const flash_ctrl_cfg_t kCertificateInfoPagesCfg = {
