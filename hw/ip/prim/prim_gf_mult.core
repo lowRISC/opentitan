@@ -13,7 +13,17 @@ filesets:
       - rtl/prim_gf_mult.sv
     file_type: systemVerilogSource
 
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_gf_mult.waiver
+    file_type: waiver
+
+
 targets:
   default:
     filesets:
+      - tool_ascentlint  ? (files_ascentlint_waiver)
       - files_rtl

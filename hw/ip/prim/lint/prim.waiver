@@ -19,9 +19,3 @@ waive -rules CONST_OUTPUT -location {prim_sram_arbiter.sv} -regexp {rsp_error.* 
 # prim_fifo_async_simple
 waive -rules CONST_FF -location {prim_fifo_async_simple.sv} -msg {Flip-flop 'not_in_reset_q' is driven by constant one in module 'prim_fifo_async_simple'} \
       -comment "The flop input and reset values are constants."
-
-# prim_gf_mult
-waive -rules USE_BEFORE_DECL -location {prim_gf_mult.sv} -msg {'gf_mult' is referenced before its declaration at prim_gf_mult.sv} \
-      -comment "gf_mult is a function defined towards the end of the file."
-waive -rules USE_BEFORE_DECL -location {prim_gf_mult.sv} -msg {'gen_matrix' is referenced before its declaration at prim_gf_mult.sv} \
-      -comment "gen_matrix is a function defined towards the end of the file."

@@ -1,0 +1,10 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_gf_mult
+
+waive -rules USE_BEFORE_DECL -location {prim_gf_mult.sv} -msg {'gf_mult' is referenced before its declaration at prim_gf_mult.sv} \
+      -comment "gf_mult is a function defined towards the end of the file."
+waive -rules USE_BEFORE_DECL -location {prim_gf_mult.sv} -msg {'gen_matrix' is referenced before its declaration at prim_gf_mult.sv} \
+      -comment "gen_matrix is a function defined towards the end of the file."
