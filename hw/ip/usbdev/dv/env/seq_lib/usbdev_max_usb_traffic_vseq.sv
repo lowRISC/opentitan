@@ -138,8 +138,11 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     claim_driver();
     if (is_setup) begin
       send_prnd_setup_packet(ep);
-      // Sending a SETUP packet clears the data toggle.
+      // Sending a SETUP packet clears the data toggle on the OUT side and it will then toggle
+      // upon successful receipt of the OUT packet.
       exp_out_toggle[ep] = 1'b0;
+      // The IN side is advanced automatically.
+      exp_in_toggle[ep]  = 1'b1;
     end else begin
       // Choose the packet length and content pseudo-randomly.
       send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0,
@@ -181,7 +184,6 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
       // Remember the current endpoints numbers.
       uint prev_out = ep_out;
       uint prev_in = ep_in;
-      pid_type_e pid_out;
 
       // Attempt to collect an IN packet.
       do begin
@@ -192,7 +194,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
         host_collect_in_packet(ep_in);
       end
 
-      // Attempt to transmit an OUT packet.
+      // Attempt to transmit a SETUP/OUT packet.
       do begin
         ep_out++;
         if (ep_out >= NEndpoints) ep_out = 0;
@@ -202,7 +204,9 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
         // - Isochronous streams continue transmitting until we have received the required
         //   number of IN packets, since packets may be lost in either direction.
         if (packets_sent[ep_out] < packet_count || ep_iso_enabled[ep_out]) begin
-          host_send_out_packet(ep_out, pid_out);
+          // Shall we send a SETUP packet rather than an OUT packet?
+          bit is_setup = $urandom & ep_setup_enabled[ep_out];
+          host_send_out_packet(ep_out, is_setup);
         end
       end
 

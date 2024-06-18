@@ -516,6 +516,28 @@ endtask
     end
   endtask
 
+  // Construct a packet that requires the use of bit stuffing; this is important in checking that
+  // bit (de)stuffing is performed correctly, and in inducing bit stuffing violations to check the
+  // reporting of such errors by the DUT.
+  function void build_prnd_bitstuff_packet(output byte unsigned data[]);
+    // Generate a random length packet of random data, and then set 7 bits at a random
+    // position. We thus require a packet length of at least 1 byte in this case.
+    //
+    // The aim here is to exercise all alignments w.r.t. byte boundaries.
+    uint len = $urandom_range(1, MaxPktSizeByte) * 8;
+    uint start = $urandom_range(0, len - 7);
+    bit bit_data[$];
+    for (uint b = 0; b < len; b++) begin
+      bit_data.push_back((b >= start && b - start < 8) | ($urandom() & 1));
+    end
+    `uvm_info(`gfn, $sformatf("start %d len %d", start, len), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("bit_data %p", bit_data), UVM_DEBUG)
+    // We need to ensure that the contiguous run of '1's is in the MSBs of the first byte
+    // transmitted and the ensuing LSBs of the subsequent byte if it spans a byte boundary.
+    data = {<<8{bit_data}};
+    `uvm_info(`gfn, $sformatf("data %p", data), UVM_DEBUG)
+  endfunction
+
   // Buffer management routines
   //
   // Software is required to keep track of the allocated buffers in order to prevent contention

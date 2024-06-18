@@ -260,9 +260,18 @@
     }
     {
       name: usbdev_stress_usb_traffic
-      // In time this shall become a separate sequence with additional fault injection traffic.
-      uvm_test_seq: usbdev_bus_rand_vseq
-      run_opts: ["+do_resume_signaling=1", "+do_reset_signaling=1", "+do_vbus_disconnects=1"],
+      // Bad traffic sequence derives from usbdev_bus_rand_vseq and incorporates both fault
+      // injection and randomized bus stimuli.
+      uvm_test_seq: usbdev_bad_traffic_vseq
+      run_opts: ["+do_resume_signaling=1",
+                 "+do_reset_signaling=1",
+                 "+do_vbus_disconnects=1",
+                 "+wt_bad_syncs=1",
+                 "+wt_bad_pids=1",
+                 "+wt_spurious_pids=1",
+                 "+wt_bad_crc5=1",
+                 "+wt_bad_crc16=1",
+                 "+wt_bitstuff_errs=1"]
       // Very long simulation times
       reseed: 5
     }
@@ -343,6 +352,10 @@
     {
       name: smoke
       tests: ["usbdev_smoke"]
+    }
+    {
+      name: stress
+      tests: ["usbdev_stress_usb_traffic"]
     }
   ]
 }
