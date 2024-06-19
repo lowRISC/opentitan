@@ -30,6 +30,7 @@ filesets:
       - seq_lib/usbdev_bus_rand_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_common_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_aon_wake_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_data_toggle_clear_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_data_toggle_restore_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_device_address_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_disable_endpoint_vseq.sv: {is_include_file: true}
