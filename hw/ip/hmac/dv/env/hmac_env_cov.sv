@@ -88,8 +88,10 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
       bins len_2048      = {2048};  // Two blocks in SHA-2 384/512
       bins len_2049      = {2049};  // Two blocks in SHA-2 384/512, +1 byte
       // Any others than the one defined above
-      bins auto_lens[50] = {[0:$]} with (!(item inside {0, 1, 511, 512, 513, 1023, 1024, 1025,
-                                                        2047, 2048, 2049}));
+      bins len_2_510     = {[2:510]};
+      bins len_514_1022  = {[514:1022]};
+      bins len_1026_2046 = {[1026:2046]};
+      bins len_2050_plus = {[2050:$]};
     }
     // Ensure that message length upper register has been used once at least
     msg_len_upper_cp: coverpoint (msg_len_upper) {
