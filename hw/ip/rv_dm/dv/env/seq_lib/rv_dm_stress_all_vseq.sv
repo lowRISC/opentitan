@@ -31,6 +31,11 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
       rv_dm_base_vseq rv_dm_vseq;
       uint            seq_idx = $urandom_range(0, seq_names.size - 1);
 
+      `uvm_info(`gfn,
+                $sformatf("Starting sequence %0s (trans %0d / %0d)",
+                          seq_names[seq_idx], i, num_trans),
+                UVM_LOW)
+
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(rv_dm_vseq, seq)
 
