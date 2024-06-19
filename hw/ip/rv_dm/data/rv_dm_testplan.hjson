@@ -365,11 +365,13 @@
     {
       name: jtag_dmi_cmderr_not_supported
       desc: '''
-            Verify that attempt to generate command error result in cmderr field of abstractcs
-            register are set.
+            Generate the "not supported" command error in abstractcs
 
-            - Try to execute abstract command that is not supported like Quick Access & Access Memory command.
-            - Verify that the cmderr field of abstractcs register is set to 2.
+            This command error is generated when trying to run an abstract command that is not
+            supported.
+
+            - Write a command to the command register where cmdtype is definitely not supported.
+            - Check that the cmderr field of abstractcs register is set to 2.
             '''
       stage: V1
       tests: ["rv_dm_cmderr_not_supported"]
