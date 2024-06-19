@@ -45,7 +45,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   uvm_event reset_dut_target_rd_compare;
 
   // (Coverage only) Queue for fmtfifo data to be sampled
-  i2c_item  fmt_fifo_data_q[$];
+  i2c_item fmt_fifo_data_q[$];
 
   `uvm_component_new
 
@@ -183,8 +183,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     model.process_tl_access(item, channel, ral_name, csr);
 
     // Collect fcov based on the access
-    if (tl_putdata) sample_write_coverage(item.a_data, csr);
-    if (tl_accessackdata) sample_read_coverage(item.d_data, csr);
+    if (cfg.en_cov) begin
+      if (tl_putdata) sample_write_coverage(item.a_data, csr);
+      if (tl_accessackdata) sample_read_coverage(item.d_data, csr);
+    end
   endtask : process_tl_access
 
 
@@ -194,11 +196,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     case (csr.get_name())
       "ctrl": begin
-        if (cfg.en_cov) begin
           cov.openting_mode_cg.sample(.ip_mode(`gmv(ral.ctrl.enablehost)),
                                       .tb_mode(!(`gmv(ral.ctrl.enablehost))),
                                       .scl_frequency(cfg.scl_frequency));
-        end
       end
 
       "fdata": begin // aka. FMTFIFO
@@ -207,28 +207,19 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         // is active.
         if (!cfg.under_reset && `gmv(ral.ctrl.enablehost)) begin
 
-          bit [7:0] fbyte = get_field_val(ral.fdata.fbyte, data);
-          bit start = get_field_val(ral.fdata.start, data);
-          bit stop  = get_field_val(ral.fdata.stop, data);
-          bit readb = get_field_val(ral.fdata.readb, data);
-          bit rcont = get_field_val(ral.fdata.rcont, data);
-          bit nakok = get_field_val(ral.fdata.nakok, data);
-
           // Sample for coverage
           // - Data is pushed to 'fmt_fifo_data_q', which is popped off in
           //   sample_fmt_fifo_data() when both exp/obs parts of the transfer
           //   have been captured for comparison.
-          if (cfg.en_cov) begin
-            i2c_item fmt_fifo_data;
-            `uvm_create_obj(i2c_item, fmt_fifo_data)
-            fmt_fifo_data.fbyte = fbyte;
-            fmt_fifo_data.start = start;
-            fmt_fifo_data.stop  = stop;
-            fmt_fifo_data.read  = readb;
-            fmt_fifo_data.rcont = rcont;
-            fmt_fifo_data.nakok = nakok;
-            fmt_fifo_data_q.push_back(fmt_fifo_data);
-          end
+          i2c_item fmt_fifo_data;
+          `uvm_create_obj(i2c_item, fmt_fifo_data)
+          fmt_fifo_data.fbyte = get_field_val(ral.fdata.fbyte, data);
+          fmt_fifo_data.start = get_field_val(ral.fdata.start, data);
+          fmt_fifo_data.stop  = get_field_val(ral.fdata.stop, data);
+          fmt_fifo_data.read  = get_field_val(ral.fdata.readb, data);
+          fmt_fifo_data.rcont = get_field_val(ral.fdata.rcont, data);
+          fmt_fifo_data.nakok = get_field_val(ral.fdata.nakok, data);
+          fmt_fifo_data_q.push_back(fmt_fifo_data);
 
         end // (!cfg.under_reset && `gmv(ral.ctrl.enablehost))
 
@@ -240,84 +231,62 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         bit rxrst_val = get_field_val(ral.fifo_ctrl.rxrst, data);
         bit acqrst_val = get_field_val(ral.fifo_ctrl.acqrst, data);
         bit txrst_val = get_field_val(ral.fifo_ctrl.txrst, data);
-        if (rxrst_val) begin
-          // TODO: FLUSH FIFOS
-        end
-        if (cfg.en_cov) begin
-          if (fmtrst_val) fmt_fifo_data_q.delete();
-          cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
-                                       .fifolvl(`gmv(ral.host_fifo_status.fmtlvl)),
-                                       .rst(fmtrst_val));
-          cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
-                                      .fifolvl(`gmv(ral.host_fifo_status.rxlvl)),
-                                      .rst(rxrst_val));
-          cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
-                                   .rxrst (rxrst_val),
-                                   .acqrst(acqrst_val),
-                                   .txrst (txrst_val),
-                                   .fmt_threshold(cfg.intr_vif.pins[FmtThreshold]),
-                                   .rx_threshold (cfg.intr_vif.pins[RxThreshold]),
-                                   .acq_threshold(cfg.intr_vif.pins[AcqThreshold]),
-                                   .rx_overflow  (cfg.intr_vif.pins[RxOverflow]),
-                                   .acq_overflow (cfg.intr_vif.pins[AcqStretch]),
-                                   .tx_threshold (cfg.intr_vif.pins[TxThreshold]));
-        end
+        if (fmtrst_val) fmt_fifo_data_q.delete();
+        cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
+                                     .fifolvl(`gmv(ral.host_fifo_status.fmtlvl)),
+                                     .rst(fmtrst_val));
+        cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
+                                    .fifolvl(`gmv(ral.host_fifo_status.rxlvl)),
+                                    .rst(rxrst_val));
+        cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
+                                 .rxrst (rxrst_val),
+                                 .acqrst(acqrst_val),
+                                 .txrst (txrst_val),
+                                 .fmt_threshold(cfg.intr_vif.pins[FmtThreshold]),
+                                 .rx_threshold (cfg.intr_vif.pins[RxThreshold]),
+                                 .acq_threshold(cfg.intr_vif.pins[AcqThreshold]),
+                                 .rx_overflow  (cfg.intr_vif.pins[RxOverflow]),
+                                 .acq_overflow (cfg.intr_vif.pins[AcqStretch]),
+                                 .tx_threshold (cfg.intr_vif.pins[TxThreshold]));
       end
 
       "intr_test": begin
         bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
         intr_exp |= data;
-        if (cfg.en_cov) begin
-          i2c_intr_e intr;
-          foreach (intr_exp[i]) begin
-            intr = i2c_intr_e'(i); // cast to enum to get interrupt name
-            cov.intr_test_cg.sample(intr, data[i], intr_en[i], intr_exp[i]);
-          end
+        foreach (intr_exp[i]) begin
+          i2c_intr_e intr = i2c_intr_e'(i); // cast to enum to get interrupt name
+          cov.intr_test_cg.sample(intr, data[i], intr_en[i], intr_exp[i]);
         end
-        if (cfg.en_cov) begin
-          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
-                                   .intr_enable(`gmv(ral.intr_enable)),
-                                   .intr_test(data));
-        end
+        cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                 .intr_enable(`gmv(ral.intr_enable)),
+                                 .intr_test(data));
       end
 
       "intr_enable" : begin
-        if (cfg.en_cov) begin
-          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
-                                   .intr_enable(data),
-                                   .intr_test(`gmv(ral.intr_test)));
-        end
+        cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                 .intr_enable(data),
+                                 .intr_test(`gmv(ral.intr_test)));
       end
 
       "timing0": begin
-        if (cfg.en_cov) begin
-          cov.thigh_cg.sample(`gmv(ral.timing0.thigh));
-          cov.tlow_cg.sample(`gmv(ral.timing0.thigh));
-        end
+        cov.thigh_cg.sample(`gmv(ral.timing0.thigh));
+        cov.tlow_cg.sample(`gmv(ral.timing0.thigh));
       end
       "timing1": begin
-        if (cfg.en_cov) begin
-          cov.t_r_cg.sample(`gmv(ral.timing1.t_r));
-          cov.t_f_cg.sample(`gmv(ral.timing1.t_f));
-        end
+        cov.t_r_cg.sample(`gmv(ral.timing1.t_r));
+        cov.t_f_cg.sample(`gmv(ral.timing1.t_f));
       end
       "timing2": begin
-        if (cfg.en_cov) begin
-          cov.tsu_sta_cg.sample(`gmv(ral.timing2.tsu_sta));
-          cov.thd_sta_cg.sample(`gmv(ral.timing2.thd_sta));
-        end
+        cov.tsu_sta_cg.sample(`gmv(ral.timing2.tsu_sta));
+        cov.thd_sta_cg.sample(`gmv(ral.timing2.thd_sta));
       end
       "timing3": begin
-        if (cfg.en_cov) begin
-          cov.tsu_dat_cg.sample(`gmv(ral.timing3.tsu_dat));
-          cov.thd_dat_cg.sample(`gmv(ral.timing3.thd_dat));
-        end
+        cov.tsu_dat_cg.sample(`gmv(ral.timing3.tsu_dat));
+        cov.thd_dat_cg.sample(`gmv(ral.timing3.thd_dat));
       end
       "timing4": begin
-        if (cfg.en_cov) begin
-          cov.t_buf_cg.sample(`gmv(ral.timing4.t_buf));
-          cov.tsu_sto_cg.sample(`gmv(ral.timing4.tsu_sto));
-        end
+        cov.t_buf_cg.sample(`gmv(ral.timing4.t_buf));
+        cov.tsu_sto_cg.sample(`gmv(ral.timing4.tsu_sto));
       end
 
       default:;
@@ -338,65 +307,51 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         bit [TL_DW-1:0] intr_en = data;
         foreach (intr_exp[i]) begin
           intr = i2c_intr_e'(i); // cast to enum to get interrupt name
-          if (cfg.en_cov) begin
-            cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
-            cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
-          end
+          cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+          cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
         end
-        if (cfg.en_cov) begin
-          cov.interrupts_cg.sample(.intr_state(data),
-                                   .intr_enable(`gmv(ral.intr_enable)),
-                                   .intr_test(`gmv(ral.intr_test)));
-        end
+        cov.interrupts_cg.sample(.intr_state(data),
+                                 .intr_enable(`gmv(ral.intr_enable)),
+                                 .intr_test(`gmv(ral.intr_test)));
       end
       "intr_test" : begin
-        if (cfg.en_cov) begin
-          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
-                                   .intr_enable(`gmv(ral.intr_enable)),
-                                   .intr_test(data));
-        end
+        cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                 .intr_enable(`gmv(ral.intr_enable)),
+                                 .intr_test(data));
       end
       "intr_enable" : begin
-        if (cfg.en_cov) begin
-          cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
-                                   .intr_enable(data),
-                                   .intr_test(`gmv(ral.intr_test)));
-        end
+        cov.interrupts_cg.sample(.intr_state(`gmv(ral.intr_state)),
+                                 .intr_enable(data),
+                                 .intr_test(`gmv(ral.intr_test)));
       end
 
       "status": begin
-        if (cfg.en_cov) begin
-          cov.status_cg.sample(
-            .fmtfull   (`gmv(ral.status.fmtfull)),
-            .rxfull    (`gmv(ral.status.rxfull)),
-            .fmtempty  (`gmv(ral.status.fmtempty)),
-            .hostidle  (`gmv(ral.status.hostidle)),
-            .targetidle(`gmv(ral.status.targetidle)),
-            .rxempty   (`gmv(ral.status.rxempty)),
-            .txfull    (`gmv(ral.status.txfull)),
-            .acqfull   (`gmv(ral.status.acqfull)),
-            .txempty   (`gmv(ral.status.txempty)),
-            .acqempty  (`gmv(ral.status.acqempty))
+        cov.status_cg.sample(
+          .fmtfull   (`gmv(ral.status.fmtfull)),
+          .rxfull    (`gmv(ral.status.rxfull)),
+          .fmtempty  (`gmv(ral.status.fmtempty)),
+          .hostidle  (`gmv(ral.status.hostidle)),
+          .targetidle(`gmv(ral.status.targetidle)),
+          .rxempty   (`gmv(ral.status.rxempty)),
+          .txfull    (`gmv(ral.status.txfull)),
+          .acqfull   (`gmv(ral.status.acqfull)),
+          .txempty   (`gmv(ral.status.txempty)),
+          .acqempty  (`gmv(ral.status.acqempty))
           );
-        end
       end
 
       "acqdata": begin
-        if (cfg.en_cov) begin
-          cov.acq_fifo_cg.sample(.abyte(data[7:1]),
-                                 .rw_ack_nack(data[0]),
-                                 .signal(data[9:8]));
-        end
+        cov.acq_fifo_cg.sample(.abyte(data[7:1]),
+                               .rw_ack_nack(data[0]),
+                               .signal(data[9:8]));
       end
 
       "ovrd": begin
-        if (cfg.en_cov) begin
-          cov.scl_sda_override_cg.sample(
-            .txovrden(`gmv(ral.ovrd.txovrden)),
-            .sclval(`gmv(ral.ovrd.sclval)),
-            .sdaval(`gmv(ral.ovrd.sdaval))
-            );
-        end
+        cov.scl_sda_override_cg.sample(
+          .txovrden(`gmv(ral.ovrd.txovrden)),
+          .sclval(`gmv(ral.ovrd.sclval)),
+          .sdaval(`gmv(ral.ovrd.sdaval))
+          );
       end
 
       default:;
@@ -493,15 +448,15 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     join
     target_mode_wr_obs_fifo.get(obs_wr);
     obs_wr.tran_id = dut_target_obs_write_transfer_id++;
-    `uvm_info(`gfn, $sformatf("Popped obs_wr item %0d.", obs_wr.tran_id), UVM_HIGH)
     target_mode_wr_exp_fifo.get(exp_wr);
     exp_wr.tran_id = dut_target_exp_write_transfer_id++;
-    `uvm_info(`gfn, $sformatf("Popped exp_wr item %0d.", exp_wr.tran_id), UVM_HIGH)
 
     // Sample the covergroup before doing the comparison.
     if (cfg.en_cov) begin
       cov.sample_i2c_b2b_cg(obs_wr.addr, `gmv(ral.ctrl.enablehost));
     end
+
+    if (!cfg.en_scb) return; // Skip comparison
 
     target_wr_comp(obs_wr, exp_wr);
   endtask: compare_target_write_trans
@@ -530,17 +485,17 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       target_mode_rd_obs_fifo.get(temp);
       `downcast(obs_rd, temp.clone())
       obs_rd.tran_id = dut_target_obs_read_transfer_id++;
-      `uvm_info(`gfn, $sformatf("Got obs_rd item %0d.", obs_rd.tran_id), UVM_HIGH)
     end
     target_mode_rd_exp_fifo.get(exp_rd);
     // Don't use the trans_id from the monitor, use our own local counter value.
     exp_rd.tran_id = dut_target_exp_read_transfer_id++;
-    `uvm_info(`gfn, $sformatf("Got exp_rd item %0d.", exp_rd.tran_id), UVM_HIGH)
 
     // Sample the covergroup before doing the comparison.
     if (cfg.en_cov) begin
       cov.sample_i2c_b2b_cg(obs_rd.addr, `gmv(ral.ctrl.enablehost));
     end
+
+    if (!cfg.en_scb) return; // Skip comparison
 
     obs_rd.pname = "obs_rd";
     exp_rd.pname = "exp_rd";
@@ -555,6 +510,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     fork
       begin
+        `uvm_info(`gfn, $sformatf("Awaiting obs_%0s item.", dir.name()), UVM_HIGH)
+
         // Get OBS item
         case (dir)
           BusOpWrite: controller_mode_wr_obs_fifo.get(obs);
@@ -574,6 +531,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           void'(obs.data_q.pop_back());
           obs.num_data--;
         end
+
+        `uvm_info(`gfn, $sformatf("Got obs_%0s item %0d.", dir.name(), obs.tran_id), UVM_HIGH)
       end
       begin
         `uvm_info(`gfn, $sformatf("Awaiting exp_%0s item.", dir.name()), UVM_HIGH)
@@ -585,7 +544,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         endcase
         // Increment the counter for each expected DUT-Controller transaction
         exp.tran_id = dut_controller_transfer_id++;
-        `uvm_info(`gfn, $sformatf("Got exp_%0s item %0d.", dir.name(), exp.tran_id), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Got exp_%0s item %0d.", dir.name(), exp.tran_id), UVM_HIGH)
       end
     join
 
@@ -603,19 +562,23 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end else begin
       `uvm_info(`gfn, $sformatf(
         "Compare succeeded: DUT-Controller, dir:%0s\n--> EXP:\n%0s\--> OBS:\n%0s",
-        dir.name(), exp.sprint(), obs.sprint()), UVM_MEDIUM)
+        dir.name(), exp.sprint(), obs.sprint()), UVM_DEBUG)
     end
   endtask : compare_controller_trans
 
   // Compare seq_items for DUT-Target Write Transactions
   //
-  // Compare start, stop and wdata only
+  // We currently only check the following fields:
+  // - tran_id
+  // - start
+  // - stop
+  // - wdata (for non-rstart/stop items)
   function void target_wr_comp(i2c_item obs, i2c_item exp);
     string str = (exp.start) ? "addr" : (exp.stop) ? "stop" : "";
     `uvm_info(`gfn, $sformatf("target_wr_comp() exp_wr_txn (%0s) %0d\n%s",
-      str, exp.tran_id, exp.sprint()), UVM_MEDIUM)
+      str, exp.tran_id, exp.sprint()), UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("target_wr_comp() obs_wr_txn (%0s) %0d\n%s",
-      str, obs.tran_id, obs.sprint()), UVM_MEDIUM)
+      str, obs.tran_id, obs.sprint()), UVM_DEBUG)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.start, exp.start)
@@ -627,16 +590,20 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   // Compare seq_items for DUT-Target Read Transactions
   //
+  // We currently only check the following fields:
+  // - tran_id
+  // - num_data
+  // - data_q
   function void target_rd_comp(i2c_item obs, i2c_item exp);
     `uvm_info(`gfn, $sformatf("target_rd_comp() exp_rd_txn %0d\n%s",
-      exp.tran_id, exp.sprint()), UVM_MEDIUM)
+      exp.tran_id, exp.sprint()), UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("target_rd_comp() obs_rd_txn %0d\n%s",
-      obs.tran_id, obs.sprint()), UVM_MEDIUM)
+      obs.tran_id, obs.sprint()), UVM_DEBUG)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.num_data, exp.num_data)
-    `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
 
+    `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
     foreach (exp.data_q[i]) begin
       `DV_CHECK_EQ(obs.data_q[i], exp.data_q[i])
     end

@@ -1111,7 +1111,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     repeat(read_data) begin
       // read one entry and compare
       csr_rd(.ptr(ral.acqdata), .value(read_data));
-      `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_MEDIUM)
+      `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_HIGH)
       // Capture the same read data from 'process_tl_access' sb
       obs = acq2item(read_data);
     end
@@ -1121,7 +1121,12 @@ class i2c_base_vseq extends cip_base_vseq #(
       `uvm_info("process_acq", $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
                                          cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
     end
-  endtask // read_acq_fifo
+  endtask : read_acq_fifo
+
+  virtual task empty_acqfifo();
+    bit acq_fifo_empty;
+    read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));
+  endtask : empty_acqfifo
 
   // is_stop: Whether the next symbol is to be a Stop
   function drv_type_e get_ack_nack(bit is_stop = 0);
