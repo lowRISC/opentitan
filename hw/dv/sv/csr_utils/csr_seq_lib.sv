@@ -487,8 +487,10 @@ class csr_aliasing_seq extends csr_base_seq;
         continue;
       end
 
-      `uvm_info(`gtn, $sformatf("Verifying register aliasing for %0s",
-                                test_csrs[i].get_full_name()), UVM_MEDIUM)
+      `uvm_info(`gtn,
+                $sformatf("Verifying register aliasing for %0s (register %0d / %0d)",
+                          test_csrs[i].get_full_name(), i + 1, test_csrs.size()),
+                UVM_MEDIUM)
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       wdata = get_csr_wdata_with_write_excl(test_csrs[i], wdata, CsrAliasingTest);
@@ -507,7 +509,7 @@ class csr_aliasing_seq extends csr_base_seq;
         if (is_excl(all_csrs[j], CsrExclInitCheck, CsrAliasingTest) ||
             is_excl(all_csrs[j], CsrExclWriteCheck, CsrAliasingTest)) begin
           `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclInit/WriteCheck exclusion",
-                                    all_csrs[j].get_full_name()), UVM_MEDIUM)
+                                    all_csrs[j].get_full_name()), UVM_HIGH)
           continue;
         end
 
