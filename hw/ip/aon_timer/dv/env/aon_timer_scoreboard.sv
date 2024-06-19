@@ -250,6 +250,10 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
     end // compute_num_clks
   endtask
 
+  virtual task wait_for_sleep();
+    wait ( !(wdog_pause_in_sleep & cfg.sleep_vif.sample_pin()));
+  endtask
+
   virtual task run_wkup_timer();
     event sample_coverage;
     forever begin
@@ -339,6 +343,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
           // logic.
           cfg.aon_clk_rst_vif.wait_clks(4);
           while (count < wdog_bark_num) begin
+            wait_for_sleep();
             cfg.aon_clk_rst_vif.wait_clks(1);
             // reset the cycle counter when we update the cycle count needed
             count = wdog_num_update_due ? 0 : (count + 1);
@@ -374,7 +379,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       join_any
       disable fork;
     end
-  endtask
+  endtask : run_wdog_bark_timer
 
   virtual task run_wdog_bite_timer();
     event sample_coverage;
@@ -401,6 +406,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
           // logic.
           cfg.aon_clk_rst_vif.wait_clks(4);
           while (count < wdog_bite_num) begin
+            wait_for_sleep();
             cfg.aon_clk_rst_vif.wait_clks(1);
             // reset the cycle counter when we update the cycle count needed
             count = wdog_num_update_due ? 0 : (count + 1);
@@ -433,7 +439,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       join_any
       disable fork;
     end
-  endtask
+  endtask : run_wdog_bite_timer
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
