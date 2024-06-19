@@ -12,6 +12,7 @@
 `include "usbdev_av_overflow_vseq.sv"
 `include "usbdev_bitstuff_err_vseq.sv"
 `include "usbdev_csr_test_vseq.sv"
+`include "usbdev_data_toggle_clear_vseq.sv"
 `include "usbdev_data_toggle_restore_vseq.sv"
 `include "usbdev_disconnected_vseq.sv"
 `include "usbdev_dpi_config_host_vseq.sv"

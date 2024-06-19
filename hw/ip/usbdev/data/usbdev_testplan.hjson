@@ -72,7 +72,7 @@
               subsequent data packets.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_data_toggle_clear"]
     }
     {
       name: phy_pins_sense
