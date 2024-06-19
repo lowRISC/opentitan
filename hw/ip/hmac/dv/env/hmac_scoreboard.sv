@@ -140,6 +140,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end else begin
                 update_err_intr_code(SwHashStartWhenActive);
               end
+              // Trigger coverage sampling of CFG register
+              -> sample_cfg;
             end
             // Detect when stop has been triggered to store the current state, for Save and Restore
             // check

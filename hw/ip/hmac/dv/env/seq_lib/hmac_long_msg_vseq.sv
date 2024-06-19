@@ -11,12 +11,10 @@ class hmac_long_msg_vseq extends hmac_smoke_vseq;
 
   constraint msg_c {
     msg.size() dist {
-        0               :/ 1,
-        [1    :128]     :/ 1, // 128 bytes is the FIFO depth
-        [129  :999]     :/ 1,
-        [1000 :3000]    :/ 6, // 1KB - 2KB according to SW immediate usage
-        [3001 :10_000]  :/ 1  // temp set to 10KB as max length, spec max size is 2^64 bits
+                  0  :/ 1,  // Empty
+      [   1 :   257] :/ 1,  // Up to two 1024-bit blocks
+      [1000 : 3_000] :/ 5,  // 1KB - 2KB according to SW immediate usage
+      [3001 :10_000] :/ 1   // temp set to 10KB as max length, spec max size is 2^64 bits
     };
   }
-
 endclass : hmac_long_msg_vseq
