@@ -20,8 +20,10 @@ class aon_timer_smoke_vseq extends aon_timer_base_vseq;
 
     `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
-    csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b1);
-
+    wdog_ctrl_pause_in_sleep = $urandom_range(0, 1);
+    ral.wdog_ctrl.enable.set(1);
+    ral.wdog_ctrl.pause_in_sleep.set(wdog_ctrl_pause_in_sleep);
+    csr_update(ral.wdog_ctrl);
     `uvm_info(`gfn, "\n\t Waiting for AON Timer to finish (interrupt)", UVM_HIGH)
   endtask : smoke_configure
 
