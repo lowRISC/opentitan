@@ -20,13 +20,13 @@ use opentitanlib::crypto::ecdsa::{
 };
 use opentitanlib::crypto::rsa::{RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::crypto::spx::{self, SpxKey, SpxKeypair, SpxSignature};
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId, ManifestExtSpec};
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
+use sphincsplus::{DecodeKey, SpxDomain, SpxPublicKey, SpxSecretKey};
 
 /// Bootstrap the target device.
 #[derive(Debug, Args)]
@@ -144,6 +144,9 @@ pub struct ManifestUpdateCommand {
     /// Passing a private key indicates the key will be used for signing.
     #[arg(long)]
     spx_key: Option<PathBuf>,
+    /// The signature domain (Raw, Pure, PreHashedSha256)
+    #[arg(long, default_value_t = SpxDomain::default())]
+    domain: SpxDomain,
     /// Filename to write the output to instead of updating the input file.
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -228,14 +231,16 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
 
         // Load / write SPX+ public key.
-        let mut spx_private_key: Option<SpxKeypair> = None;
+        let mut spx_private_key: Option<SpxSecretKey> = None;
         if let Some(key) = &self.spx_key {
-            let key = spx::load_spx_key(key)?;
-            let key_ext = ManifestExtEntry::new_spx_key_entry(&key)?;
+            let (pk, sk) = if let Ok(sk) = SpxSecretKey::read_pem_file(key) {
+                (SpxPublicKey::from(&sk), Some(sk))
+            } else {
+                (SpxPublicKey::read_pem_file(key)?, None)
+            };
+            let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;
-            if let SpxKey::Private(private) = key {
-                spx_private_key = Some(private);
-            }
+            spx_private_key = sk;
         }
         // Allocate space for `spx_signature` (this impacts the manifest `length` field which is in
         // the signed region of the image). Adding this facilitates offline signing.
@@ -281,7 +286,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Sign with SPX+.
         if let Some(key) = spx_private_key {
             image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
-                &image.map_signed_region(|buf| key.sign(buf))?,
+                &image.map_signed_region(|buf| key.sign(self.domain, buf))??,
             )?)?;
         }
 
@@ -306,7 +311,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
         // Attach SPX+ signature.
         if let Some(spx_signature) = &self.spx_signature {
-            let signature = SpxSignature::read_from_file(spx_signature)?;
+            let signature = std::fs::read(spx_signature)?;
             image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(&signature)?)?;
         }
 

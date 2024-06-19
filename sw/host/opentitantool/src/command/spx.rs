@@ -10,11 +10,11 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::crypto::spx::{self, SpxKeypair, SpxPublicKeyPart, SpxSignature};
-use opentitanlib::util::file::{FromReader, PemSerilizable, ToWriter};
+use sphincsplus::{DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxSecretKey};
 
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
+    pub algorithm: String,
     pub public_key_num_bits: usize,
     #[annotate(format=hex,comment="Words in little endian order.")]
     pub public_key: Vec<u32>,
@@ -33,12 +33,12 @@ impl CommandDispatch for SpxKeyShowCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let key = spx::load_spx_key(&self.key_file)?;
-
+        let key = SpxPublicKey::read_pem_file(&self.key_file)?;
+        let bytes = key.as_bytes();
         Ok(Some(Box::new(SpxPublicKeyInfo {
-            public_key_num_bits: key.pk_len() * 8,
-            public_key: key
-                .pk_as_bytes()
+            algorithm: key.algorithm().to_string(),
+            public_key_num_bits: bytes.len() * 8,
+            public_key: bytes
                 .chunks(4)
                 .map(|x| u32::from_le_bytes(x.try_into().unwrap()))
                 .collect(),
@@ -51,6 +51,9 @@ impl CommandDispatch for SpxKeyShowCommand {
 /// <OUTPUT_DIR>/<BASENAME>.pub.key.
 #[derive(Debug, Args)]
 pub struct SpxKeyGenerateCommand {
+    /// SPHINCS+ algorithm (SHAKE-128s-simple, SHA2-128s-simple)
+    #[arg(long, default_value = "SHAKE-128s-simple")]
+    algorithm: SphincsPlus,
     /// Output directory.
     output_dir: PathBuf,
     /// Basename for the generated key pair.
@@ -63,14 +66,14 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let private_key = SpxKeypair::generate();
+        let (private_key, public_key) = SpxSecretKey::new_keypair(self.algorithm)?;
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
         file.set_extension("pem");
         private_key.write_pem_file(&file)?;
 
         file.set_extension("pub.pem");
-        private_key.into_public_key().write_pem_file(&file)?;
+        public_key.write_pem_file(&file)?;
 
         Ok(None)
     }
@@ -91,12 +94,14 @@ pub struct SpxSignResult {
 
 #[derive(Debug, Args)]
 pub struct SpxSignCommand {
+    /// The signature domain (Raw, Pure, PreHashedSha256)
+    #[arg(long, default_value_t = SpxDomain::default())]
+    domain: SpxDomain,
     /// The filename for the message to sign.
     message: PathBuf,
-
     /// The file containing the SPHINCS+ raw private key in PEM format.
     #[arg(value_name = "KEY_FILE")]
-    keypair: PathBuf,
+    private_key: PathBuf,
     /// The filename to write the signature to.
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -109,26 +114,27 @@ impl CommandDispatch for SpxSignCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let message = std::fs::read(&self.message)?;
-        let keypair = SpxKeypair::read_pem_file(&self.keypair)?;
-        let signature = keypair.sign(&message);
+        let private_key = SpxSecretKey::read_pem_file(&self.private_key)?;
+        let signature = private_key.sign(self.domain, &message)?;
         if let Some(output) = &self.output {
-            signature.write_to_file(output)?;
+            std::fs::write(output, &signature)?;
             return Ok(None);
         }
-        let mut sig = Vec::new();
-        signature.to_writer(&mut sig)?;
-        Ok(Some(Box::new(SpxSignResult { signature: sig })))
+        Ok(Some(Box::new(SpxSignResult { signature })))
     }
 }
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
-    /// The file containing the SPHINCS+ raw private key in PEM format.
+    /// The signature domain (Raw, Pure, PreHashedSha256)
+    #[arg(long, default_value_t = SpxDomain::default())]
+    domain: SpxDomain,
+    /// The file containing the SPHINCS+ raw public key in PEM format.
     #[arg(value_name = "KEY")]
-    key_file: PathBuf,
+    public_key: PathBuf,
     /// Message file to verify the signature against.
     message: PathBuf,
-    /// SPHINCS+ signature file to verify, raw binary
+    /// SPHINCS+ signature file to verify (raw binary).
     signature: PathBuf,
 }
 
@@ -139,9 +145,9 @@ impl CommandDispatch for SpxVerifyCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let message = std::fs::read(&self.message)?;
-        let keypair = spx::load_spx_key(&self.key_file)?;
-        let signature = SpxSignature::read_from_file(&self.signature)?;
-        keypair.verify(&message, &signature)?;
+        let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
+        let signature = std::fs::read(&self.signature)?;
+        public_key.verify(self.domain, &signature, &message)?;
         Ok(None)
     }
 }

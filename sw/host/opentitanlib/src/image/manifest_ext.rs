@@ -8,12 +8,11 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 use zerocopy::AsBytes;
 
-use crate::crypto::spx::{self, SpxPublicKeyPart};
 use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
-use crate::util::file::FromReader;
 use crate::util::num_de::HexEncoded;
 use crate::with_unknown;
+use sphincsplus::{DecodeKey, SpxPublicKey};
 
 #[derive(Debug, Error)]
 pub enum ManifestExtError {
@@ -113,20 +112,20 @@ impl ManifestExtEntrySpec {
 
 impl ManifestExtEntry {
     /// Creates a new manifest extension from a given SPHINCS+ `key`.
-    pub fn new_spx_key_entry(key: &spx::SpxKey) -> Result<Self> {
+    pub fn new_spx_key_entry(key: &SpxPublicKey) -> Result<Self> {
         Ok(ManifestExtEntry::SpxKey(ManifestExtSpxKey {
             header: ManifestExtHeader {
                 identifier: MANIFEST_EXT_ID_SPX_KEY,
                 name: MANIFEST_EXT_NAME_SPX_KEY,
             },
             key: SigverifySpxKey {
-                data: le_bytes_to_word_arr(key.pk_as_bytes())?,
+                data: le_bytes_to_word_arr(key.as_bytes())?,
             },
         }))
     }
 
     /// Creates a new manifest extension from a given SPHINCS+ `signature`.
-    pub fn new_spx_signature_entry(signature: &spx::SpxSignature) -> Result<Self> {
+    pub fn new_spx_signature_entry(signature: &[u8]) -> Result<Self> {
         Ok(ManifestExtEntry::SpxSignature(Box::new(
             ManifestExtSpxSignature {
                 header: ManifestExtHeader {
@@ -134,7 +133,7 @@ impl ManifestExtEntry {
                     name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
                 },
                 signature: SigverifySpxSignature {
-                    data: le_bytes_to_word_arr(signature.sig_as_bytes())?,
+                    data: le_bytes_to_word_arr(signature)?,
                 },
             },
         )))
@@ -148,11 +147,11 @@ impl ManifestExtEntry {
         let relative_path = relative_path.unwrap_or(Path::new(""));
         Ok(match spec {
             ManifestExtEntrySpec::SpxKey { spx_key } => ManifestExtEntry::new_spx_key_entry(
-                &spx::load_spx_key(&relative_path.join(spx_key))?,
+                &SpxPublicKey::read_pem_file(relative_path.join(spx_key))?,
             )?,
             ManifestExtEntrySpec::SpxSignature { spx_signature } => {
-                ManifestExtEntry::new_spx_signature_entry(&spx::SpxSignature::read_from_file(
-                    &relative_path.join(spx_signature),
+                ManifestExtEntry::new_spx_signature_entry(&std::fs::read(
+                    relative_path.join(spx_signature),
                 )?)?
             }
             ManifestExtEntrySpec::Raw {
