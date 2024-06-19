@@ -449,8 +449,10 @@ module hmac
   //   status to be signaled again next time it's empty.
   logic status_fifo_empty, fifo_empty_gate;
   logic fifo_empty_negedge, fifo_empty_q;
+  logic fifo_full_posedge, fifo_full_q;
   logic fifo_full_seen_d, fifo_full_seen_q;
   assign fifo_empty_negedge = fifo_empty_q & ~fifo_empty;
+  assign fifo_full_posedge  = ~fifo_full_q & fifo_full;
 
   // Track whether the FIFO was full after being empty. We clear the tracking:
   // - When receiving the Start, Continue, Process or Stop command. This is to start over for the
@@ -458,10 +460,10 @@ module hmac
   // - When seeing a negative edge on the empty signal. This signals that software has reacted to
   //   the interrupt and is filling up the FIFO again.
   assign fifo_full_seen_d =
-      fifo_full                             ? 1'b 1 :
+      reg_hash_start   || reg_hash_continue ||
+      reg_hash_process || reg_hash_stop     ? 1'b 0 :
       fifo_empty_negedge                    ? 1'b 0 :
-      reg_hash_start || reg_hash_continue ||
-          reg_hash_process || reg_hash_stop ? 1'b 0 : fifo_full_seen_q;
+      fifo_full_posedge                     ? 1'b 1 : fifo_full_seen_q;
 
   // The interrupt is gated unless software is actually allowed to write the FIFO and the FIFO was
   // full before.
@@ -472,9 +474,11 @@ module hmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       fifo_empty_q     <= 1'b 0;
+      fifo_full_q      <= 1'b 0;
       fifo_full_seen_q <= 1'b 0;
     end else begin
       fifo_empty_q     <= fifo_empty;
+      fifo_full_q      <= fifo_full;
       fifo_full_seen_q <= fifo_full_seen_d;
     end
   end
