@@ -24,10 +24,11 @@ class rv_dm_base_test extends cip_base_test #(
     // knowledge of what we're waiting for).
     //
     // Long vseqs include the csr_aliasing test over DMI. We have roughly 50 registers visible over
-    // DMI. So this test needs to do 50*50 = 2500 register reads. Such a register read takes roughly
-    // 50 TCK ticks, giving 125,000 TCK ticks in total. With a TCK frequency of 1MHz, comes to
-    // 125ms. Round up to 150ms to give a bit of headroom.
-    test_timeout_ns = 150_000_000;  // 150ms.
+    // DMI. So this test needs to do 50*50 = 2500 register reads for each time around (and we might
+    // go round up to two times). Such a register read takes roughly 50 TCK ticks, giving 125,000
+    // TCK ticks in total. With a TCK frequency of 1MHz, comes to 2 * 125ms = 250ms. Round up to
+    // 300ms to give a bit of headroom.
+    test_timeout_ns = 300_000_000;  // 300ms.
   endfunction : build_phase
 
 endclass : rv_dm_base_test
