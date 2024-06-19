@@ -102,8 +102,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.crc5 = {<<{pkt.crc5}};
     drive_packet("Token", pkt);
     // Attempt to collect a response only to full speed IN transactions; this should be DATA0|1
-    // or ACK/NAK.
-    if (req_item.m_pid_type == PidTypeInToken && !req_item.low_speed) begin
+    // or ACK/NAK. For fault injection purposes we may sometimes want to avoid waiting for any
+    // response.
+    if (req_item.m_pid_type == PidTypeInToken && req_item.await_response &&
+        !req_item.low_speed) begin
       device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)

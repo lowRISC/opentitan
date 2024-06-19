@@ -315,9 +315,10 @@ endtask
     m_drv_lock.put(1);
   endtask
 
-  // Construct and transmit a token packet to the USB device
+  // Construct and transmit a token packet to the USB device, and usually await a response from
+  // the driver. For fault injection purposes, awaiting the response is optional.
   virtual task send_token_packet(bit [3:0] ep, pid_type_e pid_type,
-                                 bit [6:0] target_addr = dev_addr);
+                                 bit [6:0] target_addr = dev_addr, bit await_response = 1'b1);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_token_pkt);
     m_token_pkt.m_ev_type  = EvPacket;
@@ -325,6 +326,7 @@ endtask
     m_token_pkt.m_pid_type = pid_type;
     assert(m_token_pkt.randomize() with {m_token_pkt.address == target_addr;
                                          m_token_pkt.endpoint == ep;});
+    m_token_pkt.await_response = await_response;
     // Any fault injections requested?
     if (inject_invalid_token_sync) m_token_pkt.valid_sync = 1'b0;
     if (inject_bad_token_crc5) m_token_pkt.crc5 = ~m_token_pkt.crc5;
@@ -477,10 +479,13 @@ endtask
     check_tx_packet(in_data, pid_type, data);
   endtask
 
-  // Send handshake to DUT after an appropriate turn-around delay.
-  virtual task send_handshake(input pid_type_e pid_type);
-    // Must delay for a few bit intervals before responding.
-    response_delay();
+  // Send handshake to DUT after an appropriate turn-around delay; the delay may be overriden for
+  // the small number of sequences that must precisely control the handshake timing.
+  virtual task send_handshake(input pid_type_e pid_type, bit delay_first = 1);
+    if (delay_first) begin
+      // Must delay for a few bit intervals before responding.
+      response_delay();
+    end
     // Construct and send handshake response.
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_handshake_pkt);
