@@ -39,6 +39,7 @@ filesets:
       - seq_lib/usbdev_data_toggle_clear_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_data_toggle_restore_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_device_address_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_device_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_disable_endpoint_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_disconnected_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_dpi_config_host_vseq.sv: {is_include_file: true}

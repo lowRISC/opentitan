@@ -13,11 +13,15 @@ class usb20_item extends uvm_sequence_item;
   usb_transfer_e m_usb_transfer;
 
   // Indicates that a timeout occurred when awaiting a response from the device.
-  bit timed_out = 1'b0;
+  bit timed_out;
 
   // Indicates that this item is to be transmitted using Low Speed signaling; applicable only to
   // packet items.
   bit low_speed;
+
+  // For an IN token packet, this indicates that a response shall be automatically collected from
+  // the device.
+  bit await_response;
 
   // Validity indicators that apply to all packet types; used by the monitor at metadata for the
   // scoreboard.
@@ -41,6 +45,10 @@ class usb20_item extends uvm_sequence_item;
     valid_length = 1'b1;
     valid_stuffing = 1'b1;
     valid_eop = 1'b1;
+    // Await response to IN token packet?
+    await_response = 1'b1;
+    // Timed out awaiting a response from the device?
+    timed_out = 1'b0;
   endfunction
 
   // Copy the common fields that are not declared as uvm object fields because of the way that

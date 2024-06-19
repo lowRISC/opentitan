@@ -95,6 +95,14 @@
       uvm_test_seq: usbdev_device_address_vseq
     }
     {
+      name: usbdev_device_timeout
+      uvm_test_seq: usbdev_device_timeout_vseq
+    }
+    {
+      name: usbdev_timeout_missing_host_handshake
+      uvm_test_seq: usbdev_device_timeout_vseq
+    }
+    {
       name: usbdev_disable_endpoint
       uvm_test_seq: usbdev_disable_endpoint_vseq
     }

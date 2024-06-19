@@ -840,7 +840,7 @@
               'in_sent' register bit indicates successful transmission of the packet.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_timeout_missing_host_handshake"]
     }
     {
       name: device_timeout
@@ -860,7 +860,7 @@
               'in_sent' register bit indicates successful transmission of the packet.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_device_timeout"]
     }
     {
       name: packet_buffer
