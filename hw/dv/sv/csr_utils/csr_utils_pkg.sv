@@ -708,7 +708,7 @@ package csr_utils_pkg;
         if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
           csr_field_t fld_params = decode_csr_or_field(flds[i]);
           `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
-                                    flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)
+                                    flds[i].get_full_name(), csr_excl_type.name()), UVM_HIGH)
           get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
         end
       end
