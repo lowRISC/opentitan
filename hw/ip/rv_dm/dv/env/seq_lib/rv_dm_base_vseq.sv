@@ -226,9 +226,21 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  task read_dmcontrol(input bit backdoor, output dmcontrol_t value);
+    uvm_reg_data_t raw;
+    csr_rd(.ptr(jtag_dmi_ral.dmcontrol), .value(raw));
+    value = dmcontrol_t'(raw);
+  endtask
+
   // Tell rv_dm to request a halt, then "acknowledge" its forwarded request as the CPU after a few
   // cycles (hartsel=0 give a hart ID of 0 as we only have one hart).
   task request_halt();
+    // The TLUL connection gets blocked by u_tlul_lc_gate_rom if there is an ndmreset signal. This
+    // is confusing to debug, so use a backdoor read to check that it isn't currently set.
+    dmcontrol_t dmcontrol_val;
+    read_dmcontrol(.backdoor(1), .value(dmcontrol_val));
+    `DV_CHECK(!dmcontrol_val.ndmreset);
+
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, 1)
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
