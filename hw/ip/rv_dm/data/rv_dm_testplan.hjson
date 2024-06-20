@@ -351,14 +351,15 @@
     {
       name: jtag_dmi_cmderr_busy
       desc: '''
-            Verify that attempt to generate command error result in cmderr field of abstractcs
-            register are set.
+            Generate the "busy" command error in abstractcs.
 
-            - write to the command, abstractcs or abstractauto registers when an abstract command is
-              executing.OR
-            - Read or write to one of the data or progbuf registers, when an abstract command is
-              executing.
-            - Verify that the cmderr field of abstractcs register is set to 1.
+            - Start an abstract command executing (but don't allow it to stop)
+
+            - Write to one of command, abstractcs, abstractauto or access (read or write) the data
+              or progbuf register.
+
+            - Read the abstractcs register and check that cmderr is now set to 1 (the encoding of
+              "busy")
             '''
       stage: V1
       tests: ["rv_dm_cmderr_busy"]
