@@ -139,6 +139,10 @@ enum {
    * The offset of the second share within the output state register.
    */
   kDifKmacStateShareOffset = 0x100,
+  /**
+   * The size of the Keccak state in words (i.e. 1600 bits).
+   */
+  kDifKmacStateWords = 1600 / 8 / sizeof(uint32_t),
 };
 
 /**
@@ -662,18 +666,31 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
  * If `processed` is not provided then this function will block until `len`
  * bytes have been written to `out` or an error occurs.
  *
+ * Normally, the capacity part of Keccak state is and should not be read
+ * as part of a regular cryptographic operation. However, this function
+ * can also read the capacity for testing purposes.
+ * When `capacity` is a non-NULL pointer, at the end of the operation, the
+ * capacity part of the Keccak state is also read and written into this buffer.
+ * The capacity is read for each output round, meaning that if the requested
+ * digest is larger than a single Keccak round can provide (i.e. the rate), then
+ * the additional rounds also update this buffer. Hence it should be large
+ * enough to accommodate `ceil(digest_len/rate_len) * capacity_len`.
+ * `capacity` can be set to NULL to skip reading the capacity.
+ *
  * @param kmac A KMAC handle.
  * @param operation_state A KMAC operation state context.
  * @param[out] out Pointer to output buffer.
  * @param[out] len Number of 32-bit words to write to output buffer.
  * @param[out] processed Number of 32-bit words written to output buffer
  * (optional).
+ * @param[out] capacity Optional buffer to read capacity along with the digest.
  * @preturn The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
                               dif_kmac_operation_state_t *operation_state,
-                              uint32_t *out, size_t len, size_t *processed);
+                              uint32_t *out, size_t len, size_t *processed,
+                              uint32_t *capacity);
 
 /**
  * Ends a squeeze operation and resets the hardware so it is ready for a new

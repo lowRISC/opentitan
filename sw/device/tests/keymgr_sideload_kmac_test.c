@@ -63,6 +63,41 @@ static void init_peripheral_handles(void) {
 }
 
 /**
+ * Compute the total length of capacity.
+ *
+ * The length of the capacity is either 256 or 512 depending on the security
+ * strength implied by `kmac_mode`. The total length of capacity refers to
+ * the length of concatenated capacity parts across multiple output Keccak
+ * rounds. For instance, if `kmac_mode` implies 128-bit security and if
+ * `digest_len` implies 336 bytes of digest, then the total capacity is 512
+ * bits.
+ *
+ * @param kmac_mode KMAC mode that implies security strength.
+ * @param digest_len The length of the requested digest from KMAC operation in
+ * words.
+ * @param[out] capacity_total_len The total length of multiple capacity blocks
+ * in words.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t get_total_capacity_len(dif_kmac_mode_kmac_t kmac_mode,
+                                       size_t digest_len,
+                                       size_t *capacity_total_len) {
+  size_t capacity_len;
+  size_t rate_len;
+  if (kmac_mode == kDifKmacModeKmacLen128) {
+    capacity_len = 256 / 8 / sizeof(uint32_t);
+  } else if (kmac_mode == kDifKmacModeKmacLen256) {
+    capacity_len = 512 / 8 / sizeof(uint32_t);
+  } else {
+    return INVALID_ARGUMENT();
+  }
+  rate_len = kDifKmacStateWords - capacity_len;
+  *capacity_total_len = ceil_div(digest_len, rate_len) * capacity_len;
+  return OK_STATUS();
+}
+
+/**
  * Initialize and run KMAC using a sideloaded key.
  *
  * First, checks that KMAC works with the software key. Next, checks that when
@@ -73,14 +108,29 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Configure KMAC hardware (using software key and software entropy).
   CHECK_STATUS_OK(kmac_testutils_config(kmac, false));
 
+  // Allocate buffers to read capacity into so that we can test if it is
+  // zeroized for sideloaded KMAC operations (see #17759).
+  size_t capacity_total_len;
+  CHECK_STATUS_OK(
+      get_total_capacity_len(kKmacMode, kKmacOutputLen, &capacity_total_len));
+  uint32_t capacity[capacity_total_len];
+  uint32_t zero_array[capacity_total_len];
+  memset(zero_array, 0, sizeof(zero_array));
+  // The expected capacity after SW-keyed KMAC is non-zero, so initialize the
+  // array to 0.
+  memset(capacity, 0, sizeof(capacity));
+
   uint32_t output[kKmacOutputLen];
   CHECK_STATUS_OK(kmac_testutils_kmac(
       kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
-      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output, capacity));
   LOG_INFO("Computed KMAC output for software key.");
 
   // Check that the output matches the expected output.
   CHECK_ARRAYS_EQ(output, kSoftwareKeyExpectedOutput, kKmacOutputLen);
+
+  // Check that the capacity part is non-zero
+  CHECK_ARRAYS_NE(capacity, zero_array, ARRAYSIZE(capacity));
 
   // Reconfigure KMAC to use the sideloaded key.
   CHECK_STATUS_OK(kmac_testutils_config(kmac, true));
@@ -107,10 +157,14 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
 
   uint32_t output_sideload_good0[kKmacOutputLen];
-  CHECK_STATUS_OK(kmac_testutils_kmac(
-      kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
-      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output_sideload_good0));
+  CHECK_STATUS_OK(
+      kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
+                          kCustomStringLen, kKmacMessage, kKmacMessageLen,
+                          kKmacOutputLen, output_sideload_good0, capacity));
   LOG_INFO("Computed KMAC output for sideloaded key.");
+
+  // Check that capacity is read as 0.
+  CHECK_ARRAYS_EQ(capacity, zero_array, ARRAYSIZE(capacity));
 
   if (kDeviceType == kDeviceSimDV) {
     // From the DV environment we get the expected digest, so check that the
@@ -141,10 +195,10 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
     output_sideload_bad[i] = i;
   }
   CHECK(kFailedPrecondition ==
-        status_err(kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey,
-                                       kCustomString, kCustomStringLen,
-                                       kKmacMessage, kKmacMessageLen,
-                                       kKmacOutputLen, output_sideload_bad)));
+        status_err(kmac_testutils_kmac(
+            kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
+            kKmacMessage, kKmacMessageLen, kKmacOutputLen, output_sideload_bad,
+            /*capacity=*/NULL)));
   LOG_INFO("Ran KMAC with an invalid sideload key and checked that it fails.");
 
   // Verify that the output array did not get overwritten.
@@ -161,7 +215,8 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   uint32_t output_sideload_good1[kKmacOutputLen];
   CHECK_STATUS_OK(kmac_testutils_kmac(
       kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
-      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output_sideload_good1));
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output_sideload_good1,
+      /*capacity=*/NULL));
   LOG_INFO("Re-computed KMAC output for sideloaded key.");
 
   CHECK_ARRAYS_EQ(output_sideload_good1, output_sideload_good0, kKmacOutputLen);
