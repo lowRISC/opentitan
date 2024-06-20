@@ -17,12 +17,16 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
+  kRetRamCtrlBase = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
 };
 
 bool test_main(void) {
   uint32_t otp =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET);
-  uint32_t cfg = abs_mmio_read32(kSramCtrlBase + SRAM_CTRL_READBACK_REG_OFFSET);
-  LOG_INFO("sram_readback: otp=%x cfg=%x", otp, cfg);
-  return otp == cfg;
+  uint32_t sram =
+      abs_mmio_read32(kSramCtrlBase + SRAM_CTRL_READBACK_REG_OFFSET);
+  uint32_t retram =
+      abs_mmio_read32(kRetRamCtrlBase + SRAM_CTRL_READBACK_REG_OFFSET);
+  LOG_INFO("sram_readback: otp=%x retram=%x sram=%x", otp, retram, sram);
+  return otp == (retram << 4 | sram);
 }

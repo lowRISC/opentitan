@@ -176,6 +176,13 @@ void retention_sram_clear(void);
 void retention_sram_init(void);
 
 /**
+ * Enable or disable the readback feature of the retention SRAM.
+ *
+ * @param en A Mubi4True to enable the feature.
+ */
+void retention_sram_readback_enable(uint32_t en);
+
+/**
  * Start scrambling the retention SRAM.
  *
  * Requests a new scrambling key for the retention SRAM. This operation

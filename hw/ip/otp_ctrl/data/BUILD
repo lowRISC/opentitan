@@ -232,7 +232,8 @@ otp_json(
                 ),
                 # By default, ROM_EXT's bootstrap feature should be disabled.
                 "OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN": otp_hex(CONST.HARDENED_FALSE),
-                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE),
+                # Disable SRAM readback for both ret-ram and main sram.
+                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE << 4 | CONST.MUBI4_FALSE),
                 "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE": otp_hex(CONST.HARDENED_FALSE << 16 | CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),

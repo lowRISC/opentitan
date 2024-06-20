@@ -28,7 +28,8 @@ otp_json(
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_TRUE),
+                # Turn readback on for both retram and sram.
+                "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_TRUE << 4 | CONST.MUBI4_TRUE),
             },
         ),
     ],

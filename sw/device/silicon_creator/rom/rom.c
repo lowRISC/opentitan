@@ -232,6 +232,10 @@ static rom_error_t rom_init(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
   if ((reset_reasons & reset_mask) != 0) {
     retention_sram_init();
+    // The high nybble controls the retram readback enable.
+    retention_sram_readback_enable(
+        otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET) >>
+        4);
     retention_sram_get()->creator.last_shutdown_reason = kErrorOk;
   }
 
