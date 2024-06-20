@@ -4,12 +4,7 @@
 
 class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_jtag_dmi_debug_disabled_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   task automatic write_abstractdata(uvm_reg_data_t value);
     csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(value));

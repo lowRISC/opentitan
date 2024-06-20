@@ -12,9 +12,6 @@ class rv_dm_common_vseq extends rv_dm_base_vseq;
 
   // We set these initial inputs to known values to prevent side effects that may affect these
   // common tests.
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
   constraint unavailable_c {
     unavailable == 0;
   }

@@ -4,12 +4,7 @@
 
 class rv_dm_progbuf_read_write_execute_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_progbuf_read_write_execute_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   task progbuf_rw(int idx);
     uvm_reg_data_t data = $urandom;

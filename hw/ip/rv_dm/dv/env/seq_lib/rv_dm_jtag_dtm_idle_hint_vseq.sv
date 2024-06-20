@@ -5,12 +5,7 @@
 //rv_dm_jtag_dtm_idle_hint
 class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_jtag_dtm_idle_hint_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   // Read the dtmcs register and check the idle field has the expected value.
   task check_idle(bit [2:0] expected_idle);

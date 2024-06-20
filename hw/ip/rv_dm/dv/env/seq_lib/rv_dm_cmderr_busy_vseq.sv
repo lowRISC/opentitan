@@ -6,10 +6,6 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_cmderr_busy_vseq)
   `uvm_object_new
 
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
-
   // Generate an abstract command that tries to read the specified register
   function command_t gen_read_register_cmd(bit [15:0] regno);
     command_t cmd;

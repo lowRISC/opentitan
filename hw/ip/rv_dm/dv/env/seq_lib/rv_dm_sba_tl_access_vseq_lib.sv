@@ -66,9 +66,6 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
   }
 
   // TODO: Randomize these controls every num_times iteration.
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
   constraint unavailable_c {
     unavailable == 0;
   }

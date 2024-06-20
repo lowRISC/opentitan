@@ -5,12 +5,7 @@
 // HALTED test vseq
 class rv_dm_mem_tl_access_halted_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_mem_tl_access_halted_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   task body();
     uvm_reg_data_t r_data;

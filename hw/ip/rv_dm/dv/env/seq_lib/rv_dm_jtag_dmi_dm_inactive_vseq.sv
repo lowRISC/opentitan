@@ -5,12 +5,7 @@
 //rv_dm_jtag_dmi_dm_inactive_vseq
 class rv_dm_jtag_dmi_dm_inactive_vseq extends rv_dm_common_vseq;
   `uvm_object_utils(rv_dm_jtag_dmi_dm_inactive_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   // Write random data to the given register
   task randomise_register(input uvm_object ptr);

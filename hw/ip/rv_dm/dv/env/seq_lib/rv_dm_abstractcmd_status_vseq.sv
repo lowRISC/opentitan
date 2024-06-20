@@ -4,12 +4,7 @@
 
 class rv_dm_abstractcmd_status_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_abstractcmd_status_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   // The expected contents of the debug ROM that we will read through the abstract command
   // interface.
