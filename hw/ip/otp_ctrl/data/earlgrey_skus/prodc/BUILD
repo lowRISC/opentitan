@@ -188,6 +188,7 @@ otp_json(
                 # TODO(#23411): The customer wants this to be HARDENED_TRUE
                 # for production chips.
                 "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_FALSE),
+                "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE": otp_hex(CONST.HARDENED_FALSE << 16 | CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),
                 # By default, the sensor_ctrl should disable all sensors and mark
                 # alerts as recoverable.

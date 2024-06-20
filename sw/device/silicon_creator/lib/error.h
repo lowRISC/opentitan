@@ -111,6 +111,7 @@ enum module_ {
   X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
   \
   X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
+  X(kErrorRomResetReasonFault,        ERROR_(2, kModuleRom, kUnknown)), \
   \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
