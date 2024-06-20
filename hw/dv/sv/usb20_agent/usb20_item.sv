@@ -63,6 +63,18 @@ class usb20_item extends uvm_sequence_item;
     return !(m_pid_type[3:0] ^ m_pid_type[7:4]);
   endfunction
 
+  // Check whether any CRC on this item is valid.
+  virtual function bit valid_crc();
+    `uvm_fatal(`gfn, "CRC relates only to packet items")
+    return 1'b1;
+  endfunction
+
+  // Return the expected CRC for this item.
+  virtual function int unsigned exp_crc();
+    `uvm_fatal(`gfn, "CRC relates only to packet items")
+    return 0;
+  endfunction
+
   // Check the PID type of this item is the expected value. If not, raise a fatal error.
   function void check_pid_type(pid_type_e expected);
     `DV_CHECK_EQ_FATAL(m_pid_type, expected)
@@ -103,12 +115,22 @@ class token_pkt extends usb20_item;
     m_pid_type = pid;
     address = addr;
     endpoint = ep;
-    crc5 = generate_crc5({endpoint, address});
+    crc5 = exp_crc();
+  endfunction
+
+  // Check whether the CRC5 field is consistent with the token packet fields.
+  virtual function bit valid_crc();
+    return (crc5 == exp_crc());
+  endfunction
+
+  // Return the expected CRC for this token packet.
+  virtual function int unsigned exp_crc();
+    return generate_crc5({endpoint, address});
   endfunction
 
   function void post_randomize();
     // Calculate the CRC of non-SOF Token packets.
-    crc5 = generate_crc5({endpoint, address});
+    crc5 = exp_crc();
   endfunction
 endclass
 
@@ -127,12 +149,22 @@ class data_pkt extends usb20_item;
     super.new(name, PktTypeToken);
     m_pid_type = pid;
     data = d;
-    crc16 = generate_crc16(data);
+    crc16 = exp_crc();
   endfunction
 
   constraint data_c {
     data.size() <= 64;
   }
+
+  // Check whether the CRC16 field is consistent with the data field.
+  virtual function bit valid_crc();
+    return (crc16 == exp_crc());
+  endfunction
+
+  // Return the expected CRC for this data packet.
+  virtual function int unsigned exp_crc();
+    return generate_crc16(data);
+  endfunction
 
   // Set the data contents to form the Setup packet of a USB device request, as described in section
   // 9.3 of the USB spec.
@@ -153,18 +185,18 @@ class data_pkt extends usb20_item;
              wVL, wVH,
              wIndex[7:0], wIndex[15:8],
              wLength[7:0], wLength[15:8]};
-    crc16 = generate_crc16(data);
+    crc16 = exp_crc();
   endfunction
 
   // Set the content of the data packet and ensure that the CRC is set accordingly.
   function void set_data(byte unsigned content[]);
     data = content;
-    crc16 = generate_crc16(data);
+    crc16 = exp_crc();
   endfunction
 
   function void post_randomize();
     // CRC16 is calculated across the entire data field of the Data Packet.
-    crc16 = generate_crc16(data);
+    crc16 = exp_crc();
   endfunction
 
   static function bit [15:0] generate_crc16(input byte unsigned data[]);
@@ -205,11 +237,21 @@ class sof_pkt extends usb20_item;
     super.new(name, PktTypeSoF);
     m_pid_type = PidTypeSofToken;
     framenum = frame;
-    crc5 = generate_crc5(framenum);
+    crc5 = exp_crc();
+  endfunction
+
+  // Check whether the CRC5 field is consistent with the frame number.
+  virtual function bit valid_crc();
+    return (crc5 == exp_crc());
+  endfunction
+
+  // Return the expected CRC for this SOF token packet.
+  virtual function int unsigned exp_crc();
+    return generate_crc5(framenum);
   endfunction
 
   function void post_randomize();
-    crc5 = generate_crc5(framenum);
+    crc5 = exp_crc();
   endfunction
 endclass
 
