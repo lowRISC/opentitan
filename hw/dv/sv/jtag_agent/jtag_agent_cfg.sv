@@ -28,6 +28,16 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // This knob can bypass default 1 cycle initial delay of 'driver.drive_jtag_req()' task.
   // Use this knob only for the necessary tests.
   bit     min_rti = 0;
+
+  // This JTAG driver expects to control the JTAG interface clock (TCK), which it does by setting
+  // tck_en to 0 or 1. If rtc_length is positive, it gives a number of TCK cycles to "run to clear"
+  // (where we expect to be in the RunTest/IDLE state) before disabling the clock.
+  //
+  // This allows safe interactions with things like DMI operations, where we expect CDC to convert
+  // between the JTAG clock and a system clock. This only works when TCK is running!
+  int unsigned rtc_length = 0;
+
+
   `uvm_object_utils_begin(jtag_agent_cfg)
     `uvm_field_object(jtag_dtm_ral, UVM_DEFAULT)
   `uvm_object_utils_end

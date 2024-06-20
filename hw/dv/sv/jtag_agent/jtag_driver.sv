@@ -27,6 +27,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // without going to Run-Test-Idle), this extra cycle must be skipped
   protected bit                   exit_to_rti_dr_past = 1;
 
+  // A state flag used for controlling when we disable TCK if rtc_length is positive (see
+  // release_tck() for details)
+  protected bit tck_in_use = 1'b0;
+
   // Reset internal model of interface state
   //
   // This is needed on a genuine interface reset, but is also needed when we find out our interface
@@ -51,6 +55,37 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     cfg.vif.tdi <= 1'b0;
     exit_to_rti_dr_past = 1;
   endfunction
+
+  // Turn on TCK in the jtag_if
+  //
+  // This "acquires TCK" by setting tck_in_use (and checks that it was false beforehand).
+  virtual function void enable_tck();
+    `DV_CHECK_FATAL(!tck_in_use)
+    tck_in_use = 1'b1;
+    cfg.vif.tck_en <= 1'b1;
+  endfunction
+
+  // Turn off TCK in the jtag_if.
+  //
+  // If rtc_length is positive, wait that many ticks before actually turning TCK off. Clear
+  // tck_in_use at the start (after checking it was true). If it becomes true while we're waiting,
+  // return without making any change since another process now requires the clock running.
+  virtual task release_tck();
+    `DV_CHECK_FATAL(tck_in_use)
+    tck_in_use = 1'b0;
+    fork begin
+      if (cfg.rtc_length > 0) begin
+        fork begin : isolation_fork
+          fork
+            cfg.vif.wait_tck(cfg.rtc_length);
+            @(tck_in_use);
+          join_any
+          disable fork;
+        end join
+      end
+      if (!tck_in_use) cfg.vif.tck_en <= 1'b0;
+    end join_none
+  endtask
 
   virtual task reset_signals();
     fork
@@ -96,8 +131,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         // Make sure that we're aligned to HOST_CB (on the negedge of TCK). If we have just finished
         // the previous item, this delay is going to add a cycle of TCK, but we're in RunTest/IDLE,
         // so it won't cause any harm.
-        cfg.vif.tck_en <= 1'b1;
+        enable_tck();
         @(`HOST_CB);
+        release_tck();
 
         `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
         `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
@@ -131,7 +167,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       fork
         begin
           // Enable clock
-          cfg.vif.tck_en <= 1'b1;
+          enable_tck();
           `HOST_CB.tms <= 1'b0;
           @(`HOST_CB);
           // Go to Test Logic Reset
@@ -152,7 +188,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // drive jtag req and retrieve rsp
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
-    cfg.vif.tck_en <= 1'b1;
+    enable_tck();
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
@@ -185,7 +221,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                     req.dr_pause_cycle,
                     req.exit_to_rti_dr);
     end
-    cfg.vif.tck_en <= 1'b0;
+    release_tck();
   endtask
 
   task drive_jtag_ir(int len,
