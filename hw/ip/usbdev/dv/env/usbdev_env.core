@@ -54,6 +54,7 @@ filesets:
       - seq_lib/usbdev_in_rand_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_in_err_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_link_out_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_resume_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_suspend_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_reset_vseq.sv: {is_include_file: true}

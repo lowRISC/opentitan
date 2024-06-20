@@ -577,6 +577,27 @@ endtask
     buf_avail[b] = 1'b0;
   endfunction
 
+  // Supply an OUT buffer to the Available OUT Buffer FIFO.
+  virtual task supply_out_buffer();
+    int buf_num = buf_alloc();
+    `DV_CHECK_GE(buf_num, 0, "Could not allocate another buffer")
+    csr_wr(.ptr(ral.avoutbuffer), .value(buf_num));
+  endtask
+
+  // Remove all packets from the RX FIFO and release the associated buffers.
+  task flush_rx_fifo();
+    uvm_reg_data_t usbstat;
+    csr_rd(.ptr(ral.usbstat), .value(usbstat));
+    // Repeat until the RX FIFO is declared empty.
+    while (!get_field_val(ral.usbstat.rx_empty, usbstat)) begin
+      uvm_reg_data_t rxfifo;
+      csr_rd(.ptr(ral.rxfifo), .value(rxfifo));
+      // Release the buffer that is holding the packet.
+      buf_release(get_field_val(ral.rxfifo.buffer, rxfifo));
+      csr_rd(.ptr(ral.usbstat), .value(usbstat));
+    end
+  endtask
+
   // Check that the supplied RX FIFO entry describes a SETUP/OUT data packet with the given
   // properties.
   task check_rxfifo_packet(bit [3:0] ep, bit setup, ref byte unsigned exp_byte_data[],
@@ -886,6 +907,16 @@ endtask
       if (active == exp_active) break;
     end
   endtask
+
+  // Return the PID to send if we're trying to provoke a Data Toggle mismatch.
+  function pid_type_e bad_toggle(bit [3:0] ep, uvm_reg_data_t out_toggles);
+    return out_toggles[ep] ? PidTypeData0 : PidTypeData1;
+  endfunction
+
+  // Return the PID for the correct data toggle bit.
+  function pid_type_e correct_toggle(bit [3:0] ep, uvm_reg_data_t out_toggles);
+    return out_toggles[ep] ? PidTypeData1 : PidTypeData0;
+  endfunction
 
   // It takes a little whilst for the register state to propagate out and back in through the
   // synchronizers, eg. pull up assertion or software direct drive.
