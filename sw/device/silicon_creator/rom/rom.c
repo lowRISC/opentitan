@@ -97,6 +97,8 @@ static hardened_bool_t waking_from_low_power = 0;
 static sigverify_otp_key_ctx_t sigverify_ctx;
 // A ram copy of the OTP word controlling how to handle flash ECC errors.
 uint32_t flash_ecc_exc_handler_en;
+// A check value for the reset reason.
+uint32_t reset_reason_check;
 
 static inline bool rom_console_enabled(void) {
   return otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BANNER_EN_OFFSET) !=
@@ -151,6 +153,11 @@ static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
   sec_mmio_init();
   uint32_t reset_reasons = rstmgr_reason_get();
+  reset_reason_check =
+      reset_reasons ^
+      (otp_read32(
+           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE_OFFSET) &
+       0xFFFF);
   if (reset_reasons != (1U << RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT)) {
     // The above compares all bits, rather than just the one indication "low
     // power exit", because if there is any other reset reason, besides
@@ -240,19 +247,32 @@ static rom_error_t rom_init(void) {
   // accuracy even after scrambling.
   retention_sram_get()->version = kRetentionSramVersion4;
 
-  // Store the reset reason in retention RAM and clear the register.
+  // Store the reset reason in retention RAM.
   retention_sram_get()->creator.reset_reasons = reset_reasons;
+
+  // Print a nice message.
+  rom_banner();
+  // This function is a NOP unless ROM is built for an fpga.
+  device_fpga_version_print();
+
+  // Double check the reset reason value against the OTP-defined value.
+  reset_reason_check = launder32(reset_reason_check) ^ rstmgr_reason_get();
+  uint32_t check_val =
+      otp_read32(
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE_OFFSET) >>
+      16;
+  if (reset_reason_check != check_val && check_val != kHardenedBoolFalse) {
+    // If the check computation failed and we're configured to fail the check,
+    // then boot fault.
+    return kErrorRomResetReasonFault;
+  }
+
+  // Clear the register if configured to do so.
   if (otp_read32(
           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN_OFFSET) !=
       kHardenedBoolTrue) {
     rstmgr_reason_clear(reset_reasons);
   }
-
-  // Print a nice message.
-  rom_banner();
-
-  // This function is a NOP unless ROM is built for an fpga.
-  device_fpga_version_print();
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
