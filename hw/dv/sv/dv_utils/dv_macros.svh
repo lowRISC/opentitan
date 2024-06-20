@@ -609,7 +609,7 @@
 //
 // If there is a need to sample / force an internal signal, then it must be done in the testbench,
 // or in an interface bound to the DUT. This macro creates a standardized signal probe function
-// meant to be invoked an interface. The generated function can then be invoked in test sequences
+// to be defined in an interface. The generated function can then be invoked in test sequences
 // or other UVM classes. The macro takes 2 arguments - name of the function and the hierarchical
 // path to the signal. If invoked in an interface which is bound to the DUT, the signal can be a
 // partial hierarchical path within the DUT. The generated function accepts 2 arguments - the first

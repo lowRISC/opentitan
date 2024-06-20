@@ -190,8 +190,6 @@ module tb;
     .IOR13(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor13])
   );
 
-  `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
-
   // Knob to skip ROM backdoor logging (for sims that use ROM macro). Set below.
   logic skip_rom_bkdr_load;
 
@@ -366,6 +364,8 @@ module tb;
     .tl_out_i ()
   );
 
+  `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
+
   initial begin
     void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
     if (!dut.chip_if.stub_cpu && en_sim_sram) begin
@@ -427,14 +427,14 @@ module tb;
     run_test();
   end
 
+  `undef SIM_SRAM_IF
+
   for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_vif
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
           LIST_OF_ALERTS[i]), "vif", alert_if[i]);
     end
   end
-
-  `undef SIM_SRAM_IF
 
   // Instantitate the memory backdoor util instances.
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
