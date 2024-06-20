@@ -5,12 +5,7 @@
 // smoke test vseq
 class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_smoke_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   // Check that the IDCODE register works as expected.
   //

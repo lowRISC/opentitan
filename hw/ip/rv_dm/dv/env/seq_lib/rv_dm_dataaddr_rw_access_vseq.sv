@@ -5,12 +5,8 @@
 //Dataaddr_RW_access_Test
 class rv_dm_dataaddr_rw_access_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_dataaddr_rw_access_vseq)
-
   `uvm_object_new
 
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
   task write_and_verify(input uvm_object ptr,int idx);
     uvm_reg_data_t data;
     uvm_reg_data_t rdata;

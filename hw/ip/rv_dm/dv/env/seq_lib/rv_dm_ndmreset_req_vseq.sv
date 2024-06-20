@@ -8,13 +8,9 @@
 
 class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_ndmreset_req_vseq)
-
   `uvm_object_new
 
   rand lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en;
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
   constraint pinmux_hw_debug_en_c {
     pinmux_hw_debug_en == lc_ctrl_pkg::On;
   }

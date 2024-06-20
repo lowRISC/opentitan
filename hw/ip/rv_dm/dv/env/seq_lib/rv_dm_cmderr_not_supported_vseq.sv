@@ -4,12 +4,7 @@
 
 class rv_dm_cmderr_not_supported_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_cmderr_not_supported_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   // Generate an abstract command that will trigger a "not supported" error because it's cmdtype is
   // unknown.

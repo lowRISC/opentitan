@@ -5,12 +5,7 @@
 //halt/resume/whereto test
 class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_halt_resume_whereto_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   // Pretend to be the hart entering debug mode and write the ID (hartsel) to the HALTED register to
   // indicate that we are halted.

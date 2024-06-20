@@ -3,14 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class rv_dm_progbuf_busy_vseq extends rv_dm_base_vseq;
-
   `uvm_object_utils(rv_dm_progbuf_busy_vseq)
-
   `uvm_object_new
-
-  constraint lc_hw_debug_en_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
-  }
 
   task body();
     uvm_reg_data_t data;
