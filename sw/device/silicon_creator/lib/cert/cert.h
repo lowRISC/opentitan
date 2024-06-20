@@ -15,7 +15,7 @@ extern "C" {
 
 enum {
   /**
-   * Offset to the ASN.1 DER encoded serial number of an X.509 certificate.
+   * Offsets to the ASN.1 DER encoded serial number of an X.509 certificate.
    */
   kCertX509Asn1SerialNumberFieldByteOffset = 13,
   kCertX509Asn1SerialNumberTagByteOffset =
@@ -27,12 +27,10 @@ enum {
    * Sizes of the ASN.1 DER encoded serial number of an X.509 certificate.
    */
   kCertX509Asn1SerialNumberSizeInBytes = 20,
-  kCertX509Asn1SerialNumberSizeIn32BitWords =
-      kCertX509Asn1SerialNumberSizeInBytes / sizeof(uint32_t),
 
   /**
-   * Number of words/bytes of an X.509 ASN.1 DER encoded certificate up to, and
-   * including, the serial number.
+   * Size of an X.509 ASN.1 DER encoded certificate up to, and including, the
+   * serial number.
    *
    * Offset of ASN.1 tag is 13 plus:
    *  - 1 byte of tag
@@ -43,9 +41,6 @@ enum {
   kCertX509Asn1FirstBytesWithSerialNumber =
       kCertX509Asn1SerialNumberFieldByteOffset +
       kCertX509Asn1SerialNumberSizeInBytes + 3,
-  kCertX509Asn1FirstWordsWithSerialNumber =
-      (kCertX509Asn1FirstBytesWithSerialNumber + sizeof(uint32_t) - 1) /
-      sizeof(uint32_t),
 };
 
 /**
@@ -99,15 +94,20 @@ rom_error_t cert_x509_asn1_get_size_in_bytes(
  * Extracts the serial number field from an ASN.1 DER encoded X.509
  * certificate and checks if it matches what is expected.
  *
- * @param info_page Pointer to the flash info page the certificate is on.
+ * @param cert_page_buffer Pointer to the buffer holding the certificate blob.
+ * @param offset Byte offset into the certificate buffer to start reading at.
  * @param expected_sn_bytes Expected serial number bytes (in big endian order).
  * @param[out] matches True if expected serial number found. False otherwise.
+ * @param[out] out_cert_size The certificate size in bytes. Can be NULL if
+ *                           caller does not want it returned.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t cert_x509_asn1_check_serial_number(
-    const flash_ctrl_info_page_t *info_page, uint8_t *expected_sn_bytes,
-    hardened_bool_t *matches);
+rom_error_t cert_x509_asn1_check_serial_number(const uint8_t *cert_page_buffer,
+                                               size_t offset,
+                                               uint8_t *expected_sn_bytes,
+                                               hardened_bool_t *matches,
+                                               uint32_t *out_cert_size);
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,6 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
@@ -21,22 +20,10 @@ using ::testing::SetArgPointee;
 
 class CertTest : public rom_test::RomTest {
  protected:
-  flash_ctrl_error_code_t flash_ctrl_error_code_ = {
-      .macro_err = false,
-      .update_err = false,
-      .prog_type_err = false,
-      .prog_win_err = false,
-      .prog_err = false,
-      .rd_err = false,
-      .mp_err = false,
-      .op_err = false,
-  };
   uint8_t expected_sn_bytes_[kCertX509Asn1SerialNumberSizeInBytes] = {
       0x31, 0xF9, 0xE7, 0x35, 0x9F, 0xF2, 0x84, 0x46, 0x99, 0x5B,
       0xA0, 0x3D, 0xE5, 0xED, 0x7E, 0x32, 0x16, 0x95, 0xF1, 0xD1};
-  static constexpr size_t kDiceCertSizeInBytes =
-      kCertX509Asn1FirstWordsWithSerialNumber * sizeof(uint32_t);
-  uint32_t valid_dice_cert_words_[200] = {
+  uint32_t valid_dice_cert_words_[2048] = {
       0x1b038230, 0xc2028230, 0x010203a0, 0x31140202, 0x9f35e7f9, 0x994684f2,
       0xe53da05b, 0x16327eed, 0x30d1f195, 0x2a08060a, 0x3dce4886, 0x30020304,
       0x300b3123, 0x55030609, 0x02130604, 0x14314b55, 0x03061230, 0x0c030455,
@@ -72,138 +59,84 @@ class CertTest : public rom_test::RomTest {
       0x533fe16b, 0xfa62b6b4, 0x46af0351, 0x3e262772, 0xe9d81a0b, 0x53859bf3,
       0x990281cf, 0x007897f8};
   uint8_t *valid_dice_cert_bytes_ = (uint8_t *)valid_dice_cert_words_;
-  rom_test::MockFlashCtrl flash_ctrl_;
-  void ExpectFlashInfoPageRead(const flash_ctrl_info_page_t *info_page,
-                               uint32_t offset, size_t num_words,
-                               const uint32_t *data, rom_error_t error) {
-    EXPECT_CALL(flash_ctrl_, InfoRead(info_page, offset, num_words, _))
-        .WillOnce([num_words, data, error](auto, auto, auto, void *out) {
-          uint32_t *out_words = static_cast<uint32_t *>(out);
-          for (size_t i = 0; i < num_words; ++i) {
-            out_words[i] = data[i];
-          }
-          return error;
-        });
-  }
-  void ExpectFlashCtrlErrorCodeGet(flash_ctrl_error_code_t *in_error_code) {
-    EXPECT_CALL(flash_ctrl_, ErrorCodeGet(_))
-        .WillOnce(SetArgPointee<0>(*in_error_code));
-  }
-  void ExpectFlashInfoPageErase(const flash_ctrl_info_page_t *info_page,
-                                rom_error_t error) {
-    EXPECT_CALL(flash_ctrl_, InfoErase(info_page, kFlashCtrlEraseTypePage))
-        .WillOnce(Return(error));
-  }
+  uint32_t expected_cert_size_ =
+      ((valid_dice_cert_bytes_[2] << 8) | (valid_dice_cert_bytes_[3])) + 4;
 };
 
 TEST_F(CertTest, InvalidArgs) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  // Invalid flash info page.
-  EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(nullptr, expected_sn_bytes_, &matches),
-      kErrorCertInvalidArgument);
+  // Invalid cert page buffer.
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(nullptr, 0, expected_sn_bytes_,
+                                               &matches, nullptr),
+            kErrorCertInvalidArgument);
 
   // Invalid expected serial number.
-  EXPECT_EQ(cert_x509_asn1_check_serial_number(
-                &kFlashCtrlInfoPageUdsCertificate, nullptr, &matches),
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                               nullptr, &matches, nullptr),
             kErrorCertInvalidArgument);
 
   // Invalid match flag pointer.
-  EXPECT_EQ(cert_x509_asn1_check_serial_number(
-                &kFlashCtrlInfoPageUdsCertificate, expected_sn_bytes_, nullptr),
-            kErrorCertInvalidArgument);
-}
-
-/**
- * Here we test if the flash page looks like garbage, as is the case when
- * scrambling is enabled but the page has never been erased.
- */
-TEST_F(CertTest, CorruptedOrUnprovisionedCertFlashInfoPage) {
-  hardened_bool_t matches = kHardenedBoolFalse;
-  flash_ctrl_error_code_.rd_err = true;
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorFlashCtrlInfoRead);
-  ExpectFlashCtrlErrorCodeGet(&flash_ctrl_error_code_);
-  ExpectFlashInfoPageErase(&kFlashCtrlInfoPageUdsCertificate, kErrorOk);
   EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_bytes_, &matches),
-      kErrorOk);
-  EXPECT_EQ(matches, kHardenedBoolFalse);
-  flash_ctrl_error_code_.rd_err = false;
+      cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                         expected_sn_bytes_, nullptr, nullptr),
+      kErrorCertInvalidArgument);
+
+  // Invalid buffer offset.
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(
+                valid_dice_cert_bytes_, FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+                expected_sn_bytes_, &matches, nullptr),
+            kErrorCertInvalidArgument);
 }
 
 /**
  * Here we test if a flash page has been erased (i.e., is all 1s) but the page
  * has never been provisioned with a certificate.
  */
-TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
+TEST_F(CertTest, UnprovisionedCert) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  uint8_t unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber] = {
-      0};
-  unprovisioned_cert_bytes[0] = 0xFF;
-  unprovisioned_cert_bytes[1] = 0xFF;
-  unprovisioned_cert_bytes[2] = 0xFF;
-  unprovisioned_cert_bytes[3] = 0xFF;
-  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 4] = 0xFF;
-  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 3] = 0xFF;
-  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 2] = 0xFF;
-  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 1] = 0xFF;
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          (uint32_t *)unprovisioned_cert_bytes, kErrorOk);
-  EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_bytes_, &matches),
-      kErrorOk);
+  uint32_t unprovisioned_cert_bytes = UINT32_MAX;
+  uint32_t cert_size;
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(
+                (uint8_t *)&unprovisioned_cert_bytes, 0, expected_sn_bytes_,
+                &matches, &cert_size),
+            kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolFalse);
+  EXPECT_EQ(cert_size, 0);
 }
 
 TEST_F(CertTest, BadSerialNumberTag) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  uint8_t invalid_dice_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber] = {
-      0};
+  uint8_t backup =
+      valid_dice_cert_bytes_[kCertX509Asn1SerialNumberTagByteOffset];
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberTagByteOffset] = 0;
   EXPECT_DEATH(
-      {
-        ExpectFlashInfoPageRead(
-            &kFlashCtrlInfoPageUdsCertificate,
-            /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-            reinterpret_cast<uint32_t *>(invalid_dice_cert_bytes), kErrorOk);
-        OT_DISCARD(cert_x509_asn1_check_serial_number(
-            &kFlashCtrlInfoPageUdsCertificate, expected_sn_bytes_, &matches))
-      },
+      {OT_DISCARD(cert_x509_asn1_check_serial_number(
+          valid_dice_cert_bytes_, 0, expected_sn_bytes_, &matches, nullptr))},
       "");
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberTagByteOffset] = backup;
 }
 
 TEST_F(CertTest, BadSerialNumberLength) {
   hardened_bool_t matches = kHardenedBoolFalse;
-  uint8_t invalid_dice_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber] = {
-      0};
-  invalid_dice_cert_bytes[kCertX509Asn1SerialNumberTagByteOffset] = 2;
-  invalid_dice_cert_bytes[kCertX509Asn1SerialNumberLengthByteOffset] = 22;
+  uint8_t backup =
+      valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset];
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = 22;
   EXPECT_DEATH(
-      {
-        ExpectFlashInfoPageRead(
-            &kFlashCtrlInfoPageUdsCertificate,
-            /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-            reinterpret_cast<uint32_t *>(invalid_dice_cert_bytes), kErrorOk);
-        OT_DISCARD(cert_x509_asn1_check_serial_number(
-            &kFlashCtrlInfoPageUdsCertificate, expected_sn_bytes_, &matches))
-      },
+      {OT_DISCARD(cert_x509_asn1_check_serial_number(
+          valid_dice_cert_bytes_, 0, expected_sn_bytes_, &matches, nullptr))},
       "");
+  valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = backup;
 }
 
 TEST_F(CertTest, CertOutdated) {
   hardened_bool_t matches = kHardenedBoolFalse;
+  uint32_t cert_size;
   uint8_t empty_sn[kCertX509Asn1SerialNumberSizeInBytes] = {0};
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorOk);
-  EXPECT_EQ(cert_x509_asn1_check_serial_number(
-                &kFlashCtrlInfoPageUdsCertificate, empty_sn, &matches),
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                               empty_sn, &matches, &cert_size),
             kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolFalse);
+  EXPECT_EQ(cert_size, expected_cert_size_);
 }
 
 TEST_F(CertTest, CertOutdatedSerialNumberSizeMismatch) {
@@ -211,12 +144,9 @@ TEST_F(CertTest, CertOutdatedSerialNumberSizeMismatch) {
   uint8_t old_length =
       valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset];
   valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = 19;
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorOk);
   EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_bytes_, &matches),
+      cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                         expected_sn_bytes_, &matches, nullptr),
       kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolFalse);
   valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] =
@@ -231,27 +161,12 @@ TEST_F(CertTest, CertValidShortSerialNumber) {
   uint8_t sn_bytes[kCertX509Asn1SerialNumberSizeInBytes] = {0};
   memcpy(&sn_bytes[1], expected_sn_bytes_,
          kCertX509Asn1SerialNumberSizeInBytes - 1);
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorOk);
-  EXPECT_EQ(cert_x509_asn1_check_serial_number(
-                &kFlashCtrlInfoPageUdsCertificate, sn_bytes, &matches),
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                               sn_bytes, &matches, nullptr),
             kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolTrue);
   valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] =
       old_length;
-}
-
-TEST_F(CertTest, CertValidFullSerialNumber) {
-  hardened_bool_t matches = kHardenedBoolFalse;
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorOk);
-  EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_bytes_, &matches),
-      kErrorOk);
-  EXPECT_EQ(matches, kHardenedBoolTrue);
 }
 
 TEST_F(CertTest, CertValidFullSerialNumberThenShortSerialNumber) {
@@ -259,12 +174,9 @@ TEST_F(CertTest, CertValidFullSerialNumberThenShortSerialNumber) {
 
   // Full length serial number.
   matches = kHardenedBoolFalse;
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorOk);
   EXPECT_EQ(
-      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
-                                         expected_sn_bytes_, &matches),
+      cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                         expected_sn_bytes_, &matches, nullptr),
       kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolTrue);
 
@@ -276,11 +188,8 @@ TEST_F(CertTest, CertValidFullSerialNumberThenShortSerialNumber) {
   uint8_t sn_bytes[kCertX509Asn1SerialNumberSizeInBytes] = {0};
   memcpy(&sn_bytes[1], expected_sn_bytes_,
          kCertX509Asn1SerialNumberSizeInBytes - 1);
-  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
-                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
-                          valid_dice_cert_words_, kErrorOk);
-  EXPECT_EQ(cert_x509_asn1_check_serial_number(
-                &kFlashCtrlInfoPageUdsCertificate, sn_bytes, &matches),
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_, 0,
+                                               sn_bytes, &matches, nullptr),
             kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolTrue);
   valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] =

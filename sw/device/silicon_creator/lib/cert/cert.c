@@ -9,6 +9,8 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#include "flash_ctrl_regs.h"  // Generated.
+
 static uint8_t actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes] = {0};
 
 uint32_t cert_x509_asn1_decode_size_header(const uint8_t *header) {
@@ -30,52 +32,34 @@ rom_error_t cert_x509_asn1_get_size_in_bytes(
   return kErrorOk;
 }
 
-rom_error_t cert_x509_asn1_check_serial_number(
-    const flash_ctrl_info_page_t *info_page, uint8_t *expected_sn_bytes,
-    hardened_bool_t *matches) {
-  if (info_page == NULL || expected_sn_bytes == NULL || matches == NULL) {
+rom_error_t cert_x509_asn1_check_serial_number(const uint8_t *cert_page_buffer,
+                                               size_t offset,
+                                               uint8_t *expected_sn_bytes,
+                                               hardened_bool_t *matches,
+                                               uint32_t *out_cert_size) {
+  if (cert_page_buffer == NULL || expected_sn_bytes == NULL ||
+      matches == NULL || offset >= FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
     return kErrorCertInvalidArgument;
   }
   *matches = kHardenedBoolFalse;
 
-  // Read first part of certificate, up to, and including, the serial number.
-  uint32_t cert_words[kCertX509Asn1FirstWordsWithSerialNumber] = {0};
-  rom_error_t err = flash_ctrl_info_read(
-      info_page, /*offset=*/0,
-      /*word_count=*/kCertX509Asn1FirstWordsWithSerialNumber, cert_words);
-  if (err != kErrorOk) {
-    flash_ctrl_error_code_t flash_ctrl_err_code;
-    flash_ctrl_error_code_get(&flash_ctrl_err_code);
-    if (flash_ctrl_err_code.rd_err) {
-      // If we encountered a read error, this could mean the certificate page
-      // has been corrupted or is not provisioned yet. In this case, we erase
-      // the page and continue, which will simply result in the ROM_EXT
-      // re-generating the certificates.
-      HARDENED_RETURN_IF_ERROR(
-          flash_ctrl_info_erase(info_page, kFlashCtrlEraseTypePage));
-      return kErrorOk;
-    }
-    return err;
+  // Check if the cert is missing by checking if the ASN.1 header cannot be
+  // decoded or the size is not large enough to include a serial number.
+  uint32_t cert_size =
+      cert_x509_asn1_decode_size_header(&cert_page_buffer[offset]);
+  if (out_cert_size != NULL) {
+    *out_cert_size = cert_size;
   }
-
-  // Check if the cert is missing by checking if the first and last words are
-  // all 1s. If it is, it because the device is unprovisioned, in which case, we
-  // want to continue, and allow the ROM_EXT to attempt to update the cert.
-  if (launder32(cert_words[0]) == UINT32_MAX) {
-    HARDENED_CHECK_EQ(cert_words[0], UINT32_MAX);
-    if (launder32(cert_words[kCertX509Asn1FirstWordsWithSerialNumber - 1]) ==
-        UINT32_MAX) {
-      HARDENED_CHECK_EQ(cert_words[kCertX509Asn1FirstWordsWithSerialNumber - 1],
-                        UINT32_MAX);
-      return kErrorOk;
-    }
+  if (launder32(cert_size) < kCertX509Asn1FirstBytesWithSerialNumber) {
+    HARDENED_CHECK_LT(cert_size, kCertX509Asn1FirstBytesWithSerialNumber);
+    return kErrorOk;
   }
 
   // Extract tag and length of serial number field.
-  unsigned char *cert_bytes = (unsigned char *)cert_words;
-  uint8_t asn1_tag = cert_bytes[kCertX509Asn1SerialNumberTagByteOffset];
-  size_t asn1_integer_length =
-      cert_bytes[kCertX509Asn1SerialNumberLengthByteOffset];
+  uint8_t asn1_tag =
+      cert_page_buffer[offset + kCertX509Asn1SerialNumberTagByteOffset];
+  size_t asn1_integer_length = (size_t)
+      cert_page_buffer[offset + kCertX509Asn1SerialNumberLengthByteOffset];
 
   // Validate tag and length values.
   // Tag should be 0x2 (the ASN.1 tag for an INTEGER).
@@ -88,7 +72,8 @@ rom_error_t cert_x509_asn1_check_serial_number(
                     kCertX509Asn1SerialNumberSizeInBytes + 1);
 
   // If the length is 21 bytes, we skip the first 0 pad byte.
-  size_t sn_bytes_offset = kCertX509Asn1SerialNumberLengthByteOffset + 1;
+  size_t sn_bytes_offset =
+      offset + kCertX509Asn1SerialNumberLengthByteOffset + 1;
   if (launder32(asn1_integer_length) ==
       kCertX509Asn1SerialNumberSizeInBytes + 1) {
     HARDENED_CHECK_EQ(asn1_integer_length,
@@ -108,7 +93,7 @@ rom_error_t cert_x509_asn1_check_serial_number(
   memset(actual_serial_number, 0, kCertX509Asn1SerialNumberSizeInBytes);
   memcpy(&actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes -
                                asn1_integer_length],
-         &cert_bytes[sn_bytes_offset], asn1_integer_length);
+         &cert_page_buffer[sn_bytes_offset], asn1_integer_length);
 
   // Check the serial number in the certificate matches what was expected.
   *matches = kHardenedBoolFalse;

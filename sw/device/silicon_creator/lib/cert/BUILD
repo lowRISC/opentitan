@@ -74,6 +74,7 @@ cc_library(
     hdrs = ["cert.h"],
     deps = [
         ":asn1",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
