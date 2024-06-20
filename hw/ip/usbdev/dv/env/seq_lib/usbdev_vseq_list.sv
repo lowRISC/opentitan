@@ -24,6 +24,7 @@
 `include "usbdev_in_trans_vseq.sv"
 `include "usbdev_in_iso_vseq.sv"
 `include "usbdev_link_in_err_vseq.sv"
+`include "usbdev_link_out_err_vseq.sv"
 `include "usbdev_link_reset_vseq.sv"
 `include "usbdev_max_usb_traffic_vseq.sv"
 `include "usbdev_nak_trans_vseq.sv"

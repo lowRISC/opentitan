@@ -108,6 +108,10 @@
       uvm_test_seq: usbdev_disable_endpoint_vseq
     }
     {
+      name: usbdev_disconnected
+      uvm_test_seq: usbdev_disconnected_vseq
+    }
+    {
       name: usbdev_endpoint_access
       uvm_test_seq: usbdev_endpoint_access_vseq
     }
@@ -130,6 +134,12 @@
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
+      name: usbdev_invalid_data1_data0_toggle_test
+      uvm_test_seq: usbdev_link_out_err_vseq
+      // No need for randomization.
+      reseed: 1
+    }
+    {
       name: usbdev_invalid_sync
       uvm_test_seq: usbdev_bad_traffic_vseq
       run_opts: ["+wt_bad_syncs=1"]
@@ -137,6 +147,12 @@
     {
       name: usbdev_link_in_err
       uvm_test_seq: usbdev_link_in_err_vseq
+    }
+    {
+      name: usbdev_link_out_err
+      uvm_test_seq: usbdev_link_out_err_vseq
+      // No need for randomization.
+      reseed: 1
     }
     {
       name: usbdev_link_reset
@@ -161,10 +177,6 @@
       uvm_test_seq: usbdev_min_length_out_transaction_vseq
     }
     {
-      name: usbdev_disconnected
-      uvm_test_seq: usbdev_disconnected_vseq
-    }
-    {
       name: usbdev_max_usb_traffic
       uvm_test_seq: usbdev_max_usb_traffic_vseq
     }
@@ -177,6 +189,12 @@
       name: usbdev_max_inter_pkt_delay
       uvm_test_seq: usbdev_streaming_vseq
       run_opts: ["+setup_data_delay=26", "+out_data_delay=26"]
+    }
+    {
+      name: usbdev_nak_to_out_trans_when_avbuffer_empty_rxfifo_full
+      uvm_test_seq: usbdev_link_out_err_vseq
+      // No need for randomization.
+      reseed: 1
     }
     {
       name: usbdev_nak_trans
