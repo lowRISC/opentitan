@@ -307,10 +307,11 @@
             - Pick a random set of write/readable CSRs in all 3 RALs (JTAG DMI, regs RAL and debug
               mem RAL). Write known values to them.
             - Write the dmcontrol register to assert ndmreset - verify that the ndmreset output
-              stays asserted.
-            - Mimic the CPU going into reset by asserting unavailable input,
-              setting lc_hw_debug_en to false. Keep pinmux_hw_debug_en set to true to keep
-              the JTAG side open while the ndmreset is in progress.
+              is asserted.
+            - Mimic the CPU going into reset by asserting the unavailable input.
+            - Set lc_hw_debug_en to something other than On (since it should no longer be needed).
+              At this point the ndmreset output signal will drop. Keep pinmux_hw_debug_en set to On
+              to keep the JTAG side open while the ndmreset is in progress.
             - Read the dmstatus register to verify allunavail is asserted.
             - De-assert the ndmreset by writing 0 to the dmcontrol register field, verify the
               ndmreset output deasserted as well.
