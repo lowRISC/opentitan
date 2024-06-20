@@ -60,8 +60,9 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                           |            |      32bit       |                   OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG                    |     0x3EC      |     12     |
 |         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_SRAM_READBACK_EN                      |     0x3F8      |     4      |
 |         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN                  |     0x3FC      |     4      |
-|         |                           |            |      32bit       |                         OWNER_SW_CFG_ROM_BANNER_EN                          |     0x400      |     4      |
-|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN                  |     0x404      |     4      |
+|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE                  |     0x400      |     4      |
+|         |                           |            |      32bit       |                         OWNER_SW_CFG_ROM_BANNER_EN                          |     0x404      |     4      |
+|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN                  |     0x408      |     4      |
 |         |                           |            |      64bit       |              [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)              |     0x470      |     8      |
 |    3    | ROT_CREATOR_AUTH_CODESIGN |    472     |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0                  |     0x478      |     4      |
 |         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0                     |     0x47C      |     64     |
