@@ -540,7 +540,7 @@ module usb_fs_rx (
 
   assign valid_pid_o = pid_valid;
 
-  assign valid_packet_o = pid_valid && !bitstuff_error_q &&
+  assign valid_packet_o = packet_valid_q & pid_valid && !bitstuff_error_q &&
     ((pkt_is_handshake && valid_handshake_len) ||
      (pkt_is_data && valid_data_len && crc16_valid) ||
      (pkt_is_token && valid_token_len && crc5_valid));
