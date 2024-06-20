@@ -34,7 +34,7 @@ $OTBN_UTIL/otbn_ld.py -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o ||
 
 (cd $REPO_TOP;
  fusesoc --cores-root=. run --target=sim --setup --build \
-         lowrisc:ip:otbn_top_sim --make_options=-j$(nproc) || fail "HW Sim build failed")
+         lowrisc:ip:otbn_top_sim --make_options="-j$(nproc)" || fail "HW Sim build failed")
 
 RUN_LOG=`mktemp`
 readonly RUN_LOG
