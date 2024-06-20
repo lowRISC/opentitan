@@ -345,6 +345,16 @@
                     size: "4"
                 }
                 {
+                    // Datatype: 2x16-bit hardened_bool_t values.
+                    // The lower half and upper half should be the same value.
+                    // If the value is kHardenedBoolFalse and the reset reason validation
+                    // fails, the chip will ignore the failure and continue booting.
+                    // If the value is any other value and the reset reason validation
+                    // fails, the chip will fault during bootup.
+                    name: "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE",
+                    size: "4"
+                }
+                {
                     // Datatype: hardened_bool_t.
                     // False disables, all other values default behavior.
                     name: "OWNER_SW_CFG_ROM_BANNER_EN",

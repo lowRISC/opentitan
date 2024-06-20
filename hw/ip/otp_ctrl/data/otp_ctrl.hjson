@@ -883,10 +883,22 @@
       default: "4",
       local: "true"
     },
+    { name: "OwnerSwCfgRomResetReasonCheckValueOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE",
+      type: "int",
+      default: "1024",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomResetReasonCheckValueSize",
+      desc: "Size of OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "OwnerSwCfgRomBannerEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_BANNER_EN",
       type: "int",
-      default: "1024",
+      default: "1028",
       local: "true"
     },
     { name: "OwnerSwCfgRomBannerEnSize",
@@ -898,7 +910,7 @@
     { name: "OwnerSwCfgRomFlashEccExcHandlerEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN",
       type: "int",
-      default: "1028",
+      default: "1032",
       local: "true"
     },
     { name: "OwnerSwCfgRomFlashEccExcHandlerEnSize",
