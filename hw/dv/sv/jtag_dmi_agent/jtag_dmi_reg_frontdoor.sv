@@ -26,6 +26,10 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
     jtag_dtm_reg_block  jtag_dtm_ral = jtag_agent_cfg_h.jtag_dtm_ral;
     jtag_dmi_op_rsp_e   op_rsp;
 
+    // Configure the JTAG agent to have a positive run-to-clear length, ensuring that DMI operations
+    // make it from dmi_jtag to dm_top and back again before TCK stops.
+    jtag_agent_cfg_h.rtc_length = 4;
+
     // If the JTAG agent is sitting in reset, print a debug message and exit early
     if (jtag_agent_cfg_h.in_reset) begin
       `uvm_info(`gfn, "DMI CSR req skipped due to reset", UVM_HIGH)
