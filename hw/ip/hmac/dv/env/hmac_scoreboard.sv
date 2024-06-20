@@ -8,7 +8,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit             sha_en, fifo_empty, hmac_idle;
+  bit             sha_en, hmac_idle;
   bit [7:0]       msg_q[$];
   bit [7:0]       msg_part_q[$];  // Queue containing piece of the message if HASH is interrupted
   bit             hmac_start, hmac_process, hmac_stopped, hmac_continue;
@@ -20,6 +20,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [TL_DW-1:0] exp_digest[NUM_DIGESTS];
   bit [3:0]       previous_digest_size, expected_digest_size;
   bit             invalid_cfg;
+  bit [TL_DW-1:0] hmac_status_data;
+  bit [5:0]       hmac_fifo_depth;
+  bit             hmac_fifo_full;
+  bit             fifo_full_detected;
+  bit             hmac_fifo_empty;
+  bit             fifo_empty_intr;
+  bit             hmac_process_last;
+  bit             hmac_stopped_last;
+  bit             hmac_start_last;
+  bit             hmac_continue_last;
+  bit [TL_DW-1:0] intr_test;
+  bit [TL_DW-1:0] intr_state_exp;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -31,6 +43,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       hmac_process_fifo_status();
       hmac_process_fifo_wr();
       hmac_process_fifo_rd();
+      hmac_intr_test();
       monitor_cov();
     join_none
   endtask
@@ -191,14 +204,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end
           end
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
-            bit [TL_DW-1:0] intr_state_exp = item.a_data | `gmv(ral.intr_state);
+            intr_test = item.a_data;
+            // As INTR_STATE.hmac_err and INTR_STATE.hmac_done are RW1C, we should get back the
+            // current state
+            intr_state_exp = intr_test | `gmv(ral.intr_state);
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
             if (cfg.en_cov) begin
               bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
               hmac_intr_e     intr;
               intr = intr.first;
               do begin
-                cov.intr_test_cg.sample(intr, item.a_data[intr], intr_en[intr],
+                cov.intr_test_cg.sample(intr, intr_test[intr], intr_en[intr],
                                         intr_state_exp[intr]);
                 intr = intr.next;
               end while (intr != intr.first);
@@ -292,19 +308,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
     // predict status based on csr read addr channel
     if (!write && channel != DataChannel) begin
+      // Update expected status register
       if (csr_name == "status") begin
-        bit [5:0]       hmac_fifo_depth  = hmac_wr_cnt - hmac_rd_cnt;
-        bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
-        bit             hmac_fifo_empty  = hmac_fifo_depth == 0;
-        bit [TL_DW-1:0] hmac_status_data = (hmac_idle       << HmacStaIdle)         |
-                                           (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
-                                           (hmac_fifo_full  << HmacStaMsgFifoFull)  |
-                                           (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
+        hmac_status_data = (hmac_idle       << HmacStaIdle)         |
+                           (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
+                           (hmac_fifo_full  << HmacStaMsgFifoFull)  |
+                           (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
         void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
+      // Update expected FIFO Empty interrupt register
       end else if (csr_name == "intr_state") begin
-        if (fifo_empty && `gmv(ral.intr_state.fifo_empty) != 1) begin
-          void'(ral.intr_state.fifo_empty.predict(.value(1), .kind(UVM_PREDICT_READ)));
-        end
+        // Bitwise OR is needed to retrieve previous values as some fields are W1C
+        bit intr_state_empty = fifo_empty_intr | intr_test[HmacMsgFifoEmpty];
+        void'(ral.intr_state.fifo_empty.predict(.value(intr_state_empty), .kind(UVM_PREDICT_READ)));
       end
       return;
     end
@@ -340,9 +355,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           if (hmac_start && invalid_cfg) begin
             flush();
           end
-          // TODO(#21815): Verify FIFO empty status interrupt.
-          fifo_empty = item.d_data[HmacMsgFifoEmpty];
-          void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty), .kind(UVM_PREDICT_READ)));
         end
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
         "digest_7", "digest_8", "digest_9", "digest_10", "digest_11", "digest_12", "digest_13",
@@ -451,7 +463,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       if (do_read_check) begin
         `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
                                   csr_name, `gmv(csr)), UVM_HIGH)
-        `DV_CHECK_EQ(`gmv(csr), item.d_data, csr_name)
+        `DV_CHECK_EQ(item.d_data, `gmv(csr), csr_name)
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
@@ -465,12 +477,15 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     // Should be reinitialized before flushing as it will be used as a condition
     hmac_stopped = 0;
     flush();
-    key          = '{default:0};
-    exp_digest   = '{default:0};
-    fifo_empty   = ral.status.fifo_empty.get_reset();
-    hmac_idle    = ral.status.hmac_idle.get_reset();
-    hmac_start   = ral.cmd.hash_start.get_reset();
-    sha_en       = ral.cfg.sha_en.get_reset();
+    key             = '{default:0};
+    exp_digest      = '{default:0};
+    hmac_idle       = ral.status.hmac_idle.get_reset();
+    hmac_fifo_empty = ral.status.fifo_empty.get_reset();
+    hmac_fifo_full  = ral.status.fifo_full.get_reset();
+    hmac_fifo_depth = ral.status.fifo_depth.get_reset();
+    hmac_start      = ral.cmd.hash_start.get_reset();
+    sha_en          = ral.cfg.sha_en.get_reset();
+    hmac_stopped    = 0;
     msg_q.delete();
     msg_part_q.delete();
     cfg.wipe_secret_triggered = 0;
@@ -484,9 +499,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       hmac_rd_cnt  = 0;
       msg_q.delete();
     end
-    hmac_process  = 0;
-    hmac_start    = 0;
-    hmac_continue = 0;
+    hmac_process        = 0;
+    hmac_start          = 0;
+    hmac_continue       = 0;
+    hmac_process_last   = 0;
+    hmac_start_last     = 0;
+    hmac_stopped_last   = 0;
+    hmac_continue_last  = 0;
+    fifo_full_detected  = 0;
+    fifo_empty_intr     = 0;
+    void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty_intr | intr_test[HmacMsgFifoEmpty]),
+                                            .kind(UVM_PREDICT_READ)));
   endfunction
 
   // hmac_wr_cnt was incremented every time when msg_q has 4 bytes streamed in
@@ -539,21 +562,96 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   endtask
 
   virtual task hmac_process_fifo_status();
-    forever @(hmac_wr_cnt, hmac_rd_cnt) begin
-      // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait 1ps to guarantee
-      // get both update
-      #1ps;
-      if ((hmac_wr_cnt == hmac_rd_cnt) && (hmac_wr_cnt != 0)) begin
-        // after the rd wr pointers are equal, wait one clk cycle for the fifo_empty register
-        // update, wait another clk cycle for the register value to reflect
-        if (!fifo_empty) begin
-          cfg.clk_rst_vif.wait_clks(2);
-          `uvm_info(`gfn, "predict interrupt fifo empty is set", UVM_HIGH)
-          fifo_empty = 1;
+    bit pre_fifo_empty_intr;
+    forever @(hmac_wr_cnt, hmac_rd_cnt, hmac_process, hmac_start, hmac_stopped, hmac_continue) begin
+      // Store hmac_process and hmac_start to be able to detect when it goes up, as it could remain
+      // up for a while
+      bit hmac_process_posedge  = hmac_process & ~hmac_process_last;
+      bit hmac_start_posedge    = hmac_start & ~hmac_start_last;
+      bit hmac_stopped_posedge  = hmac_stopped & ~hmac_stopped_last;
+      bit hmac_continue_posedge = hmac_continue & ~hmac_continue_last;
+
+      // Store last value to be able to detect signal change
+      hmac_process_last  = hmac_process;
+      hmac_stopped_last  = hmac_stopped;
+      hmac_start_last    = hmac_start;
+      hmac_continue_last = hmac_continue;
+
+      // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait the clock rising edge
+      // to guarantee get both update and at the same time as the DUT
+      cfg.clk_rst_vif.wait_clks(1);
+
+      // Compute FIFO level flags
+      hmac_fifo_depth = hmac_wr_cnt - hmac_rd_cnt;
+      hmac_fifo_full  = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
+      hmac_fifo_empty = hmac_fifo_depth == 0;
+
+      // The FIFO empty interrupt is raised only if the message FIFO is actually writable by
+      // software, i.e., if all of the following conditions are met:
+      //   1- The HMAC block is not running in HMAC mode and performing the second round of
+      //      computing the final hash of the outer key as well as the result of the first round
+      //      using the inner key.
+      //   2- Software has not yet written the Process or Stop command to finish the hashing
+      //      operation.
+      //   3- The message FIFO must also have been full previously. Otherwise, the hardware empties
+      //      the FIFO faster than software can fill it and there is no point in interrupting the
+      //      software to inform it about the message FIFO being empty.
+      if (fifo_full_detected && hmac_fifo_empty) begin
+        pre_fifo_empty_intr = 1;
+      end else begin
+        pre_fifo_empty_intr = 0;
+      end
+
+      // Delay FIFO empty signal to be aligned with the DUT behavior
+      fork
+        begin
+          cfg.clk_rst_vif.wait_clks(1);
+          fifo_empty_intr = pre_fifo_empty_intr;
+        end
+      join_none
+
+      // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
+      // have the priority in case full is set at the same moment
+      if (hmac_fifo_empty || hmac_start_posedge || hmac_process_posedge ||
+          hmac_stopped_posedge || hmac_continue_posedge) begin
+        fifo_full_detected = 0;
+      end else if (hmac_fifo_full) begin
+        fifo_full_detected = 1;
+      end
+    end
+  endtask : hmac_process_fifo_status
+
+  // Spawn process to check interrupt pins in test mode
+  virtual task hmac_intr_test();
+    foreach (intr_test[intr_i]) begin
+      fork begin
+        hmac_intr_test_pin(intr_i);
+      end join_none
+    end
+  endtask : hmac_intr_test
+
+  // Check interrupt pins in test mode
+  virtual task hmac_intr_test_pin(int intr_i);
+    hmac_intr_e intr = hmac_intr_e'(intr_i);
+    forever @(intr_test[intr_i]) begin
+      if (intr_test[intr_i]) begin
+        // Check interrupt state pins only if enabled
+        if (`gmv(ral.intr_enable)[intr_i]) begin
+          fork: intr_pins
+            begin
+              wait(cfg.intr_vif.pins[intr_i]);
+              `uvm_info(`gfn, $sformatf("Detected interrupt on pin %s", intr.name()), UVM_HIGH)
+            end
+            begin
+              cfg.clk_rst_vif.wait_clks(100); // 100 clk cycles timeout
+              `uvm_error(`gfn, $sformatf("Wait pin interrupt timeout for %s", intr.name()))
+            end
+          join_any
+          disable fork;
         end
       end
     end
-  endtask
+  endtask : hmac_intr_test_pin
 
   // internal msg_fifo model to check fifo status and interrupt.
   // monitor rd_cnt and wr_cnt on the negedge of the clk
