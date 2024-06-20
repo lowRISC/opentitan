@@ -117,6 +117,9 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
 
+    // Tidy up by making sure that ndmreset isn't currently being asserted (to avoid confusion in
+    // any sequence that follows us in a stress_all test)
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(0));
   endtask : body
 
 endclass : rv_dm_smoke_vseq
