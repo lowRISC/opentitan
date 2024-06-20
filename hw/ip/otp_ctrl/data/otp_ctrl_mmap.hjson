@@ -334,7 +334,8 @@
                     size: "12" // 2 settings per alert (disabled, fatal), 4 bit per setting, space for 12 alerts (currently 11 used)
                 }
                 {
-                    // Datatype: Mubi4.
+                    // Datatype: Two packed Mubi4s:
+                    // [ret-ram readback enable][main sram readback en].
                     name: "OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
                     size: "4"
                 }

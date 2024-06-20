@@ -33,6 +33,10 @@ void retention_sram_init(void) {
   abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, reg);
 }
 
+void retention_sram_readback_enable(uint32_t en) {
+  abs_mmio_write32(kBase + SRAM_CTRL_READBACK_REG_OFFSET, en);
+}
+
 void retention_sram_scramble(void) {
   // Request the renewal of the scrambling key and initialization to random
   // values.
