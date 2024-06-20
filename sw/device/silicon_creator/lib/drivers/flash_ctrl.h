@@ -59,8 +59,8 @@ typedef enum flash_ctrl_partition {
 /**
  * Table of flash information pages.
  *
- * Columns: Name, value, bank index, page index.
- * We use an X macro to faciliate writing enums, swtich statements, and unit
+ * Columns: Name, bank index, page index.
+ * We use an X macro to faciliate writing enums, switch statements, and unit
  * tests using the contants here. All information pages in this table are of
  * type 0 since silicon creator code does not need to access information pages
  * of other types.
