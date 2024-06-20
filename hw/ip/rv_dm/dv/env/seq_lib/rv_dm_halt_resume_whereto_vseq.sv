@@ -18,13 +18,6 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(tl_mem_ral.halted), .value(hartsel));
   endtask
 
-  // Read the abstractcs register over DMI
-  task read_abstractcs(output abstractcs_t ret);
-    uvm_reg_data_t rdata;
-    csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
-    ret = dm::abstractcs_t'(rdata);
-  endtask
-
   // Check whether the debugger reports itself to be busy through the abstractcs register
   task check_busy(bit exp_busy);
     abstractcs_t abstractcs;

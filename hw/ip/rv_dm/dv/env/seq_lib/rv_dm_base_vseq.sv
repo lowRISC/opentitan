@@ -265,4 +265,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Read the abstractcs register over DMI
+  task read_abstractcs(output abstractcs_t value);
+    uvm_reg_data_t raw;
+    csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(raw));
+    value = abstractcs_t'(raw);
+  endtask
+
 endclass : rv_dm_base_vseq
