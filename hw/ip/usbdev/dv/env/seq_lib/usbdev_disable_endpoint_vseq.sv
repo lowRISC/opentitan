@@ -33,7 +33,7 @@ class usbdev_disable_endpoint_vseq extends usbdev_spray_packets_vseq;
   }
 
   // Ensure that we choose a disabled endpoint.
-  virtual function choose_target();
+  virtual function void choose_target();
     bit [3:0] init_ep;
     super.choose_target();
     // Choose a disabled endpoint, but start looking from the unconstrained random choice so that

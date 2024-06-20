@@ -147,8 +147,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   // -------------------------------
   virtual task compare_usb20_pkt(usb20_item item);
     if (predict_errors(item)) begin
-      actual_pkt_q.pop_front();
-      expected_pkt_q.pop_front();
+      void'(actual_pkt_q.pop_front());
+      void'(expected_pkt_q.pop_front());
       return;
     end
     if (actual_pkt_q.size() > 0) begin

@@ -35,17 +35,17 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   constraint in_and_out_c {
     // OUT data is returned as IN data on the same endpoint.
     (ep_in_enabled & ep_out_enabled) != 0;
-  };
+  }
 
   // Ensure that all streams are bidirectional; no OUT endpoints without corresponding IN endpoints
   // and vice-versa.
   constraint bidir_only_c {
     ep_in_enabled == ep_out_enabled;
-  };
+  }
 
   constraint ep_iso_enabled_c {
     ep_iso_enabled == 0;
-  };
+  }
 
   // Bitmap of available buffers that are not presently assigned to the DUT.
   bit [NumBuffers-1:0] buf_avail;

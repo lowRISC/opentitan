@@ -25,7 +25,7 @@ class usbdev_setup_priority_vseq extends usbdev_base_vseq;
   endtask
 
   // Retain the packet properties for subsequent checking.
-  function retain_packet(bit [3:0] ep, bit setup, ref byte unsigned data[]);
+  function void retain_packet(bit [3:0] ep, bit setup, ref byte unsigned data[]);
     rx_packet_t rx;
     // The randomized packet data that was transmitted to the DUT.
     rx.ep = ep;

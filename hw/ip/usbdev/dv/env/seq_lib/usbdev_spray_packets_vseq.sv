@@ -80,7 +80,7 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
   // transaction.
   // To be overridden by any child sequence that wishes to constrain the choice of target, endpoint
   // and/or transaction type, and/or constraints may be added to their randomization.
-  virtual function choose_target();
+  virtual function void choose_target();
     `DV_CHECK_STD_RANDOMIZE_FATAL(target_addr)
     `DV_CHECK_STD_RANDOMIZE_FATAL(target_ep)
     `DV_CHECK_STD_RANDOMIZE_FATAL(txn_type)
@@ -225,7 +225,7 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
       // Check the properties and content of the received packet, observing that we do not know
       // into which buffer the packet will have been received.
       check_rxfifo_packet(exp_rx[0].ep, exp_rx[0].setup, exp_rx[0].data, rx_fifo_read);
-      exp_rx.pop_front();
+      void'(exp_rx.pop_front());
       rx_cnt++;
       // Release the buffer that was used.
       buf_release(act_buffer_id);

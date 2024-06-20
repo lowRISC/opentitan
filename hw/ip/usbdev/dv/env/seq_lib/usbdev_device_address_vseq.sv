@@ -20,9 +20,9 @@ class usbdev_device_address_vseq extends usbdev_spray_packets_vseq;
     (ep_out_enable & rxenable_setup & ~out_stall) != 0;  // At least one receptive SETUP endpoint.
     (ep_out_enable & rxenable_out &   ~out_stall) != 0;  // At least one receptive OUT endpoint.
     (ep_in_enable  &                   ~in_stall) != 0;  // At least one receptive IN endpoint.
-  };
+  }
 
-  virtual function choose_target();
+  virtual function void choose_target();
     super.choose_target();
     if (hit) target_addr = dev_addr;
     else `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(target_addr, target_addr != dev_addr;)
