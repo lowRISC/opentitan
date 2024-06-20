@@ -756,7 +756,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit [3:0] digest_size = `gmv(ral.cfg.digest_size),
     bit [5:0] key_length  = `gmv(ral.cfg.key_length));
     bit [7:0] msg_tmp[];
+    bit [TL_DW-1:0] big_endian_key[NUM_KEYS];
     exp_digest = '{default:0}; // clear previous expected digest
+
+    // Swap the key when required according to the dedicated register field CFG.key_swap
+    if (`gmv(ral.cfg.key_swap)) begin
+      `uvm_info(`gfn, "Swap the key from little-endian to big-endian", UVM_HIGH)
+      foreach (big_endian_key[key_i]) begin
+        big_endian_key[key_i] = {<<8{key[key_i]}};
+      end
+    end else begin
+      `uvm_info(`gfn, "Keep the key in big-endian", UVM_HIGH)
+      big_endian_key = key;
+    end
 
     `uvm_info(`gfn, $sformatf("Computing digest prediction"), UVM_LOW)
 
@@ -765,41 +777,42 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       2'b11: begin
         if (digest_size == SHA2_256) begin
           if (key_length == Key_128) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:3], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:3], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_256) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:7], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:7], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_384) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:11], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:11], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_512) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:15], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:15], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_1024) begin
             // model how the HW will limit key length to max of block size
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:15], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:15], msg_i, exp_digest[0:7]);
           end
         end else if (digest_size == SHA2_384) begin
           if (key_length == Key_128) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:3], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:3], msg_i, exp_digest[0:11]);
           if (key_length == Key_256) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:7], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:7], msg_i, exp_digest[0:11]);
           if (key_length == Key_384) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:11], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:11], msg_i, exp_digest[0:11]);
           if (key_length == Key_512) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:15], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:15], msg_i, exp_digest[0:11]);
           if (key_length == Key_1024) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:31], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:31], msg_i, exp_digest[0:11]);
         end else if (digest_size == SHA2_512) begin
           if (key_length == Key_128) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:3], msg_i, exp_digest);
+                                                    big_endian_key[0:3], msg_i, exp_digest);
           if (key_length == Key_256) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:7], msg_i, exp_digest);
+                                                    big_endian_key[0:7], msg_i, exp_digest);
           if (key_length == Key_384) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:11], msg_i, exp_digest);
+                                                    big_endian_key[0:11], msg_i, exp_digest);
           if (key_length == Key_512) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:15], msg_i, exp_digest);
+                                                    big_endian_key[0:15], msg_i, exp_digest);
           if (key_length == Key_1024) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:31], msg_i, exp_digest);
+                                                    big_endian_key[0:31], msg_i, exp_digest);
         end
-        `uvm_info(`gfn, $sformatf("HMAC of key=%p, msg_i=%p: %p", key, msg_i, exp_digest), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("HMAC of key=%p (key_swap=%1b), msg_i=%p: %p",
+                                  key, `gmv(ral.cfg.key_swap), msg_i, exp_digest), UVM_LOW)
       end
       2'b01: begin
         if (digest_size == SHA2_256) begin
