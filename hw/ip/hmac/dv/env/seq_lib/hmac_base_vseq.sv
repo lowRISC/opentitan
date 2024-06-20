@@ -28,13 +28,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   rand bit [5:0]          key_length;
   rand bit                endian_swap;
   rand bit                digest_swap;
-  // TODO (issue #23245): verify key_swap
   rand bit                key_swap;
 
   // Local variables
   // Keep context configuration while testing Save and Restore feature
   local bit               endian_swap_bak;
   local bit               digest_swap_bak;
+  local bit               key_swap_bak;
   local bit [3:0]         digest_size_bak;
   local bit [5:0]         key_length_bak;
   local bit [TL_DW-1:0]   key_bak[];
@@ -647,6 +647,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     hmac_base_vseq  rand_cfg;     // Only here to randomize variables
     bit             endian_swap_tmp;
     bit             digest_swap_tmp;
+    bit             key_swap_tmp;
     bit [3:0]       digest_size_tmp;
     bit [5:0]       key_length_tmp;
     bit [TL_DW-1:0] key_tmp[];
@@ -659,11 +660,19 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     if (save_current_cfg) begin
       endian_swap_tmp = `gmv(ral.cfg.endian_swap);
       digest_swap_tmp = `gmv(ral.cfg.digest_swap);
+      key_swap_tmp    = `gmv(ral.cfg.key_swap);
       digest_size_tmp = `gmv(ral.cfg.digest_size);
       key_length_tmp  = `gmv(ral.cfg.key_length);
       key_tmp         = new[get_key_length(key_length_tmp)/TL_DW];
       for (int i=0; i<key_tmp.size(); i++) begin
         key_tmp[i] = secret_key_probe[NUM_KEYS*TL_DW-i*TL_DW-1 -: TL_DW];
+      end
+      // As the probed secret key from the HDL is already swapped, a swap back to the original
+      // value has to be performed
+      if (key_swap_tmp) begin
+        foreach (key_tmp[key_i]) begin
+          key_tmp[key_i] = {<<8{key_tmp[key_i]}};
+        end
       end
     end
 
@@ -671,6 +680,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     if (restore_previous_cfg) begin
       ral.cfg.endian_swap.set(endian_swap_bak);
       ral.cfg.digest_swap.set(digest_swap_bak);
+      ral.cfg.key_swap.set(key_swap_bak);
       ral.cfg.digest_size.set(digest_size_bak);
       ral.cfg.key_length.set(key_length_bak);
       csr_update(.csr(ral.cfg));
@@ -691,6 +701,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       // Write into registers
       ral.cfg.endian_swap.set(rand_cfg.endian_swap);
       ral.cfg.digest_swap.set(rand_cfg.digest_swap);
+      ral.cfg.key_swap.set(rand_cfg.key_swap);
       ral.cfg.digest_size.set(rand_cfg.digest_size);
       ral.cfg.key_length.set(rand_cfg.key_length);
       csr_update(.csr(ral.cfg));
@@ -698,14 +709,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       `uvm_info(`gfn, $sformatf("SAR context B - digest size=%s, key length=%0d",
                 get_digest_size(rand_cfg.digest_size),
                 get_key_length(rand_cfg.key_length)), UVM_LOW)
-      `uvm_info(`gfn, $sformatf("SAR context B - endian/digest_swap=%b",
-                {rand_cfg.endian_swap, rand_cfg.digest_swap}), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("SAR context B - endian/digest/key_swap=%b",
+                {rand_cfg.endian_swap, rand_cfg.digest_swap, rand_cfg.key_swap}), UVM_LOW)
       `uvm_info(`gfn, $sformatf("SAR context B - key=%p", rand_cfg.key), UVM_LOW)
     end
 
     // Copy over into the previous config variables
     endian_swap_bak = endian_swap_tmp;
     digest_swap_bak = digest_swap_tmp;
+    key_swap_bak    = key_swap_tmp;
     digest_size_bak = digest_size_tmp;
     key_length_bak  = key_length_tmp;
     key_bak         = key_tmp;
