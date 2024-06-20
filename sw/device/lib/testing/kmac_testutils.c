@@ -39,7 +39,8 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac,
                              const char *custom_string,
                              const size_t custom_string_len,
                              const char *message, const size_t message_len,
-                             const size_t output_len, uint32_t *output) {
+                             const size_t output_len, uint32_t *output,
+                             uint32_t *capacity) {
   // Initialize customization string.
   dif_kmac_customization_string_t kmac_custom_string;
   TRY(dif_kmac_customization_string_init(custom_string, custom_string_len,
@@ -58,7 +59,8 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac,
 
   // Get the output ("squeeze" stage) and check that KMAC doesn't report an
   // error.
-  TRY(dif_kmac_squeeze(kmac, &operation_state, output, output_len, NULL));
+  TRY(dif_kmac_squeeze(kmac, &operation_state, output, output_len, NULL,
+                       capacity));
   TRY(kmac_testutils_check_error(kmac));
 
   // End the operation and check that KMAC doesn't report an error.

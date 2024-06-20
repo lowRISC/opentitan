@@ -672,7 +672,8 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
 
 dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
                               dif_kmac_operation_state_t *operation_state,
-                              uint32_t *out, size_t len, size_t *processed) {
+                              uint32_t *out, size_t len, size_t *processed,
+                              uint32_t *capacity) {
   if (kmac == NULL || operation_state == NULL || (out == NULL && len != 0)) {
     return kDifBadArg;
   }
@@ -768,6 +769,21 @@ dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
     len -= n;
     if (processed != NULL) {
       *processed += n;
+    }
+    // Read also the capacity of the state, if non-NULL buffer is given.
+    // This is only useful for testing that capacity is not leaked during
+    // sideloaded KMAC operations.
+    if (capacity != NULL) {
+      ptrdiff_t capacity_offset =
+          KMAC_STATE_REG_OFFSET +
+          (ptrdiff_t)operation_state->r * (ptrdiff_t)sizeof(uint32_t);
+      for (int i = 0; i < kDifKmacStateWords - operation_state->r; ++i) {
+        uint32_t share0 = mmio_region_read32(base, capacity_offset);
+        uint32_t share1 = mmio_region_read32(
+            base, capacity_offset + kDifKmacStateShareOffset);
+        *capacity++ = share0 ^ share1;
+        capacity_offset += sizeof(uint32_t);
+      }
     }
   }
   return kDifOk;
