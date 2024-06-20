@@ -464,8 +464,8 @@
       desc: '''
             Verify that if a CRC error occurred then rx_crc_err will raise.
 
-            - send a packet(token/handshake/data) to the device while intentionally corrupting any of the CRC bits.
-            - Verify that the rx_crc_err should go high following the reception of erroneous packet.
+            - Send a token/data packet to the device while intentionally corrupting any of the CRC bits.
+            - Verify that the rx_crc_err goes high following the reception of the invalid packet.
             '''
       stage: V2
       tests: ["usbdev_rx_crc_err"]
