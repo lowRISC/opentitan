@@ -31,12 +31,6 @@ class usb20_monitor extends dv_base_monitor #(
     m_token_pkt.m_ev_type = EvPacket;
     m_data_pkt.m_ev_type = EvPacket;
     m_handshake_pkt.m_ev_type = EvPacket;
-    // TODO: presently we do not expect any invalid SYNC signals, but at some point we should be
-    // testing that the DUT correctly ignores such packets/interference.
-    m_sof_pkt.valid_sync = 1;
-    m_token_pkt.valid_sync = 1;
-    m_data_pkt.valid_sync = 1;
-    m_handshake_pkt.valid_sync = 1;
     if (!uvm_config_db#(virtual usb20_block_if)::get(this, "*.env.m_usb20_agent*", "bif",
                                                      cfg.bif)) begin
       `uvm_fatal(`gfn, "failed to get usb20_block_if handle from uvm_config_db")
@@ -302,6 +296,11 @@ class usb20_monitor extends dv_base_monitor #(
     if (destuffed_packet.size() == 32) begin
       m_sof_pkt.framenum = {<<{destuffed_packet[8:18]}};
       m_sof_pkt.crc5 = {<<{destuffed_packet[3:7]}};
+      if (!m_sof_pkt.valid_crc()) begin
+        // Informational report; the scoreboard may check this using `valid_crc().`
+        `uvm_info(`gfn, $sformatf("Detected SOF packet CRC5 mismatch (0x%0x, expected 0x%0x)",
+                                  m_sof_pkt.crc5, m_sof_pkt.exp_crc()), UVM_MEDIUM)
+      end
       m_sof_pkt.valid_length = 1;
     end else m_sof_pkt.valid_length = 0;
 
@@ -320,6 +319,11 @@ class usb20_monitor extends dv_base_monitor #(
       m_token_pkt.address = {<<{destuffed_packet[12:18]}};
       m_token_pkt.endpoint = {<<{destuffed_packet[8:11]}};
       m_token_pkt.crc5 = {<<{destuffed_packet[3:7]}};
+      if (!m_token_pkt.valid_crc()) begin
+        // Informational report; the scoreboard may check this using `valid_crc().`
+        `uvm_info(`gfn, $sformatf("Detected token packet CRC5 mismatch (0x%0x, expected 0x%0x)",
+                                  m_token_pkt.crc5, m_token_pkt.exp_crc()), UVM_MEDIUM)
+      end
       m_token_pkt.valid_length = 1;
     end else m_token_pkt.valid_length = 0;
 
@@ -350,11 +354,16 @@ class usb20_monitor extends dv_base_monitor #(
       // Bits_to_byte conversion of data
       byte_data = {>>byte{data}};
       m_data_pkt.data = byte_data;
-      // Crc16
+      // Collect the actual CRC16.
       for (int i= 0; i < 16; i = i+1) begin
         data_crc16[i] = destuffed_packet[i + 16 + data.size()];
       end
       m_data_pkt.crc16 = data_crc16;
+      if (!m_data_pkt.valid_crc()) begin
+        // Informational report; the scoreboard may check this using `valid_crc().`
+        `uvm_info(`gfn, $sformatf("Detected DATA packet CRC16 mismatch (0x%0x, expected 0x%0x)",
+                                  data_crc16, m_data_pkt.exp_crc()), UVM_MEDIUM)
+      end
       m_data_pkt.valid_length = 1;
     end else m_data_pkt.valid_length = 0;
 
