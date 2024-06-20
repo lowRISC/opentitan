@@ -8,7 +8,7 @@ description: "2-input glitch free clock multiplexer"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:prim_pkg
+      - lowrisc:prim:clock_gating
     files:
       - rtl/prim_clock_gp_mux2.sv
     file_type: systemVerilogSource

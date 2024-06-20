@@ -13,6 +13,8 @@ filesets:
       - lowrisc:prim:clock_div
       - lowrisc:systems:ast
       - lowrisc:systems:scan_role_pkg
+      - lowrisc:prim:prim_pkg_legacy
+      - lowrisc:prim_generic:all
 
     files:
       - rtl/chip_earlgrey_verilator.sv: { file_type: systemVerilogSource }

@@ -75,7 +75,7 @@ module tb;
 
   // Instantitate the memory backdoor util instance.
   `define ROM_CTRL_MEM_HIER \
-    tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic.mem
+    tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.mem
 
   initial begin
     mem_bkdr_util m_mem_bkdr_util;

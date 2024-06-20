@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:flop"
 description: "Xilinx flop"
+virtual:
+  - lowrisc:prim:flop
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_xilinx_flop.sv
+      - rtl/prim_flop.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

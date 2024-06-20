@@ -46,6 +46,7 @@ generate:
     parameters:
       name: entropy_src
       ip_hjson: ../../data/entropy_src.hjson
+    position: prepend
 
 targets:
   default:

@@ -5,4 +5,4 @@
 
 `verilator_config
 
-lint_off -rule UNUSED -file "*/rtl/prim_generic_clock_mux2.sv" -match "Parameter is not used: 'NoFpgaBufG'"
+lint_off -rule UNUSED -file "*/rtl/prim_clock_mux2.sv" -match "Parameter is not used: 'NoFpgaBufG'"

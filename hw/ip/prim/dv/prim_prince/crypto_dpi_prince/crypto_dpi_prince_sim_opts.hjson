@@ -11,12 +11,12 @@
   build_modes: [
     {
       name: vcs_crypto_dpi_prince_build_opts
-      build_opts: ["-CFLAGS -I{build_dir}/src/{crypto_prince_ref_src_dir}"]
+      build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/{crypto_prince_ref_src_dir}"]
     }
 
     {
       name: xcelium_crypto_dpi_prince_build_opts
-      build_opts: ["-I{build_dir}/src/{crypto_prince_ref_src_dir}"]
+      build_opts: ["-I{build_dir}/fusesoc-work/src/{crypto_prince_ref_src_dir}"]
     }
   ]
 }

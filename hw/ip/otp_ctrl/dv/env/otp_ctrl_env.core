@@ -50,6 +50,7 @@ generate:
     parameters:
       name: otp_ctrl
       ip_hjson: ../../data/otp_ctrl.hjson
+    position: prepend
 
 targets:
   default:

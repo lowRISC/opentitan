@@ -8,10 +8,10 @@
                        "run",
                        "{sv_flist_gen_flags}",
                        "--target=sim",
-                       "--build-root={build_dir}",
+                       "--work-root={build_dir}/fusesoc-work",
                        "--setup {fusesoc_core}"]
   fusesoc_cores_root_dirs: ["--cores-root {proj_root}"]
-  sv_flist_gen_dir:   "{build_dir}/sim-vcs"
+  sv_flist_gen_dir:   "{build_dir}/fusesoc-work"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
   sv_flist_gen_flags: ["--flag=fileset_{design_level}"]
 }

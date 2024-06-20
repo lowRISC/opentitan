@@ -41,11 +41,11 @@ ninja-build
 openssl
 perl
 pkgconf
-python3
 python3-pip
 python3-setuptools
 python3-urllib3
 python3-wheel
+python3.9-full
 srecord
 tree
 xsltproc

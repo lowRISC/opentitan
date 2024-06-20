@@ -178,16 +178,19 @@ cython==3.0.1 \
 distro==1.8.0 \
     --hash=sha256:02e111d1dc6a50abb8eed6bf31c3e48ed8b0830d1ea2a1b78c61765c2513fdd8 \
     --hash=sha256:99522ca3e365cac527b44bde033f64c6945d90eb9f769703caaec52b09bbd3ff
-edalize @ https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip \
-    --hash=sha256:da816ef1040d8063d4aa7377ef1fea33f0bffeca1f79a68b7a8930ef9d90c7c8
+edalize==0.5.4 \
+    --hash=sha256:0ac5bac1955afb28d1c7191298a30e799268ce96c0c42e25d4d95b3eaa4e9862
 enlighten==1.10.2 \
     --hash=sha256:7a5b83cd0f4d095e59d80c648ebb5f7ffca0cd8bcf7ae6639828ee1ad000632a \
     --hash=sha256:b237fe562b320bf9f1d4bb76d0c98e0daf914372a76ab87c35cd02f57aa9d8c1
+fastjsonschema==2.19.1 \
+    --hash=sha256:3672b47bc94178c9f23dbb654bf47440155d4db9df5f7bc47643315f9c405cd0 \
+    --hash=sha256:e3126a94bdc4623d3de4485f8d468a12f02a67921315ddc87836d6e456dc789d
 flake8==5.0.4 \
     --hash=sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db \
     --hash=sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248
-fusesoc @ https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip \
-    --hash=sha256:6d1d9b202748d160bc6da70ea8cf7a700ca80e1e7e4a78cbc1ec039bde595c65
+fusesoc @ https://github.com/a-will/fusesoc/releases/download/2.3-dev0%2Ba-will/fusesoc-2.3.dev0+a.will-py3-none-any.whl \
+    --hash=sha256:f7cd8dd3ca0b943edef2e98685d3abb58d105d7e2aa035fe2b70335eba0e9f72
 gitdb==4.0.10 \
     --hash=sha256:6eb990b69df4e15bad899ea868dc46572c3f75339735663b81de79b06f17eb9a \
     --hash=sha256:c286cf298426064079ed96a9e4a9d39e7f3e9bf15ba60701e95f5492f28415c7
@@ -218,6 +221,9 @@ jinja2==3.1.2 \
 jsonschema==4.17.3 ; python_version >= "3.7" \
     --hash=sha256:0f864437ab8b6076ba6707453ef8f98a6a0d512a80e93f8abdb676f737ecb60d \
     --hash=sha256:a870ad254da1a8ca84b6a2905cac29d265f805acc57af304784962a2aa6508f6
+jsonschema2md==1.1.0 \
+    --hash=sha256:2386fc4d119330686db3989ea497ab96a4defb6388386fc0ceff756b5c1a66a7 \
+    --hash=sha256:e89edf2de1bc7fc3e842915c7c29b7b70888555a87002eccc06350c0412a1458
 libclang==16.0.0 \
     --hash=sha256:2adce42ae652f312245b8f4eda6f30b4076fb61f7619f2dfd0a0c31dee4c32b9 \
     --hash=sha256:65258a6bb3e7dc31dc9b26f8d42f53c9d3b959643ade291fcd1aef4855303ca6 \
