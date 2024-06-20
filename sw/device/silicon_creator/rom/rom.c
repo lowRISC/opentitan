@@ -646,8 +646,10 @@ static rom_error_t rom_try_boot(void) {
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
   uint32_t flash_exec = 0;
 
+  rom_error_t slot[2] = {0, 0};
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
+  slot[0] = error;
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
 
   if (launder32(error) == kErrorOk) {
@@ -660,13 +662,28 @@ static rom_error_t rom_try_boot(void) {
   }
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
-  HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
+  error = rom_verify(manifests.ordered[1], &flash_exec);
+  slot[1] = error;
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
-  HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
-  return kErrorRomBootFailed;
+  if (launder32(error) == kErrorOk) {
+    HARDENED_CHECK_EQ(error, kErrorOk);
+    CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
+    CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
+    HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
+    return kErrorRomBootFailed;
+  }
+
+  // If we get here, we failed to validate both slots.
+  // If we see kErrorBootPolicyBadIdentifier as the error, we probably have an
+  // empty slot.  In that case, the "bad identifier" error is not helpful, so
+  // maybe choose the error from the other slot.
+  if (error == kErrorBootPolicyBadIdentifier && error == slot[1]) {
+    // If the bad identifier error comes from the non-primary slot, prefer
+    // the error from the primary slot.
+    error = slot[0];
+  }
+  return error;
 }
 
 void rom_main(void) {
