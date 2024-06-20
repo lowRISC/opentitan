@@ -138,6 +138,28 @@ static const unsigned char *kEndorsedTpmCerts[] = {
     endorsed_certs.tpm_cik_certificate,
 };
 
+/**
+ * Certificates flash info page layout.
+ */
+static const char *kDiceCertNames[] = {"UDS", "CDI_0", "CDI_1"};
+static const char *kTpmCertNames[] = {"EK", "CEK", "CIK"};
+static const cert_flash_info_layout_t kCertFlashInfoLayout[] = {
+    {
+        .info_page = &kFlashCtrlInfoPageDiceCerts,
+        .num_certs = 3,
+        .group_name = "DICE",
+        .names = kDiceCertNames,
+        .certs = kEndorsedDiceCerts,
+    },
+    {
+        .info_page = &kFlashCtrlInfoPageTpmCerts,
+        .num_certs = 3,
+        .group_name = "TPM",
+        .names = kTpmCertNames,
+        .certs = kEndorsedTpmCerts,
+    },
+};
+
 static void log_self_hash(void) {
   // clang-format off
   LOG_INFO("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
@@ -302,21 +324,15 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
   serdes_sha256_hash_t hash;
   hmac_sha256_init();
 
-  // Push DICE certificates into the hash (each resides on a separate page).
-  uint32_t page_offset = 0;
-  for (size_t i = 0; i < ARRAYSIZE(kEndorsedDiceCerts); i++) {
-    TRY(hash_certificate(&kFlashCtrlInfoPageDiceCerts, page_offset,
-                         &cert_size));
-    page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
-    page_offset = util_round_up_to(page_offset, 3);
-  }
-
-  // Push TPM certificates into the hash (all reside on the same page).
-  page_offset = 0;
-  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
-    TRY(hash_certificate(&kFlashCtrlInfoPageTpmCerts, page_offset, &cert_size));
-    page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
-    page_offset = util_round_up_to(page_offset, 3);
+  // Push all certificates into the hash.
+  for (size_t i = 0; i < ARRAYSIZE(kCertFlashInfoLayout); i++) {
+    uint32_t page_offset = 0;
+    const cert_flash_info_layout_t curr_layout = kCertFlashInfoLayout[i];
+    for (size_t j = 0; j < curr_layout.num_certs; j++) {
+      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_size));
+      page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
+      page_offset = util_round_up_to(page_offset, 3);
+    }
   }
 
   // Log the final hash of all certificates to the host and console.
@@ -445,49 +461,29 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
-  // DICE Certificates (all on the same page).
-  uint32_t page_offset = 0;
-  for (size_t i = 0; i < ARRAYSIZE(kEndorsedDiceCerts); i++) {
-    const char *names[] = {"UDS", "CDI_0", "CDI_1"};
-    // Number of words necessary for certificate storage.
-    uint32_t cert_size_words = util_size_to_words(
-        cert_x509_asn1_decode_size_header(kEndorsedDiceCerts[i]));
-    uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
+  for (size_t i = 0; i < ARRAYSIZE(kCertFlashInfoLayout); i++) {
+    uint32_t page_offset = 0;
+    const cert_flash_info_layout_t curr_layout = kCertFlashInfoLayout[i];
+    for (size_t j = 0; j < curr_layout.num_certs; j++) {
+      // Number of words necessary for certificate storage.
+      uint32_t cert_size_words = util_size_to_words(
+          cert_x509_asn1_decode_size_header(curr_layout.certs[j]));
+      uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
 
-    if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
-      LOG_ERROR("DICE %s Certificate did not fit into the info page.",
-                names[i]);
-      return OUT_OF_RANGE();
+      if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+        LOG_ERROR("%s %s certificate did not fit into the info page.",
+                  curr_layout.group_name, curr_layout.names[j]);
+        return OUT_OF_RANGE();
+      }
+      TRY(flash_ctrl_info_write(curr_layout.info_page, page_offset,
+                                cert_size_words, curr_layout.certs[j]));
+      LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
+               curr_layout.names[j]);
+      page_offset += cert_size_bytes;
+
+      // Each certificate must be 8 bytes aligned (flash word size).
+      page_offset = util_round_up_to(page_offset, 3);
     }
-    TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageDiceCerts, page_offset,
-                              cert_size_words, kEndorsedDiceCerts[i]));
-    LOG_INFO("Imported DICE %s certificate.", names[i]);
-    page_offset += cert_size_bytes;
-
-    // Each certificate must be 8 bytes aligned (flash word size).
-    page_offset = util_round_up_to(page_offset, 3);
-  }
-
-  // TPM Certificates (all on the same flash INFO page).
-  page_offset = 0;
-  for (size_t i = 0; i < ARRAYSIZE(kEndorsedTpmCerts); i++) {
-    const char *names[] = {"EK", "CEK", "CIK"};
-    // Number of words necessary for certificate storage.
-    uint32_t cert_size_words = util_size_to_words(
-        cert_x509_asn1_decode_size_header(kEndorsedTpmCerts[i]));
-    uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
-
-    if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
-      LOG_ERROR("TPM %s Certificate did not fit into the info page.", names[i]);
-      return OUT_OF_RANGE();
-    }
-    TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageTpmCerts, page_offset,
-                              cert_size_words, kEndorsedTpmCerts[i]));
-    LOG_INFO("Imported TPM %s certificate.", names[i]);
-    page_offset += cert_size_bytes;
-
-    // Each certificate must be 8 bytes aligned (flash word size).
-    page_offset = util_round_up_to(page_offset, 3);
   }
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in

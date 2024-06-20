@@ -49,6 +49,32 @@ enum {
 };
 
 /**
+ * Defines a grouping of certificates onto a single flash info page.
+ */
+typedef struct cert_flash_info_layout {
+  /**
+   * The flash info page a group of certificates will be written too.
+   */
+  const flash_ctrl_info_page_t *info_page;
+  /**
+   * The number of certificates that will be written to the flash info page.
+   */
+  size_t num_certs;
+  /**
+   * A name string for the group of certificates (e.g., "DICE" or "TPM").
+   */
+  const char *group_name;
+  /**
+   * A array of name strings, one for each certificate in the group.
+   */
+  const char **names;
+  /**
+   * An array of buffer pointers, where each buffer holds a single certificate.
+   */
+  const unsigned char **certs;
+} cert_flash_info_layout_t;
+
+/**
  * Decodes the ASN1 size header word to extract the number of bytes contained in
  * the ASN1 blob.
  *
