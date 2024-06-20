@@ -304,8 +304,8 @@
             Verify that the debugger can issue a non-debug reset to the rest of the system.
 
             - Set lc_hw_debug_en / pinmux_hw_debug_en to true value and activate the dm.
-            - Pick a random set of write/readable CSRs in all 3 RALs (JTAG DMI, regs RAL and debug
-              mem RAL). Write known values to them.
+            - Pick a random set of write/readable CSRs in the debug RALs (JTAG DMI and debug
+              memory). Write known values to them.
             - Write the dmcontrol register to assert ndmreset - verify that the ndmreset output
               is asserted.
             - Mimic the CPU going into reset by asserting the unavailable input.
