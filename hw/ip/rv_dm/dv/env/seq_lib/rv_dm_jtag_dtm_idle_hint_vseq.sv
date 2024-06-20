@@ -38,9 +38,12 @@ class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
     cfg.m_jtag_agent_cfg.min_rti = 1;
 
     // Write some arbitrary data words over DMI
-    csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(32'h0d158c94));
-    csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(32'h0d000c84));
-    csr_wr(.ptr(jtag_dmi_ral.command), .value(32'h0d000c84));
+    repeat (4) begin
+      randcase
+        1: csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(32'h0d158c94));
+        1: csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(32'h0d000c84));
+      endcase
+    end
 
     // Read dtmcs back again and check that dmistat is zero (no error)
     check_dmistat(2'h0);
