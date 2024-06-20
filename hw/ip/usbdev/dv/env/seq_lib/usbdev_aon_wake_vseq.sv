@@ -14,7 +14,7 @@ class usbdev_aon_wake_vseq extends usbdev_link_suspend_vseq;
     // Weighted to make 'no delay' a more frequent occurrence,
     // by treating all negative values as per zero.
     stim_delay_clks >= -50 && stim_delay_clks <= 2000;
-  };
+  }
 
   // Delay before optional reconnection of VBUS after disconnection.
   rand int disconn_interval_clks;
