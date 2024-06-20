@@ -31,9 +31,14 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /*
- TO BE FILLED IN
+ * Checks the result of getting an otp programming error, as when attempting
+ * to flip a bit to zero. The SV side injects an error on an otherwise okay
+ * transition request.
+ *
+ * There should be a reset caused by an lc_ctrl fatal alert, but the only
+ * trace of that is found in the rstmgr's alert dump. The lc state should
+ * not change.
  */
-
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -50,6 +55,8 @@ enum {
   kScratchFunction = 0,
   // Scratch area used for fault_checker ip_inst.
   kScratchIpInst = 1,
+  // Scratch area used for the current lc state, to check it doesn't change.
+  kScratchLcState = 2,
 };
 
 static dif_alert_handler_t alert_handler;
@@ -336,17 +343,33 @@ bool test_main(void) {
                                              kDifRvCoreIbexNmiSourceWdog));
 
     // Initiate transition into scrap
-    dif_lc_ctrl_token_t zero_token = {0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0};
+
+    // Get current lc state and save it to retention sram.
+    dif_lc_ctrl_state_t state;
+    CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &state));
+    CHECK_STATUS_OK(
+        ret_sram_testutils_scratch_write(kScratchLcState, 1, &state));
 
     // DV sync message
     LOG_INFO("Begin life cycle transition");
 
     // Mutex acquire should always succeed, there are no competing agents
     CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc_ctrl));
-    CHECK_DIF_OK(dif_lc_ctrl_configure(&lc_ctrl, kDifLcCtrlStateScrap, false,
-                                       &zero_token));
+
+    // Attempt a transition to scrap.
+    CHECK_DIF_OK(
+        dif_lc_ctrl_configure(&lc_ctrl, kDifLcCtrlStateScrap, false, NULL));
+    LOG_INFO("Configuring lc transition to scrap state");
     CHECK_DIF_OK(dif_lc_ctrl_transition(&lc_ctrl));
+
+    dif_lc_ctrl_status_t lc_status;
+    CHECK_DIF_OK(dif_lc_ctrl_get_status(&lc_ctrl, &lc_status));
+    CHECK((lc_status & ((1 << kDifLcCtrlStatusCodeTooManyTransitions) |
+                        (1 << kDifLcCtrlStatusCodeInvalidTransition) |
+                        (1 << kDifLcCtrlStatusCodeBadToken) |
+                        (1 << kDifLcCtrlStatusCodeFlashRmaError))) == 0,
+          "Got unexpected lc-side error");
+    LOG_INFO("lc STATUS:0x%x", lc_status);
 
     // halt execution
     wait_for_interrupt();
@@ -391,6 +414,14 @@ bool test_main(void) {
 
     // Check the escalation alert cause from alert dump is as expected.
     check_alert_dump();
+
+    // Check that the lc state didn't change.
+    dif_lc_ctrl_state_t state;
+    dif_lc_ctrl_state_t prior_state;
+    CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &state));
+    CHECK_STATUS_OK(ret_sram_testutils_scratch_read(kScratchLcState, 1,
+                                                    (uint32_t *)&prior_state));
+    CHECK(state == prior_state, "Unexpected lc state change");
 
     return true;
   } else {
