@@ -14,9 +14,10 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
       bins disabled = {1'b0};
       bins enabled  = {1'b1};
     }
-    endian_swap: coverpoint cfg[EndianSwap];
-    digest_swap: coverpoint cfg[DigestSwap];
-    digest_size: coverpoint cfg[DigestSizeMsb:DigestSizeLsb] {
+    endian_swap : coverpoint cfg[EndianSwap];
+    digest_swap : coverpoint cfg[DigestSwap];
+    key_swap    : coverpoint cfg[KeySwap];
+    digest_size : coverpoint cfg[DigestSizeMsb:DigestSizeLsb] {
       bins sha2_256     = {4'h1};
       bins sha2_384     = {4'h2};
       bins sha2_512     = {4'h4};
@@ -32,7 +33,7 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
       bins key_none    = {6'h20};
       bins key_invalid = key_length with (!$onehot0(item));
     }
-    cfg_cross: cross hmac_en, endian_swap, digest_swap;
+    cfg_cross: cross hmac_en, endian_swap, digest_swap, key_swap;
     hmac_dis_x_sha_en: cross hmac_en, sha_en {
       bins b0 = binsof(hmac_en.disabled) && binsof(sha_en.enabled);
     }
@@ -43,17 +44,18 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
   endgroup : cfg_cg
 
   covergroup status_cg with function sample (bit [TL_DW-1:0] sta, bit [TL_DW-1:0] cfg);
-    hmac_en:          coverpoint cfg[HmacEn];
-    endian_swap:      coverpoint cfg[EndianSwap];
-    digest_swap:      coverpoint cfg[DigestSwap];
-    sta_fifo_empty:   coverpoint sta[HmacStaMsgFifoEmpty];
-    sta_fifo_full:    coverpoint sta[HmacStaMsgFifoFull];
-    sta_fifo_depth:   coverpoint sta[HmacStaMsgFifoDepthMsb:HmacStaMsgFifoDepthLsb] {
+    hmac_en         : coverpoint cfg[HmacEn];
+    endian_swap     : coverpoint cfg[EndianSwap];
+    digest_swap     : coverpoint cfg[DigestSwap];
+    key_swap        : coverpoint cfg[KeySwap];
+    sta_fifo_empty  : coverpoint sta[HmacStaMsgFifoEmpty];
+    sta_fifo_full   : coverpoint sta[HmacStaMsgFifoFull];
+    sta_fifo_depth  : coverpoint sta[HmacStaMsgFifoDepthMsb:HmacStaMsgFifoDepthLsb] {
       bins fifo_depth[] = {[0:2^(HmacStaMsgFifoDepthMsb+1-HmacStaMsgFifoDepthLsb)-1]};
     }
-    fifo_empty_cross: cross sta_fifo_empty, hmac_en, endian_swap, digest_swap;
-    fifo_full_cross:  cross sta_fifo_full, hmac_en, endian_swap, digest_swap;
-    fifo_depth_cross: cross sta_fifo_depth, hmac_en, endian_swap, digest_swap;
+    fifo_empty_cross: cross sta_fifo_empty, hmac_en, endian_swap, digest_swap, key_swap;
+    fifo_full_cross : cross sta_fifo_full, hmac_en, endian_swap, digest_swap, key_swap;
+    fifo_depth_cross: cross sta_fifo_depth, hmac_en, endian_swap, digest_swap, key_swap;
   endgroup : status_cg
 
   covergroup err_code_cg with function sample (bit [TL_DW-1:0] err_code);
