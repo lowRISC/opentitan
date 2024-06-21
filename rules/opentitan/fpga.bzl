@@ -47,7 +47,7 @@ RUST_BACKTRACE=1 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
-    """Transform binaries into the preferred forms for fpga_cw310.
+    """Transform binaries into the preferred forms for fpga_cw3{05,10,40}.
 
     Args:
       ctx: The rule context.
@@ -104,12 +104,12 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     }
 
 def _test_dispatch(ctx, exec_env, firmware):
-    """Dispatch a test for the fpga_cw310 environment.
+    """Dispatch a test for the fpga_cw3{05,10,40} environment.
 
     Args:
       ctx: The rule context.
       exec_env: The ExecEnvInfo for this environment.
-      firmware: A label with a Cw310BinaryInfo provider attached.
+      firmware: A label with a Cw3{05,10,40}BinaryInfo provider attached.
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
@@ -230,7 +230,7 @@ def fpga_params(
         data = [],
         defines = [],
         **kwargs):
-    """A macro to create CW310 parameters for OpenTitan tests.
+    """A macro to create CW3{05,10,40} parameters for OpenTitan tests.
 
     Args:
       tags: The test tags to apply to the test rule.
@@ -259,7 +259,11 @@ def fpga_params(
     post_test_harness = "//sw/host/opentitantool" if changes_otp else None
     post_test_cmd = "--rcfile= --logging=info --interface={interface} fpga clear-bitstream" if changes_otp else ""
     return struct(
-        tags = ["cw310", "exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
+        # We do not yet know what FPGA platform the test will target (as this is
+        # defined in the execution environment), so we do not know that tag
+        # (out of: "cw305", "cw310", ...") to apply. Therefore, we apply the tag
+        # via the "_hacky_tags" macro in "rules/opentitan/defs.bzl".
+        tags = ["exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
         timeout = timeout,
         local = local,
         test_harness = test_harness,

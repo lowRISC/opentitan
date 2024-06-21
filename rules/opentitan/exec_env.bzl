@@ -382,7 +382,7 @@ def common_test_setup(ctx, exec_env, firmware):
 
         openocd_adapter_config = get_fallback(ctx, "attr.openocd_adapter_config", exec_env)
         if openocd_adapter_config != None:
-            jtag_data += [openocd_adapter_config]
+            jtag_data.append(openocd_adapter_config)
             jtag_test_cmd += '''
                 --openocd-adapter-config="$(rootpath {})"
             '''.format(openocd_adapter_config.label)
