@@ -53,6 +53,8 @@ enum {
  * @param msg_prefix_1_len Length of the first prefix.
  * @param msg_prefix_2 Optional message prefix.
  * @param msg_prefix_2_len Length of the second prefix.
+ * @param msg_prefix_3 Optional message prefix.
+ * @param msg_prefix_3_len Length of the third prefix.
  * @param msg Input message.
  * @param msg_len Legth of message (bytes).
  * @param pk Public key (`kSpxVerifyPkBytes` bytes long).
@@ -63,7 +65,8 @@ enum {
 OT_WARN_UNUSED_RESULT
 rom_error_t spx_verify(const uint32_t *sig, const uint8_t *msg_prefix_1,
                        size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
-                       size_t msg_prefix_2_len, const uint8_t *msg,
+                       size_t msg_prefix_2_len, const uint8_t *msg_prefix_3,
+                       size_t msg_prefix_3_len, const uint8_t *msg,
                        size_t msg_len, const uint32_t *pk, uint32_t *root);
 
 /**

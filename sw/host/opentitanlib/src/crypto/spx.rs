@@ -27,9 +27,12 @@ pub trait SpxPublicKeyPart {
         self.pk_as_bytes().len()
     }
 
-    /// Verify a message signature, returning Ok(()) if the signature matches.
+    // Verify a message signature in pure (not pre-hashed) mode, returning
+    // Ok(()) if the signature matches.
     fn verify(&self, message: &[u8], sig: &SpxSignature) -> Result<()> {
-        Ok(sphincsplus::spx_verify(self.pk(), &sig.0, message)?)
+        let domain_sep = &[0u8, 0u8];
+        let full_message = &[domain_sep, message].concat();
+        Ok(sphincsplus::spx_verify(self.pk(), &sig.0, full_message)?)
     }
 }
 
@@ -76,9 +79,11 @@ impl SpxKeypair {
         SpxKeypair { pk, sk }
     }
 
-    /// Sign `message` using the secret key.
+    /// Sign `message` using the secret key in "pure" mode with an empty context.
     pub fn sign(&self, message: &[u8]) -> SpxSignature {
-        SpxSignature(sphincsplus::spx_sign(&self.sk, message).unwrap())
+        let domain_sep = &[0u8, 0u8];
+        let full_message = &[domain_sep, message].concat();
+        SpxSignature(sphincsplus::spx_sign(&self.sk, full_message).unwrap())
     }
 
     /// Consumes this keypair and returns the corrisponding public key.

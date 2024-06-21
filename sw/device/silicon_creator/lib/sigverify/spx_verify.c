@@ -62,6 +62,19 @@ static const uint32_t kSpxVerifyShares[kSigverifySpxRootNumWords] = {
     0x9eabb3c3,
 };
 
+/**
+ * Domain-separation prefix for SPHINCS+ with no prehashing.
+ *
+ * The domain separation prefix is the following byte sequence:
+ *   0x00 || len(ctx) || ctx
+ *
+ * In our case, `ctx` is always the empty string, so the length is 0.
+ */
+static const uint8_t kSpxVerifyPureDomainSep[] = {
+    0x00,
+    0x00,
+};
+
 rom_error_t sigverify_spx_verify(
     const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,
     lifecycle_state_t lc_state, const void *msg_prefix_1,
@@ -73,9 +86,11 @@ rom_error_t sigverify_spx_verify(
     sigverify_spx_root_t expected_root;
     spx_public_key_root(key->data, expected_root.data);
     sigverify_spx_root_t actual_root;
-    HARDENED_RETURN_IF_ERROR(spx_verify(
-        signature->data, msg_prefix_1, msg_prefix_1_len, msg_prefix_2,
-        msg_prefix_2_len, msg, msg_len, key->data, actual_root.data));
+    HARDENED_RETURN_IF_ERROR(
+        spx_verify(signature->data, kSpxVerifyPureDomainSep,
+                   sizeof(kSpxVerifyPureDomainSep), msg_prefix_1,
+                   msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg,
+                   msg_len, key->data, actual_root.data));
 
     size_t i = 0;
     for (; launder32(i) < kSigverifySpxRootNumWords; ++i) {
