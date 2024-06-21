@@ -233,6 +233,11 @@
       reseed: 2
     }
     {
+      name: rv_dm_sba_debug_disabled
+      uvm_test_seq: rv_dm_sba_debug_disabled_vseq
+      reseed: 2
+    }
+    {
       name: rv_dm_ndmreset_req
       uvm_test_seq: rv_dm_ndmreset_req_vseq
       reseed: 2
