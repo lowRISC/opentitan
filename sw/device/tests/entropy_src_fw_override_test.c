@@ -324,7 +324,7 @@ status_t firmware_override_extract_insert(
   TRY(kmac_testutils_kmac(&kmac, kDifKmacModeKmacLen128, &software_key,
                           /*custom_string=*/NULL, /*custom_string_len=*/0,
                           /*message=*/"hello", /*message_len=*/6,
-                          ARRAYSIZE(output), output));
+                          ARRAYSIZE(output), output, /*capacity=*/NULL));
 
   LOG_INFO("Running OTBN...");
   otbn_randomness_test_start(&otbn, /*iters=*/10);

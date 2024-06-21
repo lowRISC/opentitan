@@ -171,8 +171,8 @@ void run_sha3_test(dif_kmac_t *kmac) {
     }
     uint32_t out[DIGEST_LEN_SHA3_MAX];
     CHECK(DIGEST_LEN_SHA3_MAX >= test.digest_len);
-    CHECK_DIF_OK(
-        dif_kmac_squeeze(kmac, &operation_state, out, test.digest_len, NULL));
+    CHECK_DIF_OK(dif_kmac_squeeze(kmac, &operation_state, out, test.digest_len,
+                                  /*processed=*/NULL, /*capacity=*/NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
 
     // Wait for the hardware engine to actually finish. On FPGA, it may take
@@ -212,8 +212,9 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
 
     // Checking the first 32-bits of the digest is sufficient.
     uint32_t out;
-    CHECK_DIF_OK(
-        dif_kmac_squeeze(kmac, &operation_state, &out, sizeof(uint32_t), NULL));
+    CHECK_DIF_OK(dif_kmac_squeeze(kmac, &operation_state, &out,
+                                  sizeof(uint32_t), /*processed=*/NULL,
+                                  /*capacity=*/NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
 
     // Wait for the hardware engine to actually finish. On FPGA, it may take
@@ -238,8 +239,9 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
 
     // Checking the first 32-bits of the digest is sufficient.
     uint32_t out;
-    CHECK_DIF_OK(
-        dif_kmac_squeeze(kmac, &operation_state, &out, sizeof(uint32_t), NULL));
+    CHECK_DIF_OK(dif_kmac_squeeze(kmac, &operation_state, &out,
+                                  sizeof(uint32_t), /*processed=*/NULL,
+                                  /*capacity=*/NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
 
     // Wait for the hardware engine to actually finish. On FPGA, it may take
@@ -267,8 +269,8 @@ void run_shake_test(dif_kmac_t *kmac) {
     }
     uint32_t out[DIGEST_LEN_SHAKE_MAX];
     CHECK(DIGEST_LEN_SHAKE_MAX >= test.digest_len);
-    CHECK_DIF_OK(
-        dif_kmac_squeeze(kmac, &operation_state, out, test.digest_len, NULL));
+    CHECK_DIF_OK(dif_kmac_squeeze(kmac, &operation_state, out, test.digest_len,
+                                  /*processed=*/NULL, /*capacity=*/NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
 
     // Wait for the hardware engine to actually finish. On FPGA, it may take

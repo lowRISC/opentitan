@@ -919,7 +919,7 @@ TEST_F(KmacSqueezeTest, GenerateExtraStatesSuccess) {
                    kOutShares[0].size() - 34);
 
   EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer,
-                                 ARRAYSIZE(out_buffer), nullptr));
+                                 ARRAYSIZE(out_buffer), nullptr, nullptr));
 
   EXPECT_EQ(op_state_, expected_op_state_);
 
@@ -942,7 +942,7 @@ TEST_F(KmacSqueezeTest, FillOutBufferSuccess) {
                    ARRAYSIZE(out_buffer_));
 
   EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
-                                 ARRAYSIZE(out_buffer_), nullptr));
+                                 ARRAYSIZE(out_buffer_), nullptr, nullptr));
 
   EXPECT_EQ(op_state_, expected_op_state_);
 
@@ -964,7 +964,8 @@ TEST_F(KmacSqueezeTest, AppendSizeSuccess) {
   ExpectAppendSize();
   EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
                  {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
-  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr));
+  EXPECT_DIF_OK(
+      dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr, nullptr));
 
   EXPECT_EQ(op_state_, expected_op_state_);
 }
@@ -976,18 +977,19 @@ TEST_F(KmacSqueezeTest, JustProcessSuccess) {
   EXPECT_WRITE32(KMAC_CMD_REG_OFFSET,
                  {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
 
-  EXPECT_DIF_OK(dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr));
+  EXPECT_DIF_OK(
+      dif_kmac_squeeze(&kmac_, &op_state_, nullptr, 0, nullptr, nullptr));
   EXPECT_EQ(op_state_, expected_op_state_);
   EXPECT_EQ(op_state_.d, 0);
 }
 
 TEST_F(KmacSqueezeTest, BadArg) {
   EXPECT_DIF_BADARG(dif_kmac_squeeze(NULL, &op_state_, out_buffer_,
-                                     ARRAYSIZE(out_buffer_), nullptr));
+                                     ARRAYSIZE(out_buffer_), nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_kmac_squeeze(&kmac_, nullptr, out_buffer_,
-                                     ARRAYSIZE(out_buffer_), nullptr));
+                                     ARRAYSIZE(out_buffer_), nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_kmac_squeeze(&kmac_, &op_state_, nullptr,
-                                     ARRAYSIZE(out_buffer_), nullptr));
+                                     ARRAYSIZE(out_buffer_), nullptr, nullptr));
 }
 
 TEST_F(KmacSqueezeTest, StarteMachineError) {
@@ -996,7 +998,7 @@ TEST_F(KmacSqueezeTest, StarteMachineError) {
                  {{KMAC_CMD_CMD_OFFSET, KMAC_CMD_CMD_VALUE_PROCESS}});
 
   EXPECT_EQ(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
-                             ARRAYSIZE(out_buffer_), nullptr),
+                             ARRAYSIZE(out_buffer_), nullptr, nullptr),
             kDifError);
 }
 
@@ -1011,7 +1013,7 @@ TEST_F(KmacSqueezeTest, RequestLessDataThanFixedLenError) {
                 {{KMAC_INTR_STATE_KMAC_ERR_BIT, true}});
 
   EXPECT_EQ(dif_kmac_squeeze(&kmac_, &op_state_, out_buffer_,
-                             ARRAYSIZE(out_buffer_), nullptr),
+                             ARRAYSIZE(out_buffer_), nullptr, nullptr),
             kDifError);
 }
 

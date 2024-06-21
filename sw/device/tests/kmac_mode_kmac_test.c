@@ -227,7 +227,8 @@ bool test_main(void) {
     uint32_t out[DIGEST_LEN_KMAC_MAX];
     CHECK(DIGEST_LEN_KMAC_MAX >= test.digest_len);
     CHECK_DIF_OK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out,
-                                  test.digest_len, NULL));
+                                  test.digest_len, /*processed=*/NULL,
+                                  /*capacity=*/NULL));
     CHECK_DIF_OK(dif_kmac_end(&kmac, &kmac_operation_state));
 
     for (int j = 0; j < test.digest_len; ++j) {
