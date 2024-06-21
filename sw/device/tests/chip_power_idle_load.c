@@ -195,17 +195,16 @@ bool test_main(void) {
       .ping_timeout = UINT16_MAX,
   };
 
-  // 5. Configure Alerts as unlocked so pings are disabled.
-  // TODO(lowrisc/opentitan#23644) enable locked when fixed to enable pings.
+  // 5. Configure Alerts as locked so pings are enabled.
   CHECK_STATUS_OK(
       alert_handler_testutils_configure_all(&alert_handler, config,
-                                            /*locked=*/kDifToggleDisabled));
+                                            /*locked=*/kDifToggleEnabled));
 
   // Checks whether alert handler's ping timer is locked
   bool is_locked;
   CHECK_DIF_OK(
       dif_alert_handler_is_ping_timer_locked(&alert_handler, &is_locked));
-  CHECK(!is_locked, "Expected ping timer to be unlocked");
+  CHECK(is_locked, "Expected ping timer to be locked");
 
   LOG_INFO("Alert ping is active");
 
