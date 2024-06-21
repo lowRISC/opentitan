@@ -11,8 +11,10 @@
 
 rom_error_t sigverify_spx_key_get(const sigverify_otp_key_ctx_t *sigverify_ctx,
                                   uint32_t key_id, lifecycle_state_t lc_state,
-                                  const sigverify_spx_key_t **key) {
+                                  const sigverify_spx_key_t **key,
+                                  sigverify_spx_config_id_t *config) {
   *key = NULL;
+  *config = 0;
   uint32_t spx_en = sigverify_spx_verify_enabled(lc_state);
   rom_error_t error = kErrorSigverifyBadSpxKey;
 
@@ -31,6 +33,7 @@ rom_error_t sigverify_spx_key_get(const sigverify_otp_key_ctx_t *sigverify_ctx,
         &rom_key);
     if (error == kErrorOk) {
       *key = &((const sigverify_rom_spx_key_t *)rom_key)->entry.key;
+      *config = ((const sigverify_rom_spx_key_t *)rom_key)->entry.config_id;
     }
   } else {
     HARDENED_CHECK_EQ(spx_en, kSigverifySpxDisabledOtp);

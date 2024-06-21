@@ -330,6 +330,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
       &ecdsa_key));
   // SPX+ key.
   const sigverify_spx_key_t *spx_key = NULL;
+  sigverify_spx_config_id_t spx_config = 0;
   const sigverify_spx_signature_t *spx_signature = NULL;
   uint32_t sigverify_spx_en = sigverify_spx_verify_enabled(lc_state);
   if (launder32(sigverify_spx_en) != kSigverifySpxDisabledOtp) {
@@ -337,7 +338,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     HARDENED_RETURN_IF_ERROR(manifest_ext_get_spx_key(manifest, &ext_spx_key));
     HARDENED_RETURN_IF_ERROR(sigverify_spx_key_get(
         &sigverify_ctx, sigverify_spx_key_id_get(&ext_spx_key->key), lc_state,
-        &spx_key));
+        &spx_key, &spx_config));
     const manifest_ext_spx_signature_t *ext_spx_signature;
     HARDENED_RETURN_IF_ERROR(
         manifest_ext_get_spx_signature(manifest, &ext_spx_signature));
@@ -386,14 +387,16 @@ static rom_error_t rom_verify(const manifest_t *manifest,
         &manifest->ecdsa_signature, ecdsa_key, &act_digest, flash_exec));
 
     return sigverify_spx_verify(
-        spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
-        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
-        digest_region.start, digest_region.length, flash_exec);
+        spx_signature, spx_key, spx_config, lc_state,
+        &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
+        anti_rollback, anti_rollback_len, digest_region.start,
+        digest_region.length, &act_digest, flash_exec);
   } else {
     HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
-        spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
-        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
-        digest_region.start, digest_region.length, flash_exec));
+        spx_signature, spx_key, spx_config, lc_state,
+        &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
+        anti_rollback, anti_rollback_len, digest_region.start,
+        digest_region.length, &act_digest, flash_exec));
 
     return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature, ecdsa_key,
                                        &act_digest, flash_exec);

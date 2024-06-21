@@ -45,12 +45,14 @@ extern const sigverify_rom_spx_key_t kSigverifySpxKeys[];
  * @param key_id A key ID.
  * @param lc_state Life cycle state of the device.
  * @param key Key with the given ID, valid only if it exists.
+ * @param config Key configuration with the given ID, valid only if it exists.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_spx_key_get(const sigverify_otp_key_ctx_t *sigverify_ctx,
                                   uint32_t key_id, lifecycle_state_t lc_state,
-                                  const sigverify_spx_key_t **key);
+                                  const sigverify_spx_key_t **key,
+                                  sigverify_spx_config_id_t *config);
 
 #ifdef __cplusplus
 }  // extern "C"
