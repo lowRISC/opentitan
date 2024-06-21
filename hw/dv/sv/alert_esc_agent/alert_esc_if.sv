@@ -6,6 +6,8 @@
 // Alert interface
 // ---------------------------------------------
 interface alert_esc_if(input clk, input rst_n);
+  import uvm_pkg::*;
+
   wire prim_alert_pkg::alert_tx_t alert_tx;
   wire prim_alert_pkg::alert_rx_t alert_rx;
   wire prim_esc_pkg::esc_tx_t     esc_tx;
@@ -31,7 +33,45 @@ interface alert_esc_if(input clk, input rst_n);
   dv_utils_pkg::if_mode_e if_mode;
   clk_rst_if              clk_rst_async_if(.clk(async_clk), .rst_n(rst_n));
 
-  // if alert sender is async mode, the clock will be drived in alert_esc_agent,
+  logic ping_pq;
+  always_ff @(posedge clk or negedge rst_n) begin
+    ping_pq <= alert_rx.ping_p;
+  end
+
+  // Code ping_request and alert_active so they will not assert for unknown values.
+  logic ping_request;
+  always_comb ping_request = (alert_rx.ping_p ^ ping_pq) === 1'b1;
+
+  logic alert_active;
+  always_comb alert_active = (alert_tx.alert_p ^ alert_tx.alert_n) === 1'b1 && alert_tx.alert_p;
+
+  logic alert_inactive;
+  always_comb alert_inactive = (alert_tx.alert_p ^ alert_tx.alert_n) === 1'b1 && alert_tx.alert_n;
+
+  typedef enum logic [1:0] { IdleSt, PingSt, AlertSt } state_e;
+  state_e state_d, state_q;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      state_q <= IdleSt;
+    end else begin
+      state_q <= state_d;
+    end
+  end
+
+  always_comb begin
+    state_d = state_q;
+    unique case (state_q)
+      IdleSt: if (ping_request) state_d = PingSt;
+      PingSt: if (alert_active) state_d = AlertSt;
+      AlertSt: if (alert_inactive) state_d = IdleSt;
+      default: state_d = IdleSt;
+    endcase // unique case (state_q)
+  end
+
+  logic ping_pending;
+  always_comb ping_pending = state_q != IdleSt;
+
+  // if alert sender is async mode, the clock will be driven in alert_esc_agent,
   // if it is sync mode, will assign to dut clk here
   assign async_clk = (is_async) ? 'z : clk ;
 
@@ -94,7 +134,14 @@ interface alert_esc_if(input clk, input rst_n);
   endtask : wait_esc_complete
 
   function automatic bit get_alert();
-    get_alert = (alert_tx_final.alert_p === 1'b1 && alert_tx_final.alert_n === 1'b0);
+    if (alert_tx_final.alert_p === 1'b1 && ping_pending) begin
+      `uvm_info("alert_esc_if::get_alert", $sformatf(
+                "This alert is a ping response: alert_p:%b, alert_n:%b, ping_pending:%p",
+                alert_tx_final.alert_p, alert_tx_final.alert_n, ping_pending),
+                UVM_MEDIUM)
+    end
+    get_alert = (alert_tx_final.alert_p === 1'b1 && alert_tx_final.alert_n === 1'b0 &&
+                 ! ping_pending);
   endfunction : get_alert
 
   function automatic bit is_alert_handshaking();
@@ -133,4 +180,11 @@ interface alert_esc_if(input clk, input rst_n);
     end while (cycle_cnt > 1 || rst_n != 1'b1);
   endtask : wait_esc_ping
 
+  logic alert_sva_active;
+  always_comb alert_sva_active = is_alert && !rst_n;
+
+  // Check the differential alert signals have no unknown values.
+  `ASSERT_KNOWN(PingKnown_A, alert_rx.ping_p ^ alert_rx.ping_n, clk, !alert_sva_active)
+  `ASSERT_KNOWN(AckKnown_A, alert_rx.ack_p ^ alert_rx.ack_n, clk, !alert_sva_active)
+  `ASSERT_KNOWN(AlertKnown_A, alert_tx.alert_p ^ alert_tx.alert_n, clk, !alert_sva_active)
 endinterface: alert_esc_if
