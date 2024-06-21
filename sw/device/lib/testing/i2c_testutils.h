@@ -244,11 +244,13 @@ OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c);
 
 /**
- * Busy spin until the fmt_fifo gets empty meaning that it has finished the all
- * the transactions issued.
+ * Busy spin until the fmt_fifo gets empty (meaning that it has finished the all
+ * the transactions issued) or until a controller halted event is detected.
+ * In the latter case, it will not clear the controller halt event.
  *
  * @param i2c An I2C DIF handle.
- * @return The result of the operation.
+ * @return Return an error code if something went wrong, otherwise `kOk(halted)`
+ * where `halted` is 1 if the controller was halted and 0 if fmt_fifo was empty.
  */
 status_t i2c_testutils_wait_transaction_finish(const dif_i2c_t *i2c);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_

@@ -434,9 +434,12 @@ status_t i2c_testutils_wait_transaction_finish(const dif_i2c_t *i2c) {
   dif_i2c_status_t status;
   bool controller_halted = false;
   do {
-    TRY(dif_i2c_get_status(i2c, &status));
     TRY(dif_i2c_irq_is_pending(i2c, kDifI2cIrqControllerHalt,
                                &controller_halted));
-  } while (!status.fmt_fifo_empty || controller_halted);
-  return OK_STATUS();
+    if (controller_halted) {
+      return OK_STATUS(1);
+    }
+    TRY(dif_i2c_get_status(i2c, &status));
+  } while (!status.fmt_fifo_empty);
+  return OK_STATUS(0);
 }
