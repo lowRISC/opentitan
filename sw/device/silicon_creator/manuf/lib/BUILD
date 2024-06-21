@@ -140,12 +140,12 @@ cc_library(
 opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked1_initial",
+        changes_otp = True,
+        otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
         tags = ["manuf"],
     ),
     deps = [
@@ -203,11 +203,11 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked1",
         changes_otp = True,
+        otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
         tags = ["manuf"],
         test_cmd = """
             --bootstrap={firmware}
@@ -263,8 +263,9 @@ cc_library(
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -281,6 +282,7 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx": "dev_key_0"},
     deps = [
         ":flash_info_fields",
         ":personalize",
@@ -328,8 +330,11 @@ opentitan_test(
         "AST_PROGRAM_UNITTEST=1",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    fpga = fpga_params(
+        tags = ["manuf"],
+    ),
     deps = [
         ":flash_info_fields",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
