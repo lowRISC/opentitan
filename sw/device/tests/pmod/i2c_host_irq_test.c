@@ -133,11 +133,11 @@ static status_t nak_irq(void) {
   TRY(dif_i2c_get_controller_halt_events(&i2c, &halt_events));
   CHECK(halt_events.nack_received == true);
   CHECK(halt_events.unhandled_nack_timeout == false);
-  TRY(dif_i2c_reset_fmt_fifo(i2c));
-  TRY(dif_i2c_clear_controller_halt_events(i2c, halt_events));
+  TRY(dif_i2c_reset_fmt_fifo(&i2c));
+  TRY(dif_i2c_clear_controller_halt_events(&i2c, halt_events));
   // Force Stop to be sent after the unexpected NACK.
-  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
-  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
+  TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleDisabled));
+  TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
   return OK_STATUS();
 }
 
