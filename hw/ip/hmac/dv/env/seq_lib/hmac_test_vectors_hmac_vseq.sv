@@ -14,8 +14,10 @@ class hmac_test_vectors_hmac_vseq extends hmac_test_vectors_sha_vseq;
   }
 
   task body();
-    vector_list_256 = test_vectors_pkg::hmac_256_file_list;
-    //TODO (issues #22932) add test vectors for HMAC 384/512 with different key lengths
+    // replace with HMAC NIST test vectors
+    vector_list_256 = test_vectors_pkg::hmac_sha256_file_list;
+    vector_list_384 = test_vectors_pkg::hmac_sha384_file_list;
+    vector_list_512 = test_vectors_pkg::hmac_sha512_file_list;
     super.body();
   endtask
 

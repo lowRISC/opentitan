@@ -32,7 +32,7 @@ Test vector files for the 224, 256, 384, and 512 bit variants of SHA3 found at
 website](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip).
 
 ## HMAC vectors
-Files inside of `vectors/hmac/` contain test vectors extracted from [IETF RFC 4868](https://tools.ietf.org/html/rfc4868).
+Files inside of `vectors/hmac/` contain test vectors extracted from the [NIST website](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip) for HMAC based on SHA-2 256, 384 and 512.
 
 ## SHAKE vectors
 Test vector files for the SHA3 Extendable Output Functions in `vectors/xof/shake` are

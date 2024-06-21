@@ -11,6 +11,9 @@ filesets:
     files:
       - test_vectors_pkg.sv
       - vectors/hmac/HMAC_RFC4868.rsp: {is_include_file: true}
+      - vectors/hmac/HMAC_SHA256.rsp: {is_include_file: true}
+      - vectors/hmac/HMAC_SHA384.rsp: {is_include_file: true}
+      - vectors/hmac/HMAC_SHA512.rsp: {is_include_file: true}
       - vectors/sha/sha256/SHA256ShortMsg.rsp: {is_include_file: true}
       - vectors/sha/sha256/SHA256LongMsg.rsp: {is_include_file: true}
       - vectors/sha/sha384/SHA384ShortMsg.rsp: {is_include_file: true}
