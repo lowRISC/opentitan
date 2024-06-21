@@ -757,7 +757,34 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh hyper310 manuf,-cw310_sival,-broken || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh hyper310 manuf,-cw310_sival,-broken,-cw340 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+    displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
+
+- job: execute_fpga_manuf_tests_cw340
+  displayName: CW340 Manufacturing Tests
+  pool:
+    name: $(fpga_pool)
+    demands: BOARD -equals cw340
+  timeoutInMinutes: 60
+  dependsOn:
+    - chip_earlgrey_cw340
+    - sw_build
+  condition: succeeded( 'chip_earlgrey_cw340', 'sw_build' )
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw340
+        - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/scripts/run-fpga-tests.sh cw340 manuf,-cw340_sival,-broken,-cw310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
