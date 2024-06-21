@@ -34,6 +34,7 @@ opentitan_binary(
     srcs = ["sram_cp_provision.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -73,6 +74,7 @@ opentitan_binary(
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -115,6 +117,7 @@ opentitan_test(
     name = "cp_provision",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     fpga = fpga_params(
@@ -140,6 +143,7 @@ opentitan_test(
     name = "cp_provision_functest",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         binaries = {
@@ -165,6 +169,7 @@ opentitan_test(
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         kind = "ram",
@@ -213,6 +218,7 @@ opentitan_binary(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -278,6 +284,7 @@ opentitan_test(
     name = "ft_provision",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     fpga = fpga_params(
