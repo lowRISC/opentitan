@@ -508,11 +508,11 @@
       desc: '''
             Verify that if an invalid packed identifier (PID) was received then rx_pid_err will raise.
 
-            - send an invalid PID to the device with the higher bits not complementing the lower bits.
+            - Send an invalid PID to the device with the higher bits not complementing the lower bits.
             - Verify that the interrupt pin goes high indicating PID error.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_rx_pid_err"]
     }
     {
       name: rx_bitstuff_err

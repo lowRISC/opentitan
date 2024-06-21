@@ -518,6 +518,31 @@ endtask
     end
   endtask
 
+  // Decide upon one or more corrupted PID values when constructing an invalid OUT/SETUP
+  // transaction.
+  function void build_prnd_bad_pids(output bit is_setup, output bit [7:0] setup_out_pid,
+                                    output bit [7:0] data_pid);
+    // Which PID(s) to corrupt?
+    bit corrupt_token_pid;
+    bit corrupt_data_pid;
+    {corrupt_data_pid, corrupt_token_pid} = $urandom_range(1, 3);
+    is_setup = $urandom & 1;
+    setup_out_pid = is_setup ? PidTypeSetupToken : PidTypeOutToken;
+    data_pid = ($urandom & 1) ? PidTypeData1 : PidTypeData0;
+    // Corrupt the selected PID(s); inverting a single bit within the PID ensures that the upper
+    // and lower nibbles are no longer complementary and thus the PID is invalid.
+    if (corrupt_token_pid) begin
+      int unsigned b = $urandom_range(0, 7);
+      setup_out_pid[b] ^= 1'b1;
+    end
+    if (corrupt_data_pid) begin
+      int unsigned b = $urandom_range(0, 7);
+      data_pid[b] ^= 1'b1;
+    end
+    `uvm_info(`gfn, $sformatf("Generating bad PIDs decided on token 0x%0x data 0x%0x (setup %0d)",
+                              setup_out_pid, data_pid, is_setup), UVM_MEDIUM)
+  endfunction
+
   // Construct a packet that requires the use of bit stuffing; this is important in checking that
   // bit (de)stuffing is performed correctly, and in inducing bit stuffing violations to check the
   // reporting of such errors by the DUT.
