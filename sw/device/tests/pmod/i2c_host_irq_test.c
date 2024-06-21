@@ -123,9 +123,14 @@ static status_t nak_irq(void) {
   irq_fired = kIrqVoid;
   irq_global_ctrl(true);
 
-  // Wait for the write to finish.
-  uint8_t dummy = 0;
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(dummy), &dummy, 1));
+  dif_i2c_fmt_flags_t flags = {.start = true,
+                               .stop = false,
+                               .read = false,
+                               .read_cont = false,
+                               .suppress_nak_irq = false};
+  // Address the device to read, which should return a NACK as it needs more
+  // time to be read.
+  TRY(dif_i2c_write_byte_raw(&i2c, kDeviceAddr << 1 | 0x01, flags));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqControllerHalt);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqControllerHalt,
