@@ -198,3 +198,47 @@ uint32_t pinmux_read_straps(void) {
   value |= read_strap_pin(kInputSwStrap2) << 4;
   return value;
 }
+
+void pinmux_configure_schmitt(void) {
+  static_assert(PINMUX_MIO_PAD_ATTR_MULTIREG_COUNT > 32,
+                "Too few MIO_PAD_ATTRs");
+  static_assert(PINMUX_MIO_PAD_ATTR_MULTIREG_COUNT < 64,
+                "Too many MIO_PAD_ATTRs");
+  static_assert(PINMUX_DIO_PAD_ATTR_MULTIREG_COUNT < 32,
+                "Too many DIO_PAD_ATTRs");
+  uint32_t mio1 =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_MIO_SCHMITT_EN_OFFSET);
+  uint32_t mio2 = otp_read32(
+      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_MIO_SCHMITT_EN_OFFSET + sizeof(uint32_t));
+  uint32_t dio =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_DIO_SCHMITT_EN_OFFSET);
+  for (uint32_t i = 0, bit = 1; i < 32; ++i, bit <<= 1) {
+    if ((mio1 & bit) != 0) {
+      // Configure MIO pads 0 - 31.
+      uint32_t reg = abs_mmio_read32(kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET +
+                                     i * sizeof(uint32_t));
+      abs_mmio_write32(
+          kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + i * sizeof(uint32_t),
+          bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_SCHMITT_EN_0_BIT,
+                               true));
+    }
+    if (i < PINMUX_MIO_PAD_ATTR_MULTIREG_COUNT - 32 && (mio2 & bit) != 0) {
+      // Configure MIO pads 32 - 47.
+      uint32_t reg = abs_mmio_read32(kBase + PINMUX_MIO_PAD_ATTR_32_REG_OFFSET +
+                                     i * sizeof(uint32_t));
+      abs_mmio_write32(
+          kBase + PINMUX_MIO_PAD_ATTR_32_REG_OFFSET + i * sizeof(uint32_t),
+          bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_SCHMITT_EN_0_BIT,
+                               true));
+    }
+    if (i < PINMUX_DIO_PAD_ATTR_MULTIREG_COUNT && (dio & bit) != 0) {
+      // Configure MIO pads 0 - 15.
+      uint32_t reg = abs_mmio_read32(kBase + PINMUX_DIO_PAD_ATTR_0_REG_OFFSET +
+                                     i * sizeof(uint32_t));
+      abs_mmio_write32(
+          kBase + PINMUX_DIO_PAD_ATTR_0_REG_OFFSET + i * sizeof(uint32_t),
+          bitfield_bit32_write(reg, PINMUX_DIO_PAD_ATTR_0_SCHMITT_EN_0_BIT,
+                               true));
+    }
+  }
+}

@@ -24,6 +24,12 @@ extern "C" {
 void pinmux_init(void);
 
 /**
+ * Configure Schmitt triggers on pinmux MIO and DIO pads as specified by the OTP
+ * configuration.
+ */
+void pinmux_configure_schmitt(void);
+
+/**
  * Read the SW_STRAP value.
  *
  * The straping value is encoded with two bits per pin and encodes the

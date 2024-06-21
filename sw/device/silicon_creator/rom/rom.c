@@ -163,6 +163,7 @@ static rom_error_t rom_init(void) {
     // up from low power, as the pinmux will in such case have retained its
     // previous configuration.)
     pinmux_init();
+    pinmux_configure_schmitt();
   } else {
     waking_from_low_power = kHardenedBoolTrue;
   }
