@@ -162,6 +162,39 @@
       tests: ["usbdev_phy_config_pinflip"]
     }
     {
+      name: phy_config_rand_bus_type
+      desc: '''
+            Choose a random bus configuration and verify that the smoke sequence still passes.
+            '''
+      stage: V2
+      tests: ["usbdev_phy_config_rand_bus_type"]
+    }
+    {
+      name: phy_config_rx_dp_dn
+      desc: '''
+            Verify that the DP/DN input signals may be used to decode the USB traffic without an
+            external differential receiver.
+            The USBDEV normally relies upon an external differential receiver to ensure USB 2.0
+            specification compliance but it can receive traffic directly using just DP and DN for
+            reduced complexity and/or cost.
+
+            - This just runs the smoke test with modified PHY configuration.
+            '''
+      stage: V2
+      tests: ["usbdev_phy_config_rx_dp_dn"]
+    }
+    {
+      name: phy_config_tx_use_d_se0
+      desc: '''
+            Verify that the D/SE0 outputs can be used to transmit data rather than the DP and DN
+            signals.
+
+            - This just runs the smoke test with modified PHY configuration.
+            '''
+      stage: V2
+      tests: ["usbdev_phy_config_tx_use_d_se0"]
+    }
+    {
       name: phy_config_usb_ref_disable
       desc: '''
             Verify the reference signal generation for clock synchronization may be disabled.

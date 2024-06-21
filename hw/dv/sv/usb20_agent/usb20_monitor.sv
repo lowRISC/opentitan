@@ -136,7 +136,9 @@ class usb20_monitor extends dv_base_monitor #(
     // Return the symbol currently on the bus, according to the pin configuration.
     if (cfg.tx_use_d_se0) begin
       // SE0 takes precedence over the data line.
-      sym = cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : (cfg.bif.usb_tx_d_o ? USB20Sym_J : USB20Sym_K);
+      sym = cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : // SE0 unaffected by pin flipping.
+          // Pin flipping does affect D/SE0 output too; the sense of 'd' is inverted.
+          ((cfg.bif.usb_tx_d_o ^ cfg.pinflip) ? USB20Sym_J : USB20Sym_K);
     end else begin
       casez ({cfg.bif.usb_n, cfg.bif.usb_p})
         2'b00:   sym = USB20Sym_SE0;
