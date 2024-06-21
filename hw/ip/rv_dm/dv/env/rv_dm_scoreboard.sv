@@ -184,10 +184,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       sba_access_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA access item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
-      // Check if 'lc_hw_debug_en' is off, then do not compare SBA item and throw it away.
-      if (cfg.rv_dm_vif.lc_hw_debug_en != lc_ctrl_pkg::On) begin
-        continue;
-      end else if (sba_tl_access_q.size() > 0) begin
+
+      if (sba_tl_access_q.size() > 0) begin
         compare_sba_access(item, sba_tl_access_q.pop_front());
       end else begin
         `uvm_error(`gfn, $sformatf({"Received predicted SBA access but no transaction was seen on ",
@@ -203,6 +201,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       tl_sba_a_chan_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
+      `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
+                "Received an SBA TL item when SBA should have been disabled.")
+
       process_tl_sba_access(item, AddrChannel);
     end
   endtask
@@ -213,6 +214,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       tl_sba_d_chan_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
+      `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
+                "Received an SBA TL item when SBA should have been disabled.")
       sba_tl_access_q.push_back(item);
       // check tl packet integrity
       // TODO: deal with item not being ok.
