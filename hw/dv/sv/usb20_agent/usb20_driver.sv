@@ -419,7 +419,9 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   function usb_symbol_e current_symbol();
     if (cfg.tx_use_d_se0) begin
       // SE0 takes precedence over the data line.
-      return cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : (cfg.bif.usb_tx_d_o ? USB20Sym_J : USB20Sym_K);
+      return cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : // SE0 unaffected by pin flipping.
+           // Pin flipping does affect D/SE0 output too; the sense of 'd' is inverted.
+           ((cfg.bif.usb_tx_d_o ^ cfg.pinflip) ? USB20Sym_J : USB20Sym_K);
     end else if (cfg.pinflip) begin
       // J and K encodings are transposed when the pins are flipped, but SE0 is unaltered.
       case ({cfg.bif.usb_n, cfg.bif.usb_p})

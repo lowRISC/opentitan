@@ -75,6 +75,7 @@ filesets:
       - seq_lib/usbdev_pending_in_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_eop_single_bit_handling_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_pinflip_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_phy_config_rand_bus_type_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_tx_osc_test_mode_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_usb_ref_disable_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_pins_sense_vseq.sv: {is_include_file: true}

@@ -69,7 +69,15 @@ bit apply_post_reset_delays_for_sync = 1'b1;
 bit phy_eop_single_bit = 1'b0;  // Note: the default reset value is 1
 bit phy_usb_ref_disable = 1'b0;
 bit phy_tx_osc_test_mode = 1'b0;
-bit phy_pinflip = 1'b0;
+
+// These 3 PHY configuration bits define the bus type.
+//
+// Their initial values here reflect the most common use case of the USBDEV, but they may be
+// overridden by specific 'runopts' test configuration or modified within a derived sequence.
+// Do NOT modify directly.
+bit phy_use_diff_rcvr = 1'b1; // To achieve USB 2.0 specification compliance use external receiver.
+bit phy_tx_use_d_se0  = 1'b0; // Normally the DP/DN outputs are used directly.
+bit phy_pinflip       = 1'b0; // Pins are not normally flipped; this option helps accommodate SBU.
 
 // Approx. over-estimate of the USBDEV:AON/Wake clock ratio; we expect the USB device to be
 // operating at no more than 48.24kHz, and the AON/Wake module to be operating at >= 200KHz.
@@ -203,19 +211,13 @@ endtask
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_usbdev_init) begin
-      // Default bus configuration; these will potentially impact all test sequences, so it's
-      // preferable to modify the test configurations rather than change these defaults.
-      bit tx_use_d_se0 = 0;
-      bit en_diff_rcvr = 1;
-      bit pin_flip = 0;
-      void'($value$plusargs("pin_flip=%d", pin_flip)); // Flip pins on the USB?
-      void'($value$plusargs("en_diff_rcvr=%d", en_diff_rcvr)); // Enable differential receiver?
-      void'($value$plusargs("tx_use_d_se0=%d", tx_use_d_se0)); // Use D/SE0 for transmission?
-      // Inform the USB agent of the bus configuration.
-      cfg.m_usb20_agent_cfg.pinflip = pin_flip;
-      cfg.m_usb20_agent_cfg.tx_use_d_se0 = tx_use_d_se0;
+      // Test configuration may override the default bus configuration.
+      // Note: if the argument names do not match then the 'phy_' values are unmodified.
+      void'($value$plusargs("pin_flip=%d", phy_pinflip)); // Flip pins on the USB?
+      void'($value$plusargs("en_diff_rcvr=%d", phy_use_diff_rcvr)); // Enable differential receiver?
+      void'($value$plusargs("tx_use_d_se0=%d", phy_tx_use_d_se0)); // Use D/SE0 for transmission?
       // Initialize the device via its registers.
-      usbdev_init(dev_addr, en_diff_rcvr, tx_use_d_se0, pin_flip);
+      usbdev_init(dev_addr, phy_use_diff_rcvr, phy_tx_use_d_se0, phy_pinflip);
     end
   endtask
 
@@ -702,18 +704,25 @@ endtask
   virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0,
                            // PHY Configuration for this test; all permutations should be tested.
                            bit use_diff_rcvr = 0, bit tx_use_d_se0 = 0, bit pinflip = 0);
-    // Remember the pinflip setting.
-    phy_pinflip = pinflip;
+    // Remember the PHY configuration settings.
+    phy_use_diff_rcvr = use_diff_rcvr;
+    phy_tx_use_d_se0  = tx_use_d_se0;
+    phy_pinflip       = pinflip;
+    `uvm_info(`gfn, $sformatf("USBDEV bus config: use_diff_rcvr %0d tx_use_d_se0 %0d pinflip %0d",
+                              phy_use_diff_rcvr, phy_tx_use_d_se0, phy_pinflip), UVM_LOW)
     // Configure PHY
     // - the different modes of operation may be set using parameters,
-    ral.phy_config.use_diff_rcvr.set(use_diff_rcvr);
-    ral.phy_config.tx_use_d_se0.set(tx_use_d_se0);
-    ral.phy_config.pinflip.set(pinflip);
+    ral.phy_config.use_diff_rcvr.set(phy_use_diff_rcvr);
+    ral.phy_config.tx_use_d_se0.set(phy_tx_use_d_se0);
+    ral.phy_config.pinflip.set(phy_pinflip);
     // ... but these rarely require changing; only for very specific test sequences.
     ral.phy_config.eop_single_bit.set(phy_eop_single_bit);
     ral.phy_config.usb_ref_disable.set(phy_usb_ref_disable);
     ral.phy_config.tx_osc_test_mode.set(phy_tx_osc_test_mode);
     csr_update(ral.phy_config);
+    // Inform the USB agent of the bus configuration.
+    cfg.m_usb20_agent_cfg.pinflip = phy_pinflip;
+    cfg.m_usb20_agent_cfg.tx_use_d_se0 = phy_tx_use_d_se0;
     // Has a specified address been requested? Zero is not a valid device address
     // on the USB except during the initial configuration process, so we'll just
     // keep the previous value if asked for zero.

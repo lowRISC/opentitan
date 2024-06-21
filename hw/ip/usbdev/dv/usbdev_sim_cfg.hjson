@@ -47,10 +47,6 @@
   // List of test specifications.
   tests: [
     {
-      name: usbdev_smoke
-      uvm_test_seq: usbdev_smoke_vseq
-    }
-    {
       name: usbdev_aon_wake_disconnect
       uvm_test_seq: usbdev_aon_wake_vseq
       run_opts: ["+do_vbus_disconnects=1"]
@@ -213,6 +209,42 @@
       uvm_test_seq: usbdev_out_trans_nak_vseq
     }
     {
+      name: usbdev_phy_config_eop_single_bit_handling
+      uvm_test_seq: usbdev_phy_config_eop_single_bit_handling_vseq
+      reseed: 1
+    }
+    {
+      name: usbdev_phy_config_rand_bus_type
+      uvm_test_seq: usbdev_phy_config_rand_bus_type_vseq
+      reseed: 5
+    }
+    {
+      name: usbdev_phy_config_rx_dp_dn
+      uvm_test_seq: usbdev_smoke_vseq
+      reseed: 1
+      run_opts: ["+en_diff_rcvr=0"]
+    }
+    {
+      name: usbdev_phy_config_tx_osc_test_mode
+      uvm_test_seq: usbdev_phy_config_tx_osc_test_mode_vseq
+      reseed: 1
+    }
+    {
+      name: usbdev_phy_config_tx_use_d_se0
+      uvm_test_seq: usbdev_smoke_vseq
+      reseed: 1
+      run_opts: ["+tx_use_d_se0=1"]
+    }
+    {
+      name: usbdev_phy_config_pinflip
+      uvm_test_seq: usbdev_phy_config_pinflip_vseq
+      run_opts: ["+pin_flip=1"]
+    }
+    {
+      name: usbdev_phy_config_usb_ref_disable
+      uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
+    }
+    {
       name: usbdev_pkt_buffer
       uvm_test_seq: usbdev_pkt_buffer_vseq
     }
@@ -268,6 +300,10 @@
       reseed: 5
     }
     {
+      name: usbdev_smoke
+      uvm_test_seq: usbdev_smoke_vseq
+    }
+    {
       name: usbdev_spurious_pids_ignored
       uvm_test_seq: usbdev_bad_traffic_vseq
       run_opts: ["+wt_spurious_pids=1"]
@@ -308,25 +344,6 @@
     {
       name: usbdev_stall_priority_over_nak
       uvm_test_seq: usbdev_stall_priority_over_nak_vseq
-    }
-    {
-      name: usbdev_phy_config_eop_single_bit_handling
-      uvm_test_seq: usbdev_phy_config_eop_single_bit_handling_vseq
-      reseed: 1
-    }
-    {
-      name: usbdev_phy_config_tx_osc_test_mode
-      uvm_test_seq: usbdev_phy_config_tx_osc_test_mode_vseq
-      reseed: 1
-    }
-    {
-      name: usbdev_phy_config_pinflip
-      uvm_test_seq: usbdev_phy_config_pinflip_vseq
-      run_opts: ["+pin_flip=1"]
-    }
-    {
-      name: usbdev_phy_config_usb_ref_disable
-      uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
     }
     {
       name: usbdev_setup_stage
