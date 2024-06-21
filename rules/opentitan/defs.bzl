@@ -147,7 +147,16 @@ def _hacky_tags(env):
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the
         # label name.
-        tags.append(suffix[5:])
+        subtag = suffix[5:]
+        tags.append(subtag)
+        if subtag.startswith("cw305"):
+            tags.append("cw305")
+        elif subtag.startswith("cw310"):
+            tags.append("cw310")
+        elif subtag.startswith("hyper310"):
+            tags.append("hyper310")
+        elif subtag.startswith("cw340"):
+            tags.append("cw340")
     if suffix.startswith("silicon"):
         # We add the entire suffix for silicon exec environments to be able
         # to filter tests by them. "silicon_creator" and
