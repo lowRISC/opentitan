@@ -732,26 +732,34 @@ jobs:
     demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
-    - chip_earlgrey_cw310
+    - chip_earlgrey_cw310_hyperdebug
     - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
+        - chip_earlgrey_cw310_hyperdebug
         - sw_build
   - template: ci/load-bazel-cache-write-creds.yml
+  # We run the update command for the same reasons stated above.
+  - bash: |
+      ci/bazelisk.sh run \
+        //sw/host/opentitantool:opentitantool -- \
+        --interface=hyperdebug_dfu transport update-firmware \
+      || ci/bazelisk.sh run \
+        //sw/host/opentitantool:opentitantool -- \
+        --interface=hyperdebug_dfu transport update-firmware || true
+    displayName: "Update the hyperdebug firmware"
   - bash: |
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 manuf,-cw310_sival,-broken || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh hyper310 manuf,-cw310_sival,-broken || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
-
 
 - job: deploy_release_artifacts
   displayName: Package & deploy release
