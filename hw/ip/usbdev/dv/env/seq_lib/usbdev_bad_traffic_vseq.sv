@@ -93,21 +93,9 @@ class usbdev_bad_traffic_vseq extends usbdev_bus_rand_vseq;
 
   // Generate a SETUP/OUT transaction to the DUT with invalid Packet IDentifier(s).
   virtual task generate_bad_pid(bit [3:0] ep);
-    // Which PID(s) to corrupt?
-    int unsigned corrupt = $urandom_range(1, 3); // bit 1 = corrupt data, bit 0 = setup/out
-    bit is_setup = $urandom & 1;
-    bit [7:0] setup_out_pid = is_setup ? PidTypeSetupToken : PidTypeOutToken;
-    bit [7:0] data_pid = ($urandom & 1) ? PidTypeData1 : PidTypeData0;
-    // Corrupt the selected PID(s); inverting a single bit within the PID ensures that the upper
-    // and lower nibbles are no longer complementary and thus the PID is invalid.
-    if (corrupt[0]) begin
-      int unsigned b = $urandom_range(0, 7);
-      setup_out_pid[b] ^= 1'b1;
-    end
-    if (corrupt[1]) begin
-      int unsigned b = $urandom_range(0, 7);
-      data_pid[b] ^= 1'b1;
-    end
+    bit [7:0] setup_out_pid, data_pid;
+    bit is_setup;
+    build_prnd_bad_pids(is_setup, setup_out_pid, data_pid);
     `uvm_info(`gfn, $sformatf("Generating bad PID(s) %0x,%0x (SETUP-based %0d)", setup_out_pid,
                               data_pid, is_setup), UVM_MEDIUM)
     // Since the SETUP/OUT PID and/or the DATA PID has been corrupted, the entire packet should be
@@ -115,7 +103,7 @@ class usbdev_bad_traffic_vseq extends usbdev_bus_rand_vseq;
     claim_driver();
     // If we send a valid SETUP token packet the DUT will reset its Data Toggle bits, so we need to
     // reset our expectations too.
-    if (is_setup && !corrupt[0]) begin
+    if (setup_out_pid == PidTypeSetupToken) begin
       // In this case we shall not be sending a valid DATA0 packet, so we expect the OUT endpoint
       // still be awaiting DATA0, but the IN side will have a set toggle bit.
       exp_out_toggle[ep] = 1'b0;

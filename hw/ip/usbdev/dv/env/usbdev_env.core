@@ -61,11 +61,12 @@ filesets:
       - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_resume_link_active_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_pid_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_rx_full_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_spray_packets_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_streaming_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_min_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_iso_vseq.sv: {is_include_file: true}

@@ -288,10 +288,20 @@
       reseed: 1
     }
     {
+      name: usbdev_rx_crc_err
+      uvm_test_seq: usbdev_rx_crc_err_vseq
+    }
+    {
       name: usbdev_rx_full
       uvm_test_seq: usbdev_rx_full_vseq
       // No need for randomization.
       reseed: 1
+    }
+    {
+      name: usbdev_rx_pid_err
+      uvm_test_seq: usbdev_rx_pid_err_vseq
+      // Limited need for randomization; only two PIDs used.
+      reseed: 5
     }
     {
       name: usbdev_setup_priority
@@ -332,10 +342,6 @@
                  "+wt_bitstuff_errs=1"]
       // Very long simulation times
       reseed: 5
-    }
-    {
-      name: usbdev_rx_crc_err
-      uvm_test_seq: usbdev_rx_crc_err_vseq
     }
     {
       name: usbdev_setup_trans_ignored
