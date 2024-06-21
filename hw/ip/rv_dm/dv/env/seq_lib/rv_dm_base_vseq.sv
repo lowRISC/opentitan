@@ -93,15 +93,17 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     super.dut_init();
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
 
-    // We would like to do a DMI transaction here. If this vseq is the first with debug enabled, the
-    // "enable" signal will need to make it through the a prim_lc_sync in the design before it takes
-    // effect. Fortunately, we can see that this has happened by looking at the trst_n signal: it
-    // will go high once everything has been connected. *That* signal is exposed through jtag_mon_if
-    // in the tb, which is visible through the jtag agent's mon_vif interface.
-    wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
+    if (lc_hw_debug_en == lc_ctrl_pkg::On) begin
+      // We would like to do a DMI transaction here. If this vseq is the first with debug enabled,
+      // the "enable" signal will need to make it through the a prim_lc_sync in the design before it
+      // takes effect. Fortunately, we can see that this has happened by looking at the trst_n
+      // signal: it will go high once everything has been connected. *That* signal is exposed
+      // through jtag_mon_if in the tb, which is visible through the jtag agent's mon_vif interface.
+      wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
 
-    // "Activate" the DM to facilitate ease of testing.
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+      // "Activate" the DM to facilitate ease of testing.
+      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+    end
 
     // Start the SBA TL device seq.
     sba_tl_device_seq_start();
