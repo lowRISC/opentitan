@@ -16,52 +16,57 @@ package test_vectors_pkg;
   `include "uvm_macros.svh"
 
   // declare string and vectors
-  string header                 = "test_vectors_pkg";
-  string sha2_256_file_list[]   = {"vectors/sha/sha256/SHA256ShortMsg.rsp",
-                                   "vectors/sha/sha256/SHA256LongMsg.rsp"
-                                  };
-  string sha2_384_file_list[]   = {"vectors/sha/sha384/SHA384ShortMsg.rsp",
-                                   "vectors/sha/sha384/SHA384LongMsg.rsp"
-                                  };
-  string sha2_512_file_list[]   = {"vectors/sha/sha512/SHA512ShortMsg.rsp",
+  string header                  =  "test_vectors_pkg";
+  string sha2_256_file_list[]    = {"vectors/sha/sha256/SHA256ShortMsg.rsp",
+                                    "vectors/sha/sha256/SHA256LongMsg.rsp"
+                                   };
+  string sha2_384_file_list[]    = {"vectors/sha/sha384/SHA384ShortMsg.rsp",
+                                    "vectors/sha/sha384/SHA384LongMsg.rsp"
+                                   };
+  string sha2_512_file_list[]    = {"vectors/sha/sha512/SHA512ShortMsg.rsp",
                                    "vectors/sha/sha512/SHA512LongMsg.rsp"
-                                  };
-  string hmac_256_file_list[]   = {"vectors/hmac/HMAC_RFC4868.rsp"};
-  // TODO (issue #22932) add HMAC test vectors for 384/512 for all key lengths
-  string sha3_224_file_list[]   = {"vectors/sha/sha3/SHA3_224ShortMsg.rsp",
-                                   "vectors/sha/sha3/SHA3_224LongMsg.rsp"
-                                  };
-  string sha3_256_file_list[]   = {"vectors/sha/sha3/SHA3_256ShortMsg.rsp",
+                                   };
+  // string hmac_256_file_list[]   = {"vectors/hmac/HMAC_RFC4868.rsp"};
+  string hmac_sha256_file_list[] = {"vectors/hmac/HMAC_SHA256.rsp"};
+  string hmac_sha384_file_list[] = {"vectors/hmac/HMAC_SHA384.rsp"};
+  string hmac_sha512_file_list[] = {"vectors/hmac/HMAC_SHA512.rsp"};
+  string sha3_224_file_list[]    = {"vectors/sha/sha3/SHA3_224ShortMsg.rsp",
+                                    "vectors/sha/sha3/SHA3_224LongMsg.rsp"
+                                   };
+  string sha3_256_file_list[]    = {"vectors/sha/sha3/SHA3_256ShortMsg.rsp",
                                    "vectors/sha/sha3/SHA3_256LongMsg.rsp"
-                                  };
-  string sha3_384_file_list[]   = {"vectors/sha/sha3/SHA3_384ShortMsg.rsp",
+                                   };
+  string sha3_384_file_list[]    = {"vectors/sha/sha3/SHA3_384ShortMsg.rsp",
                                    "vectors/sha/sha3/SHA3_384LongMsg.rsp"
-                                  };
-  string sha3_512_file_list[]   = {"vectors/sha/sha3/SHA3_512ShortMsg.rsp",
+                                   };
+  string sha3_512_file_list[]    = {"vectors/sha/sha3/SHA3_512ShortMsg.rsp",
                                    "vectors/sha/sha3/SHA3_512LongMsg.rsp"
-                                  };
-  string shake_128_file_list[]  = {"vectors/xof/shake/SHAKE128ShortMsg.rsp",
+                                   };
+  string shake_128_file_list[]   = {"vectors/xof/shake/SHAKE128ShortMsg.rsp",
                                    "vectors/xof/shake/SHAKE128LongMsg.rsp",
                                    "vectors/xof/shake/SHAKE128VariableOut.rsp"
-                                  };
-  string shake_256_file_list[]  = {"vectors/xof/shake/SHAKE256ShortMsg.rsp",
+                                   };
+  string shake_256_file_list[]   = {"vectors/xof/shake/SHAKE256ShortMsg.rsp",
                                    "vectors/xof/shake/SHAKE256LongMsg.rsp",
                                    "vectors/xof/shake/SHAKE256VariableOut.rsp"
-                                  };
-  string cshake_file_list[]     = {"vectors/xof/cshake/CSHAKE128Ex1.rsp",
+                                   };
+  string cshake_file_list[]      = {"vectors/xof/cshake/CSHAKE128Ex1.rsp",
                                    "vectors/xof/cshake/CSHAKE256Ex1.rsp"
-                                  };
-  string kmac_file_list[]       = {"vectors/xof/kmac/KMAC128Ex1.rsp",
+                                   };
+  string kmac_file_list[]        = {"vectors/xof/kmac/KMAC128Ex1.rsp",
                                    "vectors/xof/kmac/KMAC256Ex1.rsp"
-                                  };
-  string kmac_xof_file_list[]   = {"vectors/xof/kmac/KMAC128XOFEx1.rsp",
+                                   };
+  string kmac_xof_file_list[]    = {"vectors/xof/kmac/KMAC128XOFEx1.rsp",
                                    "vectors/xof/kmac/KMAC256XOFEx1.rsp"
-                                  };
+                                   };
   string test_vectors_dir;
 
   typedef struct {
-    // Security strenght of the algorithm.
+    // Security strength of the algorithm.
     int security_strength;
+
+    // SHA-2 key length (for HMAC test vectors based on different SHA-2 digest sizes)
+    int sha2_key_length;
 
     // Length of the input message in bytes.
     // For reporting purposes.
@@ -158,14 +163,22 @@ package test_vectors_pkg;
   // Msg = ...
   // MD = ...
   //
-  // 2) This format is used for HMAC test vectors.
+  // 2) This format is used for HMAC RFC4868 test vectors.
   //
   // Len = ...
   // Key = ...
   // Msg = ...
   // MD = ...
   //
-  // 3) This format is used for SHAKE test vectors with standard output digest length.
+  // 3) This format is used for HMAC (SHA-2 256/384/512) NIST test vectors.
+  //
+  // Klen = ...
+  // Tlen = ...
+  // Key = ...
+  // Msg = ...
+  // Mac = ...
+  //
+  // 4) This format is used for SHAKE test vectors with standard output digest length.
   // Note that the security strength and output length are specified once at the top of the file,
   // and will apply to every test vector in the corresponding file.
   //
@@ -176,7 +189,7 @@ package test_vectors_pkg;
   // Msg = ...
   // Output = ...
   //
-  // 4) This format is used for SHAKE test vectors with variable output digest length.
+  // 5) This format is used for SHAKE test vectors with variable output digest length.
   // Note that the security strength and input message length are specified once at the top of the
   // file and will apply to every test vector in the corresponding file.
   //
@@ -188,7 +201,7 @@ package test_vectors_pkg;
   // Msg = ...
   // Output = ...
   //
-  // 5) This format is used for CSHAKE test vectors.
+  // 6) This format is used for CSHAKE test vectors.
   // The security strength is specified in brackets at the top of the file and will apply to every
   // test vector in the corresponding file.
   //
@@ -201,7 +214,7 @@ package test_vectors_pkg;
   // OutputLen = ...
   // Output = ...
   //
-  // 6) This format is used for KMAC test vectors.
+  // 7) This format is used for KMAC test vectors.
   // The security strength is specified in brackets at the top of the file and will apply to every
   // test vector in the corresponding file.
   //
@@ -222,7 +235,7 @@ package test_vectors_pkg;
   // information for each vector into a `test_vectors_t` struct, appending the new object to the
   // `parsed_vectors` queue once it is complete.
   //
-  // We know that a test vector object is complete once we parse an "<MD/Output> = ..." line,
+  // We know that a test vector object is complete once we parse an "<MD/Mac/Output> = ..." line,
   // as the single consistency in all NIST test vectors is that the output data is the last entry of
   // each test vector description.
   function automatic void get_hash_test_vectors(
@@ -334,6 +347,29 @@ package test_vectors_pkg;
           "KeyLen": begin
             vector.key_length_word = entry_data.atoi() / 32;
           end
+          "Klen": begin
+            int key_length_byte = entry_data.atoi();
+
+            // confirm that atoi() does not return 0 for a string
+            if (key_length_byte == 0) begin
+              `uvm_fatal(header, "Key length is not integer value as expected.")
+            // rounding up arbitrary key length of test vector to nearest predefined key length
+            end else if (key_length_byte <= 16) begin  // 128-bit key
+              vector.key_length_word = 16 / 4;
+            end else if (key_length_byte <= 32) begin  // 256-bit key
+              vector.key_length_word = 32 / 4;
+            end else if (key_length_byte <= 48) begin  // 384-bit key
+              vector.key_length_word = 48 / 4;
+            end else if (key_length_byte <= 64) begin  // 512-bit key
+              vector.key_length_word = 64 / 4;
+            end else if (key_length_byte <= 128) begin // 1024-bit key
+              vector.key_length_word = 128 / 4;
+            end else begin // zero out if key_length > 1024 bits (128 bytes)
+              vector.key_length_word = 0;
+            end
+
+            vector.sha2_key_length = vector.key_length_word * 32;
+          end
           "Key": begin
             str_to_bytes(entry_data, bytes);
             // If no keyword `KeyLen` but has `Key`, use the default key len: 256 bits
@@ -361,7 +397,13 @@ package test_vectors_pkg;
             // If a global output length is defined, this case will never be reached.
             vector.digest_length_byte = entry_data.atoi() / 8;
           end
-          "MD", "Output": begin
+          "Tlen": begin
+            vector.digest_length_byte = entry_data.atoi();
+            if (vector.digest_length_byte % 4 !=0) begin
+              `uvm_fatal(header, "Key length is word-aligned (not divisible by 4).")
+            end
+          end
+          "MD", "Output", "Mac": begin
             str_to_bytes(entry_data, vector.exp_digest);
 
             // The output is the last entry for each test vector, so now

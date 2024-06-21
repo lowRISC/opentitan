@@ -113,9 +113,21 @@
     }
 
     {
-      name: hmac_test_hmac_vectors
+      name: hmac_test_hmac256_vectors
       uvm_test_seq: hmac_test_vectors_hmac_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +sha2_digest_size=SHA2_256"]
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=1_000_000_000 +sha2_digest_size=SHA2_256"]
+    }
+
+    {
+      name: hmac_test_hmac384_vectors
+      uvm_test_seq: hmac_test_vectors_hmac_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=2_000_000_000 +sha2_digest_size=SHA2_384"]
+    }
+
+    {
+      name: hmac_test_hmac512_vectors
+      uvm_test_seq: hmac_test_vectors_hmac_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=2_000_000_000 +sha2_digest_size=SHA2_512"]
     }
 
     {
@@ -142,6 +154,10 @@
      {
       name: sha_test_vectors
       tests: ["hmac_test_sha256_vectors", "hmac_test_sha384_vectors", "hmac_test_sha512_vectors"]
+    }
+    {
+      name: hmac_test_vectors
+      tests: ["hmac_test_hmac256_vectors", "hmac_test_hmac384_vectors", "hmac_test_hmac512_vectors"]
     }
   ]
 }
