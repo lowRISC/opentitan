@@ -75,22 +75,51 @@ static const uint8_t kSpxVerifyPureDomainSep[] = {
     0x00,
 };
 
+/**
+ * Domain-separation prefix for SPHINCS+ with SHA256 prehashing.
+ *
+ * The domain separation prefix is the following byte sequence:
+ *   0x01 || len(ctx) || ctx || OID(PH)
+ *
+ * In our case, `ctx` is always the empty string and PH (the pre-hashing
+ * function) is always SHA256.
+ */
+static const uint8_t kSpxVerifyPrehashDomainSep[] = {
+    0x01, 0x00, 0x06, 0x09, 0x60, 0x86, 0x48,
+    0x01, 0x65, 0x03, 0x04, 0x02, 0x01};
+
 rom_error_t sigverify_spx_verify(
     const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,
-    lifecycle_state_t lc_state, const void *msg_prefix_1,
-    size_t msg_prefix_1_len, const void *msg_prefix_2, size_t msg_prefix_2_len,
-    const void *msg, size_t msg_len, uint32_t *flash_exec) {
+    const sigverify_spx_config_id_t config, lifecycle_state_t lc_state,
+    const void *msg_prefix_1, size_t msg_prefix_1_len, const void *msg_prefix_2,
+    size_t msg_prefix_2_len, const void *msg, size_t msg_len,
+    const hmac_digest_t *digest, uint32_t *flash_exec) {
   uint32_t spx_en = launder32(sigverify_spx_verify_enabled(lc_state));
   rom_error_t error = kErrorSigverifyBadSpxSignature;
   if (launder32(spx_en) != kSigverifySpxDisabledOtp) {
     sigverify_spx_root_t expected_root;
     spx_public_key_root(key->data, expected_root.data);
     sigverify_spx_root_t actual_root;
-    HARDENED_RETURN_IF_ERROR(
-        spx_verify(signature->data, kSpxVerifyPureDomainSep,
-                   sizeof(kSpxVerifyPureDomainSep), msg_prefix_1,
-                   msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg,
-                   msg_len, key->data, actual_root.data));
+    if (launder32(config) == kSigverifySpxConfigIdSha2128sPrehash) {
+      HARDENED_CHECK_EQ(config, kSigverifySpxConfigIdSha2128sPrehash);
+      HARDENED_RETURN_IF_ERROR(
+          spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
+                     sizeof(kSpxVerifyPrehashDomainSep),
+                     /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
+                     /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
+                     (unsigned char *)digest->digest, sizeof(digest->digest),
+                     key->data, actual_root.data));
+    } else if (launder32(config) == kSigverifySpxConfigIdSha2128s) {
+      HARDENED_CHECK_EQ(config, kSigverifySpxConfigIdSha2128s);
+      HARDENED_RETURN_IF_ERROR(
+          spx_verify(signature->data, kSpxVerifyPureDomainSep,
+                     sizeof(kSpxVerifyPureDomainSep), msg_prefix_1,
+                     msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg,
+                     msg_len, key->data, actual_root.data));
+    } else {
+      // Unsupported SPHINCS+ configuration.
+      return kErrorSigverifyBadSpxConfig;
+    }
 
     size_t i = 0;
     for (; launder32(i) < kSigverifySpxRootNumWords; ++i) {

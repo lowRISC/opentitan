@@ -62,10 +62,10 @@ enum {
  * ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 -s 359186736 --language=c
  */
 typedef enum sigverify_spx_config_id {
-  /** SPHINCS+-SHA2-128s */
+  /** SPHINCS+-SHA2-128s without pre-hashing. */
   kSigverifySpxConfigIdSha2128s = 0x0142410e,
   /**
-   * SPHINCS+-SHA2-128s-q20
+   * SPHINCS+-SHA2-128s-q20 without pre-hashing.
    *
    * As specified in https://eprint.iacr.org/2022/1725.pdf.
    *
@@ -73,6 +73,10 @@ typedef enum sigverify_spx_config_id {
    * 16 | 18 | 1 | 24 | 6 | 16 |   128  | 3264
    */
   kSigverifySpxConfigIdSha2128sQ20 = 0x9b28d8da,
+  /** SPHINCS+-SHA2-128s with SHA256 pre-hashing. */
+  kSigverifySpxConfigIdSha2128sPrehash = 0x4694e9cb,
+  /** SPHINCS+-SHA2-128s-q20 with SHA256 pre-hashing. */
+  kSigverifySpxConfigIdSha2128sQ20Prehash = 0xa3ed7f9a,
 } sigverify_spx_config_id_t;
 
 /**

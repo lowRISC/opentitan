@@ -95,6 +95,7 @@ enum module_ {
   X(kErrorSigverifyBadEcdsaSignature, ERROR_(7, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadAuthPartition,  ERROR_(8, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadEcdsaKey,       ERROR_(9, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadSpxConfig,      ERROR_(10, kModuleSigverify, kInvalidArgument)), \
   \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   \

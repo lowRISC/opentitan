@@ -379,7 +379,10 @@ static sigverify_spx_signature_t kSignature = {
 
 static uint32_t kSpxEnabled = 0;
 
-static const uint8_t kSpxVerifyPureDomainSep[] = {
+static const sigverify_spx_config_id_t kConfig = kSigverifySpxConfigIdSha2128s;
+
+// Domain separator for pure (not pre-hashed) mode.
+static const uint8_t kSpxVerifyDomainSep[] = {
     0x00,
     0x00,
 };
@@ -425,9 +428,9 @@ static rom_error_t spx_verify_impl_test(void) {
   sigverify_spx_root_t expected_root;
   sigverify_spx_root_t actual_root;
   spx_public_key_root(kPubKey.data, expected_root.data);
-  rom_error_t error = spx_verify(kSignature.data, kSpxVerifyPureDomainSep,
-                                 sizeof(kSpxVerifyPureDomainSep), NULL, 0, NULL,
-                                 0, (const uint8_t *)kMessage, kMessageLen,
+  rom_error_t error = spx_verify(kSignature.data, kSpxVerifyDomainSep,
+                                 sizeof(kSpxVerifyDomainSep), NULL, 0, NULL, 0,
+                                 (const uint8_t *)kMessage, kMessageLen,
                                  kPubKey.data, actual_root.data);
   if (memcmp(&expected_root, &actual_root, sizeof(sigverify_spx_root_t)) != 0) {
     return kErrorUnknown;
@@ -441,9 +444,9 @@ static rom_error_t spx_verify_disabled_bad_signature_test(void) {
   uint32_t flash_exec = 0;
   uint32_t good_word = kSignature.data[0];
   kSignature.data[0] = 0;
-  rom_error_t error =
-      sigverify_spx_verify(&kSignature, &kPubKey, kLcStateProd, NULL, 0, NULL,
-                           0, &kMessage, kMessageLen, &flash_exec);
+  rom_error_t error = sigverify_spx_verify(
+      &kSignature, &kPubKey, kConfig, kLcStateProd, NULL, 0, NULL, 0, &kMessage,
+      kMessageLen, NULL, &flash_exec);
   kSignature.data[0] = good_word;
 
   if (flash_exec != kSigverifySpxSuccess) {
@@ -458,9 +461,9 @@ static rom_error_t spx_verify_disabled_good_signature_test(void) {
   disable_spx_verify();
 
   uint32_t flash_exec = 0;
-  rom_error_t error =
-      sigverify_spx_verify(&kSignature, &kPubKey, kLcStateProd, NULL, 0, NULL,
-                           0, &kMessage, kMessageLen, &flash_exec);
+  rom_error_t error = sigverify_spx_verify(
+      &kSignature, &kPubKey, kConfig, kLcStateProd, NULL, 0, NULL, 0, &kMessage,
+      kMessageLen, NULL, &flash_exec);
 
   if (flash_exec != kSigverifySpxSuccess) {
     LOG_ERROR("flash_exec must be 0x%08x, not 0x%08x", kSigverifySpxSuccess,
@@ -476,9 +479,9 @@ static rom_error_t spx_verify_enabled_bad_signature_test(void) {
   uint32_t flash_exec = 0;
   uint32_t good_word = kSignature.data[0];
   kSignature.data[0] = 0;
-  rom_error_t error =
-      sigverify_spx_verify(&kSignature, &kPubKey, kLcStateProd, NULL, 0, NULL,
-                           0, &kMessage, kMessageLen, &flash_exec);
+  rom_error_t error = sigverify_spx_verify(
+      &kSignature, &kPubKey, kConfig, kLcStateProd, NULL, 0, NULL, 0, &kMessage,
+      kMessageLen, NULL, &flash_exec);
   kSignature.data[0] = good_word;
 
   if (error == kErrorOk) {
@@ -497,9 +500,9 @@ static rom_error_t spx_verify_enabled_good_signature_test(void) {
   enable_spx_verify();
 
   uint32_t flash_exec = 0;
-  rom_error_t error =
-      sigverify_spx_verify(&kSignature, &kPubKey, kLcStateProd, NULL, 0, NULL,
-                           0, &kMessage, kMessageLen, &flash_exec);
+  rom_error_t error = sigverify_spx_verify(
+      &kSignature, &kPubKey, kConfig, kLcStateProd, NULL, 0, NULL, 0, &kMessage,
+      kMessageLen, NULL, &flash_exec);
 
   if (flash_exec != kSigverifySpxSuccess) {
     LOG_ERROR("flash_exec must be 0x%08x, not 0x%08x", kSigverifySpxSuccess,

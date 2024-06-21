@@ -34,6 +34,14 @@ pub trait SpxPublicKeyPart {
         let full_message = &[domain_sep, message].concat();
         Ok(sphincsplus::spx_verify(self.pk(), &sig.0, full_message)?)
     }
+
+    // Verify a message signature in pre-hashed mode, returning Ok(()) if the
+    // signature matches.
+    fn verify_prehash(&self, oid: &[u8], message: &[u8], sig: &SpxSignature) -> Result<()> {
+        let domain_sep = &[1u8, 0u8];
+        let full_message = &[domain_sep, oid, message].concat();
+        Ok(sphincsplus::spx_verify(self.pk(), &sig.0, full_message)?)
+    }
 }
 
 #[derive(Clone)]
@@ -83,6 +91,13 @@ impl SpxKeypair {
     pub fn sign(&self, message: &[u8]) -> SpxSignature {
         let domain_sep = &[0u8, 0u8];
         let full_message = &[domain_sep, message].concat();
+        SpxSignature(sphincsplus::spx_sign(&self.sk, full_message).unwrap())
+    }
+
+    /// Sign `message` using the secret key in "prehash" mode with an empty context.
+    pub fn sign_prehash(&self, oid: &[u8], message: &[u8]) -> SpxSignature {
+        let domain_sep = &[1u8, 0u8];
+        let full_message = &[domain_sep, oid, message].concat();
         SpxSignature(sphincsplus::spx_sign(&self.sk, full_message).unwrap())
     }
 
@@ -247,5 +262,22 @@ mod test {
         let keypair = SpxKeypair::generate();
         let sig = keypair.sign(msg);
         assert!(keypair.verify(msg, &sig).is_ok());
+    }
+
+    #[test]
+    fn test_spx_sign_prehash() {
+        // SHA256('Test message')
+        let digest = [
+            0xc0, 0x71, 0x9e, 0x9a, 0x8d, 0x5d, 0x83, 0x8d, 0x86, 0x1d, 0xc6, 0xf6, 0x75, 0xc8,
+            0x99, 0xd2, 0xb3, 0x09, 0xa3, 0xa6, 0x5b, 0xb9, 0xfe, 0x6b, 0x11, 0xe5, 0xaf, 0xcb,
+            0xf9, 0xa2, 0xc0, 0xb1,
+        ];
+        let sha256_oid = [
+            0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+        ];
+
+        let keypair = SpxKeypair::generate();
+        let sig = keypair.sign_prehash(&sha256_oid, &digest);
+        assert!(keypair.verify_prehash(&sha256_oid, &digest, &sig).is_ok());
     }
 }

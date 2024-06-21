@@ -44,8 +44,8 @@ key_sphincs_plus = rule(
         ),
         "config": attr.string(
             default = "Sha2128s",
-            doc = "The config of the key. Can be Sha2128s or Sha2128sQ20.",
-            values = ["Sha2128s", "Sha2128sQ20"],
+            doc = "The config of the key. Can be Sha2128s[Q20][Prehash].",
+            values = ["Sha2128s", "Sha2128sQ20", "Sha2128sPrehash", "Sha2128sQ20Prehash"],
         ),
         "method": attr.string(
             doc = "Mechanism used to access the key. Can be local or hsmtool.",

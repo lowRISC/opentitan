@@ -32,6 +32,8 @@ CONST = struct(
     SPX_CONFIG_ID = struct(
         SHA2_128S = 0x0142410e,
         SHA2_128S_Q20 = 0x9b28d8da,
+        SHA2_128S_PREHASH = 0x4694e9cb,
+        SHA2_128S_Q20_PREHASH = 0xa3ed7f9a,
     ),
     # Signature verification key types. Must match the definitions in
     # //sw/device/silicon_creator/rom/sigverify_key_types.h
