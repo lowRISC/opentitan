@@ -33,7 +33,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -72,7 +72,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -114,7 +114,7 @@ _CP_PROVISIONING_HARNESS = "//sw/host/provisioning/cp"
 opentitan_test(
     name = "cp_provision",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     fpga = fpga_params(
@@ -129,7 +129,7 @@ opentitan_test(
     silicon = silicon_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
-        interface = "hyper310",
+        interface = "teacup",
         needs_jtag = True,
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = _CP_PROVISIONING_HARNESS,
@@ -139,16 +139,16 @@ opentitan_test(
 opentitan_test(
     name = "cp_provision_functest",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         binaries = {
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
         },
-        bitstream = "//hw/bitstream:mask_rom_otp_raw",
         changes_otp = True,
         needs_jtag = True,
+        otp = "//hw/ip/otp_ctrl/data:img_raw",
         tags = ["manuf"],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
@@ -164,7 +164,7 @@ opentitan_test(
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         kind = "ram",
@@ -212,7 +212,7 @@ opentitan_binary(
     srcs = ["ft_personalize.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -277,7 +277,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 opentitan_test(
     name = "ft_provision",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     fpga = fpga_params(
