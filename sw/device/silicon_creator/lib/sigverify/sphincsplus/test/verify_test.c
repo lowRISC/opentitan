@@ -48,7 +48,7 @@ static rom_error_t run_verify(const spx_verify_test_vector_t *test,
 
   // Run verification and print the cycle count.
   uint64_t t_start = profile_start();
-  rom_error_t err = spx_verify(test->sig, NULL, 0, NULL, 0, test->msg,
+  rom_error_t err = spx_verify(test->sig, NULL, 0, NULL, 0, NULL, 0, test->msg,
                                test->msg_len, test->pk, root);
   uint32_t cycles = profile_end(t_start);
   LOG_INFO("Verification took %u cycles.", cycles);

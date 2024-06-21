@@ -27,7 +27,8 @@ static_assert(kSpxVerifyPkWords * sizeof(uint32_t) == kSpxVerifyPkBytes,
 static_assert(kSpxD <= UINT8_MAX, "kSpxD must fit into a uint8_t.");
 rom_error_t spx_verify(const uint32_t *sig, const uint8_t *msg_prefix_1,
                        size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
-                       size_t msg_prefix_2_len, const uint8_t *msg,
+                       size_t msg_prefix_2_len, const uint8_t *msg_prefix_3,
+                       size_t msg_prefix_3_len, const uint8_t *msg,
                        size_t msg_len, const uint32_t *pk, uint32_t *root) {
   spx_ctx_t ctx;
   memcpy(ctx.pub_seed, pk, kSpxN);
@@ -50,7 +51,7 @@ rom_error_t spx_verify(const uint32_t *sig, const uint8_t *msg_prefix_1,
   uint32_t idx_leaf;
   HARDENED_RETURN_IF_ERROR(spx_hash_message(
       sig, pk, msg_prefix_1, msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len,
-      msg, msg_len, mhash, &tree, &idx_leaf));
+      msg_prefix_3, msg_prefix_3_len, msg, msg_len, mhash, &tree, &idx_leaf));
   sig += kSpxNWords;
 
   // Layer correctly defaults to 0, so no need to set_layer_addr.

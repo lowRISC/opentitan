@@ -46,6 +46,8 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
  * @param msg_prefix_1_len Length of the first prefix.
  * @param msg_prefix_2 Optional message prefix.
  * @param msg_prefix_2_len Length of the second prefix.
+ * @param msg_prefix_3 Optional message prefix.
+ * @param msg_prefix_3_len Length of the third prefix.
  * @param msg Input message.
  * @param msg_len Input message length.
  * @param[out] digest Output buffer for message digest.
@@ -54,13 +56,12 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spx_hash_message(const uint32_t *R, const uint32_t *pk,
-                             const uint8_t *msg_prefix_1,
-                             size_t msg_prefix_1_len,
-                             const uint8_t *msg_prefix_2,
-                             size_t msg_prefix_2_len, const uint8_t *msg,
-                             size_t msg_len, uint8_t *digest, uint64_t *tree,
-                             uint32_t *leaf_idx);
+rom_error_t spx_hash_message(
+    const uint32_t *R, const uint32_t *pk, const uint8_t *msg_prefix_1,
+    size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
+    size_t msg_prefix_2_len, const uint8_t *msg_prefix_3,
+    size_t msg_prefix_3_len, const uint8_t *msg, size_t msg_len,
+    uint8_t *digest, uint64_t *tree, uint32_t *leaf_idx);
 
 #ifdef __cplusplus
 }
