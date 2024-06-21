@@ -296,7 +296,7 @@
               assert that no SBA TL accesses appear on the TL interface.
             '''
       stage: V2
-      tests: [] // TODO(#15668)
+      tests: ["rv_dm_sba_debug_disabled"]
     }
     {
       name: ndmreset_req
