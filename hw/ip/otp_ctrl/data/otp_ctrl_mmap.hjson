@@ -356,6 +356,19 @@
                     name: "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN",
                     size: "4"
                 }
+                {
+                    // Datatype: bitmap
+                    // One bits enable Schmitt triggers on the corresponding MIO pad.
+                    name: "OWNER_SW_CFG_ROM_MIO_SCHMITT_EN",
+                    size: "8"
+                }
+                {
+                    // Datatype: bitmap
+                    // One bits enable Schmitt triggers on the corresponding DIO pad.
+                    name: "OWNER_SW_CFG_ROM_DIO_SCHMITT_EN",
+                    size: "4"
+                }
+
             ],
             desc: '''Software configuration partition.
             This contains data that changes software behavior in the ROM, for

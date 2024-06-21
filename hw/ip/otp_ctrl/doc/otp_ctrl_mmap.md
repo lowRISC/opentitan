@@ -7,7 +7,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |:-------:|:-------------------------:|:----------:|:----------------:|:---------------------------------------------------------------------------:|:--------------:|:----------:|
 |    0    |        VENDOR_TEST        |     64     |      32bit       |                                   SCRATCH                                   |     0x000      |     56     |
 |         |                           |            |      64bit       |               [VENDOR_TEST_DIGEST](#Reg_vendor_test_digest_0)               |     0x038      |     8      |
-|    1    |      CREATOR_SW_CFG       |    408     |      32bit       |                           CREATOR_SW_CFG_AST_CFG                            |     0x040      |    156     |
+|    1    |      CREATOR_SW_CFG       |    400     |      32bit       |                           CREATOR_SW_CFG_AST_CFG                            |     0x040      |    156     |
 |         |                           |            |      32bit       |                         CREATOR_SW_CFG_AST_INIT_EN                          |     0x0DC      |     4      |
 |         |                           |            |      32bit       |                         CREATOR_SW_CFG_ROM_EXT_SKU                          |     0x0E0      |     4      |
 |         |                           |            |      32bit       |                       CREATOR_SW_CFG_SIGVERIFY_SPX_EN                       |     0x0E4      |     4      |
@@ -38,30 +38,32 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                           |            |      32bit       |                   CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST                   |     0x148      |     4      |
 |         |                           |            |      32bit       |                      CREATOR_SW_CFG_SRAM_KEY_RENEW_EN                       |     0x14C      |     4      |
 |         |                           |            |      32bit       |                           CREATOR_SW_CFG_RESERVED                           |     0x150      |     22     |
-|         |                           |            |      64bit       |            [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0)            |     0x1D0      |     8      |
-|    2    |       OWNER_SW_CFG        |    672     |      32bit       |                      OWNER_SW_CFG_ROM_ERROR_REPORTING                       |     0x1D8      |     4      |
-|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_BOOTSTRAP_DIS                        |     0x1DC      |     4      |
-|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_ALERT_CLASS_EN                       |     0x1E0      |     4      |
-|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_ESCALATION                      |     0x1E4      |     4      |
-|         |                           |            |      32bit       |                    OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION                    |     0x1E8      |    320     |
-|         |                           |            |      32bit       |                 OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION                 |     0x328      |     64     |
-|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH                     |     0x368      |     16     |
-|         |                           |            |      32bit       |                    OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES                    |     0x378      |     16     |
-|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES                     |     0x388      |     64     |
-|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD                      |     0x3C8      |     4      |
-|         |                           |            |      32bit       |                   OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END                    |     0x3CC      |     4      |
-|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV                      |     0x3D0      |     4      |
-|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA                      |     0x3D4      |     4      |
-|         |                           |            |      32bit       |               OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES               |     0x3D8      |     4      |
-|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN                     |     0x3DC      |     4      |
-|         |                           |            |      32bit       |                          OWNER_SW_CFG_MANUF_STATE                           |     0x3E0      |     4      |
-|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_RSTMGR_INFO_EN                       |     0x3E4      |     4      |
-|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN                      |     0x3E8      |     4      |
-|         |                           |            |      32bit       |                   OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG                    |     0x3EC      |     12     |
-|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_SRAM_READBACK_EN                      |     0x3F8      |     4      |
-|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN                  |     0x3FC      |     4      |
-|         |                           |            |      32bit       |                         OWNER_SW_CFG_ROM_BANNER_EN                          |     0x400      |     4      |
-|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN                  |     0x404      |     4      |
+|         |                           |            |      64bit       |            [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0)            |     0x1C8      |     8      |
+|    2    |       OWNER_SW_CFG        |    680     |      32bit       |                      OWNER_SW_CFG_ROM_ERROR_REPORTING                       |     0x1D0      |     4      |
+|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_BOOTSTRAP_DIS                        |     0x1D4      |     4      |
+|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_ALERT_CLASS_EN                       |     0x1D8      |     4      |
+|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_ESCALATION                      |     0x1DC      |     4      |
+|         |                           |            |      32bit       |                    OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION                    |     0x1E0      |    320     |
+|         |                           |            |      32bit       |                 OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION                 |     0x320      |     64     |
+|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH                     |     0x360      |     16     |
+|         |                           |            |      32bit       |                    OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES                    |     0x370      |     16     |
+|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES                     |     0x380      |     64     |
+|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD                      |     0x3C0      |     4      |
+|         |                           |            |      32bit       |                   OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END                    |     0x3C4      |     4      |
+|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV                      |     0x3C8      |     4      |
+|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA                      |     0x3CC      |     4      |
+|         |                           |            |      32bit       |               OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES               |     0x3D0      |     4      |
+|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN                     |     0x3D4      |     4      |
+|         |                           |            |      32bit       |                          OWNER_SW_CFG_MANUF_STATE                           |     0x3D8      |     4      |
+|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_RSTMGR_INFO_EN                       |     0x3DC      |     4      |
+|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN                      |     0x3E0      |     4      |
+|         |                           |            |      32bit       |                   OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG                    |     0x3E4      |     12     |
+|         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_SRAM_READBACK_EN                      |     0x3F0      |     4      |
+|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN                  |     0x3F4      |     4      |
+|         |                           |            |      32bit       |                         OWNER_SW_CFG_ROM_BANNER_EN                          |     0x3F8      |     4      |
+|         |                           |            |      32bit       |                  OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN                  |     0x3FC      |     4      |
+|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_MIO_SCHMITT_EN                       |     0x400      |     8      |
+|         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_DIO_SCHMITT_EN                       |     0x408      |     4      |
 |         |                           |            |      64bit       |              [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)              |     0x470      |     8      |
 |    3    | ROT_CREATOR_AUTH_CODESIGN |    472     |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0                  |     0x478      |     4      |
 |         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0                     |     0x47C      |     64     |
