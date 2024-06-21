@@ -463,6 +463,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                    stale_seed_processing;
   logic                    main_sm_enable;
+  logic                    main_sm_done_pulse;
+  logic                    main_sm_ht_failed;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -494,8 +496,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_t mubi_rng_bit_en;
 
   // flops
-  logic        ht_failed_q, ht_failed_d;
-  logic        ht_done_pulse_q, ht_done_pulse_d;
+  logic        ht_failed_qq, ht_failed_q, ht_failed_d;
+  logic        ht_done_pulse_qq, ht_done_pulse_q, ht_done_pulse_d;
   logic        sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
@@ -510,7 +512,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ht_failed_q            <= '0;
+      ht_failed_qq           <= '0;
       ht_done_pulse_q        <= '0;
+      ht_done_pulse_qq       <= '0;
       sha3_err_q             <= '0;
       cs_aes_halt_q          <= '0;
       es_rdata_capt_q        <= '0;
@@ -523,7 +527,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
       rng_enable_q           <= 1'b 0;
     end else begin
       ht_failed_q            <= ht_failed_d;
+      ht_failed_qq           <= ht_failed_q;
       ht_done_pulse_q        <= ht_done_pulse_d;
+      ht_done_pulse_qq       <= ht_done_pulse_q;
       sha3_err_q             <= sha3_err_d;
       cs_aes_halt_q          <= cs_aes_halt_d;
       es_rdata_capt_q        <= es_rdata_capt_d;
@@ -2827,6 +2833,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
   // state machine to coordinate fifo flow
   //--------------------------------------------
+  assign main_sm_done_pulse = rng_bit_en ? ht_done_pulse_qq : ht_done_pulse_q;
+  assign main_sm_ht_failed  = rng_bit_en ? ht_failed_qq : ht_failed_q;
 
   // SEC_CM: CTR.LOCAL_ESC
   // SEC_CM: MAIN_SM.FSM.SPARSE
@@ -2837,8 +2845,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .enable_i             (main_sm_enable),
     .fw_ov_ent_insert_i   (fw_ov_mode_entropy_insert),
     .fw_ov_sha3_start_i   (fw_ov_sha3_start_pfe),
-    .ht_done_pulse_i      (ht_done_pulse_q),
-    .ht_fail_pulse_i      (ht_failed_q),
+    .ht_done_pulse_i      (main_sm_done_pulse),
+    .ht_fail_pulse_i      (main_sm_ht_failed),
     .alert_thresh_fail_i  (alert_threshold_fail),
     .rst_alert_cntr_o     (rst_alert_cntr),
     .bypass_mode_i        (es_bypass_mode),
