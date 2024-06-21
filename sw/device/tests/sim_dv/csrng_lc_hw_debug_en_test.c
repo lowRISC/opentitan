@@ -142,7 +142,8 @@ static void exit_token_cshake_hash(uint64_t *otp_token_l,
 
   uint32_t token_hash[kExitTokenSizeInWords];
   CHECK_DIF_OK(dif_kmac_squeeze(&kmac, &op_state, token_hash,
-                                kExitTokenSizeInWords, /*processed=*/NULL));
+                                kExitTokenSizeInWords, /*processed=*/NULL,
+                                /*capacity=*/NULL));
   CHECK_DIF_OK(dif_kmac_end(&kmac, &op_state));
 
   *otp_token_l = 0;

@@ -167,9 +167,9 @@ bool test_main(void) {
 
     // This is where timeout might happen, so we handle dif return manually
     uint32_t out[kKmacDigestLenMax];
-    dif_result_t res =
-        dif_kmac_squeeze(&kmac, &kmac_operation_state, out,
-                         kKmacTestVector.digest_len, /*processed=*/NULL);
+    dif_result_t res = dif_kmac_squeeze(&kmac, &kmac_operation_state, out,
+                                        kKmacTestVector.digest_len,
+                                        /*processed=*/NULL, /*capacity=*/NULL);
 
     // It is OK to get kDifError at this point because of possible timeout
     CHECK(res == kDifOk || res == kDifError);

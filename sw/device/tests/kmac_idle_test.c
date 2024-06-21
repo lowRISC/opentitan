@@ -82,7 +82,8 @@ static void do_sha3_test(void) {
 
   uint32_t out[DIGEST_LEN_SHA3_MAX];
   CHECK_DIF_OK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out,
-                                sha3_256_test.digest_len, NULL));
+                                sha3_256_test.digest_len, /*processed=*/NULL,
+                                /*capacity=*/NULL));
 
   // Check clock state again which should still be enabled.
   check_clock_state(kDifToggleEnabled);
