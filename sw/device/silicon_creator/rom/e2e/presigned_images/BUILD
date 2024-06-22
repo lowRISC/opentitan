@@ -17,22 +17,6 @@ _EMPTY_TEST_DEVICES = [
     "fpga_cw310",
 ]
 
-[
-    filegroup(
-        name = "empty_test_{}".format(dev),
-        srcs = ["empty_test_sigverify_spx_{}.signed.bin".format(dev)],
-    )
-    for dev in _EMPTY_TEST_DEVICES
-]
-
-[
-    alias(
-        name = "empty_test_{}_bin".format(dev),
-        actual = ":empty_test_{}".format(dev),
-    )
-    for dev in _EMPTY_TEST_DEVICES
-]
-
 # ROM self hash test binaries and aliases.
 bin_to_vmem(
     name = "rom_e2e_self_hash_sim_dv_vmem64",
