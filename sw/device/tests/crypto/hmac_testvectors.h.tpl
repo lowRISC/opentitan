@@ -30,7 +30,7 @@ typedef enum hmac_test_operation {
   kHmacTestOperationHmacSha512,
 } hmac_test_operation_t;
 
-typedef struct kdf_test_vector {
+typedef struct hmac_test_vector {
   char* vector_identifier;
   hmac_test_operation_t test_operation;
   otcrypto_blinded_key_t key;
