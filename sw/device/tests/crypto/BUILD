@@ -473,6 +473,7 @@ opentitan_test(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
