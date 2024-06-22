@@ -35,18 +35,6 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-# TODO(#19199): reactivate this test when doing a ROM release.
-# opentitan_functest(
-#     name = "presigned_fpga_binary",
-#     cw310 = cw310_params(
-#         bitstream = ":bitstream_sigverify_spx_rma",
-#     ),
-#     ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:empty_test",
-#     # False because we don't want this rule to do the signing; the image is already signed.
-#     signed = False,
-#     targets = ["cw310_rom_with_real_keys"],
-# )
-
 opentitan_flash_binary(
     name = "rom_e2e_self_hash",
     testonly = True,
