@@ -783,22 +783,20 @@
     }
 
     // ROM self hash test.
-    // TODO(#19199): reactivate this test before PROD tapeout, when doing a ROM release.
-    // TODO(moidx): Update to ROM e2e target not requiring sigverify_mod_exp dependency.
-    // {
-    //   name: rom_e2e_self_hash
-    //   uvm_test_seq: chip_sw_base_vseq
-    //   sw_images: [
-    //     "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
-    //     "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn:4",
-    //   ]
-    //   en_run_modes: ["sw_test_mode_mask_rom"]
-    //   run_opts: [
-    //     "+sw_test_timeout_ns=200_000_000",
-    //     "+use_otp_image=OtpTypeCustom",
-    //   ]
-    //   run_timeout_mins: 480
-    // }
+    {
+      name: rom_e2e_self_hash
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules"
+        "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_rma:4",
+      ]
+      en_run_modes: ["sw_test_mode_mask_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=200_000_000",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      run_timeout_mins: 480
+    }
     // This test is commented out in the open-source, but can be uncommented by
     // back-end designers after they integrate the functional model of the ROM
     // macro into the netlist.
@@ -806,8 +804,8 @@
     //   name: rom_e2e_self_hash_no_bkdr_rom_load
     //   uvm_test_seq: chip_sw_base_vseq
     //   sw_images: [
-    //     "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
-    //     "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn:4",
+    //     "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules"
+    //     "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_rma:4",
     //   ]
     //   // We purposely use the `sw_test_mode_common` run mode here instead of the
     //   // run modes that add either ROM image to the list of sw_images to
