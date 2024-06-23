@@ -3313,6 +3313,50 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "spi_device_sleep_test",
+    srcs = ["spi_device_sleep_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EARLGREY_TEST_ENVS,
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_sleep_test",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_sleep_test",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],

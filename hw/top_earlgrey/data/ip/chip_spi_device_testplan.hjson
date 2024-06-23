@@ -195,7 +195,7 @@
       lc_states: [ "PROD" ]
       features: []
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:spi_device_sleep_test"]
     }
   ]
 }
