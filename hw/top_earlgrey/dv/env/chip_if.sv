@@ -95,10 +95,6 @@ interface chip_if;
   pins_if#(.Width(top_earlgrey_pkg::MioPadCount), .PullStrength("Weak")) mios_if(.pins(mios));
   pins_if#(.Width(top_earlgrey_pkg::DioPadCount), .PullStrength("Weak")) dios_if(.pins(dios));
 
-  // Functional (dedicated) interface (input): AST misc.
-  wire ast_misc;
-  pins_if #(.Width(1), .PullStrength("Weak")) ast_misc_if(.pins(ast_misc));
-
   // Weak pulls for DIOs.
   //
   // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
@@ -306,7 +302,7 @@ interface chip_if;
 
   // Functional (muxed) interface: DFT straps.
   pins_if #(.Width(2), .PullStrength("Weak")) dft_straps_if(
-    .pins(mios[top_earlgrey_pkg::MioPadIoc4:top_earlgrey_pkg::MioPadIoc3])
+    .pins({mios[top_earlgrey_pkg::MioPadIor7], mios[top_earlgrey_pkg::MioPadIor5]})
   );
 
   // Functional (muxed) interface: TAP straps.
@@ -706,6 +702,32 @@ interface chip_if;
     release `AST_HIER.adc_d_o;
   endtask
 
+  // This task triggers a wakeup by forcing an incoming alert from AST to sensor_ctrl.
+  // It should be used when the device is in sleep mode, and the alert will be cleared by
+  // sensor_ctrl alert ack output.
+  task static trigger_sensor_ctrl_wkup();
+    `uvm_info(MsgId, "forcing sensor_ctrl ast_alert_i[0] to 1", UVM_MEDIUM)
+    `ifdef GATE_LEVEL
+       force `SENSOR_CTRL_HIER.ast_alert_i[1:1] = 1'b1;
+    `else
+       force `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p = 1'b1;
+    `endif
+    // Release the alert when an ack cycle is done, so wait for ack to rise
+    // and release when it falls, with a timeout of 20 micro seconds.
+    `ifdef GATE_LEVEL
+       `DV_WAIT(`SENSOR_CTRL_HIER.alert_event_p[0:0] == 1'b1, , 20_000_000, "chip_if")
+    `else
+       `DV_WAIT(`SENSOR_CTRL_HIER.ast_alert_o.alerts_ack[0].p == 1'b1, , 20_000_000, "chip_if")
+    `endif
+    `uvm_info(MsgId, "releasing sensor_ctrl ast_alert_i[0]", UVM_MEDIUM)
+    @(posedge `SENSOR_CTRL_HIER.clk_i);
+    `ifdef GATE_LEVEL
+       release `SENSOR_CTRL_HIER.ast_alert_i[1:1];
+    `else
+       release `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p;
+    `endif
+  endtask
+
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn
@@ -916,7 +938,6 @@ interface chip_if;
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
     sysrst_ctrl_if.disconnect();
-    ast_misc_if.disconnect();
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
@@ -1111,12 +1132,9 @@ interface chip_if;
 `define _ADC_FSM_STATE_Q(i) \
    `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
 
-  assign adc_ctrl_state = {`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_4_
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_3_
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q[2]
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_1_
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q[0]
-                          };
+ //RTL has "assign aon_fsm_state_o = fsm_state_q;"
+ assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.aon_fsm_state_o;
+
 `undef _ADC_FSM_STATE_Q
 `else
   assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
@@ -1172,10 +1190,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
 `ifdef GATE_LEVEL
-  assign hmac_fsm_state = {`HMAC_HIER.u_hmac.dftopt19
-                          ,`HMAC_HIER.u_hmac.dftopt10
-                          ,`HMAC_HIER.u_hmac.dftopt1
-                          };
+  assign hmac_fsm_state = `HMAC_HIER.u_hmac.st_q[2:0]; 
 `else
   assign hmac_fsm_state = `HMAC_HIER.u_hmac.st_q;
 `endif
