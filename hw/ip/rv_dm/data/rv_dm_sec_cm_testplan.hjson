@@ -31,9 +31,22 @@
     }
     {
       name: sec_cm_lc_hw_debug_en_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
+      desc: '''
+        Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI.
+
+        The lc_hw_debug_en_i signal is encoded as lc_tx_t and is used through the
+        lc_hw_debug_en_gated signal. Bad values of this signal should be interpreted as "Off",
+        disabling debug and also memory/sba TL access.
+
+        Set this to a value other than On and check:
+
+        - No ndmreset is possible (true because the ndmreset_ack signal is gated)
+        - No debug request can be sent to the core through debug_req_o
+        - Instruction fetch requests through the memory window are not successful.
+        - The "mem" and "sba" TL interfaces are both disabled.
+      '''
       stage: V2S
-      tests: []
+      tests: ["rv_dm_debug_disabled", "rv_dm_sba_debug_disabled"]
     }
     {
       name: sec_cm_lc_dft_en_intersig_mubi
