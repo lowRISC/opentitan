@@ -27,7 +27,7 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["rv_dm_tl_intg_err"]
     }
     {
       name: sec_cm_lc_hw_debug_en_intersig_mubi
