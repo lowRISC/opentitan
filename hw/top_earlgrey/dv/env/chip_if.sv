@@ -707,13 +707,25 @@ interface chip_if;
   // sensor_ctrl alert ack output.
   task static trigger_sensor_ctrl_wkup();
     `uvm_info(MsgId, "forcing sensor_ctrl ast_alert_i[0] to 1", UVM_MEDIUM)
+`ifdef GATE_LEVEL
+    force `SENSOR_CTRL_HIER.ast_alert_i[1:1] = 1'b1;
+`else
     force `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p = 1'b1;
+`endif
     // Release the alert when an ack cycle is done, so wait for ack to rise
     // and release when it falls, with a timeout of 20 micro seconds.
+`ifdef GATE_LEVEL
+    `DV_WAIT(`SENSOR_CTRL_HIER.alert_event_p[0:0] == 1'b1, , 20_000_000, "chip_if")
+`else
     `DV_WAIT(`SENSOR_CTRL_HIER.ast_alert_o.alerts_ack[0].p == 1'b1, , 20_000_000, "chip_if")
+`endif
     `uvm_info(MsgId, "releasing sensor_ctrl ast_alert_i[0]", UVM_MEDIUM)
     @(posedge `SENSOR_CTRL_HIER.clk_i);
+`ifdef GATE_LEVEL
+    release `SENSOR_CTRL_HIER.ast_alert_i[1:1];
+`else
     release `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p;
+`endif
   endtask
 
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
@@ -1120,12 +1132,9 @@ interface chip_if;
 `define _ADC_FSM_STATE_Q(i) \
    `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
 
-  assign adc_ctrl_state = {`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_4_
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_3_
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q[2]
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_1_
-                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q[0]
-                          };
+  //RTL has "assign aon_fsm_state_o = fsm_state_q;"
+  assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.aon_fsm_state_o;
+
 `undef _ADC_FSM_STATE_Q
 `else
   assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
@@ -1181,9 +1190,10 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
 `ifdef GATE_LEVEL
-  assign hmac_fsm_state = {`HMAC_HIER.u_hmac.dftopt19
-                          ,`HMAC_HIER.u_hmac.dftopt10
-                          ,`HMAC_HIER.u_hmac.dftopt1
+  assign hmac_fsm_state = {
+                           `HMAC_HIER.u_hmac.st_q_reg_2_.Q,
+                           `HMAC_HIER.u_hmac.st_q_reg_1_.Q,
+                           `HMAC_HIER.u_hmac.st_q_reg_0_.Q
                           };
 `else
   assign hmac_fsm_state = `HMAC_HIER.u_hmac.st_q;
