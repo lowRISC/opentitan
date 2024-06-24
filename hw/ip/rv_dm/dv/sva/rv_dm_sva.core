@@ -9,8 +9,10 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:rv_dm
     files:
       - rv_dm_bind.sv
+      - rv_dm_enable_checker.sv
     file_type: systemVerilogSource
 
   files_formal:

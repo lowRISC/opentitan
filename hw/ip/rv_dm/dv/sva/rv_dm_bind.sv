@@ -40,4 +40,14 @@ module rv_dm_bind;
 
   // TODO: What about 'rv_dm_mem_csr_assert_fpv?
 
+  bind rv_dm rv_dm_enable_checker enable_checker (
+    .clk_i (clk_i),
+    .rst_ni (rst_ni),
+    .lc_hw_debug_en_i(lc_hw_debug_en_i),
+    .debug_req_o_i(debug_req_o),
+    .mem_tl_d_o_i(mem_tl_d_o),
+    .sba_tl_h_o_i(sba_tl_h_o),
+    .ndmreset_ack
+  );
+
 endmodule
