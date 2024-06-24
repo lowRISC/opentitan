@@ -257,8 +257,13 @@ module tb;
 
   // The gpiodpi module allows the host to directly control gpio when enabled.
   gpiodpi u_gpiodpi(
+`ifdef GATE_LEVEL
+    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
+`else
     .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
     .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+`endif
     .active(u_tb_dpi_if.enable_gpiodpi),
     .gpio_p2d(gpiodpi_p2d),
     .gpio_d2p(gpiodpi_d2p),
@@ -291,6 +296,7 @@ module tb;
   assign gpiodpi_pull_en_d2p[gi_] = 1'b0; \
   assign gpiodpi_pull_sel_d2p[gi_] = 1'b0
 
+`ifndef GATE_LEVEL
   `ASSIGN_GPIODPI_D2P(0, MioPadIob6);
   `ASSIGN_GPIODPI_D2P(1, MioPadIob7);
   `ASSIGN_GPIODPI_D2P(2, MioPadIob8);
@@ -305,6 +311,16 @@ module tb;
   `ASSIGN_GPIODPI_D2P(11, MioPadIor11);
   `ASSIGN_GPIODPI_D2P(12, MioPadIor12);
   `ASSIGN_GPIODPI_D2P(13, MioPadIor13);
+  // SW straps
+  `ASSIGN_GPIODPI_D2P(22, MioPadIoc0);
+  `ASSIGN_GPIODPI_D2P(23, MioPadIoc1);
+  `ASSIGN_GPIODPI_D2P(24, MioPadIoc2);
+  // TAP straps
+  `ASSIGN_GPIODPI_D2P(27, MioPadIoc5);
+
+  `ASSIGN_GPIODPI_D2P(30, MioPadIoc8);
+`endif
+
   `ASSIGN_UNUSED_GPIODPI_D2P(14);
   `ASSIGN_UNUSED_GPIODPI_D2P(15);
   `ASSIGN_UNUSED_GPIODPI_D2P(16);
@@ -313,17 +329,13 @@ module tb;
   `ASSIGN_UNUSED_GPIODPI_D2P(19);
   `ASSIGN_UNUSED_GPIODPI_D2P(20);
   `ASSIGN_UNUSED_GPIODPI_D2P(21);
-  // SW straps
-  `ASSIGN_GPIODPI_D2P(22, MioPadIoc0);
-  `ASSIGN_GPIODPI_D2P(23, MioPadIoc1);
-  `ASSIGN_GPIODPI_D2P(24, MioPadIoc2);
+
   `ASSIGN_UNUSED_GPIODPI_D2P(25);
   `ASSIGN_UNUSED_GPIODPI_D2P(26);
-  // TAP straps
-  `ASSIGN_GPIODPI_D2P(27, MioPadIoc5);
+
   `ASSIGN_UNUSED_GPIODPI_D2P(28);
   `ASSIGN_UNUSED_GPIODPI_D2P(29);
-  `ASSIGN_GPIODPI_D2P(30, MioPadIoc8);
+
   `ASSIGN_UNUSED_GPIODPI_D2P(31);
 
 `undef ASSIGN_GPIODPI_D2P
@@ -337,8 +349,13 @@ module tb;
     .BAUD('d1_000_000),
     .FREQ('d24_000_000)
   ) u_uartdpi0(
-    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+`ifdef GATE_LEVEL
+   .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
+   .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
+`else
+   .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
+   .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+`endif
     .active(u_tb_dpi_if.enable_uartdpi),
     .tx_o(uartdpi_tx),
     .rx_i(uartdpi_rx)
@@ -684,16 +701,17 @@ module tb;
   `include "../autogen/tb__xbar_connect.sv"
   `include "../autogen/tb__alert_handler_connect.sv"
 
-  // Gatesim initial
-  `ifdef GATE_LEVEL
-     initial begin
-       // unconnected ports
-       tb.dut.chip_if.disable_mios_x_check = 1'b1;
+// Gatesim initial
+`ifdef GATE_LEVEL
+  initial begin
+    // unconnected ports
+    tb.dut.chip_if.disable_mios_x_check = 1'b1;
 
-       // Ignore 0 time x
-       $assertoff();
-       #5ns;
-       $asserton();
-     end
-  `endif
+    // Ignore 0 time x
+    $assertoff();
+    #5ns;
+    $asserton();
+  end
+`endif
+
 endmodule
