@@ -142,18 +142,29 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     int hi_thresh, lo_thresh;
     mubi4_t threshold_scope = newcfg.ht_threshold_scope;
+    int fips_window_size, bypass_window_size;
 
     completed = 0;
+
+    // If we are in the single lane mode, the window size is 4 times as large.
+    // We need the same number of bits but only have a single lane.
+    if (newcfg.rng_bit_enable != MuBi4False) begin
+      fips_window_size   = 4*newcfg.fips_window_size;
+      bypass_window_size = 4*newcfg.bypass_window_size;
+    end else begin
+      fips_window_size   = newcfg.fips_window_size;
+      bypass_window_size = newcfg.bypass_window_size;
+    end
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
       `uvm_info(`gfn, "Setting ADAPTP thresholds", UVM_DEBUG)
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, adaptp_ht,
+      m_rng_push_seq.threshold_rec(fips_window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, adaptp_ht,
+      m_rng_push_seq.threshold_rec(bypass_window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
@@ -162,23 +173,29 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       csr_update(.csr(ral.adaptp_lo_thresholds));
 
       // Bucket thresholds
-      `uvm_info(`gfn, "Setting BUCKET thresholds", UVM_DEBUG)
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, bucket_ht, 0,
-                                   newcfg.bucket_sigma, lo_thresh, hi_thresh);
-      ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, bucket_ht, 0,
-                                   newcfg.bucket_sigma, lo_thresh, hi_thresh);
-      ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+      // Disable the bucket health test if rng_bit_enable is not set to MuBi4False.
+      if (newcfg.rng_bit_enable != MuBi4False) begin
+        ral.bucket_thresholds.fips_thresh.set(16'hffff);
+        ral.bucket_thresholds.bypass_thresh.set(16'hffff);
+      end else begin
+        `uvm_info(`gfn, "Setting BUCKET thresholds", UVM_DEBUG)
+        m_rng_push_seq.threshold_rec(fips_window_size, bucket_ht, 0,
+                                    newcfg.bucket_sigma, lo_thresh, hi_thresh);
+        ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
+        m_rng_push_seq.threshold_rec(bypass_window_size, bucket_ht, 0,
+                                    newcfg.bucket_sigma, lo_thresh, hi_thresh);
+        ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+      end
       csr_update(.csr(ral.bucket_thresholds));
 
       // Markov Thresholds
       `uvm_info(`gfn, "Setting MARKOV thresholds", UVM_DEBUG)
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, markov_ht,
+      m_rng_push_seq.threshold_rec(fips_window_size, markov_ht,
                                    threshold_scope != MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, markov_ht,
+      m_rng_push_seq.threshold_rec(bypass_window_size, markov_ht,
                                    threshold_scope != MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
@@ -262,6 +279,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // useful for logging, but it may not be worth the complexity here.
     end
 
+    // Wait at least 10 clock cycles before re-enabling to give the DUT some time to settle down.
+    cfg.clk_rst_vif.wait_clks(10);
     wait_no_outstanding_access();
     enable_dut();
 
@@ -596,7 +615,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
               msg = $sformatf("Forcing disable from state %s", rare_fsm_states[i].name());
               `uvm_info(`gfn, msg, UVM_HIGH)
               // First immediately disable the device, with an ASAP frontdoor write and if needed
-              // a  preceeding backdoor write (timed to trigger in the next cycle, for states that
+              // a preceeding backdoor write (timed to trigger in the next cycle, for states that
               // almost always follow CSR operations such as enable signals)
               // Finally call disable_dut() to clean things up properly.
               if (rare_state_to_idle_backdoor[i]) begin
