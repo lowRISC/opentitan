@@ -80,7 +80,6 @@ bool test_main(void) {
    * the Quad SPI.
    */
   enum GigadeviceVendorSpecific {
-    kDeviceId = 0x1b47,
     kManufactureId = 0xC8,
     kPageQuadProgramOpcode = 0xC2,
   };
@@ -89,7 +88,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_software_reset, &spi_host);
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
-  EXECUTE_TEST(result, test_read_jedec, &spi_host, kDeviceId, kManufactureId);
+  EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufactureId);
   EXECUTE_TEST(result, test_page_program, &spi_host);
   if (is_4_bytes_address_mode_supported()) {
     EXECUTE_TEST(result, test_4bytes_address, &spi_host);

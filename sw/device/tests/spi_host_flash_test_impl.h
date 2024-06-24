@@ -41,8 +41,7 @@ status_t test_sector_erase(dif_spi_host_t *spi);
  * @param manufacture_id The expected manufacture_id.
  * @return status_t containing either OK or an error.
  */
-status_t test_read_jedec(dif_spi_host_t *spi, uint16_t device_id,
-                         uint16_t manufacture_id);
+status_t test_read_jedec(dif_spi_host_t *spi, uint16_t manufacture_id);
 
 /**
  * Send the enable quad mode command.
