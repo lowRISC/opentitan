@@ -208,17 +208,31 @@ interface entropy_src_cov_if
 
     // Large cross covering entropy data interface over all valid configurations
     cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
-                     cp_es_type;
+                     cp_es_type {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
 
     // Finer crosses
     cr_fips_scope: cross cp_fips_enable, cp_threshold_scope;
     cr_fips_bit: cross cp_fips_enable, cp_rng_bit;
     cr_fips_type: cross cp_fips_enable, cp_es_type;
-    cr_scope_bit: cross cp_threshold_scope, cp_rng_bit;
-    cr_fips_scope_bit: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit;
+    cr_fips_scope_bit: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
     cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
     cr_fips_bit_type: cross cp_fips_enable, cp_rng_bit, cp_es_type;
-    cr_scope_bit_type: cross cp_threshold_scope, cp_rng_bit, cp_es_type;
+    cr_scope_bit_type: cross cp_threshold_scope, cp_rng_bit, cp_es_type {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
 
     // Entropy data interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
@@ -263,6 +277,11 @@ interface entropy_src_cov_if
     cp_threshold_scope: coverpoint threshold_scope {
       bins        mubi_true  = { MuBi4True };
       bins        mubi_false = { MuBi4False };
+    }
+
+    cp_rng_bit_enable: coverpoint rng_bit_enable{
+      bins        enabled  = { MuBi4True };
+      bins        disabled = { MuBi4False };
     }
 
     cp_rng_bit: coverpoint {rng_bit_enable == MuBi4True, rng_bit_sel} {
@@ -321,9 +340,20 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // CSRNG HW interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
+    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit_enable,
                      cp_es_type, cp_entropy_data_reg_enable, cp_otp_en_es_fw_read,
-                     cp_otp_en_es_fw_over;
+                     cp_otp_en_es_fw_over
+    {
+      // Ignore the invalid mubi values.
+      ignore_bins otp_en_es_fw_read_inval =
+          ! binsof(cp_otp_en_es_fw_read) intersect {MuBi8True, MuBi8False};
+      ignore_bins otp_en_es_fw_over_inval =
+          ! binsof(cp_otp_en_es_fw_over) intersect {MuBi8True, MuBi8False};
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit_enable) intersect {MuBi4True};
+    }
 
     // Smaller crosses
     cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
@@ -334,14 +364,41 @@ interface entropy_src_cov_if
 
     cr_fips_bit_type: cross cp_fips_enable, cp_rng_bit, cp_es_type;
     cr_fips_bit_data_enable: cross cp_fips_enable, cp_rng_bit, cp_entropy_data_reg_enable;
-    cr_fips_bit_otp: cross cp_fips_enable, cp_rng_bit, cp_otp_en_es_fw_read, cp_otp_en_es_fw_over;
+    cr_fips_bit_otp: cross cp_fips_enable, cp_rng_bit, cp_otp_en_es_fw_read, cp_otp_en_es_fw_over
+    {
+      // Ignore the invalid mubi values.
+      ignore_bins otp_en_es_fw_read_inval =
+          ! binsof(cp_otp_en_es_fw_read) intersect {MuBi8True, MuBi8False};
+      ignore_bins otp_en_es_fw_over_inval =
+          ! binsof(cp_otp_en_es_fw_over) intersect {MuBi8True, MuBi8False};
+    }
     cr_fips_bit_fw_ov: cross cp_fips_enable, cp_rng_bit, cp_fw_ov_mode, cp_entropy_insert;
 
-    cr_scope_bit_type:  cross cp_threshold_scope, cp_rng_bit, cp_es_type;
-    cr_scope_bit_data_enable:  cross cp_threshold_scope, cp_rng_bit, cp_entropy_data_reg_enable;
+    cr_scope_bit_type:  cross cp_threshold_scope, cp_rng_bit, cp_es_type {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
+    cr_scope_bit_data_enable:  cross cp_threshold_scope, cp_rng_bit, cp_entropy_data_reg_enable {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
     cr_scope_bit_otp:  cross cp_threshold_scope, cp_rng_bit, cp_otp_en_es_fw_read,
-                             cp_otp_en_es_fw_over;
-    cr_scope_bit_fw_ov:  cross cp_threshold_scope, cp_rng_bit, cp_fw_ov_mode, cp_entropy_insert;
+                             cp_otp_en_es_fw_over {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
+    cr_scope_bit_fw_ov:  cross cp_threshold_scope, cp_rng_bit, cp_fw_ov_mode, cp_entropy_insert {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
 
     // CSRNG HW interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
@@ -452,13 +509,22 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Entropy data interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
-                     cp_es_route, cp_es_type, cp_entropy_data_reg_enable, cp_otp_en_es_fw_read,
-                     cp_otp_en_es_fw_over;
+    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_route, cp_es_type,
+                     cp_entropy_data_reg_enable, cp_otp_en_es_fw_read, cp_otp_en_es_fw_over {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
 
     // Smaller cross-points
     cr_rng_insert_fips: cross cp_rng_bit, cp_entropy_insert, cp_fips_enable;
-    cr_rng_insert_scope: cross cp_rng_bit, cp_entropy_insert, cp_threshold_scope;
+    cr_rng_insert_scope: cross cp_rng_bit, cp_entropy_insert, cp_threshold_scope {
+      // The threshold scope needs to be set to false if we are in the single lane mode.
+      ignore_bins thresh_scope_true_rng_bit_true =
+          binsof(cp_threshold_scope) intersect {MuBi4True} &&
+          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
+    }
     cr_rng_insert_route: cross cp_rng_bit, cp_entropy_insert, cp_es_route;
     cr_rng_insert_type: cross cp_rng_bit, cp_entropy_insert, cp_es_type;
     cr_rng_insert_reg_en: cross cp_rng_bit, cp_entropy_insert, cp_entropy_data_reg_enable;
