@@ -393,4 +393,20 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_Q_CONTENTS(tl_seq_item, sba_tl_access_q)
   endfunction
 
+  // This overrides a function in cip_base_scoreboard. The problem is that when debug is not
+  // enabled, any TL request will respond with an error. This is what we expect, but the code in
+  // cip_base_scoreboard fails because we're responding with an error to an access that would
+  // otherwise be perfectly reasonable.
+  function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    if ((ral_name == "rv_dm_mem_reg_block") &&
+        (channel == DataChannel) &&
+        (cfg.rv_dm_vif.lc_hw_debug_en != lc_ctrl_pkg::On)) begin
+
+      `DV_CHECK(item.d_error)
+      return 1'b1;
+    end
+
+    return super.predict_tl_err(item, channel, ral_name);
+  endfunction
+
 endclass
