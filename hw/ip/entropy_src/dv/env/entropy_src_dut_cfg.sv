@@ -213,9 +213,20 @@ class entropy_src_dut_cfg extends uvm_object;
       prim_mubi_pkg::MuBi4True  :/ rng_bit_enable_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - rng_bit_enable_pct) };}
 
-  constraint ht_threshold_scope_c {ht_threshold_scope dist {
-      prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_scope_pct)};}
+  constraint ht_threshold_scope_c {
+    solve rng_bit_enable before ht_threshold_scope;
+    // In single lane mode, ht_threshold_scope needs to be disabled.
+    if (rng_bit_enable != MuBi4False) {
+      ht_threshold_scope dist {
+        prim_mubi_pkg::MuBi4False :/ 100
+      };
+    } else {
+      ht_threshold_scope dist {
+        prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
+        prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_scope_pct)
+      };
+    }
+  }
 
   constraint tight_thresholds_c {tight_thresholds dist {
       1 :/ tight_thresholds_pct,
@@ -232,8 +243,16 @@ class entropy_src_dut_cfg extends uvm_object;
   //
   // The last bin captures this most relaxed threshold with just one value 41 (>40)
   constraint repcnt_thresh_bypass_c {
-      solve tight_thresholds, which_tight_ht before repcnt_thresh_bypass;
-      if (tight_thresholds && (which_tight_ht == repcnt_ht) ) {
+      solve tight_thresholds, which_tight_ht, rng_bit_enable before repcnt_thresh_bypass;
+      // In single lane mode, the test window size is 4x as large and thus the threshold needs
+      // to be a bit higher.
+      if (rng_bit_enable != MuBi4False) {
+        repcnt_thresh_bypass dist {
+          [11 : 20] :/ 1,
+          [21 : 40] :/ 1,
+          [41 : 80] :/ 0
+        };
+      } else if (tight_thresholds && (which_tight_ht == repcnt_ht) ) {
         repcnt_thresh_bypass dist {
           [6  : 10] :/ 1,
           [11 : 20] :/ 1,
@@ -251,8 +270,16 @@ class entropy_src_dut_cfg extends uvm_object;
     }
 
   constraint repcnt_thresh_fips_c {
-      solve tight_thresholds, which_tight_ht before repcnt_thresh_fips;
-      if (tight_thresholds && (which_tight_ht == repcnt_ht) ) {
+      solve rng_bit_enable, tight_thresholds, which_tight_ht before repcnt_thresh_fips;
+      // In single lane mode, the test window size is 4x as large and thus the threshold needs
+      // to be a bit higher.
+      if (rng_bit_enable != MuBi4False) {
+        repcnt_thresh_fips dist {
+          [11 : 20] :/ 1,
+          [21 : 40] :/ 1,
+          [41 : 80] :/ 0
+        };
+      } else if (tight_thresholds && (which_tight_ht == repcnt_ht) ) {
         repcnt_thresh_fips dist {
           [6  : 10] :/ 1,
           [11 : 20] :/ 1,
@@ -277,8 +304,13 @@ class entropy_src_dut_cfg extends uvm_object;
   // As with the repcnt test, the highest bin would (for an assumed ideal RNG noice source)
 
   constraint repcnts_thresh_bypass_c {
-      solve tight_thresholds, which_tight_ht before repcnts_thresh_bypass;
-      if (tight_thresholds && (which_tight_ht == repcnts_ht) ) {
+      solve rng_bit_enable, tight_thresholds, which_tight_ht before repcnts_thresh_bypass;
+      // In single lane mode, the repcnts health test needs to be disabled.
+      if (rng_bit_enable != prim_mubi_pkg::MuBi4False) {
+        repcnts_thresh_bypass dist {
+          16'hffff :/ 100
+        };
+      } else if (tight_thresholds && (which_tight_ht == repcnts_ht) ) {
         repcnts_thresh_bypass dist {
           [2  :  3] :/ 1,
           [4  :  5] :/ 1,
@@ -296,8 +328,13 @@ class entropy_src_dut_cfg extends uvm_object;
     }
 
   constraint repcnts_thresh_fips_c {
-      solve tight_thresholds, which_tight_ht before repcnts_thresh_fips;
-      if (tight_thresholds && (which_tight_ht == repcnts_ht) ) {
+      solve rng_bit_enable, tight_thresholds, which_tight_ht before repcnts_thresh_fips;
+      // In single lane mode, the repcnts health test needs to be disabled.
+      if (rng_bit_enable != prim_mubi_pkg::MuBi4False) {
+        repcnts_thresh_fips dist {
+          16'hffff :/ 100
+        };
+      } else if (tight_thresholds && (which_tight_ht == repcnts_ht) ) {
         repcnts_thresh_fips dist {
           [2  :  3] :/ 1,
           [4  :  5] :/ 1,
