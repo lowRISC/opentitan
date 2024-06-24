@@ -234,6 +234,17 @@ dif_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
     config->scl_time_high_cycles = (uint16_t)lengthened_high_cycles;
   }
 
+  // For clock stretching detection to work, the SCL high and low time must be
+  // at leats 4 cycles.
+  // TODO The i2c IP has a parameter (InputDelayCycles) for that, use this when
+  // topgen supports exposing it in the headers (Issue#23786).
+  if (config->scl_time_high_cycles < 4) {
+    config->scl_time_high_cycles = 4;
+  }
+  if (config->scl_time_low_cycles < 4) {
+    config->scl_time_low_cycles = 4;
+  }
+
   return kDifOk;
 }
 
