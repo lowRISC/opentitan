@@ -64,8 +64,24 @@ _manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
 SECTIONS {
   .manifest _ottf_start_address : {
     KEEP(*(.manifest))
-    . = ALIGN(256);
+    . = ALIGN(4);
   } > ottf_flash
+
+  /**
+   * Immutable ROM_EXT section.
+   *
+   * Resides in the .text section so it is covered by the ePMP configuration
+   * that enables ROM_EXT execution.
+   */
+  .rom_ext_immutable : ALIGN(4) {
+    _text_start = .;
+    _rom_ext_immutable_start = .;
+    KEEP(*(.rom_ext_immutable))
+    /* Ensure section end is 256-byte aligned for interrupt vector after. */
+    . = ALIGN(256);
+    _rom_ext_immutable_end = .;
+  } > ottf_flash
+
 
   /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
@@ -74,7 +90,6 @@ SECTIONS {
    * Ibex.
    */
   .vectors : ALIGN (256){
-    _text_start = .;
     *(.vectors)
   } > ottf_flash
 

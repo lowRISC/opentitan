@@ -665,6 +665,45 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   // In a normal build, this function inlines to nothing.
   stack_utilization_print();
 
+  // (Potentially) Execute the immutable ROM_EXT section.
+  uint32_t rom_ext_immutable_section_enabled =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
+  if (launder32(rom_ext_immutable_section_enabled) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(rom_ext_immutable_section_enabled, kHardenedBoolTrue);
+    // Get offset and length of immutable ROM_EXT code partition.
+    uintptr_t immutable_rom_ext_start_offset = (uintptr_t)otp_read32(
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET_OFFSET);
+    size_t immutable_rom_ext_length = (size_t)otp_read32(
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH_OFFSET);
+    uintptr_t immutable_rom_ext_entry_point =
+        (uintptr_t)manifest + immutable_rom_ext_start_offset;
+
+    // Compute a hash of the code section.
+    // Include the start offset and the length of the section in the hash.
+    hmac_sha256_init();
+    hmac_sha256_update(&immutable_rom_ext_start_offset,
+                       /*len=*/sizeof(uintptr_t));
+    hmac_sha256_update(&immutable_rom_ext_length, /*len=*/sizeof(size_t));
+    hmac_sha256_update((const void *)immutable_rom_ext_entry_point,
+                       immutable_rom_ext_length);
+    hmac_digest_t actual_immutable_section_digest;
+    hmac_sha256_final(&actual_immutable_section_digest);
+
+    // Validate the hash matches that in OTP, and if so execute the code.
+    // Otherwise, trigger shutdown via hardened check fail.
+    hmac_digest_t immutable_rom_ext_hash;
+    otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_OFFSET,
+             immutable_rom_ext_hash.digest, kHmacDigestNumWords);
+    for (size_t i = 0; i < kHmacDigestNumWords; ++i) {
+      HARDENED_CHECK_EQ(immutable_rom_ext_hash.digest[i],
+                        actual_immutable_section_digest.digest[i]);
+    }
+    ((rom_ext_entry_point *)immutable_rom_ext_entry_point)();
+  } else {
+    HARDENED_CHECK_NE(rom_ext_immutable_section_enabled, kHardenedBoolTrue);
+  }
+
+  // Jump to ROM_EXT.
   ((rom_ext_entry_point *)entry_point)();
   return kErrorRomBootFailed;
 }
