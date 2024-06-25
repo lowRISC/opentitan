@@ -566,7 +566,7 @@ class RunTest(Deploy):
         # first. If --fixed-seed <val> is also passed, the subsequent tests
         # (once the custom seeds are consumed) will be run with the fixed seed.
         if not RunTest.seeds:
-            if RunTest.fixed_seed:
+            if RunTest.fixed_seed is not None:
                 return RunTest.fixed_seed
             for i in range(1000):
                 seed = random.getrandbits(256)
