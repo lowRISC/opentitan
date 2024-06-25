@@ -58,6 +58,7 @@ filesets:
       - seq_lib/usbdev_link_resume_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_suspend_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_low_speed_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_resume_link_active_vseq.sv: {is_include_file: true}

@@ -165,6 +165,10 @@
       uvm_test_seq: usbdev_link_suspend_vseq
     }
     {
+      name: usbdev_low_speed_traffic
+      uvm_test_seq: usbdev_low_speed_traffic_vseq
+    }
+    {
       name: usbdev_max_length_out_transaction
       uvm_test_seq: usbdev_max_length_out_transaction_vseq
     }

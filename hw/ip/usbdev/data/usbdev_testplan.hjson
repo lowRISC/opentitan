@@ -1014,7 +1014,7 @@
               unreliable connections.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_low_speed_traffic"]
     }
     {
       name: rand_bus_resets

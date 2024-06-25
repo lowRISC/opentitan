@@ -41,6 +41,9 @@ constraint ep_default_c {
 int unsigned setup_data_delay = 0;
 int unsigned out_data_delay   = 0;
 
+// Generation of low speed traffic.
+bit low_speed_traffic = 1'b0;
+
 // Fault injection state.
 bit inject_invalid_token_sync = 1'b0;
 bit inject_invalid_data_sync = 1'b0;
@@ -285,6 +288,7 @@ endtask
     // Any fault injections requested?
     if (inject_invalid_token_sync) m_token_pkt.valid_sync = 1'b0;
     if (inject_bad_token_crc5) m_token_pkt.crc5 = ~m_token_pkt.crc5;
+    m_token_pkt.low_speed = low_speed_traffic;
     m_usb20_item = m_token_pkt;
     finish_item(m_token_pkt);
   endtask
@@ -304,6 +308,7 @@ endtask
     // Any fault injections requested?
     if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
     if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
+    m_data_pkt.low_speed = low_speed_traffic;
     m_usb20_item = m_data_pkt;
     finish_item(m_data_pkt);
   endtask
@@ -326,14 +331,15 @@ endtask
     // Any fault injections requested?
     if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
     if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
+    m_data_pkt.low_speed = low_speed_traffic;
     m_usb20_item = m_data_pkt;
     finish_item(m_data_pkt);
   endtask
 
   // Construct and transmit a randomized OUT DATA packet, retaining a copy for subsequent checks.
-  virtual task send_prnd_setup_packet(bit [3:0] ep);
+  virtual task send_prnd_setup_packet(bit [3:0] ep, bit [6:0] target_addr = dev_addr);
     // Send SETUP token packet to the selected endpoint on the specified device.
-    send_token_packet(ep, PidTypeSetupToken);
+    send_token_packet(ep, PidTypeSetupToken, target_addr);
     // Variable delay between SETUP token packet and the ensuing DATA packet.
     inter_packet_delay(setup_data_delay);
     // DATA0/DATA packet with randomized content, but we'll honor the rule that SETUP DATA packets
@@ -356,9 +362,10 @@ endtask
   virtual task send_prnd_out_packet(bit [3:0] ep, input pid_type_e pid_type,
                                     input bit randomize_length = 1,
                                     input bit [6:0] num_of_bytes = 0,
-                                    bit isochronous_transfer = 1'b0);
+                                    bit isochronous_transfer = 1'b0,
+                                    bit [6:0] target_addr = dev_addr);
     // Send OUT token packet to the selected endpoint on the specified device.
-    send_token_packet(ep, PidTypeOutToken);
+    send_token_packet(ep, PidTypeOutToken, target_addr);
     // Variable delay between OUT token packet and the ensuing DATA packet.
     inter_packet_delay(out_data_delay);
     // DATA0/DATA packet with randomized content.
@@ -434,6 +441,7 @@ endtask
     m_handshake_pkt.m_ev_type  = EvPacket;
     m_handshake_pkt.m_pkt_type = PktTypeHandshake;
     m_handshake_pkt.m_pid_type = pid_type;
+    m_handshake_pkt.low_speed = low_speed_traffic;
     m_usb20_item = m_handshake_pkt;
     finish_item(m_handshake_pkt);
   endtask

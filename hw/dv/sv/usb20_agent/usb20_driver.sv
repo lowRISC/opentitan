@@ -101,7 +101,9 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.endpoint = {<<{pkt.endpoint}};
     pkt.crc5 = {<<{pkt.crc5}};
     drive_packet("Token", pkt);
-    if (req_item.m_pid_type == PidTypeInToken) begin
+    // Attempt to collect a response only to full speed IN transactions; this should be DATA0|1
+    // or ACK/NAK.
+    if (req_item.m_pid_type == PidTypeInToken && !req_item.low_speed) begin
       device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)
@@ -121,7 +123,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.data = {<<{pkt.data}};
     pkt.crc16 = {<<{pkt.crc16}};
     drive_packet("Data", pkt);
-    if (req_item.m_usb_transfer == IsoTrans) begin
+    // Isochronous OUT transactions and low speed transactions do not yield a response.
+    if (req_item.m_usb_transfer == IsoTrans || req_item.low_speed) begin
       seq_item_port.item_done();
     end else begin
       device_response(rsp_item);
@@ -153,7 +156,9 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   // Drive the USB to the given state for a single bit interval.
-  task drive_bit_interval(usb_symbol_e sym);
+  task drive_bit_interval(usb_symbol_e sym, bit low_speed = 1'b0);
+    // Low speed signaling (1.5Mbps) is eight times slower than full speed (12Mbps).
+    int unsigned delay_clks = low_speed ? 31 : 3;
     @(posedge cfg.bif.clk_i)
     // We may want to drive Invalid (both high) onto the USB at some point, for test purposes.
     if (cfg.pinflip) begin
@@ -163,41 +168,41 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       cfg.bif.drive_p = (sym == USB20Sym_J || sym == USB20Sym_Invalid);
       cfg.bif.drive_n = (sym == USB20Sym_K || sym == USB20Sym_Invalid);
     end
-    @(posedge cfg.bif.clk_i);
-    @(posedge cfg.bif.clk_i);
-    @(posedge cfg.bif.clk_i);
+    wait_clks(delay_clks);
   endtask
 
   // Leave the USB undriven for a single bit interval.
-  task idle_bit_interval();
+  task idle_bit_interval(bit low_speed = 1'b0);
+    // Low speed signaling (1.5Mbps) is eight times slower than full speed (12Mbps).
+    int unsigned delay_clks = low_speed ? 31 : 3;
     @(posedge cfg.bif.clk_i)
     cfg.bif.drive_p = 1'bZ;
     cfg.bif.drive_n = 1'bZ;
-    @(posedge cfg.bif.clk_i);
-    @(posedge cfg.bif.clk_i);
-    @(posedge cfg.bif.clk_i);
+    wait_clks(delay_clks);
   endtask
 
   // Wait for the given number of host clks.
   // TODO: we should probably have access to the host_clk_rst_if!
   task wait_clks(int unsigned n);
-    for (int unsigned i = 0; i < n; i++)
-      @(posedge cfg.bif.clk_i);
+    repeat (n) @(posedge cfg.bif.clk_i);
   endtask
 
-  task drive_packet(string pkt_type, usb20_item item);
-    bit driver_pkt[];
+  // Drive out the main body of a packet, prefixing with the SYNC signaling, performing NRZI
+  // encoding and bit stuffing.
+  //
+  // Note that since this task is used both to drive out the PRE PID and then subsequently the
+  // low speed packet that follows it, the EOP is not emitted and must be appended by the caller
+  // where appropriate.
+  task drive_packet_body(string pkt_type, bit valid_sync, bit driver_pkt[], bit low_speed = 1'b0);
     bit comp_pkt[];
     bit nrzi_out[];
     bit bit_stuff_out[];
-    // Pack into bitstream format.
-    void'(item.pack(driver_pkt));
     // To form the complete packet we need to attach SYNC at the start.
     comp_pkt = new [driver_pkt.size() + 8];
     for (int i = 0; i < 8; i++) begin
       comp_pkt[i] = SYNC_PATTERN[i];
     end
-    if (!item.valid_sync) begin
+    if (!valid_sync) begin
       // For resilience in the presence of frequency/phase difference, the DUT responds only to the
       // final 6 bits of the SYNC signal, so if we want to generate an invalid SYNC we must toggle
       // one of those final 6 bits.
@@ -209,29 +214,67 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       comp_pkt[i + 8] = driver_pkt[i];
     end
     `uvm_info(`gfn, $sformatf("Complete %s Packet = %p", pkt_type, comp_pkt), UVM_DEBUG)
-    // Bit Stuffing performed on packet
+    // Bit Stuffing performed on packet.
     bit_stuffing(comp_pkt, bit_stuff_out);
     `uvm_info(`gfn, $sformatf("Complete Packet after BIT STUFFING = %p", bit_stuff_out), UVM_DEBUG)
-    // NRZI Implementation
+    // NRZI Implementation.
     nrzi_encoder(bit_stuff_out, nrzi_out);
     `uvm_info(`gfn, $sformatf("Complete Packet after NRZI = %p", nrzi_out), UVM_DEBUG)
-    // Loop to drive packet bit by bit
+    // Drive out each bit in turn.
     for (int i = 0; i < nrzi_out.size(); i++) begin
-      drive_bit_interval(nrzi_out[i] ? USB20Sym_J : USB20Sym_K);
+      drive_bit_interval(nrzi_out[i] ? USB20Sym_J : USB20Sym_K, low_speed);
     end
-    end_of_packet(item.valid_eop);
+  endtask
+
+  // Drive PREamble signaling onto the USB at full speed; this is a prefix to a low speed
+  // downstream transaction.
+  task drive_pre(bit valid_sync);
+    // Decide the duration of the hub setup interval.
+    int unsigned idle_bits = $urandom_range(3, 6);
+    bit [7:0] pre = PidTypePre;
+    bit driver_pkt[] = new [8];
+    for (int unsigned b = 0; b < 8; b++) driver_pkt[b] = pre[b];
+    drive_packet_body("PRE", valid_sync, driver_pkt);
+    // The hub setup interval (8.6.5) must consist of at least 4 full speed bit intervals of Idle
+    // signaling, with the first bit interval being actively driven.
+    drive_bit_interval(USB20Sym_J);
+    repeat (idle_bits) idle_bit_interval();
+  endtask
+
+  // Drive the supplied packet item onto the USB.
+  task drive_packet(string pkt_type, usb20_item item);
+    bit valid_sync = item.valid_sync;
+    bit driver_pkt[];
+    if (item.low_speed) begin
+      // If instructed to generate an invalid SYNC, decide whether to corrupt the SYNC on the PRE
+      // PID or on the low speed packet itself.
+      bit valid_pre_sync = valid_sync | ($urandom & 1);
+      // Low speed traffic is prefixed with a PREamble Packet IDentifier at full speed.
+      drive_pre(valid_pre_sync);
+      if (!valid_sync) valid_sync = !valid_pre_sync;
+    end
+    // Pack into bitstream format.
+    void'(item.pack(driver_pkt));
+    drive_packet_body(pkt_type, valid_sync, driver_pkt, item.low_speed);
+    end_of_packet(item.valid_eop, item.low_speed);
   endtask
 
   // EOP Task
   // -------------------------------
-  task end_of_packet(bit valid_eop);
+  task end_of_packet(bit valid_eop, bit low_speed = 1'b0);
     int se0_bits = cfg.single_bit_SE0 ? 1 : 2;
     // TODO: We should introduce the ability to generate and test invalid EOPs.
     `DV_CHECK_EQ_FATAL(valid_eop, 1)
-    for (int j = 0; j < se0_bits; j++) begin
-      drive_bit_interval(USB20Sym_SE0);
-    end
+    repeat (se0_bits) drive_bit_interval(USB20Sym_SE0, low_speed);
     `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
+    // The first J symbol, which is part of the EOP, shall be actively driven.
+    drive_bit_interval(USB20Sym_J, low_speed);
+    // TODO: we may want to avoid consuming time here at some point, but presently the interpacket
+    // delay is decided in the sequence rather than the driver.
+    //
+    // After the driven J state, the bus shall be undriven and the interpacket delay shall be at
+    // least two bit intervals. Since we're testing a full speed DUT, this second bit interval is
+    // always at full speed.
     idle_bit_interval();
   endtask
 
@@ -245,6 +288,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end else begin
       for (int i = 0; i < packet.size(); i++) begin
         stuffed.push_back(packet[i]);
+        // Bit stuffing ensures that there are sufficient signal transitions for the DPLL of the
+        // receiver to remain locked.
         if (packet[i] == 1'b1) begin
           consecutive_ones_count = consecutive_ones_count + 1;
           if (consecutive_ones_count >= 6) begin
@@ -290,6 +335,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit prev_bit = 1'b1;
     nrzi_out = new[packet.size()];
     for (int i = 0; i < packet.size(); i++) begin
+      // A zero bit is encoded as a transition because zeros are more common.
       if (packet[i] == 1'b0) begin
         nrzi_out[i] = ~prev_bit;
       end else begin
@@ -334,14 +380,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     int unsigned duration_bits = usb_rst_time;
     if (duration_usecs != 0) duration_bits = duration_usecs * 12;
     // Reset bus (drive 0 on both DP and DN) for the specified number of bit intervals.
-    repeat (duration_bits) begin
-      drive_bit_interval(USB20Sym_SE0);
-    end
+    repeat (duration_bits) drive_bit_interval(USB20Sym_SE0);
     `uvm_info(`gfn, $sformatf("Reset for %d bits completed", duration_bits), UVM_MEDIUM)
     // After reset change state to IDLE
-    repeat(usb_idle_clk_cycles) begin
-      idle_bit_interval();
-    end
+    repeat (usb_idle_clk_cycles) idle_bit_interval();
   endtask
 
   // Suspend Signaling
@@ -353,9 +395,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     int unsigned duration_bits = usb_suspend_time;
     if (duration_usecs != 0) duration_bits = duration_usecs * 12;
     // Idle signaling required for the specified number of bit intervals.
-    repeat (duration_bits) begin
-      idle_bit_interval();
-    end
+    repeat (duration_bits) idle_bit_interval();
     `uvm_info(`gfn, $sformatf("Suspend Signaling for %d bits completed", duration_bits), UVM_MEDIUM)
   endtask
 
@@ -368,18 +408,12 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     int unsigned duration_bits = usb_resume_time;
     if (duration_usecs != 0) duration_bits = duration_usecs * 12;
     // K state signaling required for the specified number of bit intervals.
-    repeat (duration_bits) begin
-      drive_bit_interval(USB20Sym_K);
-    end
+    repeat (duration_bits) drive_bit_interval(USB20Sym_K);
     `uvm_info(`gfn, $sformatf("Resume Signaling for %d bits completed", duration_bits), UVM_MEDIUM)
     // _Low_ Speed EOP (SE0 for two bit intervals, J for one); LS is 1.5Mbps,
     // so 8x longer than FS signaling.
-    for (int unsigned i = 0; i < 16; i++) begin
-      drive_bit_interval(USB20Sym_SE0);
-    end
-    for (int unsigned i = 0; i < 8; i++) begin
-      idle_bit_interval();
-    end
+    repeat (16) drive_bit_interval(USB20Sym_SE0);
+    repeat (8)  idle_bit_interval();
   endtask
 
   // Get_DUT_Response
