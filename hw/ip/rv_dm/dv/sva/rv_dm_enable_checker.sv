@@ -35,5 +35,5 @@ module rv_dm_enable_checker
   // If debug is not enabled then the SBA TL interface is disabled and we will never generate a new
   // TL transaction. As such, the a_valid signal will always be false.
   `ASSERT(SbaTLRequestNeedsDebug_A,
-          sba_tl_h_o.a_valid |-> lc_tx_test_true_strict(lc_hw_debug_en_i))
+          sba_tl_h_o_i.a_valid |-> lc_tx_test_true_strict(lc_hw_debug_en_i))
 endmodule
