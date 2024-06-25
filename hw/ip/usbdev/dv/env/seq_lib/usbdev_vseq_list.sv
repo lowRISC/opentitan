@@ -46,6 +46,7 @@
 `include "usbdev_rx_crc_err_vseq.sv"
 `include "usbdev_rx_full_vseq.sv"
 `include "usbdev_rx_pid_err_vseq.sv"
+`include "usbdev_setup_priority_over_stall_response_vseq.sv"
 `include "usbdev_setup_priority_vseq.sv"
 `include "usbdev_setup_stage_vseq.sv"
 `include "usbdev_setup_trans_ignored_vseq.sv"

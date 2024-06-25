@@ -77,6 +77,7 @@ filesets:
       - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_rx_full_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_rx_pid_err_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_setup_priority_over_stall_response_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_setup_priority_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_setup_stage_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_setup_trans_ignored_vseq.sv: {is_include_file: true}
