@@ -322,6 +322,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
         case (csr.get_name())
           "alert_test": begin
           end
+          "late_debug_enable": begin
+          end
           default: `uvm_fatal(`gfn, $sformatf("Unknown regs CSR: %0s", csr.get_name()))
         endcase
       end
