@@ -543,17 +543,47 @@ module pinmux
   // Wakeup detectors //
   //////////////////////
 
+  // Wakeup detectors should not be connected to the scan clock, so filter
+  // those inputs.
+  logic [NDioPads-1:0] dio_wkup_no_scan;
+  for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_wkup_filter
+    if (TargetCfg.dio_scan_role[k] == ScanClock) begin : gen_dio_scan
+      always_comb begin
+        dio_wkup_no_scan[k] = dio_in_i[k];
+        if (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)) begin
+          dio_wkup_no_scan[k] = 1'b0;
+        end
+      end
+    end else begin : gen_no_dio_scan
+      assign dio_wkup_no_scan[k] = dio_in_i[k];
+    end
+  end
+
+  logic [NMioPads-1:0] mio_wkup_no_scan;
+  for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_wkup_filter
+    if (TargetCfg.mio_scan_role[k] == ScanClock) begin : gen_mio_scan
+      always_comb begin
+        mio_wkup_no_scan[k] = mio_in_i[k];
+        if (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)) begin
+          mio_wkup_no_scan[k] = 1'b0;
+        end
+      end
+    end else begin : gen_no_mio_scan
+      assign mio_wkup_no_scan[k] = mio_in_i[k];
+    end
+  end
+
   // Wakeup detector taps are not affected by JTAG/strap
   // selection mux. I.e., we always sample the unmuxed inputs
   // that come directly from the pads.
   logic [AlignedMuxSize-1:0] dio_wkup_mux;
   logic [AlignedMuxSize-1:0] mio_wkup_mux;
-  assign dio_wkup_mux = AlignedMuxSize'(dio_in_i);
+  assign dio_wkup_mux = AlignedMuxSize'(dio_wkup_no_scan);
   // The two constants that are concatenated here make sure tha the selection
   // indices used to index this array are the same as the ones used to index
   // the mio_mux array above, where positions 0 and 1 select constant 0 and
   // 1, respectively.
-  assign mio_wkup_mux = AlignedMuxSize'({mio_in_i, 1'b1, 1'b0});
+  assign mio_wkup_mux = AlignedMuxSize'({mio_wkup_no_scan, 1'b1, 1'b0});
 
   logic [NWkupDetect-1:0] aon_wkup_req;
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
