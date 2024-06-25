@@ -62,17 +62,17 @@ enum {
  * ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 -s 359186736 --language=c
  */
 typedef enum sigverify_spx_config_id {
-  /**SPHINCS+-SHAKE-128s*/
-  kSigverifySpxConfigIdShake128s = 0x0142410e,
+  /** SPHINCS+-SHA2-128s */
+  kSigverifySpxConfigIdSha2128s = 0x0142410e,
   /**
-   * SPHINCS+-SHAKE-128s-q20
+   * SPHINCS+-SHA2-128s-q20
    *
    * As specified in https://eprint.iacr.org/2022/1725.pdf.
    *
    * n  | h  | d | b  | k | w  | bitsec | sigsize
    * 16 | 18 | 1 | 24 | 6 | 16 |   128  | 3264
    */
-  kSigverifySpxConfigIdShake128sQ20 = 0x9b28d8da,
+  kSigverifySpxConfigIdSha2128sQ20 = 0x9b28d8da,
 } sigverify_spx_config_id_t;
 
 /**

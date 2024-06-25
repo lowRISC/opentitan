@@ -43,9 +43,9 @@ key_sphincs_plus = rule(
             values = ["TestKey", "DevKey", "ProdKey"],
         ),
         "config": attr.string(
-            default = "Shake128s",
-            doc = "The config of the key. Can be Shake128s or Shake128sQ20.",
-            values = ["Shake128s", "Shake128sQ20"],
+            default = "Sha2128s",
+            doc = "The config of the key. Can be Sha2128s or Sha2128sQ20.",
+            values = ["Sha2128s", "Sha2128sQ20"],
         ),
         "method": attr.string(
             doc = "Mechanism used to access the key. Can be local or hsmtool.",

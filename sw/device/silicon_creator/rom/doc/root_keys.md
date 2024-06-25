@@ -54,7 +54,7 @@ The `key_type` determines the life cycle states in which the key is enabled for
 secure boot verification.
 
 The config parameter is used to select the configuration parameters between
-SPHINCS+-SHAKE-128s and SPHINCS+-SHAKE-128s-q20. More details on configuration
+SPHINCS+-SHA2-128s and SPHINCS+-SHA2-128s-q20. More details on configuration
 options can be found in https://eprint.iacr.org/2022/1725.pdf.
 
 ## OTP
