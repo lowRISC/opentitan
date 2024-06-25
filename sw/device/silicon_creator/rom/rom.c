@@ -107,6 +107,13 @@ static inline bool rom_console_enabled(void) {
 
 /**
  * Prints a banner during bootup.
+ *
+ * OpenTitan:ssss-pppp-rr
+ *
+ * Where:
+ * - ssss: Silicon Creator ID.
+ * - pppp: Product ID.
+ * - rr: Revision ID.
  */
 static void rom_banner(void) {
   if (!rom_console_enabled()) {
@@ -116,8 +123,6 @@ static void rom_banner(void) {
   const uint64_t kTitle1 = 0x617469546e65704f;
   //                          : n
   const uint32_t kTitle2 = 0x3a6e;
-  //                       : T I G
-  const uint32_t kGit = 0x3a544947;
   const uint32_t kNewline = 0x0a0d;
   lifecycle_hw_rev_t hw;
   lifecycle_hw_rev_get(&hw);
@@ -126,11 +131,6 @@ static void rom_banner(void) {
   uart_write_hex(hw.silicon_creator_id, sizeof(hw.silicon_creator_id), '-');
   uart_write_hex(hw.product_id, sizeof(hw.product_id), '-');
   uart_write_hex(hw.revision_id, sizeof(hw.revision_id), kNewline);
-
-  uart_write_imm(kGit);
-  uart_write_hex(kChipInfo.scm_revision.scm_revision_high, sizeof(uint32_t), 0);
-  uart_write_hex(kChipInfo.scm_revision.scm_revision_low, sizeof(uint32_t),
-                 kNewline);
 }
 
 /**
@@ -255,7 +255,9 @@ static rom_error_t rom_init(void) {
   retention_sram_get()->creator.reset_reasons = reset_reasons;
 
   // Print a nice message.
-  rom_banner();
+  if (waking_from_low_power != kHardenedBoolTrue) {
+    rom_banner();
+  }
   // This function is a NOP unless ROM is built for an fpga.
   device_fpga_version_print();
 
