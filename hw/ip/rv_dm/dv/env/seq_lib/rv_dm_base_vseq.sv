@@ -11,7 +11,16 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(rv_dm_base_vseq)
   `uvm_object_new
 
-  // Randomize the initial inputs to the DUT.
+  // These flags control "late debug enable". The mode (late_debug_enable) gets randomized in
+  // pre_start and it takes effect either through a top-level pin (pin_late_debug_enable) or a
+  // register (reg_late_debug_enable).
+  //
+  // When one of this inputs is mubi true, the "debug enable" check is made on lc_hw_debug_en_i
+  // instead of lc_dft_en_i.
+  rand bit late_debug_enable;
+  rand bit pin_late_debug_enable;
+  rand bit reg_late_debug_enable;
+
   rand lc_ctrl_pkg::lc_tx_t   lc_hw_debug_en;
   rand prim_mubi_pkg::mubi4_t scanmode;
   rand logic [NUM_HARTS-1:0]  unavailable;
@@ -33,6 +42,25 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // back on.
   constraint no_scanmode_c {
     scanmode != prim_mubi_pkg::MuBi4True;
+  }
+
+  // A constraint that ensures debug is enabled (both lc_hw_debug_en and pinmux_hw_debug_en). We
+  // will have sequences that wish to disable debug, but they can do so by either disabling it in
+  // the middle of the sequence or by overriding this constraint.
+  constraint debug_enabled_c {
+    lc_hw_debug_en == lc_ctrl_pkg::On;
+  }
+
+  // TODO(#23096): We don't currently test the situation where late debug enable is false. We
+  // should.
+  constraint late_debug_enable_c {
+    late_debug_enable == 1;
+  }
+
+  // A constraint to make sure that pin_late_debug_enable and reg_late_debug_enable correctly
+  // implement the intent in the late_debug_enable bit.
+  constraint late_debug_enable_split_c {
+    late_debug_enable == pin_late_debug_enable || reg_late_debug_enable;
   }
 
   // SBA TL device sequence. Class member for more controllability.
@@ -72,7 +100,17 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     //               separately controlled.
     cfg.rv_dm_vif.pinmux_hw_debug_en       <= lc_hw_debug_en;
     cfg.rv_dm_vif.lc_dft_en                <= lc_hw_debug_en;
-    cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= prim_mubi_pkg::MuBi8True;
+
+    // Drive the otp_dis_rv_dm_late_debug_i pin to match pin_late_debug_enable (to avoid assertions
+    // that get triggered in prim_lc_sync/prim_mubi8_sync if the input is 'x). We will configure the
+    // register a little later, in dut_init.
+    set_late_debug_enable_with_pin(pin_late_debug_enable);
+
+    super.pre_start();
+  endtask
+
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init();
 
     // If we've just enabled debug, it might be that the JTAG interface was previously disconnected
     // and we need to tell the jtag driver (which monitors its internal state) to start again.
@@ -86,11 +124,10 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       cfg.m_jtag_agent_cfg.jtag_if_connected.trigger();
     end
 
-    super.pre_start();
-  endtask
+    // Write the late debug enable register with the value that we chose in pre_start when
+    // randomizing.
+    set_late_debug_enable_with_reg(reg_late_debug_enable);
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
 
     if (lc_hw_debug_en == lc_ctrl_pkg::On) begin
@@ -272,6 +309,28 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t raw;
     csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(raw));
     value = abstractcs_t'(raw);
+  endtask
+
+  // Set the otp_dis_rv_dm_late_debug_i pin to a t/f value matching bool_val.
+  function void set_late_debug_enable_with_pin(bit bool_val);
+    bit [7:0] mubi_val;
+    if (bool_val) begin
+      mubi_val = prim_mubi_pkg::MuBi8True;
+    end else begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mubi_val, mubi_val != prim_mubi_pkg::MuBi8True;)
+    end
+    cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= prim_mubi_pkg::mubi8_t'(mubi_val);
+  endfunction
+
+  // Write to the late_debug_enable register with a t/f value matching bool_val.
+  virtual task set_late_debug_enable_with_reg(bit bool_val);
+    bit [31:0] mubi_val;
+    if (bool_val) begin
+      mubi_val = prim_mubi_pkg::MuBi32True;
+    end else begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mubi_val, mubi_val != prim_mubi_pkg::MuBi32True;)
+    end
+    csr_wr(.ptr(ral.late_debug_enable), .value(mubi_val));
   endtask
 
 endclass : rv_dm_base_vseq

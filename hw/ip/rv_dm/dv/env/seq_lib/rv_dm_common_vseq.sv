@@ -19,6 +19,19 @@ class rv_dm_common_vseq extends rv_dm_base_vseq;
     unavailable == 0;
   }
 
+  // Avoid trying to enable debug through the late_debug_enable register. This doesn't work for the
+  // csr_hw_reset test because that test explicitly expects all the registers to contain their reset
+  // values.
+  constraint disable_reg_late_debug_enable_c {
+    reg_late_debug_enable == 0;
+  }
+
+  // This overrides the base vseq's implementation so that we don't actually change the register
+  // value (see note above disable_reg_late_debug_enable_c) and we check that it doesn't change.
+  virtual task set_late_debug_enable_with_reg(bit bool_val);
+    `DV_CHECK_FATAL(!bool_val)
+  endtask
+
   // This function controls how long we will wait for a quiet period when we want to issue a reset
   // in the wait_to_issue_reset task. Some of our existing vseqs do lots of back-to-back CSR
   // operations. Bumping this up from the default 10k cycles guarantees that we will find a good
