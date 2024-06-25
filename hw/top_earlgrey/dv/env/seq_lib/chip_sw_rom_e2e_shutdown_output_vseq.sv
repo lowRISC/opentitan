@@ -23,9 +23,10 @@ class chip_sw_rom_e2e_shutdown_output_vseq extends
       `DV_WAIT(cfg.chip_vif.sram_ret_init_done == 1)
       connect_rom_uart_agent();
 
+      check_uart_output_msg($sformatf("%0s\x0d\n", ROM_BANNER));
       check_uart_output_msg(
-        $sformatf("BFV:%0s\x0d\nLCV:%0s\x0d\n", ROM_BFV_BAD_IDENTIFIER,
-        lc_state_2_rom_lcv[lc_state]));
+        $sformatf("BFV:%0s\x0d\nLCV:%0s\x0d", ROM_BFV_BAD_IDENTIFIER,
+          lc_state_2_rom_lcv[lc_state]));
 
       disconnect_rom_uart_agent();
     end
