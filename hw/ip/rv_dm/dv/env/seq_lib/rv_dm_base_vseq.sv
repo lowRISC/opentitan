@@ -29,6 +29,10 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // enabled (controlled by late_debug_enable), this controls whether debug is enabled.
   rand bit lc_hw_debug_en;
 
+  // This flag controls whether the lc_dft_en_i signal is set to On. When late debug mode is
+  // disabled (controlled by late_debug_enable), this controls whether debug is enabled.
+  rand bit lc_dft_en;
+
   // This flag controls whether the scanmode_i signal is set to On, putting the JTAG TAP in the
   // debug module into testmode and controlling TCK and TRST_N with the system clock and reset,
   // instead of the signals in jtag_if
@@ -74,6 +78,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     pinmux_hw_debug_en == 1'b1;
   }
 
+  // TODO(#23096): Currently, the dft enable (used when late debug is enable is false) is hard-coded
+  //               to match lc_hw_debug_en. This eventually needs to be separately controlled.
+  constraint lc_dft_en_c {
+    lc_dft_en == lc_hw_debug_en;
+  }
+
   // TODO(#23096): We don't currently test the situation where late debug enable is false. We
   // should.
   constraint late_debug_enable_c {
@@ -116,10 +126,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     cfg.rv_dm_vif.unavailable <= unavailable;
 
-    // TODO(#23096): We're currently wiring all the enable signals to match lc_hw_debug_en and
-    //               hard-coding the late debug enable flag to be true. These eventually need to be
-    //               separately controlled.
-    cfg.rv_dm_vif.lc_dft_en <= bool_to_lc_tx_t(lc_hw_debug_en);
+    cfg.rv_dm_vif.lc_dft_en <= bool_to_lc_tx_t(lc_dft_en);
 
     // Drive the otp_dis_rv_dm_late_debug_i pin to match pin_late_debug_enable (to avoid assertions
     // that get triggered in prim_lc_sync/prim_mubi8_sync if the input is 'x). We will configure the
