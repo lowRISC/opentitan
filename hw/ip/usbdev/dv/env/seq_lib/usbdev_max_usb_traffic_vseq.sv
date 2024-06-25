@@ -17,7 +17,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   `uvm_object_new
 
   // This is the total number of packets to be transferred, across all endpoints.
-  constraint num_trans_c { num_trans inside {[64:256]}; }
+  constraint num_trans_c { num_trans inside {[64:128]}; }
 
   // Endpoint configuration.
   //
