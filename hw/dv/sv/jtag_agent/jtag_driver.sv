@@ -164,10 +164,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   task drive_jtag_test_logic_reset();
     `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
     fork begin : isolation_fork
+      enable_tck();
       fork
         begin
           // Enable clock
-          enable_tck();
           `HOST_CB.tms <= 1'b0;
           @(`HOST_CB);
           // Go to Test Logic Reset
@@ -183,15 +183,16 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         end
       join_any
       disable fork;
+      release_tck();
     end join
   endtask
 
   // drive jtag req and retrieve rsp
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
-    enable_tck();
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
+    enable_tck();
     if (exit_to_rti_dr_past & ~cfg.min_rti) begin
       @(`HOST_CB); // wait one cycle to ensure clock is stable. TODO: remove.
     end else begin
