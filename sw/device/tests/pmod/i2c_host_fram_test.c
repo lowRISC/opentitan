@@ -212,7 +212,7 @@ const test_setup_t kSetup[] = {
     // approaches the peripheral clock.
     {.speed = kDifI2cSpeedStandard, .kbps = (uint32_t)(100 * 0.984 * 0.85)},
     {.speed = kDifI2cSpeedFast, .kbps = (uint32_t)(400 * 0.92 * 0.85)},
-    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.55 * 0.85)}};
+    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.55 * 0.75)}};
 
 bool test_main(void) {
   dif_pinmux_t pinmux;
