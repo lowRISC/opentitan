@@ -233,6 +233,29 @@
                     size: "4"
                 }
                 {
+                    // Enablement of the ROM_EXT immutable code section.
+                    // A value of kHardenedBoolTrue enables the feature.
+                    // All other values disable it.
+                    name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN",
+                    size: "4"
+                }
+                {
+                    // Relative offset from the start of the ROM_EXT slot to
+                    // find the immutable code section at.
+                    name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET",
+                    size: "4"
+                }
+                {
+                    // Length (in bytes) of the immutable code section.
+                    name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH",
+                    size: "4"
+                }
+                {
+                    // SHA256 hash of the immutable ROM_EXT section.
+                    name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH",
+                    size: "32"
+                }
+                {
                     name: "CREATOR_SW_CFG_RESERVED",
                     size: "22"
                 }
