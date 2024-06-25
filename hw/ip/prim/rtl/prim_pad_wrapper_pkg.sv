@@ -17,7 +17,8 @@ package prim_pad_wrapper_pkg;
   typedef enum logic [1:0] {
     NoScan = 2'h0,
     ScanIn = 2'h1,
-    ScanOut = 2'h2
+    ScanOut = 2'h2,
+    ScanClock = 2'h3
   } scan_role_e;
 
   // Pad attributes

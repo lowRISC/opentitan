@@ -30,6 +30,8 @@ package pinmux_pkg;
     integer                   usb_sense_idx;
     pad_type_e [NDioPads-1:0] dio_pad_type;
     pad_type_e [NMioPads-1:0] mio_pad_type;
+    scan_role_e [NDioPads-1:0] dio_scan_role;
+    scan_role_e [NMioPads-1:0] mio_scan_role;
   } target_cfg_t;
 
   parameter target_cfg_t DefaultTargetCfg = '{
@@ -46,7 +48,9 @@ package pinmux_pkg;
     usb_dn_idx:        0,
     usb_sense_idx:     0,
     dio_pad_type:      {NDioPads{BidirStd}},
-    mio_pad_type:      {NMioPads{BidirStd}}
+    mio_pad_type:      {NMioPads{BidirStd}},
+    dio_scan_role:     {NDioPads{NoScan}},
+    mio_scan_role:     {NMioPads{NoScan}}
   };
 
   // Wakeup Detector Modes

@@ -197,6 +197,74 @@ module chip_earlgrey_cw340 #(
       BidirStd, // MIO Pad 2
       BidirStd, // MIO Pad 1
       BidirStd  // MIO Pad 0
+    },
+    // Pad scan roles
+    dio_scan_role: {
+      scan_role_pkg::DioPadSpiHostCsLScanRole, // DIO spi_host0_csb
+      scan_role_pkg::DioPadSpiHostClkScanRole, // DIO spi_host0_sck
+      scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
+      scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
+      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_aon_flash_wp_l
+      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_aon_ec_rst_l
+      scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd
+      scan_role_pkg::DioPadSpiDevD2ScanRole, // DIO spi_device_sd
+      scan_role_pkg::DioPadSpiDevD1ScanRole, // DIO spi_device_sd
+      scan_role_pkg::DioPadSpiDevD0ScanRole, // DIO spi_device_sd
+      scan_role_pkg::DioPadSpiHostD3ScanRole, // DIO spi_host0_sd
+      scan_role_pkg::DioPadSpiHostD2ScanRole, // DIO spi_host0_sd
+      scan_role_pkg::DioPadSpiHostD1ScanRole, // DIO spi_host0_sd
+      scan_role_pkg::DioPadSpiHostD0ScanRole, // DIO spi_host0_sd
+      NoScan, // DIO usbdev_usb_dn
+      NoScan // DIO usbdev_usb_dp
+    },
+    mio_scan_role: {
+      scan_role_pkg::MioPadIor13ScanRole,
+      scan_role_pkg::MioPadIor12ScanRole,
+      scan_role_pkg::MioPadIor11ScanRole,
+      scan_role_pkg::MioPadIor10ScanRole,
+      scan_role_pkg::MioPadIor7ScanRole,
+      scan_role_pkg::MioPadIor6ScanRole,
+      scan_role_pkg::MioPadIor5ScanRole,
+      scan_role_pkg::MioPadIor4ScanRole,
+      scan_role_pkg::MioPadIor3ScanRole,
+      scan_role_pkg::MioPadIor2ScanRole,
+      scan_role_pkg::MioPadIor1ScanRole,
+      scan_role_pkg::MioPadIor0ScanRole,
+      scan_role_pkg::MioPadIoc12ScanRole,
+      scan_role_pkg::MioPadIoc11ScanRole,
+      scan_role_pkg::MioPadIoc10ScanRole,
+      scan_role_pkg::MioPadIoc9ScanRole,
+      scan_role_pkg::MioPadIoc8ScanRole,
+      scan_role_pkg::MioPadIoc7ScanRole,
+      scan_role_pkg::MioPadIoc6ScanRole,
+      scan_role_pkg::MioPadIoc5ScanRole,
+      scan_role_pkg::MioPadIoc4ScanRole,
+      scan_role_pkg::MioPadIoc3ScanRole,
+      scan_role_pkg::MioPadIoc2ScanRole,
+      scan_role_pkg::MioPadIoc1ScanRole,
+      scan_role_pkg::MioPadIoc0ScanRole,
+      scan_role_pkg::MioPadIob12ScanRole,
+      scan_role_pkg::MioPadIob11ScanRole,
+      scan_role_pkg::MioPadIob10ScanRole,
+      scan_role_pkg::MioPadIob9ScanRole,
+      scan_role_pkg::MioPadIob8ScanRole,
+      scan_role_pkg::MioPadIob7ScanRole,
+      scan_role_pkg::MioPadIob6ScanRole,
+      scan_role_pkg::MioPadIob5ScanRole,
+      scan_role_pkg::MioPadIob4ScanRole,
+      scan_role_pkg::MioPadIob3ScanRole,
+      scan_role_pkg::MioPadIob2ScanRole,
+      scan_role_pkg::MioPadIob1ScanRole,
+      scan_role_pkg::MioPadIob0ScanRole,
+      scan_role_pkg::MioPadIoa8ScanRole,
+      scan_role_pkg::MioPadIoa7ScanRole,
+      scan_role_pkg::MioPadIoa6ScanRole,
+      scan_role_pkg::MioPadIoa5ScanRole,
+      scan_role_pkg::MioPadIoa4ScanRole,
+      scan_role_pkg::MioPadIoa3ScanRole,
+      scan_role_pkg::MioPadIoa2ScanRole,
+      scan_role_pkg::MioPadIoa1ScanRole,
+      scan_role_pkg::MioPadIoa0ScanRole
     }
   };
 

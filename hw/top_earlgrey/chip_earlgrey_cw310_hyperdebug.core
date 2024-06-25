@@ -11,6 +11,7 @@ filesets:
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:ast
       - lowrisc:systems:padring
+      - lowrisc:systems:scan_role_pkg
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/usr_access_xil7series.sv

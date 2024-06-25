@@ -168,6 +168,37 @@ module chip_${top["name"]}_${target["name"]} #(
 % for attr in pad_attr:
       ${attr}${" " if loop.last else ","} // MIO Pad ${len(pad_attr) - loop.index - 1}
 % endfor
+    },
+    // Pad scan roles
+    dio_scan_role: {
+<%
+  scan_roles = []
+  for sig in list(reversed(top["pinmux"]["ios"])):
+    if sig["connection"] != "muxed":
+      if (len(sig['pad']) > 0) and (target["name"] != "cw305"):
+        scan_string = lib.Name.from_snake_case('dio_pad_' + sig['pad'] + '_scan_role')
+        scan_roles.append((f'scan_role_pkg::{scan_string.as_camel_case()}', sig['name']))
+      else:
+        scan_roles.append(('NoScan', sig['name']))
+%>\
+% for scan_role, name in list(scan_roles):
+      ${scan_role}${"" if loop.last else ","} // DIO ${name}
+% endfor
+    },
+    mio_scan_role: {
+<%
+  scan_roles = []
+  for pad in list(reversed(pinout["pads"])):
+    if pad["connection"] == "muxed":
+      if target["name"] != "cw305":
+        scan_string = lib.Name.from_snake_case('mio_pad_' + pad['name'] + '_scan_role')
+        scan_roles.append(f'scan_role_pkg::{scan_string.as_camel_case()}')
+      else:
+        scan_roles.append('NoScan')
+%>\
+% for scan_role in list(scan_roles):
+      ${scan_role}${"" if loop.last else ","}
+% endfor
     }
   };
 
