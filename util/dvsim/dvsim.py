@@ -715,7 +715,7 @@ def main():
     RunTest.seeds = args.seeds
 
     # If we are fixing a seed value, no point in tests having multiple reseeds.
-    if args.fixed_seed:
+    if args.fixed_seed is not None:
         args.reseed = 1
     RunTest.fixed_seed = args.fixed_seed
 
