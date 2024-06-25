@@ -8,9 +8,13 @@
 
 ### Functional Modes
 
-I2C IP is a controller-target combo that can function as either an I2C controller or an I2C target.
-Although it is conceivable that an I2C combo can optionally function as both a controller and a target at the same time, we do not support this feature at this time.
-These functional modes are enabled at runtime by setting the register fields [`CTRL.ENABLEHOST`](registers.md#ctrl) and [`CTRL.ENABLETARGET`](registers.md#ctrl).
+I2C IP is a controller-target combo that can function as an I2C controller and/or an I2C target.
+These functional modules are enabled at runtime by setting the register fields [`CTRL.ENABLEHOST`](registers.md#ctrl) and [`CTRL.ENABLETARGET`](registers.md#ctrl).
+If the controller/host module is to be used in a multi-controller environment, [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](registers.md#ctrl) would also need to be set.
+Note the ordering requirements in the register description for multi-controller configurations.
+
+The SCL and SDA outputs from the block combine the SCL and SDA outputs from the controller and target modules.
+The modules operate as though they were independent devices on the same I2C bus, with any logic low value taking priority.
 
 ### Virtual Open Drain
 
@@ -19,7 +23,7 @@ The SDA and SCL outputs are assumed to be connected to a tri-state buffer, with 
 
 Rather than toggling the buffer inputs, the buffer inputs are *continuously asserted low*, and instead the buffer *enable* signals are toggled.
 The SDA or SCL buffers are enabled for a logical "Low" output on the respective signal, and are disabled for logical "High" outputs.
-This arrangement allows the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- multi-controller functionality).
+This arrangement allows the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or multi-controller functionality).
 
 This arrangement is necessary for FPGA builds.
 
@@ -38,23 +42,23 @@ In this state, with SCL or SDA asserted high, the register fields [`VAL.SCL_RX`]
 
 #### FSM control of SCL and SDA
 
-While in controller mode, SCL and SDA are generated through the internal state machine.
+While the controller module is active, SCL and SDA are generated through its internal state machine.
 Since SCL is directly decoded from the states, it can have short glitches during transition which the external target may be sensitive to if it is not using an over-sampling scheme.
 To counter this, the SCL and SDA outputs from the internal state machine are flopped before they are emitted.
 
 This adds a one cycle module clock delay to both signals.
-If the module clock is sufficiently faster than I2C line speeds (for example 20MHz), this is not an issue.
+If the module clock is sufficiently faster than I2C line speeds (for example 24MHz), this is not an issue.
 However if the line speeds and the module clock speeds become very close (2x), the 1 cycle delay may have an impact, as the internal state machine may mistakenly think it has sampled an SDA that has not yet been updated.
 
 Therefore, it is recommended that the internal module clock frequency is much higher than the line speeds.
 Another reason to have this higher internal clock frequency is that the timing parameters can be more accurately defined, which helps attain the desired I2C clock rate.
-Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the [Programmer's Guide](./programmers_guide.md#timing-parameter-tuning-algorithm)), it is recommended that the internal module clock frequency is at leat 50x higher than the I2C line speeds.
+Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the [Programmer's Guide](./programmers_guide.md#timing-parameter-tuning-algorithm)), it is recommended that the internal module clock frequency is at least 24x higher than the I2C line speeds.
 
 ### Byte-Formatted Programming Mode
 
-This section applies to I2C in the controller mode.
-The state-machine-controlled mode allows for higher-speed operation with less frequent software interaction.
-In this mode, the I2C pins are controlled by the state machine, which in turn is controlled by a sequence of formatting indicators.
+This section applies to I2C's controller module.
+The state-machine-controlled module allows for higher-speed operation with less frequent software interaction.
+In this module, the I2C pins are controlled by the state machine, which in turn is controlled by a sequence of formatting indicators.
 These indicators determine:
 - The sequence of bytes which should be transmitted on the SDA and SCL pins.
 - The periods between transmitted bytes when the state-machine should stop transmission and instead read back a fixed number of bytes.
@@ -127,7 +131,7 @@ The assigned address and mask pairs are set in registers [`TARGET_ID.ADDRESS0`](
 
 ### Acquired Formatted Data
 
-This section applies to I2C in the target mode.
+This section applies to I2C in the target module.
 When the target accepts a transfer, it inserts the transfer address, read/write bit, and START signal sent by the controller into ACQ FIFO where they can be accessed by software.
 ACQ FIFO output corresponds to [`ACQDATA`](registers.md#acqdata).
 If the transfer is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the controller terminates the transfer by sending a STOP or a repeated START signal.
