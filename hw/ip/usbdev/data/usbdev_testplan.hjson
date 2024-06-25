@@ -1054,6 +1054,15 @@
       tests: ["usbdev_rand_bus_disconnects"]
     }
     {
+      name: rand_suspends
+      desc: '''
+            Deriving from the sequence 'usbdev_max_usb_traffic' ensure that traffic can be streamed
+            back and forth successfully with the device being randomly suspended and resumed.
+            '''
+      stage: V2
+      tests: ["usbdev_rand_suspends"]
+    }
+    {
       name: max_usb_traffic
       desc: '''
             Verify operation under maximal traffic to maximal endpoints, exercising all transfer
@@ -1163,6 +1172,21 @@
             '''
       stage: V2
       tests: ["usbdev_fifo_rst"]
+    }
+    {
+      name: dpi_config_host
+      desc: '''
+            Using the DPI model run the DUT through a typical configuration sequence consisting of
+            Control Transfers that mimic the behavior of a physical USB host controller.
+
+            - Connect the DUT to the USB and perform a Bus Reset.
+            - Set up endpoint zero and read the Device Descriptor.
+            - Set the device address.
+            - Read the configuration descriptor.
+            - Set the configuration.
+            '''
+      stage: V3
+      tests: ["usbdev_dpi_config_host"]
     }
   ]
 
