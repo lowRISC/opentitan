@@ -8,8 +8,8 @@
 
 ### Functional Modes
 
-I2C IP is a host-target combo that can function as either an I2C host or an I2C target.
-Although it is conceivable that an I2C combo can optionally function as both a host and a target at the same time, we do not support this feature at this time.
+I2C IP is a controller-target combo that can function as either an I2C controller or an I2C target.
+Although it is conceivable that an I2C combo can optionally function as both a controller and a target at the same time, we do not support this feature at this time.
 These functional modes are enabled at runtime by setting the register fields [`CTRL.ENABLEHOST`](registers.md#ctrl) and [`CTRL.ENABLETARGET`](registers.md#ctrl).
 
 ### Virtual Open Drain
@@ -19,7 +19,7 @@ The SDA and SCL outputs are assumed to be connected to a tri-state buffer, with 
 
 Rather than toggling the buffer inputs, the buffer inputs are *continuously asserted low*, and instead the buffer *enable* signals are toggled.
 The SDA or SCL buffers are enabled for a logical "Low" output on the respective signal, and are disabled for logical "High" outputs.
-This arrangement allows the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- multi-host functionality).
+This arrangement allows the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- multi-controller functionality).
 
 This arrangement is necessary for FPGA builds.
 
@@ -38,7 +38,7 @@ In this state, with SCL or SDA asserted high, the register fields [`VAL.SCL_RX`]
 
 #### FSM control of SCL and SDA
 
-While in host mode, SCL and SDA are generated through the internal state machine.
+While in controller mode, SCL and SDA are generated through the internal state machine.
 Since SCL is directly decoded from the states, it can have short glitches during transition which the external target may be sensitive to if it is not using an over-sampling scheme.
 To counter this, the SCL and SDA outputs from the internal state machine are flopped before they are emitted.
 
@@ -52,7 +52,7 @@ Since there are currently also a few cycles discrepancy between the specified ti
 
 ### Byte-Formatted Programming Mode
 
-This section applies to I2C in the host mode.
+This section applies to I2C in the controller mode.
 The state-machine-controlled mode allows for higher-speed operation with less frequent software interaction.
 In this mode, the I2C pins are controlled by the state machine, which in turn is controlled by a sequence of formatting indicators.
 These indicators determine:
@@ -89,7 +89,7 @@ In those cases this flag should be asserted with FBYTE indicating no ACK is expe
 
 #### Halt-on-NACK
 
-If the Host-Mode Controller-Transmitter transmits a byte and the 9th bit is a NACK from the Target/Bus, the `controller_halt` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
+If the Controller-Mode Controller-Transmitter transmits a byte and the 9th bit is a NACK from the Target/Bus, the `controller_halt` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
 If the `controller_halt` interrupt is asserted, the Byte-Formatted Programming Mode FSM will halt until the interrupt condition has been cleared in the [`CONTROLLER_EVENTS.NACK`](registers.md#controller_events) register.
 Software will likely want to do one of two things in handling this irq:
 1. End the current transaction by setting [`CTRL.ENABLEHOST`](registers.md#ctrl) to `1'b0`, and clear the FIFOs to be ready to begin a new transaction.
@@ -114,10 +114,10 @@ The STOP condition terminates the transaction, leaving the FSM halted in the "bu
 ### Target Address Registers
 
 I2C target device is assigned two 7-bit address and 7-bit mask pairs.
-The target device accepts a transaction if the result of the bitwise AND operation performed on the transaction address sent by the host and a mask matches the assigned address corresponding to the mask.
+The target device accepts a transaction if the result of the bitwise AND operation performed on the transaction address sent by the controller and a mask matches the assigned address corresponding to the mask.
 In other words, address matching is performed only for bits where the mask is "1".
 Thus, with the masks set to all ones (0x7F), the target device will respond to either of the two assigned unique addresses and no other.
-If the mask and the assigned address both have zeros in a particular bit position, that bit will be a match regardless of the value of that bit received from the host.
+If the mask and the assigned address both have zeros in a particular bit position, that bit will be a match regardless of the value of that bit received from the controller.
 Note that if, in any bit position, the mask has zero and the assigned address has one, no transaction can match and such mask/address pair is effectively disabled.
 
 Finally, in the special case where the mask is all zeroes (0x00), then that corresponding entry is ignored and will not match.
@@ -128,9 +128,9 @@ The assigned address and mask pairs are set in registers [`TARGET_ID.ADDRESS0`](
 ### Acquired Formatted Data
 
 This section applies to I2C in the target mode.
-When the target accepts a transfer, it inserts the transfer address, read/write bit, and START signal sent by the host into ACQ FIFO where they can be accessed by software.
+When the target accepts a transfer, it inserts the transfer address, read/write bit, and START signal sent by the controller into ACQ FIFO where they can be accessed by software.
 ACQ FIFO output corresponds to [`ACQDATA`](registers.md#acqdata).
-If the transfer is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the host terminates the transfer by sending a STOP or a repeated START signal.
+If the transfer is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the controller terminates the transfer by sending a STOP or a repeated START signal.
 A STOP or repeated START indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits may be junk or the target address, respectively.
 
 Note that the repeated START indicator only appears if it matches the address.
@@ -141,11 +141,11 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 
 ![](../doc/I2C_acq_fifo_write.svg)
 
-If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the host signals the end of the transfer by sending a NACK signal.
+If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the controller signals the end of the transfer by sending a NACK signal.
 If TX FIFO holds no data, or if the ACQ FIFO contains more than 1 entry, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO or handle the available command.
 See [stretching during read](#stretching-during-read) for more details.
 TX FIFO input corresponds to [`TXDATA`](registers.md#txdata).
-Typically, a NACK signal is followed by a STOP or repeated START signal and the IP will raise an exception if the host sends a STOP signal after an ACK.
+Typically, a NACK signal is followed by a STOP or repeated START signal and the IP will raise an exception if the controller sends a STOP signal after an ACK.
 An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in the same entry with a STOP or repeated START signal.
 For ACK and NACK signals, the value of the first bit is 0 and 1, respectively.
 The following diagram shows consecutive entries inserted into ACQ FIFO during a read operation:
@@ -155,7 +155,7 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 The ACQ FIFO entry consists of 11 bits:
 - Address (bits 7:1) and R/W bit (bit 0) or data byte
 - Format flags (bits 10:8)
-The format flags indicate the following signals received from the host:
+The format flags indicate the following signals received from the controller:
 - START: 001
 - STOP completing transaction without errors: 010
 - repeated START: 011
@@ -169,11 +169,11 @@ The format flags indicate the following signals received from the host:
 For Standard-mode, Fast-mode and Fast-mode Plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 To claim complete compatibility at each mode, the state machine timings need to be adapted to whether there are Standard-mode, Fast-mode and Fast-mode Plus targets on the bus.
 Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1 Mbaud.
-For example, the host may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
+For example, the controller may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
 Assuming no clock stretching, for a given set of these four parameters the baud rate is then given to be:
 $$ 1/f\_{SCL}=t\_{LOW}+t\_{HIGH}+t\_{r}+t\_{f}. $$
 
-Thus in order to ensure compliance with the spec in any particular configuration, software will program the I2C host IP with explicit values for each of the following timing parameters, as defined in Figure 38 of the specification.
+Thus in order to ensure compliance with the spec in any particular configuration, software will program the I2C controller IP with explicit values for each of the following timing parameters, as defined in Figure 38 of the specification.
 - t<sub>LOW</sub>: set in register [`TIMING0.TLOW`](registers.md#timing0).
 - t<sub>HIGH</sub>: set in register [`TIMING0.THIGH`](registers.md#timing0).
 - t<sub>r</sub>: set in register [`TIMING1.T_R`](registers.md#timing1).
@@ -206,7 +206,7 @@ A detailed description of the algorithm for determining these parameters--as wel
 ### Timeout Control
 A malfunctioning (or otherwise very slow) target device can hold SCL low indefinitely, stalling the bus.
 For this reason [`TIMEOUT_CTRL`](registers.md#timeout_ctrl) provides a clock-stretching timeout mechanism to notify firmware of this sort of condition.
-If [`TIMEOUT_CTRL.EN`](registers.md#timeout_ctrl) is asserted, an interrupt will be asserted when the IP detects that another device (a target or, in possible future revisions, an alternate host) has been holding SCL low for more than [`TIMEOUT_CTRL.VAL`](registers.md#timeout_ctrl) clock ticks.
+If [`TIMEOUT_CTRL.EN`](registers.md#timeout_ctrl) is asserted, an interrupt will be asserted when the IP detects that another device (a target or, in possible future revisions, an alternate controller) has been holding SCL low for more than [`TIMEOUT_CTRL.VAL`](registers.md#timeout_ctrl) clock ticks.
 
 
 This feature is added as a utility, though it is not required by the I2C specification.
@@ -219,7 +219,7 @@ Other features may also be required for complete SMBus functionality.)
 As described in the I2C specification, a target device can pause a transaction by holding SCL low.
 There are 3 cases in which this design stretches the clock.
 In all cases described below, a target begins to stretch the clock after the ACK bit.
-In the first two scenarios, it is after the ACK bit sent by the target, in the last scenario, it is after the host's ACK bit.
+In the first two scenarios, it is after the ACK bit sent by the target, in the last scenario, it is after the controller's ACK bit.
 
 #### Stretching after address read
 - When a target device receives a start, the address and R/W bit are written into the ACQ FIFO.
@@ -227,7 +227,7 @@ In the first two scenarios, it is after the ACK bit sent by the target, in the l
 - The `acq_stretch` interrupt is generated to alert software to such a situation.
 
 #### Stretching during write
-- Similar to the scenario above, if the host tries to write a data byte into the ACQ FIFO when there is no available space, the clock is also stretched after the ACK bit.
+- Similar to the scenario above, if the controller tries to write a data byte into the ACQ FIFO when there is no available space, the clock is also stretched after the ACK bit.
 - The `acq_stretch` interrupt is generated to alert software to such a situation.
 
 #### Stretching during read
@@ -265,7 +265,7 @@ This feature is intended to support protocols that require mid-transfer NACK dec
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
 
-#### Host Mode
+#### Controller Mode
 Whenever the RX FIFO exceeds the designated number of entries, the interrupt `rx_threshold` is asserted to inform firmware.
 Firmware can configure the threshold value via the register [`HOST_FIFO_CONFIG.RX_THRESH`](registers.md#host_fifo_config).
 
@@ -278,11 +278,11 @@ If the module transmits a byte and the 9th bit is a NACK from the Target/Bus, th
 If the 'nak' interrupt is asserted, the Byte-Formatted Programming Mode FSM will halt until the interrupt has been acknowledged.
 See [the Halt-on-NAK section](#halt-on-nak) above for more details on this behaviour.
 
-When the I2C module is in transmit mode, the `scl_interference` or `sda_interference` interrupts will be asserted if the IP identifies that some other device (host or target) on the bus is forcing either signal low and interfering with the transmission.
+When the I2C module is in transmit mode, the `scl_interference` or `sda_interference` interrupts will be asserted if the IP identifies that some other device (controller or target) on the bus is forcing either signal low and interfering with the transmission.
 It should be noted that the `scl_interference` interrupt is not raised in the case when the target device is stretching the clock.
 (However, it may be raised if the target allows SCL to go high and then pulls SCL down before the end of the current clock cycle.)
 
-A target device should never assert 0 on the SDA lines, and in the absence of multi-host support, the `sda_interference` interrupt is raised whenever the host IP detects that another device is pulling SDA low.
+A target device should never assert 0 on the SDA lines, and in the absence of multi-controller support, the `sda_interference` interrupt is raised whenever the controller IP detects that another device is pulling SDA low.
 
 On the other hand, it is legal for the a target device to assert SCL low for clock stretching purposes.
 With clock stretching, the target can delay the start of the following SCL pulse by holding SCL low between clock pulses.
@@ -292,7 +292,7 @@ If SCL is pulled low during an SCL pulse which has already started, this interru
 ```wavejson
 {signal: [
   {name: 'Clock', wave: 'p.....|.......|......'},
-  {name: 'SCL Host Driver', wave: '0.z..0|.z....0|..z.x.'},
+  {name: 'SCL Controller Driver', wave: '0.z..0|.z....0|..z.x.'},
   {name: 'SCL Target Driver', wave: 'z.....|0..z...|...0..'},
   {name: 'SCL bus', wave: '0.u..0|...u..0|..u0..'},
   {name: 'scl_interference', wave: '0.....|.......|....1.'},
@@ -307,7 +307,7 @@ This interrupt is suppressed, however, if [`TIMEOUT_CTRL.EN`](registers.md#timeo
 ```wavejson
 {signal: [
   {name: 'Clock', wave: 'p............'},
-  {name: 'SCL Host Driver', wave: '0..z.......x.'},
+  {name: 'SCL Controller Driver', wave: '0..z.......x.'},
   {name: 'SCL Target Driver', wave: 'z0...........'},
   {name: 'SCL bus', wave: '0............'},
   {name: 'TIMEOUT_CNTRL.VAL', wave: '2............', data: "8"},
@@ -322,7 +322,7 @@ Except for START and STOP symbols, the I2C specification requires that the SDA s
 The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse.
 
 Transactions are terminated by a STOP signal.
-The host may send a repeated START signal instead of a STOP, which also terminates the preceding transaction.
+The controller may send a repeated START signal instead of a STOP, which also terminates the preceding transaction.
 In both cases, the `cmd_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
 
 
@@ -333,9 +333,9 @@ The interrupt `cmd_complete` is asserted whenever a RESTART or a STOP bit is obs
 The interrupt `tx_stretch` is asserted whenever target intends to transmit data but cannot.
 See [stretching during read]({{< relref "#stretching-during-read" >}}).
 
-When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
+When a controller receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
 In a case when a target receives a STOP without the prerequisite NACK, the interrupt `unexp_stop` is asserted.
-This interrupt just means that a STOP was unexpectedly observed during a host read.
+This interrupt just means that a STOP was unexpectedly observed during a controller read.
 It is not necessarily harmful, but software can be made aware just in case.
 
 If the ACQ FIFO exceeds the designated number of entries, the interrupt `acq_threshold` is raised to inform firmware.
@@ -353,14 +353,14 @@ This can be due to a full ACQ FIFO, or it can be due to an ACK Control Mode stre
 If ACK Control Mode is enabled, check the relevant bits in [`STATUS`](registers.md#status) to determine the reason(s).
 The `acq_stretch` interrupt is a Status type, so it will only de-assert once the stretch conditions are cleared.
 
-If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
-Host sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
+If a controller ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
+Controller sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
 The time period is counted from the last low-to-high SCL transition.
 Firmware can configure the timeout value via the register [`HOST_TIMEOUT_CTRL`](registers.md#host_timeout_ctrl).
 
 ### Implementation Details: Format Flag Parsing
 
-To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the `I2C_Host` state machine.
+To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the `I2C_Controller` state machine.
 In this simplified view, many sequential states have been collapsed into four sub-sequences of states (shown in square brackets) or have their names abbreviated:
 - Issue start
 - Issue stop
@@ -378,4 +378,4 @@ Similarly, the figure below shows a simplified version of the `I2C_Target` state
 
 ![](../doc/I2C_state_diagram_target.svg)
 
-In this diagram, "R/W" stands for a R/W bit value. The host is reading when R/W bit is "1" and writing when R/W bit is "0".
+In this diagram, "R/W" stands for a R/W bit value. The controller is reading when R/W bit is "1" and writing when R/W bit is "0".
