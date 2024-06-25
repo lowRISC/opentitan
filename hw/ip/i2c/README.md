@@ -56,10 +56,14 @@ This is equivalent to "controller" and comes from a time before more recent I2C 
 It should not be confused with "SMBus Host," which has a specific meaning in that protocol.
 
 At a high-level, the I2C protocol is a clock-parallel serial protocol, with at least one controller issuing transactions to a number of targets on the same bus.
+A transaction may consist of multiple transfers, each of which has its own address byte and command bit (R/W).
+However, it is strongly recommended that all transfers in a transaction are issued to the same target address.
+Multiple controllers may begin a transaction simultaneously, but bus arbitration will cause only one stream of bits to reach a target.
+This IP block can detect and report lost bus arbitration, and typically, the next action for software is to retry the transaction.
 
-Every transaction consists of a number of bytes transmitted, either from controller-to-target or target-to-controller.
+Every transfer consists of a number of bytes transmitted, either from controller-to-target or target-to-controller.
 Each byte is typically followed by a single bit acknowledgement (ACK) from the receiving side.
-Typically each transaction consists of:
+Typically each transfer consists of:
 1. A START signal, issued by the controller.
 1. An address, issued by the controller, encoded using 7 bits.
 1. An R/W bit indicating if the transaction is a read-from or a write-to the target device.
@@ -72,6 +76,9 @@ in a manner which differs between reads and writes.
     - For read transactions, the target device continues to send data as long as the controller acknowledges the target-issued data by sending an ACK signal.
     Once the controller has received all the required data it indicates that no more data is needed by explicitly de-asserting the ACK signal (this is called a NACK signal) just before sending a STOP or a repeated START signal.
 1. A STOP signal or a repeated START signal.
+
+All well-behaved transactions end with a STOP signal, which indicates the end of the last transfer and when the bus is free again.
+However, this IP does support detection of bus timeouts, when there has been no activity for a specified amount of time.
 
 This protocol is generally quite flexible with respect to timing constraints, and slow enough to be managed by a software microcontroller, however such an implementation requires frequent activity on the part of the microcontroller.
 This IP presents a simple register interface and state-machine to manage the corresponding I/O pins directly using a byte-formatted programming model.
