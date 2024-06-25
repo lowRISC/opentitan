@@ -6,6 +6,11 @@ class rv_dm_debug_disabled_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_debug_disabled_vseq)
   `uvm_object_new
 
+  // Override the constraint in rv_dm_base_vseq that enables debug (to disable it instead)
+  constraint debug_enabled_c {
+    lc_hw_debug_en == 1'b0;
+  }
+
   // Check that the "mem" TL interface is disabled as expected
   task check_no_mem_if();
     // Try to do an arbitrary TL access to the interface. We don't expect it to work, which is
@@ -49,14 +54,12 @@ class rv_dm_debug_disabled_vseq extends rv_dm_base_vseq;
     cfg.m_tl_agent_cfgs["rv_dm_mem_reg_block"].check_tl_errs = 0;
 
     repeat (4) begin
-      // Pick an arbitrary value for lc_hw_debug_en other than On. Drive the signal appropriately
-      // and then wait a short time to make sure it has had an effect.
-      bit [3:0] raw_dbg_enable;
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(raw_dbg_enable, raw_dbg_enable != lc_ctrl_pkg::On;)
-      lc_hw_debug_en = lc_ctrl_pkg::lc_tx_t'(raw_dbg_enable);
-      `uvm_info(`gfn, $sformatf("Setting lc_hw_debug_en to %0x", lc_hw_debug_en), UVM_LOW)
-      cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
-
+      // Pick an arbitrary value for lc_hw_debug_en_i other than On and then wait a short time to
+      // make sure it has had an effect.
+      upd_lc_hw_debug_en();
+      `uvm_info(`gfn,
+                $sformatf("Setting lc_hw_debug_en to %0x", cfg.rv_dm_vif.lc_hw_debug_en),
+                UVM_LOW)
       cfg.clk_rst_vif.wait_clks(10);
 
       randcase
