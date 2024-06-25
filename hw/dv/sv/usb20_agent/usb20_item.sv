@@ -15,6 +15,10 @@ class usb20_item extends uvm_sequence_item;
   // Indicates that a timeout occurred when awaiting a response from the device.
   bit timed_out = 1'b0;
 
+  // Indicates that this item is to be transmitted using Low Speed signaling; applicable only to
+  // packet items.
+  bit low_speed;
+
   // Validity indicators that apply to all packet types; used by the monitor at metadata for the
   // scoreboard.
   bit valid_sync;      // SYNC signal properly formed.
@@ -29,6 +33,8 @@ class usb20_item extends uvm_sequence_item;
     super.new(name);
     m_ev_type  = EvPacket;
     m_pkt_type = pkt_type;
+    // ALmost all communication shall occur using Full Speed signaling.
+    low_speed = 1'b0;
     // When passing requests to the driver the validity bits may be cleared to request fault
     // injection; the default behavior shall be to generate valid packets.
     valid_sync = 1'b1;
@@ -49,6 +55,8 @@ class usb20_item extends uvm_sequence_item;
     m_pkt_type          = rhs_.m_pkt_type;
     m_usb_transfer      = rhs_.m_usb_transfer;
     timed_out           = rhs_.timed_out;
+    // Low speed signaling?
+    low_speed           = rhs_.low_speed;
     // Validity indicators; used to instruct the driver to perform fault injection, and completed
     // by the monitor when constructing objects from the observed USB signaling.
     valid_sync          = rhs_.valid_sync;
