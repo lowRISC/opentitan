@@ -687,16 +687,17 @@
     {
       name: setup_priority_over_stall_response
       desc: '''
-            Verify that by enabling STALL response shall not prevent the reception of a SETUP
-            transaction/packet.SETUP shall clear both in_stall and out_stall bits for the endpoint.
+            Verify that enabling STALL response does not prevent the reception of a SETUP
+            transaction/packet. Receipt of the SETUP packet shall clear both the `in_stall` and
+            the `out_stall` bits for that endpoint.
 
-            - Configure an endpoint for stall response to out transactions then send a setup
-              transaction to the device on stalled endpoint.
-            - Verify that the SETUP being higher in priority shall clear both in_stall and out_stall
-              bits for that endpoint
+            - Configure an endpoint for stall response to OUT transactions and then send a SETUP
+              transaction to the device on the stalled endpoint.
+            - Verify that the SETUP transaction, being higher in priority, clears both in_stall and
+              out_stall bits for that endpoint.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_setup_priority_over_stall_response"]
     }
     {
       name: stall_priority_over_nak

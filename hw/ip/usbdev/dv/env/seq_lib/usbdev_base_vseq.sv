@@ -417,7 +417,7 @@ endtask
           send_handshake(PidTypeAck);
         default: begin
           // We leave the caller to deal appropriately with any other response;
-          // could be a time out (invalid device/endpoint) or could be a NAK.
+          // could be a time out (invalid device/endpoint), a NAK or a STALL, for example.
         end
       endcase
     end
@@ -854,6 +854,22 @@ endtask
     ral.configin[ep].size.set(num_of_bytes);
     ral.configin[ep].buffer.set(buffer_id);
     csr_update(ral.configin[ep]);
+  endtask
+
+  // Enable/disable the STALL response to OUT transactions for a given endpoint.
+  virtual task configure_out_stall(bit [3:0] ep, bit out_stall = 1'b1);
+    uvm_reg_data_t stall;
+    csr_rd(.ptr(ral.out_stall[0]), .value(stall));
+    stall[ep] = out_stall;
+    csr_wr(.ptr(ral.out_stall[0]), .value(stall));
+  endtask
+
+  // Enable/disable the STALL response to IN transactions for a given endpoint.
+  virtual task configure_in_stall(bit [3:0] ep, bit in_stall = 1'b1);
+    uvm_reg_data_t stall;
+    csr_rd(.ptr(ral.in_stall[0]), .value(stall));
+    stall[ep] = in_stall;
+    csr_wr(.ptr(ral.in_stall[0]), .value(stall));
   endtask
 
   // Send 'Start Of Frame' packet (bus frame/timing referenace).
