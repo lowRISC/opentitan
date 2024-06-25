@@ -27,9 +27,11 @@ See that document for integration overview within the broader top level system.
     - Clock stretching in the controller mode
     - Automatic clock stretching in the target mode<sup>2</sup>
     - Programmable automatic ACK control in the target mode
-- *No support at this time* for any of the features related to multi-controller control:
-    - No support for controller-controller clock synchronization
-    - No support for controller bus arbitration.
+- Support for multi-controller features:
+    - Controller-controller clock synchronization
+    - Controller bus arbitration
+    - Target responses to broadcast transfers (similar to arbitration)
+    - Bus idle detection
 - Byte-formatted register interface with four separate queues: two queues in the controller mode, one for holding read data (RX), the other for holding bytes to be transmitted (TX: addresses or write data) and two queues in the target mode, for holding read (RX) and write (TX) data
 - Direct SCL and SDA control in "Override mode" (for debugging)
 - SCL and SDA ports mapped to I/O via the pinmux
@@ -54,7 +56,6 @@ This is equivalent to "controller" and comes from a time before more recent I2C 
 It should not be confused with "SMBus Host," which has a specific meaning in that protocol.
 
 At a high-level, the I2C protocol is a clock-parallel serial protocol, with at least one controller issuing transactions to a number of targets on the same bus.
-Though I2C optionally allows for multiple controllers on the same bus, we do not support this feature at this time.
 
 Every transaction consists of a number of bytes transmitted, either from controller-to-target or target-to-controller.
 Each byte is typically followed by a single bit acknowledgement (ACK) from the receiving side.
