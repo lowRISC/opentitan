@@ -30,8 +30,8 @@ CONST = struct(
     # SPX+ signature verification parameters are mapped to specific config IDs.
     # Must match the definitions in //sw/device/silicon_creator/lib/sigverify/spx_key.h
     SPX_CONFIG_ID = struct(
-        SHAKE_128S = 0x0142410e,
-        SHAKE_128S_Q20 = 0x9b28d8da,
+        SHA2_128S = 0x0142410e,
+        SHA2_128S_Q20 = 0x9b28d8da,
     ),
     # Signature verification key types. Must match the definitions in
     # //sw/device/silicon_creator/rom/sigverify_key_types.h

@@ -13,7 +13,7 @@ filegroup(
 
 key_sphincs_plus(
     name = "test_key_0_spx_key",
-    config = "Shake128s",
+    config = "Sha2128s",
     method = "hsmtool",
     pub_key = "test_key_0_spx.pub.pem",
     type = "TestKey",
@@ -26,7 +26,7 @@ filegroup(
 
 key_sphincs_plus(
     name = "dev_key_0_spx_key",
-    config = "Shake128s",
+    config = "Sha2128s",
     method = "hsmtool",
     pub_key = "dev_key_0_spx.pub.pem",
     type = "TestKey",
@@ -39,7 +39,7 @@ filegroup(
 
 key_sphincs_plus(
     name = "prod_key_0_spx_key",
-    config = "Shake128s",
+    config = "Sha2128s",
     method = "hsmtool",
     pub_key = "prod_key_0_spx.pub.pem",
     type = "TestKey",
@@ -52,7 +52,7 @@ filegroup(
 
 key_sphincs_plus(
     name = "prod_key_1_spx_key",
-    config = "Shake128s",
+    config = "Sha2128s",
     method = "hsmtool",
     pub_key = "prod_key_1_spx.pub.pem",
     type = "TestKey",
