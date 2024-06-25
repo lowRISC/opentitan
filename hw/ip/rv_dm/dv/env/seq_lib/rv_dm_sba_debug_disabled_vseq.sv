@@ -9,7 +9,7 @@ class rv_dm_sba_debug_disabled_vseq extends rv_dm_base_vseq;
   // This overrides a constraint in the base vseq: we want to ensure that debug is *not* enabled for
   // this vseq.
   constraint debug_enabled_c {
-    lc_hw_debug_en != lc_ctrl_pkg::On;
+    lc_hw_debug_en == 1'b0;
   }
 
   task body();

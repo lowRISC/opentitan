@@ -53,8 +53,8 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     // At this point, "normal debug operation" is not going to be available in the chip. Set
     // lc_hw_debug_en to something other than On. But keep pinmux_hw_debug_en equal to On, so that
     // JTAG access to the debug module is maintained.
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_hw_debug_en, lc_hw_debug_en != lc_ctrl_pkg::On;)
-    cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
+    lc_hw_debug_en = 1'b0;
+    upd_lc_hw_debug_en();
 
     // Make sure that dmstatus does indeed reflect the unavailable signals.
     check_unavail();
@@ -67,8 +67,8 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     // At this point, we want to mimic the system coming back up. De-assert the unavailable_i signal
     // to show that the CPU is back. Also behave as lc_ctrl and re-enable debug.
     cfg.rv_dm_vif.cb.unavailable <= 0;
-    lc_hw_debug_en = lc_ctrl_pkg::On;
-    cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
+    lc_hw_debug_en = 1'b1;
+    upd_lc_hw_debug_en();
 
     // Read back progbuf[0] and dataddr[0]. They should still have the values that we wrote earlier
     // because the ndmreset shouldn't have reset any state inside the debug module itself.
