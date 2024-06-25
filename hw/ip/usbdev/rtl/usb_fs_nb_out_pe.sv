@@ -288,6 +288,7 @@ module usb_fs_nb_out_pe #(
           // Non-isochronous OUT transactions end here
           if (out_ep_stall_i[out_ep_index]) begin
             tx_pid_o = {UsbPidStall}; // STALL
+            rollback_data = 1'b1; // Packet not accepted
           end else if (nak_out_transaction | out_ep_full_i[out_ep_index]) begin
             tx_pid_o = {UsbPidNak}; // NAK -- the endpoint could not accept the data at the moment
             rollback_data = 1'b1;
