@@ -209,6 +209,8 @@ static rom_error_t rom_init(void) {
     // Re-initialize sensor_ctrl.
     HARDENED_RETURN_IF_ERROR(sensor_ctrl_configure(lc_state));
     pwrmgr_cdc_sync(kSensorCtrlSyncCycles);
+  } else {
+    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolTrue);
   }
 
   // Initialize the shutdown policy.
@@ -267,10 +269,17 @@ static rom_error_t rom_init(void) {
       otp_read32(
           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE_OFFSET) >>
       16;
-  if (reset_reason_check != check_val && check_val != kHardenedBoolFalse) {
-    // If the check computation failed and we're configured to fail the check,
-    // then boot fault.
-    return kErrorRomResetReasonFault;
+  if (launder32(check_val) != kHardenedBoolFalse) {
+    // Double-check the reset reason.
+    if (launder32(check_val) == reset_reason_check) {
+      HARDENED_CHECK_EQ(check_val, reset_reason_check);
+      // Reset reasons equal, do nothing.
+    } else {
+      return kErrorRomResetReasonFault;
+    }
+  } else {
+    // Configured to not double-check the reset reason.
+    HARDENED_CHECK_EQ(check_val, kHardenedBoolFalse);
   }
 
   // Clear the register if configured to do so.
