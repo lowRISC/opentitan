@@ -288,14 +288,13 @@ class usb20_monitor extends dv_base_monitor #(
 //-------------------------------------------SOF Packet-------------------------------------------//
   function void sof_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                            ref bit destuffed_packet[$]);
-    // bits to binary conversion
     m_sof_pkt.m_pid_type = pid;
     m_sof_pkt.valid_sync = valid_sync;
     m_sof_pkt.valid_eop = valid_eop;
     m_sof_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 32) begin
-      m_sof_pkt.framenum = {<<{destuffed_packet[8:18]}};
-      m_sof_pkt.crc5 = {<<{destuffed_packet[3:7]}};
+      // Unpack everything following the PID.
+      {m_sof_pkt.crc5, m_sof_pkt.framenum} = {<<{destuffed_packet[16:31]}};
       if (!m_sof_pkt.valid_crc()) begin
         // Informational report; the scoreboard may check this using `valid_crc().`
         `uvm_info(`gfn, $sformatf("Detected SOF packet CRC5 mismatch (0x%0x, expected 0x%0x)",
@@ -310,15 +309,13 @@ class usb20_monitor extends dv_base_monitor #(
 //------------------------------------------Token Packet------------------------------------------//
   function void token_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                              ref bit destuffed_packet[$]);
-    // bits to binary conversion
     m_token_pkt.m_pid_type = pid;
     m_token_pkt.valid_sync = valid_sync;
     m_token_pkt.valid_eop = valid_eop;
     m_token_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() == 32) begin
-      m_token_pkt.address = {<<{destuffed_packet[12:18]}};
-      m_token_pkt.endpoint = {<<{destuffed_packet[8:11]}};
-      m_token_pkt.crc5 = {<<{destuffed_packet[3:7]}};
+      // Unpack everything following the PID.
+      {m_token_pkt.crc5, m_token_pkt.endpoint, m_token_pkt.address} = {<<{destuffed_packet[16:31]}};
       if (!m_token_pkt.valid_crc()) begin
         // Informational report; the scoreboard may check this using `valid_crc().`
         `uvm_info(`gfn, $sformatf("Detected token packet CRC5 mismatch (0x%0x, expected 0x%0x)",
@@ -374,7 +371,6 @@ class usb20_monitor extends dv_base_monitor #(
 //----------------------------------------Handshake Packet----------------------------------------//
   function void handshake_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                                  ref bit destuffed_packet[$]);
-    // bits to binary conversion
     m_handshake_pkt.m_pid_type = pid;
     m_handshake_pkt.valid_sync = valid_sync;
     m_handshake_pkt.valid_eop = valid_eop;
