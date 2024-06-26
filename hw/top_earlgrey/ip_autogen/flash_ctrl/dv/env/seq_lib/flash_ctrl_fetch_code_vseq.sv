@@ -201,10 +201,6 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.mp_region_he_en_pc = 50;
     cfg.seq_cfg.default_region_he_en_pc = 50;
 
-    // Enable Read Only on Info Partitions
-    cfg.seq_cfg.op_readonly_on_info_partition  = 1;
-    cfg.seq_cfg.op_readonly_on_info1_partition = 1;
-
   endfunction : configure_vseq
 
   // Body
