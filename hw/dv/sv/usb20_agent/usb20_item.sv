@@ -76,7 +76,7 @@ class usb20_item extends uvm_sequence_item;
   // Check whether the Packet IDentifier passes its self-check (upper and lower nibbles are bitwise
   // complementary).
   function bit valid_pid();
-    return !(m_pid_type[3:0] ^ m_pid_type[7:4]);
+    return ((m_pid_type[3:0] ^ m_pid_type[7:4]) == 4'hf);
   endfunction
 
   // Check whether any CRC on this item is valid.
