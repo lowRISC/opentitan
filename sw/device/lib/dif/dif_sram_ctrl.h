@@ -93,6 +93,12 @@ typedef enum dif_sram_ctrl_lock {
    * of the chip (EN_SRAM_IFETCH fuse).
    */
   kDifSramCtrlLockExec,
+  /**
+   * Readback feature lock. When locked, disabling or enabling the SRAM readback
+   * feature is not available anymore. Includes the following API:
+   * `dif_sram_ctrl_readback_set`.
+   */
+  kDifSramCtrlLockReadback,
 } dif_sram_ctrl_lock_t;
 
 /**
@@ -191,6 +197,17 @@ dif_result_t dif_sram_ctrl_exec_get_enabled(const dif_sram_ctrl_t *sram_ctrl,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sram_ctrl_exec_set_enabled(const dif_sram_ctrl_t *sram_ctrl,
                                             dif_toggle_t state);
+
+/**
+ * Sets whether the SRAM readback feature is enabled or disabled.
+ *
+ * @param sram_ctrl A SRAM Controller handle.
+ * @param state The new toggle state for the SRAM readback feature.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_readback_set(const dif_sram_ctrl_t *sram_ctrl,
+                                        dif_toggle_t state);
 
 /**
  * Queries the SRAM Controller status.
