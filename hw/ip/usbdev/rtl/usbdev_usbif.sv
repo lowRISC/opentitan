@@ -199,6 +199,9 @@ module usbdev_usbif  #(
       out_max_used_q <= '0;
       wdata_q        <= '0;
       std_write_q    <= 1'b0;
+    end else if (link_reset) begin
+      out_max_used_q <= '0;
+      std_write_q    <= 1'b0;
     end else begin
       out_max_used_q <= out_max_used_d;
       std_write_q    <= std_write_d;
