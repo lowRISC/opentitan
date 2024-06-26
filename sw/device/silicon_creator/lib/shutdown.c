@@ -334,6 +334,24 @@ enum {
   kUartFifoSize = UART_PARAM_TX_FIFO_DEPTH,
 };
 
+OT_ALWAYS_INLINE
+static void shutdown_tx_wait(void) {
+#ifdef OT_PLATFORM_RV32
+  // Wait until UART TX is complete.
+  static_assert(kErrorMsgLen <= kUartFifoSize,
+                "Total message length must be less than TX FIFO size.");
+  CSR_WRITE(CSR_REG_MCYCLE, 0);
+  uint32_t mcycle;
+  bool tx_idle;
+  do {
+    tx_idle =
+        bitfield_bit32_read(abs_mmio_read32(kUartBase + UART_STATUS_REG_OFFSET),
+                            UART_STATUS_TXIDLE_BIT);
+    CSR_READ(CSR_REG_MCYCLE, &mcycle);
+  } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
+#endif
+}
+
 /**
  * Prints a fixed-length (`kErrorMsgLen`) error message.
  *
@@ -363,21 +381,7 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
 
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\r');
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\n');
-
-#ifdef OT_PLATFORM_RV32
-  // Wait until UART TX is complete.
-  static_assert(kErrorMsgLen <= kUartFifoSize,
-                "Total message length must be less than TX FIFO size.");
-  CSR_WRITE(CSR_REG_MCYCLE, 0);
-  uint32_t mcycle;
-  bool tx_idle;
-  do {
-    tx_idle =
-        bitfield_bit32_read(abs_mmio_read32(kUartBase + UART_STATUS_REG_OFFSET),
-                            UART_STATUS_TXIDLE_BIT);
-    CSR_READ(CSR_REG_MCYCLE, &mcycle);
-  } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
-#endif
+  shutdown_tx_wait();
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
@@ -396,6 +400,9 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
 
   // Store redacted shutdown reason in retention SRAM.
   retention_sram_get()->creator.last_shutdown_reason = redacted_error;
+
+  // If there are any characters in the TX FIFO, wait for them to be sent.
+  shutdown_tx_wait();
 
   // Reset UART TX fifo and enable TX.
   abs_mmio_write32(kUartBase + UART_FIFO_CTRL_REG_OFFSET,
