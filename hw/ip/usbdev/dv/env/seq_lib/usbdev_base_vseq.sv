@@ -10,7 +10,6 @@ class usbdev_base_vseq extends cip_base_vseq #(
 );
 `uvm_object_utils(usbdev_base_vseq)
 
-usb20_item     m_usb20_item;
 RSP            m_response_item;
 token_pkt      m_token_pkt;
 data_pkt       m_data_pkt;
@@ -289,7 +288,6 @@ endtask
     if (inject_invalid_token_sync) m_token_pkt.valid_sync = 1'b0;
     if (inject_bad_token_crc5) m_token_pkt.crc5 = ~m_token_pkt.crc5;
     m_token_pkt.low_speed = low_speed_traffic;
-    m_usb20_item = m_token_pkt;
     finish_item(m_token_pkt);
   endtask
 
@@ -309,7 +307,6 @@ endtask
     if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
     if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
     m_data_pkt.low_speed = low_speed_traffic;
-    m_usb20_item = m_data_pkt;
     finish_item(m_data_pkt);
   endtask
 
@@ -332,7 +329,6 @@ endtask
     if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
     if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
     m_data_pkt.low_speed = low_speed_traffic;
-    m_usb20_item = m_data_pkt;
     finish_item(m_data_pkt);
   endtask
 
@@ -385,17 +381,19 @@ endtask
 
   // Retrieve the DUT response and check the Packet IDentifier against expectations.
   virtual task check_response_matches(input pid_type_e pid_type);
+    usb20_item item;
     get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    m_usb20_item.check_pid_type(pid_type);
+    $cast(item, m_response_item);
+    item.check_pid_type(pid_type);
   endtask
 
   // Await for a DUT response and check that there is none; transaction time-out occurs.
   virtual task check_no_response();
+    usb20_item item;
     get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    `DV_CHECK_EQ(m_usb20_item.timed_out, 1,
-                 $sformatf("Response from DUT was unexpected (PID 0x%0x)", m_usb20_item.m_pid_type))
+    $cast(item, m_response_item);
+    `DV_CHECK_EQ(item.timed_out, 1,
+                 $sformatf("Response from DUT was unexpected (PID 0x%0x)", item.m_pid_type))
   endtask
 
   // Attempt to collect IN packet from the specified endpoint, optionally ACKnowledging the receipt
@@ -442,7 +440,6 @@ endtask
     m_handshake_pkt.m_pkt_type = PktTypeHandshake;
     m_handshake_pkt.m_pid_type = pid_type;
     m_handshake_pkt.low_speed = low_speed_traffic;
-    m_usb20_item = m_handshake_pkt;
     finish_item(m_handshake_pkt);
   endtask
 
@@ -864,7 +861,6 @@ endtask
     // Any fault injections requested?
     if (inject_invalid_token_sync) m_sof_pkt.valid_sync = 1'b0;
     if (inject_bad_token_crc5) m_sof_pkt.crc5 = ~m_sof_pkt.crc5;
-    m_usb20_item = m_sof_pkt;
     finish_item(m_sof_pkt);
   endtask
 

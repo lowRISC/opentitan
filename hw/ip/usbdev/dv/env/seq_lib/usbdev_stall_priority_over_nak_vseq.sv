@@ -17,10 +17,8 @@ class usbdev_stall_priority_over_nak_vseq extends usbdev_base_vseq;
     csr_wr(ral.out_stall[0].endpoint[ep_default], 1'b1);
     // Out token packet followed by a data packet
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
     // Verify that the device responds with a Stall PID instead of a nak,
     // as Stall takes priority in this context.
-    m_usb20_item.check_pid_type(PidTypeStall);
+    check_response_matches(PidTypeStall);
   endtask
 endclass

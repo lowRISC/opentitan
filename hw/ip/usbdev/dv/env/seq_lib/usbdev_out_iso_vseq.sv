@@ -13,6 +13,7 @@ class usbdev_out_iso_vseq extends usbdev_base_vseq;
     // Expected data content of packet
     byte unsigned exp_data[];
     bit pkt_received;
+
     configure_out_trans(ep_default);
     // ISO EP OUT
     csr_wr(.ptr(ral.out_iso[0].iso[ep_default]), .value(1'b1));
@@ -20,10 +21,9 @@ class usbdev_out_iso_vseq extends usbdev_base_vseq;
     // response to the transaction.
     csr_wr(.ptr(ral.intr_state.pkt_received), .value(1'b1));
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
-    // The device should not see an ACK in this case because the traffic is isochronous.
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-    `DV_CHECK_EQ(m_usb20_item.timed_out, 1)
+    // The device should not send an ACK in this case because the traffic is isochronous.
+    check_no_response();
+
     // Wait until usbdev generates an interrupt to show the packet has been received, and then
     // validate the received packet.
     for (int i = 0; i < 10; i++) begin
