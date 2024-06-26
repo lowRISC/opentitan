@@ -236,6 +236,9 @@ opentitan_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":hmac",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
