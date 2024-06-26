@@ -233,6 +233,20 @@ cc_test(
     ],
 )
 
+opentitan_test(
+    name = "hardened_functest",
+    srcs = ["hardened_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":hardened",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 cc_library(
     name = "random_order",
     srcs = ["random_order.c"],
