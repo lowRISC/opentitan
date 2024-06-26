@@ -19,7 +19,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [TL_DW-1:0] key[NUM_KEYS];
   bit [TL_DW-1:0] exp_digest[NUM_DIGESTS];
   bit [3:0]       previous_digest_size, expected_digest_size;
-  bit [5:0]       key_length;
   bit             invalid_cfg;
   event           sample_cfg;
 
@@ -399,7 +398,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               // only check till digest_idx = 7 for SHA-2 256 and till digest_idx = 11 for SHA-2 384
               // Remaining digest values are irrelevant or truncated for these digest sizes.
               if (((expected_digest_size == SHA2_256) && (digest_idx < 8))  ||
-                  ((expected_digest_size == SHA2_384) && (digest_idx < 11)) ||
+                  ((expected_digest_size == SHA2_384) && (digest_idx < 12)) ||
                     expected_digest_size == SHA2_512) begin
                 `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
               end
@@ -462,6 +461,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
     if (cfg.en_cov) cov.trig_rst_during_hash_cg.sample(hmac_process);
 
+    // Should be reinitialized before flushing as it will be used as a condition
+    hmac_stopped = 0;
     flush();
     key          = '{default:0};
     exp_digest   = '{default:0};
@@ -469,8 +470,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     hmac_idle    = ral.status.hmac_idle.get_reset();
     hmac_start   = ral.cmd.hash_start.get_reset();
     sha_en       = ral.cfg.sha_en.get_reset();
-    key_length   = ral.cfg.key_length.get_reset();
-    hmac_stopped = 0;
     msg_q.delete();
     msg_part_q.delete();
     cfg.wipe_secret_triggered = 0;
