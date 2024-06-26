@@ -67,10 +67,6 @@
       uvm_test_seq: usbdev_av_buffer_vseq
     }
     {
-      name: usbdev_bitstuff_err
-      uvm_test_seq: usbdev_bitstuff_err_vseq
-    }
-    {
       name: usbdev_av_empty
       uvm_test_seq: usbdev_av_empty_vseq
       // Limited need for randomization; two FIFOs.
@@ -83,10 +79,8 @@
       reseed: 5
     }
     {
-      name: usbdev_dpi_config_host
-      uvm_test_seq: usbdev_dpi_config_host_vseq
-      // Limited use of randomization presently
-      reseed: 1
+      name: usbdev_bitstuff_err
+      uvm_test_seq: usbdev_bitstuff_err_vseq
     }
     {
       name: usbdev_data_toggle_clear
@@ -109,12 +103,18 @@
       uvm_test_seq: usbdev_disconnected_vseq
     }
     {
-      name: usbdev_endpoint_access
-      uvm_test_seq: usbdev_endpoint_access_vseq
+      name: usbdev_dpi_config_host
+      uvm_test_seq: usbdev_dpi_config_host_vseq
+      // Limited use of randomization presently
+      reseed: 1
     }
     {
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
+    }
+    {
+      name: usbdev_endpoint_access
+      uvm_test_seq: usbdev_endpoint_access_vseq
     }
     {
       name: usbdev_fifo_rst
@@ -127,10 +127,6 @@
       reseed: 1
     }
     {
-      name: usbdev_in_trans
-      uvm_test_seq: usbdev_in_trans_vseq
-    }
-    {
       name: usbdev_invalid_data1_data0_toggle_test
       uvm_test_seq: usbdev_link_out_err_vseq
       // No need for randomization.
@@ -140,6 +136,18 @@
       name: usbdev_invalid_sync
       uvm_test_seq: usbdev_bad_traffic_vseq
       run_opts: ["+wt_bad_syncs=1"]
+    }
+    {
+      name: usbdev_in_iso
+      uvm_test_seq: usbdev_in_iso_vseq
+    }
+    {
+      name: usbdev_in_stall
+      uvm_test_seq: usbdev_in_stall_vseq
+    }
+    {
+      name: usbdev_in_trans
+      uvm_test_seq: usbdev_in_trans_vseq
     }
     {
       name: usbdev_link_in_err
@@ -170,12 +178,18 @@
       uvm_test_seq: usbdev_low_speed_traffic_vseq
     }
     {
-      name: usbdev_max_length_out_transaction
-      uvm_test_seq: usbdev_max_length_out_transaction_vseq
+      name: usbdev_max_inter_pkt_delay
+      uvm_test_seq: usbdev_streaming_vseq
+      run_opts: ["+setup_data_delay=26", "+out_data_delay=26"]
     }
     {
-      name: usbdev_min_length_out_transaction
-      uvm_test_seq: usbdev_min_length_out_transaction_vseq
+      name: usbdev_max_length_in_transaction
+      uvm_test_seq: usbdev_in_rand_trans_vseq
+      run_opts: ["+num_of_bytes=64"]
+    }
+    {
+      name: usbdev_max_length_out_transaction
+      uvm_test_seq: usbdev_max_length_out_transaction_vseq
     }
     {
       name: usbdev_max_usb_traffic
@@ -187,9 +201,13 @@
       run_opts: ["+setup_data_delay=8", "+out_data_delay=8"]
     }
     {
-      name: usbdev_max_inter_pkt_delay
-      uvm_test_seq: usbdev_streaming_vseq
-      run_opts: ["+setup_data_delay=26", "+out_data_delay=26"]
+      name: usbdev_min_length_in_transaction
+      uvm_test_seq: usbdev_in_rand_trans_vseq
+      run_opts: ["+num_of_bytes=0"]
+    }
+    {
+      name: usbdev_min_length_out_transaction
+      uvm_test_seq: usbdev_min_length_out_transaction_vseq
     }
     {
       name: usbdev_nak_to_out_trans_when_avbuffer_empty_rxfifo_full
@@ -214,9 +232,18 @@
       uvm_test_seq: usbdev_out_trans_nak_vseq
     }
     {
+      name: usbdev_pending_in_trans
+      uvm_test_seq: usbdev_pending_in_trans_vseq
+    }
+    {
       name: usbdev_phy_config_eop_single_bit_handling
       uvm_test_seq: usbdev_phy_config_eop_single_bit_handling_vseq
       reseed: 1
+    }
+    {
+      name: usbdev_phy_config_pinflip
+      uvm_test_seq: usbdev_phy_config_pinflip_vseq
+      run_opts: ["+pin_flip=1"]
     }
     {
       name: usbdev_phy_config_rand_bus_type
@@ -241,13 +268,12 @@
       run_opts: ["+tx_use_d_se0=1"]
     }
     {
-      name: usbdev_phy_config_pinflip
-      uvm_test_seq: usbdev_phy_config_pinflip_vseq
-      run_opts: ["+pin_flip=1"]
-    }
-    {
       name: usbdev_phy_config_usb_ref_disable
       uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
+    }
+    {
+      name: usbdev_phy_pins_sense
+      uvm_test_seq: usbdev_phy_pins_sense_vseq
     }
     {
       name: usbdev_pkt_buffer
@@ -260,6 +286,14 @@
     {
       name: usbdev_pkt_sent
       uvm_test_seq: usbdev_pkt_sent_vseq
+    }
+    {
+      name: usbdev_random_length_in_transaction
+      uvm_test_seq: usbdev_in_rand_trans_vseq
+    }
+    {
+      name: usbdev_random_length_out_transaction
+      uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
       name: usbdev_rand_bus_disconnects
@@ -281,10 +315,6 @@
       run_opts: ["+do_resume_signaling=1"]
       // Long simulation times
       reseed: 10
-    }
-    {
-      name: usbdev_random_length_out_transaction
-      uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
       name: usbdev_resume_link_active
@@ -315,6 +345,14 @@
       reseed: 5
     }
     {
+      name: usbdev_setup_stage
+      uvm_test_seq: usbdev_setup_stage_vseq
+    }
+    {
+      name: usbdev_setup_trans_ignored
+      uvm_test_seq: usbdev_setup_trans_ignored_vseq
+    }
+    {
       name: usbdev_smoke
       uvm_test_seq: usbdev_smoke_vseq
     }
@@ -324,12 +362,20 @@
       run_opts: ["+wt_spurious_pids=1"]
     }
     {
+      name: usbdev_stall_priority_over_nak
+      uvm_test_seq: usbdev_stall_priority_over_nak_vseq
+    }
+    {
       name: usbdev_stall_trans
       uvm_test_seq: usbdev_stall_trans_vseq
     }
     {
       name: usbdev_streaming_out
       uvm_test_seq: usbdev_streaming_vseq
+    }
+    {
+      name: usbdev_stress_all_with_rand_reset
+      reseed: 10
     }
     {
       name: usbdev_stress_usb_traffic
@@ -347,53 +393,6 @@
                  "+wt_bitstuff_errs=1"]
       // Very long simulation times
       reseed: 5
-    }
-    {
-      name: usbdev_setup_trans_ignored
-      uvm_test_seq: usbdev_setup_trans_ignored_vseq
-    }
-    {
-      name: usbdev_stall_priority_over_nak
-      uvm_test_seq: usbdev_stall_priority_over_nak_vseq
-    }
-    {
-      name: usbdev_setup_stage
-      uvm_test_seq: usbdev_setup_stage_vseq
-    }
-    {
-      name: usbdev_pending_in_trans
-      uvm_test_seq: usbdev_pending_in_trans_vseq
-    }
-    {
-      name: usbdev_phy_pins_sense
-      uvm_test_seq: usbdev_phy_pins_sense_vseq
-    }
-    {
-      name: usbdev_in_stall
-      uvm_test_seq: usbdev_in_stall_vseq
-    }
-    {
-      name: usbdev_in_iso
-      uvm_test_seq: usbdev_in_iso_vseq
-    }
-    {
-      name: usbdev_random_length_in_transaction
-      uvm_test_seq: usbdev_in_rand_trans_vseq
-    }
-    {
-      name: usbdev_min_length_in_transaction
-      uvm_test_seq: usbdev_in_rand_trans_vseq
-      run_opts: ["+num_of_bytes=0"]
-    }
-    {
-      name: usbdev_max_length_in_transaction
-      uvm_test_seq: usbdev_in_rand_trans_vseq
-      run_opts: ["+num_of_bytes=64"]
-    }
-
-    {
-      name: usbdev_stress_all_with_rand_reset
-      reseed: 10
     }
   ]
 
