@@ -559,13 +559,24 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #define HARDENED_CHECK_OP_LE_ "bleu"
 #define HARDENED_CHECK_OP_GE_ "bgeu"
 
+// The inverse opcodes test the opposite condition of their name (e.g. EQ checks
+// for not equal, etc).
+#define HARDENED_CHECK_INV_EQ_ "bne"
+#define HARDENED_CHECK_INV_NE_ "beq"
+#define HARDENED_CHECK_INV_LT_ "bgeu"
+#define HARDENED_CHECK_INV_GT_ "bleu"
+#define HARDENED_CHECK_INV_LE_ "bgtu"
+#define HARDENED_CHECK_INV_GE_ "bltu"
+
 #ifndef OT_DISABLE_HARDENING
 // clang-format off
-#define HARDENED_CHECK_(op_, a_, b_) \
-  asm volatile(                      \
-      op_ " %0, %1, .L_HARDENED_%=;" \
-      HARDENED_UNIMP_SEQUENCE_()     \
-      ".L_HARDENED_%=:;"             \
+#define HARDENED_CHECK_(op_, a_, b_)                                  \
+  asm volatile(                                                       \
+      OT_CAT(HARDENED_CHECK_OP_, op_) " %0, %1, .L_HARDENED_OK_%=;"   \
+      ".L_HARDENED_BAD_%=:;"                                          \
+      "unimp;"                                                        \
+      ".L_HARDENED_OK_%=:;"                                           \
+      OT_CAT(HARDENED_CHECK_INV_, op_) " %0, %1, .L_HARDENED_BAD_%=;" \
       ::"r"(a_), "r"(b_))
 // clang-format on
 
@@ -596,7 +607,8 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #define HARDENED_CHECK_OP_LE_ <=
 #define HARDENED_CHECK_OP_GE_ >=
 
-#define HARDENED_CHECK_(op_, a_, b_) assert((uint64_t)(a_)op_(uint64_t)(b_))
+#define HARDENED_CHECK_(op_, a_, b_) \
+  assert((uint64_t)(a_)OT_CAT(HARDENED_CHECK_OP_, op_)(uint64_t)(b_))
 
 #define HARDENED_TRAP_() __builtin_trap()
 #endif  // OT_PLATFORM_RV32
@@ -631,12 +643,12 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
  * ```
  * See `launder32()` for more details.
  */
-#define HARDENED_CHECK_EQ(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_EQ_, a_, b_)
-#define HARDENED_CHECK_NE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_NE_, a_, b_)
-#define HARDENED_CHECK_LT(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_LT_, a_, b_)
-#define HARDENED_CHECK_GT(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_GT_, a_, b_)
-#define HARDENED_CHECK_LE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_LE_, a_, b_)
-#define HARDENED_CHECK_GE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_GE_, a_, b_)
+#define HARDENED_CHECK_EQ(a_, b_) HARDENED_CHECK_(EQ_, a_, b_)
+#define HARDENED_CHECK_NE(a_, b_) HARDENED_CHECK_(NE_, a_, b_)
+#define HARDENED_CHECK_LT(a_, b_) HARDENED_CHECK_(LT_, a_, b_)
+#define HARDENED_CHECK_GT(a_, b_) HARDENED_CHECK_(GT_, a_, b_)
+#define HARDENED_CHECK_LE(a_, b_) HARDENED_CHECK_(LE_, a_, b_)
+#define HARDENED_CHECK_GE(a_, b_) HARDENED_CHECK_(GE_, a_, b_)
 
 #ifdef __cplusplus
 }
