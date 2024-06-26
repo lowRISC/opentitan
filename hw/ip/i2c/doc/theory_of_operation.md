@@ -27,6 +27,10 @@ This arrangement allows the output pins to float high if there is no conflict fr
 
 This arrangement is necessary for FPGA builds.
 
+### Glitch Filter
+
+The IP does not currently implement the specification's required 50 ns glitch filter.
+For full spec compliance, the glitch filter must be added to the system design.
 
 ### Override Mode for Direct Pin Access
 
