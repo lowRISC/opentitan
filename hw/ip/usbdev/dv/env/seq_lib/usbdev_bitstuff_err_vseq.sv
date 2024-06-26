@@ -10,6 +10,7 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
   task body();
     byte unsigned data[$];
     bit bitstuff_err;
+
     configure_out_trans(ep_default);
     case ($urandom_range(0,3))
       0: begin
@@ -47,11 +48,9 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
     inter_packet_delay();
     `DV_CHECK_EQ(cfg.intr_vif.pins[IntrRxBitstuffErr], 0)
     send_data_packet(PidTypeData0, data);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
 
     // All of these packets should be ignored, so we expect no response.
-    `DV_CHECK_EQ(m_usb20_item.timed_out, 1);
+    check_no_response();
 
     // Check that the bit stuffing violation was reported.
     csr_rd(.ptr(ral.intr_state.rx_bitstuff_err), .value(bitstuff_err));

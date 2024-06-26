@@ -20,11 +20,8 @@ class usbdev_setup_trans_ignored_vseq extends usbdev_base_vseq;
 
     // Send a randomized SETUP packet to the selected endpoint.
     send_prnd_setup_packet(ep_default);
-    get_response(m_response_item);
-    $cast(m_usb20_item, m_response_item);
-
     // An ignored SETUP packet shall receive no response.
-    `DV_CHECK_EQ(m_usb20_item.timed_out, 1);
+    check_no_response();
 
     csr_rd(.ptr(ral.intr_state.pkt_received), .value(pkt_received));
     // Verify the packet received bit is zero.
