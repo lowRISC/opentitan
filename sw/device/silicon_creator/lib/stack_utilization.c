@@ -22,10 +22,11 @@ void stack_utilization_print(void) {
   uint32_t used = total - free;
   //                          : K T S
   const uint32_t kPrefix = 0x3a4b5453;
-  //                          \n\r
-  const uint32_t kNewline = 0x0a0d;
   uart_write_imm(kPrefix);
   uart_write_hex(used, sizeof(used), '/');
-  uart_write_hex(total, sizeof(total), kNewline);
+  uart_write_hex(total, sizeof(total), '\r');
+  // Send the last char with putchar so we'll wait for the
+  // transmitter to finish.
+  uart_putchar('\n');
 }
 #endif

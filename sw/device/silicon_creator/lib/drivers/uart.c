@@ -79,13 +79,16 @@ static bool uart_tx_idle(void) {
   return bitfield_bit32_read(reg, UART_STATUS_TXIDLE_BIT);
 }
 
-void uart_putchar(uint8_t byte) {
+static void putchar_nonblocking(uint8_t byte) {
   // If the transmit FIFO is full, wait.
   while (uart_tx_full()) {
   }
   uint32_t reg = bitfield_field32_write(0, UART_WDATA_WDATA_FIELD, byte);
   abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_WDATA_REG_OFFSET, reg);
+}
 
+void uart_putchar(uint8_t byte) {
+  putchar_nonblocking(byte);
   // If the transmitter is active, wait.
   while (!uart_tx_idle()) {
   }
@@ -111,14 +114,14 @@ void uart_write_hex(uint32_t val, size_t len, uint32_t after) {
   size_t i = len * 8;
   do {
     i -= 4;
-    uart_putchar(kHexTable[(val >> i) & 0xF]);
+    putchar_nonblocking(kHexTable[(val >> i) & 0xF]);
   } while (i > 0);
   uart_write_imm(after);
 }
 
 void uart_write_imm(uint64_t imm) {
   while (imm) {
-    uart_putchar(imm & 0xFF);
+    putchar_nonblocking(imm & 0xFF);
     imm >>= 8;
   }
 }
@@ -162,6 +165,3 @@ size_t uart_sink(void *uart, const char *data, size_t len) {
   uart_write((const uint8_t *)data, len);
   return len;
 }
-
-// Provide link locations for inline functions.
-extern void uart_write_newline(void);

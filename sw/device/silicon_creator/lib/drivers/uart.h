@@ -56,6 +56,8 @@ void uart_write(const void *data, size_t len);
 /**
  * Write an unsigned integer as hex to the UART.
  *
+ * Note: this function does not block waiting for the transmitter to finish.
+ *
  * @param val The value to write to the UART.
  * @param len The length of the value in bytes (1, 2, or 4 bytes).
  * @param after Packed ASCII values to write after the hex value.
@@ -71,14 +73,11 @@ void uart_write_hex(uint32_t val, size_t len, uint32_t after);
  * order (ie: the string is reversed).  A maximum of eight bytes can be printed
  * in this way.  A zero byte in the value terminates the output.
  *
+ * Note: this function does not block waiting for the transmitter to finish.
+ *
  * @param val The bytes to print.
  */
 void uart_write_imm(uint64_t val);
-
-inline void uart_write_newline(void) {
-  //               \n\r
-  uart_write_imm(0x0a0d);
-}
 
 /**
  * Read from the UART into a buffer.
