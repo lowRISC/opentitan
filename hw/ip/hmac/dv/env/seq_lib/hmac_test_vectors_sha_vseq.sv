@@ -24,9 +24,14 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
     do_hmac_init              = 1'b0;
     // grab SHA-2 digest size from the command-line argument
     void'($value$plusargs("sha2_digest_size=%s", digest_size_arg));
+    // When the command line argument is not defined then randomize the digest_size with valid data
+    // This is a safety but also necessary for the stress tests as extra argument cannot be passed
     if (digest_size_arg == "") begin
-      `uvm_fatal(`gfn, {"This test sequence requires a command-line argument: ",
-                        "sha2_digest_size=SHA2_256/SHA2_384/SHA2_512"})
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
+        digest_size,
+        digest_size inside {SHA2_256, SHA2_384, SHA2_512};
+      )
+      digest_size_arg = get_digest_size(digest_size);
     end
     super.pre_start();
   endtask
@@ -106,6 +111,12 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
       digest_size = SHA2_512;
       key_length  = Key_256;
       vector_list = vector_list_512;
+    // TODO (issue #22932): after merged with this PR #23771, a simple "else" could be used as
+    // hmac_en condition won't be there anymore
+    end else if (digest_size_arg != "SHA2_256" && digest_size_arg != "SHA2_384" &&
+                 digest_size_arg != "SHA2_512") begin
+      `uvm_fatal(`gfn, {"Digest size is not recognized, please use command-line argument as: ",
+                        "sha2_digest_size=SHA2_256/SHA2_384/SHA2_512 or don't pass this argument"})
     end
     feed_vectors (vector_list, digest_size, key_length);
     `uvm_info(`gfn, $sformatf("Starting SHA-2/HMAC %s and %s NIST test vectors...",
