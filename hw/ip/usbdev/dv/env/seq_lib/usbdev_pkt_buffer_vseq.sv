@@ -61,12 +61,8 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
     inter_packet_delay();
 
     send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0, 0, usb_len);
-
     // Check that the packet was accepted (ACKnowledged) by the USB device.
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    `DV_CHECK_EQ(response.m_pkt_type, PktTypeHandshake);
-    `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
+    check_response_matches(PidTypeAck);
 
     // Given that the packet has been accepted, we must flip the OUT Data Toggle.
     exp_out_toggle[ep] ^= 1;
@@ -83,8 +79,6 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
   task usb_side_in(int unsigned usb_buf);
     byte unsigned pkt_data[];
     int unsigned usb_len;
-    usb20_item response;
-    data_pkt in_data;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(usb_len, usb_len inside {[0:valid_len[usb_buf]]};)
     `uvm_info(`gfn, $sformatf("USB retrieving an IN packet of 0x%x byte(s) from buffer 0x%x",
@@ -104,11 +98,7 @@ class usbdev_pkt_buffer_vseq extends usbdev_base_vseq;
 
     // Token pkt followed by handshake pkt
     send_token_packet(ep, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
-    $cast(in_data, response);
-    check_tx_packet(in_data, exp_in_toggle[ep] ? PidTypeData1 : PidTypeData0, pkt_data);
+    check_in_packet(exp_in_toggle[ep] ? PidTypeData1 : PidTypeData0, pkt_data);
     send_handshake(PidTypeAck);
 
     // Flip the IN side Data Toggle in anticipation of the next packet transfer.

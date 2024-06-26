@@ -48,7 +48,6 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
   // We'll read back the packet we sent using a random endpoint.
   task collect_in_packet(bit [3:0] ep, in_response_e rsp, byte unsigned exp_data[],
                          inout uvm_reg_data_t exp_in_data_toggles);
-    usb20_item response;
     data_pkt in_data;
 
     // Present an IN buffer for collection.
@@ -56,11 +55,7 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
 
     // Perform the IN transaction.
     send_token_packet(ep, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(response, m_response_item);
-    `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
-    $cast(in_data, response);
-    check_tx_packet(in_data, exp_in_data_toggles[ep] ? PidTypeData1 : PidTypeData0, exp_data);
+    check_in_packet(exp_in_data_toggles[ep] ? PidTypeData1 : PidTypeData0, exp_data);
 
     // Respond as chosen to the DATA packet sent by the DUT.
     case (rsp)

@@ -22,7 +22,7 @@ class usbdev_host_lost_vseq extends usbdev_base_vseq;
           // prevent the DUT from Suspending.
           forever begin
             send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1), .num_of_bytes(0));
-            get_response(m_response_item);
+            check_no_response();
           end
           // 4.1ms is long enough for host lost to be declared since no Start Of Frame (SOF) packets
           wait_for_interrupt(1 << IntrHostLost, .timeout_clks(4_100 * 48), .clear(0), .enforce(1));

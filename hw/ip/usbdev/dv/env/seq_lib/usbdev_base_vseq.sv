@@ -10,7 +10,6 @@ class usbdev_base_vseq extends cip_base_vseq #(
 );
 `uvm_object_utils(usbdev_base_vseq)
 
-RSP            m_response_item;
 token_pkt      m_token_pkt;
 data_pkt       m_data_pkt;
 handshake_pkt  m_handshake_pkt;
@@ -382,16 +381,18 @@ endtask
   // Retrieve the DUT response and check the Packet IDentifier against expectations.
   virtual task check_response_matches(input pid_type_e pid_type);
     usb20_item item;
-    get_response(m_response_item);
-    $cast(item, m_response_item);
+    RSP rsp;
+    get_response(rsp);
+    $cast(item, rsp);
     item.check_pid_type(pid_type);
   endtask
 
   // Await for a DUT response and check that there is none; transaction time-out occurs.
   virtual task check_no_response();
     usb20_item item;
-    get_response(m_response_item);
-    $cast(item, m_response_item);
+    RSP rsp;
+    get_response(rsp);
+    $cast(item, rsp);
     `DV_CHECK_EQ(item.timed_out, 1,
                  $sformatf("Response from DUT was unexpected (PID 0x%0x)", item.m_pid_type))
   endtask
@@ -400,10 +401,11 @@ endtask
   // of any DATA packet returned.
   virtual task retrieve_in_packet(bit [3:0] ep, output usb20_item reply, input bit ack = 1,
                                   input bit [6:0] target_addr = dev_addr);
+    RSP rsp;
     send_token_packet(ep, PidTypeInToken, target_addr);
     // Collect the response, if any, from the DUT
-    get_response(m_response_item);
-    $cast(reply, m_response_item);
+    get_response(rsp);
+    $cast(reply, rsp);
     // For any DATA packet received we may optionally ACKnowledge receipt; it's up to the caller
     // to determine whether this is a duplicate transmission because our previous ACKnowledgement
     // somehow got lost.
@@ -424,8 +426,12 @@ endtask
   // Retrieve the DUT response to an IN transaction, and check that it matches expectations.
   virtual task check_in_packet(input pid_type_e pid_type, input byte unsigned data[]);
     data_pkt in_data;
-    check_response_matches(pid_type);
-    $cast(in_data, m_response_item);
+    usb20_item item;
+    RSP rsp;
+    get_response(rsp);
+    $cast(item, rsp);
+    item.check_pid_type(pid_type);
+    $cast(in_data, rsp);
     check_tx_packet(in_data, pid_type, data);
   endtask
 
@@ -867,6 +873,7 @@ endtask
   // Perform Suspend Signaling (Idle state). 0 = Use default duration.
   virtual task send_suspend_signaling(int unsigned duration_usecs = 0);
     usb20_item item;
+    RSP rsp;
     // Suspend Signaling.
     `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
     start_item(item);
@@ -874,13 +881,14 @@ endtask
     item.m_ev_duration_usecs = duration_usecs;
     finish_item(item);
     // Block until Suspend Signaling has been completed.
-    get_response(m_response_item);
+    get_response(rsp);
   endtask
 
   // Perform Resume Signaling on the USB; this instructs the DUT to exit a Suspended state.
   // 0 = Use default duration.
   virtual task send_resume_signaling(int unsigned duration_usecs = 0);
     usb20_item item;
+    RSP rsp;
     // Send Resume Signaling.
     `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
     start_item(item);
@@ -888,31 +896,33 @@ endtask
     item.m_ev_duration_usecs = duration_usecs;
     finish_item(item);
     // Block until Resume Signaling has been completed.
-    get_response(m_response_item);
+    get_response(rsp);
   endtask
 
   // Issue a Bus Reset to the DUT. 0 = Use default duration.
   virtual task send_bus_reset(int unsigned duration_usecs = 0);
     usb20_item item;
+    RSP rsp;
     `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
     start_item(item);
     item.m_ev_type = EvBusReset;
     item.m_ev_duration_usecs = duration_usecs;
     finish_item(item);
     // Block until Reset Signaling is complete.
-    get_response(m_response_item);
+    get_response(rsp);
   endtask
 
   // Set the state of the VBUS signal from the usb20_driver, indicating the presence/absence
   // of a host connection.
   virtual task set_vbus_state(bit enabled);
     usb20_item item;
+    RSP rsp;
     `uvm_create_on(item, p_sequencer.usb20_sequencer_h)
     start_item(item);
     item.m_ev_type = enabled ? EvConnect : EvDisconnect;
     finish_item(item);
     // Block until VBUS change has occurred.
-    get_response(m_response_item);
+    get_response(rsp);
   endtask
 
   // Hand over control of the USB to the AON/Wake module.

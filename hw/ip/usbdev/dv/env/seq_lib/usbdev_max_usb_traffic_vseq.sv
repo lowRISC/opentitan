@@ -98,12 +98,13 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   // Attempt to collect an IN packet from the given endpoint.
   task host_collect_in_packet(bit [3:0] ep);
     usb20_item response;
+    RSP rsp;
     `uvm_info(`gfn, $sformatf("Requesting IN packet from EP%d", ep), UVM_HIGH)
     claim_driver();
     // Send IN token packet
     send_token_packet(ep, PidTypeInToken);
-    get_response(m_response_item);
-    $cast(response, m_response_item);
+    get_response(rsp);
+    $cast(response, rsp);
     case (response.m_pid_type)
       // DATA packet in response.
       PidTypeData0, PidTypeData1: begin
