@@ -159,10 +159,6 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.mp_region_he_en_pc = 50;
     cfg.seq_cfg.default_region_he_en_pc = 50;
 
-    // Enable Read Only on Info Partitions
-    cfg.seq_cfg.op_readonly_on_info_partition = 1;
-    cfg.seq_cfg.op_readonly_on_info1_partition = 1;
-
     // MAX Delay for an Expected Alert
     cfg.alert_max_delay = cfg.seq_cfg.prog_timeout_ns;
 

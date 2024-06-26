@@ -199,11 +199,6 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     // Configure MP Region Enable Prob
     cfg.seq_cfg.mp_region_en_pc = 70;
 
-    // Disable Read Only on the Info Partitions
-    cfg.seq_cfg.op_readonly_on_info_partition  = 0;
-    cfg.seq_cfg.op_readonly_on_info1_partition = 0;
-    cfg.seq_cfg.op_readonly_on_info2_partition = 0;
-
     // Scoreboard knob for blocking host reads
     cfg.block_host_rd = 1;
 

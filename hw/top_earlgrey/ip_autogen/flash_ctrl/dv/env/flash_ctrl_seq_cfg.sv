@@ -219,9 +219,19 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     max_flash_ops_per_cfg = 50;
 
-    op_readonly_on_info_partition = 0;
-    // info1 partition will be read-only by default
-    op_readonly_on_info1_partition = 1;
+    if (!$value$plusargs("op_readonly_on_info_partition=%0d",
+                         op_readonly_on_info_partition)) begin
+      op_readonly_on_info_partition = 0;
+    end
+    if (!$value$plusargs("op_readonly_on_info1_partition=%0d",
+                         op_readonly_on_info1_partition)) begin
+      // info1 partition will be read-only by default
+      op_readonly_on_info1_partition = 1;
+    end
+    if (!$value$plusargs("op_readonly_on_info2_partition=%0d",
+                         op_readonly_on_info2_partition)) begin
+      op_readonly_on_info2_partition = 0;
+    end
 
     avoid_ro_partitions = 0;
 

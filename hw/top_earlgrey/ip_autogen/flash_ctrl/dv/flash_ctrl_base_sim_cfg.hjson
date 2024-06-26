@@ -150,12 +150,14 @@
       name: flash_ctrl_mp_regions
       uvm_test_seq: flash_ctrl_mp_regions_vseq
       run_opts: ["+multi_alert=1", "+test_timeout_ns=300_000_000_000",
-                 "+fast_rcvr_recov_err"]
+                 "+fast_rcvr_recov_err", "+op_readonly_on_info1_partition=0"]
       reseed: 20
     }
     {
       name: flash_ctrl_fetch_code
       uvm_test_seq: flash_ctrl_fetch_code_vseq
+      run_opts: ["+op_readonly_on_info_partition=1",
+                 "+op_readonly_on_info1_partition=1"]
       reseed: 10
     }
     {
@@ -168,6 +170,8 @@
     {
       name: flash_ctrl_error_prog_type
       uvm_test_seq: flash_ctrl_error_prog_type_vseq
+      run_opts: ["+op_readonly_on_info_partition=1",
+                 "+op_readonly_on_info1_partition=1"]
       reseed: 5
     }
     {
@@ -178,7 +182,8 @@
     {
       name: flash_ctrl_error_mp
       uvm_test_seq: flash_ctrl_error_mp_vseq
-      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000", "+op_readonly_on_info_partition=0",
+                 "+op_readonly_on_info1_partition=0", "+op_readonly_on_info2_partition=0"]
       reseed: 10
     }
     {

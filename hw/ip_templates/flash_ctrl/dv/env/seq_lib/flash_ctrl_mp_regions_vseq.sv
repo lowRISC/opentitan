@@ -19,9 +19,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     // enable high endurance
     cfg.seq_cfg.mp_region_he_en_pc             = 50;
     cfg.seq_cfg.default_region_he_en_pc        = 50;
-
-    // info1 partition is not read only
-    cfg.seq_cfg.op_readonly_on_info1_partition = 0;
   endfunction
 
   rand flash_op_t flash_op;
