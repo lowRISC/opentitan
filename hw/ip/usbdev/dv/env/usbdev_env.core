@@ -25,66 +25,66 @@ filesets:
       - usbdev_scoreboard.sv: {is_include_file: true}
       - usbdev_env.sv: {is_include_file: true}
       - seq_lib/usbdev_vseq_list.sv: {is_include_file: true}
+      - seq_lib/usbdev_aon_wake_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_av_buffer_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_av_empty_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_av_overflow_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_bad_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_base_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_bitstuff_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_bus_rand_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_common_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_aon_wake_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_csr_test_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_data_toggle_clear_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_data_toggle_restore_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_device_address_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_disable_endpoint_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_dpi_config_host_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_smoke_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_csr_test_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_pkt_received_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_disconnected_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_av_buffer_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_av_empty_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_av_overflow_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_setup_trans_ignored_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_pkt_buffer_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_setup_stage_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_pkt_sent_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_nak_trans_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_dpi_config_host_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_enable_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_endpoint_access_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_fifo_rst_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_host_lost_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_in_iso_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_rand_trans_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_in_stall_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_in_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_out_err_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_link_resume_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_suspend_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_link_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_link_resume_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_low_speed_traffic_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_resume_link_active_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_rx_pid_err_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_rx_full_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_spray_packets_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_streaming_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_min_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_length_out_transaction_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_nak_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_iso_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_stall_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_trans_nak_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_fifo_rst_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_pending_in_trans_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_pkt_buffer_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_pkt_sent_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_eop_single_bit_handling_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_pinflip_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_rand_bus_type_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_tx_osc_test_mode_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_config_usb_ref_disable_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_phy_pins_sense_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_in_stall_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_pkt_received_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_resume_link_active_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_crc_err_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_full_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_pid_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_setup_priority_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_setup_stage_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_setup_trans_ignored_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_spray_packets_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_priority_over_nak_vseq.sv: {is_include_file: true}
-      - seq_lib/usbdev_in_iso_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_streaming_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
