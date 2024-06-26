@@ -225,6 +225,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       `uvm_info(`gfn, $sformatf("reading digest"), UVM_LOW)
       rd_digest();
     end
+    // Ensure that wipe secret flag is cleared for the next sequence, as it may cause digest
+    // comparison issue with the stress tests
+    clear_wipe_secret();
   endtask : body
 
 endclass : hmac_smoke_vseq
