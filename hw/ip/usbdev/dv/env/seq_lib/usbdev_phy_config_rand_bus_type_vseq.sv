@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class usbdev_phy_config_rand_bus_type_vseq extends usbdev_smoke_vseq;
-  `uvm_object_utils(usbdev_phy_config_rand_bus_type_vseq);
+  `uvm_object_utils(usbdev_phy_config_rand_bus_type_vseq)
 
   `uvm_object_new
 

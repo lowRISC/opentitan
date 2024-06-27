@@ -23,6 +23,7 @@
 `include "usbdev_in_rand_trans_vseq.sv"
 `include "usbdev_in_stall_vseq.sv"
 `include "usbdev_in_trans_vseq.sv"
+`include "usbdev_iso_retraction_vseq.sv"
 `include "usbdev_link_in_err_vseq.sv"
 `include "usbdev_link_out_err_vseq.sv"
 `include "usbdev_link_reset_vseq.sv"
