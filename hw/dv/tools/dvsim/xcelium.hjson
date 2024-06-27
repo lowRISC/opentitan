@@ -199,8 +199,8 @@
     {
       name: xcelium_gui
       is_sim_mode: 1
-      build_opts: ["-createdebugdb", "-access +c"]
-      run_opts: ["-gui"]
+      build_opts: ["-createdebugdb", "-access +c", "-uvmlinedebug", "-linedebug"]
+      run_opts: ["-gui", "-input '@database -open waves -into waves.shm -default;probe -create tb -depth all -packed 32k -unpacked 32k -all -dynamic -database waves'"]
     }
     {
       name: xcelium_waves
