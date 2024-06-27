@@ -38,8 +38,8 @@ format expected by the image generation tool.
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:const.bzl", "CONST", "hex")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -147,6 +147,43 @@ otp_json_rot_keys = rule(
     implementation = _otp_json_rot_keys_impl,
     attrs = {
         "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
+    },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
+)
+
+def _otp_json_immutable_rom_ext_impl(ctx):
+    # TODO(#23425): refactor how the ELF file containing the immutable section
+    # is extracted since there could be multiple ELFs if the ROM_EXT input
+    # target is the output of an `opentitan_binary` rule.
+    rom_ext_deps = ctx.attr.rom_ext[DefaultInfo].files.to_list()
+    rom_ext_elf_file = None
+    for file in rom_ext_deps:
+        if file.extension == "elf":
+            rom_ext_elf_file = file
+            break
+    if rom_ext_elf_file == None:
+        fail("No ELF dependency for ROM_EXT target.")
+    intput_file = _otp_json_builder(ctx, seed = None)
+    output_file = ctx.actions.declare_file("{}.with_immutable_re_params.json".format(ctx.attr.name))
+    args = ctx.actions.args()
+    args.add("--input", intput_file)
+    args.add("--elf", rom_ext_elf_file)
+    args.add("--output", output_file)
+
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    ctx.actions.run(
+        outputs = [output_file],
+        inputs = [intput_file, rom_ext_elf_file],
+        arguments = [args],
+        executable = tc.tools.gen_otp_immutable_rom_ext_json,
+    )
+    return [DefaultInfo(files = depset([output_file]))]
+
+otp_json_immutable_rom_ext = rule(
+    implementation = _otp_json_immutable_rom_ext_impl,
+    attrs = {
+        "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
+        "rom_ext": attr.label(doc = "The ROM_EXT ELF file the immutable section is in."),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )

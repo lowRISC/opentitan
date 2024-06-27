@@ -67,6 +67,17 @@ py_binary(
 )
 
 py_binary(
+    name = "gen-otp-immutable-rom-ext-json",
+    srcs = ["gen-otp-immutable-rom-ext-json.py"],
+    imports = ["."],
+    deps = [
+        requirement("hjson"),
+        requirement("pycryptodome"),
+        requirement("pyelftools"),
+    ],
+)
+
+py_binary(
     name = "sparse-fsm-encode",
     srcs = ["sparse-fsm-encode.py"],
     imports = ["."],
