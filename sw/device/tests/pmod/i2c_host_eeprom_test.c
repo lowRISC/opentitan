@@ -70,6 +70,7 @@ static status_t write_read_random(dif_i2c_t *i2c) {
   int32_t naks = 0;
   // Write a byte to some random address.
   const uint8_t kAddr[2] = {0x03, 0x21};
+  LOG_INFO("write_byte");
   TRY(write_byte(i2c, kAddr, 0xAB));
 
   // Wait for the write to finish.
@@ -85,6 +86,7 @@ static status_t write_read_random(dif_i2c_t *i2c) {
 
   // Erase the value we just wrote to prevent the success state persisting to
   // subsequent runs of the test.
+  LOG_INFO("write_byte");
   TRY(write_byte(i2c, kAddr, 0xFF));
   naks = TRY(poll_while_busy(i2c));
   TRY_CHECK(naks > 0, "We should have received naks");
