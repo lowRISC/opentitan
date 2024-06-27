@@ -86,6 +86,23 @@
       tests: []
     }
     {
+      name: chip_usb_sof
+      desc: '''Verify that USB can detect SOF and respond with `usb_ref_pulse_o` and
+            `usb_ref_val_o`.
+
+            - Configure to enable `usb_ref_disable`.
+            - Send a frame with the same frame number as the USB device to trigger `frame`
+              interrupt.
+            - Ensure `usb_ref_pulse_o` and `usb_ref_val_o` behave correctly.
+            - Stop sending any frame and check the `host_lost` interrupt. Ensure `use_ref_*` behave
+              correctly.
+            '''
+      stage: V3
+      si_stage: NA
+      tests: ["chip_sw_usbdev_hiclk_stream",
+              "chip_sw_usbdev_loclk_stream"]
+    }
+    {
       name: chip_usb_wake_debug
       desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
 

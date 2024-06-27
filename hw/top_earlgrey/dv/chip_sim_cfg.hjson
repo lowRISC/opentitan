@@ -627,6 +627,26 @@
       reseed: 1
     }
     {
+      name: chip_sw_usbdev_hiclk_stream
+      uvm_test_seq: chip_sw_usbdev_stream_vseq
+      sw_images: ["//sw/device/tests:usbdev_stream_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // Running usbdev at a higher frequency than the usbdpi model
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1", "+usbdpi_clk_freq_delta=-18_500", "+sw_usbdev_stream_retrying=0", "+sw_usbdev_stream_max_packets=1", "+sw_test_timeout_ns=60_000_000"]
+      run_timeout_mins: 120
+      reseed: 1
+    }
+    {
+      name: chip_sw_usbdev_loclk_stream
+      uvm_test_seq: chip_sw_usbdev_stream_vseq
+      sw_images: ["//sw/device/tests:usbdev_stream_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // Running usbdev at a lower frequency than the usbdpi model
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1", "+usbdpi_clk_freq_delta=+18_500", "+sw_usbdev_stream_retrying=0", "+sw_usbdev_stream_max_packets=1", "+sw_test_timeout_ns=60_000_000"]
+      run_timeout_mins: 120
+      reseed: 1
+    }
+    {
       name: chip_sw_inject_scramble_seed
       uvm_test_seq: chip_sw_inject_scramble_seed_vseq
       sw_images: ["//sw/device/tests/sim_dv:inject_scramble_seed:1:new_rules"]

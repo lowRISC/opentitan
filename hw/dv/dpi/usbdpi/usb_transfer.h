@@ -224,6 +224,23 @@ inline uint32_t transfer_length(const usbdpi_transfer_t *transfer) {
 }
 
 /**
+ * Drop the specified number of data bytes from the given transfer.
+ *
+ * @param  transfer  Transfer descriptor
+ * @param  n         The number of bytes to be dropped
+ * @return The success of the operation
+ */
+inline bool transfer_data_drop(usbdpi_transfer_t *transfer, size_t n) {
+  assert(transfer);
+  if ((size_t)transfer->num_bytes - transfer->data_start < n) {
+    return false;
+  }
+  transfer->data_start += n;
+  transfer->num_bytes -= n;
+  return true;
+}
+
+/**
  * Diagnostic utility function to dump out the contents of a transfer descriptor
  *
  * @param  transfer  Transfer descriptor

@@ -174,16 +174,13 @@ bool stream_data_check(usbdpi_ctx_t *ctx, usbdpi_stream_t *s,
       // Data toggle synchronization
       unsigned pid = ctx->ep_in[s->ep_in].next_data;
       if (rx->data[0] == pid) {
-        // If we've decided to reject this packet then we still check its
-        // content but we do not advance the data toggle because we're
-        // pretending that we didn't receive it successfully
-        if (accept) {
-          ctx->ep_in[s->ep_in].next_data = DATA_TOGGLE_ADVANCE(pid);
-        }
-
         // Tentatively acceptable, but we still have to check and report any and
         // all mismatched bytes
         ok = accept;
+      } else {
+        printf(
+            "[usbdpi] Data toggle mismatch 0x%02x received, expected 0x%02x\n",
+            rx->data[0], pid);
       }
 
       // Iff running a performance investigation, checking may be undesired
@@ -327,12 +324,8 @@ bool stream_sig_check(usbdpi_ctx_t *ctx, usbdpi_stream_t *s,
   // packet.
   const size_t min_len = 3U + 0x10U;
   size_t len = transfer_length(rx);
-  bool ok = (len == min_len);
 
-  if (s->xfr_type == USB_TRANSFER_TYPE_ISOCHRONOUS) {
-    ok = (len >= min_len);
-  }
-  if (ok) {
+  if (len >= min_len) {
     const uint8_t *sig = transfer_data_field(rx);
     if (sig) {
       // Signature format:
@@ -396,9 +389,6 @@ bool stream_sig_check(usbdpi_ctx_t *ctx, usbdpi_stream_t *s,
           s->tst_seq++;
           // Signature includes the initial value of the device-side LFSR
           s->tst_lfsr = sig[4];
-          // Update data toggle
-          uint8_t pid = transfer_data_pid(rx);
-          ctx->ep_in[s->ep_in].next_data = DATA_TOGGLE_ADVANCE(pid);
         }
         return true;
       }
@@ -720,20 +710,13 @@ void streams_service(usbdpi_ctx_t *ctx) {
               }
             }
 
+            // Offset of LFSR byte stream within packet
+            unsigned offset = 0U;
             if (accept) {
-              // Offset of LFSR byte stream within packet
-              unsigned offset = 0U;
-
               if (s->sig_expected) {
                 accept = stream_sig_check(ctx, s, rx);
                 if (accept) {
                   offset = SIZEOF_STREAM_SIGNATURE;
-                  if (s->xfr_type != USB_TRANSFER_TYPE_ISOCHRONOUS) {
-                    // For non-Isochronous streams, we can rely upon the first
-                    // packet being just the signature, identifying the stream.
-                    transfer_release(ctx, rx);
-                    rx = NULL;
-                  }
                 } else {
                   printf("[usbdpi] sig check failed\n");
                   // TODO: should probably transition to error state here?
@@ -742,16 +725,28 @@ void streams_service(usbdpi_ctx_t *ctx) {
               }
 
               // Check the remaining bytes of the packet, if any
-              if (rx && offset < transfer_length(rx)) {
+              if (offset < transfer_length(rx)) {
                 if (!stream_data_check(ctx, s, rx, offset, accept)) {
                   accept = false;
                 }
               }
             }
 
-            // Not yet handled this packet?
-            if (rx) {
-              if (accept) {
+            if (accept) {
+              // If this packet has a signature we must drop it here because the
+              // device is not expecting to receive it
+              if (s->xfr_type != USB_TRANSFER_TYPE_ISOCHRONOUS &&
+                  s->sig_expected) {
+                if (offset < transfer_length(rx)) {
+                  transfer_data_drop(rx, offset);
+                } else {
+                  // There's nothing left; this packet was purely the stream
+                  // signature
+                  transfer_release(ctx, rx);
+                  rx = NULL;
+                }
+              }
+              if (rx) {
                 // Collect the received packets in preparation for later
                 // transmission with modification back to the device
                 usbdpi_transfer_t *tr = s->received;
@@ -762,9 +757,9 @@ void streams_service(usbdpi_ctx_t *ctx) {
                 } else {
                   s->received = rx;
                 }
-              } else {
-                transfer_release(ctx, rx);
               }
+            } else {
+              transfer_release(ctx, rx);
             }
 
             // For non-isochronous transfers, we now ACK/NAK the data, and we
@@ -776,6 +771,10 @@ void streams_service(usbdpi_ctx_t *ctx) {
               transfer_status(ctx, tr, accept ? USB_PID_ACK : USB_PID_NAK);
 
               if (accept) {
+                // Update data toggle
+                uint8_t pid = transfer_data_pid(rx);
+                ctx->ep_in[s->ep_in].next_data = DATA_TOGGLE_ADVANCE(pid);
+                // Signature should be present only in the first packet
                 s->sig_expected = false;
               }
             }

@@ -216,11 +216,24 @@ module tb;
     .out_o(gsim_tl_win_d2h_int)
   );
 `endif
+
+  // USB DPI model runs on its own clock for two reasons
+  // - it must remain operable when the chip enters Deep Sleep, so that it
+  //   may provide the Wakeup stimulus.
+  // - operating at the opposite frequency extreme permits us to exercise the
+  //   synchronization and bitstream extraction.
+  wire usbdpi_clk;
+  wire usbdpi_rst_n;
+  clk_rst_if u_usbdpi_clk_rst_if(
+    .clk(usbdpi_clk),
+    .rst_n(usbdpi_rst_n)
+  );
+
   // Interface presently just permits the DPI model to be easily connected and
   // disconnected as required, since SENSE pin is a MIO with other uses.
   usb20_if u_usb20_if (
-    .clk_i            (dut.chip_if.usb_clk),
-    .rst_ni           (dut.chip_if.usb_rst_n),
+    .clk_i            (usbdpi_clk),
+    .rst_ni           (usbdpi_rst_n),
 
     .usb_vbus         (dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc7]),
     .usb_p            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
@@ -229,8 +242,8 @@ module tb;
 
   // Instantiate & connect the USB DPI model for top-level testing.
   usb20_usbdpi u_usb20_usbdpi (
-    .clk_i            (dut.chip_if.usb_clk),
-    .rst_ni           (dut.chip_if.usb_rst_n),
+    .clk_i            (usbdpi_clk),
+    .rst_ni           (usbdpi_rst_n),
 
     .enable           (u_usb20_if.connected),
 
@@ -413,9 +426,11 @@ module tb;
     uvm_config_db#(virtual ast_ext_clk_if)::set(
         null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
 
-    // USB DPI interface.
+    // USB DPI clk/rst and USB interfaces.
     uvm_config_db#(virtual usb20_if)::set(
         null, "*.env", "usb20_vif", u_usb20_if);
+    uvm_config_db#(virtual clk_rst_if)::set(
+        null, "*.env", "usbdpi_clk_rst_vif", u_usbdpi_clk_rst_if);
 
     // Generic DPI interface.
     uvm_config_db#(virtual tb_dpi_if)::set(

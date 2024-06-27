@@ -137,7 +137,7 @@ static usb_testutils_streams_ctx_t stream_test;
  *   (Note that this substantially alters the timing of interactions with the
  * DPI model and will increase the simulation time)
  */
-static bool verbose = false;
+static bool kVerbose = false;
 
 /*
  * These switches may be modified manually to experimentally measure the
@@ -145,35 +145,41 @@ static bool verbose = false;
  *
  * Are we sending data?
  */
-static bool sending = true;
+static bool kSending = true;
 
 /**
  * Are we generating a valid byte sequence?
  */
-static bool generating = true;
+static bool kGenerating = true;
 
 /**
  * Do we want the host to retry transmissions? (DPI model only; we cannot
  * instruct a physical host to fake delivery failure/packet corruption etc)
+ *
+ * Note: top level testbench may use backdoor overwriting to alter this symbol.
  */
-static bool retrying = true;
+static const volatile uint8_t kRetrying = 1U;
 
 /**
  * Are we expecting to receive data?
  */
-static bool recving = true;
+static bool kRecving = true;
 
 /**
  * Send only maximal length packets?
  * (important for performance measurements on the USB, but obviously undesirable
  *  for testing reliability/function)
+ *
+ * Note: top level testbench may use backdoor overwriting to alter this symbol.
  */
-static bool max_packets = false;
+static const volatile uint8_t kMaxPackets = 0U;
 
 /**
  * Number of streams to be created
+ *
+ * Note: top level testbench may use backdoor overwriting to alter this symbol.
  */
-static const unsigned nstreams = NUM_STREAMS;
+static const volatile uint8_t kNumStreams = NUM_STREAMS;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -184,7 +190,8 @@ bool test_main(void) {
   LOG_INFO("Running USBDEV Stream Test");
 
   // Check we can support the requested number of streams
-  CHECK(nstreams && nstreams < USBDEV_NUM_ENDPOINTS);
+  CHECK(kNumStreams && kNumStreams <= NUM_STREAMS &&
+        kNumStreams < USBDEV_NUM_ENDPOINTS);  // streams exclude Endpoint Zero
 
   // Decide upon the number of bytes to be transferred for the entire test
   uint32_t transfer_bytes = TRANSFER_BYTES_FPGA;
@@ -204,8 +211,8 @@ bool test_main(void) {
       CHECK(kDeviceType == kDeviceFpgaCw310);
       break;
   }
-  transfer_bytes = (transfer_bytes + nstreams - 1) / nstreams;
-  LOG_INFO(" - %u stream(s), 0x%x bytes each", nstreams, transfer_bytes);
+  transfer_bytes = (transfer_bytes + kNumStreams - 1) / kNumStreams;
+  LOG_INFO(" - %u stream(s), 0x%x bytes each", kNumStreams, transfer_bytes);
 
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
@@ -215,12 +222,12 @@ bool test_main(void) {
       kTopEarlgreyPinmuxInselIoc7));
 
   // Construct the test/stream flags to be used
-  test_flags = (sending ? kUsbdevStreamFlagRetrieve : 0U) |
-               (generating ? kUsbdevStreamFlagCheck : 0U) |
-               (retrying ? kUsbdevStreamFlagRetry : 0U) |
-               (recving ? kUsbdevStreamFlagSend : 0U) |
+  test_flags = (kSending ? kUsbdevStreamFlagRetrieve : 0U) |
+               (kGenerating ? kUsbdevStreamFlagCheck : 0U) |
+               (kRetrying ? kUsbdevStreamFlagRetry : 0U) |
+               (kRecving ? kUsbdevStreamFlagSend : 0U) |
                // Note: the 'max_packets' test flag is not required by the DPI
-               (max_packets ? kUsbdevStreamFlagMaxPackets : 0U);
+               (kMaxPackets ? kUsbdevStreamFlagMaxPackets : 0U);
 
   // Initialize the test descriptor
   // Note: the 'max packets' test flag is not required by the DPI model
@@ -249,15 +256,15 @@ bool test_main(void) {
   // Note: for now we support only Bulk Transfer streams but this should change
   // in future, eg. in response to test configuration.
   usb_testutils_transfer_type_t xfr_types[USBUTILS_STREAMS_MAX];
-  for (unsigned s = 0U; s < nstreams; s++) {
+  for (unsigned s = 0U; s < kNumStreams; s++) {
     xfr_types[s] = kUsbTransferTypeBulk;
   }
 
   // Initialise the state of the streams
   CHECK_STATUS_OK(usb_testutils_streams_init(
-      ctx, nstreams, xfr_types, transfer_bytes, test_flags, verbose));
+      ctx, kNumStreams, xfr_types, transfer_bytes, test_flags, kVerbose));
 
-  if (verbose) {
+  if (kVerbose) {
     LOG_INFO("Commencing data transfer...");
   }
 
@@ -274,7 +281,7 @@ bool test_main(void) {
   // Determine the total counts of bytes sent and received
   uint32_t tx_bytes = 0U;
   uint32_t rx_bytes = 0U;
-  for (uint8_t s = 0U; s < nstreams; s++) {
+  for (uint8_t s = 0U; s < kNumStreams; s++) {
     uint32_t tx, rx;
     CHECK_STATUS_OK(usb_testutils_stream_status(ctx, s, NULL, &tx, &rx));
     tx_bytes += tx;
@@ -284,12 +291,12 @@ bool test_main(void) {
   LOG_INFO("USB sent 0x%x byte(s), received and checked 0x%x byte(s)", tx_bytes,
            rx_bytes);
 
-  if (sending) {
-    CHECK(tx_bytes == nstreams * transfer_bytes,
+  if (kSending) {
+    CHECK(tx_bytes == kNumStreams * transfer_bytes,
           "Unexpected count of byte(s) sent to USB host");
   }
-  if (recving) {
-    CHECK(rx_bytes == nstreams * transfer_bytes,
+  if (kRecving) {
+    CHECK(rx_bytes == kNumStreams * transfer_bytes,
           "Unexpected count of byte(s) received from USB host");
   }
 

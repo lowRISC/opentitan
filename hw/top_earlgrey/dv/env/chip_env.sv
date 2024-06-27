@@ -77,6 +77,13 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get ast_ext_clk_vif from uvm_config_db")
     end
 
+    // get the handle to the usbdpi clk/rst interface.
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+            this, "", "usbdpi_clk_rst_vif", cfg.usbdpi_clk_rst_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get usbdpi clk_rst_vif from uvm_config_db")
+    end
+
     // get the handle to the usb20 interface.
     if (!uvm_config_db#(usb20_vif)::get(
             this, "", "usb20_vif", cfg.usb20_vif
