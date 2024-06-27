@@ -6,6 +6,10 @@
 
 ## Design Details
 
+### Clock relationship
+
+There is no clock frequency requirement between TL-UL and PWM clocks.
+
 ### Phase and Duty Cycle Representation
 
 The PWM IP creates series of pulses with the desired on-off duty cycle.
