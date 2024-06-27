@@ -179,7 +179,7 @@ module flash_phy_rd
     .idx_o(),
     .valid_o(),
     .data_o(),
-    .ready_i(req_o & no_match)
+    .ready_i(req_o & ack_i & no_match)
   );
 
   // which buffer to allocate upon a new transaction
