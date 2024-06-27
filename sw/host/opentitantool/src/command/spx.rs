@@ -94,7 +94,7 @@ pub struct SpxSignCommand {
     /// The filename for the message to sign.
     message: PathBuf,
 
-    /// The file containing the SPHINCS+ keypair.
+    /// The file containing the SPHINCS+ raw private key in PEM format.
     #[arg(value_name = "KEY_FILE")]
     keypair: PathBuf,
     /// The filename to write the signature to.
@@ -123,12 +123,12 @@ impl CommandDispatch for SpxSignCommand {
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
-    /// Key file.
+    /// The file containing the SPHINCS+ raw private key in PEM format.
     #[arg(value_name = "KEY")]
     key_file: PathBuf,
     /// Message file to verify the signature against.
     message: PathBuf,
-    /// SPHINCS+ signature file to verify.
+    /// SPHINCS+ signature file to verify, raw binary
     signature: PathBuf,
 }
 
