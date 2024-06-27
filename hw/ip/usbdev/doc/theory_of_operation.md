@@ -14,9 +14,9 @@ The interface runs at four times this bit rate and must be clocked from an accur
 The USB specification for a Full-Speed device requires the average bit rate is 12 Mbps +/- 0.25%, so the clock needs to support maximum error of 2,500 ppm.
 The maximum allowable integrated jitter is +/- 1 ns over 1 to 7 bit periods.
 
-This module features the following output signals to provide a reference for synchronizing the 48 MHz clock source:
+This module features the following output signals to provide a reference for synchronizing the 48 MHz clock source to match the frequency of the USB signaling.
 - `usb_ref_pulse_o` indicates the reception of a start of frame (SOF) packet.
-  The host is required to send a SOF packet every 1 ms.
+  The host is required to send a SOF packet every 1 ms and this signal therefore pulses every millisecond when there is an active connection to the USB.
 - `usb_ref_val_o` serves as a valid signal for `usb_ref_pulse_o`.
   It is set to one after the first SOF packet is received and remains high as long as `usb_ref_pulse_o` continues to behave as expected.
   As soon as it is detected that SOF will not be received as expected (usually because the link is no longer active), `usb_ref_val_o` deasserts to zero until after the next `usb_ref_pulse_o`.
@@ -61,13 +61,13 @@ The following table summarizes how the different output signals relate to the US
 
 |  External Pins | Internal Signals | Notes |
 |----------------|------------------|-------|
-| D+, D-         | dp_o, dn_o       | Data output with an encoding like the USB bus, intended to go directly to pads for supported targets. On an FPGA, the components should be used with a USB transceiver, as the regular bidirectional I/O cells will likely not be USB compliant. |
-| [Alt TX Data]  | se0_o            | Signal Single-Ended Zero (SE0) link state to a USB transceiver. |
-| [Alt TX Data]  | d_o              | Data output used for encoding K and J, for interfacing with a USB transceiver. |
-|   [TX Mode]    | tx_use_d_se0_o   | Indicates the selected TX interface: use dp_o and dn_o (0) or use d_o and se0_o (1). |
+| D+, D-         | cio_usb_dp_o, cio_usb_dn_o | Data output with an encoding like the USB bus, intended to go directly to pads for supported targets. On an FPGA, the components should be used with a USB transceiver, as the regular bidirectional I/O cells will likely not be USB compliant. |
+| [Alt TX Data]  | usb_tx_se0_o     | Signal Single-Ended Zero (SE0) link state to a USB transceiver. |
+| [Alt TX Data]  | usb_tx_d_o       | Data output used for encoding K and J, for interfacing with a USB transceiver. |
+|   [TX Mode]    | usb_tx_use_d_se0_o   | Indicates the selected TX interface: use cip_usb_dp_o and cio_usb_dn_o (0), or use usb_tx_d_o and usb_tx_se0_o (1). |
 
 Note that according to the [Comportable guideline for peripheral functionality](../../../../doc/contributing/hw/comportability/README.md), every output signal `name_o` has a dedicated output enable `name_en_o`.
-For TX data, these separate signals `dp_en_o` and `dn_en_o` all correspond to the same TX or output enable signal (`OE` in the USB spec).
+For TX data, these separate signals `cio_usb_dp_en_o` and `cio_usb_dn_en_o` all correspond to the same TX or output enable signal (`OE` in the USB spec).
 The other signals listed are of the "intersignal" variety, and they do not go directly to pads or have dedicated output enable signals.
 
 
@@ -81,8 +81,8 @@ The following table summarizes how the different input signals relate to the USB
 
 |  External Pins | Internal Signals | Notes |
 |----------------|------------------|-------|
-| D+, D-         | dp_i, dn_i       | D+ and D- signals passing into the IP single-ended, intended to go directly to pads for supported targets. These signals are used to detect the SE0 link state, and if a differential receiver is not present, they are also used for K and J symbols. On an FPGA, the components should be used with a USB transceiver, as the bidirectional regular IO cells will likely not be USB compliant. |
-| [Diff Rcvr Out]| d_i              | Data input for interfacing with a differential receiver, which is required for this input. |
+| D+, D-         | cio_usb_dp_i, cio_usb_dn_i | D+ and D- signals passing into the IP single-ended, intended to go directly to pads for supported targets. These signals are used to detect the SE0 link state, and if a differential receiver is not present, they are also used for K and J symbols. On an FPGA, the components should be used with a USB transceiver, as the bidirectional regular IO cells will likely not be USB compliant. |
+| [Diff Rcvr Out]| usb_rx_d_i       | Data input for interfacing with a differential receiver, which is required for this input. |
 
 
 ### Non-Data Pins
@@ -91,10 +91,9 @@ The USB device features the following non-data pins.
 
 |  External Pins | Internal Signals         | Notes |
 |----------------|--------------------------|-------|
-| sense (VBUS)   | sense_i                  | The sense pin indicates the presence of VBUS from the USB host. |
-| [pullup]       | dp_pullup_o, dn_pullup_o | When dp_pullup_o or dn_pullup_o asserts a 1.5k pullup resistor should be connected to D+ or D-, respectively. This can be done inside the chip or with an external pin. A permanently connected resistor could be used if the pin flip feature is not needed, but this is not recommended because there is then no way to force the device to appear to unplug. Only one of the pullup signals can be asserted at any time. The selection is based on the `pinflip` bit in [`phy_config`](registers.md#phy_config). Because this is a Full-Speed device the resistor must be on the D+ pin, so when `pinflip` is zero, dp_pullup_o is used. |
-| [suspend]      | suspend_o                | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspend state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
-| [rx_enable]    | rx_enable_o              | The rx_enable pin turns on/off a differential receiver. It is enabled via a CSR and automatically disabled when the device suspends. |
+| sense (VBUS)   | cio_sense_i              | The sense pin indicates the presence of VBUS from the USB host. |
+| [pullup]       | usb_dp_pullup_o, usb_dn_pullup_o | When usb_dp_pullup_o or usb_dn_pullup_o asserts a 1.5k pullup resistor should be connected to D+ or D-, respectively. This can be done inside the chip or with an external pin. A permanently connected resistor could be used if the pin flip feature is not needed, but this is not recommended because there is then no way to force the device to appear to unplug. Only one of the pullup signals can be asserted at any time. The selection is based on the `pinflip` bit in [`phy_config`](registers.md#phy_config). Because this is a Full-Speed device the resistor must be on the D+ pin, so when `pinflip` is zero, usb_dp_pullup_o is used. |
+| [rx_enable]    | usb_rx_enable_o          | The rx_enable pin turns on/off a differential receiver. It is enabled via a CSR and automatically disabled when the device suspends. |
 
 The USB host will identify itself to the device by enabling the 5V VBUS power.
 It may do a hard reset of a port by removing and reasserting VBUS (the Linux driver will do this when it finds a port in an inconsistent state or a port that generates errors during enumeration).
@@ -103,16 +102,16 @@ This pin is always an input and should be externally connected to detect the sta
 Note that this may require a resistor divider or (for USB-C where VBUS can be up to 20V) active level translation to an acceptable voltage for the input pin.
 
 A Full-Speed device identifies itself by providing a 1.5k pullup resistor (to 3.3V) on the D+ line.
-The IP block produces a signal `dp_pullup_o` that is asserted when this resistor should be presented.
+The IP block produces a signal `usb_dp_pullup_o` that is asserted when this resistor should be presented.
 This signal will be asserted whenever the interface is enabled and VBUS is present.
 In an FPGA implementation, this signal can drive a 3.3V output pin that is driven high when the signal is asserted and set high impedance when the signal is deasserted, and the output pin used to drive a 1.5k resistor connected on the board to the D+ line.
 Alternatively, it can be used to enable an internal 1.5k pullup on the D+ pin.
 
 This USB device supports the flipping of D+/D-.
 If the `pinflip` bit in [`phy_config`](registers.md#phy_config) is set, the data pins are flipped internally, meaning the 1.5k pullup resistor needs to be on the external D- line.
-To control the pullup on the D- line, this USB device features `dn_pullup_o` signal.
-Of the two pullup signals `dp_pullup_o` and `dn_pullup_o`, only one can be enabled at any time.
-As this is a Full-Speed device, `dp_pullup_o`, i.e., the pullup on D+ is used by default (`pinflip` equals zero).
+To control the pullup on the D- line, this USB device features `usb_dn_pullup_o` signal.
+Of the two pullup signals `usb_dp_pullup_o` and `usb_dn_pullup_o`, only one can be enabled at any time.
+As this is a Full-Speed device, `usb_dp_pullup_o`, i.e., the pullup on D+ is used by default (`pinflip` equals zero).
 
 ## USB Link State
 
@@ -215,3 +214,32 @@ This leaves 14 buffers for preparation of future transmissions (which would need
 The size of 64 bytes per buffer satisfies the maximum USB packet size for a Full-Speed interface for Control transfers (max may be 8, 16, 32 or 64 bytes), Bulk Transfers (max is 64 bytes) and Interrupt transfers (max is 64 bytes).
 It is small for Isochronous transfers (which have a max size of 1023 bytes).
 The interface will need extending for high rate isochronous use (a possible option would be to allow up to 8 or 16 64-byte buffers to be aggregated as the isochronous buffer).
+
+## Optional external AON/Wake functionality
+
+The USB may optionally be coupled with an external support module `usbdev_aon_wake` which can assume control of the USB pullup resistors and monitor the USB when the device has been put in a Suspended state by the USB host controller. In this state no further activity shall occur on the USB until at least 20ms of Resume Signaling has been performed by the USB host controller, indicating that it wishes the device to exit the Suspended state.
+
+Whilst `usbdev` is suspended much of the SoC logic including `usbdev` itself may be powered down, and the AON/Wake module remains powered on a low frequency clock, monitoring the USB for any of the following significant events:
+
+| USB activity whilst Suspended | Internal Signals         | Notes |
+|-------------------------------|--------------------------|-------|
+| Resume Signaling              | usb_aon_bus_not_idle     | The USB has switched to a 'non-idle' state. Resume signaling requires a 'K' state for at least 20ms, allowing software to ready the SoC and usbdev for re-established communication. |
+| Bus Reset                     | usb_aon_bus_reset        | The USB host controller wishes to restart the device configuration sequence. |
+| Disconnection                 | usb_aon_sense_lost       | The USB has been disconnected or powered down by the host/hub. |
+
+The normal exit from a low power Suspended state is via Resume Signaling indicating that the host controller wishes to re-establish communication, but the `usbdev_aon_wake`
+module also reports detection of a Bus Reset or a VBUS/SENSE disconnection, signaling to software that communication has been lost and that it should expect the device to be reconfigured.
+
+If support for low power states is not required then this external module may be excluded from the design, and the input signals may simply be tied inactive (low).
+
+Note that `usbdev_aon_wake` module shall only be activated whilst `usbdev` is in the Suspended state, and the modules do not offer 'remote wakeup' support. Resume signaling shall always be performed by the USB host controller.
+
+### AON/Wake Clocking
+
+The `usbdev_aon_wake` module is expected to be powered at all times, and to operate on a clock frequency much lower than that of `usbdev` for reduced power consumption. It has been designed and verified to operate on a frequency of 200kHz. Its detection of 'Bus Reset' signaling also requires it to have a clock frequency below 1MHz because the 'SE0' state on the USB is used to indicate both 'End Of Packet' events and Bus Resets. With a clock frequency of 1MHz or higher the logic will respond to Low Speed EOP events to the other devices on the bus as if they are Bus Reset signaling and thus awaken the device.
+
+### AON/Wake Interface Pins
+
+When the `usbdev_aon_wake` module is used in a design, the pullup enables 'usb_dp_pullup_o' and 'usb_dn_pullup_o' should be routed to the inputs 'usbdev_dppullup_en_i' and 'usbdev_dnpullup_en_i' of the `usbdev_aon_wake` module rather than directly to the pullups. The AON/Wake module then modifies these pullup signals when it is activated and produces the outputs 'usb_dppullup_en_o' and 'usb_dnpullup_en_o' to drive the actual pullups on the USB.
+
+Additionally, the `usbdev_aon_wake` module requires passive inputs that monitor the USB signals 'VBUS', 'D+' and 'D-' in order to produce wake up signaling for significant events on the USB. When an event is detected on the USB the output 'wake_detect_active_aon_o' is asserted, which would typically be routed to a power management IP block. How this produces a return from a sleep state and returned the `usbdev` module to a powered state is system-dependent.
