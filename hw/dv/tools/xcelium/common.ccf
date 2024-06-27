@@ -10,6 +10,9 @@
 // coverage collection on various design elements, that are otherwise turned off by default. We
 // maintain it locally with minor amends.
 
+// Cadence considers covergroups which don't set options.per_instance = 1 to be discarded if below flag not set
+set_covergroup -per_instance_default_one
+
 // Enables expression coverage of various Verilog operators.
 set_expr_coverable_operators -all -event_or
 
