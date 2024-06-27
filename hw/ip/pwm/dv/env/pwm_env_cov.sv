@@ -178,7 +178,7 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
       bins valid_range[10] = {[0:50]};
     }
     tl_clk_cp: coverpoint tl_clk_freq {
-      bins valid_range[1] = {[0:50]};
+      bins valid_range[10] = {[0:50]};
     }
     tl_core_eq_cross_cp: cross core_clk_cp, tl_clk_cp;
   endgroup : clock_cg
