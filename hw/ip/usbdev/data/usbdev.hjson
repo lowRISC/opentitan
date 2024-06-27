@@ -97,6 +97,7 @@
       width:   "1"
     }
     { name:    "usb_ref_val",
+      desc:    "This indicates that USB timing reference signal 'usb_ref_pulse' is valid"
       type:    "uni",
       act:     "req",
       package: "",
@@ -104,6 +105,7 @@
       width:   "1"
     }
     { name:    "usb_ref_pulse",
+      desc:    "USB timing reference signal. This signal pulses for a single 48MHz clock every 1ms USB frame"
       type:    "uni",
       act:     "req",
       package: "",
@@ -111,6 +113,7 @@
       width:   "1"
     },
     { name:    "usb_aon_suspend_req",
+      desc:    "Request to activate the AON/Wake module and take control of the USB pullups"
       type:    "uni",
       act:     "req",
       package: "",
@@ -118,6 +121,7 @@
       width:   "1"
     },
     { name:    "usb_aon_wake_ack",
+      desc:    "Acknowledge a wake signal from the AON/Wake and relinquish control of the USB pullups"
       type:    "uni",
       act:     "req",
       package: "",
@@ -125,6 +129,7 @@
       width:   "1"
     },
     { name:    "usb_aon_bus_reset",
+      desc:    "Indicates that the reason for waking was that a USB Bus Reset occurred"
       type:    "uni",
       act:     "rcv",
       package: "",
@@ -132,6 +137,7 @@
       width:   "1"
     },
     { name:    "usb_aon_sense_lost",
+      desc:    "Indicates that the reason for waking was that the VBUS/SENSE signal became deasserted"
       type:    "uni",
       act:     "rcv",
       package: "",
@@ -139,6 +145,7 @@
       width:   "1"
     },
     { name:    "usb_aon_bus_not_idle",
+      desc:    "Indicates that the reason for waking was that the USB is in a non-idle state"
       type:    "uni",
       act:     "rcv",
       package: "",
@@ -146,6 +153,7 @@
       width:   "1"
     },
     { name:    "usb_aon_wake_detect_active",
+      desc:    "Indicates that the external AON/Wake module is active and controlling the USB pullups",
       type:    "uni",
       act:     "rcv",
       package: "",

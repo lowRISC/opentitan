@@ -26,14 +26,14 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | usb_dp_pullup              | logic                       | uni     | req   |       1 | USB D+ pullup control                                                                              |
 | usb_dn_pullup              | logic                       | uni     | req   |       1 | USB D- pullup control                                                                              |
 | usb_rx_enable              | logic                       | uni     | req   |       1 | USB differential receiver enable                                                                   |
-| usb_ref_val                | logic                       | uni     | req   |       1 |                                                                                                    |
-| usb_ref_pulse              | logic                       | uni     | req   |       1 |                                                                                                    |
-| usb_aon_suspend_req        | logic                       | uni     | req   |       1 |                                                                                                    |
-| usb_aon_wake_ack           | logic                       | uni     | req   |       1 |                                                                                                    |
-| usb_aon_bus_reset          | logic                       | uni     | rcv   |       1 |                                                                                                    |
-| usb_aon_sense_lost         | logic                       | uni     | rcv   |       1 |                                                                                                    |
-| usb_aon_bus_not_idle       | logic                       | uni     | rcv   |       1 |                                                                                                    |
-| usb_aon_wake_detect_active | logic                       | uni     | rcv   |       1 |                                                                                                    |
+| usb_ref_val                | logic                       | uni     | req   |       1 | This indicates that USB timing reference signal 'usb_ref_pulse' is valid                           |
+| usb_ref_pulse              | logic                       | uni     | req   |       1 | USB timing reference signal. This signal pulses for a single 48MHz clock every 1ms USB frame       |
+| usb_aon_suspend_req        | logic                       | uni     | req   |       1 | Request to activate the AON/Wake module and take control of the USB pullups                        |
+| usb_aon_wake_ack           | logic                       | uni     | req   |       1 | Acknowledge a wake signal from the AON/Wake and relinquish control of the USB pullups              |
+| usb_aon_bus_reset          | logic                       | uni     | rcv   |       1 | Indicates that the reason for waking was that a USB Bus Reset occurred                             |
+| usb_aon_sense_lost         | logic                       | uni     | rcv   |       1 | Indicates that the reason for waking was that the VBUS/SENSE signal became deasserted              |
+| usb_aon_bus_not_idle       | logic                       | uni     | rcv   |       1 | Indicates that the reason for waking was that the USB is in a non-idle state                       |
+| usb_aon_wake_detect_active | logic                       | uni     | rcv   |       1 | Indicates that the external AON/Wake module is active and controlling the USB pullups              |
 | ram_cfg                    | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |                                                                                                    |
 | tl                         | tlul_pkg::tl                | req_rsp | rsp   |       1 |                                                                                                    |
 
