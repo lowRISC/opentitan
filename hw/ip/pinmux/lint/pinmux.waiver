@@ -34,3 +34,6 @@ waive -rules CLOCK_USE -location {pinmux.sv} -regexp {'hw2reg.mio_pad_attr\[28\]
 
 waive -rules CLOCK_USE -location {pinmux.sv} -regexp {'(dio_wkup_mux\[12\]|dio_wkup_mux\[13\]|mio_wkup_mux\[40\])' is used for some other purpose, and as clock} \
       -comment "The wakeup detectors can be configured to observe any MIO / DIO pins. 'DioSpiDeviceSck' (index 12) is the spi_device clock, 'DioSpiDeviceCsb' (index 13) is the spi_device chip select (used as a clock for detecting toggles inside spi_device), and 'Dft0PadIdx' (index 40) controls the first TAP strap and thus the TAP selection mux driving the JTAG clocks."
+
+waive -rules CLOCK_MUX -location {pinmux.sv} -regexp {Clock 'dio_in_i\[12\]' reaches a multiplexer here, used as a clock 'clk_i'} \
+      -comment "This mux is required to filter designated scan clock inputs (e.g. 'DioSpiDeviceSck' at index 12) from wakeup detector inputs"
