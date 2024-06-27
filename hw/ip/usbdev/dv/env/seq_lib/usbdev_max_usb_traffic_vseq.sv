@@ -43,6 +43,9 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     ep_in_enabled == ep_out_enabled;
   }
 
+  // TODO: Support Isochronous endpoints at some point to make this sequence more comprehensive/
+  // flexible? Presently there is no way to differentiate packets, and all packets are expected to
+  // be delivered reliably. See #23932.
   constraint ep_iso_enabled_c {
     ep_iso_enabled == 0;
   }
@@ -275,60 +278,6 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     ->device_ready;
   endtask
 
-  // Retract the current packet from the given IN endpoint.
-  task device_retract_in_packet(bit [3:0] ep, uvm_reg_data_t configin);
-    bit supplied;
-    // Retraction of IN packet.
-    uint prev_buf = get_field_val(ral.configin[0].buffer, configin);
-    `uvm_info(`gfn, $sformatf("Retracting IN packet from endpoint %d, buffer %d", ep, prev_buf),
-              UVM_MEDIUM)
-    ral.configin[ep].rdy.set(1'b0);
-    csr_update(ral.configin[ep]);
-    // Read back to see whether the packet is being collected right now.
-    csr_rd(.ptr(ral.configin[ep]), .value(configin));
-    `DV_CHECK_EQ(get_field_val(ral.configin[ep].buffer, configin), prev_buf)
-    if (get_field_val(ral.configin[ep].sending, configin)) begin
-      // The IN packet is presently being collected; since the packet size is limited to 64 bytes,
-      // there is an upper bound on how long the transmission can take. With 4x oversampling, and
-      // bit stuffing it's around 'hA30 clock cycles, but difficult to calculate exactly; we just
-      // need to ensure that we wait long enough...
-      uvm_reg_data_t in_sent;
-      for (int unsigned clks = 0; clks < 'hC00; clks++) begin
-        csr_rd(.ptr(ral.configin[ep]), .value(configin));
-        if (!get_field_val(ral.configin[ep].sending, configin)) break;
-      end
-      // The packet will have been either accepted or deferred.
-      csr_rd(.ptr(ral.in_sent[0]), .value(in_sent));
-      `DV_CHECK_FATAL(get_field_val(ral.configin[ep].pend, configin) || in_sent[ep])
-      // Clear the 'pending' indicator and the 'sent' status.
-      ral.configin[ep].pend.set(1'b1);
-      csr_update(ral.configin[ep]);
-      csr_wr(.ptr(ral.in_sent[0]), .value(1 << ep));
-    end
-    device_buf_supply(prev_buf, supplied);
-  endtask
-
-  // Present the IN packet for collection.
-  task device_present_in_packet(bit [3:0] ep, uint buf_num, uint len);
-    uvm_reg_data_t configin;
-    `uvm_info(`gfn, $sformatf("EP %d presenting buf %d, %d byte(s)", ep, buf_num, len), UVM_HIGH)
-    // Clear the existing IN packet, if there is one (packet retraction).
-    csr_rd(.ptr(ral.configin[ep]), .value(configin));
-    if (get_field_val(ral.configin[0].rdy, configin)) begin
-      device_retract_in_packet(ep, configin);
-    end
-    // Validate the buffer properties before supplying them to the DUT.
-    `DV_CHECK_FATAL(len <= MaxPktSizeByte)
-    `DV_CHECK_FATAL(buf_num < NumBuffers)
-    ral.configin[ep].size.set(len);
-    ral.configin[ep].buffer.set(buf_num);
-    ral.configin[ep].rdy.set(1'b0);
-    csr_update(ral.configin[ep]);
-    // Now set the RDY bit
-    ral.configin[ep].rdy.set(1'b1);
-    csr_update(ral.configin[ep]);
-  endtask
-
   // Device side response to a Bus Reset being issued.
   virtual task device_side_handle_bus_reset();
     // We must reinstate the device address following a bus reset.
@@ -387,7 +336,10 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
       // Collect and return a received packet if there is one.
       csr_rd(.ptr(ral.usbstat), .value(usbstat));
       if (!get_field_val(ral.usbstat.rx_empty, usbstat)) begin
+        int unsigned retracted_buf;
         uvm_reg_data_t rxfifo;
+        bit retracted;
+
         csr_rd(.ptr(ral.rxfifo), .value(rxfifo));
         `uvm_info(`gfn, $sformatf("Read RXFIFO 0x%x", rxfifo), UVM_HIGH)
 
@@ -395,9 +347,16 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
         // echo them back and leave the host side to check them.
 
         // Supply any processed packets for IN collection.
-        device_present_in_packet(get_field_val(ral.rxfifo.ep, rxfifo),
-                                 get_field_val(ral.rxfifo.buffer, rxfifo),
-                                 get_field_val(ral.rxfifo.size, rxfifo));
+        present_in_packet(get_field_val(ral.rxfifo.ep, rxfifo),
+                          get_field_val(ral.rxfifo.buffer, rxfifo),
+                          get_field_val(ral.rxfifo.size, rxfifo),
+                          .may_retract(1'b0),  // TODO: no isochronous support at present.
+                          .retracted(retracted), .retracted_buf(retracted_buf));
+        // Was a packet retracted?
+        if (retracted) begin
+          bit supplied;
+          device_buf_supply(retracted_buf, supplied);
+        end
       end
     end
   endtask

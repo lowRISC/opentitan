@@ -210,6 +210,10 @@
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
+      name: usbdev_iso_retraction
+      uvm_test_seq: usbdev_iso_retraction_vseq
+    }
+    {
       name: usbdev_link_in_err
       uvm_test_seq: usbdev_link_in_err_vseq
     }

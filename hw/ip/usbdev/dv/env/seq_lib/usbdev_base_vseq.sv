@@ -571,6 +571,120 @@ endtask
     end
   endtask
 
+  // Clear the 'pend(ing)' indicator and the 'sent' status for the given endpoint, so that there is
+  // no lingering completion status from an earlier IN packet.
+  // The returned bits indicate which bit was set, if any; mirroring the hardware bits in `configin`
+  // and `in_sent`, hardware guarantees that both cannot be set simultaneously for a single packet.
+  task clear_pend_sent(bit [3:0] ep, uvm_reg_data_t configin, output bit sent, output bit pend);
+    pend = get_field_val(ral.configin[ep].pend, configin);
+    if (pend) begin
+      ral.configin[ep].sending.set(1'b1);
+      ral.configin[ep].pend.set(1'b1);
+      csr_update(ral.configin[ep]);
+      sent = 1'b0;
+    end else begin
+      uvm_reg_data_t in_sent;
+      csr_rd(.ptr(ral.in_sent[0]), .value(in_sent));
+      sent = in_sent[ep];
+      if (sent) csr_wr(.ptr(ral.in_sent[0]), .value(1 << ep));
+    end
+  endtask
+
+  // Attempt to retract the current packet from the given IN endpoint; if the packet is currently
+  // being collected by the host, then this task will wait until the packet has been acknowledged,
+  // or transmission is retired unsuccessfully.
+  //
+  // The outcome is indicated to the caller via _one_ of the following becoming set.
+  //
+  // - 'sent' means that the packet was successfully sent to the USB host.
+  // - 'pend' means that an event caused it to be aborted and it remains 'pending'.
+  // - 'retracted' means that it was neither collected nor aborted, but has been succesfully
+  //   retracted and is no longer available for collection.
+  //
+  // The returned buffer number indicates the location of the packet, so that the buffer may be
+  // released or reused by the caller.
+  task retract_in_packet(bit [3:0] ep, uvm_reg_data_t configin, output bit sent, output bit pend,
+                         output bit retracted, output int prev_buf);
+    bit sending;
+    // Retraction of IN packet.
+    `DV_CHECK_EQ(get_field_val(ral.configin[0].rdy, configin), 1, "No IN packet to retract")
+    prev_buf = get_field_val(ral.configin[0].buffer, configin);
+    `uvm_info(`gfn, $sformatf("Retracting IN packet from endpoint %0d, buffer %0d", ep, prev_buf),
+              UVM_MEDIUM)
+
+    // Use csr_wr on the register to ensure that 'csr_update' does not inadvertently clear the
+    // 'sending' or 'pend' bits because of rw1c behavior; 'update' does not permit us to specify
+    // 'do not change' and thus ensure that the rw1c behavior is actually written as '0.'
+    //
+    // This is particularly important in avoiding a sw/hw race here.
+    configin = get_csr_val_with_updated_field(ral.configin[ep].sending, configin, 1'b0);
+    configin = get_csr_val_with_updated_field(ral.configin[ep].pend, configin, 1'b0);
+    // Clear the RDY bit to initiate packet retraction.
+    configin = get_csr_val_with_updated_field(ral.configin[ep].rdy, configin, 1'b0);
+    csr_wr(.ptr(ral.configin[ep]), .value(configin));
+
+    csr_rd(.ptr(ral.configin[ep]), .value(configin));
+    `DV_CHECK_EQ(get_field_val(ral.configin[ep].rdy, configin), 1'b0)  // Just cleared.
+    `DV_CHECK_EQ(get_field_val(ral.configin[ep].buffer, configin), prev_buf)  // Buffer unchanged.
+    // Is it being sent?
+    sending = get_field_val(ral.configin[ep].sending, configin);
+    if (sending) begin
+      // The IN packet is presently being collected; since the packet size is limited to 64 bytes,
+      // there is an upper bound on how long the transmission can take. With 4x oversampling, and
+      // bit stuffing it's around 'hA30 clock cycles, but difficult to calculate exactly; we just
+      // need to ensure that we wait long enough...
+      for (int unsigned clks = 0; sending && clks < 'hC00; clks++) begin
+        csr_rd(.ptr(ral.configin[ep]), .value(configin));
+        sending = get_field_val(ral.configin[ep].sending, configin);
+      end
+      `DV_CHECK_EQ(sending, 0, "Packet was neither collected nor retracted")
+    end
+    // Ensure that there's no lingering completion status that could interfere with the next
+    // IN packet presented.
+    clear_pend_sent(ep, configin, sent, pend);
+    retracted = !sent & !pend;
+  endtask
+
+  // Present the IN packet for collection, optionally permitting the retraction of an existing
+  // packet.
+  // If a packet is retracted, then its allocated buffer number is returned such that it may be
+  // released by the caller.
+  task present_in_packet(bit [3:0] ep, uint buf_num, uint len, bit may_retract = 1'b1,
+                         output bit retracted, output int retracted_buf);
+    uvm_reg_data_t configin;
+    bit sent, pend;
+
+    `uvm_info(`gfn, $sformatf("EP %d presenting buf %d, %d byte(s)", ep, buf_num, len), UVM_HIGH)
+    // Remove the existing IN packet, if there is one (packet retraction).
+    csr_rd(.ptr(ral.configin[ep]), .value(configin));
+    if (get_field_val(ral.configin[0].rdy, configin)) begin
+      `DV_CHECK_EQ(may_retract, 1, "Not permitted to retract pending IN packet")
+      retract_in_packet(ep, configin, sent, pend, retracted, retracted_buf);
+      `DV_CHECK_EQ(sent | pend | retracted, 1, "Unexpected IN packet outcome")
+    end else begin
+      // No packet retraction required.
+      retracted = 1'b0;
+      // Clear completion status of any previous IN packets.
+      clear_pend_sent(ep, configin, sent, pend);
+    end
+    // Validate the buffer properties before supplying them to the DUT.
+    `DV_CHECK_FATAL(len <= MaxPktSizeByte)
+    `DV_CHECK_FATAL(buf_num < NumBuffers)
+
+    // Use csr_wr on the register; we deliberately want to clear the 'pend' and 'sending' status
+    // indicators at this point. 'csr_update' has only a concept of 'desired' state and it's not
+    // possible to achieve a desired state of 1 by writing to rw1c bits 'sending' and 'pend.'
+    configin = get_csr_val_with_updated_field(ral.configin[ep].size, configin, len);
+    configin = get_csr_val_with_updated_field(ral.configin[ep].buffer, configin, buf_num);
+    configin = get_csr_val_with_updated_field(ral.configin[ep].sending, configin, 1'b1);
+    configin = get_csr_val_with_updated_field(ral.configin[ep].pend, configin, 1'b1);
+    configin = get_csr_val_with_updated_field(ral.configin[ep].rdy, configin, 1'b0);
+    csr_wr(.ptr(ral.configin[ep]), .value(configin));
+    // Now set the RDY bit
+    configin = get_csr_val_with_updated_field(ral.configin[ep].rdy, configin, 1'b1);
+    csr_wr(.ptr(ral.configin[ep]), .value(configin));
+  endtask
+
   // Decide upon one or more corrupted PID values when constructing an invalid OUT/SETUP
   // transaction.
   function void build_prnd_bad_pids(output bit is_setup, output bit [7:0] setup_out_pid,
@@ -888,9 +1002,8 @@ endtask
 
   // Configure an IN transaction on a specific endpoint.
   virtual task configure_in_trans(bit [3:0] ep, bit [4:0] buffer_id, bit [6:0] num_of_bytes);
-    // Enable EP0 IN
+    // Enable EP IN
     csr_wr(.ptr(ral.ep_in_enable[0].enable[ep]),  .value(1'b1));
-    csr_update(ral.ep_in_enable[0]);
     // Configure IN Transaction
     ral.configin[ep].rdy.set(1'b1);
     ral.configin[ep].size.set(num_of_bytes);
