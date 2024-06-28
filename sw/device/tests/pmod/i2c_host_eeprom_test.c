@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -32,6 +33,12 @@ enum {
   // finished writing.
   kAckPollTimeoutMicros = 80000,
 };
+
+ibex_timeout_t g_timeout;
+
+static void print_time(const char *where) {
+  LOG_INFO("%s: %dus", where, ibex_timeout_elapsed(&g_timeout));
+}
 
 static status_t write_byte(dif_i2c_t *i2c, const uint8_t addr[2],
                            uint8_t byte) {
@@ -70,13 +77,15 @@ static status_t write_read_random(dif_i2c_t *i2c) {
   int32_t naks = 0;
   // Write a byte to some random address.
   const uint8_t kAddr[2] = {0x03, 0x21};
-  LOG_INFO("write_byte");
+  print_time("write_read_random");
+  // LOG_INFO("write_byte");
   TRY(write_byte(i2c, kAddr, 0xAB));
 
   // Wait for the write to finish.
   naks = TRY(poll_while_busy(i2c));
   TRY_CHECK(naks > 0, "We should have received naks");
 
+  print_time("write_read_random(read)");
   // Read back the data at that address.
   uint8_t read_data = 0x00;
   TRY(read_byte(i2c, kAddr, &read_data));
@@ -86,10 +95,11 @@ static status_t write_read_random(dif_i2c_t *i2c) {
 
   // Erase the value we just wrote to prevent the success state persisting to
   // subsequent runs of the test.
-  LOG_INFO("write_byte");
+  print_time("write_read_random(write)");
   TRY(write_byte(i2c, kAddr, 0xFF));
   naks = TRY(poll_while_busy(i2c));
   TRY_CHECK(naks > 0, "We should have received naks");
+  print_time("write_read_random(read2)");
   TRY(read_byte(i2c, kAddr, &read_data));
 
   // Check the over-written byte matches the new value.
@@ -192,6 +202,7 @@ bool test_main(void) {
   dif_i2c_t i2c;
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  g_timeout = ibex_timeout_init(60 * 1000 * 1000);
 
   i2c_pinmux_platform_id_t platform = I2cPinmuxPlatformIdCw310Pmod;
   status_t test_result = OK_STATUS();
