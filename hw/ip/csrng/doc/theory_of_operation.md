@@ -183,7 +183,7 @@ Below is a description of the fields of this header:
          Each unit represents 128 bits of entropy returned.
          This field allows values between 1 and 4095.
          A value of 1 returns 1 * 128 bits of entropy.
-         A value of 4095 returns 4095 * 128 bits of entropy, which is less than the 2<sup>19</sup> bits allowed by NIST (referenced to as <tt>max_number_of_bit_per_request</tt>).
+         A value of 4095 returns 4095 * 128 bits of entropy, which is less than the 2<sup>19</sup> bits allowed by NIST (referenced to as <tt>max_number_of_bits_per_request</tt>).
     </td>
   </tr>
   <tr>
