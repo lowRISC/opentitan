@@ -425,6 +425,30 @@ TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
       dif_csrng_get_internal_state(nullptr, kCsrngInternalStateIdSw, &unused));
 }
 
+class GetReseedCounterTest : public DifCsrngTest {};
+
+TEST_F(GetReseedCounterTest, GetReseedCounterOk) {
+  dif_csrng_internal_state_id_t instance_id = kCsrngInternalStateIdSw;
+  uint32_t reseed_counter;
+
+  EXPECT_READ32(
+      (CSRNG_RESEED_COUNTER_0_REG_OFFSET + ((uint32_t)(instance_id) << 2)), 0);
+  EXPECT_DIF_OK(
+      dif_csrng_get_reseed_counter(&csrng_, instance_id, &reseed_counter));
+}
+
+TEST_F(GetReseedCounterTest, GetReseedCounterBadArgs) {
+  EXPECT_DIF_BADARG(
+      dif_csrng_get_reseed_counter(&csrng_, kCsrngInternalStateIdSw, nullptr));
+
+  uint32_t unused;
+  EXPECT_DIF_BADARG(
+      dif_csrng_get_reseed_counter(nullptr, kCsrngInternalStateIdSw, &unused));
+
+  EXPECT_DIF_BADARG(dif_csrng_get_reseed_counter(
+      &csrng_, static_cast<dif_csrng_internal_state_id_t>(-1), &unused));
+}
+
 class LockTest : public DifCsrngTest {};
 
 TEST_F(LockTest, BadArgs) {

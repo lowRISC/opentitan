@@ -573,6 +573,20 @@ dif_result_t dif_csrng_get_internal_state(
     dif_csrng_internal_state_t *state);
 
 /**
+ * Gets the reseed counter of a CSRNG instance.
+ *
+ * @param csrng A CSRNG handle
+ * @param instance_id CSRNG instance ID.
+ * @param[out] reseed counter The current reseed counter value of a CSRNG
+ * instance.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_get_reseed_counter(
+    const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
+    uint32_t *reseed_counter);
+
+/**
  * Locks out CSRNG functionality.
  *
  * This function is reentrant: calling it while functionality is locked will
