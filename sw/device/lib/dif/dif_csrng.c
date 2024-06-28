@@ -360,6 +360,34 @@ dif_result_t dif_csrng_get_internal_state(
   return kDifOk;
 }
 
+dif_result_t dif_csrng_get_reseed_counter(
+    const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
+    uint32_t *reseed_counter) {
+  if (csrng == NULL || reseed_counter == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_offset;
+  switch (instance_id) {
+    case kCsrngInternalStateIdEdn0:
+      reg_offset = CSRNG_RESEED_COUNTER_0_REG_OFFSET;
+      break;
+    case kCsrngInternalStateIdEdn1:
+      reg_offset = CSRNG_RESEED_COUNTER_1_REG_OFFSET;
+      break;
+    case kCsrngInternalStateIdSw:
+      reg_offset = CSRNG_RESEED_COUNTER_2_REG_OFFSET;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  // Read the reseed counter.
+  *reseed_counter = mmio_region_read32(csrng->base_addr, (ptrdiff_t)reg_offset);
+
+  return kDifOk;
+}
+
 dif_result_t dif_csrng_lock(const dif_csrng_t *csrng) {
   if (csrng == NULL) {
     return kDifBadArg;
