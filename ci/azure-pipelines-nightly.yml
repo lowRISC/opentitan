@@ -65,8 +65,7 @@ jobs:
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
         --build_tests_only \
-        --test_output=streamed \
-        --test_tag_filters="cw310_test_rom" \
+        --test_output=errors \
         --runs_per_test=150 \
         //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_test_rom
     displayName: "Run the PMOD tests with Test ROM"
@@ -79,7 +78,8 @@ jobs:
         --define bitstream=gcp_splice \
         --build_tests_only \
         --test_output=errors \
-        --test_tag_filters=cw310_sival,-broken \
-        $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
+        --test_output=errors \
+        --runs_per_test=150 \
+        //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_sival
     displayName: "Run the PMOD tests for Sival"
   - template: ../ci/publish-bazel-test-results.yml
