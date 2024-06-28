@@ -9,6 +9,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_new
 
   bit             sha_en, hmac_idle;
+  bit             fifo_empty;   // TODO(#23739): remove this line when RTL PR got merged
   bit [7:0]       msg_q[$];
   bit [7:0]       msg_part_q[$];  // Queue containing piece of the message if HASH is interrupted
   bit             hmac_start, hmac_process, hmac_stopped, hmac_continue;
@@ -372,6 +373,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           if (hmac_start && invalid_cfg) begin
             flush();
           end
+          // TODO(#23739): remove the lines below when RTL PR got merged
+          // --- BEGIN ---
+          fifo_empty = item.d_data[HmacMsgFifoEmpty];
+          void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty), .kind(UVM_PREDICT_READ)));
+          // ---  END  ---
         end
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
         "digest_7", "digest_8", "digest_9", "digest_10", "digest_11", "digest_12", "digest_13",
