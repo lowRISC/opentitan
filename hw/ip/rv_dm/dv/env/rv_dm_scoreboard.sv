@@ -395,6 +395,22 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_Q_CONTENTS(tl_seq_item, sba_tl_access_q)
   endfunction
 
+  // Return true if we're using late debug enable, based on top-level inputs and register state.
+  function logic using_late_debug_enable();
+    prim_mubi_pkg::mubi8_t  pin_val = cfg.rv_dm_vif.otp_dis_rv_dm_late_debug;
+    prim_mubi_pkg::mubi32_t reg_val = prim_mubi_pkg::mubi32_t'(`gmv(ral.late_debug_enable));
+    return (prim_mubi_pkg::mubi8_test_true_strict(pin_val) ||
+            prim_mubi_pkg::mubi32_test_true_strict(reg_val));
+  endfunction
+
+  // Return whether debug is supposed to be enabled, based on whether we're using late debug enable
+  // and on top-level inputs.
+  function logic is_debug_enabled();
+    return lc_ctrl_pkg::lc_tx_test_true_strict(using_late_debug_enable ?
+                                               cfg.rv_dm_vif.lc_hw_debug_en :
+                                               cfg.rv_dm_vif.lc_dft_en);
+  endfunction
+
   // This overrides a function in cip_base_scoreboard. The problem is that when debug is not
   // enabled, any TL request will respond with an error. This is what we expect, but the code in
   // cip_base_scoreboard fails because we're responding with an error to an access that would
@@ -402,7 +418,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     if ((ral_name == "rv_dm_mem_reg_block") &&
         (channel == DataChannel) &&
-        (cfg.rv_dm_vif.lc_hw_debug_en != lc_ctrl_pkg::On)) begin
+        !is_debug_enabled()) begin
 
       `DV_CHECK(item.d_error)
       return 1'b1;

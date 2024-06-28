@@ -44,10 +44,14 @@ module rv_dm_bind;
     .clk_i (clk_i),
     .rst_ni (rst_ni),
     .lc_hw_debug_en_i(lc_hw_debug_en_i),
+    .lc_dft_en_i(lc_dft_en_i),
+    .otp_dis_rv_dm_late_debug_i(otp_dis_rv_dm_late_debug_i),
     .debug_req_o_i(debug_req_o),
     .mem_tl_d_o_i(mem_tl_d_o),
     .sba_tl_h_o_i(sba_tl_h_o),
-    .ndmreset_ack
+
+    .ndmreset_ack,
+    .regs_reg2hw
   );
 
 endmodule
