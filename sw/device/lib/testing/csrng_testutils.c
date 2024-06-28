@@ -98,9 +98,13 @@ status_t csrng_testutils_check_internal_state(
   TRY(csrng_testutils_cmd_ready_wait(csrng));
   dif_csrng_internal_state_t got;
   TRY(dif_csrng_get_internal_state(csrng, kCsrngInternalStateIdSw, &got));
+  uint32_t reseed_counter;
+  TRY(dif_csrng_get_reseed_counter(csrng, kCsrngInternalStateIdSw,
+                                   &reseed_counter));
 
   TRY_CHECK(got.instantiated == expected->instantiated);
   TRY_CHECK(got.reseed_counter == expected->reseed_counter);
+  TRY_CHECK(reseed_counter == expected->reseed_counter);
   TRY_CHECK(got.fips_compliance == expected->fips_compliance);
 
   TRY_CHECK(memcmp(got.v, expected->v, sizeof(expected->v)) == 0);
