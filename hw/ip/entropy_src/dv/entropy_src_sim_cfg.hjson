@@ -47,6 +47,8 @@
   // Leave the following as a separate refinement, to support potential DV enhancements.
   // (See the comments within the file for more detail)
   "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cnt_err_excl.vRefine",
+  // Waive toggle coverage for the prim_count and fifo_cnt inputs.
+  "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cnt_in_excl.vRefine",
   // Waive toggle coverage for the prim_count outputs.  (MoreSB's not exercised)
   "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cnt_out_excl.vRefine",
   // Output of --cov-unr, with `prim_count` error exclusions removed.
