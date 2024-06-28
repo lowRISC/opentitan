@@ -61,6 +61,7 @@ rust_library(
         ":bindgen_sha2_128s_simple",
         ":bindgen_shake_128s_simple",
         "@crate_index//:pem-rfc7468",
+        "@crate_index//:serde",
         "@crate_index//:strum",
         "@crate_index//:thiserror",
     ],
