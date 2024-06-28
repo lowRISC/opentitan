@@ -2,7 +2,7 @@
 
 ## Block Diagram
 
-![](../doc/I2C_block_diagram.svg)
+![](../doc/i2c_block_diagram.svg)
 
 ## Design Details
 
@@ -147,7 +147,7 @@ If no additional transfers targeting this target's address occur, an entry repre
 
 The following diagram shows consecutive entries inserted into ACQ FIFO during a write operation:
 
-![](../doc/I2C_acq_fifo_write.svg)
+![](../doc/i2c_acq_fifo_write.svg)
 
 If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the controller signals the end of the transfer by sending a NACK signal.
 If TX FIFO holds no data, or if the ACQ FIFO contains more than 1 entry, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO or handle the available command.
@@ -158,7 +158,7 @@ An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in th
 For ACK and NACK signals, the value of the first bit is 0 and 1, respectively.
 The following diagram shows consecutive entries inserted into ACQ FIFO during a read operation:
 
-![](../doc/I2C_acq_fifo_read.svg)
+![](../doc/i2c_acq_fifo_read.svg)
 
 The ACQ FIFO entry consists of 11 bits:
 - Address (bits 7:1) and R/W bit (bit 0) or data byte
@@ -380,7 +380,7 @@ Each sub-sequence has a terminal event--generically labeled "[completed]" which 
 
 However, all transitions which are dependent on formatting flags are shown explicitly in this figure.
 
-![](../doc/I2C_state_diagram.svg)
+![](../doc/i2c_controller_states.svg)
 
 Similarly, the figure below shows a simplified version of the `I2C_Target` state machine.
 
