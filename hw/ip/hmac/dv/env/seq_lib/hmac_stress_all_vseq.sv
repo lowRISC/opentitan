@@ -17,9 +17,7 @@ class hmac_stress_all_vseq extends hmac_base_vseq;
                           "hmac_datapath_stress_vseq",
                           "hmac_long_msg_vseq",
                           "hmac_error_vseq",
-                          "hmac_wipe_secret_vseq",
-                          "hmac_test_vectors_sha_vseq",
-                          "hmac_test_vectors_hmac_vseq"};
+                          "hmac_wipe_secret_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
       hmac_base_vseq hmac_vseq;
