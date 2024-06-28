@@ -4,6 +4,7 @@
 
 use crate::SpxError;
 use paste::paste;
+use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
 // The `algorithms` macro provides a uniform interface to the underlying C
@@ -229,11 +230,13 @@ macro_rules! algorithms {
 // the bindgen library name and `NAMESPACE` preprocessor symbol used to construct
 // that libarary.
 algorithms! {
-    #[derive(EnumString, Display)]
+    #[derive(EnumString, Display, Serialize, Deserialize)]
     #[strum(ascii_case_insensitive)]
     pub enum SphincsPlus {
+        #[serde(rename="SPHINCS+-SHAKE-128s-simple", alias="SHAKE-128s-simple")]
         #[strum(serialize="SPHINCS+-SHAKE-128s-simple", serialize="SHAKE-128s-simple")]
         Shake128sSimple => shake_128s_simple,
+        #[serde(rename="SPHINCS+-SHA2-128s-simple", alias="SHA2-128s-simple")]
         #[strum(serialize="SPHINCS+-SHA2-128s-simple", serialize="SHA2-128s-simple")]
         Sha2128sSimple => sha2_128s_simple,
     }
