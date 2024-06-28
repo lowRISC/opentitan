@@ -63,6 +63,7 @@ module usbdev_usbif  #(
   input  logic [NEndpoints-1:0]    in_stall_i,
   input  logic [NEndpoints-1:0]    in_rdy_i,
   output logic                     in_ep_xact_end_o,
+  output logic                     in_ep_collected_o,
   output logic [3:0]               in_endpoint_o,
   output logic                     in_endpoint_val_o,
 
@@ -363,6 +364,7 @@ module usbdev_usbif  #(
     .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
     .in_ep_xact_end_o      (in_ep_xact_end_o),
+    .in_ep_collected_o     (in_ep_collected_o),
     .in_ep_get_addr_o      (in_ep_get_addr),
     .in_ep_data_get_o      (in_ep_data_get),
     .in_ep_newpkt_o        (in_ep_newpkt),
