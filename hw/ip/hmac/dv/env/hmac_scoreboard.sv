@@ -20,7 +20,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [TL_DW-1:0] exp_digest[NUM_DIGESTS];
   bit [3:0]       previous_digest_size, expected_digest_size;
   bit             invalid_cfg;
-  event           sample_cfg;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -105,8 +104,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                   // only predict a new digest if configuration is valid and HMAC was indeed started
                   // otherwise previous digest is retained in CSRs
                   predict_digest(msg_q);
-                  // Trigger coverage sampling of CFG register
-                  -> sample_cfg;
                 end else begin
                   check_idle_o(1'b1);
                 end
@@ -133,14 +130,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (!sha_en && !invalid_cfg) begin
                 // so long as configuration is valid
                 update_err_intr_code(SwHashStartWhenShaDisabled);
+                // To cover when SHA is disabled
+                if (cfg.en_cov) cov.cfg_cg.sample(`gmv(ral.cfg));
               end else if (invalid_cfg) begin
                 // otherwise signalling invalid config takes priority
                 update_err_intr_code(SwInvalidConfig);
               end else begin
                 update_err_intr_code(SwHashStartWhenActive);
               end
-              // Trigger coverage sampling of CFG register
-              -> sample_cfg;
             end
             // Detect when stop has been triggered to store the current state, for Save and Restore
             // check
@@ -225,6 +222,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               hmac_stopped = 0;             // Clear this to let digest comparison happening later
             end
             sha_en = item.a_data[ShaEn];
+            // Sample CFG when SHA is enabled
+            if (item.a_data[ShaEn]) begin
+              if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
+            end
           end
           "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7",
           "key_8", "key_9", "key_10", "key_11", "key_12", "key_13", "key_14", "key_15",
@@ -768,13 +769,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     sar_stop_continue_ev  = uvm_event_sar_pool::get_global("sar_stop_and_continue_event");
 
     fork
-      // Collect coverage for register CFG
-      begin
-        forever begin
-          @(sample_cfg);
-          if (cfg.en_cov) cov.cfg_cg.sample(`gmv(ral.cfg));
-        end
-      end
       // Save and Restore with same context
       begin
         forever begin

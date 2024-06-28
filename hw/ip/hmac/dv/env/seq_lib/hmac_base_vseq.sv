@@ -319,8 +319,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
             end
             // randomly change key, config regs during msg wr, should trigger error or be discarded
             write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
+            // Randomly trigger error code read also when no error is supposed to happen
+            if ($urandom_range(0, 1)) begin
+              check_error_code(0);
+            end
           end else begin
-            check_error_code();
+            check_error_code(1);
           end
         end
         // Keep it alive only if needed
