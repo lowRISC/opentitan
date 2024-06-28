@@ -67,7 +67,7 @@ jobs:
         --build_tests_only \
         --test_output=streamed \
         --test_tag_filters="cw310_test_rom" \
-        //sw/device/tests/pmod:i2c_host_accelerometer_test_fpga_cw310_test_rom \
+        --runs_per_test=150 \
         //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_test_rom
     displayName: "Run the PMOD tests with Test ROM"
   - template: ../ci/publish-bazel-test-results.yml
