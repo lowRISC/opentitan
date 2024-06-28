@@ -79,6 +79,48 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    {
+        "name": "exec_enabled_start_offset_invalid",
+        "otp_fields": {
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET": otp_hex(0x4),
+        },
+        # The hash check should fail, since the offset is included in the hash,
+        # triggering a hardened check fail (which executes an unimp; triggering
+        # an exception and shutdown).
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
+    },
+    {
+        "name": "exec_disabled_start_offset_invalid",
+        "otp_fields": {
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET": otp_hex(0x4),
+        },
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    {
+        "name": "exec_enabled_length_invalid",
+        "otp_fields": {
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH": otp_hex(0x4),
+        },
+        # The hash check should fail, since the length is included in the hash,
+        # triggering a hardened check fail (which executes an unimp; triggering
+        # an exception and shutdown).
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
+    },
+    {
+        "name": "exec_disabled_length_invalid",
+        "otp_fields": {
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH": otp_hex(0x4),
+        },
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
 ]
 
 [
@@ -120,9 +162,11 @@ opentitan_binary(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
