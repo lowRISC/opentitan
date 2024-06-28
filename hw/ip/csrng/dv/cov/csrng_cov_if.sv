@@ -326,9 +326,12 @@ interface csrng_cov_if (
     }
 
     cp_glen: coverpoint glen {
-      bins one         = { 1 };
-      bins multiple    = { [2:$] };
-      ignore_bins zero = { 0 };
+      bins one = { 1 };
+      bins sml = { [2:32] };
+      bins med = { [33:128] };
+      bins lrg = { [129:1024] };
+      bins xtr = { [1025:4094] };
+      bins max = { 4095 };
     }
 
     // Coverpoint for all of the possible transitions of flag0 that can cause a

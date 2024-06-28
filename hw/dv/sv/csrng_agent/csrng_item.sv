@@ -33,7 +33,7 @@ class csrng_item extends uvm_sequence_item;
 
   constraint c_glen {
     glen dist {
-      // TODO(#18350): Add a bin for 0 (with 5% chance, like for 4095?).
+      // Note that 0 isn't supported by the implementation, see #23846.
       [1:32]      :/ 75,
       [33:128]    :/ 10,
       [129:1024]  :/ 5,
