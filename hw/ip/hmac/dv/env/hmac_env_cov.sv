@@ -74,8 +74,7 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
                                               logic [TL_DW-1:0] msg_len_upper,
                                               logic [TL_DW-1:0] cfg          );
     hmac_en: coverpoint cfg[HmacEn];
-    // Register is in bits but we are interested in the number of bytes => /8
-    msg_len_lower_cp: coverpoint (msg_len_lower / 8) {
+    msg_len_lower_cp: coverpoint (msg_len_lower) {
       bins len_0         = {0};     // Empty message
       bins len_1         = {1};     // One byte message
       bins len_511       = {511};   // One block in SHA-2 256, -1 byte
