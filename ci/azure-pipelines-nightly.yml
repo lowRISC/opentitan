@@ -67,7 +67,7 @@ jobs:
         --build_tests_only \
         --test_output=errors \
         --runs_per_test=150 \
-        //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_test_rom
+        //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_sival
     displayName: "Run the PMOD tests with Test ROM"
   - template: ../ci/publish-bazel-test-results.yml
   - bash: |
@@ -80,6 +80,6 @@ jobs:
         --test_output=errors \
         --test_output=errors \
         --runs_per_test=150 \
-        //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_sival
+        //sw/device/tests/pmod:i2c_host_eeprom_test_fpga_cw310_test_rom
     displayName: "Run the PMOD tests for Sival"
   - template: ../ci/publish-bazel-test-results.yml
