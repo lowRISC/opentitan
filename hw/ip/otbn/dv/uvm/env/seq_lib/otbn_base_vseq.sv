@@ -475,8 +475,10 @@ class otbn_base_vseq extends cip_base_vseq #(
 
   // Wait for OTBN to finish, either by polling or by waiting on the interrupt pins
   //
-  // When polling, this waits up to 1ms before failing with a timeout.
-  task wait_for_run_completion(input bit verbosity);
+  // When polling, this waits up to 1ms before failing with a timeout. If polling, we pass the
+  // backdoor flag to csr_rd, which is a way to avoid starting requests on the TL sequencer.
+  // Avoiding this means we can safely kill the process without leaving anything hanging.
+  task wait_for_run_completion(input bit verbosity, input bit backdoor=0);
     fork begin : isolation_fork
       fork
         begin
@@ -493,11 +495,12 @@ class otbn_base_vseq extends cip_base_vseq #(
             `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (polling)", verbosity)
             while (cfg.clk_rst_vif.rst_n) begin
               uvm_reg_data_t rdata;
-              csr_rd(.ptr(ral.status), .value(rdata), .blocking(1));
+              csr_rd(.ptr(ral.status), .value(rdata), .blocking(1), .backdoor(backdoor));
               if (rdata inside {otbn_pkg::StatusIdle, otbn_pkg::StatusLocked}) begin
                 `uvm_info(`gfn, $sformatf("Seen end of OTBN run (status is %0x)", rdata), UVM_HIGH)
                 break;
               end
+              if (backdoor) cfg.clk_rst_vif.wait_clks(10);
             end
           end
         end
