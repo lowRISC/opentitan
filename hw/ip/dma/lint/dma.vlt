@@ -1,0 +1,16 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for dma
+
+`verilator_config
+
+lint_off -rule UNUSED -file "*/rtl/dma.sv"            -match "Bits of signal are not used: 'reg2hw'[*]"
+
+// Waive a warning caused by the fact that our "abort" register matches a C++ common word.
+lint_off -rule SYMRSVDWORD -file "*/rtl/dma_reg_pkg.sv" -match "Symbol matches C++ common word: 'abort'"
+
+// TODO: Remove waivers when logic in dma is implemented
+lint_off -rule UNUSED -file "*/rtl/dma.sv" -match "Signal is not used:*"
+lint_off -rule UNDRIVEN -file "*/rtl/dma.sv" -match "Signal is not driven:*"
