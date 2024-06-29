@@ -19,6 +19,8 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
   endtask: body
 
   // Wait until the value at path is nonzero or until OTBN finishes execution.
+  //
+  // This process is safe to kill at any time, because it doesn't start any TL transactions.
   task wait_for_flag(string path);
     fork begin : isolation_fork
       fork
@@ -31,8 +33,9 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
                        `DV_CHECK_FATAL(uvm_hdl_read(path, value));
                        end while (!value);)
         end
-        // This process waits until OTBN completes execution or until reset.
-        wait_for_run_completion(UVM_HIGH);
+        // This process waits until OTBN completes execution or until reset. Passing backdoor=1
+        // ensures that we won't start any TL reads of the status register.
+        wait_for_run_completion(.verbosity(UVM_HIGH), .backdoor(1'b1));
 
       join_any
       disable fork;
