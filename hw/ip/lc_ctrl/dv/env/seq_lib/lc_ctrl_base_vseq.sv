@@ -118,20 +118,26 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  virtual task set_flash_rma_ack(lc_ctrl_pkg::lc_tx_t val, int unsigned max_delay_cycles = 10);
+    import lc_ctrl_reg_pkg::NumRmaAckSigs;
+    int delay_lens[NumRmaAckSigs] = '{default: 0};
+    if (cfg.lc_ctrl_vif.flash_rma_ack_i != {NumRmaAckSigs{val}}) begin
+      for (int i = 0; i < NumRmaAckSigs; i++) begin
+        delay_lens[i] = $urandom_range(0, max_delay_cycles);
+      end
+    end
+    cfg.lc_ctrl_vif.set_flash_rma_ack(val, delay_lens);
+  endtask
+
   virtual task run_flash_rma_rsp(bit has_err = 0);
     forever begin
-      lc_ctrl_pkg::lc_tx_t rsp;
       wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
-      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
-          lc_ctrl_pkg::On;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-      cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+      set_flash_rma_ack((has_err && ($urandom & 1)) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On);
 
       wait(cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
-      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
-          lc_ctrl_pkg::Off;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-      cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+      set_flash_rma_ack((has_err && ($urandom & 1)) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off);
     end
   endtask
 
