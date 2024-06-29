@@ -978,7 +978,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `uvm_info(`gfn, $sformatf("run_flash_rma_rsp started off_val=%0x, on_val=%0x",
         off_val,on_val), UVM_MEDIUM)
 
-    cfg.lc_ctrl_vif.set_flash_rma_ack(off_val);
+    set_flash_rma_ack(off_val);
     forever begin
       lc_ctrl_pkg::lc_tx_t rsp = off_val;
       while (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On &&
@@ -986,19 +986,20 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         @(cfg.lc_ctrl_vif.flash_rma_req_o or err_inj);
         if(err_inj.flash_rma_rsp_mubi_err &&
           cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On) begin
-          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+          set_flash_rma_ack(rsp);
         end
       end
       if (err_inj.flash_rma_error_rsp) begin
-        // Error stream just on -> off -> on... every clock cycle
+        // Error stream just alternates flash_rma_ack_i every clock cycle. To get the timing right
+        // with this, we set max_delay_cycles to zero.
         rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        set_flash_rma_ack(rsp, .max_delay_cycles(0));
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
         // Normal behaviour
         rsp = On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        set_flash_rma_ack(rsp);
         // We can only inject error values after state FlashRmaSt starts
         if(err_inj.flash_rma_rsp_mubi_err) begin
           wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {FlashRmaSt});
@@ -1006,20 +1007,20 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
           cfg.clk_rst_vif.wait_clks(FLASH_RMA_ACK_SYNC_FFS);
           // Now inject the bad value
           rsp = on_val;
-          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+          set_flash_rma_ack(rsp);
         end
       end
       wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
       if (err_inj.flash_rma_error_rsp) begin
         // Error stream just on -> off -> on... every clock cycle
         rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        set_flash_rma_ack(rsp, .max_delay_cycles(0));
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
         // Normal behaviour
         rsp = off_val;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        set_flash_rma_ack(rsp);
       end
     end
   endtask
