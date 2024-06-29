@@ -133,11 +133,27 @@ interface lc_ctrl_if (
     clk_byp_ack_i = val;
   endtask
 
-  task automatic set_flash_rma_ack(lc_tx_t val);
-    // TODO(#21268): Note that we do get some level of signal latencies between the channels due to
-    // CDC randomization. However, it would be good to introduce some more latency between the
-    // channels at least in some sequences in order to model the reality more closely.
-    flash_rma_ack_i = {NumRmaAckSigs{val}};
+  // Set the channels of flash_rma_ack_i to val.
+  //
+  // To allow a bit more staggering between the different channels than we already get from CDC, the
+  // caller may pass nonzero values in wait_lens (which defaults to all zero). The task will then
+  // wait the given number of clock cycles before updating the respective channel.
+  task automatic set_flash_rma_ack(lc_tx_t val, int delay_lens[NumRmaAckSigs] = '{default: 0});
+    fork begin : isolation_fork
+      for (int i = 0; i < NumRmaAckSigs; i++) begin
+        automatic int ii = i;
+        fork begin
+          repeat (delay_lens[ii]) @(posedge clk);
+          flash_rma_ack_i[ii] = val;
+        end
+        join_none
+      end
+      // Wait for each of the signals to be updated
+      wait fork;
+    end join
+
+    // Check that we have correctly waited for all the channels to update
+    `DV_CHECK_FATAL(flash_rma_ack_i == {NumRmaAckSigs{val}}, , "lc_ctrl_if")
   endtask
 
   function automatic void clear_static_signals();
