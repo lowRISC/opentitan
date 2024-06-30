@@ -1320,11 +1320,13 @@ module dma
     hw2reg.control.abort.de = hw2reg.status.aborted.de;
     hw2reg.control.abort.d  = 1'b0;
 
-    // interrupt management
-    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | test_done_interrupt;
+    // Interrupt management - Set interrupts only in the transition to done / error
+    hw2reg.intr_state.dma_done.de = (hw2reg.status.done.d & hw2reg.status.done.de) |
+                                    test_done_interrupt;
     hw2reg.intr_state.dma_done.d  = 1'b1;
 
-    hw2reg.intr_state.dma_error.de = reg2hw.status.error.q | test_error_interrupt;
+    hw2reg.intr_state.dma_error.de = (hw2reg.status.error.d & hw2reg.status.error.de) |
+                                     test_error_interrupt;
     hw2reg.intr_state.dma_error.d  = 1'b1;
 
     hw2reg.intr_state.dma_memory_buffer_limit.de = send_memory_buffer_limit_interrupt |
