@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::{align_of, size_of};
 use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 
 use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
@@ -372,6 +373,18 @@ impl Image {
             rsa_modulus.to_le_bytes(),
         )?);
         *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Updates the timestamp field to the current UTC time in milliseconds.
+    pub fn update_timestamp_to_now(&mut self) -> Result<()> {
+        let now: u64 = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("time since unix epoch")
+            .as_millis()
+            .try_into()?;
+
+        self.borrow_manifest_mut()?.timestamp = now.into();
         Ok(())
     }
 
