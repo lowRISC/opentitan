@@ -18,6 +18,8 @@
     </ccf-files>
   </information>
   <rules>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_sha3/u_pad/u_sentmsg_count/commit_i" entityType="toggle" excTime="1719821432" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_sha3/u_keccak/u_round_count/commit_i" entityType="toggle" excTime="1719821477" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_adaptp_ht/&quot;gen_cntrs[0]&quot;/u_prim_count_test_cnt/commit_i" entityType="toggle" excTime="1719566661" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_adaptp_ht/&quot;gen_cntrs[0]&quot;/u_prim_count_test_cnt/decr_en_i" entityType="toggle" excTime="1719566661" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_adaptp_ht/&quot;gen_cntrs[0]&quot;/u_prim_count_test_cnt/set_cnt_i" entityType="toggle" excTime="1719566661" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>

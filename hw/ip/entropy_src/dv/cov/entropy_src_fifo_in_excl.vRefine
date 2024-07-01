@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright lowRISC contributors (OpenTitan project).
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    SPDX-License-Identifier: Apache-2.0
+-->
+<!--
+    Excludes toggle coverage for the hard-coded inputs of `prim_fifo_sync`
+    instances within entropy_src.
+-->
+<refinement-file-root>
+  <information comment-version="1" creation-time="Mo 17 Jun 2024 10:27:21 CEST" creator="hakim" csCheck="true" modified-by="hakim" modify-time="Mo 01 Jul 2024 10:15:35 CEST" save-ref-method="seq" tool-version="Cadence Verisium Manager22.09" rules-signature-c="bb1ead821a9fb48143c5545d81a4f5">
+    <ucm-files>
+    </ucm-files>
+    <ccf-files>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_distr/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_distr/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esfinal/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esfinal/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esrng/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esrng/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_observe/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_observe/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/step_i" entityType="toggle" excTime="1719821593" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_distr/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_distr/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esfinal/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esfinal/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esrng/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_esrng/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_observe/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_rptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_prim_fifo_sync_observe/gen_normal_fifo/u_fifo_cnt/gen_secure_ptrs/u_wptr/decr_en_i" entityType="toggle" excTime="1719821561" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+  </rules>
+  <cache-map>
+  </cache-map>
+</refinement-file-root>

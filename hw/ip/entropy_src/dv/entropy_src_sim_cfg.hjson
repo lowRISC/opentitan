@@ -53,6 +53,8 @@
   "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cnt_out_excl.vRefine",
   // Output of --cov-unr, with `prim_count` error exclusions removed.
   "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_UNR.vRefine",
+  // Waive toggle coverage for the prim_fifo_sync inputs.
+  "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_fifo_in_excl.vRefine",
   ]
 
   // Default UVM test and seq class name.
