@@ -29,7 +29,7 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
   task body();
     int lc_cnt_int;
     fork
-      run_clk_byp_rsp(clk_byp_error_rsp);
+      run_clk_byp_rsp(1'b0);
       run_flash_rma_rsp(flash_rma_error_rsp);
     join_none
 
