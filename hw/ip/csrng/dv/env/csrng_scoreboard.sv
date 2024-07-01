@@ -24,6 +24,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   bit [SW_APP:0] genbits_fips_previous;
   bit [SW_APP:0] genbits_fips_received = '0;
   mubi4_t [SW_APP:0] cmd_flag0_previous;
+  csrng_pkg::csrng_cmd_sts_e cmd_sts[NUM_HW_APPS + 1] = {(NUM_HW_APPS+1){CMD_STS_SUCCESS}};
 
   virtual csrng_cov_if                                    cov_vif;
 
@@ -89,6 +90,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         cs_data[i] = '0;
         es_data[i] = '0;
         fips[i] = '0;
+        cmd_sts[i] = CMD_STS_SUCCESS;
       end
       csr_spinwait(.ptr(ral.ctrl.enable),
                    .exp_data(MuBi4True),
@@ -198,7 +200,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
               cs_item[SW_APP].flags = MuBi4False;
             end
             cs_item[SW_APP].glen  = item.a_data[23:12];
-
             more_cmd_data = cs_item[SW_APP].clen;
           end
           else begin
@@ -256,7 +257,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
               end
               default: begin
                 if (!GEN) begin
-                  `uvm_fatal(`gfn, $sformatf("Invalid csrng.acmd: 0x%0h", cs_item[SW_APP].acmd))
+                  // Expect the next acknowledgement to return an error.
+                  cmd_sts[SW_APP] = CMD_STS_INVALID_ACMD;
                 end
               end
             endcase
@@ -279,6 +281,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
+        if (data_phase_read) begin
+          // If a command is being acknowledged, predict the SW command status
+          // to be equal to the pre-calculated value in cmd_sts.
+          if (item.d_data[2] == 1'b1) begin
+            `DV_CHECK_EQ(cmd_sts[SW_APP], item.d_data[5:3])
+          end
+        end
       end
       "genbits_vld": begin
         do_read_check = 1'b0;
@@ -429,6 +438,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [63:0]                  mod_val;
 
     `uvm_info(`gfn, $sformatf("Update of app %0d", app), UVM_MEDIUM)
+    // If the instance was not instantiated then the next acknowledge should return an error.
+    if (!cfg.status[app]) begin
+      cmd_sts[app] = CMD_STS_INVALID_CMD_SEQ;
+    end
     for (int i = 0; i < (CSRNG_BUS_WIDTH/BLOCK_LEN); i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
         inc = (cfg.v[app][CTR_LEN-1:0] + 1);
@@ -461,15 +474,19 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit compliance_previous = cfg.compliance[app];
 
     `uvm_info(`gfn, $sformatf("Instantiate of app %0d", app), UVM_MEDIUM)
+    // If the instance was already instantiated then the next acknowledge should return an error.
+    if (cfg.status[app]) begin
+      cmd_sts[app] = CMD_STS_INVALID_CMD_SEQ;
+    end
     seed_material  = entropy_input ^ additional_input;
     cfg.key[app] = 'h0;
     cfg.v[app]   = 'h0;
+    cfg.status[app]         = 1'b1;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b0;
     fips_force = `gmv(ral.fips_force);
     cfg.compliance[app]     = fips || ((`gmv(ral.ctrl.fips_force_enable) == MuBi4True) &&
                                        fips_force[app]);
-    cfg.status[app]         = 1'b1;
     cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
 
@@ -511,6 +528,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [63:0]                    mod_val;
 
     `uvm_info(`gfn, $sformatf("Generate of app %0d", app), UVM_MEDIUM)
+    if (cfg.reseed_counter[app] == `gmv(ral.reseed_interval)) begin
+      cmd_sts[app] = CMD_STS_RESEED_CNT_EXCEEDED;
+    end
     if (additional_input) begin
       ctr_drbg_update(app, additional_input);
     end
@@ -588,6 +608,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       cs_data[app] = '0;
       es_data[app] = '0;
       fips[app]    = 1'b0;
+
+      // Check if the command status response is equal to the expected status.
+      `DV_CHECK_EQ_FATAL(cs_item[app].status, cmd_sts[app])
       for (int i = 0; i < cs_item[app].cmd_data_q.size(); i++) begin
         cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
                        cs_data[app];
@@ -656,7 +679,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           ctr_drbg_update(app, cs_data[app]);
         end
         default: begin
-          `uvm_fatal(`gfn, $sformatf("Invalid csrng_acmd: 0x%0h", cs_item[app].acmd))
+          // Expect the next acknowledgement to return an error.
+          cmd_sts[app] = CMD_STS_INVALID_ACMD;
         end
       endcase
     end

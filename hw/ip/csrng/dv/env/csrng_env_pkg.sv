@@ -37,6 +37,7 @@ package csrng_env_pkg;
   parameter uint     RSD_CTR_LEN             = 32;
   parameter uint     LC_HW_DEBUG_EN_ON_DATA  = 123456789;
   parameter uint     LC_HW_DEBUG_EN_OFF_DATA = 987654321;
+  parameter uint     CSRNG_CMD_STS_WIDTH     = 3;
 
   // types
   typedef enum int {
