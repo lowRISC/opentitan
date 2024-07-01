@@ -46,6 +46,9 @@ class i2c_target_tx_stretch_ctrl_vseq extends i2c_target_runtime_base_vseq;
 
     // Disable ACK-Control mode
     cfg.ack_ctrl_en = 0;
+
+    // Use a basic Agent sequence that drives all items it is passed.
+    i2c_base_seq::type_id::set_type_override(i2c_target_base_seq::get_type());
   endtask: pre_start
 
   // Augment the base-class initialization to enable our feature under test.
