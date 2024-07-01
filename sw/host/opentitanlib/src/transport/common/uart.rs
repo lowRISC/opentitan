@@ -21,6 +21,7 @@ pub struct SerialPortUart {
     flow_control: Cell<FlowControl>,
     port: RefCell<TTYPort>,
     rxbuf: RefCell<VecDeque<u8>>,
+    pseudo_baud: Cell<u32>,
 }
 
 impl SerialPortUart {
@@ -40,6 +41,20 @@ impl SerialPortUart {
             flow_control: Cell::new(FlowControl::None),
             port: RefCell::new(port),
             rxbuf: RefCell::default(),
+            pseudo_baud: Cell::new(0),
+        })
+    }
+
+    /// Open a pseudo port (e.g. a verilator pts device).
+    pub fn open_pseudo(port_name: &str, baud: u32) -> Result<Self> {
+        let port = TTYPort::open(&serialport::new(port_name, baud))
+            .map_err(|e| UartError::OpenError(e.to_string()))?;
+        flock_serial(&port, port_name)?;
+        Ok(SerialPortUart {
+            flow_control: Cell::new(FlowControl::None),
+            port: RefCell::new(port),
+            rxbuf: RefCell::default(),
+            pseudo_baud: Cell::new(baud),
         })
     }
 
@@ -89,15 +104,25 @@ impl SerialPortUart {
 impl Uart for SerialPortUart {
     /// Returns the UART baudrate.  May return zero for virtual UARTs.
     fn get_baudrate(&self) -> Result<u32> {
-        self.port.borrow().baud_rate().context("getting baudrate")
+        let pseudo = self.pseudo_baud.get();
+        if pseudo == 0 {
+            self.port.borrow().baud_rate().context("getting baudrate")
+        } else {
+            Ok(pseudo)
+        }
     }
 
     /// Sets the UART baudrate.  May do nothing for virtual UARTs.
     fn set_baudrate(&self, baudrate: u32) -> Result<()> {
-        self.port
-            .borrow_mut()
-            .set_baud_rate(baudrate)
-            .map_err(|_| UartError::InvalidSpeed(baudrate))?;
+        let pseudo = self.pseudo_baud.get();
+        if pseudo == 0 {
+            self.port
+                .borrow_mut()
+                .set_baud_rate(baudrate)
+                .map_err(|_| UartError::InvalidSpeed(baudrate))?;
+        } else {
+            self.pseudo_baud.set(baudrate);
+        }
         Ok(())
     }
 
