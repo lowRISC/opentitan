@@ -506,6 +506,14 @@ impl Image {
     pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
         self.map_signed_region(|v| sha256::sha256(v))
     }
+
+    pub fn update_timestamp(&mut self, timestamp:u64)->Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+
+        manifest.timestamp.timestamp_high = (timestamp >> 32) as u32;
+        manifest.timestamp.timestamp_low = timestamp as u32;
+        Ok(())
+    }
 }
 
 impl ImageAssembler {

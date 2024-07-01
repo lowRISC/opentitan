@@ -150,6 +150,9 @@ pub struct ManifestUpdateCommand {
     /// Filename to write the output to instead of updating the input file.
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Set manifest timestamp field to this u64 value.
+    #[arg(long)]
+    timestamp: Option<u64>,
 }
 
 fn load_rsa_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
@@ -214,6 +217,11 @@ impl CommandDispatch for ManifestUpdateCommand {
             if let Some(private) = private {
                 rsa_private_key = Some(private);
             }
+        }
+
+        // If requested, set the timestamp field first, before any signing.
+        if let Some(timestamp) = &self.timestamp {
+            image.update_timestamp(*timestamp)?;
         }
 
         // Load / write ECDSA public key.
