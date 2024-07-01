@@ -86,11 +86,9 @@ class csrng_monitor extends dv_base_monitor #(
                 cs_item.fips_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_fips);
               end
             end
-            if (!(cs_item.acmd inside {csrng_pkg::INV, csrng_pkg::GENB,
-                                       csrng_pkg::GENU})) begin
-              cfg.vif.wait_cmd_ack_or_rst_n();
-            end
+            cfg.vif.wait_cmd_ack_or_rst_n();
           join_any
+          cs_item.status = cfg.vif.mon_cb.cmd_rsp.csrng_rsp_sts;
           `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()),
                     UVM_HIGH)
           analysis_port.write(cs_item);
