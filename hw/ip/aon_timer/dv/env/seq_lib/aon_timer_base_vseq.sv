@@ -46,6 +46,9 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // When set randomisation tries to set the count and threshold so that the bite is likely hit:
   rand bit          aim_bite;
 
+  // Used to randomly configure wdog_ctrl.pause_in_sleep
+  rand bit          wdog_ctrl_pause_in_sleep;
+
   constraint thold_count_c {
     solve wkup_count_gap, wkup_thold before wkup_count;
     solve aim_bite, wdog_count_gap, wdog_bark_thold, wdog_bite_thold before wdog_count;
