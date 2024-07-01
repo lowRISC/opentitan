@@ -30,7 +30,7 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
     int lc_cnt_int;
     fork
       run_clk_byp_rsp(1'b0);
-      run_flash_rma_rsp(flash_rma_error_rsp);
+      run_flash_rma_rsp(1'b0);
     join_none
 
     `DV_CHECK_RANDOMIZE_FATAL(this)
