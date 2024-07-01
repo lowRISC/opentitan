@@ -76,23 +76,24 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
                                               logic [TL_DW-1:0] msg_len_upper,
                                               logic [TL_DW-1:0] cfg          );
     hmac_en: coverpoint cfg[HmacEn];
+    // Message length is byte granularity
     msg_len_lower_cp: coverpoint (msg_len_lower) {
       bins len_0         = {0};     // Empty message
-      bins len_1         = {1};     // One byte message
-      bins len_511       = {511};   // One block in SHA-2 256, -1 byte
+      bins len_8         = {8};     // One byte message
+      bins len_504       = {504};   // One block in SHA-2 256, -1 byte
       bins len_512       = {512};   // One block in SHA-2 256
-      bins len_513       = {513};   // One block in SHA-2 256, +1 byte
-      bins len_1023      = {1023};  // One block in SHA-2 384/512 or two in SHA-2 256, -1 byte
+      bins len_520       = {520};   // One block in SHA-2 256, +1 byte
+      bins len_1016      = {1016};  // One block in SHA-2 384/512 or two in SHA-2 256, -1 byte
       bins len_1024      = {1024};  // One block in SHA-2 384/512 or two in SHA-2 256
-      bins len_1025      = {1025};  // One block in SHA-2 384/512 or two in SHA-2 256, +1 byte
-      bins len_2047      = {2047};  // Two blocks in SHA-2 384/512, -1 byte
+      bins len_1032      = {1032};  // One block in SHA-2 384/512 or two in SHA-2 256, +1 byte
+      bins len_2040      = {2040};  // Two blocks in SHA-2 384/512, -1 byte
       bins len_2048      = {2048};  // Two blocks in SHA-2 384/512
-      bins len_2049      = {2049};  // Two blocks in SHA-2 384/512, +1 byte
+      bins len_2056      = {2056};  // Two blocks in SHA-2 384/512, +1 byte
       // Any others than the one defined above
-      bins len_2_510     = {[2:510]};
-      bins len_514_1022  = {[514:1022]};
-      bins len_1026_2046 = {[1026:2046]};
-      bins len_2050_plus = {[2050:$]};
+      bins len_2_510     = {[16:496]};
+      bins len_514_1022  = {[528:1008]};
+      bins len_1026_2046 = {[1040:2032]};
+      bins len_2050_plus = {[2064:$]};
     }
     // Ensure that message length upper register has been used once at least
     msg_len_upper_cp: coverpoint (msg_len_upper) {
