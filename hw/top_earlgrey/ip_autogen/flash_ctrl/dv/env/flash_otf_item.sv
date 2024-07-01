@@ -74,7 +74,7 @@ class flash_otf_item extends uvm_object;
     this.cmd.prog_sel = flash_prog_sel_e'(item.req.prog_type);
     this.cmd.addr = item.req.addr;
     // cmd.addr can be modified to call bkdr mem access
-    // So we need to exptra copy of mem interface address
+    // So we need an extra copy of mem interface address.
     this.mem_addr = item.req.addr;
     fq = item.fq;
   endfunction // get_from_phy

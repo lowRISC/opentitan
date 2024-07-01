@@ -464,12 +464,12 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     string name = $sformatf("lm_wdata_comp_bank%0d", bank);
 
     if (rcv.mem_addr == exp.req.addr) begin
-      `dv_info($sformatf("addr match %x", rcv.mem_addr), UVM_MEDIUM, name)
+      `dv_info($sformatf("addr match 0x%x, bank %0d", rcv.mem_addr << 3, bank), UVM_MEDIUM, name)
     end else begin
       `DV_CHECK_EQ(rcv.mem_addr, exp.req.addr,,, name)
     end
 
-   // check if this is page erase
+    // check if this is page erase
     if (exp.req.pg_erase_req | exp.req.bk_erase_req) begin
       int cnt = 0;
       int cnt_max = (exp.req.bk_erase_req)? 65536 : 256;
@@ -504,49 +504,54 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         exp.req.addr++;
         @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
       end
-   end else begin
-     bit skip_comp = 0;
-     entry.bank = bank;
-     entry.addr = (rcv.mem_addr<<3);
-     entry.part = cfg.get_part(rcv.mem_part, rcv.mem_info_sel);
+    end else begin
+      bit skip_comp = 0;
+      entry.bank = bank;
+      entry.addr = (rcv.mem_addr<<3);
+      entry.part = cfg.get_part(rcv.mem_part, rcv.mem_info_sel);
 
-     if (rcv.mem_part == FlashPartData) begin
-       if (data_mem[bank].exists(rcv.mem_addr)) begin
-         corrupt_entry[entry] = 1;
-         rd_data = data_mem[bank][rcv.mem_addr];
-         if (cfg.seq_cfg.use_vendor_flash == 0) begin
-           exp.req.prog_full_data &= rd_data;
-         end else begin
-           skip_comp = 1;
-         end
-         data_mem[bank].delete(rcv.mem_addr);
-       end
-       data_mem[bank][rcv.mem_addr] = exp.req.prog_full_data;
-     end else begin
+      // Skip data comparison if there are error injections on this address.
+      if (cfg.address_has_ecc_injected_error(entry.addr, entry.part)) begin
+        skip_comp = 1;
+      end
+
+      if (rcv.mem_part == FlashPartData) begin
+        if (data_mem[bank].exists(rcv.mem_addr)) begin
+          corrupt_entry[entry] = 1;
+          rd_data = data_mem[bank][rcv.mem_addr];
+          if (cfg.seq_cfg.use_vendor_flash == 0) begin
+            exp.req.prog_full_data &= rd_data;
+          end else begin
+            skip_comp = 1;
+          end
+          data_mem[bank].delete(rcv.mem_addr);
+        end
+        data_mem[bank][rcv.mem_addr] = exp.req.prog_full_data;
+      end else begin
         `uvm_info(`gfn, $sformatf("bank:%0d sel:%0d addr:%x",
                                   bank, rcv.mem_info_sel, rcv.mem_addr), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("scb_rd_data:%x prog_data:%x",
              info_mem[bank][rcv.mem_info_sel][rcv.mem_addr], exp.req.prog_full_data), UVM_HIGH)
-       if (info_mem[bank][rcv.mem_info_sel].exists(rcv.mem_addr)) begin
-         corrupt_entry[entry] = 1;
-         rd_data = info_mem[bank][rcv.mem_info_sel][rcv.mem_addr];
-         if (cfg.seq_cfg.use_vendor_flash == 0) begin
-           exp.req.prog_full_data &= rd_data;
-         end else begin
-           skip_comp = 1;
-         end
-         info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
-       end
-       info_mem[bank][rcv.mem_info_sel][rcv.mem_addr] = exp.req.prog_full_data;
-     end
+        if (info_mem[bank][rcv.mem_info_sel].exists(rcv.mem_addr)) begin
+          corrupt_entry[entry] = 1;
+          rd_data = info_mem[bank][rcv.mem_info_sel][rcv.mem_addr];
+          if (cfg.seq_cfg.use_vendor_flash == 0) begin
+            exp.req.prog_full_data &= rd_data;
+          end else begin
+            skip_comp = 1;
+          end
+          info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
+        end
+        info_mem[bank][rcv.mem_info_sel][rcv.mem_addr] = exp.req.prog_full_data;
+      end
 
-     if (rcv.mem_wdata == exp.req.prog_full_data) begin
-       `dv_info($sformatf("wdata match %x", rcv.mem_wdata), UVM_MEDIUM, name)
-     end else begin
-       if (!skip_comp) begin
+      if (rcv.mem_wdata == exp.req.prog_full_data) begin
+        `dv_info($sformatf("wdata match %x", rcv.mem_wdata), UVM_MEDIUM, name)
+      end else begin
+        if (!skip_comp) begin
          `DV_CHECK_EQ(rcv.mem_wdata, exp.req.prog_full_data,,, name)
-       end
-     end
-   end
+        end
+      end
+    end
   endtask // lm_wdata_cmp
 endclass

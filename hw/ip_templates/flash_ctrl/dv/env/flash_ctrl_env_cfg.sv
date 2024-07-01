@@ -74,9 +74,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   // single bit error rate scale of 0~10. 10: 100%.
   int serr_pct = 0;
-  // Store single bit errored line to hash.
-  // If address exists, skip extra error injection to avoid
-  // creating multi bit errors
+  // Tracks lines with single bit errors.
   bit serr_addr_tbl[addr_t][flash_dv_part_e];
   int serr_cnt[NumBanks] = '{default : 0};
   // latest single bit error address
@@ -89,21 +87,23 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Double bit error test
   int derr_pct = 0;
   int derr_idx[76];
+  // Tracks lines with double bit errors.
   bit derr_addr_tbl[addr_t][flash_dv_part_e];
   bit derr_once = 0;
-  bit derr_created[2] = '{default : 0};
+  bit derr_created[read_task_e];
 
   // Mark out standing transactions.
   // With heavy concurrency, derr can be injected where read transaction
   // is issued and outstanding.
   // This can change error expectation of the first transaction.
-  // To handle this conrnercase, don't assert derr on outstanding read location.
+  // To handle this cornercase, don't assert derr on outstanding read location.
   int derr_otd[rd_cache_t];
 
   // Integrity ecc err
   int ierr_pct = 0;
+  // Tracks lines with integrity errors.
   bit ierr_addr_tbl[addr_t][flash_dv_part_e];
-  bit ierr_created[2] = '{default : 0};
+  bit ierr_created [read_task_e];
   // Transaction counters for otf
   int otf_ctrl_wr_sent = 0;
   int otf_ctrl_wr_rcvd = 0;
@@ -633,7 +633,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     if (is_upper) begin
       data = {wr_data, data[TL_DW-1:0]};
     end else begin
-      data = {data[flash_ctrl_pkg::DataWidth-:TL_DW], wr_data};
+      data = {data[flash_ctrl_pkg::DataWidth-1:TL_DW], wr_data};
     end
 
     // calculate truncated integrity
@@ -901,6 +901,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   function void flash_bit_flip(mem_bkdr_util _h, addr_t addr, int idx);
     bit [75:0] rdata;
     rdata = _h.read(addr);
+    `uvm_info(`gfn, $sformatf("ECC error injection at address 0x%x for bit %0d", addr, idx),
+              UVM_MEDIUM)
     rdata[idx] = ~rdata[idx];
     _h.write(addr, rdata);
   endfunction
@@ -921,9 +923,21 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       item.region =
                    get_region_from_info(mp_info[bank][part>>1][addr2page(addr)]);
     end
+    `uvm_info(`gfn, $sformatf("Integrity error injection at address 0x%x", addr), UVM_MEDIUM)
     item.scramble(exp_item.addr_key, exp_item.data_key, addr, 1, 1);
     _h.write(addr, item.fq[0]);
     item.clear_qs();
+  endfunction
+
+  // These functions are used to avoid the creation of lines with compounded bit errors.
+  local function bit address_has_some_injected_error(addr_t addr, flash_dv_part_e part);
+    return derr_addr_tbl[addr].exists(part) ||
+        ierr_addr_tbl[addr].exists(part) ||
+        serr_addr_tbl[addr].exists(part);
+  endfunction
+
+  virtual function bit address_has_ecc_injected_error(addr_t addr, flash_dv_part_e part);
+    return derr_addr_tbl[addr].exists(part) || serr_addr_tbl[addr].exists(part);
   endfunction
 
   // Create bit error following flash_op and ecc_mode.
@@ -935,178 +949,97 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     bit [75:0] rdata;
     int        size, is_odd, tail;
     int        err_idx;
-    addr_t aligned_addr, addr_cp;
+    // The flash word aligned address including the bank.
+    addr_t addr_cp;
     rd_cache_t rd_entry;
     string     name = $sformatf("add_bit_err from %s", caller.name);
 
     err_idx = -1;
-    aligned_addr = flash_op.addr;
-    // QW (8byte) align
-    aligned_addr[2:0] = 'h0;
     bank = flash_op.addr[OTFBankId];
     partition = flash_op.partition;
     rd_entry.bank = bank;
     rd_entry.part = partition;
-    rd_entry.addr = aligned_addr;
     // If address is not 8byte aligned, full 76bit has to be read.
     // This exception is identified using 4Byte address bit, (addr[2])
     // and size of 4byte word.
     is_odd = flash_op.addr[2];
     size = (flash_op.num_words + is_odd) / 2;
     tail = (flash_op.num_words + is_odd) % 2;
-    addr_cp = aligned_addr;
 
-    // Use per bank address.
-    aligned_addr[31:OTFBankId] = 'h0;
-    for (int i = 0; i < size; i++) begin
+    addr_cp = flash_op.addr;
+    // flash word is 8 byte aligned
+    addr_cp[2:0] = 'h0;
+
+    // Include tail in the range of flash words to consider for error injection.
+    for (int i = 0; i < size + tail; i++) begin
       // For controller initiated read, in the worst case, each word (8byte) can belong to
       // different memory protection region.
       // So before inject bit error, we have to check per word ecc_en
       // to make sure bit error injection become valid.
       // If ecc is not enabled, bit error cannot be detected.
       if (caller == ReadTaskHost || (item.ctrl_rd_region_q[i].ecc_en == MuBi4True)) begin
+        addr_t per_bank_addr = addr_cp[OTFBankId-1:0];
         rd_entry.addr = addr_cp;
         if (ecc_mode == FlashSerrTestMode) begin
           err_idx = get_serr_idx();
           if (err_idx >= 0) begin
-            // Make sure only assert error only once per address
-            if (!serr_addr_tbl[addr_cp].exists(partition)) begin
-              serr_addr_tbl[addr_cp][partition] = 1;
-              `uvm_info(name,
-                        $sformatf({"single bit error is inserted at line:%0d(0x%x) %s",
-                                   " the databit[%0d]"},
-                                  i, addr_cp, partition.name, err_idx), UVM_MEDIUM)
-              flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
-            end
+            // Do not inject more than one error per address.
+            if (address_has_some_injected_error(addr_cp, partition)) continue;
+            serr_addr_tbl[addr_cp][partition] = 1;
+            `DV_CHECK_EQ(addr_cp[OTFBankId-1:0], per_bank_addr[OTFBankId-1:0])
+            `uvm_info(name, $sformatf(
+                      "single bit error inserted at line:%0d(0x%x) %s bit %0d",
+                      i, addr_cp, partition.name, err_idx), UVM_MEDIUM)
+            flash_bit_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, err_idx);
           end
         end else if (ecc_mode == FlashIerrTestMode) begin
           randcase
             ierr_pct: begin
-              if (derr_otd.exists(rd_entry)) continue;
-              if (ierr_addr_tbl[addr_cp].exists(partition)) begin
-                ierr_created[caller] = 1;
-              end else if (!otf_read_entry.hash.exists(rd_entry)) begin
-                ierr_addr_tbl[addr_cp][partition] = 1;
-                ierr_created[caller] = 1;
-                `uvm_info(name,
-                          $sformatf("icv error [%s][%0d] is inserted at line:%0d rd_entry:%p",
-                                    partition.name, bank, i, rd_entry), UVM_MEDIUM)
-                flash_icv_flip(mem_bkdr_util_h[partition][bank],
-                               aligned_addr, partition, bank, item);
-              end
-            end
-            10-ierr_pct: begin
-            end
-          endcase // randcase
-        end else begin // if (ecc_mode == FlashIerrTestMode)
-          derr_idx.shuffle();
-          err_idx = 0;
-          if (derr_otd.exists(rd_entry)) continue;
-          if (derr_once == 0 || (derr_created[0] | derr_created[1]) == 0 ) begin
-            repeat (2) begin
-              randcase
-                derr_pct: begin
-                  `uvm_info(name,
-                            $sformatf({"addr:0x%x %x bit error is inserted at line:%0d",
-                                       " the databit[%0d] err_idx:%0d"},
-                                      aligned_addr, addr_cp, i, derr_idx[err_idx], err_idx),
-                            UVM_MEDIUM)
-
-                  // If address already had a single bit error, just skip this line.
-                  // We could add another bit error instead of modeling read cache behavior.
-                  if (err_idx != 0 || serr_addr_tbl[addr_cp].exists(partition) == 0) begin
-                    if (!otf_read_entry.hash.exists(rd_entry)) begin
-                      flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr,
-                                     derr_idx[err_idx++]);
-                      serr_addr_tbl[addr_cp][partition] = 1;
-                    end
-                  end
-                  if (err_idx == 2) begin
-                    `uvm_info(name, $sformatf(" addr:0x%x is added to derr_addr_tbl", addr_cp),
-                              UVM_MEDIUM)
-                    derr_addr_tbl[addr_cp][partition] = 1;
-                    derr_created[caller] = 1;
-                  end
-                end
-                10-derr_pct: begin
-                end
-              endcase // randcase
-            end // repeat (2)
-          end // if (derr_once == 0 || (|derr_created) == 0)
-        end // else: !if(ecc_mode == FlashIerrTestMode)
-        aligned_addr += 8;
-        addr_cp[OTFBankId-1:0] = aligned_addr[OTFBankId-1:0];
-      end
-    end // for (int i = 0; i < size; i++)
-
-    if (tail) begin
-      if (caller == ReadTaskHost || (item.ctrl_rd_region_q[size].ecc_en == MuBi4True)) begin
-        rd_entry.addr = addr_cp;
-        if (ecc_mode == FlashSerrTestMode) begin
-          err_idx = get_serr_idx();
-          if (err_idx >= 0) begin
-            if (!serr_addr_tbl[addr_cp].exists(partition)) begin
-              serr_addr_tbl[addr_cp][partition] = 1;
+              if (derr_otd.exists(rd_entry) ||
+                  address_has_some_injected_error(addr_cp, partition) ||
+                  ierr_addr_tbl[addr_cp].exists(partition)) continue;
+              ierr_addr_tbl[addr_cp][partition] = 1;
+              ierr_created[caller] = 1;
               `uvm_info(name,
-                        $sformatf({"last:single bit error is inserted at line:%0d(0x%x) %s",
-                                   " the databit[%0d]"},
-                                  size, addr_cp, partition.name, err_idx), UVM_MEDIUM)
-              flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
-            end
-          end
-        end else if (ecc_mode == FlashIerrTestMode) begin
-          randcase
-            ierr_pct: begin
-              if (derr_otd.exists(rd_entry)) return;
-              if (ierr_addr_tbl[addr_cp].exists(partition)) begin
-                ierr_created[caller] = 1;
-              end else if (!otf_read_entry.hash.exists(rd_entry)) begin
-                ierr_addr_tbl[addr_cp][partition] = 1;
-                ierr_created[caller] = 1;
-                `uvm_info(name,
-                          $sformatf("last:icv error[%s][%0d] is inserted at line:%0d rd_entry:%p",
-                                    partition.name, bank, size, rd_entry), UVM_MEDIUM)
-                flash_icv_flip(mem_bkdr_util_h[partition][bank],
-                               aligned_addr, partition, bank, item);
-              end
+                        $sformatf("icv error [%s][%0d] inserted at line:%0d rd_entry:%p",
+                                  partition.name, bank, i, rd_entry), UVM_MEDIUM)
+              flash_icv_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, partition, bank,
+                             item);
             end
             10-ierr_pct: begin
             end
           endcase // randcase
-        end else begin // if (ecc_mode == FlashIerrTestMode)
+        end else begin // ecc_mode == FlashDerrTestMode)
           derr_idx.shuffle();
           err_idx = 0;
-          if (derr_otd.exists(rd_entry)) return;
-          if (derr_once == 0 || (derr_created[0] | derr_created[1]) == 0) begin
-            repeat (2) begin
-              randcase
-                derr_pct: begin
-                  `uvm_info(name,
-                            $sformatf({"last:addr:0x%x %x bit error is inserted at line:%0d",
-                                       " the databit[%0d] err_idx:%0d"},
-                                      aligned_addr, addr_cp, size, derr_idx[err_idx], err_idx),
-                            UVM_MEDIUM)
-                  if (err_idx != 0 || serr_addr_tbl[addr_cp].exists(partition) == 0) begin
-                    if (!otf_read_entry.hash.exists(rd_entry)) begin
-                      flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr,
-                                     derr_idx[err_idx++]);
-                      serr_addr_tbl[addr_cp][partition] = 1;
-                    end
-                  end
-                  if (err_idx == 2) begin
-                    derr_addr_tbl[addr_cp][partition] = 1;
-                    derr_created[caller] = 1;
-                  end
-                end
-                10-derr_pct: begin
-                end
-              endcase // randcase
-            end
+          if (derr_otd.exists(rd_entry) ||
+              address_has_some_injected_error(addr_cp, partition) ||
+              otf_read_entry.hash.exists(rd_entry)) continue;
+          if (derr_once == 0 || derr_created[caller] == 1'b0) begin
+            randcase
+              derr_pct: begin
+                `uvm_info(name, $sformatf(
+                          "addr:0x%x bit error inserted at line %0d bit %0d (err_idx:%0d)",
+                          per_bank_addr, i, derr_idx[err_idx], err_idx),
+                          UVM_MEDIUM)
+                flash_bit_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, derr_idx[0]);
+                flash_bit_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, derr_idx[1]);
+                derr_addr_tbl[addr_cp][partition] = 1;
+                `uvm_info(name, $sformatf(" addr:0x%x is added to derr_addr_tbl", addr_cp),
+                          UVM_MEDIUM)
+                derr_created[caller] = 1;
+              end
+              10-derr_pct: begin
+              end
+            endcase // randcase
           end // if (derr_once == 0 || (|derr_created) == 0)
-        end // else: !if(ecc_mode == FlashIerrTestMode)
+        end
+        addr_cp += 8;
+        // Don't change banks.
+        if (addr_cp[OTFBankId] != bank) break;
       end
-    end // if (tail)
-  endfunction // add_bit_err
+    end
+  endfunction : add_bit_err
 
   // Increase outstanding table entry.
   function void inc_otd_tbl(bit bank, addr_t addr, flash_dv_part_e part);
