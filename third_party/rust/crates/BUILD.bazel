@@ -116,8 +116,14 @@ alias(
 )
 
 alias(
+    name = "ecdsa",
+    actual = "@crate_index__ecdsa-0.16.9//:ecdsa",
+    tags = ["manual"],
+)
+
+alias(
     name = "elliptic-curve",
-    actual = "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
+    actual = "@crate_index__elliptic-curve-0.13.8//:elliptic_curve",
     tags = ["manual"],
 )
 
@@ -285,13 +291,13 @@ alias(
 
 alias(
     name = "proc-macro2",
-    actual = "@crate_index__proc-macro2-1.0.67//:proc_macro2",
+    actual = "@crate_index__proc-macro2-1.0.85//:proc_macro2",
     tags = ["manual"],
 )
 
 alias(
     name = "quote",
-    actual = "@crate_index__quote-1.0.26//:quote",
+    actual = "@crate_index__quote-1.0.36//:quote",
     tags = ["manual"],
 )
 
@@ -315,13 +321,19 @@ alias(
 
 alias(
     name = "rsa",
-    actual = "@crate_index__rsa-0.8.2//:rsa",
+    actual = "@crate_index__rsa-0.9.6//:rsa",
     tags = ["manual"],
 )
 
 alias(
     name = "rusb",
     actual = "@crate_index__rusb-0.8.1//:rusb",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rust-crypto",
+    actual = "@crate_index__rust-crypto-0.2.36//:crypto",
     tags = ["manual"],
 )
 
@@ -411,7 +423,7 @@ alias(
 
 alias(
     name = "zerocopy",
-    actual = "@crate_index__zerocopy-0.5.0//:zerocopy",
+    actual = "@crate_index__zerocopy-0.7.34//:zerocopy",
     tags = ["manual"],
 )
 

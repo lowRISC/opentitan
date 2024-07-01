@@ -7,7 +7,7 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
-use structopt::StructOpt;
+use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::otp_ctrl::DaiParam;
@@ -20,16 +20,17 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::otp_ctrl::OtpParam;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     sram_program: SramProgramParams,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "600s",
         help = "Console receive timeout",
     )]
@@ -149,7 +150,7 @@ fn manuf_cp_ast_text_execution_read_otp(opts: &Opts, transport: &TransportWrappe
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 

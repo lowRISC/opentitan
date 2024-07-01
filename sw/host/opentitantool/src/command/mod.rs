@@ -5,6 +5,7 @@
 pub mod bootstrap;
 pub mod clear_bitstream;
 pub mod console;
+pub mod ecdsa;
 pub mod emulator;
 pub mod fpga;
 pub mod gpio;
@@ -14,6 +15,7 @@ pub mod image;
 pub mod load_bitstream;
 pub mod otp;
 pub mod reset_sam3x;
+pub mod rom_patch;
 pub mod rsa;
 pub mod set_pll;
 pub mod spi;
@@ -25,22 +27,22 @@ pub mod update_usr_access;
 pub mod version;
 
 use anyhow::Result;
+use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// No Operation.
 pub struct NoOp {
-    #[structopt(
-        short = "d",
+    #[arg(
+        short = 'd',
         long,
         help = "Delay execution",
-        parse(try_from_str = humantime::parse_duration)
+        value_parser = humantime::parse_duration
     )]
     delay: Option<Duration>,
 }

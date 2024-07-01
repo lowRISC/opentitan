@@ -7,7 +7,8 @@ use rsa::pkcs1::{
     self, DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey, EncodeRsaPublicKey,
 };
 use rsa::pkcs8::{self, DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey};
-use rsa::{PublicKeyParts, RsaPrivateKey, RsaPublicKey};
+use rsa::traits::{PrivateKeyParts, PublicKeyParts};
+use rsa::{RsaPrivateKey, RsaPublicKey};
 use std::convert::{AsRef, TryFrom};
 use std::path::Path;
 

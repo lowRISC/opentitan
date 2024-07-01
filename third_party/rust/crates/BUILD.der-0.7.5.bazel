@@ -83,6 +83,6 @@ rust_library(
     deps = [
         "@crate_index__const-oid-0.9.2//:const_oid",
         "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
-        "@crate_index__zeroize-1.6.0//:zeroize",
+        "@crate_index__zeroize-1.8.1//:zeroize",
     ],
 )

@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde_annotate::Annotate;
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
 
 use crate::app::{StagedProgressBar, TransportWrapper};
 use crate::bootstrap::{self, BootstrapOptions};
 
 /// Load a program into the chip.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct Bootstrap {
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub options: BootstrapOptions,
 
-    #[structopt(long, help = "RV32 test binary to load")]
+    #[arg(long, help = "RV32 test binary to load")]
     pub bootstrap: Option<PathBuf>,
 }
 

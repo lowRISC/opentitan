@@ -12,6 +12,7 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:directories",
         "@crate_index//:env_logger",
         "@crate_index//:erased-serde",
@@ -24,7 +25,6 @@ rust_binary(
         "@crate_index//:serde",
         "@crate_index//:serde_json",
         "@crate_index//:shellwords",
-        "@crate_index//:structopt",
         "@crate_index//:thiserror",
     ],
 )

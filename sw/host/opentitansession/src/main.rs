@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, bail, Result};
+use clap::Parser;
 use directories::{BaseDirs, ProjectDirs};
 use erased_serde::Serialize;
 use log::LevelFilter;
@@ -18,49 +19,49 @@ use std::path::PathBuf;
 use std::process::{self, ChildStdout, Command, Stdio};
 use std::str::FromStr;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::proxy::SessionHandler;
 use opentitanlib::{backend, util};
 
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "opentitansession",
     about = "A tool for interacting with OpenTitan chips."
 )]
 struct Opts {
-    #[structopt(
+    #[arg(
         long,
+        value_parser = PathBuf::from_str,
         default_value = "config",
         help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
     )]
     rcfile: PathBuf,
 
-    #[structopt(long, default_value = "off")]
+    #[arg(long, default_value = "off")]
     logging: LevelFilter,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     backend_opts: backend::BackendOpts,
 
-    #[structopt(
+    #[arg(
         long,
         help = "Stop a running session, optionally combine with --listen_port for disambiguation"
     )]
     stop: bool,
 
-    #[structopt(
+    #[arg(
         long,
         help = "Optional, defaults to 9900 or nearest higher available port."
     )]
     listen_port: Option<u16>,
 
-    #[structopt(
+    #[arg(
         long,
         help = "Start session, staying in foreground (do not daemonize).  Session process will terminate if its parent dies."
     )]
     foreground: bool,
 
-    #[structopt(
+    #[arg(
         long,
         help = "Internal, used to tell the child process to run as a daemon."
     )]
@@ -112,7 +113,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
 
     // Extend the argument list with all remaining command line arguments.
     arguments.extend(args);
-    let opts = Opts::from_iter(&arguments);
+    let opts = Opts::parse_from(&arguments);
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.
         let _ = env_logger::Builder::from_default_env()
@@ -229,7 +230,7 @@ fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<B
 }
 
 fn main() -> Result<()> {
-    let opts = parse_command_line(Opts::from_args(), args_os())?;
+    let opts = parse_command_line(Opts::parse(), args_os())?;
 
     if opts.foreground {
         // Start session process in foreground (do not daemonize).  The session process will

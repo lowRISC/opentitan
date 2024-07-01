@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Apache-2.0 OR MIT
 # ])
 
 rust_library(
-    name = "syn",
+    name = "elliptic_curve",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,21 +29,25 @@ rust_library(
         ],
     ),
     crate_features = [
-        "clone-impls",
+        "alloc",
+        "arithmetic",
         "default",
-        "derive",
-        "full",
-        "parsing",
-        "printing",
-        "proc-macro",
-        "quote",
+        "digest",
+        "ecdh",
+        "ff",
+        "group",
+        "hazmat",
+        "pem",
+        "pkcs8",
+        "sec1",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=syn",
+        "crate-name=elliptic-curve",
         "manual",
         "noclippy",
         "norustfmt",
@@ -82,10 +86,20 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.0.15",
+    version = "0.13.8",
     deps = [
-        "@crate_index__proc-macro2-1.0.67//:proc_macro2",
-        "@crate_index__quote-1.0.26//:quote",
-        "@crate_index__unicode-ident-1.0.6//:unicode_ident",
+        "@crate_index__base16ct-0.2.0//:base16ct",
+        "@crate_index__crypto-bigint-0.5.2//:crypto_bigint",
+        "@crate_index__digest-0.10.7//:digest",
+        "@crate_index__ff-0.13.0//:ff",
+        "@crate_index__generic-array-0.14.6//:generic_array",
+        "@crate_index__group-0.13.0//:group",
+        "@crate_index__hkdf-0.12.3//:hkdf",
+        "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
+        "@crate_index__pkcs8-0.10.2//:pkcs8",
+        "@crate_index__rand_core-0.6.4//:rand_core",
+        "@crate_index__sec1-0.7.1//:sec1",
+        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__zeroize-1.8.1//:zeroize",
     ],
 )
