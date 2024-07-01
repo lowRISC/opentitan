@@ -1035,6 +1035,7 @@
           desc: "A Host-Mode active transaction has terminated due to lost arbitration."
         }
       ]
+      tags: ["excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "TARGET_EVENTS"
       desc: '''
@@ -1068,6 +1069,7 @@
           desc: "A Target-Mode read transfer has terminated due to lost arbitration."
         }
       ]
+      tags: ["excl:CsrAllTests:CsrExclCheck"]
     }
   ]
 }
