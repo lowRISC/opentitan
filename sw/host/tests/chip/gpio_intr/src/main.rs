@@ -208,8 +208,7 @@ fn gpio_read(
     Ok(())
 }
 
-fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     log::info!(
         "Configuring pinmux for {:?}",
         opts.init.backend_opts.interface
@@ -217,7 +216,7 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, Some(&config.input), Some(&config.output))?;
+    PinmuxConfig::configure(uart, Some(&config.input), Some(&config.output))?;
 
     log::info!("Configuring debugger GPIOs as inputs");
     // The outputs (with respect to pinmux config) correspond to the input pins on the debug board.
@@ -228,63 +227,62 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     log::info!("Enabling outputs on the DUT");
-    GpioSet::set_input_noise_filter(&*uart, u32::MAX, 1)?;
-    GpioSet::set_enabled_all(&*uart, u32::MAX)?;
+    GpioSet::set_input_noise_filter(uart, u32::MAX, 1)?;
+    GpioSet::set_enabled_all(uart, u32::MAX)?;
 
     // Output level high test
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "high".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, u32::MAX)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "high".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, u32::MAX)?;
     log::info!("test: output level high test");
 
     // Walking 1
     for i in 16..30 {
-        gpio_write(transport, &*uart, 1 << i, &config.output, 0)?;
+        gpio_write(transport, uart, 1 << i, &config.output, 0)?;
     }
-    GpioSet::irq_disable_all(&*uart, u32::MAX)?;
+    GpioSet::irq_disable_all(uart, u32::MAX)?;
 
     // Output Rising Edge test
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "rising".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, u32::MAX)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "rising".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, u32::MAX)?;
 
     log::info!("test: output rising edge test");
 
     // Walking 1
     for i in 16..30 {
-        gpio_write(transport, &*uart, 1 << i, &config.output, 0)?;
+        gpio_write(transport, uart, 1 << i, &config.output, 0)?;
     }
-    GpioSet::irq_disable_all(&*uart, u32::MAX)?;
+    GpioSet::irq_disable_all(uart, u32::MAX)?;
 
     // Output level low test
     log::info!("test: output level low test");
-    GpioSet::write_all(&*uart, u32::MAX)?;
+    GpioSet::write_all(uart, u32::MAX)?;
 
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "low".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, 0x1E7E_0000)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "low".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, 0x1E7E_0000)?;
     // Walking 0
     for i in 0..32 {
-        gpio_write(transport, &*uart, 1 << i, &config.output, 1)?;
+        gpio_write(transport, uart, 1 << i, &config.output, 1)?;
     }
-    GpioSet::irq_disable_all(&*uart, u32::MAX)?;
+    GpioSet::irq_disable_all(uart, u32::MAX)?;
 
     // Output Falling Edge test
     log::info!("test: output falling edge test");
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "falling".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, u32::MAX)?;
-    GpioSet::write_all(&*uart, u32::MAX)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "falling".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, u32::MAX)?;
+    GpioSet::write_all(uart, u32::MAX)?;
 
     // Walking 0
     for i in 0..32 {
-        gpio_write(transport, &*uart, 1 << i, &config.output, 1)?;
+        gpio_write(transport, uart, 1 << i, &config.output, 1)?;
     }
     Ok(())
 }
 
-fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     log::info!(
         "Configuring pinmux for {:?}",
         opts.init.backend_opts.interface
@@ -292,7 +290,7 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, Some(&config.input), None)?;
+    PinmuxConfig::configure(uart, Some(&config.input), None)?;
 
     log::info!("Configuring debugger GPIOs as outputs");
     // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
@@ -303,8 +301,8 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     log::info!("Disabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0x0)?;
-    GpioSet::set_input_noise_filter(&*uart, u32::MAX, 1)?;
+    GpioSet::set_enabled_all(uart, 0x0)?;
+    GpioSet::set_input_noise_filter(uart, u32::MAX, 1)?;
 
     // Initialize pins to 0
     for pin in config.input.values() {
@@ -313,14 +311,14 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Input level high test
     log::info!("test: input level high test");
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "high".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, u32::MAX)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "high".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, u32::MAX)?;
     // Walking 1
     for i in 16..30 {
-        gpio_read(transport, &*uart, 1 << i, &config.input, 0)?;
+        gpio_read(transport, uart, 1 << i, &config.input, 0)?;
     }
-    GpioSet::irq_disable_all(&*uart, u32::MAX)?;
+    GpioSet::irq_disable_all(uart, u32::MAX)?;
 
     // Initialize pins to 0
     for pin in config.input.values() {
@@ -328,14 +326,14 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
     // Input Rising Edge test
     log::info!("test: input rising edge test");
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "rising".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, u32::MAX)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "rising".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, u32::MAX)?;
     // Walking 1
     for i in 16..30 {
-        gpio_read(transport, &*uart, 1 << i, &config.input, 0)?;
+        gpio_read(transport, uart, 1 << i, &config.input, 0)?;
     }
-    GpioSet::irq_disable_all(&*uart, u32::MAX)?;
+    GpioSet::irq_disable_all(uart, u32::MAX)?;
 
     // Initialize pins to 1
     for pin in config.input.values() {
@@ -344,14 +342,14 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Input level low test
     log::info!("test: input level low test");
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "low".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, 0x1E7E_0000)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "low".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, 0x1E7E_0000)?;
     // Walking 0
     for i in 16..30 {
-        gpio_read(transport, &*uart, 1 << i, &config.input, 1)?;
+        gpio_read(transport, uart, 1 << i, &config.input, 1)?;
     }
-    GpioSet::irq_disable_all(&*uart, u32::MAX)?;
+    GpioSet::irq_disable_all(uart, u32::MAX)?;
 
     // Initialize pins to 1
     for pin in config.input.values() {
@@ -359,13 +357,13 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
     // Input Falling Edge test
     log::info!("test: input falling edge test");
-    GpioSet::irq_set_trigger(&*uart, u32::MAX, "falling".into())?;
-    GpioSet::irq_acknowledge_all(&*uart)?;
-    GpioSet::irq_restore_all(&*uart, u32::MAX)?;
+    GpioSet::irq_set_trigger(uart, u32::MAX, "falling".into())?;
+    GpioSet::irq_acknowledge_all(uart)?;
+    GpioSet::irq_restore_all(uart, u32::MAX)?;
 
     // Walking 0
     for i in 16..30 {
-        gpio_read(transport, &*uart, 1 << i, &config.input, 1)?;
+        gpio_read(transport, uart, 1 << i, &config.input, 1)?;
     }
     Ok(())
 }
@@ -379,7 +377,7 @@ fn main() -> Result<()> {
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"gpio_intr_test [^\r\n]*", opts.timeout)?;
 
-    execute_test!(test_gpio_inputs, &opts, &transport);
-    execute_test!(test_gpio_outputs, &opts, &transport);
+    execute_test!(test_gpio_inputs, &opts, &transport, &*uart);
+    execute_test!(test_gpio_outputs, &opts, &transport, &*uart);
     Ok(())
 }
