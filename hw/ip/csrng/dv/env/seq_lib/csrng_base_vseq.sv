@@ -93,7 +93,7 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1,
-                    csrng_cmd_sts_e exp_sts=CMD_STS_SUCCESS, bit await_genbits=1'b1);
+                    csrng_pkg::csrng_cmd_sts_e exp_sts=CMD_STS_SUCCESS, bit await_genbits=1'b1);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
