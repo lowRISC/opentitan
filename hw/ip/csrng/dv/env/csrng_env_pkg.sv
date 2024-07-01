@@ -37,8 +37,17 @@ package csrng_env_pkg;
   parameter uint     RSD_CTR_LEN             = 32;
   parameter uint     LC_HW_DEBUG_EN_ON_DATA  = 123456789;
   parameter uint     LC_HW_DEBUG_EN_OFF_DATA = 987654321;
+  parameter uint     CSRNG_CMD_STS_WIDTH     = 3;
 
   // types
+  typedef enum logic [CSRNG_CMD_STS_WIDTH-1:0] {
+    CMD_STS_SUCCESS              = 'h0,
+    CMD_STS_INVALID_ACMD         = 'h1,
+    CMD_STS_INVALID_GEN_CMD      = 'h2,
+    CMD_STS_INVALID_CMD_SEQ      = 'h3,
+    CMD_STS_RESEED_CNT_EXCEEDED  = 'h4
+  } csrng_cmd_sts_e;
+
   typedef enum int {
     CmdReqDone = 0,
     EntropyReq = 1,
