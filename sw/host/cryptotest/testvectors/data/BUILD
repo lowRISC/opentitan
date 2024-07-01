@@ -714,25 +714,31 @@ WYCHEPROOF_RSA_PSS_SUFFIXES = {
     ]
 ]
 
-run_binary(
-    name = "rsp_sphincsplus_shake256_128s_simple_json",
-    srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:sphincsplus_schema.json",
-        "@sphincsplus_kat//:sphincs-shake256-128s-simple/PQCsignKAT_64.rsp",
-    ],
-    outs = [":rsp_sphincsplus_shake256_128s_simple.json"],
-    args = [
-        "--src",
-        "$(location @sphincsplus_kat//:sphincs-shake256-128s-simple/PQCsignKAT_64.rsp)",
-        "--dst",
-        "$(location :rsp_sphincsplus_shake256_128s_simple.json)",
-        "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:sphincsplus_schema.json)",
-        "--hash_alg",
-        "shake-256",
-    ],
-    tool = "//sw/host/cryptotest/testvectors/parsers:rsp_sphincsplus_parser",
-)
+[
+    run_binary(
+        name = "rsp_sphincsplus_{}_128s_simple_json".format(hash_alg),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:sphincsplus_schema.json",
+            "@sphincsplus_{h}_kat//:sphincs-{h}-128s-simple/PQCsignKAT_64.rsp".format(h = hash_alg),
+        ],
+        outs = [":rsp_sphincsplus_{}_128s_simple.json".format(hash_alg)],
+        args = [
+            "--src",
+            "$(location @sphincsplus_{h}_kat//:sphincs-{h}-128s-simple/PQCsignKAT_64.rsp)".format(h = hash_alg),
+            "--dst",
+            "$(location :rsp_sphincsplus_{}_128s_simple.json)".format(hash_alg),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:sphincsplus_schema.json)",
+            "--hash_alg",
+            hash_arg,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:rsp_sphincsplus_parser",
+    )
+    for (hash_alg, hash_arg) in [
+        ("sha256", "sha-256"),
+        ("shake256", "shake-256"),
+    ]
+]
 
 run_binary(
     name = "hjson_kmac",

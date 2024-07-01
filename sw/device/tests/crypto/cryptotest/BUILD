@@ -365,6 +365,25 @@ cryptotest(
     test_vectors = KMAC_TESTVECTOR_TARGETS,
 )
 
+SPHINCSPLUS_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:{}".format(target)
+    for target in [
+        "rsp_sphincsplus_sha256_128s_simple_json",
+    ]
+]
+
+SPHINCSPLUS_TESTVECTOR_ARGS = " ".join([
+    "--sphincsplus-json=\"$(rootpath {})\"".format(target)
+    for target in SPHINCSPLUS_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sphincsplus_kat",
+    test_args = SPHINCSPLUS_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/sphincsplus_kat:harness",
+    test_vectors = SPHINCSPLUS_TESTVECTOR_TARGETS,
+)
+
 # Use the following command to run the entire test suite in a given target:
 # $ export OT_EXEC_ENV=silicon_owner_sival_rom_ext
 # $ bazel test --//signing:token=//signing/tokens:cloud_kms \
@@ -392,5 +411,6 @@ test_suite(
         ":sha512_kat",
         ":shake128_kat",
         ":shake256_kat",
+        ":sphincsplus_kat",
     ],
 )

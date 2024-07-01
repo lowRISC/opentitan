@@ -134,6 +134,13 @@ cc_library(
 )
 
 cc_library(
+    name = "sphincsplus_commands",
+    srcs = ["sphincsplus_commands.c"],
+    hdrs = ["sphincsplus_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "trigger_sca_commands",
     srcs = ["trigger_sca_commands.c"],
     hdrs = ["trigger_sca_commands.h"],
