@@ -120,6 +120,9 @@ pub struct ManifestUpdateCommand {
     /// Update the length field of the manifest automatically.
     #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     update_length: bool,
+    /// Treat an unspecified timestamp field in manifest file as current UTC value.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
+    empty_manifest_timestamp_is_now: bool,
     /// Filename for an external ECDSA signature file.
     #[arg(long)]
     ecdsa_signature: Option<PathBuf>,
@@ -190,7 +193,11 @@ impl CommandDispatch for ManifestUpdateCommand {
         if let Some(manifest) = &self.manifest {
             let def = ManifestSpec::read_from_file(manifest)?;
             update_length = !def.has_length();
+            let update_timestamp = self.empty_manifest_timestamp_is_now && !def.has_timestamp();
             image.overwrite_manifest(def)?;
+            if update_timestamp {
+                image.update_timestamp_to_now()?;
+            }
         }
 
         // Load the manifest extension HJSON definition and update the image.
