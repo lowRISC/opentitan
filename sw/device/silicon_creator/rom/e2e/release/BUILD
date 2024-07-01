@@ -36,6 +36,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
     },
     fpga = fpga_params(
         otp = ":otp_img_sigverify_spx_rma",
