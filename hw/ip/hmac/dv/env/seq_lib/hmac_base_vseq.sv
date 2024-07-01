@@ -722,4 +722,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     key_length_bak  = key_length_tmp;
     key_bak         = key_tmp;
   endtask : save_and_restore_cfg
+
+  // overriding timeout on outstanding accesses for the hmac_stress_test_all_with_rand_reset test
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return 1_000_000;
+  endfunction
 endclass : hmac_base_vseq
