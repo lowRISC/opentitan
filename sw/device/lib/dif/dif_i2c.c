@@ -22,12 +22,17 @@ static uint16_t round_up_divide(uint32_t a, uint32_t b) {
   return (uint16_t)result;
 }
 
-static void spin_while_status_bit(const dif_i2c_t *i2c, uint32_t bit,
+static dif_result_t spin_while_status_bit(const dif_i2c_t *i2c, uint32_t bit,
                                   bool set) {
   uint32_t reg = 0;
+  uint32_t count = 1000;
   do {
     reg = mmio_region_read32(i2c->base_addr, I2C_STATUS_REG_OFFSET);
+    if (count-- == 0) {
+      return kDifOutOfRange;
+    }
   } while (bitfield_bit32_read(reg, bit) == set);
+  return kDifOk;
 }
 
 /**
@@ -672,7 +677,7 @@ dif_result_t dif_i2c_read_bytes(const dif_i2c_t *i2c, size_t size,
   }
 
   while (size--) {
-    spin_while_status_bit(i2c, I2C_STATUS_RXEMPTY_BIT, /*set*/ true);
+    DIF_RETURN_IF_ERROR(spin_while_status_bit(i2c, I2C_STATUS_RXEMPTY_BIT, /*set*/ true));
     uint32_t values = mmio_region_read32(i2c->base_addr, I2C_RDATA_REG_OFFSET);
     *(buffer++) = (uint8_t)bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
   }
@@ -717,7 +722,7 @@ dif_result_t dif_i2c_write_bytes_raw(const dif_i2c_t *i2c, size_t size,
     uint32_t reg =
         bitfield_field32_write(fmt_byte, I2C_FDATA_FBYTE_FIELD, bytes[i]);
     mmio_region_write32(i2c->base_addr, I2C_FDATA_REG_OFFSET, reg);
-    spin_while_status_bit(i2c, I2C_STATUS_FMTFULL_BIT, /*set*/ true);
+    DIF_RETURN_IF_ERROR(spin_while_status_bit(i2c, I2C_STATUS_FMTFULL_BIT, /*set*/ true));
   }
 
   return kDifOk;
