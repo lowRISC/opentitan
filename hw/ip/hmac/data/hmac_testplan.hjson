@@ -49,7 +49,8 @@
             DUT returns correct data.'''
       stage: V2
       tests: ["hmac_test_sha256_vectors", "hmac_test_sha384_vectors",
-              "hmac_test_sha512_vectors", "hmac_test_hmac_vectors"]
+              "hmac_test_sha512_vectors", "hmac_test_hmac256_vectors",
+              "hmac_test_hmac384_vectors", "hmac_test_hmac512_vectors"]
     }
     {
       name: burst_wr
@@ -126,7 +127,7 @@
       tests: ["hmac_smoke", "hmac_long_msg", "hmac_back_pressure", "hmac_burst_wr",
               "hmac_stress_all", "hmac_datapath_stress", "hmac_error", "hmac_wipe_secret",
               "hmac_test_sha256_vectors", "hmac_test_sha384_vectors", "hmac_test_sha512_vectors",
-              "hmac_test_hmac_vectors"]
+              "hmac_test_hmac256_vectors", "hmac_test_hmac384_vectors", "hmac_test_hmac512_vectors"]
     }
     {
       name: stress_all
