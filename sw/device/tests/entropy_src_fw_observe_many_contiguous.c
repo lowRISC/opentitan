@@ -73,6 +73,20 @@ static status_t let_observe_fifo_overflow(uint32_t timeout_usec) {
   return OK_STATUS();
 }
 
+/**
+ * Determine whether health tested entropy bits have been dropped before the
+ * postht FIFO due to conditioner back pressure.
+ */
+bool postht_entropy_dropped(void) {
+  uint32_t recov_alert_sts;
+  CHECK_DIF_OK(
+      dif_entropy_src_get_recoverable_alerts(&entropy_src, &recov_alert_sts));
+  bool dropped = bitfield_bit32_read(
+      recov_alert_sts,
+      ENTROPY_SRC_RECOV_ALERT_STS_POSTHT_ENTROPY_DROP_ALERT_BIT);
+  return dropped;
+}
+
 // Configure the entropy complex.
 static status_t entropy_config(
     dif_entropy_src_single_bit_mode_t single_bit_mode) {
@@ -136,6 +150,10 @@ status_t firmware_override_observe(
     // Collect samples from the the observe FIFO.
     uint32_t words_to_read = nr_sample_words;
     uint32_t *sample_buffer_ptr = sample_buffer;
+    // Clear POSTHT_ENTROPY_DROP_ALERT bit.
+    TRY(dif_entropy_src_clear_recoverable_alerts(
+        &entropy_src,
+        ENTROPY_SRC_RECOV_ALERT_STS_POSTHT_ENTROPY_DROP_ALERT_BIT));
     // Drain FIFO to make sure we get contiguous samples.
     LOG_INFO("drain observe FIFO overflow...");
     TRY(entropy_testutils_drain_observe_fifo(&entropy_src));
@@ -143,6 +161,10 @@ status_t firmware_override_observe(
     ibex_timeout_t tmo = ibex_timeout_init(timeout_usec);
     while (words_to_read > 0 && !ibex_timeout_check(&tmo)) {
       size_t len = words_to_read;
+      // Make sure no health tested entropy bits were dropped before the
+      // postht FIFO.
+      TRY_CHECK(!postht_entropy_dropped(),
+                "entropy bits dropped before postht FIFO");
       // Check FIFO did not overflow during collection.
       TRY_CHECK(!entropy_src_fifo_has_overflowed(),
                 "observe FIFO overflowed during collection");
@@ -152,7 +174,6 @@ status_t firmware_override_observe(
       words_to_read -= len;
     }
     TRY_CHECK(!ibex_timeout_check(&tmo), "did not collect samples in time");
-    // Make sure the FIFO did not overflow.
     uint64_t elapsed = ibex_timeout_elapsed(&tmo);
     uint64_t freq =
         udiv64_slow((uint64_t)nr_samples * (uint64_t)1000000, elapsed, NULL);
