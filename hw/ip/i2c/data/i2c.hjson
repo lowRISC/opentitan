@@ -419,6 +419,8 @@
           desc: "Do not signal an exception if the current byte is not ACK'd"
         }
       ]
+      tags: [// FIFO can fill up due to write check accesses, and then fail an assertion upon timeout on full.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "FIFO_CTRL"
       desc: "I2C FIFO control register"
@@ -867,6 +869,8 @@
       fields: [
         { bits: "7:0" }
       ]
+      tags: [// FIFO can fill up due to write check accesses, and then fail an assertion upon timeout on full.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "HOST_TIMEOUT_CTRL"
       desc: '''
