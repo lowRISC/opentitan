@@ -57,7 +57,15 @@ enum {
   /*
    * The number of entries of the esfinal FIFO of ENTROPY_SRC.
    */
-  kEntropySrcEsFinalFifoDepth = 3
+  kEntropySrcEsFinalFifoDepth = 3,
+  /*
+   * Parameters for controlling the waiting until the esfinal FIFO fills up.
+   * Under normal operating conditions, producing one seed takes roughly 4 ms.
+   * We wait for at most 32 ms for 6 seeds (2 for the EDNs, 1 for CSRNG, 3 to
+   * fill the esfinal FIFO).
+   */
+  kEsFinalFifoIterationTimeUs = 100,
+  kEsFinalFifoNumIterationsMax = 320
 };
 
 /**
@@ -394,8 +402,21 @@ static void entropy_config(void) {
   // Wait for the esfinal FIFO inside ENTROPY_SRC to fill up. This will reduce
   // the wait time for ENTROPY_SRC seeds and instead increase contention on the
   // CSRNG and EDN hardware pipelines which are in focus for this test.
+  //
+  // Under normal operating conditions, producing one seed takes roughly 4 ms.
+  // We wait for at most 32 ms for 6 seeds (2 for the EDNs, 1 for CSRNG, 3 to
+  // fill the esfinal FIFO). In the reduced_freq varaint of the test, raw
+  // entropy may be generated at a lower rate. Depending on the configuration of
+  // the EDNs, the constant entropy consumption of AST may prevent the esfinal
+  // FIFO from filling up.
   dif_entropy_src_debug_state_t debug_state;
+  uint32_t iter_count = 0;
   do {
+    busy_spin_micros(kEsFinalFifoIterationTimeUs);
+    if (++iter_count >= kEsFinalFifoNumIterationsMax) {
+      LOG_INFO("Continuing without esfinal FIFO being full");
+      break;
+    }
     CHECK_DIF_OK(dif_entropy_src_get_debug_state(&entropy_src, &debug_state));
   } while (debug_state.entropy_fifo_depth < kEntropySrcEsFinalFifoDepth);
 }
