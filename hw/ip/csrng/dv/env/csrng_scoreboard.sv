@@ -608,6 +608,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       cs_data[app] = '0;
       es_data[app] = '0;
       fips[app]    = 1'b0;
+
+      // Check if the command status response is equal to the expected status.
+      `DV_CHECK_EQ_FATAL(cs_item[app].status, cmd_sts[app])
       for (int i = 0; i < cs_item[app].cmd_data_q.size(); i++) begin
         cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
                        cs_data[app];
