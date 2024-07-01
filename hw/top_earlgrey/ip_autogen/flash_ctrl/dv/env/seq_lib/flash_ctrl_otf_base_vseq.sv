@@ -571,12 +571,14 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                     "Broke request below into one up to 0x%x with %0d bus words",
                     next_addr, split_wd), UVM_MEDIUM)
           print_flash_op(tmp_op, UVM_MEDIUM);
-          `uvm_info("prog_flash", "Broken request:", UVM_MEDIUM)
+          `uvm_info("prog_flash", "Broken request first", UVM_MEDIUM)
           print_flash_op(split_op, UVM_MEDIUM);
-          issue_prog_request(split_op, lcnt, in_err, store_prog_data);
           tmp_op.addr = {bank, next_addr};
           tmp_op.otf_addr = tmp_op.addr;
           tmp_op.num_words -= split_wd;
+          `uvm_info("prog_flash", "Broken request second", UVM_MEDIUM)
+          print_flash_op(tmp_op, UVM_MEDIUM);
+          issue_prog_request(split_op, lcnt, in_err, store_prog_data);
         end while (in_different_prog_win(tmp_op.otf_addr, end_addr));
         issue_prog_request(tmp_op, lcnt, in_err, store_prog_data);
       end else begin
@@ -729,9 +731,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
       cfg.otf_read_entry.insert(rd_entry, flash_op);
       if (cfg.derr_once) begin
-        derr_is_set = cfg.derr_created[0] & ~global_derr_is_set;
+        derr_is_set = cfg.derr_created[ReadTaskCtrl] & ~global_derr_is_set;
       end else begin
-        derr_is_set = cfg.derr_created[0];
+        derr_is_set = cfg.derr_created[ReadTaskCtrl];
       end
       if (derr_is_set) begin
         `uvm_info("read_flash", $sformatf("assert_derr 0x%x",
@@ -764,19 +766,20 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (!in_err) wait_flash_op_done();
       end
 
-      if (derr_is_set | cfg.ierr_created[0]) begin
-        `uvm_info("read_flash", $sformatf({"bank:%0d addr: %x(otf:%x) derr_is_set:%0d",
-                                          " ierr_created[0]:%0d"}, bank, flash_op.addr,
-                                          flash_op.otf_addr, derr_is_set, cfg.ierr_created[0])
-                  , UVM_MEDIUM)
+      if (derr_is_set | cfg.ierr_created[ReadTaskCtrl]) begin
+        `uvm_info("read_flash", $sformatf(
+                  "bank:%0d addr: %x(otf:%x) derr_is_set:%0d ierr_created[ReadTaskCtrl]:%0d",
+                  bank, flash_op.addr, flash_op.otf_addr, derr_is_set,
+                  cfg.ierr_created[ReadTaskCtrl]),
+                  UVM_MEDIUM)
         csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
         csr_rd_check(.ptr(ral.err_code.rd_err), .compare_value(1));
         reg_data = get_csr_val_with_updated_field(ral.err_code.rd_err, reg_data, 1);
         csr_wr(.ptr(ral.err_code), .value(reg_data));
         reg_data = get_csr_val_with_updated_field(ral.op_status.err, reg_data, 0);
         csr_wr(.ptr(ral.op_status), .value(reg_data));
-        if (cfg.derr_once == 0) cfg.derr_created[0] = 0;
-        cfg.ierr_created[0] = 0;
+        if (cfg.derr_once == 0) cfg.derr_created[ReadTaskCtrl] = 0;
+        cfg.ierr_created[ReadTaskCtrl] = 0;
       end
 
       exp_item.exp_err |= in_err;
@@ -891,9 +894,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             cfg.add_bit_err(flash_op, ReadTaskHost, exp_item);
           end
           if (cfg.derr_once) begin
-            derr_is_set = cfg.derr_created[1] & ~global_derr_is_set;
+            derr_is_set = cfg.derr_created[ReadTaskHost] & ~global_derr_is_set;
           end else begin
-            derr_is_set = (cfg.derr_created[1] | cfg.ierr_created[1]);
+            derr_is_set = (cfg.derr_created[ReadTaskHost] | cfg.ierr_created[ReadTaskHost]);
           end
 
           if (derr_is_set) begin
@@ -901,12 +904,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
             global_derr_is_set = 1;
           end
-          if (cfg.derr_once == 0) cfg.derr_created[1] = 0;
-          `uvm_info("direct_read", $sformatf("ierr_created[1]:%0d  derr_is_set:%0d exists:%0d",
-                                   cfg.ierr_created[1], derr_is_set,
-                                   cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
-                                   UVM_MEDIUM)
-          cfg.ierr_created[1] = 0;
+          if (cfg.derr_once == 0) cfg.derr_created[ReadTaskHost] = 0;
+          `uvm_info("direct_read", $sformatf(
+                    "ierr_created[ReadTaskHost]:%0d  derr_is_set:%0d exists:%0d",
+                    cfg.ierr_created[ReadTaskHost], derr_is_set,
+                    cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
+                    UVM_MEDIUM)
+          cfg.ierr_created[ReadTaskHost] = 0;
         end
         if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
       end
@@ -1131,21 +1135,22 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         wait_flash_op_done();
       end
 
-      if (derr_is_set | cfg.ierr_created[0]) begin
+      if (derr_is_set | cfg.ierr_created[ReadTaskCtrl]) begin
         uvm_reg_data_t ldata;
         csr_rd(.ptr(ral.err_code), .value(ldata), .backdoor(1));
-        `uvm_info("readback_flash", $sformatf({"bank:%0d addr: %x(otf:%x) derr_is_set:%0d",
-                                          " ierr_created[0]:%0d"}, bank, flash_op.addr,
-                                          flash_op.otf_addr, derr_is_set, cfg.ierr_created[0])
-                  , UVM_MEDIUM)
+        `uvm_info("readback_flash", $sformatf(
+                  "bank:%0d addr: %x(otf:%x) derr_is_set:%0d ierr_created[ReadTaskCtrl]:%0d",
+                  bank, flash_op.addr, flash_op.otf_addr, derr_is_set,
+                  cfg.ierr_created[ReadTaskCtrl]),
+                  UVM_MEDIUM)
         csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
         csr_rd_check(.ptr(ral.err_code.rd_err), .compare_value(1));
         reg_data = get_csr_val_with_updated_field(ral.err_code.rd_err, reg_data, 1);
         csr_wr(.ptr(ral.err_code), .value(reg_data));
         reg_data = get_csr_val_with_updated_field(ral.op_status.err, reg_data, 0);
         csr_wr(.ptr(ral.op_status), .value(reg_data));
-        if (cfg.derr_once == 0) cfg.derr_created[0] = 0;
-        cfg.ierr_created[0] = 0;
+        if (cfg.derr_once == 0) cfg.derr_created[ReadTaskCtrl] = 0;
+        cfg.ierr_created[ReadTaskCtrl] = 0;
       end
 
       exp_item.dq = flash_read_data;
@@ -1216,9 +1221,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
               cfg.add_bit_err(flash_op, ReadTaskHost, exp_item);
             end
             if (cfg.derr_once) begin
-              derr_is_set = cfg.derr_created[1] & ~global_derr_is_set;
+              derr_is_set = cfg.derr_created[ReadTaskHost] & ~global_derr_is_set;
             end else begin
-              derr_is_set = (cfg.derr_created[1] | cfg.ierr_created[1]);
+              derr_is_set = (cfg.derr_created[ReadTaskHost] | cfg.ierr_created[ReadTaskHost]);
             end
 
             if (derr_is_set) begin
@@ -1226,13 +1231,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
               cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
               global_derr_is_set = 1;
             end
-            if (cfg.derr_once == 0) cfg.derr_created[1] = 0;
+            if (cfg.derr_once == 0) cfg.derr_created[ReadTaskHost] = 0;
             `uvm_info("direct_readback",
-                      $sformatf("ierr_created[1]:%0d  derr_is_set:%0d exists:%0d",
-                                cfg.ierr_created[1], derr_is_set,
+                      $sformatf("ierr_created[ReadTaskHost]:%0d  derr_is_set:%0d exists:%0d",
+                                cfg.ierr_created[ReadTaskHost], derr_is_set,
                                 cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
                       UVM_MEDIUM)
-            cfg.ierr_created[1] = 0;
+            cfg.ierr_created[ReadTaskHost] = 0;
           end
           if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) begin
             derr = 1;
@@ -1398,11 +1403,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.scb_h.exp_alert_contd["recov_err"] = 0;
     cfg.scb_h.eflash_addr_phase_queue = '{};
 
-    cfg.derr_created[0] = 0;
-    cfg.derr_created[1] = 0;
     cfg.derr_addr_tbl.delete();
-    cfg.derr_otd.delete();
+    cfg.derr_created = '{default: ReadTaskCtrl};
     cfg.serr_addr_tbl.delete();
+    cfg.derr_otd.delete();
 
     cfg.scb_h.ecc_error_addr.delete();
     cfg.scb_h.in_error_addr.delete();
