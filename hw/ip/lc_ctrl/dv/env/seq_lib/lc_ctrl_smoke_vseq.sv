@@ -8,13 +8,11 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   `uvm_object_new
 
-  rand bit otp_prog_err, token_mismatch_err;
+  rand bit otp_prog_err;
   dec_lc_state_e next_lc_state;
   rand lc_token_t token_scramble;
 
   constraint otp_prog_err_c {otp_prog_err == 0;}
-
-  constraint token_mismatch_err_c {token_mismatch_err == 0;}
 
   virtual task pre_start();
     super.pre_start();
