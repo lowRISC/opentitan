@@ -105,7 +105,10 @@ impl Transport for Verilator {
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
-            inner.uart = Some(Rc::new(SerialPortUart::open(&self.uart_tty, UART_BAUD)?));
+            inner.uart = Some(Rc::new(SerialPortUart::open_pseudo(
+                &self.uart_tty,
+                UART_BAUD,
+            )?));
         }
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
