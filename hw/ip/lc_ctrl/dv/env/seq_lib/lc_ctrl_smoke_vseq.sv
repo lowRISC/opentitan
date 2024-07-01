@@ -8,14 +8,9 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   `uvm_object_new
 
-  rand bit flash_rma_error_rsp;
   rand bit otp_prog_err, token_mismatch_err;
   dec_lc_state_e next_lc_state;
   rand lc_token_t token_scramble;
-
-  constraint no_err_rsps_c {
-    flash_rma_error_rsp == 0;
-  }
 
   constraint otp_prog_err_c {otp_prog_err == 0;}
 
@@ -39,7 +34,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
     fork
       run_clk_byp_rsp(1'b0);
-      run_flash_rma_rsp(flash_rma_error_rsp);
+      run_flash_rma_rsp(1'b0);
     join_none
 
     //
