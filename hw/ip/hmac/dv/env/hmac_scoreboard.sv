@@ -8,7 +8,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   `uvm_component_utils(hmac_scoreboard)
   `uvm_component_new
 
-  bit             sha_en, fifo_empty, hmac_idle;
+  bit             sha_en, hmac_idle;
+  bit             fifo_empty;   // TODO(#23739): remove this line when RTL PR got merged
   bit [7:0]       msg_q[$];
   bit [7:0]       msg_part_q[$];  // Queue containing piece of the message if HASH is interrupted
   bit             hmac_start, hmac_process, hmac_stopped, hmac_continue;
@@ -20,21 +21,50 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [TL_DW-1:0] exp_digest[NUM_DIGESTS];
   bit [3:0]       previous_digest_size, expected_digest_size;
   bit             invalid_cfg;
-  event           sample_cfg;
+  bit [TL_DW-1:0] hmac_status_data;
+  bit [5:0]       hmac_fifo_depth;
+  bit             hmac_fifo_full;
+  bit             fifo_full_detected;
+  bit             hmac_fifo_empty;
+  bit             fifo_empty_intr;
+  bit             hmac_process_last;
+  bit             hmac_stopped_last;
+  bit             hmac_start_last;
+  bit             hmac_continue_last;
+  bit [TL_DW-1:0] intr_test;
+  bit [TL_DW-1:0] intr_state_exp;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-  endfunction
+  endfunction : build_phase
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    fork
-      hmac_process_fifo_status();
-      hmac_process_fifo_wr();
-      hmac_process_fifo_rd();
-      monitor_cov();
-    join_none
-  endtask
+    wait(cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+      // processes at the same level from the base classes
+      fork begin : isolation_fork
+        fork
+          begin : main_thread
+            fork
+              hmac_process_fifo_status();
+              hmac_process_fifo_wr();
+              hmac_process_fifo_rd();
+              hmac_intr_test();
+              monitor_cov();
+            join
+            wait fork;  // To ensure it will be killed only when the reset will occur
+          end
+          begin : reset_thread
+            wait(cfg.under_reset);
+          end
+        join_any
+        disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+      end join
+    end
+  endtask : run_phase
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
@@ -105,8 +135,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                   // only predict a new digest if configuration is valid and HMAC was indeed started
                   // otherwise previous digest is retained in CSRs
                   predict_digest(msg_q);
-                  // Trigger coverage sampling of CFG register
-                  -> sample_cfg;
                 end else begin
                   check_idle_o(1'b1);
                 end
@@ -133,14 +161,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (!sha_en && !invalid_cfg) begin
                 // so long as configuration is valid
                 update_err_intr_code(SwHashStartWhenShaDisabled);
+                // To cover when SHA is disabled
+                if (cfg.en_cov) cov.cfg_cg.sample(`gmv(ral.cfg));
               end else if (invalid_cfg) begin
                 // otherwise signalling invalid config takes priority
                 update_err_intr_code(SwInvalidConfig);
               end else begin
                 update_err_intr_code(SwHashStartWhenActive);
               end
-              // Trigger coverage sampling of CFG register
-              -> sample_cfg;
             end
             // Detect when stop has been triggered to store the current state, for Save and Restore
             // check
@@ -194,14 +222,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end
           end
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
-            bit [TL_DW-1:0] intr_state_exp = item.a_data | `gmv(ral.intr_state);
+            intr_test = item.a_data;
+            // As INTR_STATE.hmac_err and INTR_STATE.hmac_done are RW1C, we should get back the
+            // current state
+            intr_state_exp = intr_test | `gmv(ral.intr_state);
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
             if (cfg.en_cov) begin
               bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
               hmac_intr_e     intr;
               intr = intr.first;
               do begin
-                cov.intr_test_cg.sample(intr, item.a_data[intr], intr_en[intr],
+                cov.intr_test_cg.sample(intr, intr_test[intr], intr_en[intr],
                                         intr_state_exp[intr]);
                 intr = intr.next;
               end while (intr != intr.first);
@@ -225,6 +256,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               hmac_stopped = 0;             // Clear this to let digest comparison happening later
             end
             sha_en = item.a_data[ShaEn];
+            // Sample CFG when SHA is enabled
+            if (item.a_data[ShaEn]) begin
+              if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
+            end
           end
           "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7",
           "key_8", "key_9", "key_10", "key_11", "key_12", "key_13", "key_14", "key_15",
@@ -291,19 +326,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
     // predict status based on csr read addr channel
     if (!write && channel != DataChannel) begin
+      // Update expected status register
       if (csr_name == "status") begin
-        bit [5:0]       hmac_fifo_depth  = hmac_wr_cnt - hmac_rd_cnt;
-        bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
-        bit             hmac_fifo_empty  = hmac_fifo_depth == 0;
-        bit [TL_DW-1:0] hmac_status_data = (hmac_idle       << HmacStaIdle)         |
-                                           (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
-                                           (hmac_fifo_full  << HmacStaMsgFifoFull)  |
-                                           (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
+        hmac_status_data = (hmac_idle       << HmacStaIdle)         |
+                           (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
+                           (hmac_fifo_full  << HmacStaMsgFifoFull)  |
+                           (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
         void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
+      // Update expected FIFO Empty interrupt register
       end else if (csr_name == "intr_state") begin
-        if (fifo_empty && `gmv(ral.intr_state.fifo_empty) != 1) begin
-          void'(ral.intr_state.fifo_empty.predict(.value(1), .kind(UVM_PREDICT_READ)));
-        end
+        // Bitwise OR is needed to retrieve previous values as some fields are W1C
+        bit intr_state_empty = fifo_empty_intr | intr_test[HmacMsgFifoEmpty];
+        void'(ral.intr_state.fifo_empty.predict(.value(intr_state_empty), .kind(UVM_PREDICT_READ)));
       end
       return;
     end
@@ -339,9 +373,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           if (hmac_start && invalid_cfg) begin
             flush();
           end
-          // TODO(#21815): Verify FIFO empty status interrupt.
+          // TODO(#23739): remove the lines below when RTL PR got merged
+          // --- BEGIN ---
           fifo_empty = item.d_data[HmacMsgFifoEmpty];
           void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty), .kind(UVM_PREDICT_READ)));
+          // ---  END  ---
         end
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
         "digest_7", "digest_8", "digest_9", "digest_10", "digest_11", "digest_12", "digest_13",
@@ -450,11 +486,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       if (do_read_check) begin
         `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
                                   csr_name, `gmv(csr)), UVM_HIGH)
-        `DV_CHECK_EQ(`gmv(csr), item.d_data, csr_name)
+        `DV_CHECK_EQ(item.d_data, `gmv(csr), csr_name)
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
-  endtask
+  endtask : process_tl_access
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
@@ -464,16 +500,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     // Should be reinitialized before flushing as it will be used as a condition
     hmac_stopped = 0;
     flush();
-    key          = '{default:0};
-    exp_digest   = '{default:0};
-    fifo_empty   = ral.status.fifo_empty.get_reset();
-    hmac_idle    = ral.status.hmac_idle.get_reset();
-    hmac_start   = ral.cmd.hash_start.get_reset();
-    sha_en       = ral.cfg.sha_en.get_reset();
+    key             = '{default:0};
+    exp_digest      = '{default:0};
+    hmac_idle       = ral.status.hmac_idle.get_reset();
+    hmac_fifo_empty = ral.status.fifo_empty.get_reset();
+    hmac_fifo_full  = ral.status.fifo_full.get_reset();
+    hmac_fifo_depth = ral.status.fifo_depth.get_reset();
+    hmac_start      = ral.cmd.hash_start.get_reset();
+    sha_en          = ral.cfg.sha_en.get_reset();
+    hmac_stopped    = 0;
     msg_q.delete();
     msg_part_q.delete();
     cfg.wipe_secret_triggered = 0;
-  endfunction
+  endfunction : reset
 
   // clear variables after hmac_done
   virtual function void flush();
@@ -483,76 +522,149 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       hmac_rd_cnt  = 0;
       msg_q.delete();
     end
-    hmac_process  = 0;
-    hmac_start    = 0;
-    hmac_continue = 0;
-  endfunction
+    hmac_process        = 0;
+    hmac_start          = 0;
+    hmac_continue       = 0;
+    hmac_process_last   = 0;
+    hmac_start_last     = 0;
+    hmac_stopped_last   = 0;
+    hmac_continue_last  = 0;
+    fifo_full_detected  = 0;
+    fifo_empty_intr     = 0;
+    void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty_intr | intr_test[HmacMsgFifoEmpty]),
+                                            .kind(UVM_PREDICT_READ)));
+  endfunction : flush
 
   // hmac_wr_cnt was incremented every time when msg_q has 4 bytes streamed in
   // or when hash_process is triggered, and there are some remaining bytes
   // this task will also clear the msg_q queue once hmac_process is set
   virtual task hmac_process_fifo_wr();
-    fork
-      begin : insolation_fork_process_fifo_wr
-        forever begin
-          wait(!cfg.under_reset);
-          fork
-            begin : increase_wr_cnt
-              bit has_unprocessed_msg = 1;
-              wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() > 0));
-              // Ensure that current context has to be taken into account or skipped
-              if (cfg.sar_skip_ctxt) begin
-                wait(!cfg.sar_skip_ctxt);
-              end
-              // if hmac process is issued and there are still unprocessed word (can hold up to at
-              // most one word), then the hmac_wr_cnt will increment
-              // if all the written msgs have been process, will skip the counter incrementation
-              if (hmac_process) begin
-                if (msg_q.size() <= hmac_wr_cnt * 4) begin
-                  has_unprocessed_msg = 0;
-                end
-                msg_q.delete();
-                msg_part_q.delete();
-              end
-              if (sha_en && has_unprocessed_msg) begin
-                // if fifo full, tlul will not write next data until fifo has space again
-                if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH_WR) begin
-                  wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH_WR);
-                end
-                @(negedge cfg.clk_rst_vif.clk);
-                if (!hmac_stopped) begin
-                  hmac_wr_cnt++;
-                  `uvm_info(`gfn, $sformatf("increase wr cnt %0d", hmac_wr_cnt), UVM_HIGH)
-                  cfg.clk_rst_vif.wait_clks(HMAC_WR_WORD_CYCLE);
-                end
-              end
-            end
-            begin : reset_increase_wr_cnt
-              wait(cfg.under_reset);
-            end
-          join_any
-          disable fork;
-        end // end forever
+    bit has_unprocessed_msg;
+    forever begin
+      has_unprocessed_msg = 1;
+      wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() > 0));
+      // Ensure that current context has to be taken into account or skipped
+      if (cfg.sar_skip_ctxt) begin
+        wait(!cfg.sar_skip_ctxt);
       end
-    join
-  endtask
-
-  virtual task hmac_process_fifo_status();
-    forever @(hmac_wr_cnt, hmac_rd_cnt) begin
-      // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait 1ps to guarantee
-      // get both update
-      #1ps;
-      if ((hmac_wr_cnt == hmac_rd_cnt) && (hmac_wr_cnt != 0)) begin
-        // after the rd wr pointers are equal, wait one clk cycle for the fifo_empty register
-        // update, wait another clk cycle for the register value to reflect
-        if (!fifo_empty) begin
-          cfg.clk_rst_vif.wait_clks(2);
-          `uvm_info(`gfn, "predict interrupt fifo empty is set", UVM_HIGH)
-          fifo_empty = 1;
+      // if hmac process is issued and there are still unprocessed word (can hold up to at
+      // most one word), then the hmac_wr_cnt will increment
+      // if all the written msgs have been process, will skip the counter incrementation
+      if (hmac_process) begin
+        if (msg_q.size() <= hmac_wr_cnt * 4) begin
+          has_unprocessed_msg = 0;
+        end
+        msg_q.delete();
+        msg_part_q.delete();
+      end
+      if (sha_en && has_unprocessed_msg) begin
+        // if fifo full, tlul will not write next data until fifo has space again
+        if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH_WR) begin
+          wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH_WR);
+        end
+        @(negedge cfg.clk_rst_vif.clk);
+        if (!hmac_stopped) begin
+          hmac_wr_cnt++;
+          `uvm_info(`gfn, $sformatf("increase wr cnt %0d", hmac_wr_cnt), UVM_HIGH)
+          cfg.clk_rst_vif.wait_clks(HMAC_WR_WORD_CYCLE);
         end
       end
     end
-  endtask
+  endtask : hmac_process_fifo_wr
+
+  virtual task hmac_process_fifo_status();
+    bit pre_fifo_empty_intr;
+    forever @(hmac_wr_cnt, hmac_rd_cnt, hmac_process, hmac_start, hmac_stopped, hmac_continue) begin
+      // Store hmac_process and hmac_start to be able to detect when it goes up, as it could remain
+      // up for a while
+      bit hmac_process_posedge  = hmac_process & ~hmac_process_last;
+      bit hmac_start_posedge    = hmac_start & ~hmac_start_last;
+      bit hmac_stopped_posedge  = hmac_stopped & ~hmac_stopped_last;
+      bit hmac_continue_posedge = hmac_continue & ~hmac_continue_last;
+
+      // Store last value to be able to detect signal change
+      hmac_process_last  = hmac_process;
+      hmac_stopped_last  = hmac_stopped;
+      hmac_start_last    = hmac_start;
+      hmac_continue_last = hmac_continue;
+
+      // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait the clock rising edge
+      // to guarantee get both update and at the same time as the DUT
+      cfg.clk_rst_vif.wait_clks(1);
+
+      // Compute FIFO level flags
+      hmac_fifo_depth = hmac_wr_cnt - hmac_rd_cnt;
+      hmac_fifo_full  = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
+      hmac_fifo_empty = hmac_fifo_depth == 0;
+
+      // The FIFO empty interrupt is raised only if the message FIFO is actually writable by
+      // software, i.e., if all of the following conditions are met:
+      //   1- The HMAC block is not running in HMAC mode and performing the second round of
+      //      computing the final hash of the outer key as well as the result of the first round
+      //      using the inner key.
+      //   2- Software has not yet written the Process or Stop command to finish the hashing
+      //      operation.
+      //   3- The message FIFO must also have been full previously. Otherwise, the hardware empties
+      //      the FIFO faster than software can fill it and there is no point in interrupting the
+      //      software to inform it about the message FIFO being empty.
+      if (fifo_full_detected && hmac_fifo_empty) begin
+        pre_fifo_empty_intr = 1;
+      end else begin
+        pre_fifo_empty_intr = 0;
+      end
+
+      // Delay FIFO empty signal to be aligned with the DUT behavior
+      fork
+        begin
+          cfg.clk_rst_vif.wait_clks(1);
+          fifo_empty_intr = pre_fifo_empty_intr;
+        end
+      join_none
+
+      // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
+      // have the priority in case full is set at the same moment
+      if (hmac_fifo_empty || hmac_start_posedge || hmac_process_posedge ||
+          hmac_stopped_posedge || hmac_continue_posedge) begin
+        fifo_full_detected = 0;
+      end else if (hmac_fifo_full) begin
+        fifo_full_detected = 1;
+      end
+    end
+  endtask : hmac_process_fifo_status
+
+  // Spawn process to check interrupt pins in test mode
+  virtual task hmac_intr_test();
+    foreach (intr_test[intr_i]) begin
+      fork begin
+        hmac_intr_test_pin(intr_i);
+      end join_none
+    end
+  endtask : hmac_intr_test
+
+  // Check interrupt pins in test mode
+  virtual task hmac_intr_test_pin(int intr_i);
+    bit [TL_DW-1:0] intr_en;
+    hmac_intr_e     intr = hmac_intr_e'(intr_i);
+    forever @(intr_test[intr_i]) begin
+      intr_en = `gmv(ral.intr_enable);
+      if (intr_test[intr_i]) begin
+        // Check interrupt state pins only if enabled
+        if (intr_en[intr_i]) begin
+          fork: intr_pins
+            begin
+              wait(cfg.intr_vif.pins[intr_i]);
+              `uvm_info(`gfn, $sformatf("Detected interrupt on pin %s", intr.name()), UVM_HIGH)
+            end
+            begin
+              cfg.clk_rst_vif.wait_clks(100); // 100 clk cycles timeout
+              `uvm_error(`gfn, $sformatf("Wait pin interrupt timeout for %s", intr.name()))
+            end
+          join_any
+          disable fork;
+        end
+      end
+    end
+  endtask : hmac_intr_test_pin
 
   // internal msg_fifo model to check fifo status and interrupt.
   // monitor rd_cnt and wr_cnt on the negedge of the clk
@@ -560,104 +672,80 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   // 1). hmac process key: DUT will process the key first
   // 2). read cnt reaches FIFO_MAX: DUT will process msg in the FIFO
   virtual task hmac_process_fifo_rd();
-    bit key_processed;
+    bit key_processed = 0;
     fork
       begin : process_hmac_key_pad
         forever begin
-          if (cfg.under_reset) begin
-            wait(!cfg.under_reset);
+          cfg.clk_rst_vif.wait_clks(1);
+          // Key padding
+          wait(hmac_start && sha_en);
+          if (`gmv(ral.cfg.hmac_en) && hmac_rd_cnt == 0 && !invalid_cfg) begin
+            if (`gmv(ral.cfg.digest_size) == SHA2_256) begin
+              key_process_cycles = HMAC_KEY_PROCESS_CYCLES_256;
+            end else begin
+              key_process_cycles = HMAC_KEY_PROCESS_CYCLES_512;
+            end
+            // key_process_cycles for hmac key padding + 1 cycle for hash_start reg to reset
+            cfg.clk_rst_vif.wait_clks(key_process_cycles + 1);
+            @(negedge cfg.clk_rst_vif.clk);
+            key_processed = 1;
           end
-          // delay 1ps to make sure all variables are being reset, before moving to the next
-          // forever loop
-          #1ps;
-          fork
-            begin : key_padding
-              wait(hmac_start && sha_en);
-              if (`gmv(ral.cfg.hmac_en) && hmac_rd_cnt == 0 && !invalid_cfg) begin
-                if (`gmv(ral.cfg.digest_size) == SHA2_256) begin
-                  key_process_cycles = HMAC_KEY_PROCESS_CYCLES_256;
-                end else begin
-                  key_process_cycles = HMAC_KEY_PROCESS_CYCLES_512;
-                end
-                // key_process_cycles for hmac key padding + 1 cycle for hash_start reg to reset
-                cfg.clk_rst_vif.wait_clks(key_process_cycles + 1);
-                @(negedge cfg.clk_rst_vif.clk);
-                key_processed = 1;
-              end
-              while (1) begin
-                // TODO: check if we need the error checking here - might not be necessary
-                // break if hmac is done or if invalid config error is triggered or if SHA is
-                // being disabled as HMAC enable configuration could be changed and thus
-                // key_process_cycles might need to be updated
-                if (`gmv(ral.intr_state.hmac_done) ||
-                   (`gmv(ral.intr_state.hmac_err) && `gmv(ral.err_code) == SwInvalidConfig) ||
-                    !sha_en) begin
-                  break;
-                end
-                cfg.clk_rst_vif.wait_clks(1);
-              end
+          while (1) begin
+            // TODO: check if we need the error checking here - might not be necessary
+            // break if hmac is done or if invalid config error is triggered or if SHA is
+            // being disabled as HMAC enable configuration could be changed and thus
+            // key_process_cycles might need to be updated
+            if (`gmv(ral.intr_state.hmac_done) ||
+                (`gmv(ral.intr_state.hmac_err) && `gmv(ral.err_code) == SwInvalidConfig) ||
+                !sha_en) begin
+              break;
             end
-            begin : reset_key_padding
-              wait(cfg.under_reset);
-            end
-          join_any
-          disable fork;
+            cfg.clk_rst_vif.wait_clks(1);
+          end
           key_processed = 0;
-        end // end forever
+        end
       end
 
       begin : process_internal_fifo_rd
         forever begin
-          wait(!cfg.under_reset);
-          // delay 1ps to make sure all variables are being reset, before moving to the next
-          // forever loop
-          #1ps;
-          fork
-            begin : hmac_fifo_rd
-              // Ensure that current context has to be taken into account or skipped
-              if (cfg.sar_skip_ctxt) begin
-                wait(!cfg.sar_skip_ctxt);
-              end
-              wait((hmac_wr_cnt > hmac_rd_cnt) && (sha_en));
-              if (`gmv(ral.cfg.hmac_en) && hmac_rd_cnt == 0) begin
-                `uvm_info(`gfn, $sformatf("waiting on key processing to complete"), UVM_HIGH)
-                wait(key_processed);
-                `uvm_info(`gfn, $sformatf("key processing has completed"), UVM_HIGH)
-              end
-              #1ps; // delay 1 ps to make sure did not sample right at negedge clk
-              cfg.clk_rst_vif.wait_n_clks(1);
-              hmac_rd_cnt++;
-              `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)
-              // select correct FIFO read depth and message processing cycles
-              if (`gmv(ral.cfg.digest_size) == SHA2_256) begin
-                fifo_rd_depth        = HMAC_MSG_FIFO_DEPTH_RD_256;
-                block_process_cycles = HMAC_MSG_PROCESS_CYCLES_256;
-              end else begin
-                fifo_rd_depth        = HMAC_MSG_FIFO_DEPTH_RD_512;
-                block_process_cycles = HMAC_MSG_PROCESS_CYCLES_512;
-              end
-              if (hmac_rd_cnt % fifo_rd_depth == 0) begin
-                `uvm_info(`gfn, $sformatf("start waiting on message processing now"), UVM_HIGH)
-                cfg.clk_rst_vif.wait_n_clks(block_process_cycles);
-                `uvm_info(`gfn, $sformatf("message processing has completed"), UVM_HIGH)
-              end
-            end
-            begin : reset_hmac_fifo_rd
-              wait(cfg.under_reset);
-            end
-          join_any
-          disable fork;
-        end // end forever
+          // Ensure that current context has to be taken into account or skipped
+          if (cfg.sar_skip_ctxt) begin
+            wait(!cfg.sar_skip_ctxt);
+          end
+          wait((hmac_wr_cnt > hmac_rd_cnt) && (sha_en));
+          if (`gmv(ral.cfg.hmac_en) && hmac_rd_cnt == 0) begin
+            `uvm_info(`gfn, $sformatf("waiting on key processing to complete"), UVM_HIGH)
+            wait(key_processed);
+            `uvm_info(`gfn, $sformatf("key processing has completed"), UVM_HIGH)
+          end
+          #1ps; // delay 1 ps to make sure did not sample right at negedge clk
+          cfg.clk_rst_vif.wait_n_clks(1);
+          hmac_rd_cnt++;
+          `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)
+          // select correct FIFO read depth and message processing cycles
+          if (`gmv(ral.cfg.digest_size) == SHA2_256) begin
+            fifo_rd_depth        = HMAC_MSG_FIFO_DEPTH_RD_256;
+            block_process_cycles = HMAC_MSG_PROCESS_CYCLES_256;
+          end else begin
+            fifo_rd_depth        = HMAC_MSG_FIFO_DEPTH_RD_512;
+            block_process_cycles = HMAC_MSG_PROCESS_CYCLES_512;
+          end
+          if (hmac_rd_cnt % fifo_rd_depth == 0) begin
+            `uvm_info(`gfn, $sformatf("start waiting on message processing now"), UVM_HIGH)
+            cfg.clk_rst_vif.wait_n_clks(block_process_cycles);
+            `uvm_info(`gfn, $sformatf("message processing has completed"), UVM_HIGH)
+          end
+        end
       end
     join_none
-  endtask
+  endtask : hmac_process_fifo_rd
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacMsgFifoEmpty], 1'b0)
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacDone], 1'b0)
     `DV_CHECK_EQ(cfg.intr_vif.pins[HmacErr], 1'b0)
-  endfunction
+  endfunction : check_phase
 
   // query the sha / hmac c model to get expected digest
   // update predicted digest to ral mirrored value
@@ -668,7 +756,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit [3:0] digest_size = `gmv(ral.cfg.digest_size),
     bit [5:0] key_length  = `gmv(ral.cfg.key_length));
     bit [7:0] msg_tmp[];
+    bit [TL_DW-1:0] big_endian_key[NUM_KEYS];
     exp_digest = '{default:0}; // clear previous expected digest
+
+    // Swap the key when required according to the dedicated register field CFG.key_swap
+    if (`gmv(ral.cfg.key_swap)) begin
+      `uvm_info(`gfn, "Swap the key from little-endian to big-endian", UVM_HIGH)
+      foreach (big_endian_key[key_i]) begin
+        big_endian_key[key_i] = {<<8{key[key_i]}};
+      end
+    end else begin
+      `uvm_info(`gfn, "Keep the key in big-endian", UVM_HIGH)
+      big_endian_key = key;
+    end
 
     `uvm_info(`gfn, $sformatf("Computing digest prediction"), UVM_LOW)
 
@@ -677,41 +777,42 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       2'b11: begin
         if (digest_size == SHA2_256) begin
           if (key_length == Key_128) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:3], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:3], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_256) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:7], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:7], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_384) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:11], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:11], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_512) begin
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:15], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:15], msg_i, exp_digest[0:7]);
           end else if (key_length == Key_1024) begin
             // model how the HW will limit key length to max of block size
-            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key[0:15], msg_i, exp_digest[0:7]);
+            cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(big_endian_key[0:15], msg_i, exp_digest[0:7]);
           end
         end else if (digest_size == SHA2_384) begin
           if (key_length == Key_128) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:3], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:3], msg_i, exp_digest[0:11]);
           if (key_length == Key_256) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:7], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:7], msg_i, exp_digest[0:11]);
           if (key_length == Key_384) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:11], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:11], msg_i, exp_digest[0:11]);
           if (key_length == Key_512) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:15], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:15], msg_i, exp_digest[0:11]);
           if (key_length == Key_1024) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha384(
-                                                      key[0:31], msg_i, exp_digest[0:11]);
+                                                    big_endian_key[0:31], msg_i, exp_digest[0:11]);
         end else if (digest_size == SHA2_512) begin
           if (key_length == Key_128) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:3], msg_i, exp_digest);
+                                                    big_endian_key[0:3], msg_i, exp_digest);
           if (key_length == Key_256) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:7], msg_i, exp_digest);
+                                                    big_endian_key[0:7], msg_i, exp_digest);
           if (key_length == Key_384) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:11], msg_i, exp_digest);
+                                                    big_endian_key[0:11], msg_i, exp_digest);
           if (key_length == Key_512) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:15], msg_i, exp_digest);
+                                                    big_endian_key[0:15], msg_i, exp_digest);
           if (key_length == Key_1024) cryptoc_dpi_pkg::sv_dpi_get_hmac_sha512(
-                                                      key[0:31], msg_i, exp_digest);
+                                                    big_endian_key[0:31], msg_i, exp_digest);
         end
-        `uvm_info(`gfn, $sformatf("HMAC of key=%p, msg_i=%p: %p", key, msg_i, exp_digest), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("HMAC of key=%p (key_swap=%1b), msg_i=%p: %p",
+                                  key, `gmv(ral.cfg.key_swap), msg_i, exp_digest), UVM_LOW)
       end
       2'b01: begin
         if (digest_size == SHA2_256) begin
@@ -728,13 +829,13 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         exp_digest = '{default:0};
       end
     endcase
-  endfunction
+  endfunction : predict_digest
 
   virtual function void update_wr_msg_length(int size_bytes);
     uint64 size_bits = size_bytes * 8;
     void'(ral.msg_length_upper.predict(size_bits[TL_DW*2-1:TL_DW]));
     void'(ral.msg_length_lower.predict(size_bits[TL_DW-1:0]));
-  endfunction
+  endfunction : update_wr_msg_length
 
   virtual task update_err_intr_code(err_code_e err_code_val);
     if (!`gmv(ral.intr_state.hmac_err)) begin
@@ -752,11 +853,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       end
       void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
     end
-  endtask
+  endtask : update_err_intr_code
 
   virtual function void check_idle_o(bit val);
     if (cfg.under_reset == 0) `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), val)
-  endfunction
+  endfunction : check_idle_o
 
   virtual task monitor_cov();
     save_and_restore_e  sar_ctxt;
@@ -768,13 +869,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     sar_stop_continue_ev  = uvm_event_sar_pool::get_global("sar_stop_and_continue_event");
 
     fork
-      // Collect coverage for register CFG
-      begin
-        forever begin
-          @(sample_cfg);
-          if (cfg.en_cov) cov.cfg_cg.sample(`gmv(ral.cfg));
-        end
-      end
       // Save and Restore with same context
       begin
         forever begin
@@ -801,4 +895,4 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       end
     join_none
   endtask : monitor_cov
-endclass
+endclass : hmac_scoreboard

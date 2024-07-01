@@ -80,15 +80,15 @@ class hmac_smoke_vseq extends hmac_base_vseq;
                 i, num_trans, msg.size()*8, hmac_en, sha_en), UVM_LOW)
       `uvm_info(`gfn, $sformatf("digest size=%s, key length=%0d",
                 get_digest_size(digest_size), get_key_length(key_length)), UVM_LOW)
-      `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
+      `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err=%b, endian/digest/key_swap=%b",
                 {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
-                {endian_swap, digest_swap}), UVM_LOW)
+                {endian_swap, digest_swap, key_swap}), UVM_LOW)
       `uvm_info(`gfn, $sformatf("wipe secret condition is: %0s", do_wipe_secret.name()), UVM_LOW)
 
       // initialize hmac configs
       hmac_init(.sha_en(sha_en), .hmac_en(hmac_en), .endian_swap(endian_swap),
-                .digest_swap(digest_swap), .digest_size(digest_size), .key_length(key_length),
-                .intr_fifo_empty_en(intr_fifo_empty_en),
+                .digest_swap(digest_swap), .key_swap(key_swap), .digest_size(digest_size),
+                .key_length(key_length), .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
       // always start off the transaction by reading previous digest to clear
