@@ -400,7 +400,7 @@
         }
         { bits: "8"
           name: "START"
-          desc: "Issue a START condition before transmitting BYTE."
+          desc: "Issue a START condition before transmitting FBYTE."
         }
         { bits: "9"
           name: "STOP"
@@ -408,7 +408,7 @@
         }
         { bits: "10"
           name: "READB"
-          desc: "Read BYTE bytes from I2C. (256 if BYTE==0)"
+          desc: "Read FBYTE bytes from I2C. (256 if FBYTE==0)"
         }
         { bits: "11"
           name: "RCONT"

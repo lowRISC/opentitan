@@ -286,9 +286,9 @@ I2C Host Format Data
 | 31:13  |        |         |        | Reserved                                                        |
 |   12   |   wo   |   0x0   | NAKOK  | Do not signal an exception if the current byte is not ACK'd     |
 |   11   |   wo   |   0x0   | RCONT  | Do not NACK the last byte read, let the read operation continue |
-|   10   |   wo   |   0x0   | READB  | Read BYTE bytes from I2C. (256 if BYTE==0)                      |
+|   10   |   wo   |   0x0   | READB  | Read FBYTE bytes from I2C. (256 if FBYTE==0)                    |
 |   9    |   wo   |   0x0   | STOP   | Issue a STOP condition after this operation                     |
-|   8    |   wo   |   0x0   | START  | Issue a START condition before transmitting BYTE.               |
+|   8    |   wo   |   0x0   | START  | Issue a START condition before transmitting FBYTE.              |
 |  7:0   |   wo   |   0x0   | FBYTE  | Format Byte. Directly transmitted if no flags are set.          |
 
 ## FIFO_CTRL
