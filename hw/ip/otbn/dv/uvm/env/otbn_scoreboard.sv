@@ -662,7 +662,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // The 'enable' signal is connected to the lc_escalate_en_i top-level input
     forever begin
       if (cfg.clk_rst_vif.rst_n) begin
-        cov.escalate_en_cg.sample(cfg.escalate_vif.enable);
+        if (cfg.en_cov) cov.escalate_en_cg.sample(cfg.escalate_vif.enable);
       end
       @(cfg.escalate_vif.enable or cfg.clk_rst_vif.rst_n);
     end
@@ -674,7 +674,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // The 'req' signal is connected to the lc_rma_req_i top-level input
     forever begin
       if (cfg.clk_rst_vif.rst_n) begin
-        cov.rma_req_cg.sample(cfg.escalate_vif.req);
+        if (cfg.en_cov) cov.rma_req_cg.sample(cfg.escalate_vif.req);
       end
       @(cfg.escalate_vif.req or cfg.clk_rst_vif.rst_n);
     end
