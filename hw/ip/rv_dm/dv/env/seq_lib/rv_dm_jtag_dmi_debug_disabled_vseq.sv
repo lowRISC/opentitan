@@ -6,6 +6,11 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_jtag_dmi_debug_disabled_vseq)
   `uvm_object_new
 
+  // Override the constraint in rv_dm_base_vseq that enables debug (to disable it instead)
+  constraint debug_enabled_c {
+    lc_hw_debug_en == 1'b0;
+  }
+
   task automatic write_abstractdata(uvm_reg_data_t value);
     csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(value));
   endtask
@@ -40,13 +45,8 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
       // Possibly wait a bit
       maybe_delay();
 
-      // Set lc_hw_debug_en to some value other than On.
-      begin
-        lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pinmux_hw_debug_en,
-                                           pinmux_hw_debug_en != lc_ctrl_pkg::On;)
-        cfg.rv_dm_vif.cb.pinmux_hw_debug_en <= pinmux_hw_debug_en;
-      end
+      // Pick an arbitrary value for lc_hw_debug_en_i other than On
+      upd_lc_hw_debug_en();
 
       // Wait a few cycles to make sure that the changed enable signal has made it through a
       // prim_lc_sync. If we start the next operation too early, things will get rather confused

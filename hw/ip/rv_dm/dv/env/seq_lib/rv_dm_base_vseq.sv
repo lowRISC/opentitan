@@ -25,8 +25,19 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // whether the JTAG interface is connected.
   rand bit pinmux_hw_debug_en;
 
-  rand lc_ctrl_pkg::lc_tx_t   lc_hw_debug_en;
-  rand prim_mubi_pkg::mubi4_t scanmode;
+  // This flag controls whether the lc_hw_debug_en_i signal is set to On. When late debug mode is
+  // enabled (controlled by late_debug_enable), this controls whether debug is enabled.
+  rand bit lc_hw_debug_en;
+
+  // This flag controls whether the lc_dft_en_i signal is set to On. When late debug mode is
+  // disabled (controlled by late_debug_enable), this controls whether debug is enabled.
+  rand bit lc_dft_en;
+
+  // This flag controls whether the scanmode_i signal is set to On, putting the JTAG TAP in the
+  // debug module into testmode and controlling TCK and TRST_N with the system clock and reset,
+  // instead of the signals in jtag_if
+  rand bit scanmode;
+
   rand logic [NUM_HARTS-1:0]  unavailable;
 
   rand int unsigned tck_period_ps;
@@ -44,15 +55,20 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   //
   // A vseq that actually wants to exercise scanmode should override this constraint and turn it
   // back on.
+  //
+  // TODO(#23763): We don't currently run any tests with scanmode enabled. This is because doing so
+  //               changes the internal JTAG interface so that it is clocked from the main clock
+  //               instead of the jtag_if TCK. Muxing the tck signal in jtag_if isn't all that easy
+  //               because the jtag driver expects to be able to control it.
   constraint no_scanmode_c {
-    scanmode != prim_mubi_pkg::MuBi4True;
+    scanmode == 1'b0;
   }
 
-  // A constraint that ensures debug is enabled through lc_hw_debug_en. We will have sequences that
-  // wish to disable debug, but they can do so by either disabling it in the middle of the sequence
-  // or by overriding this constraint.
+  // A constraint that ensures debug is enabled. We will have sequences that wish to disable debug,
+  // but they can do so by either disabling it in the middle of the sequence or by overriding this
+  // constraint.
   constraint debug_enabled_c {
-    lc_hw_debug_en == lc_ctrl_pkg::On;
+    lc_hw_debug_en == 1'b1;
   }
 
   // A constraint that asserts pinmux_hw_debug_en_i will be On. Similarly to how it uses the
@@ -60,6 +76,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // connected. To see the disconnected case, a subclass can override this constraint.
   constraint pinmux_hw_debug_en_c {
     pinmux_hw_debug_en == 1'b1;
+  }
+
+  // TODO(#23096): Currently, the dft enable (used when late debug is enable is false) is hard-coded
+  //               to match lc_hw_debug_en. This eventually needs to be separately controlled.
+  constraint lc_dft_en_c {
+    lc_dft_en == lc_hw_debug_en;
   }
 
   // TODO(#23096): We don't currently test the situation where late debug enable is false. We
@@ -92,24 +114,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
-    // Initialize the input signals with defaults at the start of the sim.
-    //
-    // TODO(#23763): This currently avoids setting scanmode to true. This is because doing so
-    // changes the internal JTAG interface so that it is clocked from the main clock instead of the
-    // jtag_if TCK. Muxing the tck signal in jtag_if isn't all that easy because the jtag driver
-    // expects to be able to control it.
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_hw_debug_en)
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(scanmode, scanmode != prim_mubi_pkg::MuBi4True;)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(unavailable)
+    cfg.rv_dm_vif.scanmode <= bool_to_mubi4_t(scanmode);
 
-    cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
-    cfg.rv_dm_vif.scanmode <= scanmode;
     cfg.rv_dm_vif.unavailable <= unavailable;
 
-    // TODO(#23096): We're currently wiring all the enable signals to match lc_hw_debug_en and
-    //               hard-coding the late debug enable flag to be true. These eventually need to be
-    //               separately controlled.
-    cfg.rv_dm_vif.lc_dft_en                <= lc_hw_debug_en;
+    cfg.rv_dm_vif.lc_dft_en <= bool_to_lc_tx_t(lc_dft_en);
 
     // Drive the otp_dis_rv_dm_late_debug_i pin to match pin_late_debug_enable (to avoid assertions
     // that get triggered in prim_lc_sync/prim_mubi8_sync if the input is 'x). We will configure the
@@ -118,7 +127,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     // Drive the pinmux_hw_debug_en_i pin to match the pinmux_hw_debug_en bit, avoiding assertions
     // that get triggered in prim_lc_sync if the input is 'x.
-    set_pinmux_enable(pinmux_hw_debug_en);
+    cfg.rv_dm_vif.pinmux_hw_debug_en <= bool_to_lc_tx_t(pinmux_hw_debug_en);
+
+    // Drive the lc_hw_debug_en_i pin to match the lc_hw_debug_en bit, avoiding assertions that get
+    // triggered in prim_lc_sync if the input is 'x.
+    upd_lc_hw_debug_en();
 
     super.pre_start();
   endtask
@@ -144,7 +157,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
 
-    if (lc_hw_debug_en == lc_ctrl_pkg::On) begin
+    if (lc_hw_debug_en) begin
       // We would like to do a DMI transaction here. If this vseq is the first with debug enabled,
       // the "enable" signal will need to make it through the a prim_lc_sync in the design before it
       // takes effect. Fortunately, we can see that this has happened by looking at the trst_n
@@ -327,37 +340,45 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     value = abstractcs_t'(raw);
   endtask
 
+  function bit [31:0] bool_to_something(bit bool_val, int unsigned width, bit [31:0] true_val);
+    bit [31:0] val;
+    if (bool_val) begin
+      val = true_val;
+    end else begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, val != true_val; val >> width == 32'h0;)
+    end
+    return val;
+  endfunction
+
+  function lc_ctrl_pkg::lc_tx_t bool_to_lc_tx_t(bit bool_val);
+    return lc_ctrl_pkg::lc_tx_t'(bool_to_something(bool_val, 4, lc_ctrl_pkg::On));
+  endfunction
+
+  function prim_mubi_pkg::mubi4_t bool_to_mubi4_t(bit bool_val);
+    return prim_mubi_pkg::mubi4_t'(bool_to_something(bool_val, 4, prim_mubi_pkg::MuBi4True));
+  endfunction
+
+  function prim_mubi_pkg::mubi8_t bool_to_mubi8_t(bit bool_val);
+    return prim_mubi_pkg::mubi8_t'(bool_to_something(bool_val, 8, prim_mubi_pkg::MuBi8True));
+  endfunction
+
+  function prim_mubi_pkg::mubi32_t bool_to_mubi32_t(bit bool_val);
+    return prim_mubi_pkg::mubi32_t'(bool_to_something(bool_val, 32, prim_mubi_pkg::MuBi32True));
+  endfunction
+
   // Set the otp_dis_rv_dm_late_debug_i pin to a t/f value matching bool_val.
   function void set_late_debug_enable_with_pin(bit bool_val);
-    bit [7:0] mubi_val;
-    if (bool_val) begin
-      mubi_val = prim_mubi_pkg::MuBi8True;
-    end else begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mubi_val, mubi_val != prim_mubi_pkg::MuBi8True;)
-    end
-    cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= prim_mubi_pkg::mubi8_t'(mubi_val);
+    cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= bool_to_mubi8_t(bool_val);
   endfunction
 
   // Write to the late_debug_enable register with a t/f value matching bool_val.
-  virtual task set_late_debug_enable_with_reg(bit bool_val);
-    bit [31:0] mubi_val;
-    if (bool_val) begin
-      mubi_val = prim_mubi_pkg::MuBi32True;
-    end else begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mubi_val, mubi_val != prim_mubi_pkg::MuBi32True;)
-    end
-    csr_wr(.ptr(ral.late_debug_enable), .value(mubi_val));
+  task set_late_debug_enable_with_reg(bit bool_val);
+    csr_wr(.ptr(ral.late_debug_enable), .value(bool_to_mubi32_t(bool_val)));
   endtask
 
-  // Set the pinmux_hw_debug_en_i pin to the On if bool_val is true and a random other value if not.
-  function void set_pinmux_enable(bit bool_val);
-    bit [3:0] lc_val;
-    if (bool_val) begin
-      lc_val = lc_ctrl_pkg::On;
-    end else begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_val, lc_val != lc_ctrl_pkg::On;)
-    end
-    cfg.rv_dm_vif.pinmux_hw_debug_en <= lc_ctrl_pkg::lc_tx_t'(lc_val);
+  // Update the lc_hw_debug_en_i pin to match the bit in lc_hw_debug_en
+  function void upd_lc_hw_debug_en();
+    cfg.rv_dm_vif.lc_hw_debug_en <= bool_to_lc_tx_t(lc_hw_debug_en);
   endfunction
 
 endclass : rv_dm_base_vseq
