@@ -170,6 +170,7 @@ RUST_TARGETS = [
     "//sw/host/cryptotest:cryptotest_parser_test",
     "//sw/host/hsmtool:hsmlib",
     "//sw/host/hsmtool:hsmlib_test",
+    "//sw/host/hsmtool/acorn:acorn",
     "//sw/host/ot_certs:ot_certs",
     "//sw/host/ot_certs:ot_certs_test",
     "//sw/host/opentitanlib:opentitanlib",

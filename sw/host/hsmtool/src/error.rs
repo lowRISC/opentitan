@@ -32,4 +32,6 @@ pub enum HsmError {
     TooManyObjects(usize, String),
     #[error("Expected only owner permissions, but found permissions {0:o}")]
     FilePermissionError(u32),
+    #[error("This operation requires the acorn library")]
+    AcornUnavailable,
 }
