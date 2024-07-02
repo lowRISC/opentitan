@@ -30,3 +30,4 @@ The OpenTitan Technical Committee membership is:
 * Arnon Sharlin
 * Tim Trippel
 * Miles Dai
+* Shimeon Greenberg
