@@ -77,6 +77,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint               sw_test_timeout_ns = 12_000_000; // 12ms
   // delay until the pull is propagated, only available in closed-source
   uint               pad_pull_delay = 0;
+  logic              pad_in_dis_val = 1'bz;
   sw_logger_vif      sw_logger_vif;
   sw_test_status_vif sw_test_status_vif;
   ast_supply_vif     ast_supply_vif;
