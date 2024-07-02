@@ -26,6 +26,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
+#include "sw/device/lib/testing/usb_testutils_diags.h"
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
@@ -119,13 +120,14 @@ bool test_main(void) {
 
   // Proceed only when the device has been configured; this allows host-side
   // software to establish communication.
-  while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
-    CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
-  }
+  CHECK_STATUS_OK(
+      usb_testutils_controlep_config_wait(&usbdev_control, &usbdev));
 
   // Set up a serial port.
   CHECK_STATUS_OK(usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1U,
                                                   usb_receipt_callback));
+
+  USBUTILS_USER_PROMPT("Echo characters now...eg. 'cat /dev/ttyUSB0'");
 
   // Send a "Hi!Hi!" sign on message.
   for (int idx = 0; idx < kExpectedUsbCharsRecved; idx++) {

@@ -114,7 +114,7 @@ static usb_testutils_streams_ctx_t stream_test;
  *   (Note that this substantially alters the timing of interactions with the
  * DPI model and will increase the simulation time)
  */
-static bool verbose = false;
+static const bool kVerbose = false;
 
 /*
  * These switches may be modified manually to experimentally measure the
@@ -122,29 +122,29 @@ static bool verbose = false;
  *
  * Are we sending data?
  */
-static bool sending = true;
+static const bool kSending = true;
 
 /**
  * Are we generating a valid byte sequence?
  */
-static bool generating = true;
+static const bool kGenerating = true;
 
 /**
  * Retrying is meaningless for this test since we have only Isochronous streams.
  */
-static bool retrying = false;
+static const bool kRetrying = false;
 
 /**
  * Are we expecting to receive data?
  */
-static bool recving = true;
+static const bool kRecving = true;
 
 /**
  * Send only maximal length packets?
  * (important for performance measurements on the USB, but obviously undesirable
  *  for testing reliability/function)
  */
-static bool max_packets = false;
+static const bool kMaxPackets = false;
 
 /**
  * Number of streams to be created
@@ -191,12 +191,12 @@ bool test_main(void) {
       kTopEarlgreyPinmuxInselIoc7));
 
   // Construct the test/stream flags to be used
-  test_flags = (sending ? kUsbdevStreamFlagRetrieve : 0U) |
-               (generating ? kUsbdevStreamFlagCheck : 0U) |
-               (retrying ? kUsbdevStreamFlagRetry : 0U) |
-               (recving ? kUsbdevStreamFlagSend : 0U) |
-               // Note: the 'max_packets' test flag is not required by the DPI
-               (max_packets ? kUsbdevStreamFlagMaxPackets : 0U);
+  test_flags = (kSending ? kUsbdevStreamFlagRetrieve : 0U) |
+               (kGenerating ? kUsbdevStreamFlagCheck : 0U) |
+               (kRetrying ? kUsbdevStreamFlagRetry : 0U) |
+               (kRecving ? kUsbdevStreamFlagSend : 0U) |
+               // Note: the 'max packets' test flag is not required by the DPI
+               (kMaxPackets ? kUsbdevStreamFlagMaxPackets : 0U);
 
   // Initialize the test descriptor
   // Note: the 'max packets' test flag is not required by the DPI model
@@ -217,9 +217,10 @@ bool test_main(void) {
       &usbdev_control, ctx->usbdev, 0, config_descriptors,
       sizeof(config_descriptors), test_descriptor, sizeof(test_descriptor)));
 
-  while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
-    CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
-  }
+  // Proceed only when the device has been configured; this allows host-side
+  // software to establish communication.
+  CHECK_STATUS_OK(
+      usb_testutils_controlep_config_wait(&usbdev_control, &usbdev));
 
   // Describe the transfer type of each stream;
   // Note: make all of the streams Isochronous streams for now, but later we
@@ -231,11 +232,9 @@ bool test_main(void) {
 
   // Initialise the state of the streams
   CHECK_STATUS_OK(usb_testutils_streams_init(
-      ctx, nstreams, xfr_types, transfer_bytes, test_flags, verbose));
+      ctx, nstreams, xfr_types, transfer_bytes, test_flags, kVerbose));
 
-  if (verbose) {
-    LOG_INFO("Commencing data transfer...");
-  }
+  USBUTILS_USER_PROMPT("Start host-side streaming software");
 
   // Streaming loop; most of the work is done by the usb_testutils_streams base
   //   code and we don't need to specialize its behavior for this test.
@@ -262,11 +261,11 @@ bool test_main(void) {
 
   // Note: since Isochronous streams are susceptible to packet loss we can only
   // perform a lower bounds check on the transmitted and received byte counts.
-  if (sending) {
+  if (kSending) {
     CHECK(tx_bytes >= nstreams * transfer_bytes,
           "Unexpected count of byte(s) sent to USB host");
   }
-  if (recving) {
+  if (kRecving) {
     CHECK(rx_bytes >= nstreams * transfer_bytes,
           "Unexpected count of byte(s) received from USB host");
   }

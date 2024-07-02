@@ -4,6 +4,9 @@
 
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
+#include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/runtime/print.h"
+
 // Diagnostic, testing and performance measurements utilities for verification
 // of usbdev and development of the usb_testutils support software; the
 // requirements of this software are peculiar in that the USBDPI model used in
@@ -21,6 +24,15 @@
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.
 #define USBUTILS_ENABLE_TRC 0
+
+// Prompt the user for intervention if we're not running in simulation;
+// logging within simulation can be time-consuming and induce failures.
+#define USBUTILS_USER_PROMPT(...)                                            \
+  do {                                                                       \
+    if (kDeviceType != kDeviceSimDV && kDeviceType != kDeviceSimVerilator) { \
+      LOG_INFO(__VA_ARGS__);                                                 \
+    }                                                                        \
+  } while (false)
 
 #if USBUTILS_ENABLE_TRC
 // May be useful on FPGA CW310
