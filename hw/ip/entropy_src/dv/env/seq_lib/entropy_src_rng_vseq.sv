@@ -385,6 +385,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_csrng_pull_seq.stop(.hard(0));
     `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
     m_rng_push_seq.stop(.hard(0));
+    `uvm_info(`gfn, "Waiting for CS AES Halt interface to become idle", UVM_MEDIUM)
+    `DV_SPINWAIT(wait(cfg.m_aes_halt_agent_cfg.vif.req == 1'b0);)
     `uvm_info(`gfn, "SEQs SHUTDOWN applying CSRNG reset", UVM_MEDIUM)
     apply_reset(.kind("CSRNG_ONLY"));
     `uvm_info(`gfn, "Waiting for SEQs finished", UVM_MEDIUM)
