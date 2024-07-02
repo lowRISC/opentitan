@@ -11,7 +11,8 @@
 
   bbox_cmd: "[list aon_osc io_osc sys_osc usb_osc]"
   conn_csvs_dir: "{proj_root}/hw/top_earlgrey/formal/conn_csvs"
-  conn_csvs: ["{conn_csvs_dir}/analog_sigs.csv",
+  conn_csvs: ["{conn_csvs_dir}/alert_handler_esc.csv",
+              "{conn_csvs_dir}/analog_sigs.csv",
               "{conn_csvs_dir}/aon_timer_rst.csv",
               "{conn_csvs_dir}/ast_infra.csv",
               "{conn_csvs_dir}/ast_entropy_src_cfg.csv",
