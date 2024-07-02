@@ -3344,13 +3344,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
     end
   end
 
-  // Track when entropy is expected to get dropped instead of pushed into the esfinal FIFO: when the
-  // esfinal FIFO is full and either routing to SW and the SW read isn't done or not routing to SW
-  // and no request on the hardware interface.
+  // Track when entropy is expected to get dropped instead of pushed into the esfinal FIFO. This is
+  // the case whenever the esfinal FIFO is full. When routing to SW and the SW read finished at the
+  // same time, the entropy isn't dropped.
   logic esfinal_exp_drop;
-  assign esfinal_exp_drop = sfifo_esfinal_full & (es_route_to_sw ?
-                                                  ~swread_done :                // SW read not done
-                                                  ~entropy_src_hw_if_i.es_req); // no HW request
+  assign esfinal_exp_drop = sfifo_esfinal_full & (es_route_to_sw ? ~swread_done : 1'b1);
 
   // Count number of bits that are expected to have gotten pushed into precon FIFO and into esfinal
   // FIFO after boot and startup checks and while bypass mode was disabled.
