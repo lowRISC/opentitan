@@ -184,9 +184,12 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     bit glitched_port_is_inp;
     int unsigned unpacked_idx;
     val_t orig_val;
+    val_t orig_val_cmp;
     int unsigned bit_idx;
     val_t glitch_mask;
     val_t glitched_val;
+    val_t glitch_mask_cmp;
+    val_t glitched_val_cmp;
     int unsigned lockstep_offset;
     int unsigned max_delay_clks;
     bit wait_for_inp_used;
@@ -580,6 +583,22 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       endcase
     end
 
+    // The MuBi encoded enable_cmp_q signal is responsible for enabling/disabling the
+    // lockstep comparison. Due to the encoding and the implemented enabling/disabling
+    // logic, we tolerate a fault into this signal. Even when faulting this signal,
+    // the comparison still should be on.
+    enable_cmp_path = $sformatf("%s.enable_cmp_q", lockstep_path);
+    // Sample port value prior to glitching.
+    `DV_CHECK_FATAL(uvm_hdl_read(enable_cmp_path, orig_val_cmp))
+
+    // Invert the bit randomly selected for glitching.
+    glitched_val_cmp = orig_val_cmp ^ (1 << $urandom_range(3));
+
+    `DV_CHECK_FATAL(uvm_hdl_force(enable_cmp_path, glitched_val_cmp));
+    `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", enable_cmp_path, glitched_val_cmp),
+              UVM_LOW)
+    cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
+
     // Force the glitched value onto the port for one cycle, then release it again.
     `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitched_val));
     `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path, glitched_val), UVM_LOW)
@@ -636,16 +655,16 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
 
     // Assert that `enable_cmp_q` in `ibex_lockstep` is 1.  When coming out of reset and
     // starting execution, it takes `LockstepOffset` clock cycles for this to happen.
-    enable_cmp_path = $sformatf("%s.enable_cmp_q", lockstep_path);
     for (int i = 0; i < lockstep_offset; i++) begin
       `DV_CHECK_FATAL(uvm_hdl_read(enable_cmp_path, enable_cmp))
-      if (enable_cmp) begin
+      if (enable_cmp == ibex_pkg::IbexMuBiOn) begin
         break;
       end else begin
         cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
       end
     end
-    `DV_CHECK_EQ_FATAL(enable_cmp, 1'b1, "Lockstep comparison disabled, which is illegal.")
+    `DV_CHECK_NE_FATAL(enable_cmp, ibex_pkg::IbexMuBiOff,
+                       "Lockstep comparison disabled, which is illegal.")
 
     // Calculate whether we expect a major alert.
     exp_alert_major_internal = 1'b0;
