@@ -21,10 +21,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [3:0]       previous_digest_size, expected_digest_size;
   bit             invalid_cfg;
   bit [TL_DW-1:0] hmac_status_data;
-  bit [5:0]       hmac_fifo_depth;
-  bit             hmac_fifo_full;
+  bit [5:0]       hmac_fifo_depth, hmac_fifo_depth_reg;
+  bit             hmac_fifo_full, hmac_fifo_full_reg;
   bit             fifo_full_detected;
-  bit             hmac_fifo_empty;
+  bit             hmac_fifo_empty, hmac_fifo_empty_reg;
   bit             fifo_empty_intr;
   bit             hmac_process_last;
   bit             hmac_stopped_last;
@@ -327,10 +327,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     if (!write && channel != DataChannel) begin
       // Update expected status register
       if (csr_name == "status") begin
-        hmac_status_data = (hmac_idle       << HmacStaIdle)         |
-                           (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
-                           (hmac_fifo_full  << HmacStaMsgFifoFull)  |
-                           (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
+        hmac_status_data = (hmac_idle           << HmacStaIdle)         |
+                           (hmac_fifo_empty_reg << HmacStaMsgFifoEmpty) |
+                           (hmac_fifo_full_reg  << HmacStaMsgFifoFull)  |
+                           (hmac_fifo_depth_reg << HmacStaMsgFifoDepthLsb);
         void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
       // Update expected FIFO Empty interrupt register
       end else if (csr_name == "intr_state") begin
@@ -607,11 +607,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         pre_fifo_empty_intr = 0;
       end
 
-      // Delay FIFO empty signal to be aligned with the DUT behavior
+      // Delay FIFO signals to be aligned with the DUT behavior
       fork
         begin
           cfg.clk_rst_vif.wait_clks(1);
-          fifo_empty_intr = pre_fifo_empty_intr;
+          fifo_empty_intr     = pre_fifo_empty_intr;
+          hmac_fifo_depth_reg = hmac_fifo_depth;
+          hmac_fifo_full_reg  = hmac_fifo_full;
+          hmac_fifo_empty_reg = hmac_fifo_empty;
         end
       join_none
 
@@ -712,7 +715,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             wait(key_processed);
             `uvm_info(`gfn, $sformatf("key processing has completed"), UVM_HIGH)
           end
-          #1ps; // delay 1 ps to make sure did not sample right at negedge clk
           cfg.clk_rst_vif.wait_n_clks(1);
           hmac_rd_cnt++;
           `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)
