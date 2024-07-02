@@ -19,6 +19,9 @@ Assume first the system has the power states described [above](theory_of_operati
 7. Set and poll [`CFG_CDC_SYNC`](registers.md#cfg_cdc_sync) to ensure above settings propagate across clock domains.
 8. Execute wait-for-interrupt instruction on the processing host.
 
+Note that entering low power mode requires that pwrmgr's `pwr_cpu_i.core_sleeping` input be at logic high long enough to be sampled.
+A wait-for-interrupt instruction does not guarantee entry into low power, since the CPU could immediately resume execution in some cases.
+
 ### Possible Exits
 
 Once low power is initiated, the system may exit due to several reasons.
@@ -29,6 +32,18 @@ Once low power is initiated, the system may exit due to several reasons.
 
 In both fall through exit and aborted entry, the power manager does not actually enter low power.
 Instead the low power entry is interrupted and the system restored to active state.
+
+In addition, a CPU's sleeping signal that is too short for the power manager to sample will not trigger even an attempt to go to low power.
+In such cases, there will be no bits set in [`WAKE_INFO`](registers.md#wake_info), and no side effects of pwrmgr entering low power mode will trigger.
+
+To check the exit condition, software can follow these steps:
+1. Clear low power hint in [`CONTROL`](registers.md#control) and poll until it becomes cleared.
+<!-- As of this writing, the CONTROL REGWEN locks out writes to CONTROL once pwrmgr receives the trigger to enable low power mode.
+     pwrmgr enables writes again upon exiting low power mode.
+     For the case where low power isn't even *attempted* due to short WFI, CONTROL will not be locked, so the clear will succeed. -->
+  - Until the hint clears, the values in [`WAKE_INFO`](registers.md#wake_info) may not reflect the true exit condition.
+2. Check [`WAKE_INFO`](registers.md#wake_info) to get the condition.
+  - If no bits are set, then this was a fast fall through, where low power entry was not attempted.
 
 ## Programmer Sequence for Exiting Low Power
 
