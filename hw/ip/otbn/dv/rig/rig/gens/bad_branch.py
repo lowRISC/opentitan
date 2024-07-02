@@ -26,6 +26,17 @@ class BadBranch(BranchGen):
                     max_addr: int,
                     model: Model,
                     program: Program) -> int:
+
+        # We only want to pick values that we can actually encode as a 12-bit
+        # signed differences from the current PC (shifted left by 1).
+        min_addr = max(min_addr, model.pc - 4096)
+        max_addr = min(max_addr, model.pc + 4094)
+
+        # Check that there are still any encodable address. (This will fail if
+        # the initial call had e.g. min_addr and max_addr were enormous and
+        # model.pc=0)
+        assert min_addr <= max_addr
+
         # We need to pick an out of bounds offset from all available values (A)
         # mode is a random variable to ensure that all the bins are hit
         # for offset range. It gives equal weight to all address ranges.
@@ -39,7 +50,9 @@ class BadBranch(BranchGen):
         elif mode <= 3 and program.imem_size - 1 <= max_addr:
             tgt_addr = max_addr
         elif mode <= 4 and program.imem_size - 1 <= max_addr:
-            tgt_addr = random.randrange(0, program.imem_size, 4) + 2
+            tgt_addr = random.randrange(max(0, min_addr),
+                                        min(program.imem_size, max_addr - 4),
+                                        4) + 2
         else:
             assert mode <= 4
             tgt_addr = random.randrange(min_addr + 2, max_addr + 1, 4)
