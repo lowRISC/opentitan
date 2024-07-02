@@ -94,7 +94,9 @@ module pinmux_tb
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type:      {NDioPads{BidirStd}},
-    mio_pad_type:      {NMioPads{BidirStd}}
+    mio_pad_type:      {NMioPads{BidirStd}},
+    dio_scan_role:     {NDioPads{NoScan}},
+    mio_scan_role:     {NMioPads{NoScan}}
   };
 
   pinmux #(
