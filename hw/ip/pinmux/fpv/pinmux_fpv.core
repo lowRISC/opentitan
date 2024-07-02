@@ -12,6 +12,7 @@ filesets:
       - lowrisc:ip:pinmux
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:fpv:pinmux_common_fpv
+      - lowrisc:systems:scan_role_pkg
     files:
       - tb/pinmux_tb.sv
     file_type: systemVerilogSource
