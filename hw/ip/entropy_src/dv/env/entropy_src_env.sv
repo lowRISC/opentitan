@@ -77,6 +77,13 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_xht_agent_cfg.en_cov            = cfg.en_cov;
     cfg.m_xht_agent_cfg.is_active         = 1'b1;
 
+    // When running ast/rng at the maximum rate (this is an unrealistic scenario primarily used for
+    // reaching coverage metrics) we reduce the maximum d_ready delay of the TL-UL host to speed up
+    // e.g. the reading out of the Observe FIFO.
+    if (cfg.rng_max_delay == 1) begin
+      cfg.m_tl_agent_cfg.d_ready_delay_max = 5;
+    end
+
     if (!uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::get(this, "",
                         "precon_fifo_vif", cfg.precon_fifo_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get precon_fifo_vif from uvm_config_db")
