@@ -351,6 +351,13 @@ static void *server_create(void *ctx_void) {
     rv = select(mfd + 1, &read_fds, NULL, NULL, &timeout);
 
     if (rv < 0) {
+      if (errno == EINTR) {
+        // On interrupt we want to retry; according to the man page
+        // the timeout is now undefined.
+        timeout.tv_sec = 0;
+        continue;
+      }
+
       printf("%s: Socket read failed, port: %d\n", ctx->display_name,
              ctx->listen_port);
       tcp_server_client_close(ctx);
