@@ -3277,7 +3277,10 @@ opentitan_test(
     srcs = ["spi_device_sleep_test.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        },
     ),
     fpga = fpga_params(
         test_cmd = """
