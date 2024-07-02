@@ -178,7 +178,6 @@ static int client_tryaccept(struct tcp_server_ctx *ctx) {
   int rv;
 
   assert(ctx->sfd > 0);
-  assert(ctx->cfd == 0);
 
   int cfd = accept(ctx->sfd, NULL, NULL);
 
@@ -189,6 +188,14 @@ static int client_tryaccept(struct tcp_server_ctx *ctx) {
   if (cfd == -1) {
     fprintf(stderr, "%s: Unable to accept incoming connection: %s (%d)\n",
             ctx->display_name, strerror(errno), errno);
+    return -1;
+  }
+
+  if (ctx->cfd > 0) {
+    // Enforce a single concurrent connection. Accept and close any
+    // new connection attempt when there's already a client.
+    fprintf(stderr, "%s: Rejecting additional connection\n", ctx->display_name);
+    close(cfd);
     return -1;
   }
 
@@ -344,6 +351,13 @@ static void *server_create(void *ctx_void) {
     rv = select(mfd + 1, &read_fds, NULL, NULL, &timeout);
 
     if (rv < 0) {
+      if (errno == EINTR) {
+        // On interrupt we want to retry; according to the man page
+        // the timeout is now undefined.
+        timeout.tv_sec = 0;
+        continue;
+      }
+
       printf("%s: Socket read failed, port: %d\n", ctx->display_name,
              ctx->listen_port);
       tcp_server_client_close(ctx);
