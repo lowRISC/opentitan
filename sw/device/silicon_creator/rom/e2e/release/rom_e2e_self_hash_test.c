@@ -46,6 +46,10 @@ const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
     0xb1ebe528, 0xe461696b, 0x55d795e8, 0x5e57a7da,
     0x04007623, 0xb4b121cb, 0x572fcc0a, 0x76c45aea,
 };
+const uint32_t kSiliconGoldenRomHash[kSha256HashSizeIn32BitWords] = {
+    0x0ad1f73d, 0xf1c010da, 0x2dd0186a, 0x78f1be69,
+    0x0f01949c, 0xf61ec134, 0x14d56198, 0x8d971279,
+};
 
 extern const char _chip_info_start[];
 
@@ -75,6 +79,9 @@ status_t hash_rom(void) {
   } else if (kDeviceType == kDeviceFpgaCw310) {
     TRY_CHECK_ARRAYS_EQ(rom_hash.digest, kFpgaCw310GoldenRomHash,
                         ARRAYSIZE(kFpgaCw310GoldenRomHash));
+  } else if (kDeviceType == kDeviceSilicon) {
+    TRY_CHECK_ARRAYS_EQ(rom_hash.digest, kSiliconGoldenRomHash,
+                        ARRAYSIZE(kSiliconGoldenRomHash));
   } else {
     LOG_ERROR("ROM hash not self-checked for this device type: 0x%x",
               kDeviceType);

@@ -805,8 +805,8 @@
     //   name: rom_e2e_self_hash_no_bkdr_rom_load
     //   uvm_test_seq: chip_sw_base_vseq
     //   sw_images: [
-    //     "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules"
-    //     "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_rma:4",
+    //     "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules:silicon_creator",
+    //     "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_prod:4",
     //   ]
     //   // We purposely use the `sw_test_mode_common` run mode here instead of the
     //   // run modes that add either ROM image to the list of sw_images to
