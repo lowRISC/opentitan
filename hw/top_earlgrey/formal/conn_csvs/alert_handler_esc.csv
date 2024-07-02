@@ -1,0 +1,19 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# escalation sender and receivers
+CONNECTION, ALERT_HANDLER_PWRMGR_ESC_CLK, top_earlgrey.u_alert_handler, clk_i, top_earlgrey.u_pwrmgr_aon.u_esc_rx, clk_i
+# TODO(lowrisc/opentitan#23888) Enable this check once this issue is fixed.
+# CONNECTION, ALERT_HANDLER_PWRMGR_ESC_RST, top_earlgrey.u_alert_handler, rst_ni, top_earlgrey.u_pwrmgr_aon.u_esc_rx, rst_ni
+CONNECTION, ALERT_HANDLER_LC_CTRL_ESC0_CLK, top_earlgrey.u_alert_handler, clk_i, top_earlgrey.u_lc_ctrl.u_prim_esc_receiver0, clk_i
+CONNECTION, ALERT_HANDLER_LC_CTRL_ESC0_RST, top_earlgrey.u_alert_handler, rst_ni, top_earlgrey.u_lc_ctrl.u_prim_esc_receiver0, rst_ni
+CONNECTION, ALERT_HANDLER_LC_CTRL_ESC1_CLK, top_earlgrey.u_alert_handler, clk_i, top_earlgrey.u_lc_ctrl.u_prim_esc_receiver1, clk_i
+CONNECTION, ALERT_HANDLER_LC_CTRL_ESC1_RST, top_earlgrey.u_alert_handler, rst_ni, top_earlgrey.u_lc_ctrl.u_prim_esc_receiver1, rst_ni
+CONNECTION, ALERT_HANDLER_RV_CORE_IBEX_ESC_CLK, top_earlgrey.u_alert_handler, clk_i, top_earlgrey.u_rv_core_ibex.u_prim_esc_receiver, clk_i
+CONNECTION, ALERT_HANDLER_RV_CORE_IBEX_ESC_RST, top_earlgrey.u_alert_handler, rst_ni, top_earlgrey.u_rv_core_ibex.u_prim_esc_receiver, rst_ni
