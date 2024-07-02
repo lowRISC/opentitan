@@ -15,8 +15,9 @@ class csrng_item extends uvm_sequence_item;
   rand bit [11:0]   glen;
   rand bit [31:0]   cmd_data_q[$];
 
-  bit                                      fips_q[$];
-  bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0] genbits_q[$];
+  bit [csrng_pkg::CSRNG_CMD_STS_WIDTH - 1:0] status;
+  bit                                        fips_q[$];
+  bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]   genbits_q[$];
 
   constraint c_clen {
     clen inside {[0:12]};
@@ -55,6 +56,7 @@ class csrng_item extends uvm_sequence_item;
       this.flags      = rhs_.flags;
       this.glen       = rhs_.glen;
       this.fips_q     = rhs_.fips_q;
+      this.status     = rhs_.status;
       this.cmd_data_q = rhs_.cmd_data_q;
       this.genbits_q  = rhs_.genbits_q;
    endfunction
@@ -70,6 +72,7 @@ class csrng_item extends uvm_sequence_item;
     for (int i = 0; i < cmd_data_q.size(); i++) begin
       str = {str, $sformatf("\n\t |* cmd_data_q [%2d]  : %24s 0x%8h *| \t", i, "", cmd_data_q[i])};
     end
+    str = {str,   $sformatf("\n\t |* status           : %34h *| \t", status)                     };
     for (int i = 0; i < genbits_q.size(); i++) begin
       str = {str, $sformatf("\n\t |* genbits_q[%4d]  : 0x%32h *| \t", i, genbits_q[i])           };
       str = {str, $sformatf("\n\t |* fips_q   [%4d]  : %33s %1b *| \t", i, "", fips_q[i])        };
