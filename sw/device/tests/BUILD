@@ -3319,6 +3319,10 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        },
     ),
     fpga = fpga_params(
         test_cmd = """
