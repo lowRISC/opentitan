@@ -102,3 +102,20 @@ rust_binary(
         "@crate_index//:serde_json",
     ],
 )
+
+rust_binary(
+    name = "spi_host_config_test",
+    srcs = [
+        "src/spi_host_config_test.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+        "@crate_index//:serde_json",
+    ],
+)
