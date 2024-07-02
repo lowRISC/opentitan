@@ -16,7 +16,10 @@
  * teacup`.
  */
 {
-  "includes": ["/__builtin__/opentitan.json"],
+  "includes": [
+    "/__builtin__/hyperdebug.json",
+    "/__builtin__/opentitan.json"
+  ],
   "interface": "teacup",
   "pins": [
     {
