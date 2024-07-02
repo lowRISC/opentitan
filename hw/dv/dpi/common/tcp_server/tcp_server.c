@@ -324,9 +324,6 @@ static void *server_create(void *ctx_void) {
     goto err_cleanup_return;
   }
 
-  // Initialise timeout
-  timeout.tv_sec = 0;
-
   // Initialise fd_set
 
   // Start waiting for connection / data
@@ -344,13 +341,20 @@ static void *server_create(void *ctx_void) {
     // max fd num
     int mfd = (ctx->cfd > ctx->sfd) ? ctx->cfd : ctx->sfd;
 
-    // Set timeout - 50us gives good performance
+    // Set timeout - 50us gives good performance; do it every time
+    // since select can trash it.
+    timeout.tv_sec = 0;
     timeout.tv_usec = 50;
 
     // Wait for socket activity or timeout
     rv = select(mfd + 1, &read_fds, NULL, NULL, &timeout);
 
     if (rv < 0) {
+      if (errno == EINTR) {
+        // On interrupt we want to retry
+        continue;
+      }
+
       printf("%s: Socket read failed, port: %d\n", ctx->display_name,
              ctx->listen_port);
       tcp_server_client_close(ctx);
