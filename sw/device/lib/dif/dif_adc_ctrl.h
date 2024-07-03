@@ -472,6 +472,21 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_cause_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
                                                 uint32_t *enabled_causes);
 
+/**
+ * Wait enough time for CDC synchronization between block and CSRs.
+ *
+ * Wait long enough for any CDC synchronization between the AON part
+ * of the block and the CSRs to be complete. This is particularly important
+ * for the FILTER_STATUS register: this register can be updated by the HW
+ * and any update may take a while to become visible by the SW.
+ *
+ * @param adc_ctrl An adc_ctrl handle.
+ * @param aon_freq_hz Frequency of the AON clock in Hz.
+ * @return The result of the operation.
+ */
+dif_result_t dif_adc_ctrl_wait_cdc_sync(const dif_adc_ctrl_t *adc_ctrl,
+                                        uint32_t aon_freq_hz);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
