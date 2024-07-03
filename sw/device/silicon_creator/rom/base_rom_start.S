@@ -211,21 +211,6 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, 0x00000888
   csrc mie, t0
 
-  // Check if AST initialization should be skipped.
-  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
-  li   t1, MULTIBIT_ASM_BOOL4_TRUE
-  bne  t0, t1, .L_entropy_enable
-
-  // Copy the AST configuration from OTP.
-  li   a0, (TOP_DARJEELING_AST_BASE_ADDR)
-  li   a1, (TOP_DARJEELING_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
-  li   a2, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
-            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
-  call crt_section_copy
-
   // Enable jittery clock if enabled in OTP.
   li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -233,7 +218,6 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   a0, TOP_DARJEELING_CLKMGR_AON_BASE_ADDR
   sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
-.L_entropy_enable:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
   li a0, TOP_DARJEELING_CSRNG_BASE_ADDR
