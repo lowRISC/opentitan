@@ -779,6 +779,51 @@ cc_test(
     ],
 )
 
+dual_cc_library(
+    name = "spi_host",
+    srcs = dual_inputs(
+        device = ["spi_host.c"],
+        host = ["mock_spi_host.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_spi_host.h"],
+        shared = ["spi_host.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/spi_host/data:spi_host_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        ],
+        host = [
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/lib/sw/device/silicon_creator:error",
+            "//sw/lib/sw/device/base:abs_mmio",
+            "//sw/lib/sw/device/base:memory",
+            "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        ],
+    ),
+)
+
+cc_test(
+    name = "spi_host_unittest",
+    srcs = [
+        "spi_host_unittest.cc",
+    ],
+    deps = [
+        dual_cc_device_library_of(":spi_host"),
+        "//hw/ip/spi_host/data:spi_host_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "pwrmgr",
     srcs = ["pwrmgr.c"],

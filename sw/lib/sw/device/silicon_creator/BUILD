@@ -182,6 +182,8 @@ exports_files([
     "rom_patch.h",
     "shutdown.c",
     "shutdown.h",
+    "spi_nor_flash.c",
+    "spi_nor_flash.h",
 ])
 
 exports_files(glob(["*.cc"]))
