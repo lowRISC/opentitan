@@ -15,6 +15,9 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
   int clock_period_cycles = ((i2c_clock_period_nanos - 1) / clock_period_nanos) + 1;
   int half_period_cycles = ((i2c_clock_period_nanos/2 - 1) / clock_period_nanos) + 1;
 
+  // Keep a count of the total number of read data bytes we expect the agent to read from the DUT.
+  int sent_rd_byte[NUM_I2CS] = '{NUM_I2CS{ 0 }};
+
   function void print_i2c_timing_cfg(uint i2c_idx);
     string str;
     str = {str, $sformatf("\n    timing_cfg.tSetupStart       : %d",

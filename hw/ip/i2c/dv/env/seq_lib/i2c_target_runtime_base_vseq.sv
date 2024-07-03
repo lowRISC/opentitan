@@ -124,12 +124,8 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
 
     // Construct the I2C Controller sequence that defines the agent stimulus
     // for this test.
-    begin
-      i2c_item txn_q[$];
-      `uvm_create_obj(i2c_base_seq, m_i2c_controller_seq)
-      create_txn(txn_q);
-      fetch_txn(txn_q, m_i2c_controller_seq.req_q);
-    end
+    `uvm_create_obj(i2c_base_seq, m_i2c_controller_seq)
+    generate_agent_controller_stimulus(m_i2c_controller_seq.req_q);
 
     advance_runtime_state(.to(StPreHook));
     wait_for_runtime_state(.await(StStim));

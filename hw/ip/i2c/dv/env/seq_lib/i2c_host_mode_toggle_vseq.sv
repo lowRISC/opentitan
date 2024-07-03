@@ -45,7 +45,7 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
     fmt_item.start = 1;
     fmt_item.read = rwbit;
     fmt_item.fbyte = {addr, rwbit};
-    program_format_flag(fmt_item, "Programming address in host mode", 1);
+    program_format_flag(fmt_item, "Programming address in host mode");
     fmt_item = new("data_item");
     if (rw_bit) begin // if read enable one byte read
       fmt_item.read = 1;
@@ -55,7 +55,7 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
       fmt_item.fbyte = $urandom_range(0,255);
     end
     fmt_item.stop = 1;
-    program_format_flag(fmt_item, "Programming data in host mode", 1);
+    program_format_flag(fmt_item, "Programming data in host mode");
     // Wait for random number of cycles
     repeat (wait_cycles) @(posedge cfg.m_i2c_agent_cfg.vif.scl_io);
     `uvm_info(`gfn, "Disabling host mode", UVM_LOW)

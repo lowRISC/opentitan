@@ -73,7 +73,7 @@ class i2c_target_fifo_watermarks_tx_vseq extends i2c_target_runtime_base_vseq;
     check_one_intr(TxThreshold, tx_threshold_exp_state);
 
     // Write all rdata for the next read transaction to the TXFIFO
-    while (read_rcvd.size() > 0) write_tx_fifo();
+    while (read_rcvd_q.size() > 0) write_tx_fifo();
 
     // This should be enough data to now exceed the watermark, and hence the
     // interrupt will deassert (if the interrupt was active to begin with).

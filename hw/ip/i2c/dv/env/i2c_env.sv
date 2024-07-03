@@ -36,39 +36,30 @@ class i2c_env extends cip_base_env #(
     virtual_sequencer.i2c_sequencer_h = m_i2c_agent.sequencer;
 
     if (cfg.en_scb) begin
-      // MONITOR -> SCOREBOARD
+      // (OBS) MONITOR -> SCOREBOARD
 
-      m_i2c_agent.monitor.rd_item_port.connect(
+      m_i2c_agent.monitor.target_mode_rd_item_port.connect(
         scoreboard.controller_mode_rd_obs_fifo.analysis_export);
-      m_i2c_agent.monitor.wr_item_port.connect(
+      m_i2c_agent.monitor.target_mode_wr_item_port.connect(
         scoreboard.controller_mode_wr_obs_fifo.analysis_export);
-      m_i2c_agent.monitor.analysis_port.connect(
+      m_i2c_agent.monitor.controller_mode_rd_item_port.connect(
         scoreboard.target_mode_rd_obs_fifo.analysis_export);
+      m_i2c_agent.monitor.controller_mode_wr_item_port.connect(
+        scoreboard.target_mode_wr_obs_fifo.analysis_export);
 
-      // MODEL -> SCOREBOARD
+      // (OBS) MONITOR -> MODEL
+
+      m_i2c_agent.monitor.controller_mode_wr_item_port.connect(
+        model.target_mode_wr_obs_fifo.analysis_export);
+      m_i2c_agent.monitor.controller_mode_rd_item_port.connect(
+        model.target_mode_rd_obs_fifo.analysis_export);
+
+      // (EXP) MODEL -> SCOREBOARD
 
       model.controller_mode_wr_port.connect(scoreboard.controller_mode_wr_exp_fifo.analysis_export);
       model.controller_mode_rd_port.connect(scoreboard.controller_mode_rd_exp_fifo.analysis_export);
       model.target_mode_wr_port.connect(scoreboard.target_mode_wr_exp_fifo.analysis_export);
       model.target_mode_rd_port.connect(scoreboard.target_mode_rd_exp_fifo.analysis_export);
-      model.target_mode_wr_obs_port.connect(scoreboard.target_mode_wr_obs_fifo.analysis_export);
-    end
-
-    // The following connections are used for the (DUT:Agent == TARGET:CONTROLLER) configuration
-    //
-    // When generating stimulus in this configuration, instead of purely forming our expectations
-    // based on monitor-observed items, we actually use the sequence items created by the stimulus
-    // vseqs to form our expectation. These items are written to the vseqr '*_exp_port's, which
-    // are connected through to the model, and then onto the scoreboard.
-    // Also connect the monitor to the reference model, which helps us cheat a bit for some
-    // directed testcases where we don't fully model everything.
-    if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
-      virtual_sequencer.target_mode_wr_exp_port.connect(
-        model.target_mode_wr_stim_fifo.analysis_export);
-      virtual_sequencer.target_mode_rd_exp_port.connect(
-        model.target_mode_rd_stim_fifo.analysis_export);
-      m_i2c_agent.monitor.analysis_port.connect(
-        model.target_mode_rd_obs_fifo.analysis_export);
     end
   endfunction
 

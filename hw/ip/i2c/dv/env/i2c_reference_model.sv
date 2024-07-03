@@ -58,18 +58,6 @@
 //   the queue, each time the byte count is reached we pop the next queued item, and add its
 //   count to the previous item.
 //
-//////////////////////////////////////////
-//
-// DUT-Controller Mode
-// - EXP : Output from RefModel, based on CSR accesses to FMTFIFO/RXFIFO
-// - OBS : Output from Monitor
-//
-// DUT-Target Mode
-// - EXP : Output from stimulus generation routines in vseq's (same as input to Agent)
-//   - cfg.read_rnd_data -> EXP : Output from RefModel, based on writes to TXFIFO
-// - OBS : Output from Monitor
-//
-//////////////////////////////////////////
 //
 class i2c_reference_model extends uvm_component;
   `uvm_component_utils(i2c_reference_model)
@@ -85,8 +73,7 @@ class i2c_reference_model extends uvm_component;
 
   // Inputs
 
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_stim_fifo; // Input -> Stimulus vseqs (seqr)
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_stim_fifo; // Input -> Stimulus vseqs (seqr)
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;  // Input -> Monitor 'analysis_port'
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo;  // Input -> Monitor 'analysis_port'
 
   // Outputs
@@ -95,7 +82,6 @@ class i2c_reference_model extends uvm_component;
   uvm_analysis_port #(i2c_item) controller_mode_rd_port;
   uvm_analysis_port #(i2c_item) target_mode_wr_port;
   uvm_analysis_port #(i2c_item) target_mode_rd_port;
-  uvm_analysis_port #(i2c_item) target_mode_wr_obs_port; // Captures reads from 'ACQDATA'
 
   /////////////////////////////////
   //
@@ -109,19 +95,24 @@ class i2c_reference_model extends uvm_component;
   // into a queue for checking after the end of the transaction has been detected.
   // See the header comment for more details.
   //
-  local i2c_item exp_wr_item;
-  local i2c_item exp_rd_item, rd_pending_item;
+  local i2c_item exp_wr_item, prev_wr_item;
+  local i2c_item exp_rd_item, prev_rd_item, rd_pending_item;
   local i2c_item rd_pending_q[$]; // Helper-queue : holds partial read transactions
   local uint rdata_cnt = 0; // Count data-bytes read in a single transfer (DUT-Controller)
 
   // DUT-Target
   //
-  // In Target-mode, read data is created in the stimulus vseqs by i2c_base_seq::fetch_txn(),
-  // and by default we form our expectations based on these items.
+  // In Target-mode, read data is created in the stimulus vseqs by the function
+  // i2c_base_seq::generate_agent_controller_stimulus(), and by default we form our expectations
+  // based on these items.
   // However, sometimes we want to determine what our expected read data is just by looking
   // at the inputs to the DUT (in particular, writes to TXDATA). Store all writes to txdata
   // into this queue.
   bit [7:0] txdata_wr[$];
+  bit [10:0] acqdata_rd[$];
+
+  bit [6:0] target_addr0;  // Target Address 0
+  bit [6:0] target_addr1;  // Target Address 1
 
   `uvm_component_new
 
@@ -149,13 +140,11 @@ class i2c_reference_model extends uvm_component;
     rd_pending_item = new("rd_pending_item");
 
     // Input fifos
-    target_mode_wr_stim_fifo = new("target_mode_wr_stim_fifo", this);
-    target_mode_rd_stim_fifo = new("target_mode_rd_stim_fifo", this);
+    target_mode_wr_obs_fifo = new("target_mode_wr_obs_fifo", this);
     target_mode_rd_obs_fifo = new("target_mode_rd_obs_fifo", this);
     // Output ports
     controller_mode_wr_port = new("controller_mode_wr_port", this);
     controller_mode_rd_port = new("controller_mode_rd_port", this);
-    target_mode_wr_obs_port = new("target_mode_wr_obs_port", this);
     target_mode_wr_port = new("target_mode_wr_port", this);
     target_mode_rd_port = new("target_mode_rd_port", this);
   endfunction: build_phase
@@ -163,8 +152,7 @@ class i2c_reference_model extends uvm_component;
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      forever create_wr_exp_from_stim();
-      forever create_rd_exp_from_stim();
+      forever create_target_exp();
     join_none
   endtask: run_phase
 
@@ -244,8 +232,12 @@ class i2c_reference_model extends uvm_component;
     case (csr.get_name())
 
       "target_id": begin
+        // Update the model's addresses
+        target_addr0 = get_field_val(ral.target_id.address0, data);
+        target_addr1 = get_field_val(ral.target_id.address1, data);
         // If we write new addresses into the DUT, also update the agent's configuration
         // with the same value(s).
+        // TODO(#23920) Remove knowledge of the DUT Addresses from the i2c_agent
         cfg.m_i2c_agent_cfg.target_addr0 = get_field_val(ral.target_id.address0, data);
         cfg.m_i2c_agent_cfg.target_addr1 = get_field_val(ral.target_id.address1, data);
       end
@@ -268,10 +260,7 @@ class i2c_reference_model extends uvm_component;
       end
 
       "txdata": begin
-        // If 'cfg.read_rnd_data' is set (because we are unable to accurately predict the exp
-        // due to un-modelled control flow) capture expected read-op data at the point it is
-        // written into the TXFIFO (instead of getting it directly from the stimulus generator)
-        if (cfg.read_rnd_data) txdata_wr.push_back(data[7:0]);
+        txdata_wr.push_back(data[7:0]);
       end
 
       default:;
@@ -288,14 +277,8 @@ class i2c_reference_model extends uvm_component;
       end
 
       "acqdata": begin
-        i2c_item obs;
-        obs = acq2item(data);
-        `uvm_info(`gfn, $sformatf("Pushing obs[%0d] to target_mode_wr_obs_port now!",
-                                  obs.tran_id), UVM_MEDIUM)
-
-        target_mode_wr_obs_port.write(obs);
-
-        cfg.rcvd_acq_cnt++;
+        acqdata_rd.push_back(data[10:0]);
+        cfg.rcvd_acq_cnt++; // Used for stimulus generation purposes #TODO Remove
       end
 
       default:;
@@ -317,12 +300,12 @@ class i2c_reference_model extends uvm_component;
     // transfer (maybe a START or RSTART), where the FBYTE contains address + rw-bit.
     if (start) begin
 
-      if (exp_wr_item.start) begin
+      if (exp_wr_item.start || exp_wr_item.rstart_front) begin
         // If there is an in-progress write transfer, and this fmtfifo write has start = 1,
         // the current transfer ends (with an RSTART beginning a new transfer.)
-        exp_wr_item.rstart = 1'b1;
-        exp_wr_item.stop = 1'b1;
+        exp_wr_item.rstart_back = 1'b1;
         push_complete_write_txn(exp_wr_item);
+        prev_wr_item = exp_wr_item; // Keep track of the previously pushed item.
         exp_wr_item = new("exp_wr_item");
       end
 
@@ -331,19 +314,27 @@ class i2c_reference_model extends uvm_component;
       // of the transfer. Upon further writes to the FMTFIFO, we will fill in the remaining
       // fields.
       case (fbyte[0])
-        1'b1: begin // read transfer
+        i2c_pkg::READ: begin
           exp_rd_item = new("exp_rd_item");
           exp_rd_item.bus_op = BusOpRead;
           exp_rd_item.addr   = fbyte[7:1];
-          exp_rd_item.start  = 1;
-          exp_rd_item.stop   = stop;
+          if (prev_rd_item != null && prev_rd_item.rstart_back) begin
+            exp_rd_item.rstart_front = 1;
+          end else begin
+            exp_rd_item.start = 1;
+          end
+          exp_rd_item.stop = stop;
         end
-        1'b0: begin // write transfer
+        i2c_pkg::WRITE: begin
           exp_wr_item = new("exp_wr_item");
           exp_wr_item.bus_op = BusOpWrite;
           exp_wr_item.addr   = fbyte[7:1];
-          exp_wr_item.start  = 1;
-          exp_wr_item.stop   = stop;
+          if (prev_wr_item != null && prev_wr_item.rstart_back) begin
+            exp_wr_item.rstart_front = 1;
+          end else begin
+            exp_wr_item.start = 1;
+          end
+          exp_wr_item.stop = stop;
         end
         default:;
       endcase
@@ -353,11 +344,12 @@ class i2c_reference_model extends uvm_component;
     // expectations.
     end else begin // fdata.start == 0
 
-      if (exp_wr_item.start) begin
+      if (exp_wr_item.start || exp_wr_item.rstart_front) begin
         // There is already an in-progress write transfer.
 
         // Capture the data byte
         exp_wr_item.data_q.push_back(fbyte);
+        exp_wr_item.data_ack_q.push_back(i2c_pkg::ACK);
         exp_wr_item.num_data++;
 
         // If stop was set, that concludes the in-progress write
@@ -365,11 +357,12 @@ class i2c_reference_model extends uvm_component;
         exp_wr_item.stop = stop;
         if (stop) begin
           push_complete_write_txn(exp_wr_item);
+          prev_wr_item = exp_wr_item; // Keep track of the previously pushed item.
           exp_wr_item = new("exp_wr_item");
         end
       end
 
-      if (exp_rd_item.start) begin
+      if (exp_rd_item.start || exp_rd_item.rstart_front) begin
         // There is an in-progress read transfer.
 
         // If the 'readb' bit was set, we know more about the upcoming read transfer.
@@ -387,12 +380,11 @@ class i2c_reference_model extends uvm_component;
           end else begin
             exp_rd_item.num_data  = num_rd_bytes;
           end
-          exp_rd_item.stop   = stop;
-          exp_rd_item.rcont  = rcont;
-          exp_rd_item.read   = readb;
-          exp_rd_item.nakok  = nakok;
-          exp_rd_item.nack   = ~exp_rd_item.rcont;
-          exp_rd_item.rstart = (exp_rd_item.stop) ? 1'b0 : 1'b1;
+          exp_rd_item.stop        = stop;
+          exp_rd_item.rcont       = rcont;
+          exp_rd_item.read        = readb;
+          exp_rd_item.nakok       = nakok;
+          // exp_rd_item.rstart_back = (exp_rd_item.stop) ? 1'b0 : 1'b1;
           // Note. 'start' is ignored when used with 'readb'.
 
           // The rx_overflow vseq overflows the RXFIFO by 1 word of data, so
@@ -403,6 +395,7 @@ class i2c_reference_model extends uvm_component;
           // reads from 'rdata'.
           `downcast(tmp_rd_item, exp_rd_item.clone());
           rd_pending_q.push_back(tmp_rd_item);
+          prev_rd_item = tmp_rd_item; // Keep track of the previously pushed item.
 
           // If this read also set the 'stop' bit to end the transaction, clear the
           // temporary variable we use to accumulate chained reads.
@@ -485,6 +478,7 @@ class i2c_reference_model extends uvm_component;
       if (rd_pending_item.num_data == rdata_cnt &&
           rd_pending_item.stop) begin
         rdata_cnt = 0;
+        rd_pending_item.data_ack_q.push_back(i2c_pkg::NACK);
 
         if (!cfg.under_reset) begin
           i2c_item tmp_rd_item;
@@ -494,67 +488,114 @@ class i2c_reference_model extends uvm_component;
           // item the next time we go around and pick up the new FMTFIFO write.
           rd_pending_item.clear_all();
         end
+      end else begin
+        rd_pending_item.data_ack_q.push_back(i2c_pkg::ACK);
       end
 
     end
 
   endtask: rdata_read
 
-  // Convert stimulus items into expectations for checking.
+  // This task generates DUT-Target transfer expectations
   //
-  virtual task create_wr_exp_from_stim();
-    i2c_item exp_wr;
-    i2c_item wr_stim_item;
-
-    // Get the stimulus item from the vseq when it is created.
-    // Push the stimulus item directly to the scoreboard as our wr_exp item.
-    target_mode_wr_stim_fifo.get(wr_stim_item);
-    `downcast(exp_wr, wr_stim_item.clone());
-
-    target_mode_wr_port.write(exp_wr);
-  endtask: create_wr_exp_from_stim
-
-  // Convert stimulus items into expectations for checking.
+  // Previously, these expectations were formed by taking the stimulus items directly from the
+  // virtual sequences, which was very limiting.
   //
-  virtual task create_rd_exp_from_stim();
-    i2c_item exp_rd;
-    i2c_item rd_stim_item;
-
-    // Get the stimulus item from the vseq when it is created.
-    target_mode_rd_stim_fifo.get(rd_stim_item);
-
-    case (cfg.read_rnd_data)
-      1'b0: begin
-        // If disabled, we use the stimulus item directly as our expectation.
-        `downcast(exp_rd, rd_stim_item.clone());
+  // Now, we take input from the i2c_monitor directly, which is how this should have been
+  // architected from the start. Note that i2c_item is currently used at a 'transfer' level, which
+  // makes modelling sub-transfer behaviours precisely difficult. In the future, we should reduce
+  // the granularity down to the byte-level, which will make it possible to model with greater
+  // precision.
+  //
+  virtual task create_target_exp();
+    fork
+      forever begin
+        i2c_item obs_item, obs_item_clone;
+        target_mode_wr_obs_fifo.get(obs_item);
+        `downcast(obs_item_clone, obs_item.clone());
+        create_target_wr_exp(obs_item_clone);
       end
-      1'b1: begin
-        i2c_item obs_rd;
-        // If enabled, we completely ignore the stimulus item that came from the vseq.
-        // Instead, we capture data that was written to the CSRs, and create an entirely new
-        // item from that. 'txdata_wr[$]' is used to capture all write data to the TXFIFO,
-        // so we pop data from this queue to create our new expected item.
-
-        // First, block until we get the obs_item from the monitor, so we know:
-        // 1) When the transaction has finished.
-        // 2) How much data should be in the expected item.
-        begin
-          i2c_item temp;
-          target_mode_rd_obs_fifo.get(temp);
-          `downcast(obs_rd, temp.clone())
-        end
-
-        // Create NEW item.
-        `uvm_create_obj(i2c_item, exp_rd);
-        exp_rd.num_data = obs_rd.num_data;
-        repeat (obs_rd.num_data) exp_rd.data_q.push_back(txdata_wr.pop_front);
+      forever begin
+        i2c_item obs_item, obs_item_clone;
+        target_mode_rd_obs_fifo.get(obs_item);
+        `downcast(obs_item_clone, obs_item.clone());
+        create_target_rd_exp(obs_item_clone);
       end
-      default:;
-    endcase
+    join
+  endtask : create_target_exp
 
-    // Push the item to the scoreboard as our rd_exp item.
-    target_mode_rd_port.write(exp_rd);
-  endtask: create_rd_exp_from_stim
+  // Convert DUT-target monitor observations of write transfers into expectations for checking.
+  //
+  // While less of the DUT is comprehensively modelled here, it makes sense to start
+  // with the monitor observation, then to add in data to this item based on our predictions.
+  // This also makes sense as a baseline comparison for mis-addressed transfers, as we can also
+  // make comparisons based on the same transaction item format, except with explicitly-captured
+  // fields to represent NACK-ing the address byte, and NACK-ing any further bytes in the transfer.
+  //
+  virtual function void create_target_wr_exp(i2c_item obs_xfer);
+    i2c_item exp_wr_xfer;
+
+    // To begin with, we start with the monitor's observation as our prediction.
+    exp_wr_xfer = obs_xfer;
+
+    // If the address of the transfer did not match the DUT, we don't expect to see any DUT
+    // interaction with the remainder of the transfer. In this case, we can pass the i2c monitor
+    // observation straight through without modification as the expectation.
+
+    if (is_target_addr(obs_xfer.addr)) begin
+      // The address of the transfer matched what is configured into the DUT, so we expect the
+      // the transfer to be accepted, and to become visible at the ACQFIFO.
+
+      // Count the number of ACQFIFO items we expect to read to completely observe the transfer.
+      cfg.sent_acq_cnt += 1 /*signal=start/rstart, abyte=addr+dir*/ +
+                          obs_xfer.num_data /*signal=none, abyte=data*/ +
+                          (obs_xfer.stop ? 1 /*signal=stop, abyte=xx*/ : 0);
+
+      // #TODO Add the captured ACQFIFO write data into the sequence item we got from the monitor
+      // exp_wr_xfer.data_q = '{};
+      // if (acqdata_rd.size() < exp_wr_xfer.num_data) begin
+      //   `uvm_fatal("Too few ACQFIFO reads to complete the expected item!")
+      // end
+      // repeat (exp_wr_xfer.num_data) exp_wr_xfer.data_q.push_back(acqdata_rd.pop_front());
+    end
+
+    target_mode_wr_port.write(exp_wr_xfer);
+  endfunction: create_target_wr_exp
+
+  // Convert DUT-target monitor observations of read transfers into expectations for checking.
+  //
+  virtual task create_target_rd_exp(i2c_item obs_xfer);
+    i2c_item exp_rd_xfer;
+
+    exp_rd_xfer = obs_xfer;
+
+    // If the transfer was not addressed to the DUT we can push the item to the scoreboard as
+    // our rd_exp item.
+
+    if (is_target_addr(obs_xfer.addr)) begin
+      // The address of the transfer matched what is configured into the DUT, so we expect the
+      // the transfer to be accepted, and to become visible at the ACQFIFO.
+      exp_rd_xfer = obs_xfer;
+
+      // Count the number of ACQFIFO items we expect to read to completely observe the transfer.
+      cfg.sent_acq_cnt += 1 /*signal=start/rstart, abyte=addr+dir*/ +
+                          (exp_rd_xfer.stop ? 1 /*signal=stop, abyte=xx*/ : 0);
+
+      // If we received the item from the monitor, that means the transfer must have already
+      // ended. Therefore, we know any data in the item has already been written into the
+      // txfifo.
+      exp_rd_xfer.data_q = '{};
+      repeat (exp_rd_xfer.num_data) exp_rd_xfer.data_q.push_back(txdata_wr.pop_front());
+    end
+
+    target_mode_rd_port.write(exp_rd_xfer);
+
+  endtask: create_target_rd_exp
+
+
+  function bit is_target_addr(bit [6:0] addr);
+    return (addr == target_addr0 || addr == target_addr1);
+  endfunction
 
 
   // Reset local fifos, queues and variables

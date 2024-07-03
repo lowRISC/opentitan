@@ -32,10 +32,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // and allow tb to program a new timing parameter.
   bit     got_stop = 0;
 
-  int     sent_rd_byte = 0;
-  int     rcvd_rd_byte = 0;
-
-  bit     is_read;
+  int     rcvd_rd_byte = 0; // Increment each time the agent reads a byte.
 
   // this variables can be configured from host test
   uint i2c_host_min_data_rw = 1;
@@ -48,9 +45,10 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   bit     host_scl_pause = 0;
   int     host_scl_pause_cyc = 0;
 
-  // ack followed by stop test mode
-  bit     allow_ack_stop = 0;
-  bit     ack_stop_det = 0;
+  // ack-stop test mode
+  // This mode is used to generate stimulus that expects the assertion of the 'unexp_stop' irq
+  bit     allow_ack_stop = 0; // Enable the test mode, including generating the modified stimulus
+  bit     ack_stop_det = 0; // The monitor asserts this when an ack-then-stop stimulus has occurred
 
   ////////////////
   // Addressing //
@@ -62,17 +60,13 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   // i2c_target_bad_addr //////////////////////
   //
-  // Set this bit when there is the possibility of generating Agent-Controller stimulus
-  // transfers where the address does not match that configured into the DUT.
-  bit       allow_bad_addr = 0;
-
-  bit       valid_addr; // Was the last observed transaction to the DUT addressed correctly?
   // Store history of good and bad read target addresses ( '1' = good, '0' = bad )
   // This is used by the env's scoreboard to adjust its expectations, and also
   // to adjust the stimulus for reads, so we don't put data into the TXFIFO that will
   // never be read out.
   // Note. that this queue is only queried immediately before writing to the TXFIFO, and we only
   // push new values to the queue when the monitor decodes the address.
+  // TODO(#23920) Remove knowledge of the DUT Addresses from the i2c_agent
   bit       read_addr_q[$];
   /////////////////////////////////////////////
 
@@ -115,5 +109,12 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
     start_perf_monitor = new("start_perf_monitor");
     stop_perf_monitor = new("stop_perf_monitor");
   endfunction
+
+
+  // TODO(#23920) Remove knowledge of the DUT Addresses from the i2c_agent
+  function bit is_target_addr(bit [6:0] addr);
+    return (addr == target_addr0 || addr == target_addr1);
+  endfunction
+
 
 endclass : i2c_agent_cfg

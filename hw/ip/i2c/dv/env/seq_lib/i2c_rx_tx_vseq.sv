@@ -54,6 +54,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
                      ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
             get_timing_values();
             program_registers();
+            cfg.m_i2c_agent_cfg.got_stop = 0;
           end
 
           // if trans_type is provided, then rw_bit is overridden
@@ -115,9 +116,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end else begin // Addr10BitMode
       fmt_item.fbyte = {addr[9:0], rw_bit};
     end
-    program_format_flag(fmt_item, "  program_address_to_target", 1);
     `uvm_info(`gfn, $sformatf("program, %s address %x",
         fmt_item.fbyte[0] ? "read" : "write", fmt_item.fbyte[7:1]), UVM_HIGH)
+    program_format_flag(fmt_item, "program_address_to_target()");
   endtask : program_address_to_target
 
   virtual task program_control_read_to_target(bit last_tran);
@@ -150,7 +151,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           "with STOP, next transaction should begin with START" :
           "without STOP, next transaction should begin with RSTART"), UVM_HIGH)
     end
-    program_format_flag(fmt_item, "  program number of bytes to read", 0);
+    program_format_flag(fmt_item, "program_control_read_to_target()");
   endtask : program_control_read_to_target
 
   virtual task read_data_from_target();
@@ -219,7 +220,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_MEDIUM)
       end
-      program_format_flag(fmt_item, "program_write_data_to_target", 1);
+      program_format_flag(fmt_item, "program_write_data_to_target()");
     end
   endtask : program_write_data_to_target
 

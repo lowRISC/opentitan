@@ -131,9 +131,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       fetch_no_tb_txn(m_i2c_host_seq.req_q);
     end else begin
       // Create a normal transaction
-      i2c_item txn_q[$];
-      create_txn(txn_q);
-      fetch_txn(txn_q, m_i2c_host_seq.req_q, .skip_start(skip_start));
+      generate_agent_controller_stimulus(m_i2c_host_seq.req_q);
     end
 
     fork
@@ -254,7 +252,6 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
   // Populate transaction queue to introduce Start/Stop conditions in Write Data/Address byte
   function void create_write_glitch(ref i2c_item driver_q[$]);
     i2c_item txn;
-    i2c_item exp_txn;
     `uvm_info(`gfn, $sformatf("Introducing %s glitch", glitch.name()), UVM_LOW)
 
     // Address byte
@@ -263,10 +260,6 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     txn.wdata[0] = (rw_bit == ReadOnly); // dir
     txn.drv_type = HostData;
     driver_q.push_back(txn);
-
-    `uvm_create_obj(i2c_item, exp_txn)
-    exp_txn.wdata = txn.wdata;
-
 
     // Add entry for Address glitch
     if (glitch inside {AddressByteStart, AddressByteStop}) begin
@@ -284,19 +277,11 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       // glitch, since this is a new transaction that never completes
       // addressing the target.
       return; // return, since glitch entry is done
-
-    end else begin
-      // for valid address transaction, indicate start bit
-      exp_txn.start = 1;
-      push_exp_txn(exp_txn);
     end
 
     // Data byte
     `uvm_create_obj(i2c_item, txn)
     txn.wdata = $urandom_range(1, 127);
-
-    `uvm_create_obj(i2c_item, exp_txn)
-    exp_txn.wdata = 8'hDD;
 
     // Glitch in Data byte
     if (glitch inside {WriteDataByteStart, WriteDataByteStop}) begin
@@ -313,60 +298,42 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       `uvm_create_obj(i2c_item, txn)
       if (glitch == WriteDataByteStart) begin
         txn.drv_type = HostRStart;
-        txn.rstart = 1;
+        txn.rstart_front = 1;
         skip_start = 1;
       end else begin
         txn.drv_type = HostStop;
         txn.stop = 1;
-        exp_txn.stop = 1;
       end
       // Push transaction for driver
       driver_q.push_back(txn);
-    end
-    // Push transaction for expected ACQ data
-    // No need to do this with skip_start, since it would duplicate fetch_txn()
-    // Is this horrible spaghetti code? Why, yes, yes it is.
-    // TODO(): Cleanup?
-    if (!skip_start) begin
-      push_exp_txn(exp_txn);
     end
   endfunction
 
 
   task create_read_glitch(ref i2c_item driver_q[$]);
     i2c_item txn;
-    i2c_item full_txn;
-    i2c_item read_txn;
-    i2c_item exp_txn;
     bit valid_addr;
     bit got_valid;
     `uvm_info(`gfn, $sformatf("Introducing %s glitch", glitch.name()), UVM_LOW)
     // Address byte
     `uvm_create_obj(i2c_item, txn)
-    `uvm_create_obj(i2c_item, full_txn)
-    `uvm_create_obj(i2c_item, exp_txn)
     txn.wdata[7:1] = get_target_addr(); //target_addr0;
     txn.wdata[0] = rw_bit == ReadOnly;
     txn.read = rw_bit == ReadOnly;
     txn.drv_type = HostData;
-    txn.tran_id = this.tran_id;
-    full_txn.start = 1;
-    full_txn.tran_id = this.exp_rd_id;
-    `downcast(exp_txn, txn.clone());
     valid_addr = is_target_addr(txn.wdata[7:1]);
     // Push transaction for driver
     driver_q.push_back(txn);
-    // Update expected transaction for address
-    exp_txn.start = 1;
-    exp_txn.read = 1;
-    push_exp_txn(exp_txn);
-    // Update read transasction count
-    if (valid_addr) this.exp_rd_id++;
+
     // Update read transaction of DUT
-    `uvm_create_obj(i2c_item, read_txn)
-    read_txn.wdata = 8'hFF;
-    read_rcvd.push_back(1); // add one entry for txfifo
-    read_txn_q.push_back(read_txn);
+    begin
+      i2c_item read_txn;
+      `uvm_create_obj(i2c_item, read_txn)
+      read_txn.wdata = 8'hFF;
+      read_rcvd_q.push_back(1); // add one entry for txfifo
+      read_byte_q.push_back(read_txn.wdata);
+    end
+
     // Data byte
     if(glitch inside {ReadDataByteStart}) begin
       // Update driver transaction
@@ -387,14 +354,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       txn.drv_type = HostRStart;
       // Push glitch transaction to driver
       driver_q.push_back(txn);
-      // Update expected transaction
-      `uvm_create_obj(i2c_item, exp_txn)
-      exp_txn.wdata = 8'hDD;
-      exp_txn.rstart = 1;
-      push_exp_txn(exp_txn);
       skip_start = 1;
-      full_txn.rstart = 1;
-      if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
       return;
     end else if (glitch inside {ReadDataAckStart, ReadDataAckStop}) begin
       // Update driver transaction
@@ -405,35 +365,16 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       driver_q.push_back(txn);
       // Introduce Start glitch
       `uvm_create_obj(i2c_item, txn)
-      `uvm_create_obj(i2c_item, exp_txn)
-      exp_txn.wdata = 8'hDD;
       if (glitch inside {ReadDataAckStart}) begin
         txn.drv_type = HostRStart;
-        exp_txn.rstart = 1;
         skip_start = 1;
-        full_txn.rstart = 1;
       end else begin
         txn.drv_type = HostStop;
-        exp_txn.stop = 1;
-        full_txn.stop = 1;
       end
       // Push glitch transaction to driver
       driver_q.push_back(txn);
-      // push expected transaction
-      push_exp_txn(exp_txn);
-      if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
     end
   endtask
-
-
-  // Update expected transaction from ACQDATA register
-  function void push_exp_txn(ref i2c_item exp_txn);
-    // Push transaction for expected ACQ data
-    p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-    exp_txn.tran_id = this.tran_id;
-    cfg.sent_acq_cnt++;
-    this.tran_id++;
-  endfunction
 
 
   task stop_target_interrupt_handler();
@@ -444,7 +385,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
     cfg.read_all_acq_entries = 1;
     if (cfg.rd_pct != 0) begin
-      `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
+      `DV_WAIT(sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
       `uvm_info(id, $sformatf("st3 sent_acq:%0d rcvd_acq:%0d",
                               cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
     end

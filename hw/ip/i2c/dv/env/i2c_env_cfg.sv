@@ -41,7 +41,8 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // any larger transaction. A transfer with no data, where the address byte is NACK'd,
   // is possible with our stimulus approach, and this can break checking in certain
   // circumstances.
-  int        min_xfer_len = 0;
+  // Currently, only min_xfer_len >= 1 is supported.
+  int        min_xfer_len = 1;
 
   // The vseq stimulus has routines to generate interrupt and polling-driven stimulus.
   // This bit (settable via a plusarg) allows individual tests to specify which generic
@@ -57,24 +58,19 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   bit        slow_acq = 1'b0;
   bit        slow_txq = 1'b0;
 
-  // In Target-mode, read data is created by i2c_base_seq::fetch_txn().
-  // Random TXFIFO flush events make it difficult to check read path integrity.
-  // By setting 'read_rnd_data = 1', the expected read data is instead collected
-  // right at the input of TXFIFO. On TXFIFO reset, any expected read data is
-  // also flushed.
-  bit        read_rnd_data = 0;
-
   ////////////////////////////////
   // Helper Variables (not cfg) //
   ////////////////////////////////
 
-  int        sent_acq_cnt;
-  int        rcvd_acq_cnt;
-  bit [7:0]  lastbyte;
+  // These variables track how many items we expect to be produced at the ACQFIFO for some
+  // given stimulus. This is used by the testbench to know when it should start reading
+  // from the ACQFIFO, and also to know when it can stop to end the test.
+  // TODO(#23920) REFACTOR
+  int        sent_acq_cnt; // How many ACQFIFO items we expect the be produced
+  int        rcvd_acq_cnt; // How many ACQFIFO items we have observed by reading it
 
-  // Flags for the 'ack_stop' test
-  int        sent_ack_stop = 0;
-  int        rcvd_ack_stop = 0;
+  // The i2c_host_fifo_fmt_empty_vseq uses this variable for checking purposes.
+  bit [7:0]  lastbyte; // TODO(#23920) Remove
 
   // Flags that test sequences can use to cleanup
   bit        stop_intr_handler = 1'b0;
@@ -124,12 +120,10 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
     min_data = 1;
     max_data = 60;
     read_all_acq_entries = 0;
-    sent_ack_stop = 0;
-    rcvd_ack_stop = 0;
   endfunction : reset_seq_cfg
 
   task wait_fifo_not_empty(i2c_analysis_fifo fifo);
-    while (!fifo.is_empty()) begin
+    while (fifo.is_empty()) begin
       clk_rst_vif.wait_clks(1);
     end
   endtask

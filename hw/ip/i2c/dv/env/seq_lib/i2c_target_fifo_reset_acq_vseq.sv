@@ -12,7 +12,6 @@ class i2c_target_fifo_reset_acq_vseq extends i2c_target_runtime_base_vseq;
   virtual task pre_start();
     super.pre_start();
 
-    cfg.read_rnd_data = 1;
     seq_runtime_us = 10000;
 
     // Use a basic Agent sequence that drives all items it is passed.
@@ -36,7 +35,7 @@ class i2c_target_fifo_reset_acq_vseq extends i2c_target_runtime_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Resetting scoreboard now."), UVM_MEDIUM)
     // Clear base-vseq id for exp_items
-    tran_id = 0;
+    stim_id = 0;
     // Flush any leftover data from the fifos
     ral.fifo_ctrl.acqrst.set(1'b1);
     ral.fifo_ctrl.txrst.set(1'b1);

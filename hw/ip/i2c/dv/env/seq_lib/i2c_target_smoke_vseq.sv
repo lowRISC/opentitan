@@ -88,21 +88,17 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     fork
       begin
         for (int i = 0; i < num_trans; i++) begin
-          item_q txn_q;
-          // Generate all the transactions up-front
-          create_txn(txn_q);
-          fetch_txn(txn_q, txn_stimulus[i]);
-        end
-        for (int i = 0; i < num_trans; i++) begin
-          get_timing_values();
           `uvm_info(`gfn, $sformatf("Starting stimulus transaction %0d/%0d.",
             i+1, num_trans), UVM_HIGH)
+          generate_agent_controller_stimulus(txn_stimulus[i]);
+
           if (i > 0) begin
             // Wait for the STOP-condition (the end of the previous transaction) before
             // programming new timing parameters.
             `DV_WAIT(cfg.m_i2c_agent_cfg.got_stop,, cfg.spinwait_timeout_ns, "target_smoke_vseq")
             cfg.m_i2c_agent_cfg.got_stop = 0;
           end
+          get_timing_values();
           program_registers();
 
           `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
