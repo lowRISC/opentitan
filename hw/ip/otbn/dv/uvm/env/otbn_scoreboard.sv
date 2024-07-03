@@ -394,10 +394,11 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           if (item.rst_n !== 1'b1) model_status = item.status;
 
           // Has the status changed from idle to busy? If so, we should have seen a write to the
-          // command register on the previous posedge. See comment above pending_start_tl_trans for
-          // the details.
+          // command register on the previous posedge or there should be an RMA request. See comment
+          // above pending_start_tl_trans for the details of how we track writes to the command
+          // register.
           if (model_status == otbn_pkg::StatusIdle && is_busy) begin
-            `DV_CHECK_FATAL(pending_start_tl_trans,
+            `DV_CHECK_FATAL(pending_start_tl_trans || cfg.escalate_vif.req == lc_ctrl_pkg::On,
                             "Saw start transaction without corresponding write to CMD")
             pending_start_tl_trans = 1'b0;
           end
