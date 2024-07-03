@@ -542,18 +542,25 @@ package csr_utils_pkg;
                               input compare_op_e        compare_op = CompareOpEq,
                               input bit                 backdoor = 0,
                               input uvm_verbosity       verbosity = UVM_HIGH);
+    static int                      count;
+    count++;
+    `uvm_info($sformatf("%m()"), $sformatf(
+                "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
+                count,backdoor,exp_data, ptr.get_name()), verbosity)
     fork
       begin : isolation_fork
         csr_field_t     csr_or_fld;
         uvm_reg_data_t  read_data;
         string          msg_id = {csr_utils_pkg::msg_id, "::csr_spinwait"};
+        automatic int lcount = count;
 
         csr_or_fld = decode_csr_or_field(ptr);
         if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
         fork
           while (!under_reset) begin
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
-            `uvm_info("csr_utils_pkg", "In csr_spinwait", verbosity)
+            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d",lcount),
+                      verbosity)
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
             `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",
@@ -573,8 +580,11 @@ package csr_utils_pkg;
             endcase
           end
           begin
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id, $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
-                ptr.get_full_name(), csr_or_fld.csr.get_address(), exp_data))
+            automatic int lcount = count;
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
+                             "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
+                             ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
+                             exp_data,lcount)})
           end
         join_any
         disable fork;
