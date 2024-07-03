@@ -161,6 +161,16 @@
       tests: ["flash_ctrl_rd_intg", "flash_ctrl_access_after_disable"]
     }
     {
+      name: sec_cm_mem_addr_infection
+      desc: '''Verify the countermeasure(s) MEM.ADDR_INFECTION.
+      Send a flash request from the host, inject a fault into the address inside
+      the flash_phy_rd module, and check that we receive the expected TL-UL
+      integrity error.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_host_addr_infection"]
+    }
+    {
       name: sec_cm_mem_disable_config_mubi
       desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
       stage: V2S

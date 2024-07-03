@@ -467,6 +467,13 @@
                  "+ecc_mode=1"]
       reseed: 1
     }
+    {
+      name: flash_ctrl_host_addr_infection
+      uvm_test_seq: flash_ctrl_host_addr_infection_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1",
+                 "+otf_num_hr=100", "+en_always_read=1"]
+      reseed: 3
+    }
  ]
 
   // List of regressions.
