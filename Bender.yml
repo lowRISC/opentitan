@@ -6,8 +6,9 @@ dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.0 }
+  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.2 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
+  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "d47f3d0d207a5f22f301706f825dbf960f97f56b" } # branch: master
 
 export_include_dirs:
        - hw/ip/prim/rtl
@@ -16,6 +17,7 @@ export_include_dirs:
        - hw/dv/sv/dv_utils
        - hw/ip/tlul2axi/test
        - hw/ip/lowrisc_ibex/rtl
+       - hw/include
 
 sources:
 
@@ -821,6 +823,9 @@ sources:
 
       -  target: test
          files:
+           - hw/include/pulp_interfaces.sv
+           - hw/include/pulp_soc_defines.sv
+           - hw/include/cluster_bus_defines.sv
            - hw/tb/util/uart.sv
            - hw/tb/util/jtag_intf.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
@@ -833,6 +838,9 @@ sources:
          defines:
            VIPS: ~
          files:
+           - hw/include/pulp_interfaces.sv
+           - hw/include/pulp_soc_defines.sv
+           - hw/include/cluster_bus_defines.sv
            - hw/tb/util/uart.sv
            - hw/tb/vips/s25fs256s.v
            - hw/tb/util/jtag_intf.sv

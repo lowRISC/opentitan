@@ -77,30 +77,25 @@ module testbench_asynch_astral ();
    localparam int  NUM_BEATS = 100;
 
    localparam int unsigned RTC_CLOCK_PERIOD = 10ns;
-   localparam int unsigned AON_PERIOD = 5us;
-   localparam int unsigned IO_PERIOD = 10.41ns;
-   localparam int unsigned USB_PERIOD = 20.82ns;
 
    int          secd_sections [bit [31:0]];
    logic [31:0] secd_memory[bit [31:0]];
-   string       sram;
    logic [1:0]  boot_mode;
+
+   string       sram;
 
    logic [1:0]  bootmode;
 
    logic clk_sys = 1'b0;
-   logic aon_clk = 1'b0;
-   logic io_clk = 1'b0;
-   logic usb_clk = 1'b0;
    logic rst_sys_n;
    logic es_rng_fips;
    logic SCK, CSNeg;
+
    logic [3:0] SPIdata_i, SPIdata_o, SPIdata_oe_o;
 
    wire  I0, I1, I2, I3, WPNeg, RESETNeg;
    wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
    wire  ibex_uart_rx, ibex_uart_tx;
-
 
    logic [AsyncAxiOutAwWidth-1:0] async_axi_out_aw_data_o;
    logic             [LogDepth:0] async_axi_out_aw_wptr_o;
@@ -118,67 +113,7 @@ module testbench_asynch_astral ();
    logic             [LogDepth:0] async_axi_out_r_wptr_i;
    logic             [LogDepth:0] async_axi_out_r_rptr_o;
 
-   logic [AsyncAxiOutAwWidth-1:0] async_idma_axi_out_aw_data_o;
-   logic             [LogDepth:0] async_idma_axi_out_aw_wptr_o;
-   logic             [LogDepth:0] async_idma_axi_out_aw_rptr_i;
-   logic [ AsyncAxiOutWWidth-1:0] async_idma_axi_out_w_data_o;
-   logic             [LogDepth:0] async_idma_axi_out_w_wptr_o;
-   logic             [LogDepth:0] async_idma_axi_out_w_rptr_i;
-   logic [ AsyncAxiOutBWidth-1:0] async_idma_axi_out_b_data_i;
-   logic             [LogDepth:0] async_idma_axi_out_b_wptr_i;
-   logic             [LogDepth:0] async_idma_axi_out_b_rptr_o;
-   logic [AsyncAxiOutArWidth-1:0] async_idma_axi_out_ar_data_o;
-   logic             [LogDepth:0] async_idma_axi_out_ar_wptr_o;
-   logic             [LogDepth:0] async_idma_axi_out_ar_rptr_i;
-   logic [ AsyncAxiOutRWidth-1:0] async_idma_axi_out_r_data_i;
-   logic             [LogDepth:0] async_idma_axi_out_r_wptr_i;
-   logic             [LogDepth:0] async_idma_axi_out_r_rptr_o;
-
    uart_bus #(.BAUD_RATE(1250000), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx), .tx(ibex_uart_rx), .rx_en(1'b1)); //1470588
-
-   typedef axi_test::axi_rand_slave #(
-     .AW( AxiAddrWidth  ),
-     .DW( AxiDataWidth  ),
-     .IW( AxiOutIdWidth ),
-     .UW( AxiUserWidth  ),
-     .TA(TA),
-     .TT(TT),
-     .RAND_RESP(RAND_RESP),
-     .AX_MIN_WAIT_CYCLES(AX_MIN_WAIT_CYCLES),
-     .AX_MAX_WAIT_CYCLES(AX_MAX_WAIT_CYCLES),
-     .R_MIN_WAIT_CYCLES(R_MIN_WAIT_CYCLES),
-     .R_MAX_WAIT_CYCLES(R_MAX_WAIT_CYCLES),
-     .RESP_MIN_WAIT_CYCLES(RESP_MIN_WAIT_CYCLES),
-     .RESP_MAX_WAIT_CYCLES(RESP_MAX_WAIT_CYCLES)
-   ) axi_ran_slave;
-
-   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-   ) tlul2axi_slave();
-
-   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-   ) tlul2axi (clk_sys);
-
-   AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-   ) idma_axi_slave();
-
-   AXI_BUS_DV #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
-    .AXI_USER_WIDTH ( AxiUserWidth  )
-   ) idma_axi (clk_sys);
 
    typedef jtag_ot_test::riscv_dbg #(
       .IrLength       (5                 ),
@@ -191,25 +126,13 @@ module testbench_asynch_astral ();
    jtag_ot_pkg::jtag_req_t jtag_i;
    jtag_ot_pkg::jtag_rsp_t jtag_o;
 
-   axi_out_req_t   tlul2axi_req, idma_axi_req;
-   axi_out_resp_t  tlul2axi_rsp, idma_axi_rsp;
-
+   axi_out_req_t   tlul2axi_req;
+   axi_out_resp_t  tlul2axi_rsp;
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
 
    riscv_dbg_t::jtag_driver_t jtag_driver = new(jtag_mst);
    riscv_dbg_t riscv_dbg = new(jtag_driver);
-
-   axi_ran_slave tlul2axi_rand_slave = new(tlul2axi);
-   axi_ran_slave idma_axi_rand_slave = new(idma_axi);
-
-   `AXI_ASSIGN (tlul2axi, tlul2axi_slave)
-   `AXI_ASSIGN_FROM_REQ (tlul2axi_slave, tlul2axi_req)
-   `AXI_ASSIGN_TO_RESP  (tlul2axi_rsp, tlul2axi_slave)
-
-   `AXI_ASSIGN (idma_axi, idma_axi_slave)
-   `AXI_ASSIGN_FROM_REQ (idma_axi_slave, idma_axi_req)
-   `AXI_ASSIGN_TO_RESP  (idma_axi_rsp, idma_axi_slave)
 
    assign jtag_i.tck        = clk_sys;
    assign jtag_i.trst_n     = jtag_mst.trst_n;
@@ -223,10 +146,10 @@ module testbench_asynch_astral ();
    assign ibex_uart_rx = '0;
 
 `ifdef VIPS
-   pad_alsaqr i_I0 ( .OEN(~SPIdata_oe_o[0]), .I(SPIdata_o[0]), .O(), .PUEN(1'b1), .PAD(I0), 
-                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), 
+   pad_alsaqr i_I0 ( .OEN(~SPIdata_oe_o[0]), .I(SPIdata_o[0]), .O(), .PUEN(1'b1), .PAD(I0),
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
                      .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
-   pad_alsaqr i_I1 ( .OEN(~SPIdata_oe_o[1]), .I(), .O(SPIdata_i[1]), .PUEN(1'b1), .PAD(I1), 
+   pad_alsaqr i_I1 ( .OEN(~SPIdata_oe_o[1]), .I(), .O(SPIdata_i[1]), .PUEN(1'b1), .PAD(I1),
                      .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S),
                      .BIAS(BIAS_S), .RETC(RETC_S)   );
    s25fs256s #(
@@ -236,8 +159,8 @@ module testbench_asynch_astral ();
    ) i_spi_flash_csn0 (
     .SI       ( I0 ),
     .SO       ( I1 ),
-    .SCK,      
-    .CSNeg,    
+    .SCK,
+    .CSNeg,
     .WPNeg    (    ),
     .RESETNeg (    )
    );
@@ -275,40 +198,21 @@ module testbench_asynch_astral ();
      .dst_resp_i                ( tlul2axi_rsp )
    );
 
-   axi_cdc_dst #(
-     .LogDepth   ( LogDepth         ),
-     .SyncStages ( CdcSyncStages    ),
-     .aw_chan_t  ( axi_out_aw_chan_t ),
-     .w_chan_t   ( axi_out_w_chan_t  ),
-     .b_chan_t   ( axi_out_b_chan_t  ),
-     .ar_chan_t  ( axi_out_ar_chan_t ),
-     .r_chan_t   ( axi_out_r_chan_t  ),
-     .axi_req_t  ( axi_out_req_t     ),
-     .axi_resp_t ( axi_out_resp_t    )
-   ) i_cdc_in_idma (
-     .async_data_slave_aw_data_i( async_idma_axi_out_aw_data_o ),
-     .async_data_slave_aw_wptr_i( async_idma_axi_out_aw_wptr_o ),
-     .async_data_slave_aw_rptr_o( async_idma_axi_out_aw_rptr_i ),
-     .async_data_slave_w_data_i ( async_idma_axi_out_w_data_o  ),
-     .async_data_slave_w_wptr_i ( async_idma_axi_out_w_wptr_o  ),
-     .async_data_slave_w_rptr_o ( async_idma_axi_out_w_rptr_i  ),
-     .async_data_slave_b_data_o ( async_idma_axi_out_b_data_i  ),
-     .async_data_slave_b_wptr_o ( async_idma_axi_out_b_wptr_i  ),
-     .async_data_slave_b_rptr_i ( async_idma_axi_out_b_rptr_o  ),
-     .async_data_slave_ar_data_i( async_idma_axi_out_ar_data_o ),
-     .async_data_slave_ar_wptr_i( async_idma_axi_out_ar_wptr_o ),
-     .async_data_slave_ar_rptr_o( async_idma_axi_out_ar_rptr_i ),
-     .async_data_slave_r_data_o ( async_idma_axi_out_r_data_i  ),
-     .async_data_slave_r_wptr_o ( async_idma_axi_out_r_wptr_i  ),
-     .async_data_slave_r_rptr_i ( async_idma_axi_out_r_rptr_o  ),
-     .dst_clk_i                 ( clk_sys      ),
-     .dst_rst_ni                ( rst_sys_n    ),
-     .dst_req_o                 ( idma_axi_req ),
-     .dst_resp_i                ( idma_axi_rsp )
+   axi_sim_mem #(
+       .AddrWidth (AxiAddrWidth),
+       .DataWidth (AxiDataWidth),
+       .IdWidth   (AxiOutIdWidth),
+       .UserWidth (AxiUserWidth),
+       .axi_req_t (axi_out_req_t),
+       .axi_rsp_t (axi_out_resp_t)
+   ) sim_mem (
+       .clk_i     ( clk_sys      ),
+       .rst_ni    ( rst_sys_n    ),
+       .axi_req_i ( tlul2axi_req ),
+       .axi_rsp_o ( tlul2axi_rsp )
    );
 
 /////////////////////////////// DUT ///////////////////////////////
-
 
    security_island #(.HartIdOffs(0)) dut (
        .clk_i            ( clk_sys       ),
@@ -342,21 +246,6 @@ module testbench_asynch_astral ();
        .async_axi_out_r_data_i,
        .async_axi_out_r_wptr_i,
        .async_axi_out_r_rptr_o,
-       .async_idma_axi_out_aw_data_o,
-       .async_idma_axi_out_aw_wptr_o,
-       .async_idma_axi_out_aw_rptr_i,
-       .async_idma_axi_out_w_data_o,
-       .async_idma_axi_out_w_wptr_o,
-       .async_idma_axi_out_w_rptr_i,
-       .async_idma_axi_out_b_data_i,
-       .async_idma_axi_out_b_wptr_i,
-       .async_idma_axi_out_b_rptr_o,
-       .async_idma_axi_out_ar_data_o,
-       .async_idma_axi_out_ar_wptr_o,
-       .async_idma_axi_out_ar_rptr_i,
-       .async_idma_axi_out_r_data_i,
-       .async_idma_axi_out_r_wptr_i,
-       .async_idma_axi_out_r_rptr_o,
     // Uart
        .ibex_uart_rx_i   ( ibex_uart_rx  ),
        .ibex_uart_tx_o   ( ibex_uart_tx  ),
@@ -402,26 +291,8 @@ module testbench_asynch_astral ();
 
     forever
       #(RTC_CLOCK_PERIOD/2) clk_sys = ~clk_sys;
-  end // block: main_clock_rst_process
-
-  initial begin  : aon_clock_process
-    aon_clk   = 1'b0;
-    forever
-      #(AON_PERIOD/2) aon_clk = ~aon_clk;
   end
-
-  initial begin  : io_clock_process
-    io_clk   = 1'b0;
-    forever
-      #(IO_PERIOD/2) io_clk = ~io_clk;
-  end
-
-  initial begin  : usb_clock_process
-    usb_clk   = 1'b0;
-    forever
-      #(USB_PERIOD/2) usb_clk = ~usb_clk;
-  end
-
+/*
   initial begin  : axi_slave_process_tlul2axi
 
     @(posedge rst_sys_n);
@@ -430,16 +301,7 @@ module testbench_asynch_astral ();
      tlul2axi_rand_slave.run();
 
   end
-
-  initial begin  : axi_slave_process_idma
-
-    @(posedge rst_sys_n);
-    idma_axi_rand_slave.reset();
-    repeat (4)  @(posedge clk_sys);
-     idma_axi_rand_slave.run();
-
-  end
-
+*/
   initial  begin : bootmodes
 
     if(!$value$plusargs("BOOTMODE=%d", boot_mode)) begin
