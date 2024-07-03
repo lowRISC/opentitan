@@ -245,6 +245,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.m_i2c_agent_cfg.allow_ack_stop = 0;
     expected_intr.delete();
 
+    if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;
+
     super.pre_start();
   endtask : pre_start
 
@@ -1269,7 +1271,7 @@ class i2c_base_vseq extends cip_base_vseq #(
        cfg.bad_addr_pct: begin
          return illegal_addr;
        end
-       (10 - cfg.bad_addr_pct): begin
+       (100 - cfg.bad_addr_pct): begin
          randcase
            1: get_target_addr = target_addr0;
            1: get_target_addr = target_addr1;

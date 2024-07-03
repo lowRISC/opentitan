@@ -72,7 +72,6 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i2c_intr_e'(i));
       cfg.ack_ctrl_en = $urandom_range(0, 1);
     end
-    if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;
   endtask
 
   virtual task body();

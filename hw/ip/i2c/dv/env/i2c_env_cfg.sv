@@ -34,8 +34,8 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // may be injected to break it up into many smaller contiguous transfers.
   int        min_data = 1;
   int        max_data = 60;
-  // RSTART injection rate (between 1~10)
-  int        rs_pct = 1;
+  // RSTART injection rate percentage (1-100)
+  int        rs_pct = 10;
 
   // This sets the minimum length of a transfer (START/RSTART -> RSTART/STOP) within
   // any larger transaction. A transfer with no data, where the address byte is NACK'd,

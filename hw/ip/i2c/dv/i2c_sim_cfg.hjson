@@ -212,7 +212,7 @@
       name: i2c_target_bad_addr
       uvm_test_seq: i2c_target_smoke_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
-                 "+use_intr_handler=1", "+i2c_bad_addr_pct=5"]
+                 "+use_intr_handler=1", "+i2c_bad_addr_pct=50"]
     }
     {
       name: i2c_target_hrst
