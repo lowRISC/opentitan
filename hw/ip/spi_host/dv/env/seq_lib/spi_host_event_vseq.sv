@@ -95,7 +95,6 @@ class spi_host_event_vseq extends spi_host_tx_rx_vseq;
 
   virtual task gen_trans();
     generate_transaction();
-    segment = new();
     while (transaction.segments.size() > 0) begin
       segment = transaction.segments.pop_back();
       if (segment.command_reg.direction != RxOnly) begin

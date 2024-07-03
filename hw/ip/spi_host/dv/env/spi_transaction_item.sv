@@ -102,7 +102,8 @@ class spi_transaction_item extends uvm_sequence_item;
 
 
   function void segment_init();
-    segment                  = new();
+    segment                  = spi_segment_item::type_id::create("segment");
+
     segment.rx_only_weight   = rx_only_weight;
     segment.tx_only_weight   = tx_only_weight;
     segment.num_dummy        = num_dummy;

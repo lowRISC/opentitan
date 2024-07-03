@@ -26,7 +26,6 @@ class spi_host_error_cmd_vseq extends spi_host_tx_rx_vseq;
 
   virtual task send_cmd();
     generate_transaction();
-    segment = new();
     while (transaction.segments.size() > 0) begin
       segment = transaction.segments.pop_back();
       if (segment.command_reg.direction != RxOnly) begin
