@@ -13,7 +13,6 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   `uvm_object_new
 
   int tran_id = 0;
-  i2c_item read_txn_q[$];
 
   rand int i2c_idx;
   constraint i2c_idx_c {
@@ -234,7 +233,6 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
-          read_txn_q.push_back(read_txn);
         end else begin
           // Add RS transaction to driver only
           // and create address transaction after

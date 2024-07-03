@@ -571,18 +571,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask : program_tx_fifo
 
-  task read_acqdata (int num_bytes);
-    bit [6:0] acqlvl;
-    bit [7:0] abyte;
-    bit [1:0] signal;
-    csr_rd_check(.ptr(ral.status.acqempty), .compare_value(0));
-    csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl));
-    `DV_CHECK_EQ(acqlvl, (num_bytes+2)) // addr byte + data bytes + junk byte
-    for (int i = 0; i < (num_bytes+2); i++) begin
-      csr_rd(.ptr(ral.acqdata), .value({signal,abyte}));
-    end
-  endtask : read_acqdata
-
   // Use for debug only
   function void print_time_property();
     `uvm_info(`gfn, $sformatf("timing_prop"), UVM_MEDIUM)
