@@ -28,7 +28,7 @@ class i2c_target_tx_stretch_ctrl_vseq extends i2c_target_runtime_base_vseq;
   // Constrain the acqfifo watermark threshold to zero, so we can use the
   // interrupt handler for this irq to prevent stretching due to the acqfifo
   // level exceeding 1 for reads.
-  constraint acq_thresh_c {acq_thresh == 0;};
+  constraint acq_thresh_c {acq_thresh == 0;}
 
   virtual task pre_start();
     super.pre_start();
