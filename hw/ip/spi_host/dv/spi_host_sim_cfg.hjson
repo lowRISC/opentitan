@@ -63,6 +63,11 @@
       uvm_test_seq: spi_host_speed_vseq
     }
     {
+      name: spi_host_upper_range_clkdiv
+      uvm_test_seq: spi_host_upper_range_clkdiv_vseq
+      reseed: 10 // Reduced reseed since this test may take ages
+    }
+    {
       name: spi_host_performance
       uvm_test_seq: spi_host_performance_vseq
     }

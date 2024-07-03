@@ -28,6 +28,7 @@ filesets:
       - seq_lib/spi_host_common_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_speed_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_host_upper_range_clkdiv_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_event_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_performance_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_sw_reset_vseq.sv: {is_include_file: true}
