@@ -74,9 +74,9 @@ class i2c_monitor extends dv_base_monitor #(
         fork begin: iso_fork
           fork
             target_collect_thread();
-            begin // if (on-the-fly) reset is monitored, drop the item
+            begin // Monitor on-the-fly reset, clear all state if reset asserted
               wait_for_reset_and_drop_item();
-              `uvm_info(`gfn, $sformatf("Monitor is reset, dropping item now:\n%s",
+              `uvm_info(`gfn, $sformatf("Monitor saw reset assertion, clearing state now:\n%s",
                                         mon_dut_item.sprint()), UVM_DEBUG)
             end
             forever perf_monitor(cfg.vif, cfg.start_perf_monitor, cfg.stop_perf_monitor);
@@ -90,9 +90,9 @@ class i2c_monitor extends dv_base_monitor #(
   // Monitor SCL to measure the actual frequency of an I2C transaction.
   virtual task automatic perf_monitor(virtual i2c_if vif, ref uvm_event start, ref uvm_event stop);
 
-    `uvm_info(`gfn, "perf_monitor(): Waiting for start event.", UVM_HIGH)
+    `uvm_info(`gfn, "perf_monitor(): Waiting for start event.", UVM_DEBUG)
     start.wait_trigger();
-    `uvm_info(`gfn, "perf_monitor(): Got start event.", UVM_HIGH)
+    `uvm_info(`gfn, "perf_monitor(): Got start event.", UVM_DEBUG)
 
     // Clear out any captured measurements from the previous sample (this limits the size
     // of the queue, and prevents measuring the same period twice)
@@ -110,7 +110,7 @@ class i2c_monitor extends dv_base_monitor #(
             if (last_posedge != 0) begin
               cfg.period_q.push_back(time'(current_posedge - last_posedge));
               `uvm_info(`gfn, $sformatf("perf_monitor(): scl_period_observed = %0t",
-                                        cfg.period_q[$]), UVM_HIGH)
+                                        cfg.period_q[$]), UVM_DEBUG)
             end
             last_posedge = current_posedge;
           end
@@ -119,7 +119,7 @@ class i2c_monitor extends dv_base_monitor #(
         // join and disable the parallel monitoring process.
         begin
           stop.wait_trigger();
-          `uvm_info(`gfn, "perf_monitor(): Got stop event.", UVM_HIGH)
+          `uvm_info(`gfn, "perf_monitor(): Got stop event.", UVM_DEBUG)
         end
       join_any
       disable fork;
@@ -165,11 +165,11 @@ class i2c_monitor extends dv_base_monitor #(
     for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
       cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_dut_item.addr[i]);
       `uvm_info(`gfn, $sformatf("target_address_thread() address[%0d] %b",
-        i, mon_dut_item.addr[i]), UVM_HIGH)
+        i, mon_dut_item.addr[i]), UVM_DEBUG)
     end
-    `uvm_info(`gfn, $sformatf("target_address_thread(), address %0x", mon_dut_item.addr), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("target_address_thread(), address %0x", mon_dut_item.addr), UVM_DEBUG)
     cfg.vif.get_bit_data("host", cfg.timing_cfg, rw_req);
-    `uvm_info(`gfn, $sformatf("target_address_thread(): rw %d", rw_req), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("target_address_thread(): rw %d", rw_req), UVM_DEBUG)
 
     cfg.stop_perf_monitor.trigger();
 
@@ -177,14 +177,14 @@ class i2c_monitor extends dv_base_monitor #(
     // get ack after transmitting address
     mon_dut_item.drv_type = DevAck;
     `downcast(clone_item, mon_dut_item.clone());
-    `uvm_info(`gfn, $sformatf("target_address_thread(): Req analysis port"), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("target_address_thread(): Req analysis port"), UVM_DEBUG)
     req_analysis_port.write(clone_item);
     cfg.vif.wait_for_device_ack_or_nack(cfg.timing_cfg, mon_dut_item.addr_ack);
     if (mon_dut_item.addr_ack == 1'b1) cfg.got_nack.trigger();
     `uvm_info(`gfn,
               $sformatf("target_address_thread(): %0s", mon_dut_item.addr_ack ? "ACK": "NACK"),
       UVM_DEBUG)
-    `uvm_info(`gfn, "target_address_thread() detected ACK", UVM_HIGH)
+    `uvm_info(`gfn, "target_address_thread() detected ACK", UVM_FULL)
   endtask : target_address_thread
 
   virtual protected task target_read_thread();
@@ -207,7 +207,7 @@ class i2c_monitor extends dv_base_monitor #(
       for (int i = 7; i >= 0; i--) begin
         cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
         `uvm_info(`gfn, $sformatf("target_read_thread() trans %0d, byte %0d, bit[%0d] %0b",
-            mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_HIGH)
+            mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_DEBUG)
       end
 
       cfg.stop_perf_monitor.trigger();
@@ -228,7 +228,7 @@ class i2c_monitor extends dv_base_monitor #(
                                              mon_dut_item.rstart,
                                              mon_dut_item.stop);
         `uvm_info(`gfn, $sformatf("target_read_thread() detected %0s",
-            (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_HIGH)
+          (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_FULL)
       end
     end
   endtask : target_read_thread
@@ -239,7 +239,7 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.stop   = 1'b0;
     mon_dut_item.rstart = 1'b0;
     `uvm_info(`gfn, $sformatf("target_write_thread() begin: tran_id:%0d num_data%0d",
-                              mon_dut_item.tran_id, mon_dut_item.num_data), UVM_HIGH)
+                              mon_dut_item.tran_id, mon_dut_item.num_data), UVM_FULL)
 
     while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
       fork
@@ -257,7 +257,7 @@ class i2c_monitor extends dv_base_monitor #(
               cfg.stop_perf_monitor.trigger();
 
               `uvm_info(`gfn, $sformatf("target_write_thread() collected data %0x",
-                mon_data), UVM_HIGH)
+                mon_data), UVM_DEBUG)
               mon_dut_item.num_data++;
               mon_dut_item.data_q.push_back(mon_data);
               `uvm_info(`gfn, $sformatf("target_write_thread() data %2x num_data:%0d",
@@ -266,7 +266,7 @@ class i2c_monitor extends dv_base_monitor #(
               mon_dut_item.wdata = mon_data;
               mon_dut_item.drv_type = DevAck;
               `downcast(clone_item, mon_dut_item.clone());
-              `uvm_info(`gfn, $sformatf("target_write_thread() Req analysis port ACK."), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("target_write_thread() Req analysis port ACK."), UVM_DEBUG)
               req_analysis_port.write(clone_item);
               // sample ack/nack
               cfg.vif.wait_for_device_ack_or_nack(cfg.timing_cfg, ack_nack);
@@ -278,7 +278,7 @@ class i2c_monitor extends dv_base_monitor #(
                                                    mon_dut_item.rstart,
                                                    mon_dut_item.stop);
               `uvm_info(`gfn, $sformatf("target_write_thread() detected %0s %0b",
-                  (mon_dut_item.stop) ? "STOP" : "RSTART", mon_dut_item.stop), UVM_HIGH)
+                (mon_dut_item.stop) ? "STOP" : "RSTART", mon_dut_item.stop), UVM_FULL)
             end
           join_any
           disable fork;
@@ -286,7 +286,7 @@ class i2c_monitor extends dv_base_monitor #(
       join
     end
     `uvm_info(`gfn, $sformatf("target_write_thread() end: tran_id:%0d num_data:%0d",
-                              mon_dut_item.tran_id, mon_dut_item.num_data), UVM_HIGH)
+                              mon_dut_item.tran_id, mon_dut_item.num_data), UVM_FULL)
   endtask : target_write_thread
 
   // update of_to_end to prevent sim finished when there is any activity on the bus
@@ -397,7 +397,7 @@ class i2c_monitor extends dv_base_monitor #(
             cfg.vif.p_edge_scl();
             mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
             `uvm_info(`gfn, $sformatf("controller_address_thread() address[%0d] %b",
-                                      i, mon_dut_item.addr[i]), UVM_HIGH)
+                                      i, mon_dut_item.addr[i]), UVM_DEBUG)
           end
           `uvm_info(`gfn, $sformatf("controller_address_thread() address %0x",
                                     mon_dut_item.addr), UVM_MEDIUM)
@@ -525,7 +525,7 @@ class i2c_monitor extends dv_base_monitor #(
               data[i] = cfg.vif.sda_i;
             end
             `uvm_info(`gfn, $sformatf("controller_write_thread() got data 0x%2x",
-              data), UVM_MEDIUM)
+              data), UVM_HIGH)
           end
 
           begin : get_ack_nack_bit

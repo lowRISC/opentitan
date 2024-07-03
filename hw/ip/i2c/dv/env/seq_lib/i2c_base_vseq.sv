@@ -1039,7 +1039,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       // test need to feed 1 extraa tx fifo data at the end
       // to avoid dead lock
       if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
-        `uvm_info(id, "feed extra ack/stop data", UVM_MEDIUM)
+        `uvm_info(id, "Feeding extra data byte (0xff) for ack/stop now.", UVM_MEDIUM)
         csr_wr(.ptr(ral.txdata), .value('hff));
         pre_feed_rd_data_q.push_back(8'hff);
         pre_feed_cnt++;

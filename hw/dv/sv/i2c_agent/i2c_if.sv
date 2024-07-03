@@ -131,7 +131,7 @@ interface i2c_if(
   // routines are brittle. Remove some delays for now.
 
   task automatic wait_for_host_ack(ref timing_cfg_t tc);
-    `uvm_info(msg_id, "Wait for host ack::Begin", UVM_HIGH)
+    `uvm_info(msg_id, "Wait for host ack::Begin", UVM_FULL)
     // wait_for_dly(tc.tClockLow + tc.tSetupBit);
     forever begin
       @(posedge scl_i);
@@ -141,11 +141,11 @@ interface i2c_if(
       end
     end
     wait_for_dly(tc.tHoldBit);
-    `uvm_info(msg_id, "Wait for host ack::Ack received", UVM_HIGH)
+    `uvm_info(msg_id, "Wait for host ack::Ack received", UVM_FULL)
   endtask: wait_for_host_ack
 
   task automatic wait_for_host_nack(ref timing_cfg_t tc);
-    `uvm_info(msg_id, "Wait for host nack::Begin", UVM_HIGH)
+    `uvm_info(msg_id, "Wait for host nack::Begin", UVM_FULL)
     // wait_for_dly(tc.tClockLow + tc.tSetupBit);
     forever begin
       @(posedge scl_i);
@@ -155,7 +155,7 @@ interface i2c_if(
       end
     end
     wait_for_dly(tc.tHoldBit);
-    `uvm_info(msg_id, "Wait for host nack::nack received", UVM_HIGH)
+    `uvm_info(msg_id, "Wait for host nack::nack received", UVM_FULL)
   endtask: wait_for_host_nack
 
   task automatic wait_for_host_ack_or_nack(timing_cfg_t tc,
@@ -234,11 +234,11 @@ interface i2c_if(
       wait_for_dly(tc.tStretchHostClock);
     end
     wait_for_dly(tc.tClockLow);
-    `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_HIGH)
+    `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_FULL)
     sda_o = bit_i;
     // Hold the bit steady for the rest of the clock low time.
     @(posedge scl_i);
-    `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_HIGH)
+    `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_FULL)
     // flip sda_target2host during the clock pulse of scl_host2target causes sda_unstable irq
     if (tc.tSdaUnstable > 0) begin
       `uvm_info(msg_id, "SDA unstable", UVM_MEDIUM)
@@ -298,7 +298,7 @@ interface i2c_if(
     bit_o = sda_i;
 
     if (src == "host") begin // host transmits data (addr/wr_data)
-      `uvm_info(msg_id, $sformatf("get bit data %d", bit_o), UVM_HIGH)
+      `uvm_info(msg_id, $sformatf("get bit data %d", bit_o), UVM_DEBUG)
       // force sda_target2host low during the clock pulse of scl_host2target
       if (tc.tSdaInterference > 0) begin
         `uvm_info(msg_id, "SDA interference, SCL=1", UVM_MEDIUM)

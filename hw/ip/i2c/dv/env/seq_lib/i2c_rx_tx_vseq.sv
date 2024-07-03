@@ -12,7 +12,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   virtual task body();
     bit do_interrupt = 1'b1;
     initialization();
-    `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
+    `uvm_info(`gfn, "--> start of sequence", UVM_HIGH)
     fork
       begin
         while (!cfg.under_reset && do_interrupt) process_interrupts();
@@ -22,7 +22,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         do_interrupt = 1'b0; // gracefully stop process_interrupts
       end
     join
-    `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
+    `uvm_info(`gfn, "--> end of sequence", UVM_HIGH)
   endtask : body
 
   virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite,
@@ -31,7 +31,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
     fmt_item = new("fmt_item");
     total_rd_bytes = 0;
-    `uvm_info(`gfn, "\n  host_send_trans task running ...", UVM_DEBUG)
+    `uvm_info(`gfn, "  host_send_trans task running ...", UVM_HIGH)
     fork
       begin
         complete_program_fmt_fifo = 1'b0;
@@ -67,8 +67,10 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           end
 
           last_tran = (cur_tran == max_trans);
-          `uvm_info(`gfn, $sformatf("\n  start sending %s transaction %0d/%0d",
+
+          `uvm_info(`gfn, $sformatf("  start sending %s transaction %0d/%0d",
               (rw_bit) ? "READ" : "WRITE", cur_tran, max_trans), UVM_MEDIUM)
+
           if (chained_read) begin
             // keep programming chained read transaction
             program_control_read_to_target(last_tran);
@@ -77,7 +79,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             else        program_write_data_to_target(last_tran,stopbyte);
           end
 
-          `uvm_info(`gfn, $sformatf("\n  finish sending %s transaction, %0s at the end, %0d/%0d, ",
+          `uvm_info(`gfn, $sformatf("  finish sending %s transaction, %0s at the end, %0d/%0d, ",
               (rw_bit) ? "read" : "write",
               (fmt_item.stop) ? "stop" : "rstart", cur_tran, max_trans), UVM_MEDIUM)
 
@@ -91,11 +93,11 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       end
       if (read) begin
         read_data_from_target();
-        `uvm_info(`gfn, "\n  read_data_from_target task ended", UVM_DEBUG)
+        `uvm_info(`gfn, "  read_data_from_target task ended", UVM_HIGH)
       end
     join
     wait_host_for_idle();
-    `uvm_info(`gfn, "\n  host_send_trans task ended", UVM_DEBUG)
+    `uvm_info(`gfn, "  host_send_trans task ended", UVM_HIGH)
   endtask : host_send_trans
 
   virtual task program_address_to_target();
@@ -110,9 +112,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end else begin // Addr10BitMode
       fmt_item.fbyte = {addr[9:0], rw_bit};
     end
-    `uvm_info(`gfn, $sformatf("\nprogram, %s address %x",
-        fmt_item.fbyte[0] ? "read" : "write", fmt_item.fbyte[7:1]), UVM_DEBUG)
     program_format_flag(fmt_item, "  program_address_to_target", 1);
+    `uvm_info(`gfn, $sformatf("program, %s address %x",
+        fmt_item.fbyte[0] ? "read" : "write", fmt_item.fbyte[7:1]), UVM_HIGH)
   endtask : program_address_to_target
 
   virtual task program_control_read_to_target(bit last_tran);
@@ -121,28 +123,29 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       fbyte == num_rd_bytes;
       start == 1'b0;
       read  == 1'b1;
-      // for the last write byte of last tran., stop flag must be set to issue stop bit (stimulus end)
+      // for the last write byte of last tran., stop flag must be set to issue stop bit
       // otherwise, stop can be randomly set/unset to issue stop/rstart bit respectively
       // rcont is derived from stop and read to issue chained/non-chained reads
       stop  == (last_tran) ? 1'b1 : stop;
     )
     `DV_CHECK_EQ(fmt_item.stop | fmt_item.rcont, 1)
-    `uvm_info(`gfn, $sformatf("\n  read transaction length is %0d byte",
-        num_rd_bytes ? num_rd_bytes : 256), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("  read transaction length is %0d byte",
+        num_rd_bytes ? num_rd_bytes : 256), UVM_HIGH)
 
     // accumulate number of read byte
     total_rd_bytes += (num_rd_bytes) ? num_rd_bytes : 256;
     // decrement total_rd_bytes since one data is must be dropped in fifo_overflow test
     if (cfg.seq_cfg.en_rx_overflow) total_rd_bytes--;
-    `uvm_info(`gfn, $sformatf("\n  program_control_read_to_target, read %0d byte",
-        total_rd_bytes), UVM_DEBUG)
+
+    `uvm_info(`gfn, $sformatf("program_control_read_to_target(), new total read bytes = %0d",
+      total_rd_bytes), UVM_HIGH)
 
     if (fmt_item.rcont) begin
-      `uvm_info(`gfn, "\n  transaction READ is chained with next READ transaction", UVM_DEBUG)
+      `uvm_info(`gfn, "  transaction READ is chained with next READ transaction", UVM_HIGH)
     end else begin
-      `uvm_info(`gfn, $sformatf("\n  transaction READ ended %0s", (fmt_item.stop) ?
+      `uvm_info(`gfn, $sformatf("  transaction READ ended %0s", (fmt_item.stop) ?
           "with STOP, next transaction should begin with START" :
-          "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
+          "without STOP, next transaction should begin with RSTART"), UVM_HIGH)
     end
     program_format_flag(fmt_item, "  program number of bytes to read", 0);
   endtask : program_control_read_to_target
@@ -169,7 +172,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           csr_rd(.ptr(ral.rdata), .value(rd_data));
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
           cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
-          `uvm_info(`gfn, $sformatf("\n  read byte %0d  %x", total_rd_bytes, rd_data), UVM_DEBUG)
+          `uvm_info(`gfn, $sformatf("Read 8'h%2x (total_read_bytes=%0d)", rd_data, total_rd_bytes),
+            UVM_HIGH)
           total_rd_bytes--;
         end
       end
@@ -185,7 +189,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_data, wr_data.size == num_wr_bytes;)
     if (num_wr_bytes == 256) begin
-      `uvm_info(`gfn, "\n  write transaction length is 256 byte", UVM_DEBUG)
+      `uvm_info(`gfn, "  write transaction length is 256 byte", UVM_HIGH)
     end
     print_host_wr_data(wr_data);
 
@@ -208,7 +212,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       // last write byte of other tran., stop is randomly set/unset to issue stop/rstart bit
       fmt_item.stop = (i != num_wr_bytes) ? 1'b0 : ((last_tran) ? 1'b1 : fmt_item.stop);
       if (i == num_wr_bytes) begin
-        `uvm_info(`gfn, $sformatf("\n  transaction WRITE ended %0s", (fmt_item.stop) ?
+        `uvm_info(`gfn, $sformatf("  transaction WRITE ended %0s", (fmt_item.stop) ?
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_MEDIUM)
       end
