@@ -11,9 +11,6 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   timing_cfg_t    timing_cfg;
   bit host_stretch_test_mode = 0;
-  // If 1, perform clock stretching after an ACK, just before the next data
-  // bit. If 0, perform stretching during the ACK / NACK bit.
-  bit stretch_after_ack = 0;
 
   uvm_event got_nack;
 

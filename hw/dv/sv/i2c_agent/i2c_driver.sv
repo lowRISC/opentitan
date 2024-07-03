@@ -154,9 +154,14 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     bit [7:0] rd_data_cnt = 8'd0;
     bit [7:0] rdata;
 
+    `uvm_info(`gfn, $sformatf("drive_device_item() :: drv_type=%s", req.drv_type.name), UVM_HIGH)
+
+    // Choose a randomized stretching delay for this item.
+    // - If cfg.host_stretch_test_mode == 1, this delay is not randomized.
+    cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
+
     case (req.drv_type)
       DevAck: begin
-        cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
         `uvm_info(`gfn, $sformatf("DevAck : sending an ACK (after stretching for %0d cycles)",
                                   cfg.timing_cfg.tStretchHostClock), UVM_FULL)
         fork
@@ -167,21 +172,17 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
           // once scl_o is pulled down longer than TIMEOUT_CTRL.VAL field,
           // intr_stretch_timeout_o is asserted (ref. https://www.i2c-bus.org/clock-stretching)
           cfg.vif.device_stretch_host_clk(cfg.timing_cfg);
-          cfg.vif.device_send_ack(cfg.timing_cfg, !cfg.stretch_after_ack);
+          cfg.vif.device_send_ack(cfg.timing_cfg, .can_stretch(1'b1));
         join
       end
       DevNack: begin
         cfg.vif.device_send_nack(cfg.timing_cfg);
       end
       RdData: begin
-        cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
         `uvm_info(`gfn, $sformatf("RdData : Driving read data 8'h%2x", req.rdata), UVM_FULL)
         for (int i = 7; i >= 0; i--) begin
-          bit can_stretch = (i == 0) && cfg.stretch_after_ack;
-          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i], can_stretch);
+          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i], .can_stretch(1'b0));
         end
-        `uvm_info(`gfn, $sformatf("\n  device_driver, trans %0d, byte %0d  %0x",
-            req.tran_id, req.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
         // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
         rd_data_cnt++;
       end
@@ -200,8 +201,11 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     // If Stretch value is greater than 2*tTimeOut, it will create 2 interrupt events.
     // Which can cause faluse error in 'host_stretch_testmode'.
     // So, this value should be associated with tTimeout in host stretch testmode
-    if (cfg.host_stretch_test_mode) return (tc.tTimeOut + 1);
-    else return $urandom_range(tc.tClockPulse, tc.tClockPulse + 2*tc.tTimeOut);
+    int random_stretch = $urandom_range(tc.tClockPulse,
+                                        tc.tClockPulse + 2*tc.tTimeOut);
+
+    return (cfg.host_stretch_test_mode) ? (tc.tTimeOut + 1) :
+                                          random_stretch;
   endfunction : gen_num_stretch_host_clks
 
   virtual task process_reset();
