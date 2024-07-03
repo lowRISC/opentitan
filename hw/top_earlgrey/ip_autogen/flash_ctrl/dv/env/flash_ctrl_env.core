@@ -79,6 +79,7 @@ filesets:
       - seq_lib/flash_ctrl_oversize_error_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_connect_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_disable_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_host_addr_infection_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_rd_path_intg_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_wr_path_intg_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_info_part_access_vseq.sv: {is_include_file: true}

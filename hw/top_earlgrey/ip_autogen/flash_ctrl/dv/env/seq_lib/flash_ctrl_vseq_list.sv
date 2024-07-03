@@ -48,6 +48,7 @@
 `include "flash_ctrl_oversize_error_vseq.sv"
 `include "flash_ctrl_connect_vseq.sv"
 `include "flash_ctrl_disable_vseq.sv"
+`include "flash_ctrl_host_addr_infection_vseq.sv"
 `include "flash_ctrl_rd_path_intg_vseq.sv"
 `include "flash_ctrl_wr_path_intg_vseq.sv"
 `include "flash_ctrl_info_part_access_vseq.sv"
