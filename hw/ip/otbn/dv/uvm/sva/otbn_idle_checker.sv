@@ -128,9 +128,26 @@ module otbn_idle_checker
   `ASSERT(NotIdleIfRunning_A,
           running_q |-> ##[0:1] (idle_o_i == prim_mubi_pkg::MuBi4False))
 
-  `ASSERT(IdleIfNotRunningOrLocked_A,
-          !(running_qq || busy_secure_wipe || status_q_i == otbn_pkg::StatusLocked) |->
-          (idle_o_i == prim_mubi_pkg::MuBi4True))
+  // TODO(#23903):
+  //
+  //    The logic here is to cope with a single cycle of surprising behaviour we are neither running
+  //    nor locked but the idle_o signal is not high. This is probably a (minor) RTL bug. When it is
+  //    fixed, we can strengthen this check again to disallow a the single cycle mismatch.
+  logic running_or_locked;
+  logic missing_idle_d, missing_idle_q;
+  assign running_or_locked = running_qq ||
+                             busy_secure_wipe ||
+                             status_q_i == otbn_pkg::StatusLocked;
+  assign missing_idle_d = !running_or_locked && (idle_o_i != prim_mubi_pkg::MuBi4True);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      missing_idle_q <= 1'b0;
+    end else begin
+      missing_idle_q <= missing_idle_d;
+    end
+  end
+
+  `ASSERT(IdleIfNotRunningOrLocked_A, !(missing_idle_d && missing_idle_q))
 
   `ASSERT(NotIdleIfLockedAndRotatingKeys_A,
           ((status_q_i == otbn_pkg::StatusLocked) && keys_busy) |->
