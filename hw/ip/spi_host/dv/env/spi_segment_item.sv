@@ -24,7 +24,7 @@ class spi_segment_item extends uvm_sequence_item;
 
   // num dummy cycles
   int                           num_dummy          = 0;
-  //num_addr_bytes
+  // num_addr_bytes
   int                           num_cmd_bytes      = 4;
 
   // transaction len
@@ -98,7 +98,8 @@ class spi_segment_item extends uvm_sequence_item;
       command_reg.len == num_cmd_bytes - 1;
     } else
     if (seg_type == Dummy) {
-      command_reg.len == num_dummy - 1;
+      (num_dummy==0) -> command_reg.len == 0;
+      (num_dummy!=0) -> command_reg.len == num_dummy - 1;
     } else {
       command_reg.len inside {[spi_len_min - 1 : spi_len_max - 1]};
     }

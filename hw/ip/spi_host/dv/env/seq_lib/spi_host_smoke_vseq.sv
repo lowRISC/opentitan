@@ -17,13 +17,14 @@ class spi_host_smoke_vseq extends spi_host_tx_rx_vseq;
       foreach (spi_config_regs.csntrail[i]) {
         spi_config_regs.csntrail[i] == cfg.seq_cfg.host_spi_max_csn_latency;
       }
-      foreach (spi_config_regs.csnidle[i]) {
-        spi_config_regs.csnidle[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.clkdiv[i]) {
-        spi_config_regs.clkdiv[i] == cfg.seq_cfg.host_spi_max_clkdiv;
-      }
   }
+
+ constraint spi_config_regs_clkdiv_c {
+   foreach (spi_config_regs.clkdiv[i]) {
+     spi_config_regs.clkdiv[i] <= cfg.seq_cfg.host_spi_middle_clkdiv;
+   }
+ }
+
 
   virtual task body();
     fork

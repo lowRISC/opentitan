@@ -27,6 +27,10 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   // bumber of address bytes
   rand int    num_cmd_bytes;
 
+  // TB heavily relies on csr_spinwait, which causes timeouts when the clock divider is FF-ish or
+  // higher values
+  uint csr_spinwait_timeout_ns = csr_utils_pkg::default_spinwait_timeout_ns;
+
   constraint dummy_c {
     num_dummy inside { [min_dummy_cycles:max_dummy_cycles]};
   }

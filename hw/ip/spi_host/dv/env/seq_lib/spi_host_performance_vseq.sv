@@ -7,7 +7,7 @@ class spi_host_performance_vseq extends spi_host_smoke_vseq;
   `uvm_object_utils(spi_host_performance_vseq)
   `uvm_object_new
 
-// constraints for simulation loops
+  // constraints for simulation loops
   constraint num_trans_c {num_trans  == cfg.seq_cfg.host_spi_max_trans;}
   constraint intr_dly_c {clear_intr_dly == cfg.seq_cfg.host_spi_min_dly;}
   constraint fifo_dly_c {
@@ -28,13 +28,15 @@ class spi_host_performance_vseq extends spi_host_smoke_vseq;
       foreach (spi_config_regs.csnidle[i]) {
         spi_config_regs.csnidle[i] == cfg.seq_cfg.host_spi_min_csn_latency;
       }
-      foreach (spi_config_regs.clkdiv[i]) {
-        spi_config_regs.clkdiv[i] == cfg.seq_cfg.host_spi_min_clkdiv;
-      }
   }
 
+  constraint spi_config_regs_clkdiv_c {
+    foreach (spi_config_regs.clkdiv[i]) {
+      spi_config_regs.clkdiv[i] == cfg.seq_cfg.host_spi_min_clkdiv;
+    }
+  }
 
-   virtual task body();
+  virtual task body();
     fork
       begin : isolation_fork
         fork
