@@ -15,6 +15,8 @@ filesets:
       - i2c_if.sv
       - i2c_agent_cfg.sv: {is_include_file: true}
       - i2c_agent_cov.sv: {is_include_file: true}
+      - i2c_acqdata_item.sv: {is_include_file: true}
+      - i2c_fdata_item.sv: {is_include_file: true}
       - i2c_item.sv: {is_include_file: true}
       - i2c_driver.sv: {is_include_file: true}
       - i2c_monitor.sv: {is_include_file: true}

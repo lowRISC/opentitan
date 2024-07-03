@@ -49,4 +49,14 @@ package i2c_pkg;
   // byte and an identifier defined by i2c_acq_byte_id_e.
   parameter int unsigned ACQ_FIFO_WIDTH = I2C_ACQ_BYTE_ID_WIDTH + 8;
 
+  typedef enum bit {
+    WRITE = 1'b0,
+    READ = 1'b1
+  } rw_e;
+
+  typedef enum bit {
+    ACK = 1'b0,
+    NACK = 1'b1
+  } acknack_e;
+
 endpackage : i2c_pkg
