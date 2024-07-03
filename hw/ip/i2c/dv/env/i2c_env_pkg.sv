@@ -72,6 +72,9 @@ package i2c_env_pkg;
 
   typedef uvm_tlm_analysis_fifo #(i2c_item) i2c_analysis_fifo;
 
+  typedef i2c_item i2c_transfer_q[$];
+  typedef i2c_transfer_q i2c_transaction;
+
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;

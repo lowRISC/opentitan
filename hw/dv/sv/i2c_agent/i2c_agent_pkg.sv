@@ -73,6 +73,8 @@ package i2c_agent_pkg;
   typedef class i2c_agent_cfg;
 
   // package sources
+  `include "i2c_fdata_item.sv"
+  `include "i2c_acqdata_item.sv"
   `include "i2c_item.sv"
   `include "i2c_agent_cfg.sv"
   `include "i2c_agent_cov.sv"
