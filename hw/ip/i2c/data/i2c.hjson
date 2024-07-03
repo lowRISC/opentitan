@@ -389,34 +389,55 @@
              "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "FDATA"
-      desc: "I2C Host Format Data"
+      desc: '''I2C Host Format Data
+
+            Writes to this register are used to define and drive Controller-Mode transactions.
+            '''
       swaccess: "wo"
       hwaccess: "hro"
       hwqe: "true"
       fields: [
         { bits: "7:0"
           name: "FBYTE"
-          desc: "Format Byte. Directly transmitted if no flags are set."
+          desc: '''Format Byte.
+
+                If no flags are set, hardware will transmit this byte directly.
+
+                If READB is set, this field becomes the number of bytes hardware will automatically
+                read from the bus.
+                '''
         }
         { bits: "8"
           name: "START"
-          desc: "Issue a START condition before transmitting BYTE."
+          desc: "Issue a START condition before transmitting FBYTE."
         }
         { bits: "9"
           name: "STOP"
-          desc: "Issue a STOP condition after this operation"
+          desc: "Issue a STOP condition after transmitting FBYTE."
         }
         { bits: "10"
           name: "READB"
-          desc: "Read BYTE bytes from I2C. (256 if BYTE==0)"
+          desc: '''Transfer Direction Indicator.
+
+                If unset, this write to FDATA defines a controller-transmitter operation (WRITE).
+                A single byte of data (FBYTE) is written to the bus.
+
+                If set, this write to FDATA defines a controller-receiver operation (READ).
+                The value of FBYTE defines the number of bytes read from the bus. (256 if FBYTE==0)"
+                After this number of bytes are read, the final byte will be NACKed to end the transfer
+                unless RCONT is also set.
+                '''
         }
         { bits: "11"
           name: "RCONT"
-          desc: "Do not NACK the last byte read, let the read operation continue"
+          desc: "Do not NACK the last byte read, let the read operation continue."
         }
         { bits: "12"
           name: "NAKOK"
-          desc: "Do not signal an exception if the current byte is not ACK'd"
+          desc: '''
+                For the currrent controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
+                or assert the 'controller_halt' interrupt if the current byte is not ACK'd.
+                '''
         }
       ]
       tags: [// FIFO can fill up due to write check accesses, and then fail an assertion upon timeout on full.
