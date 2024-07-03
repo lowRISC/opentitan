@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/runtime/hart.h"
 
 #include "adc_ctrl_regs.h"  // Generated.
 
@@ -511,5 +512,15 @@ dif_result_t dif_adc_ctrl_irq_cause_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
   *enabled_causes =
       mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_ADC_INTR_CTL_REG_OFFSET);
 
+  return kDifOk;
+}
+
+dif_result_t dif_adc_ctrl_wait_cdc_sync(const dif_adc_ctrl_t *adc_ctrl,
+                                        uint32_t aon_freq_hz) {
+  if (adc_ctrl == NULL) {
+    return kDifBadArg;
+  }
+  // Wait 5 AON ticks.
+  busy_spin_micros(5 * 1000000 / aon_freq_hz);
   return kDifOk;
 }
