@@ -173,8 +173,7 @@ class OTBNSim:
         '''Step the simulation when OTBN is IDLE or LOCKED'''
         self.state.stop_if_pending_halt()
 
-        cur_fsm_state = self.state.get_fsm_state()
-        is_locked = cur_fsm_state == FsmState.LOCKED
+        is_locked = self.state.get_fsm_state() == FsmState.LOCKED
 
         # If we are locked or get an RMA request, the INSN_CNT register should
         # be zeroed. To avoid sending a line to stdout on every cycle, we only
@@ -219,7 +218,7 @@ class OTBNSim:
                     self.state.complete_init_sec_wipe()
                     self.state.set_fsm_state(FsmState.LOCKED)
                     self.state.ext_regs.write('STATUS', Status.LOCKED, True)
-                elif cur_fsm_state == FsmState.LOCKED:
+                elif is_locked:
                     self.state.set_fsm_state(FsmState.WIPING_BAD)
                 else:
                     self.state.set_fsm_state(FsmState.WIPING_GOOD)
