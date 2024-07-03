@@ -122,6 +122,12 @@ alias(
 )
 
 alias(
+    name = "der",
+    actual = "@crate_index__der-0.7.8//:der",
+    tags = ["manual"],
+)
+
+alias(
     name = "deser-hjson",
     actual = "@crate_index__deser-hjson-2.1.0//:deser_hjson",
     tags = ["manual"],
