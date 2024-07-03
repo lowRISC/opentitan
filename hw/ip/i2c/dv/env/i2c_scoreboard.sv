@@ -573,7 +573,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   // - start
   // - stop
   // - wdata (for non-rstart/stop items)
+  //
+  // TODO(#23920) : Refactor testbench such that we can compare full seq_items using A.compare(B).
   function void target_wr_comp(i2c_item obs, i2c_item exp);
+
     string str = (exp.start) ? "addr" : (exp.stop) ? "stop" : "";
     `uvm_info(`gfn, $sformatf("target_wr_comp() exp_wr_txn (%0s) %0d\n%s",
       str, exp.tran_id, exp.sprint()), UVM_FULL)
@@ -594,6 +597,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   // - tran_id
   // - num_data
   // - data_q
+  //
+  // TODO(#23920) : Refactor testbench such that we can compare full seq_items using A.compare(B).
   function void target_rd_comp(i2c_item obs, i2c_item exp);
     `uvm_info(`gfn, $sformatf("target_rd_comp() exp_rd_txn %0d\n%s",
       exp.tran_id, exp.sprint()), UVM_FULL)

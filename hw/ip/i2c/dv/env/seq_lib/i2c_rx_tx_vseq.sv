@@ -7,6 +7,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   `uvm_object_new
 
   local bit complete_program_fmt_fifo;
+
+  // Keep count of the the total number of bytes we expect to read from the RDATA fifo
+  // throughout the sequence.
   local uint total_rd_bytes;
 
   virtual task body();

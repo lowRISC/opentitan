@@ -47,6 +47,10 @@ class i2c_monitor extends dv_base_monitor #(
 
   `uvm_component_new
 
+  ///////////////////
+  // CLASS METHODS //
+  ///////////////////
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     wr_item_port  = new("wr_item_port", this);
@@ -126,6 +130,7 @@ class i2c_monitor extends dv_base_monitor #(
     end : iso_fork join
   endtask
 
+
   virtual protected task target_collect_thread();
     i2c_item full_item;
     if (mon_dut_item.stop ||
@@ -154,6 +159,7 @@ class i2c_monitor extends dv_base_monitor #(
     end
     mon_dut_item.clear_data();
   endtask: target_collect_thread
+
 
   virtual protected task target_address_thread();
     i2c_item clone_item;
@@ -344,19 +350,21 @@ class i2c_monitor extends dv_base_monitor #(
     cfg.got_stop = 1;
   endtask
 
-
+  // This task is called in a loop to collect I2C Agent-Controller transfers.
+  //
   virtual protected task controller_collect_thread();
     i2c_item full_item;
     bit skip_the_loop = 0;
 
-    // Wait for the vseq to clear this at the start of the next stimulus round.
+    // Wait for the driver/vseq to clear this at the start of the next stimulus round.
     wait(cfg.got_stop == 0);
 
     cfg.valid_addr = 0;
     if (mon_dut_item.stop ||
         (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
+      `uvm_info(`gfn, "controller_collect_thread(): Waiting for START condition.", UVM_MEDIUM)
       cfg.vif.wait_for_host_start(cfg.timing_cfg);
-      `uvm_info(`gfn, "Detected START", UVM_MEDIUM)
+      `uvm_info(`gfn, "controller_collect_thread(): Saw START condition.", UVM_MEDIUM)
     end else begin
       mon_dut_item.rstart = 1'b1;
     end
@@ -391,8 +399,8 @@ class i2c_monitor extends dv_base_monitor #(
 
     fork begin : iso_fork
       fork
-        begin // address capture thread
-          // collecting address
+        begin : address_capture_thread
+          // Collect the 7/10 address bits.
           for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
             cfg.vif.p_edge_scl();
             mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
@@ -434,7 +442,7 @@ class i2c_monitor extends dv_base_monitor #(
             if (acknack_bit) cfg.got_nack.trigger();
 
           end
-        end
+        end : address_capture_thread
         begin
           begin
             wait(cfg.monitor_rst);
@@ -449,7 +457,6 @@ class i2c_monitor extends dv_base_monitor #(
   endtask: controller_address_thread
 
 
-  // Rewrite read / write task using glitch free edge functions.
   task controller_read_thread();
     mon_dut_item.stop   = 1'b0;
     mon_dut_item.rstart = 1'b0;
@@ -507,8 +514,6 @@ class i2c_monitor extends dv_base_monitor #(
     end join
     target_read_phase = 0;
 
-    `uvm_info(`gfn, $sformatf("controller_read_thread() end stop:%0d rs:%0d",
-                              mon_dut_item.stop, mon_dut_item.rstart), UVM_HIGH)
   endtask: controller_read_thread
 
   task controller_write_thread();

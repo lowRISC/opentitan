@@ -59,6 +59,8 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
+    `uvm_info(`gfn, $sformatf("Using %0s-based testbench routines to stimulate the CSR interface.",
+      cfg.use_intr_handler ? "interrupt" : "polling"), UVM_MEDIUM)
     if (cfg.use_intr_handler) begin
       // Without populating the FMT FIFO its threshold interrupt will remain asserted.
       expected_intr[FmtThreshold] = 1;
@@ -94,8 +96,11 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
         end
         for (int i = 0; i < num_trans; i++) begin
           get_timing_values();
+          `uvm_info(`gfn, $sformatf("Starting stimulus transaction %0d/%0d.",
+            i+1, num_trans), UVM_HIGH)
           if (i > 0) begin
-            // wait for previous stop before program a new timing param.
+            // Wait for the STOP-condition (the end of the previous transaction) before
+            // programming new timing parameters.
             `DV_WAIT(cfg.m_i2c_agent_cfg.got_stop,, cfg.spinwait_timeout_ns, "target_smoke_vseq")
             cfg.m_i2c_agent_cfg.got_stop = 0;
           end
@@ -105,20 +110,19 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
           m_i2c_host_seq.req_q = txn_stimulus[i];
           m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
           sent_txn_cnt++;
+          `uvm_info(`gfn, $sformatf("Finished stimulus transaction %0d/%0d.",
+            i+1, num_trans), UVM_HIGH)
         end
+        `uvm_info(`gfn, "Finished all i2c_agent bus stimulus.", UVM_MEDIUM)
       end
-      begin
-        if (!cfg.use_intr_handler) process_acq();
-      end
-      begin
-        if (cfg.use_intr_handler == 1'b0 && cfg.rd_pct != 0) process_txq();
-      end
-      begin
-        if (cfg.use_intr_handler) while (!cfg.stop_intr_handler) process_target_interrupts();
-      end
-      begin
-        if (cfg.use_intr_handler) stop_target_interrupt_handler();
-      end
+      if (!cfg.use_intr_handler) fork
+        process_acq();
+        if (cfg.rd_pct != 0) process_txq();
+      join
+      if (cfg.use_intr_handler) fork
+        while (!cfg.stop_intr_handler) process_target_interrupts();
+        stop_target_interrupt_handler(); // Sets cfg.stop_intr_handler once stimulus has completed
+      join
     join
   endtask : body
 

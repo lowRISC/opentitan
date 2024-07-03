@@ -441,7 +441,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
-    `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
+    `uvm_info(`gfn, $sformatf("cfg.m_i2c_agent_cfg.timing_cfg\n%p",
         cfg.m_i2c_agent_cfg.timing_cfg), UVM_MEDIUM)
 
   endtask : program_registers
@@ -481,17 +481,17 @@ class i2c_base_vseq extends cip_base_vseq #(
                                        })
     // TODO: It is NOT possible to clear this interrupt by a simple INTR_STATE write now!
     if (bit'(get_field_val(ral.intr_state.fmt_threshold, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing fmt_threshold", UVM_DEBUG)
+      `uvm_info(`gfn, "clearing fmt_threshold", UVM_DEBUG)
     end
     // TODO: It is NOT possible to clear this interrupt by a simple INTR_STATE write now!
     if (bit'(get_field_val(ral.intr_state.rx_threshold, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing rx_threshold", UVM_DEBUG)
+      `uvm_info(`gfn, "clearing rx_threshold", UVM_DEBUG)
     end
     if (bit'(get_field_val(ral.intr_state.stretch_timeout, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing stretch_timeout", UVM_DEBUG)
+      `uvm_info(`gfn, "clearing stretch_timeout", UVM_DEBUG)
     end
     if (bit'(get_field_val(ral.intr_state.tx_stretch, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing tx_stretch", UVM_DEBUG)
+      `uvm_info(`gfn, "clearing tx_stretch", UVM_DEBUG)
     end
     if (bit'(get_field_val(ral.intr_state.controller_halt, intr_clear))) begin
       // Add a longer delay to mimic a software handler clearing the NAK condition
@@ -697,6 +697,8 @@ class i2c_base_vseq extends cip_base_vseq #(
       end
       read_acq_fifo(read_one, acq_fifo_empty);
     end
+
+    `uvm_info(`gfn, "End of process_acq()", UVM_MEDIUM)
   endtask
 
   // Polling read_rcvd q and fetch read data to txdata fifo
@@ -980,7 +982,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
 
     // This cfg option can be used to empty the acqfifo, typically at the end of a test.
-    if (cfg.read_all_acq_entries) read_acq_fifo(0, acq_fifo_empty);
+    if (cfg.read_all_acq_entries) begin
+      `uvm_info(`gfn, "cfg.read_all_acq_entries -> read_acq_fifo() now.", UVM_HIGH)
+      read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));
+    end
 
     // The variable "expected_intr[]" is used to keep track of interrupts the testbench
     // expects the possibility of seeing asserted. If an interrupt is asserted that is
@@ -1010,7 +1015,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // Fill tx fifo for a single read transaction.
+  // Fill the TXFIFO for a single read transaction.
+  //
   task write_tx_fifo(bit add_delay = 0);
     uvm_reg_data_t data;
     int read_size;
@@ -1030,14 +1036,12 @@ class i2c_base_vseq extends cip_base_vseq #(
        end
     end
 
-    if (add_delay) id = {id, "_delay"};
     if (read_rcvd.size() > 0) begin
       read_size = read_rcvd.pop_front();
       `uvm_info(id, $sformatf("read_size :%0d", read_size), UVM_HIGH)
     end else begin
-      // if ack stop test mode,
-      // test need to feed 1 extraa tx fifo data at the end
-      // to avoid dead lock
+      // In ack-stop test mode, we need to feed 1 extra data byte into the TXFIFO at the end
+      // of the transaction to avoid dead-lock.
       if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
         `uvm_info(id, "Feeding extra data byte (0xff) for ack/stop now.", UVM_MEDIUM)
         csr_wr(.ptr(ral.txdata), .value('hff));
@@ -1067,12 +1071,13 @@ class i2c_base_vseq extends cip_base_vseq #(
           // and causes deadlock by waiting txempty forever.
           // So if interrupt handler is used, make each task not block the other
           while (data) begin
-            bit is_empty;
             csr_rd(.ptr(ral.status.txfull), .value(data));
             // if tx fifo is full, real acq fifo to remove
             // tx_stretch condition
             if (data) begin
-              read_acq_fifo(0, is_empty);
+              bit acq_fifo_empty;
+              `uvm_info(`gfn, "write_tx_fifo() -> read_acq_fifo() now.", UVM_HIGH)
+              read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));
             end
           end
 
@@ -1094,9 +1099,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   endtask
 
   // when read_one = 1. check acqempty and read a single entry
-  // and return acq_fifo_empty.
-  // When read_one = 0, read acq fifo up to acqlvl and convert read data
-  // to i2c_item and send to wr_obs_port
+  // When read_one = 0, empty the acqfifo (read acq fifo up to acqlvl)
   task read_acq_fifo(bit read_one, ref bit acq_fifo_empty);
     uvm_reg_data_t read_data;
     i2c_item obs;
@@ -1118,9 +1121,15 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     if (read_data == 0) begin
       cfg.clk_rst_vif.wait_clks(1);
-      `uvm_info("process_acq", $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
-                                         cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+      `uvm_info(`gfn, "read_acq_fifo() fifo is now empty", UVM_DEBUG)
     end
+
+    `uvm_info(`gfn, $sformatf(
+      "After read_acq_fifo() : cfg.sent_acq_cnt=%0d cfg.rcvd_acq_cnt=%0d",
+      cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf(
+      "After read_acq_fifo() : sent_rd_byte=%0d cfg.m_i2c_agent_cfg.rcvd_rd_byte=%0d",
+      cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
   endtask : read_acq_fifo
 
   virtual task empty_acqfifo();
@@ -1193,12 +1202,14 @@ class i2c_base_vseq extends cip_base_vseq #(
         while (!acq_fifo_empty) begin
           delay = $urandom_range(1, 50);
           #(delay * 1us);
-          read_acq_fifo(1, acq_fifo_empty);
+          `uvm_info(`gfn, "proc_intr_cmdcomplete() -> (SLOW) read_acq_fifo() now.", UVM_HIGH)
+          read_acq_fifo(.read_one(1), .acq_fifo_empty(acq_fifo_empty));
         end
       end
     end else begin
       // read one entry at a time to create acq fifo back pressure
-      read_acq_fifo(1, acq_fifo_empty);
+      `uvm_info(`gfn, "proc_intr_cmdcomplete() -> read_acq_fifo() now.", UVM_HIGH)
+      read_acq_fifo(.read_one(1), .acq_fifo_empty(acq_fifo_empty));
     end
     clear_interrupt(CmdComplete, 0);
   endtask // proc_intr_cmdcomplete
@@ -1208,7 +1219,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task proc_intr_txstretch();
     bit acq_fifo_empty;
     write_tx_fifo();
-    read_acq_fifo(0, acq_fifo_empty);
+    `uvm_info(`gfn, "proc_intr_txstretch() -> read_acq_fifo() now.", UVM_HIGH)
+    read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));
     // interrupt can't be clear until
     // txfifo get data or acq fifo get entry. So verify_clear can
     // causes deadlock. Set verify_clear to 0 to avoid deadlock
@@ -1240,15 +1252,16 @@ class i2c_base_vseq extends cip_base_vseq #(
     // 2) Read the ACQFIFO if it is currently full.
     if (acq_full) begin
       bit acq_fifo_empty = 0;
+      `uvm_info(`gfn, "proc_intr_acqstretch() -> read_acq_fifo() as currently full.", UVM_MEDIUM)
       case (cfg.slow_acq)
         // Read the fifo until empty.
-        1'b0: read_acq_fifo(0, acq_fifo_empty);
+        1'b0: read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));
         // Read the fifo until empty, but slowly (1-word at a time with delays inbetweeen).
         1'b1: begin
           while (!acq_fifo_empty) begin
             int delay = $urandom_range(50, 100);
             #(delay * 1us);
-            read_acq_fifo(1, acq_fifo_empty);
+            read_acq_fifo(.read_one(1), .acq_fifo_empty(acq_fifo_empty));
           end
         end
         default:;

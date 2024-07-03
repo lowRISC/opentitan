@@ -313,7 +313,7 @@ class i2c_reference_model extends uvm_component;
     bit rcont = get_field_val(ral.fdata.rcont, data);
     bit nakok = get_field_val(ral.fdata.nakok, data);
 
-    // If the start bit is set, we're writing the first indicator of a
+    // If the start bit is set, we're writing the first indicator of a new
     // transfer (maybe a START or RSTART), where the FBYTE contains address + rw-bit.
     if (start) begin
 

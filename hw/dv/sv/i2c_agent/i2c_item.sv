@@ -10,7 +10,6 @@ class i2c_item extends uvm_sequence_item;
   int                      tran_id;
   int                      num_data;  // valid data
   bus_op_e                 bus_op;
-  drv_type_e               drv_type;
   bit                      addr_ack;
   bit                      data_ack_q[$];
   // transaction control part
@@ -26,9 +25,16 @@ class i2c_item extends uvm_sequence_item;
   rand bit [7:0]           fbyte;
   rand bit                 nakok, rcont, read, stop, start;
 
-  // Incoming write data
+  // The following fields are used when using the seq_item to create transactions byte-by-byte in
+  // the i2c_agent. Used when interacting with the i2c_driver and 'drv_type' to create stimulus.
+  // TODO: Remove / Refactor to use bus_op + data_q instead
   logic [7:0]              wdata;
   logic [7:0]              rdata;
+  // This field is used by the i2c_driver to control the driving behaviour for a single sequence
+  // item. This is not a great abstraction, hopefully one day it can be removed as part of a larger
+  // refactor.
+  // Also see #14825
+  drv_type_e               drv_type;
 
   // Use for debug print
   string                   pname = "";
@@ -51,6 +57,11 @@ class i2c_item extends uvm_sequence_item;
     wait_cycles == 8;
   }
 
+  // In the I2C block-level DV environment, we only use the .compare() method for DUT-Controller
+  // transactions. DUT-Target transactions use checking routines which explicitly only compare a
+  // different subset of the fields. Hence, the NOCOMPARE attributes only apply to DUT-Controller
+  // transaction comparison.
+  //
   `uvm_object_utils_begin(i2c_item)
     `uvm_field_int(tran_id,                    UVM_DEFAULT)
     `uvm_field_enum(bus_op_e, bus_op,          UVM_DEFAULT)
