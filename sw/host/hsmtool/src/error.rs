@@ -32,4 +32,6 @@ pub enum HsmError {
     TooManyObjects(usize, String),
     #[error("Expected only owner permissions, but found permissions {0:o}")]
     FilePermissionError(u32),
+    #[error("DER error: {0}")]
+    DerError(String),
 }
