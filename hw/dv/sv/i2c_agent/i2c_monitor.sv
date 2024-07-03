@@ -356,7 +356,6 @@ class i2c_monitor extends dv_base_monitor #(
     wait(cfg.got_stop == 0);
 
     cfg.valid_addr = 0;
-    cfg.vif.drv_phase = DrvIdle;
     if (mon_dut_item.stop ||
         (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
       cfg.vif.wait_for_host_start(cfg.timing_cfg);
@@ -396,7 +395,6 @@ class i2c_monitor extends dv_base_monitor #(
     fork begin : iso_fork
       fork
         begin // address capture thread
-          cfg.vif.drv_phase = DrvAddr;
           // collecting address
           for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
             cfg.vif.p_edge_scl();
@@ -465,7 +463,6 @@ class i2c_monitor extends dv_base_monitor #(
     // Previous data collecting thread replied on nack / stop
     // For ack / stop test, this thread need to be forked with
     // separate ack_stop_monitor
-    cfg.vif.drv_phase = DrvRd;
 
     fork begin
       fork
@@ -522,7 +519,6 @@ class i2c_monitor extends dv_base_monitor #(
   task controller_write_thread();
     mon_dut_item.stop   = 1'b0;
     mon_dut_item.rstart = 1'b0;
-    cfg.vif.drv_phase = DrvWr;
     fork begin: iso_fork
       fork
         forever begin : collect_write_data

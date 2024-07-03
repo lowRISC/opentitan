@@ -27,9 +27,6 @@ interface i2c_if(
 
   int scl_spinwait_timeout_ns = 10_000_000; // 10ms
 
-  // Trace drivers' status
-  drv_phase_e drv_phase;
-
   clocking cb @(posedge clk_i);
     input scl_i;
     input sda_i;
