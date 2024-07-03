@@ -261,6 +261,13 @@
         The bus integrity scheme for flash is different from other comportable modules.
       '''
     }
+    { name: "MEM.ADDR_INFECTION",
+      desc: '''
+        On host reads, the address of the request is XORed with the data inside the read pipeline.
+        The request address is removed from the data before returning the data over TL-UL.
+        A mismatch triggers a data integrity error.
+      '''
+    }
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
     }
