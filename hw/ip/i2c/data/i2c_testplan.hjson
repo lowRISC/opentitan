@@ -275,15 +275,15 @@
     {
       name: target_error_intr
       desc: '''
-            Test unexp_stop interrupt is asserted by the Target DUT,
+            Test the DUT-Target's 'unexp_stop' interrupt.
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Host agent send STOP after ACK
 
             Checking:
-              - Ensure all acq_stop is asserted and stay asserted until cleared
-              - Ensure IP operation get back normal after on-the-fly reset finished
+              - Ensure acq_stop is asserted and stay asserted until cleared
+              - Ensure IP operation gets back to normal after on-the-fly reset finished
             '''
       stage: V2
       tests: ["i2c_target_unexp_stop"]

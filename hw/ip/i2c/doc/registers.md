@@ -271,6 +271,8 @@ I2C Read Data
 
 ## FDATA
 I2C Host Format Data
+
+Writes to this register are used to define and drive Controller-Mode transactions.
 - Offset: `0x1c`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
@@ -281,15 +283,47 @@ I2C Host Format Data
 {"reg": [{"name": "FBYTE", "bits": 8, "attr": ["wo"], "rotate": 0}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "STOP", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "READB", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RCONT", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "NAKOK", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                     |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------|
-| 31:13  |        |         |        | Reserved                                                        |
-|   12   |   wo   |   0x0   | NAKOK  | Do not signal an exception if the current byte is not ACK'd     |
-|   11   |   wo   |   0x0   | RCONT  | Do not NACK the last byte read, let the read operation continue |
-|   10   |   wo   |   0x0   | READB  | Read BYTE bytes from I2C. (256 if BYTE==0)                      |
-|   9    |   wo   |   0x0   | STOP   | Issue a STOP condition after this operation                     |
-|   8    |   wo   |   0x0   | START  | Issue a START condition before transmitting BYTE.               |
-|  7:0   |   wo   |   0x0   | FBYTE  | Format Byte. Directly transmitted if no flags are set.          |
+|  Bits  |  Type  |  Reset  | Name                   |
+|:------:|:------:|:-------:|:-----------------------|
+| 31:13  |        |         | Reserved               |
+|   12   |   wo   |   0x0   | [NAKOK](#fdata--nakok) |
+|   11   |   wo   |   0x0   | [RCONT](#fdata--rcont) |
+|   10   |   wo   |   0x0   | [READB](#fdata--readb) |
+|   9    |   wo   |   0x0   | [STOP](#fdata--stop)   |
+|   8    |   wo   |   0x0   | [START](#fdata--start) |
+|  7:0   |   wo   |   0x0   | [FBYTE](#fdata--fbyte) |
+
+### FDATA . NAKOK
+For the currrent controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
+or assert the 'controller_halt' interrupt if the current byte is not ACK'd.
+
+### FDATA . RCONT
+Do not NACK the last byte read, let the read operation continue.
+
+### FDATA . READB
+Transfer Direction Indicator.
+
+If unset, this write to FDATA defines a controller-transmitter operation (WRITE).
+A single byte of data (FBYTE) is written to the bus.
+
+If set, this write to FDATA defines a controller-receiver operation (READ).
+The value of FBYTE defines the number of bytes read from the bus. (256 if FBYTE==0)"
+After this number of bytes are read, the final byte will be NACKed to end the transfer
+unless RCONT is also set.
+
+### FDATA . STOP
+Issue a STOP condition after transmitting FBYTE.
+
+### FDATA . START
+Issue a START condition before transmitting FBYTE.
+
+### FDATA . FBYTE
+Format Byte.
+
+If no flags are set, hardware will transmit this byte directly.
+
+If READB is set, this field becomes the number of bytes hardware will automatically
+read from the bus.
 
 ## FIFO_CTRL
 I2C FIFO control register
