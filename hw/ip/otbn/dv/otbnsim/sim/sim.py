@@ -185,13 +185,18 @@ class OTBNSim:
         if should_zero and new_zero:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
-        # If we are IDLE and rma_req is not a valid lc_ctrl signal, we expect a
-        # MUBI error inside the machine which causes us to jump to the locked
-        # state.
-        if not is_locked:
-            if self.state.rma_req == LcTx.INVALID:
-                self.state.set_fsm_state(FsmState.LOCKED)
-                self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+        # If we are IDLE and rma_req is not a valid lc_ctrl signal, we
+        # expect a MUBI error inside the machine which causes us to jump to
+        # the locked state.
+        if self.state.rma_req == LcTx.INVALID and not is_locked:
+            self.state.set_fsm_state(FsmState.LOCKED)
+            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+
+        # If we are IDLE and get an RMA request, we want to start a secure
+        # wipe, which will eventually put us into the LOCKED state.
+        if self.state.rma_req == LcTx.ON and not is_locked:
+            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
+            self.state.set_fsm_state(FsmState.WIPING_BAD)
 
         if self.state.init_sec_wipe_is_running():
             # Wait for the URND seed. If there is some genuine state to wipe
