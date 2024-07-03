@@ -220,7 +220,6 @@ class i2c_monitor extends dv_base_monitor #(
       cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
       if (mon_dut_item.nack) cfg.got_nack.trigger();
       mon_dut_item.data_ack_q.push_back(mon_dut_item.ack && !mon_dut_item.nack);
-      `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
       `uvm_info(`gfn, $sformatf("target_read_thread() saw %0s",
           (mon_dut_item.ack) ? "ACK" : "NACK"), UVM_HIGH)
       // if nack is issued, next bit must be stop or rstart
@@ -228,7 +227,6 @@ class i2c_monitor extends dv_base_monitor #(
         cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
                                              mon_dut_item.rstart,
                                              mon_dut_item.stop);
-        `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
         `uvm_info(`gfn, $sformatf("target_read_thread() detected %0s",
             (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_HIGH)
       end
@@ -279,7 +277,6 @@ class i2c_monitor extends dv_base_monitor #(
               cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
                                                    mon_dut_item.rstart,
                                                    mon_dut_item.stop);
-              `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
               `uvm_info(`gfn, $sformatf("target_write_thread() detected %0s %0b",
                   (mon_dut_item.stop) ? "STOP" : "RSTART", mon_dut_item.stop), UVM_HIGH)
             end
@@ -479,7 +476,6 @@ class i2c_monitor extends dv_base_monitor #(
           end
           cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
           if (mon_dut_item.nack) cfg.got_nack.trigger();
-          `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
           `uvm_info(`gfn, $sformatf("controller_read_thread(), detected %0s",
                                     (mon_dut_item.ack) ? "ACK" : "NACK"), UVM_MEDIUM)
 
@@ -495,7 +491,6 @@ class i2c_monitor extends dv_base_monitor #(
             cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
                                                  mon_dut_item.rstart,
                                                  mon_dut_item.stop);
-            `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
             `uvm_info(`gfn, $sformatf("controller_read_thread(), detected %0s",
                                       (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
             if (mon_dut_item.stop) cfg.got_stop = 1;
@@ -572,7 +567,6 @@ class i2c_monitor extends dv_base_monitor #(
       @(cfg.vif.cb);
       if (target_read_phase) begin
         cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg, rstart, stop);
-        `DV_CHECK_NE_FATAL({rstart, stop}, 2'b11)
         if ((rstart | stop) & mon_dut_item.ack) begin
           if (cfg.allow_ack_stop) begin
             `uvm_info("ack_stop_mon",

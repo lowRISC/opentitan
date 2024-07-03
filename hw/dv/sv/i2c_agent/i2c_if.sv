@@ -123,6 +123,7 @@ interface i2c_if(
         disable fork;
       end : iso_fork
     join
+    `DV_CHECK(rstart ^ stop, , , "i2c_if")
   endtask: wait_for_host_stop_or_rstart
 
   // TODO(#21887) Re-strengthen checks when detecting ACK/NACK on the bus
@@ -177,6 +178,8 @@ interface i2c_if(
         disable fork;
       end : iso_fork
     join
+
+    `DV_CHECK(ack ^ nack, , , "i2c_if")
   endtask: wait_for_host_ack_or_nack
 
   // TODO(#21887) Re-strengthen checks
@@ -214,6 +217,7 @@ interface i2c_if(
       end : iso_fork
     join
     ack_r = ack && !nack;
+    `DV_CHECK(ack ^ nack, , , "i2c_if")
   endtask: wait_for_device_ack_or_nack
 
   // the `sda_unstable` interrupt is asserted if, when receiving data or ,
