@@ -576,9 +576,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   function void target_wr_comp(i2c_item obs, i2c_item exp);
     string str = (exp.start) ? "addr" : (exp.stop) ? "stop" : "";
     `uvm_info(`gfn, $sformatf("target_wr_comp() exp_wr_txn (%0s) %0d\n%s",
-      str, exp.tran_id, exp.sprint()), UVM_DEBUG)
+      str, exp.tran_id, exp.sprint()), UVM_FULL)
     `uvm_info(`gfn, $sformatf("target_wr_comp() obs_wr_txn (%0s) %0d\n%s",
-      str, obs.tran_id, obs.sprint()), UVM_DEBUG)
+      str, obs.tran_id, obs.sprint()), UVM_FULL)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.start, exp.start)
@@ -596,9 +596,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   // - data_q
   function void target_rd_comp(i2c_item obs, i2c_item exp);
     `uvm_info(`gfn, $sformatf("target_rd_comp() exp_rd_txn %0d\n%s",
-      exp.tran_id, exp.sprint()), UVM_DEBUG)
+      exp.tran_id, exp.sprint()), UVM_FULL)
     `uvm_info(`gfn, $sformatf("target_rd_comp() obs_rd_txn %0d\n%s",
-      obs.tran_id, obs.sprint()), UVM_DEBUG)
+      obs.tran_id, obs.sprint()), UVM_FULL)
 
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.num_data, exp.num_data)
