@@ -1092,7 +1092,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // When read_one = 0, empty the acqfifo (read acq fifo up to acqlvl)
   task read_acq_fifo(bit read_one, ref bit acq_fifo_empty);
     uvm_reg_data_t read_data;
-    i2c_item obs;
+    i2c_acqdata_item obs;
     acq_fifo_empty = 0;
     if (read_one) begin
     // Polling if status.acqempty is zero and skip read fifo
@@ -1102,11 +1102,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     end else csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(read_data));
 
     repeat(read_data) begin
-      // read one entry and compare
       csr_rd(.ptr(ral.acqdata), .value(read_data));
-      `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_HIGH)
-      // Capture the same read data from 'process_tl_access' sb
       obs = acq2item(read_data);
+      `uvm_info(`gfn, $sformatf("read_acq_fifo() read data 3'h%3x (.signal=%s, .abyte=2'h%2x)",
+        read_data, obs.signal.name(), obs.abyte), UVM_HIGH)
     end
 
     if (read_data == 0) begin

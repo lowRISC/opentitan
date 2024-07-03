@@ -13,7 +13,6 @@ class i2c_item extends uvm_sequence_item;
   bit                      addr_ack;
   bit                      data_ack_q[$];
   // transaction control part
-  i2c_acq_byte_id_e        signal; // ACQDATA.SIGNAL
   bit                      nack;
   bit                      ack;
   bit                      rstart;
@@ -24,6 +23,9 @@ class i2c_item extends uvm_sequence_item;
   // random flags
   rand bit [7:0]           fbyte;
   rand bit                 nakok, rcont, read, stop, start;
+  //
+  // DUT-Target
+  i2c_acq_byte_id_e        signal; // ACQDATA.SIGNAL
 
   // The following fields are used when using the seq_item to create transactions byte-by-byte in
   // the i2c_agent. Used when interacting with the i2c_driver and 'drv_type' to create stimulus.

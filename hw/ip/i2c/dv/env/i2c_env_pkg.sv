@@ -84,39 +84,18 @@ package i2c_env_pkg;
   parameter uint NUM_ALERTS = i2c_reg_pkg::NumAlerts;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
-  function automatic i2c_item acq2item(bit [bus_params_pkg::BUS_DW-1:0] data);
-    i2c_item item;
-    `uvm_create_obj(i2c_item, item);
+  function automatic i2c_acqdata_item acq2item(bit [bus_params_pkg::BUS_DW-1:0] data);
+    i2c_acqdata_item item;
+    `uvm_create_obj(i2c_acqdata_item, item);
 
     // abyte+signal use the lower 11 bits of the ACQDATA register
     // Check unused upper bits are zero
     `DV_CHECK_EQ(data >> 11, '0, , , $sformatf("%m"))
 
     // Decode ACQFIFO item
-    item.wdata = data[7:0];
+    item.abyte = data[7:0];
     item.signal = i2c_acq_byte_id_e'(data[10:8]);
 
-    // Set additional helper fields
-    case (item.signal)
-      3'd0: ;
-      3'd1: item.start = 1;
-      3'd2: item.stop = 1;
-      3'd3: item.rstart = 1;
-      3'd4: item.nack = 1;
-      3'd5: begin
-        item.nack = 1;
-        item.start = 1;
-      end
-      3'd6: begin
-        item.nack = 1;
-        item.stop = 1;
-      end
-      default:;
-    endcase
-    if (item.start || item.rstart) begin
-      item.addr = item.wdata[7:1];
-      item.read = item.wdata[0];
-    end
     return item;
   endfunction: acq2item
 
