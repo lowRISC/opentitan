@@ -63,16 +63,21 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   bit [6:0] target_addr0;
   bit [6:0] target_addr1;
 
+  // i2c_target_bad_addr //////////////////////
+  //
   // Set this bit when there is the possibility of generating Agent-Controller stimulus
   // transfers where the address does not match that configured into the DUT.
   bit       allow_bad_addr = 0;
 
   bit       valid_addr; // Was the last observed transaction to the DUT addressed correctly?
-  // Store history of good and bad read target address ( '1' = good, '0' = bad )
+  // Store history of good and bad read target addresses ( '1' = good, '0' = bad )
   // This is used by the env's scoreboard to adjust its expectations, and also
   // to adjust the stimulus for reads, so we don't put data into the TXFIFO that will
   // never be read out.
+  // Note. that this queue is only queried immediately before writing to the TXFIFO, and we only
+  // push new values to the queue when the monitor decodes the address.
   bit       read_addr_q[$];
+  /////////////////////////////////////////////
 
   ////////////
   // Resets //

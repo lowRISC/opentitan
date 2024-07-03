@@ -4,6 +4,7 @@
 
 // basic fifo_full test vseq
 class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
+
   `uvm_object_utils(i2c_host_fifo_full_vseq)
   `uvm_object_new
 
@@ -22,8 +23,6 @@ class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
   // read transaction length is equal to rx_fifo
   constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
 
-  local bit check_fifo_full = 1'b1;
-
   virtual task pre_start();
     // hold reading rx_fifo to ensure rx_fifo gets full
     super.pre_start();
@@ -32,6 +31,7 @@ class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
   endtask : pre_start
 
   virtual task body();
+    bit check_fifo_full = 1'b1;
     initialization();
     `uvm_info(`gfn, "\n--> start of i2c_host_fifo_full_vseq", UVM_DEBUG)
     fork
@@ -40,7 +40,7 @@ class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
       end
       begin
         host_send_trans(num_trans);
-        check_fifo_full = 1'b0; // gracefully stop process_fifo_full_status
+        check_fifo_full = 1'b0; // gracefully stop process_fifo_full_status()
       end
     join
     `uvm_info(`gfn, "\n--> end of i2c_host_fifo_full_vseq", UVM_DEBUG)

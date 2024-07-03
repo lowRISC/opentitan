@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// This vseq stimulates the assertion of the unexp_stop interrupt (DUT-Target mode), which should
+// trigger when a STOP condition is received without an immediately-preceding NACK during a READ
+// transfer.
+//
 class i2c_target_ack_stop_vseq extends i2c_target_smoke_vseq;
   `uvm_object_utils(i2c_target_ack_stop_vseq)
   `uvm_object_new

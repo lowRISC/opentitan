@@ -49,8 +49,11 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         begin: iso_fork
           fork
             begin
-              if (cfg.if_mode == Device) drive_device_item(req);
-              else drive_host_item(req);
+              case (cfg.if_mode)
+                Host: drive_host_item(req);
+                Device: drive_device_item(req);
+                default: `uvm_fatal(`gfn, "Shouldn't reach this state!")
+              endcase
             end
             // handle on-the-fly reset
             begin
