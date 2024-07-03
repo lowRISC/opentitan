@@ -105,7 +105,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
                               cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
     num_runs.rand_mode(0);
     num_trans_c.constraint_mode(0);
-    transaction = new();
+    transaction = spi_transaction_item::type_id::create("transaction");
     super.pre_start();
   endtask : pre_start
 
@@ -134,7 +134,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
   endtask
 
   function void transaction_init();
-    transaction = new();
+    transaction = spi_transaction_item::type_id::create("transaction");
 
     transaction.read_weight     = cfg.seq_cfg.read_pct;
     transaction.write_weight    = cfg.seq_cfg.write_pct;

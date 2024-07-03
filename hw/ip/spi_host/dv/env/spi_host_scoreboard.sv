@@ -60,9 +60,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     plain_data_fifo  = new("plain_data_fifo", this);
-    host_wr_segment  = new("host_wr_segment");
-    host_rd_segment  = new("host_rd_segment");
-    device_item      = new("device_item");
+    host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
+    host_rd_segment = spi_segment_item::type_id::create("host_rd_segment");
+    device_item = spi_item::type_id::create("device_item");
   endfunction
 
 
@@ -94,7 +94,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   // Receives spi_segment_item - this is then compared with the value on the bus which is extracted
   // in compare_tx_trans
   virtual task compare_rx_trans();
-    spi_segment_item   tl_segment = new();
+    spi_segment_item   tl_segment = spi_segment_item::type_id::create("tl_segment");
     string             txt = "";
     bit [7:0]          read_data;
 
@@ -185,7 +185,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   // If the written segment's direction is RxOnly or Bidir, this then also populate the `rx_data_q`
   // for further RX comparison in compare_rx_trans
   virtual task compare_tx_trans();
-    spi_segment_item   exp_segment = new();
+    spi_segment_item   exp_segment = spi_segment_item::type_id::create("exp_segment");
+
     spi_item           dut_item, device_item;
     // indication that this is a new transaction
     bit                prev_csaat = 0;
@@ -291,7 +292,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Pushed segment:\n%s \nonto 'write_segment_q'",
                                   wr_segment.convert2string), UVM_DEBUG)
         write_segment_q.push_back(wr_segment);
-        host_wr_segment = new();
+        host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
       end
 
       return;
@@ -316,7 +317,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Pushed segment:\n%s \nonto 'read_segment_q'",
                                   rd_segment.convert2string()), UVM_DEBUG)
         read_segment_q.push_back(rd_segment);
-        host_rd_segment = new();
+        host_rd_segment = spi_segment_item::type_id::create("host_rd_segment");
       end
 
       return;
@@ -422,7 +423,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
                                           wr_segment.convert2string()), UVM_DEBUG)
               `uvm_info(`gfn, $sformatf("\n  created expeted wr_segment item %s",
                                           wr_segment.convert2string()), UVM_LOW)
-              host_wr_segment = new();
+              host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
             end
           end
           if (cfg.en_cov) begin
@@ -555,8 +556,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     write_segment_q.delete();
     read_segment_q.delete();
     rx_data_q.delete();
-    host_wr_segment = new();
-    host_rd_segment = new();
+    host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
+    host_rd_segment = spi_segment_item::type_id::create("host_rd_segment");
     device_item.clear_all();
   endfunction : reset
 

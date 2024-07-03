@@ -64,7 +64,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
 
   // Generate the TL-writes needed for the DUT to send all segments of a "spi_transaction_item" transaction.
   virtual task send_trans(spi_transaction_item trans, bit wait_ready = 1'b1);
-    spi_segment_item segment = new();
+    spi_segment_item segment;
     while (trans.segments.size() > 0) begin
       if (wait_ready) wait_ready_for_command();
       // lock fifo to this seq
@@ -83,7 +83,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
 
   // Write dummy-data into TxFifo.
   virtual task txfifo_fill();
-    spi_segment_item segment = new();
+    spi_segment_item segment = spi_segment_item::type_id::create("segment");
     spi_host_atomic.get(1);
     access_data_fifo(segment.spi_data, TxFifo);
     spi_host_atomic.put(1);
