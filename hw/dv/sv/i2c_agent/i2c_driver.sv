@@ -102,7 +102,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
     case (req.drv_type)
       HostStart: begin
-        cfg.vif.drv_phase = DrvAddr;
         cfg.vif.host_start(cfg.timing_cfg);
         cfg.host_scl_start = 1;
       end
@@ -134,7 +133,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         end
       end
       HostStop: begin
-        cfg.vif.drv_phase = DrvStop;
         // If SCL is paused high, wait for it to fall.
         `DV_WAIT(cfg.vif.scl_i === 1'b0,, scl_spinwait_timeout_ns, "drive_host_item HostStop")
         // Now disable the SCL drive thread.

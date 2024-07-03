@@ -25,16 +25,6 @@ package i2c_agent_pkg;
     HostWait
   } drv_type_e;
 
-  // Driver phase
-  typedef enum int {
-    DrvIdle,
-    DrvStart,
-    DrvAddr,
-    DrvWr,
-    DrvRd,
-    DrvStop
-  } drv_phase_e;
-
   // register values
   typedef struct {
     // derived parameters
