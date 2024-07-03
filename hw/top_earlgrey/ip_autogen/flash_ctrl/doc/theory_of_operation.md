@@ -507,3 +507,11 @@ The expected waveform from the perspective of the physical controller is shown b
   {name: 'flash_ctrl_o.prog_done', wave: '0....10.10...10'},
 ]}
 ```
+
+### Read Data Infection Feature
+
+This feature aims to provide additional security against fault injection attacks targeting the addresses of host flash read requests.
+By default, on each host read request, the data fetched from the underyling memory is infected with the address used for the memory access.
+Before returning the data to the host over the bus, the address is removed from the infected data.
+When the address used for the infection matches the original address, the plain data is restored.
+Otherwise, faulty data is generated, which can be detected by the data integrity mechanism.

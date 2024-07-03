@@ -43,6 +43,7 @@ CM_TYPES = [
     'REGREN',
     'SHADOW',
     'SCRAMBLE',
+    'ADDR_INFECTION',
     'INTEGRITY',
     'READBACK',
     'ADDR_INFECTION',

@@ -1297,6 +1297,7 @@ module flash_ctrl
   );
 
   // SEC_CM: HOST.BUS.INTEGRITY
+  // SEC_CM: MEM.ADDR_INFECTION
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
