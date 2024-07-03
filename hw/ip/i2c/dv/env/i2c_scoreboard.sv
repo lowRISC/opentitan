@@ -196,9 +196,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     case (csr.get_name())
       "ctrl": begin
-        cov.openting_mode_cg.sample(.ip_mode(`gmv(ral.ctrl.enablehost)),
-                                    .tb_mode(!(`gmv(ral.ctrl.enablehost))),
-                                    .scl_frequency(cfg.scl_frequency));
+        cov.operating_mode_cg.sample(.ip_mode(`gmv(ral.ctrl.enablehost)),
+                                     .tb_mode(!(`gmv(ral.ctrl.enablehost))),
+                                     .scl_frequency(cfg.scl_frequency));
       end
 
       "fdata": begin // aka. FMTFIFO
