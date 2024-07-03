@@ -73,10 +73,16 @@ class spi_host_base_vseq extends cip_base_vseq #(
         spi_config_regs.csnidle[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
                                           cfg.seq_cfg.host_spi_max_csn_latency]};
       }
-      foreach (spi_config_regs.clkdiv[i]) {
-        spi_config_regs.clkdiv[i] inside {[cfg.seq_cfg.host_spi_min_clkdiv :
-                                         cfg.seq_cfg.host_spi_max_clkdiv]};
-      }
+  }
+
+  // Separate constraint to allow easy override in child sequences
+  constraint spi_config_regs_clkdiv_c {
+    foreach (spi_config_regs.clkdiv[i]) {
+      spi_config_regs.clkdiv[i] dist {
+        [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]      :/80,
+        [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv] :/20
+      };
+    }
   }
 
   constraint spi_ctrl_regs_c {
@@ -97,6 +103,21 @@ class spi_host_base_vseq extends cip_base_vseq #(
       };
   }
 
+  function void post_randomize();
+    super.post_randomize();
+    // We currently support 1 chip-select line only
+    case(spi_config_regs.clkdiv[0]) inside
+      // After randomization we set a different timeout based on the clock divider
+      [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]: ; // no change
+      [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv]: begin
+        cfg.csr_spinwait_timeout_ns *= 1.5;
+      end
+      [cfg.seq_cfg.host_spi_middle_clkdiv+1 : 16'hFFF] : cfg.csr_spinwait_timeout_ns *= 5;
+      [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : cfg.csr_spinwait_timeout_ns *= 10;
+      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out range"))
+    endcase
+  endfunction
+
 
   virtual task pre_start();
     // sync monitor and scoreboard setting
@@ -108,6 +129,28 @@ class spi_host_base_vseq extends cip_base_vseq #(
     transaction = spi_transaction_item::type_id::create("transaction");
     super.pre_start();
   endtask : pre_start
+
+  // csr_spinwait wrapper to allow finer control of task fields
+  // Any VSEQ extending from these spi_host VSEQs which call csr_spinwait will have a custom timeout
+  virtual task automatic csr_spinwait(input  uvm_object        ptr,
+                                      input  uvm_reg_data_t    exp_data,
+                                      input  uvm_check_e       check = default_csr_check,
+                                      input  uvm_path_e        path = UVM_DEFAULT_PATH,
+                                      input  uvm_reg_map       map = null,
+                                      input  uvm_reg_frontdoor user_ftdr =
+                                                                 default_user_frontdoor,
+                                      input  uint              spinwait_delay_ns = 0,
+                                      input  uint              timeout_ns =
+                                                                 cfg.csr_spinwait_timeout_ns,
+                                      input  compare_op_e      compare_op = CompareOpEq,
+                                      input  bit               backdoor = 0,
+                                      input  uvm_verbosity     verbosity = UVM_HIGH);
+    csr_utils_pkg::csr_spinwait( .ptr(ptr), .exp_data(exp_data), .check(check), .path(path),
+                                 .map(map), .user_ftdr(user_ftdr),
+                                 .spinwait_delay_ns(spinwait_delay_ns),
+                                 .timeout_ns(timeout_ns), .compare_op(compare_op),
+                                 .backdoor(backdoor), .verbosity(verbosity));
+  endtask
 
   // Start sequences on the spi_agent (configured as a Device) that will respond to host bus activity.
   // Currently we use "spi_device_cmd_rsp_seq", which discards write-data, and responds with random data for reads.
@@ -148,6 +191,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     transaction.spi_num_seg_min = cfg.seq_cfg.host_spi_min_num_seg;
     transaction.spi_num_seg_max = cfg.seq_cfg.host_spi_max_num_seg;
     transaction.num_cmd_bytes   = cfg.num_cmd_bytes;
+    transaction.num_dummy       = cfg.num_dummy;
   endfunction
 
 
