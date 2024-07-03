@@ -310,6 +310,7 @@ _NORMAL_DEPENDENCIES = {
             "crc": "@crate_index__crc-3.0.1//:crc",
             "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
+            "der": "@crate_index__der-0.7.8//:der",
             "deser-hjson": "@crate_index__deser-hjson-2.1.0//:deser_hjson",
             "directories": "@crate_index__directories-5.0.1//:directories",
             "ecdsa": "@crate_index__ecdsa-0.16.9//:ecdsa",
@@ -1154,16 +1155,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__dunce-1.0.4",
-        sha256 = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/dunce/1.0.4/download"],
-        strip_prefix = "dunce-1.0.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.dunce-1.0.4.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "crate_index__ecdsa-0.16.9",
         sha256 = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca",
         type = "tar.gz",
@@ -1424,16 +1415,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__glob-0.3.1",
-        sha256 = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/glob/0.3.1/download"],
-        strip_prefix = "glob-0.3.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.glob-0.3.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "crate_index__group-0.13.0",
         sha256 = "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63",
         type = "tar.gz",
@@ -1680,16 +1661,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/itoa/1.0.9/download"],
         strip_prefix = "itoa-1.0.9",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.itoa-1.0.9.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__jobserver-0.1.27",
-        sha256 = "8c37f63953c4c63420ed5fd3d6d398c719489b9f872b9fa683262f8edd363c7d",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/jobserver/0.1.27/download"],
-        strip_prefix = "jobserver-0.1.27",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.jobserver-0.1.27.bazel"),
     )
 
     maybe(
