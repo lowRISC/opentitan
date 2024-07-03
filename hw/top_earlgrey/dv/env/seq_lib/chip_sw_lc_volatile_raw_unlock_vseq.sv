@@ -39,11 +39,15 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
 
     // Since super.body only does backdoor operation,
     // add wait for clock task before the test uses jtag polling task.
+    `uvm_info(`gfn, "Waiting for ROM check and LC ready ...", UVM_LOW)
     wait_rom_check_done();
     wait_lc_ready(1);
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
     // If we're expecting the feature to be enabled, the device should boot.
     if (exp_volatile_raw_unlock_en) begin
+      `uvm_info(`gfn, "Expecting volatile raw unlock enabled.", UVM_LOW)
+      `uvm_info(`gfn, "Waiting for device to boot..", UVM_LOW)
       // VOLATILE_RAW_UNLOCK does not require a reset after completion.
       // Applying a reset will move the device back to RAW state in this case.
       jtag_lc_state_volatile_raw_unlock(.target_strap(JtagTapRvDm), .expect_success(1));
@@ -82,9 +86,12 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
       // so that we can check the completion status through that interface.
       // After this, the rest of the test should proceed.
       jtag_lc_state_volatile_raw_unlock(JtagTapLc);
+      `uvm_info(`gfn, "Done.", UVM_LOW)
     end else begin
+      `uvm_info(`gfn, "Expecting volatile raw unlock disabled.", UVM_LOW)
       // We expect this to fail in this case.
       jtag_lc_state_volatile_raw_unlock(.target_strap(JtagTapLc), .expect_success(0));
+      `uvm_info(`gfn, "Transition failed as expected.", UVM_LOW)
     end
   endtask
 

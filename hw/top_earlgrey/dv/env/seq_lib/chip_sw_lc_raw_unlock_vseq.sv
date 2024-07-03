@@ -61,12 +61,17 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
 
     // Since super.body only does backdoor operation,
     // add wait for clock task before the test uses jtag polling task.
+    `uvm_info(`gfn, "Waiting for ROM check and LC ready ...", UVM_LOW)
     wait_rom_check_done();
     wait_lc_ready();
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
     // Switch to external clock via lc_ctrl TAP, and perform RAW unlock. This
     // requires a reset to apply the transition.
+    `uvm_info(`gfn, "Switching to external clock ...", UVM_LOW)
     switch_to_external_clock();
+    `uvm_info(`gfn, "Done.", UVM_LOW)
+    `uvm_info(`gfn, "Perform raw --> test_unlocked0 LC transition ...", UVM_LOW)
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     // Complete state transition
     apply_reset();
@@ -74,10 +79,11 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     // register.
     #(10us);
     wait_lc_ready();
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
-    // After reset, clock bypass back to 'off'.
-    // Resume external clock before switch jtag_tap, otherwise,
-    // external clock is disconnected.
+    // After reset, the external clock bypass switches back to 'off'.
+    // We resume the external clock before switching from the LC to RV_DM JTAG
+    // TAP, otherwise, the external clock will be disconnected.
     claim_transition_interface();
     jtag_riscv_agent_pkg::jtag_write_csr(
                                          ral.lc_ctrl.transition_ctrl.get_offset(),
@@ -90,29 +96,37 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
 `else
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
 `endif
-    // Switch tap to rvdm
+    // Switch JTAG TAP to RV_DM.
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     reset_jtag_tap();
 
+    // Check that the ROM starts executing.
     if (rom_prod_mode) begin
       // The production ROM is not instrumented to report `sw_test_status`, so
       // we wait for the PC to advance before continuing with the test. The
       // PC was taken from the ROM disassembly.
+      `uvm_info(`gfn, "ROM Prod Mode: waiting for ROM to start executing ...", UVM_LOW)
       `DV_WAIT(cfg.chip_vif.probed_cpu_pc.pc_wb >= 8194)
+      `uvm_info(`gfn, "Done.", UVM_LOW)
     end else begin
       // In RAW state the ROM should halt as RomExecEn is not set yet.
+      `uvm_info(`gfn, "Test ROM mode: waiting for ROM to start executing ...", UVM_LOW)
       `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+      `uvm_info(`gfn, "Done.", UVM_LOW)
     end
 
     // Use the frontend interface to configure the RomExecEn OTP value. A
     // reset is required to have otp_ctrl sample the new OTP value.
-    `uvm_info(`gfn, "Configuring RomExecEn", UVM_LOW)
+    `uvm_info(`gfn, "Configuring RomExecEn in OTP CreatorSwCfg partition ...", UVM_LOW)
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1);
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
+    // Reset the chip, connecting to the RV_DM tap again.
+    `uvm_info(`gfn, "Reset the chip again, and wait for ROM execution ...", UVM_LOW)
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     apply_reset();
     reset_jtag_tap();
@@ -125,16 +139,22 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     // Wait for ROM to start executing by checking PC to reach an arbitrary
     // value.
     `DV_WAIT(cfg.chip_vif.probed_cpu_pc.pc_wb >= 8194)
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
-    `uvm_info(`gfn, "Switching to CLK_EXT via clkmgr", UVM_LOW)
+    `uvm_info(`gfn, "Switching to CLK_EXT via clkmgr ...", UVM_LOW)
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     clkmgr_switch_to_ext_clk();
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
     `uvm_info(`gfn, "Check sensor_ctrl status bit set to 0", UVM_LOW)
     csr_rd_check(.ptr(ral.sensor_ctrl_aon.status.ast_init_done), .compare_value(0), .backdoor(1));
+
+    // There is no need to wait for the ROM to boot the flash image, since we
+    // already confirmed we performed a raw --> test_unlocked0 LC transition.
+    override_test_status_and_finish(.passed(1));
 
   endtask
 endclass
