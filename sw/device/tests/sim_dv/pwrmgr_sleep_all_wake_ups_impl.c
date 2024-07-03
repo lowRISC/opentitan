@@ -243,6 +243,8 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
     } break;
     case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX: {
       uint32_t filter_status = 0;
+      CHECK_DIF_OK(
+          dif_adc_ctrl_wait_cdc_sync(&adc_ctrl, (uint32_t)kClockFreqAonHz));
       CHECK_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl, &filter_status));
       CHECK(filter_status ==
                 ((1 << kDifAdcCtrlFilter5) | (1 << kDifAdcCtrlTrans)),
