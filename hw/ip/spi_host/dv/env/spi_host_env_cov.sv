@@ -43,8 +43,10 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     clkdiv_cp : coverpoint spi_configopts.clkdiv[SPI_HOST_NUM_CS-1]{
     // (Period) T_sck = 2*(clkdiv+1)*T_core
     // If clkdiv == 16'h00fe, F_sck = F_core / 254
-    bins clk_divl = {0};
-    bins clk_divm[30] = {[16'h1:16'h00fe]};
+    bins clk_div_zero = {0};
+    bins clk_divm_bottom_eight[30] = {[16'h1:16'h00fe]};
+    bins clk_divm_upper_eight[30] = {[16'h00ff:16'hfffe]};
+    bins clk_divm_max = {16'hffff};
     }
     csntrail_cp : coverpoint spi_configopts.csntrail[SPI_HOST_NUM_CS-1]{
       bins csntrail[] = {[0:15]};
