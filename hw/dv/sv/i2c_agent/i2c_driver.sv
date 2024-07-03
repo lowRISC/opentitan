@@ -99,10 +99,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task drive_host_item(i2c_item req);
     // During pause period, let drive_scl control scl
     `DV_WAIT(scl_pause == 1'b0,, scl_spinwait_timeout_ns, "drive_host_item")
-    if (cfg.allow_bad_addr & !cfg.valid_addr) begin
-      if (req.drv_type inside {HostAck, HostNAck} & cfg.is_read) return;
-    end
-    `uvm_info(`gfn, $sformatf("drive_host_item() :: drv_type=%s", req.drv_type.name), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("drive_host_item() :: drv_type=%s", req.drv_type.name()), UVM_HIGH)
 
     case (req.drv_type)
       HostStart: begin
@@ -140,9 +137,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         // Now disable the SCL drive thread.
         cfg.host_scl_stop = 1;
         cfg.vif.host_stop(cfg.timing_cfg);
-        if (cfg.allow_bad_addr & !cfg.valid_addr) begin
-          cfg.got_stop = 1;
-        end
       end
       default: begin
         `uvm_fatal(`gfn, {"drive_host_item() received invalid drv_type : ", req.drv_type.name()})

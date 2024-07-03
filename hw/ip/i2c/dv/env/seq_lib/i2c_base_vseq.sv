@@ -2,6 +2,53 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Base vseq class for creating i2c block-level stimulus
+// This class contains common helper code and routines for both DUT-Target and DUT-Controller
+// stimulus generation and testing. Although it might make more sense to split out code into two
+// different class for each operating mode, future multi-controller systems may see both modules
+// active simultaneously. This is an intentional use case for certain extension protocols built on
+// top of I2C.
+//
+/////////////////
+// Subroutines //
+/////////////////
+//
+// /* Create test configuration, program DUT registers and Agent appropriately. */
+// get_timing_values() / print_time_property()
+// program_registers()
+//
+// /* Create write accesses to the FMTFIFO/FDATA for driving DUT-Controller stimulus */
+// program_format_flag() / print_format_flag()
+//
+// /* Create stimulus to drive the i2c_agent to exercise DUT-Target functionality */
+// generate_agent_controller_stimulus() / print_agent_controller_txn()
+// - create_txn()
+// - convert_i2c_txn_to_drv_q()
+// - get_transaction_read_data()
+// - ack_stop_stim_modifier()
+//
+// /* Polling-based handlers for the ACQFIFO and TXFIFO (DUT-Target Mode) */
+// process_acq() / process_tx()
+//
+// /* Interrupt-based handlers for operation in DUT-Controller mode */
+// process_interrupts()
+// /* Interrupt-based handlers for operation in DUT-Target mode */
+// process_target_interrupts() / stop_target_interrupt_handler()
+// - proc_intr_acqthreshold()
+// - proc_intr_txthreshold()
+// - proc_intr_unexpstop()
+// - proc_intr_hosttimeout()
+// - proc_intr_cmdcomplete()
+// - proc_intr_txstretch()
+// - proc_intr_acqstretch()
+//
+// /* Interrupt checking helper routines */
+// clear_interrupt() / check_one_intr() / count_edge_intr()
+//
+// /* Helper routines for fifo accesses */
+// program_tx_fifo() #TODO Remove, duplicate
+// write_tx_fifo() / read_acq_fifo() / empty_acqfifo()
+
 class i2c_base_vseq extends cip_base_vseq #(
     .CFG_T               (i2c_env_cfg),
     .RAL_T               (i2c_reg_block),
@@ -62,27 +109,43 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   // host timeout ctrl value
   bit [31:0]                  host_timeout_ctrl = 32'hffff;
-  // Start counter including restart. Starting from 1 to match rtl value
-  // and easy to trace.
-  int start_cnt = 1;
-  int read_rcvd[$];
-  int full_txn_num = 0;
-  int exp_rd_id = 0;
-  int exp_wr_id = 0;
 
-  // read_txn_q usage: a single byte of read data and only wdata is valid.
-  i2c_item read_txn_q[$];
-  int tran_id = 0;
-  int sent_txn_cnt = 0;
+  // Start counter including restart.
+  // Starting from 1 to match rtl value and easy to trace.
+  int start_cnt = 1;
+
+  // This queue stores all the read data bytes the Agent-Controller expects to read back from the
+  // DUT. The testbench interrupt handlers will pull data from this queue to be written into the
+  // TXFIFO, and hence read back by the agent. Note. that this queue initially includes data bytes
+  // that part of transfers not addressed to the DUT, and we post-process the queue
+  // (using read_rcvd_q[$]) to remove bytes that in practice the Agent will never receive.
+  bit [7:0] read_byte_q[$];
+  // Keep a count of the total number of read data bytes we expect the agent to read from the DUT.
+  // This is compared to the value the agent reports it has read (cfg.m_i2c_agent_cfg.rcvd_rd_byte)
+  // to determine if we should keep adding data from read_byte_q into the TXFIFO.
+  int       sent_rd_byte = 0;
+  // This queue stores integers corresponding to the length of each generated stimulus read
+  // transfer. This is used to remove a certain number of read bytes from the expectation queue
+  // (read_byte_q[$]) when a transfer is generated with a bad address.
+  int       read_rcvd_q[$];
+
+  // 'stim_id' increments for each new I2C transfer generated as part of our stimulus.
+  int       stim_id = 0;
+
+  int       sent_txn_cnt = 0;
 
   i2c_intr_e intr_q[$];
-  bit expected_intr[i2c_intr_e];
+  bit       expected_intr[i2c_intr_e];
 
-  // Used for ack stop test
-  bit [7:0] pre_feed_rd_data_q[$];
+  // The following variables are used only for the ack-stop test (i2c_agent_cfg.allow_ack_stop = 1)
+  bit [7:0] pre_feed_rd_data_q[$]; // Always 8'hff
   int       pre_feed_cnt = 0;
-  bit       read_ack_nack_q[$];
+  bit       force_ack; // When set, forces the txn we're about to generate to end with an ACK.
+
+  // Setting this bit allows the interrupt handler cleanup code to ensure that any expectations
+  // are adjusted if the final read transfer has a bad address.
   bit       adjust_exp_read_byte = 0;
+
 
   // constraints
   constraint target_addr_c {
@@ -226,6 +289,9 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  `define ALL_ACQFIFO_READS_OCCURRED (cfg.rcvd_acq_cnt >= cfg.sent_acq_cnt)
+  `define ALL_READS_OCCURRED (cfg.m_i2c_agent_cfg.rcvd_rd_byte >= sent_rd_byte)
+
   virtual task pre_start();
     cfg.reset_seq_cfg();
     // sync monitor and scoreboard setting
@@ -239,13 +305,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.sent_acq_cnt = 0;
     cfg.rcvd_acq_cnt = 0;
     sent_txn_cnt = 0;
-    cfg.m_i2c_agent_cfg.sent_rd_byte = 0;
+    sent_rd_byte = 0;
     cfg.m_i2c_agent_cfg.rcvd_rd_byte = 0;
     host_timeout_ctrl = 32'hffff;
     cfg.m_i2c_agent_cfg.allow_ack_stop = 0;
     expected_intr.delete();
-
-    if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;
 
     super.pre_start();
   endtask : pre_start
@@ -448,7 +512,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   endtask : program_registers
 
-  virtual task program_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
+  virtual task program_format_flag(i2c_item item, string msg = "");
     bit fmtfull;
 
     ral.fdata.nakok.set(item.nakok);
@@ -463,7 +527,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
     cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
-    print_format_flag(item, msg, do_print);
+    print_format_flag(item, msg);
   endtask : program_format_flag
 
   // Read and clear interrupts
@@ -528,25 +592,33 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endfunction : print_seq_cfg_vars
 
-  virtual function void print_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
-    if (do_print) begin
-      string str;
-      str = {str, $sformatf("\n%s, format flags 0x%h \n", msg,
-                  {item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte})};
-      if (item.start) begin
-        str = {str, $sformatf("  | %5s | %5s | %5s | %5s | %5s | %8s | %3s |\n",
-            "nakok", "rcont", "read", "stop", "start", "addr", "r/w")};
-        str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x | %3s |",
-            item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte[7:1],
-            (item.fbyte[0]) ? "R" : "W")};
-      end else begin
-        str = {str, $sformatf("  | %5s | %5s | %5s | %5s | %5s | %8s |\n",
-            "nakok", "rcont", "read", "stop", "start", "fbyte")};
-        str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x |",
-            item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte)};
-      end
-      `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
-    end
+  // Print all formatting-flags of a particular write to the FDATA fifo.
+  //
+  // e.g.
+  // >   <msg>
+  // >   format flags 13'h10bf
+  // >   | fbyte | start |  stop | readb | rcont | nakok |
+  // >   | 8'hbf |     0 |     0 |     0 |     0 |     1 |
+  //
+  virtual function void print_format_flag(i2c_item item, string msg = "");
+    string str;
+    string header_tpl = "  | %5s | %5s | %5s | %5s | %5s | %5s |\n";
+    string data_tpl   = "  | 8'h%2x | %5d | %5d | %5d | %5d | %5d |\n";
+
+    str = {$sformatf("\n  \"%s\"\n", msg),
+           $sformatf("  format flags 13'h%4x\n",
+                     {item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte})};
+
+    str = {str, $sformatf(header_tpl, "fbyte", "start", "stop", "readb", "rcont", "nakok")};
+    str = {str, $sformatf(data_tpl,
+                          item.fbyte,
+                          item.start,
+                          item.stop,
+                          item.read,
+                          item.rcont,
+                          item.nakok)};
+
+    `uvm_info(`gfn, $sformatf("%s", str), UVM_MEDIUM)
   endfunction : print_format_flag
 
   virtual function void bound_check(bit [TL_DW-1:0] x, uint low_bound, uint high_bound);
@@ -612,326 +684,417 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("prob_scl_interference:%0d", prob_scl_interference), UVM_MEDIUM);
   endfunction
 
-  // Print i2c_item.data_q with RS command notation
-  function void print_wr_data(bit is_read, i2c_item myq[$]);
-    int idx = 1;
-    int rd_idx = 0;
-    bit read = is_read;
 
-    foreach (myq[i]) begin
-      if (myq[i].rstart) begin
-        if (cfg.m_i2c_agent_cfg.allow_ack_stop & read) begin
-            `uvm_info("seq", $sformatf("(n)ack: %s", (read_ack_nack_q[rd_idx++]) ?
-                                       "NACK" : "ACK"), UVM_MEDIUM)
-        end
-        read = myq[i].read;
-        `uvm_info("seq", $sformatf("idx %0d RS rw:%0d", start_cnt++, myq[i].read), UVM_MEDIUM)
-        idx = 1;
-      end else begin
-        `uvm_info("seq", $sformatf("%2d: 0x%2x", idx++, myq[i].wdata), UVM_MEDIUM)
-      end
-    end
-    if (cfg.m_i2c_agent_cfg.allow_ack_stop & read) begin
-      `uvm_info("seq", $sformatf("(n)ack: %s", (read_ack_nack_q[rd_idx]) ?
-                                 "NACK" : "ACK"), UVM_MEDIUM)
+  // Print out an Agent-Controller transaction generated for stimulus
+  //
+  function void print_agent_controller_txn(i2c_transaction txn);
+    `uvm_info(`gfn, "Generated the following stimulus transaction:", UVM_HIGH)
+    for (int i = 0; i < txn.size(); i++) begin
+      `uvm_info(`gfn, $sformatf("transfer %0d/%0d:\n%0s",
+        i+1, txn.size(), txn[i].sprint()), UVM_HIGH)
     end
   endfunction
 
-  // Update read data to send based on
-  // pre written tx data and pre defined ack / nack status
-  // Used only for ack stop test
-  function void update_wr_data(bit is_read, ref i2c_item myq[$],
-                               input bit force_ack);
-    bit read = is_read;
-    foreach (myq[i]) begin
-      if (myq[i].rstart) begin
-        // if previous segment is read, store ack/nack
-        if (read) read_ack_nack_q.push_back($urandom_range(0 ,1));
-        read = myq[i].read;
-      end else begin
-        if (read) begin
-          if (pre_feed_rd_data_q.size > 0) begin
-            myq[i].wdata = pre_feed_rd_data_q.pop_front();
-          end
-        end
-      end
-    end
-    if (read) begin
-      bit ack_nack = force_ack ? 0 : $urandom_range(0, 1);
-      read_ack_nack_q.push_back(ack_nack);
-    end
-  endfunction // update_wr_data
 
-  // Set rw bit based on cfg rd/wr pct
-  function bit get_read_write();
-    bit rw;
+  // Randomly choose transfer direction based on cfg.{rd,wr}_pct weights
+  virtual function i2c_pkg::rw_e get_read_write();
     randcase
-      cfg.wr_pct: rw = 0;
-      cfg.rd_pct: rw = 1;
+      cfg.wr_pct: return i2c_pkg::WRITE;
+      cfg.rd_pct: return i2c_pkg::READ;
     endcase
-    return rw;
-  endfunction // get_read_write
+  endfunction : get_read_write
 
-  // Call read_acq_fifo until send and rcv counter become the same.
+
+  // Polling-based ACQFIFO handler
+  //
+  // This routine waits until the sequence (via cfg.sent_acq_cnt) indicates it has created
+  // stimulus that will generate ACQFIFO entires. It then calls read_acq_fifo() until the expected
+  // number of ACQFIFO reads have been performed (and checked by the scoreboard).
+  //
   virtual task process_acq();
-    int delay;
-    bit acq_fifo_empty;
-    bit read_one = 0;
-    `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, "process_acq")
 
-    while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt) begin
+    // Wait until at least some stimulus has been created, that will produce ACQFIFO entires.
+    `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns)
+
+    while (!`ALL_ACQFIFO_READS_OCCURRED || (sent_txn_cnt < num_trans)) begin
+      bit read_one;
+
       if (cfg.slow_acq) begin
-        delay = $urandom_range(50, 100);
+        int delay = $urandom_range(50, 100);
         #(delay * 1us);
         read_one = 1;
       end
-      read_acq_fifo(read_one, acq_fifo_empty);
+
+      begin
+        bit acq_fifo_empty;
+        `uvm_info(`gfn, "process_acq() -> read_acq_fifo() now.", UVM_HIGH)
+        read_acq_fifo(read_one, acq_fifo_empty);
+      end
+
+      // Clear the 'cmd_complete' interrupt if pending
+      begin
+        uvm_reg_data_t intr_state;
+        csr_rd(.ptr(ral.intr_state), .value(intr_state), .backdoor(1));
+        if (get_field_val(ral.intr_state.cmd_complete, intr_state)) begin
+          `uvm_info(`gfn, "Clearing pending 'CmdComplete' interrupt.", UVM_HIGH)
+          clear_interrupt(CmdComplete, 0);
+        end
+      end
+
     end
 
     `uvm_info(`gfn, "End of process_acq()", UVM_MEDIUM)
   endtask
 
-  // Polling read_rcvd q and fetch read data to txdata fifo
+  // After constructing the randomized stimulus items, this routine writes all data the agent is
+  // expecting to receive into the TXFIFO.
+  // We need to keep writing data into the fifo until all expected data has been added. Loop until
+  // this is true. (Note. that new stimulus may be generated in the meantime, increasing the number
+  // of expected bytes dynamically. Keep looping until we catch up to this number.)
+  //
   virtual task process_txq();
-    `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, "process_txq")
+    // Wait until some amount of stimulus is generated that will read data from the DUT. Since we
+    // choose the randomized data as part of stimulus randomization, we can't know what to write
+    // until then!
+    `DV_WAIT(sent_rd_byte > 0,, cfg.spinwait_timeout_ns, "process_txq")
+    `DV_CHECK(cfg.m_i2c_agent_cfg.rcvd_rd_byte == 0)
 
-    while (cfg.m_i2c_agent_cfg.sent_rd_byte != cfg.m_i2c_agent_cfg.rcvd_rd_byte ||
+    while (// The agent is expecting to read more data. Keep adding them to the TXFIFO.
+           cfg.m_i2c_agent_cfg.rcvd_rd_byte < sent_rd_byte ||
+           // There are more transactions to drive. Don't exit the loop early in this case.
            sent_txn_cnt < num_trans) begin
       cfg.clk_rst_vif.wait_clks(1);
       write_tx_fifo(.add_delay(cfg.slow_txq));
     end
   endtask
 
-  // Create byte transaction (payload) to read or write.
-  // Restart can be stuffed in between bytes except first and the last bytes.
-  // While normal transaction type (read, write) is decided in 'fetch_txn',
-  // Restat transaction type is set here to make io trace easier.
-  virtual function void create_txn(ref i2c_item myq[$]);
-    bit [7:0] wdata_q[$];
-    i2c_item  txn;
-    bit       rs_avl;
-    uint      last_sr = 0;
+  // Generate a new Agent-Controller stimulus transaction
+  //
+  // This routine wraps a number of things that need to happen alongside the actual randomization
+  // - Randomize a new transaction (START + transfers + STOP) + stim_id
+  // - Modify the transaction to stimulate degenerate behaviours
+  //   - ACK/NACK-ing to stimulate 'unexp_stop' interrupt (ack-stop test)
+  // - Provide a queue of stimulus seq_items to the agent sequence (drv_type/wdata/rdata) that
+  //   control the driver.
+  // - Control testbench CSR-side routines to drive DUT inputs to match the expected transaction
+  //   - Extract the required data bytes for testbench handler routines to populate TXFIFO with
+  //     the expected read data
+  //     - Ensure bytes associated with transfers with bad-addresses (i.e. not matching the DUT's
+  //       configured addresses) are dropped/not added to the TXFIFO.
+  //
+  virtual function void generate_agent_controller_stimulus(
+    // This function outputs a queue of objects that can be passed to one of the agent sequences
+    // that will drive the generated I2C transaction.
+    // This is specifically intended to be passed to the i2c_base_seq class variable req_q[$],
+    // which derived sequences use to define the stimulus they will generate. Users of this routine
+    // should assign this returned queue of objects to 'req_q' when constructing an agent sequence.
+    ref i2c_item drv_q[$]
+  );
 
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wdata_q,
-                                       wdata_q.size() inside {
-                           [cfg.min_data : cfg.max_data]};)
+    // Create the randomized transaction
+    // - A 'transaction' in i2c parlance has a specific meaning, which is a single continuous
+    //   operation by a single controller, starting and stopping with START and STOP conditions,
+    //   and possibly subdivided by RSTARTs into one or more smaller 'transfers'.
+    // - The return type of this routine is a queue of i2c_item's, each of which represent a
+    //   a transfer that makes up the larger transaction.
+    i2c_transaction txn = create_txn();
 
-    for (int i = 0; i < wdata_q.size(); i++) begin
-      if ($urandom_range(0,9) < cfg.rs_pct) rs_avl = 1;
-      else rs_avl = 0;
-      // restart entry
-      if (rs_avl == 1 && wdata_q.size() > 1 &&
-         (myq.size() - last_sr > cfg.min_xfer_len) && // Limit min xfer len if desired
-          i inside {[1:wdata_q.size() -1]}) begin
-        `uvm_info("seq", $sformatf("RS inserted before data %0d", i), UVM_HIGH)
-        `uvm_create_obj(i2c_item, txn)
-        txn.drv_type = HostRStart;
-        txn.rstart = 1;
-        txn.stop = 0;
-        txn.read = get_read_write();
-        myq.push_back(txn);
-        last_sr = myq.size();
-      end
-      `uvm_create_obj(i2c_item, txn)
-      txn.drv_type = HostData;
-      txn.wdata = wdata_q[i];
-      myq.push_back(txn);
-    end
+    // Modify the transaction generation process to instigate degenerate behaviour
+    // - "ack-stop" test changes the way we drive/determine the ACKing behaviour for some bytes.
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop) ack_stop_stim_modifier(txn);
+
+    // Generate control items in the form expected by the i2c_agent to drive the stimulus
+    convert_i2c_txn_to_drv_q(txn, drv_q);
+
+    // Calculate the number of read-data bytes we expect to see based on this stimulus
+    // - read_rcvd_q[$] - queue of num. bytes in each read transfer
+    // - sent_rd_byte - total read bytes
+    // - read_byte_q[$] - a queue of all data bytes that will be written into the TXFIFO
+    get_transaction_read_data(txn);
+
+    // (LOGGING-ONLY) Print out the transaction
+    print_agent_controller_txn(txn);
   endfunction
 
-  // Receive byte stream from 'create_txn' and forward to driver's request q,
-  // with adding 'Start and Stop'.
-  // Expected transaction is created in the task.
-  // For write transaction and address transaction, expected transaction mimics acq read data.
-  // For read transaction, all read bytes for one transaction is accumulated to 'full_txn'
-  // and compared with received transaction at the scoreboard.
-  virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$],
-                                  input bit force_ack = 0, bit skip_start = 0);
-    // A temporary, representing each item that is pushed to the dst_q intended for the driver.
-    i2c_item txn;
-    i2c_item rs_txn;
-    // The subset of items that address the DUT that are expected from the ACQ FIFO.
-    i2c_item exp_txn;
-    // All items to go on the bus, including those that don't address the DUT.
-    i2c_item full_txn;
-    int read_size;
-    bit is_read = get_read_write();
-    bit [6:0] t_addr;
-    bit valid_addr;
-    bit addressed;
+  // Create a new valid I2C transaction for DUT-Target stimulus.
+  //
+  // This randomized transaction is constrained by a number of 'env_cfg' variables
+  // - cfg.min_data/cfg.max_data
+  // - cfg.rs_pct
+  // - cfg.min_xfer_len
+  //
+  virtual function i2c_transaction create_txn();
+    int seed = $urandom;
 
-    `uvm_info("seq", $sformatf("idx %0d:is_read:%0b size:%0d fetch_txn:%0d", start_cnt++, is_read,
-                               src_q.size(), full_txn_num++), UVM_MEDIUM)
-    // Update read data with pre filled one and ack/nack for ack stop test
-    if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
-      update_wr_data(is_read, src_q, force_ack);
+    // A temporary, used to randomize the total number of data bytes in the transaction.
+    int unsigned num_data_total;
+    // A temporary, used to randomize the total number of transfers in the transaction.
+    int num_transfers;
+    // A temporary used to succintly randomize the structure of the transaction.
+    // Each element in the array will represent the number of data bytes in each transfer that
+    // makes up the larger created transaction.
+    int unsigned transfer_lengths[];
+
+    // A local variable used to accumulate the new transaction as we construct it.
+    i2c_transaction txn;
+
+    // Randomize the number of data bytes total in the transaction.
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_data_total,
+      num_data_total inside {[cfg.min_data : cfg.max_data]};
+    )
+
+    // Randomize the number of transfers in the transaction.
+    // TODO(#23920) Consider re-implementing to avoid waiver.
+    num_transfers = $dist_normal( // verilog_lint: waive invalid-system-task-function
+      /* seed */ seed,
+      /* mean */ int'(num_data_total * real'(cfg.rs_pct / 100.0)),
+      /* stddev */ int'(num_data_total * 0.10)
+    );
+    // Saturate into the possible range if we happen to fall outside of it.
+    if (num_transfers < 1 || num_transfers > num_data_total) begin
+      `uvm_info(`gfn, $sformatf("num_transfers (%0d) outside valid range (%0d - %0d), saturating.",
+        num_transfers, 1, num_data_total), UVM_DEBUG)
+      if (num_transfers < 1)              num_transfers = 1;
+      if (num_transfers > num_data_total) num_transfers = num_data_total;
     end
 
-    print_wr_data(is_read, src_q);
-    `uvm_create_obj(i2c_item, full_txn)
+    // Next randomize the number of data bytes in each transfer.
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(transfer_lengths,
+      transfer_lengths.size() == num_transfers;
+      transfer_lengths.sum() == num_data_total;
+      foreach (transfer_lengths[i]) {
+        // Bound the size of each transfer to limit the solve space to positive integers
+        transfer_lengths[i] inside {[cfg.min_xfer_len : num_data_total]};
+      }
+      // Don't place RSTARTs too close to the start or end of the transaction.
+      transfer_lengths[0] > 0;
+      transfer_lengths[num_transfers - 1] > 0;
+    )
 
-    // Add 'START' to the front
-    if (!skip_start) begin
-      `uvm_create_obj(i2c_item, txn)
-      txn.drv_type = HostStart;
-      dst_q.push_back(txn);
-      full_txn.start = 1;
-    end
-    else begin
-      full_txn.rstart = 1;
-    end
-    if (is_read) full_txn.tran_id = this.exp_rd_id;
-    // Address
-    `uvm_create_obj(i2c_item, txn)
-    `uvm_create_obj(i2c_item, exp_txn)
-    txn.drv_type = HostData;
-    if (skip_start) begin
-      txn.rstart = 1;
-    end else begin
-      txn.start = 1;
-    end
-    txn.wdata[7:1] = get_target_addr(); //target_addr0;
-    txn.wdata[0] = is_read;
-    valid_addr = is_target_addr(txn.wdata[7:1]);
+    // Loop over the list of transfers we wish to construct, adding in data and control signals
+    // as appropriate. The address and data-direction of each is chosen randomly at this point.
+    foreach (transfer_lengths[i]) begin
+      uint len = transfer_lengths[i];
+      i2c_item xfer;
+      `uvm_create_obj(i2c_item, xfer)
 
-    txn.tran_id = this.tran_id;
-    `downcast(exp_txn, txn.clone());
-    dst_q.push_back(txn);
-    full_txn.addr = txn.wdata[7:1];
-    full_txn.read = is_read;
+      xfer.stim_id = this.stim_id++;
+      xfer.addr = get_target_addr(); // (randomly) Get a new address for the next transfer
+      xfer.addr_ack = is_target_addr(xfer.addr[6:0]) ? i2c_pkg::ACK : i2c_pkg::NACK;
+      xfer.dir = get_read_write(); // (randomly) Choose the direction of the transfer
+      xfer.bus_op = (xfer.dir == i2c_pkg::READ) ? BusOpRead : BusOpWrite;
+      xfer.num_data = len;
 
-    // Start command acq entry
-    if (valid_addr) begin
-      p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-      cfg.sent_acq_cnt++;
-      this.tran_id++;
-      if (is_read) this.exp_rd_id++;
-      addressed = 1;
-    end
-    read_size = get_read_data_size(src_q, is_read, read_rcvd);
-    cfg.m_i2c_agent_cfg.sent_rd_byte += read_size;
-    // Data
-    while (src_q.size() > 0) begin
-      `uvm_create_obj(i2c_item, txn)
-      txn = src_q.pop_front();
-      if (txn.drv_type != HostRStart) begin
-        // Restart only has empty data for address holder
-        full_txn.data_q.push_back(txn.wdata);
+      for (int j = 0; j < len; j++) begin
+        // By default, everything should be ACK'd except for the final byte of any read transfer
+        acknack_e acknack = ((xfer.bus_op == BusOpRead) && (j == len - 1)) ? i2c_pkg::NACK :
+                                                                             i2c_pkg::ACK;
+        xfer.data_ack_q.push_back(acknack);
+        xfer.data_q.push_back($urandom);
       end
 
-      if (txn.drv_type == HostRStart) begin
-        bit prv_read = 0;
-        bit prv_valid = valid_addr;
-
-        `uvm_create_obj(i2c_item, rs_txn)
-        `downcast(rs_txn, txn.clone())
-        dst_q.push_back(txn);
-
-        t_addr = get_target_addr();
-        valid_addr = is_target_addr(t_addr);
-        rs_txn.drv_type = HostData;
-        rs_txn.start = 0;
-        rs_txn.rstart = 1;
-        rs_txn.wdata[7:1] = t_addr;
-        prv_read = is_read;
-        is_read = rs_txn.read;
-        rs_txn.wdata[0] = is_read;
-        dst_q.push_back(rs_txn);
-        // create a separate stat/addr entry for exp
-        `uvm_create_obj(i2c_item, exp_txn)
-        `downcast(exp_txn, rs_txn.clone());
-        exp_txn.tran_id = this.tran_id;
-
-
-        addressed |= valid_addr;
-        // Restart command entry
-        if (valid_addr) begin
-           p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-           cfg.sent_acq_cnt++;
-           this.tran_id++;
-        end
-        // fetch previous full_txn and creat a new one
-        if (prv_read) begin
-          full_txn.stop = 1;
-          if (prv_valid) p_sequencer.target_mode_rd_exp_port.write(full_txn);
-        end
-        `uvm_create_obj(i2c_item, full_txn)
-        `downcast(full_txn, rs_txn);
-        if (is_read) begin
-          full_txn.tran_id = exp_rd_id;
-          if (valid_addr) exp_rd_id++;
-        end
+      // Add the control flags to show how each transaction should start and end
+      if (num_transfers == 1) begin
+        // Special case for a transaction with one transfer -> No RSTARTs
+        xfer.start = 1;
+        xfer.stop = 1;
       end else begin
-        if (is_read) begin
-          i2c_item read_txn;
-          `uvm_create_obj(i2c_item, read_txn)
-          `downcast(read_txn, txn.clone())
-          full_txn.num_data++;
-          if (src_q.size() == 0) begin
-            txn.drv_type = get_ack_nack(.is_stop(1));
-          end else begin
-            // if your next item is restart Do nack
-            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_ack_nack();
-            else txn.drv_type = HostAck;
+        case (i)
+          0: begin // First transfer
+            xfer.start = 1;
+            xfer.rstart_back = 1;
           end
-          dst_q.push_back(txn);
-          read_txn_q.push_back(read_txn);
-        end else begin
-          `downcast(exp_txn, txn.clone());
-          // Write payload
-          dst_q.push_back(txn);
-          if (valid_addr) begin
-            exp_txn.tran_id = this.tran_id++;
-            p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-            cfg.sent_acq_cnt++;
+          num_transfers - 1: begin // Last transfer
+            xfer.rstart_front = 1;
+            xfer.stop = 1;
           end
-        end
+          default: begin // Any transfer not at the start/end of the txn must begin and end with
+            // rstart conditions.
+            xfer.rstart_front = 1;
+            xfer.rstart_back = 1;
+          end
+        endcase
       end
-    end // while (src_q.size() > 0)
 
-    // Stop
-    `uvm_create_obj(i2c_item, txn)
-    `uvm_create_obj(i2c_item, exp_txn)
-    txn.tran_id = this.tran_id;
-    txn.stop = 1;
-    txn.drv_type = HostStop;
-    `downcast(exp_txn, txn.clone());
-    dst_q.push_back(txn);
-    full_txn.stop = 1;
-    if (addressed) begin
-       p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-       cfg.sent_acq_cnt++;
-       this.tran_id++;
+      // Add the transfer into the transaction.
+      txn.push_back(xfer);
     end
-    if (is_read) begin
-      if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+
+    // Print a summary of the randomized transaction
+    //
+    // e.g.
+    //
+    // > Randomized the following transaction:
+    // > total_bytes=19
+    // > num_xfers=4
+    // > xfers=
+    // >   5-byte WRITE
+    // >   3-byte READ
+    // >   7-byte WRITE
+    // >   4-byte WRITE
+    //
+    begin
+      string xfers_str = "";
+      foreach (txn[i]) begin
+        xfers_str = {xfers_str, $sformatf("  %0d-byte %0s\n", txn[i].num_data, txn[i].dir.name())};
+      end
+      `uvm_info(`gfn, $sformatf(
+        {"Randomized the following transaction:\n",
+        "total_bytes=%0d\n",
+        "num_xfers=%0d\n",
+        "xfers=\n%s"},
+        num_data_total, num_transfers, xfers_str), UVM_HIGH)
     end
-  endfunction
 
-  // Scan i2c_item q and count total byte of read data.
-  // Also store read data per commmand to rcvd q.
-  function int get_read_data_size(i2c_item myq[$], bit is_read, ref int rcvd[$]);
-    int cnt = 0;
-    int per_cmd_cnt = 0;
+    return txn;
+  endfunction : create_txn
 
-    for (int i = 0; i < myq.size(); i++) begin
-      if (myq[i].rstart) is_read = myq[i].read;
-      if (is_read & !myq[i].rstart) begin
-        cnt++;
-        per_cmd_cnt++;
+
+  // The i2c_driver is controlled by providing it a queue of sequence items, each of which
+  // specify the driving behaviour with the following fields:
+  // - drv_type
+  // - wdata
+  // - rdata
+  // This function converts an i2c_item targeted at the transfer-level to a queue of items that
+  // control the driver to create an equivalent bus state.
+  //
+  // This behaviour isn't ideal, as we are re-using the i2c_item to do something completely
+  // different to how it is used elsewhere. In fact, the i2c_item type would be better renamed
+  // to a i2c_transfer_item, as really this is the level of abstraction it operates at.
+  // The 3 fields above are not used, except for controlling the i2c_driver.
+  // #TODO Move to agent sequence ideally. (also see #14825)
+  //
+  virtual function void convert_i2c_txn_to_drv_q(i2c_transaction txn, ref i2c_item drv_q[$]);
+
+    // Loop over each transfer, determine what to drive based on the control flags
+    foreach (txn[transfer_i]) begin
+      i2c_item xfer = txn[transfer_i];
+
+      // The transfer must begin with a 'START' or 'RSTART' condition
+      if (xfer.start) begin
+        // 'START' condition begins the transfer (and transaction)
+        i2c_item start_txn;
+        `uvm_create_obj(i2c_item, start_txn)
+        start_txn.drv_type = HostStart;
+        drv_q.push_back(start_txn);
+      end else if (xfer.rstart_front) begin
+        // 'RSTART' condition begins the transfer (which is only possible if the previous
+        // transfer ends with an RSTART).
+        // Sending duplicate messages with .drv_type = HostRStart would cause the driver to
+        // produce invalid traffic, so simply omit sending it here.
+        `uvm_info(`gfn, "Omitting .drv_type = HostRStart item from driver queue.", UVM_FULL)
       end else begin
-        if (per_cmd_cnt > 0) begin
-          rcvd.push_back(per_cmd_cnt);
-          per_cmd_cnt = 0;
+        `uvm_fatal(`gfn, "Can't create a transfer that doesn't start with either START or RSTART!")
+      end
+
+      // Add the address+direction byte
+      begin
+        i2c_item addr_txn;
+        `uvm_create_obj(i2c_item, addr_txn)
+        addr_txn.drv_type = HostData;
+        addr_txn.wdata[7:1] = xfer.addr[6:0];
+        addr_txn.wdata[0] = xfer.dir;
+        drv_q.push_back(addr_txn);
+      end
+
+      // Add items for all the data bytes
+      foreach (xfer.data_q[i]) begin
+        case (xfer.bus_op)
+          BusOpWrite: begin
+            // For write bytes, we drive the data using 'HostData'
+            i2c_item data_txn;
+            `uvm_create_obj(i2c_item, data_txn)
+            data_txn.drv_type = HostData;
+            data_txn.wdata = xfer.data_q[i];
+            drv_q.push_back(data_txn);
+          end
+          BusOpRead: begin
+            // For read bytes, we wait 8 bit-periods then ack or nack. (The driver's behaviour
+            // for 'HostAck' and 'HostNAck' drive types both include this 8-bit wait).
+            i2c_item acknack_txn;
+            `uvm_create_obj(i2c_item, acknack_txn)
+            acknack_txn.drv_type = (xfer.data_ack_q[i] == i2c_pkg::ACK) ? HostAck : HostNAck;
+            drv_q.push_back(acknack_txn);
+          end
+          default:;
+        endcase
+      end
+
+      // Add the 'STOP' or 'RSTART' condition to end the transfer
+      if (xfer.stop) begin
+        // 'STOP' condition ends the transfer (and transaction)
+        i2c_item stop_txn;
+        `uvm_create_obj(i2c_item, stop_txn)
+        stop_txn.drv_type = HostStop;
+        drv_q.push_back(stop_txn);
+      end else if (xfer.rstart_back) begin
+        // 'RSTART' condition ends the transfer
+        i2c_item rstart_txn;
+        `uvm_create_obj(i2c_item, rstart_txn)
+        rstart_txn.drv_type = HostRStart;
+        drv_q.push_back(rstart_txn);
+      end else begin
+        `uvm_fatal(`gfn, "Can't create a transfer that doesn't end with either STOP or RSTART!")
+      end
+    end
+
+  endfunction : convert_i2c_txn_to_drv_q
+
+
+  // Post-process the randomized transaction stimulus to extract information about read transfers
+  // For stimulus generation, we need to ensure the correct data is fed into the TXFIFO such
+  // that it matches the expectation.
+  //
+  // #TODO Don't form expectations this way, use the bus monitor to reconstruct the exp. instead.
+  //
+  function void get_transaction_read_data(i2c_transaction txn);
+    foreach (txn[transfer_i]) begin
+      i2c_item xfer = txn[transfer_i];
+      if (xfer.bus_op == BusOpRead) begin
+        // Store into a queue the length of each read transfer.
+        read_rcvd_q.push_back(xfer.num_data);
+        // Accumulate the total number of read data bytes.
+        sent_rd_byte += xfer.num_data;
+        // Copy the read data bytes for interrupt handlers to pickup and write into the TXFIFO.
+        foreach (xfer.data_q[i]) read_byte_q.push_back(xfer.data_q[i]);
+      end
+    end
+  endfunction : get_transaction_read_data
+
+  // This function modifies a pre-generated i2c transaction to produce stimulus for the
+  // ack-stop test. This test aims to trigger the 'unexp_stop' interrupt.
+  //
+  function void ack_stop_stim_modifier(i2c_transaction txn);
+
+    foreach (txn[transfer_i]) begin
+      i2c_item xfer = txn[transfer_i];
+
+      if (xfer.bus_op == BusOpRead) begin
+        acknack_e random_acknack;
+
+        // Ack-Stop test mode can introduce a non-normal ACK bit at the end of each read transfer.
+        // When enabled, randomly ACK or NACK the final byte of each individual read transfer.
+        `DV_CHECK_STD_RANDOMIZE_FATAL(random_acknack)
+        xfer.data_ack_q[$] = random_acknack;
+
+        // In Ack-Stop test mode, we may need to overwrite the data byte from the pre-randomized
+        // value. Values are pushed into the 'pre_feed_rd_data_q[$]' as needed, and overwrite read
+        // data bytes in the generated transactions from first to last.
+        foreach (xfer.data_q[i]) begin
+          if (pre_feed_rd_data_q.size() > 0) xfer.data_q[i] = pre_feed_rd_data_q.pop_front();
         end
       end
-    end // for (int i = 0; i < myq.size(); i++)
-    if (per_cmd_cnt > 0) begin
-      rcvd.push_back(per_cmd_cnt);
-      per_cmd_cnt = 0;
     end
-    return cnt;
-  endfunction
+
+    // If the final transfer in the transaction is a READ , then 'force_ack' can also be used
+    // to always ACK the final byte.
+    if (force_ack) begin
+      `DV_CHECK(txn[$].bus_op == BusOpRead, "Can't force_ack if the final transfer wasn't a READ!")
+      // Force the final byte to be ACK'd
+      txn[$].data_ack_q[$] = i2c_pkg::ACK;
+    end
+
+  endfunction : ack_stop_stim_modifier
 
   virtual task proc_intr_acqthreshold; endtask
   virtual task proc_intr_txthreshold; endtask
@@ -989,17 +1152,21 @@ class i2c_base_vseq extends cip_base_vseq #(
       end
     end
 
-    // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
-    // But for the last bad read command, we have to adjust expected rd_byte separately
-    // because we will not call 'write_tx_fifo'.
-    if (adjust_exp_read_byte == 1 &&
-        cfg.sent_acq_cnt == cfg.rcvd_acq_cnt) begin
-      int read_size;
+    // When transfers with bad addresses are dropped, the queue (read_byte_q) of read data bytes
+    // the Agent-Controller expects to read back from the DUT also needs adjusting.
+    // This is normally done in write_tx_fifo(), but for the last bad read command, we have to do
+    // the adjustment here because we will not call 'write_tx_fifo'.
+    if ((cfg.bad_addr_pct > 0) &&
+        adjust_exp_read_byte && // Set in stop_target_interrupt_handler()
+        `ALL_ACQFIFO_READS_OCCURRED) begin
       while (cfg.m_i2c_agent_cfg.read_addr_q.size > 0) begin
-        read_size = read_rcvd.pop_front();
-        if (!cfg.m_i2c_agent_cfg.read_addr_q.pop_front) begin
-          repeat (read_size) void'(read_txn_q.pop_front());
-          cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
+        bit is_valid = cfg.m_i2c_agent_cfg.read_addr_q.pop_front();
+        if (!is_valid) begin
+          int read_size = read_rcvd_q.pop_front();
+         `uvm_info(`gfn, $sformatf("Adjusting 'sent_rd_byte' counter down by %0d from %0d -> %0d",
+                                   read_size, sent_rd_byte, sent_rd_byte - read_size), UVM_FULL)
+          repeat (read_size) void'(read_byte_q.pop_front());
+          sent_rd_byte -= read_size;
         end
       end
     end
@@ -1013,27 +1180,33 @@ class i2c_base_vseq extends cip_base_vseq #(
     int rd_txfifo_timeout_ns = 10_000_000;
     // indefinite time
     int tx_empty_timeout_ns = 500_000_000;
-    bit is_valid;
 
     string id = "write_tx_fifo";
-    if (cfg.m_i2c_agent_cfg.allow_bad_addr) begin
-       is_valid = cfg.m_i2c_agent_cfg.read_addr_q.pop_front();
-       if (!is_valid) begin
-          read_size = read_rcvd.pop_front();
-          repeat (read_size) void'(read_txn_q.pop_front());
-          cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
-          return;
-       end
+
+    // If there is a chance of generating stimulus transactions with bad addresses, check if the
+    // next transfer at the head of the queue has a bad address. If so, drop it from all
+    // expectations, as the DUT should ignore it.
+    if (cfg.bad_addr_pct > 0) begin
+      bit is_valid;
+      is_valid = cfg.m_i2c_agent_cfg.read_addr_q.pop_front();
+      if (!is_valid) begin
+        read_size = read_rcvd_q.pop_front();
+        `uvm_info(`gfn, $sformatf("Adjusting 'sent_rd_byte' counter down by %0d from %0d -> %0d",
+                                  read_size, sent_rd_byte, sent_rd_byte - read_size), UVM_FULL)
+        repeat (read_size) void'(read_byte_q.pop_front());
+        sent_rd_byte -= read_size;
+        return;
+      end
     end
 
-    if (read_rcvd.size() > 0) begin
-      read_size = read_rcvd.pop_front();
+    if (read_rcvd_q.size() > 0) begin
+      read_size = read_rcvd_q.pop_front();
       `uvm_info(id, $sformatf("read_size :%0d", read_size), UVM_HIGH)
     end else begin
       // In ack-stop test mode, we need to feed 1 extra data byte into the TXFIFO at the end
       // of the transaction to avoid dead-lock.
       if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
-        `uvm_info(id, "Feeding extra data byte (0xff) for ack/stop now.", UVM_MEDIUM)
+        `uvm_info(id, "Feeding extra data byte (0xff) for ack/stop now.", UVM_HIGH)
         csr_wr(.ptr(ral.txdata), .value('hff));
         pre_feed_rd_data_q.push_back(8'hff);
         pre_feed_cnt++;
@@ -1050,7 +1223,7 @@ class i2c_base_vseq extends cip_base_vseq #(
                        .timeout_ns(tx_empty_timeout_ns));
         end
       end
-      if (read_txn_q.size() > 0) begin
+      if (read_byte_q.size() > 0) begin
         i2c_item item;
         // check tx fifo is full
         if (cfg.use_intr_handler) begin
@@ -1075,13 +1248,17 @@ class i2c_base_vseq extends cip_base_vseq #(
           csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
                        .timeout_ns(rd_txfifo_timeout_ns));
         end
-        `uvm_create_obj(i2c_item, item)
-        item = read_txn_q.pop_front();
-        `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
 
-        // Send only there is no pre feed data
-        if (pre_feed_cnt == 0) csr_wr(.ptr(ral.txdata), .value(item.wdata));
-        else pre_feed_cnt--;
+        begin
+          bit [7:0] wdata = read_byte_q.pop_front();
+          // (ack-stop test) Only write to the txfifo now if there is no pre-feed data
+          if (pre_feed_cnt == 0) begin
+            csr_wr(.ptr(ral.txdata), .value(wdata));
+            `uvm_info(id, $sformatf("Wrote 0x%0x to txdata", wdata), UVM_HIGH)
+          end else begin
+            pre_feed_cnt--;
+          end
+        end
 
         read_size--;
       end
@@ -1126,59 +1303,51 @@ class i2c_base_vseq extends cip_base_vseq #(
     read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));
   endtask : empty_acqfifo
 
-  // is_stop: Whether the next symbol is to be a Stop
-  function drv_type_e get_ack_nack(bit is_stop = 0);
-    drv_type_e rsp = HostNAck;
-    if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
-      if (read_ack_nack_q.pop_front()) begin
-        rsp = HostNAck;
-      end else begin
-        rsp = HostAck;
-        if (is_stop) begin
-          cfg.sent_ack_stop++;
-        end
-      end
-    end
-    return rsp;
-  endfunction // get_ack_nack
 
-  // Calling this task will trigger unexp_stop interrupt.
-  task send_ack_stop();
-    i2c_target_base_seq m_i2c_host_seq;
-    i2c_item txn_q[$];
-    cfg.rs_pct = 0;
-    cfg.wr_pct = 0;
+  // Extra stimulus hook for use in the i2c_target_ack_stop_vseq
+  virtual task send_ack_stop; endtask
 
-    `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
-    create_txn(txn_q);
-    fetch_txn(txn_q, m_i2c_host_seq.req_q, 1);
-    m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
-    sent_txn_cnt++;
-  endtask
 
+  // This task waits for all transaction stimulus to complete, then stops any further execution of
+  // the testbench's interrupt handling routines. This is part of the end-of-test cleanup.
+  //
   virtual task stop_target_interrupt_handler();
-    string id = "stop_interrupt_handler";
-    int   acq_rd_cyc;
-    acq_rd_cyc = 9 * (thigh + tlow);
-    `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
-    `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
-    cfg.read_all_acq_entries = 1;
-    if (cfg.rd_pct != 0) begin
-      `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
-      if (cfg.m_i2c_agent_cfg.allow_bad_addr) adjust_exp_read_byte = 1;
+    string id = "stop_target_interrupt_handler()";
 
-      `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte,,
-               cfg.long_spinwait_timeout_ns, id)
+    // Wait until all test stimulus has been driven
+    `DV_CHECK(num_trans != 0)
+    `DV_WAIT((sent_txn_cnt > 0) && (sent_txn_cnt == num_trans),,
+             cfg.long_spinwait_timeout_ns, id)
+
+    // Read out all acqfifo entries to cleanup at the end of the test
+    cfg.read_all_acq_entries = 1;
+
+    // If the final transfer is a read with a bad address, we need to go down a slightly different
+    // codepath (see 'adjust_exp_read_byte') to ensure our expectations are formed correctly.
+    if ((cfg.bad_addr_pct > 0) && cfg.rd_pct != 0) begin
+      `DV_WAIT(sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
+      adjust_exp_read_byte = 1;
     end
-    `DV_WAIT(cfg.sent_acq_cnt == cfg.rcvd_acq_cnt,, cfg.spinwait_timeout_ns, id)
+
+    `DV_WAIT(`ALL_READS_OCCURRED,,, "Failed check for ALL_READS_OCCURRED")
+    `DV_WAIT(`ALL_ACQFIFO_READS_OCCURRED,,, "Failed check for ALL_ACQFIFO_READS_OCCURRED")
+
+    // Wait until all acqfifo entries have been read by the testbench, as we can't check our
+    // predictions until these observations are captured.
     csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));
 
+    // For the ack-then-stop test mode, we stimulate an extra final transaction which ends with
+    // the test stimulus we expect to trigger the associated interupt (This routine sets
+    // force_ack = 1 and cfg.wr_pct = 0 to guarantee this).
     if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
-    // add drain time before stop interrupt handler
+
+    // Add some drain time before stopping all target-mode interrupt handlers
     cfg.clk_rst_vif.wait_clks(1000);
-    cfg.stop_intr_handler = 1;
-    `uvm_info(id, "called stop_intr_handler", UVM_MEDIUM)
-  endtask // stop_target_interrupt_handler
+
+    `uvm_info(`gfn, "Target-Mode interrupt handlers stopped now.", UVM_MEDIUM)
+    cfg.stop_intr_handler = 1; // Stop the process_target_interrupts() irq-handler routine.
+  endtask : stop_target_interrupt_handler
+
 
   // This task is called when tb interrupt handler receives
   // cmdcomplete interrupt.
@@ -1241,7 +1410,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // 2) Read the ACQFIFO if it is currently full.
     if (acq_full) begin
       bit acq_fifo_empty = 0;
-      `uvm_info(`gfn, "proc_intr_acqstretch() -> read_acq_fifo() as currently full.", UVM_MEDIUM)
+      `uvm_info(`gfn, "proc_intr_acqstretch() -> read_acq_fifo() as currently full.", UVM_HIGH)
       case (cfg.slow_acq)
         // Read the fifo until empty.
         1'b0: read_acq_fifo(.read_one(0), .acq_fifo_empty(acq_fifo_empty));

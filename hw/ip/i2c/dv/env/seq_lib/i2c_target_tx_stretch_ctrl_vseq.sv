@@ -102,7 +102,7 @@ class i2c_target_tx_stretch_ctrl_vseq extends i2c_target_runtime_base_vseq;
 
   virtual task start_of_stim_hook();
     // Write all rdata for the next read transaction to the TXFIFO
-    while (read_rcvd.size() > 0) write_tx_fifo();
+    while (read_rcvd_q.size() > 0) write_tx_fifo();
   endtask: start_of_stim_hook
 
   virtual task end_of_stim_hook();

@@ -159,10 +159,9 @@ interface i2c_if(
   endtask: wait_for_host_nack
 
   task automatic wait_for_host_ack_or_nack(timing_cfg_t tc,
-                                           output bit   ack,
-                                           output bit   nack);
-    ack = 1'b0;
-    nack = 1'b0;
+                                           output i2c_pkg::acknack_e acknack);
+    bit ack = 1'b0;
+    bit nack = 1'b0;
     fork
       begin : iso_fork
         fork
@@ -180,6 +179,7 @@ interface i2c_if(
     join
 
     `DV_CHECK(ack ^ nack, , , "i2c_if")
+    acknack = (ack) ? i2c_pkg::ACK : i2c_pkg::NACK;
   endtask: wait_for_host_ack_or_nack
 
   // TODO(#21887) Re-strengthen checks
@@ -198,7 +198,7 @@ interface i2c_if(
   endtask: wait_for_device_ack
 
   task automatic wait_for_device_ack_or_nack(timing_cfg_t tc,
-                                           output bit   ack_r);
+                                             output i2c_pkg::acknack_e acknack);
     bit ack = 1'b0;
     bit nack = 1'b0;
     fork
@@ -216,8 +216,8 @@ interface i2c_if(
         disable fork;
       end : iso_fork
     join
-    ack_r = ack && !nack;
     `DV_CHECK(ack ^ nack, , , "i2c_if")
+    acknack = (ack) ? i2c_pkg::ACK : i2c_pkg::NACK;
   endtask: wait_for_device_ack_or_nack
 
   // the `sda_unstable` interrupt is asserted if, when receiving data or ,

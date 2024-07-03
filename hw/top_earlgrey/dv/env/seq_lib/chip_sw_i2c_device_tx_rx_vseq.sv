@@ -124,9 +124,8 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     m_i2c_host_seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]);
 
     // Wait for reads to complete.
-    `DV_WAIT(cfg.m_i2c_agent_cfgs[i2c_idx].sent_rd_byte > 0)
-    `DV_WAIT(cfg.m_i2c_agent_cfgs[i2c_idx].sent_rd_byte ==
-             cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte)
+    `DV_WAIT(sent_rd_byte[i2c_idx] > 0)
+    `DV_WAIT(sent_rd_byte[i2c_idx] == cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte)
     `uvm_info(`gfn, "Reads complete.", UVM_MEDIUM)
 
     // Play transactions back.
@@ -196,7 +195,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     dst_q.push_back(txn);
 
     read_size = byte_count;
-    cfg.m_i2c_agent_cfgs[i2c_idx].sent_rd_byte += read_size;
+    sent_rd_byte[i2c_idx] += read_size;
 
     // Data
     while (src_q.size() > 0) begin
@@ -212,7 +211,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
         rs_txn.drv_type = HostData;
         rs_txn.start = 0;
-        rs_txn.rstart = 1;
+        rs_txn.rstart_front = 1;
         rs_txn.wdata[7:1] = choose_address ? address_0 : address_1;
         prv_read = is_read;
         is_read = rs_txn.read;

@@ -2,6 +2,74 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Scoreboard for i2c transfers (captured in the sequence item type 'i2c_item')
+//
+// Defining expectations in terms of i2c transfers is a useful level of abstraction
+// to try and check DUT behaviour.
+//
+// DUT-Inputs
+// - CSR Accesses (write data, configuration bits, WxC flags, rd/wr-sensitive registers)
+// - I2C Bus
+//   - Agent-Controller transactions/transfers
+//   - Agent-Target feedback (NACK's, clock_stretching)
+//   - non-protocol traffic
+//
+// DUT-Outputs
+// - CSR Accesses (read data)
+// - Interrupts
+// - I2C Bus
+//   - Dut-Controller transactions/transfers
+//   - DUT-Target feedback (NACK's, clock_stretching)
+//
+// In terms of items that model i2c transfers, we need to incorporate information from multiple
+// different interface accesses and observations to form complete sequence items for comparison.
+// > (The current/existing testbench cheats egregiously here by capturing the transaction items
+// > randomized for stimulus generation and passing those directly to the scoreboard as the
+// > expectation. Do not do this.)
+//
+// For example, the data for any transfer will ingress or egress via either the I2C Agent or
+// via the DUT's various CSRs. For read operations in particular, the expectation for any transfer
+// is comprised from not just the configuration which starts the transfer, but also from the RDATA
+// added to the opposite endpoint that the read operation is responsible for returning. This
+// therefore requires some "fusion" to take place to form transfer-level items that are suitable to
+// be passed to the 'comparison' operation at the end of the scoreboard component.
+// This fusion also needs to take place over a significant amount of time, as data may be read-from
+// or written-to the CSRs long before or after the corresponding i2c bus traffic, including the
+// way these CSR accesses can influence the outcome of the bus traffic by clock-stretching, nack-ing
+// due to FIFO level, or otherwise timing-out.
+//
+// > tran_id
+//
+// Adding a transaction_id field to each seq_item is useful for identification, debugging and
+// checking continuity of stimulus throughout the system. However, there is room for ambiguitity
+// without a precise definition for its use within an I2C system.
+//
+// Since transfers should be ignored (NACK'd) by targets without a matching address, for each
+// stimulus transfer generated there may not be an associated transfer accepted and output by a
+// valid target. Therefore, incrementing transaction ids at the point stimulus is generated can
+// make for a challenging situation when scoreboarding.
+//
+// In this scoreboarding system, ITEM_T.tran_id is incremented for any transfer seen on the bus by
+// the monitor, where is transfer is any bus activity between a START/RSTART -> RSTART/STOP. This
+// includes transfers where the address is not accepted by any target, including transfers where
+// the controller just shouts into the void and receives NACKs to every driven byte.
+// It is important for the env's reference_model/predictor to also predict the existence of these
+// transfers. In effect, we should consider them a valid, expected bus behaviour, if uninteresting
+// from the perspective of a target device.
+//
+// Note. how can we nicely handle non-protocol behaviour, such as a bus timeout without an
+// end-of-transfer Sr/P condition?
+//
+// > stim_id
+//
+// Each ITEM_T also includes a 'stim_id' field, which increments when new transfers are randomized.
+// This is incremented by the stimulus generation routines, and is exclusively used for debug.
+//
+//
+//
+// #TODO : Unite rd and wr paths in the DUT-Target scoreboard paths
+
+
 class i2c_scoreboard extends cip_base_scoreboard #(
     .CFG_T(i2c_env_cfg),
     .RAL_T(i2c_reg_block),
@@ -377,7 +445,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       .read(fmt_data.read),
       .rcont(fmt_data.rcont),
       .nakok(fmt_data.nakok),
-      .ack_int_recv(dut_trn.read ? dut_trn.ack : dut_trn.addr_ack)
+      .ack_int_recv(dut_trn.read ? dut_trn.data_ack_q[$] : dut_trn.addr_ack)
     );
     `uvm_info(`gfn, $sformatf("fmt_data.size = %0d ; dut_trn.size = %0d",
       fmt_fifo_data_q.size(), dut_trn.data_q.size()), UVM_MEDIUM)
@@ -427,7 +495,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   // Compare seq_items for write transactions
   // OBS: captured byte-by-byte upon reading the ACQFIFO
-  // EXP: generated when we created the stimulus (fetch_txn())
+  // EXP: generated when we created the stimulus (generate_agent_controller_stimulus())
   //
   // We only check the start, stop and wdata fields of the item.
   task compare_target_write_trans();
@@ -463,7 +531,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   // Compare seq_items for read transactions
   // - OBS: Captured by the monitor
-  // - EXP: Created when we generated the stimulus (fetch_txn())
+  // - EXP: Created when we generated the stimulus (generate_agent_controller_stimulus())
   task compare_target_read_trans();
     i2c_item obs_rd, exp_rd;
 
@@ -586,8 +654,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.start, exp.start)
     `DV_CHECK_EQ(obs.stop, exp.stop)
-    if (obs.stop == 0 && obs.rstart == 0) begin
-      `DV_CHECK_EQ(obs.wdata, exp.wdata)
+    `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
+    foreach (exp.data_q[i]) begin
+      `DV_CHECK_EQ(obs.data_q[i], exp.data_q[i])
     end
   endfunction: target_wr_comp
 
