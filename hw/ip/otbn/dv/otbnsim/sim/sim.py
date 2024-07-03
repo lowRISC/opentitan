@@ -176,10 +176,14 @@ class OTBNSim:
         cur_fsm_state = self.state.get_fsm_state()
         is_locked = cur_fsm_state == FsmState.LOCKED
 
-        # If we are locked then zero the INSN_CNT register. It can never change
-        # again, so we only do the write on the first cycle (to avoid sending a
-        # line to stdout on every cycle)
-        if is_locked and self.state.cycles_in_this_state == 0:
+        # If we are locked or get an RMA request, the INSN_CNT register should
+        # be zeroed. To avoid sending a line to stdout on every cycle, we only
+        # actually do the register write if we've just entered the locked state
+        # or the write will change something.
+        should_zero = is_locked or self.state.rma_req == LcTx.ON
+        new_zero = (self.state.cycles_in_this_state == 0 or
+                    self.state.ext_regs.read('INSN_CNT', True) != 0)
+        if should_zero and new_zero:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
         # If we are IDLE and rma_req is not a valid lc_ctrl signal, we expect a
