@@ -59,6 +59,7 @@ rust_library(
         "@crate_index//:clap",
         "@crate_index//:cryptoki",
         "@crate_index//:cryptoki-sys",
+        "@crate_index//:der",
         "@crate_index//:directories",
         "@crate_index//:ecdsa",
         "@crate_index//:hex",

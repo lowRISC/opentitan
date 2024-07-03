@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};
+use der::{asn1::OctetStringRef, Encode, Reader, SliceReader};
 use ecdsa::elliptic_curve::pkcs8::{
     self, AssociatedOid, DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey,
 };
 use p256::ecdsa::{SigningKey, VerifyingKey};
-use p256::elliptic_curve::pkcs8::der::Encode;
 use p256::NistP256;
 
 use std::convert::{AsRef, TryFrom};
@@ -130,10 +130,13 @@ impl TryFrom<&VerifyingKey> for AttributeMap {
             AttrData::ObjectClass(ObjectClass::PublicKey),
         );
         attr.insert(AttributeType::KeyType, AttrData::KeyType(KeyType::Ec));
-        attr.insert(
-            AttributeType::EcPoint,
-            AttrData::from(k.to_sec1_bytes().as_ref()),
-        );
+        let k_sec1 = k.to_sec1_bytes();
+        let k_os = OctetStringRef::new(&k_sec1)
+            .or(Err(HsmError::DerError("building OctetString".into())))?;
+        let k_der = k_os
+            .to_der()
+            .or(Err(HsmError::DerError("encoding".into())))?;
+        attr.insert(AttributeType::EcPoint, AttrData::from(k_der.as_slice()));
         attr.insert(
             AttributeType::EcParams,
             AttrData::from(NistP256::OID.to_der().unwrap().as_slice()),
@@ -169,13 +172,18 @@ impl TryFrom<&AttributeMap> for VerifyingKey {
             return Err(HsmError::KeyError("not a P256 key".into()));
         }
 
-        let point: Vec<u8> = a
+        let point_asn1: Vec<u8> = a
             .get(&AttributeType::EcPoint)
             .ok_or_else(|| HsmError::KeyError("missing EC point".into()))?
             .try_into()
             .map_err(HsmError::AttributeError)?;
+        let mut reader = SliceReader::new(point_asn1.as_slice())
+            .or(Err(HsmError::DerError("instanciating reader".into())))?;
+        let point_os: OctetStringRef = reader
+            .decode()
+            .or(Err(HsmError::DerError("decoding OctetString".into())))?;
 
-        VerifyingKey::from_sec1_bytes(point.as_slice())
+        VerifyingKey::from_sec1_bytes(point_os.as_bytes())
             .map_err(|e| HsmError::KeyError(format!("sec1: {e:?}")))
     }
 }
@@ -245,7 +253,7 @@ mod tests {
     const TEST2_PUBLIC_KEY: &str = r#"{
   "CKA_CLASS": "CKO_PUBLIC_KEY",
   "CKA_KEY_TYPE": "CKK_EC",
-  "CKA_EC_POINT": "04:1A:D2:74:FC:D8:79:7C:52:02:BF:A5:E1:0A:0E:DA:22:4C:23:68:31:8E:89:83:F6:F2:4E:40:73:3C:1E:29:35:1C:99:7D:E3:4B:93:41:F1:47:F3:D2:79:52:89:CE:80:42:D0:D1:A4:27:A3:99:5B:E0:0A:4F:5F:91:00:B9:15",
+  "CKA_EC_POINT": "04:41:04:1A:D2:74:FC:D8:79:7C:52:02:BF:A5:E1:0A:0E:DA:22:4C:23:68:31:8E:89:83:F6:F2:4E:40:73:3C:1E:29:35:1C:99:7D:E3:4B:93:41:F1:47:F3:D2:79:52:89:CE:80:42:D0:D1:A4:27:A3:99:5B:E0:0A:4F:5F:91:00:B9:15",
   "CKA_EC_PARAMS": "06:08:2A:86:48:CE:3D:03:01:07"
 }"#;
 
