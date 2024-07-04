@@ -15,6 +15,7 @@ def coremark_repos():
         ],
         patches = [
             Label("//third_party/coremark:use_ottf_main.patch"),
+            Label("//third_party/coremark:print_coremark_per_mhz.patch"),
         ],
         patch_args = ["-p1"],
     )

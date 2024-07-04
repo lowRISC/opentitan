@@ -1,0 +1,18 @@
+diff --git a/core_main.c b/core_main.c
+index a4beeb6..3b782ad 100644
+--- a/core_main.c
++++ b/core_main.c
+@@ -379,6 +379,13 @@ for (i = 0; i < MULTITHREAD; i++)
+
+     ee_printf("Iterations       : %lu\n",
+               (long unsigned)default_num_contexts * results[0].iterations);
++    ee_u32 coremark_per_100mhz =
++        100000000 * default_num_contexts * results[0].iterations / total_time;
++    ee_u32 coremark_per_mhz = coremark_per_100mhz / 100;
++    ee_u32 coremark_per_mhz_remainder =
++        coremark_per_100mhz - coremark_per_mhz * 100;
++    ee_printf("CoreMark/MHz     : %u.%u\n", coremark_per_mhz,
++              coremark_per_mhz_remainder);
+     ee_printf("Compiler version : %s\n", COMPILER_VERSION);
+     ee_printf("Compiler flags   : %s\n", COMPILER_FLAGS);
+ #if (MULTITHREAD > 1)
