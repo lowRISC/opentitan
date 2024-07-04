@@ -52,7 +52,7 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2, x3, x12, x13, x14, x17 to x24, w0 to w25
+ * clobbered registers: x2, x3, x11, x12, x13, x14, x17 to x24, w0 to w25
  * clobbered flag groups: FG0
  */
 p256_verify:
@@ -173,11 +173,12 @@ p256_verify:
   bn.addi   w12, w31, 1
   bn.mov    w13, w31
 
-  /* Initialize counter to 0. */
+  /* initialize counter to 0 and set x11=1. */
   li        x12, 0
+  li        x11, 1
 
   /* main loop with dicreasing index i (i=255 downto 0) */
-  loopi     256, 32
+  loopi     256, 38
 
     /* always double: C = (w11,w12,w13) <= 2 (*) C = 2 (*) (w11,w12,w13) */
     bn.mov    w8, w11
@@ -191,6 +192,10 @@ p256_verify:
     andi      x2, x2, 1
     beq       x2, x0, no_both
 
+    /* hardening: this block should only be reachable if x2=1, so this should
+       have no effect */
+    and       x11, x11, x2
+
     /* both bits at current index (u1[i] and u2[i]) are set:
        do C <= C + (P + Q) and jump to end */
     bn.mov    w8, w3
@@ -198,15 +203,24 @@ p256_verify:
     bn.mov    w10, w5
     jal       x1, proj_add
     jal       x0, no_q
+    unimp
+    unimp
 
     /* either u1[i] or u2[i] is set, but not both */
     no_both:
+    /* hardening: this block should only be reachable if x2=0, so this should
+       have no effect */
+    srl       x11, x11, x2
 
     /* if u2[i] is not set jump to 'no_g' */
     bn.add    w6, w0, w0
     csrrs     x2, FG0, x0
     andi      x2, x2, 1
     beq       x2, x0, no_g
+
+    /* hardening: this block should only be reachable if x2=1, so this should
+       have no effect */
+    and       x11, x11, x2
 
     /* u2[i] is set: do C <= C + Q */
     bn.lid    x13, 0(x21)
@@ -220,6 +234,10 @@ p256_verify:
     csrrs     x2, FG0, x0
     andi      x2, x2, 1
     beq       x2, x0, no_q
+
+    /* hardening: this block should only be reachable if x2=1, so this should
+       have no effect */
+    and       x11, x11, x2
 
     /* load base point x-coordinate
       w8 <= g_x = dmem [p256_gx]; w9 <= g_y = dmem[p256_gy] */
@@ -236,7 +254,7 @@ p256_verify:
     bn.add    w1, w1, w1
 
     /* increment counter */
-    addi      x12, x12, 1
+    add      x12, x12, x11
 
   /* compute inverse of z-coordinate: w1 = z_c^-1  mod p */
   bn.mov    w0, w13
