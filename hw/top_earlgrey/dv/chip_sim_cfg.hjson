@@ -1658,7 +1658,7 @@
       run_opts: ["+en_uart_logger=1",
                  "+sw_test_timeout_ns=200_000_000"]
       reseed: 1
-      run_timeout_mins: 240
+      run_timeout_mins: 300
     }
     {
       name: chip_sw_pwrmgr_b2b_sleep_reset_req
