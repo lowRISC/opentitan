@@ -54,7 +54,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
 
   // Queue of TL_DW words for predicting outputs of the observe FIFO
+  bit [TL_DW - 1:0]                repacked_entropy_release_q[$];
   bit [TL_DW - 1:0]                observe_fifo_q[$];
+  bit                              overflow_condition = 0;
+  bit                              observe_read_incoming = 0;
 
   // Queue of 64-bit words for inserting entropy input to the SHA (or raw) pipelines
   bit [SHACondWidth - 1:0]         sha_process_q[$];
@@ -1047,9 +1050,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       health_test_data_q.delete();
     end
 
-    // Internal CSRNG stores are cleared on Disable and HardReset events
+    // Internal CSRNG stores and scoreboard state is cleared on Disable and HardReset events.
     if( rst_type == Disable || rst_type == HardReset ) begin
       fips_csrng_q.delete();
+      repacked_entropy_release_q.delete();
+      overflow_condition = 0;
     end
 
     // Internal repetition counters and watermark registers are cleared on enable.
@@ -1453,6 +1458,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "fw_ov_sha3_start": begin
       end
       "fw_ov_rd_data": begin
+        if (!write && channel == AddrChannel) begin
+          // Signal that a read is incoming.
+          // The actual comparison in the scoreboard happens with a delay. In the DUT the
+          // observe FIFO would have been already popped in this cycle. We model this
+          // by allowing our observe FIFO queue in the scoreboard to hold one additional
+          // word.
+          observe_read_incoming = 1;
+          // If there's an overflow condition and we only have one word left in the observe FIFO,
+          // this means that the overflow condition ends here. Here we signal the end of the
+          // overflow condition and update the predictions.
+          if (overflow_condition && (observe_fifo_q.size() == 1)) begin
+            overflow_condition = 0;
+            `DV_CHECK_FATAL(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow.predict(1'b0))
+          end
+        end
       end
       "fw_ov_wr_data": begin
       end
@@ -2136,6 +2156,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // then those are packed into 64-bit chunks suitable
     // for SHA3 input
     bit [TL_DW - 1:0]         repacked_entropy_tl;
+    bit [TL_DW - 1:0]         repacked_entropy_release;
     bit [SHACondWidth:0]      repacked_entropy_sha;
     int                       repack_idx_tl  = 0;
     int                       repack_idx_sha = 0;
@@ -2143,7 +2164,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit                       disable_detected;
     rng_val_t                 rng_val;
     string                    fmt, msg;
-
+    int                       observe_wait_cycles;
     bit                       predict_conditioning;
 
     localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
@@ -2158,7 +2179,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       wait_rng_queue(rng_val, disable_detected);
 
       if (disable_detected) begin
-        // Exit this task.
+        // Exit this task if a disable was detected.
         return;
       end else begin
         // Pack this data for redistribution
@@ -2168,8 +2189,35 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf("repack_idx_tl: %0d", repack_idx_tl), UVM_DEBUG)
         if (repack_idx_tl == RngPerTlDw) begin
           repack_idx_tl = 0;
-          // publish this 32 bit word to the observe FIFO
-          observe_fifo_q.push_back(repacked_entropy_tl);
+          // Push the repacked entropy into a release queue to make sure that repacked_entropy_tl
+          // is not altered by the time the observe_wait_cycles pass.
+          repacked_entropy_release_q.push_back(repacked_entropy_tl);
+          // Wait until the data has reached the observe FIFO and predict the overflow state.
+          // The FIFOs between the RNG input and the observe FIFO are: the esrng FIFO,
+          // the esbit FIFO, the postht packer FIFO and the distribution FIFO. However, we
+          // don't count the distribution FIFO here, since it is configured in pass through mode.
+          // We end up with 2 cycles delay in the normal mode and an adiitional cycle in single
+          // lane mode.
+          observe_wait_cycles = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? 3 : 2;
+          fork
+            begin
+              cfg.clk_rst_vif.wait_clks(observe_wait_cycles);
+              repacked_entropy_release = repacked_entropy_release_q.pop_front();
+              // If the observe FIFO has overflown signal the overflow condition and predict the
+              // fw_ov_rd_fifo_overflow register to be set to true. We drop the overflowing data by
+              // not pushing into the observe FIFO queue.
+              if (overflow_condition ||
+                  (observe_fifo_q.size() >= (OBSERVE_FIFO_DEPTH + observe_read_incoming))) begin
+                overflow_condition = 1;
+                `DV_CHECK_FATAL(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow.predict('b1))
+
+              // If there is no overflow condition going on then push the repacked entropy into the
+              // observe FIFO queue.
+              end else begin
+                observe_fifo_q.push_back(repacked_entropy_release);
+              end
+            end
+          join_none
 
           // Now repack the TL_DW width blocks into the larger SHA blocks
           // to publish to the correct processing fifo.
@@ -2512,72 +2560,35 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, msg, UVM_FULL)
         `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
       end else begin
-        msg = $sformatf("Checking %0d candidate seeds", observe_fifo_q.size());
+        bit [TL_DW - 1:0] prediction;
+        // Pop the observe FIFO queue and compare the prediction to the actual value.
+        prediction = observe_fifo_q.pop_front();
+        observe_read_incoming = 0;
+        fmt = "Predicting observe FIFO access, Comparing to: %08x ACTUAL VALUE : %08x";
+        msg = $sformatf(fmt, prediction, csr_val);
         `uvm_info(`gfn, msg, UVM_FULL)
-        // If no observe FIFO overflow condition was detected yet, read fw_ov_rd_fifo_overflow via
-        // backdoor to see whether the overflow condition in the observe FIFO holds.
-        if (!observe_fifo_overflow) begin
-          csr_rd(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
-                 .value(observe_fifo_overflow),
-                 .backdoor(1));
-          overflow_read_cnt = 0;
-        // If an observe FIFO overflow condition was detected, count the number of reads that
-        // happened since the overflow to trace when the condition is being lifted.
-        end else if (observe_fifo_overflow) begin
-          overflow_read_cnt += 1;
-        end
-        // Entropy can only be dropped when the overflow condition holds. This is why we only
-        // expect to see dropped seeds when the overflow condition was active and the whole observe
-        // FIFO has since been read out entirely.
-        drops_allowed = observe_fifo_overflow && (overflow_read_cnt == ObserveFifoDepth);
-        while (observe_fifo_q.size() > 0) begin : seed_trial_loop
-          bit [TL_DW - 1:0] prediction;
-          // Unlike the ENTROPY_DATA CSR case, there is no need to leave seed predictions
-          // in the queue.
-          prediction = observe_fifo_q.pop_front();
-          fmt = "Predicting observe FIFO access, Comparing to: %08x";
-          msg = $sformatf(fmt, prediction);
+        if (prediction == csr_val) begin
+          `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
+          observe_fifo_words++;
+          match_found = 1;
+          cov_vif.cg_observe_fifo_event_sample(
+              mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+              mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
+              mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
+              mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
+              mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
+              ral.conf.rng_bit_sel.get_mirrored_value(),
+              mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
+              mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
+              mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+              mubi8_t'(cfg.otp_en_es_fw_read),
+              mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+              mubi8_t'(cfg.otp_en_es_fw_over),
+              mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
+          );
+          msg = $sformatf("Match found: %d\n", observe_fifo_words);
           `uvm_info(`gfn, msg, UVM_FULL)
-          if (prediction == csr_val) begin
-            `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
-            observe_fifo_words++;
-            match_found = 1;
-            cov_vif.cg_observe_fifo_event_sample(
-                mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
-                mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
-                mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
-                mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
-                mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
-                ral.conf.rng_bit_sel.get_mirrored_value(),
-                mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
-                mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
-                mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
-                mubi8_t'(cfg.otp_en_es_fw_read),
-                mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
-                mubi8_t'(cfg.otp_en_es_fw_over),
-                mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
-            );
-            msg = $sformatf("Match found: %d\n", observe_fifo_words);
-            `uvm_info(`gfn, msg, UVM_FULL)
-            break;
-          end else begin
-            `DV_CHECK_FATAL(drops_allowed)
-            observe_fifo_drops++;
-            msg = $sformatf("Dropped word: %d\n", observe_fifo_drops);
-            `uvm_info(`gfn, msg, UVM_FULL)
-          end
-        end : seed_trial_loop
-        // If drops were allowed, disallow them again and reset overflow_read_cnt
-        // and observe_fifo_overflow.
-        if (drops_allowed) begin
-          drops_allowed = 0;
-          overflow_read_cnt = 0;
-          // See if another overflow has happened since the last one.
-          csr_rd(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
-                 .value(observe_fifo_overflow),
-                 .backdoor(1));
         end
-
         `DV_CHECK_EQ_FATAL(match_found, 1,
                           "All candidate observe FIFO words have been checked, with no match")
       end
