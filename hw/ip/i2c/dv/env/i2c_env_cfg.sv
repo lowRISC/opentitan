@@ -37,6 +37,11 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // RSTART injection rate percentage (1-100)
   int        rs_pct = 10;
 
+  // Constrain the number of i2c-transfers within any larger i2c-transaction.
+  // Note. that this specifically refers to transfers & transactions as defined by I2C, which a
+  // transaction is comprised of one or more transfers, where a transfer is between S/Sr -> Sr/P)
+  int        min_num_transfers = 1;
+  int        max_num_transfers = 0; // 0 == unlimited
   // This sets the minimum length of a transfer (START/RSTART -> RSTART/STOP) within
   // any larger transaction. A transfer with no data, where the address byte is NACK'd,
   // is possible with our stimulus approach, and this can break checking in certain

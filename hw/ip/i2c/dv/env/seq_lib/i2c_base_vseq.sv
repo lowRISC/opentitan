@@ -826,6 +826,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual function i2c_transaction create_txn();
     int seed = $urandom;
 
+    int min_num_transfers, max_num_transfers;
+
     // A temporary, used to randomize the total number of data bytes in the transaction.
     int unsigned num_data_total;
     // A temporary, used to randomize the total number of transfers in the transaction.
@@ -843,6 +845,12 @@ class i2c_base_vseq extends cip_base_vseq #(
       num_data_total inside {[cfg.min_data : cfg.max_data]};
     )
 
+    min_num_transfers = (cfg.min_num_transfers >= 1) ? cfg.min_num_transfers : 1;
+    max_num_transfers = (cfg.max_num_transfers == 0)             ? num_data_total :
+                        (cfg.max_num_transfers > num_data_total) ? num_data_total :
+                        cfg.max_num_transfers;
+    `DV_CHECK(min_num_transfers <= max_num_transfers)
+
     // Randomize the number of transfers in the transaction.
     // TODO(#23920) Consider re-implementing to avoid waiver.
     num_transfers = $dist_normal( // verilog_lint: waive invalid-system-task-function
@@ -851,11 +859,12 @@ class i2c_base_vseq extends cip_base_vseq #(
       /* stddev */ int'(num_data_total * 0.10)
     );
     // Saturate into the possible range if we happen to fall outside of it.
-    if (num_transfers < 1 || num_transfers > num_data_total) begin
+    if (num_transfers < min_num_transfers ||
+        num_transfers > max_num_transfers) begin
       `uvm_info(`gfn, $sformatf("num_transfers (%0d) outside valid range (%0d - %0d), saturating.",
         num_transfers, 1, num_data_total), UVM_DEBUG)
-      if (num_transfers < 1)              num_transfers = 1;
-      if (num_transfers > num_data_total) num_transfers = num_data_total;
+      if (num_transfers < min_num_transfers) num_transfers = min_num_transfers;
+      if (num_transfers > max_num_transfers) num_transfers = max_num_transfers;
     end
 
     // Next randomize the number of data bytes in each transfer.
