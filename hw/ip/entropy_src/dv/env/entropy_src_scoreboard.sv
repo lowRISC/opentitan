@@ -1055,6 +1055,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fips_csrng_q.delete();
       repacked_entropy_release_q.delete();
       overflow_condition = 0;
+      `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict('b0))
     end
 
     // Internal repetition counters and watermark registers are cleared on enable.
@@ -1465,6 +1466,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // by allowing our observe FIFO queue in the scoreboard to hold one additional
           // word.
           observe_read_incoming = 1;
+          `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict(
+              `gmv(ral.observe_fifo_depth.observe_fifo_depth)-1, .kind(UVM_PREDICT_DIRECT)))
           // If there's an overflow condition and we only have one word left in the observe FIFO,
           // this means that the overflow condition ends here. Here we signal the end of the
           // overflow condition and update the predictions.
@@ -1475,12 +1478,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         end
       end
       "fw_ov_wr_data": begin
+        // TODO(#18837): need to predict this
       end
       "fw_ov_wr_fifo_full": begin
         // TODO(#18837): need to predict this
       end
       "fw_ov_rd_fifo_overflow": begin
-        // TODO(#18837): need to predict this
       end
       "observe_fifo_thresh": begin
         locked_reg_access = dut_reg_locked;
@@ -2216,6 +2219,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               end else begin
                 observe_fifo_q.push_back(repacked_entropy_release);
               end
+              wait(!ral.observe_fifo_depth.is_busy());
+              `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict(
+                  `gmv(ral.observe_fifo_depth.observe_fifo_depth)+1, .kind(UVM_PREDICT_DIRECT)))
             end
           join_none
 
