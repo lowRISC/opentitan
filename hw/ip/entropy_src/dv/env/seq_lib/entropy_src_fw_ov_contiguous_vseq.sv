@@ -22,8 +22,9 @@ class entropy_src_fw_ov_contiguous_vseq extends entropy_src_base_vseq;
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       begin
+        int available_bundles;
+        bit [TL_DW-1:0] observe_fifo_depth;
         do begin
-          int available_bundles;
           // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
           poll(.source(TlSrcObserveFIFO));
           // Read all currently available data (but no more than bundle_cnt)
@@ -32,6 +33,8 @@ class entropy_src_fw_ov_contiguous_vseq extends entropy_src_base_vseq;
           // Update the count of remaining seeds to read
           bundle_cnt -= available_bundles;
         end while (bundle_cnt > 0);
+        csr_rd(.ptr(ral.observe_fifo_depth.observe_fifo_depth), .value(observe_fifo_depth),
+                .blocking(1'b1));
         m_rng_push_seq.stop(.hard(0));
         m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
       end
