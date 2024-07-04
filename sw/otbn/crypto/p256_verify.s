@@ -13,9 +13,10 @@
 /**
  * Hardened boolean values.
  *
- * Should match the values in `hardened_asm.h`.
+ * Should match the values in `hardened_asm.h`. The truthy value is XORed with
+ * 256, i.e. the expected loop counter from verify's scalar mult.
  */
-.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_TRUE_XOR_COUNTER, 0x639
 .equ HARDENED_BOOL_FALSE, 0x1d4
 
 .globl p256_verify
@@ -51,7 +52,7 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2, x3, x13, x14, x17 to x24, w0 to w25
+ * clobbered registers: x2, x3, x12, x13, x14, x17 to x24, w0 to w25
  * clobbered flag groups: FG0
  */
 p256_verify:
@@ -172,8 +173,11 @@ p256_verify:
   bn.addi   w12, w31, 1
   bn.mov    w13, w31
 
+  /* Initialize counter to 0. */
+  li        x12, 0
+
   /* main loop with dicreasing index i (i=255 downto 0) */
-  loopi     256, 31
+  loopi     256, 32
 
     /* always double: C = (w11,w12,w13) <= 2 (*) C = 2 (*) (w11,w12,w13) */
     bn.mov    w8, w11
@@ -231,6 +235,9 @@ p256_verify:
     bn.add    w0, w0, w0
     bn.add    w1, w1, w1
 
+    /* increment counter */
+    addi      x12, x12, 1
+
   /* compute inverse of z-coordinate: w1 = z_c^-1  mod p */
   bn.mov    w0, w13
   jal       x1, mod_inv_var
@@ -248,7 +255,8 @@ p256_verify:
 
   /* If we got here the basic validity checks passed, so set `ok` to true. */
   la       x2, ok
-  addi     x3, x0, HARDENED_BOOL_TRUE
+  addi     x3, x0, HARDENED_BOOL_TRUE_XOR_COUNTER
+  xor      x3, x3, x12
   sw       x3, 0(x2)
 
   /* store affine x-coordinate in dmem: dmem[x_r] = w24 = x_r */
