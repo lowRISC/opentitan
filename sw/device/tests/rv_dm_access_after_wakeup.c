@@ -32,7 +32,7 @@ enum {
 };
 
 // This location will be update from SV
-static volatile uint8_t kSoftwareBarrier = 0;
+static volatile const uint8_t kSoftwareBarrier = 0;
 
 // Handle to the plic
 dif_rv_plic_t rv_plic;
