@@ -39,3 +39,4 @@
 `include "i2c_target_fifo_watermarks_acq_vseq.sv"
 `include "i2c_target_fifo_watermarks_tx_vseq.sv"
 `include "i2c_target_tx_stretch_ctrl_vseq.sv"
+`include "i2c_target_smbus_maxlen_vseq.sv"

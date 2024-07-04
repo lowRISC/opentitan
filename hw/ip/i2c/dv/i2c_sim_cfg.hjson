@@ -267,6 +267,13 @@
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
     }
+    {
+      name: i2c_target_smbus_maxlen
+      uvm_test_seq: i2c_target_smbus_maxlen_vseq
+      run_opts: ["+i2c_agent_mode=Host",
+                 "+test_timeout_ns=20_000_000",
+                 "+use_intr_handler=1"]
+    }
   ]
 
   // List of regressions.
@@ -292,7 +299,8 @@
               "i2c_target_timeout", "i2c_target_unexp_stop",
               "i2c_target_glitch", "i2c_target_perf",
               "i2c_target_fifo_reset_acq", "i2c_target_fifo_reset_tx",
-              "i2c_target_bad_addr", "i2c_target_hrst"]
+              "i2c_target_bad_addr", "i2c_target_hrst",
+              "i2c_target_smbus_maxlen"]
     }
   ]
 }

@@ -939,6 +939,18 @@
       stage: V2
       tests: []
     }
+    {
+      name: target_mode_smbus_maxlen
+      desc: '''
+            The I2C ACQFIFO has been sized such that it can absorb a max-length SMBus message (a 255-byte
+            Block-Write) without software intervention.
+            This directed test confirms this use-case is viable by generating a stimulus message of this
+            size, while disabling any interrupt/polling handlers from interacting with the DUT. The
+            message content is checked by the scoreboard to be correct and complete.
+            '''
+      stage: V2
+      tests: ["i2c_target_smbus_maxlen"]
+    }
   ]
   covergroups: [
     {
