@@ -3273,7 +3273,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       default: bsc_state_d = BscStIncomplete;
     endcase
     // If not enabled, always clear to incomplete.
-    if (!mubi4_test_true_strict(mubi_es_enable)) begin
+    if (!es_delayed_enable) begin
       bsc_state_d = BscStIncomplete;
     end
   end
@@ -3339,7 +3339,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       end
     end
     // If not enabled, always clear to no result.
-    if (!mubi4_test_true_strict(mubi_es_enable)) begin
+    if (!es_delayed_enable) begin
       ht_state_d = HtStNoResult;
     end
   end
@@ -3426,7 +3426,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       precon_post_startup_push_bit_cnt_q  <= '0;
       precon_push_bit_cnt_q               <= '0;
       rng_valid_bit_cnt_q                 <= '0;
-    end else if (mubi4_test_true_strict(mubi_es_enable) & !fw_ov_mode_entropy_insert) begin
+    end else if (es_delayed_enable & !fw_ov_mode_entropy_insert) begin
       // All these counters get updated if and only if entropy_src is enabled and the firmware
       // override entropy insertion mode is disabled.  Otherwise, there are no guarantees on how
       // much entropy from the noise source gets dropped due to backpressure.
