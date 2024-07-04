@@ -41,7 +41,7 @@ module security_island
    parameter int unsigned AsyncAxiOutArWidth    = SynthAsyncAxiOutArWidth,
    parameter int unsigned AsyncAxiOutRWidth     = SynthAsyncAxiOutRWidth,
 
-   parameter int unsigned AxiClsIdWidth         = 5,
+   parameter int unsigned AxiClsIdWidth         = SynthClsAxiIdWidth,
 
    parameter type         axi_out_aw_chan_t     = synth_axi_out_aw_chan_t,
    parameter type         axi_out_w_chan_t      = synth_axi_out_w_chan_t,
@@ -78,21 +78,21 @@ module security_island
    output logic                          jtag_tdo_o,
    output logic                          jtag_tdo_oe_o,
    // Asynch AXI tlul2axi port
-   output logic [AsyncAxiOutAwWidth-1:0]  async_axi_out_aw_data_o,
-   output logic [LogDepth:0]              async_axi_out_aw_wptr_o,
-   input logic  [LogDepth:0]              async_axi_out_aw_rptr_i,
-   output logic [AsyncAxiOutWWidth-1:0]   async_axi_out_w_data_o,
-   output logic [LogDepth:0]              async_axi_out_w_wptr_o,
-   input logic  [LogDepth:0]              async_axi_out_w_rptr_i,
-   input logic  [AsyncAxiOutBWidth-1:0]   async_axi_out_b_data_i,
-   input logic  [LogDepth:0]              async_axi_out_b_wptr_i,
-   output logic [LogDepth:0]              async_axi_out_b_rptr_o,
-   output logic [AsyncAxiOutArWidth-1:0]  async_axi_out_ar_data_o,
-   output logic [LogDepth:0]              async_axi_out_ar_wptr_o,
-   input logic  [LogDepth:0]              async_axi_out_ar_rptr_i,
-   input logic  [AsyncAxiOutRWidth-1:0]   async_axi_out_r_data_i,
-   input logic  [LogDepth:0]              async_axi_out_r_wptr_i,
-   output logic [LogDepth:0]              async_axi_out_r_rptr_o,
+   output logic [AsyncAxiOutAwWidth-1:0] async_axi_out_aw_data_o,
+   output logic [LogDepth:0]             async_axi_out_aw_wptr_o,
+   input logic  [LogDepth:0]             async_axi_out_aw_rptr_i,
+   output logic [AsyncAxiOutWWidth-1:0]  async_axi_out_w_data_o,
+   output logic [LogDepth:0]             async_axi_out_w_wptr_o,
+   input logic  [LogDepth:0]             async_axi_out_w_rptr_i,
+   input logic  [AsyncAxiOutBWidth-1:0]  async_axi_out_b_data_i,
+   input logic  [LogDepth:0]             async_axi_out_b_wptr_i,
+   output logic [LogDepth:0]             async_axi_out_b_rptr_o,
+   output logic [AsyncAxiOutArWidth-1:0] async_axi_out_ar_data_o,
+   output logic [LogDepth:0]             async_axi_out_ar_wptr_o,
+   input logic  [LogDepth:0]             async_axi_out_ar_rptr_i,
+   input logic  [AsyncAxiOutRWidth-1:0]  async_axi_out_r_data_i,
+   input logic  [LogDepth:0]             async_axi_out_r_wptr_i,
+   output logic [LogDepth:0]             async_axi_out_r_rptr_o,
    // Axi Isolate
    input  logic                          axi_isolate_i,
    output logic                          axi_isolated_o,
@@ -123,8 +123,8 @@ module security_island
 // Defs and assignments //
 //////////////////////////
 
-   localparam int unsigned NumMstPorts = 4;
-   localparam int unsigned NumSlvPorts = 2;
+   localparam int unsigned NumMstPorts = 2;
+   localparam int unsigned NumSlvPorts = 4;
 
    axi_out_req_t  axi_out_mst_req,
                   axi_out_mst_req_iso,
@@ -390,9 +390,9 @@ module security_island
 
   assign axi_out_mst_req = axi_mst_req[0];
   assign axi_cls_mst_req = axi_mst_req[1];
-  assign axi_mst_rsp     = { axi_out_mst_rsp, axi_cls_mst_rsp };
+  assign axi_mst_rsp     = { axi_cls_mst_rsp, axi_out_mst_rsp};
 
-  assign axi_slv_req     = { axi_tlul_req, axi_idma_req, axi_cls_cfg_req, axi_cls_slv_req };
+  assign axi_slv_req     = { axi_cls_slv_req, axi_cls_cfg_req, axi_idma_req, axi_tlul_req };
   assign axi_tlul_rsp    = axi_mst_rsp[0];
   assign axi_idma_rsp    = axi_mst_rsp[1];
   assign axi_cls_cfg_rsp = axi_mst_rsp[2];
@@ -566,8 +566,8 @@ module security_island
   `AXI_ASSIGN_TO_REQ(axi_cls_cfg_req, cluster_cfg_axi_lite_bus)
   `AXI_ASSIGN_FROM_RESP(cluster_cfg_axi_lite_bus, axi_cls_cfg_rsp)
 
-   logic cluster_fetch_en = 1'b1;
-   logic cluster_en_sa_boot = 1'b1;
+   logic cluster_fetch_en = 1'b0;
+   logic cluster_en_sa_boot = 1'b0;
 
 /////////////////
 // Pulp Cluster//
@@ -591,7 +591,7 @@ module security_island
       .DIRECT_MAPPED_FEATURE        ( "DISABLED"                      ),
       .L2_SIZE                      ( 512*1024                        ),
       .ROM_BOOT_ADDR                ( 32'h1A000000                    ),
-      .BOOT_ADDR                    ( 32'hA1000000                    ),
+      .BOOT_ADDR                    ( 32'h1C000000                    ),
       .INSTR_RDATA_WIDTH            ( 32                              ),
       .CLUST_FPU                    ( `CLUST_FPU                      ),
       .CLUST_FP_DIVSQRT             ( `CLUST_FP_DIVSQRT               ),

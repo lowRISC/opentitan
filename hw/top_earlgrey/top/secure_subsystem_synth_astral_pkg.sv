@@ -18,11 +18,11 @@ package secure_subsystem_synth_astral_pkg;
   localparam SynthAxiDataWidth    = 64;
 
   localparam SynthOtAxiAddrWidth  = 64;
-  localparam SynthOtAxiOutIdWidth = 7;
+  localparam SynthOtAxiOutIdWidth = 6;
   localparam SynthOtAxiUserWidth  = 1;
   localparam SynthOtAxiDataWidth  = 64;
 
-  localparam SynthClsAxiIdWidth = 6;
+  localparam SynthClsAxiIdWidth = 4;
 
   typedef logic [SynthAxiAddrWidth-1:0]     synth_axi_addr_t;
   typedef logic [SynthAxiDataWidth-1:0]     synth_axi_data_t;
