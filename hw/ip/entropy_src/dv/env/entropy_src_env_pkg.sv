@@ -24,10 +24,11 @@ package entropy_src_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter bit [TL_DW-1:0]   INCR_ENTROPY_LO  = 32'h76543210;
-  parameter bit [TL_DW-1:0]   INCR_ENTROPY_HI  = 32'hfedcba98;
-  parameter string            LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
-  parameter uint              NUM_ALERTS       = 2;
+  parameter bit [TL_DW-1:0]   INCR_ENTROPY_LO    = 32'h76543210;
+  parameter bit [TL_DW-1:0]   INCR_ENTROPY_HI    = 32'hfedcba98;
+  parameter string            LIST_OF_ALERTS[]   = {"recov_alert","fatal_alert"};
+  parameter uint              NUM_ALERTS         = 2;
+  parameter uint              OBSERVE_FIFO_DEPTH = 32;
 
   // types
   typedef enum int {
