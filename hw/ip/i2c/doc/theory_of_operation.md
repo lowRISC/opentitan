@@ -366,17 +366,20 @@ Firmware can configure the threshold value via the register [`HOST_FIFO_CONFIG.F
 
 If the RX FIFO receives an additional write request when its FIFO is full, the interrupt `rx_overflow` is asserted and the character is dropped.
 
-If the module transmits a byte and the 9th bit is a NACK from the Target/Bus, the `nack` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
-If the 'nack' interrupt is asserted, the Controller Module FSM will halt until the interrupt has been acknowledged.
+If the module transmits a byte and the 9th bit is a NACK from the Target/Bus, the `controller_halt` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
+If the `controller_halt` interrupt is asserted, the Controller Module FSM will halt until the interrupt has been acknowledged.
 See [the Controller NACK handling section](#controller-nack-handling) above for more details on this behaviour.
+In addition, the interrupt will be asserted if any of the other halt-causing events occur, such as a bus timeout or a loss of arbitration.
+This interrupt is a status type that requires clearing all triggering event latches before it will deassert.
 
-When the I2C module is in transmit mode, the `scl_interference` or `sda_interference` interrupts will be asserted if the IP identifies that some other device (controller or target) on the bus is forcing either signal low and interfering with the transmission.
+When the Controller Module is actively transmitting, the `scl_interference` or `sda_interference` interrupts will be asserted if the IP identifies that some other device (controller or target) on the bus is forcing either signal low and interfering with the transmission.
 It should be noted that the `scl_interference` interrupt is not raised in the case when the target device is stretching the clock.
-(However, it may be raised if the target allows SCL to go high and then pulls SCL down before the end of the current clock cycle.)
+However, it may be raised if the target allows SCL to go high and then pulls SCL down before the end of the current clock cycle.
+The `scl_interference` interrupt should be masked in multi-controller environments, since clock synchronization between controllers can trigger its assertion.
 
-A target device should never assert 0 on the SDA lines, and in the absence of multi-controller support, the `sda_interference` interrupt is raised whenever the controller IP detects that another device is pulling SDA low.
+The `sda_interference` interrupt is raised whenever the Controller Module detects that another device is pulling SDA low while the Controller Module is trying to transmit logic high.
 
-On the other hand, it is legal for the a target device to assert SCL low for clock stretching purposes.
+On the other hand, it is legal for a target device to assert SCL low for clock stretching purposes.
 With clock stretching, the target can delay the start of the following SCL pulse by holding SCL low between clock pulses.
 However the target device must assert SCL low before the start of the SCL pulse.
 If SCL is pulled low during an SCL pulse which has already started, this interruption of the SCL pulse will be registered as an exception by the I2C core, which will then assert the `scl_interference` interrupt.
@@ -393,8 +396,8 @@ If SCL is pulled low during an SCL pulse which has already started, this interru
 ```
 
 
-Though normal clock stretching does not count as SCL interference, if the module detects that a target device has held SCL low and stretched the any given SCL cycle for more than [`TIMEOUT_CTRL.VAL`](registers.md#timeout_ctrl) clock ticks this will cause the stretch timeout interrupt to be asserted.
-This interrupt is suppressed, however, if [`TIMEOUT_CTRL.EN`](registers.md#timeout_ctrl) is deasserted low.
+Though normal clock stretching does not count as SCL interference, if the module detects that a target device has held SCL low and stretched any given SCL cycle for more than [`TIMEOUT_CTRL.VAL`](registers.md#timeout_ctrl) clock ticks this will cause the stretch timeout interrupt to be asserted.
+This interrupt is suppressed, however, if [`TIMEOUT_CTRL.EN`](registers.md#timeout_ctrl) is deasserted low or if the bus timeout is selected for [`TIMEOUT_CTRL.MODE`](registers.md#timeout_ctrl).
 
 ```wavejson
 {signal: [
@@ -411,22 +414,24 @@ This interrupt is suppressed, however, if [`TIMEOUT_CTRL.EN`](registers.md#timeo
 ```
 
 Except for START and STOP symbols, the I2C specification requires that the SDA signal remains constant whenever SCL is high.
-The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse.
+The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse, causing an unexpected START or STOP symbol.
 
-Transactions are terminated by a STOP signal.
-The controller may send a repeated START signal instead of a STOP, which also terminates the preceding transaction.
-In both cases, the `cmd_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
-
+Transactions are terminated by a STOP signal, but individual transfers within a transaction can be completed by a STOP signal *or* a repeated START signal.
+When a transfer completes, the `cmd_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
+This interrupt is overloaded and represents the full IP's participation in any bus transactions.
+The Target Module's transfers also signal `cmd_complete`.
 
 #### Target Module
 
-The interrupt `cmd_complete` is asserted whenever a RESTART or a STOP bit is observed by the target.
+As mentioned above, the interrupt `cmd_complete` is asserted whenever a RESTART or a STOP bit is observed by the target, for a transfer that addressed the Target Module.
 
-The interrupt `tx_stretch` is asserted whenever target intends to transmit data but cannot.
-See [stretching during read]({{< relref "#stretching-during-read" >}}).
+The interrupt `tx_stretch` is asserted whenever the Target Module intends to transmit data but cannot.
+If software sets the bit [`CTRL.TX_STRETCH_CTRL_EN`](registers.md#ctrl), the Target Module will require software to confirm release of the TX FIFO at the beginning of every read transfer addressed to it.
+This behaviour may be useful to software, as any remaining data in the TX FIFO after a Sr/P condition may no longer apply to the next transfer, so it may have to be cleared out via [`FIFO_CTRL.TXRST`](registers.md#fifo_ctrl).
+For more on stretching on read transfers, see [stretching during read]({{< relref "#stretching-during-read" >}}).
 
 When a controller receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
-In a case when a target receives a STOP without the prerequisite NACK, the interrupt `unexp_stop` is asserted.
+In a case when the Target Module receives a STOP without the prerequisite NACK, the interrupt `unexp_stop` is asserted.
 This interrupt just means that a STOP was unexpectedly observed during a controller read.
 It is not necessarily harmful, but software can be made aware just in case.
 
@@ -436,18 +441,14 @@ Firmware can configure the threshold value via the register [`TARGET_FIFO_CONFIG
 Whilst the TX FIFO level is below a designated number of entries the `tx_threshold` interrupt is asserted.
 Firmware can configure the threshold value via the register [`TARGET_FIFO_CONFIG.TX_THRESH`](registers.md#target_fifo_config).
 
-If firmware sets the bit [`TARGET_FIFO_CONFIG.TXRST_ON_COND`](registers.md#target_fifo_config), the TX FIFO will be reset whenever a RSTART or STOP condition is seen on the bus during an active Target-Mode transaction.
-This behaviour may be useful to software, as any remaining data in the TXFIFO after a Sr/P condition is probably no-longer applicable to the next transfer, so will likely have to be cleared out anyway.
-Keeping this behaviour as a toggle allows software to observe the fifo state before resetting it, which may be useful to understand how much of the previous transfer completed if that information is helpful or relevant.
-
-If the Target module stretches the clock as a target-receiver, the interrupt `acq_stretch` is asserted.
+If the Target Module stretches the clock as a target-receiver, the interrupt `acq_stretch` is asserted.
 This can be due to a full ACQ FIFO, or it can be due to an ACK Control Mode stretch request.
 If ACK Control Mode is enabled, check the relevant bits in [`STATUS`](registers.md#status) to determine the reason(s).
 The `acq_stretch` interrupt is a Status type, so it will only de-assert once the stretch conditions are cleared.
 
 If a controller ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
-Controller sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
-The time period is counted from the last low-to-high SCL transition.
+A controller sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
+The time period is counted from the last low-to-high SCL transition and continues counting until SCL goes low.
 Firmware can configure the timeout value via the register [`HOST_TIMEOUT_CTRL`](registers.md#host_timeout_ctrl).
 
 ### Implementation Details: Format Flag Parsing
