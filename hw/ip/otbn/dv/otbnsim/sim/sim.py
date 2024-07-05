@@ -195,6 +195,7 @@ class OTBNSim:
         if self.state.rma_req == LcTx.ON and not is_locked:
             self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
             self.state.set_fsm_state(FsmState.WIPING_BAD)
+            self.state.wipe_rounds_done = 0
 
         if self.state.init_sec_wipe_is_running():
             # Wait for the URND seed. If there is some genuine state to wipe
@@ -378,8 +379,6 @@ class OTBNSim:
                 # Zero INSN_CNT in the *next* cycle to match RTL control flow.
                 self.state.zero_insn_cnt_next = True
 
-        final_wipe_round = not self.state.first_round_of_wipe
-
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to
             # model the behaviour that we expect "at the end of a wipe round".
@@ -393,6 +392,8 @@ class OTBNSim:
             #
             # RMA requests are a special case where the "last round" might
             # actually be the first one as well.
+            final_wipe_round = (self.state.wipe_rounds_done ==
+                                (self.state.wipe_rounds_to_do - 1))
             if final_wipe_round:
                 next_status = Status.LOCKED if locking else Status.IDLE
                 self.state.ext_regs.write('STATUS', next_status, True)
@@ -402,13 +403,18 @@ class OTBNSim:
                 self.state._urnd_client.request()
 
         if self.state.wipe_cycles == 0:
+            if was_wiping:
+                self.state.wipe_rounds_done += 1
+
+            final_wipe_round = (self.state.wipe_rounds_done ==
+                                self.state.wipe_rounds_to_do)
+
             # This is the final clock cycle of a wipe round.
             if not final_wipe_round:
                 # This is the first wipe round and since there's no RMA
                 # request, a second round must follow after URND refresh
                 # acknowledgment.
                 if self.state.wsrs.URND.running:
-                    self.state.first_round_of_wipe = False
                     self.state.set_fsm_state(self.state.get_fsm_state())
             else:
                 # This is the second wipe round or the only wipe round during
@@ -422,11 +428,12 @@ class OTBNSim:
                     next_state = FsmState.LOCKED
 
                 # Also, set wipe_cycles to an invalid value to make really sure
-                # we've left the wiping code.
+                # we've left the wiping code. Leave wipe_rounds_done unchanged
+                # so that the "completed wipe" is visible when we come to write
+                # out the U/V line later. We'll zero it again when we enter a
+                # wiping state next time.
                 self.state.wipe_cycles = -1
 
-                self.state.first_round_of_wipe = True
-                self.state.incomplete_wipe = False
                 self.state.set_fsm_state(next_state)
 
         return (None, self._on_stall(verbose, fetch_next=False))
