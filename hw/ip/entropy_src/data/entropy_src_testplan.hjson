@@ -91,11 +91,11 @@
       name: interrupts
       desc: '''
             Verify es_entropy_valid interrupt asserts as predicted.
+            Verify es_observe_fifo_ready interrupt asserts as predicted.
             Verify es_health_test_failed interrupt asserts as predicted.
-            Verify es_fifo_err interrupt asserts as predicted.
             '''
       stage: V2
-      tests: ["entropy_src_rng"]
+      tests: ["entropy_src_intr", "entropy_src_rng"]
     }
     {
       name: alerts
