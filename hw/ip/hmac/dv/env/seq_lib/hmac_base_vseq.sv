@@ -207,8 +207,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task rd_digest();
     bit [TL_DW-1:0] digest[16];
     csr_rd_digest(digest);
-    // Clear the wipe_secret flag because the exp digest val in scb will be updated.
-    clear_wipe_secret();
   endtask : rd_digest
 
   virtual function clear_wipe_secret();
