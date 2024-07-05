@@ -31,8 +31,13 @@ enum {
   kSoftwareBarrierTimeoutUsec = 1000000,
 };
 
-// This location will be update from SV
-static volatile const uint8_t kSoftwareBarrier = 0;
+// This variable will be updated by the DV environment.
+OT_SECTION(".rodata")
+static volatile const uint8_t kSoftwareBarrierDv = 0;
+
+// This variable will be updated by the test host.
+OT_SECTION(".data")
+static volatile const uint8_t kSoftwareBarrierHost = 0;
 
 // Handle to the plic
 dif_rv_plic_t rv_plic;
@@ -88,11 +93,15 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
+  const volatile uint8_t *const software_barrier = (kDeviceType == kDeviceSimDV)
+                                                       ? &kSoftwareBarrierDv
+                                                       : &kSoftwareBarrierHost;
+
   switch (rstmgr_testutils_reason_get()) {
     case kDifRstmgrResetInfoPor:  // The first power-up.
       LOG_INFO("Software Setup.");
       // Wait for sequence to run its checks.
-      OTTF_WAIT_FOR(kSoftwareBarrier == 1, kSoftwareBarrierTimeoutUsec);
+      OTTF_WAIT_FOR(*software_barrier == 1, kSoftwareBarrierTimeoutUsec);
 
       // Enable all the AON interrupts used in this test.
       rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
@@ -122,7 +131,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
 
       // Wait for sequence to run its checks.
-      OTTF_WAIT_FOR(kSoftwareBarrier == 2, kSoftwareBarrierTimeoutUsec);
+      OTTF_WAIT_FOR(*software_barrier == 2, kSoftwareBarrierTimeoutUsec);
 
       // Put the device in a deep sleep.
       put_to_sleep(&pwrmgr, /*deep_sleep=*/true);
@@ -132,7 +141,7 @@ bool test_main(void) {
       LOG_INFO("Waking up from deep sleep.");
 
       // Wait for sequence to finish before returning.
-      OTTF_WAIT_FOR(kSoftwareBarrier == 3, kSoftwareBarrierTimeoutUsec);
+      OTTF_WAIT_FOR(*software_barrier == 3, kSoftwareBarrierTimeoutUsec);
       return true;
 
     default:

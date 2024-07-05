@@ -153,7 +153,7 @@ fn main() -> Result<()> {
 
     let elf_file = std::fs::read(&opts.firmware_elf).context("failed to read ELF")?;
     let object = object::File::parse(elf_file.as_ref()).context("failed to parse ELF")?;
-    let software_barrier_addr = test_utils::object::symbol_addr(&object, "kSoftwareBarrier")?;
+    let software_barrier_addr = test_utils::object::symbol_addr(&object, "kSoftwareBarrierHost")?;
 
     execute_test!(
         test_access_after_wakeup,
