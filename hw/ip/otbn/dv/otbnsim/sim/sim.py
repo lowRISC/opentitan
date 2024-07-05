@@ -428,7 +428,9 @@ class OTBNSim:
                 # Also, set wipe_cycles to an invalid value to make really sure
                 # we've left the wiping code.
                 self.wipe_cycles = -1
+
                 self.state.first_round_of_wipe = True
+                self.state.incomplete_wipe = False
                 self.state.set_fsm_state(next_state)
 
         return (None, self._on_stall(verbose, fetch_next=False))
