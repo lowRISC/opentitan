@@ -44,23 +44,6 @@ class kmac_common_vseq extends kmac_base_vseq;
     end
   endfunction
 
-  // cfg_shadowed register field err_process will clear shadow reg update error.
-  virtual task shadow_reg_wr(dv_base_reg    csr,
-                             uvm_reg_data_t wdata,
-                             bit            en_shadow_wr = 1,
-                             bit            predict = 1);
-    super.shadow_reg_wr(csr, wdata, en_shadow_wr, predict);
-    if (csr.get_name() == "cfg_shadowed") begin
-      // If `cfg_shadowed` register is written successfully, then check if update error status
-      // will be cleared by `KmacErrProcessed` field.
-      if (csr.is_staged() == 0 &&
-          csr.get_shadow_update_err() == 0 &&
-          csr.get_shadow_storage_err() == 0) begin
-        if (wdata[KmacErrProcessed]) clear_update_err_status();
-      end
-    end
-  endtask
-
   virtual task check_tl_intg_error_response();
     // For tl integrity fatal error, the kmac `cfg_regwen` register will be set to 0 internally to
     // lock all cfg related CSRs. Because it is a `RO` register, the logic below manually locks the
