@@ -250,12 +250,10 @@ class OTBNSim:
 
         changes = self._on_stall(verbose, fetch_next=False)
 
-        # Correctly handle an RMA request when when we're still waiting to
-        # start by jumping immediately to the LOCKED state
+        # Correctly handle an RMA request when we're still waiting to start by
+        # jumping immediately to the LOCKED state
         if self.state.rma_req == LcTx.ON:
-            self.state.set_fsm_state(FsmState.LOCKED)
-            self.state.ext_regs.write('STATUS',
-                                      Status.LOCKED, True, immediately=True)
+            self.lock_immediately()
 
         # Zero INSN_CNT the cycle after we are told to start
         if self.state.ext_regs.read('INSN_CNT', True) != 0:
@@ -463,6 +461,13 @@ class OTBNSim:
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 
+    def lock_immediately(self):
+        '''React to an event that should cause us to immediately jump to the
+        locked state.'''
+        self.state.set_fsm_state(FsmState.LOCKED)
+        self.state.ext_regs.write('STATUS',
+                                  Status.LOCKED, True, immediately=True)
+
     def set_rma_req(self, rma_req: int) -> None:
         '''Set the rma request pin state, based on a given integer input.
 
@@ -472,3 +477,39 @@ class OTBNSim:
         self.state.rma_req = read_lc_tx_t(rma_req)
         # TODO: Remove this debug print
         print(f'set_rma_req {self.state.rma_req!r}', file=sys.stderr)
+
+    def urnd_completed(self) -> None:
+        '''An outstanding URND request has just completed.
+
+        Pass the data to self.state (to tell it the data is ready). But also
+        check that we are in a state where we expect to have made a URND
+        request that can complete. If not, we should immediately jump to the
+        locked state.
+        '''
+        self.state.urnd_completed()
+        # There should only be a URND response if one of the following is true:
+        #
+        #  1. We're in IDLE, so are waiting for an initial secure wipe seed.
+        #
+        #  2. We're in PRE_EXEC, so are waiting for a seed for the urnd
+        #     register itself.
+        #
+        #  3. We've finished the first round of a secure wipe and are waiting
+        #     for the seed to run the second round.
+        #
+        # If we get a response at another time, we should treat it as
+        # "unsolicited" and lock immediately.
+        #
+        # To distinguish (3) from "a URND ack appeared when we were in the
+        # middle of the actual wipe operation", we can check the wipe_cycles
+        # counter. This will be zero when the first round wipe operation is
+        # done and we are waiting for the second round seed.
+
+        cur_state = self.state.get_fsm_state()
+        ack_allowed = (cur_state == FsmState.IDLE or
+                       cur_state == FsmState.PRE_EXEC or
+                       (cur_state in [FsmState.WIPING_GOOD,
+                                      FsmState.WIPING_BAD] and
+                        self.state.wipe_cycles == 0))
+        if not ack_allowed:
+            self.lock_immediately()
