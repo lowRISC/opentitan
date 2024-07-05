@@ -184,8 +184,8 @@ Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         | No explicit assumptions
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | In progress | Toggle coverage waived/refines added for ExtHT interface (Issue #16276)
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | In progress |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Toggle coverage waived/refines added for ExtHT interface (Issue #16276)
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         | SecCM Assertions not covered for V2
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | SHA3/KMAC
@@ -221,8 +221,8 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | In progress |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | In progress |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
