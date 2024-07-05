@@ -7,14 +7,30 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
+  jtag_dmi_reg_block jtag_dmi_ral;
+
   // Mapped to plusarg to indicate that the test is run with a production ROM
   // image.
   bit rom_prod_mode = 1'b0;
+
+  virtual function void set_handles();
+    super.set_handles();
+    jtag_dmi_ral = cfg.jtag_dmi_ral;
+  endfunction
 
   virtual task pre_start();
     void'($value$plusargs("rom_prod_mode=%0d", rom_prod_mode));
     cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
+  endtask
+
+  virtual task apply_reset(string kind = "HARD");
+    fork
+      if (kind inside {"HARD", "TRST"}) begin
+        jtag_dmi_ral.reset("HARD");
+      end
+      super.apply_reset(kind);
+    join
   endtask
 
   // reset jtag interface
@@ -40,12 +56,24 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "Waiting for extclk transition", UVM_LOW)
     `DV_SPINWAIT(
       while (!ack) begin
+        // Wait for SBA to be non-busy before attempting to read (otherwise we'll get and have to
+        // handle an `sbbusyerror`).
+        bit busy = 1'b1;
+        `DV_SPINWAIT(
+          while (busy) begin
+            uvm_reg_data_t sbcs_val;
+            csr_rd(.ptr(jtag_dmi_ral.sbcs), .value(sbcs_val));
+            busy = dv_base_reg_pkg::get_field_val(jtag_dmi_ral.sbcs.sbbusy, sbcs_val);
+            `uvm_info(`gfn, $sformatf("busy = %0b", busy), UVM_HIGH)
+          end,
+          "Timed out waiting for SBA to be non-busy")
         jtag_riscv_agent_pkg::jtag_read_csr(base_addr + ral.clkmgr_aon.extclk_status.get_offset(),
                                             p_sequencer.jtag_sequencer_h, status);
 
         ack = dv_base_reg_pkg::get_field_val(
             ral.clkmgr_aon.extclk_status.ack, status
         ) == prim_mubi_pkg::MuBi4True;
+        `uvm_info(`gfn, $sformatf("ack = %0b", ack), UVM_HIGH)
       end,
       "Timed out waiting for clkmgr to confirm extclk enablement")
   endtask
