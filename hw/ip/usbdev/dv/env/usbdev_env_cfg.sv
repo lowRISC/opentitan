@@ -50,6 +50,11 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
   // ext component cfgs
   rand usb20_agent_cfg m_usb20_agent_cfg;
 
+  // Enable checking of reads from `configin_[x]` registers?
+  bit en_scb_rdchk_configin = 1'b1;
+  // Enable checking of reads from `usbstat.link_state` register field?
+  bit en_scb_rdchk_linkstate = 1'b1;
+
   `uvm_object_utils_begin(usbdev_env_cfg)
     `uvm_field_object(m_usb20_agent_cfg,  UVM_DEFAULT)
     `uvm_field_int   (usb_clk_freq_khz,   UVM_DEFAULT)

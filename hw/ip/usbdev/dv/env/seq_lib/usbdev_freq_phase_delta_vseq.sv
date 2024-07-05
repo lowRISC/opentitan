@@ -32,7 +32,7 @@ class usbdev_freq_phase_delta_vseq extends usbdev_stream_len_max_vseq;
   rand uint num_frames;
   constraint num_frames_c {
     num_frames inside {[80:120]};
-  };
+  }
 
   // Target clock frequency of host.
   rand uint host_target_freq_khz;
@@ -40,7 +40,7 @@ class usbdev_freq_phase_delta_vseq extends usbdev_stream_len_max_vseq;
     // Maximum frequency extremes, since the host is using the same oversampling scheme as the DUT.
     // See USB 2.0 Table 7-9.
     host_target_freq_khz >= USB_CLK_FREQ_MIN_KHZ && host_target_freq_khz <= USB_CLK_FREQ_MAX_KHZ;
-  };
+  }
 
   // Configured initial frequency deltas from 48Mhz, given in Hz.
   int host_freq_delta;

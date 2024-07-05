@@ -455,13 +455,13 @@ endtask
     // somehow got lost.
     if (ack) begin
       case (reply.m_pid_type)
-        PidTypeData0:
-        PidTypeData1:
+        PidTypeData0, PidTypeData1:
           // ACKnowledge successful reception of the IN DATA packet.
           send_handshake(PidTypeAck);
         default: begin
           // We leave the caller to deal appropriately with any other response;
           // could be a time out (invalid device/endpoint), a NAK or a STALL, for example.
+
         end
       endcase
     end
@@ -703,12 +703,16 @@ endtask
     data_pid = ($urandom & 1) ? PidTypeData1 : PidTypeData0;
     // Corrupt the selected PID(s); inverting a single bit within the PID ensures that the upper
     // and lower nibbles are no longer complementary and thus the PID is invalid.
+    //
+    // Note: we choose to corrupt the upper half of the PID because otherwise the packet contain
+    // appear to change type  (eg. Token packet -> Data Packet) causing havoc and making the DUT
+    // response difficult to predict, eg. CRC16 errors may or may not be raised.
     if (corrupt_token_pid) begin
-      int unsigned b = $urandom_range(0, 7);
+      int unsigned b = $urandom_range(4, 7);
       setup_out_pid[b] ^= 1'b1;
     end
     if (corrupt_data_pid) begin
-      int unsigned b = $urandom_range(0, 7);
+      int unsigned b = $urandom_range(4, 7);
       data_pid[b] ^= 1'b1;
     end
     `uvm_info(`gfn, $sformatf("Generating bad PIDs decided on token 0x%0x data 0x%0x (setup %0d)",
@@ -942,6 +946,9 @@ endtask
   virtual task usbdev_connect();
     ral.usbctrl.enable.set(1'b1);
     csr_update(ral.usbctrl);
+    // Ensure that the pullup takes effect, and leave the USB undriven as Idle for a while before
+    // commencing any signaling.
+    cfg.host_clk_rst_vif.wait_clks(16);
   endtask
 
   // Disconnect from the USB.
