@@ -162,6 +162,12 @@ class OTBNState:
         # otbn_start_stop_control.sv, which skips a round of secure wiping
         self.has_state_to_wipe = False
 
+        # This flag gets set as we start a secure wipe, then gets cleared again
+        # once the wipe completes. Tracking this allows us to distinguish
+        # between "a lock happened when I should have been wiping" and "I
+        # finished wiping and am now locked".
+        self.incomplete_wipe = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -409,6 +415,7 @@ class OTBNState:
                 # Switch to a 'wiping' state
                 self.set_fsm_state(FsmState.WIPING_BAD if should_lock
                                    else FsmState.WIPING_GOOD)
+                self.incomplete_wipe = True
             elif self._fsm_state in [FsmState.WIPING_BAD,
                                      FsmState.WIPING_GOOD]:
                 assert should_lock
@@ -433,6 +440,7 @@ class OTBNState:
     def set_fsm_state(self, new_state: FsmState) -> None:
         if new_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
             self.wipe_cycles = _WIPE_CYCLES
+            self.incomplete_wipe = True
         self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
