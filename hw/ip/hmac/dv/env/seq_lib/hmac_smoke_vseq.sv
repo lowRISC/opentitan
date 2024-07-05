@@ -91,8 +91,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
                 .key_length(key_length), .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
-      // always start off the transaction by reading previous digest to clear
-      // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
+      // always start off the transaction by first clearing cfg.wipe_secret_triggered flag
+      // and update the exp digest val in scb with last digest
+      clear_wipe_secret();
       rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeKey) begin
@@ -105,6 +106,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       // write key
       wr_key(key);
 
+      // clear the flag after writing key
+      clear_wipe_secret();
+
       // randomly read previous digest, if the previous digest is not corrupted by wipe_secret
       if (i != 1 && $urandom_range(0, 1)) begin
         rd_digest();
@@ -114,9 +118,14 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         `uvm_info(`gfn, $sformatf("wiping before start"), UVM_HIGH)
         wipe_secrets();
         // Here the wipe secret will only corrupt secret keys and current digests.
-        // If HMAC is not enabled, check if digest is corrupted.
+        // If HMAC is not enabled, once we trigger start, the corruption does not affect the digest
+        // that will get computed. If HMAC is enabled, the key got corrupted, so the digest
+        // that will get computed will be corrupted, so only call clear_wipe_secret() when !hmac_en.
         if (!hmac_en) begin
+          // read corrupted current digests then...
           rd_digest();
+          // clear the flag at/right before starting
+          clear_wipe_secret();
         end
       end
 
@@ -145,6 +154,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         join
 
         if (invalid_cfg) begin
+          rd_digest(); // capture the digest CSRs before moving on to next transaction
           continue; // discard current transaction
         end else if (!sha_en) begin
           if (re_enable_sha) begin // restream in the message
