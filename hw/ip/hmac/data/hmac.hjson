@@ -40,7 +40,7 @@
       version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D2S",
-      verification_stage: "V1",
+      verification_stage: "V2S",
       dif_stage:          "S0",
       notes:              "",
     }
