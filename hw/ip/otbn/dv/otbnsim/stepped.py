@@ -317,7 +317,7 @@ def on_edn_flush(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_edn_urnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('urnd_cdc_done', 0, args)
-    sim.state.urnd_completed()
+    sim.urnd_completed()
     return None
 
 
