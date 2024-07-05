@@ -33,10 +33,10 @@ class usb20_item extends uvm_sequence_item;
   `uvm_object_utils_begin(usb20_item)
   `uvm_object_utils_end
 
-  function new(string name = "", pkt_type_e pkt_type = PktTypeEvent);
+  function new(string name = "");
     super.new(name);
     m_ev_type  = EvPacket;
-    m_pkt_type = pkt_type;
+    m_pkt_type = PktTypeEvent;
     // ALmost all communication shall occur using Full Speed signaling.
     low_speed = 1'b0;
     // When passing requests to the driver the validity bits may be cleared to request fault
@@ -125,12 +125,12 @@ class token_pkt extends usb20_item;
     `uvm_field_int(crc5,                    UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new(string name = "", pid_type_e pid = PidTypeOutToken, bit [6:0] addr = 0,
-               bit [3:0] ep = 0);
-    super.new(name, PktTypeToken);
-    m_pid_type = pid;
-    address = addr;
-    endpoint = ep;
+  function new(string name = "");
+    super.new(name);
+    m_pkt_type = PktTypeToken;
+    m_pid_type = PidTypeOutToken;
+    address = 0;
+    endpoint = 0;
     crc5 = exp_crc();
   endfunction
 
@@ -161,10 +161,10 @@ class data_pkt extends usb20_item;
     `uvm_field_int(crc16,                   UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new(string name = "", byte unsigned d[] = {}, pid_type_e pid = PidTypeData0);
-    super.new(name, PktTypeToken);
-    m_pid_type = pid;
-    data = d;
+  function new(string name = "");
+    super.new(name);
+    m_pkt_type = PktTypeData;
+    m_pid_type = PidTypeData0;
     crc16 = exp_crc();
   endfunction
 
@@ -249,10 +249,11 @@ class sof_pkt extends usb20_item;
     `uvm_field_int(crc5,                    UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new(string name = "", bit [10:0] frame = 0);
-    super.new(name, PktTypeSoF);
+  function new(string name = "");
+    super.new(name);
+    m_pkt_type = PktTypeSoF;
     m_pid_type = PidTypeSofToken;
-    framenum = frame;
+    framenum = 0;
     crc5 = exp_crc();
   endfunction
 
@@ -278,8 +279,9 @@ class handshake_pkt extends usb20_item;
     `uvm_field_enum(pid_type_e, m_pid_type, UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new(string name = "", pid_type_e pid = PidTypeAck);
-    super.new(name, PktTypeToken);
-    m_pid_type = pid;
+  function new(string name = "");
+    super.new(name);
+    m_pkt_type = PktTypeHandshake;
+    m_pid_type = PidTypeAck;
   endfunction
 endclass

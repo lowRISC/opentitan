@@ -21,11 +21,11 @@ class usb20_monitor extends dv_base_monitor #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    m_usb20_item = usb20_item::type_id::create("m_usb20_item", this);
-    m_sof_pkt = sof_pkt::type_id::create("m_sof_pkt", this);
-    m_token_pkt = token_pkt::type_id::create("m_token_pkt", this);
-    m_data_pkt = data_pkt::type_id::create("m_data_pkt", this);
-    m_handshake_pkt = handshake_pkt::type_id::create("m_handshake_pkt", this);
+    m_usb20_item = usb20_item::type_id::create("m_usb20_item");
+    m_sof_pkt = sof_pkt::type_id::create("m_sof_pkt");
+    m_token_pkt = token_pkt::type_id::create("m_token_pkt");
+    m_data_pkt = data_pkt::type_id::create("m_data_pkt");
+    m_handshake_pkt = handshake_pkt::type_id::create("m_handshake_pkt");
     // Complete the event type for the packet objects because these never change.
     m_sof_pkt.m_ev_type = EvPacket;
     m_token_pkt.m_ev_type = EvPacket;
@@ -111,7 +111,9 @@ class usb20_monitor extends dv_base_monitor #(
 
   // Await a transition on the USB.
   task wait_transition();
-    if (cfg.tx_use_d_se0) begin
+    // Note: The tx_d_o and tx_se0_o signals are direct-drive DUT outputs; use these only when the
+    //       DUT is driving.
+    if (cfg.bif.usb_dp_en_o & cfg.tx_use_d_se0) begin
       // D/SE0 signaling is being used by the DUT.
       @(posedge cfg.bif.usb_tx_d_o   or negedge cfg.bif.usb_tx_d_o or
         posedge cfg.bif.usb_tx_se0_o or negedge cfg.bif.usb_tx_se0_o);
@@ -128,7 +130,10 @@ class usb20_monitor extends dv_base_monitor #(
     @(posedge cfg.bif.clk_i);
     @(posedge cfg.bif.clk_i);
     // Return the symbol currently on the bus, according to the pin configuration.
-    if (cfg.tx_use_d_se0) begin
+    //
+    // Note: The tx_d_o and tx_se0_o signals are direct-drive DUT outputs; use these only when the
+    //       DUT is driving.
+    if (cfg.bif.usb_dp_en_o & cfg.tx_use_d_se0) begin
       // SE0 takes precedence over the data line.
       sym = cfg.bif.usb_tx_se0_o ? USB20Sym_SE0 : // SE0 unaffected by pin flipping.
           // Pin flipping does affect D/SE0 output too; the sense of 'd' is inverted.
@@ -232,7 +237,7 @@ class usb20_monitor extends dv_base_monitor #(
       eop_bits++;
       collect_symbol(sym);
     end
-    valid_eop = (eop_bits == 2);
+    valid_eop = cfg.single_bit_SE0 ? (eop_bits >= 1) : (eop_bits == 2);
 
     `uvm_info(`gfn, $sformatf("Complete monitored packet = %p ", packet), UVM_MEDIUM)
 
@@ -330,10 +335,6 @@ class usb20_monitor extends dv_base_monitor #(
 //------------------------------------------Data Packet-------------------------------------------//
   function void data_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
                             ref bit destuffed_packet[$]);
-    bit data[];
-    bit [15:0] data_crc16;
-    byte unsigned byte_data[];
-
     // Converting complete packet into transaction level (field wise)
     // Data_PID
     m_data_pkt.m_pid_type = pid;
@@ -341,25 +342,17 @@ class usb20_monitor extends dv_base_monitor #(
     m_data_pkt.valid_eop = valid_eop;
     m_data_pkt.valid_stuffing = valid_stuffing;
     if (destuffed_packet.size() >= 32 && !(destuffed_packet.size() & 7)) begin
-      // Data_in_bits
-      for (int i = 0 ; i < destuffed_packet.size() - 32; i++) begin
-        data = new[data.size() + 1](data);
-        data[i] = destuffed_packet[i + 16];
-      end
-      data = {<<8{data}};
-      data = {<<{data}};
-      // Bits_to_byte conversion of data
-      byte_data = {>>byte{data}};
-      m_data_pkt.data = byte_data;
+      // Collect the data bytes, converting from LSB first to an array of bytes.
+      int unsigned len_bits = destuffed_packet.size() - 32;
+      byte unsigned data[] = new [len_bits >> 3];
+      data = {<<{destuffed_packet[16:15+len_bits]}}; // Bit-reverse the entire data field.
+      m_data_pkt.data = {<<8{data}}; // Reverse the order of the bytes.
       // Collect the actual CRC16.
-      for (int i= 0; i < 16; i = i+1) begin
-        data_crc16[i] = destuffed_packet[i + 16 + data.size()];
-      end
-      m_data_pkt.crc16 = data_crc16;
+      m_data_pkt.crc16 = {<<{destuffed_packet[16+len_bits:31+len_bits]}};
       if (!m_data_pkt.valid_crc()) begin
         // Informational report; the scoreboard may check this using `valid_crc().`
         `uvm_info(`gfn, $sformatf("Detected DATA packet CRC16 mismatch (0x%0x, expected 0x%0x)",
-                                  data_crc16, m_data_pkt.exp_crc()), UVM_MEDIUM)
+                                  m_data_pkt.crc16, m_data_pkt.exp_crc()), UVM_MEDIUM)
       end
       m_data_pkt.valid_length = 1;
     end else m_data_pkt.valid_length = 0;
