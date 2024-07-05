@@ -7,6 +7,9 @@ class usb20_item extends uvm_sequence_item;
   ev_type_e  m_ev_type;
   // in microseconds, 0 = default (minimum specification-compliant delay).
   int unsigned m_ev_duration_usecs;
+  // Has this bus event completed? Some events such as Bus Reset must be reported as soon as they
+  // are detected, but their completion is also significant and thus a follow up item is required.
+  bit m_ev_completed;
 
   pid_type_e m_pid_type;
   pkt_type_e m_pkt_type;
@@ -36,6 +39,7 @@ class usb20_item extends uvm_sequence_item;
   function new(string name = "");
     super.new(name);
     m_ev_type  = EvPacket;
+    m_ev_completed = 1'b1;
     m_pkt_type = PktTypeEvent;
     // ALmost all communication shall occur using Full Speed signaling.
     low_speed = 1'b0;
@@ -59,6 +63,7 @@ class usb20_item extends uvm_sequence_item;
     super.do_copy(rhs);
     m_ev_type           = rhs_.m_ev_type;
     m_ev_duration_usecs = rhs_.m_ev_duration_usecs;
+    m_ev_completed      = rhs_.m_ev_completed;
     m_pid_type          = rhs_.m_pid_type;
     m_pkt_type          = rhs_.m_pkt_type;
     m_usb_transfer      = rhs_.m_usb_transfer;

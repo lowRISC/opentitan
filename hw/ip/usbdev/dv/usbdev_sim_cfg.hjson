@@ -97,10 +97,16 @@
     {
       name: usbdev_device_timeout
       uvm_test_seq: usbdev_device_timeout_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake.
+      run_opts: ["+en_scb_rdchk_configin=0"]
     }
     {
       name: usbdev_timeout_missing_host_handshake
       uvm_test_seq: usbdev_device_timeout_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake.
+      run_opts: ["+en_scb_rdchk_configin=0"]
     }
     {
       name: usbdev_disable_endpoint
@@ -208,6 +214,9 @@
     {
       name: usbdev_in_iso
       uvm_test_seq: usbdev_in_iso_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake.
+      run_opts: ["+en_scb_rdchk_configin=0"]
     }
     {
       name: usbdev_in_stall
@@ -220,6 +229,9 @@
     {
       name: usbdev_iso_retraction
       uvm_test_seq: usbdev_iso_retraction_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake.
+      run_opts: ["+en_scb_rdchk_configin=0"]
     }
     {
       name: usbdev_link_in_err
@@ -370,7 +382,10 @@
     {
       name: usbdev_rand_bus_disconnects
       uvm_test_seq: usbdev_bus_rand_vseq
-      run_opts: ["+do_vbus_disconnects=1"]
+      // Model cannot be used to predict transitional LinkState reliably because
+      // of CDC and filtering propagation delays and asynchronous process reading
+      // `usbstat` register.
+      run_opts: ["+do_vbus_disconnects=1","+en_scb_rdchk_linkstate=0"]
       // Long simulation times
       reseed: 10
     }
