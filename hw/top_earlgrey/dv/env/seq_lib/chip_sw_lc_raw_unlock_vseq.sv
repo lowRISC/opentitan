@@ -38,14 +38,16 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
                                          p_sequencer.jtag_sequencer_h, extcl_en);
 
     `uvm_info(`gfn, "Waiting for extclk transition", UVM_LOW)
-    while (!ack) begin
-      jtag_riscv_agent_pkg::jtag_read_csr(base_addr + ral.clkmgr_aon.extclk_status.get_offset(),
-                                          p_sequencer.jtag_sequencer_h, status);
+    `DV_SPINWAIT(
+      while (!ack) begin
+        jtag_riscv_agent_pkg::jtag_read_csr(base_addr + ral.clkmgr_aon.extclk_status.get_offset(),
+                                            p_sequencer.jtag_sequencer_h, status);
 
-      ack = dv_base_reg_pkg::get_field_val(
-          ral.clkmgr_aon.extclk_status.ack, status
-      ) == prim_mubi_pkg::MuBi4True;
-    end
+        ack = dv_base_reg_pkg::get_field_val(
+            ral.clkmgr_aon.extclk_status.ack, status
+        ) == prim_mubi_pkg::MuBi4True;
+      end,
+      "Timed out waiting for clkmgr to confirm extclk enablement")
   endtask
 
   virtual task body();
