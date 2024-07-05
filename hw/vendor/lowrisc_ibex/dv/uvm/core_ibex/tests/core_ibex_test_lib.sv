@@ -199,6 +199,195 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
 
 endclass
 
+class core_ibex_rf_ctrl_intg_test extends core_ibex_base_test;
+  `uvm_component_utils(core_ibex_rf_ctrl_intg_test)
+  `uvm_component_new
+
+  uvm_report_server rs;
+
+  virtual task send_stimulus();
+    int          rnd_delay;
+    int unsigned bit_idx;
+    logic [31:0] orig_val, glitch_val;
+    logic        alert_major_internal;
+    string       glitch_path, alert_major_internal_path;
+    string       ctrl_signals[];
+    int unsigned ctrl_signal_idx;
+    string       top_path = "core_ibex_tb_top.dut.u_ibex_top";
+    string       ibex_rf_path = {top_path, ".gen_regfile_ff.register_file_i"};
+
+    ctrl_signals = {
+      "we_a_dec",
+      "gen_rdata_mux_check.raddr_onehot_a",
+      "gen_rdata_mux_check.raddr_onehot_b"
+    };
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ctrl_signal_idx, ctrl_signal_idx < ctrl_signals.size();)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rnd_delay, rnd_delay > 1000; rnd_delay < 10_000;)
+
+    glitch_path = $sformatf("%s.%s", ibex_rf_path, ctrl_signals[ctrl_signal_idx]);
+
+    vseq.start(env.vseqr);
+    clk_vif.wait_n_clks(rnd_delay);
+
+    `uvm_info(`gfn, $sformatf("Reading value of %s", glitch_path), UVM_LOW)
+    `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_val));
+    `uvm_info(`gfn, $sformatf("Read %x", orig_val), UVM_LOW)
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_idx, bit_idx < 32;)
+
+    glitch_val = orig_val;
+    glitch_val[bit_idx] = ~glitch_val[bit_idx];
+
+    // Disable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
+    // Disable one-hot check assertions for RF muxes
+    `DV_ASSERT_CTRL_REQ("tb_rf_rd_mux_a_onehot", 1'b0)
+    `DV_ASSERT_CTRL_REQ("tb_rf_rd_mux_b_onehot", 1'b0)
+
+    `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x", glitch_path, glitch_val), UVM_LOW)
+    `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitch_val));
+
+    // Leave glitch applied for one clock cycle.
+    clk_vif.wait_n_clks(1);
+
+    // Check that the alert matches our expectation.
+    alert_major_internal_path = $sformatf("%s.alert_major_internal_o", top_path);
+    `DV_CHECK_FATAL(uvm_hdl_read(alert_major_internal_path, alert_major_internal))
+    `DV_CHECK_FATAL(alert_major_internal, "Major alert did not fire!")
+
+    // Release glitch.
+    `DV_CHECK_FATAL(uvm_hdl_release(glitch_path))
+    `uvm_info(`gfn, $sformatf("Releasing force of %s", glitch_path), UVM_LOW)
+
+    // Re-enable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b1)
+
+    // Complete the test at this point because cosimulation does not model faults so will cause
+    // a mis-match and a test failure.
+    rs = uvm_report_server::get_server();
+    rs.report_summarize();
+    $finish();
+  endtask
+endclass
+
+class core_ibex_ram_intg_test extends core_ibex_base_test;
+  `uvm_component_utils(core_ibex_ram_intg_test)
+  `uvm_component_new
+
+  uvm_report_server rs;
+
+  virtual task send_stimulus();
+    int          rnd_delay;
+    int unsigned bit_idx;
+    logic [31:0] orig_val, glitch_val;
+    logic        alert_major_internal;
+    string       glitch_path, alert_major_internal_path;
+    string       glitch_paths[];
+    string       signals[];
+    string       scr_signals[];
+    int unsigned scr_signals_idx;
+    string       adv_signals[];
+    int unsigned adv_signals_idx;
+    string       ram_path;
+    int unsigned bank_idx, ram_idx, glitch_idx;
+    string       top_path = "core_ibex_tb_top.dut.u_ibex_top";
+    string       bank_paths[];
+
+    // Hard coded paths for the data and tag bank.
+    bank_paths = {
+      "gen_rams.gen_rams_inner[0].gen_scramble_rams.tag_bank",
+      "gen_rams.gen_rams_inner[1].gen_scramble_rams.tag_bank",
+      "gen_rams.gen_rams_inner[0].gen_scramble_rams.data_bank",
+      "gen_rams.gen_rams_inner[1].gen_scramble_rams.data_bank"
+    };
+
+    // All banks contain a single prim_ram_1p_adv instance.
+    ram_path = "u_prim_ram_1p_adv";
+
+    scr_signals = {
+      "write_en_d",
+      "write_en_q",
+      "addr_collision_d",
+      "addr_collision_q",
+      "write_scr_pending_d",
+      "write_pending_q",
+      "rvalid_q",
+      "read_en_buf"
+    };
+
+    adv_signals = {
+      "req_q",
+      "req_d",
+      "write_q",
+      "write_d",
+      "rvalid_q",
+      "rvalid_d",
+      "rvalid_sram_q",
+      "rvalid_sram_d"
+    };
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(scr_signals_idx, scr_signals_idx < scr_signals.size();)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(adv_signals_idx, adv_signals_idx < adv_signals.size();)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bank_idx, bank_idx < bank_paths.size();)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rnd_delay, rnd_delay > 1000; rnd_delay < 10_000;)
+
+    signals = {
+      scr_signals[scr_signals_idx],
+      adv_signals[adv_signals_idx]
+    };
+
+    // Assemble paths and do the final muxing of the target glitch path below.
+    glitch_paths = {
+      $sformatf("%s.%s.%s", top_path, bank_paths[bank_idx], signals[0]),
+      $sformatf("%s.%s.%s.%s", top_path, bank_paths[bank_idx], ram_path, signals[1])
+    };
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glitch_idx, glitch_idx < glitch_paths.size();)
+
+    glitch_path = glitch_paths[glitch_idx];
+
+    vseq.start(env.vseqr);
+    clk_vif.wait_n_clks(rnd_delay);
+
+    `uvm_info(`gfn, $sformatf("Reading value of %s", glitch_path), UVM_LOW)
+    `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_val));
+    `uvm_info(`gfn, $sformatf("Read %x", orig_val), UVM_LOW)
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_idx, bit_idx < 4;)
+
+    glitch_val = orig_val;
+    glitch_val ^= 1 << bit_idx;
+
+    // Disable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
+
+    `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x", glitch_path, glitch_val), UVM_LOW)
+    `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitch_val));
+
+    // Leave glitch applied for one clock cycle.
+    clk_vif.wait_n_clks(1);
+
+    // Check that the alert matches our expectation.
+    alert_major_internal_path = $sformatf("%s.alert_major_internal_o", top_path);
+    `DV_CHECK_FATAL(uvm_hdl_read(alert_major_internal_path, alert_major_internal))
+    `DV_CHECK_FATAL(alert_major_internal, "Major alert did not fire!")
+
+    // Release glitch.
+    `DV_CHECK_FATAL(uvm_hdl_release(glitch_path))
+    `uvm_info(`gfn, $sformatf("Releasing force of %s", glitch_path), UVM_LOW)
+
+    // Re-enable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b1)
+
+    // Complete the test at this point because cosimulation does not model faults so will cause
+    // a mis-match and a test failure.
+    rs = uvm_report_server::get_server();
+    rs.report_summarize();
+    $finish();
+  endtask
+endclass
+
 // Test that corrupts the instruction cache and checks that an appropriate alert occurs.
 class core_ibex_icache_intg_test extends core_ibex_base_test;
 

@@ -95,6 +95,8 @@ class SpikeCosim : public simif_t, public Cosim {
 
   void early_interrupt_handle();
 
+  void misaligned_pmp_fixup();
+
   unsigned int insn_cnt;
 
  public:
@@ -123,7 +125,7 @@ class SpikeCosim : public simif_t, public Cosim {
                            uint32_t dut_pc, bool suppress_reg_write);
   bool check_sync_trap(uint32_t write_reg, uint32_t pc,
                        uint32_t initial_spike_pc);
-  void set_mip(uint32_t mip) override;
+  void set_mip(uint32_t pre_mip, uint32_t post_mip) override;
   void set_nmi(bool nmi) override;
   void set_nmi_int(bool nmi_int) override;
   void set_debug_req(bool debug_req) override;

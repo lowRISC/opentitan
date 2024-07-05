@@ -12,7 +12,8 @@
 
 import "DPI-C" function int riscv_cosim_step(chandle cosim_handle, bit [4:0] write_reg,
   bit [31:0] write_reg_data, bit [31:0] pc, bit sync_trap, bit suppress_reg_write);
-import "DPI-C" function void riscv_cosim_set_mip(chandle cosim_handle, bit [31:0] mip);
+import "DPI-C" function void riscv_cosim_set_mip(chandle cosim_handle, bit [31:0] pre_mip,
+  bit [31:0] post_mip);
 import "DPI-C" function void riscv_cosim_set_nmi(chandle cosim_handle, bit nmi);
 import "DPI-C" function void riscv_cosim_set_nmi_int(chandle cosim_handle, bit nmi_int);
 import "DPI-C" function void riscv_cosim_set_debug_req(chandle cosim_handle, bit debug_req);
@@ -22,7 +23,7 @@ import "DPI-C" function void riscv_cosim_set_csr(chandle cosim_handle, int csr_i
 import "DPI-C" function void riscv_cosim_set_ic_scr_key_valid(chandle cosim_handle, bit valid);
 import "DPI-C" function void riscv_cosim_notify_dside_access(chandle cosim_handle, bit store,
   bit [31:0] addr, bit [31:0] data, bit [3:0] be, bit error, bit misaligned_first,
-  bit misaligned_second);
+  bit misaligned_second, bit misaligned_first_saw_error, bit m_mode_access);
 import "DPI-C" function int riscv_cosim_set_iside_error(chandle cosim_handle, bit [31:0] addr);
 import "DPI-C" function int riscv_cosim_get_num_errors(chandle cosim_handle);
 import "DPI-C" function string riscv_cosim_get_error(chandle cosim_handle, int index);

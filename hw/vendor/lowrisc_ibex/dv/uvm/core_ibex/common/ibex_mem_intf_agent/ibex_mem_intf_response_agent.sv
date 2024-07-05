@@ -44,9 +44,12 @@ class ibex_mem_intf_response_agent extends uvm_agent;
     if(get_is_active() == UVM_ACTIVE) begin
       driver.seq_item_port.connect(sequencer.seq_item_export);
       monitor.addr_ph_port.connect(sequencer.addr_ph_port.analysis_export);
+      monitor.outstanding_accesses_port.connect(sequencer.outstanding_accesses_imp);
     end
     driver.cfg = cfg;
     sequencer.cfg = cfg;
+
+    sequencer.monitor_tick = monitor.monitor_tick;
   endfunction : connect_phase
 
   function void reset();

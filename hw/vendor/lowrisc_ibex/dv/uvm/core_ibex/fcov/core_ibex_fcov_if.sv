@@ -20,7 +20,15 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   input fcov_rf_ecc_err_a_id,
   input fcov_rf_ecc_err_b_id,
 
-  input ibex_mubi_t fetch_enable_i
+  input ibex_mubi_t fetch_enable_i,
+
+  input instr_req_o,
+  input instr_gnt_i,
+  input instr_rvalid_i,
+
+  input data_req_o,
+  input data_gnt_i,
+  input data_rvalid_i
 );
   `include "dv_fcov_macros.svh"
   import uvm_pkg::*;
@@ -390,6 +398,28 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   logic rf_we_glitch_err;
   logic lockstep_glitch_err;
 
+  logic imem_single_cycle_response, dmem_single_cycle_response;
+
+  mem_monitor_if iside_mem_monitor(
+    .clk_i,
+    .rst_ni,
+    .req_i(instr_req_o),
+    .gnt_i(instr_gnt_i),
+    .rvalid_i(instr_rvalid_i),
+    .outstanding_requests_o(),
+    .single_cycle_response_o(imem_single_cycle_response)
+  );
+
+  mem_monitor_if dside_mem_monitor(
+    .clk_i,
+    .rst_ni,
+    .req_i(data_req_o),
+    .gnt_i(data_gnt_i),
+    .rvalid_i(data_rvalid_i),
+    .outstanding_requests_o(),
+    .single_cycle_response_o(dmem_single_cycle_response)
+  );
+
   covergroup uarch_cg @(posedge clk_i);
     option.per_instance = 1;
     option.name = "uarch_cg";
@@ -613,6 +643,20 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     cp_misaligned_second_data_bus_err: coverpoint load_store_unit_i.data_bus_err_i iff
       (load_store_unit_i.fcov_mis_rvalid_2);
 
+    cp_imem_response_latency: coverpoint imem_single_cycle_response iff (instr_rvalid_i) {
+      bins single_cycle = {1'b1};
+      bins multi_cycle = {1'b0};
+    }
+
+    `DV_FCOV_EXPR_SEEN(imem_req_gnt_rvalid, instr_rvalid_i & instr_req_o & instr_gnt_i)
+
+    cp_dmem_response_latency: coverpoint dmem_single_cycle_response iff (data_rvalid_i) {
+      bins single_cycle = {1'b1};
+      bins multi_cycle = {1'b0};
+    }
+
+    `DV_FCOV_EXPR_SEEN(dmem_req_gnt_rvalid, data_rvalid_i & data_req_o & data_gnt_i)
+
     misaligned_data_bus_err_cross: cross cp_misaligned_first_data_bus_err,
                                          cp_misaligned_second_data_bus_err {
       // Cannot see both bus errors together as they're signalled at different states of the load
@@ -714,9 +758,12 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
          binsof(cp_stall_type_id) intersect {IdStallTypeLdHz});
 
       // Cannot have a memory stall when we see an LS exception unless it is a load or store
-      // instruction
+      // instruction or a fetch error (the raw instruction decode can still indicate a load or store
+      // which produces a stall, though won't cause any load or store to occur due to the fetch
+      // error).
       illegal_bins mem_stall_illegal =
-        (!binsof(cp_id_instr_category) intersect {InstrCategoryLoad, InstrCategoryStore} &&
+        (!binsof(cp_id_instr_category) intersect {InstrCategoryLoad, InstrCategoryStore,
+                                                  InstrCategoryFetchError} &&
          binsof(cp_stall_type_id) intersect {IdStallTypeMem}) with
         (cp_ls_pmp_exception == 1'b1 || cp_ls_error_exception == 1'b1);
 
@@ -765,4 +812,43 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   end
 
   `DV_FCOV_INSTANTIATE_CG(uarch_cg, en_uarch_cov)
+endinterface
+
+interface mem_monitor_if (
+  input clk_i,
+  input rst_ni,
+
+  input req_i,
+  input gnt_i,
+  input rvalid_i,
+
+  output int   outstanding_requests_o,
+  output logic single_cycle_response_o
+);
+
+  int outstanding_requests;
+  logic outstanding_requests_inc, outstanding_requests_dec;
+  logic no_outstanding_requests_last_cycle;
+
+  assign outstanding_requests_inc = req_i & gnt_i;
+  assign outstanding_requests_dec = rvalid_i;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      outstanding_requests               <= 0;
+      no_outstanding_requests_last_cycle <= 1'b0;
+    end else begin
+      if (outstanding_requests_inc && !outstanding_requests_dec) begin
+        outstanding_requests <= outstanding_requests + 1;
+      end else if (!outstanding_requests_inc && outstanding_requests_dec) begin
+        outstanding_requests <= outstanding_requests - 1;
+      end
+
+      no_outstanding_requests_last_cycle <= (outstanding_requests == 0) ||
+        ((outstanding_requests == 1) && outstanding_requests_dec);
+    end
+  end
+
+  assign outstanding_requests_o = outstanding_requests;
+  assign single_cycle_response_o = no_outstanding_requests_last_cycle & rvalid_i;
 endinterface
