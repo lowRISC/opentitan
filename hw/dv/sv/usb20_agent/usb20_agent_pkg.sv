@@ -24,11 +24,12 @@ package usb20_agent_pkg;
   //
   // Item Types
   typedef enum bit [2:0] {
-      // Packet objects.
+      // Packet items.
       PktTypeSoF,
       PktTypeToken,
       PktTypeData,
       PktTypeHandshake,
+      PktTypeSpecial,
       // Non-packet items.
       PktTypeEvent} pkt_type_e;
 
