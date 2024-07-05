@@ -112,11 +112,20 @@
     {
       name: fifo_empty_status_interrupt
       desc: '''Verify the FIFO empty status interrupt.
-
-               TODO(lowRISC/opentitan#21815) -> moved into M5
             '''
       stage: V2
-      tests: []
+      tests: ["hmac_smoke",
+              "hmac_test_sha256_vectors",
+              "hmac_test_sha384_vectors",
+              "hmac_test_sha512_vectors",
+              "hmac_test_hmac256_vectors",
+              "hmac_test_hmac384_vectors",
+              "hmac_test_hmac512_vectors",
+              "hmac_datapath_stress",
+              "hmac_back_pressure",
+              "hmac_long_msg",
+              "hmac_wipe_secret",
+             ]
     }
     {
       name: wide_digest_configurable_key_length
