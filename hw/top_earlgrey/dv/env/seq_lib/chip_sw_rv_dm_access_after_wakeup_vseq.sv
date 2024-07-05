@@ -50,7 +50,7 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
     // Allow the software to continue execution.
     software_barrier[0] = 1;
     `uvm_info(`gfn, "SoftwareBarrier = 1", UVM_LOW)
-    sw_symbol_backdoor_overwrite("kSoftwareBarrier", software_barrier);
+    sw_symbol_backdoor_overwrite("kSoftwareBarrierDv", software_barrier);
 
     // Wait for the software to fall asleep.
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Entering normal sleep.");,
@@ -78,7 +78,7 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
     // Allow the software to continue execution.
     software_barrier[0] = 2;
     `uvm_info(`gfn, "SoftwareBarrier = 2", UVM_LOW)
-    sw_symbol_backdoor_overwrite("kSoftwareBarrier", software_barrier);
+    sw_symbol_backdoor_overwrite("kSoftwareBarrierDv", software_barrier);
 
 
     // Wait for the software to fall asleep.
@@ -116,7 +116,7 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
     // Allow the software to continue execution.
     software_barrier[0] = 3;
     `uvm_info(`gfn, "SoftwareBarrier = 3", UVM_LOW)
-    sw_symbol_backdoor_overwrite("kSoftwareBarrier", software_barrier);
+    sw_symbol_backdoor_overwrite("kSoftwareBarrierDv", software_barrier);
 
   endtask : body
 
