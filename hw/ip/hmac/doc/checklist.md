@@ -182,15 +182,15 @@ Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
 Documentation | [DV_DOC_COMPLETED][]                    | Done        |
 Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | It would be best to add more DV assertions, OK to move it to M5
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | It would be best to add more DV assertions #23563
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
 Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        | Note: that 1 test marked as V3 is not passing
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Note: once PR #23116 will be merged to confirm the results
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | Note: once PR #23116 will be merged to confirm the results
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | See #23683
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
@@ -227,7 +227,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | N/A         |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        | See #23683
 Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived the design has only 1 standard countermeasure - bus integrity
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
