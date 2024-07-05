@@ -141,7 +141,8 @@ module ibex_core import ibex_pkg::*; #(
   output logic [ 3:0]                  rvfi_mem_wmask,
   output logic [31:0]                  rvfi_mem_rdata,
   output logic [31:0]                  rvfi_mem_wdata,
-  output logic [31:0]                  rvfi_ext_mip,
+  output logic [31:0]                  rvfi_ext_pre_mip,
+  output logic [31:0]                  rvfi_ext_post_mip,
   output logic                         rvfi_ext_nmi,
   output logic                         rvfi_ext_nmi_int,
   output logic                         rvfi_ext_debug_req,
@@ -1283,7 +1284,8 @@ module ibex_core import ibex_pkg::*; #(
 
   // RVFI extension for co-simulation support
   // debug_req and MIP captured at IF -> ID transition so one extra stage
-  ibex_pkg::irqs_t rvfi_ext_stage_mip              [RVFI_STAGES+1];
+  ibex_pkg::irqs_t rvfi_ext_stage_pre_mip          [RVFI_STAGES+1];
+  ibex_pkg::irqs_t rvfi_ext_stage_post_mip         [RVFI_STAGES];
   logic            rvfi_ext_stage_nmi              [RVFI_STAGES+1];
   logic            rvfi_ext_stage_nmi_int          [RVFI_STAGES+1];
   logic            rvfi_ext_stage_debug_req        [RVFI_STAGES+1];
@@ -1328,11 +1330,21 @@ module ibex_core import ibex_pkg::*; #(
   always_comb begin
     // Use always_comb instead of continuous assign so first assign can set 0 as default everywhere
     // that is overridden by more specific settings.
-    rvfi_ext_mip                                     = '0;
-    rvfi_ext_mip[CSR_MSIX_BIT]                       = rvfi_ext_stage_mip[RVFI_STAGES].irq_software;
-    rvfi_ext_mip[CSR_MTIX_BIT]                       = rvfi_ext_stage_mip[RVFI_STAGES].irq_timer;
-    rvfi_ext_mip[CSR_MEIX_BIT]                       = rvfi_ext_stage_mip[RVFI_STAGES].irq_external;
-    rvfi_ext_mip[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = rvfi_ext_stage_mip[RVFI_STAGES].irq_fast;
+    rvfi_ext_pre_mip               = '0;
+    rvfi_ext_pre_mip[CSR_MSIX_BIT] = rvfi_ext_stage_pre_mip[RVFI_STAGES].irq_software;
+    rvfi_ext_pre_mip[CSR_MTIX_BIT] = rvfi_ext_stage_pre_mip[RVFI_STAGES].irq_timer;
+    rvfi_ext_pre_mip[CSR_MEIX_BIT] = rvfi_ext_stage_pre_mip[RVFI_STAGES].irq_external;
+
+    rvfi_ext_pre_mip[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] =
+      rvfi_ext_stage_pre_mip[RVFI_STAGES].irq_fast;
+
+    rvfi_ext_post_mip               = '0;
+    rvfi_ext_post_mip[CSR_MSIX_BIT] = rvfi_ext_stage_post_mip[RVFI_STAGES-1].irq_software;
+    rvfi_ext_post_mip[CSR_MTIX_BIT] = rvfi_ext_stage_post_mip[RVFI_STAGES-1].irq_timer;
+    rvfi_ext_post_mip[CSR_MEIX_BIT] = rvfi_ext_stage_post_mip[RVFI_STAGES-1].irq_external;
+
+    rvfi_ext_post_mip[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] =
+      rvfi_ext_stage_post_mip[RVFI_STAGES-1].irq_fast;
   end
 
   assign rvfi_ext_nmi              = rvfi_ext_stage_nmi              [RVFI_STAGES];
@@ -1487,12 +1499,12 @@ module ibex_core import ibex_pkg::*; #(
   // the DV environment will see if a trap should have been taken but wasn't.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rvfi_ext_stage_mip[0]       <= '0;
+      rvfi_ext_stage_pre_mip[0]       <= '0;
       rvfi_ext_stage_nmi[0]       <= '0;
       rvfi_ext_stage_nmi_int[0]   <= '0;
       rvfi_ext_stage_debug_req[0] <= '0;
     end else if ((if_stage_i.instr_valid_id_d & if_stage_i.instr_new_id_d) | rvfi_irq_valid) begin
-      rvfi_ext_stage_mip[0]       <= instr_valid_id | ~captured_valid ? cs_registers_i.mip :
+      rvfi_ext_stage_pre_mip[0]   <= instr_valid_id | ~captured_valid ? cs_registers_i.mip :
                                                                         captured_mip;
       rvfi_ext_stage_nmi[0]       <= instr_valid_id | ~captured_valid ? irq_nm_i :
                                                                         captured_nmi;
@@ -1553,7 +1565,8 @@ module ibex_core import ibex_pkg::*; #(
         rvfi_stage_mem_rdata[i]            <= '0;
         rvfi_stage_mem_wdata[i]            <= '0;
         rvfi_stage_mem_addr[i]             <= '0;
-        rvfi_ext_stage_mip[i+1]            <= '0;
+        rvfi_ext_stage_pre_mip[i+1]        <= '0;
+        rvfi_ext_stage_post_mip[i]         <= '0;
         rvfi_ext_stage_nmi[i+1]            <= '0;
         rvfi_ext_stage_nmi_int[i+1]        <= '0;
         rvfi_ext_stage_debug_req[i+1]      <= '0;
@@ -1567,7 +1580,7 @@ module ibex_core import ibex_pkg::*; #(
 
         if (i == 0) begin
           if (rvfi_id_done) begin
-            rvfi_stage_halt[i]      <= '0;
+            rvfi_stage_halt[i]                 <= '0;
             rvfi_stage_trap[i]                 <= rvfi_trap_id;
             rvfi_stage_intr[i]                 <= rvfi_intr_d;
             rvfi_stage_order[i]                <= rvfi_stage_order_d;
@@ -1605,7 +1618,8 @@ module ibex_core import ibex_pkg::*; #(
           // providing information along with a retired instruction. Move these up the rvfi pipeline
           // for both cases.
           if (rvfi_id_done | rvfi_ext_stage_irq_valid[i]) begin
-            rvfi_ext_stage_mip[i+1]       <= rvfi_ext_stage_mip[i];
+            rvfi_ext_stage_pre_mip[i+1]   <= rvfi_ext_stage_pre_mip[i];
+            rvfi_ext_stage_post_mip[i]    <= cs_registers_i.mip;
             rvfi_ext_stage_nmi[i+1]       <= rvfi_ext_stage_nmi[i];
             rvfi_ext_stage_nmi_int[i+1]   <= rvfi_ext_stage_nmi_int[i];
             rvfi_ext_stage_debug_req[i+1] <= rvfi_ext_stage_debug_req[i];
@@ -1652,7 +1666,8 @@ module ibex_core import ibex_pkg::*; #(
           // providing information along with a retired instruction. Move these up the rvfi pipeline
           // for both cases.
           if (rvfi_wb_done | rvfi_ext_stage_irq_valid[i]) begin
-            rvfi_ext_stage_mip[i+1]       <= rvfi_ext_stage_mip[i];
+            rvfi_ext_stage_pre_mip[i+1]   <= rvfi_ext_stage_pre_mip[i];
+            rvfi_ext_stage_post_mip[i]    <= rvfi_ext_stage_post_mip[i-1];
             rvfi_ext_stage_nmi[i+1]       <= rvfi_ext_stage_nmi[i];
             rvfi_ext_stage_nmi_int[i+1]   <= rvfi_ext_stage_nmi_int[i];
             rvfi_ext_stage_debug_req[i+1] <= rvfi_ext_stage_debug_req[i];

@@ -31,6 +31,14 @@ class core_ibex_env_cfg extends uvm_object;
   // If '1', reaching the timeout in seconds fatally ends the test.
   // If '0', we end the test with a pass.
   bit                          is_timeout_s_fatal = 1;
+  // If '1' core_ibex_vseq will randomly choose to enable spurious responses in the data side memory
+  // agent. This will also disable assertions that check the memory interface protocol as spurious
+  // responses violate them.
+  bit                          enable_spurious_dside_responses = 1;
+
+  // If spurious responses are enabled what percentage of tests will enable them
+  int unsigned spurious_response_pct = 20;
+
 
   `uvm_object_utils_begin(core_ibex_env_cfg)
     `uvm_field_int(enable_double_fault_detector, UVM_DEFAULT)

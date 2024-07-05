@@ -375,6 +375,17 @@ The mapping between security countermeasures and coverpoints that demonstrate it
 | ICACHE.MEM.INTEGRITY           | ``cp_icache_ecc_err``                                 |
 +--------------------------------+-------------------------------------------------------+
 
+Memory Interface Behaviour
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Covering different scenarios around timing of memory requests and responses and
+related behaviour
+
+* ``cp_dmem_response_latency``/``cp_imem_response_latency`` - Latency of response from request for dmem and imem.
+  Separated into two bins ``single_cycle`` (immediate response after request) and ``multi_cycle`` (all other latencies).
+* ``dmem_req_gnt_valid``/``imem_req_gnt_rvalid`` - Request, grant and rvalid all seen in the same cycle for dmem and imem.
+  This means a response is seen the same cycle a new request is being granted.
+
+
 Miscellaneous
 ^^^^^^^^^^^^^
 Various points of interest do not fit into the categories above.

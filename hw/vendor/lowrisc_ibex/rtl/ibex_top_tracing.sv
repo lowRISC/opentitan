@@ -119,7 +119,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
   logic [ 3:0] rvfi_mem_wmask;
   logic [31:0] rvfi_mem_rdata;
   logic [31:0] rvfi_mem_wdata;
-  logic [31:0] rvfi_ext_mip;
+  logic [31:0] rvfi_ext_pre_mip;
+  logic [31:0] rvfi_ext_post_mip;
   logic        rvfi_ext_nmi;
   logic        rvfi_ext_nmi_int;
   logic        rvfi_ext_debug_req;
@@ -136,7 +137,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
   logic [31:0] unused_perf_regsh [10];
 
 
-  logic [31:0] unused_rvfi_ext_mip;
+  logic [31:0] unused_rvfi_ext_pre_mip;
+  logic [31:0] unused_rvfi_ext_post_mip;
   logic        unused_rvfi_ext_nmi;
   logic        unused_rvfi_ext_nmi_int;
   logic        unused_rvfi_ext_debug_req;
@@ -148,7 +150,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
 
   // Tracer doesn't use these signals, though other modules may probe down into tracer to observe
   // them.
-  assign unused_rvfi_ext_mip = rvfi_ext_mip;
+  assign unused_rvfi_ext_pre_mip = rvfi_ext_pre_mip;
+  assign unused_rvfi_ext_post_mip = rvfi_ext_post_mip;
   assign unused_rvfi_ext_nmi = rvfi_ext_nmi;
   assign unused_rvfi_ext_nmi_int = rvfi_ext_nmi_int;
   assign unused_rvfi_ext_debug_req = rvfi_ext_debug_req;
@@ -252,7 +255,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
-    .rvfi_ext_mip,
+    .rvfi_ext_pre_mip,
+    .rvfi_ext_post_mip,
     .rvfi_ext_nmi,
     .rvfi_ext_nmi_int,
     .rvfi_ext_debug_req,

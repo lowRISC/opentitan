@@ -157,10 +157,29 @@ module core_ibex_tb_top;
     .core_sleep_o           (dut_if.core_sleep          )
   );
 
+  `define IBEX_RF_PATH core_ibex_tb_top.dut.u_ibex_top.gen_regfile_ff.register_file_i
+
   // We should never see any alerts triggered in normal testing
   `ASSERT(NoAlertsTriggered,
     !dut_if.alert_minor && !dut_if.alert_major_internal && !dut_if.alert_major_bus, clk, !rst_n)
   `DV_ASSERT_CTRL("tb_no_alerts_triggered", core_ibex_tb_top.NoAlertsTriggered)
+  `DV_ASSERT_CTRL("tb_rf_rd_mux_a_onehot",
+    `IBEX_RF_PATH.gen_rdata_mux_check.u_rdata_a_mux.SelIsOnehot_A)
+  `DV_ASSERT_CTRL("tb_rf_rd_mux_b_onehot",
+    `IBEX_RF_PATH.gen_rdata_mux_check.u_rdata_b_mux.SelIsOnehot_A)
+
+  `DV_ASSERT_CTRL("tb_no_spurious_response",
+    core_ibex_tb_top.dut.u_ibex_top.u_ibex_core.NoMemResponseWithoutPendingAccess)
+  `DV_ASSERT_CTRL("tb_no_spurious_response",
+    core_ibex_tb_top.dut.u_ibex_top.MaxOutstandingDSideAccessesCorrect)
+  `DV_ASSERT_CTRL("tb_no_spurious_response",
+    core_ibex_tb_top.dut.u_ibex_top.PendingAccessTrackingCorrect)
+
+  if (SecureIbex) begin : g_lockstep_assert_ctrl
+    `define IBEX_LOCKSTEP_PATH core_ibex_tb_top.dut.u_ibex_top.gen_lockstep.u_ibex_lockstep
+    `DV_ASSERT_CTRL("tb_no_spurious_response",
+      `IBEX_LOCKSTEP_PATH.u_shadow_core.NoMemResponseWithoutPendingAccess)
+  end
 
   assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_we_glitch_err =
     dut.u_ibex_top.rf_alert_major_internal;
@@ -196,7 +215,8 @@ module core_ibex_tb_top;
   assign rvfi_if.mem_rmask            = dut.rvfi_mem_rmask;
   assign rvfi_if.mem_rdata            = dut.rvfi_mem_rdata;
   assign rvfi_if.mem_wdata            = dut.rvfi_mem_wdata;
-  assign rvfi_if.ext_mip              = dut.rvfi_ext_mip;
+  assign rvfi_if.ext_pre_mip          = dut.rvfi_ext_pre_mip;
+  assign rvfi_if.ext_post_mip         = dut.rvfi_ext_post_mip;
   assign rvfi_if.ext_nmi              = dut.rvfi_ext_nmi;
   assign rvfi_if.ext_nmi_int          = dut.rvfi_ext_nmi_int;
   assign rvfi_if.ext_debug_req        = dut.rvfi_ext_debug_req;
@@ -286,6 +306,13 @@ module core_ibex_tb_top;
   assign data_mem_vif.misaligned_second =
     dut.u_ibex_top.u_ibex_core.load_store_unit_i.addr_incr_req_o;
 
+  assign data_mem_vif.misaligned_first_saw_error =
+    dut.u_ibex_top.u_ibex_core.load_store_unit_i.addr_incr_req_o &
+    dut.u_ibex_top.u_ibex_core.load_store_unit_i.lsu_err_d;
+
+  assign data_mem_vif.m_mode_access =
+    dut.u_ibex_top.u_ibex_core.priv_mode_lsu == ibex_pkg::PRIV_LVL_M;
+
   initial begin
     // Drive the clock and reset lines. Reset everything and start the clock at the beginning of
     // time
@@ -350,5 +377,33 @@ module core_ibex_tb_top;
           u_prim_onehot_check_raddr_a.unused_assert_connected = 1;
     assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
           u_prim_onehot_check_raddr_b.unused_assert_connected = 1;
+  end
+
+  ibex_pkg::ctrl_fsm_e controller_state;
+  logic                controller_handle_irq;
+  ibex_pkg::irqs_t     ibex_irqs, last_ibex_irqs;
+
+  assign controller_state      = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ctrl_fsm_cs;
+  assign controller_handle_irq = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.handle_irq;
+  assign ibex_irqs             = dut.u_ibex_top.u_ibex_core.irqs;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      last_ibex_irqs <= '0;
+    end else begin
+      last_ibex_irqs <= ibex_irqs;
+    end
+  end
+
+  always_ff @(posedge clk) begin
+    if (controller_state == ibex_pkg::IRQ_TAKEN) begin
+      if (!controller_handle_irq) begin
+        $display("WARNING: Controller in IRQ_TAKEN but no IRQ to handle, returning to DECODE");
+        $display("IRQs last cycle: %x, IRQs this cycle: %x", last_ibex_irqs, ibex_irqs);
+      end else if (last_ibex_irqs != ibex_irqs) begin
+        $display("WARNING: Controller in IRQ_TAKEN and IRQs have just changed");
+        $display("IRQs last cycle: %x, IRQs this cycle: %x", last_ibex_irqs, ibex_irqs);
+      end
+    end
   end
 endmodule

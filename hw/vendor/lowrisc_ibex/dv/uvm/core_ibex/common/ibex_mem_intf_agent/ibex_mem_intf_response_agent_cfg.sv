@@ -39,19 +39,25 @@ class ibex_mem_intf_response_agent_cfg extends uvm_object;
   // CONTROL_KNOB : enable/disable to generation of bad integrity upon uninit accesses
   bit enable_bad_intg_on_uninit_access = 0;
 
+  int unsigned spurious_response_delay_min = 0;
+  int unsigned spurious_response_delay_max = 100;
+
   constraint zero_delays_c {
     zero_delays dist {1 :/ zero_delay_pct,
                       0 :/ 100 - zero_delay_pct};
   }
 
   `uvm_object_utils_begin(ibex_mem_intf_response_agent_cfg)
-    `uvm_field_int(fixed_data_write_response, UVM_DEFAULT)
-    `uvm_field_int(gnt_delay_min,             UVM_DEFAULT)
-    `uvm_field_int(gnt_delay_max,             UVM_DEFAULT)
-    `uvm_field_int(valid_delay_min,           UVM_DEFAULT)
-    `uvm_field_int(valid_delay_max,           UVM_DEFAULT)
-    `uvm_field_int(zero_delays,               UVM_DEFAULT)
-    `uvm_field_int(zero_delay_pct,            UVM_DEFAULT)
+    `uvm_field_int(fixed_data_write_response,   UVM_DEFAULT)
+    `uvm_field_int(gnt_delay_min,               UVM_DEFAULT)
+    `uvm_field_int(gnt_delay_max,               UVM_DEFAULT)
+    `uvm_field_int(valid_delay_min,             UVM_DEFAULT)
+    `uvm_field_int(valid_delay_max,             UVM_DEFAULT)
+    `uvm_field_int(zero_delays,                 UVM_DEFAULT)
+    `uvm_field_int(zero_delay_pct,              UVM_DEFAULT)
+    `uvm_field_int(spurious_response_delay_min, UVM_DEFAULT)
+    `uvm_field_int(spurious_response_delay_max, UVM_DEFAULT)
+
   `uvm_object_utils_end
 
   function new(string name = "");

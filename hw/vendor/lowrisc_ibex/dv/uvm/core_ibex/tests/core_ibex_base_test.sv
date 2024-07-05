@@ -90,6 +90,7 @@ class core_ibex_base_test extends uvm_test;
     bit [31:0] mhpm_counter_num;
     bit        secure_ibex;
     bit        icache;
+    bit        disable_spurious_dside_responses;
 
     super.build_phase(phase);
     $value$plusargs("timeout_in_cycles=%0d", timeout_in_cycles);
@@ -165,6 +166,16 @@ class core_ibex_base_test extends uvm_test;
 
     uvm_config_db#(core_ibex_env_cfg)::set(this, "*", "cfg", cfg);
     mem = mem_model_pkg::mem_model#()::type_id::create("mem");
+
+    disable_spurious_dside_responses = 0;
+    void'($value$plusargs("disable_spurious_dside_responses=%0d",
+      disable_spurious_dside_responses));
+
+    // Disable spurious reponses for non secure configs or when disabled through plusarg
+    if ((secure_ibex == 0) || disable_spurious_dside_responses) begin
+      cfg.enable_spurious_dside_responses = 0;
+    end
+
     // Create virtual sequence and assign memory handle
     vseq = core_ibex_vseq::type_id::create("vseq");
     vseq.mem = mem;

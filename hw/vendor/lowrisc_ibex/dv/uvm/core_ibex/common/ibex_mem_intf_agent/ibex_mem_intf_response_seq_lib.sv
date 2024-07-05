@@ -18,10 +18,19 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
   bit                    error_synch = 1'b1;
   bit                    is_dmem_seq = 1'b0;
   bit                    suppress_error_on_exc = 1'b0;
+  bit                    enable_spurious_response = 1'b0;
+
 
   `uvm_object_utils(ibex_mem_intf_response_seq)
   `uvm_declare_p_sequencer(ibex_mem_intf_response_sequencer)
   `uvm_object_new
+
+  rand int unsigned spurious_response_delay_cycles;
+
+  constraint spurious_response_delay_cycles_c {
+    spurious_response_delay_cycles inside {[p_sequencer.cfg.spurious_response_delay_min :
+                                            p_sequencer.cfg.spurious_response_delay_max]};
+  }
 
   virtual task body();
     virtual core_ibex_dut_probe_if ibex_dut_vif;
@@ -33,6 +42,9 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
 
     if (m_mem == null) `uvm_fatal(get_full_name(), "Cannot get memory model")
     `uvm_info(`gfn, $sformatf("is_dmem_seq: 0x%0x", is_dmem_seq), UVM_LOW)
+
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(spurious_response_delay_cycles)
+
     forever
     begin
       bit [ADDR_WIDTH-1:0] aligned_addr;
@@ -41,12 +53,48 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       bit [INTG_WIDTH-1:0] read_intg;
       bit                  data_was_uninitialized = 1'b0;
 
-      p_sequencer.addr_ph_port.get(item);
+      if (enable_spurious_response) begin
+        // When spurious responses are enabled we wake every monitor tick to decide whether to
+        // insert a spurious response.
+        while (1) begin
+          @p_sequencer.monitor_tick;
+
+          if (p_sequencer.addr_ph_port.try_get(item)) begin
+            // If we have a new request proceed as normal.
+            break;
+          end
+
+          if ((spurious_response_delay_cycles == 0)
+            && (p_sequencer.outstanding_accesses == 0)) begin
+
+            // If we've hit the time generate a new spurious responses and there's no outstanding
+            // responses (we must only generate a spurious response when the interface is idle)
+            // send one to the driver.
+            req = ibex_mem_intf_seq_item::type_id::create("req");
+
+            `DV_CHECK_RANDOMIZE_WITH_FATAL(req, rvalid_delay == 0;)
+
+            req.spurious_response = 1'b1;
+            {req.intg, req.data} = prim_secded_pkg::prim_secded_inv_39_32_enc(req.data);
+
+            `uvm_info(`gfn, $sformatf("Generated spurious response:\n%0s", req.sprint()), UVM_HIGH)
+            start_item(req);
+            finish_item(req);
+
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(spurious_response_delay_cycles)
+          end else if (spurious_response_delay_cycles > 0) begin
+            spurious_response_delay_cycles = spurious_response_delay_cycles - 1;
+          end
+        end
+      end else begin
+        // Without spurious responses just wait for the monitor to report a new request
+        p_sequencer.addr_ph_port.get(item);
+      end
+
       aligned_addr = {item.addr[DATA_WIDTH-1:2], 2'b0};
 
       req = ibex_mem_intf_seq_item::type_id::create("req");
       error_synch = 1'b0;
-
       if (suppress_error_on_exc &&
             (ibex_dut_vif.dut_cb.sync_exc_seen || ibex_dut_vif.dut_cb.irq_exc_seen)) begin
         enable_error = 1'b0;
@@ -75,6 +123,7 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       }) begin
         `uvm_fatal(`gfn, "Cannot randomize response request")
       end
+
       error_synch = 1'b1;
       enable_error = 1'b0; // Disable after single inserted error.
       aligned_addr = {req.addr[DATA_WIDTH-1:2], 2'b0};
