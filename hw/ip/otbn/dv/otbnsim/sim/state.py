@@ -98,7 +98,15 @@ class OTBNState:
 
         self._init_sec_wipe_state = InitSecWipeState.NOT_DONE
 
-        self.first_round_of_wipe = True
+        # Track how many rounds of secure wipe to do. This is normally 2, but
+        # we shorten things to a single round when we get an RMA req, which
+        # avoids needing to wait for URND data from an entropy complex that
+        # might not be available.
+        self.wipe_rounds_to_do = 2
+
+        # Track the number of rounds of secure wipe that have been done. This
+        # should never be more than wipe_rounds_to_do.
+        self.wipe_rounds_done = 0
 
         self.loop_stack = LoopStack()
 
@@ -161,12 +169,6 @@ class OTBNState:
         # time. It reflects the behaviour of wipe_after_urnd_refresh_q in
         # otbn_start_stop_control.sv, which skips a round of secure wiping
         self.has_state_to_wipe = False
-
-        # This flag gets set as we start a secure wipe, then gets cleared again
-        # once the wipe completes. Tracking this allows us to distinguish
-        # between "a lock happened when I should have been wiping" and "I
-        # finished wiping and am now locked".
-        self.incomplete_wipe = False
 
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
@@ -415,7 +417,7 @@ class OTBNState:
                 # Switch to a 'wiping' state
                 self.set_fsm_state(FsmState.WIPING_BAD if should_lock
                                    else FsmState.WIPING_GOOD)
-                self.incomplete_wipe = True
+                self.wipe_rounds_done = 0
             elif self._fsm_state in [FsmState.WIPING_BAD,
                                      FsmState.WIPING_GOOD]:
                 assert should_lock
@@ -438,9 +440,12 @@ class OTBNState:
         return self._fsm_state
 
     def set_fsm_state(self, new_state: FsmState) -> None:
-        if new_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+        # If we're switching to a wiping state, we consider this to be "the
+        # start of a wipe" and set the wipe_cycles counter to track how long
+        # the wiping operation itself will take.
+        wiping_next = new_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]
+        if wiping_next:
             self.wipe_cycles = _WIPE_CYCLES
-            self.incomplete_wipe = True
         self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
