@@ -65,6 +65,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit in_edn_fetch = 0;
 
   // CMD fields
+  bit [KmacCmdIdx:0] kmac_cmd;
   kmac_cmd_e unchecked_kmac_cmd = CmdNone;
   kmac_cmd_e checked_kmac_cmd = CmdNone;
 
@@ -75,8 +76,17 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit sha3_absorb;
   bit sha3_squeeze;
 
+  // FIFO status bits
+  bit cmd_process_triggered;
+  bit msgfifo_access;
+  bit fifo_empty_status;
+  bit fifo_full_status;
+  bit fifo_full_detected;
+  bit intr_fifo_empty_allowed;
+
   bit intr_kmac_done;
   bit intr_fifo_empty;
+  bit pre_intr_fifo_empty;
   bit intr_kmac_err;
 
   // Error tracking
@@ -168,6 +178,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         process_kmac_app_req_fifo();
         process_kmac_app_rsp_fifo();
         process_sideload_key();
+        manage_fifo_empty_intr();
       join_none
     end
   endtask
@@ -216,19 +227,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     forever begin
       wait(!cfg.under_reset);
       `DV_SPINWAIT_EXIT(
-          forever begin
-            @(posedge in_edn_fetch);
-            // Entropy interface is native 32 bits - prim_edn_req component internally
-            // does as many EDN fetches as necessary to fill up the required data bus size
-            // of the "host".
-            repeat (kmac_reg_pkg::NumSeedsEntropy) begin
-              `DV_SPINWAIT(edn_fifos[0].get(edn_item);, "Wait EDN request")
-            end
-            `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
-            set_entropy_fetch(0);
+        forever begin
+          @(posedge in_edn_fetch);
+          // Entropy interface is native 32 bits - prim_edn_req component internally
+          // does as many EDN fetches as necessary to fill up the required data bus size
+          // of the "host".
+          repeat (kmac_reg_pkg::NumSeedsEntropy) begin
+            `DV_SPINWAIT(edn_fifos[0].get(edn_item);, "Wait EDN request")
           end
-          ,
-          wait(cfg.under_reset);
+          `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
+          set_entropy_fetch(0);
+        end
+        ,
+        wait(cfg.under_reset);
       )
     end
   endtask
@@ -599,7 +610,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     string csr_name = "";
 
-    bit msgfifo_access;
     bit share0_access;
     bit share1_access;
 
@@ -612,6 +622,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
+
+    // Indicates that the msgfifo access is now over. Clear it at the beginning of this transaction
+    // as this flag is used somewhere else and needs to be actually raised for a non-null simulation
+    // time.
+    msgfifo_access = 0;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -757,7 +772,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         //
         // ICEBOX - handle error cases
         if (addr_phase_write) begin
-          bit [KmacCmdIdx:0] kmac_cmd = item.a_data[KmacCmdIdx:0];
+          kmac_cmd = item.a_data[KmacCmdIdx:0];
 
           // Handle hash_cnt clear conditions
           if (item.a_data[KmacHashCntClrIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
@@ -1093,8 +1108,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("msg: %0p", msg), UVM_HIGH)
         end
       end
-      // indicate that the msgfifo access is now over
-      msgfifo_access = 0;
     end
 
     ///////////////////////////////////////////////////
@@ -1179,6 +1192,109 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask : process_tl_access
 
+  // Triggers the predict_fifo_empty_intr task only when necessary: on particular events or at each
+  // clock cycles on particular occasions when signals need to be updated as accurately as possible
+  virtual task manage_fifo_empty_intr();
+    cmd_process_triggered = 0;
+
+    @(negedge cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      fork begin
+        fork
+          begin
+            // Trigger the task only when required to avoid to overload the simulation
+            forever @(msgfifo_access, in_kmac_app, sha3_absorb, kmac_cmd, sha3_idle) begin
+              // Loop also on each clock cycle when intr_fifo_empty_allowed or when msgfifo_access
+              // are high to avoid missing some FIFO status changes
+              do begin
+                // Do checks on the falling edge of the clock to ensure the DUT internal signals
+                // will be up to date
+                cfg.clk_rst_vif.wait_n_clks(1);
+                fork begin
+                  predict_fifo_empty_intr();
+                end join_none
+                // Ensure that intr_fifo_empty_allowed has been updated
+                cfg.clk_rst_vif.wait_clks(1);
+              end while (intr_fifo_empty_allowed || msgfifo_access);
+            end
+          end
+          begin
+            wait(cfg.under_reset);
+          end
+        join_any
+        disable fork;
+      end join
+    end
+  endtask : manage_fifo_empty_intr
+
+  // Reads FIFO empty/full status from the DUT registers to know the current level of the FIFOs as
+  // it has been decided to not predict this here.
+  // Then, it could be decided wether the FIFO empty interrupt could be raised. This should only be
+  // the case when the FIFO is actually empty, but also if all of the following conditions are met:
+  //   1- The KMAC block is not exercised by a hardware application interface.
+  //   2- The SHA3 block is in the Absorb state.
+  //   3- Software has not yet written the Process command to finish the absorption process.
+  //   4- The message FIFO must also have been full previously. Otherwise, the hardware empties
+  //      the FIFO faster than software can fill it and there is no point in interrupting the
+  //      software to inform it about the message FIFO being empty.
+  virtual task predict_fifo_empty_intr();
+    bit fifo_empty_status_neg;
+    bit fifo_empty_status_last = fifo_empty_status;
+
+    // Get FIFO empty/full status directly from the DUT as the FIFO level is not modeled
+    csr_rd(.ptr(ral.status.fifo_empty), .value(fifo_empty_status), .backdoor(1));
+    csr_rd(.ptr(ral.status.fifo_full), .value(fifo_full_status), .backdoor(1));
+
+    // Detect when FIFO is not empty anymore
+    fifo_empty_status_neg = ~fifo_empty_status & fifo_empty_status_last;
+
+    // Latch Command Process flag
+    if (!cmd_process_triggered && (kmac_cmd == CmdProcess)) begin
+      cmd_process_triggered = 1;
+    end else if (sha3_idle) begin
+      cmd_process_triggered = 0;
+    end
+
+    // Check whether FIFO full has been detected for the ongoing message
+    // This flag is raised when the FIFO full status is high and it's cleared when empty is
+    // reached or when the current message is done (idle)
+    if (fifo_full_status) begin
+      fifo_full_detected = 1;
+    end else if (sha3_idle || fifo_empty_status_neg) begin
+      fifo_full_detected = 0;
+    end
+
+    // Check if FIFO empty interrupt conditions are met
+    if (!in_kmac_app && sha3_absorb && !cmd_process_triggered && fifo_full_detected) begin
+      intr_fifo_empty_allowed = 1;
+    end else begin
+      intr_fifo_empty_allowed = 0;
+    end
+
+    if (intr_fifo_empty_allowed && fifo_empty_status) begin
+      pre_intr_fifo_empty = 1;
+    end else begin
+      pre_intr_fifo_empty = 0;
+    end
+
+    // Delay FIFO empty signal to be aligned with the DUT behavior
+    fork
+      begin
+        cfg.clk_rst_vif.wait_clks(1);
+        intr_fifo_empty = pre_intr_fifo_empty;
+      end
+    join_none
+
+    // Wait needed to avoid race condition for register access
+    wait(!ral.intr_state.is_busy());
+    // Update expected value
+    void'(ral.intr_state.fifo_empty.predict(.value(intr_fifo_empty), .kind(UVM_PREDICT_DIRECT)));
+    // Backdoor read the register and compare against mirrored value
+    csr_rd_check(.ptr(ral.intr_state.fifo_empty), .compare(1), .compare_vs_ral(1), .backdoor(1));
+  endtask : predict_fifo_empty_intr
+
+
   virtual function void predict_err(bit is_sha3_err = 0, bit is_kmac_err = 0);
     // set interrupt
     if (!intr_kmac_err) intr_kmac_err = 1;
@@ -1217,9 +1333,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     first_op_after_rst = 1;
 
     // status tracking bits
-    sha3_idle     = ral.status.sha3_idle.get_reset();
-    sha3_absorb   = ral.status.sha3_absorb.get_reset();
-    sha3_squeeze  = ral.status.sha3_squeeze.get_reset();
+    sha3_idle         = ral.status.sha3_idle.get_reset();
+    sha3_absorb       = ral.status.sha3_absorb.get_reset();
+    sha3_squeeze      = ral.status.sha3_squeeze.get_reset();
+    fifo_empty_status = ral.status.fifo_empty.get_reset();
+    fifo_full_status  = ral.status.fifo_full.get_reset();
+    intr_fifo_empty   = ral.intr_state.fifo_empty.get_reset();
   endfunction
 
   // This function should be called to reset internal state to prepare for a new hash operation
