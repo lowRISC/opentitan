@@ -126,7 +126,7 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
 
     `uvm_info(`gfn, "Execute code from GDB with `call` command", UVM_LOW)
     foreach (uart_msg_via_call[i]) begin
-      cfg.debugger.call(.symbol("uart_putchar"), .args({BUS_DW'(uart_msg_via_call[i])}));
+      cfg.debugger.call(.symbol("uart_write_imm"), .args({BUS_DW'(uart_msg_via_call[i]), 0}));
     end
 
     `uvm_info(`gfn, "Verify UART messages received over the TX port", UVM_LOW)
