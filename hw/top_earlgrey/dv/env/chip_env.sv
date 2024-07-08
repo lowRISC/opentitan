@@ -158,8 +158,8 @@ class chip_env extends cip_base_env #(
       // Set default monitor enable to zero for shared io agents.
       cfg.m_i2c_agent_cfgs[i].en_monitor = 1'b0;
 
-      m_i2c_agents[i].monitor.analysis_port.connect(
-          virtual_sequencer.i2c_rd_fifos[i].analysis_export);
+      m_i2c_agents[i].monitor.controller_mode_rd_item_port.connect(
+        virtual_sequencer.i2c_rd_fifos[i].analysis_export);
     end
 
     if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.is_active) begin
