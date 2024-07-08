@@ -1265,12 +1265,9 @@ static void max_power(void) {
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
   mmio_region_write32(uart_2.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
   mmio_region_write32(uart_3.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
-  // TODO(#) Re-enable I2C stimulus and checking in DV
-  if (kDeviceType != kDeviceSimDV) {
-    mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
-    mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
-    mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
-  }
+  mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+  mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+  mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
   // Issue OTBN start command.
   CHECK_STATUS_OK(otbn_testutils_rsa_modexp_f4_start(
@@ -1369,49 +1366,46 @@ static void max_power(void) {
     CHECK_ARRAYS_EQ(received_uart_data, kUartMessage, num_uart_rx_bytes);
   }
 
-  // TODO(#) Re-enable I2C stimulus and checking in DV
-  /* // Check I2C bits TXed were echoed back by the DV agent. (Only for DV.) */
-  /* if (kDeviceType == kDeviceSimDV) { */
-  /*   dif_i2c_level_t fmt_fifo_lvl, rx_fifo_lvl; */
+  // Check I2C bits TXed were echoed back by the DV agent. (Only for DV.)
+  if (kDeviceType == kDeviceSimDV) {
+    dif_i2c_level_t fmt_fifo_lvl, rx_fifo_lvl;
 
-  /*   // Make sure all TX FIFOs have been drained. */
-  /*   for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) { */
-  /*     do { */
-  /*       CHECK_DIF_OK(dif_i2c_get_fifo_levels( */
-  /*           i2c_handles[ii], &fmt_fifo_lvl, */
-  /*           /\*rx_fifo_lvl=*\/NULL, /\*tx_fifo_lvl=*\/NULL,
-   * /\*acq_fifo_lvl=*\/NULL)); */
-  /*     } while (fmt_fifo_lvl > 0); */
-  /*   }; */
+    // Make sure all TX FIFOs have been drained.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      do {
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(
+            i2c_handles[ii], &fmt_fifo_lvl,
+            /*rx_fifo_lvl=*/NULL, /*tx_fifo_lvl=*/NULL, /*acq_fifo_lvl=*/NULL));
+      } while (fmt_fifo_lvl > 0);
+    };
 
-  /*   // Read data from I2C RX FIFO. */
-  /*   static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX, */
-  /*                 "Length of i2c_handles must fit in uint8_t"); */
-  /*   for (uint8_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) { */
-  /*     CHECK_STATUS_OK( */
-  /*         i2c_testutils_issue_read(i2c_handles[ii], /\*addr=*\/ii + 1, */
-  /*                                  /\*byte_count=*\/I2C_PARAM_FIFO_DEPTH -
-   * 1)); */
-  /*   }; */
+    // Read data from I2C RX FIFO.
+    static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
+                  "Length of i2c_handles must fit in uint8_t");
+    for (uint8_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      CHECK_STATUS_OK(
+          i2c_testutils_issue_read(i2c_handles[ii], /*addr=*/ii + 1,
+                                   /*byte_count=*/I2C_PARAM_FIFO_DEPTH - 1));
+    };
 
-  /*   // Make sure all data has been read back. */
-  /*   for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) { */
-  /*     do { */
-  /*       CHECK_DIF_OK(dif_i2c_get_fifo_levels( */
-  /*           i2c_handles[ii], /\*fmt_fifo_lvl=*\/NULL, &rx_fifo_lvl, */
-  /*           /\*tx_fifo_lvl=*\/NULL, /\*acq_fifo_lvl=*\/NULL)); */
-  /*     } while (rx_fifo_lvl < I2C_PARAM_FIFO_DEPTH - 1); */
-  /*   }; */
+    // Make sure all data has been read back.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      do {
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(
+            i2c_handles[ii], /*fmt_fifo_lvl=*/NULL, &rx_fifo_lvl,
+            /*tx_fifo_lvl=*/NULL, /*acq_fifo_lvl=*/NULL));
+      } while (rx_fifo_lvl < I2C_PARAM_FIFO_DEPTH - 1);
+    };
 
-  /*   // Make sure read data is correct. */
-  /*   for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) { */
-  /*     for (size_t jj = 0; jj < I2C_PARAM_FIFO_DEPTH - 1; ++jj) { */
-  /*       uint8_t byte; */
-  /*       CHECK_DIF_OK(dif_i2c_read_byte(i2c_handles[ii], &byte)); */
-  /*       CHECK(kI2cMessage[jj] == byte); */
-  /*     }; */
-  /*   }; */
-  /* } */
+    // Make sure read data is correct.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      for (size_t jj = 0; jj < I2C_PARAM_FIFO_DEPTH - 1; ++jj) {
+        uint8_t byte;
+        CHECK_DIF_OK(dif_i2c_read_byte(i2c_handles[ii], &byte));
+        CHECK(kI2cMessage[jj] == byte);
+      };
+    };
+  }
 }
 
 static void max_power_task(void *task_parameters) {
