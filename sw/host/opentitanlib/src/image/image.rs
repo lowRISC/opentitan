@@ -11,6 +11,7 @@ use std::io::{Read, Write};
 use std::mem::{align_of, size_of};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+use zerocopy::AsBytes;
 
 use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::crypto::rsa::Modulus;
@@ -20,11 +21,14 @@ use crate::crypto::sha256;
 use crate::image::manifest::{
     Manifest, ManifestKind, CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2,
     CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
+    MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
+
+use super::manifest::ManifestUsageConstraints;
 
 #[derive(Debug, Error)]
 pub enum ImageError {
@@ -502,9 +506,40 @@ impl Image {
             ..self.borrow_manifest()?.signed_region_end as usize]))
     }
 
+    /// Operates on the altered signed region of the image: the fields of the
+    /// usage_constraint section not enabled by selector bits are set to the
+    /// default value. This matches the behavior of the chip when calculating
+    /// image hash for signature validation.
+    pub fn map_updated_signed_region<F, R>(&self, f: F) -> Result<R>
+    where
+        F: FnOnce(&[u8]) -> R,
+    {
+        let constraints_base = offset_of!(Manifest, usage_constraints);
+        let constraints_size = size_of::<ManifestUsageConstraints>();
+
+        // A mutable copy of the image.
+        let mut buf: Box<[u8]> = self.data.bytes.to_vec().into_boxed_slice();
+
+        // Process the constraints field, use default value for words which are
+        // not enabled by selector bits.
+        let selector = self.borrow_manifest()?.usage_constraints.selector_bits;
+
+        for i in 1..constraints_size / size_of::<u32>() {
+            if (selector & (1 << (i - 1))) == 0 {
+                let base = constraints_base + i * size_of::<u32>();
+
+                buf[base..base + size_of::<u32>()]
+                    .copy_from_slice(MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL.as_bytes());
+            }
+        }
+        // Feed the updated image to the closure and return the value.
+        Ok(f(&buf[offset_of!(Manifest, usage_constraints)
+            ..self.borrow_manifest()?.signed_region_end as usize]))
+    }
+
     /// Compute the SHA256 digest for the signed portion of the `Image`.
     pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
-        self.map_signed_region(|v| sha256::sha256(v))
+        self.map_updated_signed_region(|v| sha256::sha256(v))
     }
 }
 
