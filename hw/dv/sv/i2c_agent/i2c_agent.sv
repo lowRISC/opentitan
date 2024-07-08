@@ -22,4 +22,17 @@ class i2c_agent extends dv_base_agent #(
     cfg.has_req_fifo = 1;
   endfunction : build_phase
 
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    // If the monitor is active, connect the in-progress transfer ports from the monitor through
+    // to the sequencer. This allows agent sequences to monitor the state of any in-progress
+    // i2c transfer, and drive accordingly.
+    if (cfg.is_active) begin
+      monitor.controller_mode_in_progress_port.connect(
+        sequencer.controller_mode_in_progress_fifo.analysis_export);
+      monitor.target_mode_in_progress_port.connect(
+        sequencer.target_mode_in_progress_fifo.analysis_export);
+    end
+  endfunction : connect_phase
+
 endclass
