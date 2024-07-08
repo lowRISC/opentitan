@@ -32,10 +32,11 @@ class FsmState(IntEnum):
         MEM_SEC_WIPE <--\
              |          |
              \-------> IDLE -> PRE_EXEC -> EXEC
-                         ^                  | |
-                         \-- WIPING_GOOD <--/ |
-                                              |
-                 LOCKED <--  WIPING_BAD  <----/
+                         ^                   |
+                         |                   v
+                         \--------------- WIPING
+                                             |
+                 LOCKED <--------------------/
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
@@ -47,15 +48,15 @@ class FsmState(IntEnum):
     Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
     be LOCKED.
 
-    PRE_EXEC, EXEC, WIPING_GOOD and WIPING_BAD correspond to
-    Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
-    still waiting for an EDN value to seed URND. EXEC is the period where we
-    start fetching and executing instructions.
+    PRE_EXEC, EXEC and WIPING correspond to Status.BUSY_EXECUTE. PRE_EXEC is
+    the period after starting OTBN where we're still waiting for an EDN value
+    to seed URND. EXEC is the period where we start fetching and executing
+    instructions.
 
-    WIPING_GOOD and WIPING_BAD represent the time where we're performing a
-    secure wipe of internal state (ending in updating the STATUS register to
-    show we're done). The difference between them is that WIPING_GOOD goes back
-    to IDLE and WIPING_BAD goes to LOCKED.
+    WIPING represents the time where we're performing a secure wipe of internal
+    state (ending in updating the STATUS register to show we're done). When the
+    wipe is done, we go back to IDLE or LOCKED (depending on the
+    lock_after_wipe flag).
 
     This is a refinement of the Status enum and the integer values are picked
     so that you can divide by 10 to get the corresponding Status entry. (This
@@ -65,8 +66,7 @@ class FsmState(IntEnum):
     IDLE = 0
     PRE_EXEC = 10
     EXEC = 12
-    WIPING_GOOD = 13
-    WIPING_BAD = 14
+    WIPING = 13
     MEM_SEC_WIPE = 20
     LOCKED = 2550
 
@@ -125,9 +125,12 @@ class OTBNState:
         self.invalidated_imem = False
 
         # This is the number of cycles left for wiping. When we're in the
-        # WIPING_GOOD or WIPING_BAD state, this should be a non-negative
-        # number. Initialise to -1 to catch bugs if we forget to set it.
+        # WIPING state, this should be a non-negative number. Initialise to -1
+        # to catch bugs if we forget to set it.
         self.wipe_cycles = -1
+
+        # This controls which state we move to when the next secure wipe ends
+        self.lock_after_wipe = False
 
         # If this is nonzero, there's been an error injected from outside. The
         # Sim.step function will OR these bits into err_bits and stop at the
@@ -267,7 +270,7 @@ class OTBNState:
                                        FsmState.MEM_SEC_WIPE]
 
     def wiping(self) -> bool:
-        return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
+        return self._fsm_state == FsmState.WIPING
 
     def stop_if_pending_halt(self) -> bool:
         if self.pending_halt:
@@ -308,8 +311,7 @@ class OTBNState:
         # register) but nothing else. This is just an optimisation: if
         # everything is working properly, there won't be any other pending
         # changes.
-        if old_state not in [FsmState.EXEC,
-                             FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
+        if old_state not in [FsmState.EXEC, FsmState.WIPING]:
             return
 
         self.gprs.commit()
@@ -419,13 +421,13 @@ class OTBNState:
                 self.ext_regs.regs['WIPE_START'].commit()
 
                 # Switch to a 'wiping' state
-                self.set_fsm_state(FsmState.WIPING_BAD if should_lock
-                                   else FsmState.WIPING_GOOD)
+                self.set_fsm_state(FsmState.WIPING)
+                self.lock_after_wipe = should_lock
                 self.wipe_rounds_done = 0
-            elif self._fsm_state in [FsmState.WIPING_BAD,
-                                     FsmState.WIPING_GOOD]:
+            elif self._fsm_state == FsmState.WIPING:
                 assert should_lock
-                self._next_fsm_state = FsmState.WIPING_BAD
+                self._next_fsm_state = FsmState.WIPING
+                self.lock_after_wipe = True
             elif self._init_sec_wipe_state in [InitSecWipeState.IN_PROGRESS]:
                 # Make it so that we run stop method until initial secure wipe
                 # is done. Otherwise we would have missed the pending halt.
@@ -447,7 +449,7 @@ class OTBNState:
         # If we're switching to a wiping state, we consider this to be "the
         # start of a wipe" and set the wipe_cycles counter to track how long
         # the wiping operation itself will take.
-        wiping_next = new_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]
+        wiping_next = new_state == FsmState.WIPING
         if wiping_next:
             self.wipe_cycles = _WIPE_CYCLES
         self._next_fsm_state = new_state
