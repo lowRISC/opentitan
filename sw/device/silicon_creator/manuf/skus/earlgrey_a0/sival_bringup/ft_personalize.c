@@ -493,6 +493,12 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   return OK_STATUS();
 }
 
+/**
+ * A custom extension to the personalization flow to enable various SKU owners
+ * to customize the provisioning of their devices.
+ */
+extern status_t personalize_extension(ujson_t *uj);
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   ujson_t uj = ujson_ottf_console();
@@ -501,5 +507,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_dice_certificates(&uj));
   CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
+  CHECK_STATUS_OK(personalize_extension(&uj));
+
+  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+  // sw/host/provisioning/ft_lib/src/lib.rs
+  LOG_INFO("Personalization done.");
+
   return true;
 }

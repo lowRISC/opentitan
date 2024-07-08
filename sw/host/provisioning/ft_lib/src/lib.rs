@@ -450,7 +450,11 @@ pub fn run_ft_personalize(
     }
 
     let certs: [&Vec<u8>; 3] = [&tpm_ek_cert_bytes, &tpm_cek_cert_bytes, &tpm_cik_cert_bytes];
-    validate_certs_chain(ca_certificate.to_str().unwrap(), &certs)
+    validate_certs_chain(ca_certificate.to_str().unwrap(), &certs)?;
+
+    let _ = UartConsole::wait_for(&*uart, r"Personalization done.", timeout)?;
+
+    Ok(())
 }
 
 // This internal enum provides two different certificate signing key
