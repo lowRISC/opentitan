@@ -228,11 +228,6 @@ class i2c_monitor extends dv_base_monitor #(
       prev_item = full_item;
     end
 
-    // Clear any data leftover in the temporary item (but don't clear the flags)
-    mon_dut_item.clear_data();
-    // Clear flags (start/stop/rstart/read/rcont/nakok)
-    mon_dut_item.clear_flags();
-
   endtask: target_collect_thread
 
 
@@ -531,11 +526,6 @@ class i2c_monitor extends dv_base_monitor #(
       // This is then used to determine how the previous transfer ended (STOP or RSTART)
       prev_item = full_item;
     end
-
-    // Clear any data leftover in the temporary item (but don't clear the flags)
-    mon_dut_item.clear_data();
-    // Clear flags (start/stop/rstart/read/rcont/nakok)
-    mon_dut_item.clear_flags();
 
   endtask: controller_collect_thread
 
