@@ -465,11 +465,87 @@ Each sub-sequence has a terminal event--generically labeled "[completed]" which 
 
 However, all transitions which are dependent on formatting flags are shown explicitly in this figure.
 
-![](../doc/i2c_controller_states.svg)
+```mermaid
+stateDiagram-v2
+    Idle:       IDLE
+    Active:     ACTIVE
+    Start:      [Issue Start]
+    Transmit:   [Transmit\nByte]
+    Read:       [Read R\nBytes]
+    Stop:       [Issue Stop]
+    PopFifo:    POP_FMT_\nFIFO
+
+    [*]      --> Idle
+    Idle     --> Idle     : fmt_fifo_empty
+    Idle     --> Active   : ~fmt_fifo_empty
+    Active   --> Read     : READB
+    Active   --> Start    : (~READB) &\nSTART
+    Active   --> Transmit : (~READB) &\n(~START)
+    Read     --> PopFifo  : [completed] &\n(~STOP)
+    Read     --> Stop     : [completed] &\nSTOP
+    Start    --> Transmit : [completed]
+    Transmit --> Stop     : [completed] &\nSTOP
+    Transmit --> PopFifo  : [completed] &\n~STOP
+    Stop     --> PopFifo  : [completed]
+    PopFifo  --> Idle     : fmt_fifo_empty
+    PopFifo  --> Active   : ~fmt_fifo_empty
+```
 
 Similarly, the figure below shows a simplified version of the `I2C_Target` state machine.
 
-![](../doc/I2C_state_diagram_target.svg)
+```mermaid
+stateDiagram-v2
+
+    IdleStart    : [IdleStart]
+    AddrRead     : AddrRead
+    AddrAck      : [AddrAck]
+    StretchAddr  : StretchAddr
+    StretchTx    : [StretchTx]
+    TxByte       : [TxByte]
+    TxAck        : [TxAck]
+    AcquireByte  : AcquireByte
+    AcquireAck   : [AcquireAck]
+    StretchAcq   : StretchAcq
+    WaitForStop  : WaitForStop
+
+    [*]              --> IdleStart    : reset | stop_det | start_det
+    IdleStart        --> AddrRead
+    AddrRead         --> WaitForStop  : !address_match
+    AddrRead         --> AddrAck
+
+    state rnw_fork <<fork>>
+    AddrAck          --> StretchAddr  : stretch_addr
+    AddrAck          --> rnw_fork     : !stretch_addr
+    StretchAddr      --> rnw_fork     : !stretch_addr
+    rnw_fork         --> Tx           : !R/W
+    rnw_fork         --> Rx           : R/W
+
+    state Tx {
+        state tx_fork <<fork>>
+        [*]          --> tx_fork
+        tx_fork      --> TxByte       : tx_fifo_rvalid & !tx_halt
+        tx_fork      --> StretchTx    : !tx_fifo_rvalid & !tx_halt
+        StretchTx    --> TxByte       : tx_fifo_rvalid & !tx_halt
+        TxByte       --> TxAck
+        TxAck        --> tx_fork      : ack
+        TxAck        --> [*]          : !ack
+    }
+
+    state Rx {
+        state rx_fork <<fork>>
+        [*]          --> rx_fork
+        rx_fork      --> StretchAcq   : !acq_fifo_wready | !can_auto_ack
+        StretchAcq   --> AcquireByte  : acq_fifo_wready & can_auto_ack
+        rx_fork      --> AcquireByte  : acq_fifo_wready & can_auto_ack
+        AcquireByte  --> AcquireAck
+        AcquireAck   --> rx_fork      : ack
+        AcquireAck   --> [*]          : !ack
+    }
+
+    Tx               --> WaitForStop
+    Rx               --> WaitForStop
+    WaitForStop      --> [*]
+```
 
 In this diagram, "R/W" stands for a R/W bit value. The controller is reading when R/W bit is "1" and writing when R/W bit is "0".
 
