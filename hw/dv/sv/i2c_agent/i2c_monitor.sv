@@ -14,10 +14,10 @@
 // W -> 'controller_mode_wr_item_port'
 // R -> 'controller_mode_rd_item_port'
 //
-// Intermediate seq_items are written to the 'req_analysis_port', which become
-// available to sequences via the p_sequencer.req_analysis_fifo handle.
-// This is used to implement reactive agent sequences.
-//
+// Seq_items are written to the controller-mode and target-mode 'in_progress_ports', which can
+// be picked up by consumers who wish to interrogate the state of a transfer in a more granular
+// fashion. This can be used for prediction, or for controlling sequences in a reactive agent
+// system.
 //
 // Methods
 //
@@ -39,10 +39,16 @@ class i2c_monitor extends dv_base_monitor #(
   // CLASS VARIABLES //
   /////////////////////
 
+  // Full-transaction ports
   uvm_analysis_port #(i2c_item) controller_mode_wr_item_port;
   uvm_analysis_port #(i2c_item) controller_mode_rd_item_port;
   uvm_analysis_port #(i2c_item) target_mode_wr_item_port;
   uvm_analysis_port #(i2c_item) target_mode_rd_item_port;
+
+  // In-progress transaction ports
+  uvm_analysis_port #(i2c_item) controller_mode_in_progress_port;
+  uvm_analysis_port #(i2c_item) target_mode_in_progress_port;
+
 
   // This item is used to capture and accumulate ongoing transaction control and data symbols.
   // It is the main piece of state used by a monitor instance to keep track of the ongoing I2C
@@ -70,6 +76,8 @@ class i2c_monitor extends dv_base_monitor #(
     controller_mode_rd_item_port = new("controller_mode_rd_item_port", this);
     target_mode_wr_item_port = new("target_mode_wr_item_port", this);
     target_mode_rd_item_port = new("target_mode_rd_item_port", this);
+    controller_mode_in_progress_port = new("controller_mode_in_progress_port", this);
+    target_mode_in_progress_port = new("target_mode_in_progress_port", this);
   endfunction : build_phase
 
   virtual task wait_for_reset_and_drop_item();
@@ -155,6 +163,12 @@ class i2c_monitor extends dv_base_monitor #(
 
     `uvm_create_obj(i2c_item, mon_dut_item);
 
+    // Publish a handle of the in-progress transfer via the in_progress port.
+    // This can be used to make fine-grained predictions based on the ongoing state of the bus,
+    // such as by a predictor/reference_model.
+    // Note. that any consumers of this item should not modify it.
+    target_mode_in_progress_port.write(mon_dut_item);
+
     // Decode the start of the next transfer. As we are calling this task in a loop, this may be
     // the start of a new transaction, or the start of new transfer following a repeated-start
     // condition.
@@ -182,6 +196,7 @@ class i2c_monitor extends dv_base_monitor #(
       `uvm_fatal(`gfn, "State at start of target_collect_thread() is unexpected!")
     end
 
+    mon_dut_item.state = i2c_agent_pkg::StStarted;
     mon_dut_item.tran_id = num_dut_tran++;
 
     // Capture the transfer
@@ -193,6 +208,9 @@ class i2c_monitor extends dv_base_monitor #(
         default: `uvm_fatal(`gfn, "Should never get here!")
       endcase
     end
+
+    mon_dut_item.state = i2c_agent_pkg::StStopped;
+
     // If the previous transfer ended via STOP (as opposed to RSTART), signal this to the driver.
     if (mon_dut_item.stop) cfg.got_stop = 1;
 
@@ -243,13 +261,16 @@ class i2c_monitor extends dv_base_monitor #(
     `downcast(clone_item, mon_dut_item.clone());
     clone_item.drv_type = DevAck;
     req_analysis_port.write(clone_item);
+    mon_dut_item.state = i2c_agent_pkg::StAddrByteRcvd; // Signal the addr+dir is captured
 
     // get ack after transmitting address
     cfg.vif.wait_for_device_ack_or_nack(cfg.timing_cfg, mon_dut_item.addr_ack);
     if (mon_dut_item.addr_ack == i2c_pkg::NACK) cfg.got_nack.trigger();
     `uvm_info(`gfn,
               $sformatf("target_address_thread(): %0s", mon_dut_item.addr_ack.name()),
-      UVM_DEBUG)
+              UVM_DEBUG)
+    mon_dut_item.state = i2c_agent_pkg::StAddrByteAckRcvd;
+
     `uvm_info(`gfn, "target_address_thread() detected ACK", UVM_FULL)
   endtask : target_address_thread
 
@@ -268,6 +289,7 @@ class i2c_monitor extends dv_base_monitor #(
       `downcast(clone_item, mon_dut_item.clone());
       clone_item.drv_type = RdData;
       req_analysis_port.write(clone_item);
+      mon_dut_item.state = i2c_agent_pkg::StDataByte;
 
       cfg.start_perf_monitor.trigger();
 
@@ -282,6 +304,7 @@ class i2c_monitor extends dv_base_monitor #(
 
       mon_dut_item.data_q.push_back(mon_data);
       mon_dut_item.num_data++;
+      mon_dut_item.state = i2c_agent_pkg::StDataByteRcvd;
       `uvm_info(`gfn, $sformatf("target_read_thread() trans %0d, byte %0d 0x%0x",
           mon_dut_item.tran_id, mon_dut_item.num_data, mon_data), UVM_FULL)
 
@@ -293,6 +316,7 @@ class i2c_monitor extends dv_base_monitor #(
         if (acknack_bit == i2c_pkg::NACK) cfg.got_nack.trigger();
         mon_dut_item.data_ack_q.push_back(acknack_bit);
         `uvm_info(`gfn, $sformatf("target_read_thread() saw %0s", acknack_bit.name()), UVM_HIGH)
+        mon_dut_item.state = i2c_agent_pkg::StDataByteAckRcvd;
       end
 
       // If we saw NACK, it must be followed by a STOP or RSTART condition.
@@ -321,6 +345,8 @@ class i2c_monitor extends dv_base_monitor #(
           fork
             begin : write_data_collection_thread
 
+              mon_dut_item.state = i2c_agent_pkg::StDataByte;
+
               cfg.start_perf_monitor.trigger();
 
               for (int i = 7; i >= 0; i--) begin
@@ -343,6 +369,7 @@ class i2c_monitor extends dv_base_monitor #(
               `downcast(clone_item, mon_dut_item.clone());
               clone_item.drv_type = DevAck;
               req_analysis_port.write(clone_item);
+              mon_dut_item.state = i2c_agent_pkg::StDataByteRcvd;
 
               // Sample the ACK/NACK bit
               begin
@@ -353,6 +380,7 @@ class i2c_monitor extends dv_base_monitor #(
                 if (acknack_bit == i2c_pkg::NACK) cfg.got_nack.trigger();
                 `uvm_info(`gfn, $sformatf("target_write_thread() saw %0s",
                                           acknack_bit.name()), UVM_HIGH)
+                mon_dut_item.state = i2c_agent_pkg::StDataByteAckRcvd;
               end
             end
             begin : end_of_transfer_thread
@@ -435,6 +463,12 @@ class i2c_monitor extends dv_base_monitor #(
 
     `uvm_create_obj(i2c_item, mon_dut_item);
 
+    // Publish a handle of the in-progress transfer via the in_progress port.
+    // This can be used to make fine-grained predictions based on the ongoing state of the bus,
+    // such as by a predictor/reference_model.
+    // Note. that any consumers of this item should not modify it.
+    controller_mode_in_progress_port.write(mon_dut_item);
+
     // Decode the start of the next transfer. As we are calling this task in a loop, this may be
     // the start of a new transaction, or the start of new transfer following a repeated-start
     // condition.
@@ -462,6 +496,7 @@ class i2c_monitor extends dv_base_monitor #(
       `uvm_fatal(`gfn, "State at start of controller_collect_thread() is unexpected!")
     end
 
+    mon_dut_item.state = i2c_agent_pkg::StStarted;
     mon_dut_item.tran_id = num_dut_tran++;
 
     // Capture the transfer
@@ -477,6 +512,8 @@ class i2c_monitor extends dv_base_monitor #(
         default: `uvm_fatal(`gfn, "Should never get here!")
       endcase
     end
+
+    mon_dut_item.state = i2c_agent_pkg::StStopped;
 
     // If the previous transfer ended via STOP (as opposed to RSTART), signal this to the driver.
     if (mon_dut_item.stop) cfg.got_stop = 1;
@@ -552,6 +589,7 @@ class i2c_monitor extends dv_base_monitor #(
           `uvm_info(`gfn, $sformatf("controller_address_thread() saw %0s",
                                     mon_dut_item.addr_ack.name()), UVM_HIGH)
           if (mon_dut_item.addr_ack == i2c_pkg::NACK) cfg.got_nack.trigger();
+          mon_dut_item.state = i2c_agent_pkg::StAddrByteAckRcvd; // Signal the addr_ack is captured
 
         end : address_capture_thread
         begin
@@ -573,6 +611,8 @@ class i2c_monitor extends dv_base_monitor #(
       fork
         forever begin : read_data_collection_thread
 
+          mon_dut_item.state = i2c_agent_pkg::StDataByte;
+
           // Sample the read data
           begin : get_read_bits
             bit [7:0] data;
@@ -584,6 +624,7 @@ class i2c_monitor extends dv_base_monitor #(
             // Push read data into the item
             mon_dut_item.data_q.push_back(data);
             mon_dut_item.num_data++;
+            mon_dut_item.state = i2c_agent_pkg::StDataByteRcvd;
           end
 
           // Collect the ACK/NACK bit...
@@ -594,6 +635,7 @@ class i2c_monitor extends dv_base_monitor #(
             if (acknack_bit == i2c_pkg::NACK) cfg.got_nack.trigger();
             `uvm_info(`gfn, $sformatf("controller_read_thread(), detected %0s",
                                       acknack_bit.name()), UVM_HIGH)
+            mon_dut_item.state = i2c_agent_pkg::StDataByteAckRcvd;
           end
 
           cfg.rcvd_rd_byte++;
@@ -640,6 +682,8 @@ class i2c_monitor extends dv_base_monitor #(
       fork
         forever begin: write_data_collection_thread
 
+          mon_dut_item.state = i2c_agent_pkg::StDataByte;
+
           // Sample the write data
           begin : get_write_bits
             bit [7:0] data;
@@ -651,6 +695,7 @@ class i2c_monitor extends dv_base_monitor #(
             // Push write data into the item
             mon_dut_item.data_q.push_back(data);
             mon_dut_item.num_data++;
+            mon_dut_item.state = i2c_agent_pkg::StDataByteRcvd;
           end
 
           // Collect the ACK/NACK bit...
@@ -661,6 +706,7 @@ class i2c_monitor extends dv_base_monitor #(
             if (acknack_bit == i2c_pkg::NACK) cfg.got_nack.trigger();
             `uvm_info(`gfn, $sformatf("controller_write_thread(), detected %0s",
                                       acknack_bit.name()), UVM_HIGH)
+            mon_dut_item.state = i2c_agent_pkg::StDataByteAckRcvd;
           end
 
           `uvm_info(`gfn, $sformatf("controller_write_thread(), trans %0d, byte_num %0d, 8'h%2x",
