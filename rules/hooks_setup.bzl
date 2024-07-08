@@ -18,6 +18,14 @@ def secure_hooks_repo(name):
     )
 """
 
+_PERSO_EXTS_TEMPLATE = """
+def perso_exts_repo(name):
+    native.local_repository(
+        name = name,
+        path = "{perso_exts_dir}",
+    )
+"""
+
 _BUILD = """
 exports_files(glob(["**"]))
 """
@@ -52,4 +60,20 @@ secure_hooks_setup = repository_rule(
         ),
     },
     environ = ["SECURE_MANUFACTURER_HOOKS_DIR"],
+)
+
+def _perso_exts_setup_impl(rctx):
+    perso_exts_dir = rctx.os.environ.get("PERSO_EXTS_DIR", rctx.attr.dummy)
+    rctx.file("repos.bzl", _PERSO_EXTS_TEMPLATE.format(perso_exts_dir = perso_exts_dir))
+    rctx.file("BUILD.bazel", _BUILD)
+
+perso_exts_setup = repository_rule(
+    implementation = _perso_exts_setup_impl,
+    attrs = {
+        "dummy": attr.string(
+            mandatory = True,
+            doc = "Location of the dummy personalization FW extensions directory.",
+        ),
+    },
+    environ = ["PERSO_EXTS_DIR"],
 )

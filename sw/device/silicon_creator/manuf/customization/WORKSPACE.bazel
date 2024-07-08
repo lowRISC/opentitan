@@ -1,0 +1,13 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+workspace(name = "perso_exts")
+
+# This is a sample workspace to demonstrate how to write custom personalization
+# firmware extensions. This bazel repository is not stand-alone project: it must
+# be connected into the main OpenTitan repository by way of the
+# `perso_exts_setup` call in OpenTitan's WORKSPACE file.
+
+# See this repository's README.md and BUILD.bazel files to understand how to
+# write rules for custom personalization firmware extensions.
