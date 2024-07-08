@@ -105,7 +105,7 @@ class spi_segment_item extends uvm_sequence_item;
     }
 
     // ensure we only half or full word writes
-    (command_reg.len + 1) % 2 == 0;
+    !(seg_type == Dummy) -> (command_reg.len + 1) % 2 == 0;
     // default set keep transaction going
     command_reg.csaat == 1;
   }
