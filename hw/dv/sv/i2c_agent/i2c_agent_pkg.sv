@@ -76,6 +76,8 @@ package i2c_agent_pkg;
   typedef class i2c_item;
   typedef class i2c_agent_cfg;
 
+  typedef uvm_tlm_analysis_fifo #(i2c_item) i2c_analysis_fifo;
+
   // package sources
   `include "i2c_fdata_item.sv"
   `include "i2c_acqdata_item.sv"
