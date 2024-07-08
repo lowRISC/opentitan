@@ -251,11 +251,6 @@ class i2c_monitor extends dv_base_monitor #(
     cfg.stop_perf_monitor.trigger();
 
     mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
-
-    `uvm_info(`gfn, $sformatf("target_address_thread(): req_analysis_port.write()"), UVM_DEBUG)
-    `downcast(clone_item, mon_dut_item.clone());
-    clone_item.drv_type = DevAck;
-    req_analysis_port.write(clone_item);
     mon_dut_item.state = i2c_agent_pkg::StAddrByteRcvd; // Signal the addr+dir is captured
 
     // get ack after transmitting address
@@ -278,12 +273,6 @@ class i2c_monitor extends dv_base_monitor #(
 
     while (!mon_dut_item.stop && !mon_dut_item.rstart_back) begin
 
-      // Reactive Agent
-      // - Ask driver to transmit rdata bytes (in response to the DUT-initiated READ operation)
-      `uvm_info(`gfn, "target_read_thread(): req_analysis_port.write()", UVM_DEBUG)
-      `downcast(clone_item, mon_dut_item.clone());
-      clone_item.drv_type = RdData;
-      req_analysis_port.write(clone_item);
       mon_dut_item.state = i2c_agent_pkg::StDataByte;
 
       cfg.start_perf_monitor.trigger();
@@ -357,13 +346,6 @@ class i2c_monitor extends dv_base_monitor #(
               `uvm_info(`gfn, $sformatf("target_write_thread() data %2x num_data:%0d",
                                         mon_data, mon_dut_item.num_data), UVM_FULL)
 
-              // Send data component of this write to the 'req_analysis_port', for consumption by
-              // reactive-agent sequences.
-
-              `uvm_info(`gfn, "target_write_thread(): req_analysis_port.write()", UVM_DEBUG)
-              `downcast(clone_item, mon_dut_item.clone());
-              clone_item.drv_type = DevAck;
-              req_analysis_port.write(clone_item);
               mon_dut_item.state = i2c_agent_pkg::StDataByteRcvd;
 
               // Sample the ACK/NACK bit
