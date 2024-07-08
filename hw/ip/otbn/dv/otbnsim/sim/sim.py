@@ -461,7 +461,7 @@ class OTBNSim:
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 
-    def lock_immediately(self):
+    def lock_immediately(self) -> None:
         '''React to an event that should cause us to immediately jump to the
         locked state.'''
         self.state.set_fsm_state(FsmState.LOCKED)
