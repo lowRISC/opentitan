@@ -338,14 +338,21 @@ class OTBNSim:
     def _step_wiping(self, verbose: bool) -> StepRes:
         '''Step the simulation when wiping'''
         assert self.state.wipe_cycles >= 0
-        if self.state.wipe_cycles > 0:
+
+        # Keep track of whether there was actually a wipe operation in progress
+        # (rather than us waiting for a URND seed for the next round). If there
+        # was, then subtract one from the number of cycles left in that
+        # operation.
+        was_wiping = self.state.wipe_cycles > 0
+        if was_wiping:
             self.state.wipe_cycles -= 1
 
-        # Correctly handle an RMA request when we're already wiping by ensuring
-        # we're in the WIPING_BAD state (since we're going to lock when we're
-        # done)
-        if ((self.state.get_fsm_state() == FsmState.WIPING_GOOD and
-             self.state.rma_req == LcTx.ON)):
+        is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
+        locking = self.state.rma_req == LcTx.ON or not is_good
+
+        # If there is ann RMA request, make sure we're in the WIPING_BAD state
+        # (since we're going to lock when we're done).
+        if self.state.rma_req == LcTx.ON and is_good:
             self.state.set_fsm_state(FsmState.WIPING_BAD)
 
         # If something bad happened asynchronously (because of an escalation),
@@ -359,9 +366,6 @@ class OTBNSim:
             (self.state.ext_regs.read('STATUS', True) not in
              [Status.BUSY_SEC_WIPE_INT, Status.LOCKED])):
             self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
-
-        is_good = self.state.get_fsm_state() == FsmState.WIPING_GOOD
-        locking = self.state.rma_req == LcTx.ON or not is_good
 
         # Clear the WIPE_START register if it was set.
         if self.state.ext_regs.read('WIPE_START', True):
