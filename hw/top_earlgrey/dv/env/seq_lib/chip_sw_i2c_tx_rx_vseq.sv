@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
-  `uvm_object_utils(chip_sw_i2c_tx_rx_vseq)
 
-  `uvm_object_new
+  ///////////////
+  // VARIABLES //
+  ///////////////
 
+  // TODO(#23920) Figure out a better way to calculate this based on testbench clock frequency
   int clock_period_nanos = 41;
   int i2c_clock_period_nanos = 1000;
   int rise_fall_nanos = 10;
@@ -17,6 +19,22 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
 
   // Keep a count of the total number of read data bytes we expect the agent to read from the DUT.
   int sent_rd_byte[NUM_I2CS] = '{NUM_I2CS{ 0 }};
+
+  `uvm_object_utils_begin(chip_sw_i2c_tx_rx_vseq)
+    `uvm_field_int(clock_period_nanos,     UVM_DEFAULT | UVM_DEC)
+    `uvm_field_int(i2c_clock_period_nanos, UVM_DEFAULT | UVM_DEC)
+    `uvm_field_int(rise_fall_nanos,        UVM_DEFAULT | UVM_DEC)
+    `uvm_field_int(rise_cycles,            UVM_DEFAULT | UVM_DEC)
+    `uvm_field_int(fall_cycles,            UVM_DEFAULT | UVM_DEC)
+    `uvm_field_int(clock_period_cycles,    UVM_DEFAULT | UVM_DEC)
+    `uvm_field_int(half_period_cycles,     UVM_DEFAULT | UVM_DEC)
+  `uvm_object_utils_end
+
+  `uvm_object_new
+
+  /////////////
+  // METHODS //
+  /////////////
 
   function void print_i2c_timing_cfg(uint i2c_idx);
     string str;
