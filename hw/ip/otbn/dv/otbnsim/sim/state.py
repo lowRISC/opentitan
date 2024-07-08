@@ -170,6 +170,10 @@ class OTBNState:
         # otbn_start_stop_control.sv, which skips a round of secure wiping
         self.has_state_to_wipe = False
 
+        # If this flag is set, jump straight to the LOCKED state when we step
+        # in IDLE.
+        self.delayed_lock = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
