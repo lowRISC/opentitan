@@ -25,6 +25,20 @@ package i2c_agent_pkg;
     HostWait
   } drv_type_e;
 
+  // This enum is used to model the current state of an in-progress i2c transfer
+  typedef enum int {
+    StNone,
+    StStarted,
+    StAddrByte,
+    StAddrByteRcvd,
+    StAddrByteAckRcvd,
+    StDataByte,
+    StDataByteRcvd,
+    StDataByteAckRcvd,
+    StStopped,
+    StAborted
+  } transfer_state_e;
+
   // register values
   typedef struct {
     // derived parameters

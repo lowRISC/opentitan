@@ -10,6 +10,11 @@ class i2c_item extends uvm_sequence_item;
   // Transfer ID
   int                      tran_id;
 
+  // Model the state of an in-progress i2c transfer. This can be used as a cheap proxy for
+  // breaking up the transfer into smaller sequence items (bytes, bits, etc.) when we need to
+  // update our predictions mid-transfer.
+  transfer_state_e         state;
+
   // Address / Direction
   bit [9:0]                addr; // enough to support both 7 & 10-bit target address
   rw_e                     dir; // Transfer direction bit
@@ -75,6 +80,7 @@ class i2c_item extends uvm_sequence_item;
   `uvm_object_utils_begin(i2c_item)
     `uvm_field_int(stim_id,                       UVM_DEFAULT | UVM_DEC)
     `uvm_field_int(tran_id,                       UVM_DEFAULT | UVM_DEC)
+    `uvm_field_enum(transfer_state_e, state,      UVM_DEFAULT               | UVM_NOCOMPARE)
     `uvm_field_enum(bus_op_e, bus_op,             UVM_DEFAULT)
     `uvm_field_int(addr,                          UVM_DEFAULT)
     `uvm_field_enum(i2c_pkg::rw_e, dir,           UVM_DEFAULT | UVM_NOPRINT)
