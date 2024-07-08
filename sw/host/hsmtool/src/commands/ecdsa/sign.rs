@@ -49,13 +49,19 @@ impl Dispatch for Sign {
 
         let mut data = helper::read_file(&self.input)?;
         if self.little_endian {
+            // OpenTitanTool writes digest files in little-endian byte order,
+            // (same as the hmac peripheral's default output mode).  The ECDSA
+            // implementation performs the signature calculation with the bytes in
+            // big-endian order.
             data.reverse();
         }
         let data = self.format.prepare(KeyType::Ec, &data)?;
         let mechanism = self.format.mechanism(KeyType::Ec)?;
         let mut result = session.sign(&mechanism, object, &data)?;
         if self.little_endian {
-            result.reverse();
+            let half = result.len() / 2;
+            result[..half].reverse();
+            result[half..].reverse();
         }
         if let Some(output) = &self.output {
             helper::write_file(output, &result)?;
