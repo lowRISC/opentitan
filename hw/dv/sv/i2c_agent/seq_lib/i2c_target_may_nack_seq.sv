@@ -4,40 +4,58 @@
 
 // I2C Agent sequence which behaves as an I2C TARGET.
 //
-// - Receives seq_items from req_analysis_fifo which are sent onto the driver.
-// - If the item is requesting to drive an ACK, 50/50 to change this to a NACK instead.
+// - Uses the base-class hooks which determine that state of an inprogress transfer.
+// - Each time the I2C-Target is required to ACK/NACk during a transfer, this sequence randomly
+//   selects betwee an ACK or NACK.
 //
 class i2c_target_may_nack_seq extends i2c_base_seq;
+
+  ///////////////
+  // VARIABLES //
+  ///////////////
+
+  i2c_pkg::acknack_e acknack;
+
   `uvm_object_utils(i2c_target_may_nack_seq)
   `uvm_object_new
 
-  virtual task body();
-    case (cfg.if_mode)
-      Device: send_device_mode_txn();
-      Host:    `uvm_fatal(`gfn, "This sequence is for the agent in TARGET-Mode only!")
-      default: `uvm_fatal(`gfn, "Invalid cfg.if_mode!")
-    endcase
-  endtask : body
+  /////////////
+  // METHODS //
+  /////////////
 
-  virtual task send_device_mode_txn();
-    bit [7:0] rdata;
-    forever begin
-      p_sequencer.req_analysis_fifo.get(req);
-      // If it's a read type response, create randomized return data
-      if (req.drv_type == RdData) begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(rdata)
-        req.rdata = rdata;
-      end
-      // Convert some of the 'DevAck' items from the monitor into NACKs
-      if (req.drv_type == DevAck) begin
-        if ($urandom_range(0, 1)) begin
-          `uvm_info(`gfn, "Converting an ACK to a NACK!", UVM_LOW)
-          req.drv_type = DevNack;
-        end
-      end
-      start_item(req);
-      finish_item(req);
-    end
-  endtask
+
+  virtual function void randomize_ack();
+    `DV_CHECK_STD_RANDOMIZE_FATAL(acknack);
+    case (acknack)
+      i2c_pkg::ACK:  req.drv_type = DevAck;
+      i2c_pkg::NACK: req.drv_type = DevNack;
+      default: `uvm_fatal(`gfn, "Shouldn't get here!")
+    endcase
+  endfunction : randomize_ack
+
+
+  virtual task drive_addr_byte_ack();
+    `uvm_create_obj(REQ, req);
+    start_item(req);
+
+    // The base class / default behaviour is to ACK all address bytes.
+    // Here, choose randomly between ACK and NACK.
+    randomize_ack();
+    if (req.drv_type == DevNack) `uvm_info(`gfn, "NACKing the address byte!", UVM_LOW)
+
+    finish_item(req);
+  endtask : drive_addr_byte_ack
+
+
+  virtual task drive_write_byte_ack();
+    `uvm_create_obj(REQ, req);
+    start_item(req);
+
+    randomize_ack();
+    if (req.drv_type == DevNack) `uvm_info(`gfn, "NACKing a data byte!", UVM_LOW)
+
+    finish_item(req);
+  endtask : drive_write_byte_ack
+
 
 endclass : i2c_target_may_nack_seq
