@@ -83,7 +83,7 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_enum(transfer_state_e, state,      UVM_DEFAULT               | UVM_NOCOMPARE)
     `uvm_field_enum(bus_op_e, bus_op,             UVM_DEFAULT)
     `uvm_field_int(addr,                          UVM_DEFAULT)
-    `uvm_field_enum(i2c_pkg::rw_e, dir,           UVM_DEFAULT | UVM_NOPRINT)
+    `uvm_field_enum(i2c_pkg::rw_e, dir,           UVM_DEFAULT               | UVM_NOCOMPARE)
     `uvm_field_enum(i2c_pkg::acknack_e, addr_ack, UVM_DEFAULT)
     `uvm_field_int(num_data,                      UVM_DEFAULT | UVM_NOPRINT)
     `uvm_field_queue_int(data_q,                  UVM_DEFAULT | UVM_NOPRINT)

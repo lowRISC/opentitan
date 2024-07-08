@@ -250,7 +250,8 @@ class i2c_monitor extends dv_base_monitor #(
 
     cfg.stop_perf_monitor.trigger();
 
-    mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
+    mon_dut_item.dir = rw_e'(rw_req);
+    mon_dut_item.bus_op = (mon_dut_item.dir == i2c_pkg::READ) ? BusOpRead : BusOpWrite;
     mon_dut_item.state = i2c_agent_pkg::StAddrByteRcvd; // Signal the addr+dir is captured
 
     // get ack after transmitting address
