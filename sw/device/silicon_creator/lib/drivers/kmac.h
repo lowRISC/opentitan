@@ -19,6 +19,16 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Configure the KMAC block for KEYMGR mode of operation.
+ *
+ * In this mode, KMAC is configured to support sideload and message masking
+ * functionality.
+ *
+ * @return Error code indicating if the operation succeeded.
+ */
+rom_error_t kmac_keymgr_configure(void);
+
+/**
  * Configure the KMAC block at startup.
  *
  * Sets the KMAC block to use software entropy (since we have no secret inputs

@@ -38,9 +38,22 @@ enum {
   kAttestationPublicKeyCoordWords =
       kAttestationPublicKeyCoordBytes / sizeof(uint32_t),
   /**
+   * Size of an attestation signature component in bits.
+   */
+  kAttestationSignatureComponentBits = 256,
+  /**
+   * Size of an attestation signature component in bytes.
+   */
+  kAttestationSignatureComponentBytes = kAttestationSignatureComponentBits / 8,
+  /**
+   * Size of an attestation signature component in 32b words.
+   */
+  kAttestationSignatureComponentWords =
+      kAttestationSignatureComponentBytes / sizeof(uint32_t),
+  /**
    * Size of an attestation signature in bits.
    */
-  kAttestationSignatureBits = 512,
+  kAttestationSignatureBits = kAttestationSignatureComponentBits * 2,
   /**
    * Size of an attestation signature in bytes.
    */
@@ -51,12 +64,20 @@ enum {
   kAttestationSignatureWords = kAttestationSignatureBytes / sizeof(uint32_t),
 };
 
-/**
- * Holds an additional seed for use in attestation key generation.
- */
-typedef struct attestation_seed {
-  uint32_t seed[kAttestationSeedWords];
-} attestation_seed_t;
+typedef enum {
+  /**
+   * The UDS attestation key seed.
+   */
+  kUdsAttestationKeySeed = 0,
+  /**
+   * The CDI_0 attestation key seed.
+   */
+  kCdi0AttestationKeySeed = 1,
+  /**
+   * The CDI_1 attestation key seed.
+   */
+  kCdi1AttestationKeySeed = 2,
+} attestation_key_seed_t;
 
 /**
  * Holds an attestation public key (ECDSA-P256).
@@ -76,7 +97,8 @@ typedef struct attestation_public_key {
  * Holds an attestation signature (ECDSA-P256).
  */
 typedef struct attestation_signature {
-  uint32_t sig[kAttestationSignatureWords];
+  uint32_t r[kAttestationSignatureComponentWords];
+  uint32_t s[kAttestationSignatureComponentWords];
 } attestation_signature_t;
 
 #ifdef __cplusplus
