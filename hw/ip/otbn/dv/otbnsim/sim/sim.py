@@ -183,12 +183,10 @@ class OTBNSim:
         if should_zero and new_zero:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
-        # If we are IDLE and rma_req is not a valid lc_ctrl signal, we
-        # expect a MUBI error inside the machine which causes us to jump to
-        # the locked state.
-        if self.state.rma_req == LcTx.INVALID and not is_locked:
+        if self.state.delayed_lock:
             self.state.set_fsm_state(FsmState.LOCKED)
             self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+            is_locked = True
 
         # If we are IDLE and get an RMA request, we want to start a secure
         # wipe, which will eventually put us into the LOCKED state.
@@ -197,7 +195,7 @@ class OTBNSim:
             self.state.set_fsm_state(FsmState.WIPING_BAD)
             self.state.wipe_rounds_done = 0
 
-        if self.state.init_sec_wipe_is_running():
+        if self.state.init_sec_wipe_is_running() and not is_locked:
             # Wait for the URND seed. If there is some genuine state to wipe
             # (because self.state.has_state_to_wipe is true), then we switch to
             # WIPING_GOOD unless the FSM state is already LOCKED, in which case
@@ -417,15 +415,24 @@ class OTBNSim:
                 if self.state.wsrs.URND.running:
                     self.state.set_fsm_state(self.state.get_fsm_state())
             else:
+                # Set a flag that tells us to lock when we get to idle. This
+                # matches the cycle of delay that happens between the end of a
+                # secure wipe where we see an invalid RMA request and the
+                # status getting locked.
+                if self.state.rma_req != LcTx.OFF:
+                    self.state.delayed_lock = True
+
                 # This is the second wipe round or the only wipe round during
-                # an RMA request. If the wipe was good, set the next state to
-                # IDLE; otherwise set it to LOCKED.
-                if not locking:
+                # an RMA request. If there is an invalid RMA signal or we were
+                # in the WIPING_BAD state (so had the locking signal set) then
+                # we should lock. Otherwise, jump to IDLE.
+                if locking:
+                    next_state = FsmState.LOCKED
+                    self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+                else:
                     next_state = FsmState.IDLE
                     if self.state.init_sec_wipe_is_running():
                         self.state.complete_init_sec_wipe()
-                else:
-                    next_state = FsmState.LOCKED
 
                 # Also, set wipe_cycles to an invalid value to make really sure
                 # we've left the wiping code. Leave wipe_rounds_done unchanged
