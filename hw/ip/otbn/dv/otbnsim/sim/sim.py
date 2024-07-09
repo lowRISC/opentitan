@@ -59,8 +59,6 @@ class OTBNSim:
         Use run() or step() to actually execute the program.
 
         '''
-        if self.state.get_fsm_state() != FsmState.IDLE:
-            return
         self.stats = ExecutionStats(self.program) if collect_stats else None
         self._execute_generator = None
         self._next_insn = None
