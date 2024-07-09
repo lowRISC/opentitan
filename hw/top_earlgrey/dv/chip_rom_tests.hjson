@@ -788,8 +788,8 @@
       name: rom_e2e_self_hash
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules"
-        "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules",
+        "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_prod:4",
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
