@@ -407,9 +407,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // this is in response to an RMA request (in which case, we shouldn't see an alert).
           // Assuming that an RMA request won't be dropped after it takes effect, we can just check
           // the escalation interface to see whether it is still high.
+          //
+          // We should also clear the pending_start_tl_trans flag if it is set. This would mean that
+          // we've seen a start request, but it's being ignored because the model locks instead of
+          // starting an execution.
           if ((item.status == otbn_pkg::StatusLocked) &&
               (cfg.escalate_vif.req != lc_ctrl_pkg::On)) begin
             expect_alert("fatal");
+            pending_start_tl_trans = 1'b0;
           end
           // Has the status changed from executing to idle with a nonzero err_bits?
           // If so, we should see a recoverable alert. Note that we are not expecting to catch
