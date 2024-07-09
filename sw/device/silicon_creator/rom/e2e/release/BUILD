@@ -17,8 +17,8 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 otp_image(
-    name = "otp_img_sigverify_spx_rma",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    name = "otp_img_sigverify_spx_prod",
+    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],
@@ -29,7 +29,6 @@ opentitan_test(
     name = "rom_e2e_self_hash_test",
     srcs = ["rom_e2e_self_hash_test.c"],
     dv = dv_params(
-        otp = ":otp_img_sigverify_spx_rma",
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -39,8 +38,9 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
     },
     fpga = fpga_params(
-        otp = ":otp_img_sigverify_spx_rma",
+        otp = ":otp_img_sigverify_spx_prod",
     ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
