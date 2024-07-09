@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
+`include "axi/typedef.svh"
 `include "register_interface/typedef.svh"
 
 //
@@ -16,7 +17,7 @@
 module top_earlgrey #(
   parameter int unsigned AxiAddrWidth = 64,
   parameter int unsigned AxiDataWidth = 64,
-  parameter int unsigned AxiIdWidth   = 8,
+  parameter int unsigned AxiIdWidth = 8,
   parameter int unsigned AxiUserWidth = 1,
   // Manually defined parameters
   parameter int unsigned HartIdOffs = 0,
@@ -123,6 +124,11 @@ module top_earlgrey #(
   parameter bit          RvCoreIbexPipeLine = 0,
   parameter int          N_LOG_MST = 2,
   parameter int          N_LOG_SLV = 8,
+  parameter              type axi_aw_chan_t = logic,
+  parameter              type axi_w_chan_t = logic,
+  parameter              type axi_b_chan_t = logic,
+  parameter              type axi_ar_chan_t = logic,
+  parameter              type axi_r_chan_t = logic,
   parameter              type axi_req_t = logic,
   parameter              type axi_rsp_t = logic
 ) (
@@ -2206,18 +2212,56 @@ module top_earlgrey #(
       .axi_req_tcdm_o ( axi_req_tcdm   ),
       .axi_rsp_tcdm_i ( axi_rsp_tcdm   )
   );
+  typedef logic [63:0]               axi32_addr_t;
+  typedef logic [31:0]               axi32_data_t;
+  typedef logic [7:0]                axi32_strb_t;
+  typedef logic                      axi32_user_t;
+  typedef logic [AxiIdWidth-1:0]  axi32_out_id_t;
+
+  `AXI_TYPEDEF_ALL(axi_out32, axi32_addr_t, axi32_out_id_t, axi32_data_t, axi32_strb_t, axi32_user_t)
+
+  axi_out32_req_t  tlul2axi_req32;
+  axi_out32_resp_t tlul2axi_rsp32;
+
+  axi_dw_converter #(
+      .AxiMaxReads         ( 8                  ),
+      .AxiSlvPortDataWidth ( 32                 ),
+      .AxiMstPortDataWidth ( AxiDataWidth       ),
+      .AxiAddrWidth        ( AxiAddrWidth       ),
+      .AxiIdWidth          ( AxiIdWidth         ),
+      .aw_chan_t           ( axi_aw_chan_t      ),
+      .mst_w_chan_t        ( axi_w_chan_t       ),
+      .slv_w_chan_t        ( axi_out32_w_chan_t ),
+      .b_chan_t            ( axi_b_chan_t       ),
+      .ar_chan_t           ( axi_ar_chan_t      ),
+      .mst_r_chan_t        ( axi_r_chan_t       ),
+      .slv_r_chan_t        ( axi_out32_r_chan_t ),
+      .axi_mst_req_t       ( axi_req_t          ),
+      .axi_mst_resp_t      ( axi_rsp_t          ),
+      .axi_slv_req_t       ( axi_out32_req_t    ),
+      .axi_slv_resp_t      ( axi_out32_resp_t   )
+  )  i_axi_dw_converter_tlul2axi (
+      .clk_i (clkmgr_aon_clocks.clk_main_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      // slave port
+      .slv_req_i  ( tlul2axi_req32 ),
+      .slv_resp_o ( tlul2axi_rsp32 ),
+      // master port
+      .mst_req_o  ( tlul2axi_req_o ),
+      .mst_resp_i ( tlul2axi_rsp_i )
+  );
   tlul2axi  #(
-      .axi_req_t(axi_req_t),
-      .axi_rsp_t(axi_rsp_t)
+      .axi_req_t( axi_out32_req_t  ),
+      .axi_rsp_t( axi_out32_resp_t )
   ) u_tlul2axi (
 
       // Interrupt
       .intr_mbox_irq_o (intr_tlul2axi_mbox_irq),
 
       // Inter-module signals
-      .axi_req_o(tlul2axi_req_o),
+      .axi_req_o(tlul2axi_req32),
       .intr_mbox_irq_i(irq_ibex_i),
-      .axi_rsp_i(tlul2axi_rsp_i),
+      .axi_rsp_i(tlul2axi_rsp32),
       .tl_i(tlul2axi_tl_req),
       .tl_o(tlul2axi_tl_rsp),
 

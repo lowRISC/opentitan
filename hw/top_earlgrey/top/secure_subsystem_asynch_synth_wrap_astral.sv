@@ -393,10 +393,10 @@ module security_island
   assign axi_mst_rsp     = { axi_cls_mst_rsp, axi_out_mst_rsp};
 
   assign axi_slv_req     = { axi_cls_slv_req, axi_cls_cfg_req, axi_idma_req, axi_tlul_req };
-  assign axi_tlul_rsp    = axi_mst_rsp[0];
-  assign axi_idma_rsp    = axi_mst_rsp[1];
-  assign axi_cls_cfg_rsp = axi_mst_rsp[2];
-  assign axi_cls_slv_rsp = axi_mst_rsp[3];
+  assign axi_tlul_rsp    = axi_slv_rsp[0];
+  assign axi_idma_rsp    = axi_slv_rsp[1];
+  assign axi_cls_cfg_rsp = axi_slv_rsp[2];
+  assign axi_cls_slv_rsp = axi_slv_rsp[3];
 
   axi_xbar #(
     .Cfg          ( XbarCfg           ),
@@ -591,7 +591,7 @@ module security_island
       .DIRECT_MAPPED_FEATURE        ( "DISABLED"                      ),
       .L2_SIZE                      ( 512*1024                        ),
       .ROM_BOOT_ADDR                ( 32'h1A000000                    ),
-      .BOOT_ADDR                    ( 32'h1C000000                    ),
+      .BOOT_ADDR                    ( 32'h1C002080                    ),
       .INSTR_RDATA_WIDTH            ( 32                              ),
       .CLUST_FPU                    ( `CLUST_FPU                      ),
       .CLUST_FP_DIVSQRT             ( `CLUST_FP_DIVSQRT               ),
@@ -704,13 +704,18 @@ module security_island
 ///////////////
 
    top_earlgrey #(
-      .HartIdOffs   ( HartIdOffs   ),
-      .axi_req_t    ( axi_req_t    ),
-      .axi_rsp_t    ( axi_resp_t   ),
-      .AxiAddrWidth ( AxiAddrWidth ),
-      .AxiDataWidth ( AxiDataWidth ),
-      .AxiIdWidth   ( AxiIdWidth   ),
-      .AxiUserWidth ( AxiUserWidth )
+      .HartIdOffs    ( HartIdOffs    ),
+      .axi_w_chan_t  ( axi_w_chan_t  ),
+      .axi_b_chan_t  ( axi_b_chan_t  ),
+      .axi_r_chan_t  ( axi_r_chan_t  ),
+      .axi_aw_chan_t ( axi_aw_chan_t ),
+      .axi_ar_chan_t ( axi_ar_chan_t ),
+      .axi_req_t     ( axi_req_t     ),
+      .axi_rsp_t     ( axi_resp_t    ),
+      .AxiAddrWidth  ( AxiAddrWidth  ),
+      .AxiDataWidth  ( AxiDataWidth  ),
+      .AxiIdWidth    ( AxiIdWidth    ),
+      .AxiUserWidth  ( AxiUserWidth  )
    ) u_RoT (
       .mio_attr_o                   (                       ),
       .dio_attr_o                   (                       ),
