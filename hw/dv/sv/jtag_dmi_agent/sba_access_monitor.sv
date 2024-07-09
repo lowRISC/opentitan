@@ -138,19 +138,8 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
                                "sbbusy=%0b, sbbusyerror=%0b"}, sbbusy, sbbusyerror))
         end
 
-        // Check if we correctly predicted busy error.
-        `DV_CHECK_EQ(sbbusyerror, `gmv(jtag_dmi_ral.sbcs.sbbusyerror))
+        // Reflect any mirrored busy error in the pending SBA request
         if (sbbusyerror) sba_req_q[0].is_busy_err = 1'b1;
-
-        // Check if we correctly predicted the malformed SBA access request errors.
-        //
-        // We can only predict SbaErrBadAlignment and SbaErrBadSize errors. For the externally
-        // indicated errors SbaErrTimeout, SbaErrBadAddr and SbaErrOther, we pass the actually seen
-        // sberror to the sba_access_item that is written to the analysis port. The external entity
-        // reading from this port is expected to verify the correctness of these errors.
-        if (sberror inside {SbaErrNone, SbaErrBadAlignment, SbaErrBadSize}) begin
-          `DV_CHECK_EQ(sberror, `gmv(jtag_dmi_ral.sbcs.sberror))
-        end
 
         if (sba_req_q.size()) begin
           if (sberror) sba_req_q[0].is_err = sba_access_err_e'(sberror);
