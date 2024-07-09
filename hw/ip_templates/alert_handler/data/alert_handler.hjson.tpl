@@ -15,7 +15,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
-  version:            "1.0.0",
+  version:            "1.0.1",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

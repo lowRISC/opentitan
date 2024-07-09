@@ -27,7 +27,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_${module_instance_name.lower()}",
   revisions: [
     {
-      version:            "1.0.0",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V2",
