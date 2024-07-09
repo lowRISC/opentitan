@@ -2214,9 +2214,9 @@ module top_earlgrey #(
   );
   typedef logic [63:0]               axi32_addr_t;
   typedef logic [31:0]               axi32_data_t;
-  typedef logic [7:0]                axi32_strb_t;
+  typedef logic [3:0]                axi32_strb_t;
   typedef logic                      axi32_user_t;
-  typedef logic [AxiIdWidth-1:0]  axi32_out_id_t;
+  typedef logic [AxiIdWidth-1:0]     axi32_out_id_t;
 
   `AXI_TYPEDEF_ALL(axi_out32, axi32_addr_t, axi32_out_id_t, axi32_data_t, axi32_strb_t, axi32_user_t)
 
