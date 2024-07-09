@@ -175,6 +175,13 @@ class OTBNState:
         # in IDLE.
         self.delayed_lock = False
 
+        # We set this flag when the first URND seed comes back from the EDN. If
+        # we get an RMA request before this flag is set, we'll be in the
+        # PRE_WIPE state and the EDN might not actually be running. In that
+        # situation, we do a shortened secure wipe (just one round and no
+        # random data).
+        self.edn_seen_running = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -216,6 +223,8 @@ class OTBNState:
         # cdc_complete() returned a 256-bit value but we actually need to split
         # it back into four 64-bit words.
         w64s = [(w256 >> (64 * i)) & ((1 << 64) - 1) for i in range(4)]
+
+        self.edn_seen_running = True
 
         self.wsrs.URND.set_seed(w64s)
 

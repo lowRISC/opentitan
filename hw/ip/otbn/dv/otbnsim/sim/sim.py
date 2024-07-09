@@ -344,7 +344,7 @@ class OTBNSim:
         # complex might not be up, so we don't want to wait for a seed. Handle
         # this by jumping straight to the WIPING state and setting the number
         # of rounds to 1 (so that we don't wait again for a seed afterwards)
-        if self.state.rma_req == LcTx.ON and self.state.wipe_rounds_done == 0:
+        if self.state.rma_req == LcTx.ON and not self.state.edn_seen_running:
             self.state.lock_after_wipe = True
             self.state.wipe_rounds_to_do = 1
             self.state.set_fsm_state(FsmState.WIPING)
