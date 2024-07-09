@@ -55,6 +55,16 @@ Correctable ECC errors are by nature not fatal errors and do not stop operation.
 Instead, if the error is correctable, the flash controller fixes the issue and registers the last address where a single bit error was seen.
 See [`ECC_SINGLE_ERR_CNT`](registers.md#ecc_single_err_cnt) and [`ECC_SINGLE_ERR_ADDR`](registers.md#ecc_single_err_addr)
 
+### Errors during Multi-Word Controller Reads
+
+Note that upon experiencing the first error during any multi-word read operation, the flash controller aborts the internal read operation but still returns the requested amount of data.
+For the word where the read error has been observed, the actual flash data is returned.
+For subsequent words, the flash controller may return:
+- An all-one word in case of an access permission error.
+- An all-zero word in case of a flash read error (e.g. reliability ECC and ICV errors) and if the flash read pipeline remains idle.
+- The data belonging to other read operations in case of a flash read error and if the flash read pipeline continues doing, e.g., host initiated read operations.
+  In this case, the data returned for the subsequent words may contain further ECC and ICV errors.
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../../sw/device/lib/dif/dif_flash_ctrl.h)
