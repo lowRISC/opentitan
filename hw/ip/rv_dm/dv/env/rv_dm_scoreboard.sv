@@ -181,16 +181,24 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   virtual task process_sba_access_fifo();
     sba_access_item item;
     forever begin
+      // Watch SBA access items by listening to sba_access_monitor, which infers SBA transactions by
+      // watching how the environment is driving the JTAG interface.
       sba_access_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA access item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
 
-      if (sba_tl_access_q.size() > 0) begin
+      if (is_debug_enabled()) begin
+        // If the debugger is enabled, the JTAG access should translate into an equivalent TL access
+        // which can be seen in sba_tl_access_q.
+        `DV_CHECK_FATAL(sba_tl_access_q.size() > 0,
+                        "Saw SBA access on the JTAG side which didn't translate into TL")
+
+        // Check that the access got translated appropriately.
         compare_sba_access(item, sba_tl_access_q.pop_front());
       end else begin
-        `uvm_error(`gfn, $sformatf({"Received predicted SBA access but no transaction was seen on ",
-                                    "the SBA TL host interface: %0s"},
-                                   item.sprint(uvm_default_line_printer)))
+        // If the debugger is not enabled, the TL access
+        // should never appear.
+        `DV_CHECK(sba_tl_access_q.size() == 0)
       end
     end
   endtask
