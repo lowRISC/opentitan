@@ -34,41 +34,39 @@ class FsmState(IntEnum):
              \-------> IDLE -> PRE_EXEC -> EXEC
                          ^                   |
                          |                   v
-                         \--------------- WIPING
-                                             |
-                 LOCKED <--------------------/
+                         \----WIPING <-> PRE_WIPE
+                                 |
+                 LOCKED <--------/
+
+    PRE_WIPE is the initial state. OTBN is requesting a URND seed from the EDN.
+    Once it arrives, we jump to WIPING and perform an actual round of wiping
+    internal state. Once that wipe is finished, we normally jump back to
+    PRE_WIPE and then back to WIPING again.
+
+    Once WIPING has finished for the second time, we jump to LOCKED if there
+    has been an RMA request or an error. If not, we jump to IDLE.
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
 
     MEM_SEC_WIPE only represents the state where OTBN is busy operating on
-    secure wipe of DMEM/IMEM using SEC_WIPE_I(D)MEM command. Secure wipe of the
-    memories also happen when we encounter a fatal error while on
+    secure wipe of DMEM/IMEM to perform the SEC_WIPE_I(D)MEM command. Secure
+    wipe of the memories also happen when we encounter a fatal error while on
     Status.BUSY_EXECUTE. However, if we are getting a fatal error Status would
     be LOCKED.
 
-    PRE_EXEC, EXEC and WIPING correspond to Status.BUSY_EXECUTE. PRE_EXEC is
-    the period after starting OTBN where we're still waiting for an EDN value
-    to seed URND. EXEC is the period where we start fetching and executing
-    instructions.
-
-    WIPING represents the time where we're performing a secure wipe of internal
-    state (ending in updating the STATUS register to show we're done). When the
-    wipe is done, we go back to IDLE or LOCKED (depending on the
-    lock_after_wipe flag).
-
-    This is a refinement of the Status enum and the integer values are picked
-    so that you can divide by 10 to get the corresponding Status entry. (This
-    isn't used in the code, but makes debugging slightly more convenient when
-    you just have the numeric values available).
+    PRE_EXEC is the period after starting OTBN where we're still waiting for an
+    EDN value to seed URND. EXEC is the period where we start fetching and
+    executing instructions.
     '''
-    IDLE = 0
-    PRE_EXEC = 10
-    EXEC = 12
-    WIPING = 13
-    MEM_SEC_WIPE = 20
-    LOCKED = 2550
+    PRE_WIPE = 0
+    WIPING = 1
+    IDLE = 2
+    PRE_EXEC = 3
+    EXEC = 4
+    MEM_SEC_WIPE = 10
+    LOCKED = 255
 
 
 class InitSecWipeState(IntEnum):
@@ -93,8 +91,8 @@ class OTBNState:
 
         self.dmem = Dmem()
 
-        self._fsm_state = FsmState.IDLE
-        self._next_fsm_state = FsmState.IDLE
+        self._fsm_state = FsmState.PRE_WIPE
+        self._next_fsm_state = FsmState.PRE_WIPE
 
         self._init_sec_wipe_state = InitSecWipeState.NOT_DONE
 
@@ -420,13 +418,12 @@ class OTBNState:
                 self.ext_regs.write('WIPE_START', 1, True)
                 self.ext_regs.regs['WIPE_START'].commit()
 
-                # Switch to a 'wiping' state
-                self.set_fsm_state(FsmState.WIPING)
+                # Switch to the pre-wipe state
+                self.set_fsm_state(FsmState.PRE_WIPE)
                 self.lock_after_wipe = should_lock
                 self.wipe_rounds_done = 0
-            elif self._fsm_state == FsmState.WIPING:
+            elif self._fsm_state in [FsmState.PRE_WIPE, FsmState.WIPING]:
                 assert should_lock
-                self._next_fsm_state = FsmState.WIPING
                 self.lock_after_wipe = True
             elif self._init_sec_wipe_state in [InitSecWipeState.IN_PROGRESS]:
                 # Make it so that we run stop method until initial secure wipe
