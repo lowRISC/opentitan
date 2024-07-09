@@ -287,6 +287,9 @@ Scramble enablement is done differently depending on the type of partitions.
 *  For information partitions, the scramble enablement is done on a per page basis.
    *  Software can configure for each page whether scramble is enabled.
 
+Note that while the minimum granularity for host and controller interface accesses is 32 bits, the scrambling as well as reliability ECC operate on full Flash words (64 bits).
+Whenever reliability ECC and/or scrambling are enabled, read, program and erase operations should thus be based on 64-bit aligned addresses.
+
 #### Flash ECC and ICV
 
 Flash supports both ECC (error correction) and ICV (integrity check value).
