@@ -91,3 +91,6 @@ hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 hw/top_earlgrey/data/top_earlgrey.hjson
 hw/top_earlgrey/data/xbar_main.hjson
 hw/top_earlgrey/data/xbar_peri.hjson
+
+# The ROM self hash test including the golden ROM hashes
+sw/device/silicon_creator/rom/e2e/release/rom_e2e_self_hash_test.c
