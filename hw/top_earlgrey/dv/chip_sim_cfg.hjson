@@ -1530,6 +1530,7 @@
       sw_images: ["//sw/device/tests:keymgr_key_derivation_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
+      run_timeout_mins: 90
     }
     {
       name: chip_sw_keymgr_sideload_kmac
