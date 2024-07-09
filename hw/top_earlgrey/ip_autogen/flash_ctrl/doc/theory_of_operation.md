@@ -490,6 +490,14 @@ The expected waveform from the perspective of the physical controller is shown b
 ]}
 ```
 
+Note that upon experiencing errors during multi-word controller read operations, the flash controller aborts the internal read operation but still returns the requested amount of data.
+For the word triggering the first error, the actual flash data is returned.
+For subsequent words, the flash controller may return:
+- An all-one word in case of an access permission error.
+- An all-zero word in case of a flash read error (e.g. reliability ECC and ICV errors) and if the flash read pipeline remains idle.
+- The data belonging to other read operations in case of a flash read error and if the flash read pipeline continues doing, e.g., host initiated read operations.
+
+
 ### Controller Program
 
 Program behavior is similar to reads.
