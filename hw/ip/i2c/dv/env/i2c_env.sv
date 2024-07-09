@@ -53,6 +53,15 @@ class i2c_env extends cip_base_env #(
         model.target_mode_wr_obs_fifo.analysis_export);
       m_i2c_agent.monitor.controller_mode_rd_item_port.connect(
         model.target_mode_rd_obs_fifo.analysis_export);
+      m_i2c_agent.monitor.target_mode_wr_item_port.connect(
+        model.controller_mode_wr_obs_fifo.analysis_export);
+      m_i2c_agent.monitor.target_mode_rd_item_port.connect(
+        model.controller_mode_rd_obs_fifo.analysis_export);
+
+      m_i2c_agent.monitor.controller_mode_in_progress_port.connect(
+        model.target_mode_in_progress_fifo.analysis_export);
+      m_i2c_agent.monitor.target_mode_in_progress_port.connect(
+        model.controller_mode_in_progress_fifo.analysis_export);
 
       // (EXP) MODEL -> SCOREBOARD
 

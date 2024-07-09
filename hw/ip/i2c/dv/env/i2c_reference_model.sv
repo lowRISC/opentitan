@@ -66,15 +66,22 @@ class i2c_reference_model extends uvm_component;
   i2c_reg_block ral;
 
   /////////////////////////////////
-  //
-  // Ports
-  // Inputs <- StimulusVseq/Monitor/DUT
-  // Outputs -> Scoreboard
 
   // Inputs
+  // - Note. that the tl_ul monitor inputs (i.e DUT CSR accesses) are input to the model via the
+  //   process_tl_access() method.
 
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;  // Input -> Monitor 'analysis_port'
-  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo;  // Input -> Monitor 'analysis_port'
+  // Complete transfer items from the i2c_monitor
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_wr_obs_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_rd_obs_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo;
+
+  // The following ports capture monitor items that contain the state of an in-progress
+  // i2c transfer. This is needed to make predictions at a more granual level, based on any
+  // mid-transfer input stimulus.
+  uvm_tlm_analysis_fifo #(i2c_item) controller_mode_in_progress_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_in_progress_fifo;
 
   // Outputs
 
@@ -88,19 +95,30 @@ class i2c_reference_model extends uvm_component;
   // Modelling Variables
   //
 
-  // DUT-Controller
+  // These queues are used to capture predictions of transfers based upon CSR writes to the DUT.
+  // As we can potentially enque multiple transfers by writing to the FMTFIFO before
+  // any transfer has even started, we need to keep a track of the expected ordering of transfers.
+  // Once we have predicted the transfer to have actually been driven and any data read back, we
+  // can drop the item from this queue.
+  // Note. that this sort of prediction does not take into account if the predicted transfer
+  // actually completed. In reality, we can halt mid-transfer and completely change the progress of
+  // the transfer. Therefore, this is a pretty limited predictor.
+  local i2c_item exp_controller_mode_txn_q[$];
+  local i2c_item prev_item[$];
+
+  // DUT-Controller Operation
   //
   // The following local seq_items are used to construct larger transactions.
   // We update the local items as different events occur, then push the item
   // into a queue for checking after the end of the transaction has been detected.
   // See the header comment for more details.
   //
-  local i2c_item exp_wr_item, prev_wr_item;
-  local i2c_item exp_rd_item, prev_rd_item, rd_pending_item;
+  local i2c_item exp_wr_item;
+  local i2c_item exp_rd_item, rd_pending_item;
   local i2c_item rd_pending_q[$]; // Helper-queue : holds partial read transactions
   local uint rdata_cnt = 0; // Count data-bytes read in a single transfer (DUT-Controller)
 
-  // DUT-Target
+  // DUT-Target Operation
   //
   // In Target-mode, read data is created in the stimulus vseqs by the function
   // i2c_base_seq::generate_agent_controller_stimulus(), and by default we form our expectations
@@ -140,8 +158,12 @@ class i2c_reference_model extends uvm_component;
     rd_pending_item = new("rd_pending_item");
 
     // Input fifos
+    controller_mode_wr_obs_fifo = new("controller_mode_wr_obs_fifo", this);
+    controller_mode_rd_obs_fifo = new("controller_mode_rd_obs_fifo", this);
     target_mode_wr_obs_fifo = new("target_mode_wr_obs_fifo", this);
     target_mode_rd_obs_fifo = new("target_mode_rd_obs_fifo", this);
+    controller_mode_in_progress_fifo = new("controller_mode_in_progress_fifo", this);
+    target_mode_in_progress_fifo = new("target_mode_in_progress_fifo", this);
     // Output ports
     controller_mode_wr_port = new("controller_mode_wr_port", this);
     controller_mode_rd_port = new("controller_mode_rd_port", this);
@@ -153,6 +175,7 @@ class i2c_reference_model extends uvm_component;
     super.run_phase(phase);
     fork
       forever create_target_exp();
+      forever create_controller_exp();
     join_none
   endtask: run_phase
 
@@ -304,9 +327,9 @@ class i2c_reference_model extends uvm_component;
         // If there is an in-progress write transfer, and this fmtfifo write has start = 1,
         // the current transfer ends (with an RSTART beginning a new transfer.)
         exp_wr_item.rstart_back = 1'b1;
-        push_complete_write_txn(exp_wr_item);
-        prev_wr_item = exp_wr_item; // Keep track of the previously pushed item.
-        exp_wr_item = new("exp_wr_item");
+        push_complete_dut_controller_xfer(exp_wr_item);
+        prev_item.push_back(exp_wr_item); // Keep track of the previously pushed item.
+        `uvm_create_obj(i2c_item, exp_wr_item);
       end
 
       // Create a new seq_item for the transfer we are starting.
@@ -314,22 +337,26 @@ class i2c_reference_model extends uvm_component;
       // of the transfer. Upon further writes to the FMTFIFO, we will fill in the remaining
       // fields.
       case (fbyte[0])
+
         i2c_pkg::READ: begin
-          exp_rd_item = new("exp_rd_item");
+          `uvm_create_obj(i2c_item, exp_rd_item);
           exp_rd_item.bus_op = BusOpRead;
+          exp_rd_item.dir    = i2c_pkg::READ;
           exp_rd_item.addr   = fbyte[7:1];
-          if (prev_rd_item != null && prev_rd_item.rstart_back) begin
+          if (prev_item[$] != null && prev_item[$].rstart_back) begin
             exp_rd_item.rstart_front = 1;
           end else begin
             exp_rd_item.start = 1;
           end
           exp_rd_item.stop = stop;
         end
+
         i2c_pkg::WRITE: begin
-          exp_wr_item = new("exp_wr_item");
+          `uvm_create_obj(i2c_item, exp_wr_item);
           exp_wr_item.bus_op = BusOpWrite;
+          exp_wr_item.dir    = i2c_pkg::WRITE;
           exp_wr_item.addr   = fbyte[7:1];
-          if (prev_wr_item != null && prev_wr_item.rstart_back) begin
+          if (prev_item[$] != null && prev_item[$].rstart_back) begin
             exp_wr_item.rstart_front = 1;
           end else begin
             exp_wr_item.start = 1;
@@ -356,9 +383,9 @@ class i2c_reference_model extends uvm_component;
         // transfer. Push it to a queue for checking.
         exp_wr_item.stop = stop;
         if (stop) begin
-          push_complete_write_txn(exp_wr_item);
-          prev_wr_item = exp_wr_item; // Keep track of the previously pushed item.
-          exp_wr_item = new("exp_wr_item");
+          push_complete_dut_controller_xfer(exp_wr_item);
+          prev_item.push_back(exp_wr_item); // Keep track of the previously pushed item.
+          `uvm_create_obj(i2c_item, exp_wr_item);
         end
       end
 
@@ -395,11 +422,11 @@ class i2c_reference_model extends uvm_component;
           // reads from 'rdata'.
           `downcast(tmp_rd_item, exp_rd_item.clone());
           rd_pending_q.push_back(tmp_rd_item);
-          prev_rd_item = tmp_rd_item; // Keep track of the previously pushed item.
+          prev_item.push_back(tmp_rd_item); // Keep track of the previously pushed item.
 
           // If this read also set the 'stop' bit to end the transaction, clear the
           // temporary variable we use to accumulate chained reads.
-          if (exp_rd_item.stop) exp_rd_item = new("exp_rd_item");
+          if (exp_rd_item.stop) `uvm_create_obj(i2c_item, exp_rd_item);
 
         end
 
@@ -408,20 +435,6 @@ class i2c_reference_model extends uvm_component;
 
   endtask: fmtfifo_write
 
-  // Push DUT-Controller write items to the scoreboard once all data for the transfer
-  // has been received at the fmtfifo.
-  //
-  task push_complete_write_txn(i2c_item wr_item);
-    // If we wrote to the FMTFIFO while in-reset or host/controller-mode was
-    // inactive, break here so we don't push the expectation for checking.
-    if (cfg.under_reset || !(`gmv(ral.ctrl.enablehost))) return;
-
-    begin
-      i2c_item temp_item;
-      `downcast(temp_item, wr_item.clone());
-      controller_mode_wr_port.write(temp_item);
-    end
-  endtask: push_complete_write_txn
 
   // Complete forming our expectations of DUT-Controller read items by capturing data read from the
   // RXFIFO and adding it into the items created when we started a read xfer in the fmtfifo.
@@ -480,14 +493,11 @@ class i2c_reference_model extends uvm_component;
         rdata_cnt = 0;
         rd_pending_item.data_ack_q.push_back(i2c_pkg::NACK);
 
-        if (!cfg.under_reset) begin
-          i2c_item tmp_rd_item;
-          `downcast(tmp_rd_item, rd_pending_item.clone());
-          controller_mode_rd_port.write(tmp_rd_item);
-          // Zero-out the pending item, though we will soon drop it for a new
-          // item the next time we go around and pick up the new FMTFIFO write.
-          rd_pending_item.clear_all();
-        end
+        push_complete_dut_controller_xfer(rd_pending_item);
+
+        // Zero-out the pending item, though we will soon drop it for a new
+        // item the next time we go around and pick up the new FMTFIFO write.
+        rd_pending_item.clear_all();
       end else begin
         rd_pending_item.data_ack_q.push_back(i2c_pkg::ACK);
       end
@@ -495,6 +505,99 @@ class i2c_reference_model extends uvm_component;
     end
 
   endtask: rdata_read
+
+
+  // Push DUT-Controller completed transfers items to the 'exp_controller_mode_txn_q[$]' once we
+  // have completed capturing the transfer expectation based on FMTFIFO/RXFIFO accesses.
+  task push_complete_dut_controller_xfer(i2c_item xfer_item);
+    `uvm_info(`gfn, $sformatf("csr_pred_xfer: Pushing following transfer to queue :\n%s",
+      xfer_item.sprint()), UVM_DEBUG)
+    begin
+      i2c_item temp_item;
+      `downcast(temp_item, xfer_item.clone());
+      exp_controller_mode_txn_q.push_back(temp_item);
+    end
+  endtask : push_complete_dut_controller_xfer
+
+
+  // Fuse data from both the I2C and TL_UL interface to create predictions for
+  // DUT-Controller transfers.
+  // TL_UL stimulus is captured via fmtfifo_write()/rdata_read() routines, which form expected
+  // transfer items that are pushed to the 'exp_controller_mode_txn_q[$]'. I2C bus inputs are
+  // captured via the TLM 'controller_mode_in_progress_fifo' items created by the i2c_agent's
+  // monitor.
+  //
+  virtual task create_controller_exp();
+    i2c_item inp_xfer; // in_progress_xfer, from the i2c_monitor
+
+    // Wait until we have captured the entire in-progress transfer from the i2c_monitor.
+    // Note. that we could do this by waiting on either of the full-transfer queues
+    // 'controller_mode_{wr,rd}_obs_fifo', but in the future we will make use of the
+    // intermediate states for prediction.
+    controller_mode_in_progress_fifo.get(inp_xfer);
+    `DV_CHECK(inp_xfer.state inside {StNone, StStarted})
+    `uvm_info(`gfn, $sformatf("create_controller_exp() : Got handle to inp_xfer item :\n%s",
+      inp_xfer.sprint()), UVM_DEBUG)
+
+    fork
+      begin
+        wait(inp_xfer.state == StAddrByteAckRcvd);
+        `uvm_info(`gfn, $sformatf(
+          "create_controller_exp() got inp_xfer : (address=8'h%2x, rw=1'b%b (%0s))",
+          inp_xfer.addr, inp_xfer.dir, inp_xfer.dir.name()), UVM_DEBUG)
+
+        wait(inp_xfer.state == StStopped);
+        `uvm_info(`gfn, "create_controller_exp() : Got inp_xfer.state == StStopped.", UVM_DEBUG)
+      end
+      // Optional (UVM_DEBUG) logging routine to print ongoing transfer state changes.
+      while(inp_xfer.state != StStopped) print_inp_xfer_state_changes(inp_xfer);
+    join_any
+
+    // At this point, we have captured the observed transfer from the i2c_monitor, but not
+    // necessarily the whole csr-predicted transfer as we need to wait for the RXFIFO to be
+    // read out to capture any read-data from the transfer.
+
+    // Now spawn a background process that waits for the csr_pred_xfer to complete, then
+    // fuses the data together and pushes the result to the scoreboard for comparison.
+    fork push_exp_when_ready(inp_xfer); join_none
+
+  endtask : create_controller_exp
+
+
+  virtual task print_inp_xfer_state_changes(i2c_item inp_xfer);
+    @(inp_xfer.state);
+    `uvm_info(`gfn, $sformatf("inp_xfer.state moved to %0s.", inp_xfer.state.name()), UVM_DEBUG)
+  endtask : print_inp_xfer_state_changes
+
+
+  virtual task push_exp_when_ready(i2c_item complete_bus_xfer);
+    i2c_item csr_pred_xfer; // Prediction created by fmtfifo_write()/rdata_read() accesses
+
+    // Wait until we have made a prediction based on the CSR accesses only.
+    wait(exp_controller_mode_txn_q.size > 0);
+    csr_pred_xfer = exp_controller_mode_txn_q.pop_front();
+
+    // We now have both bus and csr predictions. Join the data together to create the final
+    // expectation.
+
+    // If we see a NACK from the Target on the address byte, then update the prediction
+    csr_pred_xfer.addr_ack = complete_bus_xfer.addr_ack;
+    // Update the data acks with our observations
+    csr_pred_xfer.data_ack_q = complete_bus_xfer.data_ack_q;
+
+    `uvm_info(`gfn, $sformatf("Pushing following transfer to scoreboard :\n%s",
+      csr_pred_xfer.sprint()), UVM_DEBUG)
+
+    // Now that we have updated the predicted transfer, push it to the scoreboard for checking
+    case (csr_pred_xfer.bus_op)
+      BusOpRead: controller_mode_rd_port.write(csr_pred_xfer);
+      BusOpWrite: controller_mode_wr_port.write(csr_pred_xfer);
+      default: `uvm_fatal(`gfn, "Shouldn't get here!")
+    endcase
+    void'(prev_item.pop_front());
+
+  endtask : push_exp_when_ready
+
 
   // This task generates DUT-Target transfer expectations
   //
