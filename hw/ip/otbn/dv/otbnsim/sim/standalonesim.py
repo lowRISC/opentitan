@@ -5,6 +5,7 @@
 from itertools import cycle
 from typing import Optional, TextIO
 from .sim import OTBNSim
+from .state import FsmState
 
 _TEST_RND_DATA = cycle([
     0xAAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999,
@@ -28,12 +29,11 @@ class StandaloneSim(OTBNSim):
 
         '''
         insn_count = 0
-        # ISS will stall at start until URND data is valid; immediately set it
-        # valid when in free running mode as nothing else will.
-        self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
-        # Similarly, set the initial secure wipe to complete.
+
+        # Skip the initial secure wipe
         self.state.complete_init_sec_wipe()
-        while self.state.executing():
+
+        while True:
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):
                 self.state.wsrs.RND.set_unsigned(next(_TEST_RND_DATA), False,
@@ -42,14 +42,20 @@ class StandaloneSim(OTBNSim):
             if not self.state.wsrs.URND.running:
                 self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
 
+            # Similarly, if URND is not running, provide it with some arbitrary
+            # seed.
+            if not self.state.wsrs.URND.running:
+                self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
+
             self.step(verbose)
             insn_count += 1
 
             # Dump registers on the first wipe cycle. This makes sure that we
             # dump them before zeroing.
-            if dump_file is not None and self.state.wiping():
-                self.dump_regs(dump_file)
-                dump_file = None
+            if self.state.get_fsm_state() in [FsmState.IDLE, FsmState.LOCKED]:
+                if dump_file is not None:
+                    self.dump_regs(dump_file)
+                break
 
         return insn_count
 
