@@ -18,6 +18,8 @@ pub struct SpxPublicKeyInfo {
     pub public_key_num_bits: usize,
     #[annotate(format=hex,comment="Words in little endian order.")]
     pub public_key: Vec<u32>,
+    #[annotate(comment = "Formatted for use in OTP configuration")]
+    pub otp_encoded: String,
 }
 
 /// Show public information of a SPHINCS+ public key or key pair.
@@ -35,6 +37,20 @@ impl CommandDispatch for SpxKeyShowCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = SpxPublicKey::read_pem_file(&self.key_file)?;
         let bytes = key.as_bytes();
+
+        // The OTP creation tool is written in python and parses arbitrary
+        // sized integers using python's `int` constructor and then writes
+        // the values into the OTP image as little-endian values.
+        //
+        // We want to store into OTP the natuaral representaion of the
+        // SPHINCS+ key.  Since the value is parsed by the `int` constructor
+        // is interpreted as a big-endian integer, but written into OTP in
+        // little-endian byte order, we want to reverse the byte representation
+        // of the key for the OTP creation tool.
+        let mut otp = bytes.to_vec();
+        otp.reverse();
+        let otp = format!("0x{}", hex::encode(otp));
+
         Ok(Some(Box::new(SpxPublicKeyInfo {
             algorithm: key.algorithm().to_string(),
             public_key_num_bits: bytes.len() * 8,
@@ -42,6 +58,7 @@ impl CommandDispatch for SpxKeyShowCommand {
                 .chunks(4)
                 .map(|x| u32::from_le_bytes(x.try_into().unwrap()))
                 .collect(),
+            otp_encoded: otp,
         })))
     }
 }

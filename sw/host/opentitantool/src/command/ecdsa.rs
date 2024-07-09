@@ -43,6 +43,8 @@ pub struct EcdsaKeyShowResult {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
     pub sec1_encoded: Vec<u8>,
+    #[annotate(comment = "Formatted for use in OTP configuration")]
+    pub otp_encoded: String,
 }
 
 impl CommandDispatch for EcdsaKeyShowCommand {
@@ -52,9 +54,26 @@ impl CommandDispatch for EcdsaKeyShowCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
+
+        // The OTP creation tool is written in python and parses arbitrary
+        // sized integers using python's `int` constructor and then writes
+        // the values into the OTP image as little-endian values.
+        //
+        // We want to store into OTP the little-endian representations of
+        // the key's X and Y values.  Therefore, we emit the key as the
+        // big-endian representation `KEY = (Y || X)` so that when the OTP tool
+        // writes the little-endian representation of `KEY` into OTP, the
+        // resulting data will be `little-endian(X) || little-endian(Y)`.
+        let mut otp = Vec::new();
+        let point = key.key.to_encoded_point(false);
+        otp.extend_from_slice(point.y().unwrap().as_slice());
+        otp.extend_from_slice(point.x().unwrap().as_slice());
+        let otp = format!("0x{}", hex::encode(otp));
+
         Ok(Some(Box::new(EcdsaKeyShowResult {
             raw: EcdsaRawPublicKey::try_from(&key)?,
             sec1_encoded: key.key.to_sec1_bytes().to_vec(),
+            otp_encoded: otp,
         })))
     }
 }
