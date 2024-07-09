@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// This vseq generates normal DUT-Controller transactions using the base class routines
+// (from the rx_tx_vseq), except we substitute in an agent sequence which may randomly
+// NACK any bytes transmitted to it.
+//
 class i2c_host_may_nack_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_host_may_nack_vseq)
   `uvm_object_new

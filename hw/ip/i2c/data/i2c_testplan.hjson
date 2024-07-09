@@ -647,7 +647,7 @@
                 reached.
             '''
       stage: V2
-      tests: []
+      tests: ["i2c_host_may_nack"]
     }
     {
       name: target_mode_n_byte_ack_control
