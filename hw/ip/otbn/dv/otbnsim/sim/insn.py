@@ -250,13 +250,13 @@ class LW(OTBNInsn):
         base = state.gprs.get_reg(self.grs1).read_unsigned()
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
-            return
+            return None
 
         addr = (base + self.offset) & ((1 << 32) - 1)
 
         if not state.dmem.is_valid_32b_addr(addr):
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
-            return
+            return None
 
         result = state.dmem.load_u32(addr)
 
@@ -265,9 +265,10 @@ class LW(OTBNInsn):
 
         if result is None:
             state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
-            return
+            return None
 
         state.gprs.get_reg(self.grd).write_unsigned(result)
+        return None
 
 
 class SW(OTBNInsn):
@@ -419,12 +420,12 @@ class CSRRS(OTBNInsn):
         if not state.csrs.check_idx(self.csr):
             # Invalid CSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            return None
 
         bits_to_set = state.gprs.get_reg(self.grs1).read_unsigned()
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
-            return
+            return None
 
         if self.csr == 0xfc0:
             # A read from RND. If a RND value is not available, request_value()
@@ -441,6 +442,8 @@ class CSRRS(OTBNInsn):
         if self.grs1 != 0:
             state.write_csr(self.csr, new_val)
 
+        return None
+
 
 class CSRRW(OTBNInsn):
     insn = insn_for_mnemonic('csrrw', 3)
@@ -455,12 +458,12 @@ class CSRRW(OTBNInsn):
         if not state.csrs.check_idx(self.csr):
             # Invalid CSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            return None
 
         new_val = state.gprs.get_reg(self.grs1).read_unsigned()
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
-            return
+            return None
 
         if self.csr == 0xfc0 and self.grd != 0:
             # A read from RND. If a RND value is not available, request_value()
@@ -478,6 +481,7 @@ class CSRRW(OTBNInsn):
             state.gprs.get_reg(self.grd).write_unsigned(old_val)
 
         state.write_csr(self.csr, new_val)
+        return None
 
 
 class ECALL(OTBNInsn):
@@ -1045,7 +1049,7 @@ class BNLID(OTBNInsn):
 
         if self.grs1_inc and self.grd_inc:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            return None
 
         grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
@@ -1069,7 +1073,7 @@ class BNLID(OTBNInsn):
             saw_err = True
 
         if saw_err:
-            return
+            return None
 
         wrd = grd_val & 0x1f
         value = state.dmem.load_u256(addr)
@@ -1087,9 +1091,10 @@ class BNLID(OTBNInsn):
 
         if value is None:
             state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
-            return
+            return None
 
         state.wdrs.get_reg(wrd).write_unsigned(value)
+        return None
 
 
 class BNSID(OTBNInsn):
@@ -1106,7 +1111,7 @@ class BNSID(OTBNInsn):
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if self.grs1_inc and self.grs2_inc:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            return None
 
         grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
@@ -1130,7 +1135,7 @@ class BNSID(OTBNInsn):
             saw_err = True
 
         if saw_err:
-            return
+            return None
 
         if self.grs1_inc:
             new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
@@ -1146,6 +1151,7 @@ class BNSID(OTBNInsn):
         wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
 
         state.dmem.store_u256(addr, wrs_val)
+        return None
 
 
 class BNMOV(OTBNInsn):
@@ -1174,7 +1180,7 @@ class BNMOVR(OTBNInsn):
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if self.grs_inc and self.grd_inc:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            return None
 
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
         grs_val = state.gprs.get_reg(self.grs).read_unsigned()
@@ -1197,7 +1203,7 @@ class BNMOVR(OTBNInsn):
             saw_err = True
 
         if saw_err:
-            return
+            return None
 
         wrd = grd_val & 0x1f
         wrs = grs_val & 0x1f
@@ -1214,6 +1220,7 @@ class BNMOVR(OTBNInsn):
 
         value = state.wdrs.get_reg(wrs).read_unsigned()
         state.wdrs.get_reg(wrd).write_unsigned(value)
+        return None
 
 
 class BNWSRR(OTBNInsn):
@@ -1229,7 +1236,7 @@ class BNWSRR(OTBNInsn):
         if not state.wsrs.check_idx(self.wsr):
             # Invalid WSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
+            return None
 
         if self.wsr == 0x1:
             # A read from RND. If a RND value is not available, request_value()
@@ -1244,11 +1251,12 @@ class BNWSRR(OTBNInsn):
         # provided us with a value). If not, fail with a KEY_INVALID error.
         if not state.wsrs.has_value_at_idx(self.wsr):
             state.stop_at_end_of_cycle(ErrBits.KEY_INVALID)
-            return
+            return None
 
         # The WSR is ready and has a value. Read it.
         val = state.wsrs.read_at_idx(self.wsr)
         state.wdrs.get_reg(self.wrd).write_unsigned(val)
+        return None
 
 
 class BNWSRW(OTBNInsn):
