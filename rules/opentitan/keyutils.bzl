@@ -75,6 +75,13 @@ key_ecdsa = rule(
             doc = "The config of the key. Only EcdsaP256 is supported at the moment.",
             values = ["EcdsaP256"],
         ),
+        # TODO(cfrantz, moidx, #22155): To support signing with opentitantool or
+        # hsmtool, the `method` should be replaced with a `token` and `profile`
+        # similar to the `keyset` rule.  The `token` is used to get access to
+        # the appropriate PKCS11 resources (shared libs, config files, etc) and
+        # the `profile` refers to a configuration in
+        # $XDG_CONFIG_HOME/hsmtool/profiles.json that refers to the user's
+        # physical token name and credentials.
         "method": attr.string(
             doc = "Mechanism used to access the key. Can be local or hsmtool.",
             values = ["local", "hsmtool"],
