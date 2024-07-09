@@ -303,6 +303,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
       SwTestStatusFailed: `uvm_error(`gfn, "SW TEST FAILED!")
       default: begin
         // If the SW test has not reached the passed / failed state, then it timed out.
+        `uvm_info(`gfn, $sformatf("Ibex PCs: IF=%0x, ID=%0x, WB=%0x\n",
+            cfg.chip_vif.probed_cpu_pc.pc_if,
+            cfg.chip_vif.probed_cpu_pc.pc_id,
+            cfg.chip_vif.probed_cpu_pc.pc_wb), UVM_LOW)
         `uvm_error(`gfn, $sformatf("SW TEST TIMED OUT. STATE: %0s, TIMEOUT = %0d ns\n",
             cfg.sw_test_status_vif.sw_test_status.name(), cfg.sw_test_timeout_ns))
       end
