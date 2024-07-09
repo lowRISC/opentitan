@@ -65,6 +65,11 @@ For subsequent words, the flash controller may return:
 - The data belonging to other read operations in case of a flash read error and if the flash read pipeline continues doing, e.g., host initiated read operations.
   In this case, the data returned for the subsequent words may contain further ECC and ICV errors.
 
+## Granularity of Scrambling and Reliability ECC
+
+While the minimum granularity for host and controller interface accesses is 32 bits, the scrambling as well as reliability ECC operate on full Flash words (64 bits).
+Whenever reliability ECC and/or scrambling are enabled, read, program and erase operations should thus be based on 64-bit aligned addresses.
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../../sw/device/lib/dif/dif_flash_ctrl.h)
