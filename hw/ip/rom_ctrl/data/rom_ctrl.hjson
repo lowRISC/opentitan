@@ -19,7 +19,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_rom_ctrl",
   revisions: [
       {
-          version:            "1.0.0",
+          version:            "1.0.1",
           life_stage:         "L1",
           design_stage:       "D3",
           verification_stage: "V2S",

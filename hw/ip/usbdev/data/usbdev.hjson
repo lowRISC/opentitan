@@ -18,7 +18,7 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_usbdev",
-  version:            "1.0.0",
+  version:            "2.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V1",

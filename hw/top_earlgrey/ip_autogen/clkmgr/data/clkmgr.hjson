@@ -23,7 +23,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_clkmgr",
   revisions: [
     {
-      version:            "1.0.0",
+      version:            "1.0.1",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",
