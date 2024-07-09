@@ -115,18 +115,18 @@ class i2c_base_seq extends dv_base_seq #(
       case (inp_xfer.state)
         StAddrByteRcvd: begin
           // Drive an ACK/NACK to the address byte
-          drive_addr_byte_ack();
+          fork drive_addr_byte_ack(); join_none
         end
         StDataByte: begin
           if (inp_xfer.dir == i2c_pkg::READ) begin
             // The agent drives the read bytes as target-transmitter.
-            drive_read_byte();
+            fork drive_read_byte(); join_none
           end
         end
         StDataByteRcvd: begin
           if (inp_xfer.dir == i2c_pkg::WRITE) begin
             // The agent now needs to ACK or NACK the received write data byte.
-            drive_write_byte_ack();
+            fork drive_write_byte_ack(); join_none
           end
         end
         default:; // We want to fall through for all other states.
