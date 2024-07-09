@@ -117,6 +117,24 @@ run_binary(
     ]
 ]
 
+run_binary(
+    name = "wycheproof_ed25519_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
+        "@wycheproof//testvectors_v1:ed25519_test.json",
+    ],
+    outs = [":wycheproof_ed25519.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:ed25519_test.json)",
+        "--dst",
+        "$(location :wycheproof_ed25519.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ed25519_parser",
+)
+
 [
     run_binary(
         name = "nist_cavp_{}_{}_{}_json".format(
