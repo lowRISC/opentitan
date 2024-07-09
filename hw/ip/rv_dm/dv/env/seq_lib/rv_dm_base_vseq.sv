@@ -73,6 +73,14 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     late_debug_enable == 1;
   }
 
+  // If we are running without a scoreboard then avoid setting the late_debug_enable register to a
+  // value other than the default (false). The reason is that we have standard CSR check sequences
+  // that, when there is no scoreboard, assert the value matches the reset value. This doesn't work
+  // if we call set_late_debug_enable_with_reg(1) from dut_init.
+  constraint no_reg_late_debug_enable_when_no_scb_c {
+    cfg.en_scb == 1'b0 -> reg_late_debug_enable == 1'b0;
+  }
+
   // A constraint to make sure that pin_late_debug_enable and reg_late_debug_enable correctly
   // implement the intent in the late_debug_enable bit.
   constraint late_debug_enable_split_c {
@@ -135,8 +143,14 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     end
 
     // Write the late debug enable register with the value that we chose in pre_start when
-    // randomizing.
-    set_late_debug_enable_with_reg(reg_late_debug_enable);
+    // randomizing. If there is no scoreboard, check that reg_late_debug_enable is false (so we can
+    // leave the register at its default value) and skip this step. See the note above
+    // no_reg_late_debug_enable_when_no_scb_c for an explanation.
+    if (cfg.en_scb == 1'b0) begin
+      `DV_CHECK(!reg_late_debug_enable)
+    end else begin
+      set_late_debug_enable_with_reg(reg_late_debug_enable);
+    end
 
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
 
