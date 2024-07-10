@@ -138,7 +138,7 @@ bitstreams_repo(name = "bitstreams")
 
 # Setup for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
-load("//rules:hooks_setup.bzl", "hooks_setup", "secure_hooks_setup", "perso_exts_setup")
+load("//rules:hooks_setup.bzl", "hooks_setup", "provisioning_exts_setup", "secure_hooks_setup")
 hooks_setup(
     name = "hooks_setup",
     dummy = "sw/device/tests/closed_source",
@@ -147,20 +147,20 @@ secure_hooks_setup(
     name = "secure_hooks_setup",
     dummy = "sw/device/tests/closed_source",
 )
-perso_exts_setup(
-    name = "perso_exts_setup",
-    dummy = "sw/device/silicon_creator/manuf/customization",
+provisioning_exts_setup(
+    name = "provisioning_exts_setup",
+    dummy = "sw/device/silicon_creator/manuf/extensions",
 )
 
 # Declare the external repositories:
 #  - One for both manufacturer secure and non-secure domains.
-#  - One for personalization firmware extensions.
+#  - One for provisioning source code extensions.
 load("@hooks_setup//:repos.bzl", "hooks_repo")
 load("@secure_hooks_setup//:repos.bzl", "secure_hooks_repo")
-load("@perso_exts_setup//:repos.bzl", "perso_exts_repo")
+load("@provisioning_exts_setup//:repos.bzl", "provisioning_exts_repo")
 hooks_repo(name = "manufacturer_test_hooks")
 secure_hooks_repo(name = "secure_manufacturer_test_hooks")
-perso_exts_repo(name = "perso_exts")
+provisioning_exts_repo(name = "provisioning_exts")
 
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
