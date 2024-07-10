@@ -254,7 +254,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
         "//sw/device/silicon_creator/manuf/lib:personalize",
-        "@perso_exts//:perso_ext",
+        "@provisioning_exts//:perso_fw_ext",
     ],
 )
 

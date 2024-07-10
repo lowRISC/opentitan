@@ -1,4 +1,11 @@
-# Personalization Firmware Extensions
+# Provisioning Flow Extensions
+
+Various components of the reference provisioning flow provided can be extended
+to satisfy the requirements of various SKUs. This describes the infrastructure
+in place that enables extending reference provisioning flows with code managed
+outside this repo.
+
+## Personalization Firmware
 
 The personalization firmware `ft_personalize.c` defines an `extern` extension
 function that is invoked as the final step in the personalization flow.

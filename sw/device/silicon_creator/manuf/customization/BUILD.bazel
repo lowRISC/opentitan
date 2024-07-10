@@ -19,12 +19,12 @@ config_setting(
 )
 
 _PERSO_EXTS = select({
-    "example_perso_ext_cfg": [":example_perso_ext"],
-    "//conditions:default": [":default_perso_ext"],
+    "example_perso_ext_cfg": [":example_perso_fw_ext"],
+    "//conditions:default": [":default_perso_fw_ext"],
 })
 
 cc_library(
-    name = "default_perso_ext",
+    name = "default_perso_fw_ext",
     srcs = ["default_personalize_ext.c"],
     deps = [
         "@//sw/device/lib/testing/test_framework:status",
@@ -33,7 +33,7 @@ cc_library(
 )
 
 cc_library(
-    name = "example_perso_ext",
+    name = "example_perso_fw_ext",
     srcs = ["example_personalize_ext.c"],
     deps = [
         "@//sw/device/lib/runtime:log",
@@ -43,6 +43,6 @@ cc_library(
 )
 
 cc_library(
-    name = "perso_ext",
+    name = "perso_fw_ext",
     deps = _PERSO_EXTS,
 )
