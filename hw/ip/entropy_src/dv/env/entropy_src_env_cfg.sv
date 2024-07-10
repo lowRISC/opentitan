@@ -190,7 +190,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       es_main_sm_err    :/ 2,
       es_cntr_err       :/ 60,
       fifo_read_err     :/ 4,
-      fifo_state_err    :/ 4};}
+      fifo_state_err    :/ 4,
+      fifo_cntr_err     :/ 4};}
 
   constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:RNG_BUS_WIDTH-1]};}
   int        num_bins = 2**RNG_BUS_WIDTH;
@@ -211,7 +212,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     which_err_code inside {sfifo_esrng_err, sfifo_distr_err, sfifo_esfinal_err} ->
       which_fifo_err inside {read, state};
     which_err_code == fifo_read_err -> which_fifo_err == read;
-    which_err_code == fifo_state_err -> which_fifo_err == state;
+    which_err_code inside {fifo_state_err, fifo_cntr_err} -> which_fifo_err == state;
   }
 
   constraint which_fifo_c {
@@ -219,6 +220,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     which_err_code == sfifo_esrng_err -> which_fifo == sfifo_esrng;
     which_err_code == sfifo_distr_err -> which_fifo == sfifo_distr;
     which_err_code == sfifo_esfinal_err -> which_fifo == sfifo_esfinal;
+    which_err_code == fifo_cntr_err -> which_fifo inside {sfifo_observe, sfifo_esrng, sfifo_distr,
+                                                          sfifo_esfinal};
   }
 
   constraint induce_targeted_transition_c {induce_targeted_transition dist {
