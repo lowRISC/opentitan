@@ -58,13 +58,10 @@
     }
     {
       name: chip_sw_spi_host_configuration
-      desc: ''' Verifiy that the polarity and clock divider configurations work appropriately.
+      desc: ''' Verifiy that the polarity configurations work appropriately.
 
-            1. Send a packet with no clock division and no polarity switch.
-            2. Send a packet with no clock division and a polarity switch.
-            3. Send a packet with clock divided by two and a polarity switch.
-
-            The testbench should compare the three packets that are received; the second packet should be inverted from the first and the third should be send half as fast as the second.
+            1. Send four packets from the host to the device, each one with a different configuration for cpol and cpha.
+            2. The device should receive the packets and be able to decode them with the appropriated configuration.
             '''
       features: [
         "SPIHOST.CONFIG.CPOL",
@@ -73,7 +70,7 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
+      tests: ["//sw/device/tests:spi_host_config_test"]
     }
     {
       name: chip_sw_spi_host_events
