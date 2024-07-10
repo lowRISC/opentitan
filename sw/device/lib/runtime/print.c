@@ -52,6 +52,8 @@ static const char kUnknownSpec[15] = "%<unknown spec>";
 static const char kErrorTooWide[12] = "%<bad width>";
 
 static size_t base_dev_null(void *data, const char *buf, size_t len) {
+  OT_DISCARD(data);
+  OT_DISCARD(buf);
   return len;
 }
 static buffer_sink_t base_stdout = {

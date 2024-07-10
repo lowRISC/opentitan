@@ -199,9 +199,11 @@ dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
 }
 
 size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn) {
+  OT_DISCARD(otbn);
   return OTBN_DMEM_SIZE_BYTES;
 }
 
 size_t dif_otbn_get_imem_size_bytes(const dif_otbn_t *otbn) {
+  OT_DISCARD(otbn);
   return OTBN_IMEM_SIZE_BYTES;
 }

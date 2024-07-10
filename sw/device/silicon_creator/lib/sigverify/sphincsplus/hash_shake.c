@@ -49,6 +49,7 @@ static_assert(
     "For the given height, 32 bits is not large enough for a leaf index.");
 
 rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
+  OT_DISCARD(ctx);
   return kmac_shake256_configure();
 }
 

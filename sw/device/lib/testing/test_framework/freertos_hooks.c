@@ -27,6 +27,7 @@ void vApplicationMallocFailedHook(void) {
  * FreeRTOSConfig.h, and a task detects a stack overflow.
  */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+  OT_DISCARD(xTask);
   LOG_INFO("FreeRTOS stack overflow. Increase stack size of task: %s",
            pcTaskName);
   irq_global_ctrl(false);
