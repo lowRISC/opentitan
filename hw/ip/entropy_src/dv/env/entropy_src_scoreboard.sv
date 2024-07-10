@@ -2631,7 +2631,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   virtual function void process_observe_fifo_csr_access(tl_seq_item item, uvm_reg csr);
     bit [TL_DW - 1:0] csr_val;
-    bit match_found = 0;
     string msg, fmt;
     bit fw_ov_enabled = (cfg.otp_en_es_fw_over == MuBi8True) &&
                         (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True);
@@ -2656,33 +2655,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // Pop the observe FIFO queue and compare the prediction to the actual value.
         prediction = observe_fifo_q.pop_front();
         observe_read_incoming = 0;
-        fmt = "Predicting observe FIFO access, Comparing to: %08x ACTUAL VALUE : %08x";
+        fmt = "Predicting observe FIFO access, Comparing to: %08x Actual value: %08x";
         msg = $sformatf(fmt, prediction, csr_val);
         `uvm_info(`gfn, msg, UVM_FULL)
-        if (prediction == csr_val) begin
-          `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
-          observe_fifo_words++;
-          match_found = 1;
-          cov_vif.cg_observe_fifo_event_sample(
-              mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
-              mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
-              mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
-              mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
-              mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
-              ral.conf.rng_bit_sel.get_mirrored_value(),
-              mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
-              mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
-              mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
-              mubi8_t'(cfg.otp_en_es_fw_read),
-              mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
-              mubi8_t'(cfg.otp_en_es_fw_over),
-              mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
-          );
-          msg = $sformatf("Match found: %d\n", observe_fifo_words);
-          `uvm_info(`gfn, msg, UVM_FULL)
-        end
-        `DV_CHECK_EQ_FATAL(match_found, 1,
-                          "All candidate observe FIFO words have been checked, with no match")
+        `DV_CHECK_EQ_FATAL(prediction, csr_val,
+            $sformatf("Prediction for observe FIFO access failed.", prediction, csr_val))
+        `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
+        observe_fifo_words++;
+        cov_vif.cg_observe_fifo_event_sample(
+            mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+            mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
+            mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
+            mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
+            mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
+            ral.conf.rng_bit_sel.get_mirrored_value(),
+            mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
+            mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
+            mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+            mubi8_t'(cfg.otp_en_es_fw_read),
+            mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+            mubi8_t'(cfg.otp_en_es_fw_over),
+            mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
+        );
+        msg = $sformatf("Match found: %d\n", observe_fifo_words);
+        `uvm_info(`gfn, msg, UVM_FULL)
       end
     join_none
   endfunction
