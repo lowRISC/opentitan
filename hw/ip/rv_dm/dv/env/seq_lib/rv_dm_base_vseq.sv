@@ -171,7 +171,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
 
-    if (lc_hw_debug_en) begin
+    if (pinmux_hw_debug_en) begin
       // We would like to do a DMI transaction here. If this vseq is the first with debug enabled,
       // the "enable" signal will need to make it through the a prim_lc_sync in the design before it
       // takes effect. Fortunately, we can see that this has happened by looking at the trst_n
