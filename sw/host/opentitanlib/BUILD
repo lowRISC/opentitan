@@ -142,6 +142,7 @@ rust_library(
         "src/spiflash/mod.rs",
         "src/spiflash/sfdp.rs",
         "src/test_utils/bitbanging/i2c.rs",
+        "src/test_utils/bitbanging/spi.rs",
         "src/test_utils/bitbanging/mod.rs",
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",

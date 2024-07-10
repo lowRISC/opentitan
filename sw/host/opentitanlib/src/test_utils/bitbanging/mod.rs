@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod i2c;
+pub mod spi;
 
 #[repr(u8)]
 #[derive(Debug, PartialEq, Clone, Copy)]
