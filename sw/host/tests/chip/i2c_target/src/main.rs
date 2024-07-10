@@ -177,10 +177,10 @@ fn test_write_repeated_start(
 
     const REFERENCE_DATA: &[u8] = b"Hello World!";
     let broken_byte = [
-        test_utils::bitbanging::i2c::Bit::High,
-        test_utils::bitbanging::i2c::Bit::Low,
-        test_utils::bitbanging::i2c::Bit::Low,
-        test_utils::bitbanging::i2c::Bit::High,
+        test_utils::bitbanging::Bit::High,
+        test_utils::bitbanging::Bit::Low,
+        test_utils::bitbanging::Bit::Low,
+        test_utils::bitbanging::Bit::High,
     ]
     .into_iter()
     .collect();
