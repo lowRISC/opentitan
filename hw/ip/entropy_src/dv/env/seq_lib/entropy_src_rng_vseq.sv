@@ -504,6 +504,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
           cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
           `uvm_info(`gfn, $sformatf("injecting entropy: %08x", fw_ov_value), UVM_FULL)
+          csr_rd(.ptr(ral.fw_ov_wr_fifo_full.fw_ov_wr_fifo_full));
           ral.fw_ov_wr_data.set(fw_ov_value);
           csr_update(.csr(ral.fw_ov_wr_data));
         end

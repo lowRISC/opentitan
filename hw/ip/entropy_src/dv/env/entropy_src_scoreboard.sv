@@ -58,6 +58,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit [TL_DW - 1:0]                observe_fifo_q[$];
   bit                              overflow_condition = 0;
   bit                              observe_read_incoming = 0;
+  bit [TL_DW - 1:0]                fw_ov_wr_fifo_full_prediction = '0;
+  bit                              precon_fifo_full = 0;
+  bit                              precon_fifo_full_q = 0;
 
   // Queue of 64-bit words for inserting entropy input to the SHA (or raw) pipelines
   bit [SHACondWidth - 1:0]         sha_process_q[$];
@@ -150,6 +153,29 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // these data points once we notice one of these events.
   bit ignore_fw_ov_data_pulse = 0;
 
+  // Variables used to predict whether the precon FIFO is full or not.
+  int precon_fifo_cnt = 0;
+  bit sha3_msg_ready = 0;
+  bit predict_fw_ov_wr_fifo_full = 0;
+  string pad_st_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st[6:0]";
+  string pad_st_d_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st_d[6:0]";
+  string aes_halt_o_path = "tb.dut.cs_aes_halt_o";
+
+  // This enum type contains the states used for the FSM in sha3pad.sv.
+  localparam int StateWidthPad = 7;
+  typedef enum logic [StateWidthPad-1:0] {
+    StPadIdle = 7'b1000010,
+    StPrefix = 7'b0111100,
+    StPrefixWait =7'b1001100,
+    StMessage = 7'b0100101,
+    StMessageWait = 7'b0001111,
+    StPad = 7'b1111010,
+    StPadRun = 7'b0011001,
+    StPad01 = 7'b1101001,
+    StPadFlush = 7'b1010111,
+    StTerminalError = 7'b0110011
+  } pad_st_e;
+
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
   // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
   typedef enum int {
@@ -190,6 +216,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_fifo_exceptions();
         health_test_scoring_thread();
         process_xht();
+        predict_fw_ov_wr_full();
       join_none
     end
   endtask
@@ -1048,6 +1075,27 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       clear_ht_stat_predictions();
       seeds_out = 0;
       health_test_data_q.delete();
+      // Wait until the precon FIFO is not full anymore and update precon_fifo_full
+      // and precon_fifo_cnt for the prediction of fw_ov_wr_fifo_full.
+      fork
+        begin
+          bit [StateWidthPad-1:0] sha3pad_state, sha3pad_state_next;
+          bit cs_aes_halt_o;
+          // Wait one cycle for the precon FIFO clear signal to go low.
+          cfg.clk_rst_vif.wait_clks(1);
+          do begin
+            // Wait one cycle for the FIFO not full signal to potentially go high.
+            cfg.clk_rst_vif.wait_clks(1);
+            `DV_CHECK(uvm_hdl_read(pad_st_path, sha3pad_state))
+            `DV_CHECK(uvm_hdl_read(pad_st_d_path, sha3pad_state_next))
+            `DV_CHECK(uvm_hdl_read(aes_halt_o_path, cs_aes_halt_o))
+            sha3_msg_ready = !cs_aes_halt_o && (sha3pad_state == StMessage) &&
+                             (sha3pad_state_next == StMessage);
+          end while (!sha3_msg_ready);
+          precon_fifo_full = 0;
+          precon_fifo_cnt = 0;
+        end
+      join_none
     end
 
     // Internal CSRNG stores and scoreboard state is cleared on Disable and HardReset events.
@@ -1056,6 +1104,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       repacked_entropy_release_q.delete();
       overflow_condition = 0;
       `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict('b0))
+      // fw_ov_wr_fifo_full goes high when the module is disabled.
+      precon_fifo_full = 1;
+      precon_fifo_cnt = 1;
     end
 
     // Internal repetition counters and watermark registers are cleared on enable.
@@ -1478,10 +1529,34 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         end
       end
       "fw_ov_wr_data": begin
-        // TODO(#18837): need to predict this
       end
       "fw_ov_wr_fifo_full": begin
-        // TODO(#18837): need to predict this
+        if (!write && channel == AddrChannel) begin
+          fork
+            begin
+              bit es_fw_ov_insert_mode, es_bypass_mode, module_enable;
+              // Wait for the variables, needed for prediction, to update.
+              cfg.clk_rst_vif.wait_n_clks(1);
+              es_fw_ov_insert_mode = (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
+                  (cfg.otp_en_es_fw_over == MuBi8True) &&
+                  (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+              es_bypass_mode = (`gmv(ral.conf.fips_enable) != MuBi4True) ||
+                  ((`gmv(ral.entropy_control.es_type) == MuBi4True) &&
+                  (`gmv(ral.entropy_control.es_route) == MuBi4True));
+              module_enable = (`gmv(ral.module_enable.module_enable) == MuBi4True);
+
+              // fw_ov_wr_fifo_full should only be high if we are in the FW override insert mode,
+              // not in bypass mode, the SHA3 is not in the idle state and the precon FIFO is full.
+              if (es_fw_ov_insert_mode && ((!es_bypass_mode && precon_fifo_full_q) ||
+                  !module_enable)) begin
+                fw_ov_wr_fifo_full_prediction = 'b1;
+              end else begin
+                fw_ov_wr_fifo_full_prediction = 'b0;
+              end
+            end
+          join_none
+          do_read_check = 1'b0;
+        end
       end
       "fw_ov_rd_fifo_overflow": begin
       end
@@ -1748,13 +1823,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               end
             end
             "fw_ov_wr_data": begin
-              bit fips_enabled = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
-              bit es_route     = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
-              bit es_type      = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
-              bit is_fips_mode = fips_enabled && !(es_route && es_type);
-
+              bit module_enabled =
+                  ral.module_enable.module_enable.get_mirrored_value() == MuBi4True;
               bit predict_conditioned = do_condition_data();
-
               bit fw_ov_entropy_insert =
                   (cfg.otp_en_es_fw_over == MuBi8True) &&
                   (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
@@ -1792,6 +1863,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   end
                 end
               end
+
+              // Count the number of words in the precon FIFO.
+              // When module_enabled is low the the FIFO is cleared. When precon_fifo_full_q
+              // is high we dropped the current word. Otherwise, the FIFO is not full yet and/or
+              // has been popped since it was last in the full state.
+              precon_fifo_cnt = !module_enabled ? 0 :
+                                precon_fifo_full_q ? precon_fifo_cnt :
+                                (precon_fifo_cnt == 2) ? 1 : precon_fifo_cnt + 1;
+              // Notify predict_fw_ov_wr_full() that fw_ov_wr_fifo_full is being read.
+              predict_fw_ov_wr_fifo_full = 1;
             end
             "err_code_test": begin
               uvm_reg_field err_code_test = csr.get_field_by_name("err_code_test");
@@ -1911,6 +1992,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               cov_vif.cg_observe_fifo_threshold_sample(obs_fifo_threshold);
             end
           end
+        end
+        "fw_ov_wr_fifo_full": begin
+          do_read_check = 1'b0;
+          `DV_CHECK_EQ(fw_ov_wr_fifo_full_prediction, item.d_data,
+                      $sformatf("reg name: %0s", csr.get_full_name()))
         end
         "recov_alert_sts": begin
           for (int i=0; i < TL_DW; i++) begin
@@ -2600,6 +2686,68 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
     join_none
   endfunction
+
+  virtual task predict_fw_ov_wr_full();
+    bit [StateWidthPad-1:0] sha3pad_state, sha3pad_state_next;
+    bit cs_aes_halt_o;
+    bit fips_enabled;
+    bit es_route;
+    bit es_type;
+    bit is_fips_mode;
+    bit fw_ov_entropy_insert;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
+
+      fips_enabled = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
+      es_route     = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
+      es_type      = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
+      is_fips_mode = fips_enabled && !(es_route && es_type);
+
+      fw_ov_entropy_insert =
+          (cfg.otp_en_es_fw_over == MuBi8True) &&
+          (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
+          (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
+
+      `DV_CHECK(uvm_hdl_read(pad_st_path, sha3pad_state))
+      `DV_CHECK(uvm_hdl_read(pad_st_d_path, sha3pad_state_next))
+      `DV_CHECK(uvm_hdl_read(aes_halt_o_path, cs_aes_halt_o))
+
+      // SHA3 only accepts new words if the SHA3 pad SM is the StMessage state and cs_aes_halt_o
+      // is low. If the SHA3 pad SM is about to leave the StMessage state, the sha3_nsg_ready
+      // signal will go low. This signal is needed to predict whether the precon FIFO is full.
+      sha3_msg_ready = !cs_aes_halt_o && (sha3pad_state == StMessage) &&
+                       (sha3pad_state_next == StMessage);
+      // precon_fifo_full is updated whenever a new word is written to fw_ov_wr_data.
+      // The full signal however is needed for prediction with one cycle of delay since
+      // pushing/popping the FIFO takes one clock cycle as well.
+      precon_fifo_full_q = precon_fifo_full;
+      // Predict whether the precon FIFO is full.
+      fork
+        begin
+          `DV_SPINWAIT_EXIT(wait(predict_fw_ov_wr_fifo_full);,
+                            cfg.clk_rst_vif.wait_n_clks(1);)
+          // If the FIFO has entered the full state, set precon_fifo_full to high.
+          if (fw_ov_entropy_insert && is_fips_mode && !sha3_msg_ready &&
+              !precon_fifo_full_q && (precon_fifo_cnt == 2) && predict_fw_ov_wr_fifo_full) begin
+            // Reset predict_fw_ov_wr_fifo_full for the next time the fw_ov_wr_fifo_full is read.
+            predict_fw_ov_wr_fifo_full = 0;
+            precon_fifo_full = 1;
+            // Wait for sha3_msg_ready and reset precon_fifo_full and precon_fifo_cnt.
+            `DV_SPINWAIT_EXIT(wait(sha3_msg_ready);,
+                              wait(!dut_pipeline_enabled);)
+            precon_fifo_full = 0;
+            precon_fifo_cnt = 0;
+          end else begin
+            // Reset predict_fw_ov_wr_fifo_full for the next time the fw_ov_wr_fifo_full is read.
+            predict_fw_ov_wr_fifo_full = 0;
+          end
+        end
+      join_none
+    end
+  endtask
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
