@@ -43,7 +43,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
   task body();
     bit [5:0]        err_code_test_bit;
     string           path, path1, path2;
-    bit              value1, value2;
+    bit              value, value1, value2;
     string           fifo_name, path_name;
     int              first_index, last_index;
     string           fifo_base_path;
@@ -74,9 +74,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
 
     cfg.clk_rst_vif.wait_clks(100);
 
-    fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
+    fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full", "cntr": "int_err"};
     fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
-    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
+    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1, "cntr": 1'b1};
     fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
 
     reg_name = "err_code";
@@ -171,6 +171,21 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
                                                                         path_exts[i]);
         end
         force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
+        cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, cfg.which_fifo);
+      end
+      fifo_cntr_err: begin
+        fifo_name = cfg.which_fifo.name();
+        path_key = fld_name.substr(first_index+1, last_index-1);
+
+        path = cfg.entropy_src_path_vif.fifo_err_path(fifo_name, fifo_err_path[0][path_key]);
+        value = fifo_err_value[0][path_key];
+
+        fld = csr.get_field_by_name({cfg.which_fifo.name(), "_err"});
+        force_path_err(path, value, fld, 1'b1);
+        // TODO(#23988): uncomment the following lines.
+        // // Additionally check if FIFO_STATE_ERR is set.
+        // fld = csr.get_field_by_name("fifo_state_err");
+        // csr_rd_check(.ptr(fld), .compare_value(1'b1));
         cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, cfg.which_fifo);
       end
       sfifo_esrng_err_test, sfifo_distr_err_test, sfifo_observe_err_test, sfifo_esfinal_err_test,
