@@ -2,24 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use super::Bit;
 use anyhow::{bail, Context, Result};
 use arrayvec::ArrayVec;
-
-#[repr(u8)]
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Bit {
-    Low = 0,
-    High = 1,
-}
-
-impl From<u8> for Bit {
-    fn from(val: u8) -> Self {
-        match val {
-            0x00 => Self::Low,
-            _ => Self::High,
-        }
-    }
-}
 
 #[derive(Debug, PartialEq)]
 enum Symbol {
