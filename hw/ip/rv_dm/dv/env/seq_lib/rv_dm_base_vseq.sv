@@ -135,7 +135,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     // Drive the pinmux_hw_debug_en_i pin to match the pinmux_hw_debug_en bit, avoiding assertions
     // that get triggered in prim_lc_sync if the input is 'x.
-    cfg.rv_dm_vif.pinmux_hw_debug_en <= bool_to_lc_tx_t(pinmux_hw_debug_en);
+    upd_pinmux_hw_debug_en();
 
     // Drive the lc_hw_debug_en_i pin to match the lc_hw_debug_en bit, avoiding assertions that get
     // triggered in prim_lc_sync if the input is 'x.
@@ -389,6 +389,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   virtual task set_late_debug_enable_with_reg(bit bool_val);
     csr_wr(.ptr(ral.late_debug_enable), .value(bool_to_mubi32_t(bool_val)));
   endtask
+
+  // Update the pinmux_hw_debug_en_i pin to match the bit in pinmux_hw_debug_en
+  function void upd_pinmux_hw_debug_en();
+    cfg.rv_dm_vif.pinmux_hw_debug_en <= bool_to_lc_tx_t(pinmux_hw_debug_en);
+  endfunction
 
   // Update the lc_hw_debug_en_i pin to match the bit in lc_hw_debug_en
   function void upd_lc_hw_debug_en();

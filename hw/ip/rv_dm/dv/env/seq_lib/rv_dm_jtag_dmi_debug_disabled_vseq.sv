@@ -6,11 +6,6 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_jtag_dmi_debug_disabled_vseq)
   `uvm_object_new
 
-  // Override the constraint in rv_dm_base_vseq that enables debug (to disable it instead)
-  constraint debug_enabled_c {
-    lc_hw_debug_en == 1'b0;
-  }
-
   task automatic write_abstractdata(uvm_reg_data_t value);
     csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(value));
   endtask
@@ -31,46 +26,49 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
     end
   endtask
 
+  // Control the pinmux_hw_debug_en_i signal, waiting long enough to ensure the signal has
+  // synchronised properly.
+  task control_pinmux_enable(bit enable);
+    pinmux_hw_debug_en = enable;
+    upd_pinmux_hw_debug_en();
+
+    // Wait a few cycles to make sure that the changed pinmux signal has made it through a
+    // prim_lc_sync. If we start the next operation too early, things will get rather confused
+    // because only half of a JTAG operation will get through.
+    cfg.clk_rst_vif.wait_clks(3);
+  endtask
+
   task body();
-    repeat ($urandom_range(1, 10)) begin
-      bit [31:0] value0, value1;
-      `DV_CHECK_STD_RANDOMIZE_FATAL(value0)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(value1)
+    bit [31:0] value0, value1;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(value0)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(value1)
 
-      // Write value0 to abstractdata[0], then read it back, checking the value has arrived as
-      // expected.
-      write_abstractdata(value0);
-      read_abstractdata(value0);
+    // At the start of the vseq, we expect that pinmux_hw_debug_en_i is On, so we should have a
+    // working DMI connection. Write some arbitrary value to abstractdata 0.
+    write_abstractdata(value0);
+    read_abstractdata(value0);
 
-      // Possibly wait a bit
-      maybe_delay();
+    // Possibly wait a bit
+    maybe_delay();
 
-      // Pick an arbitrary value for lc_hw_debug_en_i other than On
-      upd_lc_hw_debug_en();
+    // Now we want to disable the DMI connection by setting pinmux_hw_debug_en_i to a value other
+    // than On.
+    control_pinmux_enable(1'b0);
 
-      // Wait a few cycles to make sure that the changed enable signal has made it through a
-      // prim_lc_sync. If we start the next operation too early, things will get rather confused
-      // because only the latter half of a JTAG operation will get through.
-      cfg.clk_rst_vif.wait_clks(3);
+    // Write a different value to abstractdata[0] than read it back. The write should be ignored
+    // and the register should read as zero (because the JTAG connection isn't actually up).
+    write_abstractdata(value1);
+    read_abstractdata(0);
 
-      // Write a different value to abstractdata[0] than read it back. The write should be ignored
-      // and the register should read as its reset value (because the debug block is disabled).
-      write_abstractdata(value1);
-      read_abstractdata(jtag_dmi_ral.abstractdata[0].get_reset());
+    // Possibly wait a bit
+    maybe_delay();
 
-      // Possibly wait a bit
-      maybe_delay();
+    // Issue a JTAG reset through trst_n and reconnect the DMI
+    cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
+    control_pinmux_enable(1'b1);
 
-      // Issue a JTAG reset through trst_n and switch lc_hw_debug_en to On.
-      cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-      cfg.rv_dm_vif.cb.pinmux_hw_debug_en <= lc_ctrl_pkg::On;
-
-      // Wait again to make sure the LC signal makes it through the prim_lc_sync
-      cfg.clk_rst_vif.wait_clks(3);
-
-      // Read the contents of abstractdata[0] and check they are what we set at the start.
-      read_abstractdata(value0);
-    end
+    // Read the contents of abstractdata[0] and check they are what we set at the start.
+    read_abstractdata(value0);
   endtask : body
 
 endclass  : rv_dm_jtag_dmi_debug_disabled_vseq
