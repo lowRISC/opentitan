@@ -202,11 +202,13 @@ class usb20_monitor extends dv_base_monitor #(
     req_analysis_port.write(suspend);
   endtask
 
-  // Sample USB DP/DN signals.
-  task collect_symbol(output usb_symbol_e sym);
+  // Sample USB DP/DN signals with appropriate timing for the type of traffic being; although the
+  // DUT is supposed to ignore Low Speed traffic, it does so by decoding the special 'PRE' PID
+  // (which is sent at Full Speed) and then dropping everything until the next EOP.
+  task collect_symbol(output usb_symbol_e sym, input bit low_speed = 1'b0);
+    int unsigned half_bit_clks = low_speed ? 16 : 2;
     // Advance to centre of bit interval.
-    @(posedge cfg.bif.clk_i);
-    @(posedge cfg.bif.clk_i);
+    repeat (half_bit_clks) @(posedge cfg.bif.clk_i);
     // Return the symbol currently on the bus, according to the pin configuration.
     //
     // Note: The tx_d_o and tx_se0_o signals are direct-drive DUT outputs; use these only when the
@@ -225,8 +227,7 @@ class usb20_monitor extends dv_base_monitor #(
       endcase
     end
     // Advance to next bit interval change.
-    @(posedge cfg.bif.clk_i);
-    @(posedge cfg.bif.clk_i);
+    repeat (half_bit_clks) @(posedge cfg.bif.clk_i);
   endtask
 
   // Signal Bus Reset condition to the scoreboard, with the specified duration; a reset condition
@@ -329,7 +330,10 @@ class usb20_monitor extends dv_base_monitor #(
     int unsigned eop_bits = 0;
     bit monitored_decoded_packet[];
     bit destuffed_packet[$];
+    int unsigned bitcnt = 1;
+    bit [15:0] sync_pid = 0;
     int bit_intervals = 0;
+    bit low_speed = 1'b0;
     bit valid_stuffing;
     usb_symbol_e sym;
     bit from_driver;
@@ -348,6 +352,7 @@ class usb20_monitor extends dv_base_monitor #(
     // or K state is sufficiently prolonged that we're seeing Resume Signaling.
     collect_symbol(sym);
     while (sym == USB20Sym_J || sym == USB20Sym_K) begin
+      bit j_state = (sym == USB20Sym_J);
       // Check whether we have seen only K state for a number of bit intervals.
       if (resuming && sym == USB20Sym_K) begin
         if (++bit_intervals >= 8) begin
@@ -355,15 +360,36 @@ class usb20_monitor extends dv_base_monitor #(
           return;
         end
       end else resuming = 1'b0;
-      // Collect symbol for packet.
-      packet.push_back(sym == USB20Sym_J);
-      collect_symbol(sym);
+      // To decode Low Speed traffic we need to modify the sampling frequency after collecting the
+      // PRE PID at Full Speed.
+      if (bitcnt < 16) begin
+        // Collect the SYNC and the PID; KJKJKJKK_JKKKKKJK
+        sync_pid[bitcnt] = j_state;
+        if (bitcnt == 15 && sync_pid == 16'h412a) begin
+          // USB host controller shall drive the bus to Idle (J) for at least one Full Speed bit.
+          collect_symbol(sym);
+          `DV_CHECK_EQ(sym, USB20Sym_J)
+          // Consume the Hub Setup interval.
+          wait_transition();
+          // Restart the packet collection with altered sampling frequency.
+          low_speed = 1'b1;
+          packet.delete();
+        end else begin
+          // Collect symbol for packet.
+          packet.push_back(j_state);
+        end
+        bitcnt++;
+      end else begin
+        // Collect symbol for packet.
+        packet.push_back(j_state);
+      end
+      collect_symbol(sym, low_speed);
     end
     // TODO: Consider 'dribble' tolerance here.
     // Detect and validate the EOP signaling.
     while (sym == USB20Sym_SE0) begin
       eop_bits++;
-      collect_symbol(sym);
+      collect_symbol(sym, low_speed);
     end
     valid_eop = cfg.single_bit_SE0 ? (eop_bits >= 1) : (eop_bits == 2);
 
@@ -382,11 +408,13 @@ class usb20_monitor extends dv_base_monitor #(
 
     nrzi_decoder(packet, monitored_decoded_packet);
     bit_destuffing(monitored_decoded_packet, valid_stuffing, destuffed_packet);
-    classifies_packet(valid_sync, valid_eop, valid_stuffing, destuffed_packet, from_driver);
+    classifies_packet(low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
+                      from_driver);
   endtask
 
+
 //----------------------------------------Classifies Trans----------------------------------------//
-  function void classifies_packet(bit valid_sync, bit valid_eop, bit valid_stuffing,
+  function void classifies_packet(bit low_speed, bit valid_sync, bit valid_eop, bit valid_stuffing,
                                   ref bit destuffed_packet[$], input bit from_driver);
     // Read the Packet IDentifier and check its validity.
     pid_type_e pid_e;
@@ -402,35 +430,36 @@ class usb20_monitor extends dv_base_monitor #(
       PidTypeInToken,
       PidTypeSetupToken: begin
         `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit token packets")
-        token_packet(pid_e, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+        token_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
       end
       PidTypeSofToken: begin
         `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit SOF packets")
-         sof_packet(pid_e, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+         sof_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
       end
       // Data PID Types.
       PidTypeData0,
       PidTypeData1,
       PidTypeData2,
-      PidTypeMData: data_packet(pid_e, valid_sync, valid_eop, valid_stuffing,
+      PidTypeMData: data_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
                                 destuffed_packet, from_driver);
       // Handshake PID Types.
       PidTypeAck,
       PidTypeNak,
       PidTypeStall,
-      PidTypeNyet: handshake_packet(pid_e, valid_sync, valid_eop, valid_stuffing,
+      PidTypeNyet: handshake_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
                                     destuffed_packet, from_driver);
 
       // Invalid PIDs are only those produced by fault injection, or DUT error.
-      default: invalid_packet_pid(pid_e, valid_sync, valid_eop, valid_stuffing,
+      default: invalid_packet_pid(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
                                   destuffed_packet, from_driver);
     endcase
   endfunction
 
 //-------------------------------------------SOF Packet-------------------------------------------//
-  function void sof_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
-                           ref bit destuffed_packet[$]);
+  function void sof_packet(pid_type_e pid, bit low_speed, bit valid_sync, bit valid_eop,
+                           bit valid_stuffing, ref bit destuffed_packet[$]);
     m_sof_pkt.m_pid_type = pid;
+    m_sof_pkt.low_speed = low_speed;
     m_sof_pkt.valid_sync = valid_sync;
     m_sof_pkt.valid_eop = valid_eop;
     m_sof_pkt.valid_stuffing = valid_stuffing;
@@ -449,9 +478,10 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
 //------------------------------------------Token Packet------------------------------------------//
-  function void token_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
-                             ref bit destuffed_packet[$]);
+  function void token_packet(pid_type_e pid, bit low_speed, bit valid_sync, bit valid_eop,
+                             bit valid_stuffing, ref bit destuffed_packet[$]);
     m_token_pkt.m_pid_type = pid;
+    m_token_pkt.low_speed = low_speed;
     m_token_pkt.valid_sync = valid_sync;
     m_token_pkt.valid_eop = valid_eop;
     m_token_pkt.valid_stuffing = valid_stuffing;
@@ -470,11 +500,12 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
 //------------------------------------------Data Packet-------------------------------------------//
-  function void data_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
-                            ref bit destuffed_packet[$], input bit from_driver);
+  function void data_packet(pid_type_e pid, bit low_speed, bit valid_sync, bit valid_eop,
+                            bit valid_stuffing, ref bit destuffed_packet[$], input bit from_driver);
     // Converting complete packet into transaction level (field wise)
     // Data_PID
     m_data_pkt.m_pid_type = pid;
+    m_data_pkt.low_speed = low_speed;
     m_data_pkt.valid_sync = valid_sync;
     m_data_pkt.valid_eop = valid_eop;
     m_data_pkt.valid_stuffing = valid_stuffing;
@@ -502,9 +533,11 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
 //----------------------------------------Handshake Packet----------------------------------------//
-  function void handshake_packet(pid_type_e pid, bit valid_sync, bit valid_eop, bit valid_stuffing,
-                                 ref bit destuffed_packet[$], input bit from_driver);
+  function void handshake_packet(pid_type_e pid, bit low_speed, bit valid_sync, bit valid_eop,
+                                 bit valid_stuffing, ref bit destuffed_packet[$],
+                                 input bit from_driver);
     m_handshake_pkt.m_pid_type = pid;
+    m_handshake_pkt.low_speed = low_speed;
     m_handshake_pkt.valid_sync = valid_sync;
     m_handshake_pkt.valid_eop = valid_eop;
     m_handshake_pkt.valid_stuffing = valid_stuffing;
@@ -517,19 +550,19 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
   //----------------------------------------Invalid Packet----------------------------------------//
-  function void invalid_packet_pid(pid_type_e pid, bit valid_sync, bit valid_eop,
+  function void invalid_packet_pid(pid_type_e pid, bit low_speed, bit valid_sync, bit valid_eop,
                                    bit valid_stuffing, ref bit destuffed_packet[$],
                                    input bit from_driver);
     int unsigned size = destuffed_packet.size();
     `uvm_info(`gfn, $sformatf("packet size = %d", size), UVM_HIGH)
     case (size)
-      16: handshake_packet(pid, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
+      16: handshake_packet(pid, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
                            from_driver);
       32: begin
         `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit token packets")
-        token_packet(pid, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+        token_packet(pid, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
       end
-      default: data_packet(pid, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
+      default: data_packet(pid, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
                            from_driver);
     endcase
   endfunction
