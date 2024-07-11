@@ -136,6 +136,13 @@ static void setup_flash(void) {
       8, config, TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES);
   CHECK(result == kPmpRegionConfigureNapotOk,
         "Load configuration failed, error code = %d", result);
+  // When running as ROM_EXT, ROM configures the flash memory to be readonly.
+  // We need to execute so we need to unconfigure it.
+  // This region is unconfigured by ROM_EXT so is no-op for silicon owner stage.
+  pmp_region_configure_result_t configure_result =
+      pmp_region_configure_off(5, 0);
+  CHECK(configure_result == kPmpRegionConfigureOk,
+        "Load configuration failed, error code = %d", configure_result);
 
   // Initialise the flash controller.
   dif_flash_ctrl_state_t flash_ctrl;
