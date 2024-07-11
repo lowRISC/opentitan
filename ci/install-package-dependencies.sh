@@ -59,15 +59,6 @@ TMPDIR="$(mktemp -d)" || {
 }
 trap 'rm -rf "$TMPDIR"' EXIT
 
-# Install gcc-9 and set it as the default.
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test \
-  && sudo $APT_CMD update \
-  && sudo $APT_CMD install -y gcc-9 g++-9 \
-  && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 \
-  && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90 || {
-    error "Failed to set up gcc-9"
-  }
-
 # Ensure apt package index is up-to-date.
 sudo $APT_CMD update || {
     error "Failed to run apt update"
