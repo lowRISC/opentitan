@@ -4,7 +4,7 @@
 
 from typing import Dict, List, Optional
 
-from design.mubi import prim_mubi  # type: ignore
+from design.mubi import prim_mubi
 
 from reggen.access import SWAccess, HWAccess
 from reggen.bits import Bits
