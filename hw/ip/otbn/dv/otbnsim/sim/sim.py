@@ -137,6 +137,32 @@ class OTBNSim:
 
         return changes
 
+    def _delayed_insn_cnt_zero(self) -> None:
+        '''Zero INSN_CNT if we are in a wiping state and are going to lock
+        after wipe.
+
+        This is delayed by a cycle (using the zero_insn_cnt_next flag) to match
+        the timing in the RTL.
+        '''
+        assert self.state.get_fsm_state() in [FsmState.PRE_WIPE,
+                                              FsmState.WIPING]
+
+        # Only zero instruction count if we're wiping before lock
+        if not self.state.lock_after_wipe:
+            return
+
+        # We don't print "INSN_CNT=0" on every cycle of the wipe, so we should
+        # only do something if the current value is nonzero.
+        if self.state.ext_regs.read('INSN_CNT', True) == 0:
+            return
+
+        if self.state.zero_insn_cnt_next or not self.state.lock_immediately:
+            self.state.ext_regs.write('INSN_CNT', 0, True)
+            self.state.zero_insn_cnt_next = False
+        if self.state.lock_immediately:
+            # Zero INSN_CNT in the *next* cycle to match RTL control flow.
+            self.state.zero_insn_cnt_next = True
+
     def step(self, verbose: bool) -> StepRes:
         '''Run a single cycle.
 
@@ -352,15 +378,7 @@ class OTBNSim:
             self.state.ext_regs.write('WIPE_START', 0, True)
 
         # Zero INSN_CNT once if we're going to lock after wipe.
-        if ((self.state.lock_after_wipe and
-             self.state.ext_regs.read('INSN_CNT', True) != 0)):
-            if ((self.state.zero_insn_cnt_next or
-                 not self.state.lock_immediately)):
-                self.state.ext_regs.write('INSN_CNT', 0, True)
-                self.state.zero_insn_cnt_next = False
-            if self.state.lock_immediately:
-                # Zero INSN_CNT in the *next* cycle to match RTL control flow.
-                self.state.zero_insn_cnt_next = True
+        self._delayed_insn_cnt_zero()
 
         if self.state.wsrs.URND.running:
             # Reflect wiping in STATUS register if it has not been updated yet.
@@ -387,6 +405,9 @@ class OTBNSim:
 
         is_good = not self.state.lock_after_wipe
         locking = self.state.rma_req == LcTx.ON or not is_good
+
+        # Zero INSN_CNT once if we're going to lock after wipe.
+        self._delayed_insn_cnt_zero()
 
         # If there is an RMA request, ensure lock_after_wipe is set (since
         # we're going to lock when we're done)
