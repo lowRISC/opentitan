@@ -40,11 +40,12 @@ class usbdev_low_speed_traffic_vseq extends usbdev_max_usb_traffic_vseq;
       low_speed_traffic = 1'b1;
       randcase
         1: begin
-          // TODO: DATA packets cannot be more than 8 bytes in length.
+          // Note: Low Speed DATA packets cannot be more than 8 bytes in length.
+          int unsigned num_of_bytes = $urandom_range(0, 8);
           `uvm_info(`gfn, "Generating low speed OUT transaction", UVM_MEDIUM)
           send_prnd_out_packet(ls_ep, ($urandom & 1) ? PidTypeData1 : PidTypeData0,
-                               .randomize_length(1), .num_of_bytes(0), .isochronous_transfer(0),
-                               .target_addr(ls_dev_addr));
+                               .randomize_length(0), .num_of_bytes(num_of_bytes),
+                               .isochronous_transfer(0), .target_addr(ls_dev_addr));
         end
         1: begin
           `uvm_info(`gfn, "Generating low speed IN transaction", UVM_MEDIUM)

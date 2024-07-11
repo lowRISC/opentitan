@@ -59,7 +59,11 @@ class usbdev_bad_traffic_vseq extends usbdev_bus_rand_vseq;
     // Token packets that the DUT should ignore
     spurious_pid_e pid;
     bit [7:0] bad_pid;
-    `DV_CHECK_STD_RANDOMIZE_FATAL(pid)
+    // TODO: With the usb20_monitor now able to decode valid low speed traffic, it has no reliable
+    // way to differentiate between the spurious PRE tokens generated here and the valid, intended
+    // use of PRE tokens; the 'hub setup' interval is indistinguishable from some token packets
+    // (it depends upon the target address).
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pid, pid != SpuriousErr;)
     `uvm_info(`gfn, $sformatf("Generating spurious PID type %0d", pid), UVM_MEDIUM)
     claim_driver();
     case (pid)

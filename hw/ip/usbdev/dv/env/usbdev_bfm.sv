@@ -462,7 +462,7 @@ class usbdev_bfm extends uvm_component;
   // Process a token packet from the USB host controller.
   function bit token_packet(ref token_pkt token, output usb20_item rsp);
     cancel_transaction();
-    if (|{!token.valid_sync, !token.valid_eop}) return 0;
+    if (|{token.low_speed, !token.valid_sync, !token.valid_eop}) return 0;
     if (valid_packet(token)) begin
       case (token.m_pid_type)
         // SETUP token has immediate consequence for the DUT state; both SETUP and OUT token
@@ -498,7 +498,7 @@ class usbdev_bfm extends uvm_component;
   function bit data_packet(ref data_pkt data, output usb20_item rsp);
     bit valid_crc = data.valid_crc();
     cancel_in();
-    if (!(data.valid_sync & data.valid_eop)) return 0;
+    if (|{data.low_speed, !data.valid_sync, !data.valid_eop}) return 0;
     if (valid_packet(data) && (data.m_pid_type == PidTypeData0 ||
                                data.m_pid_type == PidTypeData1)) begin
       // Consult the most recent token packet to decide how to handle the DATA packet.
@@ -574,6 +574,7 @@ class usbdev_bfm extends uvm_component;
   // Process a handshake packet, in response to an attempted transaction to the given endpoint.
   function void handshake_packet(ref handshake_pkt handshake);
     cancel_out();
+    if (|{handshake.low_speed, !handshake.valid_sync, !handshake.valid_eop}) return;
     if (!handshake.valid_pid()) intr_state[IntrRxPidErr] = 1'b1;
     if (tx_ep < NEndpoints) begin
       case (handshake.m_pid_type)
