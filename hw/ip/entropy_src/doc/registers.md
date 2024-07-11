@@ -1193,10 +1193,10 @@ Firmware override FIFO write full status register
 {"reg": [{"name": "FW_OV_WR_FIFO_FULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                                                                                                                                     |
-|:------:|:------:|:-------:|:-------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                    | Reserved                                                                                                                                                                                                                        |
-|   0    |   ro   |    x    | FW_OV_WR_FIFO_FULL | "When this bit is clear, writes to the FW_OV_WR_DATA register are allowed. If this bit is set, it is the equivalent to a FIFO full condition, and writes to the FW_OV_WR_DATA register must be delayed until this bit is reset. |
+|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:-------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                    | Reserved                                                                                                                                                                                                                       |
+|   0    |   ro   |    x    | FW_OV_WR_FIFO_FULL | When this bit is clear, writes to the FW_OV_WR_DATA register are allowed. If this bit is set, it is the equivalent to a FIFO full condition, and writes to the FW_OV_WR_DATA register must be delayed until this bit is reset. |
 
 ## FW_OV_RD_FIFO_OVERFLOW
 Firmware override observe FIFO overflow status
@@ -1242,6 +1242,7 @@ Firmware override observe FIFO read register
 A read of this register pops and returns the top of the observe FIFO.
 For this to work, the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) field needs to be set to `kMultiBitBool4True`
 In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
+Reading this register while the observe FIFO is empty results in a fatal error with [`ERR_CODE.FIFO_READ_ERR`](#err_code) and [`ERR_CODE.SFIFO_OBSERVE_ERR`](#err_code) going high.
 
 ## FW_OV_WR_DATA
 Firmware override FIFO write register
