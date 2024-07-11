@@ -335,41 +335,6 @@ int puts(const char *s)
   return i;
 }
 
-void external_irq_handler(void)  {
-  
-  int mbox_id = 159;
-  int a, b, c, e, d;
-  int volatile * p_reg, * p_reg1, * plic_check, * p_reg2, * p_reg3, * p_reg4, * p_reg5 ;
-
-  //init pointer to check memory
-  
-  p_reg1 = (int *) 0x10404008;
-  p_reg2 = (int *) 0x10404010;
-  p_reg3 = (int *) 0x10404014;
-  p_reg4 = (int *) 0x10404018;
-  p_reg5 = (int *) 0x1040401C;
-
-  // start of """Interrupt Service Routine"""
-  
-  plic_check = (int *) 0xC8200004;
-  while(*plic_check != mbox_id);   //check wether the intr is the correct one
-  
-  p_reg = (int *) 0x10404020;
- *p_reg = 0x00000000;        //clearing the pending interrupt signal
- 
- *plic_check = mbox_id;      //completing interrupt
- 
-  a = *p_reg1;
-  b = *p_reg2;
-  c = *p_reg3;
-  d = *p_reg4;
-  e = *p_reg5;
-  
-  
-  if( a == 0xBAADC0DE &&  b == 0xBAADC0DE && c == 0xBAADC0DE && d == 0xBAADC0DE && e == 0xBAADC0DE){
-      p_reg = (int *) 0x10404024; // completion interrupt to ariane agent
-     *p_reg = 0x00000001;
-  }
-  
-  return;
+__attribute__ ((weak)) void external_irq_handler(void) {
+   return;
 }

@@ -5,18 +5,13 @@
 #include "utils.h"
 #include "cluster_code.h"
 
-//#define CLUSTER_BASE 0x1c000000
-
 int main() {
-  /*
-  uint32_t volatile  * ptr;
 
-  for(uint32_t i=0;i<buffer_size;i++){
-    ptr = (uint32_t *) CLUSTER_BASE + 0x100 + i;
-    *ptr = CLUSTER[i];
-  }
-  */
+  volatile int * ptr;
+  ptr = (int *) 0xff000020;
   int lol = load_cluster_code();
+  *ptr = 0x1;
   return lol;
+
 
 }
