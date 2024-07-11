@@ -183,7 +183,7 @@
             - TBO - unclear how to generate other types of failed DMI transactions.
             '''
       stage: V2
-      tests: [] // TODO(#17034)
+      tests: ["rv_dm_dmi_failed_op"]
     }
     {
       name: jtag_dmi_dm_inactive

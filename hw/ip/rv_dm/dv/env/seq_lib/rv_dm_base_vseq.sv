@@ -370,4 +370,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.pinmux_hw_debug_en <= lc_ctrl_pkg::lc_tx_t'(lc_val);
   endfunction
 
+  // Read the dtmcs register and check the dmistat field has the expected value.
+  task check_dmistat(bit [1:0] expected_dmistat);
+    uvm_reg_data_t rdata;
+    csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
+    `DV_CHECK_EQ(expected_dmistat, get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata))
+  endtask
+
 endclass : rv_dm_base_vseq
