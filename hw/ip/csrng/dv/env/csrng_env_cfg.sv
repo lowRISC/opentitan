@@ -26,6 +26,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   // Knobs & Weights
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
+       int_state_read_enable_pct, int_state_read_enable_regwen_pct,
        enable_pct, sw_app_enable_pct, read_int_state_pct, fips_force_enable_pct, force_state_pct,
        check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks,
        max_aes_halt_clks, min_num_disable_enable, max_num_disable_enable,
@@ -44,6 +45,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand bit [2:0] fips_force;
   rand bit [3:0] lc_hw_debug_en;
   rand bit [7:0] otp_en_cs_sw_app_read;
+
+  rand bit       int_state_read_enable_regwen;
+  rand bit [2:0] int_state_read_enable;
 
   rand fatal_err_e      which_fatal_err;
   rand err_code_e       which_err_code;
@@ -114,6 +118,15 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint fips_force_enable_c { fips_force_enable dist {
                                    MuBi4True  :/ fips_force_enable_pct,
                                    MuBi4False :/ (100 - fips_force_enable_pct) };}
+
+  constraint int_state_read_enable_regwen_c { int_state_read_enable_regwen dist {
+                                              1 :/ int_state_read_enable_regwen_pct,
+                                              0 :/ (100 - int_state_read_enable_regwen_pct) };}
+
+  constraint int_state_read_enable_c { foreach(int_state_read_enable[i])
+                                           int_state_read_enable[i] dist {
+                                           1'b1 :/ int_state_read_enable_pct,
+                                           1'b0 :/ (100 - int_state_read_enable_pct) };}
 
   // Behind the aes_cipher_sm_err error code, there are which_aes_cm.num() countermeasures each of
   // which can be stimulated by forcing the Sp2VWidth independent logic rails. We bias error
@@ -250,6 +263,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     bit [csrng_env_pkg::KEY_LEN-1:0]     hw_key;
     bit [csrng_env_pkg::BLOCK_LEN-1:0]   hw_v;
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0] hw_reseed_counter;
+    bit [2:0]                            csr_int_state_read_enable;
 
     // The dedicated RESEED_COUNTER CSR is always readable.
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0] csr_reseed_counter;
@@ -273,6 +287,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     csr_rd(.ptr(ral.int_state_val), .value(rdata));
     hw_compliance = rdata[1];
     hw_status     = rdata[0];
+    csr_rd(.ptr(ral.int_state_read_enable), .value(csr_int_state_read_enable));
     `uvm_info(`gfn, $sformatf("\n"), UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("************ internal_state[%0d] ***********", app), UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("hw_reseed_counter  = %0d", hw_reseed_counter), UVM_DEBUG)
@@ -289,7 +304,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     if (compare) begin
       // The dedicated RESEED_COUNTER CSR is always readable.
       `DV_CHECK_EQ_FATAL(csr_reseed_counter, reseed_counter[app])
-      if ((read_int_state == MuBi4True) && (otp_en_cs_sw_app_read == MuBi8True)) begin
+      if ((read_int_state == MuBi4True) && (otp_en_cs_sw_app_read == MuBi8True) &&
+          (csr_int_state_read_enable[app] == 1'b1)) begin
         `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
         `DV_CHECK_EQ_FATAL(hw_v, v[app])
         `DV_CHECK_EQ_FATAL(hw_key, key[app])
@@ -322,6 +338,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            regwen)};
     str = {str,  $sformatf("\n\t |***** check_int_state                 : %10d *****| \t",
            check_int_state)};
+    str = {str,  $sformatf("\n\t |***** int_state_read_enable           :        'h%01h *****| \t",
+           int_state_read_enable)};
+    str = {str,  $sformatf("\n\t |***** int_state_read_enable_regwen    : %10d *****| \t",
+           int_state_read_enable_regwen)};
     str = {str,  $sformatf("\n\t |***** fips_force_enable               : %10d *****| \t",
            fips_force_enable)};
     str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------------| \t")};
@@ -341,6 +361,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            regwen_pct)};
     str = {str,  $sformatf("\n\t |***** check_int_state_pct             : %10d *****| \t",
            check_int_state_pct)};
+    str = {str,  $sformatf("\n\t |***** int_state_read_enable_pct       : %10d *****| \t",
+           int_state_read_enable_pct)};
+    str = {str,  $sformatf("\n\t |***** int_state_read_enable_regwen_pct: %10d *****| \t",
+           int_state_read_enable_regwen_pct)};
     str = {str,  $sformatf("\n\t |***** fips_force_enable_pct           : %10d *****| \t",
            fips_force_enable_pct)};
     str = {str,  $sformatf("\n\t |***** num_cmds_min                    : %10d *****| \t",

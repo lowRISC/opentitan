@@ -24,15 +24,17 @@ class csrng_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
 
   virtual function void configure_env();
-    cfg.otp_en_cs_sw_app_read_pct       = 80;
-    cfg.otp_en_cs_sw_app_read_inval_pct = 10;
-    cfg.lc_hw_debug_en_pct              = 50;
-    cfg.regwen_pct                      = 100;
-    cfg.enable_pct                      = 100;
-    cfg.sw_app_enable_pct               = 90;
-    cfg.read_int_state_pct              = 90;
-    cfg.fips_force_enable_pct           = 50;
-    cfg.check_int_state_pct             = 100;
+    cfg.otp_en_cs_sw_app_read_pct        = 80;
+    cfg.otp_en_cs_sw_app_read_inval_pct  = 10;
+    cfg.lc_hw_debug_en_pct               = 50;
+    cfg.regwen_pct                       = 100;
+    cfg.enable_pct                       = 100;
+    cfg.sw_app_enable_pct                = 90;
+    cfg.read_int_state_pct               = 95;
+    cfg.fips_force_enable_pct            = 50;
+    cfg.check_int_state_pct              = 100;
+    cfg.int_state_read_enable_pct        = 95;
+    cfg.int_state_read_enable_regwen_pct = 50;
   endfunction
 
 endclass : csrng_base_test
