@@ -14,13 +14,6 @@ class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
     `DV_CHECK_EQ(expected_idle, get_field_val(jtag_dtm_ral.dtmcs.idle, rdata))
   endtask
 
-  // Read the dtmcs register and check the dmistat field has the expected value.
-  task check_dmistat(bit [1:0] expected_dmistat);
-    uvm_reg_data_t rdata;
-    csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
-    `DV_CHECK_EQ(expected_dmistat, get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata))
-  endtask
-
   task body();
     uvm_reg_data_t rdata;
 

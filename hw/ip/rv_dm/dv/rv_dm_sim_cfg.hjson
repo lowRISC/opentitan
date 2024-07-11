@@ -288,6 +288,11 @@
       reseed: 2
     }
     {
+      name: rv_dm_dmi_failed_op
+      uvm_test_seq: rv_dm_dmi_failed_op_vseq
+      reseed: 2
+    }
+    {
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
     }
