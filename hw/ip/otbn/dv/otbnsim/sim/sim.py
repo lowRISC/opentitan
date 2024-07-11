@@ -11,8 +11,6 @@ from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
 
-import sys
-
 # A dictionary that defines a function of the form "address -> from -> to". If
 # PC is the current PC and cnt is the count for the innermost loop then
 # warps[PC][cnt] = new_cnt means that we should warp the current count to
@@ -510,8 +508,6 @@ class OTBNSim:
         effect.
         '''
         self.state.rma_req = read_lc_tx_t(rma_req)
-        # TODO: Remove this debug print
-        print(f'set_rma_req {self.state.rma_req!r}', file=sys.stderr)
 
     def urnd_completed(self) -> None:
         '''An outstanding URND request has just completed.

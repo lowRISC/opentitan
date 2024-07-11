@@ -348,7 +348,6 @@ module otbn_core_model
                                != 0);
       end
       if (rma_req_changed) begin
-        $display("%0t: set rma_req to %0x", $time, rma_req_fifo[1]);
         failed_lc_rma_req <= (otbn_model_set_rma_req(model_handle, rma_req_fifo[1]) != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
