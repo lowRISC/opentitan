@@ -26,6 +26,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   mubi4_t [SW_APP:0] cmd_flag0_previous;
   csrng_pkg::csrng_cmd_sts_e cmd_sts[NUM_HW_APPS + 1] = {(NUM_HW_APPS+1){CMD_STS_SUCCESS}};
 
+  bit [3:0] int_state_num;
+  bit [NUM_HW_APPS:0] int_state_read_enable;
+
   virtual csrng_cov_if                                    cov_vif;
 
   // TLM agent fifos
@@ -366,6 +369,17 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
             .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
           );
+          csr_rd(.ptr(ral.int_state_num), .value(int_state_num), .backdoor(1'b1));
+          csr_rd(.ptr(ral.int_state_read_enable), .value(int_state_read_enable), .backdoor(1'b1));
+          // Unless reading of the selected internal state is enabled, the returned data must be 0.
+          // If read access is indeed enabled, the actual check is performed by the
+          // check_internal_state() task.
+          if (`gmv(ral.ctrl.read_int_state) != MuBi4True ||
+              cfg.otp_en_cs_sw_app_read != MuBi8True ||
+              int_state_num > SW_APP ||
+              int_state_read_enable[int_state_num] == 1'b0) begin
+            `DV_CHECK_EQ_FATAL(item.d_data, 0)
+          end
         end
       end
       "fips_force": begin
