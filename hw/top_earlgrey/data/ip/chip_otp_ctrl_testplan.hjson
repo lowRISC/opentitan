@@ -48,6 +48,7 @@
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_entropy
@@ -68,6 +69,7 @@
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_program
@@ -90,6 +92,7 @@
       si_stage: SV1
       lc_states: ["PROD"]
       tests: ["chip_sw_lc_ctrl_transition"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_program_error
@@ -180,6 +183,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "RMA"]
       tests: ["chip_prim_tl_access"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_vendor_test_csr_access
@@ -232,6 +236,7 @@
       si_stage: SV1
       lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
     {
       name: otp_ctrl_partition_access_locked

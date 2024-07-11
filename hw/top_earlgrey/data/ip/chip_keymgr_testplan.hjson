@@ -43,6 +43,7 @@
         "chip_sw_keymgr_key_derivation",
         "chip_sw_keymgr_key_derivation_jitter_en",
       ]
+      bazel: []
     }
     {
       name: chip_sw_keymgr_sideload_kmac_error
@@ -160,16 +161,16 @@
             - The test should check for any error or fault code status, to ensure all operations
               executed successfully.
             '''
-            features: [
-              "KEYMGR.DERIVE.ATTESTATION",
-              "KEYMGR.GENERATE.OUTPUT",
-              "KEYMGR.GENERATE.IDENTITY",
-            ]
-            stage: V3
-            si_stage: SV2
-            lc_states: ["PROD"]
-            tests: []
-            bazel: []
+      features: [
+        "KEYMGR.DERIVE.ATTESTATION",
+        "KEYMGR.GENERATE.OUTPUT",
+        "KEYMGR.GENERATE.IDENTITY",
+      ]
+      stage: V3
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
     }
     {
       name: chip_sw_keymgr_derive_sealing
@@ -183,17 +184,17 @@
             - Test a valid and an invalid key version when generating SW and sideload keys.
 
             '''
-            features: [
-              "KEYMGR.DERIVE.SEALING",
-              "KEYMGR.GENERATE.OUTPUT",
-              "KEYMGR.GENERATE.IDENTITY",
-              "KEYMGR.KEY_VERSIONING",
-            ]
-            stage: V3
-            si_stage: SV3
-            lc_states: ["PROD"]
-            tests: []
-            bazel: []
+      features: [
+        "KEYMGR.DERIVE.SEALING",
+        "KEYMGR.GENERATE.OUTPUT",
+        "KEYMGR.GENERATE.IDENTITY",
+        "KEYMGR.KEY_VERSIONING",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
     }
   ]
 }

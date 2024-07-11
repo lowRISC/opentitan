@@ -108,6 +108,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_aes_entropy
@@ -176,6 +177,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_aes_prng_reseed"]
+      bazel: []
     }
     {
       name: chip_sw_aes_force_prng_reseed
@@ -209,6 +211,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_aes_force_prng_reseed"]
+      bazel: []
     }
     {
       name: chip_sw_aes_idle

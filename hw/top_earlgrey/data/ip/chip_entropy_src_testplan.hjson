@@ -79,7 +79,6 @@
       si_stage: NA
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
-      bazel: []
     },
     {
       name: chip_sw_entropy_src_known_answer_tests

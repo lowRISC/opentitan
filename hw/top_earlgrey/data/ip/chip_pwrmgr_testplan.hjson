@@ -196,7 +196,6 @@
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
@@ -259,7 +258,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_main_power_glitch_reset

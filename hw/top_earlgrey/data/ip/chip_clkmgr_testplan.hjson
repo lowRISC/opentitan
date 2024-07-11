@@ -149,7 +149,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
-      bazel: []
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_sw

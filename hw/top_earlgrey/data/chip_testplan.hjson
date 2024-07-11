@@ -121,6 +121,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
+      bazel: []
     }
     {
       name: chip_padctrl_attributes
@@ -140,6 +141,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
+      bazel: []
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
@@ -182,6 +184,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_wake"]
+      bazel: []
     }
     {
       name: chip_sw_sleep_pin_retention
@@ -264,6 +267,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       tests: ["chip_sw_pattgen_ios"]
+      bazel: []
     }
 
     // PWM (pre-verified IP) integration tests:
@@ -381,6 +385,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_ast_clk_rst_inputs"]
+      bazel: []
     }
     {
       name: chip_sw_ast_sys_clk_jitter
@@ -401,6 +406,7 @@
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en",
               "chip_sw_edn_entropy_reqs_jitter"]
+      bazel: []
     }
     {
       name: chip_sw_ast_usb_clk_calib
@@ -421,6 +427,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_usb_ast_clk_calib"]
+      bazel: []
     }
 
     // SENSOR_CTRL tests:
@@ -452,6 +459,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sensor_ctrl_status"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
@@ -463,6 +471,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+      bazel: []
     }
 
     ////////////////////////////
@@ -745,6 +754,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_power_sleep_load"]
+      bazel: []
     }
 
     {

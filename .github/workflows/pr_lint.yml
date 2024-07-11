@@ -39,3 +39,21 @@ jobs:
           suggest_fixes: 'false'
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
+  testplans-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install hjson jsonschema
+      - name: Run testplans linter action on hw/top_earlgrey/data
+        run: |
+          ./util/lint_testplan.py \
+            --dir hw/top_earlgrey/data \
+            --schema hw/lint/sival_testplan_schema.json
+      - name: Run testplans linter action on hw/top_earlgrey/data/ip
+        run: |
+          ./util/lint_testplan.py \
+            --dir hw/top_earlgrey/data/ip \
+            --schema hw/lint/sival_testplan_schema.json
