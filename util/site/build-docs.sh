@@ -17,12 +17,20 @@ declare command="build"
 # The following are only used for "command='serve-proxy'" ------------------------|
 declare public_domain="" # (optional) The public-facing domain                  <-|
 declare public_port=""   # (optional)The port added to the public-facing domain <-|
+declare book_out
 
-case "$1" in
-  "build"|"build-local"|"build-staging"|"serve"|"serve-proxy")
-    command="$1"
-    public_domain="${2}"
-    public_port="${3}"
+command="$1"
+public_domain="${2}"
+public_port="${3}"
+
+case "$command" in
+  "build"|"build-staging")
+    book_out="${build_dir}/book"
+    ;;
+  "build-local"|"serve"|"serve-proxy")
+    # Build book at the root when serving docs by themselves since we won't have
+    # a landing page.
+    book_out="${build_dir}"
     ;;
   "help"|*)
     echo "USAGE: $0 <command> [public_domain] [public_port]"
@@ -79,9 +87,6 @@ getURLs () {
 }
 getURLs
 
-# Export some environment variables that tools will pick up
-export URL_ROOT="${base_url}/book" # earlgrey_diagram
-
 # Build up doxygen command
 doxygen_env="env"
 doxygen_env+=" SRCTREE_TOP=${proj_root}"
@@ -104,7 +109,7 @@ book_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
 book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
 book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
 book_args="build"
-book_args+=" --dest-dir ${build_dir}/book/"
+book_args+=" --dest-dir ${book_out}/"
 book_args+=" ${proj_root}"
 
 ############
@@ -127,7 +132,7 @@ buildSite () {
     ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${book_args}
     # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
     local font="Recursive_wght,CASL@300__800,0_5.woff2"
-    cp "${proj_root}/site/book-theme/${font}" "${build_dir}/book/site/book-theme/${font}"
+    cp "${proj_root}/site/book-theme/${font}" "${book_out}/site/book-theme/${font}"
 
     # Build Rust Documentation
     local rustdoc_dir="${build_dir}/gen/rustdoc/"
@@ -139,7 +144,7 @@ buildSite () {
       target_rustdoc_output_path="${bazel_out}/k8-fastbuild/bin/$(echo ${target_rustdoc} | tr ':' '/').rustdoc" #TODO : get the target's path using cquery
       ./bazelisk.sh build --experimental_convenience_symlinks=ignore "${target_rustdoc}"
       cp -rf "${target_rustdoc_output_path}"/* "${rustdoc_dir}"
-      chown -R $USER: "${rustdoc_dir}"
+      chown -R "$USER": "${rustdoc_dir}"
       chmod -R +w "${rustdoc_dir}"
     done
     # The files from bazel-out aren't writable. This ensures those that were copied are.
@@ -155,7 +160,7 @@ buildSite () {
     # Remove some unneeded files/directories that mdbook copies to the output dir
     # TODO handle this with a .ignore file or other mechanism
     for f in .git .github build-site; do
-        rm -rf "${build_dir}/book/${f}"
+        rm -rf "${book_out:?}/${f:?}"
     done
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
     # -------
@@ -173,6 +178,6 @@ if [ "$command" = "serve" ] || [ "$command" = "serve-proxy" ]; then
   echo "Website being served at : ${base_url}"
   echo
   echo "--------------------------------------------"
-  python3 -m http.server -d "$build_dir" ${serve_port:1}
+  python3 -m http.server -d "$build_dir" "${serve_port:1}"
                                          # strip leading :
 fi
