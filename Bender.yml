@@ -828,6 +828,7 @@ sources:
            - hw/include/cluster_bus_defines.sv
            - hw/tb/util/uart.sv
            - hw/tb/util/jtag_intf.sv
+           - hw/tb/util/axi2mem.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/vip_security_island_soc.sv
@@ -844,6 +845,7 @@ sources:
            - hw/tb/util/uart.sv
            - hw/tb/vips/s25fs256s.v
            - hw/tb/util/jtag_intf.sv
+           - hw/tb/util/axi2mem.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench_asynch_astral.sv

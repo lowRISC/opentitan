@@ -35,13 +35,13 @@ module crypto_sram_wrap
   output logic [NumMst-1:0] [SlvDataWidth-1:0]  r_rdata_o
 );
 
-  logic [NumSlv-1:0]                    mem_req_l2;
-  logic [NumSlv-1:0]                    mem_wen_l2;
-  logic [NumSlv-1:0]                    mem_gnt_l2;
-  logic [NumSlv-1:0][SlvAddrWidth-1:0]  mem_addr_l2;
-  logic [NumSlv-1:0][3:0]               mem_be_l2;
-  logic [NumSlv-1:0][SlvDataWidth-1:0]  mem_wdata_l2;
-  logic [NumSlv-1:0][SlvDataWidth-1:0]  mem_rdata_l2;
+  logic [NumSlv-1:0]                     mem_req_l2;
+  logic [NumSlv-1:0]                     mem_wen_l2;
+  logic [NumSlv-1:0]                     mem_gnt_l2;
+  logic [NumSlv-1:0][SlvAddrWidth-1:0]   mem_addr_l2;
+  logic [NumSlv-1:0][SlvDataWidth/8-1:0] mem_be_l2;
+  logic [NumSlv-1:0][SlvDataWidth-1:0]   mem_wdata_l2;
+  logic [NumSlv-1:0][SlvDataWidth-1:0]   mem_rdata_l2;
 
   tcdm_interconnect #(
     .NumIn        ( NumMst                     ),

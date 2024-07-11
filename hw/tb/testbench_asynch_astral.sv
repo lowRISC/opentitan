@@ -7,6 +7,9 @@
 // this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
+//
+// Author: Maicol Ciani <maicol.ciani@unibo.it>
+//
 
 `include "axi_assign.svh"
 `include "axi_typedef.svh"
@@ -24,7 +27,10 @@ module testbench_asynch_astral ();
    import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
 
- ////////////////////////////  Defines ////////////////////////////
+// -----------------------------------------------------------------------------------
+// Defines
+// -----------------------------------------------------------------------------------
+
 
    localparam AxiWideBeWidth    = 4;
    localparam AxiWideByteOffset = $clog2(AxiWideBeWidth);
@@ -67,14 +73,8 @@ module testbench_asynch_astral ();
    localparam int  unsigned LogDepth             = SynthLogDepth;
    localparam int  unsigned CdcSyncStages        = SynthCdcSyncStages;
 
-   localparam bit  RAND_RESP = 0;
-   localparam int  AX_MIN_WAIT_CYCLES = 0;
-   localparam int  AX_MAX_WAIT_CYCLES = 1;
-   localparam int  R_MIN_WAIT_CYCLES = 0;
-   localparam int  R_MAX_WAIT_CYCLES = 1;
-   localparam int  RESP_MIN_WAIT_CYCLES = 0;
-   localparam int  RESP_MAX_WAIT_CYCLES = 1;
-   localparam int  NUM_BEATS = 100;
+   localparam int  Depth = 32*1024;
+   localparam int  Aw    = $clog2(Depth);
 
    localparam int unsigned RTC_CLOCK_PERIOD = 10ns;
 
@@ -113,7 +113,33 @@ module testbench_asynch_astral ();
    logic             [LogDepth:0] async_axi_out_r_wptr_i;
    logic             [LogDepth:0] async_axi_out_r_rptr_o;
 
+
+   logic                      mem_mst_req;
+   logic [AxiAddrWidth-1:0]   mem_mst_add;
+   logic                      mem_mst_wen;
+   logic [31:0]               mem_mst_wdata;
+   logic                      mem_mst_gnt;
+   logic                      mem_mst_r_valid;
+   logic [31:0]               mem_mst_r_rdata;
+   logic [3:0]                mem_mst_be;
+   logic                      mem_rvalid_d, rvalid_d, rvalid_q;
+
+   typedef logic [63:0]               axi32_addr_t;
+   typedef logic [31:0]               axi32_data_t;
+   typedef logic [3:0]                axi32_strb_t;
+   typedef logic                      axi32_user_t;
+   typedef logic [AxiOutIdWidth-1:0]  axi32_out_id_t;
+
+   `AXI_TYPEDEF_ALL(axi_out32, axi32_addr_t, axi32_out_id_t, axi32_data_t, axi32_strb_t, axi32_user_t)
+
+   axi_out32_req_t   tlul2axi32_req;
+   axi_out32_resp_t  tlul2axi32_rsp;
+
    uart_bus #(.BAUD_RATE(1250000), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx), .tx(ibex_uart_rx), .rx_en(1'b1)); //1470588
+
+// -----------------------------------------------------------------------------------
+// JTAG Driver
+// -----------------------------------------------------------------------------------
 
    typedef jtag_ot_test::riscv_dbg #(
       .IrLength       (5                 ),
@@ -145,6 +171,10 @@ module testbench_asynch_astral ();
 
    assign ibex_uart_rx = '0;
 
+// -----------------------------------------------------------------------------------
+// Flash VIP
+// -----------------------------------------------------------------------------------
+
 `ifdef VIPS
    pad_alsaqr i_I0 ( .OEN(~SPIdata_oe_o[0]), .I(SPIdata_o[0]), .O(), .PUEN(1'b1), .PAD(I0),
                      .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
@@ -165,6 +195,10 @@ module testbench_asynch_astral ();
     .RESETNeg (    )
    );
 `endif //  `ifdef VIPS
+
+// -----------------------------------------------------------------------------------
+// Simulation Memory
+// -----------------------------------------------------------------------------------
 
    axi_cdc_dst #(
      .LogDepth   ( LogDepth         ),
@@ -198,21 +232,80 @@ module testbench_asynch_astral ();
      .dst_resp_i                ( tlul2axi_rsp )
    );
 
-   axi_sim_mem #(
-       .AddrWidth (AxiAddrWidth),
-       .DataWidth (AxiDataWidth),
-       .IdWidth   (AxiOutIdWidth),
-       .UserWidth (AxiUserWidth),
-       .axi_req_t (axi_out_req_t),
-       .axi_rsp_t (axi_out_resp_t)
-   ) sim_mem (
-       .clk_i     ( clk_sys      ),
-       .rst_ni    ( rst_sys_n    ),
-       .axi_req_i ( tlul2axi_req ),
-       .axi_rsp_o ( tlul2axi_rsp )
+   AXI_BUS #(
+     .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+     .AXI_DATA_WIDTH ( 32            ),
+     .AXI_ID_WIDTH   ( AxiOutIdWidth ),
+     .AXI_USER_WIDTH ( AxiUserWidth  )
+   ) axi_slv();
+
+  `AXI_ASSIGN_FROM_REQ(axi_slv,tlul2axi32_req)
+  `AXI_ASSIGN_TO_RESP(tlul2axi32_rsp, axi_slv)
+
+   axi_dw_converter #(
+      .AxiMaxReads         ( 8                  ),
+      .AxiSlvPortDataWidth ( 64                 ),
+      .AxiMstPortDataWidth ( 32                 ),
+      .AxiAddrWidth        ( AxiAddrWidth    ),
+      .AxiIdWidth          ( AxiOutIdWidth      ),
+      .aw_chan_t           ( axi_out_aw_chan_t  ),
+      .mst_w_chan_t        ( axi_out32_w_chan_t ),
+      .slv_w_chan_t        ( axi_out_w_chan_t   ),
+      .b_chan_t            ( axi_out_b_chan_t   ),
+      .ar_chan_t           ( axi_out_ar_chan_t  ),
+      .mst_r_chan_t        ( axi_out32_r_chan_t ),
+      .slv_r_chan_t        ( axi_out_r_chan_t   ),
+      .axi_mst_req_t       ( axi_out32_req_t    ),
+      .axi_mst_resp_t      ( axi_out32_resp_t    ),
+      .axi_slv_req_t       ( axi_out_req_t      ),
+      .axi_slv_resp_t      ( axi_out_resp_t     )
+   )  i_axi_dw_converter_tlul2axi (
+      .clk_i   ( clk_sys         ),
+      .rst_ni  ( rst_sys_n       ),
+      // slave port
+      .slv_req_i  ( tlul2axi_req ),
+      .slv_resp_o ( tlul2axi_rsp ),
+      // master port
+      .mst_req_o  ( tlul2axi32_req   ),
+      .mst_resp_i ( tlul2axi32_rsp   )
    );
 
-/////////////////////////////// DUT ///////////////////////////////
+   axi2mem #(
+      .AXI_ID_WIDTH   ( AxiOutIdWidth ),
+      .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+      .AXI_DATA_WIDTH ( 32            ),
+      .AXI_USER_WIDTH ( AxiUserWidth  )
+   ) axi2mem (
+      .clk_i   ( clk_sys         ),
+      .rst_ni  ( rst_sys_n       ),
+      .slave   ( axi_slv         ),
+      .req_o   ( mem_mst_req     ),
+      .we_o    ( mem_mst_wen     ),
+      .addr_o  ( mem_mst_add     ),
+      .be_o    ( mem_mst_be      ),
+      .data_o  ( mem_mst_wdata   ),
+      .data_i  ( mem_mst_r_rdata )
+   );
+
+   tc_sram #(
+      .NumWords  ( Depth   ),
+      .DataWidth ( 32      ),
+      .NumPorts  ( 1       ),
+      .SimInit   ( "zeros" )
+   ) sim_ram (
+      .clk_i   ( clk_sys                     ),
+      .rst_ni  ( rst_sys_n                   ),
+      .req_i   ( mem_mst_req                 ),
+      .addr_i  ( {2'b0, mem_mst_add[Aw-1:2]} ),
+      .wdata_i ( mem_mst_wdata               ),
+      .rdata_o ( mem_mst_r_rdata             ),
+      .we_i    ( mem_mst_wen                 ),
+      .be_i    ( mem_mst_be                  )
+   );
+
+// -----------------------------------------------------------------------------------
+// DUT
+// -----------------------------------------------------------------------------------
 
    security_island #(.HartIdOffs(0)) dut (
        .clk_i            ( clk_sys       ),
@@ -223,14 +316,14 @@ module testbench_asynch_astral ();
        .bootmode_i       ( bootmode      ),
        .test_enable_i    ( '0            ),
        .irq_ibex_i       ( '0            ),
-    // JTAG port
+       // JTAG port
        .jtag_tck_i       ( jtag_i.tck    ),
        .jtag_tms_i       ( jtag_i.tms    ),
        .jtag_trst_n_i    ( jtag_i.trst_n ),
        .jtag_tdi_i       ( jtag_i.tdi    ),
        .jtag_tdo_o       ( jtag_o.tdo    ),
        .jtag_tdo_oe_o    (               ),
-    // Asynch axi port
+       // Asynch axi port
        .async_axi_out_aw_data_o,
        .async_axi_out_aw_wptr_o,
        .async_axi_out_aw_rptr_i,
@@ -246,10 +339,10 @@ module testbench_asynch_astral ();
        .async_axi_out_r_data_i,
        .async_axi_out_r_wptr_i,
        .async_axi_out_r_rptr_o,
-    // Uart
+       // Uart
        .ibex_uart_rx_i   ( ibex_uart_rx  ),
        .ibex_uart_tx_o   ( ibex_uart_tx  ),
-    // SPI host
+       // SPI host
  `ifdef VIPS
        .spi_host_SCK_o   ( SCK           ),
        .spi_host_SCK_en_o(               ),
@@ -267,8 +360,6 @@ module testbench_asynch_astral ();
        .spi_host_SD_i    ( '0            ),
        .spi_host_SD_en_o (               ),
  `endif
-       .axi_isolated_o   (               ),
-       .axi_isolate_i    ( '0            ),
        .gpio_0_i         ( '0            ),
        .gpio_1_i         ( '0            ),
        .gpio_0_o         (               ),
@@ -277,7 +368,10 @@ module testbench_asynch_astral ();
        .gpio_1_oe_o      (               )
    );
 
-///////////////////////// Processes ///////////////////////////////
+
+// -----------------------------------------------------------------------------------
+// Tasks
+// -----------------------------------------------------------------------------------
 
 
   initial begin  : main_clock_rst_process
@@ -292,16 +386,7 @@ module testbench_asynch_astral ();
     forever
       #(RTC_CLOCK_PERIOD/2) clk_sys = ~clk_sys;
   end
-/*
-  initial begin  : axi_slave_process_tlul2axi
 
-    @(posedge rst_sys_n);
-    tlul2axi_rand_slave.reset();
-    repeat (4)  @(posedge clk_sys);
-     tlul2axi_rand_slave.run();
-
-  end
-*/
   initial  begin : bootmodes
 
     if(!$value$plusargs("BOOTMODE=%d", boot_mode)) begin
@@ -342,8 +427,6 @@ module testbench_asynch_astral ();
         end
     endcase // case (boot_mode)
   end // block: bootmodes
-
-///////////////////////////// Tasks ///////////////////////////////
 
   task debug_secd_module_init;
      logic [31:0]  idcode;
@@ -500,7 +583,7 @@ module testbench_asynch_astral ();
 
     riscv_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
     riscv_dbg.wait_idle(10);
-    do begin 
+    do begin
 	     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
 	     while (sbcs.sbbusy);
        riscv_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
@@ -515,6 +598,6 @@ module testbench_asynch_astral ();
 
     $finish;
 
-  endtask // jtag_read_eoc
+  endtask
 
 endmodule
