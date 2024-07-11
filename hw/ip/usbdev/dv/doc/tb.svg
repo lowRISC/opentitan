@@ -1,0 +1,1745 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1029.02"
+   height="973.72717"
+   fill="none"
+   stroke-linecap="square"
+   stroke-miterlimit="10"
+   version="1.1"
+   viewBox="0 0 1029.02 973.72715"
+   id="svg1209"
+   sodipodi:docname="tb.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview236"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="2.9747633"
+     inkscape:cx="174.63574"
+     inkscape:cy="153.28951"
+     inkscape:window-width="2560"
+     inkscape:window-height="1403"
+     inkscape:window-x="0"
+     inkscape:window-y="1228"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g1387"
+     inkscape:snap-global="false" />
+  <metadata
+     id="metadata1056">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs835">
+    <rect
+       x="-297.9502"
+       y="658.20032"
+       width="290.82916"
+       height="55.29501"
+       id="rect1331" />
+    <rect
+       x="-230.9109"
+       y="542.1825"
+       width="519.57452"
+       height="330.1489"
+       id="rect1240" />
+    <marker
+       id="marker1910"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path823" />
+    </marker>
+    <marker
+       id="marker1078"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path826" />
+    </marker>
+    <marker
+       id="marker1029"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829" />
+    </marker>
+    <marker
+       id="Arrow1Lend"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path832" />
+    </marker>
+    <marker
+       id="marker1029-3"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829-6" />
+    </marker>
+    <marker
+       id="Arrow1Lend-7"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path832-5" />
+    </marker>
+    <marker
+       id="marker1078-3"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path826-5" />
+    </marker>
+    <marker
+       id="marker1078-31"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path826-8" />
+    </marker>
+    <marker
+       id="marker1029-8"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829-60" />
+    </marker>
+    <marker
+       id="Arrow1Lend-4"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path832-8" />
+    </marker>
+    <marker
+       id="marker1029-0"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829-5" />
+    </marker>
+    <marker
+       id="Arrow1Lend-4-8"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path832-8-9" />
+    </marker>
+    <marker
+       id="marker1029-0-5"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829-5-8" />
+    </marker>
+  </defs>
+  <clipPath
+     id="clipPath839">
+    <path
+       d="M 0,0 H 1086 V 817 H 0 Z"
+       id="path837" />
+  </clipPath>
+  <rect
+     x="563.52002"
+     y="186.67685"
+     width="465"
+     height="630"
+     rx="0"
+     ry="0"
+     color="#000000"
+     color-rendering="auto"
+     fill="#dad2ea"
+     fill-rule="evenodd"
+     image-rendering="auto"
+     shape-rendering="auto"
+     solid-color="#000000"
+     stroke="#000000"
+     stroke-linecap="butt"
+     stroke-miterlimit="10"
+     style="isolation:auto;mix-blend-mode:normal"
+     id="rect841" />
+  <g
+     fill-opacity="0"
+     id="g855"
+     transform="translate(0,186.17684)">
+    <path
+       d="m 389.76,497.24 c 0,12.499 -57.798,51.23 -103.76,24.998 -45.962,-26.232 -80.086,-117.42 -103.76,-208.62 -23.674,-91.192 -36.897,-182.38 -61.956,-208.62 -25.06,-26.232 -61.956,12.495 -61.956,24.991"
+       id="path843" />
+    <path
+       d="m 231.69,278.45 c 12.518,0 12.829,64.179 25.036,121.9 12.208,57.719 36.312,108.98 66.521,121.9 30.209,12.921 66.521,-12.496 66.521,-24.992"
+       id="path845" />
+    <path
+       d="m 231.69,210.06 c 12.518,0 12.829,82.416 25.036,156.09 12.207,73.674 36.312,138.61 66.521,156.09 30.209,17.478 66.521,-12.502 66.521,-25.005"
+       id="path847" />
+    <path
+       d="m 557.73,2.0176 h 454.08 v 244.03 H 557.73 Z"
+       id="path849" />
+    <path
+       d="m 555.27,250.1 h 458.99 V 487.39 H 555.27 Z"
+       id="path851" />
+    <path
+       d="m 389.76,497.24 c 0,12.501 -36.311,47.041 -66.519,25.002 -30.207,-22.039 -54.311,-100.66 -66.519,-190.3 -12.208,-89.638 -12.521,-190.3 -25.041,-190.3"
+       id="path853" />
+  </g>
+  <g
+     stroke-linecap="butt"
+     id="g871"
+     transform="translate(0,186.17684)">
+    <rect
+       x="0.5"
+       y="0.5"
+       width="530"
+       height="631.28998"
+       rx="40"
+       ry="40"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fff8e3"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect857" />
+    <rect
+       x="10.5"
+       y="73.699997"
+       width="240"
+       height="300.17001"
+       rx="25"
+       ry="25"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fff2cc"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect859" />
+    <text
+       x="264.93945"
+       y="32.595211"
+       fill="#f18080"
+       font-family="'Liberation Sans'"
+       font-size="18.667px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text863"><tspan
+         x="264.93945"
+         y="32.595211"
+         fill="#000000"
+         id="tspan861">usbdev_base_test</tspan></text>
+    <rect
+       x="280.5"
+       y="73.699997"
+       width="240"
+       height="300.17001"
+       rx="25"
+       ry="25"
+       color="#000000"
+       color-rendering="auto"
+       fill="#ffe599"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect865" />
+    <text
+       x="400.48169"
+       y="107.04469"
+       fill="#f18080"
+       font-family="'Liberation Sans'"
+       font-size="18.667px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text869"><tspan
+         x="400.48169"
+         y="107.04469"
+         fill="#000000"
+         id="tspan867">usbdev_env_cfg</tspan></text>
+  </g>
+  <g
+     transform="translate(205.5,112.87684)"
+     stroke-linecap="butt"
+     id="g879">
+    <rect
+       x="80"
+       y="205.67999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#f4cccc"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect873" />
+    <text
+       x="194.49219"
+       y="228.39612"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text877"><tspan
+         x="194.49219"
+         y="228.39612"
+         id="tspan875">host_clk_rst_vif</tspan></text>
+  </g>
+  <g
+     transform="translate(210.5,146.17984)"
+     stroke-linecap="butt"
+     id="g887">
+    <rect
+       x="75"
+       y="355.67999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#d9ead3"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect881" />
+    <text
+       x="189.98438"
+       y="378.39615"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text885"><tspan
+         x="189.98438"
+         y="378.39615"
+         id="tspan883">m_usb20_agent_cfg</tspan></text>
+  </g>
+  <g
+     id="g1133"
+     transform="translate(0,186.17684)">
+    <rect
+       x="285.5"
+       y="177.37999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#f4cccc"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+       id="rect889" />
+    <text
+       x="399.99219"
+       y="200.09612"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text893"><tspan
+         x="399.99219"
+         y="200.09612"
+         id="tspan891">aon_clk_rst_vif</tspan></text>
+  </g>
+  <g
+     transform="translate(205.5,202.87684)"
+     stroke-linecap="butt"
+     id="g903">
+    <rect
+       x="80"
+       y="205.67999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#f4cccc"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect897" />
+    <text
+       x="194.49219"
+       y="228.39612"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text901"><tspan
+         x="194.49219"
+         y="228.39612"
+         id="tspan899">usb20_usbpdi_vif</tspan></text>
+  </g>
+  <g
+     transform="translate(205.5,248.13619)"
+     stroke-linecap="butt"
+     id="g903-1">
+    <rect
+       x="80"
+       y="205.67999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#f4cccc"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect897-8" />
+    <text
+       x="194.49219"
+       y="228.39612"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text901-5"><tspan
+         x="194.49219"
+         y="228.39612"
+         id="tspan899-9">osc_tuning_vif</tspan></text>
+  </g>
+  <text
+     x="43.516396"
+     y="686.67682"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="17.333px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     text-align="center"
+     text-anchor="middle"
+     word-spacing="0px"
+     style="line-height:20px"
+     xml:space="preserve"
+     id="text907"><tspan
+       x="43.516396"
+       y="686.67682"
+       id="tspan905" /></text>
+  <flowRoot
+     transform="translate(-36.484,139.67684)"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="14.667px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     word-spacing="0px"
+     style="line-height:20px"
+     xml:space="preserve"
+     id="flowRoot915"><flowRegion
+       id="flowRegion911"><rect
+         x="80"
+         y="537"
+         width="440"
+         height="120"
+         id="rect909" /></flowRegion><flowPara
+       id="flowPara913" /></flowRoot>
+  <g
+     transform="translate(-59.5,158.08084)"
+     id="g947">
+    <path
+       d="m 70,447 h 470 l 40,50 V 617 H 70 Z"
+       fill="#cfe2f3"
+       fill-rule="evenodd"
+       stroke="#000000"
+       id="path917" />
+    <g
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       letter-spacing="0px"
+       stroke-linecap="butt"
+       stroke-width="1px"
+       word-spacing="0px"
+       id="g937">
+      <text
+         x="90"
+         y="471.74084"
+         font-size="17.333px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text921"><tspan
+           x="90"
+           y="471.74084"
+           id="tspan919">run_phase:</tspan></text>
+      <text
+         x="90"
+         y="497.8609"
+         font-size="14.667px"
+         style="line-height:20px;white-space:pre;inline-size:463.403"
+         xml:space="preserve"
+         id="text935"><tspan
+           x="90"
+           y="497.8609"
+           id="tspan8391">In the UVM run phase, the dv_base_test class (from which the </tspan><tspan
+           x="90"
+           y="517.8609"
+           id="tspan8393">usbdev_base_test class derives) creates and runs the sequence </tspan><tspan
+           x="90"
+           y="537.8609"
+           id="tspan8395">named by the +UVM_TEST_SEQ plusarg.</tspan></text>
+    </g>
+    <g
+       stroke-linecap="butt"
+       id="g945">
+      <rect
+         x="90"
+         y="557"
+         width="470"
+         height="39.939999"
+         rx="20"
+         ry="15.181"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fff3cd"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal"
+         id="rect939" />
+      <text
+         x="324.9772"
+         y="581.76636"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="18.667px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text943"><tspan
+           x="324.9772"
+           y="581.76636"
+           id="tspan941">usbdev_base_vseq</tspan></text>
+    </g>
+  </g>
+  <text
+     x="8.2500267"
+     y="15.458092"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="18.667px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     text-align="center"
+     text-anchor="middle"
+     word-spacing="0px"
+     style="line-height:20px"
+     xml:space="preserve"
+     id="text951"><tspan
+       x="8.2500267"
+       y="15.458092"
+       font-size="21.333px"
+       text-align="start"
+       text-anchor="start"
+       id="tspan949">Legend:</tspan></text>
+  <g
+     fill="none"
+     stroke="#000000"
+     stroke-dasharray="1, 2"
+     stroke-linecap="butt"
+     stroke-miterlimit="10"
+     id="g961"
+     transform="translate(0,186.17684)">
+    <path
+       d="m 280.5,108.7 c -15,0 -35,30 -35,30"
+       id="path953" />
+    <path
+       d="m 280.5,108.7 c -15,0 -35,75 -35,75"
+       id="path955" />
+    <path
+       d="m 280.5,108.7 c -15,0 -35,120 -35,120"
+       id="path957" />
+    <path
+       d="m 280.5,108.7 c -15,0 -30,10 -30,10"
+       id="path959" />
+  </g>
+  <text
+     x="795.39844"
+     y="218.77205"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="17.333px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     text-align="center"
+     text-anchor="middle"
+     word-spacing="0px"
+     style="line-height:20px"
+     xml:space="preserve"
+     id="text981"><tspan
+       x="795.39844"
+       y="218.77205"
+       id="tspan979">tb.sv</tspan></text>
+  <text
+     transform="scale(1.0069088,0.99313864)"
+     x="130.15814"
+     y="294.70496"
+     fill="#f18080"
+     font-family="'Liberation Sans'"
+     font-size="18.6668px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="0.999991px"
+     text-align="center"
+     text-anchor="middle"
+     word-spacing="0px"
+     style="line-height:19.8623px"
+     xml:space="preserve"
+     id="text985"><tspan
+       x="130.15814"
+       y="294.70496"
+       fill="#000000"
+       stroke-width="0.999991px"
+       id="tspan983">usbdev_env</tspan></text>
+  <g
+     transform="translate(-64.5,112.87684)"
+     stroke-linecap="butt"
+     id="g993">
+    <rect
+       x="80"
+       y="205.67999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#ffe599"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect987" />
+    <text
+       x="194.49219"
+       y="228.39612"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text991"><tspan
+         x="194.49219"
+         y="228.39612"
+         id="tspan989">usbdev_env_cov</tspan></text>
+  </g>
+  <g
+     transform="translate(-64.5,116.55384)"
+     stroke-linecap="butt"
+     id="g1001">
+    <rect
+       x="80"
+       y="247"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#ffe599"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect995" />
+    <text
+       x="194.98438"
+       y="269.71912"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text999"><tspan
+         x="194.98438"
+         y="269.71912"
+         id="tspan997">usbdev_scoreboard</tspan></text>
+  </g>
+  <g
+     transform="translate(-64.5,121.55384)"
+     stroke-linecap="butt"
+     id="g1009">
+    <rect
+       x="80"
+       y="287"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#ffe599"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect1003" />
+    <text
+       x="194.98438"
+       y="309.71912"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text1007"><tspan
+         x="194.98438"
+         y="309.71912"
+         id="tspan1005">usbdev_virtual_sequencer</tspan></text>
+  </g>
+  <g
+     transform="translate(-59.5,144.85684)"
+     stroke-linecap="butt"
+     id="g1017">
+    <rect
+       x="75"
+       y="355.67999"
+       width="230"
+       height="36.323002"
+       rx="10"
+       ry="10"
+       color="#000000"
+       color-rendering="auto"
+       fill="#d9ead3"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal"
+       id="rect1011" />
+    <text
+       x="189.98438"
+       y="378.39615"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="16px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="line-height:20px"
+       xml:space="preserve"
+       id="text1015"><tspan
+         x="189.98438"
+         y="378.39615"
+         id="tspan1013">usb20_agent</tspan></text>
+  </g>
+  <g
+     id="g310962">
+    <rect
+       x="575.44879"
+       y="292.19028"
+       width="169.22116"
+       height="35"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect963" />
+    <text
+       x="659.91547"
+       y="314.24603"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967"><tspan
+         x="659.91547"
+         y="314.24603"
+         id="tspan965"
+         style="font-size:16px">host_clk_rst_if</tspan></text>
+  </g>
+  <g
+     id="g310989">
+    <rect
+       x="575.3476"
+       y="480.31601"
+       width="169.22116"
+       height="52"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect963-88-4-5" />
+    <text
+       x="659.81427"
+       y="502.37173"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967-9-6-48"><tspan
+         sodipodi:role="line"
+         id="tspan297680"
+         x="659.81427"
+         y="502.37173"><tspan
+           x="659.81427"
+           y="502.37173"
+           id="tspan965-7-9-1"
+           style="font-size:16px">usbdev_osc_tuning_if</tspan></tspan><tspan
+         sodipodi:role="line"
+         id="tspan297682"
+         x="659.81427"
+         y="520.83325">(USB timing ref)</tspan></text>
+  </g>
+  <g
+     id="g310957">
+    <rect
+       x="575.44879"
+       y="249.40884"
+       width="169.22116"
+       height="35"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect971" />
+    <text
+       x="659.48389"
+       y="271.46646"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text975"><tspan
+         x="659.48389"
+         y="271.46646"
+         id="tspan973"
+         style="font-size:16px">usbdev_clk_rst_if</tspan></text>
+    <path
+       d="m 751.16,266.90884 h 42.738"
+       fill="#000000"
+       marker-end="url(#marker1029)"
+       id="path1083"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g310968">
+    <path
+       d="m 751.16,352.47171 h 42.738"
+       fill="#000000"
+       marker-end="url(#marker1029-0)"
+       id="path1083-9"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#marker1029-0)" />
+    <rect
+       x="575.44879"
+       y="334.97171"
+       width="169.22116"
+       height="35"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect1065" />
+    <text
+       x="659.46692"
+       y="357.0318"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text1069"><tspan
+         x="659.46692"
+         y="357.0318"
+         id="tspan1067"
+         style="font-size:16px">aon_clk_rst_if</tspan></text>
+  </g>
+  <g
+     id="g311016">
+    <path
+       d="m 751.16,651.66034 h 42.738"
+       fill="#000000"
+       marker-end="url(#marker1029-0-5)"
+       id="path1083-9-6"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#marker1029-0-5)" />
+    <rect
+       x="577.63861"
+       y="625.66034"
+       width="169.22116"
+       height="52"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect1065-2" />
+    <text
+       x="661.65674"
+       y="647.7204"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text1069-8"><tspan
+         sodipodi:role="line"
+         id="tspan295090"
+         x="661.65674"
+         y="647.7204"><tspan
+           x="661.65674"
+           y="647.7204"
+           id="tspan1067-4"
+           style="font-size:16px">u_usb_diff_rx</tspan></tspan><tspan
+         sodipodi:role="line"
+         id="tspan295092"
+         x="661.65674"
+         y="666.18195">(External diff rx)</tspan></text>
+  </g>
+  <g
+     id="g310974">
+    <rect
+       x="575.49237"
+       y="377.75314"
+       width="169.22116"
+       height="35"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect963-88-4" />
+    <text
+       x="659.95905"
+       y="399.8089"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967-9-6"><tspan
+         x="659.95905"
+         y="399.8089"
+         id="tspan965-7-9"
+         style="font-size:16px">usb20_block_if</tspan></text>
+    <path
+       d="m 751.19718,395.25115 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 h -24.605 v 10 z"
+       fill="#ffffff"
+       id="path1081-7-2"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g310982">
+    <rect
+       x="574.45721"
+       y="420.53458"
+       width="169.22116"
+       height="52"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect963-88-4-2" />
+    <text
+       x="658.92389"
+       y="442.59033"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967-9-6-4"><tspan
+         sodipodi:role="line"
+         id="tspan301897"
+         x="658.92389"
+         y="442.59033"><tspan
+           x="658.92389"
+           y="442.59033"
+           id="tspan965-7-9-7"
+           style="font-size:16px">usb20_if</tspan></tspan><tspan
+         sodipodi:role="line"
+         id="tspan301899"
+         x="658.92389"
+         y="461.05188">(DUT to usb20_agent)</tspan></text>
+    <path
+       d="m 751.19718,446.53458 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 h -24.605 v 10 z"
+       fill="#ffffff"
+       id="path1081-7-2-7"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g311024">
+    <rect
+       x="576.76166"
+       y="685.44177"
+       width="169.22116"
+       height="52"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect963-88-4-2-1" />
+    <text
+       x="661.22839"
+       y="707.4975"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967-9-6-4-10"><tspan
+         sodipodi:role="line"
+         id="tspan291132"
+         x="661.22839"
+         y="707.4975"><tspan
+           x="661.22839"
+           y="707.4975"
+           id="tspan965-7-9-7-8"
+           style="font-size:16px">u_usbdev_aon_wake</tspan></tspan><tspan
+         sodipodi:role="line"
+         id="tspan291134"
+         x="661.22839"
+         y="725.95905">(AON/Wake support)</tspan></text>
+    <path
+       d="m 751.19718,711.44177 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 h -24.605 v 10 z"
+       fill="#ffffff"
+       id="path1081-7-2-7-50"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g311032">
+    <rect
+       x="577.12207"
+       y="745.22321"
+       width="169.22116"
+       height="52"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:0.999996;stroke-linecap:butt"
+       id="rect963-88-4-2-6" />
+    <text
+       x="661.58875"
+       y="767.27899"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967-9-6-4-4"><tspan
+         sodipodi:role="line"
+         id="tspan276518"
+         x="661.58875"
+         y="767.27899"><tspan
+           x="661.58875"
+           y="767.27899"
+           id="tspan965-7-9-7-6"
+           style="font-size:16px">u_usb20_usbdpi</tspan></tspan><tspan
+         sodipodi:role="line"
+         id="tspan276520"
+         x="663.8114"
+         y="785.74054">(DPI model of host) </tspan></text>
+    <path
+       d="m 751.19718,771.2232 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 h -24.605 v 10 z"
+       fill="#ffffff"
+       id="path1081-7-2-7-2"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g311001">
+    <rect
+       x="578.11414"
+       y="582.87891"
+       width="169.22116"
+       height="35"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect963-88-4-2-2" />
+    <text
+       x="662.58081"
+       y="604.93469"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text967-9-6-4-1"><tspan
+         x="662.58081"
+         y="604.93469"
+         id="tspan965-7-9-7-0"
+         style="font-size:16px">alert_if</tspan></text>
+    <path
+       d="m 751.19718,600.37694 10,-15 v 10 h 24.60501 v -10 l 10,15 -10,15 v -10 h -24.60501 v 10 z"
+       fill="#ffffff"
+       id="path1081-7-2-7-5"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g310995">
+    <rect
+       x="577.43237"
+       y="540.09747"
+       width="169.22116"
+       height="35"
+       color="#000000"
+       color-rendering="auto"
+       fill="#fce6ce"
+       fill-rule="evenodd"
+       image-rendering="auto"
+       shape-rendering="auto"
+       solid-color="#000000"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+       id="rect1065-09-3" />
+    <text
+       x="661.45044"
+       y="562.15753"
+       fill="#000000"
+       font-family="'Liberation Sans'"
+       font-size="17.333px"
+       letter-spacing="0px"
+       stroke-width="1px"
+       text-align="center"
+       text-anchor="middle"
+       word-spacing="0px"
+       style="font-size:16px;line-height:18.4615px;stroke-linecap:butt"
+       xml:space="preserve"
+       id="text1069-2-6"><tspan
+         x="661.45044"
+         y="562.15753"
+         id="tspan1067-5-8"
+         style="font-size:16px">intr_if</tspan></text>
+    <path
+       d="m 795.80186,557.59548 h -42.663"
+       fill="#000000"
+       marker-end="url(#Arrow1Lend-4-8)"
+       id="path1087-4-0"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#Arrow1Lend-4-8)" />
+  </g>
+  <rect
+     x="802.90869"
+     y="247.37683"
+     width="210.61133"
+     height="549.84637"
+     color="#000000"
+     color-rendering="auto"
+     fill="#ffffff"
+     fill-rule="evenodd"
+     image-rendering="auto"
+     shape-rendering="auto"
+     solid-color="#000000"
+     stroke="#000000"
+     stroke-miterlimit="10"
+     style="isolation:auto;mix-blend-mode:normal;stroke-width:1;stroke-linecap:butt"
+     id="rect1093" />
+  <text
+     x="907.68115"
+     y="273.06488"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="17.333px"
+     letter-spacing="0px"
+     stroke-width="1px"
+     text-align="center"
+     text-anchor="middle"
+     word-spacing="0px"
+     style="line-height:20px;stroke-linecap:butt"
+     xml:space="preserve"
+     id="text1097"><tspan
+       x="907.68115"
+       y="273.06488"
+       id="tspan1095">usbdev</tspan></text>
+  <text
+     transform="translate(19.640625,859.6457)"
+     x="-12.809546"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="16px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     word-spacing="0px"
+     style="font-size:16px;line-height:18.4615px;font-family:'Liberation Sans';letter-spacing:0px;word-spacing:0px;white-space:pre;fill:#000000;stroke-width:1px;stroke-linecap:butt;shape-inside:url(#rect2085)"
+     xml:space="preserve"
+     id="text1207"><tspan
+       x="0"
+       y="0"
+       id="tspan8399"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8397">Many classes have handles (always called cfg) to the test's 
+</tspan></tspan><tspan
+       x="0"
+       y="18.4615"
+       id="tspan8407"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8401">usbdev</tspan><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8403">_env_cfg object. To denote this, those classes are </tspan><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8405">connected by a
+</tspan></tspan><tspan
+       x="0"
+       y="36.923"
+       id="tspan8411"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8409">dotted line to the usbdev_env_cfg class.
+</tspan></tspan><tspan
+       x="0"
+       y="55.384501"
+       id="tspan8415"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8413">
+</tspan></tspan><tspan
+       x="0"
+       y="73.846001"
+       id="tspan8419"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8417">The virtual sequence object created in the run phase has a 
+</tspan></tspan><tspan
+       x="0"
+       y="92.307501"
+       id="tspan8425"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8421">p_sequencer handle to the usbdev_virtual_sequencer inside </tspan><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8423">the environment
+</tspan></tspan><tspan
+       x="0"
+       y="110.769"
+       id="tspan8429"><tspan
+         style="shape-inside:url(#rect1653)"
+         id="tspan8427">(not shown).
+</tspan></tspan></text>
+  <text
+     xml:space="preserve"
+     id="text1329"
+     style="font-size:26.6667px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1331);fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     transform="translate(0,186.17684)" />
+  <text
+     xml:space="preserve"
+     style="font-size:14.6667px;line-height:15px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;white-space:pre;inline-size:444.731;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="381.45059"
+     y="72.469238"
+     id="text1070"><tspan
+       x="381.45059"
+       y="72.469238"
+       id="tspan8431">Nesting shows fields in classes, so there is an object of type </tspan><tspan
+       x="381.45059"
+       y="87.469235"
+       id="tspan8433">usbdev_env inside the object of type usbdev_base_test.
+</tspan><tspan
+       x="381.45059"
+       y="102.46923"
+       id="tspan8435">
+</tspan><tspan
+       x="381.45059"
+       y="117.46923"
+       id="tspan8437">The color of the box for a class shows the base class. For example, </tspan><tspan
+       x="381.45059"
+       y="132.46923"
+       id="tspan8439">interfaces are pink; agents are green.</tspan></text>
+  <g
+     id="g1376"
+     transform="translate(360,-48.823158)">
+    <g
+       id="g1318">
+      <rect
+         x="-330"
+         y="95"
+         width="35"
+         height="25"
+         rx="6.9096456"
+         ry="6.8383126"
+         color="#000000"
+         color-rendering="auto"
+         fill="#ffe599"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="font-variation-settings:normal;opacity:1;isolation:auto;mix-blend-mode:normal;vector-effect:none;fill:#d9ead3;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+         id="rect1197" />
+      <rect
+         x="-335"
+         y="90"
+         width="35"
+         height="25"
+         rx="6.9096456"
+         ry="6.8383126"
+         color="#000000"
+         color-rendering="auto"
+         fill="#ffe599"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="font-variation-settings:normal;opacity:1;isolation:auto;mix-blend-mode:normal;vector-effect:none;fill:#f4cccc;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+         id="rect1184" />
+      <rect
+         x="-340"
+         y="85"
+         width="35"
+         height="25"
+         rx="6.9096456"
+         ry="6.8383126"
+         color="#000000"
+         color-rendering="auto"
+         fill="#ffe599"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-width:1.00001;stroke-linecap:butt"
+         id="rect1094" />
+      <text
+         x="-322.5"
+         y="98.355469"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="16px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px;stroke-linecap:butt"
+         xml:space="preserve"
+         id="text1098"><tspan
+           x="-322.5"
+           y="98.355469"
+           id="tspan1096">...</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;line-height:15px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+       x="-270"
+       y="200"
+       id="text1278"
+       transform="translate(-10.461954,-93.708002)"><tspan
+         id="tspan1276"
+         x="-270"
+         y="200">SV classes (UVM; dynamically created)</tspan></text>
+  </g>
+  <g
+     id="g1387"
+     transform="translate(360,-48.823158)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;line-height:15px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+       x="-270"
+       y="200"
+       id="text1309"
+       transform="translate(-10.770581,-49.876055)"><tspan
+         id="tspan1307"
+         x="-270"
+         y="200">SV modules / interfaces (static).</tspan></text>
+    <g
+       id="g1325">
+      <rect
+         x="-330"
+         y="140"
+         width="35"
+         height="25"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="font-variation-settings:normal;opacity:1;isolation:auto;mix-blend-mode:normal;vector-effect:none;fill:#cee8fc;fill-opacity:1;stroke:#000000;stroke-width:1.00156;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:1.00157, 2.00313;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+         id="rect1251" />
+      <rect
+         x="-335"
+         y="135"
+         width="35"
+         height="25"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="font-variation-settings:normal;opacity:1;isolation:auto;mix-blend-mode:normal;vector-effect:none;fill:#ffe8fe;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+         id="rect1221" />
+      <rect
+         x="-340"
+         y="130"
+         width="35"
+         height="25"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-width:0.999996;stroke-linecap:butt"
+         id="rect1159" />
+      <text
+         x="-322.5"
+         y="143.35547"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="16px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px;stroke-linecap:butt"
+         xml:space="preserve"
+         id="text1212"><tspan
+           x="-322.5"
+           y="143.35547"
+           id="tspan1210">...</tspan></text>
+    </g>
+  </g>
+  <g
+     id="g1392"
+     transform="translate(360,-48.823158)">
+    <path
+       style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:#cfe2f3;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+       d="m -335,180 h 25 l 10,10 v 15 h -35 z"
+       id="path1327" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;line-height:15px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
+       x="-270"
+       y="200"
+       id="text1342"
+       transform="translate(-10.461954,-3.7079991)"><tspan
+         id="tspan1340"
+         x="-270"
+         y="200">Code block (a UVM phase)</tspan></text>
+  </g>
+</svg>
