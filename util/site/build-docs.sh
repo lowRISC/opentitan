@@ -40,19 +40,6 @@ case "$1" in
     ;;
 esac
 
-################
-# DEPENDENCIES #
-################
-
-checkDeps () {
-    # Check for hugo dep
-    if ! command -v hugo >/dev/null; then
-        echo "E: hugo not found, please install from your package manager" >&2
-        exit 1
-    fi
-}
-checkDeps
-
 #################
 # CONFIGURATION #
 #################
@@ -120,12 +107,6 @@ book_args="build"
 book_args+=" --dest-dir ${build_dir}/book/"
 book_args+=" ${proj_root}"
 
-# Build up Hugo arguments
-hugo_args=""
-hugo_args+=" --source ${proj_root}/site/landing/"
-hugo_args+=" --destination ${build_dir}/"
-hugo_args+=" --baseURL ${base_url}"
-
 ############
 # BUILDING #
 ############
@@ -147,9 +128,6 @@ buildSite () {
     # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
     local font="Recursive_wght,CASL@300__800,0_5.woff2"
     cp "${proj_root}/site/book-theme/${font}" "${build_dir}/book/site/book-theme/${font}"
-
-    # shellcheck disable=SC2086
-    hugo ${hugo_args}
 
     # Build Rust Documentation
     local rustdoc_dir="${build_dir}/gen/rustdoc/"
