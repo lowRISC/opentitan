@@ -5,7 +5,8 @@
 class usbdev_env_cov extends cip_base_env_cov #(.CFG_T(usbdev_env_cfg));
   `uvm_component_utils(usbdev_env_cov)
 
-  covergroup pids_cg with function sample(pid_type_e pid);
+  // All of the Packet IDentifiers that the DUT should expect to see from the USB host controller.
+  covergroup pids_to_dut_cg with function sample(pid_type_e pid);
     cp_pid: coverpoint pid {
       bins sof   = {PidTypeSofToken};
       bins setup = {PidTypeSetupToken};
@@ -18,6 +19,17 @@ class usbdev_env_cov extends cip_base_env_cov #(.CFG_T(usbdev_env_cfg));
       // Not directly relevant to USBDEV function, but we must appropriately ignore it and the
       // ensuing Low Speed traffic.
       bins pre   = {PidTypePre};
+    }
+  endgroup
+
+  // All of the PIDs that the DUT sends to the host in response.
+  covergroup pids_from_dut_cg with function sample(pid_type_e pid);
+    cp_pid: coverpoint pid {
+      bins data0 = {PidTypeData0};
+      bins data1 = {PidTypeData1};
+      bins ack   = {PidTypeAck};
+      bins nak   = {PidTypeNak};
+      bins stall = {PidTypeStall};
     }
   endgroup
 
@@ -228,7 +240,18 @@ class usbdev_env_cov extends cip_base_env_cov #(.CFG_T(usbdev_env_cfg));
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // [instantiate covergroups here]
+    pids_to_dut_cg = new();
+    pids_from_dut_cg = new();
+    framenum_rx_cg = new();
+    crc16_cg = new();
+    crc5_cg = new();
+    address_cg = new();
+    ep_out_cfg_cg = new();
+    ep_in_cfg_cg = new();
+    fifo_lvl_cg = new();
+    data_pkt_cg = new();
+    data_tog_endp_cg = new();
+    pid_type_endp_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

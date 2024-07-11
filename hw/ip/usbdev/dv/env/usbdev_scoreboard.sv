@@ -129,6 +129,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               `uvm_info(`gfn, $sformatf("SOF packet (PID 0x%0x) received from monitor",
                                         item.m_pid_type), UVM_MEDIUM)
               `downcast(sof, item);
+              collect_sof_cov(sof);
               bfm.sof_packet(sof);
               update_timed_regs();
             end
@@ -137,6 +138,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               `uvm_info(`gfn, $sformatf("Token packet (PID 0x%0x) received from monitor",
                                         item.m_pid_type), UVM_MEDIUM)
               `downcast(token, item);
+              collect_token_cov(token);
               if (bfm.token_packet(token, rsp)) expected_rsp_q.push_back(rsp);
               update_timed_regs();
             end
@@ -145,6 +147,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               `uvm_info(`gfn, $sformatf("Data packet (PID 0x%0x) received from monitor",
                                         item.m_pid_type), UVM_MEDIUM)
               `downcast(data, item);
+              collect_out_data_cov(data);
               if (bfm.data_packet(data, rsp)) expected_rsp_q.push_back(rsp);
               update_timed_regs();
             end
@@ -153,6 +156,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               `uvm_info(`gfn, $sformatf("Handshake packet (PID 0x%0x) received from monitor",
                                         item.m_pid_type), UVM_MEDIUM)
               `downcast(handshake, item);
+              collect_handshake_cov(handshake);
               bfm.handshake_packet(handshake);
               update_timed_regs();
             end
@@ -172,6 +176,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     forever begin
       // Collect an actual response from the DUT.
       rsp_usb20_fifo.get(act_item);
+      // Collect coverage for IN traffic from the DUT.
+      collect_dut_rsp_cov(act_item);
       `uvm_info(`gfn, "Comparing DUT response against the BFM expected response:", UVM_MEDIUM)
       `uvm_info(`gfn, $sformatf(" - Actual:\n%0s", act_item.sprint()), UVM_MEDIUM)
       `DV_CHECK_GT(expected_rsp_q.size(), 0, "Unexpected response from DUT; no expectation ready")
@@ -181,6 +187,91 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(act_item.compare(exp_item), 1, "DUT response does not match expectation")
     end
   endtask
+
+  // Collection of functional coverage for SOF packets received by the DUT.
+  function void collect_sof_cov(ref sof_pkt sof);
+    if (!cfg.en_cov) return;
+    cov.pids_to_dut_cg.sample(sof.m_pid_type);
+    cov.framenum_rx_cg.sample(sof.framenum);
+  endfunction
+
+  // Collection of functional coverage for Token packets received by the DUT.
+  function void collect_token_cov(ref token_pkt token);
+    bit [3:0] ep = token.endpoint;
+    bit dir_in = (token.m_pid_type == PidTypeInToken);
+    if (!cfg.en_cov) return;
+    cov.pids_to_dut_cg.sample(token.m_pid_type);
+    cov.address_cg.sample(token.address, ep);
+    cov.crc5_cg.sample(dir_in, token.crc5);
+    if (ep < NEndpoints) begin
+      if (dir_in) begin
+        // Sample IN requests from the DUT -> host.
+        cov.ep_in_cfg_cg.sample(token.m_pid_type, bfm.ep_in_enable[ep], bfm.in_stall[ep],
+                                bfm.in_iso[ep]);
+      end else begin
+        // Sample OUT traffic from the host -> DUT.
+        cov.ep_out_cfg_cg.sample(token.m_pid_type, bfm.ep_out_enable[ep], bfm.rxenable_setup[ep],
+                                 bfm.rxenable_out[ep], bfm.set_nak_out[ep], bfm.out_stall[ep],
+                                 bfm.out_iso[ep]);
+      end
+    end
+    cov.pid_type_endp_cg.sample(token.m_pid_type, token.endpoint);
+    // SETUP/OUT DATA packets interact with the AvSetup/AvOUT and RX FIFOs.
+    if (token.m_pid_type == PidTypeSetupToken || token.m_pid_type == PidTypeOutToken) begin
+      cov.fifo_lvl_cg.sample(token.m_pid_type, bfm.avsetup_fifo.size(), bfm.avout_fifo.size(),
+                             bfm.rx_fifo.size());
+    end
+  endfunction
+
+  // Collection of functional coverage for DATA packets received by the DUT.
+  function void collect_out_data_cov(ref data_pkt data);
+    if (!cfg.en_cov) return;
+    cov.pids_to_dut_cg.sample(data.m_pid_type);
+    cov.crc16_cg.sample(.dir_in(1'b0), .crc16(data.crc16));
+    cov.data_pkt_cg.sample(.dir_in(1'b0), .pkt_len(data.data.size()));
+    // The endpoint number for the OUT DATA transfer is sent in the preceding OUT token packet,
+    // if there was one and it was valid.
+    if (bfm.rx_token != null) begin
+      cov.data_tog_endp_cg.sample(data.m_pid_type, .dir_in(1'b0), .endp(bfm.rx_token.endpoint));
+    end
+  endfunction
+
+  // Collection of functional coverage for Handshake packets received by the DUT.
+  function void collect_handshake_cov(ref handshake_pkt handshake);
+    if (!cfg.en_cov) return;
+    cov.pids_to_dut_cg.sample(handshake.m_pid_type);
+  endfunction
+
+  // Collection of functional coverage for DUT responses.
+  function void collect_dut_rsp_cov(ref usb20_item item);
+    if (!cfg.en_cov) return;
+    cov.pids_from_dut_cg.sample(item.m_pid_type);
+    case (item.m_pid_type)
+      // IN DATA packets transmitted by the DUT.
+      PidTypeData0, PidTypeData1: begin
+        data_pkt data;
+        `downcast(data, item);
+        cov.crc16_cg.sample(.dir_in(1'b1), .crc16(data.crc16));
+        cov.data_pkt_cg.sample(.dir_in(1'b1), .pkt_len(data.data.size()));
+        // The endpoint number for the IN DATA transfer is sent in the preceding token packet,
+        // if there was one and it was valid.
+        if (bfm.tx_ep != usbdev_bfm::InvalidEP) begin
+          cov.data_tog_endp_cg.sample(item.m_pid_type, .dir_in(1'b1), .endp(bfm.tx_ep));
+        end
+      end
+      // Handshake packets sent by the DUT.
+      PidTypeAck, PidTypeNak: begin
+        // The endpoint number for the OUT DATA transfer is sent in the preceding token packet,
+        // if there was one and it was valid.
+        if (bfm.rx_token != null) begin
+          cov.data_tog_endp_cg.sample(item.m_pid_type, .dir_in(1'b0), .endp(bfm.rx_token.endpoint));
+        end
+      end
+      default: begin
+        // Nothing to do for other packet types.
+      end
+    endcase
+  endfunction
 
   function void init_timed_regs();
     bfm_timed_regs_t init_regs;
@@ -456,6 +547,13 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         bfm.intr_test = wdata & IntrMask & ro_mask;  // Stimulus for Status type interrupts.
         update_timed_regs();
         intr_state = bfm.intr_state | bfm.intr_test;
+        // Sample tested interrupts.
+        if (cfg.en_cov) begin
+          foreach (wdata[i]) begin
+            usbdev_intr_e intr = usbdev_intr_e'(i); // cast to enum to get interrupt name
+            cov.intr_test_cg.sample(intr, wdata[i], bfm.intr_enable[i], intr_state[i]);
+          end
+        end
       end
       "intr_state": begin
         // Not all interrupt bits may be cleared; Status type interrupts must remain asserted in the
@@ -576,6 +674,14 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("intr_state read as 0x%0h", intr_state), UVM_MEDIUM)
         // Check that the interrupt state of the DUT matches that of the BFM.
         void'(csr.predict(.value(intr_state), .kind(UVM_PREDICT_READ)));
+        // Sample asserted interrupt bits.
+        if (cfg.en_cov) begin
+          foreach (item.d_data[i]) begin
+            usbdev_intr_e intr = usbdev_intr_e'(i); // cast to enum to get interrupt name
+            cov.intr_cg.sample(intr, bfm.intr_enable[intr], item.d_data[intr]);
+            cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+          end
+        end
       end
 
       // The BFM has internal knowledge about the device address and enable, both of which may be
