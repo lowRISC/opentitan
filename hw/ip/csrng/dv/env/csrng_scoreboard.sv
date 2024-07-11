@@ -24,7 +24,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   bit [SW_APP:0] genbits_fips_previous;
   bit [SW_APP:0] genbits_fips_received = '0;
   mubi4_t [SW_APP:0] cmd_flag0_previous;
-  csrng_pkg::csrng_cmd_sts_e cmd_sts[NUM_HW_APPS + 1] = {(NUM_HW_APPS+1){CMD_STS_SUCCESS}};
+  csrng_pkg::csrng_cmd_sts_e cmd_sts[NUM_HW_APPS + 1] = '{default: CMD_STS_SUCCESS};
 
   bit [3:0] int_state_num;
   bit [NUM_HW_APPS:0] int_state_read_enable;
