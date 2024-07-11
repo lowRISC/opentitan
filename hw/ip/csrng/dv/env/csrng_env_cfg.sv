@@ -251,6 +251,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     bit [csrng_env_pkg::BLOCK_LEN-1:0]   hw_v;
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0] hw_reseed_counter;
 
+    // The dedicated RESEED_COUNTER CSR is always readable.
+    bit [csrng_env_pkg::RSD_CTR_LEN-1:0] csr_reseed_counter;
+    csr_rd(.ptr(ral.reseed_counter[app]), .value(csr_reseed_counter));
+
     csr_wr(.ptr(ral.int_state_num), .value(app));
     // To give the hardware time to update
     clk_rst_vif.wait_clks(1);
@@ -283,6 +287,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
         UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("******************************************\n"), UVM_DEBUG)
     if (compare) begin
+      // The dedicated RESEED_COUNTER CSR is always readable.
+      `DV_CHECK_EQ_FATAL(csr_reseed_counter, reseed_counter[app])
       if ((read_int_state == MuBi4True) && (otp_en_cs_sw_app_read == MuBi8True)) begin
         `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
         `DV_CHECK_EQ_FATAL(hw_v, v[app])
