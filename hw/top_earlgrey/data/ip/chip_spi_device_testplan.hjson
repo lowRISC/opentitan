@@ -163,8 +163,12 @@
       stage: V3
       si_stage: None
       lc_states: [ "PROD" ]
-      features: []
-      tests: []
+      features: ["SPI_DEVICE.CFG",
+                 "SPI_DEVICE.JEDEC_CC",
+                 "SPI_DEVICE.JEDEC_ID",
+                 "SPI_DEVICE.CMD_INFO",
+      ]
+      tests: ["chip_sw_spi_device_pinmux_sleep_retention"]
       bazel: ["//sw/device/tests:spi_device_sleep_test"]
     }
   ]

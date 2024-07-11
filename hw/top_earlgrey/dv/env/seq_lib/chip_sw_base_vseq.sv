@@ -12,6 +12,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   `uvm_object_new
 
+  bit disconnect_sw_straps_if = 1;
+
   virtual task pre_start();
     super.pre_start();
     set_and_release_sw_strap_nonblocking();
@@ -30,7 +32,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
             cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
           end
           SwTestStatusInTest: begin
-            cfg.chip_vif.sw_straps_if.disconnect();
+            if (disconnect_sw_straps_if)
+              cfg.chip_vif.sw_straps_if.disconnect();
           end
           default: ;
         endcase

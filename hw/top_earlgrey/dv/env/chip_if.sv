@@ -143,7 +143,7 @@ interface chip_if;
     top_earlgrey_pkg::mio_pad_e named_io = top_earlgrey_pkg::mio_pad_e'(i);
     always (* xprop_off *) @(glitch_free_io) begin
       if (glitch_free_io === 1'bx && disable_mios_x_check == 0) begin
-        `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
+        `uvm_error(MsgId, $sformatf("Detected an X on %0s (num=%0d)", named_io.name(), i))
       end
     end
   end : gen_mios_x_check

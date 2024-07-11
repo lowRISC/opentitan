@@ -711,6 +711,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_spi_device_pinmux_sleep_retention
+      uvm_test_seq: chip_sw_spi_device_pinmux_sleep_retention_vseq
+      sw_images: ["//sw/device/tests:spi_device_sleep_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_spi_device_pass_through
       uvm_test_seq: chip_sw_spi_passthrough_vseq
       sw_images: ["//sw/device/tests/sim_dv:spi_passthrough_test:1:new_rules"]
