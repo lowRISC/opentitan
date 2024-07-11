@@ -171,6 +171,9 @@ module security_island
    wire [1:0] flash_testmode_tieoff;
    wire otp_ext_tieoff, flash_testvolt_tieoff;
 
+   logic cluster_fetch_enable;
+   logic cluster_en_sa_boot = 1'b0;
+
    logic unused = clk_ref_i & test_enable_i;
 
    assign flash_testmode_tieoff = '0;
@@ -528,9 +531,6 @@ module security_island
   `AXI_ASSIGN_TO_REQ(axi_cls_cfg_req, cluster_cfg_axi_lite_bus)
   `AXI_ASSIGN_FROM_RESP(cluster_cfg_axi_lite_bus, axi_cls_cfg_rsp)
 
-   logic cluster_fetch_en = 1'b0;
-   logic cluster_en_sa_boot = 1'b0;
-
 /////////////////
 // Pulp Cluster//
 /////////////////
@@ -603,7 +603,7 @@ module security_island
       .en_sa_boot_i                    ( cluster_en_sa_boot                   ),
 
       .test_mode_i                     ( 1'b0                                 ),
-      .fetch_en_i                      ( cluster_fetch_en                     ),
+      .fetch_en_i                      ( cluster_fetch_enable                 ),
       .eoc_o                           ( s_cluster_eoc                        ),
       .busy_o                          (                                      ),
       .cluster_id_i                    ( 6'b000000                            ),
@@ -757,7 +757,8 @@ module security_island
       .jtag_req_i                   ( jtag_i                ),
       .jtag_rsp_o                   ( jtag_o                ),
       .fetch_en_i                   ( fetch_en_sync         ),
-      .bootmode_i                   ( bootmode_i            )
+      .bootmode_i                   ( bootmode_i            ),
+      .cluster_fetch_en_o           ( cluster_fetch_enable  )
    );
 
 endmodule

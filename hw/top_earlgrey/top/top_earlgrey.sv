@@ -217,6 +217,8 @@ module top_earlgrey #(
   //Bootmode
   input logic [1:0] bootmode_i,
   input logic fetch_en_i,
+  output logic cluster_fetch_en_o,
+
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
   output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
@@ -638,7 +640,6 @@ module top_earlgrey #(
   logic       pinmux_aon_usbdev_wake_detect_active;
    
   logic        datapath_o;
-  logic        info_init_o;
   logic        debug_flash_write;
   logic        debug_flash_req;
   logic [15:0] debug_flash_addr;
@@ -2313,9 +2314,9 @@ module top_earlgrey #(
     .flash_wmask_o(debug_flash_wmask),
     .bootmode_i,
     .datapath_o,
-    .info_init_o
-  ); 
-  flash_ctrl #(               
+    .cluster_fetch_en_o
+  );
+  flash_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:35]),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
@@ -2389,7 +2390,7 @@ module top_earlgrey #(
       .debug_flash_wdata,
       .debug_flash_wmask,
       .datapath_i(datapath_o),
-      .info_init_i(info_init_o),
+      .info_init_i(1'b0),
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
