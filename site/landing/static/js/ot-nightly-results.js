@@ -1,1 +1,0 @@
-../../../../util/site-dashboard/ot-nightly-results.js
