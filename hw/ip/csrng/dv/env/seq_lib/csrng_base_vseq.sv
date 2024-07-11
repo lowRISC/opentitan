@@ -60,6 +60,9 @@ class csrng_base_vseq extends cip_base_vseq #(
     ral.ctrl.read_int_state.set(cfg.read_int_state);
     ral.ctrl.fips_force_enable.set(cfg.fips_force_enable);
     csr_update(.csr(ral.ctrl));
+    csr_wr(.ptr(ral.int_state_read_enable_regwen), .value(cfg.int_state_read_enable_regwen));
+    ral.int_state_read_enable.set(cfg.int_state_read_enable);
+    csr_update(.csr(ral.int_state_read_enable));
   endtask
 
   task wait_cmd_req_done(uint exp_sts=CMD_STS_SUCCESS);
