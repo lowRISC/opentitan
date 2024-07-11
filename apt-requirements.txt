@@ -21,7 +21,6 @@ flex
 g++
 git
 golang
-hugo
 lcov
 libelf1
 libelf-dev
