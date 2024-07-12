@@ -1,0 +1,150 @@
+{
+  /*
+   * Declarations of HyperDebug pin assignments, which are independent of the shield on top.
+   */
+  "pins": [
+    /*
+     * SPI1
+     */
+    {
+      "name": "SPI1_CS",
+      "alias_of": "CN7_4"
+    },
+    {
+      "name": "SPI1_SCK",
+      "alias_of": "CN7_15"
+    },
+    {
+      "name": "SPI1_MOSI",
+      "alias_of": "CN7_14"
+    },
+    {
+      "name": "SPI1_MISO",
+      "alias_of": "CN7_12"
+    },
+    /*
+     * SPI2
+     */
+    {
+      "name": "SPI2_CS",
+      "alias_of": "CN9_25"
+    },
+    {
+      "name": "SPI2_SCK",
+      "alias_of": "CN9_27"
+    },
+    {
+      "name": "SPI2_MOSI",
+      "alias_of": "CN9_8"
+    },
+    {
+      "name": "SPI2_MISO",
+      "alias_of": "CN9_10"
+    },
+    /*
+     * QSPI
+     */
+    {
+      "name": "QSPI_CS",
+      "alias_of": "CN10_6"
+    },
+    {
+      "name": "QSPI_SCK",
+      "alias_of": "CN10_24"
+    },
+    {
+      "name": "QSPI_MOSI",
+      "alias_of": "CN10_23"
+    },
+    {
+      "name": "QSPI_MISO",
+      "alias_of": "CN10_10"
+    },
+    {
+      "name": "QSPI_D0",
+      "alias_of": "CN10_23"
+    },
+    {
+      "name": "QSPI_D1",
+      "alias_of": "CN10_10"
+    },
+    {
+      "name": "QSPI_D2",
+      "alias_of": "CN10_25"
+    },
+    {
+      "name": "QSPI_D3",
+      "alias_of": "CN10_19"
+    },
+    /*
+     * I2C ports
+     */
+    {
+      "name": "I2C1_SCL",
+      "alias_of": "CN7_2"
+    },
+    {
+      "name": "I2C1_SDA",
+      "alias_of": "CN7_4"
+    },
+    {
+      "name": "I2C2_SCL",
+      "alias_of": "CN9_19"
+    },
+    {
+      "name": "I2C2_SDA",
+      "alias_of": "CN9_21"
+    },
+    {
+      "name": "I2C3_SCL",
+      "alias_of": "CN9_11"
+    },
+    {
+      "name": "I2C3_SDA",
+      "alias_of": "CN9_9"
+    },
+    {
+      "name": "I2C4_SCL",
+      "alias_of": "CN10_8"
+    },
+    {
+      "name": "I2C4_SDA",
+      "alias_of": "CN10_12"
+    },
+    /*
+     * UARTS, (TX and RX are from the perspective of the HyperDebug MCU)
+     */
+    {
+      "name": "UART2_TX",
+      "alias_of": "CN9_6"
+    },
+    {
+      "name": "UART2_RX",
+      "alias_of": "CN9_4"
+    },
+    {
+      "name": "UART3_TX",
+      "alias_of": "CN10_14"
+    },
+    {
+      "name": "UART3_RX",
+      "alias_of": "CN10_16"
+    },
+    {
+      "name": "UART4_TX",
+      "alias_of": "CN8_6"
+    },
+    {
+      "name": "UART4_RX",
+      "alias_of": "CN8_8"
+    },
+    {
+      "name": "UART5_TX",
+      "alias_of": "CN8_10"
+    },
+    {
+      "name": "UART5_RX",
+      "alias_of": "CN8_12"
+    }
+  ]
+}
