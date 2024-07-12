@@ -294,15 +294,6 @@ void adc_setup(bool first_adc_setup) {
   }
 }
 
-/*
- * This function quickly disables and re-enables the ENTROPY_SRC block which
- * causes all internal FIFOs to be cleared to restart the entropy collection.
- */
-void entropy_src_restart(void) {
-  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleEnabled));
-}
-
 void ast_enter_sleep_states_and_check_functionality(
     dif_pwrmgr_domain_config_t pwrmgr_config, uint32_t alert_idx) {
   bool deepsleep;
@@ -322,7 +313,11 @@ void ast_enter_sleep_states_and_check_functionality(
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) ==
       true) {
-    entropy_src_restart();
+    // Make sure ENTROPY_SRC is enabled and then empty the observe FIFO to
+    // restart the entropy collection. Note that this is more efficient than
+    // restarting the entire block.
+    CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleEnabled));
+    CHECK_STATUS_OK(entropy_testutils_drain_observe_fifo(&entropy_src));
 
     // Verify that the FIFO depth is non-zero via SW - indicating the reception
     // of data over the AST RNG interface.
@@ -371,7 +366,11 @@ void ast_enter_sleep_states_and_check_functionality(
       adc_setup(first_adc_setup);
     }
 
-    entropy_src_restart();
+    // Make sure ENTROPY_SRC is enabled and then empty the observe FIFO to
+    // restart the entropy collection. Note that this is more efficient than
+    // restarting the entire block.
+    CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleEnabled));
+    CHECK_STATUS_OK(entropy_testutils_drain_observe_fifo(&entropy_src));
 
     IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
   }
