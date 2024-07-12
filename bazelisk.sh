@@ -103,7 +103,8 @@ function do_outquery() {
 
     "$file" "${pre_cmd_args[@]}" cquery "$@" \
         --output=starlark --starlark:expr="$qexpr" \
-        --ui_event_filters=-info --noshow_progress
+        --ui_event_filters=-info --noshow_progress \
+        | sort | uniq
 }
 
 function main() {
