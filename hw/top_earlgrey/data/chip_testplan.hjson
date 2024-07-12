@@ -85,17 +85,6 @@
       si_stage: NA
       tests: []
     }
-    {
-      name: chip_usb_wake_debug
-      desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
-
-            - Drive random value on `usb_state_debug_i`.
-            - Ensure the CSR `wake_debug` returns correctly value.
-            '''
-      stage: V3
-      si_stage: NA
-      tests: []
-    }
 
     // PINMUX & PADRING (pre-verified IP) integration tests:
     {
