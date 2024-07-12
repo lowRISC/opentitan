@@ -64,8 +64,8 @@ The example below builds the `hello_world` image and loads it onto the FPGA.
 ```console
 $ cd ${REPO_TOP}
 $ bazel run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
-$ bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
-$ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
+$ bazel build //sw/device/examples/hello_world
+$ bazel run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world | grep fpga_${BOARD}.bin)
 ```
 
 Uart output:
