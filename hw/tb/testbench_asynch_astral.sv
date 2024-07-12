@@ -22,7 +22,7 @@ module testbench_asynch_astral ();
    import dm_ot::*;
    import tlul2axi_pkg::*;
    import top_earlgrey_pkg::*;
-   import secure_subsystem_synth_pkg::*;
+   import secure_subsystem_synth_astral_pkg::*;
    import "DPI-C" function read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);

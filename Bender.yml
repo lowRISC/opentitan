@@ -468,9 +468,10 @@ sources:
       - hw/ip/sram_ctrl/rtl/sram_ctrl.sv
 
 #### crypto_sram
-
-      - hw/ip/crypto_sram_wrap/rtl/crypto_sram_wrap.sv
-      - hw/ip/crypto_sram_wrap/rtl/idma_wrap.sv
+      - target: use_idma
+        files:
+         - hw/ip/crypto_sram_wrap/rtl/crypto_sram_wrap.sv
+         - hw/ip/crypto_sram_wrap/rtl/idma_wrap.sv
 
 #### flash_ctrl
 
@@ -814,10 +815,13 @@ sources:
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
       - hw/top_earlgrey/top/secure_subsystem_synth_astral_pkg.sv
-      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap_astral.sv
       - hw/top_earlgrey/top/top_earlgrey.sv
-      - hw/top_earlgrey/top/secure_subsystem_synth_pkg.sv
-      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap.sv
+      - target: use_idma
+        defines:
+          USE_IDMA: ~
+        files:
+           - hw/top_earlgrey/top/top_earlgrey.sv
+      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap_astral.sv
 
 ##### testbench
 

@@ -2105,6 +2105,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel])
   );
+
+`ifdef USE_IDMA
   tlul_adapter_sram #(
     .SramAw(15),
     .SramDw(32),
@@ -2213,6 +2215,12 @@ module top_earlgrey #(
       .axi_req_tcdm_o ( axi_req_tcdm   ),
       .axi_rsp_tcdm_i ( axi_rsp_tcdm   )
   );
+`else // !`ifdef USE_IDMA
+  assign idma_axi_req_o = '0;
+  assign idma_tl_rsp = '0;
+  assign crypto_sram_tl_rsp = '0;
+`endif
+
   typedef logic [63:0]               axi32_addr_t;
   typedef logic [31:0]               axi32_data_t;
   typedef logic [3:0]                axi32_strb_t;
