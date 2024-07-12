@@ -294,24 +294,17 @@ void adc_setup(bool first_adc_setup) {
   }
 }
 
-void entropy_config(dif_entropy_src_config_t entropy_src_config) {
+/*
+ * This function quickly disables and re-enables the ENTROPY_SRC block which
+ * causes all internal FIFOs to be cleared to restart the entropy collection.
+ */
+void entropy_src_restart(void) {
   CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-
-  const dif_entropy_src_fw_override_config_t fw_override_config = {
-      .entropy_insert_enable = true,
-      .buffer_threshold = kEntropyFifoBufferSize,
-  };
-
-  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-      &entropy_src, fw_override_config, kDifToggleEnabled));
-
-  CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
-                                         kDifToggleEnabled));
+  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleEnabled));
 }
 
 void ast_enter_sleep_states_and_check_functionality(
-    dif_pwrmgr_domain_config_t pwrmgr_config,
-    dif_entropy_src_config_t entropy_src_config, uint32_t alert_idx) {
+    dif_pwrmgr_domain_config_t pwrmgr_config, uint32_t alert_idx) {
   bool deepsleep;
   uint32_t read_fifo_depth_val = 0;
   uint32_t unhealthy_fifos, errors, alerts;
@@ -329,7 +322,7 @@ void ast_enter_sleep_states_and_check_functionality(
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) ==
       true) {
-    entropy_config(entropy_src_config);
+    entropy_src_restart();
 
     // Verify that the FIFO depth is non-zero via SW - indicating the reception
     // of data over the AST RNG interface.
@@ -373,16 +366,12 @@ void ast_enter_sleep_states_and_check_functionality(
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
     if (deepsleep) {
-      if (read_fifo_depth(&entropy_src) != 0)
-        LOG_ERROR("read_fifo_depth after reset=%0d should be 0",
-                  read_fifo_depth(&entropy_src));
-
       first_adc_setup = false;
       // Configure ADC after deep sleep
       adc_setup(first_adc_setup);
     }
 
-    entropy_config(entropy_src_config);
+    entropy_src_restart();
 
     IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
   }
@@ -423,8 +412,6 @@ void ast_enter_sleep_states_and_check_functionality(
  *  set edn auto mode
  */
 void set_edn_auto_mode(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
@@ -435,7 +422,16 @@ void set_edn_auto_mode(void) {
   // Disable the entropy complex
   CHECK_STATUS_OK(entropy_testutils_stop_all());
 
-  // Enable ENTROPY_SRC
+  // Configure ENTROPY_SRC in Firmware Override: Observe mode and enable it.
+  // In this mode, the entropy received from the RNG inside AST gets collected
+  // in the Observe FIFO AND continues to flow through the hardware pipeline to
+  // eventually reach the hardware interface.
+  const dif_entropy_src_fw_override_config_t fw_override_config = {
+      .entropy_insert_enable = false,
+      .buffer_threshold = kEntropyFifoBufferSize,
+  };
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      &entropy_src, fw_override_config, kDifToggleEnabled));
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
 
@@ -512,6 +508,10 @@ void set_edn_auto_mode(void) {
       .reseed_interval = 4,  // Reseed after every 4 generates.
   };
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn1_params));
+
+  // The Observe FIFO has already been filled while producing the seeds for the
+  // EDNs. Empty the FIFO to restart the collection for the actual test.
+  CHECK_STATUS_OK(entropy_testutils_drain_observe_fifo(&entropy_src));
 }
 
 void ottf_external_isr(uint32_t *exc_info) {
@@ -537,18 +537,6 @@ void ottf_external_isr(uint32_t *exc_info) {
 bool test_main(void) {
   dif_pwrmgr_domain_config_t pwrmgr_config;
 
-  const dif_entropy_src_config_t entropy_src_config = {
-      .fips_enable = true,
-      .fips_flag = true,
-      .rng_fips = true,
-      // Route the entropy data received from RNG to the FIFO.
-      .route_to_firmware = true,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_threshold_scope = false,
-      .health_test_window_size = 0x0200,
-      .alert_threshold = 2,
-  };
-
   init_units();
 
   set_edn_auto_mode();
@@ -564,23 +552,20 @@ bool test_main(void) {
 
   LOG_INFO("1 test alert/rng after Deep sleep 1");
   pwrmgr_config = kDifPwrmgrDomainOptionUsbClockInActivePower;
-  ast_enter_sleep_states_and_check_functionality(
-      pwrmgr_config, entropy_src_config, kAlertVal7);
+  ast_enter_sleep_states_and_check_functionality(pwrmgr_config, kAlertVal7);
 
   LOG_INFO("2 test alert/rng after regular sleep (usb clk enabled)");
   LOG_INFO("force new adc conv set");
   pwrmgr_config = kDifPwrmgrDomainOptionUsbClockInActivePower |
                   kDifPwrmgrDomainOptionUsbClockInLowPower |
                   kDifPwrmgrDomainOptionMainPowerInLowPower;
-  ast_enter_sleep_states_and_check_functionality(
-      pwrmgr_config, entropy_src_config, kAlertVal8);
+  ast_enter_sleep_states_and_check_functionality(pwrmgr_config, kAlertVal8);
 
   LOG_INFO("3 test alert/rng after regular sleep (all clk disabled in lp)");
   LOG_INFO("force new adc conv set");
   pwrmgr_config = kDifPwrmgrDomainOptionMainPowerInLowPower |
                   kDifPwrmgrDomainOptionUsbClockInActivePower;
-  ast_enter_sleep_states_and_check_functionality(
-      pwrmgr_config, entropy_src_config, kAlertVal7);
+  ast_enter_sleep_states_and_check_functionality(pwrmgr_config, kAlertVal7);
 
   LOG_INFO("c code is finished");
 

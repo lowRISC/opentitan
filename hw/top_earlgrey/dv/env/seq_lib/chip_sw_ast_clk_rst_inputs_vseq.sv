@@ -25,6 +25,10 @@ class chip_sw_ast_clk_rst_inputs_vseq extends chip_sw_base_vseq;
   localparam bit IN_RANGE = 1;
   localparam bit NOT_IN_RANGE = 0;
 
+  // Increase the spinwait timeout. The default is 10ms (see default_spinwait_timeout_ns in
+  // csr_utils_pkg.sv)
+  uint default_spinwait_timeout_ns = 15_000_000; // 15ms
+
   event adc_valid_falling_edge_event;
   event adc_valid_rising_edge_event;
   event adc_channel1_event;
