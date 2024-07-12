@@ -44,8 +44,9 @@ CONNECTION, LC_DFT_EN_AST,    top_earlgrey.u_lc_ctrl, lc_dft_en_o, u_ast,       
 # Verify lc_ctrl's RMA request connections.
 CONNECTION, LC_RMA_SEED_FLASH_CTRL,  top_earlgrey.u_lc_ctrl,    lc_flash_rma_seed_o, top_earlgrey.u_flash_ctrl, rma_seed_i
 CONNECTION, LC_RMA_REQ_FLASH_CTRL,   top_earlgrey.u_lc_ctrl,    lc_flash_rma_req_o,  top_earlgrey.u_flash_ctrl, rma_req_i
-CONNECTION, FLASH_CTRL_RMA_ACK_OTBN, top_earlgrey.u_flash_ctrl, rma_ack_o,           top_earlgrey.u_otbn,       lc_rma_req_i
-CONNECTION, OTBN_RMA_ACK_LC,         top_earlgrey.u_otbn,       lc_rma_ack_o,        top_earlgrey.u_lc_ctrl,    lc_flash_rma_ack_i
+CONNECTION, FLASH_CTRL_RMA_ACK_LC,   top_earlgrey.u_flash_ctrl, rma_ack_o,           top_earlgrey.u_lc_ctrl,    lc_flash_rma_ack_i[0]
+CONNECTION, LC_RMA_REQ_OTBN,         top_earlgrey.u_lc_ctrl,    lc_flash_rma_req_o,  top_earlgrey.u_otbn,       lc_rma_req_i
+CONNECTION, OTBN_RMA_ACK_LC,         top_earlgrey.u_otbn,       lc_rma_ack_o,        top_earlgrey.u_lc_ctrl,    lc_flash_rma_ack_i[1]
 
 # Verify lc_ctrl's clock bypass request connections.
 CONNECTION, LC_CLK_BYP_REQ_CLKMGR,  top_earlgrey.u_lc_ctrl,     lc_clk_byp_req_o,    top_earlgrey.u_clkmgr_aon, lc_clk_byp_req_i
