@@ -652,9 +652,9 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
 
   % if regs_flat:
 <%
-    # We want to signal wr_err if reg_be (the byte enable signal) is true for
-    # any bytes that aren't supported by a register. That's true if a
-    # addr_hit[i] and a bit is set in reg_be but not in *_PERMIT[i].
+    # We want to signal wr_err for a write if the write is not enabled for every byte supported by
+    # its target register. That happens for register i if if addr_hit[i] and a bit is set in
+    # *_PERMIT[i] (so there is a field covering this bit) but the bit is not set in reg_be.
 
     wr_err_terms = ['(addr_hit[{idx}] & (|({mod}_PERMIT[{idx}] & ~reg_be)))'
                     .format(idx=str(i).rjust(max_regs_char),

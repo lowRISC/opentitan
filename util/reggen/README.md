@@ -640,8 +640,10 @@ Other error responses include for the following reasons:
 
 * TL-UL `a_opcode` illegal value
 * TL-UL writes of size smaller than register size
-  * I.e. writes of size 8b to registers > 8b will cause error (explicitly: if it has field bits within `[31:08]`)
-  * I.e. writes of size 16b to registers > 16b will cause error (explicitly: if it has field bits within `[31:16]`)
+  * Disallowing such writes makes the implementation simpler.
+  * It also strengthens the security of the system, by making it hard to use a fault injection to cause only part of a register to be updated.
+  * This can be seen with an 8b write to a register which is larger than 8 bits, or a 16b write to a register which is larger than 16 bits.
+  * The width of the register is determined by the location of its fields.
 * TL-UL writes of size smaller than 32b that are not word-aligned
   * I.e. writes of size 8b or 16b that are not to an address that is 4B aligned return in error.
 
