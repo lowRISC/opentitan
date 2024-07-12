@@ -180,7 +180,6 @@
             - Clear it by writing to dtmcs[dmireset] register.
             - Poll the DMI access for completion and verify that the first write completed
               successfully by doing a read-check.
-            - TBO - unclear how to generate other types of failed DMI transactions.
             '''
       stage: V2
       tests: ["rv_dm_dmi_failed_op"]
