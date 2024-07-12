@@ -12,6 +12,7 @@ filesets:
     depend:
       - lowrisc:dv:pwrmgr_test
       - lowrisc:dv:pwrmgr_sva
+      - lowrisc:dv:pwrmgr_unit_only_sva
     files:
       - tb.sv
       - cov/pwrmgr_cov_bind.sv

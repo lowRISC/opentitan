@@ -10,10 +10,12 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip_interfaces:rstmgr
+      - lowrisc:dv:pwrmgr_rstmgr_sva_if
 
     files:
       - rstmgr_attrs_sva_if.sv
       - rstmgr_cascading_sva_if.sv
+      - rstmgr_rst_en_track_sva_if.sv
       - rstmgr_sw_rst_sva_if.sv
     file_type: systemVerilogSource
 

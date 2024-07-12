@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rstmgr_unit_only_sva:0.1"
-description: "RSTMGR assertion modules not suitable for chip level and bind file."
+name: "lowrisc:dv:pwrmgr_unit_only_sva:0.1"
+description: "PWRMGR assertion interfaces not suitable for chip level bind file."
 filesets:
   files_dv:
     depend:
@@ -12,18 +12,18 @@ filesets:
       - lowrisc:dv:pwrmgr_rstmgr_sva_if
 
     files:
-      - rstmgr_unit_only_bind.sv
+      - pwrmgr_unit_only_bind.sv
     file_type: systemVerilogSource
 
   files_formal:
     depend:
-      - lowrisc:systems:rstmgr
+      - lowrisc:ip_interfaces:pwrmgr
 
 generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../data/rstmgr.hjson
+      spec: ../../data/pwrmgr.hjson
 
 targets:
   default: &default_target
@@ -36,4 +36,4 @@ targets:
     filesets:
       - files_formal
       - files_dv
-    toplevel: rstmgr
+    toplevel: pwrmgr
