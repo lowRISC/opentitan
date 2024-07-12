@@ -153,6 +153,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // these data points once we notice one of these events.
   bit ignore_fw_ov_data_pulse = 0;
 
+  // Variables used to predict the observe FIFO depth.
+  bit observe_push_busy_addr_phase = 0;
+  bit observe_push_busy = 0;
+
   // Variables used to predict whether the precon FIFO is full or not.
   int precon_fifo_cnt = 0;
   bit sha3_msg_ready = 0;
@@ -1170,6 +1174,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       // gets cleared.
       observe_fifo_overflow = 0;
       overflow_read_cnt = 0;
+      // Clear variables used for observe FIFO depth prediction.
+      observe_push_busy_addr_phase = 0;
+      observe_push_busy = 0;
     end
 
     // reset all other statistics
@@ -1564,6 +1571,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         locked_reg_access = dut_reg_locked;
       end
       "observe_fifo_depth": begin
+        // If a word is being pushed into the observe FIFO while reading observe_fifo_depth, the
+        // prediction will be off by one word. We need to take this into account for predictions.
+        if (!write && channel == AddrChannel) begin
+          observe_push_busy_addr_phase = observe_push_busy;
+        end
       end
       "debug_status": begin
       end
@@ -1971,6 +1983,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             process_entropy_data_csr_access(item, csr);
           end
         end
+        "observe_fifo_depth": begin
+          // If a new word was pushed to the observe FIFO in the address phase,
+          // the prediction is off by 1 word.
+          item.d_data -= observe_push_busy_addr_phase;
+        end
         "fw_ov_rd_data": begin
           if (fifos_cleared) begin
             `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
@@ -2305,7 +2322,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               end else begin
                 observe_fifo_q.push_back(repacked_entropy_release);
               end
+              // Signal to potential reads to observe_fifo_depth that a word is currently being pushed
+              // into the observe FIFO.
+              observe_push_busy = 1;
               wait(!ral.observe_fifo_depth.is_busy());
+              observe_push_busy = 0;
               `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict(
                   `gmv(ral.observe_fifo_depth.observe_fifo_depth)+1, .kind(UVM_PREDICT_DIRECT)))
             end
