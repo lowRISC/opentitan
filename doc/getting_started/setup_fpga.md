@@ -295,8 +295,8 @@ There are two ways to load a bitstream on to the FPGA and bootstrap software int
 1. **automatically**, on single invocations of `./bazelisk.sh test ...`.
 2. **manually**, using multiple invocations of `opentitantool`, and
 Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
-Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_test` Bazel macro, you will use the latter (**automatic**) approach.
-Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_binary` Bazel macro, you will use the former (**manual**) approach.
+Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_test` Bazel macro, you will use the former (**automatic**) approach.
+Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_binary` Bazel macro, you will use the latter (**manual**) approach.
 
 See below for details on both approaches.
 
@@ -342,6 +342,7 @@ Some on-device software targets are defined using the custom `opentitan_binary` 
 Unlike the `opentitan_test` macro, the `opentitan_binary` macro does **not** instantiate any Bazel test rules under the hood.
 Therefore, to run such software on OpenTitan FPGA hardware, both a bitstream and the software target must be loaded manually onto the FPGA.
 Below, we describe how to accomplish this, and in doing so, we shed some light on the tasks that Bazel automates through the use of `opentitan_test` Bazel rules.
+The given commands can also be used to run targets defined by the `opentitan_test` macro if you desire.
 
 #### Manually loading a bitstream onto the FPGA with `opentitantool`
 
@@ -389,12 +390,12 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the 
    ```sh
    screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
    ```
-3. Run `opentitantool`.
+3. Run `opentitantool` as below. When building an `opentitan_binary` there is no way to specify the execution environment - all must be built. We then `grep` for the correct binary to bootstrap.
    ```sh
    cd ${REPO_TOP}
    ./bazelisk.sh run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll # This needs to be done only once.
-   ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin
-   ./bazelisk.sh run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)
+   ./bazelisk.sh build //sw/device/examples/hello_world
+   ./bazelisk.sh run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world | grep fpga_${BOARD}.bin)
    ```
 
    And then output like this should appear from the UART:
@@ -417,13 +418,15 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the 
 6. Alternatively you can use the console embedded into `opentitantool` to see the output from the UART instead of `screen`.
 ```sh
 ./bazelisk.sh run //sw/host/opentitantool -- \
---exec "bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)"\
+--exec "bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world | grep fpga_${BOARD}.bin)" \
 console
 ```
 
 #### Troubleshooting
 
 If the firmware load fails, try pressing the "USR-RST" button before loading the bitstream.
+
+If you get an error like "Transport does not support Gpio", make sure you have appropriately configured your interface by using `--interface=${BOARD}` either in your `~/.config/opentitantool/config` file or passed as an option to `opentitantool` itself (after the `--`).
 
 ## Debugging with JTAG
 
