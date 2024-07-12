@@ -286,7 +286,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Sign with SPX+.
         if let Some(key) = spx_private_key {
             image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
-                &image.map_signed_region(|buf| key.sign(self.domain, buf))??,
+                &image.map_updated_signed_region(|buf| key.sign(self.domain, buf))??,
             )?)?;
         }
 
