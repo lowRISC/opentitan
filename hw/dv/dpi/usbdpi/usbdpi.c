@@ -1383,7 +1383,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->linebits = (ctx->linebits << 1);
       } else if (ctx->byte >= sending->num_bytes) {
         ctx->state = ST_EOP;
-        ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
+        ctx->driving = set_driving(ctx, d2p, 0, true);  // First SE0
         ctx->bit = 1;
         force_stat = 1;
       } else {
@@ -1405,15 +1405,15 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     } break;
 
     case ST_EOP0:
-      ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
+      ctx->driving = set_driving(ctx, d2p, 0, true);  // First SE0
       ctx->state = ST_EOP;
       break;
 
-    case ST_EOP:  // SE0 SE0 J
-      if (ctx->bit == 4) {
+    case ST_EOP:  // (First SE0 already done) SE0 J = End Of Packet.
+      if (ctx->bit == 2) {
         ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
       }
-      if (ctx->bit == 8) {
+      if (ctx->bit == 4) {
         const usbdpi_transfer_t *sending = ctx->sending;
         assert(sending);
         // Stop driving: host pulldown to SE0 unless there is a pullup on DP
