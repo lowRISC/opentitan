@@ -289,7 +289,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  `define ALL_ACQFIFO_READS_OCCURRED (cfg.rcvd_acq_cnt >= cfg.sent_acq_cnt)
+  `define ALL_ACQFIFO_READS_OCCURRED (cfg.obs_num_acqfifo_reads >= cfg.exp_num_acqfifo_reads)
   `define ALL_READS_OCCURRED (cfg.m_i2c_agent_cfg.rcvd_rd_byte >= sent_rd_byte)
 
   virtual task pre_start();
@@ -302,8 +302,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     num_trans_c.constraint_mode(0);
 
     // Initialize counters for stop_target_interrupt for stress_all test
-    cfg.sent_acq_cnt = 0;
-    cfg.rcvd_acq_cnt = 0;
+    cfg.exp_num_acqfifo_reads = 0;
+    cfg.obs_num_acqfifo_reads = 0;
     sent_txn_cnt = 0;
     sent_rd_byte = 0;
     cfg.m_i2c_agent_cfg.rcvd_rd_byte = 0;
@@ -707,14 +707,14 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   // Polling-based ACQFIFO handler
   //
-  // This routine waits until the sequence (via cfg.sent_acq_cnt) indicates it has created
+  // This routine waits until the sequence (via cfg.exp_num_acqfifo_reads) indicates it has created
   // stimulus that will generate ACQFIFO entires. It then calls read_acq_fifo() until the expected
   // number of ACQFIFO reads have been performed (and checked by the scoreboard).
   //
   virtual task process_acq();
 
     // Wait until at least some stimulus has been created, that will produce ACQFIFO entires.
-    `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns)
+    `DV_WAIT(cfg.exp_num_acqfifo_reads > 0,, cfg.spinwait_timeout_ns)
 
     while (!`ALL_ACQFIFO_READS_OCCURRED || (sent_txn_cnt < num_trans)) begin
       bit read_one;
@@ -1300,11 +1300,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
 
     `uvm_info(`gfn, $sformatf(
-      "After read_acq_fifo() : cfg.sent_acq_cnt=%0d cfg.rcvd_acq_cnt=%0d",
-      cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+      "After read_acq_fifo() : cfg.exp_num_acqfifo_reads=%0d cfg.obs_num_acqfifo_reads=%0d",
+      cfg.exp_num_acqfifo_reads, cfg.obs_num_acqfifo_reads), UVM_HIGH)
     `uvm_info(`gfn, $sformatf(
       "After read_acq_fifo() : sent_rd_byte=%0d cfg.m_i2c_agent_cfg.rcvd_rd_byte=%0d",
-      cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+      sent_rd_byte, cfg.m_i2c_agent_cfg.rcvd_rd_byte), UVM_HIGH)
   endtask : read_acq_fifo
 
   virtual task empty_acqfifo();
