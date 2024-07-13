@@ -285,7 +285,7 @@
               - Ensure acq_stop is asserted and stay asserted until cleared
               - Ensure IP operation gets back to normal after on-the-fly reset finished
             '''
-      stage: V2
+      stage: V3
       tests: ["i2c_target_unexp_stop"]
     }
     {
