@@ -96,14 +96,15 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
             // Wait for the STOP-condition (the end of the previous transaction) before
             // programming new timing parameters.
             `DV_WAIT(cfg.m_i2c_agent_cfg.got_stop,, cfg.spinwait_timeout_ns, "target_smoke_vseq")
-            cfg.m_i2c_agent_cfg.got_stop = 0;
           end
+          cfg.m_i2c_agent_cfg.got_stop = 0;
           get_timing_values();
           program_registers();
 
           `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
           m_i2c_host_seq.req_q = txn_stimulus[i];
           m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+
           sent_txn_cnt++;
           `uvm_info(`gfn, $sformatf("Finished stimulus transaction %0d/%0d.",
             i+1, num_trans), UVM_HIGH)
