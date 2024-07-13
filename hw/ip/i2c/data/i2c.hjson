@@ -23,9 +23,9 @@
       version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D2S",
-      verification_stage: "V1",
+      verification_stage: "V2S",
       dif_stage:          "S2",
-      notes:              ""
+      notes:              "Verification Stage is V2S qualified by the given exceptions in PR#22108. This broadly excludes verif. of multi-controller features."
     }
   ]
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
