@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// In DUT=host_mode, create a read/write transaction and randomly disable host_mode
-//   mid-transaction by writing ctrl.enablehost = 1'b0.
-// Check if DUT goes to Idle state
-// To check the DUT has recovered, start a host_smoke_vseq to check transactions
-//   are processed as expected
+// This vseq stimulates a mid-transfer deactivation of the DUT's Controller-Mode module
+// by writing ctrl.enablehost = 1'b0 at a random point during an active I2C Transaction.
+// - Configure the DUT, and drive a normal controller-mode transfer.
+// - Randomly disable Host-Mode mid transfer.
+// - Wait for the DUT to go back to the Idle state.
+// - Re-activate the controller-mode module, and drive a new transaction to test recovery.
+//
 class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
   `uvm_object_utils(i2c_host_mode_toggle_vseq)
   `uvm_object_new
 
   rand bit rwbit;
   rand bit[6:0] addr;
-  uint num_bytes = 1;
   rand uint wait_cycles;
   // Wait for address byte or data byte with equal probability
   constraint wait_cycles_c{
@@ -23,74 +24,108 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
     };
   }
 
+
   virtual task pre_start();
     super.pre_start();
+
+    // Mark the interrupts we expect to assert during this test. If any other interrupts assert,
+    // immediately raise a fatal error.
     expected_intr[AcqStretch] = 1;
     expected_intr[TxStretch] = 1;
     expected_intr[CmdComplete] = 1;
-    // Since after driver reset, SDA will be high, NAK interrupt will be raised
     expected_intr[ControllerHalt] = 1;
     expected_intr[HostTimeout] = 1;
     for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i2c_intr_e'(i));
   endtask
 
+
   virtual task body();
-    i2c_item fmt_item = new("addr_item");
-    bit [TL_DW-1:0] reg_val;
+
     initialization();
     get_timing_values();
     program_registers();
+
     `uvm_info(`gfn, "Start i2c_host_mode_toggle_vseq", UVM_HIGH)
-    // start transmission in Host mode with a random read or write transaction
-    fmt_item.start = 1;
-    fmt_item.read = rwbit;
-    fmt_item.fbyte = {addr, rwbit};
-    program_format_flag(fmt_item, "Programming address in host mode");
-    fmt_item = new("data_item");
-    if (rw_bit) begin // if read enable one byte read
-      fmt_item.read = 1;
-      fmt_item.fbyte = num_bytes;
+
+    // Drive a new DUT-Controller transfer, which may be either a 1-byte read or write
+
+    // The first write initiates the transaction via the start condition, then the addr+dir byte
+    begin
+      i2c_item fmt_item = new("fmt_item");
+      fmt_item.start = 1;
+      fmt_item.fbyte = {addr, rw_bit};
+      program_format_flag(fmt_item, "Programming address in host mode");
     end
-    else begin // if write send one byte
-      fmt_item.fbyte = $urandom_range(0,255);
+    // The second write determines tx or rx for the one data byte, then drives a STOP condition.
+    begin
+      i2c_item fmt_item = new("fmt_item");
+      if (rw_bit == i2c_pkg::READ) begin
+        fmt_item.read = 1;
+        fmt_item.fbyte = 1; // Just do a one byte read transfer
+      end
+      else begin // Do a one byte write transfer
+        fmt_item.fbyte = $urandom;
+      end
+      fmt_item.stop = 1;
+      program_format_flag(fmt_item, "Programming data in host mode");
     end
-    fmt_item.stop = 1;
-    program_format_flag(fmt_item, "Programming data in host mode");
-    // Wait for random number of cycles
+
+    // Before disabling the CONTROLLER module via ctrl.enablehost, wait for random number of
+    // SCL cycles to ensure we are mid-transfer on the bus.
     repeat (wait_cycles) @(posedge cfg.m_i2c_agent_cfg.vif.scl_io);
-    `uvm_info(`gfn, "Disabling host mode", UVM_LOW)
-    // Disable host mode
+
+    // Disable scoreboard
     cfg.en_scb = 0;
-    ral.ctrl.enablehost.set(1'b0);
-    csr_update(ral.ctrl);
-    // Clear Host mode FIFO
-    ral.fifo_ctrl.rxrst.set(1'b1);
-    ral.fifo_ctrl.fmtrst.set(1'b1);
-    csr_update(ral.fifo_ctrl);
-    // Wait for DUT to be in idle mode
-    do begin
-      csr_rd(.ptr(ral.status), .value(reg_val));
-      cfg.clk_rst_vif.wait_clks(1);
-    end while(!bit'(get_field_val(ral.status.hostidle, reg_val)));
-    `uvm_info(`gfn, "DUT in idle mode", UVM_LOW)
-    // Clear all interrupts
-    process_interrupts();
-    // Clear scoreboard FIFO
-    cfg.scoreboard.target_mode_wr_exp_fifo.flush();
-    cfg.scoreboard.target_mode_wr_obs_fifo.flush();
-    // Enable scorebaord
+    begin
+
+      // Disable the host mode module now.
+      `uvm_info(`gfn, "Disabling host mode now.", UVM_LOW)
+      ral.ctrl.enablehost.set(1'b0);
+      csr_update(ral.ctrl);
+
+      // Wait for DUT to return to idle.
+      csr_spinwait(ral.status.hostidle, 1'b1,
+        .spinwait_delay_ns(( cfg.clk_rst_vif.clk_period_ps / 1000 ) * 10 /* 10 clk_i cycles*/),
+        .timeout_ns(10_000));
+
+      `uvm_info(`gfn, "DUT has returned to idle now.", UVM_LOW)
+
+      // Clear out any remaining state in the Controller-Mode FIFOs.
+      ral.fifo_ctrl.rxrst.set(1'b1);
+      ral.fifo_ctrl.fmtrst.set(1'b1);
+      csr_update(ral.fifo_ctrl);
+
+      // Clear any pending Controller-Mode interrupts
+      process_interrupts();
+
+      // Clear scoreboard FIFO
+      cfg.scoreboard.target_mode_wr_exp_fifo.flush();
+      cfg.scoreboard.target_mode_wr_obs_fifo.flush();
+
+    end
+    // Re-enable scorebaord
     cfg.en_scb = 1;
-    `uvm_info(`gfn, "Enable Host mode", UVM_LOW)
-    cfg.m_i2c_agent_cfg.if_mode = Device;
-    // Enable host mode
+
+    // Re-enable host mode
+    `uvm_info(`gfn, "Re-enabling the Controller-Module now.", UVM_LOW)
     ral.ctrl.enablehost.set(1'b1);
     csr_update(ral.ctrl);
+
+    // Start a DUT-Controller stimulus transaction to test recovery
+    // - Limit the size of the transfer just to keep this test fast, as we get no additional
+    //   coverage from extra data in the smoke sequence.
     cfg.clk_rst_vif.wait_clks(10);
-    // Start host_smoke
     begin
-      uvm_sequence seq = create_seq_by_name("i2c_host_smoke_vseq");
+      i2c_host_smoke_vseq seq;
+      `uvm_create_obj(i2c_host_smoke_vseq, seq)
       seq.set_sequencer(p_sequencer);
-      `DV_CHECK_RANDOMIZE_FATAL(seq)
+      seq.num_trans_c.constraint_mode(0);
+      seq.num_runs_c.constraint_mode(0);
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(seq,
+        num_trans == 3;
+        num_runs == 3;
+        num_wr_bytes == 15;
+        num_rd_bytes == 15;)
       seq.start(p_sequencer);
     end
     `uvm_info(`gfn, "End i2c_host_mode_toggle_vseq", UVM_HIGH)
