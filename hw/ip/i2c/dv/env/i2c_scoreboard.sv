@@ -707,6 +707,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     // Also reset the model when the scoreboard is reset (such as on dut_init())
     model.reset();
+
+    `uvm_info(`gfn, "i2c_scoreboard is reset now.", UVM_LOW)
   endfunction : reset
 
   function void check_phase(uvm_phase phase);

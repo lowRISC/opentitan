@@ -99,8 +99,21 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task drive_host_item(i2c_item req);
     // During pause period, let drive_scl control scl
     `DV_WAIT(scl_pause == 1'b0,, scl_spinwait_timeout_ns, "drive_host_item")
-    `uvm_info(`gfn, $sformatf("drive_host_item() :: drv_type=%s", req.drv_type.name()), UVM_HIGH)
 
+    // Print out what we are about to drive...
+    begin
+      string str = $sformatf("drive_host_item() :: drv_type=%s", req.drv_type.name());
+      case (req.drv_type)
+        HostData: str = {str, $sformatf(" ( byte=8'h%2x )", req.wdata)};
+        HostDataNoWaitForACK: begin
+          str = {str, $sformatf(" ( byte=8'h%2x, wait_cycles=%0d )", req.wdata, req.wait_cycles)};
+        end
+        default:; // Fall-through
+      endcase
+      `uvm_info(`gfn, str, UVM_HIGH)
+    end
+
+    // Now drive the item.
     case (req.drv_type)
       HostStart: begin
         cfg.vif.host_start(cfg.timing_cfg);

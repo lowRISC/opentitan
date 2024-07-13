@@ -821,6 +821,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // This randomized transaction is constrained by a number of 'env_cfg' variables
   // - cfg.min_data/cfg.max_data
   // - cfg.rs_pct
+  // - cfg.min_num_transfers/cfg.max_num_transfers
   // - cfg.min_xfer_len
   //
   virtual function i2c_transaction create_txn();
@@ -1263,7 +1264,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           // (ack-stop test) Only write to the txfifo now if there is no pre-feed data
           if (pre_feed_cnt == 0) begin
             csr_wr(.ptr(ral.txdata), .value(wdata));
-            `uvm_info(id, $sformatf("Wrote 0x%0x to txdata", wdata), UVM_HIGH)
+            `uvm_info(id, $sformatf("Wrote 8'h%2x into the TXFIFO.", wdata), UVM_HIGH)
           end else begin
             pre_feed_cnt--;
           end
