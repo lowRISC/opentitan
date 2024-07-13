@@ -708,8 +708,10 @@ class i2c_reference_model extends uvm_component;
     exp_rd_item.clear_all();
     exp_wr_item.clear_all();
     rdata_cnt = 0;
-    txdata_wr = '{};
+    txdata_wr = {};
     acqdata_rd = {};
+
+    `uvm_info(`gfn, "i2c_reference_model is reset now.", UVM_LOW)
   endfunction : reset
 
 endclass : i2c_reference_model
