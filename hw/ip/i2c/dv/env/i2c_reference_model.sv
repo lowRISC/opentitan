@@ -301,7 +301,7 @@ class i2c_reference_model extends uvm_component;
 
       "acqdata": begin
         acqdata_rd.push_back(data[10:0]);
-        cfg.rcvd_acq_cnt++; // Used for stimulus generation purposes #TODO Remove
+        cfg.obs_num_acqfifo_reads++; // Used for stimulus generation purposes #TODO Remove
       end
 
       default:;
@@ -650,7 +650,7 @@ class i2c_reference_model extends uvm_component;
       // the transfer to be accepted, and to become visible at the ACQFIFO.
 
       // Count the number of ACQFIFO items we expect to read to completely observe the transfer.
-      cfg.sent_acq_cnt += 1 /*signal=start/rstart, abyte=addr+dir*/ +
+      cfg.exp_num_acqfifo_reads += 1 /*signal=start/rstart, abyte=addr+dir*/ +
                           obs_xfer.num_data /*signal=none, abyte=data*/ +
                           (obs_xfer.stop ? 1 /*signal=stop, abyte=xx*/ : 0);
 
@@ -681,8 +681,8 @@ class i2c_reference_model extends uvm_component;
       exp_rd_xfer = obs_xfer;
 
       // Count the number of ACQFIFO items we expect to read to completely observe the transfer.
-      cfg.sent_acq_cnt += 1 /*signal=start/rstart, abyte=addr+dir*/ +
-                          (exp_rd_xfer.stop ? 1 /*signal=stop, abyte=xx*/ : 0);
+      cfg.exp_num_acqfifo_reads += 1 /*signal=start/rstart, abyte=addr+dir*/ +
+                                   (exp_rd_xfer.stop ? 1 /*signal=stop, abyte=xx*/ : 0);
 
       // If we received the item from the monitor, that means the transfer must have already
       // ended. Therefore, we know any data in the item has already been written into the

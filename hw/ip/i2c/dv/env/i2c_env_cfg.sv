@@ -71,8 +71,8 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // given stimulus. This is used by the testbench to know when it should start reading
   // from the ACQFIFO, and also to know when it can stop to end the test.
   // TODO(#23920) REFACTOR
-  int        sent_acq_cnt; // How many ACQFIFO items we expect the be produced
-  int        rcvd_acq_cnt; // How many ACQFIFO items we have observed by reading it
+  int        exp_num_acqfifo_reads; // How many ACQFIFO items we expect the be produced
+  int        obs_num_acqfifo_reads; // How many ACQFIFO items we have observed by reading it
 
   // The i2c_host_fifo_fmt_empty_vseq uses this variable for checking purposes.
   bit [7:0]  lastbyte; // TODO(#23920) Remove
