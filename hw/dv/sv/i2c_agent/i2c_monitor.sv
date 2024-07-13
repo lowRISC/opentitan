@@ -399,38 +399,6 @@ class i2c_monitor extends dv_base_monitor #(
     end
   endtask : monitor_ready_to_end
 
-  // Handle an externally-triggered monitor reset
-  // This routine is currently triggered externally by setting cfg.monitor_rst = 1 in the
-  // hrst_vseq. This is a hack to try and keep the dv env in sync with stimulus that
-  // short-circuits the current transaction with an early RSTART/STOP. It should be refactored
-  // and removed, preferably with proper modelling inside the scoreboard/refmodel.
-  //
-  // - Wait for the next edge on the bus
-  // - Clear temporary state about the currently monitored transaction
-  // - Set stop bit to indicate completion of the current transaction
-  task handle_rst(input string task_name);
-    int wait_timeout_ns = 1_000_000; // 1 ms
-    `uvm_info(`gfn, $sformatf("handle_rst() from task '%0s'", task_name), UVM_MEDIUM)
-
-    // Wait for the next bus activity via the clocking block
-    @(cfg.vif.cb);
-
-    // Clear the temporary item used to accumulate in-progress transactions
-    mon_dut_item.clear_all();
-
-    // Wait for cfg.monitor_rst to de-assert (within 1ms).
-    `DV_WAIT(// WAIT_COND_
-             (!cfg.monitor_rst),
-             // MSG_
-             ,
-             // TIMEOUT_NS_
-             wait_timeout_ns,
-             // ID_
-             $sformatf("handle_rst: reset failed to de-asserted from task '%0s'", task_name));
-
-    // Indicate the end of the current transaction with a stop condition.
-    cfg.got_stop = 1;
-  endtask
 
   // This task is called in a loop to collect I2C Agent-Controller transfers.
   //
@@ -471,6 +439,7 @@ class i2c_monitor extends dv_base_monitor #(
     end else begin
       // If we got to the else-condition, it means our decoding above failed, and somehow the
       // items are in an unexpected state. This may be a testbench bug.
+
       `uvm_fatal(`gfn, "State at start of controller_collect_thread() is unexpected!")
     end
 
@@ -478,17 +447,18 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.tran_id = num_dut_tran++;
 
     // Capture the transfer
-    // - If an external reset is requested, return early without pushing a sequence item.
     begin
-      bit seen_mid_transfer_reset;
-      controller_address_thread(seen_mid_transfer_reset);
-      // If cfg.monitor_reset was asserted during the address capture task, return early here.
-      if (seen_mid_transfer_reset) return;
-      case (mon_dut_item.bus_op)
-        BusOpRead: controller_read_thread();
-        BusOpWrite: controller_write_thread();
-        default: `uvm_fatal(`gfn, "Should never get here!")
-      endcase
+      controller_address_thread();
+      // We may have seen an early RSTART/STOP during the address+direction byte. This is not a
+      // normal transfer, but is valid bus behaviour. If so, push the transfer item normally, then
+      // return to the start for the next one.
+      if (!mon_dut_item.stop && !mon_dut_item.rstart_back) begin
+        case (mon_dut_item.bus_op)
+          BusOpRead: controller_read_thread();
+          BusOpWrite: controller_write_thread();
+          default: `uvm_fatal(`gfn, "Should never get here!")
+        endcase
+      end
     end
 
     mon_dut_item.state = i2c_agent_pkg::StStopped;
@@ -513,12 +483,7 @@ class i2c_monitor extends dv_base_monitor #(
   endtask: controller_collect_thread
 
 
-  task controller_address_thread(
-    // If the monitor will not partake any further in the transaction, due to an external actor
-    //  requesting a monitor reset via cfg.monitor_rst, this bit is set upon returning.
-    output bit skip
-  );
-    skip = 1'b0;
+  task controller_address_thread();
 
     fork begin : iso_fork
       fork
@@ -565,12 +530,12 @@ class i2c_monitor extends dv_base_monitor #(
           mon_dut_item.state = i2c_agent_pkg::StAddrByteAckRcvd; // Signal the addr_ack is captured
 
         end : address_capture_thread
-        begin
-          begin
-            wait(cfg.monitor_rst);
-            handle_rst("controller_address_thread()");
-          end
-          skip = 1; // Skip processing rest of the transaction
+
+        begin: end_of_transfer_thread
+          cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
+            mon_dut_item.rstart_back, mon_dut_item.stop);
+          `uvm_info(`gfn, $sformatf("controller_read_thread(), detected %0s",
+            (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_HIGH)
         end
       join_any
       disable fork;
@@ -638,11 +603,6 @@ class i2c_monitor extends dv_base_monitor #(
           end
         end
 
-        begin : testbench_monitor_reset_thread
-          // Testbench monitor reset triggered from the target_hrst_vseq
-          wait(cfg.monitor_rst)
-          handle_rst("controller_read_thread()");
-        end
       join_any
       disable fork;
     end: iso_fork join
@@ -700,10 +660,6 @@ class i2c_monitor extends dv_base_monitor #(
             (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_HIGH)
         end
 
-        begin: testbench_monitor_reset_thread
-          wait(cfg.monitor_rst);
-          handle_rst("controller_write_thread");
-        end
       join_any
       disable fork;
     end: iso_fork join
