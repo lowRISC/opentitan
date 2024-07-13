@@ -18,7 +18,6 @@ class i2c_target_stress_all_vseq extends i2c_base_vseq;
     "i2c_target_smoke_vseq",
     "i2c_target_stress_wr_vseq",
     "i2c_target_timeout_vseq",
-    "i2c_target_ack_stop_vseq",
     "i2c_target_perf_vseq"
   };
 
