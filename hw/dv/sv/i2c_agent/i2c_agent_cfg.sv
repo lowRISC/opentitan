@@ -30,6 +30,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // test should not update timing parameter.
   // This variable indicates target DUT receives the end of the transaction
   // and allow tb to program a new timing parameter.
+  // TODO(#23920) Remove this.
   bit     got_stop = 0;
 
   int     rcvd_rd_byte = 0; // Increment each time the agent reads a byte.
