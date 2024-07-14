@@ -17,9 +17,6 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // Length of IR register. Update this field based on the actual width used in the design.
   uint ir_len = JTAG_IRW;
 
-  // TAP FSM state we go to on a TRST_N reset
-  jtag_fsm_state_e tap_reset_state = JtagResetState;
-
   // JTAG debug transport module (DTM) RAL model based off of RISCV spec 0.13.2 (section 6.1.2).
   jtag_dtm_reg_block jtag_dtm_ral;
 

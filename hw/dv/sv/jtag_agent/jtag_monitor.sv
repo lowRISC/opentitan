@@ -65,10 +65,7 @@ class jtag_monitor extends dv_base_monitor #(
       wait_tck();
 
       if (!cfg.vif.trst_n) begin
-        // Jump to the correct "reset state". I suspect this should always be JtagResetState, but
-        // some hardware jumps elsewhere! In particular, the pulp riscv-dbg TAP jumps to
-        // JtagIdleState.
-        jtag_state = cfg.tap_reset_state;
+        jtag_state = JtagResetState;
         wait(cfg.vif.trst_n == 1);
         continue;
       end

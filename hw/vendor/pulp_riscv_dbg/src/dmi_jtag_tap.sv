@@ -300,7 +300,7 @@ module dmi_jtag_tap #(
 
   always_ff @(posedge tck_i or negedge trst_ni) begin : p_regs
     if (!trst_ni) begin
-      tap_state_q <= RunTestIdle;
+      tap_state_q <= TestLogicReset;
       idcode_q    <= IdcodeValue;
       bypass_q    <= 1'b0;
     end else begin
