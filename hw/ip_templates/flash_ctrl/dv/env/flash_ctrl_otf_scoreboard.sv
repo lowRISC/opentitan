@@ -471,38 +471,41 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
     // check if this is page erase
     if (exp.req.pg_erase_req | exp.req.bk_erase_req) begin
-      int cnt = 0;
-      int cnt_max = (exp.req.bk_erase_req)? 65536 : 256;
+      // The below check won't always be valid when using the vendor flash.
+      if (cfg.seq_cfg.use_vendor_flash == 0) begin
+        int cnt = 0;
+        int cnt_max = (exp.req.bk_erase_req)? 65536 : 256;
 
-      `uvm_info(name, $sformatf("erase detected  pg_erase:%0d bk_erase:%0d",
-                                exp.req.pg_erase_req, exp.req.bk_erase_req),
-                UVM_MEDIUM)
-      repeat (cnt_max) begin
-        rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
-        rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
-        rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
-        rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
+        `uvm_info(name, $sformatf("erase detected  pg_erase:%0d bk_erase:%0d",
+                                  exp.req.pg_erase_req, exp.req.bk_erase_req),
+                  UVM_MEDIUM)
+        repeat (cnt_max) begin
+          rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
+          rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
+          rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
+          rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
 
-        entry.bank = bank;
-        entry.addr = (rcv.mem_addr<<3);
-        entry.part = cfg.get_part(rcv.mem_part, rcv.mem_info_sel);
-        corrupt_entry.delete(entry);
+          entry.bank = bank;
+          entry.addr = (rcv.mem_addr<<3);
+          entry.part = cfg.get_part(rcv.mem_part, rcv.mem_info_sel);
+          corrupt_entry.delete(entry);
 
-        if (rcv.mem_addr == exp.req.addr) begin
-          `dv_info($sformatf("addr match %x", rcv.mem_addr), UVM_MEDIUM, name)
-        end else begin
-          `DV_CHECK_EQ(rcv.mem_addr, exp.req.addr,,, name)
+          if (rcv.mem_addr == exp.req.addr) begin
+            `dv_info($sformatf("addr match %x", rcv.mem_addr), UVM_MEDIUM, name)
+          end else begin
+            `DV_CHECK_EQ(rcv.mem_addr, exp.req.addr,,, name)
+          end
+          `DV_CHECK_EQ(rcv.mem_wdata, {flash_phy_pkg::FullDataWidth{1'b1}},,, name)
+
+
+          if (rcv.mem_part == FlashPartData) begin
+            data_mem[bank].delete(rcv.mem_addr);
+          end else begin
+            info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
+          end
+          exp.req.addr++;
+          @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
         end
-        `DV_CHECK_EQ(rcv.mem_wdata, {flash_phy_pkg::FullDataWidth{1'b1}},,, name)
-
-
-        if (rcv.mem_part == FlashPartData) begin
-          data_mem[bank].delete(rcv.mem_addr);
-        end else begin
-          info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
-        end
-        exp.req.addr++;
-        @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
       end
     end else begin
       bit skip_comp = 0;
