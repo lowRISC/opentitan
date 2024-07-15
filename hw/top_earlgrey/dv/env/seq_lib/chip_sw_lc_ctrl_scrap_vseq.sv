@@ -56,11 +56,22 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
   endfunction : backdoor_override_otp
 
   protected task sync_with_sw();
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusBooted)
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    if (is_cpu_enabled_lc_state(lc_ctrl_dv_utils_pkg::encode_lc_state(src_state))) begin
+      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusBooted)
+      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    end
   endtask : sync_with_sw
 
   protected task perform_transition_to_scrap();
+    // if JTAG - wait until booter is done
+    //           need to ensure the booter finished copying values
+    //           from OTP to AST before performing external clock
+    //           transition
+    // if SW   - wait until in test
+    //
+    // Either way, sync with SW here
+    sync_with_sw();
+
     // perform transition through JTAG if we're not using SW transition
     // or if SW transition isn't allowed (RAW/TEST_LOCKED*)
     if (!perform_transition_via_sw) begin : jtag_transition
@@ -72,10 +83,12 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
       jtag_lc_state_transition(src_state, DecLcStScrap);
     end : jtag_transition
 
-    // else, we're performing the transition though SW
+    // else, we're performing the transition through SW
     else begin : sw_transition
-      // sync with SW, and let perform the transition
-      sync_with_sw();
+      // syncing with SW already done above,
+      // and SW has to execute the transition,
+      // so go on and wait for the transition to end
+      #0;
     end : sw_transition
 
     // wait for transition to end
