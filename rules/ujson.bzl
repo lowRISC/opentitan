@@ -7,7 +7,7 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 """Rust generation rules for `ujson`."""
 
 def _ujson_rust(ctx):
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     module = ctx.actions.declare_file("{}.rs".format(ctx.label.name))
     ujson_lib = ctx.attr.ujson_lib[CcInfo].compilation_context.headers.to_list()
 

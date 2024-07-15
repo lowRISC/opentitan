@@ -121,7 +121,7 @@ def _cc_aspect_impl(target, ctx, action_callback):
         return [make_output_group_info()]
     cc_compile_ctx = cc_info.compilation_context
 
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,

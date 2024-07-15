@@ -12,9 +12,9 @@ def google_repos(
     http_archive_or_local(
         name = "rules_cc",
         local = rules_cc,
-        sha256 = "123ababe4be661f2fc9189d3b24deabc003926e87d991832cd46b6ae59f7b3c8",
-        strip_prefix = "rules_cc-a636005ba28c0344da5110bd8532184c74b6ffdf",
-        url = "https://github.com/bazelbuild/rules_cc/archive/a636005ba28c0344da5110bd8532184c74b6ffdf.tar.gz",
+        sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
+        strip_prefix = "rules_cc-0.0.9",
+        url = "https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz",
     )
 
     http_archive_or_local(

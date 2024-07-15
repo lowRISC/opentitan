@@ -176,7 +176,7 @@ RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
 ]
 
 def _obj_transform_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     outputs = []
     for src in ctx.files.srcs:
         binary = ctx.actions.declare_file(
@@ -215,7 +215,7 @@ ArchiveInfo = provider(fields = ["archive_infos"])
 
 def _bin_to_archive_impl(ctx):
     cc_infos = []
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     cc_info_dict = {}
     num_devices = len(ctx.attr.devices)
     num_binaries = len(ctx.attr.binaries)
@@ -356,7 +356,7 @@ bin_to_archive = rv_rule(
 )
 
 def _elf_to_disassembly_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     outputs = []
     for src in ctx.files.srcs:
         disassembly = ctx.actions.declare_file(
