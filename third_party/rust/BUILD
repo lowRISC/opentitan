@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
+load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_toolchain")
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
 
 package(default_visibility = ["//visibility:public"])
@@ -28,7 +28,6 @@ rust_bindgen_toolchain(
         ":specify_bindgen_libstdcxx": "@bindgen_libstdcxx_linux//:libstdc++",
         "//conditions:default": None,
     }),
-    system_includes = "@bindgen_clang_linux//:system_includes",
 )
 
 toolchain(
