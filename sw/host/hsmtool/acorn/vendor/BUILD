@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_library")
+load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_library")
 
 package(default_visibility = ["//visibility:public"])
 

@@ -143,7 +143,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @remote_java_tools//... \
     @remote_java_tools_linux//... \
     @bindgen_clang_linux//... \
-    @rules_rust_bindgen__bindgen-0.65.1//... \
+    @rules_rust_bindgen__bindgen-0.69.1//... \
     @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_cc_toolchains//... \
@@ -155,7 +155,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.11.0_linux//... \
     @cmake-3.23.2-linux-x86_64//... \
-    @rustfmt_nightly-2023-10-05__x86_64-unknown-linux-gnu_tools//... \
+    @rustfmt_nightly-2024-07-25__x86_64-unknown-linux-gnu_tools//... \
     @rust_analyzer_1.71.1_tools//... \
     @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
     @rust_linux_x86_64__riscv32imc-unknown-none-elf__nightly_tools//...
