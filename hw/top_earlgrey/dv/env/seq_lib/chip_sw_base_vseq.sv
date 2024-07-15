@@ -1125,7 +1125,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Wait for LC to be ready, acquire the transition interface mutex
     wait_lc_ready();
 
-    // enable external clock.
+    // claim the transition interface mutex
     claim_transition_interface();
 
     // Switch to external clock via LC controller.
@@ -1134,6 +1134,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       ral.lc_ctrl.transition_ctrl.get_offset(),
       p_sequencer.jtag_sequencer_h,
       1);
+
+    // wait until external clock is actually switched
+    wait_lc_ext_clk_switched();
   endtask : switch_to_external_clock
 
   // Use JTAG interface to program OTP fields.
