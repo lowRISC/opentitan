@@ -28,6 +28,10 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kDefaultTimeoutMicros = 50000,
+  // This test uses the hyperdebug bit banging. To ensure accurate signal
+  // capture and avoid aliasing, we run the spi at 40kHz, adhering to the
+  // Nyquist limit with the Hyperdebug's 100kHz sampling rate.
+  kSpiClock = 20000,
 };
 
 uint8_t backdoor_cpha = UINT8_MAX;
@@ -57,8 +61,8 @@ bool test_main(void) {
 
 static status_t spi_config_test(dif_spi_host_t *spi) {
   dif_spi_host_config_t config = {
-      .spi_clock = 40000,
-      .peripheral_clock_freq_hz = (uint32_t)kClockFreqUsbHz,
+      .spi_clock = kSpiClock,
+      .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz / 2,
   };
   backdoor_cpha = UINT8_MAX;
   backdoor_cpol = UINT8_MAX;
@@ -77,7 +81,7 @@ static status_t spi_config_test(dif_spi_host_t *spi) {
   OTTF_WAIT_FOR(backdoor_data != UINT32_MAX, kDefaultTimeoutMicros);
   uint8_t data[sizeof(backdoor_data)];
   memcpy(data, &backdoor_data, sizeof(data));
-  busy_spin_micros(70000);
+  busy_spin_micros(40000);
   TRY(spi_flash_testutils_program_page(spi, data, sizeof(data), address,
                                        false));
   return OK_STATUS();

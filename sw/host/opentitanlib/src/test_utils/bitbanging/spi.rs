@@ -67,7 +67,8 @@ pub mod decoder {
     impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, const CS: u8>
         Decoder<D0, D1, D2, D3, CLK, CS>
     {
-        /// Returns a sample when a raise or fall clock edge is detected depending on the cpol and cpha configuration.
+        /// Loop sampling the cs until a low level is detected. Then the clock level is checked
+        /// for correctness based on the cpol configuration.
         fn wait_cs<I>(&self, samples: &mut I) -> Result<()>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
