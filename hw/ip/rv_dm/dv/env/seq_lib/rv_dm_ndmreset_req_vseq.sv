@@ -25,7 +25,20 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     `DV_CHECK(dmstatus.allunavail)
   endtask
 
+  // Check that the ndmreset_pending_q signal in the design has the value we expect.
+  task check_ndmreset_pending(bit expected_value);
+    uvm_reg_data_t val;
+    string path = "tb.dut.ndmreset_pending_q";
+
+    `DV_CHECK(uvm_hdl_read(path, val));
+    `DV_CHECK_EQ(val, expected_value);
+  endtask
+
   task body();
+    // Check that the lc_rst_pending_q signal isn't currently set. This is just to make sure that we
+    // aren't starting the sequence in some "partially reset" state.
+    check_ndmreset_pending(1'b0);
+
     // We want to write known values to registers in each RAL (JTAG DMI, debug memory), but choose
     // registers where this won't actually have any effect.
     //
@@ -46,8 +59,17 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     // remains high: it will drop again when we disable lc_hw_debug_en below.
     `DV_CHECK(cfg.rv_dm_vif.cb.ndmreset_req)
 
-    // Pretend that the "rest of the system" has indeed gone into reset by asserting the
-    // unavailable_i input, which means that the hart is powered down.
+    // We should also expect to see the ndmreset_pending_q signal go high (tracking the fact that we
+    // are in the middle of an ndm reset)
+    check_ndmreset_pending(1'b1);
+
+    // Resetting the system would normally drop the rst_ni pin (resetting rv_dm as well). Because
+    // this is an "ndm reset", we don't do that. But we *do* expect to see the reset on the
+    // auxiliary clk_rst_lc_ni pin.
+    cfg.clk_lc_rst_vif.drive_rst_pin(1'b0);
+
+    // Pretend that the "rest of the system" has indeed seen a reset by asserting the unavailable_i
+    // input, which means that the hart is powered down.
     cfg.rv_dm_vif.cb.unavailable <= 1;
 
     // At this point, "normal debug operation" is not going to be available in the chip. Set
@@ -64,11 +86,33 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(0));
     `DV_CHECK(!cfg.rv_dm_vif.cb.ndmreset_req)
 
-    // At this point, we want to mimic the system coming back up. De-assert the unavailable_i signal
-    // to show that the CPU is back. Also behave as lc_ctrl and re-enable debug.
+    // We still expect the ndmreset_pending_q signal to be high at this point. It's job is to track
+    // the entire ndm reset and it should only drop when the rest of the system comes out of reset.
+    check_ndmreset_pending(1'b1);
+
+    // At this point, we want to mimic the system coming back up. De-assert the clk_lc_rst_vif reset
+    // and then drop the unavailable_i signal to show that the CPU is back. Also behave as lc_ctrl
+    // and re-enable debug.
+    cfg.clk_lc_rst_vif.drive_rst_pin(1'b1);
     cfg.rv_dm_vif.cb.unavailable <= 0;
     lc_hw_debug_en = 1'b1;
     upd_lc_hw_debug_en();
+
+    // Wait a short time to make sure that the lc_hw_debug_en signal change has made it through the
+    // synchroniser primitives.
+    cfg.clk_rst_vif.wait_clks(8);
+
+    // The ndmreset should have finished. Check that rv_dm doesn't think it's still pending.
+    check_ndmreset_pending(1'b0);
+
+    // Also, the debug module should think that the one and only hart has reset. The allhavereset
+    // and anyhavereset fields should all be high.
+    begin
+      uvm_reg_data_t rvalue;
+      csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rvalue));
+    end
+    `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.anyhavereset), 1)
+    `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.allhavereset), 1)
 
     // Read back progbuf[0] and dataddr[0]. They should still have the values that we wrote earlier
     // because the ndmreset shouldn't have reset any state inside the debug module itself.
