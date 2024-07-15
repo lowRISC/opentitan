@@ -257,15 +257,12 @@ interface clk_rst_if #(
   endtask
 
   // apply reset with specified scheme
-  // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
-  task automatic apply_reset(int pre_reset_dly_clks   = 0,
-                             int reset_width_clks = $urandom_range(50, 100),
+  task automatic apply_reset(int reset_width_clks = $urandom_range(50, 100),
                              int post_reset_dly_clks  = 0,
                              rst_scheme_e rst_n_scheme  = RstAssertAsyncDeassertSync);
     if (drive_rst_n) begin
       int dly_ps;
       dly_ps = $urandom_range(0, clk_period_ps);
-      wait_clks(pre_reset_dly_clks);
       case (rst_n_scheme)
         RstAssertSyncDeassertSync: begin
           o_rst_n <= 1'b0;
