@@ -204,7 +204,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       super.apply_reset(kind);
       if (kind == "HARD") begin
         // A short slow clock reset should suffice.
-        cfg.slow_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(5));
+        cfg.slow_clk_rst_vif.apply_reset(.reset_width_clks(5));
       end
       cfg.esc_clk_rst_vif.apply_reset();
       cfg.lc_clk_rst_vif.apply_reset();
