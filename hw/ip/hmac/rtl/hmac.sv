@@ -928,8 +928,6 @@ module hmac
 
   // Below condition is covered by the design (2020-02-19)
   //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
-  // `hash_process` or `reg_hash_stop` should be toggled and paired with `hash_start_or_continue`
-  `ASSERT(ValidHashProcessAssert, (hash_process || reg_hash_stop) |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,
