@@ -462,18 +462,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   local task start_clocks();
     control_all_clocks(.enable(1));
     fork
-      cfg.aon_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                      .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                     .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div2_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                          .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div4_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                          .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.main_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                       .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.usb_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                      .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.aon_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.io_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.io_div2_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.io_div4_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.main_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+      cfg.usb_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
     join
   endtask
 
