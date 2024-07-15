@@ -20,7 +20,7 @@ def obj_transform(ctx, **kwargs):
     Returns:
       The transformed File.
     """
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     output = kwargs.get("output")
     if not output:
         name = get_override(ctx, "attr.name", kwargs)
@@ -56,7 +56,7 @@ def obj_disassemble(ctx, **kwargs):
     Returns:
       The disassembled File.
     """
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     output = kwargs.get("output")
     if not output:
         name = get_override(ctx, "attr.name", kwargs)
