@@ -293,6 +293,11 @@
       reseed: 2
     }
     {
+      name: rv_dm_hartsel_warl
+      uvm_test_seq: rv_dm_hartsel_warl_vseq
+      reseed: 1
+    }
+    {
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
     }

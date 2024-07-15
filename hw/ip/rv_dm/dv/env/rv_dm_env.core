@@ -54,6 +54,7 @@ filesets:
       - seq_lib/rv_dm_rom_read_access_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_progbuf_read_write_execute_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_dmi_failed_op_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_hartsel_warl_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
