@@ -50,7 +50,11 @@ const SPI_PIN_SCL: u8 = 1;
 const SPI_PIN_D0: u8 = 2;
 const SPI_PIN_D1: u8 = 3;
 
-fn spi_host_config_test(opts: &Opts, transport: &TransportWrapper, ctx: &TestContext) -> Result<()> {
+fn spi_host_config_test(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    ctx: &TestContext,
+) -> Result<()> {
     let uart = transport.uart("console")?;
     let gpio_bitbanging = transport.gpio_bitbanging()?;
 
@@ -58,6 +62,7 @@ fn spi_host_config_test(opts: &Opts, transport: &TransportWrapper, ctx: &TestCon
     let mut samples = vec![0x00; SAMPLES];
     let output = &mut [0x7; SAMPLES];
     output[1] = 0x0f; // A rising edge on the D1 to indicate when the sampling started, which is helpfull when debugging.
+    output[output.len() - 2] = 0x0f; // A rising edge on the D1 to indicate when the sampling finished, which is helpfull when debugging.
     let waveform = Box::new([BitbangEntry::Both(output, &mut samples)]);
 
     UartConsole::wait_for(
@@ -85,7 +90,7 @@ fn spi_host_config_test(opts: &Opts, transport: &TransportWrapper, ctx: &TestCon
             .iter()
             .map(Rc::borrow)
             .collect::<Vec<&dyn GpioPin>>(),
-        Duration::from_micros(20),
+        Duration::from_micros(10),
         waveform,
     )?;
 
