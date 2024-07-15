@@ -95,9 +95,8 @@ def rust_repos(rules_rust = None, serde_annotate = None):
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "1a110ae8bfa34091e2a62e4c0325f8231f934b2956f3a585d4cafba5c81c2676",
-        strip_prefix = "rules_rust-rebase-20231115_01",
-        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/rebase-20231115_01.tar.gz",
+        integrity = "sha256-3QBrdyIdWeTRQSB8DnrfEbH7YNFEC4/KA7+SVheTKmA=",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.49.3/rules_rust-v0.49.3.tar.gz"],
     )
 
     http_archive_or_local(
