@@ -31,3 +31,4 @@
 `include "rv_dm_sba_debug_disabled_vseq.sv"
 `include "rv_dm_debug_disabled_vseq.sv"
 `include "rv_dm_dmi_failed_op_vseq.sv"
+`include "rv_dm_hartsel_warl_vseq.sv"

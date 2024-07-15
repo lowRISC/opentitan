@@ -534,6 +534,17 @@
       tests: ["rv_dm_rom_read_access"]
     }
     {
+      name: hartsel_warl
+      desc: '''
+        Check the WARL behaviour of the hartsel field in dmcontrol
+
+        - Write '1 to hartsel and then read dmcontrol back again.
+        - Check resulting value of hartsel equals the maximum hart index.
+      '''
+      stage: V2
+      tests: ["rv_dm_hartsel_warl"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
