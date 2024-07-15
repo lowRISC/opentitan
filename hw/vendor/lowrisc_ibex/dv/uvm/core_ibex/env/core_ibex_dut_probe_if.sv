@@ -34,6 +34,7 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic                              rf_ren_b;
   logic                              rf_rd_a_wb_match;
   logic                              rf_rd_b_wb_match;
+  logic                              rf_write_wb;
   logic                              sync_exc_seen;
   logic                              irq_exc_seen;
   logic                              csr_save_cause;
@@ -80,6 +81,7 @@ interface core_ibex_dut_probe_if(input logic clk);
     input rf_ren_b;
     input rf_rd_a_wb_match;
     input rf_rd_b_wb_match;
+    input rf_write_wb;
     input sync_exc_seen;
     input irq_exc_seen;
     input wb_exception;
@@ -93,6 +95,7 @@ interface core_ibex_dut_probe_if(input logic clk);
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_rf_ren_b, rf_ren_b)
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_rf_rd_a_wb_match, rf_rd_a_wb_match)
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_rf_rd_b_wb_match, rf_rd_b_wb_match)
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_rf_write_wb, rf_write_wb)
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_minor, alert_minor)
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_ic_tag_req, ic_tag_req)
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_ic_tag_write, ic_tag_write)

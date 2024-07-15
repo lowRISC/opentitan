@@ -916,8 +916,8 @@ module ibex_core import ibex_pkg::*; #(
     assign rf_rdata_b = rf_rdata_b_ecc_i[31:0];
 
     // Calculate errors - qualify with WB forwarding to avoid xprop into the alert signal
-    assign rf_ecc_err_a_id = |rf_ecc_err_a & rf_ren_a & ~rf_rd_a_wb_match;
-    assign rf_ecc_err_b_id = |rf_ecc_err_b & rf_ren_b & ~rf_rd_b_wb_match;
+    assign rf_ecc_err_a_id = |rf_ecc_err_a & rf_ren_a & ~(rf_rd_a_wb_match & rf_write_wb);
+    assign rf_ecc_err_b_id = |rf_ecc_err_b & rf_ren_b & ~(rf_rd_b_wb_match & rf_write_wb);
 
     // Combined error
     assign rf_ecc_err_comb = instr_valid_id & (rf_ecc_err_a_id | rf_ecc_err_b_id);

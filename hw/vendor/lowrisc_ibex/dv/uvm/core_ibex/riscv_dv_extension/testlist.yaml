@@ -683,8 +683,14 @@
 - test: riscv_rf_intg_test
   description: >
     Randomly corrupt the register file read port once in the middle of program execution
-  iterations: 15
+  iterations: 100
   gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=10000
+    +num_of_sub_program=5
+    +gen_all_csrs_by_default=1
+    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0,0x7c1
+    +no_csr_instr=0
   rtl_test: core_ibex_rf_intg_test
   rtl_params:
     SecureIbex: 1

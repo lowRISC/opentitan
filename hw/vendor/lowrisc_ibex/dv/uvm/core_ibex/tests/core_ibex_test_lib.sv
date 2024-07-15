@@ -129,7 +129,8 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
   endfunction
 
   virtual task send_stimulus();
-    bit port_idx;
+    int    rnd_delay;
+    bit    port_idx;
     string port_name;
 
     vseq.start(env.vseqr);
@@ -138,13 +139,18 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
     port_idx = $urandom_range(1);
     port_name = port_idx ? "rf_rdata_b_ecc" : "rf_rdata_a_ecc";
 
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rnd_delay, rnd_delay > 1000; rnd_delay < 10_000;)
+    clk_vif.wait_n_clks(rnd_delay);
+
     forever begin
-      logic rf_ren, rf_rd_wb_match;
+      logic rf_ren, rf_rd_wb_match, rf_write_wb;
       int unsigned bit_idx;
       uvm_hdl_data_t data, mask;
       logic exp_alert, alert_major_internal;
 
       clk_vif.wait_n_clks(1);
+
+      rf_write_wb = dut_vif.signal_probe_rf_write_wb(dv_utils_pkg::SignalProbeSample);
 
       // Check if port is being read.
       if (port_idx) begin
@@ -156,7 +162,7 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
       end
 
       // Only corrupt port if it is read.
-      if (!(rf_ren == 1'b1 && rf_rd_wb_match == 1'b0)) continue;
+      if (!(rf_ren == 1'b1 && (rf_rd_wb_match == 1'b0 || rf_write_wb == 1'b0))) continue;
 
       data = read_data(port_name);
       `uvm_info(`gfn, $sformatf("Corrupting %s; original value: 'h%0x", port_name, data), UVM_LOW)

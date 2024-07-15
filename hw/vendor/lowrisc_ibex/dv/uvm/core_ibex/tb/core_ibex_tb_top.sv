@@ -250,6 +250,7 @@ module core_ibex_tb_top;
   assign dut_if.rf_ren_b         = dut.u_ibex_top.u_ibex_core.rf_ren_b;
   assign dut_if.rf_rd_a_wb_match = dut.u_ibex_top.u_ibex_core.rf_rd_a_wb_match;
   assign dut_if.rf_rd_b_wb_match = dut.u_ibex_top.u_ibex_core.rf_rd_b_wb_match;
+  assign dut_if.rf_write_wb      = dut.u_ibex_top.u_ibex_core.rf_write_wb;
   assign dut_if.sync_exc_seen    = dut.u_ibex_top.u_ibex_core.cs_registers_i.cpuctrlsts_part_q.sync_exc_seen;
   assign dut_if.csr_save_cause   = dut.u_ibex_top.u_ibex_core.csr_save_cause;
   assign dut_if.exc_cause        = dut.u_ibex_top.u_ibex_core.exc_cause;
