@@ -199,6 +199,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
         cfg.m_jtag_agent_cfg.vif.do_trst_n();
       end
       if (kind inside {"HARD", "SCAN"}) apply_scan_reset();
+      cfg.clk_lc_rst_vif.apply_reset();
       super.apply_reset(kind);
     join
   endtask

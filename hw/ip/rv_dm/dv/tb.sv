@@ -78,6 +78,11 @@ module tb;
   assign mon_jtag_if.tdo    = dut.dap.td_o;
 
   initial begin
+    // Copy the clock period from clk_rst_if to clk_lc_rst_if. The clock isn't actually connected to
+    // anything in the design, but we have DV code that asserts the reset and then waits a cycle
+    // before de-asserting it, so the clock must be running.
+    clk_lc_rst_if.set_period_ps(clk_rst_if.clk_period_ps);
+
     clk_rst_if.set_active();
     clk_lc_rst_if.set_active();
 
