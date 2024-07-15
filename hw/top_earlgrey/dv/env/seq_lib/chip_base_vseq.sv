@@ -383,4 +383,11 @@ class chip_base_vseq #(
     cfg.chip_vif.por_n_if.drive(1);
   endtask // assert_por_reset
 
+  // The chip_csr_mem_rw_with_rand_reset test checks all CSRs back to back and without opening a
+  // window for applying a reset. This may take a much longer time than the default 10_000 clock
+  // cycles used in cip_base_vseq.sv.
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return 250_000;
+  endfunction
+
 endclass : chip_base_vseq
