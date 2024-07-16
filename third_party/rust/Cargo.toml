@@ -89,16 +89,7 @@ secrecy = "0.8"
 strum = { version = "0.25", features = ["derive"] }
 libloading = "0.8"
 
-# We'd like to reference serde_annotate by its Git repo, but we also need to
-# support airgapped builds and bazel does not support git repo references
-# for airgapped builds. As such, these two libraries are downloaded as
-# http_archive dependencies. In order to have a globally consistent set of
-# crate dependencies, we have to list the deps of those two crates here. Those
-# crates reference their deps via a `@crate_index` repo. In OpenTitan, we
-# create our own `@crate_index` repo which is share globally among all bazel
-# sub-repositories.
-
-# serde_annotate = { git = "https://github.com/lowRISC/serde-annotate", branch="main"}
+serde_annotate = { git = "https://github.com/lowRISC/serde-annotate", tag = "v0.0.11" }
 anstyle = "1.0"
 pest = "2.2"
 pest_derive = "2.2"

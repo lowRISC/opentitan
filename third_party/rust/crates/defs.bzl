@@ -16,6 +16,7 @@
 """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
@@ -358,6 +359,7 @@ _NORMAL_DEPENDENCIES = {
             "scopeguard": Label("@crate_index__scopeguard-1.2.0//:scopeguard"),
             "secrecy": Label("@crate_index__secrecy-0.8.0//:secrecy"),
             "serde": Label("@crate_index__serde-1.0.189//:serde"),
+            "serde_annotate": Label("@crate_index__serde_annotate-0.1.0//:serde_annotate"),
             "serde_bytes": Label("@crate_index__serde_bytes-0.11.12//:serde_bytes"),
             "serde_json": Label("@crate_index__serde_json-1.0.107//:serde_json"),
             "serde_with": Label("@crate_index__serde_with-3.4.0//:serde_with"),
@@ -2691,6 +2693,26 @@ def crate_repositories():
     )
 
     maybe(
+        new_git_repository,
+        name = "crate_index__serde_annotate-0.1.0",
+        commit = "975683bc760df712b3e8c8e62606da16c9b516e9",
+        init_submodules = True,
+        remote = "https://github.com/lowRISC/serde-annotate",
+        build_file = Label("@//third_party/rust/crates:BUILD.serde_annotate-0.1.0.bazel"),
+        strip_prefix = "serde_annotate",
+    )
+
+    maybe(
+        new_git_repository,
+        name = "crate_index__serde_annotate_derive-0.1.0",
+        commit = "975683bc760df712b3e8c8e62606da16c9b516e9",
+        init_submodules = True,
+        remote = "https://github.com/lowRISC/serde-annotate",
+        build_file = Label("@//third_party/rust/crates:BUILD.serde_annotate_derive-0.1.0.bazel"),
+        strip_prefix = "serde_annotate_derive",
+    )
+
+    maybe(
         http_archive,
         name = "crate_index__serde_bytes-0.11.12",
         sha256 = "ab33ec92f677585af6d88c65593ae2375adde54efdbf16d597f2cbc7a6d368ff",
@@ -3756,6 +3778,7 @@ def crate_repositories():
         struct(repo = "crate_index__scopeguard-1.2.0", is_dev_dep = False),
         struct(repo = "crate_index__secrecy-0.8.0", is_dev_dep = False),
         struct(repo = "crate_index__serde-1.0.189", is_dev_dep = False),
+        struct(repo = "crate_index__serde_annotate-0.1.0", is_dev_dep = False),
         struct(repo = "crate_index__serde_bytes-0.11.12", is_dev_dep = False),
         struct(repo = "crate_index__serde_json-1.0.107", is_dev_dep = False),
         struct(repo = "crate_index__serde_with-3.4.0", is_dev_dep = False),

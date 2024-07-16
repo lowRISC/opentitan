@@ -341,6 +341,7 @@ dependencies = [
  "scopeguard",
  "secrecy",
  "serde",
+ "serde_annotate",
  "serde_bytes",
  "serde_json",
  "serde_with",
@@ -2113,6 +2114,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e422a44e74ad4001bdc8eede9a4570ab52f71190e9c076d14369f38b9200537"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde_annotate"
+version = "0.1.0"
+source = "git+https://github.com/lowRISC/serde-annotate?tag=v0.0.11#975683bc760df712b3e8c8e62606da16c9b516e9"
+dependencies = [
+ "anstyle",
+ "num-traits",
+ "once_cell",
+ "pest",
+ "pest_derive",
+ "regex",
+ "serde",
+ "serde_annotate_derive",
+ "thiserror",
+]
+
+[[package]]
+name = "serde_annotate_derive"
+version = "0.1.0"
+source = "git+https://github.com/lowRISC/serde-annotate?tag=v0.0.11#975683bc760df712b3e8c8e62606da16c9b516e9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.38",
 ]
 
 [[package]]
