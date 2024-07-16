@@ -377,6 +377,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
   // Add remaining part of manifest / ROM_EXT image to the measurement.
   hmac_sha256_update(digest_region.start, digest_region.length);
+  hmac_sha256_process();
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
   // Copy the ROM_EXT measurement to the .static_critical section.
@@ -523,6 +524,7 @@ static rom_error_t rom_measure_otp_partitions(
       sizeof(uint64_t));
   hmac_sha256_update(sigverify_ctx.keys.integrity_measurement.digest,
                      kHmacDigestNumBytes);
+  hmac_sha256_process();
   hmac_digest_t otp_measurement;
   hmac_sha256_final(&otp_measurement);
   memcpy(measurement->data, otp_measurement.digest, kHmacDigestNumBytes);
@@ -686,6 +688,7 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
     hmac_sha256_update(&immutable_rom_ext_length, /*len=*/sizeof(size_t));
     hmac_sha256_update((const void *)immutable_rom_ext_entry_point,
                        immutable_rom_ext_length);
+    hmac_sha256_process();
     hmac_digest_t actual_immutable_section_digest;
     hmac_sha256_final(&actual_immutable_section_digest);
 

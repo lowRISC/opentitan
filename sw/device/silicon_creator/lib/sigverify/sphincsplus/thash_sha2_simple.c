@@ -16,5 +16,6 @@ void thash(const uint32_t *in, size_t inblocks, const spx_ctx_t *ctx,
   hmac_sha256_restore(&ctx->state_seeded);
   hmac_sha256_update((unsigned char *)addr->addr, kSpxSha256AddrBytes);
   hmac_sha256_update_words(in, inblocks * kSpxNWords);
+  hmac_sha256_process();
   hmac_sha256_final_truncated(out, kSpxNWords);
 }
