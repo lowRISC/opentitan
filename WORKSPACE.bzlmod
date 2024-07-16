@@ -36,21 +36,7 @@ github_tools_repos()
 load("//third_party/lychee:repos.bzl", "lychee_repos")
 lychee_repos()
 
-# Rust Toolchain + crates.io Dependencies
-load("//third_party/rust:repos.bzl", "rust_repos")
-rust_repos()
-load("//third_party/rust:deps.bzl", "rust_deps")
-rust_deps()
-
-load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
-crate_universe_dependencies(bootstrap = True)
-
-load("//third_party/rust/crates:crates.bzl", "crate_repositories")
-crate_repositories()
-
 # Tock dependencies.
-load("//third_party/tock/crates:crates.bzl", tock_crate_repositories = "crate_repositories")
-tock_crate_repositories()
 load("//third_party/tock:repos.bzl", "tock_repos")
 tock_repos()
 load("@tockloader_deps//:requirements.bzl", install_tockloader_python_deps="install_deps")
