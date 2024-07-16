@@ -740,20 +740,30 @@ class cip_base_vseq #(
               wait(ongoing_reset == 0);
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
+            // This process waits a random time (until it's safe to issue a reset) and then issues a
+            // reset for a short time, ending when we leave reset again. If the dut goes into reset
+            // for another reason while we are waiting, this waits until that reset is finished.
             begin : issue_rand_reset
               wait_to_issue_reset(reset_delay_bound);
 
-              // Check that there are no CSR requests in flight as we trigger the reset. If any
-              // exist, they won't manage to complete (because apply_resets_concurrently will kill
-              // the task that is driving them) and everything will end up out of sync.
-              `DV_CHECK(!has_outstanding_access(),
-                        "Trying to trigger a reset with outstanding CSR items.")
+              if (!cfg.clk_rst_vif.rst_n) begin
+                // If we are in reset at this point then someone else must have put us there! Wait
+                // until we leave reset, at which point our job is done.
+                @(cfg.clk_rst_vif.rst_n);
+              end else begin
+                // If we aren't in reset for some other reason then we want to inject one ourselves
+                // now. Check that there are no CSR requests in flight as we trigger the reset. If
+                // any exist, they won't manage to complete (because apply_resets_concurrently will
+                // kill the task that is driving them) and everything will end up out of sync.
+                `DV_CHECK(!has_outstanding_access(),
+                          "Trying to trigger a reset with outstanding CSR items.")
 
-              ongoing_reset = 1'b1;
-              `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
-              apply_resets_concurrently();
-              do_read_and_check_all_csrs = 1'b1;
-              ongoing_reset = 1'b0;
+                ongoing_reset = 1'b1;
+                `uvm_info(`gfn, $sformatf("\nIssuing reset for run %0d/%0d", i, num_times), UVM_LOW)
+                apply_resets_concurrently();
+                do_read_and_check_all_csrs = 1'b1;
+                ongoing_reset = 1'b0;
+              end
             end
           join_any
           disable fork;
@@ -806,6 +816,10 @@ class cip_base_vseq #(
     for (cycles_waited = 0;
          cycles_waited < wait_cycles || cycles_with_no_accesses > 0;
          ++cycles_waited) begin
+      // If we are actually in reset then there's no need to do any more waiting: the caller can
+      // "apply a reset now" (a no-op)
+      if (!cfg.clk_rst_vif.rst_n) return;
+
       if (!has_outstanding_access()) begin
         ++cycles_with_no_accesses;
         if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
