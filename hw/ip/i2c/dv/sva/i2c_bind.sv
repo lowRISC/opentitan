@@ -29,4 +29,18 @@ module i2c_bind;
     .intr_tx_stretch   (intr_tx_stretch_o)
   );
 
+  bind i2c i2c_assert u_i2c_assert(
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
+    .scl_i       (cio_scl_i),
+    .cio_scl_o   (cio_scl_o),
+    .cio_scl_en_o(cio_scl_en_o),
+    .sda_i       (cio_sda_i),
+    .cio_sda_o   (cio_sda_o),
+    .cio_sda_en_o(cio_sda_en_o),
+    .intr_scl_interference_o (intr_scl_interference_o),
+    .intr_sda_interference_o (intr_sda_interference_o),
+    .intr_sda_unstable_o     (intr_sda_unstable_o)
+  );
+
 endmodule
