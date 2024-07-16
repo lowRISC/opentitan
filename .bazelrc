@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Opt-out of bzlmod for now and continue to use `WORKSPACE`.
-common --noenable_bzlmod
+# Enable bzlmod using both `MODULE.bazel` and `WORKSPACE.bzlmod`.
+common --enable_bzlmod
 
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
 build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
