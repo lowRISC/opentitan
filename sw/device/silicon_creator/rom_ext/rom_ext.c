@@ -255,6 +255,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   hmac_sha256_update(digest_region.start, digest_region.length);
   // TODO(#19596): add owner configuration block to measurement.
   // Verify signature
+  hmac_sha256_process();
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
 

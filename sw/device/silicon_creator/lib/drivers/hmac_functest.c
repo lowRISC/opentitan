@@ -110,6 +110,7 @@ rom_error_t hmac_truncated_test(void) {
   uint32_t digest[3];
   hmac_sha256_init();
   hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_process();
   hmac_sha256_final_truncated(digest, ARRAYSIZE(digest));
 
   const size_t len = ARRAYSIZE(digest);
@@ -130,6 +131,7 @@ rom_error_t hmac_bigendian_test(void) {
   hmac_sha256_configure(true);
   hmac_sha256_start();
   hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_process();
   hmac_sha256_final(&digest);
 
   const size_t len = ARRAYSIZE(digest.digest);
@@ -149,6 +151,7 @@ rom_error_t hmac_bigendian_truncated_test(void) {
   hmac_sha256_configure(true);
   hmac_sha256_start();
   hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_process();
   uint32_t digest[3];
   hmac_sha256_final_truncated(digest, ARRAYSIZE(digest));
 
@@ -182,6 +185,7 @@ rom_error_t hmac_save_restore_test(void) {
   hmac_sha256_configure(true);
   hmac_sha256_start();
   hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
+  hmac_sha256_process();
   hmac_digest_t digest_be;
   hmac_sha256_final(&digest_be);
 
@@ -189,6 +193,7 @@ rom_error_t hmac_save_restore_test(void) {
   hmac_sha256_configure(false);
   hmac_sha256_restore(&ctx);
   hmac_sha256_update(input, remaining_input_len);
+  hmac_sha256_process();
   hmac_digest_t digest_le;
   hmac_sha256_final(&digest_le);
 
@@ -235,6 +240,7 @@ rom_error_t hmac_save_restore_repeated_test(void) {
   hmac_sha256_save(&ctx);
   hmac_sha256_restore(&ctx);
   hmac_sha256_update(input, remaining_input_len);
+  hmac_sha256_process();
   hmac_digest_t digest_le;
   hmac_sha256_final(&digest_le);
 

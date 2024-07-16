@@ -92,9 +92,6 @@ static void wait_for_done(void) {
 }
 
 void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
-  // Send the process command in case it hasn't been sent yet (it's harmless to
-  // send it twice).
-  hmac_sha256_process();
   wait_for_done();
 
   uint32_t result, incr;
@@ -124,6 +121,7 @@ void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
 void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
   hmac_sha256_init();
   hmac_sha256_update(data, len);
+  hmac_sha256_process();
   hmac_sha256_final(digest);
 }
 

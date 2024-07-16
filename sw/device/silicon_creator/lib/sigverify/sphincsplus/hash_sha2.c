@@ -79,6 +79,7 @@ rom_error_t spx_hash_message(
   hmac_sha256_update(msg_prefix_2, msg_prefix_2_len);
   hmac_sha256_update(msg_prefix_3, msg_prefix_3_len);
   hmac_sha256_update(msg, msg_len);
+  hmac_sha256_process();
   hmac_sha256_final_truncated(&seed[2 * kSpxNWords], kSpxDigestWords);
 
   uint32_t buf[kSpxDigestWords] = {0};

@@ -336,6 +336,7 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
   }
 
   // Log the final hash of all certificates to the host and console.
+  hmac_sha256_process();
   hmac_sha256_final((hmac_digest_t *)&hash);
   RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &hash);
   LOG_INFO("SHA256 hash of all certificates: %08x%08x%08x%08x%08x%08x%08x%08x",

@@ -17,6 +17,7 @@ void mgf1_sha256(const uint32_t *in, size_t in_len, size_t out_len,
     hmac_sha256_update_words(in, in_len);
     uint32_t ctr_be = __builtin_bswap32(ctr);
     hmac_sha256_update_words(&ctr_be, 1);
+    hmac_sha256_process();
     // If the remaining output needed is less than the full digest size,
     // truncate.
     size_t digest_words =

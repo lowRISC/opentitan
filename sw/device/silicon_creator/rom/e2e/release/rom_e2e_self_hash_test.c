@@ -39,26 +39,25 @@ enum {
 
 const size_t kGoldenRomSizeBytes = 32652 - sizeof(chip_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x5559e17d, 0xd920f2a7, 0x98afda37, 0x5380eed1,
-    0x7549a52e, 0x26f0a4a9, 0x917888e5, 0x5a76bd3d,
+    0x953cca70, 0x018fb4c7, 0xcd2ebc02, 0x95680df3,
+    0x220ca956, 0xe890a35d, 0xe8b62c21, 0x15bfa5e0,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xb1ebe528, 0xe461696b, 0x55d795e8, 0x5e57a7da,
-    0x04007623, 0xb4b121cb, 0x572fcc0a, 0x76c45aea,
+    0x876747cf, 0xec01137f, 0x159bdc7f, 0x8177d11c,
+    0xcad1fb4e, 0xc0d3ccd0, 0xc7cb8699, 0x99c8a56b,
 };
 const uint32_t kSiliconGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x0ad1f73d, 0xf1c010da, 0x2dd0186a, 0x78f1be69,
-    0x0f01949c, 0xf61ec134, 0x14d56198, 0x8d971279,
+    0x5d02eeae, 0x76d7386c, 0x063a84ea, 0x279865f6,
+    0xf05b04e8, 0x06a569e0, 0xa8f2053b, 0x66c2cb77,
 };
 
 extern const char _chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
-  hmac_sha256_init();
-  hmac_sha256_update((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes);
   hmac_digest_t rom_hash;
-  hmac_sha256_final(&rom_hash);
+  hmac_sha256((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes,
+              &rom_hash);
   LOG_INFO("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x", rom_hash.digest[7],
            rom_hash.digest[6], rom_hash.digest[5], rom_hash.digest[4],
            rom_hash.digest[3], rom_hash.digest[2], rom_hash.digest[1],

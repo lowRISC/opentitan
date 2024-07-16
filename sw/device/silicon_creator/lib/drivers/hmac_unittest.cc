@@ -126,6 +126,7 @@ TEST_F(Sha256FinalTest, GetDigest) {
   };
   ExpectDigest(kExpectedDigest);
 
+  hmac_sha256_process();
   hmac_digest_t got_digest;
   hmac_sha256_final(&got_digest);
   EXPECT_THAT(got_digest.digest, ElementsAreArray(kExpectedDigest));

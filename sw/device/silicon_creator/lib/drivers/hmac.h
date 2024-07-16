@@ -106,6 +106,8 @@ void hmac_sha256_process(void);
  * Copies only the first `len` 32-bit words of the digest. The caller must
  * ensure enough space is available in the buffer.
  *
+ * Note: the caller must call `hmac_sha256_process()` before calling this.
+ *
  * @param[out] digest Buffer to copy digest to.
  * @param[out] len Requested word-length.
  */
@@ -114,6 +116,8 @@ void hmac_sha256_final_truncated(uint32_t *digest, size_t len);
 /**
  * Finalizes SHA256 operation and writes `digest` buffer.
  *
+ * Note: the caller must call `hmac_sha256_process()` before calling this.
+ *
  * @param[out] digest Buffer to copy digest to.
  */
 inline void hmac_sha256_final(hmac_digest_t *digest) {
@@ -121,7 +125,8 @@ inline void hmac_sha256_final(hmac_digest_t *digest) {
 }
 
 /**
- * Convenience function for computing the SHA-256 digest of a contiguous buffer.
+ * Convenience single-shot function for computing the SHA-256 digest of a
+ * contiguous buffer.
  *
  * @param data Buffer to copy data from.
  * @param len Size of the `data` buffer in bytes.
