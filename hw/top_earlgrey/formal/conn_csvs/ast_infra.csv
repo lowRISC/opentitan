@@ -14,12 +14,22 @@ CONNECTION, AST_PAD0,            u_ast,                      ast2pad_t0_ao,     
 CONNECTION, AST_PAD1,            u_ast,                      ast2pad_t1_ao,                                       , IOA3,
 CONNECTION, AST_PINMUX,          u_ast,                      ast2padmux_o,              top_earlgrey.u_sensor_ctrl_aon, ast2pinmux_i,
 CONNECTION, PAD_AST,                  ,                      "{IOC3, IOC2, IOC1, IOB2, IOB1, IOB0, IOA5, IOA4}", u_ast, padmux2ast_i,
+# The inputs of above pads can be disabled using the mio_attr[25:23, 11:9, 5:4] control signals driven by pinmux.
+# Whenever pinmux is in reset, the inputs of these pads must be enabled.
+# Below conditions evaluate to: (mio_attr[x] == 1'b1 && rst_ni == 1'b1) || (rst_ni == 1'b0)
+CONDITION,                            ,                      "{mio_attr[25], mio_attr[24], mio_attr[23], mio_attr[11], mio_attr[10], mio_attr[9], mio_attr[5], mio_attr[4]}",    1'b1
+CONDITION,   top_earlgrey.u_pinmux_aon,                      rst_ni,                    1'b1,                    1'b0
 
 #################################
 # Other clocks
 #################################
-CONNECTION, AST_CLK_EXT_IN,           ,                      IOC6,                      u_ast,                   clk_ast_ext_i
 CONNECTION, AST_CLK_SPI_SNS_IN,       ,                      SPI_DEV_CLK,               u_ast,                   sns_spi_ext_clk_i
+CONNECTION, AST_CLK_EXT_IN,           ,                      IOC6,                      u_ast,                   clk_ast_ext_i
+# The input of the IOC6 pad can be disabled using the mio_attr[28] control bit driven by pinmux.
+# Whenever pinmux is in reset, the input of the IOC6 pad must be enabled.
+# Below conditions evaluate to: (mio_attr[28] == 1'b1 && rst_ni == 1'b1) || (rst_ni == 1'b0)
+CONDITION,                            ,                      mio_attr[28],              1'b1,
+CONDITION,   top_earlgrey.u_pinmux_aon,                      rst_ni,                    1'b1,                    1'b0
 
 #################################
 # Other resets
