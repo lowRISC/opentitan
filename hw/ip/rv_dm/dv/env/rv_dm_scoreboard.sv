@@ -165,15 +165,15 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
         end
         default: `uvm_fatal(`gfn, $sformatf("Unknown DMI CSR: %0s", csr.get_name()))
       endcase
-    end
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (item.req_op == DmiOpRead) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.rdata,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
+      // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+      if (item.req_op == DmiOpRead) begin
+        if (do_read_check) begin
+          `DV_CHECK_EQ(csr.get_mirrored_value(), item.rdata,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
+        end
+        void'(csr.predict(.value(item.rdata), .kind(UVM_PREDICT_READ)));
       end
-      void'(csr.predict(.value(item.rdata), .kind(UVM_PREDICT_READ)));
     end
   endtask
 
