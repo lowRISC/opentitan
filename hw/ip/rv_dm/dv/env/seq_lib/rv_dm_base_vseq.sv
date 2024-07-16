@@ -177,9 +177,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       // takes effect. Fortunately, we can see that this has happened by looking at the trst_n
       // signal: it will go high once everything has been connected. *That* signal is exposed
       // through jtag_mon_if in the tb, which is visible through the jtag agent's mon_vif interface.
-      `DV_WAIT(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
-      `DV_CHECK_FATAL(cfg.m_jtag_agent_cfg.mon_vif.trst_n,
-                      "trst_n wasn't enabled in time (is debug enabled?)")
+      wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
 
       // "Activate" the DM to facilitate ease of testing.
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
