@@ -123,7 +123,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     touch MODULE.bazel
     touch WORKSPACE
     cp "${REPO_TOP}/.bazelversion" .
-    bazel sync --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
+    bazel fetch --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
   popd
   rm -rf "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
 fi
