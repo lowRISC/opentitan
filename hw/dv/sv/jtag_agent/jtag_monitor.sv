@@ -62,8 +62,17 @@ class jtag_monitor extends dv_base_monitor #(
     bit [JTAG_DRW-1:0] dr, dout;
 
     forever begin
-      wait_tck();
+      // Wait until the next TCK edge, or reset if that happens first.
+      fork begin : isolation_fork
+        fork
+          wait_tck();
+          wait(!cfg.vif.trst_n);
+        join_any
+        disable fork;
+      end join
 
+      // If we are in reset then put the FSM state back to the reset state and then wait until we
+      // exit reset (and can start looking at TCK again).
       if (!cfg.vif.trst_n) begin
         jtag_state = JtagResetState;
         wait(cfg.vif.trst_n == 1);
