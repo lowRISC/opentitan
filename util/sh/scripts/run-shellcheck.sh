@@ -9,9 +9,9 @@ set -e
 # when it's invoked by Bazel, the Bazel target will depend on `//:WORKSPACE`.
 # This assumption enables us to infer that we're running in the sandbox when we
 # see a symlink named "WORKSPACE".
-if [[ -L WORKSPACE ]]; then
-    SHELLCHECK="$(realpath external/shellcheck/shellcheck)"
-    REPO_TOP="$(dirname "$(realpath WORKSPACE)")"
+if [[ -L WORKSPACE.bzlmod ]]; then
+    SHELLCHECK="$(find -executable -name shellcheck -exec realpath {} +)"
+    REPO_TOP="$(dirname "$(realpath WORKSPACE.bzlmod)")"
     cd "${REPO_TOP}"
 else
     REPO_TOP="$(git rev-parse --show-toplevel)"
@@ -26,4 +26,4 @@ EXCLUDED_DIRS="-name third_party -o -name vendor -o -name lowrisc_misc-linters"
 readarray -t shell_scripts < \
     <(find . \( $EXCLUDED_DIRS \) -prune -o -name '*.sh' -print)
 
-$SHELLCHECK --severity=warning "${shell_scripts[@]}"
+"$SHELLCHECK" --severity=warning "${shell_scripts[@]}"
