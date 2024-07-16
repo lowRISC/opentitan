@@ -121,7 +121,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       join
 
       if (!cfg.vif.trst_n) begin
-        `DV_WAIT(cfg.vif.trst_n)
+        @(posedge cfg.vif.trst_n);
       end else begin
         // Since trst_n is not 0, the get_next_item() task must have completed and has written the
         // request to req
