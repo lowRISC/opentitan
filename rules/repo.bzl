@@ -79,7 +79,7 @@ bare_repository = repository_rule(
             doc = "Script to create symlink trees for the `local` case.",
         ),
         "workspace": attr.label(
-            default = Label("//:WORKSPACE"),
+            default = Label("//:WORKSPACE.bzlmod"),
             allow_single_file = True,
             doc = "Root workspace.",
         ),
