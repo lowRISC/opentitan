@@ -97,6 +97,7 @@ def rust_repos(rules_rust = None, serde_annotate = None):
         local = rules_rust,
         integrity = "sha256-35cwdTOaqqu4y+aXgIUU2C2PAKMz4+uyJ7/UMIGCmFs=",
         url = "https://github.com/bazelbuild/rules_rust/releases/download/0.47.1/rules_rust-v0.47.1.tar.gz",
+        patches = ["//third_party/rust/patches:rules_rust.bindgen_static_lib.patch"],
     )
 
     http_archive_or_local(
