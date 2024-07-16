@@ -89,7 +89,7 @@ rust_library(
         "@crate_index//:strum",
         "@crate_index//:thiserror",
         "@crate_index//:typetag",
-        "@lowrisc_serde_annotate//serde_annotate",
+        "@crate_index//:serde_annotate",
     ],
 )
 

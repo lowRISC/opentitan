@@ -434,6 +434,12 @@ alias(
 )
 
 alias(
+    name = "serde_annotate",
+    actual = "@crate_index__serde_annotate-0.1.0//:serde_annotate",
+    tags = ["manual"],
+)
+
+alias(
     name = "serde_bytes",
     actual = "@crate_index__serde_bytes-0.11.12//:serde_bytes",
     tags = ["manual"],
