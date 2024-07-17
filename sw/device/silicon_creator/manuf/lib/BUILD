@@ -10,7 +10,7 @@ load(
     "opentitan_test",
 )
 load(
-    "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
+    "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
 )
 

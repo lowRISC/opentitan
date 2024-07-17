@@ -4,7 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load(
-    "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
+    "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "FT_PERSONALIZE_KEYS",
 )
 
@@ -17,8 +17,8 @@ rust_binary(
     testonly = True,
     srcs = ["src/main.rs"],
     data = [
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize",
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:sram_ft_individualize_all",
+        "//sw/device/silicon_creator/manuf/base:ft_personalize",
+        "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",

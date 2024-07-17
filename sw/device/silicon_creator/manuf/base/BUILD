@@ -11,7 +11,7 @@ load(
     "silicon_params",
 )
 load(
-    "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
+    "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
