@@ -4,4 +4,5 @@
 
 module(name = "lowrisc_opentitan")
 
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
