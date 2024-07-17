@@ -36,17 +36,17 @@ module rv_dm_enable_checker
   assign debug_enabled = lc_tx_test_true_strict(late_debug_enable ? lc_hw_debug_en_i : lc_dft_en_i);
 
   // An ndmreset ack is only passed to the debug module if debug is enabled.
-  `ASSERT(NdmResetAckNeedsDebug_A, ndmreset_ack |-> debug_enabled)
+  `ASSERT(NdmResetAckNeedsDebug_A, $rose(ndmreset_ack) -> debug_enabled)
 
   // A debug request can only be passed from the debug module to the hart if debug is enabled
-  `ASSERT(DebugRequestNeedsDebug_A, debug_req_o_i |-> debug_enabled)
+  `ASSERT(DebugRequestNeedsDebug_A, $rose(debug_req_o_i) -> debug_enabled)
 
   // If debug is not enabled then the mem TL interface is disabled and will respond to everything
   // with an error. This means that any response will have d_error=1.
   `ASSERT(MemTLResponseWithoutDebugIsError_A,
-          mem_tl_d_o_i.d_valid && !debug_enabled |-> mem_tl_d_o_i.d_error)
+          $rose(mem_tl_d_o_i.d_valid) && !debug_enabled -> mem_tl_d_o_i.d_error)
 
   // If debug is not enabled then the SBA TL interface is disabled and we will never generate a new
-  // TL transaction. As such, the a_valid signal will always be false.
-  `ASSERT(SbaTLRequestNeedsDebug_A, sba_tl_h_o_i.a_valid |-> debug_enabled)
+  // TL transaction. As such, the a_valid signal will never rise.
+  `ASSERT(SbaTLRequestNeedsDebug_A, $rose(sba_tl_h_o_i.a_valid) -> debug_enabled)
 endmodule
