@@ -16,7 +16,7 @@ if [[ -L WORKSPACE.bzlmod ]]; then
 else
     REPO_TOP="$(git rev-parse --show-toplevel)"
     cd "${REPO_TOP}"
-    SHELLCHECK="./bazelisk.sh run @shellcheck//:shellcheck --"
+    SHELLCHECK="./bazelisk.sh run @rules_shellcheck//:shellcheck --"
 fi
 
 EXCLUDED_DIRS="-name third_party -o -name vendor -o -name lowrisc_misc-linters"

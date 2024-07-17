@@ -211,6 +211,6 @@ sh_test(
     srcs = ["//util/sh/scripts:run-shellcheck.sh"],
     data = [
         "//:WORKSPACE.bzlmod",
-        "@shellcheck",
+        "@rules_shellcheck//:shellcheck",
     ],
 )
