@@ -211,6 +211,10 @@ sh_test(
     srcs = ["//util/sh/scripts:run-shellcheck.sh"],
     data = [
         "//:WORKSPACE.bzlmod",
-        "@shellcheck",
+        "@rules_shellcheck//:shellcheck",
     ],
+    env = {
+        "SHELLCHECK": "$(execpath @rules_shellcheck//:shellcheck)",
+        "WORKSPACE": "$(location //:WORKSPACE.bzlmod)",
+    },
 )

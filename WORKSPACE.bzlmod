@@ -48,10 +48,6 @@ crate_universe_dependencies(bootstrap = True)
 load("//third_party/rust/crates:crates.bzl", "crate_repositories")
 crate_repositories()
 
-# Shellcheck
-load("//third_party/shellcheck:repos.bzl", "shellcheck_repos")
-shellcheck_repos()
-
 # Tock dependencies.
 load("//third_party/tock/crates:crates.bzl", tock_crate_repositories = "crate_repositories")
 tock_crate_repositories()

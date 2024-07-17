@@ -6,24 +6,23 @@
 set -e
 
 # Escape the sandbox when running under `bazel test`. This script assumes that
-# when it's invoked by Bazel, the Bazel target will depend on `//:WORKSPACE`.
+# when it's invoked by Bazel, the Bazel target will depend on `//:WORKSPACE.bazel`.
 # This assumption enables us to infer that we're running in the sandbox when we
 # see a symlink named "WORKSPACE".
-if [[ -L WORKSPACE.bzlmod ]]; then
-    SHELLCHECK="$(find -executable -name shellcheck -exec realpath {} +)"
-    REPO_TOP="$(dirname "$(realpath WORKSPACE.bzlmod)")"
-    cd "${REPO_TOP}"
-else
+if [ -z "${WORKSPACE+x}" ]; then
     REPO_TOP="$(git rev-parse --show-toplevel)"
-    cd "${REPO_TOP}"
-    SHELLCHECK="./bazelisk.sh run @shellcheck//:shellcheck --"
+    SHELLCHECK="./bazelisk.sh run @rules_shellcheck//:shellcheck --"
+else
+    REPO_TOP="$(dirname "$(realpath "$WORKSPACE")")"
+    SHELLCHECK="$(realpath "$SHELLCHECK")"
 fi
 
-EXCLUDED_DIRS="-name third_party -o -name vendor -o -name lowrisc_misc-linters"
-# Get an array of all shell scripts to check using input redirection and
-# process substitution. For details on this syntax, see ShellCheck SC2046.
-# shellcheck disable=SC2046
+
+cd "${REPO_TOP}"
+
+EXCLUDED_DIRS=(-name third_party -o -name vendor -o -name lowrisc_misc-linters)
+
 readarray -t shell_scripts < \
-    <(find . \( $EXCLUDED_DIRS \) -prune -o -name '*.sh' -print)
+    <(find . '(' "${EXCLUDED_DIRS[@]}" ')' -prune -o -name '*.sh' -print)
 
 "$SHELLCHECK" --severity=warning "${shell_scripts[@]}"
