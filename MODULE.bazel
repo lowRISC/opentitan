@@ -15,9 +15,20 @@ bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
 bazel_dep(name = "rules_shellcheck", version = "0.3.3")
+bazel_dep(name = "toolchains_llvm", version = "1.0.0")
 
 git_override(
     module_name = "lowrisc_misc_linters",
     commit = "aed701007ebc25df45e50f161eca73d37739df45",
     remote = "https://github.com/lowRISC/misc-linters",
 )
+
+# LLVM toolchain used by bindgen (not for device software).
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_versions = {
+        "": "10.0.0",
+    },
+)
+use_repo(llvm, "llvm_toolchain_llvm")
