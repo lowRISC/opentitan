@@ -94,6 +94,10 @@ OPTIONAL_FIELDS = {
         's',
         "alert that will be triggered if "
         "this shadowed register has storage error"
+    ],
+    'writes_ignore_errors': [
+        'b',
+        "This register may update on a TL write that causes an error response."
     ]
 }
 
@@ -118,7 +122,8 @@ class Register(RegBase):
                  shadowed: bool,
                  fields: List[Field],
                  update_err_alert: Optional[str],
-                 storage_err_alert: Optional[str]):
+                 storage_err_alert: Optional[str],
+                 writes_ignore_errors: bool):
         super().__init__(offset)
         self.alias_target = alias_target
         self.name = name
@@ -240,6 +245,8 @@ class Register(RegBase):
 
         self.update_err_alert = update_err_alert
         self.storage_err_alert = storage_err_alert
+
+        self.writes_ignore_errors = writes_ignore_errors
 
     @staticmethod
     def from_raw(reg_width: int,
@@ -385,11 +392,17 @@ class Register(RegBase):
                                            'storage_err_alert for {} register'
                                            .format(name))
 
+        writes_ignore_errors = \
+            check_bool(rd.get('writes_ignore_errors', False),
+                       'writes_ignore_errors flag for {} register'
+                       .format(name))
+
         return Register(offset, name, alias_target, desc, async_name,
                         async_clk, sync_name, sync_clk,
                         hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
-                        update_err_alert, storage_err_alert)
+                        update_err_alert, storage_err_alert,
+                        writes_ignore_errors)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + addrsep
@@ -540,7 +553,8 @@ class Register(RegBase):
                         self.sync_name, self.sync_clk,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
-                        self.update_err_alert, self.storage_err_alert)
+                        self.update_err_alert, self.storage_err_alert,
+                        self.writes_ignore_errors)
 
     def check_valid_regwen(self) -> None:
         '''Check that this register is valid for use as a REGWEN'''

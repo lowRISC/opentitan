@@ -168,6 +168,7 @@ tags | optional | string | tags for the register, following the format 'tag_name
 shadowed | optional | string | 'true' if the register is shadowed
 update_err_alert | optional | string | alert that will be triggered if this shadowed register has update error
 storage_err_alert | optional | string | alert that will be triggered if this shadowed register has storage error
+writes_ignore_errors | optional | bitrange | This register may update on a TL write that causes an error response.
 
 
 The basic register definition group will follow this pattern:
@@ -362,6 +363,7 @@ tags | optional | string | tags for the register, following the format 'tag_name
 shadowed | optional | string | 'true' if the register is shadowed
 update_err_alert | optional | string | alert that will be triggered if this shadowed register has update error
 storage_err_alert | optional | string | alert that will be triggered if this shadowed register has storage error
+writes_ignore_errors | optional | bitrange | This register may update on a TL write that causes an error response.
 regwen_multi | optional | python Bool | If true, regwen term increments along with current multireg count.
 compact | optional | python Bool | If true, allow multireg compacting.If false, do not compact.
 cdc | optional | string | indicates the register must cross to a different clock domain before use.  The value shown here should correspond to one of the module's clocks.
