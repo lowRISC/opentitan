@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@ot_hack_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
+load("@bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
 load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report", "rustfmt_fix")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
