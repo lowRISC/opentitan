@@ -393,7 +393,8 @@
           { bits: "0",
             resval: "0" // core ID value
           },
-        ]
+        ],
+        writes_ignore_errors: "true"
       },
       { skipto: "0x108" }
       { name: "GOING",
@@ -412,7 +413,8 @@
           { bits: "0",
             resval: "0"
           },
-        ]
+        ],
+        writes_ignore_errors: "true"
       },
       { skipto: "0x110" }
      {  name:  "RESUMING"
@@ -429,7 +431,8 @@
           { bits: "0",
             resval: "0" // core ID value
           },
-        ]
+        ],
+        writes_ignore_errors: "true"
       },
       { skipto: "0x118" }
       { name: "EXCEPTION",
@@ -440,7 +443,8 @@
           { bits: "0",
             resval: "0"
           },
-        ]
+        ],
+        writes_ignore_errors: "true"
       },
       { skipto: "0x300" }
       { name: "WHERETO",
@@ -521,6 +525,7 @@
           ]
           tags: [// TODO: Write-read-check will work after "activating" the debug module via JTAG.
                  "excl:CsrNonInitTests:CsrExclWriteCheck"]
+          writes_ignore_errors: "true"
         }
       },
       { skipto: "0x400" }
