@@ -10,15 +10,15 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
-# licenses([
-#     "TODO",  # MIT OR Apache-2.0
-# ])
-
 rust_library(
     name = "rand",
-    srcs = glob(["**/*.rs"]),
+    srcs = glob(
+        include = ["**/*.rs"],
+        allow_empty = True,
+    ),
     compile_data = glob(
         include = ["**"],
+        allow_empty = True,
         exclude = [
             "**/* *",
             ".tmp_git_root/**/*",
@@ -40,7 +40,9 @@ rust_library(
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
-    rustc_flags = ["--cap-lints=allow"],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
     tags = [
         "cargo-bazel",
         "crate-name=rand",
@@ -56,6 +58,8 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-linux-android": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:aarch64-unknown-nixos-gnu": [],
+        "@rules_rust//rust/platform:aarch64-unknown-nto-qnx710": [],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [],
         "@rules_rust//rust/platform:armv7-linux-androideabi": [],
         "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [],
@@ -79,77 +83,14 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:x86_64-unknown-nixos-gnu": [],
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.8.5",
     deps = [
+        "@crate_index__libc-0.2.149//:libc",
         "@crate_index__rand_chacha-0.3.1//:rand_chacha",
         "@crate_index__rand_core-0.6.4//:rand_core",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-fuchsia": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:armv7-linux-androideabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:i686-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-fuchsia": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
