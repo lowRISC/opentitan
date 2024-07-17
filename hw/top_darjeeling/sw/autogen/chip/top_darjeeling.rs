@@ -1119,68 +1119,66 @@ pub enum TopDarjeelingPlicIrqId {
     DmaDmaDone = 130,
     /// dma_dma_error
     DmaDmaError = 131,
-    /// dma_dma_memory_buffer_limit
-    DmaDmaMemoryBufferLimit = 132,
     /// mbx0_mbx_ready
-    Mbx0MbxReady = 133,
+    Mbx0MbxReady = 132,
     /// mbx0_mbx_abort
-    Mbx0MbxAbort = 134,
+    Mbx0MbxAbort = 133,
     /// mbx0_mbx_error
-    Mbx0MbxError = 135,
+    Mbx0MbxError = 134,
     /// mbx1_mbx_ready
-    Mbx1MbxReady = 136,
+    Mbx1MbxReady = 135,
     /// mbx1_mbx_abort
-    Mbx1MbxAbort = 137,
+    Mbx1MbxAbort = 136,
     /// mbx1_mbx_error
-    Mbx1MbxError = 138,
+    Mbx1MbxError = 137,
     /// mbx2_mbx_ready
-    Mbx2MbxReady = 139,
+    Mbx2MbxReady = 138,
     /// mbx2_mbx_abort
-    Mbx2MbxAbort = 140,
+    Mbx2MbxAbort = 139,
     /// mbx2_mbx_error
-    Mbx2MbxError = 141,
+    Mbx2MbxError = 140,
     /// mbx3_mbx_ready
-    Mbx3MbxReady = 142,
+    Mbx3MbxReady = 141,
     /// mbx3_mbx_abort
-    Mbx3MbxAbort = 143,
+    Mbx3MbxAbort = 142,
     /// mbx3_mbx_error
-    Mbx3MbxError = 144,
+    Mbx3MbxError = 143,
     /// mbx4_mbx_ready
-    Mbx4MbxReady = 145,
+    Mbx4MbxReady = 144,
     /// mbx4_mbx_abort
-    Mbx4MbxAbort = 146,
+    Mbx4MbxAbort = 145,
     /// mbx4_mbx_error
-    Mbx4MbxError = 147,
+    Mbx4MbxError = 146,
     /// mbx5_mbx_ready
-    Mbx5MbxReady = 148,
+    Mbx5MbxReady = 147,
     /// mbx5_mbx_abort
-    Mbx5MbxAbort = 149,
+    Mbx5MbxAbort = 148,
     /// mbx5_mbx_error
-    Mbx5MbxError = 150,
+    Mbx5MbxError = 149,
     /// mbx6_mbx_ready
-    Mbx6MbxReady = 151,
+    Mbx6MbxReady = 150,
     /// mbx6_mbx_abort
-    Mbx6MbxAbort = 152,
+    Mbx6MbxAbort = 151,
     /// mbx6_mbx_error
-    Mbx6MbxError = 153,
+    Mbx6MbxError = 152,
     /// mbx_jtag_mbx_ready
-    MbxJtagMbxReady = 154,
+    MbxJtagMbxReady = 153,
     /// mbx_jtag_mbx_abort
-    MbxJtagMbxAbort = 155,
+    MbxJtagMbxAbort = 154,
     /// mbx_jtag_mbx_error
-    MbxJtagMbxError = 156,
+    MbxJtagMbxError = 155,
     /// mbx_pcie0_mbx_ready
-    MbxPcie0MbxReady = 157,
+    MbxPcie0MbxReady = 156,
     /// mbx_pcie0_mbx_abort
-    MbxPcie0MbxAbort = 158,
+    MbxPcie0MbxAbort = 157,
     /// mbx_pcie0_mbx_error
-    MbxPcie0MbxError = 159,
+    MbxPcie0MbxError = 158,
     /// mbx_pcie1_mbx_ready
-    MbxPcie1MbxReady = 160,
+    MbxPcie1MbxReady = 159,
     /// mbx_pcie1_mbx_abort
-    MbxPcie1MbxAbort = 161,
+    MbxPcie1MbxAbort = 160,
     /// mbx_pcie1_mbx_error
-    MbxPcie1MbxError = 162,
+    MbxPcie1MbxError = 161,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1319,37 +1317,36 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             129 => Ok(Self::Edn1EdnFatalErr),
             130 => Ok(Self::DmaDmaDone),
             131 => Ok(Self::DmaDmaError),
-            132 => Ok(Self::DmaDmaMemoryBufferLimit),
-            133 => Ok(Self::Mbx0MbxReady),
-            134 => Ok(Self::Mbx0MbxAbort),
-            135 => Ok(Self::Mbx0MbxError),
-            136 => Ok(Self::Mbx1MbxReady),
-            137 => Ok(Self::Mbx1MbxAbort),
-            138 => Ok(Self::Mbx1MbxError),
-            139 => Ok(Self::Mbx2MbxReady),
-            140 => Ok(Self::Mbx2MbxAbort),
-            141 => Ok(Self::Mbx2MbxError),
-            142 => Ok(Self::Mbx3MbxReady),
-            143 => Ok(Self::Mbx3MbxAbort),
-            144 => Ok(Self::Mbx3MbxError),
-            145 => Ok(Self::Mbx4MbxReady),
-            146 => Ok(Self::Mbx4MbxAbort),
-            147 => Ok(Self::Mbx4MbxError),
-            148 => Ok(Self::Mbx5MbxReady),
-            149 => Ok(Self::Mbx5MbxAbort),
-            150 => Ok(Self::Mbx5MbxError),
-            151 => Ok(Self::Mbx6MbxReady),
-            152 => Ok(Self::Mbx6MbxAbort),
-            153 => Ok(Self::Mbx6MbxError),
-            154 => Ok(Self::MbxJtagMbxReady),
-            155 => Ok(Self::MbxJtagMbxAbort),
-            156 => Ok(Self::MbxJtagMbxError),
-            157 => Ok(Self::MbxPcie0MbxReady),
-            158 => Ok(Self::MbxPcie0MbxAbort),
-            159 => Ok(Self::MbxPcie0MbxError),
-            160 => Ok(Self::MbxPcie1MbxReady),
-            161 => Ok(Self::MbxPcie1MbxAbort),
-            162 => Ok(Self::MbxPcie1MbxError),
+            132 => Ok(Self::Mbx0MbxReady),
+            133 => Ok(Self::Mbx0MbxAbort),
+            134 => Ok(Self::Mbx0MbxError),
+            135 => Ok(Self::Mbx1MbxReady),
+            136 => Ok(Self::Mbx1MbxAbort),
+            137 => Ok(Self::Mbx1MbxError),
+            138 => Ok(Self::Mbx2MbxReady),
+            139 => Ok(Self::Mbx2MbxAbort),
+            140 => Ok(Self::Mbx2MbxError),
+            141 => Ok(Self::Mbx3MbxReady),
+            142 => Ok(Self::Mbx3MbxAbort),
+            143 => Ok(Self::Mbx3MbxError),
+            144 => Ok(Self::Mbx4MbxReady),
+            145 => Ok(Self::Mbx4MbxAbort),
+            146 => Ok(Self::Mbx4MbxError),
+            147 => Ok(Self::Mbx5MbxReady),
+            148 => Ok(Self::Mbx5MbxAbort),
+            149 => Ok(Self::Mbx5MbxError),
+            150 => Ok(Self::Mbx6MbxReady),
+            151 => Ok(Self::Mbx6MbxAbort),
+            152 => Ok(Self::Mbx6MbxError),
+            153 => Ok(Self::MbxJtagMbxReady),
+            154 => Ok(Self::MbxJtagMbxAbort),
+            155 => Ok(Self::MbxJtagMbxError),
+            156 => Ok(Self::MbxPcie0MbxReady),
+            157 => Ok(Self::MbxPcie0MbxAbort),
+            158 => Ok(Self::MbxPcie0MbxError),
+            159 => Ok(Self::MbxPcie1MbxReady),
+            160 => Ok(Self::MbxPcie1MbxAbort),
+            161 => Ok(Self::MbxPcie1MbxError),
             _ => Err(val),
         }
     }
@@ -1775,7 +1772,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 163] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 162] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -2039,8 +2036,6 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     // DmaDmaDone -> TopDarjeelingPlicPeripheral::Dma
     TopDarjeelingPlicPeripheral::Dma,
     // DmaDmaError -> TopDarjeelingPlicPeripheral::Dma
-    TopDarjeelingPlicPeripheral::Dma,
-    // DmaDmaMemoryBufferLimit -> TopDarjeelingPlicPeripheral::Dma
     TopDarjeelingPlicPeripheral::Dma,
     // Mbx0MbxReady -> TopDarjeelingPlicPeripheral::Mbx0
     TopDarjeelingPlicPeripheral::Mbx0,
