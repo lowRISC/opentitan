@@ -5,11 +5,13 @@
 
 set -ex
 
-# Prefetch bazel airgapped dependencies.
-util/prep-bazel-airgapped-build.sh -f
+REPO_TOP="$(git rev-parse --show-toplevel)"
+AIRGAP_DIR="${REPO_TOP}/bazel-airgapped"
 
 # Remove the airgapped network namespace.
 remove_airgapped_netns() {
+  # Unreachable only because it's in a trap.
+  # shellcheck disable=SC2317
   sudo ip netns delete airgapped
 }
 trap remove_airgapped_netns EXIT
@@ -23,10 +25,10 @@ sudo ip netns exec airgapped ip link set dev lo up
 sudo ip netns exec airgapped sudo -u "$USER" \
   env \
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache"   \
-    OT_AIRGAPPED="true" \
+    OT_AIRGAPPED="true"                                                \
     BITSTREAM="--offline latest"                                       \
-  "${PWD}/bazel-airgapped/bazel" build                                  \
-    --distdir="${PWD}/bazel-airgapped/bazel-distdir"                   \
+  "${PWD}/bazel-airgapped/bazel" build                                 \
+    --vendor_dir="${AIRGAP_DIR}/vendor-dir"                            \
     --repository_cache="${PWD}/bazel-airgapped/bazel-cache"            \
     --define DISABLE_VERILATOR_BUILD=true                              \
     //sw/device/silicon_creator/rom:mask_rom
