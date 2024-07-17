@@ -38,12 +38,23 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
     `DV_CHECK_EQ(abstractcs.cmderr, cmderr_exp);
   endtask
 
+  // Clear the cmderr field of abstractcs.
+  task clear_cmderr();
+    // To clear the field, we use uvm_reg_field.predict() to convince the model that it has an error
+    // that needs clearing, then call uvm_reg_field.set() with 3'b111 to set desired value to zero
+    // (passing 3'b111 rather than zero because the field is R/W1C), then finally call update.
+    uvm_status_e status;
+
+    `DV_CHECK_FATAL(jtag_dmi_ral.abstractcs.cmderr.predict(3'b111));
+    jtag_dmi_ral.abstractcs.cmderr.set(3'b111);
+    jtag_dmi_ral.abstractcs.update(.status(status));
+    `DV_CHECK_EQ(status, UVM_IS_OK);
+  endtask
+
   task body();
     uvm_reg_data_t rdata;
 
-    // Check that there isn't currently any command error (if there is, it will be sticky and we
-    // won't be able to change it to CmdErrBusy)
-    check_cmderr(CmdErrNone);
+    clear_cmderr();
 
     // Tell the debug module to request a halt and tell it that we're halted (so that we can accept
     // the abstract command)
