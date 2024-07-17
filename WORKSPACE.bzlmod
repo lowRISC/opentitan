@@ -42,10 +42,6 @@ github_tools_repos()
 # Various linters
 load("//third_party/lint:repos.bzl", "lint_repos")
 lint_repos()
-load("//third_party/lint:deps.bzl", "lint_deps")
-lint_deps()
-load("@lowrisc_misc_linters_pip//:requirements.bzl", install_lowrisc_lint_python_deps="install_deps")
-install_lowrisc_lint_python_deps()
 
 # Lychee link checker.
 load("//third_party/lychee:repos.bzl", "lychee_repos")

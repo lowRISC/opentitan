@@ -6,3 +6,10 @@ module(name = "lowrisc_opentitan")
 
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
+bazel_dep(name = "lowrisc_misc_linters")
+
+git_override(
+    module_name = "lowrisc_misc_linters",
+    commit = "aed701007ebc25df45e50f161eca73d37739df45",
+    remote = "https://github.com/lowRISC/misc-linters",
+)
