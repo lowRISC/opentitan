@@ -82,10 +82,6 @@ typedef enum dif_dma_irq {
    * DMA error has occurred. DMA_STATUS.error_code register shows the details.
    */
   kDifDmaIrqDmaError = 1,
-  /**
-   * Memory buffer limit address reached.
-   */
-  kDifDmaIrqDmaMemoryBufferLimit = 2,
 } dif_dma_irq_t;
 
 /**

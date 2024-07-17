@@ -100,7 +100,7 @@ static status_t external_isr(void) {
   // This test currently cannot handle any other interrupts, as the logic/ISRs
   // are not sufficiently robust.
   CHECK(plic_irq_id >= kTopDarjeelingPlicIrqIdDmaDmaDone &&
-            plic_irq_id <= kTopDarjeelingPlicIrqIdDmaDmaMemoryBufferLimit,
+            plic_irq_id <= kTopDarjeelingPlicIrqIdDmaDmaError,
         "got an irq from a plic_peripheral that is not a DMA!");
 
   peripheral = (top_darjeeling_plic_peripheral_t)

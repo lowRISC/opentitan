@@ -55,9 +55,9 @@ module dma_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [64:0] reg_we_check;
+  logic [60:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(65)
+    .OneHotWidth(61)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -129,19 +129,14 @@ module dma_reg_top (
   logic intr_state_dma_done_wd;
   logic intr_state_dma_error_qs;
   logic intr_state_dma_error_wd;
-  logic intr_state_dma_memory_buffer_limit_qs;
-  logic intr_state_dma_memory_buffer_limit_wd;
   logic intr_enable_we;
   logic intr_enable_dma_done_qs;
   logic intr_enable_dma_done_wd;
   logic intr_enable_dma_error_qs;
   logic intr_enable_dma_error_wd;
-  logic intr_enable_dma_memory_buffer_limit_qs;
-  logic intr_enable_dma_memory_buffer_limit_wd;
   logic intr_test_we;
   logic intr_test_dma_done_wd;
   logic intr_test_dma_error_wd;
-  logic intr_test_dma_memory_buffer_limit_wd;
   logic alert_test_we;
   logic alert_test_wd;
   logic src_addr_lo_we;
@@ -184,18 +179,6 @@ module dma_reg_top (
   logic transfer_width_we;
   logic [1:0] transfer_width_qs;
   logic [1:0] transfer_width_wd;
-  logic dst_addr_limit_lo_we;
-  logic [31:0] dst_addr_limit_lo_qs;
-  logic [31:0] dst_addr_limit_lo_wd;
-  logic dst_addr_limit_hi_we;
-  logic [31:0] dst_addr_limit_hi_qs;
-  logic [31:0] dst_addr_limit_hi_wd;
-  logic dst_addr_almost_limit_lo_we;
-  logic [31:0] dst_addr_almost_limit_lo_qs;
-  logic [31:0] dst_addr_almost_limit_lo_wd;
-  logic dst_addr_almost_limit_hi_we;
-  logic [31:0] dst_addr_almost_limit_hi_qs;
-  logic [31:0] dst_addr_almost_limit_hi_wd;
   logic control_we;
   logic [3:0] control_opcode_qs;
   logic [3:0] control_opcode_wd;
@@ -377,33 +360,6 @@ module dma_reg_top (
     .qs     (intr_state_dma_error_qs)
   );
 
-  //   F[dma_memory_buffer_limit]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_intr_state_dma_memory_buffer_limit (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_dma_memory_buffer_limit_wd),
-
-    // from internal hardware
-    .de     (hw2reg.intr_state.dma_memory_buffer_limit.de),
-    .d      (hw2reg.intr_state.dma_memory_buffer_limit.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.dma_memory_buffer_limit.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (intr_state_dma_memory_buffer_limit_qs)
-  );
-
 
   // R[intr_enable]: V(False)
   //   F[dma_done]: 0:0
@@ -460,37 +416,10 @@ module dma_reg_top (
     .qs     (intr_enable_dma_error_qs)
   );
 
-  //   F[dma_memory_buffer_limit]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_intr_enable_dma_memory_buffer_limit (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (intr_enable_we),
-    .wd     (intr_enable_dma_memory_buffer_limit_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.dma_memory_buffer_limit.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (intr_enable_dma_memory_buffer_limit_qs)
-  );
-
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [2:0] intr_test_flds_we;
+  logic [1:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[dma_done]: 0:0
   prim_subreg_ext #(
@@ -523,22 +452,6 @@ module dma_reg_top (
     .qs     ()
   );
   assign reg2hw.intr_test.dma_error.qe = intr_test_qe;
-
-  //   F[dma_memory_buffer_limit]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_intr_test_dma_memory_buffer_limit (
-    .re     (1'b0),
-    .we     (intr_test_we),
-    .wd     (intr_test_dma_memory_buffer_limit_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (intr_test_flds_we[2]),
-    .q      (reg2hw.intr_test.dma_memory_buffer_limit.q),
-    .ds     (),
-    .qs     ()
-  );
-  assign reg2hw.intr_test.dma_memory_buffer_limit.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
@@ -1017,138 +930,6 @@ module dma_reg_top (
 
     // to register interface (read)
     .qs     (transfer_width_qs)
-  );
-
-
-  // R[dst_addr_limit_lo]: V(False)
-  // Create REGWEN-gated WE signal
-  logic dst_addr_limit_lo_gated_we;
-  assign dst_addr_limit_lo_gated_we =
-    dst_addr_limit_lo_we &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
-  ) u_dst_addr_limit_lo (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (dst_addr_limit_lo_gated_we),
-    .wd     (dst_addr_limit_lo_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.dst_addr_limit_lo.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (dst_addr_limit_lo_qs)
-  );
-
-
-  // R[dst_addr_limit_hi]: V(False)
-  // Create REGWEN-gated WE signal
-  logic dst_addr_limit_hi_gated_we;
-  assign dst_addr_limit_hi_gated_we =
-    dst_addr_limit_hi_we &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
-  ) u_dst_addr_limit_hi (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (dst_addr_limit_hi_gated_we),
-    .wd     (dst_addr_limit_hi_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.dst_addr_limit_hi.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (dst_addr_limit_hi_qs)
-  );
-
-
-  // R[dst_addr_almost_limit_lo]: V(False)
-  // Create REGWEN-gated WE signal
-  logic dst_addr_almost_limit_lo_gated_we;
-  assign dst_addr_almost_limit_lo_gated_we =
-    dst_addr_almost_limit_lo_we &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
-  ) u_dst_addr_almost_limit_lo (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (dst_addr_almost_limit_lo_gated_we),
-    .wd     (dst_addr_almost_limit_lo_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.dst_addr_almost_limit_lo.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (dst_addr_almost_limit_lo_qs)
-  );
-
-
-  // R[dst_addr_almost_limit_hi]: V(False)
-  // Create REGWEN-gated WE signal
-  logic dst_addr_almost_limit_hi_gated_we;
-  assign dst_addr_almost_limit_hi_gated_we =
-    dst_addr_almost_limit_hi_we &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
-  ) u_dst_addr_almost_limit_hi (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (dst_addr_almost_limit_hi_gated_we),
-    .wd     (dst_addr_almost_limit_hi_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.dst_addr_almost_limit_hi.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (dst_addr_almost_limit_hi_qs)
   );
 
 
@@ -3062,7 +2843,7 @@ module dma_reg_top (
 
 
 
-  logic [64:0] addr_hit;
+  logic [60:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == DMA_INTR_STATE_OFFSET);
@@ -3082,54 +2863,50 @@ module dma_reg_top (
     addr_hit[14] = (reg_addr == DMA_TOTAL_DATA_SIZE_OFFSET);
     addr_hit[15] = (reg_addr == DMA_CHUNK_DATA_SIZE_OFFSET);
     addr_hit[16] = (reg_addr == DMA_TRANSFER_WIDTH_OFFSET);
-    addr_hit[17] = (reg_addr == DMA_DST_ADDR_LIMIT_LO_OFFSET);
-    addr_hit[18] = (reg_addr == DMA_DST_ADDR_LIMIT_HI_OFFSET);
-    addr_hit[19] = (reg_addr == DMA_DST_ADDR_ALMOST_LIMIT_LO_OFFSET);
-    addr_hit[20] = (reg_addr == DMA_DST_ADDR_ALMOST_LIMIT_HI_OFFSET);
-    addr_hit[21] = (reg_addr == DMA_CONTROL_OFFSET);
-    addr_hit[22] = (reg_addr == DMA_STATUS_OFFSET);
-    addr_hit[23] = (reg_addr == DMA_ERROR_CODE_OFFSET);
-    addr_hit[24] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
-    addr_hit[25] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
-    addr_hit[26] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
-    addr_hit[27] = (reg_addr == DMA_SHA2_DIGEST_3_OFFSET);
-    addr_hit[28] = (reg_addr == DMA_SHA2_DIGEST_4_OFFSET);
-    addr_hit[29] = (reg_addr == DMA_SHA2_DIGEST_5_OFFSET);
-    addr_hit[30] = (reg_addr == DMA_SHA2_DIGEST_6_OFFSET);
-    addr_hit[31] = (reg_addr == DMA_SHA2_DIGEST_7_OFFSET);
-    addr_hit[32] = (reg_addr == DMA_SHA2_DIGEST_8_OFFSET);
-    addr_hit[33] = (reg_addr == DMA_SHA2_DIGEST_9_OFFSET);
-    addr_hit[34] = (reg_addr == DMA_SHA2_DIGEST_10_OFFSET);
-    addr_hit[35] = (reg_addr == DMA_SHA2_DIGEST_11_OFFSET);
-    addr_hit[36] = (reg_addr == DMA_SHA2_DIGEST_12_OFFSET);
-    addr_hit[37] = (reg_addr == DMA_SHA2_DIGEST_13_OFFSET);
-    addr_hit[38] = (reg_addr == DMA_SHA2_DIGEST_14_OFFSET);
-    addr_hit[39] = (reg_addr == DMA_SHA2_DIGEST_15_OFFSET);
-    addr_hit[40] = (reg_addr == DMA_HANDSHAKE_INTR_ENABLE_OFFSET);
-    addr_hit[41] = (reg_addr == DMA_CLEAR_INTR_SRC_OFFSET);
-    addr_hit[42] = (reg_addr == DMA_CLEAR_INTR_BUS_OFFSET);
-    addr_hit[43] = (reg_addr == DMA_INTR_SRC_ADDR_0_OFFSET);
-    addr_hit[44] = (reg_addr == DMA_INTR_SRC_ADDR_1_OFFSET);
-    addr_hit[45] = (reg_addr == DMA_INTR_SRC_ADDR_2_OFFSET);
-    addr_hit[46] = (reg_addr == DMA_INTR_SRC_ADDR_3_OFFSET);
-    addr_hit[47] = (reg_addr == DMA_INTR_SRC_ADDR_4_OFFSET);
-    addr_hit[48] = (reg_addr == DMA_INTR_SRC_ADDR_5_OFFSET);
-    addr_hit[49] = (reg_addr == DMA_INTR_SRC_ADDR_6_OFFSET);
-    addr_hit[50] = (reg_addr == DMA_INTR_SRC_ADDR_7_OFFSET);
-    addr_hit[51] = (reg_addr == DMA_INTR_SRC_ADDR_8_OFFSET);
-    addr_hit[52] = (reg_addr == DMA_INTR_SRC_ADDR_9_OFFSET);
-    addr_hit[53] = (reg_addr == DMA_INTR_SRC_ADDR_10_OFFSET);
-    addr_hit[54] = (reg_addr == DMA_INTR_SRC_WR_VAL_0_OFFSET);
-    addr_hit[55] = (reg_addr == DMA_INTR_SRC_WR_VAL_1_OFFSET);
-    addr_hit[56] = (reg_addr == DMA_INTR_SRC_WR_VAL_2_OFFSET);
-    addr_hit[57] = (reg_addr == DMA_INTR_SRC_WR_VAL_3_OFFSET);
-    addr_hit[58] = (reg_addr == DMA_INTR_SRC_WR_VAL_4_OFFSET);
-    addr_hit[59] = (reg_addr == DMA_INTR_SRC_WR_VAL_5_OFFSET);
-    addr_hit[60] = (reg_addr == DMA_INTR_SRC_WR_VAL_6_OFFSET);
-    addr_hit[61] = (reg_addr == DMA_INTR_SRC_WR_VAL_7_OFFSET);
-    addr_hit[62] = (reg_addr == DMA_INTR_SRC_WR_VAL_8_OFFSET);
-    addr_hit[63] = (reg_addr == DMA_INTR_SRC_WR_VAL_9_OFFSET);
-    addr_hit[64] = (reg_addr == DMA_INTR_SRC_WR_VAL_10_OFFSET);
+    addr_hit[17] = (reg_addr == DMA_CONTROL_OFFSET);
+    addr_hit[18] = (reg_addr == DMA_STATUS_OFFSET);
+    addr_hit[19] = (reg_addr == DMA_ERROR_CODE_OFFSET);
+    addr_hit[20] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
+    addr_hit[21] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
+    addr_hit[22] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
+    addr_hit[23] = (reg_addr == DMA_SHA2_DIGEST_3_OFFSET);
+    addr_hit[24] = (reg_addr == DMA_SHA2_DIGEST_4_OFFSET);
+    addr_hit[25] = (reg_addr == DMA_SHA2_DIGEST_5_OFFSET);
+    addr_hit[26] = (reg_addr == DMA_SHA2_DIGEST_6_OFFSET);
+    addr_hit[27] = (reg_addr == DMA_SHA2_DIGEST_7_OFFSET);
+    addr_hit[28] = (reg_addr == DMA_SHA2_DIGEST_8_OFFSET);
+    addr_hit[29] = (reg_addr == DMA_SHA2_DIGEST_9_OFFSET);
+    addr_hit[30] = (reg_addr == DMA_SHA2_DIGEST_10_OFFSET);
+    addr_hit[31] = (reg_addr == DMA_SHA2_DIGEST_11_OFFSET);
+    addr_hit[32] = (reg_addr == DMA_SHA2_DIGEST_12_OFFSET);
+    addr_hit[33] = (reg_addr == DMA_SHA2_DIGEST_13_OFFSET);
+    addr_hit[34] = (reg_addr == DMA_SHA2_DIGEST_14_OFFSET);
+    addr_hit[35] = (reg_addr == DMA_SHA2_DIGEST_15_OFFSET);
+    addr_hit[36] = (reg_addr == DMA_HANDSHAKE_INTR_ENABLE_OFFSET);
+    addr_hit[37] = (reg_addr == DMA_CLEAR_INTR_SRC_OFFSET);
+    addr_hit[38] = (reg_addr == DMA_CLEAR_INTR_BUS_OFFSET);
+    addr_hit[39] = (reg_addr == DMA_INTR_SRC_ADDR_0_OFFSET);
+    addr_hit[40] = (reg_addr == DMA_INTR_SRC_ADDR_1_OFFSET);
+    addr_hit[41] = (reg_addr == DMA_INTR_SRC_ADDR_2_OFFSET);
+    addr_hit[42] = (reg_addr == DMA_INTR_SRC_ADDR_3_OFFSET);
+    addr_hit[43] = (reg_addr == DMA_INTR_SRC_ADDR_4_OFFSET);
+    addr_hit[44] = (reg_addr == DMA_INTR_SRC_ADDR_5_OFFSET);
+    addr_hit[45] = (reg_addr == DMA_INTR_SRC_ADDR_6_OFFSET);
+    addr_hit[46] = (reg_addr == DMA_INTR_SRC_ADDR_7_OFFSET);
+    addr_hit[47] = (reg_addr == DMA_INTR_SRC_ADDR_8_OFFSET);
+    addr_hit[48] = (reg_addr == DMA_INTR_SRC_ADDR_9_OFFSET);
+    addr_hit[49] = (reg_addr == DMA_INTR_SRC_ADDR_10_OFFSET);
+    addr_hit[50] = (reg_addr == DMA_INTR_SRC_WR_VAL_0_OFFSET);
+    addr_hit[51] = (reg_addr == DMA_INTR_SRC_WR_VAL_1_OFFSET);
+    addr_hit[52] = (reg_addr == DMA_INTR_SRC_WR_VAL_2_OFFSET);
+    addr_hit[53] = (reg_addr == DMA_INTR_SRC_WR_VAL_3_OFFSET);
+    addr_hit[54] = (reg_addr == DMA_INTR_SRC_WR_VAL_4_OFFSET);
+    addr_hit[55] = (reg_addr == DMA_INTR_SRC_WR_VAL_5_OFFSET);
+    addr_hit[56] = (reg_addr == DMA_INTR_SRC_WR_VAL_6_OFFSET);
+    addr_hit[57] = (reg_addr == DMA_INTR_SRC_WR_VAL_7_OFFSET);
+    addr_hit[58] = (reg_addr == DMA_INTR_SRC_WR_VAL_8_OFFSET);
+    addr_hit[59] = (reg_addr == DMA_INTR_SRC_WR_VAL_9_OFFSET);
+    addr_hit[60] = (reg_addr == DMA_INTR_SRC_WR_VAL_10_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3197,11 +2974,7 @@ module dma_reg_top (
                (addr_hit[57] & (|(DMA_PERMIT[57] & ~reg_be))) |
                (addr_hit[58] & (|(DMA_PERMIT[58] & ~reg_be))) |
                (addr_hit[59] & (|(DMA_PERMIT[59] & ~reg_be))) |
-               (addr_hit[60] & (|(DMA_PERMIT[60] & ~reg_be))) |
-               (addr_hit[61] & (|(DMA_PERMIT[61] & ~reg_be))) |
-               (addr_hit[62] & (|(DMA_PERMIT[62] & ~reg_be))) |
-               (addr_hit[63] & (|(DMA_PERMIT[63] & ~reg_be))) |
-               (addr_hit[64] & (|(DMA_PERMIT[64] & ~reg_be)))));
+               (addr_hit[60] & (|(DMA_PERMIT[60] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3210,22 +2983,16 @@ module dma_reg_top (
   assign intr_state_dma_done_wd = reg_wdata[0];
 
   assign intr_state_dma_error_wd = reg_wdata[1];
-
-  assign intr_state_dma_memory_buffer_limit_wd = reg_wdata[2];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_dma_done_wd = reg_wdata[0];
 
   assign intr_enable_dma_error_wd = reg_wdata[1];
-
-  assign intr_enable_dma_memory_buffer_limit_wd = reg_wdata[2];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_dma_done_wd = reg_wdata[0];
 
   assign intr_test_dma_error_wd = reg_wdata[1];
-
-  assign intr_test_dma_memory_buffer_limit_wd = reg_wdata[2];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -3268,19 +3035,7 @@ module dma_reg_top (
   assign transfer_width_we = addr_hit[16] & reg_we & !reg_error;
 
   assign transfer_width_wd = reg_wdata[1:0];
-  assign dst_addr_limit_lo_we = addr_hit[17] & reg_we & !reg_error;
-
-  assign dst_addr_limit_lo_wd = reg_wdata[31:0];
-  assign dst_addr_limit_hi_we = addr_hit[18] & reg_we & !reg_error;
-
-  assign dst_addr_limit_hi_wd = reg_wdata[31:0];
-  assign dst_addr_almost_limit_lo_we = addr_hit[19] & reg_we & !reg_error;
-
-  assign dst_addr_almost_limit_lo_wd = reg_wdata[31:0];
-  assign dst_addr_almost_limit_hi_we = addr_hit[20] & reg_we & !reg_error;
-
-  assign dst_addr_almost_limit_hi_wd = reg_wdata[31:0];
-  assign control_we = addr_hit[21] & reg_we & !reg_error;
+  assign control_we = addr_hit[17] & reg_we & !reg_error;
 
   assign control_opcode_wd = reg_wdata[3:0];
 
@@ -3297,86 +3052,86 @@ module dma_reg_top (
   assign control_abort_wd = reg_wdata[27];
 
   assign control_go_wd = reg_wdata[31];
-  assign status_we = addr_hit[22] & reg_we & !reg_error;
+  assign status_we = addr_hit[18] & reg_we & !reg_error;
 
   assign status_done_wd = reg_wdata[1];
 
   assign status_aborted_wd = reg_wdata[2];
 
   assign status_error_wd = reg_wdata[3];
-  assign handshake_intr_enable_we = addr_hit[40] & reg_we & !reg_error;
+  assign handshake_intr_enable_we = addr_hit[36] & reg_we & !reg_error;
 
   assign handshake_intr_enable_wd = reg_wdata[10:0];
-  assign clear_intr_src_we = addr_hit[41] & reg_we & !reg_error;
+  assign clear_intr_src_we = addr_hit[37] & reg_we & !reg_error;
 
   assign clear_intr_src_wd = reg_wdata[10:0];
-  assign clear_intr_bus_we = addr_hit[42] & reg_we & !reg_error;
+  assign clear_intr_bus_we = addr_hit[38] & reg_we & !reg_error;
 
   assign clear_intr_bus_wd = reg_wdata[10:0];
-  assign intr_src_addr_0_we = addr_hit[43] & reg_we & !reg_error;
+  assign intr_src_addr_0_we = addr_hit[39] & reg_we & !reg_error;
 
   assign intr_src_addr_0_wd = reg_wdata[31:0];
-  assign intr_src_addr_1_we = addr_hit[44] & reg_we & !reg_error;
+  assign intr_src_addr_1_we = addr_hit[40] & reg_we & !reg_error;
 
   assign intr_src_addr_1_wd = reg_wdata[31:0];
-  assign intr_src_addr_2_we = addr_hit[45] & reg_we & !reg_error;
+  assign intr_src_addr_2_we = addr_hit[41] & reg_we & !reg_error;
 
   assign intr_src_addr_2_wd = reg_wdata[31:0];
-  assign intr_src_addr_3_we = addr_hit[46] & reg_we & !reg_error;
+  assign intr_src_addr_3_we = addr_hit[42] & reg_we & !reg_error;
 
   assign intr_src_addr_3_wd = reg_wdata[31:0];
-  assign intr_src_addr_4_we = addr_hit[47] & reg_we & !reg_error;
+  assign intr_src_addr_4_we = addr_hit[43] & reg_we & !reg_error;
 
   assign intr_src_addr_4_wd = reg_wdata[31:0];
-  assign intr_src_addr_5_we = addr_hit[48] & reg_we & !reg_error;
+  assign intr_src_addr_5_we = addr_hit[44] & reg_we & !reg_error;
 
   assign intr_src_addr_5_wd = reg_wdata[31:0];
-  assign intr_src_addr_6_we = addr_hit[49] & reg_we & !reg_error;
+  assign intr_src_addr_6_we = addr_hit[45] & reg_we & !reg_error;
 
   assign intr_src_addr_6_wd = reg_wdata[31:0];
-  assign intr_src_addr_7_we = addr_hit[50] & reg_we & !reg_error;
+  assign intr_src_addr_7_we = addr_hit[46] & reg_we & !reg_error;
 
   assign intr_src_addr_7_wd = reg_wdata[31:0];
-  assign intr_src_addr_8_we = addr_hit[51] & reg_we & !reg_error;
+  assign intr_src_addr_8_we = addr_hit[47] & reg_we & !reg_error;
 
   assign intr_src_addr_8_wd = reg_wdata[31:0];
-  assign intr_src_addr_9_we = addr_hit[52] & reg_we & !reg_error;
+  assign intr_src_addr_9_we = addr_hit[48] & reg_we & !reg_error;
 
   assign intr_src_addr_9_wd = reg_wdata[31:0];
-  assign intr_src_addr_10_we = addr_hit[53] & reg_we & !reg_error;
+  assign intr_src_addr_10_we = addr_hit[49] & reg_we & !reg_error;
 
   assign intr_src_addr_10_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_0_we = addr_hit[54] & reg_we & !reg_error;
+  assign intr_src_wr_val_0_we = addr_hit[50] & reg_we & !reg_error;
 
   assign intr_src_wr_val_0_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_1_we = addr_hit[55] & reg_we & !reg_error;
+  assign intr_src_wr_val_1_we = addr_hit[51] & reg_we & !reg_error;
 
   assign intr_src_wr_val_1_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_2_we = addr_hit[56] & reg_we & !reg_error;
+  assign intr_src_wr_val_2_we = addr_hit[52] & reg_we & !reg_error;
 
   assign intr_src_wr_val_2_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_3_we = addr_hit[57] & reg_we & !reg_error;
+  assign intr_src_wr_val_3_we = addr_hit[53] & reg_we & !reg_error;
 
   assign intr_src_wr_val_3_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_4_we = addr_hit[58] & reg_we & !reg_error;
+  assign intr_src_wr_val_4_we = addr_hit[54] & reg_we & !reg_error;
 
   assign intr_src_wr_val_4_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_5_we = addr_hit[59] & reg_we & !reg_error;
+  assign intr_src_wr_val_5_we = addr_hit[55] & reg_we & !reg_error;
 
   assign intr_src_wr_val_5_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_6_we = addr_hit[60] & reg_we & !reg_error;
+  assign intr_src_wr_val_6_we = addr_hit[56] & reg_we & !reg_error;
 
   assign intr_src_wr_val_6_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_7_we = addr_hit[61] & reg_we & !reg_error;
+  assign intr_src_wr_val_7_we = addr_hit[57] & reg_we & !reg_error;
 
   assign intr_src_wr_val_7_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_8_we = addr_hit[62] & reg_we & !reg_error;
+  assign intr_src_wr_val_8_we = addr_hit[58] & reg_we & !reg_error;
 
   assign intr_src_wr_val_8_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_9_we = addr_hit[63] & reg_we & !reg_error;
+  assign intr_src_wr_val_9_we = addr_hit[59] & reg_we & !reg_error;
 
   assign intr_src_wr_val_9_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_10_we = addr_hit[64] & reg_we & !reg_error;
+  assign intr_src_wr_val_10_we = addr_hit[60] & reg_we & !reg_error;
 
   assign intr_src_wr_val_10_wd = reg_wdata[31:0];
 
@@ -3400,12 +3155,12 @@ module dma_reg_top (
     reg_we_check[14] = total_data_size_gated_we;
     reg_we_check[15] = chunk_data_size_gated_we;
     reg_we_check[16] = transfer_width_gated_we;
-    reg_we_check[17] = dst_addr_limit_lo_gated_we;
-    reg_we_check[18] = dst_addr_limit_hi_gated_we;
-    reg_we_check[19] = dst_addr_almost_limit_lo_gated_we;
-    reg_we_check[20] = dst_addr_almost_limit_hi_gated_we;
-    reg_we_check[21] = control_we;
-    reg_we_check[22] = status_we;
+    reg_we_check[17] = control_we;
+    reg_we_check[18] = status_we;
+    reg_we_check[19] = 1'b0;
+    reg_we_check[20] = 1'b0;
+    reg_we_check[21] = 1'b0;
+    reg_we_check[22] = 1'b0;
     reg_we_check[23] = 1'b0;
     reg_we_check[24] = 1'b0;
     reg_we_check[25] = 1'b0;
@@ -3419,35 +3174,31 @@ module dma_reg_top (
     reg_we_check[33] = 1'b0;
     reg_we_check[34] = 1'b0;
     reg_we_check[35] = 1'b0;
-    reg_we_check[36] = 1'b0;
-    reg_we_check[37] = 1'b0;
-    reg_we_check[38] = 1'b0;
-    reg_we_check[39] = 1'b0;
-    reg_we_check[40] = handshake_intr_enable_gated_we;
-    reg_we_check[41] = clear_intr_src_gated_we;
-    reg_we_check[42] = clear_intr_bus_gated_we;
-    reg_we_check[43] = intr_src_addr_0_gated_we;
-    reg_we_check[44] = intr_src_addr_1_gated_we;
-    reg_we_check[45] = intr_src_addr_2_gated_we;
-    reg_we_check[46] = intr_src_addr_3_gated_we;
-    reg_we_check[47] = intr_src_addr_4_gated_we;
-    reg_we_check[48] = intr_src_addr_5_gated_we;
-    reg_we_check[49] = intr_src_addr_6_gated_we;
-    reg_we_check[50] = intr_src_addr_7_gated_we;
-    reg_we_check[51] = intr_src_addr_8_gated_we;
-    reg_we_check[52] = intr_src_addr_9_gated_we;
-    reg_we_check[53] = intr_src_addr_10_gated_we;
-    reg_we_check[54] = intr_src_wr_val_0_gated_we;
-    reg_we_check[55] = intr_src_wr_val_1_gated_we;
-    reg_we_check[56] = intr_src_wr_val_2_gated_we;
-    reg_we_check[57] = intr_src_wr_val_3_gated_we;
-    reg_we_check[58] = intr_src_wr_val_4_gated_we;
-    reg_we_check[59] = intr_src_wr_val_5_gated_we;
-    reg_we_check[60] = intr_src_wr_val_6_gated_we;
-    reg_we_check[61] = intr_src_wr_val_7_gated_we;
-    reg_we_check[62] = intr_src_wr_val_8_gated_we;
-    reg_we_check[63] = intr_src_wr_val_9_gated_we;
-    reg_we_check[64] = intr_src_wr_val_10_gated_we;
+    reg_we_check[36] = handshake_intr_enable_gated_we;
+    reg_we_check[37] = clear_intr_src_gated_we;
+    reg_we_check[38] = clear_intr_bus_gated_we;
+    reg_we_check[39] = intr_src_addr_0_gated_we;
+    reg_we_check[40] = intr_src_addr_1_gated_we;
+    reg_we_check[41] = intr_src_addr_2_gated_we;
+    reg_we_check[42] = intr_src_addr_3_gated_we;
+    reg_we_check[43] = intr_src_addr_4_gated_we;
+    reg_we_check[44] = intr_src_addr_5_gated_we;
+    reg_we_check[45] = intr_src_addr_6_gated_we;
+    reg_we_check[46] = intr_src_addr_7_gated_we;
+    reg_we_check[47] = intr_src_addr_8_gated_we;
+    reg_we_check[48] = intr_src_addr_9_gated_we;
+    reg_we_check[49] = intr_src_addr_10_gated_we;
+    reg_we_check[50] = intr_src_wr_val_0_gated_we;
+    reg_we_check[51] = intr_src_wr_val_1_gated_we;
+    reg_we_check[52] = intr_src_wr_val_2_gated_we;
+    reg_we_check[53] = intr_src_wr_val_3_gated_we;
+    reg_we_check[54] = intr_src_wr_val_4_gated_we;
+    reg_we_check[55] = intr_src_wr_val_5_gated_we;
+    reg_we_check[56] = intr_src_wr_val_6_gated_we;
+    reg_we_check[57] = intr_src_wr_val_7_gated_we;
+    reg_we_check[58] = intr_src_wr_val_8_gated_we;
+    reg_we_check[59] = intr_src_wr_val_9_gated_we;
+    reg_we_check[60] = intr_src_wr_val_10_gated_we;
   end
 
   // Read data return
@@ -3457,19 +3208,16 @@ module dma_reg_top (
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_dma_done_qs;
         reg_rdata_next[1] = intr_state_dma_error_qs;
-        reg_rdata_next[2] = intr_state_dma_memory_buffer_limit_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_dma_done_qs;
         reg_rdata_next[1] = intr_enable_dma_error_qs;
-        reg_rdata_next[2] = intr_enable_dma_memory_buffer_limit_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
-        reg_rdata_next[2] = '0;
       end
 
       addr_hit[3]: begin
@@ -3530,22 +3278,6 @@ module dma_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = dst_addr_limit_lo_qs;
-      end
-
-      addr_hit[18]: begin
-        reg_rdata_next[31:0] = dst_addr_limit_hi_qs;
-      end
-
-      addr_hit[19]: begin
-        reg_rdata_next[31:0] = dst_addr_almost_limit_lo_qs;
-      end
-
-      addr_hit[20]: begin
-        reg_rdata_next[31:0] = dst_addr_almost_limit_hi_qs;
-      end
-
-      addr_hit[21]: begin
         reg_rdata_next[3:0] = control_opcode_qs;
         reg_rdata_next[4] = control_hardware_handshake_enable_qs;
         reg_rdata_next[5] = control_memory_buffer_auto_increment_enable_qs;
@@ -3556,7 +3288,7 @@ module dma_reg_top (
         reg_rdata_next[31] = control_go_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_done_qs;
         reg_rdata_next[2] = status_aborted_qs;
@@ -3564,7 +3296,7 @@ module dma_reg_top (
         reg_rdata_next[4] = status_sha2_digest_valid_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = error_code_src_addr_error_qs;
         reg_rdata_next[1] = error_code_dst_addr_error_qs;
         reg_rdata_next[2] = error_code_opcode_error_qs;
@@ -3575,167 +3307,167 @@ module dma_reg_top (
         reg_rdata_next[7] = error_code_asid_error_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[20]: begin
         reg_rdata_next[31:0] = sha2_digest_0_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = sha2_digest_1_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = sha2_digest_2_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[23]: begin
         reg_rdata_next[31:0] = sha2_digest_3_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[24]: begin
         reg_rdata_next[31:0] = sha2_digest_4_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[25]: begin
         reg_rdata_next[31:0] = sha2_digest_5_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[26]: begin
         reg_rdata_next[31:0] = sha2_digest_6_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[27]: begin
         reg_rdata_next[31:0] = sha2_digest_7_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[28]: begin
         reg_rdata_next[31:0] = sha2_digest_8_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[29]: begin
         reg_rdata_next[31:0] = sha2_digest_9_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[30]: begin
         reg_rdata_next[31:0] = sha2_digest_10_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[31]: begin
         reg_rdata_next[31:0] = sha2_digest_11_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[32]: begin
         reg_rdata_next[31:0] = sha2_digest_12_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[33]: begin
         reg_rdata_next[31:0] = sha2_digest_13_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[34]: begin
         reg_rdata_next[31:0] = sha2_digest_14_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[35]: begin
         reg_rdata_next[31:0] = sha2_digest_15_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[36]: begin
         reg_rdata_next[10:0] = handshake_intr_enable_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[37]: begin
         reg_rdata_next[10:0] = clear_intr_src_qs;
       end
 
-      addr_hit[42]: begin
+      addr_hit[38]: begin
         reg_rdata_next[10:0] = clear_intr_bus_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[39]: begin
         reg_rdata_next[31:0] = intr_src_addr_0_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[40]: begin
         reg_rdata_next[31:0] = intr_src_addr_1_qs;
       end
 
-      addr_hit[45]: begin
+      addr_hit[41]: begin
         reg_rdata_next[31:0] = intr_src_addr_2_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[42]: begin
         reg_rdata_next[31:0] = intr_src_addr_3_qs;
       end
 
-      addr_hit[47]: begin
+      addr_hit[43]: begin
         reg_rdata_next[31:0] = intr_src_addr_4_qs;
       end
 
-      addr_hit[48]: begin
+      addr_hit[44]: begin
         reg_rdata_next[31:0] = intr_src_addr_5_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[45]: begin
         reg_rdata_next[31:0] = intr_src_addr_6_qs;
       end
 
-      addr_hit[50]: begin
+      addr_hit[46]: begin
         reg_rdata_next[31:0] = intr_src_addr_7_qs;
       end
 
-      addr_hit[51]: begin
+      addr_hit[47]: begin
         reg_rdata_next[31:0] = intr_src_addr_8_qs;
       end
 
-      addr_hit[52]: begin
+      addr_hit[48]: begin
         reg_rdata_next[31:0] = intr_src_addr_9_qs;
       end
 
-      addr_hit[53]: begin
+      addr_hit[49]: begin
         reg_rdata_next[31:0] = intr_src_addr_10_qs;
       end
 
-      addr_hit[54]: begin
+      addr_hit[50]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_0_qs;
       end
 
-      addr_hit[55]: begin
+      addr_hit[51]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_1_qs;
       end
 
-      addr_hit[56]: begin
+      addr_hit[52]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_2_qs;
       end
 
-      addr_hit[57]: begin
+      addr_hit[53]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_3_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[54]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_4_qs;
       end
 
-      addr_hit[59]: begin
+      addr_hit[55]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_5_qs;
       end
 
-      addr_hit[60]: begin
+      addr_hit[56]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_6_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[57]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_7_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[58]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_8_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[59]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_9_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[60]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_10_qs;
       end
 

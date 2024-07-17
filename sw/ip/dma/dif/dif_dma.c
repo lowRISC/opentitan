@@ -176,45 +176,6 @@ dif_result_t dif_dma_is_memory_range_valid(const dif_dma_t *dma,
   return kDifOk;
 }
 
-dif_result_t dif_dma_irq_thresholds_set(const dif_dma_t *dma,
-                                        uint64_t almost_limit, uint64_t limit) {
-  if (dma == NULL || almost_limit > limit) {
-    return kDifBadArg;
-  }
-
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET,
-                      almost_limit & UINT32_MAX);
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET,
-                      almost_limit >> (sizeof(uint32_t) * 8));
-
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LIMIT_LO_REG_OFFSET,
-                      limit & UINT32_MAX);
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LIMIT_HI_REG_OFFSET,
-                      limit >> (sizeof(uint32_t) * 8));
-
-  return kDifOk;
-}
-
-dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
-                                        uint64_t *almost_limit,
-                                        uint64_t *limit) {
-  if (dma == NULL || almost_limit == NULL || limit == NULL) {
-    return kDifBadArg;
-  }
-
-  uint64_t val_lo = mmio_region_read32(dma->base_addr,
-                                       DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET);
-  uint64_t val_hi = mmio_region_read32(dma->base_addr,
-                                       DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET);
-  *almost_limit = val_lo | (val_hi << (sizeof(uint32_t) * 8));
-
-  val_lo = mmio_region_read32(dma->base_addr, DMA_DST_ADDR_LIMIT_LO_REG_OFFSET);
-  val_hi = mmio_region_read32(dma->base_addr, DMA_DST_ADDR_LIMIT_HI_REG_OFFSET);
-  *limit = val_lo | (val_hi << (sizeof(uint32_t) * 8));
-
-  return kDifOk;
-}
-
 dif_result_t dif_dma_status_get(const dif_dma_t *dma,
                                 dif_dma_status_t *status) {
   if (dma == NULL || status == NULL) {

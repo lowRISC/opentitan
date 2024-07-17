@@ -301,16 +301,6 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_addr), UVM_HIGH)
   endtask : set_dst_addr
 
-  task set_dst_addr_range(bit[63:0] almost_limit,
-                                     bit[63:0] limit);
-    csr_wr(ral.dst_addr_limit_lo, limit[31:0]);
-    csr_wr(ral.dst_addr_limit_hi, limit[63:32]);
-    `uvm_info(`gfn, $sformatf("DMA: Destination Limit = 0x%016h", limit), UVM_HIGH)
-    csr_wr(ral.dst_addr_almost_limit_lo, almost_limit[31:0]);
-    csr_wr(ral.dst_addr_almost_limit_hi, almost_limit[63:32]);
-    `uvm_info(`gfn, $sformatf("DMA: Destination Almost Limit = 0x%016h", almost_limit), UVM_HIGH)
-  endtask : set_dst_addr_range
-
   // Task: Set DMA Enabled Memory base and limit
   task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, bit valid, mubi4_t lock);
     csr_wr(ral.enabled_memory_range_base, base);
@@ -374,7 +364,6 @@ class dma_base_vseq extends cip_base_vseq #(
     abort_pending = 1'b0;
     set_src_addr(dma_config.src_addr);
     set_dst_addr(dma_config.dst_addr);
-    set_dst_addr_range(dma_config.dst_addr_almost_limit, dma_config.dst_addr_limit);
     set_addr_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
