@@ -14,7 +14,7 @@ def _get_assembler(cc_toolchain):
     # the compiler as assembler.
     return [f for f in cc_toolchain.all_files.to_list() if f.basename.endswith("as")][0]
 
-def _otbn_assemble_sources(ctx):
+def _otbn_assemble_sources(ctx, additional_srcs = []):
     """Helper function that, for each source file in the provided context, adds
     an action to the context that invokes the otbn assember (otbn_as.py),
     producing a corresponding object file. Returns a list of all object files
@@ -24,7 +24,7 @@ def _otbn_assemble_sources(ctx):
     assembler = _get_assembler(cc_toolchain)
 
     objs = []
-    for src in ctx.files.srcs:
+    for src in ctx.files.srcs + additional_srcs:
         obj = ctx.actions.declare_file(src.basename.replace("." + src.extension, ".o"))
         objs.append(obj)
         ctx.actions.run(
@@ -53,7 +53,7 @@ def _otbn_library(ctx):
         ),
     ]
 
-def _otbn_binary(ctx):
+def _otbn_binary(ctx, additional_srcs = []):
     """The build process for otbn resources currently invokes
     `//hw/ip/otbn/util/otbn_{as,ld,...}.py` to build the otbn resource.
     These programs are python scripts which translate otbn special
@@ -81,7 +81,7 @@ def _otbn_binary(ctx):
     assembler = _get_assembler(cc_toolchain)
 
     # Run the otbn assembler on source files to produce object (.o) files.
-    objs = _otbn_assemble_sources(ctx)
+    objs = _otbn_assemble_sources(ctx, additional_srcs)
 
     # Declare output files.
     elf = ctx.actions.declare_file(ctx.attr.name + ".elf")
@@ -147,6 +147,31 @@ def _otbn_binary(ctx):
         ),
     ]
 
+def _run_sim_test(ctx, exp, additional_srcs = []):
+    providers = _otbn_binary(ctx, additional_srcs)
+
+    # Extract the output .elf file from the output group.
+    elf = providers[1].elf.to_list()[0]
+
+    # Create a simple script that runs the OTBN test wrapper on the .elf file
+    # using the provided simulator path.
+    sim_test_wrapper = ctx.executable._sim_test_wrapper
+    simulator = ctx.executable._simulator
+    ctx.actions.write(
+        output = ctx.outputs.executable,
+        content = "{} {} {} {}".format(sim_test_wrapper.short_path, simulator.short_path, exp.short_path, elf.short_path),
+    )
+
+    # Runfiles include sources, the .elf file, the simulator and test wrapper
+    # themselves, and all the simulator and test wrapper runfiles.
+    runfiles = ctx.runfiles(files = (ctx.files.srcs + additional_srcs + [elf, exp, ctx.executable._simulator, ctx.executable._sim_test_wrapper]))
+    runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
+    runfiles = runfiles.merge(ctx.attr._sim_test_wrapper[DefaultInfo].default_runfiles)
+    return [
+        DefaultInfo(runfiles = runfiles),
+        providers[1],
+    ]
+
 def _otbn_sim_test(ctx):
     """This rule is for standalone OTBN unit tests, which are run on the host
     via the OTBN simulator.
@@ -155,31 +180,36 @@ def _otbn_sim_test(ctx):
     them on the simulator. Tests are expected to count failures in the w0
     register; the test checks that w0=0 to determine if the test passed.
     """
-    providers = _otbn_binary(ctx)
+    return _run_sim_test(ctx, ctx.file.exp)
 
-    # Extract the output .elf file from the output group.
-    elf = providers[1].elf.to_list()[0]
+def _otbn_autogen_sim_test_impl(ctx):
+    """
+    Automatically generate test data for OTBN simulator tests.
 
-    exp_file = ctx.file.exp
+    This infrastructure can be used to generate tests using a known-good
+    implementation. Note that tests with the same testgen script and seed value
+    are expected to generate the same test data, so the test data does not get
+    re-randomized in each build.
 
-    # Create a simple script that runs the OTBN test wrapper on the .elf file
-    # using the provided simulator path.
-    sim_test_wrapper = ctx.executable._sim_test_wrapper
-    simulator = ctx.executable._simulator
-    ctx.actions.write(
-        output = ctx.outputs.executable,
-        content = "{} {} {} {}".format(sim_test_wrapper.short_path, simulator.short_path, exp_file.short_path, elf.short_path),
+    Uses the provided generation script to generate a .s file with input values
+    for DMEM (.data section) and a .exp file with expected register values after
+    the test. Then, runs the OTBN simulator to check this test's results.
+
+    Test data generation scripts should take two mandatory arguments: the data
+    file path and the expected-values file path. They should also accept a seed
+    value for randomness with '-s'.
+    """
+
+    data = ctx.actions.declare_file(ctx.attr.name + "_data.s")
+    exp = ctx.actions.declare_file(ctx.attr.name + ".exp")
+    ctx.actions.run(
+        outputs = [data, exp],
+        inputs = [ctx.executable.testgen],
+        arguments = ["-s", str(ctx.attr.seed), data.path, exp.path],
+        executable = ctx.executable.testgen,
     )
 
-    # Runfiles include sources, the .elf file, the simulator and test wrapper
-    # themselves, and all the simulator and test wrapper runfiles.
-    runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, exp_file, ctx.executable._simulator, ctx.executable._sim_test_wrapper]))
-    runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
-    runfiles = runfiles.merge(ctx.attr._sim_test_wrapper[DefaultInfo].default_runfiles)
-    return [
-        DefaultInfo(runfiles = runfiles),
-        providers[1],
-    ]
+    return _run_sim_test(ctx, exp, additional_srcs = [data])
 
 def _otbn_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.
@@ -296,6 +326,49 @@ otbn_sim_test = rv_rule(
         "deps": attr.label_list(providers = [DefaultInfo]),
         "exp": attr.label(allow_single_file = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_otbn_as": attr.label(
+            default = "//hw/ip/otbn/util:otbn_as",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_otbn_data": attr.label(
+            default = "//hw/ip/otbn/data:all_files",
+            allow_files = True,
+        ),
+        "_simulator": attr.label(
+            default = "//hw/ip/otbn/dv/otbnsim:standalone",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_sim_test_wrapper": attr.label(
+            default = "//hw/ip/otbn/util:otbn_sim_test",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_wrapper": attr.label(
+            default = "//util:otbn_build",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+    fragments = ["cpp"],
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
+)
+
+otbn_autogen_sim_test = rv_rule(
+    implementation = _otbn_autogen_sim_test_impl,
+    test = True,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = [DefaultInfo]),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "testgen": attr.label(
+            mandatory = True,
+            executable = True,
+            cfg = "exec",
+        ),
+        "seed": attr.int(mandatory = True),
         "_otbn_as": attr.label(
             default = "//hw/ip/otbn/util:otbn_as",
             executable = True,
