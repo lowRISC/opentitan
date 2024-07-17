@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_import")
 load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_toolchain")
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
 
@@ -19,13 +20,23 @@ string_flag(
     make_variable = "OPENSSL_PKG_CONFIG_PATH",
 )
 
+cc_import(
+    name = "libclang",
+    shared_library = "@llvm_toolchain_llvm//:lib/libclang.so",
+)
+
+cc_import(
+    name = "libc++",
+    shared_library = "@llvm_toolchain_llvm//:lib/libc++.so",
+)
+
 rust_bindgen_toolchain(
     name = "bindgen_toolchain_impl",
     bindgen = "@rules_rust//bindgen/3rdparty:bindgen",
-    clang = "@bindgen_clang_linux//:clang",
-    libclang = "@bindgen_clang_linux//:libclang",
+    clang = "@llvm_toolchain_llvm//:bin/clang",
+    libclang = ":libclang",
     libstdcxx = select({
-        ":specify_bindgen_libstdcxx": "@bindgen_libstdcxx_linux//:libstdc++",
+        ":specify_bindgen_libstdcxx": ":libc++",
         "//conditions:default": None,
     }),
 )
