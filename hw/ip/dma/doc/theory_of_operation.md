@@ -134,10 +134,6 @@ hardware handshake DMA operation.
     interrupt times the FIFO read data width).
 -   [*Transfer Width*](../data/dma.hjson#transfer_width): Width of each transaction
     (equivalent to FIFO read data width).
--   [*Limit register*](../data/dma.hjson#dst_addr_limit_lo): Marks the end of the buffer used
-    to write 'total size' worth of data payloads if memory buffer
-    auto-increment feature is used. DMAC shall set an overflow
-    indication if the buffer limit is reached.
 -   [*DMAC Control register*](../data/dma.hjson#control):
 
     -   Opcode: Type of operation requested. Typically set to copy
@@ -197,10 +193,6 @@ hardware handshake DMA operation.
     into the FIFO.
 -   [*Transfer Width*](../data/dma.hjson#transfer_width): Write Data width of the LSIO FIFO
     register. Each write transaction is equal to this size.
--   [*Limit register*](../data/dma.hjson#dst_addr_limit_lo): Marks the end of the memory
-    buffer used to read 'total size' worth of data segments if
-    auto-increment feature is used. DMAC shall set an overflow
-    indication if the buffer limit is reached.
 -   [*DMAC Control register*](../data/dma.hjson#control)
 
     -   Opcode: Type of operation requested. Typically set to copy

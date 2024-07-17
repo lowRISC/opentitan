@@ -297,46 +297,7 @@ TEST_F(MemoryRangeLockTest, GetBadArg) {
   EXPECT_DIF_BADARG(dif_dma_is_memory_range_locked(&dma_, nullptr));
 }
 
-// DMA thresholds tests
-class IrqThresholdsTest : public DmaTestInitialized {};
-
-TEST_F(IrqThresholdsTest, SetSuccess) {
-  EXPECT_WRITE32(DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET, 0x9000F000);
-  EXPECT_WRITE32(DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET, 0x80001000);
-  EXPECT_WRITE32(DMA_DST_ADDR_LIMIT_LO_REG_OFFSET, 0xE0005000);
-  EXPECT_WRITE32(DMA_DST_ADDR_LIMIT_HI_REG_OFFSET, 0xF0001000);
-
-  EXPECT_DIF_OK(dif_dma_irq_thresholds_set(&dma_, 0x800010009000F000,
-                                           0xF0001000E0005000));
-}
-
-TEST_F(IrqThresholdsTest, GetSuccess) {
-  EXPECT_READ32(DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET, 0x9000F000);
-  EXPECT_READ32(DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET, 0x80001000);
-  EXPECT_READ32(DMA_DST_ADDR_LIMIT_LO_REG_OFFSET, 0xE0005000);
-  EXPECT_READ32(DMA_DST_ADDR_LIMIT_HI_REG_OFFSET, 0xF0001000);
-
-  uint64_t almost = 0;
-  uint64_t limit = 0;
-
-  EXPECT_DIF_OK(dif_dma_irq_thresholds_get(&dma_, &almost, &limit));
-  EXPECT_EQ(almost, 0x800010009000F000);
-  EXPECT_EQ(limit, 0xF0001000E0005000);
-}
-
-TEST_F(IrqThresholdsTest, SetBadArg) {
-  EXPECT_DIF_BADARG(dif_dma_irq_thresholds_set(nullptr, 0, 0));
-  EXPECT_DIF_BADARG(dif_dma_irq_thresholds_set(&dma_, 1, 0));
-}
-
-TEST_F(IrqThresholdsTest, GetBadArg) {
-  uint64_t dummy;
-  EXPECT_DIF_BADARG(dif_dma_irq_thresholds_get(nullptr, &dummy, &dummy));
-  EXPECT_DIF_BADARG(dif_dma_irq_thresholds_get(&dma_, nullptr, &dummy));
-  EXPECT_DIF_BADARG(dif_dma_irq_thresholds_get(&dma_, &dummy, nullptr));
-}
-
-// DMA thresholds tests
+// DMA status tests
 typedef struct status_reg {
   uint32_t reg;
   dif_dma_status_t status;

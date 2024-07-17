@@ -70,8 +70,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(dif_dma_irq_get_type(
-      &dma_, static_cast<dif_dma_irq_t>(kDifDmaIrqDmaMemoryBufferLimit + 1),
-      &type));
+      &dma_, static_cast<dif_dma_irq_t>(kDifDmaIrqDmaError + 1), &type));
 }
 
 TEST_F(IrqGetTypeTest, Success) {
@@ -144,9 +143,8 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the last IRQ state.
   irq_state = true;
   EXPECT_READ32(DMA_INTR_STATE_REG_OFFSET,
-                {{DMA_INTR_STATE_DMA_MEMORY_BUFFER_LIMIT_BIT, false}});
-  EXPECT_DIF_OK(dif_dma_irq_is_pending(&dma_, kDifDmaIrqDmaMemoryBufferLimit,
-                                       &irq_state));
+                {{DMA_INTR_STATE_DMA_ERROR_BIT, false}});
+  EXPECT_DIF_OK(dif_dma_irq_is_pending(&dma_, kDifDmaIrqDmaError, &irq_state));
   EXPECT_FALSE(irq_state);
 }
 
@@ -158,7 +156,7 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  const uint32_t num_irqs = 3;
+  const uint32_t num_irqs = 2;
   const uint32_t irq_mask = (1u << num_irqs) - 1;
   dif_dma_irq_state_snapshot_t irq_snapshot = 1;
 
@@ -211,8 +209,8 @@ TEST_F(IrqAcknowledgeTest, Success) {
 
   // Clear the last IRQ state.
   EXPECT_WRITE32(DMA_INTR_STATE_REG_OFFSET,
-                 {{DMA_INTR_STATE_DMA_MEMORY_BUFFER_LIMIT_BIT, true}});
-  EXPECT_DIF_OK(dif_dma_irq_acknowledge(&dma_, kDifDmaIrqDmaMemoryBufferLimit));
+                 {{DMA_INTR_STATE_DMA_ERROR_BIT, true}});
+  EXPECT_DIF_OK(dif_dma_irq_acknowledge(&dma_, kDifDmaIrqDmaError));
 }
 
 class IrqForceTest : public DmaTest {};
@@ -234,8 +232,8 @@ TEST_F(IrqForceTest, Success) {
 
   // Force last IRQ.
   EXPECT_WRITE32(DMA_INTR_TEST_REG_OFFSET,
-                 {{DMA_INTR_TEST_DMA_MEMORY_BUFFER_LIMIT_BIT, true}});
-  EXPECT_DIF_OK(dif_dma_irq_force(&dma_, kDifDmaIrqDmaMemoryBufferLimit, true));
+                 {{DMA_INTR_TEST_DMA_ERROR_BIT, true}});
+  EXPECT_DIF_OK(dif_dma_irq_force(&dma_, kDifDmaIrqDmaError, true));
 }
 
 class IrqGetEnabledTest : public DmaTest {};
@@ -272,9 +270,8 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(DMA_INTR_ENABLE_REG_OFFSET,
-                {{DMA_INTR_ENABLE_DMA_MEMORY_BUFFER_LIMIT_BIT, false}});
-  EXPECT_DIF_OK(dif_dma_irq_get_enabled(&dma_, kDifDmaIrqDmaMemoryBufferLimit,
-                                        &irq_state));
+                {{DMA_INTR_ENABLE_DMA_ERROR_BIT, false}});
+  EXPECT_DIF_OK(dif_dma_irq_get_enabled(&dma_, kDifDmaIrqDmaError, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
@@ -306,9 +303,8 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;
   EXPECT_MASK32(DMA_INTR_ENABLE_REG_OFFSET,
-                {{DMA_INTR_ENABLE_DMA_MEMORY_BUFFER_LIMIT_BIT, 0x1, false}});
-  EXPECT_DIF_OK(dif_dma_irq_set_enabled(&dma_, kDifDmaIrqDmaMemoryBufferLimit,
-                                        irq_state));
+                {{DMA_INTR_ENABLE_DMA_ERROR_BIT, 0x1, false}});
+  EXPECT_DIF_OK(dif_dma_irq_set_enabled(&dma_, kDifDmaIrqDmaError, irq_state));
 }
 
 class IrqDisableAllTest : public DmaTest {};

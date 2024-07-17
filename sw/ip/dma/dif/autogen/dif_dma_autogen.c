@@ -57,9 +57,6 @@ static bool dma_get_irq_bit_index(dif_dma_irq_t irq,
     case kDifDmaIrqDmaError:
       *index_out = DMA_INTR_COMMON_DMA_ERROR_BIT;
       break;
-    case kDifDmaIrqDmaMemoryBufferLimit:
-      *index_out = DMA_INTR_COMMON_DMA_MEMORY_BUFFER_LIMIT_BIT;
-      break;
     default:
       return false;
   }
@@ -70,14 +67,12 @@ static bool dma_get_irq_bit_index(dif_dma_irq_t irq,
 static dif_irq_type_t irq_types[] = {
     kDifIrqTypeEvent,
     kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_irq_get_type(const dif_dma_t *dma, dif_dma_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (dma == NULL || type == NULL ||
-      irq == kDifDmaIrqDmaMemoryBufferLimit + 1) {
+  if (dma == NULL || type == NULL || irq == kDifDmaIrqDmaError + 1) {
     return kDifBadArg;
   }
 

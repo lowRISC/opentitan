@@ -22,7 +22,6 @@ module dma
   // DMA interrupts and incoming LSIO triggers
   output  logic                                     intr_dma_done_o,
   output  logic                                     intr_dma_error_o,
-  output  logic                                     intr_dma_memory_buffer_limit_o,
   input   lsio_trigger_t                            lsio_trigger_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -1083,85 +1082,15 @@ module dma
   // Interrupt logic
   logic test_done_interrupt;
   logic test_error_interrupt;
-  logic test_memory_buffer_limit_interrupt;
-  logic send_memory_buffer_limit_interrupt;
-  logic sent_almost_limit_interrupt_d, sent_almost_limit_interrupt_q;
-  logic send_almost_limit_interrupt;
-  logic sent_limit_interrupt_d, sent_limit_interrupt_q;
-  logic send_limit_interrupt;
-
   logic data_move_state, data_move_state_valid;
   logic update_dst_addr_reg, update_src_addr_reg;
 
   assign test_done_interrupt  = reg2hw.intr_test.dma_done.q  && reg2hw.intr_test.dma_done.qe;
   assign test_error_interrupt = reg2hw.intr_test.dma_error.q && reg2hw.intr_test.dma_error.qe;
-  assign test_memory_buffer_limit_interrupt =
-    reg2hw.intr_test.dma_memory_buffer_limit.q &&
-    reg2hw.intr_test.dma_memory_buffer_limit.qe;
 
   // Signal interrupt controller whenever an enabled interrupt info bit is set
   assign intr_dma_done_o  = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
   assign intr_dma_error_o = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
-  assign intr_dma_memory_buffer_limit_o = reg2hw.intr_state.dma_memory_buffer_limit.q &&
-                                          reg2hw.intr_enable.dma_memory_buffer_limit.q;
-
-  always_comb begin
-    sent_almost_limit_interrupt_d = sent_almost_limit_interrupt_q;
-
-    if (send_almost_limit_interrupt) begin
-      sent_almost_limit_interrupt_d = 1'b1;
-    end else if ((ctrl_state_q == DmaIdle) && handshake_interrupt) begin
-      sent_almost_limit_interrupt_d = 1'b0;
-    end
-  end
-
-  prim_flop #(
-    .Width(1)
-  ) aff_send_almost_limit_interrupt (
-    .clk_i ( gated_clk                     ),
-    .rst_ni( rst_ni                        ),
-    .d_i   ( sent_almost_limit_interrupt_d ),
-    .q_o   ( sent_almost_limit_interrupt_q )
-  );
-
-  assign send_almost_limit_interrupt =
-    (!sent_almost_limit_interrupt_q)    &&  // only want to send once
-    data_move_state_valid               &&  // only trigger for single cycle when data has moved
-    control_q.cfg_handshake_en          &&
-    control_q.cfg_memory_buffer_auto_increment_en &&
-    (!control_q.cfg_data_direction)     &&
-    (dst_addr_q >= {reg2hw.dst_addr_almost_limit_hi.q, reg2hw.dst_addr_almost_limit_lo.q});
-
-  always_comb begin
-    sent_limit_interrupt_d = sent_limit_interrupt_q;
-
-    if (send_limit_interrupt) begin
-      sent_limit_interrupt_d = 1'b1;
-    end else if ((ctrl_state_q == DmaIdle) && handshake_interrupt) begin
-      sent_limit_interrupt_d = 1'b0;
-    end
-  end
-
-  prim_flop #(
-    .Width(1)
-  ) aff_send_limit_interrupt (
-    .clk_i ( gated_clk              ),
-    .rst_ni( rst_ni                 ),
-    .d_i   ( sent_limit_interrupt_d ),
-    .q_o   ( sent_limit_interrupt_q )
-  );
-
-  assign send_limit_interrupt =
-    (!sent_limit_interrupt_q)           &&  // only want to send once
-    data_move_state_valid               &&  // only trigger for single cycle when data has moved
-    control_q.cfg_handshake_en          &&
-    control_q.cfg_memory_buffer_auto_increment_en &&
-    (!control_q.cfg_data_direction)     &&
-    (dst_addr_q >= {reg2hw.dst_addr_limit_hi.q, reg2hw.dst_addr_limit_lo.q});
-
-  // Send out an interrupt when reaching almost the buffer limit or when really reaching the limit
-  // Ensures that all data until the IRQ is transferred.
-  assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
   // Data was moved if we get a write valid response
   assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite ||
@@ -1326,10 +1255,6 @@ module dma
 
     hw2reg.intr_state.dma_error.de = reg2hw.status.error.q | test_error_interrupt;
     hw2reg.intr_state.dma_error.d  = 1'b1;
-
-    hw2reg.intr_state.dma_memory_buffer_limit.de = send_memory_buffer_limit_interrupt |
-                                                   test_memory_buffer_limit_interrupt;
-    hw2reg.intr_state.dma_memory_buffer_limit.d  = 1'b1;
 
     // Clear the SHA2 digests if the SHA2 valid flag is cleared (RW1C)
     if (reg2hw.status.sha2_digest_valid.qe & reg2hw.status.sha2_digest_valid.q) begin
