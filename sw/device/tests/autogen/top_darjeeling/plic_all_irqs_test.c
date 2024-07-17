@@ -1120,7 +1120,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralDma;
   for (dif_dma_irq_t irq = kDifDmaIrqDmaDone;
-       irq <= kDifDmaIrqDmaMemoryBufferLimit; ++irq) {
+       irq <= kDifDmaIrqDmaError; ++irq) {
     dma_irq_expected = irq;
     LOG_INFO("Triggering dma IRQ %d.", irq);
     CHECK_DIF_OK(dif_dma_irq_force(&dma, irq, true));

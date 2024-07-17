@@ -15929,12 +15929,6 @@
       module_name: dma
     }
     {
-      name: dma_dma_memory_buffer_limit
-      width: 1
-      type: interrupt
-      module_name: dma
-    }
-    {
       name: mbx0_mbx_ready
       width: 1
       type: interrupt

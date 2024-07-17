@@ -344,7 +344,7 @@ module top_darjeeling #(
   // rv_core_ibex
 
 
-  logic [162:0]  intr_vector;
+  logic [161:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -415,7 +415,6 @@ module top_darjeeling #(
   logic intr_edn1_edn_fatal_err;
   logic intr_dma_dma_done;
   logic intr_dma_dma_error;
-  logic intr_dma_dma_memory_buffer_limit;
   logic intr_mbx0_mbx_ready;
   logic intr_mbx0_mbx_abort;
   logic intr_mbx0_mbx_error;
@@ -2105,9 +2104,8 @@ module top_darjeeling #(
   ) u_dma (
 
       // Interrupt
-      .intr_dma_done_o                (intr_dma_dma_done),
-      .intr_dma_error_o               (intr_dma_dma_error),
-      .intr_dma_memory_buffer_limit_o (intr_dma_dma_memory_buffer_limit),
+      .intr_dma_done_o  (intr_dma_dma_done),
+      .intr_dma_error_o (intr_dma_dma_error),
       // [74]: fatal_fault
       .alert_tx_o  ( alert_tx[74:74] ),
       .alert_rx_i  ( alert_rx[74:74] ),
@@ -2495,37 +2493,36 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_mbx_pcie1_mbx_error, // IDs [162 +: 1]
-      intr_mbx_pcie1_mbx_abort, // IDs [161 +: 1]
-      intr_mbx_pcie1_mbx_ready, // IDs [160 +: 1]
-      intr_mbx_pcie0_mbx_error, // IDs [159 +: 1]
-      intr_mbx_pcie0_mbx_abort, // IDs [158 +: 1]
-      intr_mbx_pcie0_mbx_ready, // IDs [157 +: 1]
-      intr_mbx_jtag_mbx_error, // IDs [156 +: 1]
-      intr_mbx_jtag_mbx_abort, // IDs [155 +: 1]
-      intr_mbx_jtag_mbx_ready, // IDs [154 +: 1]
-      intr_mbx6_mbx_error, // IDs [153 +: 1]
-      intr_mbx6_mbx_abort, // IDs [152 +: 1]
-      intr_mbx6_mbx_ready, // IDs [151 +: 1]
-      intr_mbx5_mbx_error, // IDs [150 +: 1]
-      intr_mbx5_mbx_abort, // IDs [149 +: 1]
-      intr_mbx5_mbx_ready, // IDs [148 +: 1]
-      intr_mbx4_mbx_error, // IDs [147 +: 1]
-      intr_mbx4_mbx_abort, // IDs [146 +: 1]
-      intr_mbx4_mbx_ready, // IDs [145 +: 1]
-      intr_mbx3_mbx_error, // IDs [144 +: 1]
-      intr_mbx3_mbx_abort, // IDs [143 +: 1]
-      intr_mbx3_mbx_ready, // IDs [142 +: 1]
-      intr_mbx2_mbx_error, // IDs [141 +: 1]
-      intr_mbx2_mbx_abort, // IDs [140 +: 1]
-      intr_mbx2_mbx_ready, // IDs [139 +: 1]
-      intr_mbx1_mbx_error, // IDs [138 +: 1]
-      intr_mbx1_mbx_abort, // IDs [137 +: 1]
-      intr_mbx1_mbx_ready, // IDs [136 +: 1]
-      intr_mbx0_mbx_error, // IDs [135 +: 1]
-      intr_mbx0_mbx_abort, // IDs [134 +: 1]
-      intr_mbx0_mbx_ready, // IDs [133 +: 1]
-      intr_dma_dma_memory_buffer_limit, // IDs [132 +: 1]
+      intr_mbx_pcie1_mbx_error, // IDs [161 +: 1]
+      intr_mbx_pcie1_mbx_abort, // IDs [160 +: 1]
+      intr_mbx_pcie1_mbx_ready, // IDs [159 +: 1]
+      intr_mbx_pcie0_mbx_error, // IDs [158 +: 1]
+      intr_mbx_pcie0_mbx_abort, // IDs [157 +: 1]
+      intr_mbx_pcie0_mbx_ready, // IDs [156 +: 1]
+      intr_mbx_jtag_mbx_error, // IDs [155 +: 1]
+      intr_mbx_jtag_mbx_abort, // IDs [154 +: 1]
+      intr_mbx_jtag_mbx_ready, // IDs [153 +: 1]
+      intr_mbx6_mbx_error, // IDs [152 +: 1]
+      intr_mbx6_mbx_abort, // IDs [151 +: 1]
+      intr_mbx6_mbx_ready, // IDs [150 +: 1]
+      intr_mbx5_mbx_error, // IDs [149 +: 1]
+      intr_mbx5_mbx_abort, // IDs [148 +: 1]
+      intr_mbx5_mbx_ready, // IDs [147 +: 1]
+      intr_mbx4_mbx_error, // IDs [146 +: 1]
+      intr_mbx4_mbx_abort, // IDs [145 +: 1]
+      intr_mbx4_mbx_ready, // IDs [144 +: 1]
+      intr_mbx3_mbx_error, // IDs [143 +: 1]
+      intr_mbx3_mbx_abort, // IDs [142 +: 1]
+      intr_mbx3_mbx_ready, // IDs [141 +: 1]
+      intr_mbx2_mbx_error, // IDs [140 +: 1]
+      intr_mbx2_mbx_abort, // IDs [139 +: 1]
+      intr_mbx2_mbx_ready, // IDs [138 +: 1]
+      intr_mbx1_mbx_error, // IDs [137 +: 1]
+      intr_mbx1_mbx_abort, // IDs [136 +: 1]
+      intr_mbx1_mbx_ready, // IDs [135 +: 1]
+      intr_mbx0_mbx_error, // IDs [134 +: 1]
+      intr_mbx0_mbx_abort, // IDs [133 +: 1]
+      intr_mbx0_mbx_ready, // IDs [132 +: 1]
       intr_dma_dma_error, // IDs [131 +: 1]
       intr_dma_dma_done, // IDs [130 +: 1]
       intr_edn1_edn_fatal_err, // IDs [129 +: 1]
