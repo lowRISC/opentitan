@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{ensure, Context, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -144,7 +144,7 @@ pub struct ManifestUpdateCommand {
     /// Passing a private key indicates the key will be used for signing.
     #[arg(long)]
     spx_key: Option<PathBuf>,
-    /// The signature domain (Raw, Pure, PreHashedSha256)
+    /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
     /// Filename to write the output to instead of updating the input file.
@@ -241,10 +241,10 @@ impl CommandDispatch for ManifestUpdateCommand {
             let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;
             spx_private_key = sk;
-        }
-        // Allocate space for `spx_signature` (this impacts the manifest `length` field which is in
-        // the signed region of the image). Adding this facilitates offline signing.
-        if self.spx_key.is_some() {
+
+            // Allocate space for `spx_signature` (this impacts the manifest
+            // `length` field which is in the signed region of the image).
+            // Adding this facilitates offline signing.
             image.allocate_manifest_extension(
                 ManifestExtId::spx_signature.into(),
                 std::mem::size_of::<ManifestExtSpxSignature>(),
@@ -328,6 +328,9 @@ pub struct ManifestVerifyCommand {
     /// Run verification for SPHINCS+.
     #[arg(short, long)]
     spx: bool,
+    /// The SPX signature domain (None, Pure, PreHashedSha256)
+    #[arg(long, default_value_t = SpxDomain::default())]
+    domain: SpxDomain,
 }
 
 impl CommandDispatch for ManifestVerifyCommand {
@@ -345,8 +348,15 @@ impl CommandDispatch for ManifestVerifyCommand {
         sigverify_params.verify(&digest)?;
 
         if self.spx {
-            // TODO(#18496)
-            bail!("SPHINCS+ verification not supported yet, see lowRISC/opentitan#18496.");
+            image.map_signed_region(|b| {
+                sigverify_params.spx_verify(b, self.domain).map_err(|x| {
+                    eprintln!(
+                        "SPX+ signature verification for domain '{}' failed",
+                        self.domain
+                    );
+                    x
+                })
+            })??;
         }
 
         Ok(None)

@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{bail, ensure, Result};
 use memoffset::offset_of;
+use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
@@ -18,8 +19,9 @@ use crate::crypto::rsa::RsaPublicKey;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
 use crate::image::manifest::{
-    Manifest, ManifestKind, CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2,
-    CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
+    Manifest, ManifestKind, SigverifySpxSignature, CHIP_MANIFEST_VERSION_MAJOR1,
+    CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER,
+    CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
@@ -46,22 +48,46 @@ pub enum ImageError {
     InvalidManifestVersionforEcdsa(u16, u16),
 }
 
-pub enum SigverifyParams {
+pub enum MainSignatureParams {
     Rsa(RsaPublicKey, RsaSignature),
     Ecdsa(EcdsaRawPublicKey, EcdsaRawSignature),
 }
 
+pub struct SpxSignatureParams {
+    key: SpxPublicKey,
+    signature: [u8; 7856],
+}
+
+// Binary image is signed either RSA or ECDSA. SPX+ signature could be added as
+// an extension.
+pub struct SigverifyParams {
+    pub main_sig_params: MainSignatureParams,
+    pub spx_sig_params: Option<SpxSignatureParams>,
+}
+
 impl SigverifyParams {
+    // Verify the main image signature.
     pub fn verify(&self, digest: &sha256::Sha256Digest) -> Result<()> {
-        match self {
-            SigverifyParams::Rsa(key, sig) => {
+        match &self.main_sig_params {
+            MainSignatureParams::Rsa(key, sig) => {
                 key.verify(digest, sig)?;
             }
-            SigverifyParams::Ecdsa(key, sig) => {
+            MainSignatureParams::Ecdsa(key, sig) => {
                 let ecdsa_key: EcdsaPublicKey = key.try_into()?;
                 ecdsa_key.verify(digest, sig)?;
             }
         }
+        Ok(())
+    }
+
+    // Verify the optional SPX+ signature.
+    pub fn spx_verify(&self, b: &[u8], domain: SpxDomain) -> Result<()> {
+        if let Some(spx) = &self.spx_sig_params {
+            spx.key.verify(domain, &spx.signature, b)?;
+        } else {
+            bail!("No SPX signature found");
+        }
+
         Ok(())
     }
 }
@@ -162,9 +188,42 @@ impl Image {
         Ok(())
     }
 
+    // Retrieve the SPX+ signature from the image, if present.
+    fn get_spx_signature(&self) -> Result<Option<SpxSignatureParams>> {
+        let ext_tab = self.borrow_manifest()?.extensions.entries;
+        let key_o = ext_tab
+            .iter()
+            .find(|e| e.identifier == MANIFEST_EXT_ID_SPX_KEY);
+        let sig_o = ext_tab
+            .iter()
+            .find(|e| e.identifier == MANIFEST_EXT_ID_SPX_SIGNATURE);
+
+        match (key_o, sig_o) {
+            (Some(key_e), Some(sig_e)) => {
+                const KEY_SIZE: usize = 32; // SPX+ public key size.
+                const SIG_SIZE: usize = std::mem::size_of::<SigverifySpxSignature>();
+
+                let mut key_bytes = [0u8; KEY_SIZE];
+                let mut signature = [0u8; SIG_SIZE];
+                let k_ofs = (key_e.offset + 8) as usize;
+                let s_ofs = (sig_e.offset + 8) as usize;
+
+                key_bytes.copy_from_slice(&self.data.bytes[k_ofs..k_ofs + KEY_SIZE]);
+                signature.copy_from_slice(&self.data.bytes[s_ofs..s_ofs + SIG_SIZE]);
+
+                let key = SpxPublicKey::from_bytes(SphincsPlus::Sha2128sSimple, &key_bytes)?;
+
+                Ok(Some(SpxSignatureParams { key, signature }))
+            }
+            (_, _) => Ok(None),
+        }
+    }
+
     pub fn get_sigverify_params_from_manifest(&self) -> Result<SigverifyParams> {
         let manifest = self.borrow_manifest()?;
         let manifest_def: ManifestSpec = manifest.try_into()?;
+
+        let spx_sig_params = self.get_spx_signature()?;
 
         let pub_key = manifest_def
             .pub_key()
@@ -181,13 +240,19 @@ impl Image {
         {
             let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(pub_key)?)?;
             let rsa_sig = RsaSignature::from_le_bytes(signature)?;
-            return Ok(SigverifyParams::Rsa(rsa_key, rsa_sig));
+            return Ok(SigverifyParams {
+                main_sig_params: MainSignatureParams::Rsa(rsa_key, rsa_sig),
+                spx_sig_params,
+            });
         }
 
         let ecdsa_pub_key = EcdsaRawPublicKey::read(&mut std::io::Cursor::new(pub_key))?;
         let ecdsa_sig = EcdsaRawSignature::read(&mut std::io::Cursor::new(signature))?;
 
-        Ok(SigverifyParams::Ecdsa(ecdsa_pub_key, ecdsa_sig))
+        Ok(SigverifyParams {
+            main_sig_params: MainSignatureParams::Ecdsa(ecdsa_pub_key, ecdsa_sig),
+            spx_sig_params,
+        })
     }
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
