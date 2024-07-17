@@ -128,10 +128,16 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         $cast(rsp, req.clone());
         rsp.set_id_info(req);
 
-        // Make sure that we're aligned to HOST_CB (on the negedge of TCK). If we have just finished
-        // the previous item, this delay is going to add a cycle of TCK, but we're in RunTest/IDLE,
-        // so it won't cause any harm.
+        // When we start an iteration of this loop, we always expect to either be in the
+        // Run-Test/Idle FSM state (the normal situation) or in Test-Logic-Reset (which happens
+        // after a test reset).
+        //
+        // Send a TCK cycle with tms=0. If we were in Run-Test/Idle, this is a no-op. If we were in
+        // Test-Logic-Reset, this steps to Run-Test/Idle. As a side-effect, this also lines us up
+        // again with the negedge of tck.
         enable_tck();
+        cfg.vif.tms <= 1'b0;
+        @(posedge cfg.vif.tck);
         @(`HOST_CB);
         release_tck();
 
