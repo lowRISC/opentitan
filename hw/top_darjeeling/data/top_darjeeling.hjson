@@ -1076,6 +1076,7 @@
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
       'i2c0.lsio_trigger'       : ['soc_proxy.i2c_lsio_trigger'],
       'spi_host0.lsio_trigger'  : ['soc_proxy.spi_host_lsio_trigger'],
+      'spi_device.lsio_trigger' : ['soc_proxy.spi_device_lsio_trigger'],
       'uart0.lsio_trigger'      : ['soc_proxy.uart_lsio_trigger'],
 
       // LC RMA req/ack interface: LC -> OTBN

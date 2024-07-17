@@ -234,7 +234,7 @@ module top_darjeeling #(
   input  logic       soc_wkup_async_i,
   input  logic       soc_rst_req_async_i,
   input  logic [31:0] soc_intr_async_i,
-  input  logic [7:0] soc_lsio_trigger_i,
+  input  logic [6:0] soc_lsio_trigger_i,
   output logic [15:0] soc_gpi_async_o,
   input  logic [15:0] soc_gpo_async_i,
   output logic       sck_monitor_o,
@@ -481,6 +481,7 @@ module top_darjeeling #(
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   logic       i2c0_lsio_trigger;
   logic       spi_host0_lsio_trigger;
+  logic       spi_device_lsio_trigger;
   logic       uart0_lsio_trigger;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
@@ -1024,6 +1025,7 @@ module top_darjeeling #(
       .ram_cfg_i(ast_spi_ram_2p_cfg),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
+      .lsio_trigger_o(spi_device_lsio_trigger),
       .mbist_en_i('0),
       .sck_monitor_o(sck_monitor_o),
       .tl_i(spi_device_tl_req),
@@ -1606,6 +1608,7 @@ module top_darjeeling #(
       .ctn_tl_d2h_i(ctn_tl_d2h_i),
       .i2c_lsio_trigger_i(i2c0_lsio_trigger),
       .spi_host_lsio_trigger_i(spi_host0_lsio_trigger),
+      .spi_device_lsio_trigger_i(spi_device_lsio_trigger),
       .uart_lsio_trigger_i(uart0_lsio_trigger),
       .soc_lsio_trigger_i(soc_lsio_trigger_i),
       .dma_lsio_trigger_o(dma_lsio_trigger),

@@ -921,6 +921,15 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          index: -1
+        }
+        {
           name: mbist_en
           struct: logic
           type: uni
@@ -15943,6 +15952,15 @@
         default: ""
         end_idx: -1
         top_signame: spi_device_passthrough
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
         index: -1
       }
       {

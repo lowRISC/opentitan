@@ -686,6 +686,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: spi_device_lsio_trigger
+          index: -1
+        }
+        {
           name: mbist_en
           struct: logic
           type: uni
@@ -3867,6 +3881,19 @@
           index: -1
         }
         {
+          name: spi_device_lsio_trigger
+          desc: LSIO trigger signal from SPI Device
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          package: ""
+          top_signame: spi_device_lsio_trigger
+          index: -1
+        }
+        {
           name: uart_lsio_trigger
           desc: LSIO trigger signal from UART
           struct: logic
@@ -3885,7 +3912,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 8
+          width: 7
           inst_name: soc_proxy
           default: ""
           package: ""
@@ -9142,6 +9169,10 @@
       spi_host0.lsio_trigger:
       [
         soc_proxy.spi_host_lsio_trigger
+      ]
+      spi_device.lsio_trigger:
+      [
+        soc_proxy.spi_device_lsio_trigger
       ]
       uart0.lsio_trigger:
       [
@@ -17538,6 +17569,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: spi_device_lsio_trigger
+        index: -1
+      }
+      {
         name: mbist_en
         struct: logic
         type: uni
@@ -19654,6 +19699,19 @@
         index: -1
       }
       {
+        name: spi_device_lsio_trigger
+        desc: LSIO trigger signal from SPI Device
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        package: ""
+        top_signame: spi_device_lsio_trigger
+        index: -1
+      }
+      {
         name: uart_lsio_trigger
         desc: LSIO trigger signal from UART
         struct: logic
@@ -19672,7 +19730,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 8
+        width: 7
         inst_name: soc_proxy
         default: ""
         package: ""
@@ -24641,7 +24699,7 @@
         package: ""
         struct: logic
         signame: soc_lsio_trigger_i
-        width: 8
+        width: 7
         type: uni
         default: ""
         direction: in
@@ -24989,6 +25047,17 @@
         package: ""
         struct: logic
         signame: spi_host0_lsio_trigger
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: spi_device_lsio_trigger
         width: 1
         type: uni
         end_idx: -1
