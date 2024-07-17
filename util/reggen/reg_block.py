@@ -465,7 +465,8 @@ class RegBlock:
             shadowed=False,
             fields=fields,
             update_err_alert=None,
-            storage_err_alert=None)
+            storage_err_alert=None,
+            writes_ignore_errors=False)
         self.add_register(reg)
 
     def make_intr_regs(self, interrupts: Sequence[Interrupt]) -> None:
@@ -550,7 +551,8 @@ class RegBlock:
                 shadowed=False,
                 fields=fields,
                 update_err_alert=None,
-                storage_err_alert=None))
+                storage_err_alert=None,
+                writes_ignore_errors=False))
 
         self._add_intr_alert_reg(
             interrupts, 'INTR_ENABLE', 'Interrupt Enable Register',
