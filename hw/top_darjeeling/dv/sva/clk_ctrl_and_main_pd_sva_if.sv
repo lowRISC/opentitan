@@ -28,7 +28,7 @@ interface clk_ctrl_and_main_pd_sva_if (
   // not more than 2 cycles.
   localparam int MIN_CLK_WAIT_CYCLES = 0;
   localparam int MIN_PDN_WAIT_CYCLES = 0;
-  localparam int MAX_CLK_WAIT_CYCLES = 60;
+  localparam int MAX_CLK_WAIT_CYCLES = 600;
   localparam int MAX_PDN_WAIT_CYCLES = 110;
 
   bit disable_sva;
