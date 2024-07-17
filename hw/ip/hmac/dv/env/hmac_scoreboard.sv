@@ -130,12 +130,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (item.a_data[HashProcess] && (hmac_start || hmac_continue)) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
                 if (!invalid_cfg) begin
-                  check_idle_o(1'b0);
+                  check_idle(1'b0);
                   // only predict a new digest if configuration is valid and HMAC was indeed started
                   // otherwise previous digest is retained in CSRs
                   predict_digest(msg_q);
                 end else begin
-                  check_idle_o(1'b1);
+                  check_idle(1'b1);
                 end
               end else if (item.a_data[HashStart]) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
@@ -146,7 +146,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 if (invalid_cfg) begin
                   update_err_intr_code(SwInvalidConfig);
                 end else begin
-                  check_idle_o(1'b0);
+                  check_idle(1'b0);
                   update_wr_msg_length(0);
                   // update digest size to the new one at start/continue signal when valid context
                   if (!cfg.sar_skip_ctxt) begin
@@ -218,6 +218,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                         "setting previous digest: %4b", previous_digest_size), UVM_HIGH)
               hmac_continue = 1;
               hmac_stopped  = 0;  // Clear this variable to be able to compare digest if needed
+              check_idle(1'b0);
             end
           end
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
@@ -365,7 +366,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             if (sha_en && (hmac_process || hmac_stopped)) begin
               void'(ral.intr_state.hmac_done.predict(.value(1), .kind(UVM_PREDICT_READ)));
             end
-            check_idle_o(1'b1);
+            check_idle(1'b1);
             flush();
           end
           // hmac has been triggered and config is invalid
@@ -441,9 +442,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             do_read_check = 0;
           end
           if (cfg.en_cov) cov.status_cg.sample(item.d_data, `gmv(ral.cfg));
-          // TODO (issue #23380): Verify idle status now exposed to SW
-          hmac_idle = item.d_data[HmacStaIdle];
-          void'(ral.status.hmac_idle.predict(.value(hmac_idle), .kind(UVM_PREDICT_READ)));
         end
         "msg_length_lower": begin
           if (cfg.sar_skip_ctxt) begin
@@ -849,9 +847,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     end
   endtask : update_err_intr_code
 
-  virtual function void check_idle_o(bit val);
-    if (cfg.under_reset == 0) `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), val)
-  endfunction : check_idle_o
+  // Check idle output pin and update status register predicted value
+  virtual function void check_idle(bit val);
+    if (cfg.under_reset == 0) begin
+      `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), val)
+    end
+    hmac_idle = val;
+    void'(ral.status.hmac_idle.predict(.value(hmac_idle), .kind(UVM_PREDICT_READ)));
+  endfunction : check_idle
 
   virtual task monitor_cov();
     save_and_restore_e  sar_ctxt;
