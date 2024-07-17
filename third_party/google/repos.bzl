@@ -61,7 +61,7 @@ def google_repos(
 def fuzzing_repos():
     http_archive_or_local(
         name = "rules_fuzzing",
-        sha256 = "f85dc70bb9672af0e350686461fe6fdd0d61e10e75645f9e44fedf549b21e369",
-        strip_prefix = "rules_fuzzing-0.3.2",
-        urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.2.tar.gz"],
+        sha256 = "e6bc219bfac9e1f83b327dd090f728a9f973ee99b9b5d8e5a184a2732ef08623",
+        strip_prefix = "rules_fuzzing-0.5.2",
+        urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.5.2/rules_fuzzing-0.5.2.zip"],
     )
