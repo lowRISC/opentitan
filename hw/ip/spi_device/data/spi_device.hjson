@@ -195,6 +195,11 @@
       name:    "passthrough",
       act:     "req"
     }
+    { struct: "logic",
+      type:   "uni",
+      name:   "lsio_trigger",
+      act:    "req",
+    }
     { struct:  "logic"
       package: ""
       type:    "uni"

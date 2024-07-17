@@ -47,6 +47,9 @@ module spi_device
   output logic intr_generic_rx_overflow_o,          // RX Async FIFO Overflow
   output logic intr_generic_tx_underflow_o,         // TX Async FIFO Underflow
 
+  // LSIO trigger signal used by the DMA
+  output logic lsio_trigger_o,
+
   // INTR: Flash mode
   output logic intr_upload_cmdfifo_not_empty_o,
   output logic intr_upload_payload_not_empty_o,
@@ -508,6 +511,15 @@ module spi_device
   end
   assign intr_fwm_rxlvl = ~rxlvl && rxlvl_d;
   assign intr_fwm_txlvl = ~txlvl && txlvl_d;
+
+  // Flop trigger signal to avoid glitches on the output
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lsio_trigger_o <= 1'b0;
+    end else begin
+      lsio_trigger_o <= intr_fwm_txlvl | intr_fwm_rxlvl;
+    end
+  end
 
   // rxf_overflow
   //    Could trigger lint error for input clock.
