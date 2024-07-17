@@ -198,6 +198,11 @@ py_library(
 )
 
 py_library(
+    name = "testgen",
+    srcs = ["testgen.py"],
+)
+
+py_library(
     name = "toolchain",
     srcs = ["toolchain.py"],
 )
