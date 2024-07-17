@@ -39,8 +39,9 @@ module soc_proxy
 
   input  logic       i2c_lsio_trigger_i,
   input  logic       spi_host_lsio_trigger_i,
+  input  logic       spi_device_lsio_trigger_i,
   input  logic       uart_lsio_trigger_i,
-  input  logic [7:0] soc_lsio_trigger_i,
+  input  logic [6:0] soc_lsio_trigger_i,
   output dma_pkg::lsio_trigger_t dma_lsio_trigger_o,
 
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,
@@ -407,7 +408,8 @@ module soc_proxy
   );
 
   // CDC sync of LSIO trigger signals between the peripheral and the high-speed clock domain
-  logic uart_lsio_trigger_sync, spi_host_lsio_trigger_sync, i2c_lsio_trigger_sync;
+  logic uart_lsio_trigger_sync, spi_host_lsio_trigger_sync, spi_device_lsio_trigger_sync,
+        i2c_lsio_trigger_sync;
 
   prim_flop_2sync #(
     .Width(1)
@@ -429,6 +431,15 @@ module soc_proxy
 
   prim_flop_2sync #(
     .Width(1)
+  ) u_spi_device_lsio_trigger_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i      (spi_device_lsio_trigger_i),
+    .q_o      (spi_device_lsio_trigger_sync)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
   ) u_i2c_lsio_trigger_sync (
     .clk_i,
     .rst_ni,
@@ -439,6 +450,7 @@ module soc_proxy
   // Collate LSIO trigger inputs into signal for DMA
   assign dma_lsio_trigger_o = {
     soc_lsio_trigger_i,
+    spi_device_lsio_trigger_sync,
     uart_lsio_trigger_sync,
     spi_host_lsio_trigger_sync,
     i2c_lsio_trigger_sync
