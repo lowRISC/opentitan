@@ -131,7 +131,8 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
-  - bash: ci/scripts/test-airgapped-build.sh
+  - bash: util/prep-bazel-airgapped-build.sh bazel-airgapped
+  - bash: ci/scripts/test-airgapped-build.sh bazel-airgapped
 
 - job: slow_lints
   displayName: Quality (in-depth lint)
