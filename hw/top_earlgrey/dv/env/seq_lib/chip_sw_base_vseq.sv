@@ -762,15 +762,25 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // doesn't happen within max_cycles cycles.
   task wait_lc_ctrl_jtag_connection(int max_cycles = 1000);
     bit connected = 1'b0;
+    string tap_strap_path;
 
     fork : isolation_fork
       fork
         cfg.clk_rst_vif.wait_clks(max_cycles);
         forever begin
           bit[1:0] tap_strap_value;
+`ifdef GATE_LEVEL
+          tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+                            "u_pinmux_strap_sampling.tap_strap_q_reg_1_.Q"};
+          `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[1]))
+          tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+                            "u_pinmux_strap_sampling.tap_strap_q_reg_0_.Q"};
+          `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[0]))
+`else
           string tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
                                    "u_pinmux_strap_sampling.tap_strap"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
+`endif
           if (tap_strap_value == pinmux_pkg::LcTapSel) begin
             connected = 1'b1;
             break;

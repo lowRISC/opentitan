@@ -1061,8 +1061,13 @@ interface chip_if;
       `OTP_CTRL_HIER.u_otp_ctrl_lci.lc_err_o, 1)
 
   // Signal probe function for LC program request to OTP ctrl.
+`ifdef GATE_LEVEL
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_program_req,
+      `OTP_CTRL_HIER.lc_otp_program_i_req, 1)
+`else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_program_req,
       `OTP_CTRL_HIER.lc_otp_program_i.req, 1)
+`endif
 
   // A custom signal probe function for LC program request to OTP.
   // See dv_macros.svh for a signal probe function description, but they only deal with
@@ -1070,6 +1075,7 @@ interface chip_if;
   // support enums.
   function static lc_ctrl_state_pkg::lc_state_t signal_probe_otp_ctrl_lc_program_state (
       dv_utils_pkg::signal_probe_e kind, lc_ctrl_state_pkg::lc_state_e state);
+`ifndef GATE_LEVEL
     case (kind)
       dv_utils_pkg::SignalProbeSample: ;
       dv_utils_pkg::SignalProbeForce: force `OTP_CTRL_HIER.lc_otp_program_i.state = state;
@@ -1078,6 +1084,7 @@ interface chip_if;
         `uvm_fatal("signal_probe_otp_ctrl_lc_program_state", $sformatf("Bad value: %0d", kind))
     endcase
     return `OTP_CTRL_HIER.lc_otp_program_i.state;
+`endif
   endfunction
 
   // This injects fatal errors in otp_ctrl tampering with an lc state change request to otp.
