@@ -7,12 +7,6 @@
 
 workspace(name = "lowrisc_opentitan")
 
-# Bazel skylib library
-load("//third_party/skylib:repos.bzl", "bazel_skylib_repos")
-bazel_skylib_repos()
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-bazel_skylib_workspace()
-
 # Python Toolchain + PIP Dependencies
 load("//third_party/python:repos.bzl", "python_repos")
 python_repos()
