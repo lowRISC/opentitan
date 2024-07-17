@@ -64,6 +64,11 @@ virtual task tl_write_less_than_csr_width(string ral_name);
     `DV_CHECK_FATAL($cast(csr, all_csrs[i]))
     msb_pos = csr.get_msb_pos();
     addr    = csr.get_address();
+
+    // If this is a register that might change on a write that causes an error then we shouldn't
+    // generate writes to it because we might update the register contents unexpectedly.
+    if (csr.writes_ignore_errors) continue;
+
     `create_tl_access_error_case(
         tl_write_less_than_csr_width,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
