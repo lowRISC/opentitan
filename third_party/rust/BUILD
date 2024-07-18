@@ -64,6 +64,9 @@ crates_vendor(
                     ],
                 )
             """,
+            extra_aliased_targets = {
+                "cryptoki-sys-binding-srcs": "binding_srcs",
+            },
         )],
         "openssl-sys": [crate.annotation(
             build_script_env = {
