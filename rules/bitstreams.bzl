@@ -53,9 +53,13 @@ load("@ot_python_deps//:requirements.bzl", "all_requirements")
 
 def _make_pythonpath(rctx):
     # Create a PYTHONPATH with all the pip deps from requirements.txt
-    directories = [
-        rctx.path(Label(pip_req + ":BUILD.bazel")).dirname
+    packages = [
+        pip_req.replace("//", "_").replace(":", "//:")
         for pip_req in all_requirements
+    ]
+    directories = [
+        str(rctx.path(Label(package)).dirname) + "/site-packages"
+        for package in packages
     ]
     pythonpath = ":".join([str(directory) for directory in directories])
     return pythonpath
