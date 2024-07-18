@@ -20,6 +20,8 @@ load("//third_party/python:deps.bzl", "python_deps")
 python_deps()
 load("//third_party/python:pip.bzl", "pip_deps")
 pip_deps()
+load("@ot_python_deps//:requirements.bzl", install_ot_python_deps="install_deps")
+install_ot_python_deps()
 
 # Google/Bazel dependencies.  This needs to be after Python initialization
 # so that our preferred python configuration takes precedence.
@@ -54,6 +56,8 @@ load("//third_party/lint:repos.bzl", "lint_repos")
 lint_repos()
 load("//third_party/lint:deps.bzl", "lint_deps")
 lint_deps()
+load("@lowrisc_misc_linters_pip//:requirements.bzl", install_lowrisc_lint_python_deps="install_deps")
+install_lowrisc_lint_python_deps()
 
 # Lychee link checker.
 load("//third_party/lychee:repos.bzl", "lychee_repos")
@@ -63,6 +67,8 @@ load("//third_party/google:repos.bzl", "fuzzing_repos")
 fuzzing_repos()
 load("//third_party/google:fuzzing_deps.bzl", "fuzzing_deps")
 fuzzing_deps()
+load("@fuzzing_py_deps//:requirements.bzl", install_fuzzing_python_deps="install_deps")
+install_fuzzing_python_deps()
 
 # Rust Toolchain + crates.io Dependencies
 load("//third_party/rust:repos.bzl", "rust_repos")
@@ -90,6 +96,8 @@ tock_repos(
     #tock = "../tock",
     #libtock = "../libtock-rs",
 )
+load("@tockloader_deps//:requirements.bzl", install_tockloader_python_deps="install_deps")
+install_tockloader_python_deps()
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
