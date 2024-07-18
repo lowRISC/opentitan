@@ -213,10 +213,8 @@ fn extract_rma_unlock_token(
     Ok(())
 }
 
-pub fn run_ft_personalize(
+fn provision_certificates(
     transport: &TransportWrapper,
-    init: &InitializeTest,
-    host_ecc_sk: PathBuf,
     cert_endorsement_key_wrapper: KeyWrapper,
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
@@ -224,26 +222,11 @@ pub fn run_ft_personalize(
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
-    // Bootstrap personalization binary into flash.
-    uart.clear_rx_buffer()?;
-    init.bootstrap.init(transport)?;
-
-    // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
-    let _ = UartConsole::wait_for(&*uart, r"Bootstrap requested.", timeout)?;
-    uart.clear_rx_buffer()?;
-    init.bootstrap.init(transport)?;
-
-    extract_rma_unlock_token(transport, host_ecc_sk, timeout)?;
-
-    // -------------------------------------------------------------------------
-    // Certificate Provisioning                                                |
-    // -------------------------------------------------------------------------
-
-    // Send attestation TCB measurements for generating certificates.
+    // Send attestation TCB measurements for generating DICE certificates.
     let _ = UartConsole::wait_for(&*uart, r"Waiting for certificate inputs ...", timeout)?;
     perso_certgen_inputs.send(&*uart)?;
 
-    // Wait until device exports the attestation certificates.
+    // Wait until device exports the TBS certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting TBS certificates ...", timeout)?;
     let certs = ManufCerts::recv(&*uart, timeout, true)?;
 
@@ -285,6 +268,7 @@ pub fn run_ft_personalize(
         .take(certs.tpm_cik_tbs_certificate_size)
         .collect();
 
+    // Parse and endorse the certificates.
     let key = match cert_endorsement_key_wrapper {
         KeyWrapper::LocalKey(path) => {
             log::info!("Using local key for cert endorsement");
@@ -300,6 +284,7 @@ pub fn run_ft_personalize(
     let tpm_cek_cert_bytes = parse_and_endorse_x509_cert(tpm_cek_tbs_cert_bytes, &key)?;
     let tpm_cik_cert_bytes = parse_and_endorse_x509_cert(tpm_cik_tbs_cert_bytes, &key)?;
 
+    // Log the certificates to the console.
     log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
     let _ = parse_certificate(&uds_cert_bytes)?;
     log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
@@ -367,8 +352,41 @@ pub fn run_ft_personalize(
         )
     }
 
+    // Validate the TPM certificate endorsements.
     let certs: [&Vec<u8>; 3] = [&tpm_ek_cert_bytes, &tpm_cek_cert_bytes, &tpm_cik_cert_bytes];
     validate_certs_chain(ca_certificate.to_str().unwrap(), &certs)?;
+
+    Ok(())
+}
+
+pub fn run_ft_personalize(
+    transport: &TransportWrapper,
+    init: &InitializeTest,
+    host_ecc_sk: PathBuf,
+    cert_endorsement_key_wrapper: KeyWrapper,
+    perso_certgen_inputs: &ManufCertgenInputs,
+    timeout: Duration,
+    ca_certificate: PathBuf,
+) -> Result<()> {
+    let uart = transport.uart("console")?;
+
+    // Bootstrap personalization binary into flash.
+    uart.clear_rx_buffer()?;
+    init.bootstrap.init(transport)?;
+
+    // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
+    let _ = UartConsole::wait_for(&*uart, r"Bootstrap requested.", timeout)?;
+    uart.clear_rx_buffer()?;
+    init.bootstrap.init(transport)?;
+
+    extract_rma_unlock_token(transport, host_ecc_sk, timeout)?;
+    provision_certificates(
+        transport,
+        cert_endorsement_key_wrapper,
+        perso_certgen_inputs,
+        timeout,
+        ca_certificate,
+    )?;
 
     let _ = UartConsole::wait_for(&*uart, r"Personalization done.", timeout)?;
 
