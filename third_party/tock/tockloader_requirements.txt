@@ -1,10 +1,68 @@
-argcomplete==3.1.1
-colorama==0.4.6
-crcmod==1.7
-pycryptodome==3.18.0
-pyserial==3.5
-questionary==1.10.0
-siphash==0.0.1
-tockloader==1.13
-toml==0.10.2
-tqdm==4.65.0
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+argcomplete==3.5.0 \
+    --hash=sha256:4349400469dccfb7950bb60334a680c58d88699bff6159df61251878dc6bf74b \
+    --hash=sha256:d4bcf3ff544f51e16e54228a7ac7f486ed70ebf2ecfe49a63a91171c76bf029b
+colorama==0.4.6 \
+    --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
+    --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
+crcmod==1.7 \
+    --hash=sha256:dc7051a0db5f2bd48665a990d3ec1cc305a466a77358ca4492826f41f283601e
+prompt-toolkit==3.0.36 \
+    --hash=sha256:3e163f254bef5a03b146397d7c1963bd3e2812f0964bb9a24e6ec761fd28db63 \
+    --hash=sha256:aa64ad242a462c5ff0363a7b9cfe696c20d55d9fc60c11fd8e632d064804d305
+pycryptodome==3.20.0 \
+    --hash=sha256:06d6de87c19f967f03b4cf9b34e538ef46e99a337e9a61a77dbe44b2cbcf0690 \
+    --hash=sha256:09609209ed7de61c2b560cc5c8c4fbf892f8b15b1faf7e4cbffac97db1fffda7 \
+    --hash=sha256:210ba1b647837bfc42dd5a813cdecb5b86193ae11a3f5d972b9a0ae2c7e9e4b4 \
+    --hash=sha256:2a1250b7ea809f752b68e3e6f3fd946b5939a52eaeea18c73bdab53e9ba3c2dd \
+    --hash=sha256:2ab6ab0cb755154ad14e507d1df72de9897e99fd2d4922851a276ccc14f4f1a5 \
+    --hash=sha256:3427d9e5310af6680678f4cce149f54e0bb4af60101c7f2c16fdf878b39ccccc \
+    --hash=sha256:3cd3ef3aee1079ae44afaeee13393cf68b1058f70576b11439483e34f93cf818 \
+    --hash=sha256:405002eafad114a2f9a930f5db65feef7b53c4784495dd8758069b89baf68eab \
+    --hash=sha256:417a276aaa9cb3be91f9014e9d18d10e840a7a9b9a9be64a42f553c5b50b4d1d \
+    --hash=sha256:4401564ebf37dfde45d096974c7a159b52eeabd9969135f0426907db367a652a \
+    --hash=sha256:49a4c4dc60b78ec41d2afa392491d788c2e06edf48580fbfb0dd0f828af49d25 \
+    --hash=sha256:5601c934c498cd267640b57569e73793cb9a83506f7c73a8ec57a516f5b0b091 \
+    --hash=sha256:6e0e4a987d38cfc2e71b4a1b591bae4891eeabe5fa0f56154f576e26287bfdea \
+    --hash=sha256:76658f0d942051d12a9bd08ca1b6b34fd762a8ee4240984f7c06ddfb55eaf15a \
+    --hash=sha256:76cb39afede7055127e35a444c1c041d2e8d2f1f9c121ecef573757ba4cd2c3c \
+    --hash=sha256:8d6b98d0d83d21fb757a182d52940d028564efe8147baa9ce0f38d057104ae72 \
+    --hash=sha256:9b3ae153c89a480a0ec402e23db8d8d84a3833b65fa4b15b81b83be9d637aab9 \
+    --hash=sha256:a60fedd2b37b4cb11ccb5d0399efe26db9e0dd149016c1cc6c8161974ceac2d6 \
+    --hash=sha256:ac1c7c0624a862f2e53438a15c9259d1655325fc2ec4392e66dc46cdae24d044 \
+    --hash=sha256:acae12b9ede49f38eb0ef76fdec2df2e94aad85ae46ec85be3648a57f0a7db04 \
+    --hash=sha256:acc2614e2e5346a4a4eab6e199203034924313626f9620b7b4b38e9ad74b7e0c \
+    --hash=sha256:acf6e43fa75aca2d33e93409f2dafe386fe051818ee79ee8a3e21de9caa2ac9e \
+    --hash=sha256:baee115a9ba6c5d2709a1e88ffe62b73ecc044852a925dcb67713a288c4ec70f \
+    --hash=sha256:c18b381553638414b38705f07d1ef0a7cf301bc78a5f9bc17a957eb19446834b \
+    --hash=sha256:d29daa681517f4bc318cd8a23af87e1f2a7bad2fe361e8aa29c77d652a065de4 \
+    --hash=sha256:d5954acfe9e00bc83ed9f5cb082ed22c592fbbef86dc48b907238be64ead5c33 \
+    --hash=sha256:ec0bb1188c1d13426039af8ffcb4dbe3aad1d7680c35a62d8eaf2a529b5d3d4f \
+    --hash=sha256:ec1f93feb3bb93380ab0ebf8b859e8e5678c0f010d2d78367cf6bc30bfeb148e \
+    --hash=sha256:f0e6d631bae3f231d3634f91ae4da7a960f7ff87f2865b2d2b831af1dfb04e9a \
+    --hash=sha256:f35d6cee81fa145333137009d9c8ba90951d7d77b67c79cbe5f03c7eb74d8fe2 \
+    --hash=sha256:f47888542a0633baff535a04726948e876bf1ed880fddb7c10a736fa99146ab3 \
+    --hash=sha256:fb3b87461fa35afa19c971b0a2b7456a7b1db7b4eba9a8424666104925b78128
+pyserial==3.5 \
+    --hash=sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb \
+    --hash=sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0
+questionary==2.0.1 \
+    --hash=sha256:8ab9a01d0b91b68444dff7f6652c1e754105533f083cbe27597c8110ecc230a2 \
+    --hash=sha256:bcce898bf3dbb446ff62830c86c5c6fb9a22a54146f0f5597d3da43b10d8fc8b
+siphash==0.0.1 \
+    --hash=sha256:aee97fe95e09a2995819c058a5e4ac6d96661a898d7fe0ad55e3b72c9a31d461
+tockloader==1.13.0 \
+    --hash=sha256:0f51cdb3a3d5f2cd60796a0f2922e26a8298376b357a32f6a2d72d153bf6795d \
+    --hash=sha256:276a9deb4416af48b847e8478739dd3a6c28a92a4a30dc0d8cb9acafdaacc76c
+toml==0.10.2 \
+    --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
+    --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
+tqdm==4.66.5 \
+    --hash=sha256:90279a3770753eafc9194a0364852159802111925aa30eb3f9d85b0e805ac7cd \
+    --hash=sha256:e1020aef2e5096702d8a025ac7d16b1577279c9d63f8375b63083e9a5f0fcbad
+wcwidth==0.2.13 \
+    --hash=sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859 \
+    --hash=sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5
