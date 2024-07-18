@@ -45,9 +45,7 @@ fn sleep_pin_retention_test(opts: &Opts, transport: &TransportWrapper) -> Result
     transport
         .gpio_pin(WAKEUP_PIN)?
         .set_mode(PinMode::PushPull)?;
-    transport
-        .gpio_pin(SYNC_PIN)?
-        .set_mode(PinMode::PushPull)?;
+    transport.gpio_pin(SYNC_PIN)?.set_mode(PinMode::PushPull)?;
     for pin in GPIO_PINS {
         transport.gpio_pin(pin)?.set_mode(PinMode::Input)?;
     }
