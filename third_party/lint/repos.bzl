@@ -29,7 +29,7 @@ def lint_repos(lowrisc_lint = None):
     http_archive_or_local(
         name = "lowrisc_lint",
         local = lowrisc_lint,
-        sha256 = "ff4e14b2a8ace83a7f6a1536c7489c29f8c2b97d345ae9bb8b2d0f68059ec265",
-        strip_prefix = "misc-linters-20240423_01",
-        url = "https://github.com/lowRISC/misc-linters/archive/refs/tags/20240423_01.tar.gz",
+        sha256 = "1303d2790b7d1a0a216558c01f8bc6255dfb840e9e60b523d988b3655a0ddab3",
+        strip_prefix = "misc-linters-20240820_01",
+        url = "https://github.com/lowRISC/misc-linters/archive/refs/tags/20240820_01.tar.gz",
     )

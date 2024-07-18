@@ -109,7 +109,7 @@ ifneq (${sw_images},)
 			if [[ -n $${BAZEL_OTP_DATA_PERM_FLAG} ]]; then \
 				bazel_opts+=" --//hw/ip/otp_ctrl/data:data_perm=$${BAZEL_OTP_DATA_PERM_FLAG}"; \
 			fi; \
-			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
+			if [[ $${OT_AIRGAPPED} != true ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
 				bazel_cmd="./bazelisk.sh"; \
 			else \
