@@ -216,8 +216,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ps * $urandom_range(5, 20) *
-        1000_000;
+    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ps * $urandom_range(5, 20);
     cfg.rv_dm_vif.cb.scan_rst_n <= 1'b0;
     cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b0;
     super.apply_resets_concurrently(dv_utils_pkg::max2(reset_duration_ps, trst_n_duration_ps));
