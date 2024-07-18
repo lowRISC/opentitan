@@ -77,7 +77,7 @@ def tock_repos(elf2tab = None):
                     "//kernel",
                     "//libraries/enum_primitive",
                     "//libraries/tickv",
-                    "@tock_index//:ghash",
+                    "@crate_index//:ghash",
                 ],
             ),
             "capsules/core/BUILD": crate_build(
@@ -231,7 +231,7 @@ def tock_repos(elf2tab = None):
                 crate_name = "libtock_{name}",
                 deps = [
                     "//platform",
-                    "@tock_index//:libm",
+                    "@crate_index//:libm",
                 ],
             ),
             "apis/proximity/BUILD": crate_build(
