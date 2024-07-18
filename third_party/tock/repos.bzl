@@ -4,8 +4,6 @@
 
 load("@//rules:repo.bzl", "bare_repository", "http_archive_or_local")
 load("@//rules:rust.bzl", "crate_build")
-load("@python3//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_parse")
 
 # Exports the kernel_layout.ld file so it can be used in opentitan rules.
 _KERNEL_LAYOUT = """
@@ -294,10 +292,4 @@ def tock_repos(elf2tab = None):
         sha256 = "b8b2ec7d8b9d052667d34190f98a0f5e69a0ba93ce69f00f2fdda7b5e241b963",
         strip_prefix = "elf2tab-2f0e2f0ef01e37799850d1b12f48b93a0b32a203",
         build_file = Label("//third_party/tock:BUILD.elf2tab.bazel"),
-    )
-
-    pip_parse(
-        name = "tockloader_deps",
-        python_interpreter_target = interpreter,
-        requirements_lock = "//:third_party/tock/tockloader_requirements.txt",
     )
