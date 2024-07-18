@@ -22,13 +22,13 @@ sudo ip netns exec airgapped ip link set dev lo up
 # Enter the network namespace and perform several builds.
 sudo ip netns exec airgapped sudo -u "$USER" \
   env \
-    BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache"   \
-    BAZEL_PYTHON_WHEELS_REPO="${PWD}/bazel-airgapped/ot_python_wheels" \
-    BITSTREAM="--offline latest"                                       \
-  "${PWD}/bazel-airgapped/bazel" build                                  \
-    --distdir="${PWD}/bazel-airgapped/bazel-distdir"                   \
-    --repository_cache="${PWD}/bazel-airgapped/bazel-cache"            \
-    --define DISABLE_VERILATOR_BUILD=true                              \
+    BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
+    OT_AIRGAPPED="true"                                              \
+    BITSTREAM="--offline latest"                                     \
+  "${PWD}/bazel-airgapped/bazel" build                               \
+    --distdir="${PWD}/bazel-airgapped/bazel-distdir"                 \
+    --repository_cache="${PWD}/bazel-airgapped/bazel-cache"          \
+    --define DISABLE_VERILATOR_BUILD=true                            \
     //sw/device/silicon_creator/rom:mask_rom
 
 exit 0
