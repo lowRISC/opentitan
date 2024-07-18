@@ -224,8 +224,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                   bit disabled;
                   wait_es_item_or_disable(SW_APP, disabled);
                   if (disabled) begin
-                    `uvm_info(`gfn, "Stopping to wait for entropy on INS command due to disable",
-                              UVM_HIGH)
+                    `uvm_info(`gfn,
+                        "Stopping to wait for entropy due to disable - Instantiate of SW_APP",
+                        UVM_MEDIUM)
                     return;
                   end
                   es_item[SW_APP] = es_item_q[SW_APP].pop_front;
@@ -242,8 +243,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                   bit disabled;
                   wait_es_item_or_disable(SW_APP, disabled);
                   if (disabled) begin
-                    `uvm_info(`gfn, "Stopping to wait for entropy on RES command due to disable",
-                              UVM_HIGH)
+                    `uvm_info(`gfn,
+                        "Stopping to wait for entropy due to disable - Reseed of SW_APP",
+                        UVM_MEDIUM)
                     return;
                   end
                   es_item[SW_APP] = es_item_q[SW_APP].pop_front;
@@ -640,9 +642,11 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             bit disabled;
             wait_es_item_or_disable(app, disabled);
             if (disabled) begin
-              `uvm_info(`gfn, "Stopping to wait for entropy on INS command due to disable",
-                        UVM_HIGH)
-              return;
+              `uvm_info(`gfn,
+                  $sformatf("Stopping to wait for entropy due to disable - Instantiate of app %0d",
+                      app),
+                  UVM_MEDIUM)
+              continue;
             end
             es_item[app] = es_item_q[app].pop_front();
             es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
@@ -679,9 +683,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             bit disabled;
             wait_es_item_or_disable(app, disabled);
             if (disabled) begin
-              `uvm_info(`gfn, "Stopping to wait for entropy on RES command due to disable",
-                        UVM_HIGH)
-              return;
+              `uvm_info(`gfn,
+                  $sformatf("Stopping to wait for entropy due to disable - Reseed of app %0d", app),
+                  UVM_MEDIUM)
+              continue;
             end
             es_item[app] = es_item_q[app].pop_front();
             es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
