@@ -335,6 +335,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           end
           "late_debug_enable": begin
           end
+          "late_debug_enable_regwen": begin
+          end
           default: `uvm_fatal(`gfn, $sformatf("Unknown regs CSR: %0s", csr.get_name()))
         endcase
       end
