@@ -14,11 +14,11 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:regex",
     ],
 )
 
@@ -30,11 +30,11 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:regex",
     ],
 )
 
@@ -46,11 +46,11 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:regex",
     ],
 )
 
@@ -62,11 +62,11 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:regex",
     ],
 )
 
@@ -78,10 +78,10 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:regex",
     ],
 )

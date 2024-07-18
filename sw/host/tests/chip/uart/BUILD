@@ -13,12 +13,12 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:clap",
-        "//third_party/rust/crates:humantime",
-        "//third_party/rust/crates:log",
-        "//third_party/rust/crates:object",
-        "//third_party/rust/crates:serialport",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+        "@crate_index//:serialport",
     ],
 )
 
@@ -29,11 +29,11 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:clap",
-        "//third_party/rust/crates:humantime",
-        "//third_party/rust/crates:log",
-        "//third_party/rust/crates:object",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
     ],
 )
 
@@ -44,11 +44,11 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:clap",
-        "//third_party/rust/crates:humantime",
-        "//third_party/rust/crates:log",
-        "//third_party/rust/crates:object",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
     ],
 )
 
@@ -59,10 +59,10 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:clap",
-        "//third_party/rust/crates:humantime",
-        "//third_party/rust/crates:log",
-        "//third_party/rust/crates:object",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
     ],
 )
