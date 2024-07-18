@@ -48,8 +48,6 @@ particular bitstream or use cached version for the next cache entry, for each
 design (i.e. mix-and-match).
 """
 
-load("@python3//:defs.bzl", "interpreter")
-
 def _bitstreams_repo_impl(rctx):
     # First, check if an existing pre-built bitstream cache repo exists, and if
     # so, use it instead of building one.
@@ -112,7 +110,7 @@ bitstreams_repo = repository_rule(
             default = 18 * 3600,  # Refresh every 18h
         ),
         "python_interpreter": attr.label(
-            default = interpreter,
+            default = "@python3_host//:python",
             allow_single_file = True,
             doc = "Python interpreter to use.",
         ),

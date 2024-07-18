@@ -14,6 +14,7 @@ bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
+bazel_dep(name = "rules_python", version = "0.34.0")
 bazel_dep(name = "rules_rust", version = "0.47.1")
 bazel_dep(name = "rules_shellcheck", version = "0.3.3")
 bazel_dep(name = "toolchains_llvm", version = "1.0.0")
@@ -107,6 +108,35 @@ llvm.toolchain(
     },
 )
 use_repo(llvm, "llvm_toolchain_llvm")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.9",
+    # Required because CI containers currently run as the `root` user.
+    # We lose caching of `.pyc` files.
+    # See <https://github.com/bazelbuild/rules_python/pull/713>.
+    ignore_root_user_error = True,
+)
+use_repo(python, "pythons_hub")
+
+register_toolchains("@pythons_hub//:all")
+
+use_repo(python, python3 = "python_3_9", python3_host = "python_3_9_host")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "ot_python_deps",
+    python_version = "3.9",
+    requirements_lock = "//:python-requirements.txt",
+)
+use_repo(pip, "ot_python_deps")
+pip.parse(
+    hub_name = "tockloader_deps",
+    python_version = "3.9",
+    requirements_lock = "//:third_party/tock/tockloader_requirements.txt",
+)
+use_repo(pip, "tockloader_deps")
 
 tock = use_extension("//third_party/tock:extension.bzl", "tock")
 use_repo(tock, "elf2tab", "libtock", "tock")
