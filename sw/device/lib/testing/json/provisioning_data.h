@@ -144,9 +144,7 @@ UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
 // clang-format on
 
 /**
- * Sha256 hash
- *
- * A 32 byte binary.
+ * Sha256 hash digest.
  */
 // clang-format off
 #define STRUCT_SHA256_HASH(field, string) \
