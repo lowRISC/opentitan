@@ -18,7 +18,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   // hold expected transactions
   spi_segment_item                  host_wr_segment;
   spi_segment_item                  host_rd_segment;
-  spi_item                          device_item;
   spi_item                          plain_item;
 
   // local variables
@@ -28,6 +27,11 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   // 'spi_segment_item.spi_data' are used.
   local spi_segment_item            read_segment_q[$];
   local bit [7:0]                   rx_data_q[$];
+  // state of the last segment CSAAT field. It's used to check CSB lines behaved correctly
+  // after each segment:
+  local bit                         csaat = 0;
+  // The configured half period in ps on the SPI bus
+  local int                         spi_clk_half_period;
 
   // interrupt bit vector
   local bit [NumSpiHostIntr-1:0]    intr_state = 2'b00;
@@ -45,7 +49,14 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   local spi_host_intr_state_t       spi_intr_state_reg;
   local spi_host_intr_enable_t      spi_intr_enable_reg;
   local spi_host_intr_test_t        spi_intr_test_reg;
+  // Holds latest written value
   spi_host_configopts_t             spi_configopts;
+  // Holds value modelling FSM in case reg is re-configured during in-flight spi txn
+  spi_host_configopts_t             curr_spi_configopts;
+  // Flag used to control when 'curr_spi_configopts' is updated in case there is a SPI-txn
+  // in flight when the configopts register is written
+  bit                               initialise_configopts = 1;
+
   // Tally-Counters
   int                               in_tx_seg_cnt      = 0;
   int                               checked_tx_seg_cnt = 0;
@@ -62,24 +73,121 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     plain_data_fifo  = new("plain_data_fifo", this);
     host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
     host_rd_segment = spi_segment_item::type_id::create("host_rd_segment");
-    device_item = spi_item::type_id::create("device_item");
   endfunction
 
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    // cfg.en_scb currently does not change mid-test
+    wait (cfg.en_scb == 1);
     forever begin
+      wait(cfg.clk_rst_vif.rst_n && !spi_ctrl_reg.sw_rst);
+      // Wait until CSB signal has the enable set
+      wait (cfg.spi_passthrough_vif.cio_csb_en_o === 1);
       `DV_SPINWAIT_EXIT(
         fork
           compare_tx_trans();
           compare_rx_trans();
           get_plain_txn();
+          check_csn_lead();
+          check_csn_idle();
         join,
         @(negedge cfg.clk_rst_vif.rst_n or event_sw_rst)
       )
       `uvm_info(`gfn, "Restarting scoreboard checking due to reset event now.", UVM_LOW)
     end
   endtask : run_phase
+
+  // Checks the minimum time between commands CSB stays high - which should equate
+  // to configopts.csnidle + 1
+  virtual task check_csn_idle();
+    int unsigned time_high, time_low;
+    int unsigned quarter_period;
+    int unsigned num_quarter_cycles;
+
+    `uvm_info(`gfn, $sformatf("%m - After reset"), UVM_DEBUG)
+    forever begin
+
+      wait (spi_ctrl_reg.sw_rst === 0);
+      @(posedge cfg.m_spi_agent_cfg.vif.csb[0]);
+      // Using quarter period for greater granularity
+      num_quarter_cycles = (curr_spi_configopts.csnidle + 1) * 2;
+      quarter_period = spi_clk_half_period / 2;
+      // Spec says 'configot.idle' is the minimum amount of half SCK cycles before the next command
+      for(int i = 0; i < num_quarter_cycles; i++) begin
+        #(quarter_period * 1ps);
+        if (cfg.m_spi_agent_cfg.vif.csb[0] === 0) begin
+          `uvm_error(`gfn, {$sformatf("(CONFIGOPTS.csnidle*2=%0d) > %0d 1/4 cycles since CSB=0x1.",
+                                      num_quarter_cycles, i),
+                            "... and CSB has just being deasserted which is against the spec"})
+        end
+      end
+      // After the time above, is ok for the RTL to set CSB low anytime
+    end // forever begin
+  endtask : check_csn_idle
+
+
+  virtual task check_csn_lead();
+    time start_time, end_time;
+    int unsigned quarter_period;
+
+    `uvm_info(`gfn, $sformatf("%m - After reset and CSB output enable"), UVM_DEBUG)
+    // Just a delay to ensure the X -> set/unset in clock is not detected after
+    // 'cio_csb_en_o' just becomes active.
+    cfg.clk_rst_vif.wait_clks(1);
+
+    // Threads set timestamps of moments in which CSB became active and first spi cycle.
+    // We then check the amount of spi half cycles isn't greater than the CSNLEAD register value
+    forever begin
+      @(negedge cfg.m_spi_agent_cfg.vif.csb[0]);
+      `uvm_info(`gfn, "CSB went low", UVM_DEBUG)
+      fork : iso_fork
+        begin
+          fork
+            begin
+              start_time = $time;
+              `uvm_info(`gfn, $sformatf("%m - NEGEDGE of CSB"), UVM_DEBUG)
+              @(posedge cfg.m_spi_agent_cfg.vif.csb[0]);
+              `uvm_info(`gfn, $sformatf("%m - POSEDGE of CSB: exiting thread"), UVM_DEBUG)
+            end
+            begin
+              wait_start_sck_edge();
+              // Wait a quarter period to ensure the sampled CSB value is correct with no races
+              quarter_period = spi_clk_half_period / 2;
+              #(quarter_period * 1ps);
+              end_time = $time;
+              `uvm_info(`gfn, $sformatf("%m - After clock tick. Exiting thread"), UVM_DEBUG)
+            end
+          join_any
+          disable fork;
+        end
+      join  : iso_fork
+
+      // Only interested for cases where there's been SCK cycles with the chip select being active
+      if (end_time > start_time) begin
+        int unsigned actual_clk_ticks = (end_time - start_time) / spi_clk_half_period;
+        if (actual_clk_ticks > (curr_spi_configopts.csnlead + 1)) begin
+          `uvm_fatal(`gfn, {"Since CSB become active, There's been",
+                            $sformatf(" %0d half SCKs ",
+                                      (end_time - start_time) / spi_clk_half_period ),
+                            $sformatf("VS (configopts.csnlead+1)=%0d",
+                                      curr_spi_configopts.csnlead + 1)})
+        end
+      end
+      else
+        `uvm_fatal(`gfn, "SPI Clock was ticking before CSB went low")
+
+    end
+  endtask : check_csn_lead
+
+  // SPI clock may "tick", as in being set to 0/1 depending on phase/polarity settings
+  // The clock driven in neg-edge if phase != polarity
+  task wait_start_sck_edge();
+    if (spi_configopts.cpol == spi_configopts.cpha)
+      @(negedge cfg.m_spi_agent_cfg.vif.sck);
+    else
+      @(posedge cfg.m_spi_agent_cfg.vif.sck);
+  endtask
 
   // RX spi raw txn. The monitor sampled the spi bus raw, and the data gets decoded in
   // 'compare_tx_trans' according to the segment configuration.
@@ -89,7 +197,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // Each time CSB goes low, SCB receives a "plain data txn"
       `uvm_info(`gfn, $sformatf("Received: plain_item=\n%s", plain_item.sprint), UVM_DEBUG)
     end
-  endtask
+  endtask : get_plain_txn
 
   // Receives spi_segment_item - this is then compared with the value on the bus which is extracted
   // in compare_tx_trans
@@ -121,7 +229,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("\n successfully compared read transaction of %d ",
                                 tl_segment.command_reg.len+1), UVM_DEBUG)
     end // forever begin
-  endtask
+  endtask : compare_rx_trans
 
   virtual task  extract_data_for_segment(spi_host_command_t  command_info,
                                          output bit[7:0] host_data, output bit [7:0] device_data);
@@ -179,7 +287,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       end
     endcase
 
-  endtask
+  endtask : extract_data_for_segment
 
   // Receives spi_segment_item - this is then compared with the value on the bus which is extracted
   // If the written segment's direction is RxOnly or Bidir, this then also populate the `rx_data_q`
@@ -187,9 +295,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   virtual task compare_tx_trans();
     spi_segment_item   exp_segment = spi_segment_item::type_id::create("exp_segment");
 
-    spi_item           dut_item, device_item;
     // indication that this is a new transaction
-    bit                prev_csaat = 0;
     string             txt = "";
     bit [7:0]          host_data, device_data, extracted_data;
 
@@ -238,15 +344,133 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       end
 
       // store CSAAT so we now if we are starting a new transaction
-      prev_csaat = exp_segment.command_reg.csaat;
+      csaat = exp_segment.command_reg.csaat;
+      fork
+        begin
+          check_csaat(.csaat(csaat));
+        end
+      join_none
+
       // update number of ok segments
       checked_tx_seg_cnt += 1;
       `uvm_info(`gfn, $sformatf("\n successfully compared write transaction of %d ",
                                 exp_segment.command_reg.len+1), UVM_HIGH)
+
+
     end // forever begin
-  endtask // compare_tx_trans
+  endtask : compare_tx_trans
 
+  // This task checks if the CSB line matches the value written in the command (command.csaat
+  // negated).
+  // Spec states the number of half cycles will be 'curr_spi_configopts.csntrail + 1'
+  // we add extra 1 because depending on phase and polarity, the monitor sometimes sends data
+  // 1/2 cycle earlier.
+  // 'num_times' is scaled to account for sys_clk cycles (plus 1 extra), otherwise the check may
+  // miss some spi_en or stalling conditions if the spi_clk is too slow.
+  //
+  // Note: Only 1 csb line is currently supported, hence checks reference csb as "vif.CSB[0]"
+  virtual task check_csaat(bit csaat);
+    int num_times = ((curr_spi_configopts.csntrail + 1 + 1) *
+                      (curr_spi_configopts.clkdiv + 1)) + 1;
+    spi_host_status_t status;
+    `uvm_info(`gfn, $sformatf("%m - carrying out CSAAT (%0d) check", csaat), UVM_DEBUG)
 
+    fork begin : iso_fork
+      fork
+        begin : csntrail_check
+          bit stall_flag;
+          // The loop below waits for configopts.csntrail spi half cycles (accounted as their
+          // corresponding sys cycles) to see if the CSB line goes up as expected based on
+          // the command.CSAAT
+          for (int i=0; i < num_times; i++) begin
+            // Backdoor read to see if the RTL is stalling due to TX / RX buffer being
+            // empty / full respectively
+            csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
+
+            if (spi_ctrl_reg.spien==0) begin
+              // IF control.Spien unset, we block until the block is re-enabled
+              `uvm_info(`gfn, $sformatf("%m - Blocked at spien"), UVM_DEBUG)
+              wait (spi_ctrl_reg.spien === 1);
+              if (i > 0) begin
+                // Taking an extra cycle if we're blocked during spien
+                // Otherwise, if spien=0x1 mid spi-cycle then we may fail the CSB check
+                stall_flag = 1;
+              end
+            end
+            else if (status.txstall || status.rxstall) begin
+              // If we're stalling we ignore the current clock cycle
+              stall_flag = 1;
+              `uvm_info(`gfn, { "SPI processing is stalled: ",
+                        $sformatf("status.txstall=%0d, status.rxstall=%0d",
+                                  status.txstall || status.rxstall)}, UVM_DEBUG)
+            end
+
+            if (cfg.m_spi_agent_cfg.vif.csb[0] !== csaat) begin
+              break;
+            end
+            // Consuming the delays programmed into configopts.CSNTRAIL as a factor of sys cycles
+            cfg.clk_rst_vif.wait_clks(1);
+
+            if (stall_flag)
+              i--; // Ignoring current clk_cycle when stalling (due to spien=0 or tx/rxstall flags)
+          end
+
+          csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
+
+          if (spi_ctrl_reg.spien === 0) begin
+            wait (spi_ctrl_reg.spien === 1);
+            // Extra delay if spien=0, just to allow for CSB to become 1
+            #(spi_clk_half_period/2 * 1ps);
+          end
+          // We just delay by 1/4 of a period in case there was a race in sampling CSB
+          #(spi_clk_half_period/2 * 1ps);
+
+          // Checking after the number of half SCK cycles the CSB line is at the expected value
+          if (cfg.m_spi_agent_cfg.vif.csb[0] === csaat) begin
+            `uvm_fatal(`gfn, {"CSB still low since last data sent",
+                       $sformatf("There's been %0d half SCK cycles (time, no ticks)",num_times)})
+          end
+        end
+        begin
+          int max_scks_edges = 2;
+
+          repeat(max_scks_edges)
+            @(cfg.m_spi_agent_cfg.vif.sck);
+
+          // Blocking here if csaat is not 0, so the fork is not killed early
+          wait (csaat == 0);
+          `uvm_fatal(`gfn, $sformatf("%m - Clock kept ticking"))
+        end
+        begin
+          wait (cfg.m_spi_agent_cfg.vif.csb[0] === 1);
+          `uvm_info(`gfn, $sformatf("%m - CSB has been set to 1 - killing CSAAT check"), UVM_DEBUG)
+        end
+      join_any
+      disable fork;
+    end join
+
+  endtask // check_csaat
+
+  // Use to control the 'current' configopts.lead/idle/trail values, in case the RTL is configured
+  // mid spi transaction
+  virtual task update_configopts(spi_host_configopts_t next_spi_configopts);
+
+    `uvm_info(`gfn, $sformatf("CONFIGOPTS written - %p\nValue will be updated on CSB change",
+                              next_spi_configopts),UVM_DEBUG)
+    // Wait for CSB to be low to update the current value
+    if (!initialise_configopts && cfg.m_spi_agent_cfg.vif.csb[0] === 0) begin
+      @(cfg.m_spi_agent_cfg.vif.csb[0]);
+      `uvm_info(`gfn, "CSB changed, wait delay ebfore updating configopts", UVM_DEBUG)
+      // Delay before updating the config to avoid colliding with the ongoing
+      // idle/trail/lead checks
+      cfg.clk_rst_vif.wait_clks(1);
+    end
+    initialise_configopts = 0;
+
+    curr_spi_configopts = next_spi_configopts;
+    spi_clk_half_period = (curr_spi_configopts.clkdiv + 1) * cfg.clk_rst_vif.clk_period_ps;
+    `uvm_info(`gfn, $sformatf("TB updated Configopts to %p",curr_spi_configopts), UVM_DEBUG)
+  endtask // update_configopts
 
   // The SPI_HOST hwip block TL-UL interface contains a set of CSRs plus windows into two
   // fifos (RXFIFO and TXFIFO).
@@ -364,6 +588,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             cov.control_cg.sample(spi_ctrl_reg, active);
           end
           if (spi_ctrl_reg.sw_rst) begin
+            `uvm_info(`gfn, "CONTROL.sw_rst has been set", UVM_DEBUG)
             if (active) begin
               // Zero the checked segment counters here.
               // 'in_tx_seg_cnt' updates when we drive the stimulus, but 'checked_tx_seg_cnt' only
@@ -394,6 +619,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           spi_configopts.csnidle  = get_field_val(ral.configopts.csnidle, item.a_data);
           spi_configopts.clkdiv   = get_field_val(ral.configopts.clkdiv, item.a_data);
           spi_configopts.csntrail = get_field_val(ral.configopts.csntrail, item.a_data);
+          update_configopts(spi_configopts);
           if (cfg.en_cov) begin
             cov.config_opts_cg.sample(spi_configopts);
           end
@@ -558,7 +784,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     rx_data_q.delete();
     host_wr_segment = spi_segment_item::type_id::create("host_wr_segment");
     host_rd_segment = spi_segment_item::type_id::create("host_rd_segment");
-    device_item.clear_all();
+    initialise_configopts = 1;
   endfunction : reset
 
   function void check_phase(uvm_phase phase);

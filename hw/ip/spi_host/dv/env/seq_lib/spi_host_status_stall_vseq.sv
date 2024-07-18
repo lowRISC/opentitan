@@ -22,7 +22,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
     cfg.seq_cfg.host_spi_min_num_seg = 4;
     cfg.seq_cfg.host_spi_max_num_seg = 8;
     super.pre_start();
-  endtask : pre_start;
+  endtask : pre_start
 
   virtual task body();
     spi_host_command_t command_snd;
