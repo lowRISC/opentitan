@@ -122,6 +122,12 @@ alias(
 )
 
 alias(
+    name = "cryptoki-sys-binding-srcs",
+    actual = "@crate_index__cryptoki-sys-0.1.6//:binding_srcs",
+    tags = ["manual"],
+)
+
+alias(
     name = "der",
     actual = "@crate_index__der-0.7.8//:der",
     tags = ["manual"],
