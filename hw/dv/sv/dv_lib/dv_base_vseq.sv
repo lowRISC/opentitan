@@ -120,21 +120,33 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // optional input `reset_duration_ps` if the DUT has additional resets. The task uses this input
   // to compute the minimal time required to keep all resets asserted.
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    int slowest_clk_period_ps = 0;
+    int reset_duration_from_clks_ps;
 
-    // Has one or more RAL models in DUT.
+    // Calculate the slowest clock that we see with a RAL model or fall back to the default
+    // clk_rst_if if there is no RAL model.
     if (cfg.clk_rst_vifs.size() > 0) begin
       foreach (cfg.clk_rst_vifs[i]) begin
-        cfg.clk_rst_vifs[i].drive_rst_pin(0);
-        reset_duration_ps = max2(reset_duration_ps, cfg.clk_rst_vifs[i].clk_period_ps);
+        slowest_clk_period_ps = max2(slowest_clk_period_ps, cfg.clk_rst_vifs[i].clk_period_ps);
       end
-      #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
-      foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
+    end else begin
+      slowest_clk_period_ps = cfg.clk_rst_vif.clk_period_ps;
+    end
 
-    // No RAL model and only has default clk_rst_vif.
+    // Pick the reset duration by picking a random number of (slowest) clock cycles, taking at least
+    // two. Then use the maximum of that value and the reset_duration_ps argument.
+    reset_duration_from_clks_ps = $urandom_range(2, 10) * slowest_clk_period_ps;
+    reset_duration_ps = max2(reset_duration_ps, reset_duration_from_clks_ps);
+
+    // Now apply the reset by driving any reset pins to zero, waiting a while, and then driving the
+    // back to one.
+    if (cfg.clk_rst_vifs.size() > 0) begin
+      foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(0);
+      #(reset_duration_ps * 1ps);
+      foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
     end else begin
       cfg.clk_rst_vif.drive_rst_pin(0);
-      reset_duration_ps = max2(reset_duration_ps, cfg.clk_rst_vif.clk_period_ps);
-      #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
+      #(reset_duration_ps * 1ps);
       cfg.clk_rst_vif.drive_rst_pin(1);
     end
   endtask
