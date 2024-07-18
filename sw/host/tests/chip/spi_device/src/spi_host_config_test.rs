@@ -50,7 +50,11 @@ const SPI_PIN_SCL: u8 = 1;
 const SPI_PIN_D0: u8 = 2;
 const SPI_PIN_D1: u8 = 3;
 
-fn spi_host_config_test(opts: &Opts, transport: &TransportWrapper, ctx: &TestContext) -> Result<()> {
+fn spi_host_config_test(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    ctx: &TestContext,
+) -> Result<()> {
     let uart = transport.uart("console")?;
     let gpio_bitbanging = transport.gpio_bitbanging()?;
 
