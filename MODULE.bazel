@@ -107,3 +107,6 @@ llvm.toolchain(
     },
 )
 use_repo(llvm, "llvm_toolchain_llvm")
+
+tock = use_extension("//third_party/tock:extension.bzl", "tock")
+use_repo(tock, "elf2tab", "libtock", "tock")

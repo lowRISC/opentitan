@@ -36,9 +36,6 @@ github_tools_repos()
 load("//third_party/lychee:repos.bzl", "lychee_repos")
 lychee_repos()
 
-# Tock dependencies.
-load("//third_party/tock:repos.bzl", "tock_repos")
-tock_repos()
 load("//third_party/tock:deps.bzl", "tock_deps")
 tock_deps()
 load("@tockloader_deps//:requirements.bzl", install_tockloader_python_deps="install_deps")
