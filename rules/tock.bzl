@@ -12,7 +12,6 @@ load(
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
 )
-load("@tockloader_deps//:requirements.bzl", "entry_point")
 
 TockApplication = provider(
     fields = {
@@ -182,10 +181,7 @@ tock_image = rv_rule(
         "debug": attr.bool(default = True, doc = "Tockloader debug output"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_tockloader": attr.label(
-            default = entry_point(
-                pkg = "tockloader",
-                script = "tockloader",
-            ),
+            default = "//third_party/tock:tockloader",
             executable = True,
             cfg = "exec",
         ),
