@@ -50,10 +50,15 @@ virtual task tl_access_unmapped_addr(string ral_name);
   end
 endtask
 
-virtual task tl_write_less_than_csr_width(string ral_name);
+// Generate a sequence of transactions that write to each register in the block but sending a
+// byte-enable mask that doesn't cover the full width. This is not allowed in OpenTitan and should
+// generate an error response and not change the value of the register.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+virtual task tl_write_less_than_csr_width(string ral_name, dv_base_reg_block block);
   uvm_reg all_csrs[$];
-
-  cfg.ral_models[ral_name].get_registers(all_csrs);
+  block.get_registers(all_csrs);
   all_csrs.shuffle();
   foreach (all_csrs[i]) begin
     dv_base_reg      csr;
@@ -256,8 +261,8 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
               // protocol errors
               1: tl_protocol_err(ral_name);
 
-              // only run when csr addresses exist
-              has_csr_addrs: tl_write_less_than_csr_width(ral_name);
+              // If there are CSRs, send writes with invalid byte enable masks to all of them
+              has_csr_addrs: tl_write_less_than_csr_width(ral_name, ral_model);
 
               // only run when unmapped addr exists
               ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
