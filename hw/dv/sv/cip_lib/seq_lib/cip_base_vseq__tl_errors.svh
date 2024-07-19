@@ -227,6 +227,12 @@ task tl_write_ro_mem_err(string            ral_name,
   end
 endtask
 
+// Generate a stream of transactions that trigger errors connected with instr_type. This is either
+// because the multi-bit encoded instr_type is not a valid mubi value or because it is MuBi4True and
+// the transaction is a write ("writing through the fetch port").
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
