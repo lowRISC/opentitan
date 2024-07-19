@@ -116,28 +116,42 @@ task tl_protocol_err(string ral_name);
   end
 endtask
 
-virtual task tl_write_mem_less_than_word(string ral_name);
-  uint mem_idx;
-  dv_base_mem mem;
-  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+// Generate a stream of transactions that try to send partial writes to a memory that doesn't
+// support them. These should generate error responses but have no other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_write_mem_less_than_word(string            ral_name,
+                                 dv_base_reg_block block,
+                                 addr_range_t      rel_mem_ranges[$]);
+  addr_range_t rel_tgt_ranges[$];
+
+  // For each memory range, look up the memory that contains it. Collect ranges where that memory
+  // doesn't support partial writes. These track addresses relative to the base address of the
+  // block.
+  foreach (rel_mem_ranges[i]) begin
+    dv_base_mem mem;
+    `downcast(mem, get_mem_by_addr(block, block.mem_ranges[i].start_addr))
+    if (!mem.get_mem_partial_write_support()) rel_tgt_ranges.push_back(rel_mem_ranges[i]);
+  end
+
+  // We should have found at least one range that doesn't support partial writes (a property we
+  // check before calling this task).
+  `DV_CHECK_FATAL(rel_tgt_ranges.size() > 0)
+
   repeat ($urandom_range(10, 100)) begin
+    uint range_idx = $urandom_range(0, rel_tgt_ranges.size() - 1);
+
     if (cfg.stop_transaction_generators()) return;
-    // if more than one memories, randomly select one memory
-    mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
-    // only test when mem doesn't support partial write
-    `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name],
-                                   cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr))
-    if (mem.get_mem_partial_write_support()) continue;
 
     `create_tl_access_error_case(
         tl_write_mem_less_than_word,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
         addr[1:0] == 0; // word aligned
         (addr & csr_addr_mask[ral_name]) inside
-            {[loc_mem_ranges[mem_idx].start_addr : loc_mem_ranges[mem_idx].end_addr]};
+            {[rel_tgt_ranges[range_idx].start_addr : rel_tgt_ranges[range_idx].end_addr]};
         mask != '1 || size < 2;, ,
-        p_sequencer.tl_sequencer_hs[ral_name]
-        )
+        p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
@@ -267,8 +281,11 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
               // If there are some unmapped addresses, generate transactions that access them.
               ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name, ral_model);
 
-              // only run this task when the error can be triggered
-              has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
+              // If the memory doesn't support partial writes, generate transactions that try to do
+              // them.
+              has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name, ral_model,
+                                                                   updated_mem_ranges[ral_name]);
+
               has_wo_mem: tl_read_wo_mem_err(ral_name);
               has_ro_mem: tl_write_ro_mem_err(ral_name);
               1: tl_instr_type_err(ral_name);
