@@ -123,9 +123,43 @@ Finally, using the Tcl console, you can kick off the project setup with
 source lowrisc_systems_chip_earlgrey_${BOARD}_0.1.tcl
 ```
 
-## Connecting the ChipWhisperer FPGA board:
+## Connecting ChipWhisperer FPGA (and HyperDebug) Boards to your PC
 
-### CW310 board
+### Device Permissions: udev rules
+
+To program any FPGAs or HyperDebug boards users need permissions to access USB devices connected to the PC.
+Depending on your security policy you can take different steps to enable this access.
+One way of doing so is given in the udev rule outlined below.
+
+To do so, create a file named `/etc/udev/rules.d/90-lowrisc.rules` and add the following content to it:
+
+```
+# Grant access to board peripherals connected over USB:
+# - The USB devices itself (used e.g. by Vivado to program the FPGA)
+# - Virtual UART at /dev/tty/XXX
+
+# NewAE Technology Inc. ChipWhisperer boards e.g. CW310, CW305, CW-Lite, CW-Husky
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="2b3e", ATTRS{idProduct}=="ace[0-9]|c[3-6][0-9][0-9]", MODE="0666"
+
+# Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
+# used on Digilent boards
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{manufacturer}=="Digilent", MODE="0666"
+
+# Future Technology Devices International, Ltd FT232 Serial (UART) IC
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666"
+
+# HyperDebug
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0666", SYMLINK+="hyperdebug_dfu"
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="520e", MODE="0666", SYMLINK+="hyperdebug"
+```
+
+You then need to reload the udev rules:
+
+```console
+sudo udevadm control --reload-rules && sudo service udev restart && sudo udevadm trigger
+```
+
+### CW310 Board
 
 The CW310 board supports different power options.
 It is recommended to power the board via the included DC power adapter.
@@ -137,30 +171,81 @@ To this end:
 5. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
 6. Use a USB-C cable to connect your PC with the *USB-C Data* connector (*J8*) in the lower left corner on the board.
 
-### CW340 board
+### CW340 Board
 
 The CW340 board should be powered via the included DC power adapter.
 To this end:
-1. Set the *Control Power* switch (top left corner, *SW7*) to the right.
+1. Set the *Control Power* switch (top left corner, *SW7*) to the right (towards the OpenTitan logo).
 2. Ensure the *Tgt Power* switch (center of the board) is set to the right, towards the *Auto* option.
 3. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
 4. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
 5. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
    1. If set to FTDI the UART0 will (likely) be routed to `/dev/ttyUSB2`.
    1. If set to SAM the UART0 will be routed to `/dev/ttyACM0`.
+6a. If you are connecting a HyperDebug board to your CW340 base board, follow the below instruction.
+6b. Otherwise, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
 
-### Detecting the board
-You can now use the following to monitor output from dmesg:
+#### HyperDebug Board
+
+If you have a HyperDebug board, you can connect it to your CW340 board to enable executing more advanced test cases (such as test cases that drive various communication peripherals on OpenTitan).
+Below we describe how to:
+1. flash firmware onto your HyperDebug board, and
+1. connect it to you CW340 board
+
+![HyperDebug Setup](hyperdebug_setup.png)
+
+##### Flashing HyperDebug Firmware for the First Time
+
+*BEFORE* connecting your HyperDebug board to the CW340 base board ST Zio connectors, do the following to install the firmware on it for the first time:
+1. Move jumper JP6 to select `5V_USB_C`.
+1. Move jumper JP4 to select `3.3V` mode (_this will be changed before connecting to CW340_).
+1. Use a USB-C cable to connect your PC with the `USB1` power and data connector near the blue and black push buttons.
+1. Using a jumper wire, connect pins 5 and 7 on bank CN11, and hit the black `RESET` push button to put the device in DFU mode (the red and blue LEDs whould be solid to indicate you have entered DFU mode).
+1. Flash the firmware by running `cd $REPO_TOP && ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware`.
+
+Note: after flashing the HyperDebug firmware for the first time, it can be updated (*without* needing to put the board into DFU mode) by running the same command used above to flash the firmware for the first time.
+
+##### Before Connecting HyperDebug to the CW340 Base Board
+
+On your HyperDebug board:
+1. Disconnect the PC USB-C cable from your HyperDebug board.
+1. Move jumper JP4 to select `1.8V` mode.
+
+On your CW340 base board (the red board):
+1. Move the following single pin-to-pin jumpers in the bottom right corner of the board to `HD` (for "HyperDebug").
+    1. UART0 RX/TX (OpenTitan pins IOC3/4): JP1 & JP2
+    1. UART1 RX/TX (OpenTitan pins IOA0/1): JP3 & JP4
+    1. JTAG TAP select straps (OpenTitan pins IOC5/8): JP11 & JP12
+1. Connect the following blue socket-to-socket jumpers in the middle of the board to `HD` (for "HyperDebug").
+    1. SPI Device: connect JP23 to JP25
+    1. JTAG: connect JP13 to JP15
+
+##### Connecting HyperDebug to the CW340 Base Board
+
+1. Ensure the CW340 FPGA base board is:
+    1. Powered off (the *Control Power* switch in the top left corner, *SW7*, is set to the right towards the OpenTitan logo).
+    1. Connected via USB-C to your PC (described above).
+1. Ensure the HyperDebug jumper JP4 is set to select `1.8V`.
+1. Connect the HyperDebug board to the ST Zio connectors in the bottom left of the board.
+1. Connect the PC USB-C cable back to your HyperDebug board.
+1. Connect the PC USB-C cable back to your HyperDebug board.
+1. Power on the CW340 by setting the *Control Power* switch in the top left corner, *SW7*, to the left towards the barrel jack.
+
+### Detecting the PC Connections to the Board(s)
+To detect if you PC has successfully connected to you FPGA and/or HyperDebug boards, you can use the following command to monitor output from dmesg:
 ```sh
 sudo dmesg -Hw
 ```
-This should show which serial ports have been assigned, or if the board is having trouble connecting to USB.
-If `dmesg` reports a problem you can trigger a *USB_RST* with *SW5*.
-When properly connected, `dmesg` should identify the board, not show any errors, and the status light should flash (next to *SW5*).
-They should be named `'/dev/ttyACM*'` for CW310 and `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
+This should show which serial ports have been assigned, or if the boards are having trouble connecting to USB.
+If `dmesg` reports a problem you can:
+1. trigger a reset of your CW310 with *USB_RST* on *SW5*,
+1. trigger a reset of your CW340 with *Control Power* on *SW7*, and/or
+1. trigger a reset of your HyperDebug with the black *RESET* button on *B2*.
+When properly connected, `dmesg` should identify each board, not show any errors.
+The serial ports identified should be named `'/dev/ttyACM*'` for CW310 and `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
  >e.g. `/dev/ttyACM1`.
 
-To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions](./install_vivado/README.md).
+To ensure that you have sufficient access permissions, set up the udev rules as explained above.
 
 You will then need to run this command to configure the board. You only need to run it once.
 ```sh
@@ -335,7 +420,8 @@ Assuming opentitantool has been built and that the current directory is the root
 
 ### CW340 Board
 
-The CW340 supports JTAG-based debugging with OpenOCD and GDB via the FTDI Chip embedded on the board. So no external JTAG adapter is needed.
+The CW340 supports JTAG-based debugging with OpenOCD and GDB via the FTDI Chip embedded on the board or via HyperDebug (if you connected one to your board above).
+No external JTAG adapter is needed.
 
 ### CW310 Board
 
