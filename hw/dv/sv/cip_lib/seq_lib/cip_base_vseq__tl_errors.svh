@@ -208,7 +208,6 @@ endtask
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
-  bit has_mem = (loc_mem_range.size > 0);
   bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
   bit has_mem_byte_access_err;
   bit has_wo_mem;
