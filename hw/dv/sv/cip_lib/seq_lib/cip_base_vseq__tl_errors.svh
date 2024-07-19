@@ -24,24 +24,38 @@
     csr_utils_pkg::decrement_outstanding_access();                                         \
   end
 
-virtual task tl_access_unmapped_addr(string ral_name);
-  addr_range_t loc_unmapped_addr_ranges[$] = updated_unmapped_addr_ranges[ral_name];
+// Generate a sequence of transactions that access unmapped addresses. These transactions should
+// generate error responses but not have any other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_access_unmapped_addr(string ral_name, dv_base_reg_block block);
+  addr_range_t     unmapped_ranges[$];
+  bit [BUS_AW-1:0] csr_base_addr = block.default_map.get_base_addr();
 
-  if (loc_unmapped_addr_ranges.size() == 0) return;
+  // Check the block has some unmapped ranges (otherwise this task shouldn't have been called)
+  `DV_CHECK_FATAL(block.unmapped_addr_ranges.size() > 0)
 
-  // randomize unmapped_addr first to improve perf
+  // Subtract the RAL base address from the ends of each range in the block's list of unmapped
+  // ranges.
+  foreach (block.unmapped_addr_ranges[i]) begin
+    addr_range_t range = block.unmapped_addr_ranges[i];
+    unmapped_ranges.push_back(addr_range_t'{range.start_addr - csr_base_addr,
+                                            range.end_addr - csr_base_addr});
+  end
+
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] unmapped_addr;
 
-    // Randomly pick which unmapped address range to target
-    int idx = $urandom_range(0, loc_unmapped_addr_ranges.size()-1);
+    // Randomly pick which range of unmapped addresses to target
+    int range_idx = $urandom_range(0, unmapped_ranges.size() - 1);
 
     if (cfg.stop_transaction_generators()) return;
+
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
-        (unmapped_addr & csr_addr_mask[ral_name])
-            inside {[loc_unmapped_addr_ranges[idx].start_addr :
-                     loc_unmapped_addr_ranges[idx].end_addr]};
-    )
+                                       (unmapped_addr & csr_addr_mask[ral_name])
+                                         inside {[unmapped_ranges[range_idx].start_addr :
+                                                  unmapped_ranges[range_idx].end_addr]};)
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
         addr == unmapped_addr;,
@@ -234,15 +248,6 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
     end
   end
 
-  if (ral_model.has_unmapped_addrs) begin
-    addr_range_t loc_unmapped_addr_ranges[$] = ral_model.unmapped_addr_ranges;
-    foreach (loc_unmapped_addr_ranges[i]) begin
-      updated_unmapped_addr_ranges[ral_name].push_back(addr_range_t'{
-          loc_unmapped_addr_ranges[i].start_addr - csr_base_addr,
-          loc_unmapped_addr_ranges[i].end_addr - csr_base_addr});
-    end
-  end
-
   get_all_mem_attrs(ral_model, has_mem_byte_access_err, has_wo_mem, has_ro_mem);
 
   // use multiple thread to create outstanding access
@@ -259,8 +264,8 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
               // If there are CSRs, send writes with invalid byte enable masks to all of them
               has_csr_addrs: tl_write_less_than_csr_width(ral_name, ral_model);
 
-              // only run when unmapped addr exists
-              ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
+              // If there are some unmapped addresses, generate transactions that access them.
+              ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name, ral_model);
 
               // only run this task when the error can be triggered
               has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
