@@ -160,23 +160,39 @@ task tl_write_mem_less_than_word(string            ral_name,
   end
 endtask
 
-virtual task tl_read_wo_mem_err(string ral_name);
-  uint mem_idx;
-  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+// Generate a stream of transactions that read from a write-only memory. These should generate error
+// responses but have no other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_read_wo_mem_err(string            ral_name,
+                        dv_base_reg_block block,
+                        addr_range_t      rel_mem_ranges[$]);
+  addr_range_t rel_tgt_ranges[$];
+
+  // For each memory range, look up the memory that contains it. Collect ranges where that memory is
+  // write-only. These track addresses relative to the base address of the block.
+  foreach (rel_mem_ranges[i]) begin
+    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "WO") begin
+      rel_tgt_ranges.push_back(rel_mem_ranges[i]);
+    end
+  end
+
+  // If we call this, there should be at least one write-only memory. Check that there is.
+  `DV_CHECK_FATAL(rel_tgt_ranges.size() > 0)
+
   repeat ($urandom_range(10, 100)) begin
+    uint range_idx = $urandom_range(0, rel_tgt_ranges.size() - 1);
+
     if (cfg.stop_transaction_generators()) return;
-    // if more than one memories, randomly select one memory
-    mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
-    if (get_mem_access_by_addr(cfg.ral_models[ral_name],
-        cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "WO") continue;
+
     `create_tl_access_error_case(
         tl_read_wo_mem_err,
         opcode == tlul_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
-            {[loc_mem_ranges[mem_idx].start_addr :
-              loc_mem_ranges[mem_idx].end_addr]};, ,
-        p_sequencer.tl_sequencer_hs[ral_name]
-        )
+            {[rel_tgt_ranges[range_idx].start_addr :
+              rel_tgt_ranges[range_idx].end_addr]};, ,
+        p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
@@ -291,7 +307,11 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
               has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name, ral_model,
                                                                    updated_mem_ranges[ral_name]);
 
-              has_wo_mem: tl_read_wo_mem_err(ral_name);
+              // If the block has a write-only memory, generate transactions that try to read it.
+              has_wo_mem: tl_read_wo_mem_err(ral_name,
+                                             ral_model,
+                                             updated_mem_ranges[ral_name]);
+
               has_ro_mem: tl_write_ro_mem_err(ral_name);
               1: tl_instr_type_err(ral_name);
             endcase
