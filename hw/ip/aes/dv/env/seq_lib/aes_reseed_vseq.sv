@@ -119,7 +119,7 @@ class aes_reseed_vseq extends aes_base_vseq;
         end else if (block_ctr == 0) begin
           // Check whether the DUT is actually busy. Unless it's doing a block operation, no reseed
           // operation is getting triggered.
-          csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+          csr_rd(.ptr(ral.status), .value(status), .blocking(1), .backdoor(1));
           `DV_CHECK_FATAL(uvm_hdl_read(cipher_crypt_path, cipher_crypt))
           if (!status.idle && cipher_crypt) begin
             // Check entropy_masking_req to verify the reseeding is actually triggered.
