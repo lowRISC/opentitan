@@ -21,6 +21,10 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
   // Outgoing filtered JTAG DTM transactions that do not touch the DMI register.
   uvm_analysis_port #(jtag_item) non_dmi_jtag_dtm_analysis_port;
 
+  // Does the JTAG FSM currently have an instruction register equal to the DMI address?
+  bit dmi_selected = 1'b0;
+
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -38,10 +42,6 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
   virtual protected task collect_trans();
     jtag_item jtag_item;
-
-    // This bit is set if the JTAG FSM currently has an instruction register equal to the DMI
-    // address.
-    bit dmi_selected = 1'b0;
 
     forever begin
       bit is_ir_update, is_dr_update;
@@ -150,7 +150,10 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
   virtual protected task monitor_reset();
     forever @cfg.in_reset begin
-      if (cfg.in_reset) dmi_req_q.delete();
+      if (cfg.in_reset) begin
+        dmi_req_q.delete();
+        dmi_selected = 1'b0;
+      end
     end
   endtask
 
