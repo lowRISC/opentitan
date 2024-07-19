@@ -58,9 +58,6 @@ class cip_base_vseq #(
   // mem_ranges without base address
   addr_range_t updated_mem_ranges[string][$];
 
-  // unmapped addr ranges without base address
-  addr_range_t updated_unmapped_addr_ranges[string][$];
-
   // mask out bits out of the csr/mem range and LSB 2 bits
   bit [BUS_AW-1:0] csr_addr_mask[string];
 
