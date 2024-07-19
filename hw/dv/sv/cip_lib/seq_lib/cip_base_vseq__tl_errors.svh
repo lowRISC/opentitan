@@ -88,12 +88,17 @@ virtual task tl_write_less_than_csr_width(string ral_name);
   end
 endtask
 
-virtual task tl_protocol_err(tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h);
+// Generate a stream of transactions which cause TL protocol errors but have no other effect
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_protocol_err(string ral_name);
   repeat ($urandom_range(10, 100)) begin
     if (cfg.stop_transaction_generators()) return;
-    `create_tl_access_error_case(
-        tl_protocol_err, , tl_host_protocol_err_seq #(cip_tl_seq_item), tl_sequencer_h
-        )
+    `create_tl_access_error_case(tl_protocol_err,
+                                 ,
+                                 tl_host_protocol_err_seq #(cip_tl_seq_item),
+                                 p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
@@ -247,7 +252,10 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
         fork
           begin
             randcase
-              1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
+              // One option that always exists is to generate a stream of transactions that cause
+              // protocol errors
+              1: tl_protocol_err(ral_name);
+
               // only run when csr addresses exist
               has_csr_addrs: tl_write_less_than_csr_width(ral_name);
 
