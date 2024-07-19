@@ -107,13 +107,13 @@ class aes_reseed_vseq extends aes_base_vseq;
         // Read the block counter.
         `DV_CHECK_FATAL(uvm_hdl_read(block_ctr_path, block_ctr))
 
-        // Force a lower value to get more more action.
+        // Force a lower value to get more action.
         if (block_ctr == 8188 || // Speed up testing of the PER_8K setting.
             block_ctr == 60) begin // Speed up testing of the PER_64 setting.
           `uvm_info(`gfn, $sformatf("Lowering block counter from %0d to %0d to speed up testing",
               block_ctr, block_ctr_set_val), UVM_LOW)
           `DV_CHECK(uvm_hdl_force(block_ctr_path, block_ctr_set_val));
-          cfg.clk_rst_vif.wait_clks(1);
+          cfg.clk_rst_vif.wait_n_clks(1);
           `DV_CHECK_FATAL(uvm_hdl_release(block_ctr_path))
 
         end else if (block_ctr == 0) begin
@@ -134,9 +134,9 @@ class aes_reseed_vseq extends aes_base_vseq;
                   if (cipher_out_valid && cipher_out_ready) begin
                     block_done = 1;
                   end
-                  cfg.clk_rst_vif.wait_clks(1);
+                  cfg.clk_rst_vif.wait_n_clks(1);
                 end;,
-                cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);,
+                cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles_max);,
                 "Timeout waiting for block to finish")
           end
         end
@@ -203,10 +203,10 @@ class aes_reseed_vseq extends aes_base_vseq;
           sideload_valid = 0;
           `DV_SPINWAIT_EXIT(
             while (!sideload_valid) begin
-              cfg.clk_rst_vif.wait_clks(1);
+              cfg.clk_rst_vif.wait_n_clks(1);
               `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
             end,
-            cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);,
+            cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles);,
             "Timeout waiting for valid sideload key")
           fork
             // Enable sideload.
@@ -217,7 +217,7 @@ class aes_reseed_vseq extends aes_base_vseq;
             // Detect if the sideload valid bit gets de-asserted while trying to enable sideload.
             begin
               while (sideload_valid && !sideload_enabled) begin
-                cfg.clk_rst_vif.wait_clks(1);
+                cfg.clk_rst_vif.wait_n_clks(1);
                 `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
               end
             end
