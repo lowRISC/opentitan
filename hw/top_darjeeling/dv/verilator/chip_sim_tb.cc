@@ -23,13 +23,14 @@ int main(int argc, char **argv) {
       "u_prim_ram_1p_adv.u_mem."
       "gen_generic.u_impl_generic");
 
-  MemArea rom(top_scope + (".u_rom_ctrl0.gen_rom_scramble_enabled.u_rom.u_rom."
-                           "u_prim_rom.gen_generic.u_impl_generic"),
-              0x4000 / 4, 4);
-  MemArea second_rom(
-      top_scope + (".u_rom_ctrl1.gen_rom_scramble_enabled.u_rom.u_rom."
-                   "u_prim_rom.gen_generic.u_impl_generic"),
-      0x8000 / 4, 4);
+  MemArea rom0(top_scope + (".u_rom_ctrl0.gen_rom_scramble_enabled."
+                            "u_rom.u_rom."
+                            "u_prim_rom.gen_generic.u_impl_generic"),
+               0x8000 / 4, 4);
+  MemArea rom1(top_scope + (".u_rom_ctrl1.gen_rom_scramble_enabled."
+                            "u_rom.u_rom."
+                            "u_prim_rom.gen_generic.u_impl_generic"),
+               0x10000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   Ecc32MemArea ram_ctn(
@@ -39,10 +40,10 @@ int main(int argc, char **argv) {
 
   MemArea otp(top_scope + ".u_otp_ctrl.u_otp.gen_generic.u_impl_generic." +
                   ram1p_adv_scope,
-              0x4000 / 4, 4);
+              0x10000 / 4, 4);
 
-  memutil.RegisterMemoryArea("rom", 0x8000, &rom);
-  memutil.RegisterMemoryArea("second_rom", 0x20000, &second_rom);
+  memutil.RegisterMemoryArea("rom", 0x8000u, &rom0);
+  memutil.RegisterMemoryArea("rom1", 0x20000u, &rom1);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
   memutil.RegisterMemoryArea("otp", 0x30000000u /* (bogus LMA) */, &otp);
   memutil.RegisterMemoryArea("ram_ctn", 0x41000000u, &ram_ctn);

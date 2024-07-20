@@ -155,10 +155,10 @@ def verilator_params(
         "--interface=verilator",
         "--verilator-bin=$(location @//hw/top_darjeeling:verilator)",
         "--verilator-rom=$(location {rom})",
-        "--verilator-second-rom=$(location {second_rom})",
+        "--verilator-rom1=$(location {second_rom})",
         # TODO: we need to split the build rules here so that both CTN SRAM and
         # flash options can co-exist.
-        "--verilator-ram-ctn=$(location {flash})",
+        "--verilator-ram-ctn=$(location {flash_backdoor})",
         "--verilator-otp=$(location {otp})",
     ]
     required_data = [
@@ -505,14 +505,18 @@ def opentitan_functest(
         if target in ["sim_dv", "sim_verilator"]:
             # TODO: we need to create a separate rule for backdoor loading the
             # CTN memory.
-            # flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
-            flash = "{}_{}_vmem32".format(ot_flash_binary, target)
+            flash = "{}_{}_bin".format(ot_flash_binary, target)
+            flash_backdoor = "{}_{}_vmem32".format(ot_flash_binary, target)
+            # flash_backdoor = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
+
         elif target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
             flash = "{}_fpga_cw310_bin".format(ot_flash_binary)
+            flash_backdoor = flash
         else:
             fail("Unexpected target: {}".format(target))
         if signed:
             flash += "_signed"
+            flash_backdoor += "_signed"
 
             # Multislot flash binaries could have different slots / stages
             # signed with different keys. Therefore, the key name will not be
@@ -528,6 +532,7 @@ def opentitan_functest(
                         suffix_parts.append(key_struct.spx.name)
                     suffix = "_".join(suffix_parts)
                 flash += "_{}".format(suffix)
+                flash_backdoor += "_{}".format(suffix)
 
         # If test is to be run in ROM we load the same image into flash as a
         # as a placeholder (since execution will never reach flash). Moreover,
@@ -535,9 +540,13 @@ def opentitan_functest(
         # targets were already added above.
         if (test_in_rom or test_in_second_rom):
             flash = rom
+            flash_backdoor = rom
         else:
             target_data.append(flash)
-            if target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
+            if target in ["sim_dv", "sim_verilator"]:
+                target_data.append(flash_backdoor)
+                target_data.append("{}_{}".format(ot_flash_binary, target))
+            elif target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
                 target_data.append("{}_fpga_cw310".format(ot_flash_binary))
             else:
                 target_data.append("{}_{}".format(ot_flash_binary, target))
@@ -582,6 +591,7 @@ def opentitan_functest(
         format_dict = {
             "name": name,
             "flash": flash,
+            "flash_backdoor": flash_backdoor,
             "rom": rom,
             "second_rom": second_rom,
             "otp": otp,

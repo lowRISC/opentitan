@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_ctn_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_spi_device.h"
@@ -21,8 +21,8 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
-bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
-  return std::memcmp(&lhs, &rhs, sizeof(flash_ctrl_perms_t)) == 0;
+bool operator==(ctn_sram_perms_t lhs, ctn_sram_perms_t rhs) {
+  return std::memcmp(&lhs, &rhs, sizeof(ctn_sram_perms_t)) == 0;
 }
 
 namespace bootstrap_unittest {
@@ -79,23 +79,23 @@ class BootstrapTest : public rom_test::RomTest {
   /**
    * Sets an expectation for enabling write for the data partition.
    */
-  void ExpectFlashCtrlWriteEnable() {
-    EXPECT_CALL(flash_ctrl_, DataDefaultPermsSet((flash_ctrl_perms_t){
-                                 .read = kMultiBitBool4False,
-                                 .write = kMultiBitBool4True,
-                                 .erase = kMultiBitBool4False,
-                             }));
+  void ExpectCtnSramWriteEnable() {
+    EXPECT_CALL(ctn_sram_, DataDefaultPermsSet((ctn_sram_perms_t){
+                               .read = kMultiBitBool4False,
+                               .write = kMultiBitBool4True,
+                               .erase = kMultiBitBool4False,
+                           }));
   }
 
   /**
    * Sets an expectation for disabling all permissions for the data partition.
    */
-  void ExpectFlashCtrlAllDisable() {
-    EXPECT_CALL(flash_ctrl_, DataDefaultPermsSet((flash_ctrl_perms_t){
-                                 .read = kMultiBitBool4False,
-                                 .write = kMultiBitBool4False,
-                                 .erase = kMultiBitBool4False,
-                             }));
+  void ExpectCtnSramAllDisable() {
+    EXPECT_CALL(ctn_sram_, DataDefaultPermsSet((ctn_sram_perms_t){
+                               .read = kMultiBitBool4False,
+                               .write = kMultiBitBool4False,
+                               .erase = kMultiBitBool4False,
+                           }));
   }
 
   /**
@@ -104,14 +104,14 @@ class BootstrapTest : public rom_test::RomTest {
    * @param err0 Result of erase for the first bank.
    * @param err1 Result of erase for the second bank.
    */
-  void ExpectFlashCtrlChipErase(rom_error_t err0, rom_error_t err1) {
-    EXPECT_CALL(flash_ctrl_, BankErasePermsSet(kHardenedBoolTrue));
-    EXPECT_CALL(flash_ctrl_, DataErase(0, kFlashCtrlEraseTypeBank))
+  void ExpectCtnSramChipErase(rom_error_t err0, rom_error_t err1) {
+    EXPECT_CALL(ctn_sram_, BankErasePermsSet(kHardenedBoolTrue));
+    EXPECT_CALL(ctn_sram_, DataErase(0, kCtnSramEraseTypeBank))
         .WillOnce(Return(err0));
-    EXPECT_CALL(flash_ctrl_, DataErase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                       kFlashCtrlEraseTypeBank))
+    EXPECT_CALL(ctn_sram_, DataErase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                     kCtnSramEraseTypeBank))
         .WillOnce(Return(err1));
-    EXPECT_CALL(flash_ctrl_, BankErasePermsSet(kHardenedBoolFalse));
+    EXPECT_CALL(ctn_sram_, BankErasePermsSet(kHardenedBoolFalse));
   }
 
   /**
@@ -121,19 +121,19 @@ class BootstrapTest : public rom_test::RomTest {
    * @param err1 Result of erase for the second page.
    * @param addr Erase start address.
    */
-  void ExpectFlashCtrlSectorErase(rom_error_t err0, rom_error_t err1,
-                                  uint32_t addr) {
-    EXPECT_CALL(flash_ctrl_, DataDefaultPermsSet((flash_ctrl_perms_t){
-                                 .read = kMultiBitBool4False,
-                                 .write = kMultiBitBool4False,
-                                 .erase = kMultiBitBool4True,
-                             }));
-    EXPECT_CALL(flash_ctrl_, DataErase(addr, kFlashCtrlEraseTypePage))
+  void ExpectCtnSramSectorErase(rom_error_t err0, rom_error_t err1,
+                                uint32_t addr) {
+    EXPECT_CALL(ctn_sram_, DataDefaultPermsSet((ctn_sram_perms_t){
+                               .read = kMultiBitBool4False,
+                               .write = kMultiBitBool4False,
+                               .erase = kMultiBitBool4True,
+                           }));
+    EXPECT_CALL(ctn_sram_, DataErase(addr, kCtnSramEraseTypePage))
         .WillOnce(Return(err0));
-    EXPECT_CALL(flash_ctrl_, DataErase(addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-                                       kFlashCtrlEraseTypePage))
+    EXPECT_CALL(ctn_sram_, DataErase(addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+                                     kCtnSramEraseTypePage))
         .WillOnce(Return(err1));
-    ExpectFlashCtrlAllDisable();
+    ExpectCtnSramAllDisable();
   }
 
   /**
@@ -142,16 +142,16 @@ class BootstrapTest : public rom_test::RomTest {
    * @param err0 Result of erase verification for the first bank.
    * @param err1 Result of erase verification for the second bank.
    */
-  void ExpectFlashCtrlEraseVerify(rom_error_t err0, rom_error_t err1) {
-    EXPECT_CALL(flash_ctrl_, DataEraseVerify(0, kFlashCtrlEraseTypeBank))
+  void ExpectCtnSramEraseVerify(rom_error_t err0, rom_error_t err1) {
+    EXPECT_CALL(ctn_sram_, DataEraseVerify(0, kCtnSramEraseTypeBank))
         .WillOnce(Return(err0));
-    EXPECT_CALL(flash_ctrl_, DataEraseVerify(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                             kFlashCtrlEraseTypeBank))
+    EXPECT_CALL(ctn_sram_, DataEraseVerify(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                           kCtnSramEraseTypeBank))
         .WillOnce(Return(err1));
   }
 
   rom_test::MockAbsMmio mmio_;
-  rom_test::MockFlashCtrl flash_ctrl_;
+  rom_test::MockCtnSram ctn_sram_;
   rom_test::MockOtp otp_;
   rom_test::MockRstmgr rstmgr_;
   rom_test::MockSpiDevice spi_device_;
@@ -255,9 +255,9 @@ TEST_F(BootstrapTest, PayloadOverflowProgram) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   EXPECT_CALL(spi_device_, CmdGet(NotNull()))
@@ -272,9 +272,9 @@ TEST_F(BootstrapTest, BootstrapSimple) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0, 16);
@@ -284,10 +284,10 @@ TEST_F(BootstrapTest, BootstrapSimple) {
   std::vector<uint8_t> flash_bytes(cmd.payload,
                                    cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_, DataWrite(0, 4, HasBytes(flash_bytes)))
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_, DataWrite(0, 4, HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorOk));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Reset
@@ -303,9 +303,9 @@ TEST_F(BootstrapTest, BootstrapOddPayload) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0, 17);
@@ -318,10 +318,10 @@ TEST_F(BootstrapTest, BootstrapOddPayload) {
     flash_bytes.push_back(0xff);
   }
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_, DataWrite(cmd.address, 6, HasBytes(flash_bytes)))
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_, DataWrite(cmd.address, 6, HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorOk));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Reset
@@ -337,9 +337,9 @@ TEST_F(BootstrapTest, BootstrapMisalignedAddrLongPayload) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0xfff0, 256);
@@ -350,12 +350,12 @@ TEST_F(BootstrapTest, BootstrapMisalignedAddrLongPayload) {
   std::vector<uint8_t> flash_bytes_1(cmd.payload + 16,
                                      cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_, DataWrite(0xfff0, 4, HasBytes(flash_bytes_0)))
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_, DataWrite(0xfff0, 4, HasBytes(flash_bytes_0)))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, DataWrite(0xff00, 60, HasBytes(flash_bytes_1)))
+  EXPECT_CALL(ctn_sram_, DataWrite(0xff00, 60, HasBytes(flash_bytes_1)))
       .WillOnce(Return(kErrorOk));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Reset
@@ -371,9 +371,9 @@ TEST_F(BootstrapTest, BootstrapMisalignedAddrShortPayload) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(816, 8);
@@ -383,10 +383,10 @@ TEST_F(BootstrapTest, BootstrapMisalignedAddrShortPayload) {
   std::vector<uint8_t> flash_bytes(cmd.payload,
                                    cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_, DataWrite(816, 2, HasBytes(flash_bytes)))
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_, DataWrite(816, 2, HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorOk));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Reset
@@ -402,9 +402,9 @@ TEST_F(BootstrapTest, BootstrapStartWithSectorErase) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(SectorEraseCmd(0));
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0, 16);
@@ -414,12 +414,12 @@ TEST_F(BootstrapTest, BootstrapStartWithSectorErase) {
   std::vector<uint8_t> flash_bytes(cmd.payload,
                                    cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_,
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_,
               DataWrite(cmd.address, cmd.payload_byte_count / sizeof(uint32_t),
                         HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorOk));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Reset
@@ -435,9 +435,9 @@ TEST_F(BootstrapTest, BootstrapProgramWithErase) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0, 16);
@@ -447,23 +447,23 @@ TEST_F(BootstrapTest, BootstrapProgramWithErase) {
   std::vector<uint8_t> flash_bytes(cmd.payload,
                                    cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_,
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_,
               DataWrite(cmd.address, cmd.payload_byte_count / sizeof(uint32_t),
                         HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorOk));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Chip erase
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Sector erase
   ExpectSpiCmd(SectorEraseCmd(0));
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlSectorErase(kErrorOk, kErrorOk, 0);
+  ExpectCtnSramSectorErase(kErrorOk, kErrorOk, 0);
   EXPECT_CALL(spi_device_, FlashStatusClear());
 
   // Reset
@@ -479,24 +479,24 @@ TEST_F(BootstrapTest, MisalignedEraseAddress) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Erase with misaligned and aligned addresses
   ExpectSpiCmd(SectorEraseCmd(5));
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlSectorErase(kErrorOk, kErrorOk, 0);
+  ExpectCtnSramSectorErase(kErrorOk, kErrorOk, 0);
   EXPECT_CALL(spi_device_, FlashStatusClear());
 
   ExpectSpiCmd(SectorEraseCmd(4096));
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlSectorErase(kErrorOk, kErrorOk, 4096);
+  ExpectCtnSramSectorErase(kErrorOk, kErrorOk, 4096);
   EXPECT_CALL(spi_device_, FlashStatusClear());
 
   ExpectSpiCmd(SectorEraseCmd(8195));
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlSectorErase(kErrorOk, kErrorOk, 8192);
+  ExpectCtnSramSectorErase(kErrorOk, kErrorOk, 8192);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Reset
   ExpectSpiCmd(ResetCmd());
@@ -516,9 +516,9 @@ TEST_F(BootstrapTest, IgnoredCommands) {
   EXPECT_CALL(spi_device_, FlashStatusClear());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Phase 1: Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Phase 2: Erase/Program
   ExpectSpiCmd(SectorEraseCmd(0));
@@ -539,7 +539,7 @@ TEST_F(BootstrapTest, EraseBank0Error) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorUnknown, kErrorOk);
+  ExpectCtnSramChipErase(kErrorUnknown, kErrorOk);
 
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
@@ -549,7 +549,7 @@ TEST_F(BootstrapTest, EraseBank1Error) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorUnknown);
+  ExpectCtnSramChipErase(kErrorOk, kErrorUnknown);
 
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
@@ -560,9 +560,9 @@ TEST_F(BootstrapTest, EraseVerifyBank0Error) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorUnknown, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorUnknown, kErrorOk);
 
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
@@ -573,9 +573,9 @@ TEST_F(BootstrapTest, EraseVerifyBank1Error) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorUnknown);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorUnknown);
 
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
@@ -586,9 +586,9 @@ TEST_F(BootstrapTest, DataWriteError) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0, 16);
@@ -598,12 +598,12 @@ TEST_F(BootstrapTest, DataWriteError) {
   std::vector<uint8_t> flash_bytes(cmd.payload,
                                    cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_,
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_,
               DataWrite(cmd.address, cmd.payload_byte_count / sizeof(uint32_t),
                         HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorUnknown));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
@@ -614,9 +614,9 @@ TEST_F(BootstrapTest, DataWriteErrorMisalignedAddr) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto cmd = PageProgramCmd(0xf0, 16);
@@ -626,10 +626,10 @@ TEST_F(BootstrapTest, DataWriteErrorMisalignedAddr) {
   std::vector<uint8_t> flash_bytes(cmd.payload,
                                    cmd.payload + cmd.payload_byte_count);
 
-  ExpectFlashCtrlWriteEnable();
-  EXPECT_CALL(flash_ctrl_, DataWrite(0xf0, 4, HasBytes(flash_bytes)))
+  ExpectCtnSramWriteEnable();
+  EXPECT_CALL(ctn_sram_, DataWrite(0xf0, 4, HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorUnknown));
-  ExpectFlashCtrlAllDisable();
+  ExpectCtnSramAllDisable();
 
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
@@ -640,9 +640,9 @@ TEST_F(BootstrapTest, BadProgramAddress) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
   auto page_program_cmd = PageProgramCmd(3, 16);
@@ -658,9 +658,9 @@ TEST_F(BootstrapTest, BadEraseAddress) {
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
-  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  ExpectCtnSramChipErase(kErrorOk, kErrorOk);
   // Verify
-  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  ExpectCtnSramEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Erase
   ExpectSpiCmd(SectorEraseCmd(FLASH_CTRL_PARAM_BYTES_PER_BANK *

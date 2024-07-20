@@ -86,6 +86,7 @@ struct dmidpi_ctx {
   struct tcp_server_ctx *sock;
   struct jtag_ctx jtag;
   struct dmi_sig_values sig;
+  int id_code;
 };
 
 /**
@@ -101,7 +102,7 @@ static void set_dr_data(struct dmidpi_ctx *ctx) {
       ctx->jtag.dr_length = 1;
       break;
     case IdCode:
-      ctx->jtag.dr_shift_reg = IDCODEVAL;
+      ctx->jtag.dr_shift_reg = ctx->id_code;
       ctx->jtag.dr_length = 32;
       break;
     case DTMCSR:
@@ -374,14 +375,23 @@ static void update_dmi_state(struct dmidpi_ctx *ctx) {
   }
 }
 
-void *dmidpi_create(const char *display_name, int listen_port) {
+void *dmidpi_create(const char *display_name, unsigned int id_code,
+                    int listen_port) {
   // Create context
   struct dmidpi_ctx *ctx =
       (struct dmidpi_ctx *)calloc(1, sizeof(struct dmidpi_ctx));
   assert(ctx);
 
+  // Initialize ID code value
+  if (id_code != 0) {
+    ctx->id_code = id_code;
+  } else {
+    ctx->id_code = IDCODEVAL;
+  }
+
   // Set up socket details
   ctx->sock = tcp_server_create(display_name, listen_port);
+  assert(ctx->sock);
 
   printf(
       "\n"

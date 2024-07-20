@@ -4,6 +4,7 @@
 
 module dmidpi #(
   parameter string Name = "dmi0", // name of the interface (display only)
+  parameter int unsigned IdCode = 'h0000_0000, // ID of the DMI device (Use default)
   parameter int ListenPort = 44853 // TCP port to listen on
 )(
   input  bit        clk_i,
@@ -22,7 +23,8 @@ module dmidpi #(
 );
 
   import "DPI-C"
-  function chandle dmidpi_create(input string name, input int listen_port);
+  function chandle dmidpi_create(input string name, input int unsigned id_code,
+                                 input int listen_port);
 
   import "DPI-C"
   function void dmidpi_tick(input chandle ctx, output bit dmi_req_valid,
@@ -38,7 +40,7 @@ module dmidpi #(
   chandle ctx;
 
   initial begin
-    ctx = dmidpi_create(Name, ListenPort);
+    ctx = dmidpi_create(Name, IdCode, ListenPort);
   end
 
   final begin

@@ -43,6 +43,7 @@ struct tcp_server_ctx {
   int sfd;  // socket fd
   int cfd;  // client fd
   pthread_t sock_thread;
+  pthread_mutex_t sock_mutex;
 };
 
 static bool tcp_buffer_is_full(struct tcp_buf *buf) {
@@ -319,6 +320,7 @@ static void *server_create(void *ctx_void) {
 
   // Initialise timeout
   timeout.tv_sec = 0;
+  timeout.tv_usec = 0;
 
   // Initialise fd_set
 
@@ -357,6 +359,7 @@ static void *server_create(void *ctx_void) {
     // New client data
     if (FD_ISSET(ctx->cfd, &read_fds)) {
       unsigned count = 0;
+      pthread_mutex_lock(&ctx->sock_mutex);
       while (!tcp_buffer_is_full(ctx->buf_in)) {
         if (get_byte(ctx, &xfer_data)) {
           tcp_buffer_put_byte(ctx->buf_in, xfer_data);
@@ -370,12 +373,15 @@ static void *server_create(void *ctx_void) {
           break;
         }
       }
+      pthread_mutex_unlock(&ctx->sock_mutex);
     }
 
     if (ctx->cfd != 0) {
+      pthread_mutex_lock(&ctx->sock_mutex);
       while (tcp_buffer_get_byte(ctx->buf_out, &xfer_data)) {
         put_byte(ctx, xfer_data);
       }
+      pthread_mutex_unlock(&ctx->sock_mutex);
     }
   }
 
@@ -411,8 +417,9 @@ struct tcp_server_ctx *tcp_server_create(const char *display_name,
   ctx->display_name = strdup(display_name);
   assert(ctx->display_name);
 
-  if (pthread_create(&ctx->sock_thread, NULL, server_create, (void *)ctx) !=
-      0) {
+  if (pthread_mutex_init(&ctx->sock_mutex, NULL) != 0 ||
+      pthread_create(&ctx->sock_thread, NULL, server_create, (void *)ctx) !=
+          0) {
     fprintf(stderr, "%s: Unable to create TCP socket thread\n",
             ctx->display_name);
     ctx_free(ctx);
@@ -423,11 +430,23 @@ struct tcp_server_ctx *tcp_server_create(const char *display_name,
 }
 
 bool tcp_server_read(struct tcp_server_ctx *ctx, char *dat) {
-  return tcp_buffer_get_byte(ctx->buf_in, dat);
+  bool result;
+  pthread_mutex_lock(&ctx->sock_mutex);
+  result = tcp_buffer_get_byte(ctx->buf_in, dat);
+  pthread_mutex_unlock(&ctx->sock_mutex);
+  return result;
 }
 
 void tcp_server_write(struct tcp_server_ctx *ctx, char dat) {
-  tcp_buffer_put_byte(ctx->buf_out, dat);
+  bool done = false;
+  while (!done) {
+    pthread_mutex_lock(&ctx->sock_mutex);
+    if (!tcp_buffer_is_full(ctx->buf_out)) {
+      tcp_buffer_put_byte(ctx->buf_out, dat);
+      done = true;
+    }
+    pthread_mutex_unlock(&ctx->sock_mutex);
+  }
 }
 
 void tcp_server_close(struct tcp_server_ctx *ctx) {

@@ -5,6 +5,7 @@
 module gpiodpi
 #(
   parameter string NAME = "gpio0",
+  parameter int ListenPort = -1,
   parameter        N_GPIO = 32
 )(
   input  logic              clk_i,
@@ -14,10 +15,12 @@ module gpiodpi
   input  logic [N_GPIO-1:0] gpio_d2p,
   input  logic [N_GPIO-1:0] gpio_en_d2p,
   input  logic [N_GPIO-1:0] gpio_pull_en,
-  input  logic [N_GPIO-1:0] gpio_pull_sel
+  input  logic [N_GPIO-1:0] gpio_pull_sel,
+  output logic              gpio_rst_n
 );
    import "DPI-C" function
-     chandle gpiodpi_create(input string name, input int n_bits);
+     chandle gpiodpi_create(input string name, input int listen_port,
+                            input int n_bits);
 
    import "DPI-C" function
      void gpiodpi_device_to_host(input chandle ctx, input [N_GPIO-1:0] gpio_d2p,
@@ -30,12 +33,13 @@ module gpiodpi
      int gpiodpi_host_to_device_tick(input chandle ctx,
                                      input [N_GPIO-1:0] gpio_en_d2p,
                                      input [N_GPIO-1:0] gpio_pull_en,
-                                     input [N_GPIO-1:0] gpio_pull_sel);
+                                     input [N_GPIO-1:0] gpio_pull_sel,
+                                     output gpio_rst_n);
 
    chandle ctx;
 
    initial begin
-     ctx = gpiodpi_create(NAME, N_GPIO);
+     ctx = gpiodpi_create(NAME, ListenPort, N_GPIO);
    end
 
    final begin
@@ -55,8 +59,9 @@ module gpiodpi
    always_ff @(posedge clk_i or negedge rst_ni) begin
      if (!rst_ni) begin
        gpio_p2d <= '0; // default value
+       gpio_rst_n = rst_ni;
      end else begin
-       gpio_p2d <= gpiodpi_host_to_device_tick(ctx, gpio_en_d2p, gpio_pull_en, gpio_pull_sel);
+       gpio_p2d <= gpiodpi_host_to_device_tick(ctx, gpio_en_d2p, gpio_pull_en, gpio_pull_sel, gpio_rst_n);
      end
    end
 

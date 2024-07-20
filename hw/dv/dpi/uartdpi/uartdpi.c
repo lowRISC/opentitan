@@ -19,33 +19,59 @@
 #include <string.h>
 #include <unistd.h>
 
-void *uartdpi_create(const char *name, const char *log_file_path) {
+#include "tcp_server.h"
+
+struct uartdpi_ctx {
+  // Server context
+  struct tcp_server_ctx *sock;
+  char ptyname[64];
+  int host;
+  int device;
+  char tmp_read;
+  FILE *log_file;
+};
+
+void *uartdpi_create(const char *name, int listen_port,
+                     const char *log_file_path) {
   struct uartdpi_ctx *ctx =
-      (struct uartdpi_ctx *)malloc(sizeof(struct uartdpi_ctx));
+      (struct uartdpi_ctx *)calloc(1, sizeof(struct uartdpi_ctx));
   assert(ctx);
 
   int rv;
 
-  // Initialize UART pseudo-terminal
-  struct termios tty;
-  cfmakeraw(&tty);
+  if (listen_port >= 0 && listen_port <= 0xffff) {
+    // Create socket
+    ctx->sock = tcp_server_create(name, listen_port);
+    assert(ctx->sock);
 
-  rv = openpty(&ctx->host, &ctx->device, 0, &tty, 0);
-  assert(rv != -1);
+    printf(
+        "\n"
+        "UART: Created %s:%d for %s. Connect to it with any telnet terminal "
+        "program.\n",
+        "localhost", listen_port, name);
+  } else {
+    // Initialize UART pseudo-terminal
+    struct termios tty;
+    cfmakeraw(&tty);
 
-  rv = ttyname_r(ctx->device, ctx->ptyname, 64);
-  assert(rv == 0 && "ttyname_r failed");
+    rv = openpty(&ctx->host, &ctx->device, 0, &tty, 0);
+    assert(rv != -1);
 
-  int cur_flags = fcntl(ctx->host, F_GETFL, 0);
-  assert(cur_flags != -1 && "Unable to read current flags.");
-  int new_flags = fcntl(ctx->host, F_SETFL, cur_flags | O_NONBLOCK);
-  assert(new_flags != -1 && "Unable to set FD flags");
+    rv = ttyname_r(ctx->device, ctx->ptyname, 64);
+    assert(rv == 0 && "ttyname_r failed");
 
-  printf(
-      "\n"
-      "UART: Created %s for %s. Connect to it with any terminal program, e.g.\n"
-      "$ screen %s\n",
-      ctx->ptyname, name, ctx->ptyname);
+    int cur_flags = fcntl(ctx->host, F_GETFL, 0);
+    assert(cur_flags != -1 && "Unable to read current flags.");
+    int new_flags = fcntl(ctx->host, F_SETFL, cur_flags | O_NONBLOCK);
+    assert(new_flags != -1 && "Unable to set FD flags");
+
+    printf(
+        "\n"
+        "UART: Created %s for %s. Connect to it with any terminal program, "
+        "e.g.\n"
+        "$ screen %s\n",
+        ctx->ptyname, name, ctx->ptyname);
+  }
 
   // Open log file (if requested)
   ctx->log_file = NULL;
@@ -84,8 +110,12 @@ void uartdpi_close(void *ctx_void) {
     return;
   }
 
-  close(ctx->host);
-  close(ctx->device);
+  if (ctx->sock) {
+    tcp_server_close(ctx->sock);
+  } else {
+    close(ctx->host);
+    close(ctx->device);
+  }
 
   if (ctx->log_file) {
     // Always ensure the log file is flushed (most important when writing
@@ -102,8 +132,13 @@ void uartdpi_close(void *ctx_void) {
 int uartdpi_can_read(void *ctx_void) {
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
 
-  int rv = read(ctx->host, &ctx->tmp_read, 1);
-  return (rv == 1);
+  if (ctx->sock) {
+    bool rv = tcp_server_read(ctx->sock, &ctx->tmp_read);
+    return (rv == true);
+  } else {
+    int rv = read(ctx->host, &ctx->tmp_read, 1);
+    return (rv == 1);
+  }
 }
 
 char uartdpi_read(void *ctx_void) {
@@ -117,8 +152,12 @@ void uartdpi_write(void *ctx_void, char c) {
 
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
 
-  rv = write(ctx->host, &c, 1);
-  assert(rv == 1 && "Write to pseudo-terminal failed.");
+  if (ctx->sock) {
+    tcp_server_write(ctx->sock, c);
+  } else {
+    rv = write(ctx->host, &c, 1);
+    assert(rv == 1 && "Write to pseudo-terminal failed.");
+  }
 
   if (ctx->log_file) {
     rv = fwrite(&c, sizeof(char), 1, ctx->log_file);

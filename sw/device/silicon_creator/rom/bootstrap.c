@@ -6,7 +6,7 @@
 
 #include <stdalign.h>
 
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/ctn_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
@@ -65,17 +65,17 @@ typedef enum bootstrap_state {
 } bootstrap_state_t;
 
 /**
- * Handles access permissions and erases both data banks of the embedded flash.
+ * Handles access permissions and erases both data banks of the ctn sram.
  *
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_chip_erase(void) {
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
-  rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                            kFlashCtrlEraseTypeBank);
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
+  ctn_sram_bank_erase_perms_set(kHardenedBoolTrue);
+  rom_error_t err_0 = ctn_sram_data_erase(0, kCtnSramEraseTypeBank);
+  rom_error_t err_1 = ctn_sram_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                          kCtnSramEraseTypeBank);
+  ctn_sram_bank_erase_perms_set(kHardenedBoolFalse);
 
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
@@ -83,10 +83,7 @@ static rom_error_t bootstrap_chip_erase(void) {
 
 /**
  * Handles access permissions and erases a 4 KiB region in the data partition of
- * the embedded flash.
- *
- * Since OpenTitan's flash page size is 2 KiB, this function erases two
- * consecutive pages.
+ * the ctn sram.
  *
  * @param addr Address that falls within the 4 KiB region being deleted.
  * @return Result of the operation.
@@ -107,15 +104,15 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
   }
   addr &= kPageAddrMask;
 
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4True,
   });
-  rom_error_t err_0 = flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage);
-  rom_error_t err_1 = flash_ctrl_data_erase(
-      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kFlashCtrlEraseTypePage);
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  rom_error_t err_0 = ctn_sram_data_erase(addr, kCtnSramEraseTypePage);
+  rom_error_t err_1 = ctn_sram_data_erase(
+      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kCtnSramEraseTypePage);
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4False,
@@ -126,18 +123,12 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 }
 
 /**
- * Handles access permissions and programs up to 256 bytes of flash memory
+ * Handles access permissions and programs up to 256 bytes of memory
  * starting at `addr`.
  *
- * If `byte_count` is not a multiple of flash word size, it's rounded up to next
- * flash word and missing bytes in `data` are set to `0xff`.
- *
- * @param addr Address to write to, must be flash word aligned.
- * @param byte_count Number of bytes to write. Rounded up to next flash word if
- * not a multiple of flash word size. Missing bytes in `data` are set to `0xff`.
- * @param data Data to write, must be word aligned. If `byte_count` is not a
- * multiple of flash word size, `data` must have enough space until the next
- * flash word.
+ * @param addr Address to write data into memory.
+ * @param byte_count Number of bytes to write into memory.
+ * @param data Data to write into memory.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -178,7 +169,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   }
   size_t rem_word_count = byte_count / sizeof(uint32_t);
 
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4False,
@@ -193,7 +184,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
     if (word_count > rem_word_count) {
       word_count = rem_word_count;
     }
-    err_0 = flash_ctrl_data_write(addr, word_count, data);
+    err_0 = ctn_sram_data_write(addr, word_count, data);
     rem_word_count -= word_count;
     data += word_count * sizeof(uint32_t);
     // Wrap to the beginning of the current page since PAGE_PROGRAM modifies
@@ -202,9 +193,9 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   }
   rom_error_t err_1 = kErrorOk;
   if (rem_word_count > 0) {
-    err_1 = flash_ctrl_data_write(addr, rem_word_count, data);
+    err_1 = ctn_sram_data_write(addr, rem_word_count, data);
   }
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4False,
@@ -217,9 +208,6 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
 /**
  * Bootstrap state 1: Wait for an erase command and erase the data
  * partition.
- *
- * This function erases both data banks of the flash regardless of the type of
- * the erase command (CHIP_ERASE or SECTOR_ERASE).
  *
  * @param state Bootstrap state.
  * @return Result of the operation.
@@ -267,9 +255,9 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
-  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase_verify(
-      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  rom_error_t err_0 = ctn_sram_data_erase_verify(0, kCtnSramEraseTypeBank);
+  rom_error_t err_1 = ctn_sram_data_erase_verify(
+      FLASH_CTRL_PARAM_BYTES_PER_BANK, kCtnSramEraseTypeBank);
   HARDENED_RETURN_IF_ERROR(err_0);
   HARDENED_RETURN_IF_ERROR(err_1);
 

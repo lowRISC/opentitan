@@ -70,13 +70,13 @@ enum {
    */
   kSpiDeviceSfdpAreaOffset = 0xc00,
   /**
-   * Offset of the payload area in spi_device buffer.
-   */
-  kSpiDevicePayloadAreaOffset = 0xd00,
-  /**
    * Size of the payload area in spi_device buffer in bytes.
    */
   kSpiDevicePayloadAreaNumBytes = 256,
+  /**
+   * Offset of the payload area in spi_device buffer.
+   */
+  kSpiDevicePayloadAreaOffset = 0x0,
   /**
    * Size of the payload area in spi_device buffer in words.
    */
@@ -119,7 +119,7 @@ typedef enum spi_device_opcode {
   /**
    * READ_SFDP command.
    *
-   * This commond is handled by the spi_device. Upon receiving this
+   * This command is handled by the spi_device. Upon receiving this
    * opcode, 3 bytes of address (all zeroes), and 8 dummy cycles;
    * spi_device sends `kSpiDeviceSfdpTable` from its buffer.
    */

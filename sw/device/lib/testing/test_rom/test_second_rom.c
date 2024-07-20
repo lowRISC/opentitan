@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
@@ -109,6 +110,20 @@ bool second_rom_test_main(void) {
         mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
     CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
     LOG_INFO("Jitter is enabled");
+  }
+
+  if (bootstrap_requested() == kHardenedBoolTrue) {
+    // This log statement is used to synchronize the rom and DV testbench
+    // for specific test cases.
+    LOG_INFO("Boot strap requested");
+
+    rom_error_t bootstrap_err = bootstrap();
+    if (bootstrap_err != kErrorOk) {
+      LOG_ERROR("Bootstrap failed with status code: %08x",
+                (uint32_t)bootstrap_err);
+      // Currently the only way to recover is by a hard reset.
+      test_status_set(kTestStatusFailed);
+    }
   }
 
   _ottf_main();

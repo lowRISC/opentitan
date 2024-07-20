@@ -9,14 +9,17 @@
 
 extern "C" {
 
+struct gpiodpi_ctx;
+
 /**
  * Allocate a new GPIO DPI interface, returned as an opaque pointer.
  *
  * @param name a name to use when creating the inner FIFO.
+ * @param listen_port Port to listen on
  * @param n_bits number of bits to write in each direction; this must be at
  *        most 32 bits.
  */
-void *gpiodpi_create(const char *name, int n_bits);
+void *gpiodpi_create(const char *name, int listen_port, int n_bits);
 
 /**
  * Attempt to post the current GPIO state to the outside world.
@@ -40,7 +43,8 @@ void gpiodpi_device_to_host(void *ctx_void, svBitVecVal *gpio_data,
  */
 uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
                                      svBitVecVal *gpio_pull_en,
-                                     svBitVecVal *gpio_pull_sel);
+                                     svBitVecVal *gpio_pull_sel,
+                                     svBit *gpio_rst_n);
 
 /**
  * Relinquish resources held by a GPIO DPI interface.
