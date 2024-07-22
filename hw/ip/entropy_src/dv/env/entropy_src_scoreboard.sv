@@ -61,7 +61,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit                              precon_fifo_full = 0;
   bit                              precon_fifo_full_q = 0;
 
-  // Queue of 64-bit words for inserting entropy input to the SHA (or raw) pipelines
+  // Queue words for inserting entropy input to the SHA (or raw) pipelines.
   bit [SHACondWidth - 1:0]         sha_process_q[$];
   bit [TL_DW - 1:0]                raw_process_q[$];
 
@@ -162,7 +162,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit predict_fw_ov_wr_fifo_full = 0;
   string pad_st_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st[6:0]";
   string pad_st_d_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st_d[6:0]";
-  string aes_halt_o_path = "tb.dut.cs_aes_halt_o";
 
   // Variables used to model entropy propagating through the pipeline.
   int                       post_ht_drops = 0;
@@ -171,10 +170,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit                       esbit_last_full_cycle = 0;
   bit                       postht_fifo_processed = 1;
   bit                       postht_last_full_cycle = 0;
-  bit                       distr_fifo_processed = 1;
-  bit                       observe_fifo_processed = 1;
-  bit                       bypass_fifo_processed = 1;
-  bit                       precon_fifo_processed = 1;
   bit                       sha3_ready_predicted = 1;
   bit                       fw_ov_sha3_started = 0;
   bit [3:0]                 esrng_fifo_q[$];
@@ -386,7 +381,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit rng_bit_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
     int rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
     // Round down to the highest even number.
-    // The window size can be odd when entropy drops happened.
+    // This needs to be done since the bits are tested in pairs and the last bit will be skipped if
+    // the number of bits is odd.
     int window_size = (window.size() % 2) ? window.size() - 1 : window.size();
     for (int i = 0; i < window_size; i += 2) begin
       for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
@@ -1116,7 +1112,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fork
         begin
           bit [StateWidthPad-1:0] sha3pad_state, sha3pad_state_next;
-          bit cs_aes_halt_o;
           // Wait one cycle for the precon FIFO clear signal to go low.
           cfg.clk_rst_vif.wait_clks(1);
           do begin
@@ -1124,8 +1119,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             cfg.clk_rst_vif.wait_clks(1);
             `DV_CHECK(uvm_hdl_read(pad_st_path, sha3pad_state))
             `DV_CHECK(uvm_hdl_read(pad_st_d_path, sha3pad_state_next))
-            `DV_CHECK(uvm_hdl_read(aes_halt_o_path, cs_aes_halt_o))
-            sha3_msg_ready = !cs_aes_halt_o && (sha3pad_state == StMessage) &&
+            sha3_msg_ready = (sha3pad_state == StMessage) &&
                              (sha3pad_state_next == StMessage);
           end while (!sha3_msg_ready);
           precon_fifo_full = 0;
@@ -1214,10 +1208,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       esbit_last_full_cycle = 0;
       postht_fifo_processed = 1;
       postht_last_full_cycle = 0;
-      distr_fifo_processed = 1;
-      observe_fifo_processed = 1;
-      bypass_fifo_processed = 1;
-      precon_fifo_processed = 1;
       sha3_ready_predicted = 1;
       fw_ov_sha3_started = 0;
       esrng_fifo_q.delete();
@@ -1592,7 +1582,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           fork
             begin
               bit es_fw_ov_insert_mode, es_bypass_mode, module_enable;
-              // Wait for the variables, needed for prediction, to update.
               es_fw_ov_insert_mode = (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
                   (cfg.otp_en_es_fw_over == MuBi8True) &&
                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
@@ -2297,20 +2286,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       // Always pop, if the following FIFOs are full we drop the entropy.
       esrng_rd_data = esrng_fifo_q.pop_front();
 
-      // In single lane mode, we push into the esbit FIFO if it has space left.
-      if (bit_sel_enable && (esbit_fifo_q.size() < 4) && !esbit_last_full_cycle) begin
+      if (bit_sel_enable && (esbit_fifo_q.size() < RNG_BUS_WIDTH) && !esbit_last_full_cycle) begin
+        // In single lane mode, we push into the esbit FIFO if it has space left.
         // Wait for the esbit FIFO to be done such that the words we push into it
         // are handled in the next cycle.
         wait(esbit_fifo_processed);
         esbit_fifo_q.push_back(esrng_rd_data[rng_bit_sel]);
-      // In the normal mode, we push into the postht FIFO if it has space left.
-      end else if (!bit_sel_enable && (postht_fifo_q.size() < 8) && !postht_last_full_cycle) begin
+      end else if (!bit_sel_enable && (postht_fifo_q.size() < POST_HT_WIDTH/RNG_BUS_WIDTH) &&
+                   !postht_last_full_cycle) begin
+        // In the normal mode, we push into the postht FIFO if it has space left.
         // Wait for the postht FIFO to be done such that the words we push into it
         // are handled in the next cycle.
         wait(postht_fifo_processed);
         postht_fifo_q.push_back(esrng_rd_data);
-      // Otherwise we drop the entropy and increase the counter. We also predict an alert.
       end else begin
+        // Otherwise we drop the entropy and increase the counter. We also predict an alert.
         post_ht_drops += 1;
         `DV_CHECK_FATAL(ral.recov_alert_sts.postht_entropy_drop_alert.predict(1'b1));
         set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
@@ -2331,8 +2321,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       bit_sel_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
       // If we are not in single lane mode or the postht FIFO is full we don't do anything.
       // Since this is a packer FIFO we need to wait until we have a full word before we pop.
-      if (!bit_sel_enable || (postht_fifo_q.size() >= 8) ||
-          postht_last_full_cycle || (esbit_fifo_q.size() < 4)) begin
+      if (!bit_sel_enable || (postht_fifo_q.size() >= POST_HT_WIDTH/RNG_BUS_WIDTH) ||
+          postht_last_full_cycle || (esbit_fifo_q.size() < RNG_BUS_WIDTH)) begin
         // Signal to the esrng FIFO that we are done processing for the current cycle.
         esbit_fifo_processed = 1;
         @(negedge cfg.clk_rst_vif.clk);
@@ -2346,7 +2336,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       esbit_last_full_cycle = 1;
       while (esbit_fifo_q.size()) begin
         esbit_rd_data = esbit_fifo_q.pop_front();
-        postht_wr_data = {esbit_rd_data, postht_wr_data[1 +: 3]};
+        postht_wr_data = {esbit_rd_data, postht_wr_data[1 +: (RNG_BUS_WIDTH - 1)]};
       end
       postht_fifo_q.push_back(postht_wr_data);
       // Signal to the esrng FIFO that we are done processing for the current cycle.
@@ -2358,7 +2348,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endtask
 
   virtual task process_postht_fifo();
-    bit [3:0] postht_rd_data;
+    bit [RNG_BUS_WIDTH - 1:0] postht_rd_data;
     bit [TL_DW - 1:0] distr_wr_data;
     forever begin
       @(posedge cfg.clk_rst_vif.clk);
@@ -2368,7 +2358,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       // If the distr FIFO is full we model backpressure by not doing anything.
       // Since this is a packer FIFO we need to wait until we have a full word before we pop.
-      if ((distr_fifo_q.size() >= 2) || (postht_fifo_q.size() < 8)) begin
+      if ((distr_fifo_q.size() >= DISTR_FIFO_DEPTH) ||
+          (postht_fifo_q.size() < POST_HT_WIDTH/RNG_BUS_WIDTH)) begin
         // Signal to the preceding FIFOs that we are done processing for the current cycle.
         postht_fifo_processed = 1;
         @(negedge cfg.clk_rst_vif.clk);
@@ -2379,7 +2370,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       postht_last_full_cycle = 1;
       while (postht_fifo_q.size()) begin
         postht_rd_data = postht_fifo_q.pop_front();
-        distr_wr_data = {postht_rd_data, distr_wr_data[4 +: (TL_DW - 4)]};
+        distr_wr_data = {postht_rd_data, distr_wr_data[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
       end
       distr_fifo_q.push_back(distr_wr_data);
 
@@ -2409,13 +2400,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
       // If the conditioner is being used and we are not in fw_ov_insert mode,
-      // then we only propagate the entropy if the distr FIFO is not full.
-      if ((predict_conditioning && !fw_ov_insert && (distr_to_precon_fifo_q.size() >= 2)) ||
+      // then we only propagate the entropy if the distr_to_precon_fifo queue is not full.
+      if ((predict_conditioning && !fw_ov_insert &&
+           (distr_to_precon_fifo_q.size() >= PRECON_FIFO_DEPTH)) ||
           (distr_fifo_q.size() == 0)) begin
-        // Signal to the preceding FIFOs that we are done processing for the current cycle.
-        distr_fifo_processed = 1;
-        @(negedge cfg.clk_rst_vif.clk);
-        distr_fifo_processed = 0;
         continue;
       end
 
@@ -2430,11 +2418,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if (predict_conditioning && !fw_ov_insert) begin
         distr_to_precon_fifo_q.push_back(distr_rd_data);
       end
-
-      // Signal to the preceding FIFOs that we are done processing for the current cycle.
-      distr_fifo_processed = 1;
-      @(negedge cfg.clk_rst_vif.clk);
-      distr_fifo_processed = 0;
     end
   endtask
 
@@ -2445,8 +2428,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if(!cfg.en_scb) begin
         continue;
       end
-      // In case of an overflow condition, we predict the end of the condition right at
-      // the posedge so we need wait and see if it ends in this cycle.
+      // In case of an overflow condition, the end of the condition is predicted right at
+      // the posedge so we need to wait and see if the overflow condition ends in this cycle.
       `DV_SPINWAIT_EXIT(wait(!overflow_condition);,
                         cfg.clk_rst_vif.wait_n_clks(1);)
 
@@ -2467,9 +2450,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             overflow_condition = 1;
             `DV_CHECK_FATAL(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow.predict('b1))
 
-          // If there is no overflow condition going on then push the repacked entropy into the
-          // observe FIFO queue.
           end else begin
+            // If there is no overflow condition going on then push the repacked entropy into the
+            // observe FIFO queue.
             observe_fifo_q.push_back(observe_wr_data);
             // Signal to potential reads to observe_fifo_depth that a word is currently being pushed
             // into the observe FIFO.
@@ -2485,11 +2468,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           end
         end
       end
-
-      // Signal to the preceding FIFOs that we are done processing for the current cycle.
-      observe_fifo_processed = 1;
-      wait(!cfg.clk_rst_vif.clk);
-      observe_fifo_processed = 0;
     end
   endtask
 
@@ -2507,19 +2485,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                      (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True);
       fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
+      // The fw_ov_insert case is handled in process_tl_access().
       if (!fw_ov_insert && !predict_conditioning && distr_to_bypass_fifo_q.size()) begin
         // Get the data for redistribution.
         bypass_wr_data = distr_to_bypass_fifo_q.pop_front();
         raw_process_q.push_back(bypass_wr_data);
-        if (raw_process_q.size() == 12) begin
+        if (raw_process_q.size() == BYPASS_FIFO_DEPTH) begin
           package_and_release_entropy();
         end
       end
-
-      // Signal to the preceding FIFOs that we are done processing for the current cycle.
-      bypass_fifo_processed = 1;
-      @(negedge cfg.clk_rst_vif.clk);
-      bypass_fifo_processed = 0;
     end
   endtask
 
@@ -2543,27 +2517,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
       // If the conditioner is not being used or the data for the conditioner comes from firmware,
-      // we don't need to do anything.
+      // we don't need to do anything. The precon FIFO is a packer FIFO and we only propagate the
+      // data when we have a SHACondWidth wide word ready.
       if (fw_ov_insert || !predict_conditioning || !sha3_msg_ready ||
-          (distr_to_precon_fifo_q.size() < 2)) begin
-        // Signal to the preceding FIFOs that we are done processing for the current cycle.
-        precon_fifo_processed = 1;
-        @(negedge cfg.clk_rst_vif.clk);
-        precon_fifo_processed = 0;
+          (distr_to_precon_fifo_q.size() < PRECON_FIFO_DEPTH)) begin
         continue;
       end
       // Push the entropy into the SHA3 processing queue.
       while (distr_to_precon_fifo_q.size()) begin
         precon_rd_data = distr_to_precon_fifo_q.pop_front();
         repacked_entropy_sha = {precon_rd_data,
-                                repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
+            repacked_entropy_sha[POST_HT_WIDTH +: (SHACondWidth - POST_HT_WIDTH)]};
       end
       sha_process_q.push_back(repacked_entropy_sha);
-
-      // Signal to the preceding FIFOs that we are done processing for the current cycle.
-      precon_fifo_processed = 1;
-      @(negedge cfg.clk_rst_vif.clk);
-      precon_fifo_processed = 0;
     end
   endtask
 
@@ -2931,7 +2897,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   virtual task predict_fw_ov_wr_full();
     bit [StateWidthPad-1:0] sha3pad_state, sha3pad_state_next;
-    bit cs_aes_halt_o;
     bit fips_enabled;
     bit es_route;
     bit es_type;
@@ -2958,10 +2923,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       `DV_CHECK(uvm_hdl_read(pad_st_path, sha3pad_state))
       `DV_CHECK(uvm_hdl_read(pad_st_d_path, sha3pad_state_next))
-      `DV_CHECK(uvm_hdl_read(aes_halt_o_path, cs_aes_halt_o))
 
-      // SHA3 only accepts new words if the SHA3 pad SM is the StMessage state and cs_aes_halt_o
-      // is low. If the SHA3 pad SM is about to leave the StMessage state, the sha3_nsg_ready
+      // SHA3 only accepts new words if the SHA3 pad SM is the StMessage state.
+      // If the SHA3 pad SM is about to leave the StMessage state, the sha3_nsg_ready
       // signal will go low. This signal is needed to predict whether the precon FIFO is full.
       sha3_msg_ready = (sha3pad_state == StMessage) && (sha3pad_state_next == StMessage);
       sha3_ready_predicted = 1;
