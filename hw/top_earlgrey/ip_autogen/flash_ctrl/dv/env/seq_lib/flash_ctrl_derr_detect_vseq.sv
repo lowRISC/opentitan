@@ -12,7 +12,6 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int num, bank;
-    int fatal_cnt = 0;
     uvm_reg_data_t addr0, addr1;
     cfg.derr_once = 1;
     cfg.scb_h.do_alert_check = 1;
@@ -24,7 +23,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
     fork begin : isolation_fork
       fork
         begin
-          repeat(40) begin
+          repeat(cfg.otf_num_rw) begin
             randcase
               cfg.otf_wr_pct:begin
                 `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
@@ -40,7 +39,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
           end
         end
         begin
-          for (int i = 0; i < 4; ++i) begin
+          for (int i = 0; i < cfg.otf_num_hr; ++i) begin
             fork
               send_rand_host_rd();
             join_none
@@ -56,17 +55,16 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
         end
       join_any
       disable fork;
-    end // block: isolation_fork
+    end : isolation_fork
     join
 
     // Add drain time
     #10us;
-    if (cfg.derr_created[0] + cfg.derr_created[1] > 0) begin
-      fatal_cnt = cfg.scb_h.alert_count["fatal_err"];
-      `DV_CHECK_NE(fatal_cnt, 0, "fatal alert is not detected",
-                   error, "SEQ")
+    if (cfg.derr_count(ReadTaskCtrl) > 0 || cfg.derr_count(ReadTaskHost) > 0) begin
+      int fatal_cnt = cfg.scb_h.alert_count["fatal_err"];
+      `DV_CHECK_NE(fatal_cnt, 0, "fatal alert is not detected", error, "SEQ")
     end
     `uvm_info("SEQ", $sformatf("seqend derr_created: %p", cfg.derr_created), UVM_LOW)
     otf_tb_clean_up();
-  endtask // body
-endclass // flash_ctrl_derr_detect_vseq
+  endtask : body
+endclass : flash_ctrl_derr_detect_vseq

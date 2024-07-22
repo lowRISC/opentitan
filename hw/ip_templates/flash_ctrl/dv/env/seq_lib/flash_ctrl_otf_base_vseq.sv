@@ -344,8 +344,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf(
                 "Address start=%x end=%x num=%x fractions=%x", ctrl.otf_addr, end_addr, num,
                 fractions), UVM_MEDIUM)
-      if (!address_range_was_written(to_full_addr(ctrl.otf_addr, bank),
-				     to_full_addr(end_addr, bank))) begin
+      if (!address_range_was_written(bank, ctrl.partition, ctrl.otf_addr, end_addr)) begin
         `uvm_info(`gfn, $sformatf(
                   "Found unwritten address range bank:%0d %s [0x%x : 0x%x]",
                   bank, ctrl.partition.name, ctrl.otf_addr, end_addr), UVM_MEDIUM)
@@ -494,7 +493,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     start_addr = flash_op.otf_addr;
     // last byte address in each program
     end_addr = start_addr + (tot_wd * 4) - 1;
-    update_range_addresses_written(to_full_addr(start_addr, bank), to_full_addr(end_addr, bank));
+    update_range_addresses_written(bank, flash_op.partition, start_addr, end_addr);
 
     `uvm_info("prog_flash",$sformatf("begin addr:%x part:%s num:%0d wd:%0d st:%x ed:%x",
                                      flash_op.otf_addr, flash_op.partition.name, num,
@@ -1316,7 +1315,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
               cfg.update_otf_mem_read_zone(part, i, addr);
             end
-//            add_address_range(i, part, st_addr, ed_addr);
+            add_address_range(i, part, st_addr, ed_addr);
             `uvm_info("flash_otf_init",
                       $sformatf("part:%s pre:%s bank:%0d st:%x ed:%x",
                                 part.name, j.name, i, st_addr, ed_addr), UVM_MEDIUM)
@@ -1338,7 +1337,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
               for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
                 cfg.update_otf_mem_read_zone(part, i, addr);
               end
-//              add_address_range(i, part, st_addr, ed_addr);
+              add_address_range(i, part, st_addr, ed_addr);
               `uvm_info("flash_otf_init",
                         $sformatf("part:%s pre:%s bank:%0d page:%0d st:%x ed:%x",
                                   part.name, j.name, i, k, st_addr, ed_addr), UVM_MEDIUM)
@@ -1349,7 +1348,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end :parts
       while (part != part.first);
     end : banks
-//    sort_all_address_ranges();
+    sort_all_address_ranges();
   endfunction // flash_otf_init
 
   // Send direct host read to both banks 'host_num' times.
