@@ -54,7 +54,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
 
   // Queue of TL_DW words for predicting outputs of the observe FIFO
-  bit [TL_DW - 1:0]                repacked_entropy_release_q[$];
   bit [TL_DW - 1:0]                observe_fifo_q[$];
   bit                              overflow_condition = 0;
   bit                              observe_read_incoming = 0;
@@ -64,7 +63,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   // Queue of 64-bit words for inserting entropy input to the SHA (or raw) pipelines
   bit [SHACondWidth - 1:0]         sha_process_q[$];
-  bit [SHACondWidth - 1:0]         raw_process_q[$];
+  bit [TL_DW - 1:0]                raw_process_q[$];
 
   // Buffer to store SHA entropy when using FW_OV mode
   bit [SHACondWidth - 1:0]         repacked_entropy_fw_ov;
@@ -165,6 +164,27 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   string pad_st_d_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st_d[6:0]";
   string aes_halt_o_path = "tb.dut.cs_aes_halt_o";
 
+  // Variables used to model entropy propagating through the pipeline.
+  int                       post_ht_drops = 0;
+  bit                       fw_ov_insert;
+  bit                       esbit_fifo_processed = 1;
+  bit                       esbit_last_full_cycle = 0;
+  bit                       postht_fifo_processed = 1;
+  bit                       postht_last_full_cycle = 0;
+  bit                       distr_fifo_processed = 1;
+  bit                       observe_fifo_processed = 1;
+  bit                       bypass_fifo_processed = 1;
+  bit                       precon_fifo_processed = 1;
+  bit                       sha3_ready_predicted = 1;
+  bit                       fw_ov_sha3_started = 0;
+  bit [3:0]                 esrng_fifo_q[$];
+  bit [3:0]                 esbit_fifo_q[$];
+  bit [TL_DW - 1:0]         postht_fifo_q[$];
+  bit [TL_DW - 1:0]         distr_fifo_q[$];
+  bit [TL_DW - 1:0]         distr_to_observe_fifo_q[$];
+  bit [TL_DW - 1:0]         distr_to_bypass_fifo_q[$];
+  bit [TL_DW - 1:0]         distr_to_precon_fifo_q[$];
+
   // This enum type contains the states used for the FSM in sha3pad.sv.
   localparam int StateWidthPad = 7;
   typedef enum logic [StateWidthPad-1:0] {
@@ -221,6 +241,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         health_test_scoring_thread();
         process_xht();
         predict_fw_ov_wr_full();
+        process_esrng_fifo();
+        process_esbit_fifo();
+        process_postht_fifo();
+        process_distr_fifo();
+        process_observe_fifo();
+        process_bypass_fifo();
+        process_precon_fifo();
       join_none
     end
   endtask
@@ -358,7 +385,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int minq[$], maxq[$];
     bit rng_bit_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
     int rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
-    for (int i = 0; i < window.size(); i += 2) begin
+    // Round down to the highest even number.
+    // The window size can be odd when entropy drops happened.
+    int window_size = (window.size() % 2) ? window.size() - 1 : window.size();
+    for (int i = 0; i < window_size; i += 2) begin
       for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
         bit different = window[i][j] ^ window[i + 1][j];
         pair_cnt[j] += different;
@@ -1107,7 +1137,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // Internal CSRNG stores and scoreboard state is cleared on Disable and HardReset events.
     if( rst_type == Disable || rst_type == HardReset ) begin
       fips_csrng_q.delete();
-      repacked_entropy_release_q.delete();
       overflow_condition = 0;
       `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict('b0))
       // fw_ov_wr_fifo_full goes high when the module is disabled.
@@ -1168,8 +1197,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       // For FW_OV mode the 64 bit packer is also cleared.
       repack_idx_fw_ov = 0;
     end
-    // Note: For non-FW_OV mode, the repack_idx_tl and repack_idx_sha counters are stack variables
-    // which get reset automatically when the collect entropy task exits.
 
     if ((rst_type == FIFOClr) || (rst_type == Enable)) begin
       observe_fifo_q.delete();
@@ -1181,6 +1208,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       // Clear variables used for observe FIFO depth prediction.
       observe_push_busy_addr_phase = 0;
       observe_push_busy = 0;
+      // Clear variables used for predicting entropy drops.
+      post_ht_drops = 0;
+      esbit_fifo_processed = 1;
+      esbit_last_full_cycle = 0;
+      postht_fifo_processed = 1;
+      postht_last_full_cycle = 0;
+      distr_fifo_processed = 1;
+      observe_fifo_processed = 1;
+      bypass_fifo_processed = 1;
+      precon_fifo_processed = 1;
+      sha3_ready_predicted = 1;
+      fw_ov_sha3_started = 0;
+      esrng_fifo_q.delete();
+      esbit_fifo_q.delete();
+      postht_fifo_q.delete();
+      distr_fifo_q.delete();
+      distr_to_observe_fifo_q.delete();
+      distr_to_bypass_fifo_q.delete();
+      distr_to_precon_fifo_q.delete();
     end
 
     // reset all other statistics
@@ -1547,7 +1593,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             begin
               bit es_fw_ov_insert_mode, es_bypass_mode, module_enable;
               // Wait for the variables, needed for prediction, to update.
-              cfg.clk_rst_vif.wait_n_clks(1);
               es_fw_ov_insert_mode = (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
                   (cfg.otp_en_es_fw_over == MuBi8True) &&
                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
@@ -1815,6 +1860,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                     // which we load into the next round.
                     bit [SHACondWidth - 1:0] sha_temp = sha_process_q.pop_back();
                     `uvm_info(`gfn, "SHA3 disabled for FW_OV (Illegally, data present)", UVM_FULL)
+                    // Signal to predict_fw_ov_wr_full() that SHA3 has been started by firmware.
+                    fw_ov_sha3_started = 1;
                     package_and_release_entropy();
                     sha_process_q.push_back(sha_temp);
                     `uvm_info(`gfn, "SHA3 disabled while data pending, expecting alert", UVM_MEDIUM)
@@ -1822,6 +1869,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                     `DV_CHECK_FATAL(recov_sts_fld.predict(.value(1'b1), .kind(UVM_PREDICT_READ)));
                   end else begin
                     `uvm_info(`gfn, "SHA3 disabled for FW_OV (Legally)", UVM_FULL)
+                    // Signal to predict_fw_ov_wr_full() that SHA3 has been started by firmware.
+                    fw_ov_sha3_started = 1;
                     package_and_release_entropy();
                   end
                 end else begin
@@ -1849,7 +1898,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
               if (ignore_fw_ov_data_pulse) begin
                 msg = $sformatf("fw_ov_wr_data dropped: 0x%08x", item.a_data);
-                `uvm_info(`gfn, msg, UVM_LOW)
+                `uvm_info(`gfn, msg, UVM_FULL)
               end else begin
                 msg = $sformatf("fw_ov_wr_data captured: 0x%08x", item.a_data);
                 `uvm_info(`gfn, msg, UVM_FULL)
@@ -1869,12 +1918,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   `uvm_info(`gfn, msg, UVM_HIGH)
                   if (predict_conditioned) begin
                     sha_process_q.push_back(repacked_entropy_fw_ov);
-                  end else begin
-                    raw_process_q.push_back(repacked_entropy_fw_ov);
                   end
-                  // In bypass mode, data is automatically released when a full seed is acquired
-                  if (! predict_conditioned &&
-                      raw_process_q.size() == (CSRNG_BUS_WIDTH / SHACondWidth)) begin
+                end
+                // In bypass mode, data is automatically released when a full seed is acquired
+                if (!predict_conditioned) begin
+                  raw_process_q.push_back(item.a_data);
+                  if (raw_process_q.size() == (CSRNG_BUS_WIDTH / TL_DW)) begin
                     package_and_release_entropy();
                   end
                 end
@@ -2200,14 +2249,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end else begin
 
       while (raw_process_q.size() > 0) begin
-        bit [SHACondWidth - 1:0] word = raw_process_q.pop_front();
+        bit [TL_DW - 1:0] word = raw_process_q.pop_front();
         string fmt;
 
-        fmt = "sample size: %01d, last elem.: %016h";
+        fmt = "sample size: %01d, last elem.: %08h";
         `uvm_info(`gfn, $sformatf(fmt, raw_process_q.size()+1, word), UVM_FULL)
 
-        csrng_data = csrng_data >> SHACondWidth;
-        csrng_data[CSRNG_BUS_WIDTH - SHACondWidth +: SHACondWidth] = word;
+        csrng_data = csrng_data >> TL_DW;
+        csrng_data[CSRNG_BUS_WIDTH - TL_DW +: TL_DW] = word;
       end
       `uvm_info(`gfn, $sformatf("Unconditioned data: %096h", csrng_data), UVM_HIGH)
     end
@@ -2224,143 +2273,313 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endtask
 
-  // Wait on the RNG queue for rng sequence items
-  //
-  // If bit selection is enabled, wait for RNG_BUS_WIDTH items. Otherwise, return after one item.
-  // If dut_pipeline_enabled is deasserted before any data is found, this task
-  // halts and asserts disable_detected.
-  task wait_rng_queue(output rng_val_t val, output bit disable_detected);
-    push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH))  rng_item;
-    bit bit_sel_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
-    int n_items        = bit_sel_enable ? RNG_BUS_WIDTH : 1;
-    disable_detected   = 0;
-
-    if(!dut_pipeline_enabled) begin
-      disable_detected = 1;
-      return;
-    end
-
-    for (int i = 0; i < n_items; i++) begin : rng_loop
-      `DV_SPINWAIT_EXIT(rng_fifo.peek(rng_item);,
-                        wait(!dut_pipeline_enabled);)
-      // Pop any data off the rng_fifo below to resolve potential
-      // race conditions if a new RNG word appears in the same
-      // cycle that the dut is disabled.
-      disable_detected = !rng_fifo.try_get(rng_item);
-      if (disable_detected) break;
-
-      if (bit_sel_enable) begin
-        val[i] = rng_item.h_data[ral.conf.rng_bit_sel.get_mirrored_value()];
-      end else begin
-        val    = rng_item.h_data;
+  virtual task process_esrng_fifo();
+    bit [3:0] esrng_rd_data;
+    bit [3:0] postht_wr_data;
+    bit esbit_wr_data;
+    bit bit_sel_enable;
+    int rng_bit_sel;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
+      // Wait to see if something is going to be pushed into esrng_fifo_q.
+      `DV_SPINWAIT_EXIT(wait(esrng_fifo_q.size());,
+                        cfg.clk_rst_vif.wait_n_clks(1);)
+      // If esrng_fifo_q is still empty at the negedge, we can skip to the next cycle.
+      if (esrng_fifo_q.size() == 0) begin
+        continue;
       end
 
-      // Add the item to health_test_data_q for health test checking.
-      health_test_data_q.push_back(rng_item.h_data);
-    end : rng_loop
+      bit_sel_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+      rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
+      // Always pop, if the following FIFOs are full we drop the entropy.
+      esrng_rd_data = esrng_fifo_q.pop_front();
+
+      // In single lane mode, we push into the esbit FIFO if it has space left.
+      if (bit_sel_enable && (esbit_fifo_q.size() < 4) && !esbit_last_full_cycle) begin
+        // Wait for the esbit FIFO to be done such that the words we push into it
+        // are handled in the next cycle.
+        wait(esbit_fifo_processed);
+        esbit_fifo_q.push_back(esrng_rd_data[rng_bit_sel]);
+      // In the normal mode, we push into the postht FIFO if it has space left.
+      end else if (!bit_sel_enable && (postht_fifo_q.size() < 8) && !postht_last_full_cycle) begin
+        // Wait for the postht FIFO to be done such that the words we push into it
+        // are handled in the next cycle.
+        wait(postht_fifo_processed);
+        postht_fifo_q.push_back(esrng_rd_data);
+      // Otherwise we drop the entropy and increase the counter. We also predict an alert.
+      end else begin
+        post_ht_drops += 1;
+        `DV_CHECK_FATAL(ral.recov_alert_sts.postht_entropy_drop_alert.predict(1'b1));
+        set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
+      end
+    end
   endtask
 
-  task collect_entropy();
-    // Two levels of repacking to mimic the structure of the DUT
-    // first RNG samples are packed into 32-bit TL DW's
-    // then those are packed into 64-bit chunks suitable
-    // for SHA3 input
-    bit [TL_DW - 1:0]         repacked_entropy_tl;
-    bit [TL_DW - 1:0]         repacked_entropy_release;
-    bit [SHACondWidth:0]      repacked_entropy_sha;
-    int                       repack_idx_tl  = 0;
-    int                       repack_idx_sha = 0;
-    bit                       fw_ov_insert;
-    bit                       disable_detected;
-    rng_val_t                 rng_val;
-    string                    fmt, msg;
-    int                       observe_wait_cycles;
-    bit                       predict_conditioning;
+  virtual task process_esbit_fifo();
+    bit esbit_rd_data;
+    bit [3:0] postht_wr_data;
+    bit bit_sel_enable;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
 
-    localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
+      bit_sel_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+      // If we are not in single lane mode or the postht FIFO is full we don't do anything.
+      // Since this is a packer FIFO we need to wait until we have a full word before we pop.
+      if (!bit_sel_enable || (postht_fifo_q.size() >= 8) ||
+          postht_last_full_cycle || (esbit_fifo_q.size() < 4)) begin
+        // Signal to the esrng FIFO that we are done processing for the current cycle.
+        esbit_fifo_processed = 1;
+        @(negedge cfg.clk_rst_vif.clk);
+        esbit_fifo_processed = 0;
+        continue;
+      end
+      // Wait for the postht FIFO to be done such that the words we push into it
+      // are handled in the next cycle.
+      wait(postht_fifo_processed);
+      // Signal to the preceding esrng FIFO that the full signal will be high for one cycle.
+      esbit_last_full_cycle = 1;
+      while (esbit_fifo_q.size()) begin
+        esbit_rd_data = esbit_fifo_q.pop_front();
+        postht_wr_data = {esbit_rd_data, postht_wr_data[1 +: 3]};
+      end
+      postht_fifo_q.push_back(postht_wr_data);
+      // Signal to the esrng FIFO that we are done processing for the current cycle.
+      esbit_fifo_processed = 1;
+      @(negedge cfg.clk_rst_vif.clk);
+      esbit_fifo_processed = 0;
+      esbit_last_full_cycle = 0;
+    end
+  endtask
 
-    wait_enabled();
+  virtual task process_postht_fifo();
+    bit [3:0] postht_rd_data;
+    bit [TL_DW - 1:0] distr_wr_data;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
 
-    fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
-                   (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
-                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+      // If the distr FIFO is full we model backpressure by not doing anything.
+      // Since this is a packer FIFO we need to wait until we have a full word before we pop.
+      if ((distr_fifo_q.size() >= 2) || (postht_fifo_q.size() < 8)) begin
+        // Signal to the preceding FIFOs that we are done processing for the current cycle.
+        postht_fifo_processed = 1;
+        @(negedge cfg.clk_rst_vif.clk);
+        postht_fifo_processed = 0;
+        continue;
+      end
+      // Signal to the preceding FIFOs that the full signal will be high for one cycle.
+      postht_last_full_cycle = 1;
+      while (postht_fifo_q.size()) begin
+        postht_rd_data = postht_fifo_q.pop_front();
+        distr_wr_data = {postht_rd_data, distr_wr_data[4 +: (TL_DW - 4)]};
+      end
+      distr_fifo_q.push_back(distr_wr_data);
 
-    forever begin : collect_entropy_loop
-      wait_rng_queue(rng_val, disable_detected);
+      // Signal to the preceding FIFOs that we are done processing for the current cycle.
+      postht_fifo_processed = 1;
+      @(negedge cfg.clk_rst_vif.clk);
+      postht_fifo_processed = 0;
+      postht_last_full_cycle = 0;
+    end
+  endtask
 
-      if (disable_detected) begin
-        // Exit this task if a disable was detected.
-        return;
-      end else begin
-        // Pack this data for redistribution
-        repacked_entropy_tl = {rng_val,
-                               repacked_entropy_tl[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
-        repack_idx_tl++;
-        `uvm_info(`gfn, $sformatf("repack_idx_tl: %0d", repack_idx_tl), UVM_DEBUG)
-        if (repack_idx_tl == RngPerTlDw) begin
-          repack_idx_tl = 0;
-          // Push the repacked entropy into a release queue to make sure that repacked_entropy_tl
-          // is not altered by the time the observe_wait_cycles pass.
-          repacked_entropy_release_q.push_back(repacked_entropy_tl);
-          // Wait until the data has reached the observe FIFO and predict the overflow state.
-          // The FIFOs between the RNG input and the observe FIFO are: the esrng FIFO,
-          // the esbit FIFO, the postht packer FIFO and the distribution FIFO. However, we
-          // don't count the distribution FIFO here, since it is configured in pass through mode.
-          // We end up with 2 cycles delay in the normal mode and an adiitional cycle in single
-          // lane mode.
-          observe_wait_cycles = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? 3 : 2;
-          fork
-            begin
-              cfg.clk_rst_vif.wait_clks(observe_wait_cycles);
-              repacked_entropy_release = repacked_entropy_release_q.pop_front();
-              // If the observe FIFO has overflown signal the overflow condition and predict the
-              // fw_ov_rd_fifo_overflow register to be set to true. We drop the overflowing data by
-              // not pushing into the observe FIFO queue.
-              if (overflow_condition ||
-                  (observe_fifo_q.size() >= (OBSERVE_FIFO_DEPTH + observe_read_incoming))) begin
-                overflow_condition = 1;
-                `DV_CHECK_FATAL(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow.predict('b1))
+  virtual task process_distr_fifo();
+    bit [TL_DW - 1:0] distr_rd_data;
+    bit predict_conditioning, fw_ov_mode, fw_ov_insert;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
+      // Since the distr FIFO is configured in feedthrough mode, we wait for the postht FIFO
+      // and immediately process the entropy.
+      wait(postht_fifo_processed);
 
-              // If there is no overflow condition going on then push the repacked entropy into the
-              // observe FIFO queue.
-              end else begin
-                observe_fifo_q.push_back(repacked_entropy_release);
+      predict_conditioning = do_condition_data();
+      fw_ov_mode   = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                     (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True);
+      fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+
+      // If the conditioner is being used and we are not in fw_ov_insert mode,
+      // then we only propagate the entropy if the distr FIFO is not full.
+      if ((predict_conditioning && !fw_ov_insert && (distr_to_precon_fifo_q.size() >= 2)) ||
+          (distr_fifo_q.size() == 0)) begin
+        // Signal to the preceding FIFOs that we are done processing for the current cycle.
+        distr_fifo_processed = 1;
+        @(negedge cfg.clk_rst_vif.clk);
+        distr_fifo_processed = 0;
+        continue;
+      end
+
+      // Distribute the entropy to the respective FIFOs depending on the operational mode.
+      distr_rd_data = distr_fifo_q.pop_front();
+      if (fw_ov_mode) begin
+        distr_to_observe_fifo_q.push_back(distr_rd_data);
+      end
+      if (!predict_conditioning && !fw_ov_insert) begin
+        distr_to_bypass_fifo_q.push_back(distr_rd_data);
+      end
+      if (predict_conditioning && !fw_ov_insert) begin
+        distr_to_precon_fifo_q.push_back(distr_rd_data);
+      end
+
+      // Signal to the preceding FIFOs that we are done processing for the current cycle.
+      distr_fifo_processed = 1;
+      @(negedge cfg.clk_rst_vif.clk);
+      distr_fifo_processed = 0;
+    end
+  endtask
+
+  virtual task process_observe_fifo();
+    bit [TL_DW - 1:0] observe_wr_data;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
+      // In case of an overflow condition, we predict the end of the condition right at
+      // the posedge so we need wait and see if it ends in this cycle.
+      `DV_SPINWAIT_EXIT(wait(!overflow_condition);,
+                        cfg.clk_rst_vif.wait_n_clks(1);)
+
+      // If the observe queue is receiving entropy, process it.
+      if (distr_to_observe_fifo_q.size()) begin
+        observe_wr_data = distr_to_observe_fifo_q.pop_front();
+        // If there is an overflow condition ongoing, we drop the entropy.
+        // Otherwise we process it here.
+        if (!overflow_condition) begin
+          // If the observe FIFO is just about to overflow, we need to wait to see if a read
+          // happens in the same cycle. Otherwise we wrongly predict an overflow.
+          `DV_SPINWAIT_EXIT(wait(observe_read_incoming);,
+                            wait(!cfg.clk_rst_vif.clk);)
+          // If the observe FIFO has overflown signal the overflow condition and predict the
+          // fw_ov_rd_fifo_overflow register to be set to true. We drop the overflowing data by
+          // not pushing into the observe FIFO queue.
+          if (observe_fifo_q.size() >= (OBSERVE_FIFO_DEPTH + observe_read_incoming)) begin
+            overflow_condition = 1;
+            `DV_CHECK_FATAL(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow.predict('b1))
+
+          // If there is no overflow condition going on then push the repacked entropy into the
+          // observe FIFO queue.
+          end else begin
+            observe_fifo_q.push_back(observe_wr_data);
+            // Signal to potential reads to observe_fifo_depth that a word is currently being pushed
+            // into the observe FIFO.
+            fork
+              begin
+                observe_push_busy = 1;
+                wait(!ral.observe_fifo_depth.is_busy());
+                observe_push_busy = 0;
+                `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict(
+                    `gmv(ral.observe_fifo_depth.observe_fifo_depth)+1, .kind(UVM_PREDICT_DIRECT)))
               end
-              // Signal to potential reads to observe_fifo_depth that a word is currently being pushed
-              // into the observe FIFO.
-              observe_push_busy = 1;
-              wait(!ral.observe_fifo_depth.is_busy());
-              observe_push_busy = 0;
-              `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict(
-                  `gmv(ral.observe_fifo_depth.observe_fifo_depth)+1, .kind(UVM_PREDICT_DIRECT)))
-            end
-          join_none
-
-          // Now repack the TL_DW width blocks into the larger SHA blocks
-          // to publish to the correct processing fifo.
-          // Since the raw and sha-conditioned data are handled differently
-          // on disable events they go into different FIFOs
-          //
-          repacked_entropy_sha = {repacked_entropy_tl,
-                                  repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
-          repack_idx_sha++;
-          if (repack_idx_sha == SHACondWidth/TL_DW) begin
-            repack_idx_sha = 0;
-            if (!fw_ov_insert) begin
-              predict_conditioning = do_condition_data();
-              if (predict_conditioning) begin
-                sha_process_q.push_back(repacked_entropy_sha);
-                msg = $sformatf("RNG SHA word: %016x, count: 0x%01x",
-                                repacked_entropy_sha, sha_process_q.size());
-                `uvm_info(`gfn, msg, UVM_HIGH)
-              end else begin
-                `uvm_info(`gfn, $sformatf("RNG RAW word: %016x", repacked_entropy_sha) , UVM_HIGH)
-                raw_process_q.push_back(repacked_entropy_sha);
-              end
-            end
+            join_none
           end
         end
       end
+
+      // Signal to the preceding FIFOs that we are done processing for the current cycle.
+      observe_fifo_processed = 1;
+      wait(!cfg.clk_rst_vif.clk);
+      observe_fifo_processed = 0;
+    end
+  endtask
+
+  virtual task process_bypass_fifo();
+    bit [TL_DW - 1:0] bypass_wr_data;
+    bit predict_conditioning, fw_ov_mode, fw_ov_insert;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
+
+      predict_conditioning = do_condition_data();
+      fw_ov_mode   = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                     (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True);
+      fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+
+      if (!fw_ov_insert && !predict_conditioning && distr_to_bypass_fifo_q.size()) begin
+        // Get the data for redistribution.
+        bypass_wr_data = distr_to_bypass_fifo_q.pop_front();
+        raw_process_q.push_back(bypass_wr_data);
+        if (raw_process_q.size() == 12) begin
+          package_and_release_entropy();
+        end
+      end
+
+      // Signal to the preceding FIFOs that we are done processing for the current cycle.
+      bypass_fifo_processed = 1;
+      @(negedge cfg.clk_rst_vif.clk);
+      bypass_fifo_processed = 0;
+    end
+  endtask
+
+  virtual task process_precon_fifo();
+    bit [TL_DW - 1:0] precon_rd_data;
+    bit [SHACondWidth:0] repacked_entropy_sha;
+    bit predict_conditioning, fw_ov_mode, fw_ov_insert;
+    string msg;
+    forever begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if(!cfg.en_scb) begin
+        continue;
+      end
+      // Wait for the prediction of the sha3_ready signal.
+      // This signal will tell us if SHA3 is ready to absorb entropy.
+      wait(sha3_ready_predicted);
+
+      predict_conditioning = do_condition_data();
+      fw_ov_mode   = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                     (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True);
+      fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+
+      // If the conditioner is not being used or the data for the conditioner comes from firmware,
+      // we don't need to do anything.
+      if (fw_ov_insert || !predict_conditioning || !sha3_msg_ready ||
+          (distr_to_precon_fifo_q.size() < 2)) begin
+        // Signal to the preceding FIFOs that we are done processing for the current cycle.
+        precon_fifo_processed = 1;
+        @(negedge cfg.clk_rst_vif.clk);
+        precon_fifo_processed = 0;
+        continue;
+      end
+      // Push the entropy into the SHA3 processing queue.
+      while (distr_to_precon_fifo_q.size()) begin
+        precon_rd_data = distr_to_precon_fifo_q.pop_front();
+        repacked_entropy_sha = {precon_rd_data,
+                                repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
+      end
+      sha_process_q.push_back(repacked_entropy_sha);
+
+      // Signal to the preceding FIFOs that we are done processing for the current cycle.
+      precon_fifo_processed = 1;
+      @(negedge cfg.clk_rst_vif.clk);
+      precon_fifo_processed = 0;
+    end
+  endtask
+
+  task collect_entropy();
+    bit disable_detected;
+
+    wait_enabled();
+
+    forever begin : collect_entropy_loop
+      push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)) rng_item;
+      `DV_SPINWAIT_EXIT(rng_fifo.peek(rng_item);,
+                        wait(!dut_pipeline_enabled);)
+      disable_detected = (!rng_fifo.try_get(rng_item) || !dut_pipeline_enabled);
+      if (disable_detected) return;
+      esrng_fifo_q.push_back(rng_item.h_data);
+      health_test_data_q.push_back(rng_item.h_data);
     end
   endtask
 
@@ -2516,11 +2735,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
           if (disable_detected) break; // No sample events. DUT has shutdown
 
+          // In case of entropy drops, there is more entropy to be health tested than the usual
+          // window_rng_frames.
           if (xht_item.req.window_wrap_pulse) begin
-            `DV_CHECK(window.size() == window_rng_frames)
+            `DV_CHECK(window.size() == (window_rng_frames + post_ht_drops))
+            post_ht_drops = 0;
             break;
           end else begin
-            `DV_CHECK(window.size() < window_rng_frames)
+            `DV_CHECK(window.size() < (window_rng_frames + post_ht_drops))
           end
           // Check whether the rng_bit_en and the rng_bit_sel match the values in the CONF register.
           `DV_CHECK(xht_item.req.rng_bit_en == rng_bit_en)
@@ -2576,7 +2798,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf("sha_process_q.size: %01d", sha_process_q.size()), UVM_HIGH)
 
         if (pass_count >= pass_requirement && !threshold_alert_active && !main_sm_escalates) begin
-          package_and_release_entropy();
           // update counters for processing next seed:
           pass_count = 0;
           seed_idx++;
@@ -2684,7 +2905,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         msg = $sformatf(fmt, prediction, csr_val);
         `uvm_info(`gfn, msg, UVM_FULL)
         `DV_CHECK_EQ_FATAL(prediction, csr_val,
-            $sformatf("Prediction for observe FIFO access failed.", prediction, csr_val))
+            $sformatf("Prediction for observe FIFO access failed."))
         `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
         observe_fifo_words++;
         cov_vif.cg_observe_fifo_event_sample(
@@ -2718,6 +2939,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit fw_ov_entropy_insert;
     forever begin
       @(posedge cfg.clk_rst_vif.clk);
+      // Wait for a tick to be able to read the updated values of the sha3pad state.
+      // Otherwise we will read the values from the previous cycle.
+      #1;
       if(!cfg.en_scb) begin
         continue;
       end
@@ -2739,8 +2963,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       // SHA3 only accepts new words if the SHA3 pad SM is the StMessage state and cs_aes_halt_o
       // is low. If the SHA3 pad SM is about to leave the StMessage state, the sha3_nsg_ready
       // signal will go low. This signal is needed to predict whether the precon FIFO is full.
-      sha3_msg_ready = !cs_aes_halt_o && (sha3pad_state == StMessage) &&
-                       (sha3pad_state_next == StMessage);
+      sha3_msg_ready = (sha3pad_state == StMessage) && (sha3pad_state_next == StMessage);
+      sha3_ready_predicted = 1;
       // precon_fifo_full is updated whenever a new word is written to fw_ov_wr_data.
       // The full signal however is needed for prediction with one cycle of delay since
       // pushing/popping the FIFO takes one clock cycle as well.
@@ -2759,6 +2983,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             // Wait for sha3_msg_ready and reset precon_fifo_full and precon_fifo_cnt.
             `DV_SPINWAIT_EXIT(wait(sha3_msg_ready);,
                               wait(!dut_pipeline_enabled);)
+            // Wait until the SHA3 ready signal is predicted and after one cycle the precon FIFO
+            // will be empty again.
+            wait(sha3_ready_predicted);
+            cfg.clk_rst_vif.wait_clks(1);
             precon_fifo_full = 0;
             precon_fifo_cnt = 0;
           end else begin
@@ -2767,6 +2995,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           end
         end
       join_none
+      // Start the SHA3 processing when the SHA3Pad SM enters the StPad state.
+      if ((sha3pad_state == StMessage) && (sha3pad_state_next == StPad)) begin
+        // Only start the SHA3 if it hasn't already been started via the fw_ov_sha3_start CSR.
+        if (!fw_ov_sha3_started) begin
+          package_and_release_entropy();
+        end
+        fw_ov_sha3_started = 0;
+      end
+      @(negedge cfg.clk_rst_vif.clk);
+      sha3_ready_predicted = 0;
     end
   endtask
 
