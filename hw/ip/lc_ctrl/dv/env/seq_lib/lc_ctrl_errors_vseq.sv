@@ -1005,14 +1005,17 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
           wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {FlashRmaSt});
           // Allow time to get through the synchronisation FFs
           cfg.clk_rst_vif.wait_clks(FLASH_RMA_ACK_SYNC_FFS);
-          // Now inject the bad value
+          // Now inject the bad value. When verifying MuBi errors in the Flash RMA response, our
+          // sequence seems to expect the invalid MuBi signal to arrive within at most 1 clock
+          // cycle.
           rsp = on_val;
-          set_flash_rma_ack(rsp);
+          set_flash_rma_ack(rsp, .max_delay_cycles(1));
         end
       end
       wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
       if (err_inj.flash_rma_error_rsp) begin
-        // Error stream just on -> off -> on... every clock cycle
+        // Error stream just alternates flash_rma_ack_i every clock cycle. To get the timing right
+        // with this, we set max_delay_cycles to zero.
         rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
         set_flash_rma_ack(rsp, .max_delay_cycles(0));
         cfg.clk_rst_vif.wait_clks(1);
