@@ -23,7 +23,7 @@ class aes_reseed_vseq extends aes_base_vseq;
         cfg.aes_reseed_vif.entropy_clearing_req), UVM_MEDIUM)
     `DV_SPINWAIT_EXIT(
         wait (cfg.aes_reseed_vif.entropy_clearing_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);,
+        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);,
         "Timeout waiting for entropy_clearing_req")
     `DV_CHECK_EQ_FATAL(request_seen, 1'b1)
   endtask
@@ -49,21 +49,21 @@ class aes_reseed_vseq extends aes_base_vseq;
     `DV_CHECK_EQ_FATAL(request_seen | finished_all_msgs, 1'b1)
   endtask
 
-  task check_prng_reseed(bit exp_reseed);
-    if (exp_reseed) begin
-      // Check entropy_clearing_req to verify the reseeding is actually triggered.
-      check_clearing_prng_reseed();
-      if (`EN_MASKING) begin
-        check_masking_prng_reseed();
-      end
-      // Wait for the DUT to become idle again. This happens once the reseed operation finishes.
-      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-    end else begin
-      // No reseed operation is supposed to be triggered.
-      cfg.clk_rst_vif.wait_clks(1);
-      `DV_CHECK_EQ_FATAL(cfg.aes_reseed_vif.entropy_clearing_req |
-                         cfg.aes_reseed_vif.entropy_masking_req, 1'b0)
+  task check_prng_reseed();
+    // Check entropy_clearing_req to verify the reseeding is actually triggered.
+    check_clearing_prng_reseed();
+    if (`EN_MASKING) begin
+      check_masking_prng_reseed();
     end
+    // Wait for the DUT to become idle again. This happens once the reseed operation finishes.
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+  endtask
+
+  task check_no_prng_reseed();
+    // No reseed operation is supposed to be triggered.
+    cfg.clk_rst_vif.wait_clks(1);
+    `DV_CHECK_EQ_FATAL(cfg.aes_reseed_vif.entropy_clearing_req |
+                       cfg.aes_reseed_vif.entropy_masking_req, 1'b0)
   endtask
 
   task check_reseed_rate();
@@ -171,8 +171,10 @@ class aes_reseed_vseq extends aes_base_vseq;
 
         // Trigger reseed by manually setting the PRNG_RESEED bit in the TRIGGER register.
         `uvm_info(`gfn, "Triggering PRNG reseed via trigger register", UVM_LOW)
-        prng_reseed();
-        check_prng_reseed(.exp_reseed(1'b1));
+        fork
+          prng_reseed();
+          check_prng_reseed();
+        join
 
         // Trigger reseed by writing a new key to the initial key registers. In case
         // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered. The
@@ -182,8 +184,15 @@ class aes_reseed_vseq extends aes_base_vseq;
         `DV_CHECK_STD_RANDOMIZE_FATAL(init_key)
         // Wait for the DUT to be idle before writing the key.
         csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-        write_key(init_key, 1'b0);
-        check_prng_reseed(.exp_reseed(cfg.do_reseed));
+        if (cfg.do_reseed) begin
+          fork
+            write_key(init_key, 1'b0);
+            check_prng_reseed();
+          join
+        end else begin
+          write_key(init_key, 1'b0);
+          check_no_prng_reseed();
+        end
 
         // Trigger reseed by loading a new key via sideload interface. In case
         // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered.
@@ -233,7 +242,11 @@ class aes_reseed_vseq extends aes_base_vseq;
 
         // Sideload got enabled with a valid sideload key present. This must trigger a reseed in
         // case KEY_TOUCH_FORCES_RESEED is set.
-        check_prng_reseed(.exp_reseed(cfg.do_reseed));
+        if (cfg.do_reseed) begin
+          check_prng_reseed();
+        end else begin
+          check_no_prng_reseed();
+        end
 
         // Test that the PRNGs are reseeded at the proper rate during message processing.
         `uvm_info(`gfn, "Testing automatic / block counter based reseeding of the masking PRNG",
