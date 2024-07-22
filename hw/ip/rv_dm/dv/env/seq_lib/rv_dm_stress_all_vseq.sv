@@ -31,6 +31,8 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
       rv_dm_base_vseq rv_dm_vseq;
       uint            seq_idx = $urandom_range(0, seq_names.size - 1);
 
+      if (cfg.stop_transaction_generators()) return;
+
       `uvm_info(`gfn,
                 $sformatf("Starting sequence %0s (trans %0d / %0d)",
                           seq_names[seq_idx], i, num_trans),
