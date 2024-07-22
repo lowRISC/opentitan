@@ -65,13 +65,20 @@ def cleanup_format(_format):
     so they're converted to pointers instead.
     - Change %![N]?s        --> %[N]?s[%d].
     - Change %![N]?[xXyY]   --> %[N]?h.
-    - Change %![N]?b        --> %[N]?d.'''
+    - Change %![N]?b        --> %[N]?d.
+
+    Status values are printed as hexadecimal values which can be manually decoded
+    by users as necessary, to prevent errors occuring in tests due to lacking
+    support for this formatting specifier. JSON support for status printing is
+    likewise just replaced by displaying the hex.
+    - Change %!?[N]?r        --> %8h'''
     _format = re.sub(r"%(-?\d*)[iu]", r"%\1d", _format)
     _format = re.sub(r"%(-?\d*)[xp]", r"%\1h", _format)
     _format = re.sub(r"%(-?\d*)X", r"%\1H", _format)
     _format = re.sub(r"%!(-?\d*)s", r"%\1s[%d]", _format)
     _format = re.sub(r"%!(-?\d*)[xXyY]", r"%\1h[%d]", _format)
     _format = re.sub(r"%!(-?\d*)b", r"%\1d[%d]", _format)
+    _format = re.sub(r"%!?(-?\d*)r", r"%8h", _format)
     _format = re.sub(r"%([bcodhHs])", r"%0\1", _format)
     return cleanup_newlines(_format)
 
