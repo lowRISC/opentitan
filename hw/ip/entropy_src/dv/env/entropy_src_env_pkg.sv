@@ -29,6 +29,10 @@ package entropy_src_env_pkg;
   parameter string            LIST_OF_ALERTS[]   = {"recov_alert","fatal_alert"};
   parameter uint              NUM_ALERTS         = 2;
   parameter uint              OBSERVE_FIFO_DEPTH = 32;
+  parameter uint              POST_HT_WIDTH      = 32;
+  parameter uint              DISTR_FIFO_DEPTH   = 2;
+  parameter uint              PRECON_FIFO_DEPTH  = 2;
+  parameter uint              BYPASS_FIFO_DEPTH  = 12;
 
   // types
   typedef enum int {
