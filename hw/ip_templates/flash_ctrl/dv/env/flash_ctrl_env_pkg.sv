@@ -259,7 +259,8 @@ package flash_ctrl_env_pkg;
 
   typedef enum {
     ReadTaskCtrl = 0,
-    ReadTaskHost = 1
+    ReadTaskHost = 1,
+    NumReadTask  = 2
   } read_task_e;
 
   typedef struct packed {
@@ -298,7 +299,7 @@ package flash_ctrl_env_pkg;
   // Useful for the flash model.
   typedef data_t data_model_t[addr_t];
   // Otf address in a bank.
-  typedef bit [flash_ctrl_pkg::BusAddrByteW-FlashBankWidth-1 :0] otf_addr_t;
+  typedef bit [flash_ctrl_pkg::BusAddrByteW-FlashBankWidth-1 : 0] otf_addr_t;
 
   typedef struct packed {
     flash_dv_part_e  partition;   // data or one of the info partitions
