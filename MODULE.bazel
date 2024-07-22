@@ -8,6 +8,7 @@ bazel_dep(name = "abseil-cpp", version = "20240116.2")
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
 bazel_dep(name = "googletest", version = "1.14.0")
+bazel_dep(name = "lowrisc_bazel_release", version = "0.1.0")
 bazel_dep(name = "lowrisc_misc_linters")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_cc", version = "0.0.9")
@@ -18,6 +19,12 @@ bazel_dep(name = "rules_python", version = "0.34.0")
 bazel_dep(name = "rules_rust", version = "0.47.1")
 bazel_dep(name = "rules_shellcheck", version = "0.3.3")
 bazel_dep(name = "toolchains_llvm", version = "1.0.0")
+
+git_override(
+    module_name = "lowrisc_bazel_release",
+    commit = "89f1f10ccc2eb61127e0a57718b1137688d46109",
+    remote = "https://github.com/lowRISC/bazel-release",
+)
 
 git_override(
     module_name = "lowrisc_misc_linters",

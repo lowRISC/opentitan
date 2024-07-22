@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("//third_party/github:rules.bzl", "release")
+load("@lowrisc_bazel_release//release:release.bzl", "release")
 
 package(default_visibility = ["//visibility:public"])
 
