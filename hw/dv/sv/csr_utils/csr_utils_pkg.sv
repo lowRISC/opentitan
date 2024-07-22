@@ -348,6 +348,16 @@ package csr_utils_pkg;
       status = UVM_IS_OK;
       return;
     end
+
+    // If we are under reset then we want to respond instantly with a bad return value and
+    // UVM_NOT_OK, rather than blocking indefinitely on the bus.
+    if (under_reset) begin
+      `uvm_info(msg_id, "Early-exit from csr_rd_sub because we are in reset", UVM_LOW)
+      value = '1;
+      status = UVM_NOT_OK;
+      return;
+    end
+
     fork
       begin : isolation_fork
         csr_field_t   csr_or_fld;
