@@ -8,7 +8,7 @@ class flash_mem_addr_attrs;
     addr_t addr;               // Input addr, bus-word aligned.
     addr_t bank_addr;          // Addr within the bank, bus-word aligned.
     addr_t word_addr;          // Addr within the bank, flash word aligned.
-    int             offset;             // Byte offset within the flash word.
+    int    offset;             // Byte offset within the flash word.
 
     addr_t bank_start_addr;    // Start addr of the bank (bus word aligned).
     addr_t page_start_addr;    // Start addr of the page within the bank.

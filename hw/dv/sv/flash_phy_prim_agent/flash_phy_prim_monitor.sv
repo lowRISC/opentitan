@@ -138,13 +138,14 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       write_buffer[bank] = {};
     end
   endtask // collect_item
+
   function void collect_lm_item(int bank);
     flash_phy_prim_item item;
     `uvm_create_obj(flash_phy_prim_item, item)
     item.req = cfg.vif.req[bank];
     item.rsp = cfg.vif.rsp[bank];
     eg_rtl_lm_port[bank].write(item);
-    `uvm_info("lm_debug", $sformatf("I sent bank%0d", bank),UVM_MEDIUM)
+    `uvm_info("lm_debug", $sformatf("Sent reguest %p for bank %0d", item.req, bank), UVM_MEDIUM)
   endfunction // collect_lm_item
 
 endclass

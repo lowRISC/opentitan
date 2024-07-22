@@ -490,19 +490,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
     flash_op.op = FlashOpProgram;
     flash_op.num_words = wd;
-    start_addr = flash_op.otf_addr;
+    start_addr = flash_op.addr;
     // last byte address in each program
     end_addr = start_addr + (tot_wd * 4) - 1;
     update_range_addresses_written(bank, flash_op.partition, start_addr, end_addr);
 
-    `uvm_info("prog_flash",$sformatf("begin addr:%x part:%s num:%0d wd:%0d st:%x ed:%x",
-                                     flash_op.otf_addr, flash_op.partition.name, num,
-                                     wd, start_addr, end_addr), UVM_MEDIUM)
+    `uvm_info("prog_flash", $sformatf("begin start_addr:%x part:%s num:%0d wd:%0d end_addr:%x",
+                                      flash_op.addr, flash_op.partition.name, num, wd, end_addr),
+                                      UVM_MEDIUM)
     // Roll over start address if this is the case.
-    `uvm_info("prog_flash", $sformatf({"bank:%0d otf_addr:0x%0h,",
-                                       " part:%s size:%0d x %0d x 4B"},
-                                      bank, flash_op.otf_addr, flash_op.partition.name,
-                                      num, wd), UVM_MEDIUM)
+    `uvm_info("prog_flash", $sformatf("bank:%0d otf_addr:0x%0h, part:%s size:%0d x %0d x 4B",
+                                      bank, flash_op.otf_addr, flash_op.partition.name, num, wd),
+                                      UVM_MEDIUM)
 
     flash_op.otf_addr = start_addr;
 
