@@ -243,7 +243,8 @@
     {
       name: flash_ctrl_rw_serr
       uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=3"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=3",
+                 "+otf_num_rw=100", "+otf_num_hr=1000"]
       reseed: 10
     }
     {
@@ -279,13 +280,15 @@
       name: flash_ctrl_rw_derr
       uvm_test_seq: flash_ctrl_rw_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=3",
+                 "+otf_num_rw=100", "+otf_num_hr=1000",
                  "+bypass_alert_ready_to_end_check=1"]
       reseed: 10
     }
     {
       name: flash_ctrl_derr_detect
       uvm_test_seq: flash_ctrl_derr_detect_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=1",
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=4",
+                 "+otf_num_rw=50", "+otf_num_hr=200",
                  "+rerun=5", "+otf_wr_pct=1"]
       reseed: 5
     }
