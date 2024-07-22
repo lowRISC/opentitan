@@ -195,7 +195,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       `DV_CHECK_EQ(read_data[i], ref_data[i],
                    $sformatf("read_check:%0d ", i))
     end
-  endtask // filesys_read_check
+  endtask : filesys_read_check
 
   // All addresses are 8byte aligned.
   task filesys_ctrl_read(flash_op_t flash_op_r, output data_q_t rdata, input bit serr);
@@ -208,12 +208,12 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     rdata = '{};
     size = flash_op_r.num_words / 2;
     if (serr) begin
-      filesystem_add_bit_err(flash_op_r.partition, flash_op_r.addr, size);
+      filesystem_add_bit_err(flash_op_r.partition, flash_op_r.addr, ReadTaskCtrl, size);
     end
     flash_ctrl_start_op(flash_op_r);
     flash_ctrl_read(flash_op_r.num_words, rdata, poll_fifo_status);
     wait_flash_op_done();
-  endtask // filesys_ctrl_read
+  endtask : filesys_ctrl_read
 
   task filesys_host_read(flash_op_t flash_op_r, output data_q_t rdata, input bit serr);
     bit [TL_AW-1:0] tl_addr;
@@ -224,14 +224,14 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
 
     for (int i = 0; i < flash_op_r.num_words; i++) begin
       if (serr & (i % 2 == 0)) begin
-        filesystem_add_bit_err(flash_op_r.partition, tl_addr, 1);
+        filesystem_add_bit_err(flash_op_r.partition, tl_addr, ReadTaskHost, 1);
       end
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(unit_rdata),
                      .completed(completed));
       rdata.push_back(unit_rdata);
       tl_addr += 4;
     end
-  endtask // filesys_host_read
+  endtask : filesys_host_read
 
   // Create all addresses for the flash_op from the start address
   // in the resolution of 8 bytes
@@ -242,9 +242,10 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       generate_all_addr.push_back((flash_op.addr >> 3));
       flash_op.addr += 8;
     end
-  endfunction // generate_all_addr
+  endfunction : generate_all_addr
 
-  function void filesystem_add_bit_err(flash_dv_part_e partition, addr_t addr, int size);
+  function void filesystem_add_bit_err(flash_dv_part_e partition, addr_t addr, read_task_e caller,
+                                       int size);
     int err_idx, bank;
     addr_t per_bank_addr;
     bit [flash_phy_pkg::FullDataWidth-1:0] mem_data;
@@ -254,9 +255,9 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       per_bank_addr = addr;
       per_bank_addr[31:OTFBankId] = 'h0;
 
-      if (!cfg.serr_addr_tbl[addr].exists(partition)) begin
-        cfg.serr_addr_tbl[addr][partition] = 1;
+      if (!cfg.address_has_serr(addr, partition)) begin
         err_idx = $urandom_range(0, 75);
+        cfg.add_serr(addr, partition, caller, err_idx);
         cfg.flash_bit_flip(cfg.mem_bkdr_util_h[partition][bank], per_bank_addr, err_idx);
         // Flip the same bit in the reference mem model.
         if (partition == FlashPartData) begin
@@ -271,6 +272,6 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       end
       addr += 8;
     end
-  endfunction // filesystem_add_bit_err
+  endfunction : filesystem_add_bit_err
 
-endclass // flash_ctrl_filesystem_support_vseq
+endclass : flash_ctrl_filesystem_support_vseq

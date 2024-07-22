@@ -150,10 +150,10 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     if (cfg.ecc_mode > FlashSerrTestMode && obs.derr == 1) begin
       err_addr = {obs.cmd.addr[31:3],3'h0};
       // check expected derr
-      if (cfg.derr_addr_tbl[err_addr].exists(FlashPartData)) begin
+      if (cfg.address_has_derr(err_addr, FlashPartData)) begin
         `uvm_info("process_eg_host",
                   $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
-      end else if (cfg.ierr_addr_tbl[err_addr].exists(FlashPartData)) begin
+      end else if (cfg.address_has_ierr(err_addr, FlashPartData)) begin
         `uvm_info("process_eg_host",
                   $sformatf("expected icv error 0x%x", err_addr), UVM_MEDIUM)
       end else begin
@@ -279,10 +279,10 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         err_addr[OTFBankId] = bank;
 
         // check expected derr
-        if (cfg.derr_addr_tbl[err_addr].exists(exp.cmd.partition)) begin
+        if (cfg.address_has_derr(err_addr, exp.cmd.partition)) begin
           `uvm_info("process_read",
                     $sformatf("expected double bit error 0x%x", err_addr), UVM_MEDIUM)
-        end else if (cfg.ierr_addr_tbl[err_addr].exists(exp.cmd.partition)) begin
+        end else if (cfg.address_has_ierr(err_addr, exp.cmd.partition)) begin
           `uvm_info("process_read",
                     $sformatf("expected icv error 0x%x", err_addr), UVM_MEDIUM)
         end else if (derr_expected == 0) begin
@@ -403,7 +403,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     if (cfg.ecc_mode == FlashSerrTestMode) begin
       serr_addr = item.req.addr << 3;
       serr_addr[OTFBankId] = bank;
-      if (cfg.serr_addr_tbl[serr_addr].exists(part)) begin
+      if (cfg.address_has_serr(serr_addr, part)) begin
         cfg.inc_serr_cnt(bank);
         cfg.serr_addr[bank] = serr_addr;
       end
@@ -550,10 +550,9 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
       if (rcv.mem_wdata == exp.req.prog_full_data) begin
         `dv_info($sformatf("wdata match %x", rcv.mem_wdata), UVM_MEDIUM, name)
-      end else begin
-        if (!skip_comp) begin
-         `DV_CHECK_EQ(rcv.mem_wdata, exp.req.prog_full_data,,, name)
-        end
+      end else if (!skip_comp) begin
+        `uvm_info(`gfn, $sformatf("expected request %p", exp.req), UVM_MEDIUM)
+        `DV_CHECK_EQ(rcv.mem_wdata, exp.req.prog_full_data,,, name)
       end
     end
   endtask // lm_wdata_cmp

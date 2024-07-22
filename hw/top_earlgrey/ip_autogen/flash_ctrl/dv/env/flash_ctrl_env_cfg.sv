@@ -8,6 +8,11 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   .RAL_T(flash_ctrl_core_reg_block)
 );
 
+  // Type for an associative array on address and partition to record injected errors.
+  typedef bit per_caller_err_addr_tbl_t[addr_t][flash_dv_part_e];
+  // Type for a regular array per read_task_e of the associative array above.
+  typedef per_caller_err_addr_tbl_t err_addr_tbl_t[NumReadTask];
+
   // Memory backdoor util instances for each partition in each bank.
   mem_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_pkg::NumBanks];
 
@@ -72,10 +77,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // 4 : integrity error test mode
   ecc_mode_e ecc_mode = FlashEccDisabled;
 
+  // For tracking addresses that have had errors injected use *err_addr_tbl, since they
+  // persist past each transaction.
+
   // single bit error rate scale of 0~10. 10: 100%.
   int serr_pct = 0;
   // Tracks lines with single bit errors.
-  bit serr_addr_tbl[addr_t][flash_dv_part_e];
+  local err_addr_tbl_t serr_addr_tbl;
+
   int serr_cnt[NumBanks] = '{default : 0};
   // latest single bit error address
   bit [OTFBankId:0] serr_addr[NumBanks];
@@ -88,7 +97,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int derr_pct = 0;
   int derr_idx[76];
   // Tracks lines with double bit errors.
-  bit derr_addr_tbl[addr_t][flash_dv_part_e];
+  local err_addr_tbl_t derr_addr_tbl;
   bit derr_once = 0;
   bit derr_created[read_task_e];
 
@@ -102,7 +111,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Integrity ecc err
   int ierr_pct = 0;
   // Tracks lines with integrity errors.
-  bit ierr_addr_tbl[addr_t][flash_dv_part_e];
+  local err_addr_tbl_t ierr_addr_tbl;
   bit ierr_created [read_task_e];
   // Transaction counters for otf
   int otf_ctrl_wr_sent = 0;
@@ -874,21 +883,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
   endfunction : set_scb_mem
 
-  function int get_serr_idx();
-    int rnd_odds;
-    int idx = -1;
-    if (serr_once == 1 && serr_created == 1) return -1;
-    if (ecc_mode == FlashSerrTestMode) begin
-      rnd_odds = $urandom_range(0,9);
-      if (rnd_odds < serr_pct) begin
-        idx = $urandom_range(0, 75);
-        serr_created = 1;
-      end
-    end
-
-    return idx;
-  endfunction // get_serr_idx
-
   // Increase single bit error count.
   function void inc_serr_cnt(int bank, bit dis = 0);
     if (serr_cnt[bank] < 255) serr_cnt[bank]++;
@@ -920,8 +914,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       full_addr[OTFBankId] = bank;
       item.region = get_region(addr2page(full_addr));
     end else begin
-      item.region =
-                   get_region_from_info(mp_info[bank][part>>1][addr2page(addr)]);
+      item.region = get_region_from_info(mp_info[bank][part>>1][addr2page(addr)]);
     end
     `uvm_info(`gfn, $sformatf("Integrity error injection at address 0x%x", addr), UVM_MEDIUM)
     item.scramble(exp_item.addr_key, exp_item.data_key, addr, 1, 1);
@@ -929,15 +922,112 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     item.clear_qs();
   endfunction
 
-  // These functions are used to avoid the creation of lines with compounded bit errors.
-  local function bit address_has_some_injected_error(addr_t addr, flash_dv_part_e part);
-    return derr_addr_tbl[addr].exists(part) ||
-        ierr_addr_tbl[addr].exists(part) ||
-        serr_addr_tbl[addr].exists(part);
+  // This shows errors injected per the given caller table.
+  local function void show_errors(ref per_caller_err_addr_tbl_t addr_tbl);
+    addr_t addr;
+    if (addr_tbl.first(addr) == 0) return;
+    while (addr_tbl.next(addr) != 0) begin
+      flash_dv_part_e part;
+      `DV_CHECK_EQ(addr_tbl[addr].first(part), 1)
+      do
+        `uvm_info(`gfn, $sformatf("error injected at addr:0x%x, part:%0s", addr, part.name),
+                  UVM_MEDIUM)
+      while (addr_tbl[addr].next(part) != 0);
+    end
+  endfunction
+
+  function void show_derrors(read_task_e caller);
+    `uvm_info(`gfn, $sformatf("Double bit errors injected for %s caller:", caller.name),
+              UVM_MEDIUM)
+    show_errors(derr_addr_tbl[caller]);
+  endfunction
+
+  local function int err_count(ref per_caller_err_addr_tbl_t err_addr_tbl);
+    int count = 0;
+    addr_t addr;
+    if (err_addr_tbl.first(addr) == 0) return 0;
+    while (err_addr_tbl.next(addr) != 0) begin
+      flash_dv_part_e part;
+      `DV_CHECK_EQ(err_addr_tbl[addr].first(part), 1)
+      do count++; while (err_addr_tbl[addr].next(part) != 0);
+    end
+    return count;
+  endfunction
+
+  // These count the total number of errors per caller for the different error kinds.
+  function int derr_count(input read_task_e caller);
+    return err_count(derr_addr_tbl[caller]);
+  endfunction
+
+  function int ierr_count(input read_task_e caller);
+    return err_count(ierr_addr_tbl[caller]);
+  endfunction
+
+  function int serr_count(input read_task_e caller);
+    return err_count(serr_addr_tbl[caller]);
+  endfunction
+
+  local function bit address_has_err(ref err_addr_tbl_t err_addr_tbl, input addr_t addr,
+                                     input flash_dv_part_e part);
+    return (err_addr_tbl[ReadTaskCtrl].exists(addr) &&
+            err_addr_tbl[ReadTaskCtrl][addr].exists(part)) ||
+           (err_addr_tbl[ReadTaskHost].exists(addr) &&
+            err_addr_tbl[ReadTaskHost][addr].exists(part));
+  endfunction
+
+  // These functions are used to track the creation of lines with bit errors.
+  function bit address_has_derr(addr_t addr, flash_dv_part_e part);
+    return address_has_err(derr_addr_tbl, addr, part);
+  endfunction
+
+  function bit address_has_ierr(addr_t addr, flash_dv_part_e part);
+    return address_has_err(ierr_addr_tbl, addr, part);
+  endfunction
+
+  function bit address_has_serr(addr_t addr, flash_dv_part_e part);
+    return address_has_err(serr_addr_tbl, addr, part);
+  endfunction
+
+  function bit address_has_some_injected_error(addr_t addr, flash_dv_part_e part);
+    return address_has_derr(addr, part) || address_has_ierr(addr, part) ||
+        address_has_serr(addr, part);
   endfunction
 
   virtual function bit address_has_ecc_injected_error(addr_t addr, flash_dv_part_e part);
-    return derr_addr_tbl[addr].exists(part) || serr_addr_tbl[addr].exists(part);
+    return address_has_derr(addr, part) || address_has_serr(addr, part);
+  endfunction
+
+  protected function void add_derr(input addr_t addr, input flash_dv_part_e partition,
+                                   input read_task_e caller, input int idx_0, input int idx_1);
+    int bank = addr[OTFBankId];
+
+    `uvm_info(`gfn, $sformatf(
+              "double bit ecc error injected for %s at bank %0d %s addr:0x%x bits %0d and %0d",
+              caller.name, bank, partition.name, addr, idx_0, idx_1),
+              UVM_MEDIUM)
+    derr_addr_tbl[caller][addr][partition] = 1;
+    derr_created[caller] = 1;
+  endfunction
+
+  protected function void add_ierr(input addr_t addr, input flash_dv_part_e partition,
+                                   input read_task_e caller);
+    int bank = addr[OTFBankId];
+
+    `uvm_info(`gfn, $sformatf("icv error injected for %s at bank %0d %s addr:0x%x",
+                               caller.name, bank, partition.name, addr),
+              UVM_MEDIUM)
+    ierr_addr_tbl[caller][addr][partition] = 1;
+    ierr_created[caller] = 1;
+  endfunction
+
+  function void add_serr(input addr_t addr, input flash_dv_part_e partition,
+                         input read_task_e caller, input int bit_index);
+    int bank = addr[OTFBankId];
+
+    `uvm_info(`gfn, $sformatf(
+              "single bit ecc error injected for %s at bank %0d %s addr:0x%x bit %0d",
+              caller.name, bank, partition.name, addr, bit_index), UVM_MEDIUM)
+    serr_addr_tbl[caller][addr][partition] = 1;
   endfunction
 
   // Create bit error following flash_op and ecc_mode.
@@ -948,13 +1038,11 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     int bank;
     bit [75:0] rdata;
     int        size, is_odd, tail;
-    int        err_idx;
     // The flash word aligned address including the bank.
     addr_t addr_cp;
     rd_cache_t rd_entry;
     string     name = $sformatf("add_bit_err from %s", caller.name);
 
-    err_idx = -1;
     bank = flash_op.addr[OTFBankId];
     partition = flash_op.partition;
     rd_entry.bank = bank;
@@ -978,61 +1066,75 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       // to make sure bit error injection become valid.
       // If ecc is not enabled, bit error cannot be detected.
       if (caller == ReadTaskHost || (item.ctrl_rd_region_q[i].ecc_en == MuBi4True)) begin
-        addr_t per_bank_addr = addr_cp[OTFBankId-1:0];
+        otf_addr_t otf_addr = otf_addr_t'(addr_cp);
         rd_entry.addr = addr_cp;
         if (ecc_mode == FlashSerrTestMode) begin
-          err_idx = get_serr_idx();
-          if (err_idx >= 0) begin
-            // Do not inject more than one error per address.
-            if (address_has_some_injected_error(addr_cp, partition)) continue;
-            serr_addr_tbl[addr_cp][partition] = 1;
-            `DV_CHECK_EQ(addr_cp[OTFBankId-1:0], per_bank_addr[OTFBankId-1:0])
-            `uvm_info(name, $sformatf(
-                      "single bit error inserted at line:%0d(0x%x) %s bit %0d",
-                      i, addr_cp, partition.name, err_idx), UVM_MEDIUM)
-            flash_bit_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, err_idx);
-          end
+          randcase
+            serr_pct: begin
+              int err_idx;
+              if (serr_once && serr_created) continue;
+              // Do not inject more than one error per address.
+              if (address_has_some_injected_error(addr_cp, partition)) begin
+                 `uvm_info(`gfn, $sformatf(
+                           "single bit error injection %s bank:%0d addr:0x%x blocked by prior",
+                           partition.name, bank, otf_addr), UVM_MEDIUM)
+                continue;
+              end
+              err_idx = $urandom_range(0, 75);
+              flash_bit_flip(mem_bkdr_util_h[partition][bank], otf_addr, err_idx);
+              add_serr(addr_cp, partition, caller, err_idx);
+            end
+            10-serr_pct: begin
+            end
+          endcase
         end else if (ecc_mode == FlashIerrTestMode) begin
           randcase
             ierr_pct: begin
-              if (derr_otd.exists(rd_entry) ||
-                  address_has_some_injected_error(addr_cp, partition) ||
-                  ierr_addr_tbl[addr_cp].exists(partition)) continue;
-              ierr_addr_tbl[addr_cp][partition] = 1;
-              ierr_created[caller] = 1;
-              `uvm_info(name,
-                        $sformatf("icv error [%s][%0d] inserted at line:%0d rd_entry:%p",
-                                  partition.name, bank, i, rd_entry), UVM_MEDIUM)
-              flash_icv_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, partition, bank,
+              if (derr_otd.exists(rd_entry)) begin
+                `uvm_info(`gfn, $sformatf(
+                          "icv error injection %s bank:%0d addr:0x%x blocked by otd",
+                          partition.name, bank, otf_addr), UVM_MEDIUM)
+                continue;
+              end
+              if (address_has_some_injected_error(addr_cp, partition)) begin
+                `uvm_info(`gfn, $sformatf(
+                          "icv error injection %s bank:%0d addr:0x%x blocked by prior error",
+                          partition.name, bank, otf_addr), UVM_MEDIUM)
+                continue;
+              end
+              flash_icv_flip(mem_bkdr_util_h[partition][bank], otf_addr, partition, bank,
                              item);
+              add_ierr(addr_cp, partition, caller);
             end
             10-ierr_pct: begin
             end
           endcase // randcase
         end else begin // ecc_mode == FlashDerrTestMode)
-          derr_idx.shuffle();
-          err_idx = 0;
-          if (derr_otd.exists(rd_entry) ||
-              address_has_some_injected_error(addr_cp, partition) ||
-              otf_read_entry.hash.exists(rd_entry)) continue;
-          if (derr_once == 0 || derr_created[caller] == 1'b0) begin
-            randcase
-              derr_pct: begin
-                `uvm_info(name, $sformatf(
-                          "addr:0x%x bit error inserted at line %0d bit %0d (err_idx:%0d)",
-                          per_bank_addr, i, derr_idx[err_idx], err_idx),
-                          UVM_MEDIUM)
-                flash_bit_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, derr_idx[0]);
-                flash_bit_flip(mem_bkdr_util_h[partition][bank], per_bank_addr, derr_idx[1]);
-                derr_addr_tbl[addr_cp][partition] = 1;
-                `uvm_info(name, $sformatf(" addr:0x%x is added to derr_addr_tbl", addr_cp),
-                          UVM_MEDIUM)
-                derr_created[caller] = 1;
+          randcase
+            derr_pct: begin
+              string block_reason = "";
+              if (derr_once == 1 && derr_created[caller] == 1'b1) continue;
+              if (derr_otd.exists(rd_entry)) begin
+                block_reason = "otd";
+              end else if (address_has_some_injected_error(addr_cp, partition)) begin
+                block_reason = "prior error";
+              end else if (otf_read_entry.hash.exists(rd_entry)) begin
+                block_reason = "otf_read_entry";
               end
-              10-derr_pct: begin
+              if (block_reason != "") begin
+                `uvm_info(`gfn, $sformatf(
+                          "double bit error injection %s bank:%0d addr:0x%x blocked by %s",
+                          partition.name, bank, otf_addr, block_reason), UVM_MEDIUM)
+                continue;
               end
-            endcase // randcase
-          end // if (derr_once == 0 || (|derr_created) == 0)
+              derr_idx.shuffle();
+              flash_bit_flip(mem_bkdr_util_h[partition][bank], otf_addr, derr_idx[0]);
+              flash_bit_flip(mem_bkdr_util_h[partition][bank], otf_addr, derr_idx[1]);
+              add_derr(addr_cp, partition, caller, derr_idx[0], derr_idx[1]);
+            end
+            10-derr_pct: begin
+            end
+          endcase
         end
         addr_cp += 8;
         // Don't change banks.
@@ -1113,7 +1215,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       item.region = get_region_from_info(mp_info[bank][part>>1][page]);
     end
     item.page = page;
+    `uvm_info(`gfn, $sformatf(
+              "update_otf_mem_read_zone part:%0d, bank:%0d addr:0x%08x orig data:0x%0x%0x",
+              part, bank, addr, item.dq[1], item.dq[0]), UVM_HIGH)
     item.scramble(otp_addr_key, otp_data_key, addr, 0);
+    `uvm_info(`gfn, $sformatf(
+              "update_otf_mem_read_zone part:%0d, bank:%0d addr:0x%08x scr data:0x%x",
+              part, bank, addr, item.fq[0]), UVM_HIGH)
+
     mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
     // address should be mem_addr
     mem_addr = addr >> 3;
@@ -1149,4 +1258,36 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       addr += 8;
     end
   endfunction
+
+  // Cleans up some variables to support multiple sequence runs.
+  task otf_clean_up();
+    scb_h.alert_count["fatal_err"] = 0;
+    scb_h.exp_alert_contd["fatal_err"] = 0;
+    scb_h.alert_count["recov_err"] = 0;
+    scb_h.exp_alert_contd["recov_err"] = 0;
+    scb_h.eflash_addr_phase_queue = '{};
+
+    derr_addr_tbl[ReadTaskCtrl].delete();
+    derr_addr_tbl[ReadTaskHost].delete();
+    derr_created = '{default: ReadTaskCtrl};
+    derr_otd.delete();
+    ierr_addr_tbl[ReadTaskCtrl].delete();
+    ierr_addr_tbl[ReadTaskHost].delete();
+    serr_addr_tbl[ReadTaskCtrl].delete();
+    serr_addr_tbl[ReadTaskHost].delete();
+
+    scb_h.ecc_error_addr.delete();
+    scb_h.in_error_addr.delete();
+
+    otf_scb_h.stop = 1;
+    otf_read_entry.hash.delete();
+    foreach (otf_read_entry.prv_read[i]) otf_read_entry.prv_read[i] = '{};
+    otf_scb_h.clear_fifos();
+
+    for (int i = 0; i < NumBanks; i++) begin
+      otf_scb_h.data_mem[i].delete();
+      foreach (otf_scb_h.info_mem[i][j])
+        otf_scb_h.info_mem[i][j].delete();
+    end
+  endtask
 endclass
