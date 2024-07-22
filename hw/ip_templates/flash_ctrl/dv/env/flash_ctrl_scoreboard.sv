@@ -100,13 +100,12 @@ class flash_ctrl_scoreboard #(
     flash_mp_region_cfg_t my_region;
     bit ecc_en, scr_en;
     int page;
-    bit [OTFBankId:0] addr;
     forever begin
       @(negedge cfg.clk_rst_vif.clk);
-      for (int i = 0;i < NumBanks; i++) begin
+      for (int i = 0; i < NumBanks; i++) begin
         foreach (cfg.flash_ctrl_vif.hazard[i][j]) begin
           if (cfg.flash_ctrl_vif.hazard[i][j]) begin
-            addr =cfg.flash_ctrl_vif.rd_buf[i][j].addr<<3;
+            otf_addr_t addr = cfg.flash_ctrl_vif.rd_buf[i][j].addr << 3;
             page = cfg.addr2page(addr);
             if (cfg.flash_ctrl_vif.rd_buf[i][j].part == 0) begin // data
               my_region = cfg.get_region(page + 256*i);
@@ -117,11 +116,10 @@ class flash_ctrl_scoreboard #(
             end
             ecc_en = (my_region.ecc_en == MuBi4True);
             scr_en = (my_region.scramble_en == MuBi4True);
-            `uvm_info(`gfn,
-                      $sformatf({"eviction bank%0d buffer%0d addr:0x%x(%x)",
-                                 " page:%0d ecc_en:%0d scr_en:%0d"},
-                                i, j ,cfg.flash_ctrl_vif.rd_buf[i][j].addr,
-                                addr, page, ecc_en, scr_en), UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf(
+                      "eviction bank:%0d buffer:%0d addr:0x%x(%x) page:%0d ecc_en:%0d scr_en:%0d",
+                      i, j ,cfg.flash_ctrl_vif.rd_buf[i][j].addr, addr, page, ecc_en, scr_en),
+                      UVM_MEDIUM)
             if (cfg.en_cov) cov.eviction_cg.sample(j, {cfg.flash_ctrl_vif.evict_prog[i],
                                                        cfg.flash_ctrl_vif.evict_erase[i]},
                                                    {scr_en, ecc_en});
@@ -846,16 +844,16 @@ class flash_ctrl_scoreboard #(
     end
 
     if (ral_name == cfg.flash_ral_name) begin
-       if (get_flash_instr_type_err(item, channel)) return (1);
-       if (cfg.tlul_eflash_exp_cnt > 0 && item.d_error == 1) begin
-          cfg.tlul_eflash_obs_cnt++;
-          return 1;
-       end
+      if (get_flash_instr_type_err(item, channel)) return (1);
+      if (cfg.tlul_eflash_exp_cnt > 0 && item.d_error == 1) begin
+        cfg.tlul_eflash_obs_cnt++;
+        return 1;
+      end
     end else begin
-       if (cfg.tlul_core_exp_cnt > 0 && item.d_error == 1) begin
-          cfg.tlul_core_obs_cnt++;
-          return 1;
-       end
+      if (cfg.tlul_core_exp_cnt > 0 && item.d_error == 1) begin
+        cfg.tlul_core_obs_cnt++;
+        return 1;
+      end
     end
 
     if (ecc_err | in_err) begin
@@ -870,6 +868,16 @@ class flash_ctrl_scoreboard #(
 
     if (exp_tl_rsp_intg_err == 1 && channel == DataChannel) begin
       return (!item.is_d_chan_intg_ok(.throw_error(0)));
+    end
+
+    if (ral_name == cfg.flash_ral_name && channel == DataChannel) begin
+      bit has_error = cfg.address_has_some_injected_error({item.a_addr[TL_AW-1:3],3'h0},
+                                                          FlashPartData);
+      if (has_error) begin
+        `uvm_info(`gfn, $sformatf("A double ecc or integrity error for addr:0x%x", item.a_addr),
+                  UVM_MEDIUM)
+        return 1;
+      end
     end
     return (super.predict_tl_err(item, channel, ral_name));
   endfunction : predict_tl_err
