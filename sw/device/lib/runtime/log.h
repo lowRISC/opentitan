@@ -101,6 +101,25 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
 extern char _dv_log_offset[];
 
 /**
+ * A macro that wraps the `OT_FAIL_IF_64_BIT` macro, providing the name
+ * of the LOG macro for better error messages.
+ *
+ * @param arg an arg/expression to check
+ */
+#define OT_FAIL_IF_64_BIT_LOG(arg) OT_FAIL_IF_64_BIT(arg, LOG)
+
+/**
+ * A macro that checks the variable arguments of the `LOG` function are valid
+ * at compile time, by asserting that each of the argument is not a standard
+ * C integer type with a width of 64 bits. Any such invalid argument will
+ * cause a relevant error via a static assertion.
+ *
+ * @param ... the variable args list
+ */
+#define OT_CHECK_VALID_LOG_ARGS(...) \
+  OT_VA_FOR_EACH(OT_FAIL_IF_64_BIT_LOG, ##__VA_ARGS__)
+
+/**
  * Basic logging macro that all other logging macros delegate to.
  *
  * Prefer to use a LOG function with a specified severity, instead.
@@ -112,6 +131,7 @@ extern char _dv_log_offset[];
  */
 #define LOG(severity, format, ...)                               \
   do {                                                           \
+    OT_CHECK_VALID_LOG_ARGS(__VA_ARGS__);                        \
     if (kDeviceLogBypassUartAddress != 0) {                      \
       /* clang-format off */                                     \
       /* Put DV-only log constants in .logs.* sections, which

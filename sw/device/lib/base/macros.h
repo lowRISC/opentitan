@@ -259,6 +259,153 @@ extern "C++" {
   static_assert(var == expected_value, "Unexpected value for " #var)
 
 /**
+ * A variable-argument macro that expands to the number of arguments passed into
+ * it, between 1 and 32 arguments (1 action and 0-31 others).
+ *
+ * This macro accepts a macro name and a variable list of items, and will then
+ * expand to sequentially call the macro with each provided item in order. This
+ * can be useful for performing compile-time checks on arguments in variadic
+ * functions defined via macros.
+ *
+ * For example, OT_VAR_FOR_EACH(TEST, 5, 19, 32, 1, 4) would expand to be
+ * `do {TEST(5); TEST(19); TEST(32); TEST(1); TEST(4);} while (false)`
+ *
+ * @param action The name of the macro to invoke with each item individually.
+ * @param ... The variable args list to call the macro on.
+ */
+#define OT_VA_FOR_EACH(action, ...)                                        \
+  do {                                                                     \
+    OT_CAT(OT_CAT(OT_VA_FOR_EACH_, OT_VA_ARGS_COUNT(0, ##__VA_ARGS__)), _) \
+    (action, ##__VA_ARGS__)                                                \
+  } while (false)
+
+/**
+ * The following collection of `OT_VA_FOR_EACH` macros are used to construct
+ * the generic "for each" `OT_VA_FOR_EACH` macro.
+ */
+#define OT_VA_FOR_EACH_0_(action)
+#define OT_VA_FOR_EACH_1_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_0_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_2_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_1_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_3_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_2_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_4_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_3_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_5_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_4_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_6_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_5_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_7_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_6_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_8_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_7_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_9_(action, item, ...) \
+  action(item);                              \
+  OT_VA_FOR_EACH_8_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_10_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_9_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_11_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_10_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_12_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_11_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_13_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_12_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_14_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_13_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_15_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_14_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_16_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_15_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_17_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_16_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_18_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_17_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_19_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_18_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_20_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_19_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_21_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_20_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_22_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_21_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_23_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_22_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_24_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_23_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_25_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_24_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_26_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_25_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_27_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_26_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_28_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_27_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_29_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_28_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_30_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_29_(action, ##__VA_ARGS__)
+#define OT_VA_FOR_EACH_31_(action, item, ...) \
+  action(item);                               \
+  OT_VA_FOR_EACH_30_(action, ##__VA_ARGS__)
+
+/**
+ * A macro that checks whether a specified argument is not a standard C integer
+ * type with a width of 64 bits. Useful when assuming that variable arguments
+ * are 32 bits integers.
+ *
+ * @param arg An argument/expression
+ */
+#define OT_CHECK_NOT_INT64(arg) \
+  _Generic((arg), int64_t: false, uint64_t: false, default: true)
+
+/**
+ * A macro that expands to an assertion that wraps the `OT_CHECK_NOT_INT64`
+ * macro, failing with a relevant error message if the provided argument is a
+ * standard C integer type with a width of 64 bits.
+ *
+ * @param arg An argument/expression to check
+ * @param func_name The name of the macro/functionality being invoked, to be
+ * printed in a relevant error if the assertion fails.
+ */
+#define OT_FAIL_IF_64_BIT(arg, func_name)                          \
+  do {                                                             \
+    static_assert(OT_CHECK_NOT_INT64(arg),                         \
+                  "Argument '" #arg "' passed to the " #func_name  \
+                  " function must be no wider than 32 bits. "      \
+                  "Hint: maybe cast with '(uint32_t) " #arg "'?"); \
+  } while (0)
+
+/**
  * A macro representing the OpenTitan execution platform.
  */
 #if __riscv_xlen == 32
