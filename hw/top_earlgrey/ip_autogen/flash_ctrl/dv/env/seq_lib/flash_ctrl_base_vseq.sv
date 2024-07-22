@@ -24,7 +24,16 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // This tracks all addresses that have had a write to avoid multiple writes
   // since they are most likely going to result in ECC errors, unless there is
   // an erase.
-  bit        addresses_written[addr_t];
+  typedef bit part_addresses_written_t[NumBanks][flash_dv_part_e][addr_t];
+
+  typedef struct packed {
+    addr_t first;
+    addr_t last;
+  } address_range_t;
+
+  typedef address_range_t address_ranges_t[$];
+
+  typedef address_ranges_t part_address_ranges_t[NumBanks][flash_dv_part_e];
 
   constraint num_trans_c {num_trans inside {[1 : cfg.seq_cfg.max_num_trans]};}
 
@@ -47,6 +56,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     };
   }
 
+  part_addresses_written_t part_addresses_written;
+  part_address_ranges_t part_address_ranges_written;
+
   // Page to region map.
   // This is used to validate transactions based on their page address
   // and policy config associate with it.
@@ -55,42 +67,152 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
 
-  // Returns non-zero if the given address has been written. It assumes the
-  // info secret pages were completely written.
-  protected function bit address_was_written(input addr_t addr);
-    if (addr >= 16'h800 && addr < 16'h2000) return 1'b1;
-    return addresses_written.exists(addr);
+  function void add_address_range(input int bank, input flash_dv_part_e part,
+                                  input addr_t first_address, input addr_t last_address);
+    part_address_ranges_written[bank][part].push_back('{first: first_address, last: last_address});
   endfunction
 
-  // Returns 1 if any address between start_addr and end_addr were written.
-  protected function bit address_range_was_written(input addr_t start_addr, input addr_t end_addr);
-     `uvm_info(`gfn, $sformatf("Query addresses_written from %x to %x", start_addr, end_addr),
-               UVM_MEDIUM)
-    for (addr_t addr = start_addr; addr < end_addr; addr += FlashBankBytesPerWord) begin
-      if (address_was_written(addr)) begin
-        `uvm_info(`gfn, "overwrite", UVM_MEDIUM)
-        return 1'b1;
+  function void sort_all_address_ranges();
+    foreach (part_address_ranges_written[bank, part]) begin
+      part_address_ranges_written[bank][part].sort();
+    end
+  endfunction
+
+  function void show_all_address_ranges();
+    for (int bank = 0; bank < NumBanks; ++bank) begin
+      foreach (part_address_ranges_written[bank][part]) begin
+        `uvm_info("address_written", $sformatf("address_ranges bank:%0d %s:", bank, part.name),
+                  UVM_MEDIUM)
+        foreach (part_address_ranges_written[bank][part][i]) begin
+          address_range_t range = part_address_ranges_written[bank][part][i];
+          `uvm_info("address_written", $sformatf("  [0x%x : 0x%x]", range.first, range.last),
+                    UVM_MEDIUM)
+        end
+      end
+    end
+  endfunction
+
+  // This is a binary search for an address in the address ranges. It also returns the index
+  // of the last range examined, which is useful for the caller.
+  local function bit address_in_ranges(input int bank, input flash_dv_part_e part,
+                                       input address_ranges_t ranges, input addr_t addr,
+                                       ref int index);
+    int bottom = 0;
+    int top = ranges.size() - 1;
+    do
+      begin
+        index = (top + bottom) / 2;
+        `uvm_info("address_written", $sformatf(
+                  "bot:%0d, index:%0d, top:%0d, [0x%x : 0x%x]", bottom, index, top,
+                  ranges[index].first, ranges[index].last), UVM_MEDIUM)
+        if (addr < ranges[index].first) top = index - 1;
+        else if (addr <= ranges[index].last) begin
+           `uvm_info("address_written", $sformatf(
+                     "addr:0x%x found in range [0x%x : 0x%x] for bank:%0d, part %s", addr,
+                     ranges[index].first, ranges[index].last, bank, part.name), UVM_MEDIUM)
+          return 1;
+        end else bottom = index + 1;
+      end
+     while (top >= bottom);
+     return 1'b0;
+  endfunction
+
+  // This searches for any overap between the addresses in the given range and the address ranges
+  // for the given bank and partition. Notice if the binary search fails we still need to examine
+  // the range last examined by the binary search, denoted by the index returned. A miss is the
+  // most common outcome of this lookup so having this index is good for performance.
+  protected function bit address_range_in_address_ranges(
+      input int bank, input flash_dv_part_e part,
+      input addr_t start_addr, input addr_t end_addr);
+    if (part_address_ranges_written[bank].exists(part)) begin
+      address_ranges_t ranges = part_address_ranges_written[bank][part];
+      int index;
+      bit success = address_in_ranges(bank, part, ranges, start_addr, index);
+      if (success) return 1'b1;
+      else begin
+        `uvm_info("address_written", $sformatf(
+                  "end range [0x%x : 0x%x]", ranges[index].first, ranges[index].last), UVM_MEDIUM)
+        if (ranges[index].first > start_addr) begin
+          if (ranges[index].first <= end_addr) begin
+            `uvm_info("address_written", $sformatf(
+                      "range [0x%x : 0x%x] overlaps [0x%x : 0x%x]", ranges[index].first,
+                      ranges[index].last, start_addr, end_addr), UVM_MEDIUM)
+            return 1'b1;
+          end
+        end
       end
     end
     return 1'b0;
   endfunction
 
+  local function bit address_in_words(input int bank, input flash_dv_part_e part,
+                                      input addr_t addr);
+    return part_addresses_written[bank].exists(part) &&
+        part_addresses_written[bank][part].exists(addr);
+  endfunction
+
+  // Returns non-zero if the given address has been written. It assumes the
+  // info secret pages were completely written.
+  protected function bit address_was_written(input int bank, input flash_dv_part_e part,
+                                             input addr_t addr);
+    if (part_address_ranges_written[bank].exists(part)) begin
+      address_ranges_t ranges = part_address_ranges_written[bank][part];
+      int index;
+      if (address_in_ranges(bank, part, ranges, addr, index)) begin
+        return 1'b1;
+      end
+    end
+    if (addr >= 16'h800 && addr < 16'h2000) return 1'b1;
+    return address_in_words(bank, part, addr);
+  endfunction
+
+  // Returns 1 if any address between start_addr and end_addr were written.
+  protected function bit address_range_was_written(input int bank, input flash_dv_part_e part,
+                                                   input addr_t start_addr, input addr_t end_addr);
+    int index;
+
+    `uvm_info(`gfn, $sformatf(
+              "Query address_range_written from %x to %x in bank:%0d %0s",
+              start_addr, end_addr, bank, part.name),
+              UVM_MEDIUM)
+    if (address_range_in_address_ranges(bank, part, start_addr, end_addr)) begin
+      return 1'b1;
+    end
+    `uvm_info("address_written", "Cleared ranges", UVM_MEDIUM)
+    if (start_addr >= 16'h800 && end_addr < 16'h2000) return 1'b1;
+    for (addr_t addr = start_addr; addr < end_addr; addr += FlashBankBytesPerWord) begin
+      if (address_in_words(bank, part, addr)) begin
+        `uvm_info("address_words", $sformatf("addr:0x%x is already written", addr), UVM_MEDIUM)
+        return 1'b1;
+      end
+    end
+    `uvm_info("address_written", $sformatf(
+              "range [0x%x : 0x%x] has no overlaps in bank:%0d, %s",
+                      start_addr, end_addr, bank, part.name), UVM_MEDIUM)
+    return 1'b0;
+  endfunction
+
   // Marks the given address as being written. It is fatal if it was already
   // written.
-  protected function void update_addresses_written(input addr_t addr);
-    `DV_CHECK(!address_was_written(addr), $sformatf("Overwriting address 0x%x", addr), fatal)
-    addresses_written[addr] = 1;
+  protected function void update_addresses_written(input int bank, input flash_dv_part_e part,
+                                                   input addr_t addr);
+    `DV_CHECK(!address_in_words(bank, part, addr), $sformatf(
+              "Overwriting address 0x%x in part %s", addr, part.name), fatal)
+    part_addresses_written[bank][part][addr] = 1;
   endfunction
 
   // Marks all addresses between start_addr and end_addr as being written.
   // It is fatal if any was already written.
-  protected function void update_range_addresses_written(input addr_t start_addr,
+  protected function void update_range_addresses_written(input int bank,
+                                                         input flash_dv_part_e part,
+                                                         input addr_t start_addr,
                                                          input addr_t end_addr);
     `uvm_info(`gfn, $sformatf("Update addresses_written from %x to %x", start_addr, end_addr),
               UVM_MEDIUM)
     for (addr_t addr = start_addr; addr < end_addr; addr += FlashBankBytesPerWord) begin
-      update_addresses_written(addr);
+      update_addresses_written(bank, part, addr);
     end
+    `uvm_info(`gfn, "Update addresses done", UVM_MEDIUM)
   endfunction
 
   // Check permission and page range of info partition
@@ -108,7 +230,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     if (flash_op.op == FlashOpRead) loop = 2;
     else loop = 1;
 
-    for (int i= 0; i < loop; ++i) begin
+    for (int i = 0; i < loop; ++i) begin
       if (i == 1) page = end_page;
       if (flash_op.partition == FlashPartInfo && bank == 0 &&
           page inside {[1:3]}) begin

@@ -543,12 +543,6 @@ package flash_ctrl_env_pkg;
     end
   endfunction
 
-  function automatic addr_t to_full_addr(input otf_addr_t addr, input logic bank);
-    addr_t ret_addr = addr;
-    ret_addr[TL_AW-1:OTFBankId] = bank;
-    return ret_addr;
-  endfunction
-
   // Round an address down to a program resolution window.
   function automatic addr_t round_to_prog_resolution(addr_t addr);
     return addr - (addr & (BusPgmResBytes - 1));
