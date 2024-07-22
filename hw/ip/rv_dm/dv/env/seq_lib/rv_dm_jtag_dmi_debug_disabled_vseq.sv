@@ -13,7 +13,7 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
   task automatic read_abstractdata(uvm_reg_data_t expected_value);
     uvm_reg_data_t rdata;
     csr_rd(.ptr(jtag_dmi_ral.abstractdata[0]), .value(rdata));
-    `DV_CHECK_EQ(rdata, expected_value);
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(rdata, expected_value);
   endtask
 
   // Possibly wait a short time.
@@ -47,6 +47,7 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
     // working DMI connection. Write some arbitrary value to abstractdata 0.
     write_abstractdata(value0);
     read_abstractdata(value0);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Possibly wait a bit
     maybe_delay();
@@ -59,6 +60,7 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
     // and the register should read as zero (because the JTAG connection isn't actually up).
     write_abstractdata(value1);
     read_abstractdata(0);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Possibly wait a bit
     maybe_delay();
