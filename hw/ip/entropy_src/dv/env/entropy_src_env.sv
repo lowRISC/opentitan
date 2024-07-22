@@ -65,7 +65,7 @@ class entropy_src_env extends cip_base_env #(
     // scoreboard cannot handle this.
     cfg.m_aes_halt_agent_cfg.zero_delays = 0;
     cfg.m_aes_halt_agent_cfg.device_delay_min = 0;
-    cfg.m_aes_halt_agent_cfg.device_delay_max = (cfg.rng_max_delay == 1) ? 0 : 48;
+    cfg.m_aes_halt_agent_cfg.device_delay_max = 48;
     // CSRNG drops its ack in the cycle after entropy_src has dropped its req.
     cfg.m_aes_halt_agent_cfg.ack_lo_delay_max = 1;
 

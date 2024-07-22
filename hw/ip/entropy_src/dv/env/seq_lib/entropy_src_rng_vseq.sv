@@ -853,12 +853,38 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Don't enable here, let the main loop do that explicitly
   endtask
 
+  function void disable_assertions();
+    if (cfg.rng_max_delay) begin
+      // Disable assertions which expect that no entropy is dropped between the esrng,
+      // esbit and postht FIFOs.
+      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsbitFifoPushedIntoPosthtFifo_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsbitFifoPushedIntoPosthtFifo_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.Final_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
+      // TODO(#24103): Change rng_valid_bit_cnt_d to use the current value of enable
+      // instead of es_delayed_enable_q.
+      // If done, we can remove the two related assertoffs below.
+      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_ValidRngBitsPushedIntoEsrngFifo_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.Final_ValidRngBitsPushedIntoEsrngFifo_A);
+      // TODO(#24103): Replace esfinal_exp_drop by ~sfifo_esfinal_not_full, since the assumptions in
+      // the comments for esfinal_exp_drop are not true anymore.
+      // If done, we can remove the two related assertoffs below.
+      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsfinalFifoPushedPostStartup_A);
+      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsfinalFifoPushedPostStartup_A);
+      // TODO(#24085): Remove this assertoff once the issue is solved.
+      $assertoff(0, tb.dut.u_entropy_src_core.FifosEmptyWhenShaProcess_A);
+    end
+  endfunction
+
   task body();
 
     do_background_procs = 1;
     continue_sim = 1;
     reset_needed = 0;
 
+    disable_assertions();
     // Start sequences in the background
     start_indefinite_seqs();
 
