@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//rv_dm_jtag_dmi_dm_inactive_vseq
 class rv_dm_jtag_dmi_dm_inactive_vseq extends rv_dm_common_vseq;
   `uvm_object_utils(rv_dm_jtag_dmi_dm_inactive_vseq)
   `uvm_object_new
@@ -46,6 +45,8 @@ class rv_dm_jtag_dmi_dm_inactive_vseq extends rv_dm_common_vseq;
                  .value(is_active), .blocking(1), .predict(1));
         end
       endcase
+
+      if (cfg.stop_transaction_generators()) return;
     end
   endtask
 
