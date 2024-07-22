@@ -144,7 +144,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                              get_field_val(ral.trigger.key_iv_data_in_clear, wdata),
                              get_field_val(ral.trigger.data_out_clear, wdata),
                              get_field_val(ral.trigger.prng_reseed, wdata));
-    `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", wdata), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\nWrite to Trigger register observed: 0x%h", wdata), UVM_MEDIUM)
     if (get_field_val(ral.trigger.start, wdata)) begin
       ok_to_fwd = input_item.mode != AES_NONE;
     end
@@ -181,8 +181,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       // waiting for output data is forwarded without the data.
     end
     // reseed
-    if (wdata[5]) begin
-      // nothing to do for DV
+    if (get_field_val(ral.trigger.prng_reseed, wdata)) begin
+      // The PRNG reseeding is tested using the dedicated aes_reseed_vseq.sv sequence.
     end
   endfunction
 
