@@ -17,6 +17,7 @@ class kmac_test_vectors_kmac_vseq extends kmac_test_vectors_base_vseq;
   endtask
 
   virtual function void randomize_cfg(test_vectors_pkg::test_vectors_t vector);
+    int vector_len = vector.customization_str.len();
     `DV_CHECK_RANDOMIZE_WITH_FATAL(this,
       hash_mode == sha3_pkg::CShake;
       kmac_en == 1;
@@ -39,7 +40,7 @@ class kmac_test_vectors_kmac_vseq extends kmac_test_vectors_base_vseq;
       } else if (vector.key_length_word * 32 == 512) {
         key_len == Key512;
       }
-      custom_str_len == vector.customization_str.len();
+      custom_str_len == vector_len;
     )
   endfunction
 

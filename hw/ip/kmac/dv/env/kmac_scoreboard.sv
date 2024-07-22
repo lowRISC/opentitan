@@ -233,7 +233,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           // does as many EDN fetches as necessary to fill up the required data bus size
           // of the "host".
           repeat (kmac_reg_pkg::NumSeedsEntropy) begin
-            `DV_SPINWAIT(edn_fifos[0].get(edn_item);, "Wait EDN request")
+            edn_fifos[0].get(edn_item);
           end
           `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
           set_entropy_fetch(0);
