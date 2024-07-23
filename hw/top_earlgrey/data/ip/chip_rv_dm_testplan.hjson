@@ -310,9 +310,7 @@
                 - Write 1 to ackhavereset
                 - Check dmstatus does not indicate havereset for Ibex
                 - Write all 1s to hartsel
-                - Read back hartsel and check value is all 1s
-                - Write 0 to hartsel
-                - Read back hartsel and check value is 0 (Ibex core selected)
+                - Read back hartsel and check value is 0 (hartsel is WARL)
                 - Halt Ibex with a write to haltreq
                 - Check dmstatus reflects halted status
                 - Resume Ibex for a write to resumereq

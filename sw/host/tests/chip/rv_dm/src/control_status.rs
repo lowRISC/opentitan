@@ -6,7 +6,7 @@ use anyhow::Result;
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::debug::dmi::{consts, Dmi, DmiDebugger, OpenOcdDmi};
+use opentitanlib::debug::dmi::{consts, DmiDebugger, OpenOcdDmi};
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 
@@ -43,16 +43,9 @@ fn test_control_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     hart.set_dmcontrol(consts::DMCONTROL_ACKHAVERESET_MASK)?;
 
     // Write all 1s to hartsel and confirm readback.
-    let dmcontrol = 0x3ff << consts::DMCONTROL_HARTSELLO_SHIFT
-        | 0x3ff << consts::DMCONTROL_HARTSELHI_SHIFT
-        | consts::DMCONTROL_DMACTIVE_MASK;
-    dmi.dmi_write(consts::DMCONTROL, dmcontrol)?;
-    // Since this target only supports 1 hart, the WARL behavior of this register is such that no
-    // bits should be set at this point, except for dmactive.
-    assert_eq!(
-        dmi.dmi_read(consts::DMCONTROL)?,
-        consts::DMCONTROL_DMACTIVE_MASK
-    );
+    let hartsel_mask = dmi.hartsel_mask()?;
+    // Since this target only supports 1 hart, no hartsel bits could be set.
+    assert_eq!(hartsel_mask, 0);
 
     let mut hart = dmi.select_hart(0)?;
     assert!(hart.state()?.running);

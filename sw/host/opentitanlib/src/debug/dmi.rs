@@ -186,6 +186,7 @@ pub enum DmiError {
 /// A debugger that communicates with the target via RISC-V Debug Module Interface (DMI).
 pub struct DmiDebugger<D> {
     dmi: D,
+    hartsel_mask: Option<u32>,
 }
 
 impl<D> Deref for DmiDebugger<D> {
@@ -204,7 +205,32 @@ impl<D> DerefMut for DmiDebugger<D> {
 
 impl<D: Dmi> DmiDebugger<D> {
     pub fn new(dmi: D) -> Self {
-        Self { dmi }
+        Self {
+            dmi,
+            hartsel_mask: None,
+        }
+    }
+
+    /// Obtain bits valid in hartsel as a bitmask.
+    pub fn hartsel_mask(&mut self) -> Result<u32> {
+        if self.hartsel_mask.is_none() {
+            // Write all 1s to hartsel.
+            let dm_control = 0 << DMCONTROL_HASEL_SHIFT
+                | 0x3ff << DMCONTROL_HARTSELLO_SHIFT
+                | 0x3ff << DMCONTROL_HARTSELHI_SHIFT
+                | DMCONTROL_DMACTIVE_MASK;
+            self.dmi.dmi_write(DMCONTROL, dm_control)?;
+
+            // This is a WARL register so after writing 1, the readback value would be
+            // the mask for valid bits in the register.
+            let dm_control = self.dmi.dmi_read(DMCONTROL)?;
+            let hart_select = (dm_control >> DMCONTROL_HARTSELLO_SHIFT) & 0x3ff
+                | ((dm_control >> DMCONTROL_HARTSELHI_SHIFT) & 0x3ff) << 10;
+
+            self.hartsel_mask = Some(hart_select);
+        }
+
+        Ok(self.hartsel_mask.unwrap())
     }
 
     /// Selects a hart to debug.
@@ -213,6 +239,15 @@ impl<D: Dmi> DmiDebugger<D> {
         if hartid >= (1 << 20) {
             bail!("Invalid hartid: {hartid}");
         }
+
+        // When selecting non-zero hart, ensure written bit to HARTSEL is legal.
+        if hartid != 0 {
+            let mask = self.hartsel_mask()?;
+            if (hartid & mask) != hartid {
+                bail!(DmiError::Nonexistent);
+            }
+        }
+
         let hart_select = 0 << DMCONTROL_HASEL_SHIFT
             | (hartid & 0x3ff) << DMCONTROL_HARTSELLO_SHIFT
             | (hartid >> 10) << DMCONTROL_HARTSELHI_SHIFT
