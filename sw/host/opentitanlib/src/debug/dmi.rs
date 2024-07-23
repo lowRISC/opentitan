@@ -47,6 +47,7 @@ pub mod consts {
     pub const DMSTATUS_ANYNONEXISTENT_MASK: u32 = 1 << 14;
     pub const DMSTATUS_ANYRESUMEACK_MASK: u32 = 1 << 16;
     pub const DMSTATUS_ANYHAVERESET_MASK: u32 = 1 << 18;
+    pub const DMSTATUS_ALLHAVERESET_MASK: u32 = 1 << 19;
 
     pub const DMCONTROL_HASEL_SHIFT: u32 = 26;
     pub const DMCONTROL_HARTSELHI_SHIFT: u32 = 6;
