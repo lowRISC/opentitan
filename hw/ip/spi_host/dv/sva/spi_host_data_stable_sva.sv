@@ -40,7 +40,7 @@ module spi_host_data_stable_sva (
   whole_cycle_data_stable_signal_checker #(.VECTOR_WIDTH(4))
   u_sva_cio_sd_i_whole_cycle_data_stable_check (
      .rst_ni (rst_ni),
-     .sck_o (sck_o),
+     .sck_o (cio_sck_o),
      .csb_o (csbs),
      .signal2check_i (cio_sd_i),
      .sampled_negedge_enable (sampled_negedge_enable),
@@ -51,7 +51,7 @@ module spi_host_data_stable_sva (
   whole_cycle_data_stable_signal_checker #(.VECTOR_WIDTH(4))
   u_sva_cio_sd_en_o_whole_cycle_data_stable_check (
      .rst_ni (rst_ni),
-     .sck_o (sck_o),
+     .sck_o (cio_sck_o),
      .csb_o (csbs),
      .signal2check_i (cio_sd_en_o),
      .sampled_negedge_enable (sampled_negedge_enable),
