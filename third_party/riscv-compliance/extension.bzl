@@ -18,3 +18,7 @@ def riscv_compliance_repos():
         ],
         patch_args = ["-p1"],
     )
+
+riscv_compliance = module_extension(
+    implementation = lambda _: riscv_compliance_repos(),
+)
