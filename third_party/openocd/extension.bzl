@@ -20,3 +20,7 @@ def openocd_repos(local = None):
         ],
         patch_args = ["-p1"],
     )
+
+openocd = module_extension(
+    implementation = lambda _: openocd_repos(),
+)

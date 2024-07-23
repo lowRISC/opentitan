@@ -156,3 +156,6 @@ use_repo(nonhermetic, "nonhermetic")
 
 lychee = use_extension("//third_party/lychee:extension.bzl", "lychee")
 use_repo(lychee, "lychee")
+
+openocd = use_extension("//third_party/openocd:extension.bzl", "openocd")
+use_repo(openocd, "openocd")
