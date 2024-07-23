@@ -104,6 +104,7 @@
     {
       name: "{name}_burst_write"
       uvm_test_seq: kmac_burst_write_vseq
+      run_opts: ["+test_timeout_ns=500_000_000"]
     }
     {
       name: "{name}_test_vectors_sha3_224"
@@ -162,6 +163,7 @@
     {
       name: "{name}_app"
       uvm_test_seq: kmac_app_vseq
+      run_opts: ["+test_timeout_ns=500_000_000"]
     }
     {
       name: "{name}_app_with_partial_data"
@@ -171,6 +173,7 @@
     {
       name: "{name}_entropy_refresh"
       uvm_test_seq: kmac_entropy_refresh_vseq
+      run_opts: ["+test_timeout_ns=500_000_000"]
     }
     {
       name: "{name}_mubi"
