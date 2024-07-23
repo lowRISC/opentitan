@@ -20,3 +20,7 @@ def xkcp_repos():
         ],
         patch_args = ["-p1"],
     )
+
+xkcp = module_extension(
+    implementation = lambda _: xkcp_repos(),
+)
