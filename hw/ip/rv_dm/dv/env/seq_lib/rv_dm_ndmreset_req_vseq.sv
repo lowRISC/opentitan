@@ -25,19 +25,46 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     `DV_CHECK(dmstatus.allunavail)
   endtask
 
-  // Check that the ndmreset_pending_q signal in the design has the value we expect.
-  task check_ndmreset_pending(bit expected_value);
+  // Read the value of the ndmreset_pending_q flag.
+  task get_ndmreset_pending(output bit rvalue);
     uvm_reg_data_t val;
     string path = "tb.dut.ndmreset_pending_q";
 
     `DV_CHECK(uvm_hdl_read(path, val));
-    `DV_CHECK_EQ(val, expected_value);
+    rvalue = val[0];
+  endtask
+
+  // Check that the ndmreset_pending_q signal in the design has the value we expect.
+  task check_ndmreset_pending(bit expected_value);
+    bit seen_value;
+    get_ndmreset_pending(seen_value);
+    `DV_CHECK_EQ(seen_value, expected_value);
+  endtask
+
+  // Clear the ndmreset_pending_q flag if it is currently set.
+  task clear_pending_ndmreset();
+    bit ndmreset_pending;
+    get_ndmreset_pending(ndmreset_pending);
+    if (!ndmreset_pending) return;
+
+    // If rv_dm currently thinks an ndmreset is pending, it probably means that we're following a
+    // vseq that set the ndmreset field in dmcontrol. To clear this, we need to set the ndmreset_ack
+    // signal, which happens in response to a reset through rst_lc_ni. We add short waits after
+    // changes to rst_lc_ni so that the signal can flow through some synchronisers.
+    begin
+      cfg.clk_lc_rst_vif.drive_rst_pin(1'b0);
+      cfg.clk_rst_vif.wait_clks(8);
+      cfg.clk_lc_rst_vif.drive_rst_pin(1'b1);
+      cfg.clk_rst_vif.wait_clks(8);
+    end
+
+    // This should now have cleared the pending reset flag. Make sure it is clear.
+    check_ndmreset_pending(1'b0);
   endtask
 
   task body();
-    // Check that the lc_rst_pending_q signal isn't currently set. This is just to make sure that we
-    // aren't starting the sequence in some "partially reset" state.
-    check_ndmreset_pending(1'b0);
+    // Clear any ndmreset_pending_q signal
+    clear_pending_ndmreset();
 
     // We want to write known values to registers in each RAL (JTAG DMI, debug memory), but choose
     // registers where this won't actually have any effect.
