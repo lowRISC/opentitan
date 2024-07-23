@@ -163,8 +163,11 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // does, we'll be in the test-logic-reset state by a different route, so the task can terminate.
   task drive_jtag_test_logic_reset();
     `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
+
+    // This task should only be called in situations where tck is already enabled.
+    `DV_CHECK_FATAL(tck_in_use)
+
     fork begin : isolation_fork
-      enable_tck();
       fork
         begin
           // Enable clock
@@ -183,16 +186,15 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         end
       join_any
       disable fork;
-      release_tck();
     end join
   endtask
 
   // drive jtag req and retrieve rsp
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
+    enable_tck();
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
-    enable_tck();
     if (exit_to_rti_dr_past & ~cfg.min_rti) begin
       @(`HOST_CB); // wait one cycle to ensure clock is stable. TODO: remove.
     end else begin
