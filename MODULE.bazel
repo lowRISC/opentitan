@@ -171,3 +171,6 @@ use_repo(riscv_compliance, "riscv-compliance")
 
 coremark = use_extension("//third_party/coremark:extension.bzl", "coremark")
 use_repo(coremark, "coremark")
+
+xkcp = use_extension("//third_party/xkcp:extension.bzl", "xkcp")
+use_repo(xkcp, "xkcp")
