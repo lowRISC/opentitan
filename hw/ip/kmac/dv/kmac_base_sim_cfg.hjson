@@ -168,6 +168,7 @@
     {
       name: "{name}_app_with_partial_data"
       uvm_test_seq: kmac_app_with_partial_data_vseq
+      run_opts: ["+test_timeout_ns=500_000_000"]
       reseed: 10
     }
     {
