@@ -20,13 +20,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   protected logic [JTAG_IRW-1:0]  selected_ir;
   protected uint                  selected_ir_len;
 
-  // Variable to save the previous value of exit_to_rti_dr
-  // Before fetching a new request, `drive_jtag_req` task waits for a clock cycle.
-  // Since, in the `drive_ir` task, there is a possibility to introduce TAP reset by consecutively
-  // driving `tsm` high for five cycles if previous state is UpdateDr (previous `drive_dr` exit
-  // without going to Run-Test-Idle), this extra cycle must be skipped
-  protected bit                   exit_to_rti_dr_past = 1;
-
   // A state flag used for controlling when we disable TCK if rtc_length is positive (see
   // release_tck() for details)
   protected bit tck_in_use = 1'b0;
@@ -53,7 +46,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     cfg.vif.tck_en <= 1'b0;
     cfg.vif.tms <= 1'b0;
     cfg.vif.tdi <= 1'b0;
-    exit_to_rti_dr_past = 1;
   endfunction
 
   // Turn on TCK in the jtag_if
@@ -192,11 +184,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
-    if (exit_to_rti_dr_past & ~cfg.min_rti) begin
-      @(`HOST_CB); // wait one cycle to ensure clock is stable. TODO: remove.
-    end else begin
-      `uvm_info(`gfn, "Skip wait cycles because of past exit to RTI in drive_dr", UVM_HIGH)
-    end
     if (req.ir_len) begin
       if (req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len) begin
         `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_HIGH)
@@ -283,7 +270,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // A flag that tracks whether we injected a pause on the last iteration of the loop.
     bit pause_just_injected = 1'b0;
 
-    exit_to_rti_dr_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_HIGH)
     // assume starting in RTI
     // go to SelectDR
