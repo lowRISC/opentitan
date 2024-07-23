@@ -134,12 +134,12 @@ static void otp_read_test(uint32_t address, const uint8_t *buffer,
     CHECK_DIF_OK(dif_otp_ctrl_dai_read64_end(&otp, &got));
     if (exp_result == kExpectFailed) {
       CHECK(got != exp,
-            "0x%x == 0x%x (got == exp) is not expected at address 0x%x", got,
-            exp, address);
+            "0x%x == 0x%x (got == exp) is not expected at address 0x%x",
+            (uint32_t)got, (uint32_t)exp, address);
     } else {
       CHECK(got == exp,
-            "0x%x != 0x%x (got != exp) is not expected at address 0x%x", got,
-            exp, address);
+            "0x%x != 0x%x (got != exp) is not expected at address 0x%x",
+            (uint32_t)got, (uint32_t)exp, address);
     }
   }
 }

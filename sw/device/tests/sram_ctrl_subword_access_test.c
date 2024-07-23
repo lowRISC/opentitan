@@ -67,7 +67,7 @@ static void read_subwords_check(mmio_region_t region) {
   }
 
   // Check uint64_t reads.
-  for (uint64_t i = 0; i < kSramCtrlTestDataSizeBytes - 7; ++i) {
+  for (uint32_t i = 0; i < kSramCtrlTestDataSizeBytes - 7; ++i) {
     uint64_t expected = *(volatile uint64_t *)((uint8_t *)kRandomData + i);
     uint64_t got = *(volatile uint64_t *)((uint8_t *)region.base + i);
     CHECK(expected == got,
