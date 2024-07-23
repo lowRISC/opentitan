@@ -206,3 +206,5 @@ use_repo(
 
 hyperdebug = use_extension("//third_party/hyperdebug:extension.bzl", "hyperdebug")
 use_repo(hyperdebug, "hyperdebug_firmware")
+
+register_toolchains("//rules/opentitan:localtools")
