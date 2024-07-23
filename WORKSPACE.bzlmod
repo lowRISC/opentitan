@@ -18,10 +18,6 @@ crt_deps()
 load("@crt//config:registration.bzl", "crt_register_toolchains")
 crt_register_toolchains(riscv32 = True)
 
-# NIST CAVP Test Vectors
-load("//third_party/nist_cavp_testvectors:repos.bzl", "nist_cavp_repos")
-nist_cavp_repos()
-
 # Wycheproof Test Vectors
 load("//third_party/wycheproof:repos.bzl", "wycheproof_repos")
 wycheproof_repos()

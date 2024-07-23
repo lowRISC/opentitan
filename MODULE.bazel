@@ -176,4 +176,19 @@ xkcp = use_extension("//third_party/xkcp:extension.bzl", "xkcp")
 use_repo(xkcp, "xkcp")
 
 hsm = use_extension("//third_party/hsm:extension.bzl", "hsm")
-use_repo(hsm, "softhsm2", "sc_hsm", "cloud_kms_hsm")
+use_repo(hsm, "cloud_kms_hsm", "sc_hsm", "softhsm2")
+
+nist_cavp_testvectors = use_extension("//third_party/nist_cavp_testvectors:extension.bzl", "nist_cavp_testvectors")
+use_repo(
+    nist_cavp_testvectors,
+    "nist_cavp_aes_gcm",
+    "nist_cavp_aes_kw_sp_800_38f",
+    "nist_cavp_drbg_sp_800_90a_root",
+    "nist_cavp_ecdh_sp_800_56a",
+    "nist_cavp_ecdsa_fips_186_4",
+    "nist_cavp_hmac_fips_198_1",
+    "nist_cavp_rsa_fips_186_3",
+    "nist_cavp_sha2_fips_180_4",
+    "nist_cavp_sha3_fips_202",
+    "nist_cavp_shake_fips_202",
+)

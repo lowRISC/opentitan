@@ -107,3 +107,7 @@ def nist_cavp_repos():
             "https://storage.googleapis.com/ot-crypto-test-vectors/nist/hmactestvectors.zip",
         ],
     )
+
+nist_cavp_testvectors = module_extension(
+    implementation = lambda _: nist_cavp_repos(),
+)
