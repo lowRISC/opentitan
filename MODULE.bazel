@@ -159,3 +159,6 @@ use_repo(lychee, "lychee")
 
 openocd = use_extension("//third_party/openocd:extension.bzl", "openocd")
 use_repo(openocd, "openocd")
+
+freertos = use_extension("//third_party/freertos:extension.bzl", "freertos")
+use_repo(freertos, "freertos")

@@ -20,3 +20,7 @@ def freertos_repos():
         ],
         patch_args = ["-p1"],
     )
+
+freertos = module_extension(
+    implementation = lambda _: freertos_repos(),
+)
