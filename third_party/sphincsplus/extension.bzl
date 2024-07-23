@@ -40,3 +40,7 @@ def sphincsplus_repos(local = None):
         ],
         patch_args = ["-p2"],
     )
+
+sphincsplus = module_extension(
+    implementation = lambda _: sphincsplus_repos(),
+)
