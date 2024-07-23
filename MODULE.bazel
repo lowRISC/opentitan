@@ -195,3 +195,11 @@ use_repo(
 
 wycheproof = use_extension("//third_party/wycheproof:extension.bzl", "wycheproof")
 use_repo(wycheproof, "wycheproof")
+
+sphincsplus = use_extension("//third_party/sphincsplus:extension.bzl", "sphincsplus")
+use_repo(
+    sphincsplus,
+    "sphincsplus_fips205_ipd",
+    "sphincsplus_sha256_kat",
+    "sphincsplus_shake256_kat",
+)
