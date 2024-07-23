@@ -192,3 +192,6 @@ use_repo(
     "nist_cavp_sha3_fips_202",
     "nist_cavp_shake_fips_202",
 )
+
+wycheproof = use_extension("//third_party/wycheproof:extension.bzl", "wycheproof")
+use_repo(wycheproof, "wycheproof")

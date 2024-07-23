@@ -12,3 +12,7 @@ def wycheproof_repos():
         strip_prefix = "wycheproof-snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d",
         url = "https://github.com/lowRISC/wycheproof/archive/refs/tags/snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d.tar.gz",
     )
+
+wycheproof = module_extension(
+    implementation = lambda _: wycheproof_repos(),
+)
