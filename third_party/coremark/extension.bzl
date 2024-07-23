@@ -19,3 +19,7 @@ def coremark_repos():
         ],
         patch_args = ["-p1"],
     )
+
+coremark = module_extension(
+    implementation = lambda _: coremark_repos(),
+)
