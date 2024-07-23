@@ -11,3 +11,7 @@ def hyperdebug_repos():
         sha256 = "649a8cd6d183bc3fb286ea5895c752cfec3aa29b9990f44bb9e7621c0414c7de",
         build_file = "@//third_party/hyperdebug:BUILD",
     )
+
+hyperdebug = module_extension(
+    implementation = lambda _: hyperdebug_repos(),
+)
