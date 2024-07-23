@@ -30,3 +30,7 @@ def hsm_repos():
         strip_prefix = "libkmsp11-1.2-linux-amd64",
         sha256 = "81fff58d5835f05d550ff86c88fa6fb92a733bde8b232e1482d85a3cf07c6396",
     )
+
+hsm = module_extension(
+    implementation = lambda _: hsm_repos(),
+)
