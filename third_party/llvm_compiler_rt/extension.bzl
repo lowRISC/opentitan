@@ -19,3 +19,7 @@ def llvm_compiler_rt_repos():
         ],
         patch_args = ["-p1"],
     )
+
+llvm_compiler_rt = module_extension(
+    implementation = lambda _: llvm_compiler_rt_repos(),
+)

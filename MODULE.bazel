@@ -162,3 +162,6 @@ use_repo(openocd, "openocd")
 
 freertos = use_extension("//third_party/freertos:extension.bzl", "freertos")
 use_repo(freertos, "freertos")
+
+llvm_compiler_rt = use_extension("//third_party/llvm_compiler_rt:extension.bzl", "llvm_compiler_rt")
+use_repo(llvm_compiler_rt, "llvm_compiler_rt")
