@@ -44,10 +44,6 @@ hooks_repo(name = "manufacturer_test_hooks")
 secure_hooks_repo(name = "secure_manufacturer_test_hooks")
 provisioning_exts_repo(name = "provisioning_exts")
 
-# Binary firmware image for HyperDebug
-load("//third_party/hyperdebug:repos.bzl", "hyperdebug_repos")
-hyperdebug_repos()
-
 register_toolchains(
     "//rules/opentitan:localtools",
 )
