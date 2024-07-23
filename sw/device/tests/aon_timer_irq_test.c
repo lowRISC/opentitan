@@ -103,7 +103,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   CHECK_STATUS_OK(
       aon_timer_testutils_get_aon_cycles_from_us(irq_time_us, &count_cycles));
   LOG_INFO("Setting interrupt for %u us (%u cycles)", (uint32_t)irq_time_us,
-           count_cycles);
+           (uint32_t)count_cycles);
 
   // Set the default value to a different value than expected.
   peripheral = kTopEarlgreyPlicPeripheralUnknown;

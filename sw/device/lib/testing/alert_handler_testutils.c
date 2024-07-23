@@ -149,7 +149,7 @@ status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
                                  /*rem_out=*/NULL);
   TRY_CHECK(cycles_ < UINT32_MAX,
             "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
-            (cycles_ >> 32), (uint32_t)cycles_);
+            (uint32_t)(cycles_ >> 32), (uint32_t)cycles_);
   *cycles = (uint32_t)cycles_;
   return OK_STATUS();
 }
