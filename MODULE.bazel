@@ -153,3 +153,6 @@ use_repo(bitstreams, "bitstreams")
 
 nonhermetic = use_extension("//rules:extensions.bzl", "nonhermetic")
 use_repo(nonhermetic, "nonhermetic")
+
+lychee = use_extension("//third_party/lychee:extension.bzl", "lychee")
+use_repo(lychee, "lychee")

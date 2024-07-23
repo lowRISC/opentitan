@@ -23,3 +23,7 @@ exports_files(glob(["**"]))
 """,
         sha256 = "2a47a11d7fd3498ea3e0f8f58909e1673d652f917205d41dcf852fed1ad56ff7",
     )
+
+lychee = module_extension(
+    implementation = lambda _: lychee_repos(),
+)
