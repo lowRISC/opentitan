@@ -43,7 +43,3 @@ load("@provisioning_exts_setup//:repos.bzl", "provisioning_exts_repo")
 hooks_repo(name = "manufacturer_test_hooks")
 secure_hooks_repo(name = "secure_manufacturer_test_hooks")
 provisioning_exts_repo(name = "provisioning_exts")
-
-register_toolchains(
-    "//rules/opentitan:localtools",
-)
