@@ -69,9 +69,25 @@
     }
     {
       name: sec_cm_otp_dis_rv_dm_late_debug_intersig_mubi
-      desc: "Verify the countermeasure(s) OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI."
+      desc: '''
+        Verify the countermeasure(s) OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI.
+
+        Control of whether to use late debug is governed by both the otp_dis_rv_dm_late_debug_i port
+        and the late_debug_enable register. In both cases, bad values of the signal are interpreted
+        as "Off", causing debug enable to be controlled by the lc_dft_en_i port instead of the
+        lc_hw_debug_en_i port.
+
+        To test that this mubi encoding is interpreted as expected, disable late debug enablement by
+        setting both the otp_dis_rv_dm_late_debug_i port and the late_debug_enable register to
+        values that are not strict mubi true values. Then check that whether debug is enabled is
+        caused by lc_dft_en_i.
+
+        This is actually handled by rv_dm_base_vseq, which controls half of its runs with an invalid
+        late_debug_enable signal. As such, most tests will verify this testpoint.
+
+      '''
       stage: V2S
-      tests: []
+      tests: ["rv_dm_smoke"]
     }
     {
       name: sec_cm_dm_en_ctrl_lc_gated
