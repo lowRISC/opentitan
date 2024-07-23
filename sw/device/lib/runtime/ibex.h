@@ -218,7 +218,7 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
     while (!(expr)) {                                                     \
       CHECK(!ibex_timeout_check(&timeout_),                               \
             "Timed out after %d usec (%d CPU cycles) waiting for " #expr, \
-            timeout_usec, (uint32_t)timeout_.cycles);                     \
+            (uint32_t)timeout_usec, (uint32_t)timeout_.cycles);           \
     }                                                                     \
   } while (0)
 

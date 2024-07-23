@@ -103,7 +103,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_64_from_us(irq_time_us,
                                                                 &count_cycles));
   LOG_INFO("Setting interrupt for %u us (%u cycles)", (uint32_t)irq_time_us,
-           count_cycles);
+           (uint32_t)count_cycles);
 
   // TRY_CHECK(count_cycles <= UINT32_MAX,
   //           "The desired wake-up count 0x%08x%08x cannot fit into the 32 bits
