@@ -100,17 +100,17 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Not Started |
-RTL           | [TODO_COMPLETE][]       | Not Started |
-Code Quality  | [LINT_COMPLETE][]       | Not Started |
-Code Quality  | [CDC_COMPLETE][]        | Not Started |
-Code Quality  | [RDC_COMPLETE][]        | Not Started |
-Review        | [REVIEW_RTL][]          | Not Started |
-Review        | [REVIEW_DELETED_FF][]   | Not Started |
-Review        | [REVIEW_SW_CHANGE][]    | Not Started |
-Review        | [REVIEW_SW_ERRATA][]    | Not Started |
-Review        | Reviewer(s)             | Not Started |
-Review        | Signoff date            | Not Started |
+Documentation | [NEW_FEATURES_D3][]     | Done        |
+RTL           | [TODO_COMPLETE][]       | Done        |
+Code Quality  | [LINT_COMPLETE][]       | Done        | With waivers approved by TC on 2024-08-08
+Code Quality  | [CDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff.
+Review        | [REVIEW_RTL][]          | Done        |
+Review        | [REVIEW_DELETED_FF][]   | Done        |
+Review        | [REVIEW_SW_CHANGE][]    | Done        |
+Review        | [REVIEW_SW_ERRATA][]    | Done        |
+Review        | Reviewer(s)             | Done        | matutem@, vogelpi@, adk@
+Review        | Signoff date            | Done        | 2024-08-08
 
 [NEW_FEATURES_D3]:      ../../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../../doc/project_governance/checklist/README.md#todo_complete
