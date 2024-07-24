@@ -103,7 +103,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       2: begin
         logic [3:0] good_op, bad_op;
         logic       selected_flags_C;
-        bit         avoid_addc = 1'b0, avoid_subb = 1'b0;
+        bit         avoid_addc = 1'b0;
 
         string alu_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum";
         string op_path = {alu_path, ".operation_i.op"};
@@ -125,17 +125,29 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           // around again.
         end
 
-        // We know that we won't spot conversions between add/addc and sub/subb if the selected
-        // flags register happens to be zero (because the change in opcode won't actually have any
-        // effect). Constrain the randomisation to avoid doing one of those conversions if we're in
-        // that situation.
+        // We also know that the pre-decode check won't spot conversions between add/addc and
+        // sub/subb if the selected flags register happens to be zero (because the change in opcode
+        // won't actually have any effect). We want to constrain the randomisation to avoid doing
+        // one of those conversions if we're in that situation.
+        //
+        //  - Do this by adding an avoid_addc flag that avoids a conversion between add/addc when
+        //    the carry flag is zero. (This also applies to subtractions: see the point below)
+        //
+        // It also isn't strict enough to spot conversions between addX and subX for any X. We can
+        // avoid requiring that it should by adding two constraints:
+        //
+        //  - Constraining the difference between good_op and bad_op not to be 3. Because there are
+        //    three add instructions this guarantees we won't convert between addX and subX for any
+        //    X.
+        //
+        //  - Extend the avoid_addc flag (which would normally avoid trying to distinguish between
+        //    add/addc, sub/subb when the carry flag was zero) so that they apply to both either
+        //    additions or subtractions. This will avoid e.g. converting between add and subb.
         `DV_CHECK_FATAL(uvm_hdl_read(carry_path, selected_flags_C))
         if (!selected_flags_C) begin
-          if (good_op inside {otbn_pkg::AluOpBignumAdd, otbn_pkg::AluOpBignumAddc}) begin
+          if (good_op inside {otbn_pkg::AluOpBignumAdd, otbn_pkg::AluOpBignumAddc,
+                              otbn_pkg::AluOpBignumSub, otbn_pkg::AluOpBignumSubb}) begin
             avoid_addc = 1'b1;
-          end
-          if (good_op inside {otbn_pkg::AluOpBignumSub, otbn_pkg::AluOpBignumSubb}) begin
-            avoid_subb = 1'b1;
           end
         end
 
@@ -143,9 +155,10 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
                                            bad_op != good_op;
                                            bad_op != otbn_pkg::AluOpBignumNone;
                                            avoid_addc -> (bad_op != otbn_pkg::AluOpBignumAdd &&
-                                                          bad_op != otbn_pkg::AluOpBignumAddc);
-                                           avoid_subb -> (bad_op != otbn_pkg::AluOpBignumSub &&
-                                                          bad_op != otbn_pkg::AluOpBignumSubb);)
+                                                          bad_op != otbn_pkg::AluOpBignumAddc &&
+                                                          bad_op != otbn_pkg::AluOpBignumSub &&
+                                                          bad_op != otbn_pkg::AluOpBignumSubb);
+                                           bad_op != good_op + 3; good_op != bad_op + 3;)
 
         `uvm_info(`gfn,
                   $sformatf("Forcing %0s from %0d to %0d", err_path, good_op, bad_op),
