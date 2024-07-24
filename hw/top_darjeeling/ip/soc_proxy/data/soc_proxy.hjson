@@ -204,12 +204,18 @@
     }
     { struct:  "logic"
       type:    "uni"
+      name:    "spi_device_lsio_trigger"
+      act:     "rcv"
+      desc:    "LSIO trigger signal from SPI Device"
+    }
+    { struct:  "logic"
+      type:    "uni"
       name:    "uart_lsio_trigger"
       act:     "rcv"
       desc:    "LSIO trigger signal from UART"
     }
     { struct:  "logic"
-      width:   8
+      width:   7
       type:    "uni"
       name:    "soc_lsio_trigger"
       act:     "rcv"
