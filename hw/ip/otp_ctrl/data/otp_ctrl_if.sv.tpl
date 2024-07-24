@@ -264,6 +264,11 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     release tb.dut.part_access_dai;
   endtask
 
+  // everytime we reset, disconnect EXT_VPP
+  always_ff @( negedge rst_ni ) begin : disconnect_ext_vpp
+    drive_ext_voltage_h_io(1'bz);
+  end
+
   // Connectivity assertions for test related I/Os.
   `ASSERT(LcOtpTestStatusO_A, otp_vendor_test_status_o == `PRIM_GENERIC_OTP_PATH.test_status_o)
   `ASSERT(LcOtpTestCtrlI_A, otp_vendor_test_ctrl_i == `PRIM_GENERIC_OTP_PATH.test_ctrl_i)
