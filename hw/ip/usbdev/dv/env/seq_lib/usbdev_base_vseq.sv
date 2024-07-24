@@ -642,7 +642,14 @@ endtask
         csr_rd(.ptr(ral.configin[ep]), .value(configin));
         sending = get_field_val(ral.configin[ep].sending, configin);
       end
-      `DV_CHECK_EQ(sending, 0, "Packet was neither collected nor retracted")
+      // See `usb20_agent_cfg.sv` for explanation => `sending` bit will remain asserted if
+      // collection has been attempted but the packet has not been ACKnowledged.
+      if (cfg.m_usb20_agent_cfg.rtl_sending_clear_requires_ack) begin
+        // Clear the `sending` bit manually.
+        csr_wr(.ptr(ral.configin[ep]), .value(configin));
+      end else begin
+        `DV_CHECK_EQ(sending, 0, "Packet was neither collected nor retracted")
+      end
     end
     // Ensure that there's no lingering completion status that could interfere with the next
     // IN packet presented.

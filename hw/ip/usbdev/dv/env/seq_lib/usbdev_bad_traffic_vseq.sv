@@ -29,6 +29,13 @@ class usbdev_bad_traffic_vseq extends usbdev_bus_rand_vseq;
     int unsigned corrupt = $urandom_range(1, 3);  // bit 1 = corrupt data, bit 0 = corrupt out.
     `uvm_info(`gfn, "Generating transaction with invalid SYNC", UVM_MEDIUM)
     claim_driver();
+    // See explanation in `usb20_agent_cfg.sv` => choose an invalid Endpoint so that we do not
+    // interfere with valid traffic.
+    if (cfg.m_usb20_agent_cfg.rtl_limited_sync_recovery) begin
+      ep = $urandom_range(NEndpoints, 15);
+      `uvm_info(`gfn, $sformatf(" => redirecting as valid traffic to invalid endpoint %0d", ep),
+                UVM_MEDIUM)
+    end
     // Instruct the driver to scramble one or both of the SYNC signals.
     inject_invalid_token_sync = corrupt[0];
     inject_invalid_data_sync  = corrupt[1];

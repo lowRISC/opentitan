@@ -332,6 +332,7 @@ class usb20_monitor extends dv_base_monitor #(
     bit destuffed_packet[$];
     int unsigned bitcnt = 1;
     bit [15:0] sync_pid = 0;
+    int unsigned initb = 0;
     int bit_intervals = 0;
     bit low_speed = 1'b0;
     bit valid_stuffing;
@@ -394,12 +395,11 @@ class usb20_monitor extends dv_base_monitor #(
     valid_eop = cfg.single_bit_SE0 ? (eop_bits >= 1) : (eop_bits == 2);
 
     `uvm_info(`gfn, $sformatf("Complete monitored packet = %p", packet), UVM_MEDIUM)
-
-    // We never expect to receive invalid SYNC signals at present; at some point we may generate
-    // them from the driver, but the DUT should never generate them.
     `DV_CHECK_GT(packet.size(), 8, "Incomplete SYNC signal detected")
     valid_sync = 1'b1;
-    for (int unsigned b = 0; b < 8; b++) begin
+    // See explanation in `usb20_agent_cfg.sv` => check only bits 2 to 8
+    if (cfg.rtl_limited_sync_recovery) initb = 2;
+    for (int unsigned b = initb; b < 8; b++) begin
       if (packet[b] != sync[b]) begin
         `uvm_info(`gfn, $sformatf("Invalid SYNC signal detected %p", packet), UVM_MEDIUM)
         valid_sync = 1'b0;
