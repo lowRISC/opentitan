@@ -134,7 +134,7 @@ class timed_reg_field extends uvm_object;
       if (act_val == pred.val_new) begin
         // This expectation has been met and may be discarded.
         `uvm_info(`gfn, $sformatf("Reg %s field %s (ID 0x%0x) met expectation 0x%0x", reg_name,
-                                  field.get_name(), pred.id, pred.val_new), UVM_MEDIUM)
+                                  field.get_name(), pred.id, pred.val_new), UVM_HIGH)
         void'(pred_q.pop_front());
         obs_latest = act_val;
       end else if (!(pred.latest_time - time_now > 0)) begin

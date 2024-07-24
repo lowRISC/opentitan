@@ -61,7 +61,7 @@ class usbdev_timed_regs extends uvm_object;
       TimedWakeEvents: csr_rd(.ptr(ral.wake_events),  .value(act_data), .backdoor(1));
       default: `uvm_fatal(`gfn, "Invalid/unrecognized register")
     endcase
-    `uvm_info(`gfn, $sformatf("Backdoor read of reg %p yielded 0x%0x", r, act_data), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Backdoor read of reg %p yielded 0x%0x", r, act_data), UVM_HIGH)
   endtask
 
   // Add a timed, predicted state change to the list of expectations for the given register.
