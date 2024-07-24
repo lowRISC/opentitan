@@ -18,30 +18,48 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     fork seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]); join_none
   endtask
 
+  virtual function uint div_ceil(uint n, uint d);
+    return (n - 1) / (d + 1);
+  endfunction
+
   // Utility task to configure the I2C agents
   virtual task configure_i2c_agents();
     bit [31:0] i2c_scl_period_ns;          // `kI2cSclPeriodNs` in SW
+    bit [31:0] i2c_scl_half_period_ns;
     bit [31:0] peripheral_clock_freq_hz;   // `kClockFreqPeripheralHz` in SW
     bit [31:0] peripheral_clock_period_ns; // `peripheral_clock_period_ns` in SW
     bit [31:0] half_cycles_in_i2c_period;
-    // Hard-coded from `sw/device/lib/arch/device_sim_dv.c`.
+
+    // Copy the I2C clk_i frequency from the hard-coded `sw/device/lib/arch/device_sim_dv.c`.
     peripheral_clock_freq_hz = 24 * 1000 * 1000;
     peripheral_clock_period_ns = 1_000_000_000 / peripheral_clock_freq_hz;
-    `uvm_info(`gfn, $sformatf("peripheral_clock_period_ns = %0d", peripheral_clock_period_ns),
-      UVM_LOW);
 
-    // Hard-coded from `sw/device/tests/power_virus_systemtest.c`.
-    i2c_scl_period_ns = 1000;
-    half_cycles_in_i2c_period = ((int'(i2c_scl_period_ns) / 2 - 1) /
-      int'(peripheral_clock_period_ns)) + 1;
+    // The software test `power_virus_systemtest.c` hardcodes the I2C speedmode and performance
+    // as FastModePlus @ 1Mb/s. This defines the SCL period of 1us, which we need to pass to our
+    // agent to ensure it correctly receives and responds to I2C-Controller traffic from the DUT.
+    // Copy the hardcoded values from SW, and derive the agent's timing parameters from this.
+    i2c_scl_period_ns = 1000; // From `power_virus_systemtest.c`
+    i2c_scl_half_period_ns = i2c_scl_period_ns / 2;
+    half_cycles_in_i2c_period = div_ceil(.n(uint'(i2c_scl_half_period_ns)),
+                                         .d(uint'(peripheral_clock_period_ns)));
+
+    `uvm_info(`gfn, $sformatf("peripheral_clock_period_ns = %0d",
+      peripheral_clock_period_ns), UVM_LOW);
     `uvm_info(`gfn, $sformatf("Half (peripheral) cycles in I2C clock period: %d",
       half_cycles_in_i2c_period), UVM_LOW);
 
     foreach (cfg.m_i2c_agent_cfgs[i]) begin
+      int tSetupBit = 2;
+      if (cfg.en_dv_cdc) begin
+        tSetupBit++;
+        cfg.m_i2c_agent_cfgs[i].timing_cfg.tHoldBit = 1;
+      end
+
       cfg.m_i2c_agent_cfgs[i].if_mode = Device;
       cfg.m_i2c_agent_cfgs[i].target_addr0 = i + 1;
-      cfg.m_i2c_agent_cfgs[i].timing_cfg.tClockLow = half_cycles_in_i2c_period - 2;
-      cfg.m_i2c_agent_cfgs[i].timing_cfg.tClockPulse = half_cycles_in_i2c_period + 1;
+      cfg.m_i2c_agent_cfgs[i].timing_cfg.tSetupBit = tSetupBit;
+      cfg.m_i2c_agent_cfgs[i].timing_cfg.tClockLow = half_cycles_in_i2c_period - tSetupBit;
+      cfg.m_i2c_agent_cfgs[i].timing_cfg.tClockPulse = half_cycles_in_i2c_period;
     end
   endtask
 

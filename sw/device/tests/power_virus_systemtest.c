@@ -132,6 +132,7 @@ enum {
   /**
    * I2C parameters.
    */
+  kI2CSpeedMode = kDifI2cSpeedFastPlus,
   kI2cSclPeriodNs = 1000,
   kI2cSdaRiseFallTimeNs = 10,
   kI2cDeviceMask = 0x7f,
@@ -937,7 +938,7 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
 
   CHECK_DIF_OK(dif_i2c_compute_timing(
       (dif_i2c_timing_config_t){
-          .lowest_target_device_speed = kDifI2cSpeedFastPlus,
+          .lowest_target_device_speed = kI2CSpeedMode,
           .clock_period_nanos = peripheral_clock_period_ns,
           .sda_rise_nanos = kI2cSdaRiseFallTimeNs,
           .sda_fall_nanos = kI2cSdaRiseFallTimeNs,
