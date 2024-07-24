@@ -86,7 +86,7 @@ class usbdev_timed_regs extends uvm_object;
     forever begin
       timed_reg_e r;
       // The checker cannot afford to wait a cycle for the prediction because the CSR change may
-      /// occur within the current cycle.
+      // occur within the current cycle.
       @(negedge clk_rst_vif.clk);
       time_now++;
       // Check each of the timed registers for expired expectations.
