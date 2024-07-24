@@ -218,6 +218,8 @@ typedef enum dif_dma_status_code {
   kDifDmaStatusBusy = 0x01 << DMA_STATUS_BUSY_BIT,
   // Configured DMA operation is complete.
   kDifDmaStatusDone = 0x01 << DMA_STATUS_DONE_BIT,
+  // Transfer of a single chunk is complete.
+  kDifDmaStatusChunkDone = 0x01 << DMA_STATUS_CHUNK_DONE_BIT,
   // Set once aborted operation drains.
   kDifDmaStatusAborted = 0x01 << DMA_STATUS_ABORTED_BIT,
   // Error occurred during the operation.
