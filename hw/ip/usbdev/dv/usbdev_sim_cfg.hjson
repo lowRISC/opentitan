@@ -89,6 +89,10 @@
     {
       name: usbdev_data_toggle_restore
       uvm_test_seq: usbdev_data_toggle_restore_vseq
+      // Sequences lets IN transactions time out and since the model has no
+      // concept of elapsed time, it cannot be used to predict the resulting
+      // `link_in_err` assertion.
+      run_opts: ["+en_scb_rdchk_link_in_err=0"]
     }
     {
       name: usbdev_device_address
@@ -99,14 +103,14 @@
       uvm_test_seq: usbdev_device_timeout_vseq
       // Model has no concept of elapsed time, and cannot change state in the
       // absence of a missing USB host controller handshake.
-      run_opts: ["+en_scb_rdchk_configin=0"]
+      run_opts: ["+en_scb_rdchk_configin=0","+en_scb_rdchk_link_in_err=0"]
     }
     {
       name: usbdev_timeout_missing_host_handshake
       uvm_test_seq: usbdev_device_timeout_vseq
       // Model has no concept of elapsed time, and cannot change state in the
       // absence of a missing USB host controller handshake.
-      run_opts: ["+en_scb_rdchk_configin=0"]
+      run_opts: ["+en_scb_rdchk_configin=0","+en_scb_rdchk_link_in_err=0"]
     }
     {
       name: usbdev_disable_endpoint

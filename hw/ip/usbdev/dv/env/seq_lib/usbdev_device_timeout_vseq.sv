@@ -87,7 +87,15 @@ class usbdev_device_timeout_vseq extends usbdev_base_vseq;
       // Do we need to delay after this transaction?
       bit delay = 0;
 
-      `DV_CHECK_STD_RANDOMIZE_FATAL(response)
+      // See explanation in `usb20_agent_pkg.sv` => do not generate IN/OUT/SETUP after IN DATA
+      // packet without an intervening handshake/timeout because it will corrupt the intended
+      // streaming traffic.
+      if (cfg.m_usb20_agent_cfg.rtl_must_have_host_handshake) begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(response, response == ResponseNone ||
+                                                     response == ResponseAck;)
+      end else begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(response)
+      end
       `DV_CHECK_STD_RANDOMIZE_FATAL(response_delay)
 
       `uvm_info(`gfn, $sformatf("Response type %0d delay %0d clocks", response, response_delay),

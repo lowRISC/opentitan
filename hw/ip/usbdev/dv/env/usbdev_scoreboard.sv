@@ -47,6 +47,13 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     cfg.en_scb_rdchk_configin = 1'b1;
     void'($value$plusargs("en_scb_rdchk_configin=%0b", cfg.en_scb_rdchk_configin));
 
+    // Similarly for the checking of the `intr_state.link_in_err` field, which is asserted by the
+    // DUT if there is no handshake to an IN transaction.
+    // - `usbdev_device_timeout`
+    // - `usbdev_timeout_missing_host_handshake`
+    cfg.en_scb_rdchk_link_in_err = 1'b1;
+    void'($value$plusargs("en_scb_rdchk_link_in_err=%0b", cfg.en_scb_rdchk_link_in_err));
+
     // Model cannot be used to predict transitional `link_state` reliably because of CDC and
     // filtering propagation delays in the presence of an asynchronous process that is reading
     // the `usbstat` register repeatedly:
@@ -340,7 +347,15 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               // Link resume signaling may be delayed until after the Low Speed EOP.
               "link_resume": max_delay = 3 * 8 * 4;
               // Most interrupts should be reflected almost immediately.
-              default: max_delay = 16;
+              default: begin
+                max_delay = 16;
+                // Checking of the `link_in_err` assertion following a missing host handshake is
+                // not possible presently because the model has no awareness of elapsed time without
+                // activity.
+                if (!cfg.en_scb_rdchk_link_in_err && field_name == "link_in_err") begin
+                  include_field = 1'b0;
+                end
+              end
             endcase
           end
 

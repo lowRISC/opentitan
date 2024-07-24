@@ -204,7 +204,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     for (int i = 0; i < 8; i++) begin
       comp_pkt[i] = SYNC_PATTERN[i];
     end
-    if (!valid_sync) begin
+    // See explanation in `usb20_agent_cfg.sv` => avoid corrupting a bit within the initial
+    // pre-encoded signal because it would invalidate the rest of the SYNC signal because of the
+    // NRZI encoding.
+    if (!valid_sync && !cfg.rtl_limited_sync_recovery) begin
       // For resilience in the presence of frequency/phase difference, the DUT responds only to the
       // final 6 bits of the SYNC signal, so if we want to generate an invalid SYNC we must toggle
       // one of those final 6 bits.
@@ -222,6 +225,12 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     // NRZI Implementation.
     nrzi_encoder(bit_stuff_out, nrzi_out);
     `uvm_info(`gfn, $sformatf("Complete Packet after NRZI = %p", nrzi_out), UVM_DEBUG)
+    // See explanation in `usb20_agent_cfg.sv` => corrupt only one of the first 2 bits transmitted
+    // on the line.
+    if (!valid_sync && cfg.rtl_limited_sync_recovery) begin
+      nrzi_out[1] ^= 1'b1;
+      `uvm_info(`gfn, "Driver chose to corrupt bit 1 of SYNC signal (limited)", UVM_MEDIUM)
+    end
     // Drive out each bit in turn.
     for (int i = 0; i < nrzi_out.size(); i++) begin
       drive_bit_interval(nrzi_out[i] ? USB20Sym_J : USB20Sym_K, low_speed);
