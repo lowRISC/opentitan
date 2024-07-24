@@ -465,20 +465,26 @@ class usbdev_bfm extends uvm_component;
     if (|{token.low_speed, !token.valid_sync, !token.valid_eop}) return 0;
     if (valid_packet(token)) begin
       case (token.m_pid_type)
-        // SETUP token has immediate consequence for the DUT state; both SETUP and OUT token
-        // packets cause some state information to be retained so that the ensuing DATA packet may
-        // be processed.
-        PidTypeSetupToken: begin
+        PidTypeSetupToken, PidTypeOutToken: begin
           bit [3:0] ep = token.endpoint;
           `downcast(rx_token, token.clone())
-          // Detection of a SETUP, whether or not it's stored clears the Data Toggles bits, iff
-          // the endpoints are enabled.
-          if (ep_out_enable[ep]) out_toggles[ep] = 1'b0;
-          if (ep_in_enable[ep])  in_toggles[ep]  = 1'b1;
-        end
-        PidTypeOutToken: begin
-          `downcast(rx_token, token.clone())
-          // Nothing to do until the DATA packet is received; `rx_token` holds the required state.
+          // Basic check of whether we should do anything at all for this transaction.
+          if (rx_token.address != dev_address || ep >= NEndpoints || !ep_out_enable[ep]) begin
+            // Now forget the OUT transaction; silently ignored.
+            rx_token = null;
+            return 0;
+          end
+          // SETUP token has immediate consequence for the DUT state; both SETUP and OUT token
+          // packets cause some state information to be retained so that the ensuing DATA packet may
+          // be processed.
+          if (token.m_pid_type == PidTypeSetupToken) begin
+            // Detection of a SETUP, whether or not it's stored clears the Data Toggles bits, iff
+            // the endpoints are enabled.
+            if (ep_out_enable[ep]) out_toggles[ep] = 1'b0;
+            if (ep_in_enable[ep])  in_toggles[ep]  = 1'b1;
+          end
+          // Nothing more to do until the DATA packet is received; `rx_token` holds the required
+          // state.
         end
         PidTypeInToken: begin
           return in_packet(token, rsp);
@@ -616,15 +622,8 @@ class usbdev_bfm extends uvm_component;
     assert(token.m_pkt_type == PktTypeToken);
     assert(data.m_pkt_type  == PktTypeData);
 
-    // Basic check of whether we should do anything at all for this transaction.
-    ep = token.endpoint;
-    if (token.address != dev_address || ep >= NEndpoints || !ep_out_enable[ep]) begin
-      // Now forget the OUT transaction; silently ignored.
-      rx_token = null;
-      return 0;
-    end
-
     // First we concern ourselves with the packet type-dependent impact upon the hardware state.
+    ep = token.endpoint;
     case (token.m_pid_type)
       PidTypeSetupToken: begin
         // Silently ignore SETUP packets to endpoints not configured to receive them.
