@@ -25,6 +25,11 @@ def main() -> int:
         action='store_true',
         help=('Print full control-flow and information-flow graphs.'))
     parser.add_argument(
+        '--clobbered',
+        action='store_true',
+        help=('Print the clobbered registers as they would be in a docstring. '
+              'Unless --verbose is set, will not print full graph.'))
+    parser.add_argument(
         '--subroutine',
         required=False,
         help=(
@@ -91,7 +96,7 @@ def main() -> int:
 
     # If no secrets were given or the --verbose flag is set, then print the
     # full information-flow graphs.
-    if (args.verbose or args.secrets is None):
+    if (args.verbose or (args.secrets is None and not args.clobbered)):
         if ret_iflow.exists:
             print(
                 'Information flow for paths ending in a return to the caller:')
@@ -102,6 +107,13 @@ def main() -> int:
         if end_iflow.exists:
             print('Information flow for paths ending the program:')
             print(end_iflow.pretty(indent=2))
+
+    if args.clobbered:
+        if ret_iflow.exists:
+            print(ret_iflow.clobbered())
+        # If we have no secrets listed, then just finish here.
+        if args.secrets is None:
+            return 0
 
     if args.secrets is None:
         # If no initial secrets were provided, we will print all nodes that

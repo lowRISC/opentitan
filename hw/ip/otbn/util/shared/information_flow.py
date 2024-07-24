@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from serialize.parse_helpers import check_keys, check_list, check_str
 
@@ -247,6 +247,77 @@ class InformationFlowGraph:
             'Maximum number of iterations ({}) exceeded when looping '
             'information-flow graph. Is the set of possible nodes larger '
             'than the maximum iterations?'.format(max_iterations))
+
+    def clobbered(self) -> str:
+        '''Return a human-readable description of clobbered registers and flags.
+
+        For example:
+        clobbered registers: x3 to x5, w2 to w10, acc
+        clobbered flag groups: FG0
+        '''
+        if not self.exists:
+            return 'Nonexistent information-flow graph (no possible paths).'
+
+        def _combine_ranges(nums: List[int]) -> List[Tuple[int, int]]:
+            '''Convert a list of numbers into a list of ranges.
+
+            For example, [1, 3, 4, 5] would become [(1, 1), (3,5)].
+            '''
+            if len(nums) == 0:
+                return []
+
+            ranges = []
+            start = nums[0]
+            end = nums[0]
+            for n in nums[1:]:
+                if n == end + 1:
+                    end = n
+                else:
+                    ranges.append((start, end))
+                    start = n
+                    end = n
+            ranges.append((start, end))
+            return ranges
+
+        def _stringify_range(prefix: str, r: Tuple[int, int]) -> str:
+            start, end = r
+            if start == end:
+                return f'{prefix}{start}'
+            return f'{prefix}{start} to {prefix}{end}'
+
+        # First transform the nodes into a list of special registers plus
+        # registers that may get represented as a range, stored as numbers.
+        special = []
+        flag_groups = set()
+        wregs = []
+        xregs = []
+        for sink in sorted(self.flow.keys()):
+            if sink == 'dmem' or sink == 'x1':
+                # Not real registers or flags, ignore
+                continue
+            elif sink.startswith('w') and sink[1:].isdigit():
+                wregs.append(int(sink[1:]))
+            elif sink.startswith('x') and sink[1:].isdigit():
+                xregs.append(int(sink[1:]))
+            elif sink.startswith('fg0'):
+                flag_groups.add('FG0')
+            elif sink.startswith('fg1'):
+                flag_groups.add('FG1')
+            else:
+                special.append(sink)
+
+        # Combine the ranges.
+        w_ranges = _combine_ranges(sorted(wregs))
+        x_ranges = _combine_ranges(sorted(xregs))
+
+        # Stringify ranges
+        regs = [_stringify_range('x', r) for r in x_ranges]
+        regs += [_stringify_range('w', r) for r in w_ranges]
+        regs += special
+        regs_line = '* clobbered registers: ' + ', '.join(regs)
+        flags_str = 'none' if len(flag_groups) == 0 else ', '.join(sorted(list(flag_groups)))
+        flags_line = '* clobbered flag groups: ' + flags_str
+        return regs_line + '\n' + flags_line
 
     def pretty(self, indent: int = 0) -> str:
         '''Return a human-readable representation of the graph.'''
