@@ -10,10 +10,11 @@ use std::time::Duration;
 use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 use crate::io::i2c::{self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer};
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+use crate::transport::hyperdebug::{BulkInterface, CommandHandler, Inner};
 use crate::transport::{TransportError, TransportInterfaceType};
 
 pub struct HyperdebugI2cBus {
+    console: CommandHandler,
     inner: Rc<Inner>,
     interface: BulkInterface,
     cmsis_encapsulation: bool,
@@ -145,6 +146,7 @@ impl HyperdebugI2cBus {
     const CMSIS_DAP_CUSTOM_COMMAND_I2C_DEVICE: u8 = 0x82;
 
     pub fn open(
+        console: &CommandHandler,
         inner: &Rc<Inner>,
         i2c_interface: &BulkInterface,
         cmsis_encapsulation: bool,
@@ -162,6 +164,7 @@ impl HyperdebugI2cBus {
         usb_handle.claim_interface(i2c_interface.interface)?;
 
         Ok(Self {
+            console: console.clone(),
             inner: Rc::clone(inner),
             interface: *i2c_interface,
             cmsis_encapsulation,
@@ -300,7 +303,7 @@ impl Bus for HyperdebugI2cBus {
         match mode {
             // Put I2C debugger into host mode (this is the default).
             i2c::Mode::Host => {
-                self.inner
+                self.console
                     .cmd_no_output(&format!("i2c set mode {} host", &self.bus_idx))?;
                 self.mode.set(Mode::Host);
             }
@@ -310,7 +313,7 @@ impl Bus for HyperdebugI2cBus {
                     self.supports_i2c_device,
                     TransportError::UnsupportedOperation,
                 );
-                self.inner
+                self.console
                     .cmd_no_output(&format!("i2c set mode {} device {}", &self.bus_idx, addr))?;
                 self.mode.set(Mode::Device);
             }
@@ -321,7 +324,7 @@ impl Bus for HyperdebugI2cBus {
     /// Gets the maximum allowed speed of the I2C bus.
     fn get_max_speed(&self) -> Result<u32> {
         let mut buf = String::new();
-        let captures = self.inner.cmd_one_line_output_match(
+        let captures = self.console.cmd_one_line_output_match(
             &format!("i2c info {}", &self.bus_idx),
             &super::SPI_REGEX,
             &mut buf,
@@ -332,7 +335,7 @@ impl Bus for HyperdebugI2cBus {
     /// Sets the maximum allowed speed of the I2C bus, typical values are 100_000, 400_000 or
     /// 1_000_000.
     fn set_max_speed(&self, max_speed: u32) -> Result<()> {
-        self.inner
+        self.console
             .cmd_no_output(&format!("i2c set speed {} {}", &self.bus_idx, max_speed))
     }
 

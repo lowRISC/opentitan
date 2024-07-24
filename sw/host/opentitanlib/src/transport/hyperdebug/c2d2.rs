@@ -6,7 +6,7 @@ use anyhow::{bail, Result};
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
+use crate::transport::hyperdebug::{CommandHandler, Flavor, Inner, StandardFlavor, VID_GOOGLE};
 use crate::transport::{TransportError, TransportInterfaceType};
 
 /// The C2D2 (Case Closed Debugging Debugger) is used to bring up OT and EC chips sitting
@@ -21,14 +21,18 @@ impl C2d2Flavor {
 }
 
 impl Flavor for C2d2Flavor {
-    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+    fn gpio_pin(console: &CommandHandler, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         if pinname == "SPIVREF_RSVD_H1VREF_H1_RST_ODL" {
-            return Ok(Rc::new(C2d2ResetPin::open(inner)?));
+            return Ok(Rc::new(C2d2ResetPin::open(console)?));
         }
-        StandardFlavor::gpio_pin(inner, pinname)
+        StandardFlavor::gpio_pin(console, pinname)
     }
 
-    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+    fn spi_index(
+        _console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, u8)> {
         if instance == "0" {
             return Ok((super::spi::USB_SPI_REQ_ENABLE, 0));
         }
@@ -52,13 +56,13 @@ impl Flavor for C2d2Flavor {
 }
 
 pub struct C2d2ResetPin {
-    inner: Rc<Inner>,
+    console: CommandHandler,
 }
 
 impl C2d2ResetPin {
-    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
+    pub fn open(console: &CommandHandler) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            console: console.clone(),
         })
     }
 }
@@ -67,7 +71,7 @@ impl GpioPin for C2d2ResetPin {
     /// Reads the value of the reset pin.
     fn read(&self) -> Result<bool> {
         let line = self
-            .inner
+            .console
             .cmd_one_line_output("gpioget SPIVREF_RSVD_H1VREF_H1_RST_ODL")
             .map_err(|_| {
                 TransportError::CommunicationError("No output from gpioget".to_string())
@@ -77,7 +81,7 @@ impl GpioPin for C2d2ResetPin {
 
     /// Sets the value of the GPIO reset pin by means of the special h1_reset command.
     fn write(&self, value: bool) -> Result<()> {
-        self.inner
+        self.console
             .cmd_one_line_output(&format!("h1_reset {}", if value { 0 } else { 1 }))?;
         Ok(())
     }

@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
 use crate::transport::hyperdebug::i2c::Mode;
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
+use crate::transport::hyperdebug::{CommandHandler, Flavor, Inner, StandardFlavor, VID_GOOGLE};
 use crate::transport::{TransportError, TransportInterfaceType};
 
 // The GSC has some capability to control GPIO lines inside a Chromebook, and to program the AP
@@ -19,11 +19,15 @@ impl Ti50Flavor {
 }
 
 impl Flavor for Ti50Flavor {
-    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        StandardFlavor::gpio_pin(inner, pinname)
+    fn gpio_pin(console: &CommandHandler, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+        StandardFlavor::gpio_pin(console, pinname)
     }
 
-    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+    fn spi_index(
+        _console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, u8)> {
         if instance == "AP" {
             return Ok((super::spi::USB_SPI_REQ_ENABLE_AP, 0));
         } else if instance == "EC" {
@@ -35,7 +39,11 @@ impl Flavor for Ti50Flavor {
         ))
     }
 
-    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, Mode)> {
+    fn i2c_index(
+        _console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, Mode)> {
         if instance == "I2C1" {
             return Ok((0, Mode::Host));
         } else if instance == "I2C2" {

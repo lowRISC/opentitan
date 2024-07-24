@@ -16,18 +16,18 @@ use crate::io::gpio::{
     BitbangEntry, ClockNature, Edge, GpioBitbanging, GpioError, GpioMonitoring, GpioPin,
     MonitoringEvent, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+use crate::transport::hyperdebug::{BulkInterface, CommandHandler, Inner};
 use crate::transport::TransportError;
 
 pub struct HyperdebugGpioPin {
-    inner: Rc<Inner>,
+    console: CommandHandler,
     pinname: String,
 }
 
 impl HyperdebugGpioPin {
-    pub fn open(inner: &Rc<Inner>, pinname: &str) -> Result<Self> {
+    pub fn open(console: &CommandHandler, pinname: &str) -> Result<Self> {
         let result = Self {
-            inner: Rc::clone(inner),
+            console: console.clone(),
             pinname: pinname.to_string(),
         };
         Ok(result)
@@ -38,19 +38,19 @@ impl GpioPin for HyperdebugGpioPin {
     /// Reads the value of the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
         let line = self
-            .inner
+            .console
             .cmd_one_line_output(&format!("gpioget {}", &self.pinname))?;
         Ok(line.trim_start().starts_with('1'))
     }
 
     /// Sets the value of the GPIO pin `id` to `value`.
     fn write(&self, value: bool) -> Result<()> {
-        self.inner
+        self.console
             .cmd_no_output(&format!("gpioset {} {}", &self.pinname, u32::from(value)))
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
-        self.inner.cmd_no_output(&format!(
+        self.console.cmd_no_output(&format!(
             "gpiomode {} {}",
             &self.pinname,
             match mode {
@@ -65,7 +65,7 @@ impl GpioPin for HyperdebugGpioPin {
     }
 
     fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
-        self.inner.cmd_no_output(&format!(
+        self.console.cmd_no_output(&format!(
             "gpiopullmode {} {}",
             &self.pinname,
             match mode {
@@ -78,7 +78,7 @@ impl GpioPin for HyperdebugGpioPin {
 
     fn analog_read(&self) -> Result<f32> {
         let line = self
-            .inner
+            .console
             .cmd_one_line_output(&format!("adc {}", &self.pinname))
             .map_err(|_| TransportError::CommunicationError("No output from adc".to_string()))?;
         static ADC_REGEX: Lazy<Regex> =
@@ -96,7 +96,7 @@ impl GpioPin for HyperdebugGpioPin {
             return Err(GpioError::UnsupportedPinVoltage(volts).into());
         }
         let milli_volts = (volts * 1000.0) as u32;
-        self.inner.cmd_no_output(&format!(
+        self.console.cmd_no_output(&format!(
             "gpio analog-set {} {}",
             &self.pinname, milli_volts,
         ))
@@ -114,7 +114,7 @@ impl GpioPin for HyperdebugGpioPin {
                 return Err(GpioError::UnsupportedPinVoltage(v).into());
             }
         }
-        self.inner.cmd_no_output(&format!(
+        self.console.cmd_no_output(&format!(
             "gpio multiset {} {} {} {} {}",
             &self.pinname,
             match value {
@@ -189,6 +189,7 @@ struct RspGpioMonitoringHeader {
 }
 
 pub struct HyperdebugGpioMonitoring {
+    console: CommandHandler,
     inner: Rc<Inner>,
     cmsis_interface: Option<BulkInterface>,
 }
@@ -204,8 +205,13 @@ impl HyperdebugGpioMonitoring {
     const MON_SUCCESS: u16 = 0;
     const MON_BUFFER_OVERRUN: u16 = 5;
 
-    pub fn open(inner: &Rc<Inner>, cmsis_interface: Option<BulkInterface>) -> Result<Self> {
+    pub fn open(
+        console: &CommandHandler,
+        inner: &Rc<Inner>,
+        cmsis_interface: Option<BulkInterface>,
+    ) -> Result<Self> {
         Ok(Self {
+            console: console.clone(),
             inner: Rc::clone(inner),
             cmsis_interface,
         })
@@ -236,7 +242,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
         let mut start_time: u64 = 0;
         let mut signals = Vec::new();
         let mut unexpected_output = false;
-        self.inner.execute_command(
+        self.console.execute_command(
             &format!("gpio monitoring start {}", pin_names.join(" ")),
             |line| {
                 if let Some(captures) = START_TIME_REGEX.captures(line) {
@@ -379,7 +385,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             }
 
             if !continue_monitoring {
-                self.inner
+                self.console
                     .cmd_no_output(&format!("gpio monitoring stop {}", pin_names.join(" ")))?;
             }
             return Ok(MonitoringReadResponse {
@@ -397,7 +403,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             let mut more_data = false;
             let mut buffer_overrun = false;
             let mut unexpected_output = false;
-            self.inner.execute_command(
+            self.console.execute_command(
                 &format!("gpio monitoring read {}", pin_names.join(" ")),
                 |line| {
                     if let Some(captures) = START_TIME_REGEX.captures(line) {
@@ -439,7 +445,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             }
         }
         if !continue_monitoring {
-            self.inner
+            self.console
                 .cmd_no_output(&format!("gpio monitoring stop {}", pin_names.join(" ")))?;
         }
         Ok(MonitoringReadResponse {
@@ -478,6 +484,7 @@ fn decode_leb128(idx: &mut usize, databytes: &[u8]) -> Result<u64> {
 }
 
 pub struct HyperdebugGpioBitbanging {
+    console: CommandHandler,
     inner: Rc<Inner>,
     cmsis_interface: BulkInterface,
 }
@@ -495,13 +502,18 @@ impl HyperdebugGpioBitbanging {
     const STATUS_BITBANG_ONGOING: u8 = 0x01;
     const STATUS_BITBANG_ERROR_WAVEFORM: u8 = 0x80;
 
-    pub fn open(inner: &Rc<Inner>, cmsis_interface: BulkInterface) -> Result<Self> {
+    pub fn open(
+        console: &CommandHandler,
+        inner: &Rc<Inner>,
+        cmsis_interface: BulkInterface,
+    ) -> Result<Self> {
         // Exclusively claim CMSIS-DAP interface, preparing for bulk transfers.
         inner
             .usb_device
             .borrow_mut()
             .claim_interface(cmsis_interface.interface)?;
         Ok(Self {
+            console: console.clone(),
             inner: Rc::clone(inner),
             cmsis_interface,
         })
@@ -528,7 +540,7 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
                     .ok_or(TransportError::InvalidOperation)?,
             );
         }
-        self.inner.cmd_no_output(&format!(
+        self.console.cmd_no_output(&format!(
             "gpio bit-bang {} {}",
             clock_tick.as_nanos(),
             pin_names.join(" ")

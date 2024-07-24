@@ -6,7 +6,7 @@ use anyhow::{bail, Result};
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
+use crate::transport::hyperdebug::{CommandHandler, Flavor, Inner, StandardFlavor, VID_GOOGLE};
 use crate::transport::{TransportError, TransportInterfaceType};
 
 /// The Servo Micro is used to bring up GSC and EC chips sitting inside a computing device, such
@@ -21,14 +21,18 @@ impl ServoMicroFlavor {
 }
 
 impl Flavor for ServoMicroFlavor {
-    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+    fn gpio_pin(console: &CommandHandler, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         if pinname == "IO_EXP_16" {
-            return Ok(Rc::new(ServoMicroResetPin::open(inner)?));
+            return Ok(Rc::new(ServoMicroResetPin::open(console)?));
         }
-        StandardFlavor::gpio_pin(inner, pinname)
+        StandardFlavor::gpio_pin(console, pinname)
     }
 
-    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+    fn spi_index(
+        _console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, u8)> {
         bail!(TransportError::InvalidInstance(
             TransportInterfaceType::Spi,
             instance.to_string()
@@ -65,16 +69,16 @@ enum IoExpanderRegister {
 
 /// Handles the specialized IO expander logic to read and write to the OT reset pin
 pub struct ServoMicroResetPin {
-    inner: Rc<Inner>,
+    console: CommandHandler,
 }
 
 impl ServoMicroResetPin {
     /// The target reset pin mask for `IoExpanderRegister `
     const RESET_PIN_MASK: u8 = 1 << 6;
 
-    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
+    pub fn open(console: &CommandHandler) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            console: console.clone(),
         })
     }
 
@@ -82,7 +86,7 @@ impl ServoMicroResetPin {
     fn read_reg(&self, reg: IoExpanderRegister) -> Result<u8> {
         let cmd = format!("i2cxfer r 0 0x20 {}", reg as u8);
         let line = self
-            .inner
+            .console
             .cmd_one_line_output(&cmd)
             .map_err(|_| TransportError::CommunicationError(format!("No output from {cmd}")))?;
         let Some(Ok(val)) = line
@@ -100,7 +104,7 @@ impl ServoMicroResetPin {
     /// Writes the entire raw value to a `IoExpanderRegister`.
     fn write_reg(&self, reg: IoExpanderRegister, val: u8) -> Result<()> {
         let cmd = format!("i2cxfer w 0 0x20 {} {val}", reg as u8);
-        self.inner.cmd_no_output(&cmd)
+        self.console.cmd_no_output(&cmd)
     }
 
     /// Reads only the value of OT reset pin for the specified `IoExpanderRegister`.

@@ -15,10 +15,11 @@ use crate::io::gpio::GpioPin;
 use crate::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+use crate::transport::hyperdebug::{BulkInterface, CommandHandler, Inner};
 use crate::transport::TransportError;
 
 pub struct HyperdebugSpiTarget {
+    console: CommandHandler,
     inner: Rc<Inner>,
     interface: BulkInterface,
     target_enable_cmd: u8,
@@ -247,6 +248,7 @@ enum StreamState<'a> {
 
 impl HyperdebugSpiTarget {
     pub fn open(
+        console: &CommandHandler,
         inner: &Rc<Inner>,
         spi_interface: &BulkInterface,
         enable_cmd: u8,
@@ -288,6 +290,7 @@ impl HyperdebugSpiTarget {
         );
 
         Ok(Self {
+            console: console.clone(),
             inner: Rc::clone(inner),
             interface: *spi_interface,
             target_enable_cmd: enable_cmd,
@@ -668,7 +671,7 @@ impl Target for HyperdebugSpiTarget {
 
     fn get_max_speed(&self) -> Result<u32> {
         let mut buf = String::new();
-        let captures = self.inner.cmd_one_line_output_match(
+        let captures = self.console.cmd_one_line_output_match(
             &format!("spi info {}", &self.target_idx),
             &super::SPI_REGEX,
             &mut buf,
@@ -676,7 +679,7 @@ impl Target for HyperdebugSpiTarget {
         Ok(captures.get(3).unwrap().as_str().parse().unwrap())
     }
     fn set_max_speed(&self, frequency: u32) -> Result<()> {
-        self.inner
+        self.console
             .cmd_no_output(&format!("spi set speed {} {}", &self.target_idx, frequency))
     }
 
@@ -695,7 +698,7 @@ impl Target for HyperdebugSpiTarget {
             bail!(SpiError::InvalidPin);
         }
         if let Some(pin) = chip_select {
-            self.inner.cmd_no_output(&format!(
+            self.console.cmd_no_output(&format!(
                 "spi set cs {} {}",
                 &self.target_idx,
                 pin.get_internal_pin_name().ok_or(SpiError::InvalidPin)?

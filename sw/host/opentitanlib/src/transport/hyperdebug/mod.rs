@@ -51,6 +51,7 @@ pub use ti50::Ti50Flavor;
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
+    console: CommandHandler,
     spi_interface: BulkInterface,
     i2c_interface: Option<BulkInterface>,
     cmsis_interface: Option<BulkInterface>,
@@ -64,14 +65,22 @@ pub struct Hyperdebug<T: Flavor> {
 /// Trait allowing slightly different treatment of USB devices that work almost like a
 /// HyperDebug.  E.g. C2D2 and Servo micro.
 pub trait Flavor {
-    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>>;
-    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+    fn gpio_pin(console: &CommandHandler, pinname: &str) -> Result<Rc<dyn GpioPin>>;
+    fn spi_index(
+        _console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, u8)> {
         bail!(TransportError::InvalidInstance(
             TransportInterfaceType::Spi,
             instance.to_string()
         ))
     }
-    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, i2c::Mode)> {
+    fn i2c_index(
+        _console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, i2c::Mode)> {
         bail!(TransportError::InvalidInstance(
             TransportInterfaceType::I2c,
             instance.to_string()
@@ -281,6 +290,11 @@ impl<T: Flavor> Hyperdebug<T> {
             }
         }
         let result = Hyperdebug::<T> {
+            console: CommandHandler {
+                console_tty: console_tty.ok_or_else(|| {
+                    TransportError::CommunicationError("Missing console interface".to_string())
+                })?,
+            },
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
@@ -288,9 +302,6 @@ impl<T: Flavor> Hyperdebug<T> {
             cmsis_interface,
             uart_interfaces,
             inner: Rc::new(Inner {
-                console_tty: console_tty.ok_or_else(|| {
-                    TransportError::CommunicationError("Missing console interface".to_string())
-                })?,
                 usb_device: RefCell::new(device),
                 gpio: Default::default(),
                 spis: Default::default(),
@@ -412,21 +423,12 @@ impl<T: Flavor> Hyperdebug<T> {
     }
 }
 
-/// Internal state of the Hyperdebug struct, this struct is reference counted such that Gpio,
-/// Spi and Uart sub-structs can all refer to this shared data, which is guaranteed to live on,
-/// even if the caller lets the outer Hyperdebug struct run out of scope.
-pub struct Inner {
+#[derive(Clone)]
+pub struct CommandHandler {
     console_tty: PathBuf,
-    usb_device: RefCell<UsbBackend>,
-    gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
-    spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
-    selected_spi: Cell<u8>,
-    i2cs_by_name: RefCell<HashMap<String, Rc<dyn Bus>>>,
-    i2cs_by_index: RefCell<HashMap<u8, Rc<dyn Bus>>>,
-    uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
 }
 
-impl Inner {
+impl CommandHandler {
     /// Send a command to HyperDebug firmware, expecting to receive no output.  Any output will be
     /// reported through an `Err()` return.
     pub fn cmd_no_output(&self, cmd: &str) -> Result<()> {
@@ -572,6 +574,19 @@ impl Inner {
     }
 }
 
+/// Internal state of the Hyperdebug struct, this struct is reference counted such that Gpio,
+/// Spi and Uart sub-structs can all refer to this shared data, which is guaranteed to live on,
+/// even if the caller lets the outer Hyperdebug struct run out of scope.
+pub struct Inner {
+    usb_device: RefCell<UsbBackend>,
+    gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
+    spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
+    selected_spi: Cell<u8>,
+    i2cs_by_name: RefCell<HashMap<String, Rc<dyn Bus>>>,
+    i2cs_by_index: RefCell<HashMap<u8, Rc<dyn Bus>>>,
+    uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
+}
+
 impl<T: Flavor> Transport for Hyperdebug<T> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
@@ -589,16 +604,17 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 
     fn apply_default_configuration(&self) -> Result<()> {
-        self.inner.cmd_no_output("reinit")
+        self.console.cmd_no_output("reinit")
     }
 
     // Create SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        let (enable_cmd, idx) = T::spi_index(&self.inner, instance)?;
+        let (enable_cmd, idx) = T::spi_index(&self.console, &self.inner, instance)?;
         if let Some(instance) = self.inner.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
+            &self.console,
             &self.inner,
             &self.spi_interface,
             enable_cmd,
@@ -616,7 +632,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         if let Some(instance) = self.inner.i2cs_by_name.borrow().get(name) {
             return Ok(Rc::clone(instance));
         }
-        let (idx, mode) = T::i2c_index(&self.inner, name)?;
+        let (idx, mode) = T::i2c_index(&self.console, &self.inner, name)?;
         if let Some(instance) = self.inner.i2cs_by_index.borrow().get(&idx) {
             self.inner
                 .i2cs_by_name
@@ -632,6 +648,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 self.i2c_interface.as_ref(),
             ) {
                 (true, Some(cmsis_interface), _) => i2c::HyperdebugI2cBus::open(
+                    &self.console,
                     &self.inner,
                     cmsis_interface,
                     true, /* cmsis_encapsulation */
@@ -640,6 +657,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                     mode,
                 )?,
                 (_, _, Some(i2c_interface)) => i2c::HyperdebugI2cBus::open(
+                    &self.console,
                     &self.inner,
                     i2c_interface,
                     false, /* cmsis_encapsulation */
@@ -697,7 +715,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         Ok(
             match self.inner.gpio.borrow_mut().entry(pinname.to_string()) {
                 Entry::Vacant(v) => {
-                    let u = v.insert(T::gpio_pin(&self.inner, pinname)?);
+                    let u = v.insert(T::gpio_pin(&self.console, pinname)?);
                     Rc::clone(u)
                 }
                 Entry::Occupied(o) => Rc::clone(o.get()),
@@ -711,6 +729,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         // harmless (save for some memory usage).
         if self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_GPIO_MONITORING != 0 {
             Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(
+                &self.console,
                 &self.inner,
                 self.cmsis_interface,
             )?))
@@ -719,6 +738,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             // protocol.  Not passing the `cmsis_interface` below forces the code to use textual
             // console protocol as fallback.
             Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(
+                &self.console,
                 &self.inner,
                 None,
             )?))
@@ -738,6 +758,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             ));
         };
         Ok(Rc::new(gpio::HyperdebugGpioBitbanging::open(
+            &self.console,
             &self.inner,
             cmsis_interface,
         )?))
@@ -787,17 +808,17 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 pub struct StandardFlavor;
 
 impl Flavor for StandardFlavor {
-    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
+    fn gpio_pin(console: &CommandHandler, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+        Ok(Rc::new(gpio::HyperdebugGpioPin::open(console, pinname)?))
     }
 
-    fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+    fn spi_index(console: &CommandHandler, _inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
         match instance.parse() {
             Err(_) => {
                 // Execute a "spi info" command to look up the numeric index corresponding to the
                 // given alphanumeric SPI instance name.
                 let mut buf = String::new();
-                let captures = inner
+                let captures = console
                     .cmd_one_line_output_match(
                         &format!("spi info {}", instance),
                         &SPI_REGEX,
@@ -818,11 +839,15 @@ impl Flavor for StandardFlavor {
         }
     }
 
-    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, i2c::Mode)> {
+    fn i2c_index(
+        console: &CommandHandler,
+        _inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, i2c::Mode)> {
         // Execute a "i2c info" command to look up the numeric index corresponding to the
         // given alphanumeric I2C instance name.
         let mut buf = String::new();
-        let captures = inner
+        let captures = console
             .cmd_one_line_output_match(&format!("i2c info {}", instance), &SPI_REGEX, &mut buf)
             .map_err(|_| {
                 TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
@@ -852,14 +877,18 @@ pub struct ChipWhispererFlavor<B: Board> {
 }
 
 impl<B: Board> Flavor for ChipWhispererFlavor<B> {
-    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        StandardFlavor::gpio_pin(inner, pinname)
+    fn gpio_pin(console: &CommandHandler, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+        StandardFlavor::gpio_pin(console, pinname)
     }
-    fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
-        StandardFlavor::spi_index(inner, instance)
+    fn spi_index(console: &CommandHandler, inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        StandardFlavor::spi_index(console, inner, instance)
     }
-    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, i2c::Mode)> {
-        StandardFlavor::i2c_index(inner, instance)
+    fn i2c_index(
+        console: &CommandHandler,
+        inner: &Rc<Inner>,
+        instance: &str,
+    ) -> Result<(u8, i2c::Mode)> {
+        StandardFlavor::i2c_index(console, inner, instance)
     }
     fn get_default_usb_vid() -> u16 {
         StandardFlavor::get_default_usb_vid()
