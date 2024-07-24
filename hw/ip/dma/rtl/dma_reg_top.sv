@@ -201,6 +201,8 @@ module dma_reg_top (
   logic status_error_qs;
   logic status_error_wd;
   logic status_sha2_digest_valid_qs;
+  logic status_chunk_done_qs;
+  logic status_chunk_done_wd;
   logic error_code_src_addr_error_qs;
   logic error_code_dst_addr_error_qs;
   logic error_code_opcode_error_qs;
@@ -1162,14 +1164,14 @@ module dma_reg_top (
 
   // R[status]: V(False)
   logic status_qe;
-  logic [4:0] status_flds_we;
+  logic [5:0] status_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
   ) u_status0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&(status_flds_we | 5'h11)),
+    .d_i(&(status_flds_we | 6'h11)),
     .q_o(status_qe)
   );
   //   F[busy]: 0:0
@@ -1308,6 +1310,33 @@ module dma_reg_top (
     .qs     (status_sha2_digest_valid_qs)
   );
   assign reg2hw.status.sha2_digest_valid.qe = status_qe;
+
+  //   F[chunk_done]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_chunk_done (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_chunk_done_wd),
+
+    // from internal hardware
+    .de     (hw2reg.status.chunk_done.de),
+    .d      (hw2reg.status.chunk_done.d),
+
+    // to internal hardware
+    .qe     (status_flds_we[5]),
+    .q      (reg2hw.status.chunk_done.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_chunk_done_qs)
+  );
 
 
   // R[error_code]: V(False)
@@ -3056,6 +3085,8 @@ module dma_reg_top (
   assign status_aborted_wd = reg_wdata[2];
 
   assign status_error_wd = reg_wdata[3];
+
+  assign status_chunk_done_wd = reg_wdata[5];
   assign handshake_intr_enable_we = addr_hit[36] & reg_we & !reg_error;
 
   assign handshake_intr_enable_wd = reg_wdata[10:0];
@@ -3291,6 +3322,7 @@ module dma_reg_top (
         reg_rdata_next[2] = status_aborted_qs;
         reg_rdata_next[3] = status_error_qs;
         reg_rdata_next[4] = status_sha2_digest_valid_qs;
+        reg_rdata_next[5] = status_chunk_done_qs;
       end
 
       addr_hit[19]: begin

@@ -532,17 +532,18 @@ Other values are reserved.
 Status indication for DMA data movement.
 - Offset: `0x48`
 - Reset default: `0x0`
-- Reset mask: `0x1f`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "busy", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "aborted", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sha2_digest_valid", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "busy", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "aborted", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sha2_digest_valid", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "chunk_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                                                                        |
 |:------:|:------:|:-------:|:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:5  |        |         |                   | Reserved                                                                                                                                                                           |
+|  31:6  |        |         |                   | Reserved                                                                                                                                                                           |
+|   5    |  rw1c  |   0x0   | chunk_done        | Transfer of a single chunk is complete. Only raised for multi-chunk memory-to-memory transfers. Cleared automatically by the hardware when starting the transfer of a new chunk.   |
 |   4    |   ro   |   0x0   | sha2_digest_valid | Indicates whether the SHA2_DIGEST register contains a valid digest. This value is cleared on the initial transfer and set when the digest is written.                              |
 |   3    |  rw1c  |   0x0   | error             | Error occurred during the operation. ERROR_CODE register denotes the source of the error.                                                                                          |
 |   2    |  rw1c  |   0x0   | aborted           | Set once aborted operation drains.                                                                                                                                                 |
