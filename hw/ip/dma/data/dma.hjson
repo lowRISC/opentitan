@@ -541,7 +541,6 @@
           resval: 0x0
           hwaccess: "hrw"
           swaccess: "ro"
-          hwaccess: "hrw"
           desc: '''
                 DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
@@ -581,6 +580,16 @@
           desc: '''
                 Indicates whether the SHA2_DIGEST register contains a valid digest.
                 This value is cleared on the initial transfer and set when the digest is written.
+                '''
+        }
+        { bits: "5"
+          name: "chunk_done"
+          resval: 0x0
+          hwaccess: "hrw"
+          desc: '''
+                Transfer of a single chunk is complete.
+                Only raised for multi-chunk memory-to-memory transfers.
+                Cleared automatically by the hardware when starting the transfer of a new chunk.
                 '''
         }
       ]

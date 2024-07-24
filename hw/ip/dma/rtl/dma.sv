@@ -75,7 +75,7 @@ module dma
 
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
-  logic set_error_code, clear_go, clear_status, clear_sha_status;
+  logic set_error_code, clear_go, clear_status, clear_sha_status, chunk_done;
 
   logic [INTR_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                                clear_index_en, intr_clear_tlul_rsp_valid;
@@ -609,6 +609,7 @@ module dma
     clear_index_en = '0;
 
     clear_go       = 1'b0;
+    chunk_done     = 1'b0;
 
     // Mux the TLUL grant and response signals depending on the selected bus interface
     intr_clear_tlul_gnt       = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_gnt :
@@ -968,8 +969,9 @@ module dma
               end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
                 // Conditionally clear the go bit when not being in hardware handshake mode.
                 // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
-                // and done bit, and release the go bit for the next FW-controlled chunk.
+                // and chunk done bit, and release the go bit for the next FW-controlled chunk.
                 clear_go     = !control_q.cfg_handshake_en;
+                chunk_done   = !control_q.cfg_handshake_en;
                 ctrl_state_d = DmaIdle;
               end else begin
                 ctrl_state_d = DmaAddrSetup;
@@ -1177,9 +1179,10 @@ module dma
     clear_sha_status = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
                        reg2hw.control.initial_transfer.q;
 
-    // Set done bit and raise interrupt when we either finished a single transfer or all transfers
-    // in hardware handshake mode. Automatically clear the done bit when starting a new transfer
-    hw2reg.status.done.de = ((!cfg_abort_en) && data_move_state && clear_go) | clear_status;
+    // Set the done bit only when finishing all chunks. Automatically clear the done bit when
+    // starting a new transfer
+    hw2reg.status.done.de = ((!cfg_abort_en) && data_move_state && clear_go && ~chunk_done) |
+                            clear_status;
     hw2reg.status.done.d  = clear_status? 1'b0 : 1'b1;
 
     hw2reg.status.error.de = (ctrl_state_d == DmaError) | clear_status;
@@ -1190,6 +1193,9 @@ module dma
 
     hw2reg.status.sha2_digest_valid.de = sha2_digest_set | clear_sha_status;
     hw2reg.status.sha2_digest_valid.d  = sha2_digest_set;
+
+    hw2reg.status.chunk_done.de = ((!cfg_abort_en) && chunk_done) | clear_status;
+    hw2reg.status.chunk_done.d  = clear_status? 1'b0 : 1'b1;
 
     // Write digest to CSRs when needed. The digest is an 8-element 64-bit datatype. Depending on
     // the selected hashing algorithm, the digest is stored differently in the digest datatype:
@@ -1251,8 +1257,10 @@ module dma
     hw2reg.control.abort.de = hw2reg.status.aborted.de;
     hw2reg.control.abort.d  = 1'b0;
 
-    // interrupt management
-    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | test_done_interrupt;
+    // Interrupt management
+    // Raise the done interrupt either when finishing finishing a single chunk or the whole
+    // transfer.
+    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | chunk_done | test_done_interrupt;
     hw2reg.intr_state.dma_done.d  = 1'b1;
 
     hw2reg.intr_state.dma_error.de = reg2hw.status.error.q | test_error_interrupt;

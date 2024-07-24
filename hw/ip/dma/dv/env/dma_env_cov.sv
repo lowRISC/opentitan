@@ -192,6 +192,7 @@ endgroup
 covergroup dma_status_cg with function sample(
   bit busy,
   bit done,
+  bit chunk_done,
   bit aborted,
   bit error,
   bit sha2_digest_valid
@@ -200,6 +201,7 @@ covergroup dma_status_cg with function sample(
   option.name = "dma_status_cg";
   cp_status_busy: coverpoint busy;
   cp_status_done: coverpoint done;
+  cp_status_chunk_done: coverpoint chunk_done;
   cp_status_aborted: coverpoint aborted;
   cp_status_error: coverpoint error;
   cp_sha2_digest_valid: coverpoint sha2_digest_valid;
