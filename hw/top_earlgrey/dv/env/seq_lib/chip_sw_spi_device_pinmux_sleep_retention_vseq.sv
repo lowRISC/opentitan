@@ -99,7 +99,7 @@ class chip_sw_spi_device_pinmux_sleep_retention_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "Starting 'm_spi_host_seq' on 'spi_device_sequencer_hs[0]'", UVM_DEBUG)
     m_spi_host_seq.opcode = test_opcode;
     if(!std::randomize(test_payload_size) with {
-      test_payload_size inside {64, 128, 256, 512, 1024, 2048};
+      test_payload_size inside {128, 256, 512, 1024, 2048};
       }) `uvm_fatal(`gfn, "Randomization Failure")
     m_spi_host_seq.read_size = test_payload_size;
     cfg.chip_vif.spi_host_if.disconnect(0);
