@@ -31,8 +31,6 @@ class rom_ctrl_env extends cip_base_env #(
     // Build the KMAC agent
     m_kmac_agent = kmac_app_agent::type_id::create("m_kmac_agent", this);
     uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
-    cfg.m_kmac_agent_cfg.zero_delays = cfg.zero_delays;
-    cfg.m_kmac_agent_cfg.m_data_push_agent_cfg.device_delay_max = cfg.device_delay_max;
 
     cfg.scoreboard = scoreboard;
 
