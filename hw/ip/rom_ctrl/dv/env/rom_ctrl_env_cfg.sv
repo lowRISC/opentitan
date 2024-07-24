@@ -7,7 +7,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   string rom_ral_name = "rom_ctrl_prim_reg_block";
 
   // ext component cfgs
-  kmac_app_agent_cfg m_kmac_agent_cfg;
+  rand kmac_app_agent_cfg m_kmac_agent_cfg;
 
   // Memory backdoor util instance for ROM.
   mem_bkdr_util mem_bkdr_util_h;
@@ -15,35 +15,21 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // ext interfaces
   rom_ctrl_vif rom_ctrl_vif;
 
-  // Enables/disable all protocol delays.
-  rand bit zero_delays;
-
   // Default is 10ms (see default_spinwait_timeout_ns in csr_utils_pkg.sv)
   // We have to increase this here since the ROM check may actually take longer than that,
   // which sometimes causes blocked TL accesses to time out.
   uint tl_access_timeout_ns = 40_000_000; // 40ms
 
-  // Bias randomization in favor of enabling zero delays less often.
-  constraint zero_delays_c {
-    zero_delays dist { 0 := 8,
-                       1 := 2 };
-  }
-
-  // Device-side delay for both push/pull protocols.
-  rand int unsigned device_delay_max;
-
   // A handle to the scoreboard, used to flag expected errors.
   rom_ctrl_scoreboard scoreboard;
 
-  constraint device_delay_max_c {
-    solve zero_delays before device_delay_max;
-    if (zero_delays) {
-      device_delay_max == 0;
-    } else {
-      device_delay_max dist {
-        [1:20] :/ 2,
-        [21:50] :/ 4
-      };
+  // Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
+  // rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
+  // send to kmac. Randomise this to be small with high probability and occasionally make it 10 (to
+  // check that the interface from rom_ctrl to kmac can be stalled properly).
+  constraint kmac_accept_delay_max_c {
+    if (!m_kmac_agent_cfg.m_data_push_agent_cfg.zero_delays) {
+      m_kmac_agent_cfg.m_data_push_agent_cfg.device_delay_max dist { 1 :/ 10, 10 :/ 1 };
     }
   }
 
