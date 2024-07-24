@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Result};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{CommandHandler, Flavor, Inner, StandardFlavor, VID_GOOGLE};
+use crate::transport::hyperdebug::{CommandHandler, Flavor, StandardFlavor, VID_GOOGLE};
 use crate::transport::{TransportError, TransportInterfaceType};
+use crate::util::usb::UsbBackend;
 
 /// The C2D2 (Case Closed Debugging Debugger) is used to bring up OT and EC chips sitting
 /// inside a computing device, such that those OT chips can provide Case Closed Debugging
@@ -30,7 +32,7 @@ impl Flavor for C2d2Flavor {
 
     fn spi_index(
         _console: &CommandHandler,
-        _inner: &Rc<Inner>,
+        _usb_device: &Rc<RefCell<UsbBackend>>,
         instance: &str,
     ) -> Result<(u8, u8)> {
         if instance == "0" {

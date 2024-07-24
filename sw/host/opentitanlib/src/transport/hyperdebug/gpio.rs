@@ -6,6 +6,7 @@ use anyhow::{bail, ensure, Result};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::cell::RefCell;
 use std::io::Cursor;
 use std::mem::size_of;
 use std::rc::Rc;
@@ -16,8 +17,9 @@ use crate::io::gpio::{
     BitbangEntry, ClockNature, Edge, GpioBitbanging, GpioError, GpioMonitoring, GpioPin,
     MonitoringEvent, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::transport::hyperdebug::{BulkInterface, CommandHandler, Inner};
+use crate::transport::hyperdebug::{BulkInterface, CommandHandler};
 use crate::transport::TransportError;
+use crate::util::usb::UsbBackend;
 
 pub struct HyperdebugGpioPin {
     console: CommandHandler,
@@ -190,7 +192,7 @@ struct RspGpioMonitoringHeader {
 
 pub struct HyperdebugGpioMonitoring {
     console: CommandHandler,
-    inner: Rc<Inner>,
+    usb_device: Rc<RefCell<UsbBackend>>,
     cmsis_interface: Option<BulkInterface>,
 }
 
@@ -207,12 +209,12 @@ impl HyperdebugGpioMonitoring {
 
     pub fn open(
         console: &CommandHandler,
-        inner: &Rc<Inner>,
+        usb_device: &Rc<RefCell<UsbBackend>>,
         cmsis_interface: Option<BulkInterface>,
     ) -> Result<Self> {
         Ok(Self {
             console: console.clone(),
-            inner: Rc::clone(inner),
+            usb_device: Rc::clone(usb_device),
             cmsis_interface,
         })
     }
@@ -294,8 +296,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                 pkt.write_u8(pin_name.len().try_into()?)?;
                 pkt.extend_from_slice(pin_name.as_bytes());
             }
-            self.inner
-                .usb_device
+            self.usb_device
                 .borrow()
                 .write_bulk(cmsis_interface.out_endpoint, &pkt)?;
 
@@ -304,7 +305,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             let mut bytecount = 0;
 
             while bytecount < 1 + size_of::<RspGpioMonitoringHeader>() {
-                let read_count = self.inner.usb_device.borrow().read_bulk(
+                let read_count = self.usb_device.borrow().read_bulk(
                     cmsis_interface.in_endpoint,
                     &mut databytes[bytecount..][..USB_MAX_SIZE],
                 )?;
@@ -333,7 +334,6 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
 
             while bytecount < databytes.len() {
                 let c = self
-                    .inner
                     .usb_device
                     .borrow()
                     .read_bulk(cmsis_interface.in_endpoint, &mut databytes[bytecount..])?;
@@ -485,7 +485,7 @@ fn decode_leb128(idx: &mut usize, databytes: &[u8]) -> Result<u64> {
 
 pub struct HyperdebugGpioBitbanging {
     console: CommandHandler,
-    inner: Rc<Inner>,
+    usb_device: Rc<RefCell<UsbBackend>>,
     cmsis_interface: BulkInterface,
 }
 
@@ -504,17 +504,16 @@ impl HyperdebugGpioBitbanging {
 
     pub fn open(
         console: &CommandHandler,
-        inner: &Rc<Inner>,
+        usb_device: &Rc<RefCell<UsbBackend>>,
         cmsis_interface: BulkInterface,
     ) -> Result<Self> {
         // Exclusively claim CMSIS-DAP interface, preparing for bulk transfers.
-        inner
-            .usb_device
+        usb_device
             .borrow_mut()
             .claim_interface(cmsis_interface.interface)?;
         Ok(Self {
             console: console.clone(),
-            inner: Rc::clone(inner),
+            usb_device: Rc::clone(usb_device),
             cmsis_interface,
         })
     }
@@ -548,7 +547,7 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
 
         // Send an initial request, to ask how much buffer space HyperDebug has, so that we can
         // fill the buffer, while avoiding overflows.
-        let usb = self.inner.usb_device.borrow();
+        let usb = self.usb_device.borrow();
         let mut free_bytes: usize = {
             let mut pkt = Vec::<u8>::new();
             pkt.write_u8(Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO)?;

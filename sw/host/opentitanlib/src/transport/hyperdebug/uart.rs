@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -13,13 +14,13 @@ use super::UartInterface;
 use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::Uart;
 use crate::transport::common::uart::SerialPortUart;
-use crate::transport::hyperdebug::Inner;
 use crate::transport::TransportError;
+use crate::util::usb::UsbBackend;
 
 const UART_BAUD: u32 = 115200;
 
 pub struct HyperdebugUart {
-    inner: Rc<Inner>,
+    usb_device: Rc<RefCell<UsbBackend>>,
     usb_interface: u8,
     supports_clearing_queues: bool,
     serial_port: SerialPortUart,
@@ -44,12 +45,12 @@ const CLEAR_TX_FIFO: u16 = 0x0002;
 
 impl HyperdebugUart {
     pub fn open(
-        inner: &Rc<Inner>,
+        usb_device: &Rc<RefCell<UsbBackend>>,
         uart_interface: &UartInterface,
         supports_clearing_queues: bool,
     ) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            usb_device: usb_device.clone(),
             usb_interface: uart_interface.interface,
             supports_clearing_queues,
             serial_port: SerialPortUart::open(
@@ -65,7 +66,7 @@ impl HyperdebugUart {
 
 impl Uart for HyperdebugUart {
     fn get_baudrate(&self) -> Result<u32> {
-        let usb_handle = self.inner.usb_device.borrow();
+        let usb_handle = self.usb_device.borrow();
         let mut data = [0u8, 0u8];
         usb_handle.read_control(
             rusb::request_type(Direction::In, RequestType::Vendor, Recipient::Interface),
@@ -78,7 +79,7 @@ impl Uart for HyperdebugUart {
     }
 
     fn set_baudrate(&self, baudrate: u32) -> Result<()> {
-        let usb_handle = self.inner.usb_device.borrow();
+        let usb_handle = self.usb_device.borrow();
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::SetBaud as u8,
@@ -107,7 +108,7 @@ impl Uart for HyperdebugUart {
 
     fn clear_rx_buffer(&self) -> Result<()> {
         if self.supports_clearing_queues {
-            let usb_handle = self.inner.usb_device.borrow();
+            let usb_handle = self.usb_device.borrow();
             usb_handle.write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
                 ControlRequest::ClearQueues as u8,
@@ -120,7 +121,7 @@ impl Uart for HyperdebugUart {
     }
 
     fn set_break(&self, enable: bool) -> Result<()> {
-        let usb_handle = self.inner.usb_device.borrow();
+        let usb_handle = self.usb_device.borrow();
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::Break as u8,
@@ -138,7 +139,7 @@ impl Uart for HyperdebugUart {
             Parity::Even => 2,
         };
 
-        let usb_handle = self.inner.usb_device.borrow();
+        let usb_handle = self.usb_device.borrow();
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::SetParity as u8,

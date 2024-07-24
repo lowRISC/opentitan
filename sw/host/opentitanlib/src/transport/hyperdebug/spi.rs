@@ -5,6 +5,7 @@
 use anyhow::{bail, ensure, Result};
 use rusb::{Direction, Recipient, RequestType};
 use std::cell::Cell;
+use std::cell::RefCell;
 use std::mem::size_of;
 use std::rc::Rc;
 use std::time::Duration;
@@ -17,9 +18,11 @@ use crate::io::spi::{
 };
 use crate::transport::hyperdebug::{BulkInterface, CommandHandler, Inner};
 use crate::transport::TransportError;
+use crate::util::usb::UsbBackend;
 
 pub struct HyperdebugSpiTarget {
     console: CommandHandler,
+    usb_device: Rc<RefCell<UsbBackend>>,
     inner: Rc<Inner>,
     interface: BulkInterface,
     target_enable_cmd: u8,
@@ -249,12 +252,13 @@ enum StreamState<'a> {
 impl HyperdebugSpiTarget {
     pub fn open(
         console: &CommandHandler,
+        usb_device: &Rc<RefCell<UsbBackend>>,
         inner: &Rc<Inner>,
         spi_interface: &BulkInterface,
         enable_cmd: u8,
         idx: u8,
     ) -> Result<Self> {
-        let mut usb_handle = inner.usb_device.borrow_mut();
+        let mut usb_handle = usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
         inner.selected_spi.set(idx);
@@ -291,6 +295,7 @@ impl HyperdebugSpiTarget {
 
         Ok(Self {
             console: console.clone(),
+            usb_device: usb_device.clone(),
             inner: Rc::clone(inner),
             interface: *spi_interface,
             target_enable_cmd: enable_cmd,
@@ -308,7 +313,7 @@ impl HyperdebugSpiTarget {
     fn select_my_spi_bus(&self) -> Result<()> {
         if self.inner.selected_spi.get() != self.target_idx {
             self.inner.selected_spi.set(self.target_idx);
-            self.inner.usb_device.borrow().write_control(
+            self.usb_device.borrow().write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
                 self.target_enable_cmd,
                 self.target_idx as u16,
@@ -627,8 +632,7 @@ impl HyperdebugSpiTarget {
 
     /// Send one USB packet.
     fn usb_write_bulk(&self, buf: &[u8]) -> Result<()> {
-        self.inner
-            .usb_device
+        self.usb_device
             .borrow()
             .write_bulk(self.interface.out_endpoint, buf)?;
         Ok(())
@@ -636,16 +640,14 @@ impl HyperdebugSpiTarget {
 
     /// Receive one USB packet.
     fn usb_read_bulk(&self, buf: &mut [u8]) -> Result<usize> {
-        self.inner
-            .usb_device
+        self.usb_device
             .borrow()
             .read_bulk(self.interface.in_endpoint, buf)
     }
 
     /// Receive one USB packet, with particular timeout.
     fn usb_read_bulk_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        self.inner
-            .usb_device
+        self.usb_device
             .borrow()
             .read_bulk_timeout(self.interface.in_endpoint, buf, timeout)
     }
