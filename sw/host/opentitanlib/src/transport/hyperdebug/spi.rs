@@ -16,15 +16,15 @@ use crate::io::gpio::GpioPin;
 use crate::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::transport::hyperdebug::{BulkInterface, CommandHandler, Inner};
+use crate::transport::hyperdebug::{BulkInterface, CommandHandler};
 use crate::transport::TransportError;
 use crate::util::usb::UsbBackend;
 
 pub struct HyperdebugSpiTarget {
     console: CommandHandler,
     usb_device: Rc<RefCell<UsbBackend>>,
-    inner: Rc<Inner>,
     interface: BulkInterface,
+    selected_spi_idx: Rc<Cell<u8>>,
     target_enable_cmd: u8,
     target_idx: u8,
     feature_bitmap: u16,
@@ -253,15 +253,15 @@ impl HyperdebugSpiTarget {
     pub fn open(
         console: &CommandHandler,
         usb_device: &Rc<RefCell<UsbBackend>>,
-        inner: &Rc<Inner>,
         spi_interface: &BulkInterface,
+        selected_spi_idx: &Rc<Cell<u8>>,
         enable_cmd: u8,
         idx: u8,
     ) -> Result<Self> {
         let mut usb_handle = usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
-        inner.selected_spi.set(idx);
+        selected_spi_idx.set(idx);
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             enable_cmd,
@@ -296,8 +296,8 @@ impl HyperdebugSpiTarget {
         Ok(Self {
             console: console.clone(),
             usb_device: usb_device.clone(),
-            inner: Rc::clone(inner),
             interface: *spi_interface,
+            selected_spi_idx: selected_spi_idx.clone(),
             target_enable_cmd: enable_cmd,
             target_idx: idx,
             feature_bitmap: resp.feature_bitmap,
@@ -311,8 +311,8 @@ impl HyperdebugSpiTarget {
 
     /// Instruct HyperDebug device which SPI bus subsequent transactions should be forwarded to.
     fn select_my_spi_bus(&self) -> Result<()> {
-        if self.inner.selected_spi.get() != self.target_idx {
-            self.inner.selected_spi.set(self.target_idx);
+        if self.selected_spi_idx.get() != self.target_idx {
+            self.selected_spi_idx.set(self.target_idx);
             self.usb_device.borrow().write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
                 self.target_enable_cmd,

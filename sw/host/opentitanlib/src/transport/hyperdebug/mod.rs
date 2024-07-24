@@ -54,6 +54,7 @@ pub struct Hyperdebug<T: Flavor> {
     console: CommandHandler,
     usb_device: Rc<RefCell<UsbBackend>>,
     spi_interface: BulkInterface,
+    selected_spi_idx: Rc<Cell<u8>>,
     i2c_interface: Option<BulkInterface>,
     cmsis_interface: Option<BulkInterface>,
     uart_interfaces: HashMap<String, UartInterface>,
@@ -300,13 +301,13 @@ impl<T: Flavor> Hyperdebug<T> {
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
+            selected_spi_idx: Rc::new(Cell::new(0)),
             i2c_interface,
             cmsis_interface,
             uart_interfaces,
             inner: Rc::new(Inner {
                 gpio: Default::default(),
                 spis: Default::default(),
-                selected_spi: Cell::new(0),
                 i2cs_by_name: Default::default(),
                 i2cs_by_index: Default::default(),
                 uarts: Default::default(),
@@ -577,7 +578,6 @@ impl CommandHandler {
 pub struct Inner {
     gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
     spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
-    selected_spi: Cell<u8>,
     i2cs_by_name: RefCell<HashMap<String, Rc<dyn Bus>>>,
     i2cs_by_index: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
@@ -612,8 +612,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
             &self.console,
             &self.usb_device,
-            &self.inner,
             &self.spi_interface,
+            &self.selected_spi_idx,
             enable_cmd,
             idx,
         )?);
