@@ -295,7 +295,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
     // to ensure x is valid.
     logic [3:0] val;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, ~(val inside {MuBi4True, MuBi4False});)
-    return val;
+    return prim_mubi_pkg::mubi4_t'(val);
   endfunction
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
