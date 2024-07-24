@@ -102,6 +102,14 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       end
       2: begin
         logic [3:0] good_op, bad_op;
+        logic       selected_flags_C;
+        bit         avoid_addc = 1'b0, avoid_subb = 1'b0;
+
+        string alu_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum";
+        string op_path = {alu_path, ".operation_i.op"};
+        string op_valid_path = {alu_path, ".operation_valid_i"};
+        string carry_path = {alu_path, ".selected_flags.C"};
+
         report_err_type("error in opcode on the bignum side");
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_i.op";
 
@@ -109,17 +117,39 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         // operation_valid_i flag should be high, and this should be the opcode for a genuine
         // operation (less than or equal to AluOpBignumNot).
         while (1) begin
-          wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_valid_i");
-          `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_op));
+          wait_for_flag(op_valid_path);
+          `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_op))
           if (good_op <= otbn_pkg::AluOpBignumNot)
             break;
           // If the opcode doesn't specify a known operation, we'll need to wait a bit longer. Go
           // around again.
         end
 
+        // We know that we won't spot conversions between add/addc and sub/subb if the selected
+        // flags register happens to be zero (because the change in opcode won't actually have any
+        // effect). Constrain the randomisation to avoid doing one of those conversions if we're in
+        // that situation.
+        `DV_CHECK_FATAL(uvm_hdl_read(carry_path, selected_flags_C))
+        if (!selected_flags_C) begin
+          if (good_op inside {otbn_pkg::AluOpBignumAdd, otbn_pkg::AluOpBignumAddc}) begin
+            avoid_addc = 1'b1;
+          end
+          if (good_op inside {otbn_pkg::AluOpBignumSub, otbn_pkg::AluOpBignumSubb}) begin
+            avoid_subb = 1'b1;
+          end
+        end
+
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_op,
                                            bad_op != good_op;
-                                           bad_op != otbn_pkg::AluOpBignumNone;);
+                                           bad_op != otbn_pkg::AluOpBignumNone;
+                                           avoid_addc -> (bad_op != otbn_pkg::AluOpBignumAdd &&
+                                                          bad_op != otbn_pkg::AluOpBignumAddc);
+                                           avoid_subb -> (bad_op != otbn_pkg::AluOpBignumSub &&
+                                                          bad_op != otbn_pkg::AluOpBignumSubb);)
+
+        `uvm_info(`gfn,
+                  $sformatf("Forcing %0s from %0d to %0d", err_path, good_op, bad_op),
+                  UVM_MEDIUM)
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_op) == 1);
       end
       3: begin
