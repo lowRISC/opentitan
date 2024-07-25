@@ -238,6 +238,18 @@ module rv_core_ibex
     .esc_tx_i
   );
 
+  // esc_irq_nm is a combinatorial signal in the escalation receiver clock domain. We need to flop
+  // it before going into the synchronizer below.
+  logic esc_irq_nm_q;
+  prim_flop #(
+    .Width(1)
+  ) u_alert_nmi_flop (
+    .clk_i (clk_esc_i),
+    .rst_ni(rst_esc_ni),
+    .d_i   (esc_irq_nm),
+    .q_o   (esc_irq_nm_q)
+  );
+
   // Synchronize to fast Ibex clock domain.
   logic alert_irq_nm;
   prim_flop_2sync #(
@@ -245,7 +257,7 @@ module rv_core_ibex
   ) u_alert_nmi_sync (
     .clk_i,
     .rst_ni,
-    .d_i(esc_irq_nm),
+    .d_i(esc_irq_nm_q),
     .q_o(alert_irq_nm)
   );
 
