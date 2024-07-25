@@ -45,13 +45,16 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // When selecting fixed duration, the total simulated duration of the test is approximately
   // equal to cfg.sim_duration
   //
-  // TODO(#18836): Randomize & constrain the following values.
+  // sim_duration_ms is used as a random value to set sim_duration in post_randomize().
   realtime sim_duration;
+  rand int unsigned sim_duration_ms;
 
   // Mean time before hard RNG failure
-  realtime hard_mtbf;
+  // Default: Negative, meaning no random reconfigs.
+  realtime hard_mtbf = -1;
   // Mean time before "soft" RNG failure (still functions but less entropy per bit)
-  realtime soft_mtbf;
+  // Default: Negative, meaning no random reconfigs.
+  realtime soft_mtbf = -1;
 
   // Mean time between unexpected configuration update events
   // Default: Negative, meaning no random reconfigs
@@ -152,6 +155,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   /////////////////
   // Constraints //
   /////////////////
+  constraint sim_duration_ms_c {
+    7 <= sim_duration_ms && sim_duration_ms <= 20;
+  }
+
   constraint which_ht_state_c {
     which_ht_state dist {
       BootHTRunning :/ 25,
@@ -318,6 +325,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   function void post_randomize();
     void'(dut_cfg.randomize());
     super.post_randomize();
+    sim_duration = sim_duration_ms * 1ms;
   endfunction
 
   function void pre_randomize();
