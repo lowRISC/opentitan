@@ -61,8 +61,5 @@ ci/scripts/rust-format.sh $tgt_branch
 echo -e "\n### Run shellcheck on all shell scripts"
 util/sh/scripts/run-shellcheck.sh
 
-echo -e "\n### Render landing site"
-ci/scripts/build-site.sh
-
 echo -e "\n### Check what kinds of changes the PR contains"
 ci/scripts/get-build-type.sh $tgt_branch PullRequest
