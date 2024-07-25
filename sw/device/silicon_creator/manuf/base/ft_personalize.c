@@ -203,7 +203,9 @@ static void sw_reset(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_pages_creator_cfg();
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageTpmCerts);
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageTpmCerts,
