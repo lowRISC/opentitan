@@ -273,22 +273,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       end
     join_none
   endtask
-  task write_chk (input uvm_object ptr,input int cmderr,input int command);
-    uvm_reg_data_t data;
-    uvm_reg_data_t rdata;
-    repeat ($urandom_range(1, 10)) begin
-      data = $urandom;
-      request_halt();
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
-      csr_wr(.ptr(ptr), .value(data));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cmderr,get_field_val(jtag_dmi_ral.abstractcs.cmderr,rdata));
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-    end
-  endtask
+
   task read_chk (input uvm_object ptr,input int cmderr,input int command);
     uvm_reg_data_t data;
     uvm_reg_data_t rdata;
@@ -405,4 +390,40 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(expected_dmistat, get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata))
   endtask
 
+  // Check that the cmderr field in abstractcs is as expected
+  task check_cmderr(cmderr_e cmderr_exp);
+    abstractcs_t abstractcs;
+    read_abstractcs(abstractcs);
+    `DV_CHECK_EQ(abstractcs.cmderr, cmderr_exp);
+  endtask
+
+  // Clear the cmderr field of abstractcs.
+  task clear_cmderr();
+    // To clear the field, we use uvm_reg_field.predict() to convince the model that it has an error
+    // that needs clearing, then call uvm_reg_field.set() with 3'b111 to set desired value to zero
+    // (passing 3'b111 rather than zero because the field is R/W1C), then finally call update.
+    uvm_status_e status;
+
+    `DV_CHECK_FATAL(jtag_dmi_ral.abstractcs.cmderr.predict(3'b111));
+    jtag_dmi_ral.abstractcs.cmderr.set(3'b111);
+    jtag_dmi_ral.abstractcs.update(.status(status));
+    `DV_CHECK_EQ(status, UVM_IS_OK);
+  endtask
+
+  // Generate an abstract command that tries to read the specified register
+  function command_t gen_read_register_cmd(bit [15:0] regno);
+    command_t cmd;
+    ac_ar_cmd_t ar_cmd = '0;
+
+    ar_cmd.aarsize = 2; // Access lower 32 bits
+    ar_cmd.aarpostincrement = 0;
+    ar_cmd.postexec = 0;
+    ar_cmd.transfer = 0;
+    ar_cmd.write = 0;
+    ar_cmd.regno = regno;
+
+    cmd.cmdtype = AccessRegister;
+    cmd.control = ar_cmd;
+    return cmd;
+  endfunction
 endclass : rv_dm_base_vseq
