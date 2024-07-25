@@ -19,7 +19,7 @@ else
     SHELLCHECK="./bazelisk.sh run @shellcheck//:shellcheck --"
 fi
 
-EXCLUDED_DIRS="-name third_party -o -name vendor -o -name lowrisc_misc-linters"
+EXCLUDED_DIRS="-name third_party -o -name vendor -o -name build-site -o -name lowrisc_misc-linters"
 # Get an array of all shell scripts to check using input redirection and
 # process substitution. For details on this syntax, see ShellCheck SC2046.
 # shellcheck disable=SC2046
