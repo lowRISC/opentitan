@@ -30,12 +30,13 @@ The values of these parameters will depend primarily on three bus details:
     - See table 10 of the I2C specification for more details.
 - (optional) The desired SCL cycle period, t<sub>SCL,user</sub> in ns.
     - By default the device should operate at the maximum frequency for that mode.
-    However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period  could be allowed as an additional functional parameter when calculating the timing parameters.
+    However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period could be allowed as an additional functional parameter when calculating the timing parameters.
 
 Additional Constraints
-- To guarantee clock stretching works correctly in Controller-Mode, there is a requirement of `THIGH >= 4`.
+- To guarantee clock stretching works correctly with the Controller Module, there is a requirement of `THIGH >= 4 + InputDelayCycles`.
 This constraint derives from the fact that there is a latency between the Controller FSM driving the bus and observing the effect of driving the bus.
 The implementation requires `THIGH` to be at least this large to guarantee that if the Target stretches the clock, we can observe it in time, and react accordingly.
+Note that `InputDelayCycles` is a hardware instance parameter provided by the top-level integration.
 
 Based on the inputs, the timing parameters may be chosen using the following algorithm:
 1. The physical timing parameters t<sub>HD,STA</sub>, t<sub>SU,STA</sub>, t<sub>HD.DAT</sub>, t<sub>SU,DAT</sub>, t<sub>BUF</sub>, and t<sub>STO</sub>, t<sub>HIGH</sub>, and t<sub>LOW</sub> all have minimum allowed values which depend on the choice of speed mode (Standard-mode, Fast-mode or Fast-mode Plus).
@@ -76,10 +77,9 @@ $$ \textrm{TIMING0.TLOW}=\textrm{TLOW_MIN} $$
 1. THIGH is then set to satisfy both constraints in the desired SCL period and in the minimum permissible values for t<sub>HIGH</sub>:
 $$ \textrm{TIMING0.THIGH}=\max(\textrm{PERIOD}-\textrm{T_R} - \textrm{TIMING0.TLOW} -\textrm{T_F}, \textrm{THIGH_MIN}) $$
 
-We are aware of two issues with timing calculations.
-First, the fall time (T_F) is counted twice in controller mode as is tracked in [issue #18958](https://github.com/lowRISC/opentitan/issues/18958).
-Second, the high time (THIGH) is 3 cycles longer when no clock stretching is detected as tracked in [issue #18962](https://github.com/lowRISC/opentitan/issues/18962).
-Due to these two discrepancies and the tendency of the above equations to create an underestimate of the eventual clock frequency, we recommend that the internal clock is driven at least 50x higher than the line speed.
+Note that the actual frequency will generally be lower, due to the need to round up counts after dividing.
+In addition, clock stretching can delay transitions.
+To achieve nominal rates within 5% or so, we recommend that the internal clock is driven at least 24x higher than the desired line speed.
 
 #### Timing parameter examples
 
@@ -112,31 +112,37 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 | TIMING1.T_R     | 0                | 134        | 402            | Atypically high line capacitance             |
 | SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
 
-## Writing `n` bytes to a device:
+## Controller Module Operations
+### Writing `n` bytes to a device:
 1. Address the device for writing by writing to:
-   - `FDATA.START` = 1;
-   - `FDATA.FBYTE` = <7-bit address + write bit>.
-2. Fill the TX_FIFO by writing to `FDATA.FBYTE` `n`-1 times.
+  - `FDATA.START` = 1;
+  - `FDATA.FBYTE` = <7-bit address + write bit>.
+2. Fill the FMT FIFO by writing to `FDATA.FBYTE` `n`-1 times.
 3. Send last byte with the stop bit by writing to:
-    - `FDATA.STOP` = 1;
-    - `FDATA.FBYTE` = <last byte>.
+  - `FDATA.STOP` = 1;
+  - `FDATA.FBYTE` = <last byte>.
+4. Wait for and check the result of the transaction.
+  - If `INTR_STATE.CONTROLLER_HALT` is 1, the transaction failed.
+    - Check `CONTROLLER_EVENTS` for the reason, reset the FMT FIFO with `FIFO_CTRL.FMTRST`, and clear the latched events.
+  - Otherwise, if `INTR_STATE.CMD_COMPLETE` is 1 and `STATUS.FMTEMPTY` is 1, the transaction succeeded.
 
-<!-- TODO: Fix #18917 and remove the FMT_FIFO empty check before adding the full transaction to the FMT_FIFO -->
-## Reading `n` bytes from a device:
-1. Address the device for reading by writing to:
-   - `FDATA.START` = 1;
-   - `FDATA.FBYTE` = <7-bit address + read bit>.
-2. Wait the write transaction to finish by either checking:
-    - If `STATUS.FMTEMPTY` bit is 1.
-    - **Or** if `INTR_STATE.fmt_threshold` bit is 1 ( as long as `FIFO_CTRL.FMTILVL` is set to 1).
-3. If `INTR_STATE.nak` bit is 1, then go back to step 1, else proceed.
-4. Issue a read transaction by writing to.
-    - `FDATA.READ` = 1;
-    - `FDATA.STOP` = 1;
-    - `FDATA.FBYTE` = <`n`>.
-5. Wait for the read transaction to finish by checking:
-    -  `STATUS.FMTEMPTY` bit is 1.
-6. Retrieve the data from the FIFO by reading `RDATA` `n` times.
+### Reading `n` bytes from a device:
+1. Address the device for reading by writing to the FMT FIFO:
+  - `FDATA.START` = 1;
+  - `FDATA.FBYTE` = <7-bit address + read bit>.
+2. Issue a read transfer by writing to the FMT FIFO.
+  - `FDATA.READ` = 1;
+  - `FDATA.STOP` = 1;
+  - `FDATA.FBYTE` = <`n`>.
+3. Wait for the transfer to finish or interrupt by checking:
+  - If `STATUS.FMTEMPTY` bit is 1.
+    - **Or** if `INTR_STATE.FMT_THRESHOLD` bit is 1 ( as long as `FIFO_CTRL.FMTILVL` is set to 1).
+  - If `INTR_STATE.CONTROLLER_HALT` is 1.
+4. If the `INTR_STATE.CONTROLLER_HALT` bit is 1, then set `FIFO_CTRL.FMTRST` to reset the FMT FIFO, clear latched events in `CONTROLLER_EVENTS`, and go back to step 1. Otherwise, proceed.
+5. If `STATUS.FMTEMPTY` is 1, the read transfer has completed.
+  - Retrieve the data from the FIFO by reading `RDATA` `n` times.
+
+<!-- TODO: Add target module operations. -->
 
 ## Device Interface Functions (DIFs)
 
