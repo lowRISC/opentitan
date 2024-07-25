@@ -26,7 +26,7 @@ export BOARD=cw340
 ```
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz).
+If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz) from our public bistream cache GCS bucket.
 
 For example, to download and unpack the bitstream, run the following:
 
@@ -56,6 +56,30 @@ cp util/git/hooks/post-checkout .git/hooks/
 
 ### Build an FPGA bitstream
 
+
+#### Splicing a different ROM or OTP into a Cached Bitstream
+
+As mentioned above, the default bitstreams cached in our public GCS bucket are built with a test version of the boot ROM and a minimally configured OTP image.
+If you desire a bitstream with _only_ a different combination of ROM / OTP images (say if you want to build and splice in the production mask ROM), you can do so without rebuilding the entire bitstream from scratch.
+Specifically, you can build the [`//hw/bitstream/universal:splice`](https://github.com/lowRISC/opentitan/blob/e439226b6c5314be12ccf5cc055f2d4b8149d0ab/hw/bitstream/universal/BUILD#L30) Bazel target and specify any combination of:
+1. ROM image (using the `--//hw/bitstream/universal:rom=<ROM image Bazel target>` label flag),
+1. OTP image (using the `--//hw/bitstream/universal:otp=<OTP image Bazel target>` label flag), and/or
+1. `exec_env` (using the `--//hw/bitstream/universal:env=<exec_env Bazel target>` label flag; `exec_env`s define a collection of ROM, OTP, and base bitstream targets to use).
+
+For example, to splice a CW310 bitstream with the mask ROM image and a specific OTP image, you can run
+```sh
+bazel build \
+    --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data:img_dev \
+    --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys \
+    //hw/bitstream/universal:splice
+```
+
+>**Note**: Splicing bitstreams will require the (free) Lab Edition of Vivado to be installed on your system, described [here](./install_vivado/README.md).
+>General software development on the FPGA requires this as well, since bitstreams will be spliced locally by Bazel during test builds.
+
+#### From Scratch
+
+If you would like to synthesize a bitstream from scratch (e.g., to test a new RTL change), you can synthesize one locally.
 Synthesizing a design for an FPGA board is simple with Bazel.
 While Bazel is the entry point for kicking off the FPGA synthesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
 During the build process, the boot ROM is baked into the bitstream.
@@ -73,8 +97,7 @@ cd $REPO_TOP
 ./bazelisk.sh build //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys
 ```
 
->**Note**: Building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
->For general software development on the FPGA, Vivado must still be installed, but the Lab Edition is sufficient.
+>**Note**: Building these bitstreams will require Vivado to be installed on your system, with access to the proper (paid) licenses, described [here](./install_vivado/README.md).
 
 #### Dealing with FPGA Congestion Issues
 
