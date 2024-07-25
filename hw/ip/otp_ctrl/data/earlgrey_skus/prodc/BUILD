@@ -18,7 +18,6 @@ load(
     "//rules:otp.bzl",
     "otp_alert_classification",
     "otp_alert_digest",
-    "otp_bytestring",
     "otp_hex",
     "otp_image",
     "otp_image_consts",
@@ -404,4 +403,14 @@ otp_image(
     name = "otp_img_rma_manuf_personalized",
     src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = MANUF_PERSONALIZED,
+)
+
+# `MANUF_PERSONALIZED` configuration for RMA with SPHINCS+ signature verification
+# enabled for secure boot. Only available in secure environments.
+otp_image(
+    name = "otp_img_rma_manuf_personalized_spx_enabled",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = MANUF_PERSONALIZED + [
+        "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
+    ],
 )
