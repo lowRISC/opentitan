@@ -41,6 +41,10 @@ class usb20_agent_cfg extends dv_base_agent_cfg;
   // RTL has limited ability to recover from an invalid SYNC signal at the start of the packet.
   bit rtl_limited_sync_recovery = 1'b1;
 
+  // RTL has limited ability to recover from bit stuffing violations; subsequent bits within the
+  // packet may be misinterpreted as another SYNC signal.
+  bit rtl_limited_bitstuff_recovery = 1'b1;
+
   // RTL does not recover from missing host handshake in response to an IN DATA packet.
   bit rtl_must_have_host_handshake = 1'b1;
 
