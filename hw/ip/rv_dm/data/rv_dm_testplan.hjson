@@ -465,14 +465,11 @@
             Verify that writing on DM progbuf registers while abstract command is executing
             causes jtag_dmi_ral.abstractcs.busy to be set to 1.
 
-            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1.
-            - Acknowledge haltreq by setting tl_mem_ral.halted to 0.
-            - Send access register abstract command with postexec bit set.
-            - Write on any of progbuf registers.
-            - Verify that jtag_dmi_ral.abstractcs.busy is set to 1.
+            This is implemented by rv_dm_cmderr_busy, which chooses a random operation to generate
+            the busy command error. One possible operation is writing to progbuf[0].
             '''
       stage: V1
-      tests: ["rv_dm_progbuf_busy"]
+      tests: ["rv_dm_cmderr_busy"]
     }
     {
       name: abstractcmd_status
