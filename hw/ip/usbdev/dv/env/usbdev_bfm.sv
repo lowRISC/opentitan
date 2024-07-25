@@ -731,14 +731,22 @@ class usbdev_bfm extends uvm_component;
     wr_data.push_back(data.crc16[7:0]);
     wr_data.push_back(data.crc16[15:8]);
     wr_bytes = data.data.size() + 2;
-    if (wr_bytes >= MaxPktSizeByte) wr_bytes = MaxPktSizeByte;
-    for (int unsigned offset = 0; offset < wr_bytes; offset += 4) begin
-      // Collect bytes, remembering that the final word may be incomplete, so leave unchanged.
-      wdata_q[7:0] = wr_data[offset];
-      if (wr_bytes - offset > 1) wdata_q[15:8]  = wr_data[offset + 1];
-      if (wr_bytes - offset > 2) wdata_q[23:16] = wr_data[offset + 2];
-      if (wr_bytes - offset > 3) wdata_q[31:24] = wr_data[offset + 3];
-      write_buffer(buf_start + (offset >> 2), wdata_q);
+    // Collect bytes, writing full words into the packet buffer memory but not over-running the
+    // packet buffer. However, additional bytes are still remembered in the flops and may be written
+    // into packet buffers by subsequent short transfers.
+    for (int unsigned offset = 0; offset < wr_bytes; offset++) begin
+      // DUT stops incrementing its write offset at the end of the packet buffer, but still keeps
+      // replacing the final byte within the flops.
+      int unsigned wr_offset = (offset >= MaxPktSizeByte) ? (MaxPktSizeByte - 1) : offset;
+      case (wr_offset & 3)
+        0:       wdata_q[7:0]   = wr_data[offset];
+        1:       wdata_q[15:8]  = wr_data[offset];
+        2:       wdata_q[23:16] = wr_data[offset];
+        default: wdata_q[31:24] = wr_data[offset];
+      endcase
+      if (offset < MaxPktSizeByte && (((offset & 3) == 3) || (offset >= wr_bytes - 1))) begin
+        write_buffer(buf_start + (offset >> 2), wdata_q);
+      end
     end
   endfunction
 
