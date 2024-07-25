@@ -8,21 +8,12 @@ class rom_ctrl_smoke_vseq extends rom_ctrl_base_vseq;
 
   `uvm_object_new
 
-  // Indicates the number of memory accesses to be performed
-  rand int num_mem_reads;
-
-  constraint num_mem_reads_c {
-    num_mem_reads inside {[20 : 50]};
-  }
-
   task body();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_mem_reads)
-    do_rand_ops(num_mem_reads);
+    do_rand_ops($urandom_range(20, 50));
     read_digest_regs();
     dut_init();
     set_kmac_digest();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_mem_reads)
-    do_rand_ops(num_mem_reads);
+    do_rand_ops($urandom_range(20, 50));
     read_digest_regs();
   endtask : body
 
