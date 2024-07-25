@@ -8,11 +8,28 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
   `uvm_object_new
 
   task body();
+    int unsigned sel = $urandom_range(0, 3);
     byte unsigned data[$];
     bit bitstuff_err;
 
+    // See `usb20_agent_cfg.sv` for explanation => ensure that the bits after the bit stuffing
+    // violation cannot constitute a valid SYNC signal.
+    if (cfg.m_usb20_agent_cfg.rtl_limited_bitstuff_recovery) begin
+      // Avoid the generation of randomized DATA packets because even if we control the content
+      // after the bit stuffing violation we still cannot control the CRC16.
+      //
+      // Additionally, the DUT presently does not detect a bit suffing violation that occurs
+      // immediately before the EOP (6 '1's should be followed by a stuffed '0' before EOP),
+      // so ensure that the endpoint has its MSB clear.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ep_default, ep_default < 8;)
+      sel = sel & 1;  // We can only exercise cases 0 and 1.
+    end
+
     configure_out_trans(ep_default);
-    case ($urandom_range(0,3))
+    // Enable the bitstuff error interrupt.
+    csr_wr(.ptr(ral.intr_enable.rx_bitstuff_err), .value(1'b1));
+
+    case (sel)
       0: begin
         // We need a known payload to guarantee a bit stuffing violation, and 6 contiguous
         // '1's shall be followed by a '0'...ie. 7 or more is a violation.
@@ -44,16 +61,29 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
     // Disable the bit stuffing logic in the driver.
     cfg.m_usb20_agent_cfg.disable_bitstuffing = 1'b1;
 
+    `DV_CHECK_EQ(cfg.intr_vif.pins[IntrRxBitstuffErr], 0)
+    csr_rd(.ptr(ral.intr_state.rx_bitstuff_err), .value(bitstuff_err));
+    `DV_CHECK_EQ(bitstuff_err, 0)
+
     send_token_packet(ep_default, PidTypeOutToken);
     inter_packet_delay();
-    `DV_CHECK_EQ(cfg.intr_vif.pins[IntrRxBitstuffErr], 0)
     send_data_packet(PidTypeData0, data);
 
     // All of these packets should be ignored, so we expect no response.
     check_no_response();
 
+    // Re-enable the bit stuffing logic in the driver.
+    cfg.m_usb20_agent_cfg.disable_bitstuffing = 1'b0;
+
     // Check that the bit stuffing violation was reported.
     csr_rd(.ptr(ral.intr_state.rx_bitstuff_err), .value(bitstuff_err));
-    `DV_CHECK_EQ(1, bitstuff_err);
+    `DV_CHECK_EQ(bitstuff_err, 1)
+    `DV_CHECK_EQ(cfg.intr_vif.pins[IntrRxBitstuffErr], 1)
+
+    // Clear the interrupt
+    csr_wr(.ptr(ral.intr_state.rx_bitstuff_err), .value(1'b1));
+    csr_wr(.ptr(ral.intr_enable.rx_bitstuff_err), .value(1'b0));
+    loopback_delay();
+    `DV_CHECK_EQ(cfg.intr_vif.pins[IntrRxBitstuffErr], 0)
   endtask
 endclass : usbdev_bitstuff_err_vseq

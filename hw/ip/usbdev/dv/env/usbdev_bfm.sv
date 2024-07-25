@@ -425,8 +425,20 @@ class usbdev_bfm extends uvm_component;
   // according to any errors detected.
   function bit valid_packet(usb20_item item);
     if (!item.valid_pid()) intr_state[IntrRxPidErr] = 1'b1;
-    if (!item.valid_crc() || !item.valid_stuffing) intr_state[IntrRxCrcErr] = 1'b1;
-    if (!item.valid_stuffing) intr_state[IntrRxBitstuffErr] = 1'b1;
+    if (!item.valid_stuffing) begin
+      bit exp_crc_error = 1;
+      intr_state[IntrRxBitstuffErr] = 1'b1;
+      // The expectation is that a bit stuffing violation will also induce a CRC error, except in
+      // the very specific case of us having generated a violation right at the end of a token
+      // packet.
+      if (item.m_pkt_type == PktTypeToken) begin
+        token_pkt tok;
+        `downcast(tok, item.clone());
+        exp_crc_error = tok.crc5 != 5'h1f || tok.endpoint[3:2] != 2'b11;
+      end
+      if (exp_crc_error) intr_state[IntrRxCrcErr] = 1'b1;
+    end
+    if (!item.valid_crc()) intr_state[IntrRxCrcErr] = 1'b1;
     return &{item.valid_pid(), item.valid_length, item.valid_stuffing, item.valid_crc()};
   endfunction
 
@@ -467,13 +479,8 @@ class usbdev_bfm extends uvm_component;
       case (token.m_pid_type)
         PidTypeSetupToken, PidTypeOutToken: begin
           bit [3:0] ep = token.endpoint;
-          `downcast(rx_token, token.clone())
           // Basic check of whether we should do anything at all for this transaction.
-          if (rx_token.address != dev_address || ep >= NEndpoints || !ep_out_enable[ep]) begin
-            // Now forget the OUT transaction; silently ignored.
-            rx_token = null;
-            return 0;
-          end
+          if (token.address != dev_address || ep >= NEndpoints) return 0;
           // SETUP token has immediate consequence for the DUT state; both SETUP and OUT token
           // packets cause some state information to be retained so that the ensuing DATA packet may
           // be processed.
@@ -483,6 +490,8 @@ class usbdev_bfm extends uvm_component;
             if (ep_out_enable[ep]) out_toggles[ep] = 1'b0;
             if (ep_in_enable[ep])  in_toggles[ep]  = 1'b1;
           end
+          if (!ep_out_enable[ep]) return 0;  // Silently ignored.
+          `downcast(rx_token, token.clone())
           // Nothing more to do until the DATA packet is received; `rx_token` holds the required
           // state.
         end
