@@ -103,11 +103,11 @@ module prim_esc_rxtx_assert_fpv
       !rst_ni ||
       error_present)
 
-  // check correct transmission of escalation within 0-1 cycles
+  // check correct transmission of escalation within 1-2 cycles
   `ASSERT(EscCheck_A,
       ##1 esc_req_i
       |->
-      ##[0:1] esc_req_o,
+      ##[1:2] esc_req_o,
       clk_i,
       !rst_ni ||
       error_present)
@@ -155,7 +155,7 @@ module prim_esc_rxtx_assert_fpv
       !esc_req_o ##1
       !ping_req_i [*0 : 2**TimeoutCntDw - 4]
       |->
-      !esc_req_o,
+      ##1 !esc_req_o,
       clk_i,
       !rst_ni ||
       error_d ||
@@ -169,7 +169,7 @@ module prim_esc_rxtx_assert_fpv
       !esc_req_o ##1
       !ping_req_i [* 2**TimeoutCntDw - 3 : $]
       |->
-      esc_req_o,
+      ##1 esc_req_o,
       clk_i,
       !rst_ni ||
       error_d ||
