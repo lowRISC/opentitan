@@ -12,7 +12,7 @@ class rom_ctrl_smoke_vseq extends rom_ctrl_base_vseq;
     do_rand_ops($urandom_range(20, 50));
     read_digest_regs();
     dut_init();
-    set_kmac_digest();
+    configure_kmac_digest(1'b1);
     do_rand_ops($urandom_range(20, 50));
     read_digest_regs();
   endtask : body
