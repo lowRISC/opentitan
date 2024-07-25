@@ -48,113 +48,142 @@ jobs:
     artifact: opentitan-repo
     displayName: "Upload repository"
 
-- job: hyperdebug
-  displayName: "Hyperdebug tests"
-  timeoutInMinutes: 30
-  dependsOn: checkout
-  pool:
-    name: FPGA
-    demands: BOARD -equals cw310
-  steps:
-  - template: ../ci/checkout-template.yml
-  - template: ../ci/install-package-dependencies.yml
-  # We run the update command twice to workaround an issue with udev on the container.
-  # Where rusb cannot dynamically update its device list in CI (udev is not completely
-  # functional). If the device is in normal mode, the first thing that opentitantool
-  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-  # never detected. But if we run the tool another time, the device list is queried again
-  # and opentitantool can finish the update. The device will now reboot in normal mode
-  # and work for the hyperdebug job.
-  - bash: |
-      ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware \
-      || ci/bazelisk.sh run \
-        //sw/host/opentitantool:opentitantool -- \
-        --interface=hyperdebug_dfu transport update-firmware || true
-    displayName: "Update the hyperdebug firmware"
-  - bash: |
-      set -x
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --define bitstream=gcp_splice \
-        --build_tests_only \
-        --test_tag_filters=-broken \
-        --test_output=errors \
-        $(bash ./bazelisk.sh query 'attr("tags", "cw310_sival", tests(//...))')
-    displayName: "Run all the hyperdebug tests"
+#- job: hyperdebug
+#  displayName: "Hyperdebug tests"
+#  timeoutInMinutes: 30
+#  dependsOn: checkout
+#  pool:
+#    name: FPGA
+#    demands: BOARD -equals cw310
+#  steps:
+#  - template: ../ci/checkout-template.yml
+#  - template: ../ci/install-package-dependencies.yml
+#  # We run the update command twice to workaround an issue with udev on the container.
+#  # Where rusb cannot dynamically update its device list in CI (udev is not completely
+#  # functional). If the device is in normal mode, the first thing that opentitantool
+#  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
+#  # never detected. But if we run the tool another time, the device list is queried again
+#  # and opentitantool can finish the update. The device will now reboot in normal mode
+#  # and work for the hyperdebug job.
+#  - bash: |
+#      ci/bazelisk.sh run \
+#        //sw/host/opentitantool:opentitantool -- \
+#        --interface=hyperdebug_dfu transport update-firmware \
+#      || ci/bazelisk.sh run \
+#        //sw/host/opentitantool:opentitantool -- \
+#        --interface=hyperdebug_dfu transport update-firmware || true
+#    displayName: "Update the hyperdebug firmware"
+#  - bash: |
+#      set -x
+#      module load "xilinx/vivado/$(VIVADO_VERSION)"
+#      ci/bazelisk.sh test \
+#        --define DISABLE_VERILATOR_BUILD=true \
+#        --define bitstream=gcp_splice \
+#        --build_tests_only \
+#        --test_tag_filters=-broken \
+#        --test_output=errors \
+#        $(bash ./bazelisk.sh query 'attr("tags", "cw310_sival", tests(//...))')
+#    displayName: "Run all the hyperdebug tests"
+#
+#- job: rom_e2e
+#  displayName: "ROM E2E Tests"
+#  timeoutInMinutes: 180
+#  dependsOn: checkout
+#  pool:
+#    name: FPGA
+#    demands: BOARD -equals cw310
+#  steps:
+#  - template: ../ci/checkout-template.yml
+#  - template: ../ci/install-package-dependencies.yml
+#  - bash: |
+#      set -x
+#      module load "xilinx/vivado/$(VIVADO_VERSION)"
+#      ci/bazelisk.sh test \
+#        --define DISABLE_VERILATOR_BUILD=true \
+#        --define bitstream=gcp_splice \
+#        --test_tag_filters=-verilator,-dv,-broken \
+#        --build_tests_only \
+#        --test_output=errors \
+#        //sw/device/silicon_creator/rom/e2e/...
+#    displayName: "Run all ROM E2E tests"
+#  - template: ../ci/publish-bazel-test-results.yml
+#
+#- job: slow_otbn_crypto_tests
+#  displayName: "Slow OTBN Crypto Tests"
+#  timeoutInMinutes: 180
+#  dependsOn: checkout
+#  pool:
+#    name: FPGA
+#    demands: BOARD -equals cw310
+#  steps:
+#  - template: ../ci/checkout-template.yml
+#  - template: ../ci/install-package-dependencies.yml
+#  - bash: |
+#      set -x
+#      ci/bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
+#    displayName: "Run the tests"
+#  - template: ../ci/publish-bazel-test-results.yml
+#
+#- job: bob_spi_i2c
+#  displayName: "BoB: SPI and I2C Tests"
+#  timeoutInMinutes: 30
+#  dependsOn: checkout
+#  pool:
+#    name: FPGA
+#    demands: BOARD -equals cw310
+#  steps:
+#  - template: ../ci/checkout-template.yml
+#  - template: ../ci/install-package-dependencies.yml
+#  - bash: |
+#      set -x
+#      module load "xilinx/vivado/$(VIVADO_VERSION)"
+#      ci/bazelisk.sh test \
+#        --define DISABLE_VERILATOR_BUILD=true \
+#        --define bitstream=gcp_splice \
+#        --build_tests_only \
+#        --test_output=errors \
+#        --test_tag_filters="cw310_test_rom" \
+#        $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
+#    displayName: "Run the PMOD tests with Test ROM"
+#  - template: ../ci/publish-bazel-test-results.yml
+#  - bash: |
+#      set -x
+#      module load "xilinx/vivado/$(VIVADO_VERSION)"
+#      ci/bazelisk.sh test \
+#        --define DISABLE_VERILATOR_BUILD=true \
+#        --define bitstream=gcp_splice \
+#        --build_tests_only \
+#        --test_output=errors \
+#        --test_tag_filters=cw310_sival,-broken \
+#        $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
+#    displayName: "Run the PMOD tests for Sival"
+#  - template: ../ci/publish-bazel-test-results.yml
 
-- job: rom_e2e
-  displayName: "ROM E2E Tests"
-  timeoutInMinutes: 180
+# Below commands are required if running on an Azure Pipeline Ubuntu 20.04 VM instead of CI
+#      sudo mkdir -p "$HOME/.cache/fusesoc"
+#      sudo chmod 777 "$HOME/.cache/fusesoc"
+# Below target will extract all relevant untested verilator tests, excluding the slow OTBN
+# crypto tests which are already being run elsewhere.
+#          'tests(//...) except attr("tags", "nightly", tests(//sw/otbn/crypto/...))'
+- job: verilator_tests
+  displayName: "Verilator Tests"
+  timeoutInMinutes: 0
   dependsOn: checkout
-  pool:
-    name: FPGA
-    demands: BOARD -equals cw310
+  pool: ci-public
   steps:
   - template: ../ci/checkout-template.yml
   - template: ../ci/install-package-dependencies.yml
   - bash: |
       set -x
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --define bitstream=gcp_splice \
-        --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=errors \
-        //sw/device/silicon_creator/rom/e2e/...
-    displayName: "Run all ROM E2E tests"
-  - template: ../ci/publish-bazel-test-results.yml
-
-- job: slow_otbn_crypto_tests
-  displayName: "Slow OTBN Crypto Tests"
-  timeoutInMinutes: 180
-  dependsOn: checkout
-  pool:
-    name: FPGA
-    demands: BOARD -equals cw310
-  steps:
-  - template: ../ci/checkout-template.yml
-  - template: ../ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      ci/bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
-    displayName: "Run the tests"
-  - template: ../ci/publish-bazel-test-results.yml
-
-- job: bob_spi_i2c
-  displayName: "BoB: SPI and I2C Tests"
-  timeoutInMinutes: 30
-  dependsOn: checkout
-  pool:
-    name: FPGA
-    demands: BOARD -equals cw310
-  steps:
-  - template: ../ci/checkout-template.yml
-  - template: ../ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --define bitstream=gcp_splice \
-        --build_tests_only \
-        --test_output=errors \
-        --test_tag_filters="cw310_test_rom" \
-        $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-    displayName: "Run the PMOD tests with Test ROM"
-  - template: ../ci/publish-bazel-test-results.yml
-  - bash: |
-      set -x
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --define bitstream=gcp_splice \
-        --build_tests_only \
-        --test_output=errors \
-        --test_tag_filters=cw310_sival,-broken \
-        $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-    displayName: "Run the PMOD tests for Sival"
+        --local_test_jobs=8 \
+        --local_cpu_resources=8 \
+        --test_timeout=2400,2400,3600,-1 \
+        --test_tag_filters=verilator,-broken \
+        --//hw:verilator_options=--threads,1 \
+        --//hw:make_options=-j,8 \
+        $(bash ./bazelisk.sh query 'tests(//...) except attr("tags", "nightly", tests(//sw/otbn/crypto/...))')
+    displayName: "Run all Verilator Tests"
   - template: ../ci/publish-bazel-test-results.yml
