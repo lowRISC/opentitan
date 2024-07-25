@@ -1089,7 +1089,7 @@ module chip_earlgrey_asic #(
   assign manual_oe_otp_ext_volt = 1'b0;
 
   // Enable schmitt trigger on POR for better signal integrity.
-  assign manual_attr_por_n = '{schmitt_en: 1'b1, default: '0};
+  assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
 
   // These pad attributes are controlled through sensor_ctrl.  Update the description of
   // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
