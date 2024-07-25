@@ -50,17 +50,35 @@
     {
       name: usbdev_aon_wake_disconnect
       uvm_test_seq: usbdev_aon_wake_vseq
-      run_opts: ["+do_vbus_disconnects=1"]
+      // Transitional link states and `link_resume` interrupts are not predictable with the
+      // functional model because this sequence changes the bus configuration whilst the
+      // AON/Wake module is controlling the bus.
+      run_opts: [
+        "+do_vbus_disconnects=1",
+        "+en_scb_rdchk_linkstate=0"
+        "+en_scb_rdchk_link_resume=0"
+      ]
     }
     {
       name: usbdev_aon_wake_reset
       uvm_test_seq: usbdev_aon_wake_vseq
-      run_opts: ["+do_reset_signaling=1"]
+      // Transitional link states cannot be predicted with the model presently.
+      run_opts: [
+        "+do_reset_signaling=1",
+        "+en_scb_rdchk_linkstate=0"
+      ]
     }
     {
       name: usbdev_aon_wake_resume
       uvm_test_seq: usbdev_aon_wake_vseq
-      run_opts: ["+do_resume_signaling=1"]
+      // Transitional link states and `link_resume` interrupts are not predictable with the
+      // functional model because this sequence changes the bus configuration whilst the
+      // AON/Wake module is controlling the bus.
+      run_opts: [
+        "+do_resume_signaling=1",
+        "+en_scb_rdchk_linkstate=0",
+        "+en_scb_rdchk_link_resume=0"
+      ]
     }
     {
       name: usbdev_av_buffer
