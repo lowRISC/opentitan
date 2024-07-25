@@ -126,11 +126,21 @@ module prim_esc_receiver
   // - requested via the escalation sender/receiver path,
   // - the ping monitor timeout is reached,
   // - the two ping monitor counters are in an inconsistent state.
-  logic esc_req;
+  // Register the escalation request to avoid potential CDC issues downstream.
+  logic esc_req, esc_req_d, esc_req_q;
+  assign esc_req_d = esc_req || (&timeout_cnt) || timeout_cnt_error;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      esc_req_q <= 1'b0;
+    end else begin
+      esc_req_q <= esc_req_d;
+    end
+  end
+
   prim_sec_anchor_buf #(
     .Width(1)
   ) u_prim_buf_esc_req (
-    .in_i(esc_req || (&timeout_cnt) || timeout_cnt_error),
+    .in_i (esc_req_q),
     .out_o(esc_req_o)
   );
 
@@ -257,7 +267,7 @@ module prim_esc_receiver
   `ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_rx_o.resp_p == esc_rx_o.resp_n)
   `ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt)
   // auto-escalate in case of signal integrity issue
-  `ASSERT(SigIntCheck2_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_req_o)
+  `ASSERT(SigIntCheck2_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_req_d)
   // correct diff encoding
   `ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=> esc_rx_o.resp_p ^ esc_rx_o.resp_n)
   // disable in case of signal integrity issue
@@ -271,10 +281,10 @@ module prim_esc_receiver
   // detect escalation pulse
   `ASSERT(EscEnCheck_A,
           esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
-      ##1 esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_req_o)
+      ##1 esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_req_d)
   // make sure the counter does not wrap around
   `ASSERT(EscCntWrap_A, &timeout_cnt |=> timeout_cnt != 0)
   // if the counter expires, escalation should be asserted
-  `ASSERT(EscCntEsc_A, &timeout_cnt |-> esc_req_o)
+  `ASSERT(EscCntEsc_A, &timeout_cnt |-> esc_req_d)
 
 endmodule : prim_esc_receiver
