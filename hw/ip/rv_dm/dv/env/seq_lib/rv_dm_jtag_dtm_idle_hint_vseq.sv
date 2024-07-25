@@ -28,8 +28,8 @@ class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
     // Write some arbitrary data words over DMI
     repeat (4) begin
       randcase
-        1: csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(32'h0d158c94));
-        1: csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(32'h0d000c84));
+        1: csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value($urandom));
+        1: csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value($urandom));
       endcase
     end
 
