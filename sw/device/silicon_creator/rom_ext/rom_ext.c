@@ -493,7 +493,9 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
-  flash_ctrl_cert_info_pages_owner_restrict();
+  flash_ctrl_cert_info_page_owner_restrict(
+      &kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.
@@ -819,7 +821,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
              self->version_minor);
 
   // Configure DICE certificate flash info page and buffer it into RAM.
-  flash_ctrl_cert_info_pages_creator_cfg();
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
   HARDENED_RETURN_IF_ERROR(rom_ext_buffer_dice_certs_into_ram());
 
   // Establish our identity.

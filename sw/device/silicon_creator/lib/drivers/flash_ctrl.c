@@ -728,53 +728,32 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
   HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
-const flash_ctrl_info_page_t
-    *kCertificateInfoPages[kFlashCtrlNumCertInfoPages] = {
-        &kFlashCtrlInfoPageAttestationKeySeeds,
-        &kFlashCtrlInfoPageDiceCerts,
-        &kFlashCtrlInfoPageTpmCerts,
-};
-const flash_ctrl_cfg_t kCertificateInfoPagesCfg = {
+const flash_ctrl_cfg_t kCertificateInfoPageCfg = {
     .scrambling = kMultiBitBool4True,
     .ecc = kMultiBitBool4True,
     .he = kMultiBitBool4False,
 };
-const flash_ctrl_perms_t kCertificateInfoPagesCreatorAccess = {
+const flash_ctrl_perms_t kCertificateInfoPageCreatorAccess = {
     .read = kMultiBitBool4True,
     .write = kMultiBitBool4True,
     .erase = kMultiBitBool4True,
 };
-const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess = {
+const flash_ctrl_perms_t kCertificateInfoPageOwnerAccess = {
     .read = kMultiBitBool4True,
     .write = kMultiBitBool4False,
     .erase = kMultiBitBool4False,
 };
 
-void flash_ctrl_cert_info_pages_creator_cfg(void) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesCreatorCfg,
-                                  2 * kFlashCtrlNumCertInfoPages);
-  size_t i = 0, r = kFlashCtrlNumCertInfoPages - 1;
-  for (; launder32(i) < kFlashCtrlNumCertInfoPages &&
-         launder32(r) < kFlashCtrlNumCertInfoPages;
-       ++i, --r) {
-    flash_ctrl_info_cfg_set(kCertificateInfoPages[i], kCertificateInfoPagesCfg);
-    flash_ctrl_info_perms_set(kCertificateInfoPages[i],
-                              kCertificateInfoPagesCreatorAccess);
-  }
-  HARDENED_CHECK_EQ(i, kFlashCtrlNumCertInfoPages);
-  HARDENED_CHECK_EQ(r, SIZE_MAX);
+void flash_ctrl_cert_info_page_creator_cfg(
+    const flash_ctrl_info_page_t *info_page) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageCreatorCfg, 2);
+  flash_ctrl_info_cfg_set(info_page, kCertificateInfoPageCfg);
+  flash_ctrl_info_perms_set(info_page, kCertificateInfoPageCreatorAccess);
 }
 
-void flash_ctrl_cert_info_pages_owner_restrict(void) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesOwnerRestrict,
-                                  kFlashCtrlNumCertInfoPages);
-  size_t i = 0, r = kFlashCtrlNumCertInfoPages - 1;
-  for (; launder32(i) < kFlashCtrlNumCertInfoPages &&
-         launder32(r) < kFlashCtrlNumCertInfoPages;
-       ++i, --r) {
-    flash_ctrl_info_perms_set(kCertificateInfoPages[i],
-                              kCertificateInfoPagesOwnerAccess);
-  }
-  HARDENED_CHECK_EQ(i, kFlashCtrlNumCertInfoPages);
-  HARDENED_CHECK_EQ(r, SIZE_MAX);
+void flash_ctrl_cert_info_page_owner_restrict(
+    const flash_ctrl_info_page_t *info_page) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageOwnerRestrict,
+                                  1);
+  flash_ctrl_info_perms_set(info_page, kCertificateInfoPageOwnerAccess);
 }

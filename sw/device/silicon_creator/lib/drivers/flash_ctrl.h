@@ -166,8 +166,8 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  */
 enum {
   kFlashCtrlSecMmioCreatorInfoPagesLockdown = 16,
-  kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 6,
-  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 3,
+  kFlashCtrlSecMmioCertInfoPageCreatorCfg = 2,
+  kFlashCtrlSecMmioCertInfoPageOwnerRestrict = 1,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
@@ -588,30 +588,14 @@ void flash_ctrl_exec_set(uint32_t exec_val);
 void flash_ctrl_creator_info_pages_lockdown(void);
 
 /**
- * Number of flash info pages reserved for storing:
- *
- * 1. any DRBG seed material needed to reproduce private keys, and
- * 2. the certificates themselves.
- */
-enum {
-  kFlashCtrlNumCertInfoPages = 3,
-};
-
-/**
- * Info pages that contain device certificates.
- */
-extern const flash_ctrl_info_page_t
-    *kCertificateInfoPages[kFlashCtrlNumCertInfoPages];
-
-/**
  * Certificate info page configurations and permissions.
  *
  * Certificate info pages are fully accessable by the creator code (ROM +
  * ROM_EXT), but read-only for owner code.
  */
-extern const flash_ctrl_cfg_t kCertificateInfoPagesCfg;
-extern const flash_ctrl_perms_t kCertificateInfoPagesCreatorAccess;
-extern const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess;
+extern const flash_ctrl_cfg_t kCertificateInfoPageCfg;
+extern const flash_ctrl_perms_t kCertificateInfoPageCreatorAccess;
+extern const flash_ctrl_perms_t kCertificateInfoPageOwnerAccess;
 
 /**
  * Configures certificate flash info pages for access by the silicon creator.
@@ -624,7 +608,8 @@ extern const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess;
  * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesCreatorCfg)`
  * when sec_mmio is being used to check expectations.
  */
-void flash_ctrl_cert_info_pages_creator_cfg(void);
+void flash_ctrl_cert_info_page_creator_cfg(
+    const flash_ctrl_info_page_t *info_page);
 
 /**
  * Restricts access of certificate flash info pages to read-only for the silicon
@@ -634,7 +619,8 @@ void flash_ctrl_cert_info_pages_creator_cfg(void);
  * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesOwnerRestrict)`
  * when sec_mmio is being used to check expectations.
  */
-void flash_ctrl_cert_info_pages_owner_restrict(void);
+void flash_ctrl_cert_info_page_owner_restrict(
+    const flash_ctrl_info_page_t *info_page);
 
 #ifdef __cplusplus
 }
