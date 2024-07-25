@@ -140,7 +140,18 @@ module prim_count
   // The sum of both counters must always equal the counter maximum.
   logic [Width:0] sum;
   assign sum = (cnt_q[0] + cnt_q[1]);
-  assign err_o = (sum != {1'b0, {Width{1'b1}}});
+
+  // Register the error signal to avoid potential CDC issues downstream.
+  logic err_d, err_q;
+  assign err_d = (sum != {1'b0, {Width{1'b1}}});
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_q <= 1'b0;
+    end else begin
+      err_q <= err_d;
+    end
+  end
+  assign err_o = err_q;
 
   // Output count values
   assign cnt_o              = cnt_q[0];
@@ -190,7 +201,7 @@ module prim_count
       rst_ni
       |=>
       $past(!commit_i) || (cnt_o == $past(cnt_after_commit_o)),
-      clk_i, err_o || fpv_err_present || !rst_ni)
+      clk_i, err_d || fpv_err_present || !rst_ni)
 
   // Clear
   if (PossibleActions & Clr) begin : g_check_clr_fwd_a
@@ -199,7 +210,7 @@ module prim_count
             |=>
             (cnt_o == ResetValue) &&
             (cnt_q[1] == ({Width{1'b1}} - ResetValue)),
-            clk_i, err_o || fpv_err_present || !rst_ni)
+            clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
   // Set
@@ -209,7 +220,7 @@ module prim_count
         |=>
         (cnt_o == $past(set_cnt_i)) &&
         (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i))),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
   // Do not count if both increment and decrement are asserted.
@@ -218,7 +229,7 @@ module prim_count
         rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
         |=>
         $stable(cnt_o) && $stable(cnt_q[1]),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
   // Increment
@@ -227,24 +238,24 @@ module prim_count
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
         |=>
         cnt_o == min($past(cnt_o) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
     `ASSERT(IncrDnCnt_A,
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
         |=>
         cnt_q[1] == max($past(signed'({2'b0, cnt_q[1]})) - $past({2'b0, step_i}), '0),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
     `ASSERT(UpCntIncrStable_A,
         incr_en_i && !(clr_i || set_i || decr_en_i) &&
         cnt_o == {Width{1'b1}}
         |=>
         $stable(cnt_o),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
     `ASSERT(DnCntIncrStable_A,
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
         cnt_q[1] == '0
         |=>
         $stable(cnt_q[1]),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
   // Decrement
@@ -253,24 +264,24 @@ module prim_count
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
         |=>
         cnt_o == max($past(signed'({2'b0, cnt_o})) - $past({2'b0, step_i}), '0),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
     `ASSERT(DecrDnCnt_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
         |=>
         cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
     `ASSERT(UpCntDecrStable_A,
         decr_en_i && !(clr_i || set_i || incr_en_i) &&
         cnt_o == '0
         |=>
         $stable(cnt_o),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
     `ASSERT(DnCntDecrStable_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
         cnt_q[1] == {Width{1'b1}}
         |=>
         $stable(cnt_q[1]),
-        clk_i, err_o || fpv_err_present || !rst_ni)
+        clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
   // A backwards check for count changes. This asserts that the count only changes if one of the
@@ -279,12 +290,12 @@ module prim_count
           rst_ni ##1 $changed(cnt_o) && $changed(cnt_q[1])
           |->
           $past(clr_i || set_i || (commit_i && (incr_en_i || decr_en_i))),
-          clk_i, err_o || fpv_err_present || !rst_ni)
+          clk_i, err_d || fpv_err_present || !rst_ni)
 
-  // Check that count errors are reported properly in err_o
-  `ASSERT(CntErrReported_A, ((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o)
+  // Check that count errors are reported properly in err_d
+  `ASSERT(CntErrReported_A, ((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_d)
  `ifdef PrimCountFpv
-  `COVER(CntErr_C, err_o)
+  `COVER(CntErr_C, err_d)
  `endif
 
   // This logic that will be assign to one, when user adds macro
