@@ -55,6 +55,7 @@ pub struct Hyperdebug<T: Flavor> {
     i2c_interface: Option<BulkInterface>,
     cmsis_interface: Option<BulkInterface>,
     uart_interfaces: HashMap<String, UartInterface>,
+    cached_io_interfaces: CachedIo,
     inner: Rc<Inner>,
     current_firmware_version: Option<String>,
     cmsis_google_capabilities: Cell<Option<u16>>,
@@ -287,17 +288,19 @@ impl<T: Flavor> Hyperdebug<T> {
             i2c_interface,
             cmsis_interface,
             uart_interfaces,
+            cached_io_interfaces: CachedIo {
+                gpio: Default::default(),
+                spis: Default::default(),
+                i2cs_by_name: Default::default(),
+                i2cs_by_index: Default::default(),
+                uarts: Default::default(),
+            },
             inner: Rc::new(Inner {
                 console_tty: console_tty.ok_or_else(|| {
                     TransportError::CommunicationError("Missing console interface".to_string())
                 })?,
                 usb_device: RefCell::new(device),
-                gpio: Default::default(),
-                spis: Default::default(),
                 selected_spi: Cell::new(0),
-                i2cs_by_name: Default::default(),
-                i2cs_by_index: Default::default(),
-                uarts: Default::default(),
             }),
             current_firmware_version,
             cmsis_google_capabilities: Cell::new(None),
@@ -418,9 +421,15 @@ impl<T: Flavor> Hyperdebug<T> {
 pub struct Inner {
     console_tty: PathBuf,
     usb_device: RefCell<UsbBackend>,
+    selected_spi: Cell<u8>,
+}
+
+/// Holds cached IO communication instances(gpio, spi, i2c, uart) that the Hyperdebug struct generates.
+/// This way requests for the Hyperdebug Transport struct to create a previously generated instance
+/// will return the cached one instead of generating a completely new one.
+pub struct CachedIo {
     gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
     spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
-    selected_spi: Cell<u8>,
     i2cs_by_name: RefCell<HashMap<String, Rc<dyn Bus>>>,
     i2cs_by_index: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
@@ -595,7 +604,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     // Create SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         let (enable_cmd, idx) = T::spi_index(&self.inner, instance)?;
-        if let Some(instance) = self.inner.spis.borrow().get(&idx) {
+        if let Some(instance) = self.cached_io_interfaces.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
@@ -604,7 +613,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             enable_cmd,
             idx,
         )?);
-        self.inner
+        self.cached_io_interfaces
             .spis
             .borrow_mut()
             .insert(idx, Rc::clone(&instance));
@@ -613,12 +622,12 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     // Create I2C Target instance, or return one from a cache of previously created instances.
     fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
-        if let Some(instance) = self.inner.i2cs_by_name.borrow().get(name) {
+        if let Some(instance) = self.cached_io_interfaces.i2cs_by_name.borrow().get(name) {
             return Ok(Rc::clone(instance));
         }
         let (idx, mode) = T::i2c_index(&self.inner, name)?;
-        if let Some(instance) = self.inner.i2cs_by_index.borrow().get(&idx) {
-            self.inner
+        if let Some(instance) = self.cached_io_interfaces.i2cs_by_index.borrow().get(&idx) {
+            self.cached_io_interfaces
                 .i2cs_by_name
                 .borrow_mut()
                 .insert(name.to_string(), Rc::clone(instance));
@@ -653,11 +662,11 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 )),
             },
         );
-        self.inner
+        self.cached_io_interfaces
             .i2cs_by_index
             .borrow_mut()
             .insert(idx, Rc::clone(&instance));
-        self.inner
+        self.cached_io_interfaces
             .i2cs_by_name
             .borrow_mut()
             .insert(name.to_string(), Rc::clone(&instance));
@@ -668,7 +677,12 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         match self.uart_interfaces.get(instance) {
             Some(uart_interface) => {
-                if let Some(instance) = self.inner.uarts.borrow().get(&uart_interface.tty) {
+                if let Some(instance) = self
+                    .cached_io_interfaces
+                    .uarts
+                    .borrow()
+                    .get(&uart_interface.tty)
+                {
                     return Ok(Rc::clone(instance));
                 }
                 let supports_clearing_queues =
@@ -678,7 +692,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                     uart_interface,
                     supports_clearing_queues,
                 )?);
-                self.inner
+                self.cached_io_interfaces
                     .uarts
                     .borrow_mut()
                     .insert(uart_interface.tty.clone(), Rc::clone(&instance));
@@ -695,7 +709,12 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(
-            match self.inner.gpio.borrow_mut().entry(pinname.to_string()) {
+            match self
+                .cached_io_interfaces
+                .gpio
+                .borrow_mut()
+                .entry(pinname.to_string())
+            {
                 Entry::Vacant(v) => {
                     let u = v.insert(T::gpio_pin(&self.inner, pinname)?);
                     Rc::clone(u)
