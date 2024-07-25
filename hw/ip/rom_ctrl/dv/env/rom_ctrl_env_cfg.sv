@@ -36,15 +36,13 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   `uvm_object_utils_begin(rom_ctrl_env_cfg)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new (string name="");
+    super.new(name);
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal";
-
     ral_model_names.push_back("rom_ctrl_prim_reg_block");
 
-    super.initialize(csr_base_addr);
     num_interrupts = 0;
 
     m_kmac_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_agent_cfg");
@@ -52,13 +50,18 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
     m_kmac_agent_cfg.constant_share_means_error = 1'b0;
 
+    sec_cm_alert_name = "fatal";
+  endfunction
+
+  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    super.initialize(csr_base_addr);
+
     // default TLUL supports 1 outstanding item, the rom TLUL supports 2 outstanding items.
     m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
     m_tl_agent_cfgs[rom_ral_name].max_outstanding_req = 2;
 
     // Tell the CIP base code what bit gets set if we see a TL fault.
     tl_intg_alert_fields[ral.fatal_alert_cause.integrity_error] = 1;
-    sec_cm_alert_name = "fatal";
   endfunction
 
   // Override the default implementation in dv_base_env_cfg.
