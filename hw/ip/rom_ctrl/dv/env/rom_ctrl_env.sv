@@ -18,7 +18,6 @@ class rom_ctrl_env extends cip_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    `DV_CHECK_RANDOMIZE_FATAL(cfg)
     // Get the mem_bkdr interface
     if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "mem_bkdr_util", cfg.mem_bkdr_util_h)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_util from uvm_config_db")
