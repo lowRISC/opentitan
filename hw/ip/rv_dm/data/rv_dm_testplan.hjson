@@ -379,10 +379,11 @@
     {
       name: cmderr_exception
       desc: '''
-             Verify that tha cmderr should set to 3, if an excepton occurred while executing the command.
+             Verify that if an exception occurs when executing a command then cmderr is set to 3.
 
-            -Write into memory mapped register called EXCEPTION(0x118) through tl-device interface.
-            -Verify that the cmderr field of abstractcs register is set to 3.
+             - Start an abstract command.
+             - While it's running, write to the exception register over TL.
+             - Check that the cmderr field of abstractcs register is now 3.
             '''
       stage: V1
       tests: ["rv_dm_cmderr_exception"]
