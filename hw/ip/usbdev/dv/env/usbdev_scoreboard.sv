@@ -54,6 +54,12 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     cfg.en_scb_rdchk_link_in_err = 1'b1;
     void'($value$plusargs("en_scb_rdchk_link_in_err=%0b", cfg.en_scb_rdchk_link_in_err));
 
+    // Model cannot be used to predict `intr_state.link_resume` field for a couple of AON/Wake
+    // sequences because they deliberately abuse the bus by changing the pin configuration and
+    // attempting to change pull up enables whilst the AON/Wake module is active.
+    cfg.en_scb_rdchk_link_resume = 1'b1;
+    void'($value$plusargs("en_scb_rdchk_link_resume=%0b", cfg.en_scb_rdchk_link_resume));
+
     // Model cannot be used to predict transitional `link_state` reliably because of CDC and
     // filtering propagation delays in the presence of an asynchronous process that is reading
     // the `usbstat` register repeatedly:
@@ -345,7 +351,15 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               // actually the host is running faster.
               "link_suspend": max_delay = 4364;
               // Link resume signaling may be delayed until after the Low Speed EOP.
-              "link_resume": max_delay = 3 * 8 * 4;
+              "link_resume": begin
+                // Checking of the `link_resume` assertion is presently not possible with the
+                // functional model for the sequences `usbdev_aon_wake` and
+                // `usbdev_aon_wake_disconnect` because they attempt to perturb the pullup enables
+                // by changing the bus configuration whilst the AON/Wake module is controlling the
+                // bus.
+                if (cfg.en_scb_rdchk_link_resume) max_delay = 3 * 8 * 4;
+                else include_field = 1'b0;
+              end
               // Most interrupts should be reflected almost immediately.
               default: begin
                 max_delay = 16;
