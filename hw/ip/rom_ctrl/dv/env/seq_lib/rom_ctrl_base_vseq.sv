@@ -172,18 +172,35 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                             .tl_intg_err_type(tl_intg_err_type), .req_abort_pct(req_abort_pct));
   endtask
 
-
-
-  // Set KMAC digest_share0 with ROM digest value and digest_share1 with 0
-  virtual function void set_kmac_digest();
-    bit [DIGEST_SIZE-1:0]  expected_digest;
+  // Configure the KMAC agent to respond with a digest matching the given value. This is sent in two
+  // shares, which are chosen randomly.
+  function void set_kmac_digest(bit [DIGEST_SIZE-1:0] value);
     bit [kmac_pkg::AppDigestW-1:0] share0;
     kmac_pkg::rsp_digest_t rsp_digest_h;
-    expected_digest = get_expected_digest();
+
     `DV_CHECK_STD_RANDOMIZE_FATAL(share0)
     rsp_digest_h.digest_share0 = share0;
-    rsp_digest_h.digest_share1 = rsp_digest_h.digest_share0 ^ expected_digest;
+    rsp_digest_h.digest_share1 = rsp_digest_h.digest_share0 ^ value;
     cfg.m_kmac_agent_cfg.add_user_digest_share(rsp_digest_h);
+  endfunction
+
+  // Configure the KMAC agent to respond with the ROM's expected digest if correct is as_expected
+  // and the wrong digest otherwise.
+  function void configure_kmac_digest(bit as_expected);
+    bit [DIGEST_SIZE-1:0] digest;
+
+    // Read the expected digest from the ROM.
+    digest = get_expected_digest();
+
+    if (!as_expected) begin
+      // We want to choose a digest that doesn't match. To do so, start with the expected digest and
+      // then xor with a random nonzero value.
+      bit [kmac_pkg::AppDigestW-1:0] mask;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, mask != 0;)
+      digest ^= mask;
+    end
+
+    set_kmac_digest(digest);
   endfunction
 
   // Wait for a fatal alert to be raised
