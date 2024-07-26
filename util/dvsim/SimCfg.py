@@ -82,6 +82,8 @@ class SimCfg(FlowCfg):
         # Set default sim modes for unpacking
         if args.gui:
             self.en_build_modes.append("gui")
+        if args.gui_debug:
+            self.en_build_modes.append("gui_debug")
         if args.waves is not None:
             self.en_build_modes.append("waves")
         else:
@@ -484,8 +486,8 @@ class SimCfg(FlowCfg):
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
 
-        # In GUI mode, only allow one test to run.
-        if self.gui and len(self.runs) > 1:
+        # In GUI mode or GUI with debug mode, only allow one test to run.
+        if (self.gui or self.gui_debug) and len(self.runs) > 1:
             self.runs = self.runs[:1]
             log.warning("In GUI mode, only one test is allowed to run. "
                         "Picking {}".format(self.runs[0].full_name))
