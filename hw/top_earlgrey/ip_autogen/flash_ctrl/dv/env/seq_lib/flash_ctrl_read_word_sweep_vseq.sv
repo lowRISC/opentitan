@@ -29,19 +29,15 @@ class flash_ctrl_read_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
 
     `DV_CHECK_RANDOMIZE_FATAL(this)
 
+    bank = rand_op.addr[OTFBankId];
     start_addr = rand_op.addr;
     max_addr = start_addr + InitializedMemBytes - 1;
+
     // It may be better to initialize the data right before each individual read.
-    begin
-      addr_t addr = start_addr;
-      addr[2] = 1'b0;
-      `uvm_info("read_word_sweep", $sformatf(
-                "Initializing data from addr:0x%x to:0x%x", addr, addr + InitializedMemBytes - 1),
-                UVM_MEDIUM)
-       for (; addr <= max_addr; addr += 8) begin
-         cfg.update_otf_mem_read_zone(rand_op.partition, rand_op.addr[OTFBankId], addr);
-       end
-    end
+    `uvm_info("read_word_sweep", $sformatf(
+              "Initializing data from addr:0x%x to:0x%x", start_addr, max_addr),
+              UVM_MEDIUM)
+    cfg.update_otf_mem_read_zone(rand_op.partition, bank, start_addr, max_addr);
 
     ctrl = rand_op;
     num = 1;
@@ -49,6 +45,7 @@ class flash_ctrl_read_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     addr = start_addr;
     repeat(20) begin
       addr_t end_addr = addr + num * mywd * 4 - 1;
+      // Don't read uninitialized memory to avoid trouble.
       if (end_addr > max_addr) break;
       ctrl.addr = addr;
       ctrl.otf_addr = addr;
