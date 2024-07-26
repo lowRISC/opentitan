@@ -4,4 +4,4 @@
 
 vsim testbench_asynch_astral -t 1ps -coverage  -voptargs=+acc -classdebug -suppress 3999 -suppress 8360 \
     -do "set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;" \
-    +SRAM=${SRAM} +BOOTMODE=${BOOTMODE} -sv_lib work-dpi/ariane_dpi
+    +SRAM=${SRAM} +BOOTMODE=${BOOTMODE} -sv_lib work-dpi/elfloader

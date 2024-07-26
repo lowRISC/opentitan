@@ -826,8 +826,6 @@ sources:
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/vip_security_island_soc.sv
-           - hw/tb/testbench.sv
-           - hw/tb/testbench_asynch.sv
            - hw/tb/testbench_asynch_astral.sv
 
 
@@ -840,6 +838,4 @@ sources:
            - hw/tb/util/jtag_intf.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
-           - hw/tb/testbench.sv
-           - hw/tb/testbench_asynch.sv
            - hw/tb/testbench_asynch_astral.sv

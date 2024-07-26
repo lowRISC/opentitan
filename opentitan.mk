@@ -20,6 +20,8 @@ BOOTMODE ?= 0
 QUESTA = questa-2022.3-bt
 IDMA_ROOT ?= $(shell $(BENDER) path idma)
 
+dpi-library    ?= work-dpi
+
 # Ensure half-built targets are purged
 .DELETE_ON_ERROR:
 
@@ -52,7 +54,7 @@ endef
 
 .PHONY: init build sim update clean secure_boot_jtag secure_boot_spi
 
-build: scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
+build: $(dpi-library)/elfloader.so scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
 	$(QUESTA) vsim -c -do 'source $(compile_script); quit'
 
 sim: build
@@ -64,6 +66,7 @@ update:
 clean:
 	rm -rf scripts/compile*
 	rm -rf work
+	rm -rf work-dpi
 	rm -rf *.log
 	rm -rf transcript
 	rm -rf modelsim.ini
@@ -101,3 +104,21 @@ $(OT_ROOT)/hw/tb/vips:
 	rm -rf model_tmp
 
 init: bender update scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
+
+# DPI
+dpi := $(patsubst hw/tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard hw/tb/dpi/*.cc))
+
+
+dpi_hdr := $(wildcard hw/tb/dpi/*.h)
+dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
+CFLAGS := -I$(QUESTASIM_HOME)/include         \
+          -I$(RISCV)/include                  \
+          -std=c++11 -Ihw/tb/dpi -O3
+
+$(dpi-library)/elfloader.o: $(dpi_hdr)
+	mkdir -p $(dpi-library)
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c  hw/tb/dpi/elfloader.cc -o $@
+
+$(dpi-library)/elfloader.so: $(dpi)
+	$(CXX) -shared -m64 -o $(dpi-library)/elfloader.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
+

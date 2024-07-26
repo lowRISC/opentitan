@@ -22,7 +22,7 @@ module testbench_asynch_astral ();
    import secure_subsystem_synth_pkg::*;
    import "DPI-C" function read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len);
-   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
+   import "DPI-C" context function byte read_section(input longint address, inout byte buffer[], input longint len);
 
  ////////////////////////////  Defines ////////////////////////////
 
@@ -606,7 +606,7 @@ module testbench_asynch_astral ();
 
       secd_sections[section_addr >> AxiWideByteOffset] = num_words;
       buffer = new[num_words * AxiWideBeWidth];
-      void'(read_section(section_addr, buffer));
+      void'(read_section(section_addr, buffer, section_len));
       for (int i = 0; i < num_words; i++) begin
         automatic logic [AxiWideBeWidth-1:0][7:0] word = '0;
         for (int j = 0; j < AxiWideBeWidth; j++) begin
