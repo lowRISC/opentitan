@@ -14,14 +14,20 @@ class flash_ctrl_write_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     flash_op_t ctrl;
     int num, bank;
     int mywd;
+    addr_t addr;
 
     // Don't select a partition defined as read-only
     cfg.seq_cfg.avoid_ro_partitions = 1'b1;
     `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
+    num = 1;
     mywd = fractions;
     `DV_CHECK_EQ(mywd, 2)
+    addr = ctrl.addr;
     repeat(10) begin
+      ctrl.addr = addr;
+      ctrl.otf_addr = addr;
       prog_flash(ctrl, bank, num, mywd);
+      addr += num * mywd * 4;
       mywd = (mywd % 16) + 2;
     end
   endtask
