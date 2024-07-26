@@ -21,25 +21,42 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
 
   // Send an OUT packet with the specified DATAx token to the DUT and check that it
   // receives the expected handshake response.
-  task send_and_check_packet(bit [3:0] ep, bit data_toggle, bit exp_ack,
+  task send_and_check_packet(bit [3:0] ep, bit data_toggle, bit exp_stored,
                              inout uvm_reg_data_t exp_out_data_toggles);
+    uvm_reg_data_t exp_rx_level;
+    uvm_reg_data_t rx_level;
+
     // Set up the OUT EP and supply a randomly-chosen buffer.
     `DV_CHECK_STD_RANDOMIZE_FATAL(out_buffer_id);
     configure_out_trans(ep);
 
-    send_prnd_out_packet(ep, data_toggle ? PidTypeData1 : PidTypeData0, 1, 0);
+    // Read the RX FIFO level.
+    csr_rd(.ptr(ral.usbstat.rx_depth), .value(exp_rx_level));
+    if (exp_stored) exp_rx_level++;
 
-    // Check that the transaction received the expected response, which should either be ACK
-    // for an accepted packet (matching data toggle) or no response (packet dropped).
-    if (exp_ack) begin
-      check_response_matches(PidTypeAck);
+    send_prnd_out_packet(ep, data_toggle ? PidTypeData1 : PidTypeData0, .randomize_length(1),
+                         .num_of_bytes(0));
 
+    // Check that the transaction received the expected response, which should be ACK in every case.
+    check_response_matches(PidTypeAck);
+
+    // Check the RX FIFO level.
+    csr_rd(.ptr(ral.usbstat.rx_depth), .value(rx_level));
+    `DV_CHECK_EQ(rx_level, exp_rx_level)
+
+    // An accepted packet (matching data toggle) should have been stored in the RX FIFO; a mismatch
+    // should still have produced an ACK response but no stored packet (regarded as a resend of an
+    // earlier packet).
+    if (exp_stored) begin
       // Check the contents of the packet buffer memory against the OUT packet that was sent.
       check_rx_packet(ep, 1'b0, out_buffer_id, m_data_pkt.data);
-
+      // Only a packet that is stored should cause the data toggle bit to advance.
       exp_out_data_toggles[ep] ^= 1;
     end else begin
-      // We use the FIFO reset here to prevent the Available OUT Buffer FIFO overflowing later.
+      // We use the FIFO reset here to prevent the Available OUT Buffer FIFO overflowing later, and
+      // to make it easier to be certain which buffer will be used for future stored packets; no
+      // lingering entries in the Av OUT FIFO.
+      //
       // Note: this functionality is not present in the engineering sample.
       csr_wr(.ptr(ral.fifo_ctrl.avout_rst), .value(1));
     end
@@ -50,7 +67,8 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
                          inout uvm_reg_data_t exp_in_data_toggles);
     data_pkt in_data;
 
-    // Present an IN buffer for collection.
+    // Present an IN buffer for collection; we're using `out_buffer_id` here because we're
+    // attempting to collect from the buffer to which we just transmitted.
     configure_in_trans(ep, out_buffer_id, exp_data.size());
 
     // Perform the IN transaction.
@@ -206,10 +224,6 @@ class usbdev_data_toggle_restore_vseq extends usbdev_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ep_in,  ep_in  inside {[0:NEndpoints-1]};)
       // Decide whether we wish to match or mismatch the expected toggle.
       `DV_CHECK_STD_RANDOMIZE_FATAL(out_provoke_mismatch);
-      // TODO: the usb20_driver presently cannot cope with non-response from the device, so we must
-      //       not provoke a data toggle mismatch presently; lose this when usb20_driver has been
-      //       extended.
-      out_provoke_mismatch = 0;
       // Decide upon our response to an IN DATA packet.
       `DV_CHECK_STD_RANDOMIZE_FATAL(in_rsp);
 
