@@ -1146,9 +1146,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Increase outstanding table entry.
   function void inc_otd_tbl(bit bank, addr_t addr, flash_dv_part_e part);
     rd_cache_t ent;
-    addr[2:0] = 3'h0;
     ent.bank = bank;
-    ent.addr = addr;
+    ent.addr = align_to_flash_word(addr);
     ent.part = part;
     if (!derr_otd.exists(ent)) begin
       derr_otd[ent] = 1;
@@ -1160,9 +1159,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Descrease outstanding table entry.
   function void dec_otd_tbl(bit bank, addr_t addr, flash_dv_part_e part);
     rd_cache_t ent;
-    addr[2:0] = 3'h0;
     ent.bank = bank;
-    ent.addr = addr;
+    ent.addr = align_to_flash_word(addr);
     ent.part = part;
     if (!derr_otd.exists(ent)) begin
       `uvm_error("dec_otd_tbl", $sformatf("addr %x %s doesn't exits", addr, part.name))
