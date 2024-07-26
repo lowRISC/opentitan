@@ -1188,46 +1188,49 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual function void load_otf_mem_page(flash_dv_part_e part,
                                           int bank,
                                           int page);
-    addr_t addr;
+    addr_t addr = '0;
     addr[OTFBankId-1:11] = page;
-    for (int i = 0; i < 256; i++) begin
-      update_otf_mem_read_zone(part, bank, addr);
-      addr += 8;
-    end
+    update_otf_mem_read_zone(part, bank, addr, addr + BytesPerPage - 1);
   endfunction : load_otf_mem_page
 
-  function void update_otf_mem_read_zone(flash_dv_part_e part, int bank, addr_t addr);
-    flash_otf_item item;
-    int page;
-    bit [BankAddrW-1:0] mem_addr;
+  function void update_otf_mem_read_zone(flash_dv_part_e part, int bank,
+                                         addr_t start_addr, addr_t end_addr);
+    start_addr = align_to_flash_word(start_addr);
+    `uvm_info(`gfn, $sformatf(
+              "mem_bkdr initializing from 0x%x to 0x%x per attributes", start_addr, end_addr),
+              UVM_MEDIUM)
+    for (addr_t addr = start_addr; addr <= end_addr; addr += 8) begin
+      flash_otf_item item;
+      int page;
+      bit [BankAddrW-1:0] mem_addr;
 
-    `uvm_create_obj(flash_otf_item, item)
-    item.dq.push_back($urandom());
-    item.dq.push_back($urandom());
-    if (part == FlashPartData) begin
-      addr[OTFBankId] = bank;
-      page = addr2page(addr);
-      item.region = get_region(page, 0);
-      // back to per bank addr
-      addr[OTFBankId] = 0;
-    end else begin
-      page = addr2page(addr);
-      item.region = get_region_from_info(mp_info[bank][part>>1][page]);
+      `uvm_create_obj(flash_otf_item, item)
+      item.dq.push_back($urandom());
+      item.dq.push_back($urandom());
+      if (part == FlashPartData) begin
+        addr_t pd_addr = addr;
+        pd_addr[OTFBankId] = bank;
+        page = addr2page(pd_addr);
+        item.region = get_region(page, 0);
+      end else begin
+        page = addr2page(addr);
+        item.region = get_region_from_info(mp_info[bank][part>>1][page]);
+      end
+      item.page = page;
+      `uvm_info(`gfn, $sformatf(
+                "update_otf_mem_read_zone part:%0d, bank:%0d addr:0x%08x orig data:0x%0x%0x",
+                part, bank, addr, item.dq[1], item.dq[0]), UVM_HIGH)
+      item.scramble(otp_addr_key, otp_data_key, addr, 0);
+      `uvm_info(`gfn, $sformatf(
+                "update_otf_mem_read_zone part:%0d, bank:%0d addr:0x%08x scr data:0x%x",
+                part, bank, addr, item.fq[0]), UVM_HIGH)
+
+      mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
+      // address should be mem_addr
+      mem_addr = addr >> 3;
+      if (part == FlashPartData) otf_scb_h.data_mem[bank][mem_addr] = item.fq[0];
+      else otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
     end
-    item.page = page;
-    `uvm_info(`gfn, $sformatf(
-              "update_otf_mem_read_zone part:%0d, bank:%0d addr:0x%08x orig data:0x%0x%0x",
-              part, bank, addr, item.dq[1], item.dq[0]), UVM_HIGH)
-    item.scramble(otp_addr_key, otp_data_key, addr, 0);
-    `uvm_info(`gfn, $sformatf(
-              "update_otf_mem_read_zone part:%0d, bank:%0d addr:0x%08x scr data:0x%x",
-              part, bank, addr, item.fq[0]), UVM_HIGH)
-
-    mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
-    // address should be mem_addr
-    mem_addr = addr >> 3;
-    if (part == FlashPartData) otf_scb_h.data_mem[bank][mem_addr] = item.fq[0];
-    else otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
   endfunction : update_otf_mem_read_zone
 
   // Update memory with random data through backdoor.

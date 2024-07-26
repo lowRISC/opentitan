@@ -543,6 +543,10 @@ package flash_ctrl_env_pkg;
     end
   endfunction
 
+  function automatic addr_t align_to_flash_word(addr_t addr);
+     return {addr[$bits(addr_t) - 1 : FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
+  endfunction
+
   // Round an address down to a program resolution window.
   function automatic addr_t round_to_prog_resolution(addr_t addr);
     return addr - (addr & (BusPgmResBytes - 1));
