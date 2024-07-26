@@ -19,6 +19,15 @@ class flash_ctrl_read_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
 
   localparam int InitializedMemBytes = 1024;
 
+  local function void initialize_memory(flash_dv_part_e partition, int bank,
+                                        otf_addr_t start_addr, otf_addr_t end_addr);
+    `uvm_info("read_word_sweep", $sformatf(
+              "Initializing bank:%0d %s from addr:0x%x to:0x%x",
+              bank, partition.name, start_addr, end_addr),
+              UVM_MEDIUM)
+    cfg.update_otf_mem_read_zone(partition, bank, start_addr, end_addr);
+  endfunction
+
   virtual task body();
     flash_op_t ctrl;
     addr_t start_addr, max_addr;
@@ -34,10 +43,7 @@ class flash_ctrl_read_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     max_addr = start_addr + InitializedMemBytes - 1;
 
     // It may be better to initialize the data right before each individual read.
-    `uvm_info("read_word_sweep", $sformatf(
-              "Initializing data from addr:0x%x to:0x%x", start_addr, max_addr),
-              UVM_MEDIUM)
-    cfg.update_otf_mem_read_zone(rand_op.partition, bank, start_addr, max_addr);
+    initialize_memory(rand_op.partition, bank, start_addr, max_addr);
 
     ctrl = rand_op;
     num = 1;

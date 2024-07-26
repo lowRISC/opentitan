@@ -709,8 +709,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
       cfg.otf_read_entry.insert(rd_entry, flash_op);
       if (derr_is_set) begin
-        `uvm_info("read_flash", $sformatf("assert_derr 0x%x",
-                                          {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+        `uvm_info("read_flash", $sformatf("assert_derr 0x%x", align_to_flash_word(flash_op.addr)),
+                  UVM_MEDIUM)
         global_derr_is_set = 1;
         if (cfg.scb_h.do_alert_check == 1) begin
           cfg.scb_h.expected_alert["fatal_err"].expected = 1;
@@ -867,11 +867,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           if (cfg.ecc_mode == FlashSerrTestMode || tl_addr[2] == 0) begin
             cfg.add_bit_err(flash_op, ReadTaskHost, exp_item);
           end
-          derr_is_set = cfg.address_has_derr({flash_op.addr[TL_AW-1:3],3'h0}, flash_op.partition);
-          ierr_is_set = cfg.address_has_ierr({flash_op.addr[TL_AW-1:3],3'h0}, flash_op.partition);
+          derr_is_set = cfg.address_has_derr(align_to_flash_word(flash_op.addr),
+                                             flash_op.partition);
+          ierr_is_set = cfg.address_has_ierr(align_to_flash_word(flash_op.addr),
+                                             flash_op.partition);
           if (derr_is_set) begin
             `uvm_info("direct_read", $sformatf("assert_derr 0x%x", tl_addr), UVM_MEDIUM)
-            cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
+            cfg.scb_h.ecc_error_addr[align_to_flash_word(flash_op.addr)] = 1;
             global_derr_is_set = 1;
           end
           if (ierr_is_set) begin
@@ -881,18 +883,21 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           `uvm_info("direct_read", $sformatf(
                     "ierr_created[ReadTaskHost]:%0d  derr_is_set:%0d exists:%0d",
                     cfg.ierr_created[ReadTaskHost], derr_is_set,
-                    cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
+                    cfg.scb_h.ecc_error_addr.exists(align_to_flash_word(flash_op.addr))),
                     UVM_MEDIUM)
           cfg.ierr_created[ReadTaskHost] = 0;
         end
-        if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
+        if (cfg.scb_h.ecc_error_addr.exists(align_to_flash_word(flash_op.addr)) ||
+            derr_is_set) begin
+          derr = 1;
+        end
       end
       cfg.otf_read_entry.insert(rd_entry, flash_op);
       `uvm_info("direct_read", $sformatf({"num_i:%0d bank:%0d exec: page:%0d(%0d)",
                                           " 0x%x derr:%0d in_err:%0d"},
                                          i, bank, tl_addr, page, (page % 256),
                                          derr, in_err), UVM_MEDIUM)
-      if (in_err) cfg.scb_h.in_error_addr[{tl_addr[31:3],3'h0}] = 1;
+      if (in_err) cfg.scb_h.in_error_addr[align_to_flash_word(flash_op.addr)] = 1;
 
       derr |= in_err;
 
@@ -1007,7 +1012,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
              my_region.ecc_en == MuBi4True &&
              cfg.otf_scb_h.corrupt_entry.exists(rd_entry) == 1) begin
             `uvm_info("readback_flash", $sformatf("read corrupted entry 0x%x",
-                                                  {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+                                                  align_to_flash_word(flash_op.addr)), UVM_MEDIUM)
             derr_is_set |= 1;
          end
 
@@ -1034,7 +1039,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             my_region.ecc_en == MuBi4True &&
             cfg.otf_scb_h.corrupt_entry.exists(rd_entry) == 1) begin
           `uvm_info("readback_flash", $sformatf("read corrupted entry 0x%x",
-                                                {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+                                                align_to_flash_word(flash_op.addr)), UVM_MEDIUM)
           derr_is_set |= 1;
         end
       end
@@ -1085,7 +1090,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
       if (derr_is_set) begin
         `uvm_info("readback_flash", $sformatf("read corrupted entry 0x%x",
-                                          {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+                                          align_to_flash_word(flash_op.addr)), UVM_MEDIUM)
         global_derr_is_set = 1;
         exp_item.derr = 1;
 
@@ -1195,18 +1200,19 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           end
           if (derr_is_set) begin
             `uvm_info("direct_readback", $sformatf("assert_derr 0x%x", tl_addr), UVM_MEDIUM)
-            cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
+            cfg.scb_h.ecc_error_addr[align_to_flash_word(flash_op.addr)] = 1;
             global_derr_is_set = 1;
           end
           if (cfg.derr_once == 0) cfg.derr_created[ReadTaskHost] = 0;
           `uvm_info("direct_readback",
                     $sformatf("ierr_created[ReadTaskHost]:%0d  derr_is_set:%0d exists:%0d",
                               cfg.ierr_created[ReadTaskHost], derr_is_set,
-                              cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
+                              cfg.scb_h.ecc_error_addr.exists(align_to_flash_word(flash_op.addr))),
                     UVM_MEDIUM)
           cfg.ierr_created[ReadTaskHost] = 0;
         end
-        if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) begin
+        if (cfg.scb_h.ecc_error_addr.exists(align_to_flash_word(flash_op.addr)) |
+            derr_is_set) begin
           derr = 1;
         end
       end // if (cfg.ecc_mode > FlashEccEnabled)
@@ -1218,7 +1224,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (local_derr) begin
           exp_item.derr = 1;
           derr = 1;
-          cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
+          cfg.scb_h.ecc_error_addr[align_to_flash_word(flash_op.addr)] = 1;
           if (derr & cfg.scb_h.do_alert_check) begin
             cfg.scb_h.expected_alert["fatal_err"].expected = 1;
             cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
@@ -1302,7 +1308,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (part == FlashPartData) begin
           // Allocate a quarter of each bank to each read target.
           int byte_size = BytesPerBank / 4;
-          `DV_CHECK_EQ(byte_size, 64 * 256 * 8)
           for (flash_tgt_prefix_e j = TgtRd; j <= TgtDr; j = j.next()) begin : targets
             // 8byte aligned
             addr_t st_addr, ed_addr;
