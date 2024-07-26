@@ -31,3 +31,4 @@ The OpenTitan Technical Committee membership is:
 * Tim Trippel
 * Miles Dai
 * Shimeon Greenberg
+* Jade Philipoom
