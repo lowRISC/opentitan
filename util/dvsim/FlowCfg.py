@@ -52,6 +52,9 @@ class FlowCfg():
         self.branch = args.branch
         self.job_prefix = args.job_prefix
         self.gui = args.gui
+        self.gui_debug = args.gui_debug
+        if self.gui_debug:
+            self.gui = 1
 
         self.interactive = args.interactive
 
@@ -370,8 +373,8 @@ class FlowCfg():
         '''
         self.prune_selected_cfgs()
 
-        # GUI or Interactive mode is allowed only for one cfg.
-        if (self.gui or self.interactive) and len(self.cfgs) > 1:
+        # GUI, GUI debug or Interactive mode is allowed only for one cfg.
+        if (self.gui or self.gui_debug or self.interactive) and len(self.cfgs) > 1:
             log.fatal("In GUI mode, only one cfg can be run.")
             sys.exit(1)
 

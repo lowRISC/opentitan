@@ -137,7 +137,7 @@ class Deploy():
         """
         self._extract_attrs(self.sim_cfg.__dict__)
 
-        # Enable GUI mode.
+        # Enable GUI mode, also when GUI debug mode has been invoked.
         self.gui = self.sim_cfg.gui
 
         # Output directory where the artifacts go (used by the launcher).
