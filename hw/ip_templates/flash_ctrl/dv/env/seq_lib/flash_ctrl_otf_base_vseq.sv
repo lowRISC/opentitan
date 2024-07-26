@@ -1311,9 +1311,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             st_addr = 'h0;
             st_addr[18:17] = cfg.tgt_pre[part][j];
             ed_addr = st_addr + byte_size - 1;
-            for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-              cfg.update_otf_mem_read_zone(part, i, addr);
-            end
+            cfg.update_otf_mem_read_zone(part, i, st_addr, ed_addr);
             add_address_range(i, part, st_addr, ed_addr);
             `uvm_info("flash_otf_init",
                       $sformatf("part:%s pre:%s bank:%0d st:%x ed:%x",
@@ -1333,9 +1331,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             for (int k = 0; k < InfoTypeSize[part>>1]; k++) begin : pages
               st_addr[DVPageMSB:DVPageLSB] = k; // page
               ed_addr = st_addr + byte_size - 1;
-              for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-                cfg.update_otf_mem_read_zone(part, i, addr);
-              end
+              cfg.update_otf_mem_read_zone(part, i, st_addr, ed_addr);
               add_address_range(i, part, st_addr, ed_addr);
               `uvm_info("flash_otf_init",
                         $sformatf("part:%s pre:%s bank:%0d page:%0d st:%x ed:%x",
