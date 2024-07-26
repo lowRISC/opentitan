@@ -10,7 +10,6 @@
 //                --rnd_cnst_seed \
 //                1017106219537032642877583828875051302543807092889754935647094601236425074047
 
-
 module chip_earlgrey_asic #(
   parameter bit SecRomCtrlDisableScrambling = 1'b0
 ) (
