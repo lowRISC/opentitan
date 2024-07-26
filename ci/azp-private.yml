@@ -15,10 +15,7 @@ trigger:
   tags:
     include:
     - "*"
-pr:
-  branches:
-    include:
-    - '*'
+pr: none
 
 # The runner used for private CI enforces the use of the template below. All
 # build steps need to be placed into the template.

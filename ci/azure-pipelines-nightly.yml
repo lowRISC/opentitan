@@ -16,7 +16,10 @@ schedules:
   always: True
 
 trigger: none
-pr: none
+pr:
+  branches:
+    include:
+    - "*"
 
 variables:
   # If updating VERILATOR_VERSION, TOOLCHAIN_VERSION, update
