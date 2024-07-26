@@ -203,6 +203,16 @@
       run_opts: ["-gui"]
     }
     {
+      name: xcelium_gui_debug
+      is_sim_mode: 1
+      build_opts: ["-createdebugdb", "-access +c", "-uvmlinedebug", "-linedebug",
+                   "+uvm_set_config_int=*,recording_detail,1"]
+      run_opts: ["-gui",
+                 "-input '@database -open waves -into waves.shm -default; probe -create \n"
+                 "tb -depth all -packed 32k -unpacked 32k -all -dynamic -database waves'",
+                 "+uvm_set_config_int=*,recording_detail,1"]
+    }
+    {
       name: xcelium_waves
       is_sim_mode: 1
       build_opts: ["-access +c"]

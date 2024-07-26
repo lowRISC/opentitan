@@ -271,6 +271,13 @@
       run_opts: ["-gui", "-l {run_dir}/simv.log"]
     }
     {
+      name: vcs_gui_debug
+      // TODO as done for Xcelium see PR #24156
+      is_sim_mode: 1
+      build_opts: ["-debug_access+all+reverse"]
+      run_opts: ["-gui", "-l {run_dir}/simv.log"]
+    }
+    {
       name: vcs_waves
       is_sim_mode: 1
       build_opts: [// Enable generating Verdi Knowledge Database

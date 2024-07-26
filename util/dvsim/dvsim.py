@@ -443,6 +443,15 @@ def parse_args():
                       help=('Run the flow in GUI mode instead of the batch '
                             'mode.'))
 
+    disg.add_argument("--gui-debug",
+                      "-gd",
+                      action='store_true',
+                      help=('Run the flow in GUI mode and enable tool debug '
+                            'features such as: breakpoints, live values, '
+                            'transactions recording... (works with Xcelium '
+                            'only for the moment). '
+                            '[!] Has a significant performance impact.'))
+
     disg.add_argument("--interactive",
                       action='store_true',
                       help=('Run the job in non-GUI interactive mode '
