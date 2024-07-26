@@ -25,6 +25,8 @@ hw/ip/*/rtl/*
 hw/ip_templates/*/rtl/*
 hw/top_earlgrey/ip/*/rtl/*
 hw/top_earlgrey/ip_autogen/*/rtl/*
+hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
+hw/top_earlgrey/rtl/autogen/chip_earlgrey_asic.sv
 
 # Vendored IP
 hw/vendor/lowrisc_ibex/rtl/*
