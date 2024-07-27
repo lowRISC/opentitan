@@ -285,9 +285,16 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
         // Sign with SPX+.
         if let Some(key) = spx_private_key {
-            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
-                &image.map_signed_region(|buf| key.sign(self.domain, buf))??,
-            )?)?;
+            let sig_bytes = match self.domain {
+                SpxDomain::None | SpxDomain::Pure => {
+                    image.map_signed_region(|buf| key.sign(self.domain, buf))??
+                }
+                SpxDomain::PreHashedSha256 => {
+                    let digest = image.compute_digest()?.to_le_bytes();
+                    key.sign(self.domain, &digest)?
+                }
+            };
+            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(&sig_bytes)?)?;
         }
 
         // Offline signing takes place if signatures are provided.
