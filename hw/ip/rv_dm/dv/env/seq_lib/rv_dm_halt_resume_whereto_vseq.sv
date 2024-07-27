@@ -59,7 +59,8 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
     dm::command_t cmd;
 
     ar_cmd.aarsize  = 3'h2;
-    ar_cmd.postexec = 1'b1;
+    ar_cmd.postexec = $urandom_range(0, 1);
+    ar_cmd.transfer = $urandom_range(0, 1);
     ar_cmd.regno    = regno;
 
     cmd.cmdtype = dm::AccessRegister;
