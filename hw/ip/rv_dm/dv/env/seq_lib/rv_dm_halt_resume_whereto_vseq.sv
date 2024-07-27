@@ -53,14 +53,28 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
                         rdata, prog_buf_jal, abs_cmd_jal))
   endtask
 
-  // Construct a "read register" abstract command.
-  function bit [31:0] read_register_cmd(bit [15:0] regno);
+  // Construct an "access register" abstract command.
+  function bit [31:0] access_register_cmd();
     dm::ac_ar_cmd_t ar_cmd = '0;
-    dm::command_t cmd;
+    dm::command_t   cmd;
+    bit [3:0]       regno;
+    bit             write, transfer;
+
+    regno = $urandom_range(0, 16'h3fff);
+
+    // We want to generate writes with or without the transfer flag. We also want to generate reads
+    // (and occasionally set the transfer flag, even though it won't actually do anything)
+    write = $urandom_range(0, 1);
+    randcase
+      2:       transfer = 1'b1;
+      write*2: transfer = 1'b0;
+      1:       transfer = 1'b0;
+    endcase
 
     ar_cmd.aarsize  = 3'h2;
     ar_cmd.postexec = $urandom_range(0, 1);
-    ar_cmd.transfer = $urandom_range(0, 1);
+    ar_cmd.transfer = transfer;
+    ar_cmd.write    = write;
     ar_cmd.regno    = regno;
 
     cmd.cmdtype = dm::AccessRegister;
@@ -73,8 +87,8 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
 
     request_halt();
 
-    // Send an abstract command over DMI (read a register)
-    csr_wr(.ptr(jtag_dmi_ral.command), .value(read_register_cmd(16'h40)));
+    // Send an abstract command over DMI (access a register)
+    csr_wr(.ptr(jtag_dmi_ral.command), .value(access_register_cmd()));
 
     check_busy(1'b1);
 
