@@ -90,3 +90,6 @@ uart
 vsim.wlf
 work/
 hw/tb/vips
+Bender.lock
+*.vstf
+work-dpi
