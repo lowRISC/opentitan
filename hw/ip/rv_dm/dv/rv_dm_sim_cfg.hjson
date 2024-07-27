@@ -43,6 +43,8 @@
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/rv_dm/dv/cov/rv_dm_cov_excl.el"]
+
   overrides: [
     {
       // This sets the width of UVM data (UVM_REG_DATA_WIDTH) to sufficiently large value. RV_DM DV
