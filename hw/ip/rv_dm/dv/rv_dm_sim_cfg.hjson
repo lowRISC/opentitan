@@ -232,7 +232,7 @@
     {
       name: rv_dm_halt_resume_whereto
       uvm_test_seq: rv_dm_halt_resume_whereto_vseq
-      reseed: 2
+      reseed: 8
     }
     {
       name: rv_dm_sba_debug_disabled
