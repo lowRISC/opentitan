@@ -18,6 +18,36 @@ class rv_dm_dmi_failed_op_vseq extends rv_dm_base_vseq;
     return ret;
   endfunction
 
+  // Send a DMI operation and abort it by issuing trst_n. This will cancel the operation, so it will
+  // have no effect.
+  task send_interrupted_dmi_operation(jtag_dmi_op_req_e op);
+    bit [6:0] data0_addr = 4;
+
+    // Issue a JTAG transaction that writes to the dmi register to request a DMI operation that
+    // accesses the data0 register (either reading it or writing a random value)
+    csr_wr(.ptr(jtag_dtm_ral.dmi),
+           .value(make_dmi_reg_op(data0_addr, $urandom, op)),
+           .blocking(1));
+
+    // At this point, we've just finished requesting the DMI operation and are on the negedge of
+    // tck. The TAP FSM has just got back to RunTestIdle and state_q in dmi_jtag will be Read or
+    // Write.
+    //
+    // Inject a trst_n reset. This will jump state_q back to Idle. This reset will also cause
+    // dmi_jtag to send dmi_rst_n, which tells dm_top to drop the transaction. In fact, any DMI
+    // write (if op is DmiOpWrite) will be cancelled because the DMI reset gets to dm_csrs faster
+    // than the CDC synchronisation for the operation, but it shouldn't really matter.
+    cfg.m_jtag_agent_cfg.vif.do_trst_n();
+
+    // At this point, trst_n will no longer be asserted, but we don't know that the JTAG agent
+    // config has noticed yet. Wait until its in_reset flag drops, to avoid the next JTAG operation
+    // exiting early.
+    wait(!cfg.m_jtag_agent_cfg.in_reset);
+
+    // Clear the DMI error by writing 1 to the dmireset field of the dtmcs register.
+    csr_wr(.ptr(jtag_dtm_ral.dtmcs.dmireset), .value(1'b1), .blocking(1));
+  endtask
+
   task body();
     bit [6:0] data0_addr = 4;
 
@@ -30,6 +60,12 @@ class rv_dm_dmi_failed_op_vseq extends rv_dm_base_vseq;
 
     // Write a known value to data0, which we will read back.
     csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(data0_value0));
+
+    // As an extra check (since we're doing a detailed investigation of DMI handling in this vseq),
+    // send and abort a DMI operation. This steps through a particular edge in the jtag_dmi FSM. We
+    // "test that it works" by checking this doesn't interfere with the DMI operations that will
+    // follow.
+    send_interrupted_dmi_operation($urandom_range(0, 1) ? DmiOpRead : DmiOpWrite);
 
     // To try to generate a DMI busy error, we start by sending an arbitrary DMI request. We don't
     // want to use jtag_dmi_reg_frontdoor, because that driver has some intentional waits to avoid
