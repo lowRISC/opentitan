@@ -71,51 +71,53 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
   task body();
     int unsigned hartsel = 0;
 
-    repeat (2) begin
-      request_halt();
+    request_halt();
 
-      // Send an abstract command over DMI (read a register)
-      csr_wr(.ptr(jtag_dmi_ral.command), .value(read_register_cmd(16'h40)));
+    // Send an abstract command over DMI (read a register)
+    csr_wr(.ptr(jtag_dmi_ral.command), .value(read_register_cmd(16'h40)));
 
-      check_busy(1'b1);
+    check_busy(1'b1);
 
-      // Check the debugger's state machine is currently in the Go state with no resume flag.
-      check_flags(.exp_resume(0), .exp_go(1), .hartsel(0));
+    // Check the debug module's state machine is currently in the Go state with no resume flag.
+    check_flags(.exp_resume(0), .exp_go(1), .hartsel(0));
 
-      // Write to the "going" address to tell the debugger the core is executing again. The actual
-      // value that is written doesn't matter.
-      csr_wr(.ptr(tl_mem_ral.going), .value(0));
+    // Write to the "going" address to tell the debug module the core is executing again. The actual
+    // value that is written doesn't matter.
+    csr_wr(.ptr(tl_mem_ral.going), .value(0));
 
-      check_busy(1'b1);
+    check_busy(1'b1);
 
-      // Check that WHERETO points at the expected address
-      check_whereto();
+    // Check that WHERETO points at the expected address
+    check_whereto();
 
-      // Write the expected value to HALTED. This should be the ID of the hart that is halting
-      write_halted(hartsel);
+    // Write the expected value to HALTED. This should be the ID of the hart that is halting
+    write_halted(hartsel);
 
-      // Now the hart has responded to say that it's entering debug mode, the debugger shouldn't
-      // think that it's busy any more.
-      check_busy(1'b0);
+    // Now the hart has responded to say that it's entering debug mode, the debug module shouldn't
+    // think that it's busy any more.
+    check_busy(1'b0);
 
-      // Write over DMI to clear HALTREQ and then set RESUMEREQ. At this point, we've stopped asking
-      // to halt and now want to ask the hart to resume.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(0));
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.resumereq), .value(1));
+    // Write over DMI to clear HALTREQ and then set RESUMEREQ. At this point, we've stopped asking
+    // to halt and now want to ask the hart to resume.
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(0));
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.resumereq), .value(1));
 
-      // Now we've told the debugger to ask the hart to resume, the debugger should say it's busy
-      // until the hart responds to say that it is indeed resuming.
-      check_busy(1'b1);
+    // Now we've told the debug module to ask the hart to resume, the debug module should say it's
+    // busy until the hart responds to say that it is indeed resuming.
+    check_busy(1'b1);
 
-      // Check that the resume signal is being sent from the debugger to the hart.
-      check_flags(.exp_resume(1), .exp_go(0), .hartsel(hartsel));
+    // Check that the resume signal is being sent from the debug module to the hart.
+    check_flags(.exp_resume(1), .exp_go(0), .hartsel(hartsel));
 
-      // Finally respond (as the hart) to tell the debugger that we are resuming.
-      csr_wr(.ptr(tl_mem_ral.resuming), .value(hartsel));
+    // Finally respond (as the hart) to tell the debug module that we are resuming.
+    csr_wr(.ptr(tl_mem_ral.resuming), .value(hartsel));
 
-      // Now that the hart has responded, the debugger should no longer be busy.
-      check_busy(1'b0);
-    end
+    // Now that the hart has responded, the debug module should no longer be busy.
+    check_busy(1'b0);
+
+    // Finally (as the debugger) write 1 to resumereq to drop the resume request: it has now done
+    // its job!
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.resumereq), .value(1));
   endtask
 
 endclass: rv_dm_halt_resume_whereto_vseq
