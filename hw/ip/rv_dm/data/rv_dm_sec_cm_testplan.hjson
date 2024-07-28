@@ -91,7 +91,36 @@
     }
     {
       name: sec_cm_dm_en_ctrl_lc_gated
-      desc: "Verify the countermeasure(s) DM_EN.CTRL.LC_GATED."
+      desc: '''
+        Verify the countermeasure(s) DM_EN.CTRL.LC_GATED.
+
+        The multibit nature of the debug enable signal is covered in
+        sec_cm_lc_hw_debug_en_intersig_mubi. However, this testpoint doesn't address the way there
+        are separate buffered copies of the enable signal. This testpoint addresses that.
+
+        There are five copies of the lifecycle enable signal:
+
+        - LcEnFetch controls whether hart fetch requests the debug module's memory, which are made
+          over TL, is relayed to the debug module. (This is implemented with the en_ifetch_i signal
+          in tlul_adapter_reg).
+
+        - LcEnRom controls whether hart access to debug module's memory is possible at all, gating
+          TL transactions.
+
+        - LcEnSba controls whether SBA (system bus access) transactions are relayed from the debug
+          module to the TL bus.
+
+        - LcEnDebugReq controls whether a debug request from the debug module (which ultimately will
+          have come from a DMI command) gets relayed to the hart.
+
+        - LcEnResetReq controls whether a request for ndmreset from the debug module is relayed to
+          the rest of the system.
+
+        These are buffered from each other to make sure that corrupting one won't affect the other
+        copies. With debug disabled, force one of the copies. Verify that, while this feature is now
+        active, none of the other features become active.
+
+      '''
       stage: V2S
       tests: []
     }
