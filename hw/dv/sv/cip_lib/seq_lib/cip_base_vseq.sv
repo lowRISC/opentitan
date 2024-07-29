@@ -687,7 +687,7 @@ class cip_base_vseq #(
 
     run_seq_with_rand_reset_vseq(.seq(create_seq_by_name(stress_seq_name)),
                                  .num_times(num_times),
-                                 .reset_delay_bound(10_000_000));
+                                 .reset_delay_bound(100_000));
   endtask
 
   // Some blocks needs input ports and status / intr csr clean up
