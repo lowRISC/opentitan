@@ -248,6 +248,9 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
                                           flash_op_data.size == flash_op.num_words;)
     `uvm_info("do_mp_reg", $sformatf("flash_op: %p", flash_op), UVM_MEDIUM)
     bank = flash_op.addr[OTFBankId];
+    if  (flash_op.partition != FlashPartData) begin
+      illegal_trans |= check_info_part(flash_op, "check_info_tran");
+    end
     // For ctrl read, you have to validate per Qword
     if (flash_op.op == FlashOpRead) begin
       int is_odd = flash_op.addr[2];
@@ -266,7 +269,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
         end else begin
           page = cfg.addr2page(flash_op.addr[OTFBankId-1:0]);
           my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
-          illegal_trans |= check_info_part(flash_op, "read_flash");
         end
         illegal_trans |= validate_flash_op(flash_op, my_region);
         flash_op.addr += 8;
@@ -278,7 +280,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
         end else begin
           page = cfg.addr2page(flash_op.otf_addr);
           my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
-          illegal_trans |= check_info_part(flash_op, "read_flash");
         end
         illegal_trans |= validate_flash_op(flash_op, my_region);
       end // if (tail)
