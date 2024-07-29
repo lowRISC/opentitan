@@ -8,11 +8,12 @@ description: "TL-UL Lifecycle Gate"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:assert
-      - lowrisc:tlul:common
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:assert
       - lowrisc:prim:blanker
+      - lowrisc:prim:lc_sync
       - lowrisc:prim:sparse_fsm
+      - lowrisc:tlul:common
     files:
       - rtl/tlul_lc_gate.sv
     file_type: systemVerilogSource
