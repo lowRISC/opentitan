@@ -191,7 +191,37 @@ static void chip_sw_reset(void) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(uint32_t *exc_info) { interrupt_serviced = true; }
+void ottf_external_isr(uint32_t *exc_info) {
+  dif_rv_plic_irq_id_t irq_id;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
+
+  // Only handle `alert_handler` interrupts.
+  top_earlgrey_plic_peripheral_t peripheral =
+      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralAlertHandler);
+
+  // Check whether the alert was caused by the `FlashCtrlFatalErr` alert which
+  // we must ignore on FPGAs.
+  if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
+    bool is_cause;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, kTopEarlgreyAlertIdFlashCtrlFatalErr, &is_cause));
+    if (is_cause) {
+      CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+          &alert_handler, kTopEarlgreyAlertIdFlashCtrlFatalErr));
+      return;
+    }
+  }
+
+  interrupt_serviced = true;
+
+  // Acknowledge and complete the interrupt.
+  uint32_t alert_handler_irq = irq_id -
+           (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa;
+  CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, alert_handler_irq));
+
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+}
 
 bool test_main(void) {
   init_peripherals();
