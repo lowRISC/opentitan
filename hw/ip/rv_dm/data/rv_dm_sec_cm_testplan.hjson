@@ -122,7 +122,7 @@
 
       '''
       stage: V2S
-      tests: []
+      tests: ["rv_dm_buffered_enable"]
     }
     {
       name: sec_cm_sba_tl_lc_gate_fsm_sparse
