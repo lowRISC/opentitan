@@ -288,8 +288,6 @@
             Verify that access to SBA interface is disabled if lc_hw_debug_en is set to a value
             other than lc_ctrl_pkg::On.
 
-            - Set lc_hw_debug_en to true and activate the dm.
-            - Attempt to inject a legal randomized SBA access - verify that it comes through.
             - Set lc_hw_debug_en to non-true value and activate the dm.
             - Attempt to send some legal randomized SBA accesses. Checks in the scoreboard will
               assert that no SBA TL accesses appear on the TL interface.
