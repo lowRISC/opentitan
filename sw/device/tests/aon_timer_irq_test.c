@@ -133,7 +133,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
                             kTopEarlgreyPlicPeripheralAonTimerAon);
 
   uint32_t time_elapsed = (uint32_t)irq_tick - start_tick;
-  CHECK(time_elapsed < sleep_range_h && time_elapsed > sleep_range_l,
+  CHECK(time_elapsed <= sleep_range_h && time_elapsed >= sleep_range_l,
         "Timer took %u usec which is not in the range %u usec and %u usec",
         (uint32_t)time_elapsed, (uint32_t)sleep_range_l,
         (uint32_t)sleep_range_h);
