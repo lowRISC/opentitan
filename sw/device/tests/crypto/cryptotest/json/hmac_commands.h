@@ -35,7 +35,8 @@ UJSON_SERDE_STRUCT(CryptotestHmacMessage, cryptotest_hmac_message_t, HMAC_MESSAG
 UJSON_SERDE_STRUCT(CryptotestHmacKey, cryptotest_hmac_key_t, HMAC_KEY);
 
 #define HMAC_TAG(field, string) \
-    field(tag, uint8_t, HMAC_CMD_MAX_TAG_BYTES) \
+    field(oneshot_tag, uint8_t, HMAC_CMD_MAX_TAG_BYTES) \
+    field(streaming_tag, uint8_t, HMAC_CMD_MAX_TAG_BYTES) \
     field(tag_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestHmacTag, cryptotest_hmac_tag_t, HMAC_TAG);
 
