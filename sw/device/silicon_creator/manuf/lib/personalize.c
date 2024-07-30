@@ -155,20 +155,9 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
   }
   return found_error ? INTERNAL() : OK_STATUS();
 }
-/**
- * Writes device-generated secret attestation key seeds to a flash info page.
- *
- * Entropy is extracted from the CSRNG instance and programmed into the target
- * flash info page.
- *
- * @param flash_state Flash controller instance.
- * @param field Info flash field location information.
- * @param len The number of uint32_t words to program starting at the beginning
- *            of the target flash info field.
- * @return OK_STATUS on success.
- */
+
 OT_WARN_UNUSED_RESULT
-static status_t flash_attestation_key_seed_write(
+status_t manuf_personalize_flash_asymm_key_seed(
     dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
@@ -371,24 +360,24 @@ status_t manuf_personalize_device_secrets(
                                      kFlashInfoKeySeedSizeIn32BitWords));
 
   // Provision attestation key seeds.
-  TRY(flash_attestation_key_seed_write(flash_state,
-                                       kFlashInfoFieldUdsAttestationKeySeed,
-                                       kAttestationSeedWords));
-  TRY(flash_attestation_key_seed_write(flash_state,
-                                       kFlashInfoFieldCdi0AttestationKeySeed,
-                                       kAttestationSeedWords));
-  TRY(flash_attestation_key_seed_write(flash_state,
-                                       kFlashInfoFieldCdi1AttestationKeySeed,
-                                       kAttestationSeedWords));
-  TRY(flash_attestation_key_seed_write(flash_state,
-                                       kFlashInfoFieldTpmEkAttestationKeySeed,
-                                       kAttestationSeedWords));
-  TRY(flash_attestation_key_seed_write(flash_state,
-                                       kFlashInfoFieldTpmCekAttestationKeySeed,
-                                       kAttestationSeedWords));
-  TRY(flash_attestation_key_seed_write(flash_state,
-                                       kFlashInfoFieldTpmCikAttestationKeySeed,
-                                       kAttestationSeedWords));
+  TRY(manuf_personalize_flash_asymm_key_seed(
+      flash_state, kFlashInfoFieldUdsAttestationKeySeed,
+      kAttestationSeedWords));
+  TRY(manuf_personalize_flash_asymm_key_seed(
+      flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
+      kAttestationSeedWords));
+  TRY(manuf_personalize_flash_asymm_key_seed(
+      flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
+      kAttestationSeedWords));
+  TRY(manuf_personalize_flash_asymm_key_seed(
+      flash_state, kFlashInfoFieldTpmEkAttestationKeySeed,
+      kAttestationSeedWords));
+  TRY(manuf_personalize_flash_asymm_key_seed(
+      flash_state, kFlashInfoFieldTpmCekAttestationKeySeed,
+      kAttestationSeedWords));
+  TRY(manuf_personalize_flash_asymm_key_seed(
+      flash_state, kFlashInfoFieldTpmCikAttestationKeySeed,
+      kAttestationSeedWords));
 
   // Provision the attestation key generation version field (at the end of the
   // attestation seed info page).
