@@ -16,7 +16,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj);
 status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj);
 status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj);
 status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj);
-status_t handle_otbn_init_trigger(ujson_t *uj);
+status_t handle_otbn_init(ujson_t *uj);
 status_t handle_otbn_fi(ujson_t *uj);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_OTBN_FI_H_

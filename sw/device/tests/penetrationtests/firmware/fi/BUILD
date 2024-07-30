@@ -36,6 +36,7 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -45,6 +46,7 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_hardware_reg_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_unrolled_dmem_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_unrolled_reg_op_loop",
+        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
         "//sw/device/tests/penetrationtests/json:otbn_fi_commands",
     ],
 )
