@@ -8,7 +8,7 @@ dependencies:
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
   idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.2 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
-  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "d47f3d0d207a5f22f301706f825dbf960f97f56b" } # branch: master
+  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "ffe0ebe12324dd3d7502f75e917c60776b77bb86" } # branch: alsaqr-2.0
 
 export_include_dirs:
        - hw/ip/prim/rtl

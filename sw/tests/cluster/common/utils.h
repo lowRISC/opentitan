@@ -56,26 +56,26 @@
 #define SERIAL_RX_BUFFER_SIZE UART_FIFO_DEPTH
 #define SERIAL_TX_BUFFER_SIZE UART_FIFO_DEPTH
 
-void uart_set_cfg(int parity, uint16_t clk_counter);
+void uart_set_cfg_cl(int parity, uint16_t clk_counter);
 
-void uart_send(const char* str, unsigned int len);
-void uart_sendchar(const char c);
+void uart_send_cl(const char* str, unsigned int len);
+void uart_sendchar_cl(const char c);
 
-char uart_getchar();
+char uart_getchar_cl();
 
-void uart_wait_tx_done(void);
+void uart_wait_tx_done_cl(void);
 
 
 void external_irq_handler(void) __attribute__((interrupt));
 void simple_exc_handler(void) ;
 
 
-size_t strlen (const char *str);
-int  strcmp (const char *s1, const char *s2);
-char* strcpy (char *s1, const char *s2);
-int puts(const char *s);
-int printf(const char *format, ...);
-void * memset (void *dest, int val, size_t len);
-int putchar(int s);
+size_t strlen_cl (const char *str);
+int  strcmp_cl (const char *s1, const char *s2);
+char* strcpy_cl (char *s1, const char *s2);
+int puts_cl(const char *s);
+int printf_cl(const char *format, ...);
+void * memset_cl (void *dest, int val, size_t len);
+int putchar_cl(int s);
 
 #endif
