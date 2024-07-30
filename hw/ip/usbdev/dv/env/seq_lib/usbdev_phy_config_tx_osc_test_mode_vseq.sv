@@ -97,6 +97,9 @@ class usbdev_phy_config_tx_osc_test_mode_vseq extends usbdev_base_vseq;
       end
     end
 
+    // Disable TX OSC test mode.
+    csr_wr(.ptr(ral.phy_config.tx_osc_test_mode), .value(1'b0));
+
     // Check the mean phase duration; expect to see 4 cycles for each phase, allow a little error
     // for sampling phase issues.
     `DV_CHECK(total_duration >= 4 * (num_phases - 1) && total_duration <= 4 * (num_phases + 1),
