@@ -18,6 +18,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
@@ -35,6 +36,7 @@
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
@@ -230,12 +232,38 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     wait_for_interrupt();
   }
 
-  // Provision OTP Secret2 partition and keymgr flash info pages (1, 2, and 4).
+  // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
+  // and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
     LOG_INFO("Waiting for host public key ...");
     TRY(ujson_deserialize_ecc_p256_public_key_t(uj, &host_ecc_pk));
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
                                          &host_ecc_pk, &wrapped_rma_token));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldUdsAttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldCdi0AttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldCdi1AttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldTpmEkAttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldTpmCekAttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldTpmCikAttestationKeySeed,
+        kAttestationSeedWords));
+    // Provision the attestation key generation version field (at the end of the
+    // attestation seed info page).
+    uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
+    TRY(manuf_flash_info_field_write(
+        &flash_ctrl_state, kFlashInfoFieldAttestationKeyGenVersion,
+        /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
+        /*erase_page_before_write=*/false));
     LOG_INFO("Exporting RMA token ...");
     RESP_OK(ujson_serialize_wrapped_rma_unlock_token_t, uj, &wrapped_rma_token);
     sw_reset();

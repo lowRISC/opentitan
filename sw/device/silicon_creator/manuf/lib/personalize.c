@@ -359,34 +359,6 @@ status_t manuf_personalize_device_secrets(
   TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldOwnerSeed,
                                      kFlashInfoKeySeedSizeIn32BitWords));
 
-  // Provision attestation key seeds.
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      flash_state, kFlashInfoFieldUdsAttestationKeySeed,
-      kAttestationSeedWords));
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
-      kAttestationSeedWords));
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
-      kAttestationSeedWords));
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      flash_state, kFlashInfoFieldTpmEkAttestationKeySeed,
-      kAttestationSeedWords));
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      flash_state, kFlashInfoFieldTpmCekAttestationKeySeed,
-      kAttestationSeedWords));
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      flash_state, kFlashInfoFieldTpmCikAttestationKeySeed,
-      kAttestationSeedWords));
-
-  // Provision the attestation key generation version field (at the end of the
-  // attestation seed info page).
-  uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
-  TRY(manuf_flash_info_field_write(flash_state,
-                                   kFlashInfoFieldAttestationKeyGenVersion,
-                                   /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
-                                   /*erase_page_before_write=*/false));
-
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl, wrapped_rma_token));
 

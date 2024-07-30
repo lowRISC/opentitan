@@ -122,9 +122,19 @@ bool test_main(void) {
                                      &uj, &host_ecc_pk));
 
       // Perform OTP and flash info writes.
-      LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");
+      LOG_INFO("Provisioning OTP SECRET2 and keymgr flash info pages ...");
       CHECK_STATUS_OK(manuf_personalize_device_secrets(
           &flash_state, &lc_ctrl, &otp_ctrl, &host_ecc_pk, wrapped_rma_token));
+      LOG_INFO("Provisioning flash info asymmetric keygen seeds ...");
+      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
+          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
+          kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
+          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
+          kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
+          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
+          kAttestationSeedWords));
 
       // Read the attestation key seed fields to ensure they are non-zero.
       uint32_t uds_attestation_key_seed[kAttestationSeedWords];
