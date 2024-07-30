@@ -40,6 +40,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // This event is used to notify process_set_exp_alerts there are alerts to be handled.
   event new_exp_alert;
+  bit ignore_exp_alert = 0;
 
   // alert checking related parameters
   bit do_alert_check = 1;
@@ -297,7 +298,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end
-    if (!cfg.en_scb) return;
+    // Ignore the alert if the scoreboard is disabled or if the alert is not fatal and the ignore
+    // alert bit is set.
+    if (!cfg.en_scb || (ignore_exp_alert && !expected_alert[alert_name].is_fatal)) return;
     `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
                                alert_name, expected_alert[alert_name].max_delay))
   endtask
