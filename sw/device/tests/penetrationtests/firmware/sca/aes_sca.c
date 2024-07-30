@@ -215,7 +215,7 @@ status_t handle_aes_sca_key_set(ujson_t *uj) {
   if (aes_key_mask_and_config(key_fixed, uj_key_data.key_length) != aesScaOk) {
     return ABORTED();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -285,7 +285,7 @@ static status_t aes_send_ciphertext(bool only_first_word, ujson_t *uj) {
   memcpy(uj_output.ciphertext, (uint8_t *)ciphertext.data,
          uj_output.ciphertext_length);
   RESP_OK(ujson_serialize_cryptotest_aes_sca_ciphertext_t, uj, &uj_output);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -330,7 +330,7 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   }
 
   TRY(aes_send_ciphertext(false, uj));
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -427,7 +427,7 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
 
   TRY(aes_send_ciphertext(true, uj));
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -508,7 +508,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   memcpy(uj_output.ciphertext, (uint8_t *)ciphertext.data, kAesTextLength);
   RESP_OK(ujson_serialize_cryptotest_aes_sca_ciphertext_t, uj, &uj_output);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -534,7 +534,7 @@ status_t handle_aes_sca_batch_plaintext_set(ujson_t *uj) {
   }
   memcpy(batch_plaintext, uj_data.text, uj_data.text_length);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -559,7 +559,7 @@ status_t handle_aes_sca_fvsr_key_set(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -609,7 +609,7 @@ status_t aes_sca_fvsr_key_batch_generate(cryptotest_aes_sca_data_t uj_data) {
     sample_fixed = batch_plaintexts[i][0] & 0x1;
   }
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -755,7 +755,7 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
 
   TRY(aes_send_ciphertext(false, uj));
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -802,7 +802,7 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
   }
 #endif
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -824,7 +824,7 @@ status_t handle_aes_sca_seed_lfsr_order(ujson_t *uj) {
   uint32_t seed_local = read_32(uj_lfsr_data.seed);
   sca_seed_lfsr(seed_local, kScaLfsrOrder);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -888,7 +888,7 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
 
   sca_seed_lfsr(kPrngInitialState, kScaLfsrOrder);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -925,7 +925,7 @@ status_t handle_aes_sca_init(ujson_t *uj) {
   TRY(sca_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_aes_sca(ujson_t *uj) {
@@ -975,5 +975,5 @@ status_t handle_aes_sca(ujson_t *uj) {
       LOG_ERROR("Unrecognized AES SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
