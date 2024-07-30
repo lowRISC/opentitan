@@ -32,8 +32,8 @@ static bool did_extclk_settle(const dif_clkmgr_t *clkmgr) {
 }
 
 status_t handle_extclk_sca_fi_configure(ujson_t *uj) {
-  cryptotest_extclk_sca_fi_cfg_t uj_data;
-  TRY(ujson_deserialize_cryptotest_extclk_sca_fi_cfg_t(uj, &uj_data));
+  penetrationtest_extclk_sca_fi_cfg_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_extclk_sca_fi_cfg_t(uj, &uj_data));
 
   TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
                       &clkmgr));
