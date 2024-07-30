@@ -12,6 +12,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -81,6 +82,26 @@ status_t manuf_personalize_device_secrets(
     dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
     const dif_otp_ctrl_t *otp_ctrl, ecc_p256_public_key_t *host_ecc_pk,
     wrapped_rma_unlock_token_t *wrapped_rma_token);
+
+/**
+ * Personalize device with an asymmetric keygen seed.
+ *
+ * The device is provisioned with a unique seed (extracted from a CSRNG
+ * instance) in the provided flash info page field that can be used at runtime
+ * to generate an asymmetric (e.g., ECDSA) key pair.
+ *
+ * Preconditions:
+ * - Device has SW CSRNG data access (configured in HW_CFG0 parition).
+ * - Device has initialized the entropy complex.
+ *
+ * @param flash_state Flash controller instance.
+ * @param field Info flash field location information.
+ * @param len The number of uint32_t words to program starting at the beginning
+ *            of the target flash info field.
+ * @return OK_STATUS on success.
+ */
+status_t manuf_personalize_flash_asymm_key_seed(
+    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len);
 
 /**
  * Checks the device personalization end state.
