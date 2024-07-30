@@ -99,11 +99,11 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
  * DICE certificates exported during personalization.
  *
  * See the `OT_ASSERT_MEMBER_SIZE_AS_ENUM` calls in
- * `sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/ft_personalize.c`
+ * `sw/device/silicon_creator/manuf/base/ft_personalize.c`
  * for how these sizes are chosen.
  */
 // clang-format off
-#define STRUCT_MANUF_PERSO_CERTS(field, string) \
+#define STRUCT_MANUF_CERTS(field, string) \
     field(uds_tbs_certificate, uint8_t, 680) \
     field(uds_tbs_certificate_size, size_t) \
     field(cdi_0_certificate, uint8_t, 580) \
@@ -118,14 +118,14 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
     field(tpm_cik_tbs_certificate_size, size_t)
 UJSON_SERDE_STRUCT(ManufCerts, \
                    manuf_certs_t, \
-                   STRUCT_MANUF_PERSO_CERTS);
+                   STRUCT_MANUF_CERTS);
 // clang-format on
 
 /**
- * Endorsed certificates imported during personalization.
+ * Endorsed DICE certificates imported during personalization.
  *
  * See the `OT_ASSERT_MEMBER_SIZE_AS_ENUM` calls in
- * `sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/ft_personalize.c`
+ * `sw/device/silicon_creator/manuf/base/ft_personalize.c`
  * for how these sizes are chosen.
  */
 // clang-format off

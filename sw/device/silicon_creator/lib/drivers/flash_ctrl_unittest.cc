@@ -712,10 +712,9 @@ TEST_F(FlashCtrlTest, BankErasePermsSet) {
 }
 
 TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
-  std::array<const flash_ctrl_info_page_t *, 3> cert_pages = {
+  std::array<const flash_ctrl_info_page_t *, 2> cert_pages = {
       &kFlashCtrlInfoPageAttestationKeySeeds,
       &kFlashCtrlInfoPageDiceCerts,
-      &kFlashCtrlInfoPageTpmCerts,
   };
   for (auto page : cert_pages) {
     auto info_page = InfoPages().at(page);
@@ -726,14 +725,14 @@ TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9666666);
   }
 
-  flash_ctrl_cert_info_pages_creator_cfg();
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
 }
 
 TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
-  std::array<const flash_ctrl_info_page_t *, 3> cert_pages = {
+  std::array<const flash_ctrl_info_page_t *, 2> cert_pages = {
       &kFlashCtrlInfoPageAttestationKeySeeds,
       &kFlashCtrlInfoPageDiceCerts,
-      &kFlashCtrlInfoPageTpmCerts,
   };
   for (auto page : cert_pages) {
     auto info_page = InfoPages().at(page);
@@ -741,7 +740,9 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669966);
   }
 
-  flash_ctrl_cert_info_pages_owner_restrict();
+  flash_ctrl_cert_info_page_owner_restrict(
+      &kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
 }
 
 struct EraseVerifyCase {

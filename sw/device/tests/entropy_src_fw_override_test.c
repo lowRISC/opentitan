@@ -18,6 +18,7 @@
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -55,6 +56,16 @@ enum {
    * and blocks the ISR.
    */
   kMaxOutputWords = 16,
+  /**
+   * Number of micro seconds we wait between having extracted words from the
+   * observe FIFO and inserting words back into the entropy source.
+   */
+  kOutputDelayUs = 128,
+  /**
+   * The size of the buffer used in firmware to process the entropy bits in
+   * firmware override mode.
+   */
+  kEntropyFifoBufferSize = 12,
 };
 
 static dif_aes_t aes;
@@ -91,6 +102,8 @@ static size_t words_to_output = 0;
 
 static dif_edn_auto_params_t edn_params0;
 static dif_edn_auto_params_t edn_params1;
+
+static bool fw_ov_insert_wait_enabled = false;
 
 /**
  * Determine whether the observe FIFO has overflowed.
@@ -152,6 +165,10 @@ void ottf_external_isr(uint32_t *exc_info) {
 
     words_to_input = kFifoBufferSizeWords;
     words_to_output = kFifoBufferSizeWords;
+  }
+
+  if (fw_ov_insert_wait_enabled) {
+    busy_spin_micros(kOutputDelayUs);
   }
 
   if (words_to_output > 0) {
@@ -258,13 +275,83 @@ static status_t entropy_config(
   return OK_STATUS();
 }
 
+// Configure the entropy complex.
+static status_t reenable_entropy_src(
+    dif_entropy_src_single_bit_mode_t single_bit_mode,
+    bool bypass_conditioner) {
+  uint32_t data;
+  bool entropy_req_intr = false;
+  size_t words_written = 0;
+  uint32_t kInputMsg[kEntropyFifoBufferSize];
+  uint32_t cnt = 0;
+
+  // Don't let the extract and insert interrupt handler run until we've
+  // re-enabled the entropy source.
+  irq_external_ctrl(false);
+
+  // Make ENTROPY_SRC produce new seeds until CSRNG has no outstanding
+  // entropy requests.
+  do {
+    // If the FW_OV_WR_DATA register is not ready yet,
+    // we wait for a bit and try again.
+    data = mmio_region_read32(entropy_src.base_addr,
+                              ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET);
+    if (data) {
+      busy_spin_micros(10);
+      continue;
+    }
+    // Make SHA3 absorb new data and produce a new seed right away.
+    // We use a counter for the input message to avoid triggering
+    // ES_BUS_CMP_ALERT.
+    CHECK_DIF_OK(dif_entropy_src_fw_override_sha3_start_insert(
+        &entropy_src, kDifToggleEnabled));
+    for (int i = 0; i < kEntropyFifoBufferSize; i++) {
+      kInputMsg[i] = cnt++;
+    }
+    CHECK_DIF_OK(dif_entropy_src_fw_ov_data_write(
+        &entropy_src, (const uint32_t *)kInputMsg, kEntropyFifoBufferSize,
+        &words_written));
+    CHECK_DIF_OK(dif_entropy_src_fw_override_sha3_start_insert(
+        &entropy_src, kDifToggleDisabled));
+    // Clear CS_ENTROPY_REQ and check if it is reasserted.
+    // If not, we can disable ENTROPY_SRC and check if the entropy
+    // complex still produces entropy after reenabling ENTROPY_SRC.
+    CHECK_DIF_OK(dif_csrng_irq_acknowledge_state(
+        &csrng, 1 << CSRNG_INTR_STATE_CS_ENTROPY_REQ_BIT));
+    CHECK_DIF_OK(dif_csrng_irq_is_pending(
+        &csrng, CSRNG_INTR_STATE_CS_ENTROPY_REQ_BIT, &entropy_req_intr));
+  } while (entropy_req_intr);
+
+  // Disable the entropy source.
+  LOG_INFO("Disabling entropy_src");
+  TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
+
+  // Wait for CSRNG to request a seed while ENTROPY_SRC is diabled.
+  do {
+    if (rv_core_ibex_testutils_is_rnd_data_valid(&rv_core_ibex)) {
+      TRY(dif_rv_core_ibex_read_rnd_data(&rv_core_ibex, &data));
+    }
+    CHECK_DIF_OK(dif_csrng_irq_is_pending(
+        &csrng, CSRNG_INTR_STATE_CS_ENTROPY_REQ_BIT, &entropy_req_intr));
+  } while (!entropy_req_intr);
+
+  // Reenable ENTROPY_SRC now that CSRNG has an outstanding entropy request.
+  TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleEnabled));
+  LOG_INFO("ENTROPY_SRC re-enabled");
+
+  // Enable the interrupt handler to provide CSRNG with entropy.
+  irq_external_ctrl(true);
+
+  return OK_STATUS();
+}
+
 /**
  * Configure the entropy source in extract and insert mode and run some entropy
  * consumers.
  */
 status_t firmware_override_extract_insert(
-    dif_entropy_src_single_bit_mode_t single_bit_mode,
-    bool bypass_conditioner) {
+    dif_entropy_src_single_bit_mode_t single_bit_mode, bool bypass_conditioner,
+    bool reenable_es) {
   LOG_INFO("==================");
   LOG_INFO("Configuring single_bit_mode=%u, bypass_conditioner=%d",
            single_bit_mode, bypass_conditioner);
@@ -278,6 +365,12 @@ status_t firmware_override_extract_insert(
     TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex,
                                             /*timeout_usec=*/100 * 1000,
                                             &data));
+  }
+
+  if (reenable_es) {
+    // Now that we know that a seed was produced we reenable the entropy_src
+    // and see whether the entropy complex still works as expected.
+    reenable_entropy_src(single_bit_mode, bypass_conditioner);
   }
 
   // Run an AES encryption and decryption process.
@@ -377,10 +470,23 @@ bool test_main(void) {
 
   for (size_t i = 0; i < ARRAYSIZE(kModes); i++) {
     EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i],
+                 false, false);
+    EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i], true,
                  false);
-    EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i],
-                 true);
   }
+  // Rerun the test with single bit mode disabled, this time we reenable the
+  // entropy_src without reenabling the rest of the entropy complex.
+  EXECUTE_TEST(test_result, firmware_override_extract_insert,
+               kDifEntropySrcSingleBitModeDisabled, false, true);
+  EXECUTE_TEST(test_result, firmware_override_extract_insert,
+               kDifEntropySrcSingleBitModeDisabled, true, true);
+  // Rerun the test with single bit mode disabled,
+  // this time with an output delay.
+  fw_ov_insert_wait_enabled = true;
+  EXECUTE_TEST(test_result, firmware_override_extract_insert,
+               kDifEntropySrcSingleBitModeDisabled, false, false);
+  EXECUTE_TEST(test_result, firmware_override_extract_insert,
+               kDifEntropySrcSingleBitModeDisabled, true, false);
 
   return status_ok(test_result);
 }

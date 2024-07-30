@@ -24,24 +24,38 @@
     csr_utils_pkg::decrement_outstanding_access();                                         \
   end
 
-virtual task tl_access_unmapped_addr(string ral_name);
-  addr_range_t loc_unmapped_addr_ranges[$] = updated_unmapped_addr_ranges[ral_name];
+// Generate a sequence of transactions that access unmapped addresses. These transactions should
+// generate error responses but not have any other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_access_unmapped_addr(string ral_name, dv_base_reg_block block);
+  addr_range_t     unmapped_ranges[$];
+  bit [BUS_AW-1:0] csr_base_addr = block.default_map.get_base_addr();
 
-  if (loc_unmapped_addr_ranges.size() == 0) return;
+  // Check the block has some unmapped ranges (otherwise this task shouldn't have been called)
+  `DV_CHECK_FATAL(block.unmapped_addr_ranges.size() > 0)
 
-  // randomize unmapped_addr first to improve perf
+  // Subtract the RAL base address from the ends of each range in the block's list of unmapped
+  // ranges.
+  foreach (block.unmapped_addr_ranges[i]) begin
+    addr_range_t range = block.unmapped_addr_ranges[i];
+    unmapped_ranges.push_back(addr_range_t'{range.start_addr - csr_base_addr,
+                                            range.end_addr - csr_base_addr});
+  end
+
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] unmapped_addr;
 
-    // Randomly pick which unmapped address range to target
-    int idx = $urandom_range(0, loc_unmapped_addr_ranges.size()-1);
+    // Randomly pick which range of unmapped addresses to target
+    int range_idx = $urandom_range(0, unmapped_ranges.size() - 1);
 
     if (cfg.stop_transaction_generators()) return;
+
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
-        (unmapped_addr & csr_addr_mask[ral_name])
-            inside {[loc_unmapped_addr_ranges[idx].start_addr :
-                     loc_unmapped_addr_ranges[idx].end_addr]};
-    )
+                                       (unmapped_addr & csr_addr_mask[ral_name])
+                                         inside {[unmapped_ranges[range_idx].start_addr :
+                                                  unmapped_ranges[range_idx].end_addr]};)
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
         addr == unmapped_addr;,
@@ -50,10 +64,15 @@ virtual task tl_access_unmapped_addr(string ral_name);
   end
 endtask
 
-virtual task tl_write_less_than_csr_width(string ral_name);
+// Generate a sequence of transactions that write to each register in the block but sending a
+// byte-enable mask that doesn't cover the full width. This is not allowed in OpenTitan and should
+// generate an error response and not change the value of the register.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+virtual task tl_write_less_than_csr_width(string ral_name, dv_base_reg_block block);
   uvm_reg all_csrs[$];
-
-  cfg.ral_models[ral_name].get_registers(all_csrs);
+  block.get_registers(all_csrs);
   all_csrs.shuffle();
   foreach (all_csrs[i]) begin
     dv_base_reg      csr;
@@ -88,80 +107,137 @@ virtual task tl_write_less_than_csr_width(string ral_name);
   end
 endtask
 
-virtual task tl_protocol_err(tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h);
+// Generate a stream of transactions which cause TL protocol errors but have no other effect
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_protocol_err(string ral_name);
   repeat ($urandom_range(10, 100)) begin
     if (cfg.stop_transaction_generators()) return;
-    `create_tl_access_error_case(
-        tl_protocol_err, , tl_host_protocol_err_seq #(cip_tl_seq_item), tl_sequencer_h
-        )
+    `create_tl_access_error_case(tl_protocol_err,
+                                 ,
+                                 tl_host_protocol_err_seq #(cip_tl_seq_item),
+                                 p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
-virtual task tl_write_mem_less_than_word(string ral_name);
-  uint mem_idx;
-  dv_base_mem mem;
-  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+// Generate a stream of transactions that try to send partial writes to a memory that doesn't
+// support them. These should generate error responses but have no other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_write_mem_less_than_word(string            ral_name,
+                                 dv_base_reg_block block,
+                                 addr_range_t      rel_mem_ranges[$]);
+  addr_range_t rel_tgt_ranges[$];
+
+  // For each memory range, look up the memory that contains it. Collect ranges where that memory
+  // doesn't support partial writes. These track addresses relative to the base address of the
+  // block.
+  foreach (rel_mem_ranges[i]) begin
+    dv_base_mem mem;
+    `downcast(mem, get_mem_by_addr(block, block.mem_ranges[i].start_addr))
+    if (!mem.get_mem_partial_write_support()) rel_tgt_ranges.push_back(rel_mem_ranges[i]);
+  end
+
+  // We should have found at least one range that doesn't support partial writes (a property we
+  // check before calling this task).
+  `DV_CHECK_FATAL(rel_tgt_ranges.size() > 0)
+
   repeat ($urandom_range(10, 100)) begin
+    uint range_idx = $urandom_range(0, rel_tgt_ranges.size() - 1);
+
     if (cfg.stop_transaction_generators()) return;
-    // if more than one memories, randomly select one memory
-    mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
-    // only test when mem doesn't support partial write
-    `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name],
-                                   cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr))
-    if (mem.get_mem_partial_write_support()) continue;
 
     `create_tl_access_error_case(
         tl_write_mem_less_than_word,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
         addr[1:0] == 0; // word aligned
         (addr & csr_addr_mask[ral_name]) inside
-            {[loc_mem_ranges[mem_idx].start_addr : loc_mem_ranges[mem_idx].end_addr]};
+            {[rel_tgt_ranges[range_idx].start_addr : rel_tgt_ranges[range_idx].end_addr]};
         mask != '1 || size < 2;, ,
-        p_sequencer.tl_sequencer_hs[ral_name]
-        )
+        p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
-virtual task tl_read_wo_mem_err(string ral_name);
-  uint mem_idx;
-  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+// Generate a stream of transactions that read from a write-only memory. These should generate error
+// responses but have no other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_read_wo_mem_err(string            ral_name,
+                        dv_base_reg_block block,
+                        addr_range_t      rel_mem_ranges[$]);
+  addr_range_t rel_tgt_ranges[$];
+
+  // For each memory range, look up the memory that contains it. Collect ranges where that memory is
+  // write-only. These track addresses relative to the base address of the block.
+  foreach (rel_mem_ranges[i]) begin
+    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "WO") begin
+      rel_tgt_ranges.push_back(rel_mem_ranges[i]);
+    end
+  end
+
+  // If we call this, there should be at least one write-only memory. Check that there is.
+  `DV_CHECK_FATAL(rel_tgt_ranges.size() > 0)
+
   repeat ($urandom_range(10, 100)) begin
+    uint range_idx = $urandom_range(0, rel_tgt_ranges.size() - 1);
+
     if (cfg.stop_transaction_generators()) return;
-    // if more than one memories, randomly select one memory
-    mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
-    if (get_mem_access_by_addr(cfg.ral_models[ral_name],
-        cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "WO") continue;
+
     `create_tl_access_error_case(
         tl_read_wo_mem_err,
         opcode == tlul_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
-            {[loc_mem_ranges[mem_idx].start_addr :
-              loc_mem_ranges[mem_idx].end_addr]};, ,
-        p_sequencer.tl_sequencer_hs[ral_name]
-        )
+            {[rel_tgt_ranges[range_idx].start_addr :
+              rel_tgt_ranges[range_idx].end_addr]};, ,
+        p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
-virtual task tl_write_ro_mem_err(string ral_name);
-  uint mem_idx;
-  addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+// Generate a stream of transactions that write to a read-only memory. These should generate error
+// responses but have no other effect.
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
+task tl_write_ro_mem_err(string            ral_name,
+                         dv_base_reg_block block,
+                         addr_range_t      rel_mem_ranges[$]);
+  addr_range_t rel_tgt_ranges[$];
+
+  // For each memory range, look up the memory that contains it. Collect ranges where that memory is
+  // read-only. These track addresses relative to the base address of the block.
+  foreach (rel_mem_ranges[i]) begin
+    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "RO") begin
+      rel_tgt_ranges.push_back(rel_mem_ranges[i]);
+    end
+  end
+
+  // If we call this, there should be at least one write-only memory. Check that there is.
+  `DV_CHECK_FATAL(rel_tgt_ranges.size() > 0)
+
   repeat ($urandom_range(10, 100)) begin
+    uint range_idx = $urandom_range(0, rel_tgt_ranges.size() - 1);
+
     if (cfg.stop_transaction_generators()) return;
-    // if more than one memories, randomly select one memory
-    mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
-    if (get_mem_access_by_addr(cfg.ral_models[ral_name],
-        cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "RO") continue;
+
     `create_tl_access_error_case(
         tl_write_ro_mem_err,
         opcode != tlul_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
-            {[loc_mem_ranges[mem_idx].start_addr :
-              loc_mem_ranges[mem_idx].end_addr]};, ,
-        p_sequencer.tl_sequencer_hs[ral_name]
-        )
+            {[rel_tgt_ranges[range_idx].start_addr :
+              rel_tgt_ranges[range_idx].end_addr]};, ,
+        p_sequencer.tl_sequencer_hs[ral_name])
   end
 endtask
 
+// Generate a stream of transactions that trigger errors connected with instr_type. This is either
+// because the multi-bit encoded instr_type is not a valid mubi value or because it is MuBi4True and
+// the transaction is a write ("writing through the fetch port").
+//
+// If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
+// reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
@@ -207,23 +283,21 @@ endtask
 
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
-  addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
-  bit has_mem = (loc_mem_range.size > 0);
-  bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
-  bit has_mem_byte_access_err;
-  bit has_wo_mem;
-  bit has_ro_mem;
+  dv_base_reg_block ral_model = cfg.ral_models[ral_name];
+  bit [BUS_AW-1:0]  csr_base_addr = ral_model.default_map.get_base_addr();
+  bit               has_mem_byte_access_err, has_wo_mem, has_ro_mem;
 
-  bit has_csr_addrs = (cfg.ral_models[ral_name].csr_addrs.size() > 0);
+  bit has_csr_addrs = (ral_model.csr_addrs.size() > 0);
 
   // get_addr_mask returns address map size - 1 and get_max_offset return the offset of high byte
   // in address map. The difference btw them is unmapped address
-  csr_addr_mask[ral_name] = cfg.ral_models[ral_name].get_addr_mask();
+  csr_addr_mask[ral_name] = ral_model.get_addr_mask();
 
   // word aligned. This is used to constrain the random address and LSB 2 bits are masked out
   csr_addr_mask[ral_name][1:0] = 0;
 
   if (updated_mem_ranges[ral_name].size == 0) begin
+    addr_range_t loc_mem_range[$] = ral_model.mem_ranges;
     foreach (loc_mem_range[i]) begin
       updated_mem_ranges[ral_name].push_back(addr_range_t'{
           loc_mem_range[i].start_addr - csr_base_addr,
@@ -231,16 +305,7 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
     end
   end
 
-  if (cfg.ral_models[ral_name].has_unmapped_addrs) begin
-    addr_range_t loc_unmapped_addr_ranges[$] = cfg.ral_models[ral_name].unmapped_addr_ranges;
-    foreach (loc_unmapped_addr_ranges[i]) begin
-      updated_unmapped_addr_ranges[ral_name].push_back(addr_range_t'{
-          loc_unmapped_addr_ranges[i].start_addr - csr_base_addr,
-          loc_unmapped_addr_ranges[i].end_addr - csr_base_addr});
-    end
-  end
-
-  get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
+  get_all_mem_attrs(ral_model, has_mem_byte_access_err, has_wo_mem, has_ro_mem);
 
   // use multiple thread to create outstanding access
   fork
@@ -249,17 +314,32 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
         fork
           begin
             randcase
-              1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
-              // only run when csr addresses exist
-              has_csr_addrs: tl_write_less_than_csr_width(ral_name);
+              // One option that always exists is to generate a stream of transactions that cause
+              // protocol errors
+              1: tl_protocol_err(ral_name);
 
-              // only run when unmapped addr exists
-              cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
+              // If there are CSRs, send writes with invalid byte enable masks to all of them
+              has_csr_addrs: tl_write_less_than_csr_width(ral_name, ral_model);
 
-              // only run this task when the error can be triggered
-              has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name);
-              has_wo_mem: tl_read_wo_mem_err(ral_name);
-              has_ro_mem: tl_write_ro_mem_err(ral_name);
+              // If there are some unmapped addresses, generate transactions that access them.
+              ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name, ral_model);
+
+              // If the memory doesn't support partial writes, generate transactions that try to do
+              // them.
+              has_mem_byte_access_err: tl_write_mem_less_than_word(ral_name, ral_model,
+                                                                   updated_mem_ranges[ral_name]);
+
+              // If the block has a write-only memory, generate transactions that try to read it.
+              has_wo_mem: tl_read_wo_mem_err(ral_name,
+                                             ral_model,
+                                             updated_mem_ranges[ral_name]);
+
+              // If the block has a read-only memory, generate transactions that try to write to
+              // it.
+              has_ro_mem: tl_write_ro_mem_err(ral_name,
+                                              ral_model,
+                                              updated_mem_ranges[ral_name]);
+
               1: tl_instr_type_err(ral_name);
             endcase
           end

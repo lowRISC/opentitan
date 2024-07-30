@@ -74,6 +74,7 @@
     {
       name: rom_ctrl_smoke
       uvm_test_seq: rom_ctrl_smoke_vseq
+      reseed: 10
     }
     {
       name: rom_ctrl_stress_all

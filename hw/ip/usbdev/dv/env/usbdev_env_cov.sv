@@ -194,10 +194,10 @@ class usbdev_env_cov extends cip_base_env_cov #(.CFG_T(usbdev_env_cfg));
       bins five  = {5};
       // Plus those where the additional bytes of the CRC16 cause the total byte count to near or
       // exceed 64.
-      bins sixty_one   = {61};
-      bins sixty_two   = {62};
-      bins sixty_three = {63};
-      bins sixty_four  = {64};
+      bins max_len_m3 = {MaxPktSizeByte-3};
+      bins max_len_m2 = {MaxPktSizeByte-2};
+      bins max_len_m1 = {MaxPktSizeByte-1};
+      bins max_len    = {MaxPktSizeByte};
     }
     // Directions
     cp_dir: coverpoint dir_in;
@@ -215,7 +215,10 @@ class usbdev_env_cov extends cip_base_env_cov #(.CFG_T(usbdev_env_cfg));
       bins nak = {PidTypeNak};
     }
     cp_dir: coverpoint dir_in;  // 'dir_in' is set to indicate IN
-    cp_endp: coverpoint endp;
+    cp_endp: coverpoint endp {
+      // Device supports only 12 endpoints.
+      bins endpoints[] = {[0:NEndpoints-1]};
+    }
 
     cr_pid_X_dir_X_endp: cross
       cp_pid,
@@ -228,9 +231,9 @@ class usbdev_env_cov extends cip_base_env_cov #(.CFG_T(usbdev_env_cfg));
       bins pkt_types[] = {PidTypeSetupToken, PidTypeOutToken, PidTypeInToken};
     }
     cp_endp: coverpoint endp {
-      bins endpoints[] = {[0:11]};
+      bins endpoints[] = {[0:NEndpoints-1]};
       // Device should ignore all packets to unimplemented endpoints.
-      bins invalid_ep[] = {[12:15]};
+      bins invalid_ep[] = {[NEndpoints:15]};
     }
 
     cr_pid_X_endp: cross

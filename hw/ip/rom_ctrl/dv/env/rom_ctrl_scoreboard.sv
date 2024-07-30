@@ -116,14 +116,8 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // Update the RAL model with expected values for the digest registers
   virtual function void update_ral_digests();
     for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-      string digest_name = $sformatf("digest_%0d", i);
-      uvm_reg csr = ral.get_reg_by_name(digest_name);
-      void'(csr.predict(.value(kmac_digest[i*TL_DW+:TL_DW]), .kind(UVM_PREDICT_READ)));
-    end
-    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-      string digest_name = $sformatf("exp_digest_%0d", i);
-      uvm_reg csr = ral.get_reg_by_name(digest_name);
-      void'(csr.predict(.value(expected_digest[i*TL_DW+:TL_DW]), .kind(UVM_PREDICT_READ)));
+      `DV_CHECK(ral.digest[i].predict(kmac_digest[i*TL_DW+:TL_DW]))
+      `DV_CHECK(ral.exp_digest[i].predict(expected_digest[i*TL_DW+:TL_DW]))
     end
   endfunction
 

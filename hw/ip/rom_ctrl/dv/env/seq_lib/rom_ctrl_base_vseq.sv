@@ -82,17 +82,17 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
+  // Read the digest[i] registers (computed by kmac) and the exp_digest[i] registers (which rom_ctrl
+  // read from the top of the ROM). Check these registers all have their expected values.
   virtual task read_digest_regs();
-    bit [TL_DW-1:0] rdata;
+    uvm_status_e status;
     for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-      string digest_name = $sformatf("digest_%0d", i);
-      uvm_reg csr = ral.get_reg_by_name(digest_name);
-      csr_rd(.ptr(csr), .value(rdata));
+      ral.digest[i].mirror(.status(status), .check(UVM_CHECK));
+      `DV_CHECK_EQ(status, UVM_IS_OK)
     end
     for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-      string digest_name = $sformatf("exp_digest_%0d", i);
-      uvm_reg csr = ral.get_reg_by_name(digest_name);
-      csr_rd(.ptr(csr), .value(rdata));
+      ral.exp_digest[i].mirror(.status(status), .check(UVM_CHECK));
+      `DV_CHECK_EQ(status, UVM_IS_OK)
     end
   endtask
 
@@ -172,18 +172,35 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                             .tl_intg_err_type(tl_intg_err_type), .req_abort_pct(req_abort_pct));
   endtask
 
-
-
-  // Set KMAC digest_share0 with ROM digest value and digest_share1 with 0
-  virtual function void set_kmac_digest();
-    bit [DIGEST_SIZE-1:0]  expected_digest;
+  // Configure the KMAC agent to respond with a digest matching the given value. This is sent in two
+  // shares, which are chosen randomly.
+  function void set_kmac_digest(bit [DIGEST_SIZE-1:0] value);
     bit [kmac_pkg::AppDigestW-1:0] share0;
     kmac_pkg::rsp_digest_t rsp_digest_h;
-    expected_digest = get_expected_digest();
+
     `DV_CHECK_STD_RANDOMIZE_FATAL(share0)
     rsp_digest_h.digest_share0 = share0;
-    rsp_digest_h.digest_share1 = rsp_digest_h.digest_share0 ^ expected_digest;
+    rsp_digest_h.digest_share1 = rsp_digest_h.digest_share0 ^ value;
     cfg.m_kmac_agent_cfg.add_user_digest_share(rsp_digest_h);
+  endfunction
+
+  // Configure the KMAC agent to respond with the ROM's expected digest if correct is as_expected
+  // and the wrong digest otherwise.
+  function void configure_kmac_digest(bit as_expected);
+    bit [DIGEST_SIZE-1:0] digest;
+
+    // Read the expected digest from the ROM.
+    digest = get_expected_digest();
+
+    if (!as_expected) begin
+      // We want to choose a digest that doesn't match. To do so, start with the expected digest and
+      // then xor with a random nonzero value.
+      bit [kmac_pkg::AppDigestW-1:0] mask;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, mask != 0;)
+      digest ^= mask;
+    end
+
+    set_kmac_digest(digest);
   endfunction
 
   // Wait for a fatal alert to be raised

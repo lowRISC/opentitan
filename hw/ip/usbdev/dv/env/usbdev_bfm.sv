@@ -635,12 +635,16 @@ class usbdev_bfm extends uvm_component;
     ep = token.endpoint;
     case (token.m_pid_type)
       PidTypeSetupToken: begin
+        bit avsetup_empty = !avsetup_fifo.size();
         // Silently ignore SETUP packets to endpoints not configured to receive them.
         if (!rxenable_setup[ep]) begin
           rx_token = null;
           return 0;
         end
-        if (!avsetup_fifo.size() || rx_fifo.size() >= RxFIFODepth) begin
+        // Collect the packet contents into the buffer, if one is available, as well as updating
+        // the internal `wdata` flops.
+        write_pkt_bytes(!avsetup_empty, avsetup_empty ? 0 : avsetup_fifo[0], data);
+        if (avsetup_empty || rx_fifo.size() >= RxFIFODepth) begin
           // SETUP packets that cannot be accepted are just ignored.
           cancel_out();
           return 0;
@@ -659,6 +663,10 @@ class usbdev_bfm extends uvm_component;
       end
 
       PidTypeOutToken: begin
+        bit avout_empty = !avout_fifo.size();
+        // Collect the packet contents into the buffer, if one is available, as well as updating
+        // the internal `wdata` flops.
+        write_pkt_bytes(!avout_empty, avout_empty ? 0 : avout_fifo[0], data);
         // Is the OUT endpoint stalled? This has priority over other reasons for rejection.
         if (out_stall[ep]) begin
           usb20_item stall = handshake_pkt::type_id::create("stall");
@@ -669,7 +677,7 @@ class usbdev_bfm extends uvm_component;
           return 1;
         end
         // Note: the final entry of the RX FIFO is reserved solely for SETUP packets.
-        if (!avout_fifo.size() || rx_fifo.size() >= RxFIFODepth - 1 || !rxenable_out[ep]) begin
+        if (avout_empty || rx_fifo.size() >= RxFIFODepth - 1 || !rxenable_out[ep]) begin
           usb20_item nak;
           cancel_out();
           // Construct a NAK response indicating that we're busy, unless Isochronous.
@@ -704,12 +712,9 @@ class usbdev_bfm extends uvm_component;
     end else begin
       // Update the Data Toggle bit.
       out_toggles[ep] ^= 1'b1;
-      // Complete the packet description.
+      // Complete the packet description and add it to the RX FIFO.
       e.ep = ep;
-
       e.size = data.data.size();
-      // Now add the packet content to the buffer and its description to the RX FIFO.
-      write_pkt_bytes(e.buffer, data);
       rx_fifo.push_back(e);
       // Packet received.
       intr_state[IntrRxFull] = (rx_fifo.size() >= RxFIFODepth);
@@ -728,8 +733,9 @@ class usbdev_bfm extends uvm_component;
     return 1;
   endfunction
 
-  // Internal function to write the bytes of a SETUP/OUT DATA packet into the specified buffer.
-  function void write_pkt_bytes(int unsigned buffer, ref data_pkt data);
+  // Internal function to write the bytes of a SETUP/OUT DATA packet into the specified buffer,
+  // if a buffer is available, as well as updating the internal `wdata` flops.
+  function void write_pkt_bytes(bit buf_avail, int unsigned buffer, ref data_pkt data);
     int unsigned buf_start = (buffer * MaxPktSizeByte) >> 2;
     byte unsigned wr_data[$];
     int unsigned wr_bytes;
@@ -753,7 +759,8 @@ class usbdev_bfm extends uvm_component;
         2:       wdata_q[23:16] = wr_data[offset];
         default: wdata_q[31:24] = wr_data[offset];
       endcase
-      if (offset < MaxPktSizeByte && (((offset & 3) == 3) || (offset >= wr_bytes - 1))) begin
+      if (buf_avail && offset < MaxPktSizeByte &&
+          (((offset & 3) == 3) || (offset >= wr_bytes - 1))) begin
         write_buffer(buf_start + (offset >> 2), wdata_q);
       end
     end

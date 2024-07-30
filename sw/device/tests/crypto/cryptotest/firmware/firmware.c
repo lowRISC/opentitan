@@ -12,40 +12,24 @@
 
 // Include commands
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/aes_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/drbg_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/extclk_sca_fi_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/otbn_fi_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/prng_sca_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/sha3_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
-#include "sw/device/tests/crypto/cryptotest/json/trigger_sca_commands.h"
 
 // Include handlers
 #include "aes.h"
-#include "aes_sca.h"
 #include "drbg.h"
 #include "ecdh.h"
 #include "ecdsa.h"
-#include "extclk_sca_fi.h"
 #include "hash.h"
 #include "hmac.h"
-#include "ibex_fi.h"
 #include "kmac.h"
-#include "kmac_sca.h"
-#include "otbn_fi.h"
-#include "prng_sca.h"
-#include "sha3_sca.h"
 #include "sphincsplus.h"
-#include "trigger_sca.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -77,30 +61,6 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandSphincsPlus:
         RESP_ERR(uj, handle_sphincsplus(uj));
-        break;
-      case kCryptotestCommandAesSca:
-        RESP_ERR(uj, handle_aes_sca(uj));
-        break;
-      case kCryptotestCommandExtClkScaFi:
-        RESP_ERR(uj, handle_extclk_sca_fi(uj));
-        break;
-      case kCryptotestCommandIbexFi:
-        RESP_ERR(uj, handle_ibex_fi(uj));
-        break;
-      case kCryptotestCommandKmacSca:
-        RESP_ERR(uj, handle_kmac_sca(uj));
-        break;
-      case kCryptotestCommandOtbnFi:
-        RESP_ERR(uj, handle_otbn_fi(uj));
-        break;
-      case kCryptotestCommandPrngSca:
-        RESP_ERR(uj, handle_prng_sca(uj));
-        break;
-      case kCryptotestCommandSha3Sca:
-        RESP_ERR(uj, handle_sha3_sca(uj));
-        break;
-      case kCryptotestCommandTriggerSca:
-        RESP_ERR(uj, handle_trigger_sca(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);

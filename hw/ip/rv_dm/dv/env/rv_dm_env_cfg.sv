@@ -61,6 +61,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     m_tl_sba_agent_cfg = tl_agent_cfg::type_id::create("m_tl_sba_agent_cfg");
     m_tl_sba_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_tl_sba_agent_cfg.is_active = 1'b1;
+    m_tl_sba_agent_cfg.max_outstanding_req = 1;
 
     jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_agent_cfg);
     // Fix the reset values of these fields based on our design.

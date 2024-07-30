@@ -19,15 +19,7 @@ extern "C" {
     value(_, Hash) \
     value(_, Hmac) \
     value(_, Kmac) \
-    value(_, AesSca) \
-    value(_, ExtClkScaFi) \
-    value(_, IbexFi) \
-    value(_, KmacSca) \
-    value(_, OtbnFi) \
-    value(_, PrngSca) \
-    value(_, Sha3Sca) \
-    value(_, SphincsPlus) \
-    value(_, TriggerSca)
+    value(_, SphincsPlus)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
 // clang-format on

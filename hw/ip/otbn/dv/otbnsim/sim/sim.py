@@ -406,9 +406,6 @@ class OTBNSim:
         is_good = not self.state.lock_after_wipe
         locking = self.state.rma_req == LcTx.ON or not is_good
 
-        # Zero INSN_CNT once if we're going to lock after wipe.
-        self._delayed_insn_cnt_zero()
-
         # If there is an RMA request, ensure lock_after_wipe is set (since
         # we're going to lock when we're done)
         if self.state.rma_req == LcTx.ON:
@@ -419,6 +416,9 @@ class OTBNSim:
         # this end, turn this into a "wipe because something bad happended".
         if self.state.pending_halt:
             self.state.lock_after_wipe = True
+
+        # Zero INSN_CNT once if we're going to lock after wipe.
+        self._delayed_insn_cnt_zero()
 
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to
