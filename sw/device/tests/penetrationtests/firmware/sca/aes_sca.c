@@ -920,6 +920,11 @@ status_t handle_aes_sca_init(ujson_t *uj) {
   // measurements.
   sca_configure_cpu();
 
+  // Read device ID and return to host.
+  penetrationtest_device_id_t uj_output;
+  TRY(sca_read_device_id(uj_output.device_id));
+  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+
   return OK_STATUS(0);
 }
 
