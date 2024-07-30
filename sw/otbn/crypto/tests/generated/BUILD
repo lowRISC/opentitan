@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//rules:otbn.bzl", "otbn_autogen_sim_test")
 
@@ -29,6 +30,58 @@ py_binary(
         testgen = ":mul_testgen",
         deps = [
             "//sw/otbn/crypto:mul",
+        ],
+    )
+    for i in range(10)
+]
+
+# Run randomly generated tests for SHA3.
+py_binary(
+    name = "sha3_testgen",
+    srcs = ["sha3_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+        requirement("pycryptodome"),
+    ],
+)
+
+[
+    otbn_autogen_sim_test(
+        name = "sha3_test" + str(i),
+        srcs = ["sha3_py_test.s"],
+        seed = i,
+        testgen = ":sha3_testgen",
+        deps = [
+            "//sw/otbn/crypto:sha3_shake",
+        ],
+    )
+    for i in range(10)
+]
+
+# Run randomly generated tests for SHAKE.
+py_binary(
+    name = "shake_testgen",
+    srcs = ["shake_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+        requirement("pycryptodome"),
+    ],
+)
+
+[
+    otbn_autogen_sim_test(
+        name = "shake_test" + str(i),
+        srcs = ["shake_py_test.s"],
+        seed = i,
+        testgen = ":shake_testgen",
+        deps = [
+            "//sw/otbn/crypto:sha3_shake",
         ],
     )
     for i in range(10)
