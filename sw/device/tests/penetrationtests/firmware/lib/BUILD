@@ -42,5 +42,6 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/device/tests/penetrationtests/json:sca_lib_commands",
     ],
 )
