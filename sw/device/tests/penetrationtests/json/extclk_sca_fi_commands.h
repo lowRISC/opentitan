@@ -20,7 +20,7 @@ UJSON_SERDE_ENUM(ExtClkScaFiSubcommand, extclk_sca_fi_subcommand_t, EXTCLK_SCA_F
 #define EXTCLK_SCA_FI_CFG(field, string) \
     field(sel, bool) \
     field(hi_speed_sel, bool)
-UJSON_SERDE_STRUCT(CryptotestExtClkScaFiCfg, cryptotest_extclk_sca_fi_cfg_t, EXTCLK_SCA_FI_CFG);
+UJSON_SERDE_STRUCT(PenetrationtestExtClkScaFiCfg, penetrationtest_extclk_sca_fi_cfg_t, EXTCLK_SCA_FI_CFG);
 
 // clang-format on
 
