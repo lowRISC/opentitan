@@ -31,6 +31,9 @@ extern uint32_t increment_100x1(uint32_t start_value);
 static str_fn_t increment_100x10_remapped = (str_fn_t)increment_100x10;
 static str_fn_t increment_100x1_remapped = (str_fn_t)increment_100x1;
 
+// Interface to Ibex.
+static dif_rv_core_ibex_t rv_core_ibex;
+
 // Make sure that this function does not get optimized by the compiler.
 uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
   uint32_t return_value = counter + 1;
@@ -102,11 +105,8 @@ OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[32];
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Create translation descriptions.
   dif_rv_core_ibex_addr_translation_mapping_t increment_100x10_mapping = {
@@ -157,6 +157,9 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   asm volatile(NOP100);
   result_expected = increment_100x10_remapped(0);
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
   uint32_t result_target = increment_100x1_remapped(0);
   // Compare values
   uint32_t res = 0;
@@ -176,16 +179,14 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1 = {
@@ -214,6 +215,8 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
       kDifRvCoreIbexAddrTranslationDBus, mapping2));
   asm volatile(NOP1000);
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read back address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1_read_back;
@@ -248,16 +251,15 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  ibex_fi_test_result_t uj_output;
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   sca_set_trigger_high();
@@ -272,6 +274,9 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   // Read values from CSRs.
   CSR_READ(CSR_REG_MSCRATCH, &res_values);
 
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
   // Compare against reference values.
   uint32_t res = 0;
   if (res_values != ref_values[0]) {
@@ -283,19 +288,16 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
@@ -309,6 +311,9 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   }
   asm volatile(NOP10);
   sca_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Compare against reference values.
   uint32_t res = 0;
@@ -326,16 +331,14 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Configure the data flash.
   // Flash configuration.
@@ -381,6 +384,9 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   }
   sca_set_trigger_low();
 
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
   // Compare against reference values.
   uint32_t res = 0;
   for (int i = 0; i < 32; i++) {
@@ -397,16 +403,15 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
   // Configure the data flash.
   // Flash configuration.
   dif_flash_ctrl_region_properties_t region_properties = {
@@ -442,6 +447,8 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
       &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[32];
@@ -462,16 +469,14 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -493,6 +498,9 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   }
   sca_set_trigger_low();
 
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
   // Compare against reference values.
   uint32_t res = 0;
   for (int i = 0; i < 32; i++) {
@@ -509,16 +517,14 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -532,6 +538,8 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
                         ref_values[i]);
   }
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[32];
@@ -552,16 +560,14 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t result = 0;
@@ -668,6 +674,8 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   result = increment_counter(result);
   result = increment_counter(result);
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -677,16 +685,14 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = result;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t branch_if_ = 1;
@@ -701,6 +707,8 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
     }
   }
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -711,16 +719,14 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
   uj_output.result1 = branch_if_;
   uj_output.result2 = branch_else;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -732,6 +738,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
     asm volatile(LWSUBISW1 : : "r"((uint32_t *)&loop_counter2));
   }
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -742,16 +750,14 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -768,6 +774,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -777,16 +785,14 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -802,6 +808,8 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   asm volatile("mv %0, x5" : "=r"(loop_counter1));
   asm volatile("mv %0, x6" : "=r"(loop_counter2));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -812,16 +820,14 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -840,6 +846,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   asm volatile(ADDI1000);
   asm volatile("mv %0, x5" : "=r"(loop_counter));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -849,16 +857,14 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[7];
 
@@ -875,6 +881,8 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   sca_set_trigger_high();
   asm volatile(NOP1000);
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -902,16 +910,14 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[3];
 
@@ -929,6 +935,8 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   asm volatile("mv x29, x6");
   asm volatile("mv x30, x7");
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Load register values.
   asm volatile("mv %0, x28" : "=r"(res_values[0]));
@@ -952,15 +960,23 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_init_trigger(ujson_t *uj) {
+status_t handle_ibex_fi_init(ujson_t *uj) {
   sca_select_trigger_type(kScaTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4);
+  sca_init(kScaTriggerSourceAes,
+           kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
+               kScaPeripheralEntropy | kScaPeripheralAes | kScaPeripheralHmac |
+               kScaPeripheralKmac | kScaPeripheralOtbn);
+
+  // Configure the alert handler. Alerts triggered by IP blocks are captured
+  // and reported to the test.
+  sca_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   sca_configure_cpu();
@@ -971,6 +987,16 @@ status_t handle_ibex_fi_init_trigger(ujson_t *uj) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
 
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Read device ID and return to host.
+  penetrationtest_device_id_t uj_output;
+  TRY(sca_read_device_id(uj_output.device_id));
+  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+
   return OK_STATUS();
 }
 
@@ -978,8 +1004,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
   ibex_fi_subcommand_t cmd;
   TRY(ujson_deserialize_ibex_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
-    case kIbexFiSubcommandInitTrigger:
-      return handle_ibex_fi_init_trigger(uj);
+    case kIbexFiSubcommandInit:
+      return handle_ibex_fi_init(uj);
     case kIbexFiSubcommandCharUnrolledRegOpLoop:
       return handle_ibex_fi_char_unrolled_reg_op_loop(uj);
     case kIbexFiSubcommandCharRegOpLoop:
