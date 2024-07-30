@@ -3096,6 +3096,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 `ifdef INC_ASSERT
 `include "prim_macros.svh"
 
+  // Assert that we request high quality entropy only when the rng_fips field of the conf register
+  // is set to Mubi4True.
+  `ASSERT(RngFipsOutputHighInFipsMode_A,
+          prim_mubi_pkg::mubi4_test_true_loose(mubi4_t'(reg2hw.conf.rng_fips.q)) === rng_fips_o)
+
   // Count number of disables since last reset.
   logic [63:0] disable_cnt_d, disable_cnt_q;
   always_comb begin
