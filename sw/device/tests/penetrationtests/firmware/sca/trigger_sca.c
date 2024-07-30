@@ -29,7 +29,7 @@ status_t handle_trigger_sca_select_source(ujson_t *uj) {
 
   sca_select_trigger_type(uj_trigger.source);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_trigger_sca(ujson_t *uj) {
@@ -43,5 +43,5 @@ status_t handle_trigger_sca(ujson_t *uj) {
       LOG_ERROR("Unrecognized TRIGGER SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }

@@ -28,7 +28,7 @@ status_t read_otbn_err_bits(dif_otbn_err_bits_t *err_bits) {
   dif_otbn_t otbn;
   TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   TRY(dif_otbn_get_err_bits(&otbn, err_bits));
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
@@ -72,7 +72,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
@@ -116,7 +116,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
@@ -160,7 +160,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
@@ -204,7 +204,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_otbn_fi_init(ujson_t *uj) {
@@ -259,5 +259,5 @@ status_t handle_otbn_fi(ujson_t *uj) {
       LOG_ERROR("Unrecognized OTBN FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
