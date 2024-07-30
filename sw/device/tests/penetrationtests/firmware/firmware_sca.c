@@ -62,7 +62,7 @@ status_t process_cmd(ujson_t *uj) {
     }
   }
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 bool test_main(void) {
