@@ -1076,6 +1076,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                    (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
     if (rst_type == Enable) begin
+      // Stop ignoring alerts as soon as ENTROPY_SRC is turned on.
+      ignore_exp_alert = 0;
       clear_ht_stat_predictions();
       seeds_out = 0;
       health_test_data_q.delete();
@@ -1111,6 +1113,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       // fw_ov_wr_fifo_full goes high when the module is disabled.
       precon_fifo_full = 1;
       precon_fifo_cnt = 1;
+      // Ignore any outstanding alerts.
+      ignore_exp_alert = 1;
     end
 
     // Internal repetition counters and watermark registers are cleared on enable.
