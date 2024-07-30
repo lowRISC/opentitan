@@ -1108,6 +1108,17 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "sha3_shake_test",
+    srcs = [
+        "sha3_shake_test.s",
+    ],
+    exp = "sha3_shake_test.exp",
+    deps = [
+        "//sw/otbn/crypto:sha3_shake",
+    ],
+)
+
+otbn_sim_test(
     name = "x25519_test1",
     srcs = [
         "x25519_test1.s",
