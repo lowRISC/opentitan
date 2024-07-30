@@ -383,7 +383,7 @@ status_t handle_sha3_sca_disable_masking(ujson_t *uj) {
   uj_status.status = 0;
   RESP_OK(ujson_serialize_cryptotest_sha3_sca_status_t, uj, &uj_status);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -465,7 +465,7 @@ status_t handle_sha3_sca_single_absorb(ujson_t *uj) {
   // another absorb.
   kmac_reset();
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -489,7 +489,7 @@ status_t handle_sha3_sca_fixed_message_set(ujson_t *uj) {
 
   memcpy(message_fixed, uj_msg.msg, uj_msg.msg_length);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -556,7 +556,7 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
   memcpy(uj_output.batch_digest, (uint8_t *)batch_digest, kDigestLength * 4);
   RESP_OK(ujson_serialize_cryptotest_sha3_sca_batch_digest_t, uj, &uj_output);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -574,7 +574,7 @@ status_t handle_sha3_sca_seed_lfsr(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_sha3_sca_lfsr_t(uj, &uj_lfsr_data));
   sca_seed_lfsr(read_32(uj_lfsr_data.seed), kScaLfsrMasking);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -610,7 +610,7 @@ status_t handle_sha3_sca_init(ujson_t *uj) {
   TRY(sca_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -640,5 +640,5 @@ status_t handle_sha3_sca(ujson_t *uj) {
       LOG_ERROR("Unrecognized SHA SCA FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
