@@ -32,6 +32,18 @@ class usbdev_disable_endpoint_vseq extends usbdev_spray_packets_vseq;
     target_addr == dev_addr;
   }
 
+  // We do not wish to test Isochronous transfers in this sequence.
+  constraint in_iso_c {
+    in_iso == 0;
+  }
+  constraint out_iso_c {
+    out_iso == 0;
+  }
+  // Do not complicate things with the `set_nak_out` functionality in this sequence.
+  constraint set_nak_out_c {
+    set_nak_out == 0;
+  }
+
   // Ensure that we choose a disabled endpoint.
   virtual function void choose_target();
     bit [3:0] init_ep;
