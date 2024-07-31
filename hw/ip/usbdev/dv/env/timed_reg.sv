@@ -137,16 +137,20 @@ class timed_reg_field extends uvm_object;
                                   field.get_name(), pred.id, pred.val_new), UVM_HIGH)
         void'(pred_q.pop_front());
         obs_latest = act_val;
-      end else if (!(pred.latest_time - time_now > 0)) begin
-        `uvm_info(`gfn, $sformatf("Reg %p field %s (ID 0x%0x) did NOT meet expectation 0x%0x",
-                                  reg_name, field.get_name(), pred.id, pred.val_new), UVM_MEDIUM)
-        `uvm_info(`gfn, $sformatf(" (time_now 0x%0x)", time_now), UVM_MEDIUM)
-        // Report the mismatched value.
-        `DV_CHECK_EQ(act_val, pred.val_new);
       end else begin
-        // Check that it still matches the previous value.
-        `DV_CHECK_EQ(act_val, pred.val_prev);
-        break;
+        // Check that the latest time on this prediction has not yet passed; the expression of the
+        // comparison copes with timer wraparound too.
+        if (!(pred.latest_time - time_now > 0)) begin
+          `uvm_info(`gfn, $sformatf("Reg %p field %s (ID 0x%0x) did NOT meet expectation 0x%0x",
+                                    reg_name, field.get_name(), pred.id, pred.val_new), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf(" (time_now 0x%0x)", time_now), UVM_MEDIUM)
+          // Report the mismatched value.
+          `DV_CHECK_EQ(act_val, pred.val_new);
+        end else begin
+          // Check that it still matches the previous value.
+          `DV_CHECK_EQ(act_val, pred.val_prev);
+          break;
+        end
       end
     end while (pred_q.size() > 0);
   endfunction

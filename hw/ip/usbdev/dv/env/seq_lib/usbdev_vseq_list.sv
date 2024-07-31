@@ -56,6 +56,7 @@
 `include "usbdev_stall_priority_over_nak_vseq.sv"
 `include "usbdev_stall_trans_vseq.sv"
 `include "usbdev_stream_len_max_vseq.sv"
+`include "usbdev_tx_rx_disruption_vseq.sv"
 
 // These depend on usbdev_spray_packets_vseq, so need to come after it.
 `include "usbdev_device_address_vseq.sv"

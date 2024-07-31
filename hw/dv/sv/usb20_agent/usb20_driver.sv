@@ -103,10 +103,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     drive_packet("Token", pkt);
     // Attempt to collect a response only to full speed IN transactions; this should be DATA0|1
     // or ACK/NAK. For fault injection purposes we may sometimes want to avoid waiting for any
-    // response.
+    // response. Likewise for aborted transmissions.
     if (req_item.m_pid_type == PidTypeInToken && req_item.await_response &&
-        !req_item.low_speed) begin
-      device_response(rsp_item);
+        !req_item.low_speed && req_item.bits_to_transmit == 0) begin
+      device_response(rsp_item, req_item.bits_to_receive);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)
     end else begin
@@ -125,11 +125,13 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     pkt.data = {<<{pkt.data}};
     pkt.crc16 = {<<{pkt.crc16}};
     drive_packet("Data", pkt);
-    // Isochronous OUT transactions and low speed transactions do not yield a response.
-    if (req_item.m_usb_transfer == IsoTrans || req_item.low_speed) begin
+    // Isochronous OUT transactions, low speed transactions and aborted transmissions do not yield a
+    // response.
+    if (req_item.m_usb_transfer == IsoTrans || req_item.low_speed ||
+        req_item.bits_to_transmit != 0) begin
       seq_item_port.item_done();
     end else begin
-      device_response(rsp_item);
+      device_response(rsp_item, req_item.bits_to_receive);
       seq_item_port.item_done(rsp_item);
     end
   endtask
@@ -190,12 +192,14 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   // Drive out the main body of a packet, prefixing with the SYNC signaling, performing NRZI
-  // encoding and bit stuffing.
+  // encoding and bit stuffing. Optionally a non-zero value may be specified for 'bits_to_transmit'
+  // to truncate the packet.
   //
   // Note that since this task is used both to drive out the PRE PID and then subsequently the
   // low speed packet that follows it, the EOP is not emitted and must be appended by the caller
   // where appropriate.
-  task drive_packet_body(string pkt_type, bit valid_sync, bit driver_pkt[], bit low_speed = 1'b0);
+  task drive_packet_body(string pkt_type, bit valid_sync, bit driver_pkt[], bit low_speed = 1'b0,
+                         int unsigned bits_to_transmit = 0);
     bit comp_pkt[];
     bit nrzi_out[];
     bit bit_stuff_out[];
@@ -231,8 +235,13 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       nrzi_out[1] ^= 1'b1;
       `uvm_info(`gfn, "Driver chose to corrupt bit 1 of SYNC signal (limited)", UVM_MEDIUM)
     end
-    // Drive out each bit in turn.
-    for (int i = 0; i < nrzi_out.size(); i++) begin
+    // Drive out each bit in turn, unless we've been asked to truncate the packet.
+    if (bits_to_transmit) begin
+      `uvm_info(`gfn, $sformatf("Driver asked to abort transmission after %0d bits",
+                                bits_to_transmit), UVM_MEDIUM)
+      if (bits_to_transmit > nrzi_out.size()) bits_to_transmit = nrzi_out.size();
+    end else bits_to_transmit = nrzi_out.size();
+    for (int i = 0; i < bits_to_transmit; i++) begin
       drive_bit_interval(nrzi_out[i] ? USB20Sym_J : USB20Sym_K, low_speed);
     end
   endtask
@@ -266,8 +275,15 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     // Pack into bitstream format.
     void'(item.pack(driver_pkt));
-    drive_packet_body(pkt_type, valid_sync, driver_pkt, item.low_speed);
-    end_of_packet(item.valid_eop, item.low_speed);
+    drive_packet_body(pkt_type, valid_sync, driver_pkt, item.low_speed, item.bits_to_transmit);
+    // Skip the EOP if we've been instructed to abort the transmission.
+    if (|item.bits_to_transmit) begin
+      `uvm_info(`gfn, "Skipping EOP transmission", UVM_MEDIUM)
+      // We need to remove the drivers from the DP/DN lines, however, and let them float.
+      @(posedge cfg.bif.clk_i)
+      cfg.bif.drive_p = 1'bZ;
+      cfg.bif.drive_n = 1'bZ;
+    end else end_of_packet(item.valid_eop, item.low_speed);
   endtask
 
   // EOP Task
@@ -433,9 +449,12 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // Upon receiving the IN token/OUT packet, the device is expected to initiate a response.
   // This task monitors whether the device initiates the response in the form of a
   // handshake or data packet within the specified timeout period.
+  // Optionally a non-zero value may be specified for 'bits_to_receive' to receive no more than
+  // that number of bits.
+  //
   // If no response is detected within timeout frame that is 18 bit times(from section 7.1.19.1),
   // it send timeout response to sequence.
-  task device_response(ref usb20_item rsp_item);
+  task device_response(ref usb20_item rsp_item, input int unsigned bits_to_receive);
     bit timed_out = 1'b0;
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_MEDIUM)
     fork begin : isolation_fork
@@ -452,7 +471,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
             disable get_device_response;
           end
         end
-        get_device_response(rsp_item);
+        get_device_response(rsp_item, bits_to_receive);
       join
       `uvm_info(`gfn, $sformatf("timed_out = %d", timed_out), UVM_MEDIUM)
       // this bit will indicate if device didn't repond within timeout period.
@@ -486,7 +505,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
   endfunction
 
-  task get_device_response(ref usb20_item rsp_item);
+  task get_device_response(ref usb20_item rsp_item, input int unsigned bits_to_receive);
+    bit truncate_input = |bits_to_receive;
     bit received_pkt[];
     bit nrzi_out_pkt[];
     bit decoded_received_pkt[];
@@ -494,12 +514,23 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit [7:0] received_pid = 0;
     bit bitstuff_err;
     bit use_negedge;
+    if (truncate_input) begin
+      `uvm_info(`gfn, $sformatf("Driver asked to receive at most %0d bits", bits_to_receive),
+                UVM_MEDIUM)
+    end
+    // Remember the initial count of transferred bits, in the event that we truncate this packet.
+    rsp_item.bits_to_receive = bits_to_receive;
     // TODO: DV should not be stealing access to the driver enable of the DUT and would ideally
     // be able to synchronize to just the USB_P/N signals are they are received.
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
     while (cfg.bif.usb_dp_en_o) begin
       usb_symbol_e sym;
+      if (truncate_input && ~|bits_to_receive) begin
+        // Do not consume any more simulation time; we're expecting to generate a bus event at this
+        // point, to interfere with the transmission from the DUT.
+        return;
+      end
       @(posedge cfg.bif.clk_i);
       @(posedge cfg.bif.clk_i);
       // Detect SE0 signaling which indicates End Of Packet
@@ -510,7 +541,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       receive_index = receive_index + 1;
       @(posedge cfg.bif.clk_i);
       @(posedge cfg.bif.clk_i);
+      if (truncate_input) bits_to_receive--;
     end
+    // Indicate that truncation was not performed.
+    rsp_item.bits_to_receive = 0;
     // Check SE0 signaling; we've hopefully sampled in the middle of the first bit,
     // so there should be 1.5 bit intervals of additional SE0 signaling; check throughout the
     // full bit interval, but avoid the transition to Idle because the agent and DUT frequencies

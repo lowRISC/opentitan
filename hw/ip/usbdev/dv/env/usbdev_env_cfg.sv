@@ -58,6 +58,10 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
   bit en_scb_rdchk_link_in_err = 1'b1;
   // Enable checking of `intr_state.link_resume` register field?
   bit en_scb_rdchk_link_resume = 1'b1;
+  // Enable checking of `intr_state.rx_pid_err` register field?
+  bit en_scb_rdchk_rx_pid_err = 1'b1;
+  // Enable checking of `intr_state.rx_crc_err` register field?
+  bit en_scb_rdchk_rx_crc_err = 1'b1;
 
   `uvm_object_utils_begin(usbdev_env_cfg)
     `uvm_field_object(m_usb20_agent_cfg,  UVM_DEFAULT)

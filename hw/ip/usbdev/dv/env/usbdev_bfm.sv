@@ -315,6 +315,8 @@ class usbdev_bfm extends uvm_component;
       // 'sending' and setting the 'pend' bit.
       for (int unsigned ep = 0; ep < NEndpoints; ep++) retire_in_packet(ep);
       tx_ep = InvalidEP;
+      // Discard any memory of a token packet from before the Reset Signaling.
+      rx_token = null;
     end
     // Link state changes occur only when the Reset Signaling is complete.
     if (powered && sense && enable) begin
@@ -445,7 +447,14 @@ class usbdev_bfm extends uvm_component;
       if (exp_crc_error) intr_state[IntrRxCrcErr] = 1'b1;
     end
     if (!item.valid_crc()) intr_state[IntrRxCrcErr] = 1'b1;
-    return &{item.valid_pid(), item.valid_length, item.valid_stuffing, item.valid_crc()};
+    // The expectation is that an invalid length/EOP will also induce a CRC error if it's known to
+    // be a token or data packet.
+    if ((item.m_pkt_type == PktTypeToken || item.m_pkt_type == PktTypeData) &&
+        (!item.valid_length || !item.valid_eop)) begin
+      intr_state[IntrRxCrcErr] = 1'b1;
+    end
+    return &{item.valid_pid(), item.valid_length, item.valid_stuffing, item.valid_crc(),
+             item.valid_eop};
   endfunction
 
   // Complete an in-progress Isochronous IN transaction.
@@ -465,7 +474,7 @@ class usbdev_bfm extends uvm_component;
   // Process a Start of Frame packet from the USB host controller.
   function void sof_packet(ref sof_pkt sof);
     cancel_transaction();
-    if (!(sof.valid_sync & sof.valid_eop)) return;
+    if (!(sof.valid_sync)) return;
     void'(valid_packet(sof)); // Ensure errors are reported.
     if (sof.valid_pid()) begin
       // The frame number itself shall be used only if the CRC matches.
@@ -479,7 +488,7 @@ class usbdev_bfm extends uvm_component;
   // Process a token packet from the USB host controller.
   function bit token_packet(ref token_pkt token, output usb20_item rsp);
     cancel_transaction();
-    if (|{token.low_speed, !token.valid_sync, !token.valid_eop}) return 0;
+    if (|{token.low_speed, !token.valid_sync}) return 0;
     if (valid_packet(token)) begin
       case (token.m_pid_type)
         PidTypeSetupToken, PidTypeOutToken: begin
@@ -518,7 +527,7 @@ class usbdev_bfm extends uvm_component;
   function bit data_packet(ref data_pkt data, output usb20_item rsp);
     bit valid_crc = data.valid_crc();
     cancel_in();
-    if (|{data.low_speed, !data.valid_sync, !data.valid_eop}) return 0;
+    if (|{data.low_speed, !data.valid_sync}) return 0;
     if (valid_packet(data) && (data.m_pid_type == PidTypeData0 ||
                                data.m_pid_type == PidTypeData1)) begin
       // Consult the most recent token packet to decide how to handle the DATA packet.
@@ -595,7 +604,7 @@ class usbdev_bfm extends uvm_component;
   // Process a handshake packet, in response to an attempted transaction to the given endpoint.
   function void handshake_packet(ref handshake_pkt handshake);
     cancel_out();
-    if (|{handshake.low_speed, !handshake.valid_sync, !handshake.valid_eop}) return;
+    if (|{handshake.low_speed, !handshake.valid_sync}) return;
     if (!handshake.valid_pid()) intr_state[IntrRxPidErr] = 1'b1;
     if (tx_ep < NEndpoints) begin
       case (handshake.m_pid_type)

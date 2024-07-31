@@ -26,6 +26,14 @@ class usb20_item extends uvm_sequence_item;
   // the device.
   bit await_response;
 
+  // For a SETUP/OUT token packet, OUT DATA packet or an IN DATA request, this indicates how many
+  // bits shall be transmitted, as a precursor to then issuing a bus-level event such as a Bus Reset
+  // to test the DUT's recovery logic. (0 = default; transmit the entire packet.)
+  int unsigned bits_to_transmit;
+  // For an IN DATA request, this indicates how many bits of any responses shall be received.
+  // (0 = default; receive the entire response.)
+  int unsigned bits_to_receive;
+
   // Validity indicators that apply to all packet types; used by the monitor at metadata for the
   // scoreboard.
   bit valid_sync;      // SYNC signal properly formed.
@@ -51,6 +59,12 @@ class usb20_item extends uvm_sequence_item;
     valid_eop = 1'b1;
     // Await response to IN token packet?
     await_response = 1'b1;
+    // Normally the entire packet will be transmitted; this field may be used to truncate a packet
+    // transfer prematurely to test recovery behavior.
+    bits_to_transmit = 0;
+    // Normally the entirety of any response will be received; this field may be used to truncate
+    // collect only part of the response, to test recovery behavior.
+    bits_to_receive = 0;
     // Timed out awaiting a response from the device?
     timed_out = 1'b0;
   endfunction
@@ -68,6 +82,12 @@ class usb20_item extends uvm_sequence_item;
     m_pkt_type          = rhs_.m_pkt_type;
     m_usb_transfer      = rhs_.m_usb_transfer;
     timed_out           = rhs_.timed_out;
+    // Await response to IN packet?
+    await_response      = rhs_.await_response;
+    // Number of bits to transmit, if truncating.
+    bits_to_transmit    = rhs_.bits_to_transmit;
+    // Number of response bits to receive, if truncating.
+    bits_to_receive     = rhs_.bits_to_receive;
     // Low speed signaling?
     low_speed           = rhs_.low_speed;
     // Validity indicators; used to instruct the driver to perform fault injection, and completed
