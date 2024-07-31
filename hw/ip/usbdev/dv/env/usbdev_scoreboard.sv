@@ -210,49 +210,61 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   // Collection of functional coverage for Token packets received by the DUT.
   function void collect_token_cov(ref token_pkt token);
+    pid_type_e pid = token.m_pid_type;
     bit [3:0] ep = token.endpoint;
-    bit dir_in = (token.m_pid_type == PidTypeInToken);
+    bit dir_in = (pid == PidTypeInToken);
     if (!cfg.en_cov) return;
-    cov.pids_to_dut_cg.sample(token.m_pid_type);
+    // When the usb20_monitor decodes and forwards Low Speed traffic the PID does not reflect the
+    // PRE token used on the USB.
+    if (token.low_speed) pid = PidTypePre;  // Coverage should show that PRE has been received.
+    cov.pids_to_dut_cg.sample(pid);
     cov.address_cg.sample(token.address, ep);
     cov.crc5_cg.sample(dir_in, token.crc5);
     if (ep < NEndpoints) begin
       if (dir_in) begin
         // Sample IN requests from the DUT -> host.
-        cov.ep_in_cfg_cg.sample(token.m_pid_type, bfm.ep_in_enable[ep], bfm.in_stall[ep],
+        cov.ep_in_cfg_cg.sample(pid, bfm.ep_in_enable[ep], bfm.in_stall[ep],
                                 bfm.in_iso[ep]);
       end else begin
         // Sample OUT traffic from the host -> DUT.
-        cov.ep_out_cfg_cg.sample(token.m_pid_type, bfm.ep_out_enable[ep], bfm.rxenable_setup[ep],
+        cov.ep_out_cfg_cg.sample(pid, bfm.ep_out_enable[ep], bfm.rxenable_setup[ep],
                                  bfm.rxenable_out[ep], bfm.set_nak_out[ep], bfm.out_stall[ep],
                                  bfm.out_iso[ep]);
       end
     end
-    cov.pid_type_endp_cg.sample(token.m_pid_type, token.endpoint);
+    cov.pid_type_endp_cg.sample(pid, token.endpoint);
     // SETUP/OUT DATA packets interact with the AvSetup/AvOUT and RX FIFOs.
-    if (token.m_pid_type == PidTypeSetupToken || token.m_pid_type == PidTypeOutToken) begin
-      cov.fifo_lvl_cg.sample(token.m_pid_type, bfm.avsetup_fifo.size(), bfm.avout_fifo.size(),
+    if (pid == PidTypeSetupToken || pid == PidTypeOutToken) begin
+      cov.fifo_lvl_cg.sample(pid, bfm.avsetup_fifo.size(), bfm.avout_fifo.size(),
                              bfm.rx_fifo.size());
     end
   endfunction
 
   // Collection of functional coverage for DATA packets received by the DUT.
   function void collect_out_data_cov(ref data_pkt data);
+    pid_type_e pid = data.m_pid_type;
     if (!cfg.en_cov) return;
-    cov.pids_to_dut_cg.sample(data.m_pid_type);
+    // When the usb20_monitor decodes and forwards Low Speed traffic the PID does not reflect the
+    // PRE token used on the USB.
+    if (data.low_speed) pid = PidTypePre;  // Coverage should show that PRE has been received.
+    cov.pids_to_dut_cg.sample(pid);
     cov.crc16_cg.sample(.dir_in(1'b0), .crc16(data.crc16));
     cov.data_pkt_cg.sample(.dir_in(1'b0), .pkt_len(data.data.size()));
     // The endpoint number for the OUT DATA transfer is sent in the preceding OUT token packet,
     // if there was one and it was valid.
     if (bfm.rx_token != null) begin
-      cov.data_tog_endp_cg.sample(data.m_pid_type, .dir_in(1'b0), .endp(bfm.rx_token.endpoint));
+      cov.data_tog_endp_cg.sample(pid, .dir_in(1'b0), .endp(bfm.rx_token.endpoint));
     end
   endfunction
 
   // Collection of functional coverage for Handshake packets received by the DUT.
   function void collect_handshake_cov(ref handshake_pkt handshake);
+    pid_type_e pid = handshake.m_pid_type;
     if (!cfg.en_cov) return;
-    cov.pids_to_dut_cg.sample(handshake.m_pid_type);
+    // When the usb20_monitor decodes and forwards Low Speed traffic the PID does not reflect the
+    // PRE token used on the USB.
+    if (handshake.low_speed) pid = PidTypePre;  // Coverage should show that PRE has been received.
+    cov.pids_to_dut_cg.sample(pid);
   endfunction
 
   // Collection of functional coverage for DUT responses.
