@@ -22,8 +22,10 @@ rust_binary(
         "//sw/host/provisioning/ujson_lib",
         "//sw/host/provisioning/util_lib",
         "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:tiny-keccak",
     ],
 )

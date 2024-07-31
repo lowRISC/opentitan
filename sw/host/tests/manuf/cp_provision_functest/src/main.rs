@@ -9,6 +9,8 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
 use rand::RngCore;
+use tiny_keccak::{CShake, Hasher};
+use zerocopy::AsBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
 use opentitanlib::app::TransportWrapper;
@@ -75,7 +77,7 @@ fn cp_provision(
 fn test_unlock(
     opts: &Opts,
     transport: &TransportWrapper,
-    provisioning_data: &ManufCpProvisioningData,
+    test_unlock_token: Option<[u32; 4]>,
 ) -> Result<()> {
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
@@ -96,13 +98,7 @@ fn test_unlock(
         transport,
         jtag,
         DifLcCtrlState::TestUnlocked1,
-        Some(
-            provisioning_data
-                .test_unlock_token
-                .clone()
-                .into_inner()
-                .unwrap(),
-        ),
+        test_unlock_token,
         /*use_external_clk=*/ true,
         opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
@@ -178,6 +174,24 @@ fn check_cp_provisioning(
     Ok(())
 }
 
+fn cshake_it(input: &[u8]) -> Result<ArrayVec<u64, 2>> {
+    let name = b"";
+    let customazation = b"LC_CTRL";
+    let mut csh = CShake::v128(name, customazation);
+    let mut output = [0u8; 16];
+
+    csh.update(input);
+    csh.finalize(&mut output);
+
+    Ok(output
+        .chunks_exact(8)
+        .map(|chunk| {
+            let arr: [u8; 8] = chunk.try_into().expect("chunk is the wrong size");
+            u64::from_le_bytes(arr)
+        })
+        .collect::<ArrayVec<u64, 2>>())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -187,8 +201,8 @@ fn main() -> Result<()> {
     let mut device_id = ArrayVec::new();
     let mut manuf_state = ArrayVec::new();
     let mut wafer_auth_secret = ArrayVec::new();
-    let mut test_exit_token = ArrayVec::new();
-    let mut test_unlock_token = ArrayVec::new();
+    let mut test_exit_token: ArrayVec<u32, 4> = ArrayVec::new();
+    let mut test_unlock_token: ArrayVec<u32, 4> = ArrayVec::new();
     for i in 0..8 {
         if i < 4 {
             test_exit_token.push(rand::thread_rng().next_u32());
@@ -204,13 +218,17 @@ fn main() -> Result<()> {
         device_id,
         manuf_state,
         wafer_auth_secret,
-        test_unlock_token,
-        test_exit_token,
+        test_unlock_token_hash: cshake_it(test_unlock_token.as_bytes())?,
+        test_exit_token_hash: cshake_it(test_exit_token.as_bytes())?,
     };
     cp_provision(&opts, &transport, &provisioning_data)?;
 
     // Transition to TEST_UNLOCKED1 and check provisioning operations over JTAG.
-    test_unlock(&opts, &transport, &provisioning_data)?;
+    test_unlock(
+        &opts,
+        &transport,
+        Some(test_unlock_token.into_inner().unwrap()),
+    )?;
     check_cp_provisioning(&opts, &transport, &provisioning_data)?;
 
     Ok(())

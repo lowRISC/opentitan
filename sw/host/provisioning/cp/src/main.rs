@@ -7,13 +7,15 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::Parser;
 
+use arrayvec::ArrayVec;
 use cp_lib::{reset_and_lock, run_sram_cp_provision, ManufCpProvisioningDataInput};
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
+use tiny_keccak::{CShake, Hasher};
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
-use util_lib::hex_string_to_u32_arrayvec;
+use util_lib::{hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -31,6 +33,25 @@ struct Opts {
     timeout: Duration,
 }
 
+fn cshake_it(input: &str) -> Result<ArrayVec<u64, 2>> {
+    let data = hex_string_to_u8_arrayvec::<16>(input)?;
+    let name = b"";
+    let customazation = b"LC_CTRL";
+    let mut csh = CShake::v128(name, customazation);
+    let mut output = [0u8; 16];
+
+    csh.update(&data);
+    csh.finalize(&mut output);
+
+    Ok(output
+        .chunks_exact(8)
+        .map(|chunk| {
+            let arr: [u8; 8] = chunk.try_into().expect("chunk is the wrong size");
+            u64::from_le_bytes(arr)
+        })
+        .collect::<ArrayVec<u64, 2>>())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -42,12 +63,8 @@ fn main() -> Result<()> {
         wafer_auth_secret: hex_string_to_u32_arrayvec::<8>(
             opts.provisioning_data.wafer_auth_secret.as_str(),
         )?,
-        test_unlock_token: hex_string_to_u32_arrayvec::<4>(
-            opts.provisioning_data.test_unlock_token.as_str(),
-        )?,
-        test_exit_token: hex_string_to_u32_arrayvec::<4>(
-            opts.provisioning_data.test_exit_token.as_str(),
-        )?,
+        test_unlock_token_hash: cshake_it(opts.provisioning_data.test_unlock_token.as_str())?,
+        test_exit_token_hash: cshake_it(opts.provisioning_data.test_exit_token.as_str())?,
     };
 
     // Only run CP provisioning if requested in any of the TestUnlocked states, except the last

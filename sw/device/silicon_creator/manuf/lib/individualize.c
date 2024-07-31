@@ -167,21 +167,14 @@ status_t manuf_individualize_device_secret0(
     return OK_STATUS();
   }
 
-  uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeIn64BitWords];
-  uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeIn64BitWords];
-  TRY(manuf_util_hash_lc_transition_token(provisioning_data->test_unlock_token,
-                                          kSecret0TestUnlockTokenSizeInBytes,
-                                          hashed_test_unlock_token));
-  TRY(manuf_util_hash_lc_transition_token(provisioning_data->test_exit_token,
-                                          kSecret0TestExitTokenSizeInBytes,
-                                          hashed_test_exit_token));
-
-  TRY(otp_ctrl_testutils_dai_write64(
-      otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
-      hashed_test_unlock_token, kSecret0TestUnlockTokenSizeIn64BitWords));
-  TRY(otp_ctrl_testutils_dai_write64(
-      otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestExitTokenOffset,
-      hashed_test_exit_token, kSecret0TestExitTokenSizeIn64BitWords));
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                     kSecret0TestUnlockTokenOffset,
+                                     provisioning_data->test_unlock_token_hash,
+                                     kSecret0TestUnlockTokenSizeIn64BitWords));
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                     kSecret0TestExitTokenOffset,
+                                     provisioning_data->test_exit_token_hash,
+                                     kSecret0TestExitTokenSizeIn64BitWords));
 
   TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret0,
                                         /*digest=*/0));
