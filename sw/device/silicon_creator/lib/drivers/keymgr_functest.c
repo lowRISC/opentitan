@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -146,6 +147,9 @@ rom_error_t keymgr_rom_test(void) {
                              kScKeymgrSecMmioCreatorMaxVerSet);
   }
   sec_mmio_check_values(/*rnd_offset=*/0);
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 0,
+        "Keymgr SW binding should be locked in Reset state.");
 
   const uint16_t kEntropyReseedInterval = 0x1234;
   sc_keymgr_entropy_reseed_interval_set(kEntropyReseedInterval);
@@ -156,11 +160,43 @@ rom_error_t keymgr_rom_test(void) {
   sc_keymgr_advance_state();
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateInit));
   LOG_INFO("Keymgr State: Init");
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 0,
+        "Keymgr SW binding should be locked in Initialized state.");
+  if (retention_sram_get()
+          ->creator
+          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+      TEST_ROM_IDENTIFIER) {
+    CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                          KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET) ==
+              kBindingValueRom.data[0],
+          "Keymgr Attestation SW Binding value should be value set by ROM "
+          "during Initialized state.");
+    CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                          KEYMGR_ATTEST_SW_BINDING_7_REG_OFFSET) ==
+              kBindingValueRom.data[7],
+          "Keymgr Attestation SW Binding value should be value set by ROM "
+          "during Initialized state.");
+    CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                          KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET) ==
+              kBindingValueRom.data[0],
+          "Keymgr Sealing SW Binding value should be value set by ROM "
+          "during Initialized state.");
+    CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                          KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET) ==
+              kBindingValueRom.data[7],
+          "Keymgr Sealing SW Binding value should be value set by ROM "
+          "during Initialized state.");
+  }
 
   // Advance keymgr to CreatorRootKey state.
   sc_keymgr_advance_state();
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   LOG_INFO("Keymgr State: CreatorRootKey");
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 1,
+        "Keymgr SW binding should be unlocked after transitioning to "
+        "CreatorRootKey state.");
 
   // The software binding register lock is reset after advancing the key
   // manager, so we need to call this function to update sec_mmio expectation
@@ -174,9 +210,17 @@ rom_error_t keymgr_rom_test(void) {
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 0,
+        "Keymgr SW binding should be locked before transitioning to "
+        "OwnerIntermediateKey state.");
   sc_keymgr_advance_state();
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr State: OwnerIntermediateKey");
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 1,
+        "Keymgr SW binding should be unlocked after transitioning to "
+        "OwnerIntermediateKey state.");
 
   sec_mmio_check_counters(/*expected_check_count=*/4);
   return kErrorOk;
@@ -192,12 +236,21 @@ rom_error_t keymgr_rom_ext_test(void) {
 
   // Advance keymgr to OwnerKey state.
   sc_keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 0,
+        "Keymgr SW binding should be locked before transitioning to "
+        "OwnerKey state.");
   sc_keymgr_owner_max_ver_set(kMaxVerBl0);
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
   sc_keymgr_advance_state();
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
+  LOG_INFO("Keymgr State: OwnerKey");
+  CHECK(abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                        KEYMGR_SW_BINDING_REGWEN_REG_OFFSET) == 1,
+        "Keymgr SW binding should be unlocked after transitioning to "
+        "Owner state.");
 
   sec_mmio_check_counters(/*expected_check_count=*/7);
   return kErrorOk;
