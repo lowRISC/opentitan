@@ -338,7 +338,7 @@ cc_fuzz_test(
     deps = [
         ":bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",
-        "@com_google_absl//absl/types:span",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
