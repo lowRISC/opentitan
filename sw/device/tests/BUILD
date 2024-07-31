@@ -217,7 +217,7 @@ opentitan_test(
         # be run as part of the DV nightly regression.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
@@ -306,7 +306,7 @@ opentitan_test(
         # be run as part of the DV nightly regression.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
@@ -358,7 +358,7 @@ opentitan_test(
         # be run as part of the DV nightly regression.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             # See #23038, this test requires a provisioned flash in sival.
@@ -1819,7 +1819,7 @@ opentitan_test(
         # Not compatible with the verilated top level.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
