@@ -153,6 +153,15 @@
       uvm_test_seq: usbdev_endpoint_access_vseq
     }
     {
+      name: usbdev_endpoint_types
+      uvm_test_seq: usbdev_endpoint_types_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake. (Isochronous IN traffic.)
+      run_opts: ["+en_scb_rdchk_configin=0"]
+      // Short sequence, many possible endpoint configurations.
+      reseed: 200
+    }
+    {
       name: usbdev_fifo_rst
       uvm_test_seq: usbdev_fifo_rst_vseq
     }

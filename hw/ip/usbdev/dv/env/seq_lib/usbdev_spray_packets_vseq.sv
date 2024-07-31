@@ -26,7 +26,9 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
   typedef enum bit [1:0] {
     TxnType_SETUP,
     TxnType_IN,
-    TxnType_OUT
+    TxnType_OUT,
+    // Low Speed traffic should be ignored entirely; downstream traffic is propagated by hubs.
+    TxnType_PRE
   } txn_type_e;
 
   // Chosen configuration of DUT.
@@ -36,18 +38,34 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
   rand bit [NEndpoints-1:0] in_stall;
   rand bit [NEndpoints-1:0] rxenable_setup;
   rand bit [NEndpoints-1:0] rxenable_out;
+  rand bit [NEndpoints-1:0] set_nak_out;
+  rand bit [NEndpoints-1:0] out_iso;
+  rand bit [NEndpoints-1:0] in_iso;
 
   // Does the specified endpoint accept the given type of transaction?
   virtual function bit endpoint_accepts(bit [3:0] ep, txn_type_e txn_type);
     // Non-extant endpoints shall simply ignore all traffic.
     if (ep >= NEndpoints) return 0;
+    // STALL response is produced only by non-Isochronous endpoints,
     case (txn_type)
+      // PRE token packets (prefixing Low Speed traffic) shall be ignored entirely for all
+      // endpoints/configurations.
+      TxnType_PRE:   return 1'b0;
       // SETUP transactions shall never return STALL, so we ignore 'out_stall' here.
       TxnType_SETUP: return (ep_out_enable[ep] & rxenable_setup[ep]);
-      TxnType_IN:    return (ep_in_enable[ep]  & !in_stall[ep]);
-      // We're slightly biased in favor of OUT packets, but that's a good choice really.
-      default:       return (ep_out_enable[ep] & !out_stall[ep] & rxenable_out[ep]);
+      TxnType_IN:    return &{ep_in_enable[ep],  endpoint_in_iso(ep)  | !in_stall[ep]};
+      default:       return &{ep_out_enable[ep], endpoint_out_iso(ep) | !out_stall[ep],
+                              rxenable_out[ep]};
     endcase
+  endfunction
+
+  // Isochronous endpoints cannot STALL (no handshake response), but enabling SETUP reception
+  // (Control Endpoint) takes precedence.
+  function bit endpoint_in_iso(bit [3:0] ep);
+    return in_iso[ep] & !rxenable_setup[ep];
+  endfunction
+  function bit endpoint_out_iso(bit [3:0] ep);
+    return out_iso[ep] & !rxenable_setup[ep];
   endfunction
 
   // Is the specified endpoint stalled for the given type of transaction?
@@ -55,11 +73,12 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
     // Non-extant endpoints shall simply ignore all traffic, not return STALL handshakes.
     if (ep >= NEndpoints) return 0;
     case (txn_type)
-      // SETUP transactions shall never return STALL as a response.
+      TxnType_PRE:   return 1'b0;
+      // SETUP transactions shall never return STALL as a response; STALL condition is cleared by
+      // receipt of the SETUP token packet.
       TxnType_SETUP: return 1'b0;
-      TxnType_IN:    return (ep_in_enable[ep]  &  in_stall[ep]);
-      // We're slightly biased in favor of OUT packets, but that's a good choice really.
-      default:       return (ep_out_enable[ep] & out_stall[ep]);
+      TxnType_IN:    return (ep_in_enable[ep]  &  in_stall[ep] & !endpoint_in_iso(ep));
+      default:       return (ep_out_enable[ep] & out_stall[ep] & !endpoint_out_iso(ep));
     endcase
   endfunction
 
@@ -94,8 +113,8 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
   task ensure_buffer_avail(bit [3:0] ep, txn_type_e txn_type);
     uvm_reg_data_t level;
     case (txn_type)
-      TxnType_IN: begin
-        // Nothing to do here for IN transactions.
+      TxnType_PRE, TxnType_IN: begin
+        // Nothing to do here for either IN or PRE transactions.
       end
       TxnType_SETUP: begin
         // Do we need to supply a buffer?
@@ -106,7 +125,6 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
           csr_wr(.ptr(ral.avsetupbuffer), .value(buf_num));
         end
       end
-      // We're slightly biased in favor of OUT packets, but that's a good choice really;
       default: begin
         // Do we need to supply a buffer?
         csr_rd(.ptr(ral.usbstat.av_out_depth), .value(level));
@@ -117,6 +135,15 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
         end
       end
     endcase
+  endtask
+
+  task transaction_pre(bit acceptable, bit stall_expected, ref byte unsigned data[$],
+                      output bit rx_expected);
+    low_speed_traffic = 1'b1;
+    send_setup_packet(target_ep, data, target_addr);
+    low_speed_traffic = 1'b0;
+    // Low Speed traffic prefixed with a PRE token shall never be received!
+    rx_expected = 0;
   endtask
 
   task transaction_in(bit acceptable, bit stall_expected, ref byte unsigned data[$],
@@ -175,7 +202,8 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
 
   task transaction_out(bit acceptable, bit stall_expected, ref byte unsigned data[$],
                        output bit rx_expected);
-    pid_type_e pid = exp_out_toggles[target_ep] ? PidTypeData1 : PidTypeData0;
+    pid_type_e pid = (exp_out_toggles[target_ep] & !endpoint_out_iso(target_ep)) ? PidTypeData1
+                                                                                 : PidTypeData0;
     // This sequence is constructed such that any acceptable packet shall be received; we've
     // ensured the availability of a suitable buffer.
     rx_expected = acceptable;
@@ -185,14 +213,22 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
     if (rx_expected) begin
       // If we're expecting the packet to be received it shall always be accepted immediately
       // in this sequence; a NAK through lack of resources would break the logic.
-      check_response_matches(PidTypeAck);
-      exp_out_toggles[target_ep] ^= 1'b1;
+      if (!endpoint_out_iso(target_ep)) begin
+        check_response_matches(PidTypeAck);
+        exp_out_toggles[target_ep] ^= 1'b1;
+      end
     end else if (stall_expected) check_response_matches(PidTypeStall);
     else begin
-      if (target_addr == dev_addr && target_ep < NEndpoints && ep_out_enable[target_ep]) begin
-        // Configuration (rxenable_out) prevents the packet being received.
+      if (target_addr == dev_addr && target_ep < NEndpoints && ep_out_enable[target_ep] &&
+          !endpoint_out_iso(target_ep)) begin
+        // Configuration (rxenable_out) prevents the packet being received; we expect a NAK from
+        // non-Isochronous endpoints, but note that Control overrides Isochronous if both have been
+        // set (misconfiguration).
         check_response_matches(PidTypeNak);
-      end else check_no_response();
+      end else begin
+        // Other packets should be silently dropped with no response.
+        check_no_response();
+      end
     end
   endtask
 
@@ -255,12 +291,17 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.in_stall[0]), .value(in_stall));
     csr_wr(.ptr(ral.rxenable_setup[0]), .value(rxenable_setup));
     csr_wr(.ptr(ral.rxenable_out[0]), .value(rxenable_out));
+    csr_wr(.ptr(ral.set_nak_out[0]), .value(set_nak_out));
+    csr_wr(.ptr(ral.out_iso[0]), .value(out_iso));
+    csr_wr(.ptr(ral.in_iso[0]), .value(in_iso));
 
     // Report endpoint configuration for diagnostic purposes.
-    `uvm_info(`gfn, $sformatf("ep_out_enable 0x%3x out_stall 0x%3x rxenable_out 0x%3x",
-                              ep_out_enable, out_stall, rxenable_out), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("ep_in_enable 0x%3x in_stall 0x%3x rxenable_setup 0x%3x",
-                              ep_in_enable, in_stall, rxenable_setup), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("ep_out_enable 0x%3x out_stall 0x%3x out_iso 0x%3x", ep_out_enable,
+                              out_stall, out_iso), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("ep_in_enable 0x%3x in_stall 0x%3x in_iso 0x%3x", ep_in_enable,
+                              in_stall, in_iso), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("rxenable_out 0x%3x rxenable_setup 0x%3x set_nak_out 0x%3x",
+                              rxenable_out, rxenable_setup, set_nak_out), UVM_LOW)
 
     // Each transaction is a single packet that may or may not be received.
     for (int unsigned txn = 0; txn < num_trans; txn++) begin
@@ -272,7 +313,7 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
 
       // This chooses the target and type of this transaction.
       choose_target();
-      `uvm_info(`gfn, $sformatf("Txn %0x: type %x address 0x%x ep 0x%x", txn, txn_type, target_addr,
+      `uvm_info(`gfn, $sformatf("Txn %0x: type %p address 0x%x ep 0x%x", txn, txn_type, target_addr,
                                 target_ep), UVM_MEDIUM)
 
       // Make sure there is a buffer available in the appropriate FIFO or available for collection.
@@ -305,9 +346,9 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
 
       // Perform this transaction.
       case (txn_type)
+        TxnType_PRE:   transaction_pre(acceptable, stall_expected, data, rx_expected);
         TxnType_IN:    transaction_in(acceptable, stall_expected, data, rx_expected);
         TxnType_SETUP: transaction_setup(acceptable, stall_expected, data, rx_expected);
-        // We're slightly biased in favor of OUT packets, but that's a good choice really.
         default:       transaction_out(acceptable, stall_expected, data, rx_expected);
       endcase
 
@@ -321,6 +362,10 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
         // Retain packet properties and content.
         exp_rx.push_back(rx);
         exp_rx_cnt++;
+        // For any SETUP/OUT packet that is received, we can model the functionality of
+        // `set_nak_out` easily enough by clearing our copy of `rxenable_out` too; our subsequent
+        // expectations should then be correct.
+        if (set_nak_out[target_ep]) rxenable_out[target_ep] = 1'b0;
       end
 
       // We MUST collect at least one packet now if we expect the RX FIFO to have become full,

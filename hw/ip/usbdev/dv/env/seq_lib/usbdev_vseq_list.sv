@@ -60,6 +60,7 @@
 // These depend on usbdev_spray_packets_vseq, so need to come after it.
 `include "usbdev_device_address_vseq.sv"
 `include "usbdev_disable_endpoint_vseq.sv"
+`include "usbdev_endpoint_types_vseq.sv"
 // This depends on usbdev_stream_len_max_vseq, so needs to come after it.
 `include "usbdev_freq_phase_delta_vseq.sv"
 // These depend on usbdev_random_length_out_transaction, so need to come after it.

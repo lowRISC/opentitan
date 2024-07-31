@@ -43,6 +43,7 @@ filesets:
       - seq_lib/usbdev_dpi_config_host_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_enable_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_endpoint_access_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_endpoint_types_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_fifo_rst_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_freq_phase_delta_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_host_lost_vseq.sv: {is_include_file: true}

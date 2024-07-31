@@ -633,6 +633,20 @@
       tests: ["usbdev_disable_endpoint"]
     }
     {
+      name: endpoint_types
+      desc: '''
+            Exercise all permutations of endpoint configuration bits with all possible token packets
+            (SETUP, OUT, IN and PRE).
+
+            - Randomize all endpoint configuration bits (ep_out_enable, ep_in_enable,
+              out_stall, in_stall, rxenable_out, rxenable_setup, set_nak_out, out_iso, in_iso).
+            - Targeting only the correct device address with randomized traffic, check that only the
+              expected traffic is received by the DUT and that all other packets are correctly dropped.
+            '''
+      stage: V2
+      tests: ["usbdev_endpoint_types"]
+    }
+    {
       name: out_trans_nak
       desc: '''
             Verify the functionality of OUT transaction when rxenable_out is not set.

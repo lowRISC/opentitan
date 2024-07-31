@@ -11,6 +11,18 @@ class usbdev_device_address_vseq extends usbdev_spray_packets_vseq;
     num_trans inside {[256:1024]};
   }
 
+  // We do not wish to test Isochronous transfers in this sequence.
+  constraint in_iso_c {
+    in_iso == 0;
+  }
+  constraint out_iso_c {
+    out_iso == 0;
+  }
+  // Do not complicate things with the `set_nak_out` functionality in this sequence.
+  constraint set_nak_out_c {
+    set_nak_out == 0;
+  }
+
   // Whether to target the correct address?
   bit hit;
 

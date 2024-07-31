@@ -443,18 +443,17 @@ class usbdev_bfm extends uvm_component;
   endfunction
 
   // Complete an in-progress Isochronous IN transaction.
-  function void in_iso_completed();
+  function void in_iso_completed(bit [3:0] ep);
     // Check that there is a pending IN transaction.
-    assert(tx_ep != InvalidEP && tx_ep < NEndpoints);
-    assert(in_iso[tx_ep]);
-    if (configin[tx_ep].rdy) begin
-      in_sent[tx_ep] = 1'b1;
+    assert(ep != InvalidEP && ep < NEndpoints);
+    assert(in_iso[ep] & !rxenable_setup[ep]);
+    if (configin[ep].rdy) begin
+      in_sent[ep] = 1'b1;
       intr_state[IntrPktSent] = 1'b1;
     end
     // Update the IN configuration.
-    configin[tx_ep].sending = 1'b0;
-    configin[tx_ep].rdy = 1'b0;
-    tx_ep = InvalidEP;
+    configin[ep].sending = 1'b0;
+    configin[ep].rdy = 1'b0;
   endfunction
 
   // Process a Start of Frame packet from the USB host controller.
@@ -545,24 +544,25 @@ class usbdev_bfm extends uvm_component;
     ep = token.endpoint;
     if (token.address != dev_address || ep >= NEndpoints || !ep_in_enable[ep]) return 0;
 
-    if (in_stall[ep]) begin
+    if (in_stall[ep] & (!in_iso[ep] | rxenable_setup[ep])) begin
       usb20_item stall = handshake_pkt::type_id::create("stall");
       stall.m_pid_type = PidTypeStall;
       // Return STALL response.
       rsp = stall;
     end else begin
+      // Control takes precedence over Isochronous setting in the event of such a misconfiguration.
+      bit iso_in_endpoint = in_iso[ep] & !rxenable_setup[ep];
       // What about the IN configuration for this endpoint?
       bit rdy = configin[ep].rdy;
-      if (rdy || in_iso[ep]) begin
+      if (rdy || iso_in_endpoint) begin
         data_pkt data;
         configin[ep].sending = 1'b1;
 
         data = data_pkt::type_id::create("data");
-        if (in_iso[ep]) begin
+        if (iso_in_endpoint) begin
           // Isochronous transactions receive no handshake packet so we're already done, but
           // the packet sent signaling occurs only if there was a pending IN packet.
-          tx_ep = ep;
-          in_iso_completed();
+          in_iso_completed(ep);
           // Always use DATA0 for Full Speed Isochronous transactions.
           data.m_pid_type = PidTypeData0;
           tx_ep = InvalidEP;
@@ -667,8 +667,10 @@ class usbdev_bfm extends uvm_component;
         // Collect the packet contents into the buffer, if one is available, as well as updating
         // the internal `wdata` flops.
         write_pkt_bytes(!avout_empty, avout_empty ? 0 : avout_fifo[0], data);
-        // Is the OUT endpoint stalled? This has priority over other reasons for rejection.
-        if (out_stall[ep]) begin
+        // Is the OUT endpoint stalled? This has priority over other reasons for rejection, but does
+        // not apply to Isochronous endpoints (no handshake responses) unless they're also set to
+        // receive SETUP packets (misconfigured).
+        if (out_stall[ep] & (!out_iso[ep] | rxenable_setup[ep])) begin
           usb20_item stall = handshake_pkt::type_id::create("stall");
           stall.m_pid_type = PidTypeStall;
           cancel_out();
@@ -680,8 +682,9 @@ class usbdev_bfm extends uvm_component;
         if (avout_empty || rx_fifo.size() >= RxFIFODepth - 1 || !rxenable_out[ep]) begin
           usb20_item nak;
           cancel_out();
-          // Construct a NAK response indicating that we're busy, unless Isochronous.
-          if (out_iso[ep]) return 0;
+          // Construct a NAK response indicating that we're busy, unless Isochronous. If an endpoint
+          // is misconfigured to be both Control and Isochronous, Control wins.
+          if (out_iso[ep] & !rxenable_setup[ep]) return 0;
           nak = handshake_pkt::type_id::create("nak");
           nak.m_pid_type = PidTypeNak;
           // NAK response.
@@ -698,9 +701,6 @@ class usbdev_bfm extends uvm_component;
           e.buffer = avout_fifo.pop_front();
           e.setup = 0;
           if (!avout_fifo.size()) intr_state[IntrAvOutEmpty] = 1'b1;
-          // 'Set NAK on OUT' functionality; accepts a single OUT packet at a time on the endpoint,
-          // gated by software control.
-          if (set_nak_out[ep]) rxenable_out[ep] = 1'b0;
         end
       end
       default: `uvm_fatal(`gfn, $sformatf("Unexpected PID type 0x%x", token.m_pid_type))
@@ -716,6 +716,9 @@ class usbdev_bfm extends uvm_component;
       e.ep = ep;
       e.size = data.data.size();
       rx_fifo.push_back(e);
+      // 'Set NAK on OUT' functionality; accepts a single OUT packet at a time on the endpoint,
+      // gated by software control.
+      if (set_nak_out[ep]) rxenable_out[ep] = 1'b0;
       // Packet received.
       intr_state[IntrRxFull] = (rx_fifo.size() >= RxFIFODepth);
       intr_state[IntrPktReceived] = 1'b1;
@@ -723,8 +726,9 @@ class usbdev_bfm extends uvm_component;
 
     // Now forget the OUT transaction; successfully completed.
     rx_token = null;
-    // Isochronous transactions do not include a handshake packet.
-    if (out_iso[ep]) return 0;
+    // Isochronous transactions do not include a handshake packet, but 'control endpoints' take
+    // precedence; it is a configuration error to have an Isochronous Control endpoint, however.
+    if (out_iso[ep] & !rxenable_setup[ep]) return 0;
 
     ack = handshake_pkt::type_id::create("ack");
     ack.m_pid_type = PidTypeAck;
