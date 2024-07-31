@@ -369,6 +369,7 @@ _NORMAL_DEPENDENCIES = {
             "tar": "@crate_index__tar-0.4.40//:tar",
             "tempfile": "@crate_index__tempfile-3.8.0//:tempfile",
             "thiserror": "@crate_index__thiserror-1.0.49//:thiserror",
+            "tiny-keccak": "@crate_index__tiny-keccak-2.0.2//:tiny_keccak",
             "typetag": "@crate_index__typetag-0.2.13//:typetag",
             "zerocopy": "@crate_index__zerocopy-0.7.11//:zerocopy",
         },
@@ -1013,6 +1014,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/crc32fast/1.3.2/download"],
         strip_prefix = "crc32fast-1.3.2",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.crc32fast-1.3.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__crunchy-0.2.2",
+        sha256 = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/crunchy/0.2.2/download"],
+        strip_prefix = "crunchy-0.2.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.crunchy-0.2.2.bazel"),
     )
 
     maybe(
@@ -3061,6 +3072,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/time-macros/0.2.14/download"],
         strip_prefix = "time-macros-0.2.14",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-macros-0.2.14.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__tiny-keccak-2.0.2",
+        sha256 = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tiny-keccak/2.0.2/download"],
+        strip_prefix = "tiny-keccak-2.0.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.tiny-keccak-2.0.2.bazel"),
     )
 
     maybe(
