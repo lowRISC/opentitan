@@ -95,6 +95,8 @@ interface chip_if;
   pins_if#(.Width(top_earlgrey_pkg::MioPadCount), .PullStrength("Weak")) mios_if(.pins(mios));
   pins_if#(.Width(top_earlgrey_pkg::DioPadCount), .PullStrength("Weak")) dios_if(.pins(dios));
 
+  //Allow pull up from testbench on POR pad
+  bit por_external_pu = 1;
   // Weak pulls for DIOs.
   //
   // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
@@ -113,7 +115,10 @@ interface chip_if;
       dios_if.pins_pd = '1;
 
       // These are active low, so pull up.
-      dios_if.pins_pu[top_earlgrey_pkg::DioPadPorN] = 1;
+      void'($value$plusargs("por_external_pu=%0b", por_external_pu));
+      if (por_external_pu) begin
+        dios_if.pins_pu[top_earlgrey_pkg::DioPadPorN] = 1;
+      end
       dios_if.pins_pu[top_earlgrey_pkg::DioPadUsbP] = 1;
       dios_if.pins_pu[top_earlgrey_pkg::DioPadIor8] = 1;
       dios_if.pins_pu[top_earlgrey_pkg::DioPadIor9] = 1;
