@@ -494,6 +494,12 @@ alias(
 )
 
 alias(
+    name = "tiny-keccak",
+    actual = "@crate_index__tiny-keccak-2.0.2//:tiny_keccak",
+    tags = ["manual"],
+)
+
+alias(
     name = "typetag",
     actual = "@crate_index__typetag-0.2.13//:typetag",
     tags = ["manual"],
