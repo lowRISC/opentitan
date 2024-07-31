@@ -21,8 +21,8 @@ extern "C" {
     field(device_id, uint32_t, 8) \
     field(manuf_state, uint32_t, 8) \
     field(wafer_auth_secret, uint32_t, 8) \
-    field(test_unlock_token, uint32_t, 4) \
-    field(test_exit_token, uint32_t, 4)
+    field(test_unlock_token_hash, uint64_t, 2) \
+    field(test_exit_token_hash, uint64_t, 2)
 UJSON_SERDE_STRUCT(ManufCpProvisioningData, \
                    manuf_cp_provisioning_data_t, \
                    STRUCT_MANUF_CP_PROVISIONING_DATA);
