@@ -52,6 +52,9 @@ class usb20_agent_cfg extends dv_base_agent_cfg;
   // ACKnowledged an IN packet or it has been marked as `pend` by the hardware.
   bit rtl_sending_clear_requires_ack = 1'b1;
 
+  // RTL will report CRC errors even if the PID is truncated, for DATA packets.
+  bit rtl_limited_crc_checking = 1'b1;
+
   // --------------------------------------------------------------------------
 
 endclass

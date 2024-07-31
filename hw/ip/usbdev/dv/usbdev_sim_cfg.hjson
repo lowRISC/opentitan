@@ -541,6 +541,23 @@
       name: usbdev_stream_len_max
       uvm_test_seq: usbdev_stream_len_max_vseq
     }
+    {
+      name: usbdev_tx_rx_disruption
+      uvm_test_seq: usbdev_tx_rx_disruption_vseq
+      // Monitor and model cannot be used to predict with absolute certainty when a PID/CRC error
+      // will be reported when truncating a packet transmission to the DUT because `usb_fs_rx` can
+      // sample the SE0 state of a spontaneous Bus Reset and complete the PID even though not all
+      // of the PID bits were transmitted. The CRC can simply be a false positive match,
+      // particularly the CRC5 of a token packet.
+      // We also cannot readily predict whether we shall raise a `link_in_err` by issuing a bus
+      // reset during an IN DATA packet.
+      run_opts: [
+        "+en_scb_rdchk_rx_pid_err=0",
+        "+en_scb_rdchk_rx_crc_err=0",
+        "+en_scb_rdchk_link_in_err=0"
+      ]
+      reseed: 500
+    }
   ]
 
   // List of regressions.
