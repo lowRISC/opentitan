@@ -265,6 +265,14 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_TX_FIFO_START :
                                             SPI_HOST_TX_FIFO_END]}) begin
       bit [7:0] tl_byte[TL_DBW] = {<< 8{item.a_data}};
+
+      if (!is_valid_mask(item.a_mask, 1)) begin
+        `uvm_info(`gfn, $sformatf("TX-FIFO: Wrong mask (%0d) ... Returning, data is ignored",
+                                  item.a_mask),UVM_DEBUG)
+        return;
+      end
+
+
       if (cfg.en_cov) begin
         spi_host_status_t status;
         csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
@@ -273,7 +281,10 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // Store all write-data into the local transaction item.
       if (cmd_phase_write) begin
         foreach (tl_byte[i]) begin
-          host_wr_segment.spi_data.push_back(tl_byte[i]);
+          if (item.a_mask[i]) begin
+            host_wr_segment.spi_data.push_back(tl_byte[i]);
+            `uvm_info(`gfn, $sformatf("Write to TXFIFO: 0x%0x",tl_byte[i]), UVM_DEBUG)
+          end
         end
       end
       // Based on the value of cfg.tx_stall_check, we push this data into the

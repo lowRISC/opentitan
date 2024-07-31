@@ -414,6 +414,32 @@ class spi_host_base_vseq extends cip_base_vseq #(
               UVM_HIGH)
   endtask : tl_access_inner
 
+  // TODO (#24198): incorporate into a tl_access task wrapper and use whenever the mask is 0x0,
+  // or non-3 byte strobes for TXFIFO
+  virtual task accessinval_error_check(bit [TL_DBW-1:0] mask, bit txfifo);
+    int num_try = 2;
+    bit accessinval_error;
+
+    if (!is_valid_mask (mask, txfifo)) begin
+
+      repeat (num_try) begin
+        csr_rd(.ptr(ral.error_status.accessinval), .value(accessinval_error));
+        if (accessinval_error) begin
+          break;
+        end
+      end
+      if (!accessinval_error) begin
+        `uvm_fatal(`gfn, {$sformatf("%m - ACCESSINVAL_ERROR not set despite of sending a"),
+                          $sformatf("mask = %0d",mask)})
+      end else begin
+        // Clear the error bit to allow the RTL to move forward.
+        csr_wr(.ptr(ral.error_status.accessinval), .value(1));
+        `uvm_info(`gfn, {"Sent ral.error_status.accessinval = 0x1 to clear the error and let",
+                         " the simulation proceed"}, UVM_DEBUG)
+      end
+    end
+  endtask
+
   // Create TL access(es) to either TXFIFO/RXFIFO to write/read data.
   // fifo == TxFifo : Write all bits in data_q to the TxFifo
   //      == RxFifo : Read single 32-bit word from RxFifo
@@ -438,7 +464,12 @@ class spi_host_base_vseq extends cip_base_vseq #(
       while (data_q.size() > 0) begin
         data[cnt] = data_q.pop_front();
         mask[cnt] = 1'b1;
-        if (cnt == 3) begin
+
+        // TX - FIFO doesn't support 3-strobes set. Sending a 3-byte strobes
+        // in write causes an ACCESSINVAL which locks the RTL until is cleared
+        // Currently neither the scoreboard nor the VSEQs handle this scenario well,
+        // hence restricting here
+        if ((cnt == 3) || (cnt == 1 && data_q.size == 1)) begin
           tl_access_inner(.addr(align_addr), .data(data), .write(WRITE),
                           .mask(mask), .blocking(1'b1));
           cnt  = 0;
@@ -448,6 +479,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
           cnt++;
         end
       end
+
       // add runts
       if (cnt != 0) begin
         tl_access_inner(.addr(align_addr), .data(data), .write(WRITE), .mask(mask),
