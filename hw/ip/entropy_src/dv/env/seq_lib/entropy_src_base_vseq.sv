@@ -341,7 +341,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   // Poll the relevant interrupt bit for accessing either the ENTROPY_DATA or FW_OV_RD_DATA
   // register
-  task poll(tl_data_source_e source = TlSrcEntropyDataReg);
+  task poll(tl_data_source_e source = TlSrcEntropyDataReg, int spinwait_delay_ns = 0);
 
     uvm_reg_field intr_field;
 
@@ -357,7 +357,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       end
     endcase
 
-    csr_spinwait(.ptr(intr_field), .exp_data(1'b1));
+    csr_spinwait(.ptr(intr_field), .exp_data(1'b1), .spinwait_delay_ns(spinwait_delay_ns));
   endtask
 
 

@@ -20,21 +20,28 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
                      create("m_rng_push_seq");
 
     m_rng_push_seq.num_trans = 96;
-
-    fork
+    begin
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
-      begin
-        do begin
-          int available_seeds;
-          // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
-          poll(.source(TlSrcEntropyDataReg));
-          // Read all currently available data (but no more than seed_cnt)
-          do_entropy_data_read(.max_bundles(seed_cnt), .bundles_found(available_seeds));
-          // Update the count of remaining seeds to read
-          seed_cnt -= available_seeds;
-        end while (seed_cnt > 0);
-      end
-    join
+      fork
+        begin
+          do begin
+            int available_seeds;
+            // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
+            poll(.source(TlSrcEntropyDataReg), .spinwait_delay_ns(1000));
+            // Read all currently available data (but no more than seed_cnt)
+            do_entropy_data_read(.max_bundles(seed_cnt), .bundles_found(available_seeds));
+            // Update the count of remaining seeds to read
+            seed_cnt -= available_seeds;
+          end while (seed_cnt > 0);
+        end
+        begin
+          csr_spinwait(.ptr(ral.alert_summary_fail_counts.any_fail_count), .exp_data(1),
+                       .backdoor(1));
+        end
+      join_any
+      wait_no_outstanding_access();
+      disable fork;
+    end
   endtask : body
 
 endclass : entropy_src_smoke_vseq
