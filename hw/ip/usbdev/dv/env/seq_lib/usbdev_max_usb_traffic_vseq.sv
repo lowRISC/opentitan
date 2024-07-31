@@ -12,12 +12,12 @@
 // The code structure and naming has been written with this in mind, and the intention is that
 // some of these tasks would be migrated into the parent 'usbdev_usb_host_vseq.'
 class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
- `uvm_object_utils(usbdev_max_usb_traffic_vseq)
+  `uvm_object_utils(usbdev_max_usb_traffic_vseq)
 
   `uvm_object_new
 
   // This is the total number of packets to be transferred, across all endpoints.
-  constraint num_trans_c { num_trans inside {[64:128]}; }
+  constraint num_trans_c { num_trans inside {[32:64]}; }
 
   // Endpoint configuration.
   //
@@ -28,8 +28,9 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   //   Data Toggle Synchronization and retrying.
   rand bit [NEndpoints-1:0] ep_in_enabled;
   rand bit [NEndpoints-1:0] ep_out_enabled;
-  rand bit [NEndpoints-1:0] ep_setup_enabled;
-  rand bit [NEndpoints-1:0] ep_iso_enabled;
+  rand bit [NEndpoints-1:0] rxenable_setup;
+  rand bit [NEndpoints-1:0] out_iso;
+  rand bit [NEndpoints-1:0] in_iso;
 
   // Ensure that the test can do something.
   constraint in_and_out_c {
@@ -43,17 +44,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     ep_in_enabled == ep_out_enabled;
   }
 
-  // TODO: Support Isochronous endpoints at some point to make this sequence more comprehensive/
-  // flexible? Presently there is no way to differentiate packets, and all packets are expected to
-  // be delivered reliably. See #23932.
-  constraint ep_iso_enabled_c {
-    ep_iso_enabled == 0;
-  }
-
-  // Bitmap of available buffers that are not presently assigned to the DUT.
-  bit [NumBuffers-1:0] buf_avail;
-
-  // We need to track the OUT side Data Toggle(s) otherwise packets will be rejected.
+  // We need to track the OUT side Data Toggle(s) otherwise packets will be dropped.
   bit [NEndpoints-1:0] exp_out_toggle;
 
   // We track the IN side Data Toggle(s) just to check that the DUT transmissions.
@@ -70,6 +61,16 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   // In-flight packets to each of the endpoints.
   data_pkt packets_in_flight[NEndpoints][$];
 
+  // Description of a packet received on the device side.
+  typedef struct {
+    byte unsigned data[];
+  } rx_packet_t;
+
+  // Device-side queue of packets
+  // - Non-Isochronous streams are not permitted to drop packets.
+  // - A stream is considered non-Isochronous if neither OUT nor IN endpoint is Isochronous.
+  rx_packet_t dev_pkt_q[NEndpoints][$];
+
   // Number of active streams.
   uint stream_count;
 
@@ -83,6 +84,16 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   bit traffic_completed = 0;
 
   event device_ready;
+
+  // Extract the sequence ID from the start of a DATA packet.
+  function bit [31:0] get_sequence_id(ref byte unsigned data[]);
+    bit [31:0] seq_id;
+    // Packet data shall always consist of at least four bytes.
+    `DV_CHECK_GE(data.size(), 4)
+    seq_id = {data[3], data[2], data[1], data[0]};
+    `uvm_info(`gfn, $sformatf("get_sequence_id returning 0x%0x", seq_id), UVM_HIGH)
+    return seq_id;
+  endfunction
 
   // ------------------------------------ Host side of test --------------------------------------
 
@@ -100,6 +111,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
 
   // Attempt to collect an IN packet from the given endpoint.
   task host_collect_in_packet(bit [3:0] ep);
+    bit iso = in_iso[ep];
     usb20_item response;
     RSP rsp;
     `uvm_info(`gfn, $sformatf("Requesting IN packet from EP%d", ep), UVM_HIGH)
@@ -111,24 +123,40 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     case (response.m_pid_type)
       // DATA packet in response.
       PidTypeData0, PidTypeData1: begin
+        pid_type_e exp_pid = (exp_in_toggle[ep] & !iso) ? PidTypeData1 : PidTypeData0;
         // Received a packet; check it against expectations.
         data_pkt exp_data;
         data_pkt in_data;
         $cast(in_data, response);
-        `DV_CHECK(packets_in_flight[ep].size() > 0)
-        exp_data = packets_in_flight[ep].pop_front();
-        check_tx_packet(in_data, exp_in_toggle[ep] ? PidTypeData1 : PidTypeData0, exp_data.data);
-        if (!ep_iso_enabled[ep]) begin
-          // Since we're acknowledging successful receipt, we flip our toggle.
-          exp_in_toggle[ep] ^= 1'b1;
-          send_handshake(PidTypeAck);
+        // Ignore Zero Length Packets from Isochronous endpoints because this just means there is no
+        // data available presently. (This sequence does not generate zero length packets.)
+        if (!iso || in_data.data.size() > 0) begin
+          bit [31:0] act_seq = get_sequence_id(in_data.data);
+          bit [31:0] exp_seq;
+          do begin
+            `DV_CHECK(packets_in_flight[ep].size() > 0)
+            exp_data = packets_in_flight[ep].pop_front();
+            // Isochronous streams may drop OUT and/or IN packets, so use the sequence number to
+            // catch up.
+            exp_seq = get_sequence_id(exp_data.data);
+            `uvm_info(`gfn, $sformatf("Comparing act seq 0x%0x against exp 0x%0x (iso %0d)",
+                                      act_seq, exp_seq, iso), UVM_MEDIUM)
+          end while (iso && exp_seq < act_seq);
+          // This packet should match; content check includes the sequence IDs.
+          check_tx_packet(in_data, exp_pid, exp_data.data);
+          if (!iso) begin
+            // Since we're acknowledging successful receipt, we flip our toggle.
+            exp_in_toggle[ep] ^= 1'b1;
+            send_handshake(PidTypeAck);
+          end
+          // Update the count of received packets.
+          packets_received[ep] = packets_received[ep] + 1;
+          if (packets_received[ep] >= packet_count) stream_completed[ep] = 1'b1;
         end
-        // Update the count of received packets.
-        packets_received[ep] = packets_received[ep] + 1;
-        if (packets_received[ep] >= packet_count) stream_completed[ep] = 1'b1;
       end
       // Nothing available, try again later.
       PidTypeNak: begin
+        `DV_CHECK_EQ(iso, 1'b0, "Only non-Isochronous endpoints should NAK IN requests")
       end
       default: `uvm_fatal(`gfn, $sformatf("Unexpected response 0x%0x from DUT",
                           response.m_pid_type))
@@ -138,6 +166,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
 
   // Send a pseudo-random packet to the given endpoint number.
   task host_send_out_packet(bit [3:0] ep, bit is_setup);
+    bit iso = out_iso[ep];
     `uvm_info(`gfn, $sformatf("Sending OUT packet to EP%d", ep), UVM_HIGH)
     claim_driver();
     if (is_setup) begin
@@ -148,13 +177,19 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
       // The IN side is advanced automatically.
       exp_in_toggle[ep]  = 1'b1;
     end else begin
-      // Choose the packet length and content pseudo-randomly.
-      send_prnd_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0,
-                           1'b1, 0, ep_iso_enabled[ep]);
+      // Choose the packet length and content pseudo-randomly, but ensure that we have at least
+      // 4 bytes so that we can include a packet sequence number to differentiate the packets.
+      // As an extra precaution we set the 4 MSBs to match the endpoint number, which can also be
+      // diagnostically useful.
+      uint seq_id = packets_sent[ep];
+      byte unsigned data[];
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data, data.size() >= 4 && data.size() <= MaxPktSizeByte;)
+      {data[3], data[2], data[1], data[0]} = {ep, seq_id[27:0]};
+      send_out_packet(ep, exp_out_toggle[ep] ? PidTypeData1 : PidTypeData0, data, iso);
     end
     // Check that the packet was accepted (ACKnowledged) by the USB device.
     // An Isochronous endpoint returns no handshake and no data toggle bit, so do not wait.
-    if (ep_iso_enabled[ep]) begin
+    if (iso) begin
       // Ensure a sufficient gap before the next transaction.
       // TODO: this should probably be guaranteed within the driver.
       inter_packet_delay();
@@ -207,9 +242,9 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
         // Are we permitted to send another OUT packet?
         // - Isochronous streams continue transmitting until we have received the required
         //   number of IN packets, since packets may be lost in either direction.
-        if (packets_sent[ep_out] < packet_count || ep_iso_enabled[ep_out]) begin
+        if (packets_sent[ep_out] < packet_count || out_iso[ep_out]) begin
           // Shall we send a SETUP packet rather than an OUT packet?
-          bit is_setup = $urandom & ep_setup_enabled[ep_out];
+          bit is_setup = $urandom & rxenable_setup[ep_out];
           host_send_out_packet(ep_out, is_setup);
         end
       end
@@ -242,9 +277,6 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
       csr_wr(.ptr(ral.avsetupbuffer), .value(buf_num));
       supplied = 1'b1;
     end
-    // Update the set of buffers that are available for later use, having not been supplied to
-    // the DUT.
-    buf_avail[buf_num] = !supplied;
     `uvm_info(`gfn, $sformatf("usbstat was 0x%0x and supplied is %d", usbstat, supplied),
               UVM_HIGH)
   endtask
@@ -252,28 +284,44 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
   // Keep the 'Available Buffer' FIFOs topped up; we want to keep the traffic streaming,
   // so there must always be buffers available to the DUT for packet reception.
   task device_refill_fifos();
+    int buf_num = buf_alloc();
     bit supplied = 1'b1;
     // Keep going until we run out of space or buffers.
-    while (supplied && buf_avail) begin
-      uint buf_num = 0;
-      while (buf_num < NumBuffers && !buf_avail[buf_num]) buf_num++;
-      `DV_CHECK_FATAL(buf_num < NumBuffers)
+    while (supplied && buf_num >= 0) begin
       device_buf_supply(buf_num, supplied);
+      if (supplied) buf_num = buf_alloc();
     end
+    if (buf_num >= 0) buf_release(buf_num);
   endtask
 
   task device_setup;
+    buf_init();
     // Populate the 'Available Buffer' FIFOs.
-    uint buf_num = 0;
-    for (uint buf_num = 0; buf_num < NumBuffers; buf_num++) begin
-      bit supplied;
-      device_buf_supply(buf_num, supplied);
-    end
+    device_refill_fifos();
     // Configure the endpoints; this should strictly be done on the device side really.
     csr_wr(.ptr(ral.ep_out_enable[0]),  .value(ep_out_enabled));
     csr_wr(.ptr(ral.ep_in_enable[0]),   .value(ep_in_enabled));
     csr_wr(.ptr(ral.rxenable_out[0]),   .value(ep_out_enabled));
-    csr_wr(.ptr(ral.rxenable_setup[0]), .value(ep_setup_enabled));
+    csr_wr(.ptr(ral.rxenable_setup[0]), .value(rxenable_setup));
+    csr_wr(.ptr(ral.out_iso[0]),        .value(out_iso));
+    csr_wr(.ptr(ral.in_iso[0]),         .value(in_iso));
+
+    // Report the configuration that we're using.
+    `uvm_info(`gfn, $sformatf("ep_out_enable  0x%0x", ep_out_enabled), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("ep_in_enable   0x%0x", ep_in_enabled),  UVM_LOW)
+    `uvm_info(`gfn, $sformatf("rxenable_out   0x%0x", ep_out_enabled), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("rxenable_setup 0x%0x", rxenable_setup), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("out_iso        0x%0x", out_iso),        UVM_LOW)
+    `uvm_info(`gfn, $sformatf("in_iso         0x%0x", in_iso),         UVM_LOW)
+
+    // Control endpoint setting takes precedence over the Isochronous one; having both bits set
+    // for a single endpoint constitutes a configuration error, but we want to exercise all
+    // configurations.
+    out_iso &= ~rxenable_setup;
+    in_iso  &= ~rxenable_setup;
+
+    // Ensure that our packet queues are defined and empty.
+    for (int unsigned ep = 0; ep < NEndpoints; ep++) dev_pkt_q[ep].delete();
 
     ->device_ready;
   endtask
@@ -326,6 +374,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
             // Return this buffer.
             buf_num = get_field_val(ral.configin[0].buffer, configin);
             device_buf_supply(buf_num, supplied);
+            if (!supplied) buf_release(buf_num);
           end
         end
       end
@@ -336,26 +385,79 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
       // Collect and return a received packet if there is one.
       csr_rd(.ptr(ral.usbstat), .value(usbstat));
       if (!get_field_val(ral.usbstat.rx_empty, usbstat)) begin
-        int unsigned retracted_buf;
         uvm_reg_data_t rxfifo;
-        bit retracted;
+        int unsigned buf_num;
+        int unsigned pkt_len;
+        bit enqueue = 1'b1;
+        bit [3:0] ep;
 
         csr_rd(.ptr(ral.rxfifo), .value(rxfifo));
         `uvm_info(`gfn, $sformatf("Read RXFIFO 0x%x", rxfifo), UVM_HIGH)
 
+        ep = get_field_val(ral.rxfifo.ep, rxfifo);
+        buf_num = get_field_val(ral.rxfifo.buffer, rxfifo);
+        pkt_len = get_field_val(ral.rxfifo.size, rxfifo);
+        `uvm_info(`gfn, $sformatf("Device ep %0d received %0d byte(s) into buffer %0d", ep,
+                                  pkt_len, buf_num), UVM_MEDIUM)
+        `DV_CHECK_LT(ep, NEndpoints)
+
         // Note: in time we may want to modify the packets in some way, but for now we just
         // echo them back and leave the host side to check them.
 
-        // Supply any processed packets for IN collection.
-        present_in_packet(get_field_val(ral.rxfifo.ep, rxfifo),
-                          get_field_val(ral.rxfifo.buffer, rxfifo),
-                          get_field_val(ral.rxfifo.size, rxfifo),
-                          .may_retract(1'b0),  // TODO: no isochronous support at present.
-                          .retracted(retracted), .retracted_buf(retracted_buf));
-        // Was a packet retracted?
-        if (retracted) begin
+        // If we already have packets queued for this endpoint, we must queue this packet too, to
+        // keep them in order.
+        if (!dev_pkt_q[ep].size()) begin
+          bit iso = in_iso[ep];
+          uvm_reg_data_t rdy;
+          // Is there still a waiting IN packet for this endpoint?
+          csr_rd(.ptr(ral.configin[ep].rdy), .value(rdy));
+          if (iso || !rdy) begin
+            int unsigned retracted_buf;
+            bit retracted;
+            // We should be able to make the packet available immediately, leaving it in its present
+            // buffer. Present the packet for collection by an IN transaction from the USB host.
+            present_in_packet(ep, buf_num, pkt_len, .may_retract(iso), .retracted(retracted),
+                              .retracted_buf(retracted_buf));
+            // Was a packet retracted?
+            if (retracted) begin
+              bit supplied;
+              device_buf_supply(retracted_buf, supplied);
+            end
+            enqueue = 1'b0;
+          end
+        end
+        if (enqueue) begin
+          // Collect the contents of the packet buffer.
+          rx_packet_t rx_pkt;
           bit supplied;
-          device_buf_supply(retracted_buf, supplied);
+          read_buffer(buf_num, pkt_len, rx_pkt.data);
+          dev_pkt_q[ep].push_back(rx_pkt);
+          // Release the buffer.
+          device_buf_supply(buf_num, supplied);
+          if (!supplied) buf_release(buf_num);
+        end
+      end
+
+      // Can we supply any more packets for IN collection at this point?
+      // Do as many as we can right now, just to keep things moving.
+      for (int unsigned ep = 0; ep < NEndpoints; ep++) begin
+        if (ep_in_enabled[ep] && dev_pkt_q[ep].size() > 0) begin
+          uvm_reg_data_t rdy;
+          csr_rd(.ptr(ral.configin[ep].rdy), .value(rdy));
+          if (!rdy) begin
+            int buf_num = buf_alloc();
+            if (buf_num >= 0) begin
+              rx_packet_t rx_pkt = dev_pkt_q[ep].pop_front();
+              int unsigned pkt_len = rx_pkt.data.size();
+              int unsigned retracted_buf;
+              bit iso = in_iso[ep];
+              bit retracted;
+              write_buffer(buf_num, rx_pkt.data);
+              present_in_packet(ep, buf_num, pkt_len, .may_retract(iso),
+                                .retracted(retracted), .retracted_buf(retracted_buf));
+              `DV_CHECK_EQ(retracted, 0, "Should not have had to retract an IN packet here")
+            end
+          end
         end
       end
     end

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class usbdev_streaming_vseq extends usbdev_max_usb_traffic_vseq;
+class usbdev_streaming_vseq extends usbdev_max_non_iso_usb_traffic_vseq;
   `uvm_object_utils(usbdev_streaming_vseq)
 
   `uvm_object_new

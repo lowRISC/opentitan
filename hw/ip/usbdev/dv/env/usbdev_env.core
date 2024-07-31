@@ -60,6 +60,7 @@ filesets:
       - seq_lib/usbdev_low_speed_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_min_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_length_out_transaction_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_max_non_iso_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_max_usb_traffic_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_nak_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_iso_vseq.sv: {is_include_file: true}
