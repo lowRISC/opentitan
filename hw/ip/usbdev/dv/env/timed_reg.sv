@@ -82,13 +82,13 @@ class timed_reg_field extends uvm_object;
     uvm_reg_data_t pred_val;
     `uvm_info(`gfn, $sformatf(" - field %s : pred valid %d prev 0x%0x new 0x%0x",
                               field.get_name(), pred_valid, pred_latest.val_prev,
-                              pred_latest.val_new), UVM_MEDIUM)
+                              pred_latest.val_new), UVM_HIGH)
     if (pred_valid) begin
       uvm_reg_data_t act_val = (act_data >> lsb) & f_mask;
       `uvm_info(`gfn, $sformatf("   (time_now 0x%0x latest_time 0x%0x)", pred_latest.latest_time,
-                                time_now), UVM_MEDIUM)
+                                time_now), UVM_HIGH)
       if (act_val == pred_latest.val_new) begin
-        `uvm_info(`gfn, "   Prediction met", UVM_MEDIUM)
+        `uvm_info(`gfn, "   Prediction met", UVM_HIGH)
         pred_val = pred_latest.val_new;
         // Prediction met; no longer required.
         pred_valid = 1'b0;
@@ -104,7 +104,7 @@ class timed_reg_field extends uvm_object;
       // We have no new prediction, use the most recent prediction.
       pred_val = read_latest;
     end
-    `uvm_info(`gfn, $sformatf("   (predicted as 0x%0x)", pred_val), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("   (predicted as 0x%0x)", pred_val), UVM_HIGH)
     // Return the predicted value pre-shifted to be merged into the register-level prediction.
     return pred_val << lsb;
   endfunction
