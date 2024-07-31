@@ -1421,7 +1421,7 @@ opentitan_test(
         timeout = "eternal",
         tags = ["manual"],
         test_cmd = " ".join([
-            "--firmware-elf=\"{firmware:elf}\"",
+            "\"{firmware:elf}\"",
         ]),
         test_harness = "//sw/host/tests/chip/mem",
     ),
