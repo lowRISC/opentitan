@@ -102,7 +102,7 @@ cc_test(
     srcs = ["print_unittest.cc"],
     deps = [
         ":print",
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:str_format",
         "@googletest//:gtest_main",
     ],
 )

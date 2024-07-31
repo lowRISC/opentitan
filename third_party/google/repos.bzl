@@ -36,7 +36,7 @@ def google_repos(
     )
 
     http_archive_or_local(
-        name = "com_google_absl",
+        name = "abseil-cpp",
         local = absl,
         sha256 = "59d2976af9d6ecf001a81a35749a6e551a335b949d34918cfade07737b9d93c5",
         strip_prefix = "abseil-cpp-20230802.0",
