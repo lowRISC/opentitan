@@ -1,0 +1,5 @@
+overrides:
+  axi:                { git: "https://github.com/pulp-platform/axi.git", version: 0.39.1                                       }
+  hci:                { git: "https://github.com/pulp-platform/hci.git", rev: b2e6f391aa6c10c03f45b693d80a0aaddecf169b         }
+  hwpe-stream:        { git: "https://github.com/pulp-platform/hwpe-stream.git", rev: ddc154424187dff42a8fcec946c768ceb13f13de }
+  riscv:              { git: "https://github.com/AlSaqr-platform/riscv_nn.git", rev: "291ad04adb290e8f3aa80c22e5528d0640f5a8ae"} # branch: alsaqr-2.
