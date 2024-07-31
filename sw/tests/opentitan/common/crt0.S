@@ -61,16 +61,23 @@ zero_loop:
   ble x26, x27, zero_loop
 zero_loop_end:
 
-
 main_entry:
   /* jump to main program entry point (argc = argv = 0) */
   addi x10, x0, 0
   addi x11, x0, 0
   jal x1, main
-  /* write EOC */
+  // Branch if non returned 0;
+  beq x10, x0, success
   li a0, 0xc11c0018
-  li t0, 0x1	
+  li t0, 0xFFFFFFFF
   sw t0, 0(a0)
+  j sleep_loop
+
+success:
+  li a0, 0xc11c0018
+  li t0, 0x1
+  sw t0, 0(a0)
+
 sleep_loop:
   wfi
   j sleep_loop

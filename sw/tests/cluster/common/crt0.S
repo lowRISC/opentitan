@@ -67,10 +67,18 @@ main_entry:
   addi x10, x0, 0
   addi x11, x0, 0
   jal x1, main
-  /* write EOC */
+  // Branch if non returned 0;
+  beq x10, x0, success
   li a0, 0xc11c0018
-  li t0, 0x1	
+  li t0, 0xFFFFFFFF
   sw t0, 0(a0)
+  j sleep_loop
+
+success:
+  li a0, 0xc11c0018
+  li t0, 0x1
+  sw t0, 0(a0)
+
 sleep_loop:
   wfi
   j sleep_loop
