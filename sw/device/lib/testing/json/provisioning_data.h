@@ -96,48 +96,41 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 // clang-format on
 
 /**
- * DICE certificates exported during personalization.
+ * All certificates exported during personalization.
  *
- * See the `OT_ASSERT_MEMBER_SIZE_AS_ENUM` calls in
- * `sw/device/silicon_creator/manuf/base/ft_personalize.c`
- * for how these sizes are chosen.
+ * This struct may hold up to eight different certificate blobs, the cumulative
+ * size of which must be <= 4k. The layout is such that the first three slots
+ * contain the following DICE certificates, and the remaining slots may be used
+ * by provisioning extensions.
+ *
+ * First three slots:
+ * 1. UDS TBS certificate.
+ * 2. CDI_0 certificate.
+ * 3. CDI_1 certificate.
  */
 // clang-format off
 #define STRUCT_MANUF_CERTS(field, string) \
-    field(uds_tbs_certificate, uint8_t, 680) \
-    field(uds_tbs_certificate_size, size_t) \
-    field(cdi_0_certificate, uint8_t, 580) \
-    field(cdi_0_certificate_size, size_t) \
-    field(cdi_1_certificate, uint8_t, 632) \
-    field(cdi_1_certificate_size, size_t) \
-    field(tpm_ek_tbs_certificate, uint8_t, 844) \
-    field(tpm_ek_tbs_certificate_size, size_t) \
-    field(tpm_cek_tbs_certificate, uint8_t, 456) \
-    field(tpm_cek_tbs_certificate_size, size_t) \
-    field(tpm_cik_tbs_certificate, uint8_t, 456) \
-    field(tpm_cik_tbs_certificate_size, size_t)
+    field(sizes, uint32_t, 8) \
+    field(offsets, uint32_t, 8) \
+    field(certs, uint8_t, 4096)
 UJSON_SERDE_STRUCT(ManufCerts, \
                    manuf_certs_t, \
                    STRUCT_MANUF_CERTS);
 // clang-format on
 
 /**
- * Endorsed DICE certificates imported during personalization.
+ * All endorsed certificates imported during personalization.
  *
- * See the `OT_ASSERT_MEMBER_SIZE_AS_ENUM` calls in
- * `sw/device/silicon_creator/manuf/base/ft_personalize.c`
- * for how these sizes are chosen.
+ * This struct may hold up to eight different certificate blobs, the cumulative
+ * size of which must be <= 4k. The layout is such that the first slot contains
+ * the endorsed UDS certificate, and the remaining slots may be used by
+ * provisioning extensions.
  */
 // clang-format off
 #define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
-    field(uds_certificate, uint8_t, 768) \
-    field(uds_certificate_size, size_t) \
-    field(tpm_ek_certificate, uint8_t, 936) \
-    field(tpm_ek_certificate_size, size_t) \
-    field(tpm_cek_certificate, uint8_t, 548) \
-    field(tpm_cek_certificate_size, size_t) \
-    field(tpm_cik_certificate, uint8_t, 548) \
-    field(tpm_cik_certificate_size, size_t)
+    field(sizes, uint32_t, 8) \
+    field(offsets, uint32_t, 8) \
+    field(certs, uint8_t, 4096)
 UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
                    manuf_endorsed_certs_t, \
                    STRUCT_MANUF_ENDORSED_CERTS);

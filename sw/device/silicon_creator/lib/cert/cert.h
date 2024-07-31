@@ -64,9 +64,19 @@ typedef struct cert_flash_info_layout {
    */
   const char **names;
   /**
-   * An array of buffer pointers, where each buffer holds a single certificate.
+   * An array of buffer pointers, where each buffer holds a contiguous buffer of
+   * certificates from the host.
    */
   const unsigned char **certs;
+  /**
+   * An array of cert buffer offset arrays.
+   */
+  const uint32_t **cert_offsets;
+  /**
+   * An array of buffer offset indices to use to retrieve the certificate buffer
+   * offset from the buffer above.
+   */
+  const int *cert_offset_idxs;
 } cert_flash_info_layout_t;
 
 /**
