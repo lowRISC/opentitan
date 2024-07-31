@@ -122,7 +122,7 @@ class chip_sw_spi_device_pinmux_sleep_retention_vseq extends chip_sw_base_vseq;
     end join_none
 
 
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "SYNC: Awaked")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "PASS!")
 
     // Check spi transactions work as they should after devide is awoken
   endtask : body
