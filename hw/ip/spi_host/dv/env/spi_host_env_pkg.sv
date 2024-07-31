@@ -159,6 +159,19 @@ package spi_host_env_pkg;
 
   // functions
 
+  // Convenience function to detect mask validity for TXFIFO. Actual allowed masks are taken
+  // directly from RTL: `spi_host.access_valid`
+  function automatic bit is_valid_mask(bit [TL_DBW-1:0] mask, bit txfifo);
+
+    if (txfifo && (mask inside {4'b1000, 4'b0100, 4'b0010, 4'b0001, 4'b1100,
+                                4'b0110, 4'b0011,4'b1111})) begin
+      return 1;
+    end else if (!txfifo && mask!=0) begin
+      return 1;
+    end
+    return 0;
+  endfunction // is_valid_mask
+
   // package sources
   `include "spi_host_seq_cfg.sv"
   `include "spi_host_env_cfg.sv"
