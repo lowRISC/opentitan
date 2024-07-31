@@ -1074,7 +1074,10 @@
             interrupts.
             '''
       stage: V2
-      tests: ["usbdev_max_usb_traffic"]
+      tests: [
+        "usbdev_max_usb_traffic",
+        "usbdev_max_non_iso_usb_traffic"
+      ]
     }
     {
       name: stress_usb_traffic

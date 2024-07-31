@@ -298,8 +298,19 @@
       uvm_test_seq: usbdev_max_length_out_transaction_vseq
     }
     {
+      name: usbdev_max_non_iso_usb_traffic
+      uvm_test_seq: usbdev_max_non_iso_usb_traffic_vseq
+      // More important than Isochronous traffic.
+      reseed: 25
+    }
+    {
       name: usbdev_max_usb_traffic
       uvm_test_seq: usbdev_max_usb_traffic_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake (Isochronous IN traffic).
+      run_opts: ["+en_scb_rdchk_configin=0"]
+      // Isochronous transfers are rarely used.
+      reseed: 15
     }
     {
       name: usbdev_min_inter_pkt_delay

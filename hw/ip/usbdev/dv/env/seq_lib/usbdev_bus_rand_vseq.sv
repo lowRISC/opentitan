@@ -13,7 +13,7 @@
 // internal state according to the expect DUT changes. (eg. zeroing of device address and resetting
 // of data toggles.)
 
-class usbdev_bus_rand_vseq extends usbdev_max_usb_traffic_vseq;
+class usbdev_bus_rand_vseq extends usbdev_max_non_iso_usb_traffic_vseq;
   `uvm_object_utils(usbdev_bus_rand_vseq)
 
   `uvm_object_new
