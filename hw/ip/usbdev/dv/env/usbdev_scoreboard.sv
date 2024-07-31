@@ -67,6 +67,16 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     cfg.en_scb_rdchk_linkstate = 1'b1;
     void'($value$plusargs("en_scb_rdchk_linkstate=%0b", cfg.en_scb_rdchk_linkstate));
 
+    // Monitor and model cannot be used to predict with absolute certainty when a PID/CRC error
+    // will be reported when truncating a packet transmission to the DUT because `usb_fs_rx` can
+    // sample the SE0 state of a spontaneous Bus Reset and complete the PID even though not all
+    // of the PID bits were transmitted. The CRC can simply be a false positive match,
+    // particularly the CRC5 of a token packet.
+    cfg.en_scb_rdchk_rx_pid_err = 1'b1;
+    void'($value$plusargs("en_scb_rdchk_rx_pid_err=%0b", cfg.en_scb_rdchk_rx_pid_err));
+    cfg.en_scb_rdchk_rx_crc_err = 1'b1;
+    void'($value$plusargs("en_scb_rdchk_rx_crc_err=%0b", cfg.en_scb_rdchk_rx_crc_err));
+
     super.build_phase(phase);
     // Bus Functional Model of USBDEV.
     bfm = new();
@@ -102,6 +112,9 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     usb20_item item;
     forever begin
       req_usb20_fifo.get(item);
+      // Any non-packet event signaled by the monitor invalidates any responses that the functional
+      // model has already predicted.
+      if (item.m_ev_type != EvPacket) expected_rsp_q.delete();
       case (item.m_ev_type)
         // Non-packet events on the USB.
         EvBusReset: begin
@@ -371,6 +384,18 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
                 // bus.
                 if (cfg.en_scb_rdchk_link_resume) max_delay = 3 * 8 * 4;
                 else include_field = 1'b0;
+              end
+              "rx_crc_err": begin
+                // Monitor and model cannot be used to predict with absolute certainty when a
+                // PID/CRC error will be reported when truncating a packet transmission to the DUT
+                // because `usb_fs_rx` can sample the SE0 state of a spontaneous Bus Reset and
+                // complete the PID even though not all of the PID bits were transmitted. The CRC
+                // can simply be a false positive match, particularly the CRC5 of a token packet.
+                if (!cfg.en_scb_rdchk_rx_crc_err) include_field = 1'b0;
+              end
+              "rx_pid_err": begin
+                // See `rx_crc_err` above.
+                if (!cfg.en_scb_rdchk_rx_pid_err) include_field = 1'b0;
               end
               // Most interrupts should be reflected almost immediately.
               default: begin

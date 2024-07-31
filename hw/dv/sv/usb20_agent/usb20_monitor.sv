@@ -335,12 +335,13 @@ class usb20_monitor extends dv_base_monitor #(
     int unsigned bitcnt = 1;
     bit [15:0] sync_pid = 0;
     int unsigned initb = 0;
+    int unsigned maxb = 8;
+    bit valid_sync = 1'b1;
     int bit_intervals = 0;
     bit low_speed = 1'b0;
     bit valid_stuffing;
     usb_symbol_e sym;
     bit from_driver;
-    bit valid_sync;
     bit valid_eop;
     bit packet[$];
 
@@ -359,7 +360,6 @@ class usb20_monitor extends dv_base_monitor #(
       // Check whether we have seen only K state for a number of bit intervals.
       if (resuming && sym == USB20Sym_K) begin
         if (++bit_intervals >= 8) begin
-          resuming = 1'b1;
           return;
         end
       end else resuming = 1'b0;
@@ -388,30 +388,46 @@ class usb20_monitor extends dv_base_monitor #(
       end
       collect_symbol(sym, low_speed);
     end
+    resuming = 1'b0;
+
     // TODO: Consider 'dribble' tolerance here.
     // Detect and validate the EOP signaling.
     while (sym == USB20Sym_SE0) begin
-      eop_bits++;
+      // After 2.5 microseconds of SE0 a device is permitted to initiate a reset; allow 3
+      // microseconds before abandoning packet collection.
+      if (++eop_bits >= (low_speed ? 4 : 32)) begin
+        `uvm_info(`gfn, "Abandoning packet collection because of Reset Signaling", UVM_LOW)
+        // The incomplete packet must still be forwarded to the scoreboard for predictions because
+        // the DUT shall not consider it a link reset immediately; it may flag errors.
+        break;
+      end
       collect_symbol(sym, low_speed);
     end
-    valid_eop = cfg.single_bit_SE0 ? (eop_bits >= 1) : (eop_bits == 2);
+    valid_eop = (eop_bits == 2) || (cfg.single_bit_SE0 && eop_bits == 1);
 
     `uvm_info(`gfn, $sformatf("Complete monitored packet = %p", packet), UVM_MEDIUM)
-    `DV_CHECK_GT(packet.size(), 8, "Incomplete SYNC signal detected")
-    valid_sync = 1'b1;
-    // See explanation in `usb20_agent_cfg.sv` => check only bits 2 to 8
+    if (packet.size() < 8) begin
+      `uvm_info(`gfn, $sformatf("Incomplete SYNC signal of %0d bits detected", packet.size()),
+                UVM_MEDIUM)
+      maxb = packet.size();
+      valid_sync = 1'b0;
+    end
+    // See explanation in `usb20_agent_cfg.sv` => check only bit 2 onwards.
     if (cfg.rtl_limited_sync_recovery) initb = 2;
-    for (int unsigned b = initb; b < 8; b++) begin
+    for (int unsigned b = initb; b < maxb; b++) begin
       if (packet[b] != sync[b]) begin
         `uvm_info(`gfn, $sformatf("Invalid SYNC signal detected %p", packet), UVM_MEDIUM)
         valid_sync = 1'b0;
       end
     end
-
-    nrzi_decoder(packet, monitored_decoded_packet);
-    bit_destuffing(monitored_decoded_packet, valid_stuffing, destuffed_packet);
-    classifies_packet(low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
-                      from_driver);
+    // 'Packets' so damaged that there aren't enough bits to constitute a SYNC signal may be
+    // discarded.
+    if (maxb >= 8) begin
+      nrzi_decoder(packet, monitored_decoded_packet);
+      bit_destuffing(monitored_decoded_packet, valid_stuffing, destuffed_packet);
+      classifies_packet(low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet,
+                        from_driver);
+    end
   endtask
 
 
@@ -419,42 +435,76 @@ class usb20_monitor extends dv_base_monitor #(
   function void classifies_packet(bit low_speed, bit valid_sync, bit valid_eop, bit valid_stuffing,
                                   ref bit destuffed_packet[$], input bit from_driver);
     // Read the Packet IDentifier and check its validity.
-    pid_type_e pid_e;
+    int unsigned pmax = destuffed_packet.size();
+    bit pid_complete = (pmax >= 16);
     bit [7:0] pid;
-    for (int i = 0; i < 8; i++) begin
-      pid[i] = destuffed_packet[i + 8];
+    if (pid_complete) pmax = 16;
+    // Collect all of the PID bits present.
+    for (int i = 8; i < pmax; i++) begin
+      pid[i - 8] = destuffed_packet[i];
     end
     `uvm_info(`gfn, $sformatf(".......Packet PID = %b", pid), UVM_HIGH)
-    pid_e = pid_type_e'(pid);
-    case (pid)
-      // Token PID Types.
-      PidTypeOutToken,
-      PidTypeInToken,
-      PidTypeSetupToken: begin
-        `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit token packets")
-        token_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
-      end
-      PidTypeSofToken: begin
-        `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit SOF packets")
-         sof_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
-      end
-      // Data PID Types.
-      PidTypeData0,
-      PidTypeData1,
-      PidTypeData2,
-      PidTypeMData: data_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
-                                destuffed_packet, from_driver);
-      // Handshake PID Types.
-      PidTypeAck,
-      PidTypeNak,
-      PidTypeStall,
-      PidTypeNyet: handshake_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
-                                    destuffed_packet, from_driver);
-
-      // Invalid PIDs are only those produced by fault injection, or DUT error.
-      default: invalid_packet_pid(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
+    if (pid_complete) begin
+      pid_type_e pid_e = pid_type_e'(pid);
+      case (pid)
+        // Token PID Types.
+        PidTypeOutToken,
+        PidTypeInToken,
+        PidTypeSetupToken: begin
+          `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit token packets")
+          token_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+        end
+        PidTypeSofToken: begin
+          `DV_CHECK_EQ(from_driver, 1'b1, "Only driver should transmit SOF packets")
+           sof_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing, destuffed_packet);
+        end
+        // Data PID Types.
+        PidTypeData0,
+        PidTypeData1,
+        PidTypeData2,
+        PidTypeMData: data_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
                                   destuffed_packet, from_driver);
-    endcase
+        // Handshake PID Types.
+        PidTypeAck,
+        PidTypeNak,
+        PidTypeStall,
+        PidTypeNyet: handshake_packet(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
+                                      destuffed_packet, from_driver);
+
+        // Invalid PIDs are only those produced by fault injection, or DUT error.
+        default: invalid_packet_pid(pid_e, low_speed, valid_sync, valid_eop, valid_stuffing,
+                                    destuffed_packet, from_driver);
+      endcase
+    end else begin
+      // Packets that are too short to include a valid PID may be produced by some sequences that
+      // disrupt transmission to inject a bus event; treat these as token packets. It's impossible
+      // to tell really in some cases.
+      if (cfg.rtl_limited_crc_checking && pmax <= 15) begin
+        if (pmax == 15 && pid[0]) begin
+          // The RTL does not check for the completeness of the PID before raising a crc5/16_error.
+          // Specifically if 7 bits of the PID have been received then the LSB will determine
+          // whether an incomplete packet is regarded as a token packet or data packet for the
+          // purpose of raising spurious CRC errors. (usb_fs_rx.sv:521).
+          pid[7] = pid[3];  // Ensure the PID is invalid; only the first 7 bits have been read.
+          data_packet(pid_type_e'(pid), low_speed, valid_sync, valid_eop, valid_stuffing,
+                      destuffed_packet, from_driver);
+        end else begin
+          pid[7:4] = pid[3:0];  // Ensure the PID is invalid, but perhaps leave a clue.
+          if (pmax == 15) begin
+            token_packet(pid_type_e'(pid), low_speed, valid_sync, valid_eop, valid_stuffing,
+                         destuffed_packet);
+          end else begin
+            // If even the PID is not complete then we do not expect a CRC error.
+            handshake_packet(pid_type_e'(pid), low_speed, valid_sync, valid_eop, valid_stuffing,
+                             destuffed_packet, from_driver);
+          end
+        end
+      end else begin
+        pid[7:4] = pid[3:0];  // Ensure the PID is invalid, but perhaps leave a clue as to its type.
+        token_packet(pid_type_e'(pid), low_speed, valid_sync, valid_eop, valid_stuffing,
+                     destuffed_packet);
+      end
+    end
   endfunction
 
 //-------------------------------------------SOF Packet-------------------------------------------//
