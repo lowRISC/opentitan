@@ -91,6 +91,7 @@ filesets:
       - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_streaming_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stream_len_max_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_tx_rx_disruption_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

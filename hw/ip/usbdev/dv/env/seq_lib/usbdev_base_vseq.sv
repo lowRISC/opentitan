@@ -50,6 +50,10 @@ bit inject_invalid_data_sync = 1'b0;
 bit inject_bad_token_crc5 = 1'b0;
 bit inject_bad_data_crc16 = 1'b0;
 
+// Truncated transmission and reception of packets.
+int unsigned disrupt_tx_bits = 0;  // 0 = no disruption; transmit entire packet.
+int unsigned disrupt_rx_bits = 0;  // 0 = receive entire response.
+
 // Bus events/stimuli to be presented during the sequence
 //   (these are used in the `aon_wake_` and `rand_bus...` tests points).
 bit do_reset_signaling  = 1'b0;
@@ -331,6 +335,10 @@ endtask
     assert(m_token_pkt.randomize() with {m_token_pkt.address == target_addr;
                                          m_token_pkt.endpoint == ep;});
     m_token_pkt.await_response = await_response;
+    // Number of bit intervals after which to stop transmission (0 = send entire packet).
+    m_token_pkt.bits_to_transmit = disrupt_tx_bits;
+    // Number of bit intervals of any data packet to receive.
+    m_token_pkt.bits_to_receive = disrupt_rx_bits;
     // Any fault injections requested?
     if (inject_invalid_token_sync) m_token_pkt.valid_sync = 1'b0;
     if (inject_bad_token_crc5) m_token_pkt.crc5 = ~m_token_pkt.crc5;
@@ -350,6 +358,10 @@ endtask
       m_data_pkt.m_usb_transfer = usb_transfer_e'(IsoTrans);
     end
     m_data_pkt.set_data(data);  // This also completes the CRC16.
+    // Number of bit intervals after which to stop transmission (0 = send entire packet).
+    m_data_pkt.bits_to_transmit = disrupt_tx_bits;
+    // Number of bit intervals of any handshake packet to receive.
+    m_data_pkt.bits_to_receive = disrupt_rx_bits;
     // Any fault injections requested?
     if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
     if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;
@@ -372,6 +384,8 @@ endtask
     end
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_data_pkt,
                                    !randomize_length -> m_data_pkt.data.size() == num_of_bytes;)
+    // Number of bit intervals after which to stop transmission (0 = send entire packet).
+    m_data_pkt.bits_to_transmit = disrupt_tx_bits;
     // Any fault injections requested?
     if (inject_invalid_data_sync) m_data_pkt.valid_sync = 1'b0;
     if (inject_bad_data_crc16) m_data_pkt.crc16 = ~m_data_pkt.crc16;

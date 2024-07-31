@@ -1194,6 +1194,30 @@
       tests: ["usbdev_fifo_rst"]
     }
     {
+      name: usbdev_tx_rx_disruption
+      desc: '''
+            Verify that the DUT is still capable of transmitting and receiving after a spontaneous
+            disruption to the connection during transmission or reception, without requiring an
+            IP block reset. On some implementations resetting of individual IP blocks may not be
+            an option.
+
+            Note that after a Bus Reset the USB host must restart the entire device addressing and
+            configuration sequence, so the first transmissions will be SOF and SETUP packets.
+
+            - Configure the device, choosing an endpoint and choose whether to transmit or receive.
+            - Choose the moment at which the link reset shall occur.
+            - Transmit/receive a partial transaction before instructing the driver to perform a
+              USB Bus Reset.
+            - Reconfigure the device _without_ resetting the block or even the FIFO state, since
+              normally the software will rely upon its knowledge of the device state in handling
+              a Bus Reset.
+            - Retry transmission or reception to/from the device both to the previously-active
+              endpoint and to a different endpoint to guard against persistent internal state.
+            '''
+      stage: V2
+      tests: ["usbdev_tx_rx_disruption"]
+    }
+    {
       name: dpi_config_host
       desc: '''
             Using the DPI model run the DUT through a typical configuration sequence consisting of
