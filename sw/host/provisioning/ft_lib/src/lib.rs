@@ -231,42 +231,12 @@ fn provision_certificates(
     let certs = ManufCerts::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
-    let uds_tbs_cert_bytes: Vec<u8> = certs
-        .uds_tbs_certificate
-        .clone()
-        .into_iter()
-        .take(certs.uds_tbs_certificate_size)
-        .collect();
-    let cdi_0_cert_bytes: Vec<u8> = certs
-        .cdi_0_certificate
-        .clone()
-        .into_iter()
-        .take(certs.cdi_0_certificate_size)
-        .collect();
-    let cdi_1_cert_bytes: Vec<u8> = certs
-        .cdi_1_certificate
-        .clone()
-        .into_iter()
-        .take(certs.cdi_1_certificate_size)
-        .collect();
-    let tpm_ek_tbs_cert_bytes: Vec<u8> = certs
-        .tpm_ek_tbs_certificate
-        .clone()
-        .into_iter()
-        .take(certs.tpm_ek_tbs_certificate_size)
-        .collect();
-    let tpm_cek_tbs_cert_bytes: Vec<u8> = certs
-        .tpm_cek_tbs_certificate
-        .clone()
-        .into_iter()
-        .take(certs.tpm_cek_tbs_certificate_size)
-        .collect();
-    let tpm_cik_tbs_cert_bytes: Vec<u8> = certs
-        .tpm_cik_tbs_certificate
-        .clone()
-        .into_iter()
-        .take(certs.tpm_cik_tbs_certificate_size)
-        .collect();
+    let mut cert_bytes: Vec<Vec<u8>> = Vec::new();
+    let mut start: usize = 0;
+    for size in certs.sizes.iter() {
+        cert_bytes.push(certs.certs[start..start + *size as usize].to_vec());
+        start += *size as usize;
+    }
 
     // Parse and endorse the certificates.
     let key = match cert_endorsement_key_wrapper {
@@ -279,10 +249,12 @@ fn provision_certificates(
             CertEndorsementKey::CkmsKey(key_id)
         }
     };
-    let uds_cert_bytes = parse_and_endorse_x509_cert(uds_tbs_cert_bytes, &key)?;
-    let tpm_ek_cert_bytes = parse_and_endorse_x509_cert(tpm_ek_tbs_cert_bytes, &key)?;
-    let tpm_cek_cert_bytes = parse_and_endorse_x509_cert(tpm_cek_tbs_cert_bytes, &key)?;
-    let tpm_cik_cert_bytes = parse_and_endorse_x509_cert(tpm_cik_tbs_cert_bytes, &key)?;
+    let uds_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[0].clone(), &key)?;
+    let cdi_0_cert_bytes = cert_bytes[1].clone();
+    let cdi_1_cert_bytes = cert_bytes[2].clone();
+    let tpm_ek_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[3].clone(), &key)?;
+    let tpm_cek_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[4].clone(), &key)?;
+    let tpm_cik_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[5].clone(), &key)?;
 
     // Log the certificates to the console.
     log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
@@ -320,15 +292,26 @@ fn provision_certificates(
     let host_computed_certs_hash = hasher.finalize();
 
     // Send endorsed certificates back to the device.
+    let endorsed_cert_byte_vecs = vec![
+        &uds_cert_bytes,
+        &tpm_ek_cert_bytes,
+        &tpm_cek_cert_bytes,
+        &tpm_cik_cert_bytes,
+    ];
+    let mut endorsed_cert_bytes = ArrayVec::<u8, 4096>::new();
+    let mut endorsed_cert_sizes = ArrayVec::<u32, 8>::new();
+    let mut endorsed_cert_offsets = ArrayVec::<u32, 8>::new();
+    let mut offset: u32 = 0;
+    for vec in &endorsed_cert_byte_vecs {
+        endorsed_cert_sizes.push(vec.len() as u32);
+        endorsed_cert_offsets.push(offset);
+        endorsed_cert_bytes.try_extend_from_slice(vec)?;
+        offset += vec.len() as u32;
+    }
     let endorsed_certs = ManufEndorsedCerts {
-        uds_certificate: uds_cert_bytes.clone().into_iter().collect(),
-        uds_certificate_size: uds_cert_bytes.len(),
-        tpm_ek_certificate: tpm_ek_cert_bytes.clone().into_iter().collect(),
-        tpm_ek_certificate_size: tpm_ek_cert_bytes.len(),
-        tpm_cek_certificate: tpm_cek_cert_bytes.clone().into_iter().collect(),
-        tpm_cek_certificate_size: tpm_cek_cert_bytes.len(),
-        tpm_cik_certificate: tpm_cik_cert_bytes.clone().into_iter().collect(),
-        tpm_cik_certificate_size: tpm_cik_cert_bytes.len(),
+        sizes: endorsed_cert_sizes,
+        offsets: endorsed_cert_offsets,
+        certs: endorsed_cert_bytes,
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;
     endorsed_certs.send(&*uart)?;
