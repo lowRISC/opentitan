@@ -102,8 +102,22 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       fork
         process_usb20_req();
         process_usb20_rsp();
-        timed_regs.check_predictions();
+        // Prediction checker will discard any predictions over a DUT reset since they can no longer
+        // be considered relevant; the CSR state will be reset.
+        timed_regs.check_predictions(cfg.under_reset);
+        handle_resets();
       join_none
+    end
+  endtask
+
+  // Handle DUT resets and ensure that the BFM is informed.
+  virtual task handle_resets();
+    forever begin
+      wait (cfg.under_reset);
+      bfm.dut_reset();
+      // Capture the post-reset state of the loosely-timed registers.
+      capture_timed_regs(prev_timed_regs);
+      wait (!cfg.under_reset);
     end
   endtask
 
@@ -112,9 +126,20 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     usb20_item item;
     forever begin
       req_usb20_fifo.get(item);
-      // Any non-packet event signaled by the monitor invalidates any responses that the functional
-      // model has already predicted.
-      if (item.m_ev_type != EvPacket) expected_rsp_q.delete();
+      if (item.m_ev_type == EvPacket) begin
+        // Ignore all USB packets if the DUT is under reset.
+        if (cfg.under_reset) begin
+          `uvm_info(`gfn, $sformatf("Ignoring monitor packet (PID 0x%0x) because of IP reset",
+                                    item.m_pid_type), UVM_LOW)
+          continue;
+        end
+      end else if (expected_rsp_q.size() > 0) begin
+        // Any non-packet event signaled by the monitor invalidates any response packets that the
+        // functional model has already predicted; this occurs only if a transaction is interrupted.
+        `uvm_info(`gfn, $sformatf("Dropping expected response(s) because of bus event %p",
+                                  item.m_ev_type), UVM_LOW)
+        expected_rsp_q.delete();
+      end
       case (item.m_ev_type)
         // Non-packet events on the USB.
         EvBusReset: begin
@@ -202,6 +227,9 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     forever begin
       // Collect an actual response from the DUT.
       rsp_usb20_fifo.get(act_item);
+      // Ignore all DUT response packets if the DUT is under reset or disconnected from the USB;
+      // they will be incomplete responses when the reset/disconnection interrupted a transaction.
+      if (cfg.under_reset || !cfg.m_usb20_agent_cfg.bif.usb_vbus) continue;
       // Collect coverage for IN traffic from the DUT.
       collect_dut_rsp_cov(act_item);
       `uvm_info(`gfn, "Comparing DUT response against the BFM expected response:", UVM_MEDIUM)
@@ -366,8 +394,10 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
               // `pkt_sent` interrupt state much sooner than the DUT, which waits until the
               // data has been transmitted. 64 bytes to transmit => 4*(4+32+64*8*7/6) clock cycles.
               "pkt_sent": max_delay = 2800;
-              // Link reset may arrive 2 microseconds behind the signaling from the monitor.
-              "link_reset": max_delay = 2 * 48;
+              // Link reset may arrive 2 microseconds behind the signaling from the monitor, but we
+              // must also allow for the different clock frequencies; 2us is 96 clock cycles, extend
+              // to 100.
+              "link_reset": max_delay = 100;
               // The monitor is compelled to signal the transition to Suspended as much as 90
               // microseconds before the DUT transitions, because the DUT ignores its own non-Idle
               // signaling in timing the Suspend signaling and the DUT could be running faster.

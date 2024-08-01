@@ -46,8 +46,6 @@ class usbdev_tx_rx_disruption_vseq extends usbdev_smoke_vseq;
     uint data_bytes = ($urandom & 1) ? MaxPktSizeByte : 8;
     // Report choices.
     string stim_desc;
-    // TODO: Only BusReset is expected to work presently; scoreboard/BFM not hooked up for IP reset.
-    stim_type = StimType_BusReset;
     case (stim_type)
       StimType_IPReset:    stim_desc = "IP Reset";
       StimType_BusReset:   stim_desc = "Bus Reset";
