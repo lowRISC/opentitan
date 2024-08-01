@@ -251,7 +251,9 @@ class usb20_monitor extends dv_base_monitor #(
     // of the Bus Reset to signal its occurrence, otherwise the scoreboard will be informed way
     // too late.
     while (sym == USB20Sym_SE0 && bit_cnt < 36) begin
-      bit_cnt++;
+      // Do not measure the passage of time if the DUT is under reset because the DUT will not be
+      // measuring the duration of the SE0 state.
+      if (cfg.bif.rst_ni) bit_cnt++;
       collect_symbol(sym);
     end
     // Bus Reset Signaling requires SE0 state for > 2.5 microseconds.
@@ -265,7 +267,9 @@ class usb20_monitor extends dv_base_monitor #(
     // Consume the rest of the Bus Reset, which could be many milliseconds.
     collect_symbol(sym);
     while (sym == USB20Sym_SE0) begin
-      bit_cnt++;
+      // Do not measure the passage of time if the DUT is under reset because the DUT will not be
+      // measuring the duration of the SE0 state.
+      if (cfg.bif.rst_ni) bit_cnt++;
       collect_symbol(sym);
     end
     `uvm_info(`gfn, $sformatf("Bus Reset of %d bit intervals detected", bit_cnt), UVM_MEDIUM)
@@ -393,6 +397,9 @@ class usb20_monitor extends dv_base_monitor #(
     // TODO: Consider 'dribble' tolerance here.
     // Detect and validate the EOP signaling.
     while (sym == USB20Sym_SE0) begin
+      // If this is actually a DUT reset drop the traffic entirely at this point because writing
+      // to the analysis port will leave a spurious item awaiting collection.
+      if (!cfg.bif.rst_ni) return;
       // After 2.5 microseconds of SE0 a device is permitted to initiate a reset; allow 3
       // microseconds before abandoning packet collection.
       if (++eop_bits >= (low_speed ? 4 : 32)) begin

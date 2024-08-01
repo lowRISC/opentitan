@@ -80,7 +80,7 @@ class usbdev_timed_regs extends uvm_object;
 
   // This process checks every prediction that is made, using backdoor csr_rd in zero time to avoid
   // interfering with actual CSR reads and the timing of the simulation.
-  task check_predictions();
+  task check_predictions(ref bit under_reset);
     // Collect the initial values post-reset.
     wait (clk_rst_vif.rst_n === 1'b1);
     forever begin
@@ -92,7 +92,11 @@ class usbdev_timed_regs extends uvm_object;
       // Check each of the timed registers for expired expectations.
       r = r.first();
       forever begin
-        if (timed[r].preds_pending()) begin
+        if (under_reset) begin
+          `uvm_info(`gfn, $sformatf("Resetting timed register predictions at 0x%0x", time_now),
+                    UVM_LOW)
+          timed[r].reset();
+        end else if (timed[r].preds_pending()) begin
           uvm_reg_data_t act_data;
           // Something is expected to happen to this register field.
           read_act_data(r, act_data);
