@@ -38,10 +38,6 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str)]
     target_mission_mode_lc_state: DifLcCtrlState,
 
-    /// Host (HSM) generated ECC (P256) private key DER file to support RMA token encryption.
-    #[arg(long)]
-    host_ecc_sk: PathBuf,
-
     /// Measurement of the ROM_EXT image to be loaded onto the device.
     #[arg(long)]
     pub rom_ext_measurement: String,
@@ -77,6 +73,10 @@ pub struct ManufFtProvisioningDataInput {
     /// CA certificate to be used for verifying a cert chain.
     #[arg(long)]
     pub ca_certificate: PathBuf,
+
+    /// RMA unlock token hash to pass to the device, a string of 16 hex digits.
+    #[arg(long)]
+    pub rma_unlock_token_hash: String,
 }
 
 #[derive(Debug, Parser)]
@@ -110,7 +110,8 @@ fn main() -> Result<()> {
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
     let _test_exit_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?;
-
+    let rma_unlock_token_hash =
+        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.rma_unlock_token_hash.as_str())?;
     // Format ujson data payload(s).
     // Individualization ujson payload.
     let _ft_individualize_data_in = ManufFtIndividualizeData {
@@ -217,11 +218,11 @@ fn main() -> Result<()> {
     run_ft_personalize(
         &transport,
         &opts.init,
-        opts.provisioning_data.host_ecc_sk,
         cert_endorsement_key_wrapper,
         &_perso_certgen_inputs,
         opts.timeout,
         opts.provisioning_data.ca_certificate,
+        &rma_unlock_token_hash,
     )?;
 
     log::info!("Provisioning Done");

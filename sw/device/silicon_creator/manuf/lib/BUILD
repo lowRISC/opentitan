@@ -278,7 +278,6 @@ opentitan_test(
         ],
         test_cmd = """
             --bootstrap={firmware}
-            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
