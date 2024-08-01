@@ -15,6 +15,10 @@ interface ast_supply_if (
   input logic core_sleeping_trigger,
   input logic low_power_trigger
 );
+
+  timeunit 1ps;
+  timeprecision 1ps;
+
   import uvm_pkg::*;
 
   // The amount of time to hold the glitch. Should be enough to span more than one aon_clk cycles
