@@ -96,17 +96,21 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 // clang-format on
 
 /**
- * All certificates exported during personalization.
+ * All certificates exported/imported during personalization.
  *
  * This struct may hold up to eight different certificate blobs, the cumulative
- * size of which must be <= 4k. The layout is such that the first three slots
- * contain the following DICE certificates, and the remaining slots may be used
- * by provisioning extensions.
+ * size of which must be <= 4k. The layout is such that the cumulative blob
+ * array can hold several concatenated TBS and/or endorsed certificates.
  *
- * First three slots:
+ * The `tbs` value indicates if the certificate needs be endorsed or not.
+ *
+ * During certificate export, the first three slots are:
  * 1. UDS TBS certificate.
  * 2. CDI_0 certificate.
  * 3. CDI_1 certificate.
+ *
+ * During certificate import, the first slot is:
+ * 1. UDS certificate.
  */
 // clang-format off
 #define STRUCT_MANUF_CERTS(field, string) \
@@ -117,24 +121,6 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 UJSON_SERDE_STRUCT(ManufCerts, \
                    manuf_certs_t, \
                    STRUCT_MANUF_CERTS);
-// clang-format on
-
-/**
- * All endorsed certificates imported during personalization.
- *
- * This struct may hold up to eight different certificate blobs, the cumulative
- * size of which must be <= 4k. The layout is such that the first slot contains
- * the endorsed UDS certificate, and the remaining slots may be used by
- * provisioning extensions.
- */
-// clang-format off
-#define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
-    field(sizes, uint32_t, 8) \
-    field(offsets, uint32_t, 8) \
-    field(certs, uint8_t, 4096)
-UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
-                   manuf_endorsed_certs_t, \
-                   STRUCT_MANUF_ENDORSED_CERTS);
 // clang-format on
 
 /**

@@ -26,8 +26,8 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertgenInputs, ManufCerts, ManufEndorsedCerts, ManufFtIndividualizeData,
-    SerdesSha256Hash, WrappedRmaUnlockToken,
+    EccP256PublicKey, ManufCertgenInputs, ManufCerts, ManufFtIndividualizeData, SerdesSha256Hash,
+    WrappedRmaUnlockToken,
 };
 
 pub fn test_unlock(
@@ -226,7 +226,7 @@ fn provision_certificates(
 
     // Wait until the device exports the TBS certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting TBS certificates ...", timeout)?;
-    let certs_ujson = ManufCerts::recv(&*uart, timeout, true)?;
+    let manuf_certs = ManufCerts::recv(&*uart, timeout, true)?;
 
     // Select the CA endorsement key to use.
     let key = match cert_endorsement_key_wrapper {
@@ -254,11 +254,11 @@ fn provision_certificates(
     let mut endorsed_cert_sizes = ArrayVec::<u32, 8>::new();
     let mut endorsed_cert_offsets = ArrayVec::<u32, 8>::new();
     for (i, label) in cert_labels.iter().enumerate() {
-        let mut cert_size = certs_ujson.sizes[i] as usize;
-        let mut cert_bytes = certs_ujson.certs[start..start + cert_size].to_vec();
+        let mut cert_size = manuf_certs.sizes[i] as usize;
+        let mut cert_bytes = manuf_certs.certs[start..start + cert_size].to_vec();
         start += cert_size;
         // Not all certificates need to be endorsed, some certs are already fully endorsed.
-        if certs_ujson.tbs[i] {
+        if manuf_certs.tbs[i] {
             // Endorse the cert and updates its size.
             cert_bytes = parse_and_endorse_x509_cert(cert_bytes.clone(), &key)?;
             cert_size = cert_bytes.len();
@@ -285,9 +285,10 @@ fn provision_certificates(
     let host_computed_certs_hash = cert_hasher.finalize();
 
     // Send endorsed certificates back to the device.
-    let manuf_endorsed_certs = ManufEndorsedCerts {
+    let manuf_endorsed_certs = ManufCerts {
         sizes: endorsed_cert_sizes,
         offsets: endorsed_cert_offsets,
+        tbs: ArrayVec::<bool, 8>::try_from([false; 8]).unwrap(),
         certs: endorsed_cert_concat,
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;

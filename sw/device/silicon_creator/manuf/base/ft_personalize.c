@@ -103,12 +103,10 @@ static manuf_certs_t tbs_certs = {
             kTpmCikMaxTbsSizeBytes,
         },
     .offsets = {0},
-    // Indicates if the embedded certificate blob is a TBS certificate and needs
-    // to be endorsed by the host.
     .tbs = {true, false, false, true, true, true},
     .certs = {0},
 };
-static manuf_endorsed_certs_t endorsed_certs;
+static manuf_certs_t endorsed_certs;
 
 /**
  * Certificates flash info page layout.
@@ -533,7 +531,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Importing endorsed certificates ...");
-  TRY(ujson_deserialize_manuf_endorsed_certs_t(uj, &endorsed_certs));
+  TRY(ujson_deserialize_manuf_certs_t(uj, &endorsed_certs));
 
   /*****************************************************************************
    * Save Certificates to Flash.
