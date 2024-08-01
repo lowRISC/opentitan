@@ -500,6 +500,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
+    # This test can take > 40 minutes, so mark it manual as it shouldn't run
+    # in CI/nightlies.
+    verilator = verilator_params(tags = ["manual"]),
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",
