@@ -9,7 +9,6 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
 use rand::RngCore;
-use tiny_keccak::{CShake, Hasher};
 use zerocopy::AsBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
@@ -24,6 +23,7 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::UartSend;
 use opentitanlib::uart::console::UartConsole;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
+use util_lib::hash_lc_token;
 
 #[derive(Debug, Parser)]
 pub struct Opts {
@@ -174,24 +174,6 @@ fn check_cp_provisioning(
     Ok(())
 }
 
-fn cshake_it(input: &[u8]) -> Result<ArrayVec<u64, 2>> {
-    let name = b"";
-    let customazation = b"LC_CTRL";
-    let mut csh = CShake::v128(name, customazation);
-    let mut output = [0u8; 16];
-
-    csh.update(input);
-    csh.finalize(&mut output);
-
-    Ok(output
-        .chunks_exact(8)
-        .map(|chunk| {
-            let arr: [u8; 8] = chunk.try_into().expect("chunk is the wrong size");
-            u64::from_le_bytes(arr)
-        })
-        .collect::<ArrayVec<u64, 2>>())
-}
-
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -218,8 +200,8 @@ fn main() -> Result<()> {
         device_id,
         manuf_state,
         wafer_auth_secret,
-        test_unlock_token_hash: cshake_it(test_unlock_token.as_bytes())?,
-        test_exit_token_hash: cshake_it(test_exit_token.as_bytes())?,
+        test_unlock_token_hash: hash_lc_token(test_unlock_token.as_bytes())?,
+        test_exit_token_hash: hash_lc_token(test_exit_token.as_bytes())?,
     };
     cp_provision(&opts, &transport, &provisioning_data)?;
 
