@@ -2611,6 +2611,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
+    # FIXME this test is also broken in Verilator for the same reason as in
+    # sival ROM_EXT above. Remove this line when fixed. See #21706.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -3469,7 +3472,12 @@ opentitan_test(
     name = "spi_host_winbond_flash_test",
     srcs = ["spi_host_winbond_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # This test requires an SPI flash on the bus, and therefore
+            # cannot be tested in Verilator where this is not available.
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
@@ -5990,7 +5998,10 @@ opentitan_test(
     name = "rv_core_ibex_mem_test_prod",
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
