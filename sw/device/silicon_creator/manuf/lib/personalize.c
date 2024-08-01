@@ -7,10 +7,6 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/ecc/p256_common.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/include/aes.h"
-#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -33,108 +29,6 @@ static_assert(OTP_CTRL_PARAM_RMA_TOKEN_SIZE == 16,
               "RMA token is not 128 bits (i.e., one AES block), re-evaluate "
               "padding / AES mode. Additionally, update ujson struct "
               "definition for the wrapped RMA unlock token.");
-
-// ECC curve to use with ECDH keygen.
-static const otcrypto_ecc_curve_t kCurveP256 = {
-    .curve_type = kOtcryptoEccCurveTypeNistP256,
-    .domain_parameter = NULL,
-};
-
-// ECDH private key configuration.
-static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdh,
-    .key_length = kP256ScalarBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelHigh,
-};
-
-// ECDH shared secret configuration.
-static const otcrypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesEcb,
-    .key_length = kP256CoordBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelHigh,
-};
-
-/**
- * Generate ECDH keypair for use in generating an ephemeral AES encryption key
- * for exporting the RMA unlock token.
- *
- * @param host_pk Host ECC public key used to derive shared AES key.
- * @param[out] aes_key RMA unlock token AES encryption key buffer.
- * @param[out] wrapped_token Wrapped RMA unlock token struct that stores the
- *                           ECDH device public key and encrypted RMA token.
- * @return OK_STATUS on success.
- */
-OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
-    ecc_p256_public_key_t *host_pk, otcrypto_blinded_key_t *aes_key,
-    wrapped_rma_unlock_token_t *wrapped_token) {
-  // Host ECC public key.
-  // TODO: update the .checksum fields once cryptolib uses this field.
-  otcrypto_unblinded_key_t pk_host = {
-      .key_mode = kOtcryptoKeyModeEcdh,
-      .key_length = sizeof(*host_pk),
-      .key = (uint32_t *)host_pk,
-      .checksum = 0,
-  };
-
-  // Device ECC private key.
-  uint32_t sk_device_keyblob[keyblob_num_words(kEcdhPrivateKeyConfig)];
-  otcrypto_blinded_key_t sk_device = {
-      .config = kEcdhPrivateKeyConfig,
-      .keyblob_length = sizeof(sk_device_keyblob),
-      .keyblob = sk_device_keyblob,
-      .checksum = 0,
-  };
-
-  // Device ECC public key.
-  otcrypto_unblinded_key_t pk_device = {
-      .key_mode = kOtcryptoKeyModeEcdh,
-      .key_length = sizeof(wrapped_token->device_pk),
-      .key = (uint32_t *)&wrapped_token->device_pk,
-      .checksum = 0,
-  };
-
-  TRY(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device));
-  return otcrypto_ecdh(&sk_device, &pk_host, &kCurveP256, aes_key);
-}
-
-OT_WARN_UNUSED_RESULT
-static status_t encrypt_rma_unlock_token(
-    otcrypto_blinded_key_t *aes_key,
-    wrapped_rma_unlock_token_t *wrapped_token) {
-  // Construct IV, which since we are using ECB mode, is empty.
-  otcrypto_word32_buf_t iv = {
-      .data = NULL,
-      .len = 0,
-  };
-
-  // Construct plaintext buffer.
-  otcrypto_const_byte_buf_t plaintext = {
-      .data = (const unsigned char *)wrapped_token->data,
-      .len = kRmaUnlockTokenSizeInBytes,
-  };
-
-  // Construct ciphertext buffer. (No need for padding since RMA unlock token
-  // is 128-bits already.)
-  uint32_t ciphertext_data[kRmaUnlockTokenSizeInBytes];
-  otcrypto_byte_buf_t ciphertext = {
-      .data = (unsigned char *)ciphertext_data,
-      .len = kRmaUnlockTokenSizeInBytes,
-  };
-
-  // Run encryption and check the result.
-  TRY(otcrypto_aes(aes_key, iv, kOtcryptoAesModeEcb,
-                   kOtcryptoAesOperationEncrypt, plaintext,
-                   kOtcryptoAesPaddingNull, ciphertext));
-
-  // Copy encrypted RMA unlock token to the output buffer.
-  memcpy(wrapped_token->data, ciphertext.data, kRmaUnlockTokenSizeInBytes);
-
-  return OK_STATUS();
-}
 
 /**
  * Performs sanity check of buffers holding a masked secret.
@@ -252,26 +146,15 @@ static status_t flash_keymgr_secret_seed_write(
  * lifecyle state.
  *
  * @param otp_ctrl OTP controller instance.
- * @param[out] rma_unlock_token RMA unlock token to export export from the chip.
+ * @param rma_unlock_token_hash Hash of the RMA unlock token to store on chip.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
 static status_t otp_partition_secret2_configure(
     const dif_otp_ctrl_t *otp_ctrl,
-    wrapped_rma_unlock_token_t *rma_unlock_token) {
+    const lc_token_hash_t *rma_unlock_token_hash) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
-
-  // Generate and hash RMA unlock token.
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, rma_unlock_token->data,
-                             kRmaUnlockTokenSizeIn32BitWords,
-                             /*fips_check*/ kHardenedBoolTrue));
-  TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
-                           /*seed_material=*/NULL));
-  uint64_t hashed_rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
-  TRY(manuf_util_hash_lc_transition_token(rma_unlock_token->data,
-                                          kRmaUnlockTokenSizeInBytes,
-                                          hashed_rma_unlock_token));
 
   // Generate RootKey shares.
   uint64_t share0[kRootKeyShareSizeIn64BitWords];
@@ -292,7 +175,7 @@ static status_t otp_partition_secret2_configure(
   // Provision RMA unlock token and RootKey shares into OTP.
   TRY(otp_ctrl_testutils_dai_write64(
       otp_ctrl, kDifOtpCtrlPartitionSecret2, kRmaUnlockTokenOffset,
-      hashed_rma_unlock_token, kRmaUnlockTokenSizeIn64BitWords));
+      rma_unlock_token_hash->hash, kRmaUnlockTokenSizeIn64BitWords));
   TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret2,
                                      kRootKeyOffsetShare0, share0,
                                      kRootKeyShareSizeIn64BitWords));
@@ -308,8 +191,8 @@ static status_t otp_partition_secret2_configure(
 
 status_t manuf_personalize_device_secrets(
     dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
-    const dif_otp_ctrl_t *otp_ctrl, ecc_p256_public_key_t *host_ecc_pk,
-    wrapped_rma_unlock_token_t *wrapped_rma_token) {
+    const dif_otp_ctrl_t *otp_ctrl,
+    const lc_token_hash_t *rma_unlock_token_hash) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
@@ -338,17 +221,6 @@ status_t manuf_personalize_device_secrets(
   // the entropy_src health checks in FIPS mode.
   TRY(entropy_complex_init());
 
-  // Generate AES encryption key and IV for exporting the RMA unlock token.
-  // AES key (i.e., ECDH shared secret).
-  uint32_t aes_key_buf[keyblob_num_words(kRmaUnlockTokenAesKeyConfig)];
-  otcrypto_blinded_key_t token_aes_key = {
-      .config = kRmaUnlockTokenAesKeyConfig,
-      .keyblob_length = sizeof(aes_key_buf),
-      .keyblob = aes_key_buf,
-  };
-  TRY(gen_rma_unlock_token_aes_key(host_ecc_pk, &token_aes_key,
-                                   wrapped_rma_token));
-
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
   TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldCreatorSeed,
@@ -360,10 +232,7 @@ status_t manuf_personalize_device_secrets(
                                      kFlashInfoKeySeedSizeIn32BitWords));
 
   // Provision the OTP SECRET2 partition.
-  TRY(otp_partition_secret2_configure(otp_ctrl, wrapped_rma_token));
-
-  // Encrypt the RMA unlock token with AES.
-  TRY(encrypt_rma_unlock_token(&token_aes_key, wrapped_rma_token));
+  TRY(otp_partition_secret2_configure(otp_ctrl, rma_unlock_token_hash));
 
   return OK_STATUS();
 }
