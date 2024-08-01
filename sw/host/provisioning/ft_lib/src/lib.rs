@@ -9,7 +9,7 @@ use std::time::Duration;
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
 use elliptic_curve::pkcs8::DecodePrivateKey;
-use elliptic_curve::{PublicKey, SecretKey};
+use elliptic_curve::SecretKey;
 use p256::NistP256;
 use zerocopy::AsBytes;
 
@@ -26,9 +26,9 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertgenInputs, ManufCerts, ManufFtIndividualizeData, SerdesSha256Hash,
-    WrappedRmaUnlockToken,
+    LcTokenHash, ManufCertgenInputs, ManufCerts, ManufFtIndividualizeData, SerdesSha256Hash,
 };
+use util_lib::hash_lc_token;
 
 pub fn test_unlock(
     transport: &TransportWrapper,
@@ -165,49 +165,21 @@ pub enum KeyWrapper {
     CkmsKey(String),
 }
 
-fn extract_rma_unlock_token(
+fn send_rma_unlock_token_hash(
     transport: &TransportWrapper,
-    host_ecc_sk: PathBuf,
+    rma_unlock_token_hash: &ArrayVec<u32, 4>,
     timeout: Duration,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
-    // Load host (HSM) generated ECC keys.
-    let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(host_ecc_sk)?;
-    let host_pk = PublicKey::<NistP256>::from_secret_scalar(&host_sk.to_nonzero_scalar());
-
-    // Format host ECC public key to inject it into the device.
-    // Note: we trim off the first byte of SEC1 formatted public key as these are not part
-    // of the key bytes, rather this byte just indicates if the key was compressed or not.
-    let host_pk_sec1_bytes = host_pk.to_sec1_bytes();
-    let num_coord_bytes: usize = (host_pk_sec1_bytes.len() - 1) / 2;
-    let mut host_pk_x = host_pk_sec1_bytes.as_ref()[1..num_coord_bytes + 1]
-        .chunks(4)
-        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
-        .collect::<ArrayVec<u32, 8>>();
-    let mut host_pk_y = host_pk_sec1_bytes.as_ref()[num_coord_bytes + 1..]
-        .chunks(4)
-        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
-        .collect::<ArrayVec<u32, 8>>();
-    host_pk_x.reverse();
-    host_pk_y.reverse();
-    let rma_token_wrapping_pubkey = EccP256PublicKey {
-        x: host_pk_x,
-        y: host_pk_y,
+    let rma_token_hash = LcTokenHash {
+        hash: hash_lc_token(rma_unlock_token_hash.as_bytes())?,
     };
 
     // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for host public key ...", timeout)?;
-
-    // Send RMA token wrapping ECC keys into the device over the console.
-    rma_token_wrapping_pubkey.send(&*uart)?;
-
-    // Wait until device exports the wrapped RMA unlock token.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA token ...", timeout)?;
-    let rma_token_out_data = WrappedRmaUnlockToken::recv(&*uart, timeout, false)?;
-    log::info!("{:x?}", rma_token_out_data);
-
+    let _ = UartConsole::wait_for(&*uart, r"Waiting For RMA Unlock Token Hash ...", timeout)?;
+    rma_token_hash.send_with_crc(&*uart)?;
     Ok(())
 }
 
@@ -322,11 +294,11 @@ fn provision_certificates(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    host_ecc_sk: PathBuf,
     cert_endorsement_key_wrapper: KeyWrapper,
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
     ca_certificate: PathBuf,
+    rma_unlock_token_hash: &ArrayVec<u32, 4>,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
@@ -339,7 +311,7 @@ pub fn run_ft_personalize(
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
 
-    extract_rma_unlock_token(transport, host_ecc_sk, timeout)?;
+    send_rma_unlock_token_hash(transport, rma_unlock_token_hash, timeout)?;
     provision_certificates(
         transport,
         cert_endorsement_key_wrapper,

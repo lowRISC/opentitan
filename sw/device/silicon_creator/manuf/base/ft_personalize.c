@@ -54,12 +54,6 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
 
 /**
- * RMA unlock token wrapping data.
- */
-static ecc_p256_public_key_t host_ecc_pk;
-static wrapped_rma_unlock_token_t wrapped_rma_token;
-
-/**
  * Keymgr binding values.
  */
 static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
@@ -258,10 +252,16 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
   // and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
-    LOG_INFO("Waiting for host public key ...");
-    TRY(ujson_deserialize_ecc_p256_public_key_t(uj, &host_ecc_pk));
+    lc_token_hash_t token_hash;
+    // Wait for host the host generated RMA unlock token hash to arrive over the
+    // console.
+    LOG_INFO("Waiting For RMA Unlock Token Hash ...");
+
+    CHECK_STATUS_OK(
+        UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
+
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
-                                         &host_ecc_pk, &wrapped_rma_token));
+                                         &token_hash));
     TRY(manuf_personalize_flash_asymm_key_seed(
         &flash_ctrl_state, kFlashInfoFieldUdsAttestationKeySeed,
         kAttestationSeedWords));
@@ -287,8 +287,6 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
         &flash_ctrl_state, kFlashInfoFieldAttestationKeyGenVersion,
         /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
         /*erase_page_before_write=*/false));
-    LOG_INFO("Exporting RMA token ...");
-    RESP_OK(ujson_serialize_wrapped_rma_unlock_token_t, uj, &wrapped_rma_token);
     sw_reset();
   }
 
