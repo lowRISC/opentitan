@@ -120,6 +120,9 @@ opentitan_test(
     fpga = fpga_params(
         timeout = "long",
     ),
+    # This test can take > 40 minutes, so mark it manual as it shouldn't run
+    # in CI/nightlies.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -317,6 +320,9 @@ opentitan_test(
     fpga = fpga_params(
         timeout = "long",
     ),
+    # This test can take > 40 minutes, so mark it manual as it shouldn't run
+    # in CI/nightlies.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",

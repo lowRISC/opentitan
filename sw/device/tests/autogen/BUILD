@@ -40,7 +40,12 @@ package(default_visibility = ["//visibility:public"])
         ),
         verilator = verilator_params(
             timeout = "eternal",
-            tags = ["flaky"],
+            tags = [
+                "flaky",
+                "manual",
+            ],
+            # This test can take > 60 minutes, so mark it manual as it
+            # shouldn't run in CI/nightlies.
             # often times out in 3600s on 4 cores
         ),
         deps = [
