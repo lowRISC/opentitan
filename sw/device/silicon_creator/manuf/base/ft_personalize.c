@@ -103,6 +103,9 @@ static manuf_certs_t tbs_certs = {
             kTpmCikMaxTbsSizeBytes,
         },
     .offsets = {0},
+    // Indicates if the embedded certificate blob is a TBS certificate and needs
+    // to be endorsed by the host.
+    .tbs = {true, false, false, true, true, true},
     .certs = {0},
 };
 static manuf_endorsed_certs_t endorsed_certs;
