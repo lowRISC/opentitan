@@ -10,6 +10,7 @@ load(
     "fpga_params",
     "opentitan_test",
     "silicon_params",
+    "verilator_params",
 )
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
@@ -330,6 +331,9 @@ opentitan_test(
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
+    # This test can take > 40 minutes, so mark it manual as it shouldn't run
+    # in CI/nightlies.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

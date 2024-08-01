@@ -73,6 +73,9 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "long",
+        # This test can take > 40 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
         test_cmd = CLEAR_TEST_CMD,
         test_harness = "//sw/host/tests/rom/sw_strap_value",
     ),
