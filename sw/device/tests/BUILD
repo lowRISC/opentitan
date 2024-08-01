@@ -3439,7 +3439,12 @@ opentitan_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        # This test requires a flash connected to the SPI bus,
+        # which is not available in Verilator.
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(timeout = "moderate"),
