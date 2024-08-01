@@ -461,8 +461,6 @@
     {
       name: usbdev_rx_full
       uvm_test_seq: usbdev_rx_full_vseq
-      // No need for randomization.
-      reseed: 1
     }
     {
       name: usbdev_rx_pid_err
