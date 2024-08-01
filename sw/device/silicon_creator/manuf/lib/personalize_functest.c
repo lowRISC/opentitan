@@ -57,12 +57,6 @@ static void sw_reset(void) {
   wait_for_interrupt();
 }
 
-status_t export_rma_token_over_console(
-    ujson_t *uj, wrapped_rma_unlock_token_t *wrapped_rma_token) {
-  RESP_OK(ujson_serialize_wrapped_rma_unlock_token_t, uj, wrapped_rma_token);
-  return OK_STATUS();
-}
-
 static status_t check_array_non_zero(uint32_t *array, size_t num_words) {
   for (size_t i = 0; i < num_words; ++i) {
     if (array[i] == 0) {
@@ -90,14 +84,6 @@ bool test_main(void) {
     abort();
   }
 
-  // Restore the export data stored in the retention SRAM. We store the data to
-  // be exported from the device (e.g., the encrypted RMA unlock token) in the
-  // retention SRAM (namely in the creator partition) as it is faster than
-  // storing it in flash, and still persists across a SW initiated reset.
-  retention_sram_t *ret_sram_data = retention_sram_get();
-  wrapped_rma_unlock_token_t *wrapped_rma_token =
-      (wrapped_rma_unlock_token_t *)&ret_sram_data->creator.reserved;
-
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
     // Provision the OTP SECRET1 partition.
@@ -114,17 +100,17 @@ bool test_main(void) {
 
     // Provision the OTP SECRET2 partition and flash info pages.
     if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
-      // Wait for host ECC pubkey, used to generate a shared AES key to export
-      // the RMA unlock token, to arrive over the console.
-      LOG_INFO("Ready to receive host ECC pubkey ...");
-      ecc_p256_public_key_t host_ecc_pk;
-      CHECK_STATUS_OK(UJSON_WITH_CRC(ujson_deserialize_ecc_p256_public_key_t,
-                                     &uj, &host_ecc_pk));
+      lc_token_hash_t token_hash;
+      // Wait for host the host generated RMA unlock token hash to arrive over
+      // the console.
+      LOG_INFO("Waiting For RMA Unlock Token Hash ...");
+
+      CHECK_STATUS_OK(
+          UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, &uj, &token_hash));
 
       // Perform OTP and flash info writes.
-      LOG_INFO("Provisioning OTP SECRET2 and keymgr flash info pages ...");
-      CHECK_STATUS_OK(manuf_personalize_device_secrets(
-          &flash_state, &lc_ctrl, &otp_ctrl, &host_ecc_pk, wrapped_rma_token));
+      CHECK_STATUS_OK(manuf_personalize_device_secrets(&flash_state, &lc_ctrl,
+                                                       &otp_ctrl, &token_hash));
       LOG_INFO("Provisioning flash info asymmetric keygen seeds ...");
       CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
           &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
@@ -155,16 +141,13 @@ bool test_main(void) {
           cdi_1_attestation_key_seed, kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
                                            kAttestationSeedWords));
+      LOG_INFO(
+          "Finished provisioning OTP SECRET2 and keymgr flash info pages ...");
 
       // Reset the chip to activate the OTP partitions and flash pages.
       sw_reset();
     }
   } else if (info == kDifRstmgrResetInfoSw) {
-    // Send the RMA unlock token data (stored in the retention SRAM) over the
-    // console using ujson framework.
-    LOG_INFO("Exporting RMA unlock token ...");
-    CHECK_STATUS_OK(export_rma_token_over_console(&uj, wrapped_rma_token));
-
     // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
     // resetting the chip.
     LOG_INFO("Spinning for host to connect over JTAG.");

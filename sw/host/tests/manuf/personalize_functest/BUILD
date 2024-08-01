@@ -24,6 +24,7 @@ rust_binary(
     },
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/provisioning/util_lib",
         "@crate_index//:aes",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
@@ -34,5 +35,6 @@ rust_binary(
         "@crate_index//:p256",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
+        "@crate_index//:zerocopy",
     ],
 )

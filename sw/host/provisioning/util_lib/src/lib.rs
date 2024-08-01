@@ -34,8 +34,8 @@ pub fn hex_string_to_u8_arrayvec<const N: usize>(hex_str: &str) -> Result<ArrayV
         .collect::<ArrayVec<u8, N>>())
 }
 
-// Life cycle tokens are hashed using a keccak hashing algorithm. The result is
-// a 16 byte value represented as a vector of two u64s.
+/// Life cycle tokens are hashed using a keccak hashing algorithm. The result is
+/// a 16 byte value represented as a vector of two u64s.
 pub fn hash_lc_token(input: &[u8]) -> Result<ArrayVec<u64, 2>> {
     let name = b"";
     let customazation = b"LC_CTRL";
