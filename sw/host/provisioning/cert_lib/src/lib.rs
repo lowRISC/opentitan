@@ -150,12 +150,14 @@ fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<V
     generate_certificate_from_tbs(tbs, &signature)
 }
 
-/// Validate a chain of X.509 certificates using 'openssl verify ...' command.
+/// Validate a collection of X.509 certificates using 'openssl verify ...' command.
+///
+/// Each certificate in the collection is validated against the provided CA.
 ///
 /// Arguments:
 /// * ca_pem - The file name of the CA certificate saved in PEM format.
 /// * certs  - A vector of certificate binary blobs.
-pub fn validate_certs_chain(ca_pem: &str, certs: &[&Vec<u8>]) -> Result<()> {
+pub fn validate_certs_chain(ca_pem: &str, certs: &[Vec<u8>]) -> Result<()> {
     let base_name = tmpfilename("cert_validation");
     let binding_der = base_name.to_owned() + ".der";
     let binding_pem = base_name.to_owned() + ".pem";
@@ -295,12 +297,16 @@ mod tests {
         ];
 
         // Verify that the certificate validation succeeds.
-        assert!(validate_certs_chain(ca_pem, &[&cert0, &cert1, &cert2]).is_ok());
+        assert!(
+            validate_certs_chain(ca_pem, &[cert0.clone(), cert1.clone(), cert2.clone()]).is_ok()
+        );
 
         // Corrupt the fist certificate in the chain and verify that the
         // certificate validation fails.
         let bad_value = cert0.pop().unwrap() + 1;
         cert0.push(bad_value);
-        assert!(validate_certs_chain(ca_pem, &[&cert0, &cert1, &cert2]).is_err());
+        assert!(
+            validate_certs_chain(ca_pem, &[cert0.clone(), cert1.clone(), cert2.clone()]).is_err()
+        );
     }
 }

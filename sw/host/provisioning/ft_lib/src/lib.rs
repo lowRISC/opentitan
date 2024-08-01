@@ -13,9 +13,7 @@ use elliptic_curve::{PublicKey, SecretKey};
 use p256::NistP256;
 use zerocopy::AsBytes;
 
-use cert_lib::{
-    get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
-};
+use cert_lib::{parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
@@ -226,19 +224,11 @@ fn provision_certificates(
     let _ = UartConsole::wait_for(&*uart, r"Waiting for certificate inputs ...", timeout)?;
     perso_certgen_inputs.send(&*uart)?;
 
-    // Wait until device exports the TBS certificates.
+    // Wait until the device exports the TBS certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting TBS certificates ...", timeout)?;
-    let certs = ManufCerts::recv(&*uart, timeout, true)?;
+    let certs_ujson = ManufCerts::recv(&*uart, timeout, true)?;
 
-    // Extract certificate byte vectors and trim unused bytes.
-    let mut cert_bytes: Vec<Vec<u8>> = Vec::new();
-    let mut start: usize = 0;
-    for size in certs.sizes.iter() {
-        cert_bytes.push(certs.certs[start..start + *size as usize].to_vec());
-        start += *size as usize;
-    }
-
-    // Parse and endorse the certificates.
+    // Select the CA endorsement key to use.
     let key = match cert_endorsement_key_wrapper {
         KeyWrapper::LocalKey(path) => {
             log::info!("Using local key for cert endorsement");
@@ -249,72 +239,59 @@ fn provision_certificates(
             CertEndorsementKey::CkmsKey(key_id)
         }
     };
-    let uds_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[0].clone(), &key)?;
-    let cdi_0_cert_bytes = cert_bytes[1].clone();
-    let cdi_1_cert_bytes = cert_bytes[2].clone();
-    let tpm_ek_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[3].clone(), &key)?;
-    let tpm_cek_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[4].clone(), &key)?;
-    let tpm_cik_cert_bytes = parse_and_endorse_x509_cert(cert_bytes[5].clone(), &key)?;
 
-    // Log the certificates to the console.
-    log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
-    let _ = parse_certificate(&uds_cert_bytes)?;
-    log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
-    let _ = parse_certificate(&cdi_0_cert_bytes)?;
-    log::info!("CDI_1 Cert: {}", hex::encode(cdi_1_cert_bytes.clone()));
-    let _ = parse_certificate(&cdi_1_cert_bytes)?;
-    log::info!("TPM EK Cert: {}", hex::encode(tpm_ek_cert_bytes.clone()));
-    let _ = parse_certificate(&tpm_ek_cert_bytes)?;
-    log::info!("TPM CEK Cert: {}", hex::encode(tpm_cek_cert_bytes.clone()));
-    let _ = parse_certificate(&tpm_cek_cert_bytes)?;
-    log::info!("TPM CIK Cert: {}", hex::encode(tpm_cik_cert_bytes.clone()));
-    let _ = parse_certificate(&tpm_cik_cert_bytes)?;
-
-    // Hash all certificates' contents.
-    let mut hasher = Sha256::new();
-    let all_certs: [&Vec<u8>; 6] = [
-        &uds_cert_bytes,
-        &cdi_0_cert_bytes,
-        &cdi_1_cert_bytes,
-        &tpm_ek_cert_bytes,
-        &tpm_cek_cert_bytes,
-        &tpm_cik_cert_bytes,
-    ];
-    for cert in all_certs {
-        // Do not hash trailing bytes present in the certificate vectors, use
-        let size = get_cert_size(cert)?;
-        let mut cert_clone = cert.clone();
-        if cert_clone.len() > size {
-            cert_clone.truncate(size);
-        }
-        hasher.update(cert_clone);
-    }
-    let host_computed_certs_hash = hasher.finalize();
-
-    // Send endorsed certificates back to the device.
-    let endorsed_cert_byte_vecs = vec![
-        &uds_cert_bytes,
-        &tpm_ek_cert_bytes,
-        &tpm_cek_cert_bytes,
-        &tpm_cik_cert_bytes,
-    ];
-    let mut endorsed_cert_bytes = ArrayVec::<u8, 4096>::new();
+    // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
+    // During the process, both:
+    //   1. prepare a UJSON payload of endorsed certs to send back to the device,
+    //   2. collect the certs that were endorsed to verify their endorsement signatures with OpenSSL, and
+    //   3. hash all certs to check the integrity of what gets written back to the device.
+    let cert_labels = ["UDS", "CDI_0", "CDI_1", "TPM_EK", "CEK", "CIK"];
+    let mut cert_hasher = Sha256::new();
+    let mut start: usize = 0;
+    let mut offset: u32 = 0;
+    let mut host_endorsed_certs: Vec<Vec<u8>> = Vec::new();
+    let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
     let mut endorsed_cert_sizes = ArrayVec::<u32, 8>::new();
     let mut endorsed_cert_offsets = ArrayVec::<u32, 8>::new();
-    let mut offset: u32 = 0;
-    for vec in &endorsed_cert_byte_vecs {
-        endorsed_cert_sizes.push(vec.len() as u32);
-        endorsed_cert_offsets.push(offset);
-        endorsed_cert_bytes.try_extend_from_slice(vec)?;
-        offset += vec.len() as u32;
+    for (i, label) in cert_labels.iter().enumerate() {
+        let mut cert_size = certs_ujson.sizes[i] as usize;
+        let mut cert_bytes = certs_ujson.certs[start..start + cert_size].to_vec();
+        start += cert_size;
+        // Not all certificates need to be endorsed, some certs are already fully endorsed.
+        if certs_ujson.tbs[i] {
+            // Endorse the cert and updates its size.
+            cert_bytes = parse_and_endorse_x509_cert(cert_bytes.clone(), &key)?;
+            cert_size = cert_bytes.len();
+            // Prepare a collection of certs whose endorsements should be checked with OpenSSL.
+            // TODO: verify the endorsement of the UDS certificate with OpenSSL. It is currently
+            // failing signature verification due to the custom DiceTcbInfo extension being a
+            // non-recognizable extension that is marked "critical".
+            if i > 0 {
+                host_endorsed_certs.push(cert_bytes.clone());
+            }
+            // Prepare the UJSON data payloads that will be sent back to the device.
+            endorsed_cert_concat.try_extend_from_slice(cert_bytes.as_slice())?;
+            endorsed_cert_sizes.push(cert_size as u32);
+            endorsed_cert_offsets.push(offset);
+            offset += cert_size as u32;
+        }
+        // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
+        log::info!("{} Cert: {}", label, hex::encode(cert_bytes.clone()));
+        let _ = parse_certificate(cert_bytes.as_slice())?;
+        // Push the cert into the hasher so we can ensure the certs written to the device's flash
+        // info pages match those verified on the host.
+        cert_hasher.update(cert_bytes);
     }
-    let endorsed_certs = ManufEndorsedCerts {
+    let host_computed_certs_hash = cert_hasher.finalize();
+
+    // Send endorsed certificates back to the device.
+    let manuf_endorsed_certs = ManufEndorsedCerts {
         sizes: endorsed_cert_sizes,
         offsets: endorsed_cert_offsets,
-        certs: endorsed_cert_bytes,
+        certs: endorsed_cert_concat,
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;
-    endorsed_certs.send(&*uart)?;
+    manuf_endorsed_certs.send(&*uart)?;
     let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
 
     // Check the integrity of the certificates written to the device's flash by comparing a
@@ -335,9 +312,8 @@ fn provision_certificates(
         )
     }
 
-    // Validate the TPM certificate endorsements.
-    let certs: [&Vec<u8>; 3] = [&tpm_ek_cert_bytes, &tpm_cek_cert_bytes, &tpm_cik_cert_bytes];
-    validate_certs_chain(ca_certificate.to_str().unwrap(), &certs)?;
+    // Validate the certificate endorsements with OpenSSL.
+    validate_certs_chain(ca_certificate.to_str().unwrap(), &host_endorsed_certs)?;
 
     Ok(())
 }

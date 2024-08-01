@@ -112,6 +112,7 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 #define STRUCT_MANUF_CERTS(field, string) \
     field(sizes, uint32_t, 8) \
     field(offsets, uint32_t, 8) \
+    field(tbs, bool, 8) \
     field(certs, uint8_t, 4096)
 UJSON_SERDE_STRUCT(ManufCerts, \
                    manuf_certs_t, \
