@@ -64,6 +64,12 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> Result<TokenStream> {
         .map(|variant| dispatch_variant(name, variant))
         .collect::<Result<Vec<_>>>()?;
 
+    let exclusive_arms = e
+        .variants
+        .iter()
+        .map(|variant| exclusive_variant(name, variant))
+        .collect::<Result<Vec<_>>>()?;
+
     // We wrap the derived code inside an anonymous const block to give the
     // `extern crate` references a local namespace that wont pollute the
     // global namespace.
@@ -83,6 +89,12 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> Result<TokenStream> {
                         #(#arms),*
                     }
                 }
+
+        fn exclusive_use_of_transport(&self) -> bool {
+                    match self {
+                        #(#exclusive_arms),*
+                    }
+        }
             }
         };
     })
@@ -108,5 +120,28 @@ fn dispatch_variant(name: &Ident, variant: &Variant) -> Result<TokenStream> {
     Ok(quote! {
         #name::#ident(ref __field) =>
             opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
+    })
+}
+
+fn exclusive_variant(name: &Ident, variant: &Variant) -> Result<TokenStream> {
+    let ident = &variant.ident;
+    let unnamed_len = match &variant.fields {
+        Fields::Unnamed(u) => u.unnamed.len(),
+        _ => {
+            return Err(Error::new(
+                variant.ident.span(),
+                "CommandDispatch is only implemented for Newtype variants",
+            ));
+        }
+    };
+    if unnamed_len != 1 {
+        return Err(Error::new(
+            variant.ident.span(),
+            "CommandDispatch is only implemented for Newtype variants",
+        ));
+    }
+    Ok(quote! {
+        #name::#ident(ref __field) =>
+            opentitanlib::app::command::CommandDispatch::exclusive_use_of_transport(__field)
     })
 }
