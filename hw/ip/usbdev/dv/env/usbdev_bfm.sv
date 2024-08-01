@@ -336,7 +336,7 @@ class usbdev_bfm extends uvm_component;
 
   // Suspend signaling detected; over 3ms have elapsed in the Idle state.
   function void bus_suspend();
-    link_state = LinkSuspended;
+    link_state = (link_state == LinkPowered) ? LinkPoweredSuspended : LinkSuspended;
     intr_state[IntrLinkSuspend] = 1'b1;
   endfunction
 
