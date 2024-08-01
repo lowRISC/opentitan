@@ -703,6 +703,8 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -3125,6 +3127,8 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
@@ -4079,6 +4083,8 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -4113,7 +4119,11 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
-    verilator = verilator_params(timeout = "long"),
+    verilator = verilator_params(
+        timeout = "long",
+        # Broken on Verilator. See #24182.
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -4277,7 +4287,11 @@ opentitan_test(
         timeout = "eternal",
         tags = ["manual"],
     ),
-    verilator = verilator_params(timeout = "long"),
+    verilator = verilator_params(
+        timeout = "long",
+        # Broken on Verilator. See #24182.
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -6206,6 +6220,8 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
