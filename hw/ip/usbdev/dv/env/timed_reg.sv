@@ -30,6 +30,9 @@ class timed_reg_field extends uvm_object;
   // Maximum expected delay for a predicted change to be met.
   int unsigned       max_delay;
 
+  // Initial value of this register field; to be reinstated after a DUT reset.
+  uvm_reg_data_t     init_val;
+
   // Latest matched value of this field; used in predicting CSR read data.
   uvm_reg_data_t     read_latest;
 
@@ -154,6 +157,17 @@ class timed_reg_field extends uvm_object;
       end
     end while (pred_q.size() > 0);
   endfunction
+
+  // Reset the state of the timed register field/predictions in response to a DUT reset.
+  function void reset();
+    `uvm_info(`gfn, $sformatf("Field %s resetting to 0x%0x", field.get_name(), init_val), UVM_HIGH)
+    // State for CSR reading.
+    read_latest = init_val;
+    pred_valid = 1'b0;
+    // State for `timed_checker` process.
+    obs_latest = init_val;
+    pred_q.delete();
+  endfunction
 endclass : timed_reg_field
 
 //-----------------------------------------------------------------------------
@@ -185,11 +199,10 @@ class timed_reg extends uvm_object;
     // Update the 'unpredictable bits' mask.
     mask = (1 << field.get_n_bits()) - 1;
     unpred_mask &= ~(mask << field.get_lsb_pos());
-    // State for CSR reading.
-    trf.read_latest = init_val;
-    trf.pred_valid = 1'b0;
-    // State for `timed_checker` process.
-    trf.obs_latest = init_val;
+    // Remember the initial state to be reinstated after device reset.
+    trf.init_val = init_val;
+    // Set the initial post-reset state of the field.
+    trf.reset();
     fields.push_back(trf);
   endfunction
 
@@ -231,5 +244,10 @@ class timed_reg extends uvm_object;
     for (int unsigned f = 0; f < fields.size(); f++) begin
       if (fields[f].preds_pending()) fields[f].check_pred(time_now, reg_name, act_data);
     end
+  endfunction
+
+  // Reset the state of the timed register/predictions in response to a DUT reset.
+  function void reset();
+    for (int unsigned f = 0; f < fields.size(); f++) fields[f].reset();
   endfunction
 endclass : timed_reg

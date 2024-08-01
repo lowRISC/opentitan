@@ -130,6 +130,8 @@ class usbdev_bfm extends uvm_component;
 
   // Reset assertion to the DUT; this is a reset of the IP block; not a Bus Reset on the USB.
   function void dut_reset();
+    configin_t configin_rst;  // Defaults to zeros throughout.
+    `uvm_info(`gfn, "Modeling DUT reset", UVM_LOW)
     powered = 1'b1;
     // Assigned device address is discarded and the DUT returns to the disconnected state.
     dev_address = 0;
@@ -163,8 +165,12 @@ class usbdev_bfm extends uvm_component;
     // Note: packet buffer contents are unmodified by DUT reset, but the bank of 32 flops is reset.
     wdata_q <= 32'b0;
     // Note: AON/Wake state also unaffected.
-    // Record that there is no IN transmission in progress.
+    // Note: `sense` line is unaffected; it's an external input to the DUT.
+    // Record that there is no IN transmission configured or in progress.
+    for (int unsigned ep = 0; ep < NEndpoints; ep++) configin[ep] = configin_rst;
     tx_ep = InvalidEP;
+    // Nor any in-progress reception.
+    rx_token = null;
   endfunction
 
   //------------------------------------------------------------------------------------------------
