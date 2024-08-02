@@ -12,48 +12,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
   csrng_item   cs_item;
   string       path1, path2, path3, path4, path_push, path_full, path_pop, path_not_empty, path;
-
-  // TODO(#22869): Instead of forcing ack_sts, actually generate the different error conditions.
-  task force_ack_and_ack_sts(int inst_idx, csrng_cmd_sts_e cmd_status);
-    bit [31:0] value_ack_sts;
-    string path_ack, path_ack_sts;
-
-    // Get paths
-    // ack is a 1D packed array - 1 bit per instance
-    path_ack = $sformatf("tb.dut.u_csrng_core.cmd_stage_ack[%0d]", inst_idx);
-    // ack_sts is a 1D packed array of enums -> a 2D packed array where the first packed dimension
-    // indexes the enum
-    path_ack_sts = "tb.dut.u_csrng_core.cmd_stage_ack_sts";
-
-    // Check paths and read the current ack_sts value
-    if (!uvm_hdl_check_path(path_ack)) begin
-      `uvm_fatal(`gfn, $sformatf("Path %s not found", path_ack))
-    end
-    if (!uvm_hdl_check_path(path_ack_sts)) begin
-      `uvm_fatal(`gfn, $sformatf("Path %s not found", path_ack_sts))
-    end else if (!uvm_hdl_read(path_ack_sts, value_ack_sts)) begin
-      `uvm_error(`gfn, $sformatf("Path %s could not be read", path_ack_sts))
-    end
-
-    // Inject the defined status bits at the correct positon.
-    // ack_sts is a 1D packed array of enums. This corresponds to a 2D packed array where the first
-    // packed dimension indexes the enum. We have to interpret this as a flat 1D packed array.
-    value_ack_sts =
-        value_ack_sts & ~({CSRNG_CMD_STS_WIDTH{1'b1}} << (CSRNG_CMD_STS_WIDTH * inst_idx));
-    value_ack_sts = value_ack_sts | ({cmd_status} << (CSRNG_CMD_STS_WIDTH * inst_idx));
-
-    // Force signals
-    if (!uvm_hdl_force(path_ack, 1'b1)) begin
-      `uvm_error(`gfn, $sformatf("Path %s could not be forced", path_ack))
-    end else begin
-      `uvm_info(`gfn, $sformatf("Path %s forced to 1", path_ack), UVM_MEDIUM)
-    end
-    if (!uvm_hdl_force(path_ack_sts, value_ack_sts)) begin
-      `uvm_error(`gfn, $sformatf("Path %s could not be forced", path_ack))
-    end else begin
-      `uvm_info(`gfn, $sformatf("Path %s forced to %b", path_ack_sts, value_ack_sts), UVM_MEDIUM)
-    end
-  endtask
+  bit [31:0]   backdoor_err_code_val;
 
   task release_ack_and_ack_sts(int inst_idx);
     string path_ack, path_ack_sts;
@@ -134,46 +93,101 @@ class csrng_intr_vseq extends csrng_base_vseq;
     send_cmd_req(SW_APP, cs_item);
   endtask // test_cs_entropy_req
 
-  task test_cs_sw_cmd_sts();
-    // TODO(#22869): Instead of forcing ack_sts, actually generate the different error conditions.
-    // Force error on SW instance
-    force_ack_and_ack_sts(2, CMD_STS_INVALID_CMD_SEQ);
-    // Wait for SW_CMD_STS getting set
-    csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(CMD_STS_INVALID_CMD_SEQ));
-    cov_vif.cg_err_code_sample(.err_code(32'b0));
-    release_ack_and_ack_sts(2);
-  endtask
+  task trigger_invalid_acmd_sts_err(uint app);
+    // Write an invalid command and expect the corresponding status response.
+    cs_item.randomize();
+    cs_item.clen  = 'h0;
+    cs_item.acmd  = cfg.which_invalid_acmd;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(app, cs_item, .exp_sts(CMD_STS_INVALID_ACMD));
 
-  task test_cs_hw_inst_exc();
-    // TODO(#22869): Instead of forcing ack_sts, actually generate the different error conditions.
-    bit [31:0] backdoor_err_code_val;
+    if (app != SW_APP) begin
+      // Expect/Clear interrupt bit
+      check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
+      cfg.clk_rst_vif.wait_clks(100);
+      // Make sure the interrupt bit is cleared
+      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
+    end
 
-    // Force error on HW instance 0.
-    force_ack_and_ack_sts(0, CMD_STS_INVALID_CMD_SEQ);
-    // Wait for cs_hw_inst_exc interrupt
-    csr_spinwait(.ptr(ral.intr_state.cs_hw_inst_exc), .exp_data(1'b1));
-    cov_vif.cg_err_code_sample(.err_code(32'b0));
+    csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+    cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
+  endtask // trigger_invalid_acmd_sts_err
 
-    // Force errors on both HW instance 1 and 0.
-    force_ack_and_ack_sts(1, CMD_STS_INVALID_CMD_SEQ);
+  task trigger_invalid_seq_sts_err(uint app);
+    // Write an invalid sequence of commands and expect the corresponding status response.
+    if (cfg.which_cmd_inv_seq == INS) begin
+      cs_item.randomize();
+      cs_item.acmd  = cfg.which_cmd_inv_seq;
+      `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+      send_cmd_req(app, cs_item);
+    end
+
+    cs_item.randomize();
+    cs_item.acmd  = cfg.which_cmd_inv_seq;
+    cs_item.clen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(app, cs_item, .exp_sts(CMD_STS_INVALID_CMD_SEQ), .await_genbits(0));
+
+    if (app != SW_APP) begin
+      // Expect/Clear interrupt bit
+      check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
+      cfg.clk_rst_vif.wait_clks(100);
+      // Make sure the interrupt bit is cleared
+      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
+    end
+
+    csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+    cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
+  endtask // trigger_invalid_seq_sts_err
+
+  task trigger_reseed_interval_sts_err(uint app);
+    // Send cfg.reseed_interval + 1 generate commands and expect the corresponding status response.
+    csr_wr(.ptr(ral.reseed_interval), .value(cfg.reseed_interval));
+
+    if (cfg.which_cmd_inv_seq != INS) begin
+      cs_item.randomize();
+      cs_item.acmd  = INS;
+      `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+      send_cmd_req(app, cs_item);
+    end
+    `uvm_info(`gfn, $sformatf("Setting the reseed interval to %d", cfg.reseed_interval), UVM_DEBUG)
+    for (int i = 0; i < cfg.reseed_interval; i++) begin
+      cs_item.randomize();
+      cs_item.acmd  = GEN;
+      cs_item.glen  = 'h1;
+      `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+      send_cmd_req(app, cs_item);
+    end
+    cs_item.randomize();
+    cs_item.acmd  = GEN;
+    cs_item.glen  = 'h1;
+    cs_item.clen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(app, cs_item, .exp_sts(CMD_STS_RESEED_CNT_EXCEEDED), .await_genbits(0));
+
+    if (app != SW_APP) begin
+      // Expect/Clear interrupt bit
+      check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
+      cfg.clk_rst_vif.wait_clks(100);
+      // Make sure the interrupt bit is cleared
+      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
+    end
+
+    csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+    cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
+  endtask // trigger_reseed_interval_sts_err
+
+  task test_cmd_sts_errs(uint app);
+    trigger_invalid_acmd_sts_err(app);
+    trigger_invalid_seq_sts_err(app);
+    trigger_reseed_interval_sts_err(app);
+
+    ral.ctrl.enable.set(prim_mubi_pkg::MuBi4False);
+    csr_update(.csr(ral.ctrl));
     cfg.clk_rst_vif.wait_clks(100);
-    cov_vif.cg_err_code_sample(.err_code(32'b0));
-
-    release_ack_and_ack_sts(0);
-
-    // Now only have error on HW instance 1.
-    cfg.clk_rst_vif.wait_clks(100);
-    cov_vif.cg_err_code_sample(.err_code(32'b0));
-
-    // Release last error so that we're back to normal operation.
-    release_ack_and_ack_sts(1);
-
-    // Expect/Clear interrupt bit
-    check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
-    cfg.clk_rst_vif.wait_clks(100);
-    // Make sure the interrupt bit is cleared
-    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
-  endtask // test_cs_hw_inst_exc
+    ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
+    csr_update(.csr(ral.ctrl));
+  endtask // test_cmd_sts_errs
 
   task test_cs_fatal_err();
     string        path, path1, path2;
@@ -189,7 +203,6 @@ class csrng_intr_vseq extends csrng_base_vseq;
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
-    bit [31:0]    backdoor_err_code_val;
 
     fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
     fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
@@ -338,6 +351,12 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
   task body();
     super.body();
+    // Create EDN host sequences.
+    for (int i = 0; i < NUM_HW_APPS; i++) begin
+      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
+                                              ($sformatf("m_edn_push_seq[%0d]", i));
+    end
+
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
 
@@ -357,11 +376,11 @@ class csrng_intr_vseq extends csrng_base_vseq;
     // Test cs_entropy_req interrupt
     test_cs_entropy_req();
 
-    // Test cs_hw_inst_exc interrupt
-    test_cs_hw_inst_exc();
-
-    // Test faulty SW APP response by forcing sts output
-    test_cs_sw_cmd_sts();
+    // Test the command status response errors and for the HW apps
+    // the cs_hw_inst_exc interrupt.
+    for (int app = 0; app <= SW_APP; app++) begin
+      test_cmd_sts_errs(app);
+    end
 
     // Test cs_fatal_err interrupt
     test_cs_fatal_err();

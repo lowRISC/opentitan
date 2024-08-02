@@ -212,8 +212,12 @@ interface csrng_cov_if (
     }
 
     cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs {
-      bins success = { 1'b0 };
-      bins error   = { 1'b1 };
+      bins success             = { CMD_STS_SUCCESS };
+      bins invalid_acmd        = { CMD_STS_INVALID_ACMD };
+      // TODO(#24224): Uncomment or delete this line based on the decision in the issue.
+      // bins invalid_gen_cmd     = { CMD_STS_INVALID_GEN_CMD };
+      bins invalid_cmd_seq     = { CMD_STS_INVALID_CMD_SEQ };
+      bins reseed_cnt_exceeded = { CMD_STS_RESEED_CNT_EXCEEDED };
     }
 
   endgroup : csrng_sts_cg
