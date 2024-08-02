@@ -11,7 +11,7 @@
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/cdc/tools/dvsim/common_cdc_cfg.hjson"]
 
-  tool: verixcdc
+  tool: meridiancdc
 
   // Overrides
   overrides: [
@@ -24,17 +24,11 @@
   // Timing constraints for this module
   sdc_file: "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc"
 
-  // Verix environment file with additional definitions (may have to populate later)
-  env_file: ""
-
   // Main CDC waiver file
-  cdc_waiver_file: "{proj_root}/hw/top_earlgrey/cdc/cdc_waivers.tcl"
+  cdc_waiver_file: ""
 
-  // CDC customized env file for ast integration
-  cdc_user_env: "{proj_root}/hw/top_earlgrey/cdc/top_user.env"
-
-  // AST.lib
-  ast_lib: "{proj_root}/hw/top_earlgrey/ip/ast/lib/ast.lib"
+  // CDC customized env file
+  cdc_env_file: "{proj_root}/hw/top_earlgrey/cdc/user_intent.env"
 
   // Technology path for this module (empty for open-source runs)
   foundry_root: ""
