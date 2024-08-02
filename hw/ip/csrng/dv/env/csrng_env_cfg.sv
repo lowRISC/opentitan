@@ -66,6 +66,15 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   int NApps = NHwApps + 1;
   int Sp2VWidth = 3;
 
+  rand csrng_pkg::acmd_e which_cmd_inv_seq;
+  constraint  which_cmd_inv_seq_c { which_cmd_inv_seq inside {INS, RES, GEN, UPD};}
+
+  rand csrng_pkg::acmd_e which_invalid_acmd;
+  constraint  which_invalid_acmd_c { which_invalid_acmd inside {INV, GENB, GENU};}
+
+  rand bit [31:0] reseed_interval;
+  constraint  reseed_interval_c { reseed_interval inside {[1:10]};}
+
   rand uint   which_app_err_alert;
   constraint  which_app_err_alert_c { which_app_err_alert inside {[0:NApps-1]};}
 
