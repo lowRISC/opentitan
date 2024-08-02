@@ -345,13 +345,19 @@ class usbdev_bfm extends uvm_component;
     if (wake_events.module_active) wake_events.bus_not_idle = 1'b1;
     if (powered) begin
       if (completed) begin
-        link_state = LinkActiveNoSOF;
+        if (link_state == LinkResuming) link_state = LinkActiveNoSOF;
         intr_state[IntrLinkResume] = 1'b1;
       end else begin
-        if (link_state == LinkSuspended || link_state == LinkPoweredSuspended) begin
-          link_state = LinkResuming;
-        end
-        if (link_state == LinkPoweredSuspended) intr_state[IntrLinkResume] = 1'b1;
+        case (link_state)
+          LinkSuspended: link_state = LinkResuming;
+          LinkPoweredSuspended: begin
+            link_state = LinkPowered;
+            intr_state[IntrLinkResume] = 1'b1;
+          end
+          default: begin
+            // Nothing to be done.
+          end
+        endcase
       end
     end
   endfunction

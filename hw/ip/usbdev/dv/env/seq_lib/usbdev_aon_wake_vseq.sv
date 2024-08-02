@@ -52,7 +52,7 @@ class usbdev_aon_wake_vseq extends usbdev_link_suspend_vseq;
     // Set up the DUT, do some minimal traffic and then check that the USBDEV has detected
     // and reported that it has been Suspended; `usbdev_link_suspend_vseq` supplies the
     // Suspend signaling.
-    super.body();
+    run_and_suspend();
 
     // Report configuration.
     `uvm_info(`gfn, $sformatf("do_resume_signaling %d do_reset_signaling %d do_vbus_disconnects %d",
