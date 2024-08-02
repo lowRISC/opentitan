@@ -451,8 +451,7 @@
     {
       name: usbdev_resume_link_active
       uvm_test_seq: usbdev_resume_link_active_vseq
-      // No need for randomization.
-      reseed: 1
+      reseed: 20
     }
     {
       name: usbdev_rx_crc_err
