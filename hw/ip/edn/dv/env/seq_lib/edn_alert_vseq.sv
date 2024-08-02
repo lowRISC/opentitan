@@ -41,7 +41,7 @@ class edn_alert_vseq extends edn_base_vseq;
     bit valid_d;
     bit valid, ready;
     bit [31:0] hw_cmd_sts_prev;
-    bit [CMD_TYPE_SIZE-1:0] cmd_type_prev;
+    csrng_pkg::acmd_e cmd_type_prev;
     bit auto_mode_prev;
     bit precise;
     csrng_pkg::acmd_e exp_cmd_type;
@@ -144,7 +144,8 @@ class edn_alert_vseq extends edn_base_vseq;
         end
         // Back up the previous value of hw_cmd_sts for the prediction.
         csr_rd(.ptr(ral.hw_cmd_sts), .value(hw_cmd_sts_prev), .backdoor(1));
-        cmd_type_prev = hw_cmd_sts_prev[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type];
+        cmd_type_prev =
+            csrng_pkg::acmd_e'(hw_cmd_sts_prev[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type]);
         auto_mode_prev = hw_cmd_sts_prev[hw_cmd_auto_mode];
         // The next acknowledgement should return an error status.
         cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
