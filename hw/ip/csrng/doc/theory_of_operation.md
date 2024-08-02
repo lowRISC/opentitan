@@ -284,8 +284,8 @@ The actions performed by each command, as well as which flags are supported, are
 #### Command Response
 
 Once a command has been completed, successfully or unsuccessfully, the CSRNG responds with a single cycle pulse on the `csrng_rsp_ack` signal associated with the same application interface port.
-If the command is successful, the `csrng_rsp_sts` signal will indicate the value 0 (`CSRNG_OK`) in the same cycle.
-Otherwise the application will receive the value 1 (`CSRNG_ERROR`) on the `csrng_rsp_sts` signal.
+If the command is successful, the `csrng_rsp_sts` signal will indicate the value 0 (`SUCCESS`) in the same cycle.
+Otherwise the application will receive an error value on the `csrng_rsp_sts` signal as described in [`SW_CMD_STS.CMD_STS`](registers.md#sw_cmd_sts).
 A number of exception cases to be considered are enumerated in NIST SP 800-90A, and may include events such as:
 * Failure of the entropy source
 * Attempts to use an instance which has not been properly instantiated, or
