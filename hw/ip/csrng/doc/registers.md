@@ -276,6 +276,7 @@ It is set to low each time a new command is written to [`CMD_REQ.`](#cmd_req)
 The field is set to high once a SW command request has been acknowledged by the CSRNG.
 0b0: The last SW command has not been acknowledged yet.
 0b1: The last SW command has been acknowledged.
+In case of a generate command the acknowledgement goes high after all of the requested entropy is consumed.
 
 ### SW_CMD_STS . CMD_RDY
 This bit indicates when the command interface is ready to accept commands.
@@ -295,11 +296,11 @@ Generate bits returned valid register
 {"reg": [{"name": "GENBITS_VLD", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GENBITS_FIPS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                               |
-|:------:|:------:|:-------:|:-------------|:--------------------------------------------------------------------------|
-|  31:2  |        |         |              | Reserved                                                                  |
-|   1    |   ro   |    x    | GENBITS_FIPS | This bit is set when genbits are FIPS/CC compliant.                       |
-|   0    |   ro   |    x    | GENBITS_VLD  | This bit is set when genbits are available on this application interface. |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                        |
+|:------:|:------:|:-------:|:-------------|:-------------------------------------------------------------------------------------------------------------------|
+|  31:2  |        |         |              | Reserved                                                                                                           |
+|   1    |   ro   |    x    | GENBITS_FIPS | This bit is set when genbits are FIPS/CC compliant.                                                                |
+|   0    |   ro   |    x    | GENBITS_VLD  | This bit is set when genbits are available on this application interface after a generate command has been issued. |
 
 ## GENBITS
 Generate bits returned register

@@ -404,6 +404,7 @@
                 The field is set to high once a SW command request has been acknowledged by the CSRNG.
                 0b0: The last SW command has not been acknowledged yet.
                 0b1: The last SW command has been acknowledged.
+                In case of a generate command the acknowledgement goes high after all of the requested entropy is consumed.
                 '''
           resval: "0"
         }
@@ -467,7 +468,7 @@
       fields: [
         { bits: "0",
           name: "GENBITS_VLD",
-          desc: "This bit is set when genbits are available on this application interface."
+          desc: "This bit is set when genbits are available on this application interface after a generate command has been issued."
         }
         { bits: "1",
           name: "GENBITS_FIPS",
