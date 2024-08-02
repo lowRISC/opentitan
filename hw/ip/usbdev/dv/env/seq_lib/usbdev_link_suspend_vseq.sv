@@ -44,7 +44,8 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
   //  (Start Of Frame packets are 1ms apart, and 32 bits in duration like other token packets.)
   uint inter_sof_delay_clks = 1_000 * 48 - (32 * 4);  // 4 times oversampling per bit.
 
-  task body();
+  // Configure, run and suspend the DUT; this task is called by derived sequences.
+  task run_and_suspend();
     // Declare our choices.
     `uvm_info(`gfn, $sformatf("Traffic %0d reset_not_suspended %0d reset_suspended %0d",
                               gen_traffic, gen_reset_not_suspended, gen_reset_suspended), UVM_LOW)
@@ -111,6 +112,10 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
     wait_for_interrupt(1 << IntrLinkSuspend, .timeout_clks(1), .clear(1), .enforce(1));
     // Disable the interrupt before completing.
     csr_wr(.ptr(ral.intr_enable), .value(0));
+  endtask
+
+  task body();
+    run_and_suspend();
 
     // Shall we try generating a Bus Reset from the `(Powered)Suspended` state?
     if (gen_reset_suspended) begin
