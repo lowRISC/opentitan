@@ -16,7 +16,7 @@
   build_dir:        "{scratch_path}/{build_mode}"
   build_log:        "{build_dir}/cdc.log"
 
-  tool:             "verixcdc"
+  tool:             "meridiancdc"
 
   // We rely on Fusesoc to generate the file list for us
   sv_flist_gen_cmd:   "fusesoc"
