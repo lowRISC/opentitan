@@ -227,14 +227,11 @@ interface edn_cov_if (
     cp_recov_alert_cg: coverpoint recov_alert;
   endgroup : edn_alert_cg
 
-  covergroup edn_cs_cmd_response_cg with function sample(bit csrng_rsp_sts);
+  covergroup edn_cs_cmd_response_cg with function sample(csrng_pkg::csrng_cmd_sts_e csrng_rsp_sts);
     option.name         = "edn_cs_cmd_response_cg";
     option.per_instance = 1;
 
-    cp_csrng_rsp_sts_cg: coverpoint csrng_rsp_sts {
-      bins error   = { 1'b1 };
-      bins success = { 1'b0 };
-    }
+    cp_csrng_rsp_sts_cg: coverpoint csrng_rsp_sts;
   endgroup : edn_cs_cmd_response_cg
 
   covergroup edn_sw_cmd_sts_cg with function sample(bit cmd_rdy, bit cmd_reg_rdy,
@@ -356,7 +353,8 @@ interface edn_cov_if (
     end
   endfunction : cg_alert_sample
 
-  function automatic void cg_cs_cmd_response_sample(bit csrng_rsp_sts, bit csrng_rsp_ack);
+  function automatic void cg_cs_cmd_response_sample(csrng_pkg::csrng_cmd_sts_e csrng_rsp_sts,
+                                                    bit csrng_rsp_ack);
     if (csrng_rsp_ack) begin
       edn_cs_cmd_response_cg_inst.sample(csrng_rsp_sts);
     end
