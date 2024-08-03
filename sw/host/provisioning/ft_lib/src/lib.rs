@@ -13,7 +13,9 @@ use elliptic_curve::{PublicKey, SecretKey};
 use p256::NistP256;
 use zerocopy::AsBytes;
 
-use cert_lib::{parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey};
+use cert_lib::{
+    get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
+};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
@@ -211,6 +213,10 @@ fn extract_rma_unlock_token(
     Ok(())
 }
 
+const CERT_LABELS: [&str; 8] = [
+    "UDS", "CDI_0", "CDI_1", "TPM_EK", "CEK", "CIK", "Unknown", "Unknown",
+];
+
 fn provision_certificates(
     transport: &TransportWrapper,
     cert_endorsement_key_wrapper: KeyWrapper,
@@ -245,23 +251,19 @@ fn provision_certificates(
     //   1. prepare a UJSON payload of endorsed certs to send back to the device,
     //   2. collect the certs that were endorsed to verify their endorsement signatures with OpenSSL, and
     //   3. hash all certs to check the integrity of what gets written back to the device.
-    let cert_labels = ["UDS", "CDI_0", "CDI_1", "TPM_EK", "CEK", "CIK"];
     let mut cert_hasher = Sha256::new();
     let mut start: usize = 0;
-    let mut offset: u32 = 0;
     let mut host_endorsed_certs: Vec<Vec<u8>> = Vec::new();
+    let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
-    let mut endorsed_cert_sizes = ArrayVec::<u32, 8>::new();
-    let mut endorsed_cert_offsets = ArrayVec::<u32, 8>::new();
-    for (i, label) in cert_labels.iter().enumerate() {
-        let mut cert_size = manuf_certs.sizes[i] as usize;
+    for (i, label) in CERT_LABELS.iter().enumerate().take(manuf_certs.num_certs) {
+        let cert_size = get_cert_size(&manuf_certs.certs[start..])?;
         let mut cert_bytes = manuf_certs.certs[start..start + cert_size].to_vec();
         start += cert_size;
         // Not all certificates need to be endorsed, some certs are already fully endorsed.
         if manuf_certs.tbs[i] {
             // Endorse the cert and updates its size.
             cert_bytes = parse_and_endorse_x509_cert(cert_bytes.clone(), &key)?;
-            cert_size = cert_bytes.len();
             // Prepare a collection of certs whose endorsements should be checked with OpenSSL.
             // TODO: verify the endorsement of the UDS certificate with OpenSSL. It is currently
             // failing signature verification due to the custom DiceTcbInfo extension being a
@@ -271,9 +273,7 @@ fn provision_certificates(
             }
             // Prepare the UJSON data payloads that will be sent back to the device.
             endorsed_cert_concat.try_extend_from_slice(cert_bytes.as_slice())?;
-            endorsed_cert_sizes.push(cert_size as u32);
-            endorsed_cert_offsets.push(offset);
-            offset += cert_size as u32;
+            num_host_endorsed_certs += 1;
         }
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
         log::info!("{} Cert: {}", label, hex::encode(cert_bytes.clone()));
@@ -286,8 +286,8 @@ fn provision_certificates(
 
     // Send endorsed certificates back to the device.
     let manuf_endorsed_certs = ManufCerts {
-        sizes: endorsed_cert_sizes,
-        offsets: endorsed_cert_offsets,
+        num_certs: num_host_endorsed_certs,
+        next_free: endorsed_cert_concat.len(),
         tbs: ArrayVec::<bool, 8>::try_from([false; 8]).unwrap(),
         certs: endorsed_cert_concat,
     };
@@ -314,7 +314,9 @@ fn provision_certificates(
     }
 
     // Validate the certificate endorsements with OpenSSL.
-    validate_certs_chain(ca_certificate.to_str().unwrap(), &host_endorsed_certs)?;
+    if !host_endorsed_certs.is_empty() {
+        validate_certs_chain(ca_certificate.to_str().unwrap(), &host_endorsed_certs)?;
+    }
 
     Ok(())
 }

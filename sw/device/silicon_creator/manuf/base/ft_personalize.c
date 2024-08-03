@@ -25,10 +25,7 @@
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
-#include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/tpm_cik.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/tpm_ek.h"   // Generated.
-#include "sw/device/silicon_creator/lib/cert/uds.h"      // Generated.
+#include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -85,25 +82,11 @@ static dice_cert_key_id_pair_t cdi_1_key_ids = {
     .endorsement = &cdi_0_pubkey_id,
     .cert = &cdi_1_pubkey_id,
 };
-static hmac_digest_t tpm_endorsement_key_id;
-static hmac_digest_t tpm_pubkey_id;
-static dice_cert_key_id_pair_t tpm_key_ids = {
-    .endorsement = &tpm_endorsement_key_id, .cert = &tpm_pubkey_id};
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static manuf_certs_t tbs_certs = {
-    .sizes =
-        {
-            // DICE certs.
-            kUdsMaxTbsSizeBytes,
-            kCdi0MaxCertSizeBytes,
-            kCdi1MaxCertSizeBytes,
-            // TPM certs.
-            kTpmEkMaxTbsSizeBytes,
-            kTpmCekMaxTbsSizeBytes,
-            kTpmCikMaxTbsSizeBytes,
-        },
-    .offsets = {0},
-    .tbs = {true, false, false, true, true, true},
+    .num_certs = 3,
+    .next_free = 0,
+    .tbs = {true, false, false, false, false, false, false, false},
     .certs = {0},
 };
 static manuf_certs_t endorsed_certs;
@@ -111,77 +94,33 @@ static manuf_certs_t endorsed_certs;
 /**
  * Certificates flash info page layout.
  */
-enum {
-  /**
-   * Order of the endorsed certificates within the `tbs_certs` struct.
-   *
-   * While the name of the struct is `tbs_certs`, it contains two fully endorsed
-   * certificates (namely the CDI_0 and CDI_1 DICE certificates) to minimize the
-   * data transfers between the host and device, since these certs are endorsed
-   * on the device at creation time.
-   */
-  kCdi0EndorsedCertIdx = 1,
-  kCdi1EndorsedCertIdx = 2,
-  /**
-   * Order of the certificates within the `endorsed_certs` struct.
-   */
-  kUdsEndorsedCertIdx = 0,
-  kTpmEkEndorsedCertIdx = 1,
-  kTpmCekEndorsedCertIdx = 2,
-  kTpmCikEndorsedCertIdx = 3,
-};
-static const char *kDiceCertNames[] = {"UDS", "CDI_0", "CDI_1"};
-static const char *kTpmCertNames[] = {"EK", "CEK", "CIK"};
-// DICE cert buffers and offsets.
-static const unsigned char *kEndorsedDiceCerts[] = {
-    endorsed_certs.certs,
-    tbs_certs.certs,
-    tbs_certs.certs,
-};
-static const uint32_t *kDiceCertOffsets[] = {
-    endorsed_certs.offsets,
-    tbs_certs.offsets,
-    tbs_certs.offsets,
-};
-static const int kDiceCertOffsetIdxs[] = {
-    kUdsEndorsedCertIdx,
-    kCdi0EndorsedCertIdx,
-    kCdi1EndorsedCertIdx,
-};
-// TPM cert buffers and offsets.
-static const unsigned char *kEndorsedTpmCerts[] = {
-    endorsed_certs.certs,
-    endorsed_certs.certs,
-    endorsed_certs.certs,
-};
-static const uint32_t *kTpmCertOffsets[] = {
-    endorsed_certs.offsets,
-    endorsed_certs.offsets,
-    endorsed_certs.offsets,
-};
-static const int kTpmCertOffsetIdxs[] = {
-    kTpmEkEndorsedCertIdx,
-    kTpmCekEndorsedCertIdx,
-    kTpmCikEndorsedCertIdx,
-};
-static const cert_flash_info_layout_t kCertFlashInfoLayout[] = {
+static uint8_t all_certs[8192];
+static size_t cdi_0_offset;
+static size_t cdi_1_offset;
+static char *kDiceCertNames[] = {"UDS", "CDI_0", "CDI_1"};
+static cert_flash_info_layout_t cert_flash_layout[] = {
     {
+        .used = true,
+        .group_name = "DICE",
         .info_page = &kFlashCtrlInfoPageDiceCerts,
         .num_certs = 3,
-        .group_name = "DICE",
         .names = kDiceCertNames,
-        .certs = kEndorsedDiceCerts,
-        .cert_offsets = kDiceCertOffsets,
-        .cert_offset_idxs = kDiceCertOffsetIdxs,
+    },
+    // These flash info pages can be used by provisioning extensions to store
+    // additional certificates SKU owners may desire to provision.
+    {
+        .used = false,
+        .group_name = "Ext0",
+        .info_page = &kFlashCtrlInfoPageOwnerReserved7,
+        .num_certs = 0,
+        .names = NULL,
     },
     {
-        .info_page = &kFlashCtrlInfoPageTpmCerts,
-        .num_certs = 3,
-        .group_name = "TPM",
-        .names = kTpmCertNames,
-        .certs = kEndorsedTpmCerts,
-        .cert_offsets = kTpmCertOffsets,
-        .cert_offset_idxs = kTpmCertOffsetIdxs,
+        .used = false,
+        .group_name = "Ext1",
+        .info_page = &kFlashCtrlInfoPageOwnerReserved8,
+        .num_certs = 0,
+        .names = NULL,
     },
 };
 
@@ -230,10 +169,7 @@ static void sw_reset(void) {
 static status_t config_and_erase_certificate_flash_pages(void) {
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageTpmCerts);
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageTpmCerts,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }
@@ -270,15 +206,6 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
         kAttestationSeedWords));
     TRY(manuf_personalize_flash_asymm_key_seed(
         &flash_ctrl_state, kFlashInfoFieldCdi1AttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldTpmEkAttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldTpmCekAttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldTpmCikAttestationKeySeed,
         kAttestationSeedWords));
     // Provision the attestation key generation version field (at the end of the
     // attestation seed info page).
@@ -378,9 +305,13 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
   hmac_sha256_init();
 
   // Push all certificates into the hash.
-  for (size_t i = 0; i < ARRAYSIZE(kCertFlashInfoLayout); i++) {
+  for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     uint32_t page_offset = 0;
-    const cert_flash_info_layout_t curr_layout = kCertFlashInfoLayout[i];
+    const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
+    // Skip the page if it is not in use.
+    if (!curr_layout.used) {
+      continue;
+    }
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
       TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_size));
       page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
@@ -402,7 +333,7 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
 /**
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
-static status_t personalize_dice_certificates(ujson_t *uj) {
+static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   /*****************************************************************************
    * Initialization.
    ****************************************************************************/
@@ -422,8 +353,6 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
          kDiceCertKeyIdSizeInBytes);
-  memcpy(tpm_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
-         kDiceCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.
   TRY(entropy_complex_init());
@@ -438,23 +367,23 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   /*****************************************************************************
    * DICE certificates.
    ****************************************************************************/
-  size_t curr_cert_offset = 0;
-  size_t curr_cert_idx = 0;
+  size_t curr_cert_size = 0;
 
   // Generate UDS keys and (TBS) cert.
+  curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kOtbnBootAttestationKeyTypeDice,
                                      kUdsKeymgrDiversifier));
   TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey,
-                              &tbs_certs.certs[curr_cert_offset],
-                              &tbs_certs.sizes[curr_cert_idx]));
-  tbs_certs.offsets[curr_cert_idx] = curr_cert_offset;
-  curr_cert_offset += tbs_certs.sizes[curr_cert_idx];
-  curr_cert_idx++;
+                              &tbs_certs.certs[tbs_certs.next_free],
+                              &curr_cert_size));
+  tbs_certs.next_free += curr_cert_size;
   LOG_INFO("Generated UDS TBS certificate.");
 
   // Generate CDI_0 keys and cert.
+  cdi_0_offset = tbs_certs.next_free;
+  curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_owner_int_binding(&certgen_inputs);
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
                                   &attestation_binding_value,
@@ -463,13 +392,13 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(dice_cdi_0_cert_build(
       (hmac_digest_t *)certgen_inputs.rom_ext_measurement,
       certgen_inputs.rom_ext_security_version, &cdi_0_key_ids, &curr_pubkey,
-      &tbs_certs.certs[curr_cert_offset], &tbs_certs.sizes[curr_cert_idx]));
-  tbs_certs.offsets[curr_cert_idx] = curr_cert_offset;
-  curr_cert_offset += tbs_certs.sizes[curr_cert_idx];
-  curr_cert_idx++;
+      &tbs_certs.certs[tbs_certs.next_free], &curr_cert_size));
+  tbs_certs.next_free += curr_cert_size;
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
+  cdi_1_offset = tbs_certs.next_free;
+  curr_cert_size = kCdi1MaxCertSizeBytes;
   compute_keymgr_owner_binding(&certgen_inputs);
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
                               &attestation_binding_value,
@@ -479,45 +408,14 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
       certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
-      &tbs_certs.certs[curr_cert_offset], &tbs_certs.sizes[curr_cert_idx]));
-  tbs_certs.offsets[curr_cert_idx] = curr_cert_offset;
-  curr_cert_offset += tbs_certs.sizes[curr_cert_idx];
-  curr_cert_idx++;
+      &tbs_certs.certs[tbs_certs.next_free], &curr_cert_size));
+  tbs_certs.next_free += curr_cert_size;
   LOG_INFO("Generated CDI_1 certificate.");
 
-  /*****************************************************************************
-   * TPM certificates.
-   ****************************************************************************/
-  // Generate TPM EK keys and (TBS) cert.
-  TRY(dice_attestation_keygen(kDiceKeyTpmEk, &tpm_pubkey_id, &curr_pubkey));
-  TRY(dice_tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                 &tbs_certs.certs[curr_cert_offset],
-                                 &tbs_certs.sizes[curr_cert_idx]));
-  tbs_certs.offsets[curr_cert_idx] = curr_cert_offset;
-  curr_cert_offset += tbs_certs.sizes[curr_cert_idx];
-  curr_cert_idx++;
-  LOG_INFO("Generated TPM EK TBS certificate.");
+  return OK_STATUS();
+}
 
-  // Generate TPM CEK keys and (TBS) cert.
-  TRY(dice_attestation_keygen(kDiceKeyTpmCek, &tpm_pubkey_id, &curr_pubkey));
-  TRY(dice_tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                  &tbs_certs.certs[curr_cert_offset],
-                                  &tbs_certs.sizes[curr_cert_idx]));
-  tbs_certs.offsets[curr_cert_idx] = curr_cert_offset;
-  curr_cert_offset += tbs_certs.sizes[curr_cert_idx];
-  curr_cert_idx++;
-  LOG_INFO("Generated TPM CEK TBS certificate.");
-
-  // Generate TPM CIK keys and (TBS) cert.
-  TRY(dice_attestation_keygen(kDiceKeyTpmCik, &tpm_pubkey_id, &curr_pubkey));
-  TRY(dice_tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                  &tbs_certs.certs[curr_cert_offset],
-                                  &tbs_certs.sizes[curr_cert_idx]));
-  tbs_certs.offsets[curr_cert_idx] = curr_cert_offset;
-  curr_cert_offset += tbs_certs.sizes[curr_cert_idx];
-  curr_cert_idx++;
-  LOG_INFO("Generated TPM CIK TBS certificate.");
-
+static status_t personalize_endorse_certificates(ujson_t *uj) {
   /*****************************************************************************
    * Certificate Export and Endorsement.
    ****************************************************************************/
@@ -534,32 +432,78 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(ujson_deserialize_manuf_certs_t(uj, &endorsed_certs));
 
   /*****************************************************************************
+   * Rearrange certificates to prepare for writing to flash.
+   *
+   * All certificates are ordered in a buffer according to the order in which
+   * they will be written to flash. That order is:
+   * 1. UDS cert
+   * 2. CDI_0 cert
+   * 3. CDI_1 cert
+   * 4. Provision Extension certs
+   ****************************************************************************/
+  size_t ec_i = 0;
+  size_t ac_i = 0;
+  size_t size = 0;
+
+  // UDS cert.
+  size = cert_x509_asn1_decode_size_header(endorsed_certs.certs);
+  memcpy(all_certs, endorsed_certs.certs, size);
+  ec_i += size;
+  ac_i += size;
+
+  // CDI_0 cert.
+  size = cert_x509_asn1_decode_size_header(&tbs_certs.certs[cdi_0_offset]);
+  memcpy(&all_certs[ac_i], &tbs_certs.certs[cdi_0_offset], size);
+  ac_i += size;
+
+  // CDI_1 cert.
+  size = cert_x509_asn1_decode_size_header(&tbs_certs.certs[cdi_1_offset]);
+  memcpy(&all_certs[ac_i], &tbs_certs.certs[cdi_1_offset], size);
+  ac_i += size;
+
+  // Remaining (endorsed) certs.
+  size = cert_x509_asn1_decode_size_header(&endorsed_certs.certs[ec_i]);
+  while (size > 0) {
+    memcpy(&all_certs[ac_i], &endorsed_certs.certs[ec_i], size);
+    ec_i += size;
+    ac_i += size;
+    OT_ASSERT_MEMBER_SIZE(manuf_certs_t, certs, 4096);
+    size = ec_i < 4096
+               ? cert_x509_asn1_decode_size_header(&endorsed_certs.certs[ec_i])
+               : 0;
+  }
+
+  /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
-  for (size_t i = 0; i < ARRAYSIZE(kCertFlashInfoLayout); i++) {
+  size_t all_certs_offset = 0;
+  for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
+    const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
-    const cert_flash_info_layout_t curr_layout = kCertFlashInfoLayout[i];
+    // Skip the page if it is not in use.
+    if (!curr_layout.used) {
+      continue;
+    }
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      // Number of words necessary for certificate storage (rounded up to word
-      // alignment).
-      uint32_t cert_offset =
-          curr_layout.cert_offsets[j][curr_layout.cert_offset_idxs[j]];
-      uint32_t cert_size_words =
-          util_size_to_words(cert_x509_asn1_decode_size_header(
-              &curr_layout.certs[j][cert_offset]));
-      uint32_t cert_size_bytes = cert_size_words * sizeof(uint32_t);
+      // Compute the number of words necessary for certificate storage (rounded
+      // up to word alignment).
+      uint32_t cert_size_bytes =
+          cert_x509_asn1_decode_size_header(&all_certs[all_certs_offset]);
+      uint32_t cert_size_words = util_size_to_words(cert_size_bytes);
+      uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
 
-      if ((page_offset + cert_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+      if ((page_offset + cert_size_bytes_ru) >
+          FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
         LOG_ERROR("%s %s certificate did not fit into the info page.",
                   curr_layout.group_name, curr_layout.names[j]);
         return OUT_OF_RANGE();
       }
       TRY(flash_ctrl_info_write(curr_layout.info_page, page_offset,
-                                cert_size_words,
-                                &curr_layout.certs[j][cert_offset]));
+                                cert_size_words, &all_certs[all_certs_offset]));
       LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
                curr_layout.names[j]);
-      page_offset += cert_size_bytes;
+      page_offset += cert_size_bytes_ru;
+      all_certs_offset += cert_size_bytes;
 
       // Each certificate must be 8 bytes aligned (flash word size).
       page_offset = util_round_up_to(page_offset, 3);
@@ -577,7 +521,9 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
  * A custom extension to the personalization flow to enable various SKU owners
  * to customize the provisioning of their devices.
  */
-extern status_t personalize_extension(ujson_t *uj);
+extern status_t personalize_extension(
+    ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
+    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout);
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
@@ -585,9 +531,11 @@ bool test_main(void) {
   log_self_hash();
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
-  CHECK_STATUS_OK(personalize_dice_certificates(&uj));
+  CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
+  CHECK_STATUS_OK(personalize_extension(&uj, &certgen_inputs, &tbs_certs,
+                                        cert_flash_layout));
+  CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
   CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
-  CHECK_STATUS_OK(personalize_extension(&uj));
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs

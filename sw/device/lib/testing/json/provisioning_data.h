@@ -114,8 +114,8 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
  */
 // clang-format off
 #define STRUCT_MANUF_CERTS(field, string) \
-    field(sizes, uint32_t, 8) \
-    field(offsets, uint32_t, 8) \
+    field(num_certs, size_t) \
+    field(next_free, size_t) \
     field(tbs, bool, 8) \
     field(certs, uint8_t, 4096)
 UJSON_SERDE_STRUCT(ManufCerts, \
