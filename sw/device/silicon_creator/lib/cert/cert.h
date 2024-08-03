@@ -48,7 +48,17 @@ enum {
  */
 typedef struct cert_flash_info_layout {
   /**
-   * The flash info page a group of certificates will be written too.
+   * Boolean to indicate if this layout configuration is used by the
+   * personalization firmware. This enables supporting personalization firmware
+   * extensions.
+   */
+  bool used;
+  /**
+   * A name string for the group of certificates (e.g., "DICE").
+   */
+  char *group_name;
+  /**
+   * The flash info page a set of certificates will be written too.
    */
   const flash_ctrl_info_page_t *info_page;
   /**
@@ -56,27 +66,9 @@ typedef struct cert_flash_info_layout {
    */
   size_t num_certs;
   /**
-   * A name string for the group of certificates (e.g., "DICE" or "TPM").
-   */
-  const char *group_name;
-  /**
    * A array of name strings, one for each certificate in the group.
    */
-  const char **names;
-  /**
-   * An array of buffer pointers, where each buffer holds a contiguous buffer of
-   * certificates from the host.
-   */
-  const unsigned char **certs;
-  /**
-   * An array of cert buffer offset arrays.
-   */
-  const uint32_t **cert_offsets;
-  /**
-   * An array of buffer offset indices to use to retrieve the certificate buffer
-   * offset from the buffer above.
-   */
-  const int *cert_offset_idxs;
+  char **names;
 } cert_flash_info_layout_t;
 
 /**

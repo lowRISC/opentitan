@@ -11,6 +11,11 @@ bool_flag(
     build_setting_default = False,
 )
 
+bool_flag(
+    name = "use_tpm_perso_ext",
+    build_setting_default = False,
+)
+
 config_setting(
     name = "example_perso_ext_cfg",
     flag_values = {
@@ -18,8 +23,16 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "tpm_perso_ext_cfg",
+    flag_values = {
+        ":use_tpm_perso_ext": "True",
+    },
+)
+
 _PERSO_EXTS = select({
     "example_perso_ext_cfg": [":example_perso_fw_ext"],
+    "tpm_perso_ext_cfg": [":tpm_perso_fw_ext"],
     "//conditions:default": [":default_perso_fw_ext"],
 })
 
@@ -27,8 +40,10 @@ cc_library(
     name = "default_perso_fw_ext",
     srcs = ["default_personalize_ext.c"],
     deps = [
+        "@//sw/device/lib/testing/json:provisioning_data",
         "@//sw/device/lib/testing/test_framework:status",
         "@//sw/device/lib/testing/test_framework:ujson_ottf",
+        "@//sw/device/silicon_creator/lib/cert",
     ],
 )
 
@@ -37,8 +52,29 @@ cc_library(
     srcs = ["example_personalize_ext.c"],
     deps = [
         "@//sw/device/lib/runtime:log",
+        "@//sw/device/lib/testing/json:provisioning_data",
         "@//sw/device/lib/testing/test_framework:status",
         "@//sw/device/lib/testing/test_framework:ujson_ottf",
+        "@//sw/device/silicon_creator/lib/cert",
+    ],
+)
+
+cc_library(
+    name = "tpm_perso_fw_ext",
+    srcs = ["tpm_personalize_ext.c"],
+    deps = [
+        "@//sw/device/lib/dif:flash_ctrl",
+        "@//sw/device/lib/runtime:log",
+        "@//sw/device/lib/testing/test_framework:status",
+        "@//sw/device/lib/testing/test_framework:ujson_ottf",
+        "@//sw/device/silicon_creator/lib:dice",
+        "@//sw/device/silicon_creator/lib/cert",
+        "@//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
+        "@//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
+        "@//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
+        "@//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "@//sw/device/silicon_creator/lib/drivers:hmac",
+        "@//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
 

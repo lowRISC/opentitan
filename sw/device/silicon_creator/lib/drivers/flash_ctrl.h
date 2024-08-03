@@ -87,11 +87,11 @@ typedef enum flash_ctrl_partition {
   X(kFlashCtrlInfoPageBootData1,       1, 1) \
   X(kFlashCtrlInfoPageOwnerSlot0,      1, 2) \
   X(kFlashCtrlInfoPageOwnerSlot1,      1, 3) \
-  X(kFlashCtrlInfoPageTpmCerts,        1, 4) \
-  X(kFlashCtrlInfoPageOwnerReserved5,  1, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved6,  1, 6) \
+  X(kFlashCtrlInfoPageOwnerReserved5,  1, 4) \
+  X(kFlashCtrlInfoPageOwnerReserved6,  1, 5) \
+  X(kFlashCtrlInfoPageOwnerReserved7,  1, 6) \
   X(kFlashCtrlInfoPageBootServices,    1, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved7,  1, 8) \
+  X(kFlashCtrlInfoPageOwnerReserved8,  1, 8) \
   X(kFlashCtrlInfoPageDiceCerts,       1, 9) \
 // clang-format on
 
