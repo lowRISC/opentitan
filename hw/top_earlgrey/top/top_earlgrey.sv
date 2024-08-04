@@ -155,7 +155,8 @@ module top_earlgrey #(
   input  axi_rsp_t                    idma_axi_rsp_i,
   output axi_req_t                    tlul2axi_req_o,
   input  axi_rsp_t                    tlul2axi_rsp_i,
-  input  logic       irq_ibex_i,
+  input  logic                        irq_ibex_i,
+  input  logic                        irq_cfi_req_i,
   input  jtag_ot_pkg::jtag_req_t       jtag_req_i,
   output jtag_ot_pkg::jtag_rsp_t       jtag_rsp_o,
   input  edn_pkg::edn_req_t       ast_edn_req_i,
@@ -2920,7 +2921,7 @@ module top_earlgrey #(
       intr_flash_ctrl_prog_lvl, // IDs [161 +: 1]
       intr_flash_ctrl_prog_empty, // IDs [160 +: 1]
       intr_tlul2axi_mbox_irq, // IDs [159 +: 1]
-      intr_sensor_ctrl_init_status_change, // IDs [158 +: 1]
+      irq_cfi_req_i, // IDs [158 +: 1]
       intr_sensor_ctrl_io_status_change, // IDs [157 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [156 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [155 +: 1]

@@ -95,6 +95,7 @@ module security_island
    output logic [LogDepth:0]             async_axi_out_r_rptr_o,
    // Interrupt signal
    input logic                           irq_ibex_i,
+   input logic                           cfi_req_irq_i,
    // OT peripherals
    input logic                           ibex_uart_rx_i,
    output logic                          ibex_uart_tx_o,
@@ -754,6 +755,7 @@ module security_island
       .idma_axi_req_o               ( axi_idma_req          ),
       .idma_axi_rsp_i               ( axi_idma_rsp          ),
       .irq_ibex_i                   ( irq_ibex_sync         ),
+      .irq_cfi_req_i                ( cfi_req_irq_i         ),
       .jtag_req_i                   ( jtag_i                ),
       .jtag_rsp_o                   ( jtag_o                ),
       .fetch_en_i                   ( fetch_en_sync         ),
