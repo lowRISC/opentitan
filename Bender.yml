@@ -135,8 +135,8 @@ sources:
       - hw/ip/prim/rtl/prim_pulse_sync.sv
       - hw/ip/prim/rtl/prim_ram_2p_pkg.sv
       - hw/ip/prim/rtl/prim_ram_1p_pkg.sv
-      - hw/ip/prim/rtl/prim_ram_2p.sv
-      - hw/ip/prim/rtl/prim_ram_1p.sv
+      #- hw/ip/prim/rtl/prim_ram_2p.sv
+      #- hw/ip/prim/rtl/prim_ram_1p.sv
       - hw/ip/prim/rtl/prim_ram_1p_adv.sv
       - hw/ip/prim/rtl/prim_ram_1p_scr.sv
       - hw/ip/prim/rtl/prim_ram_2p_adv.sv
@@ -716,24 +716,24 @@ sources:
 
       - hw/ip/spi_device/rtl/spi_device_reg_pkg.sv
       - hw/ip/spi_device/rtl/spi_device_pkg.sv
-      - hw/ip/spi_device/rtl/spi_device_reg_top.sv
-      - hw/ip/spi_device/rtl/spi_cmdparse.sv
-      - hw/ip/spi_device/rtl/spi_fwm_rxf_ctrl.sv
-      - hw/ip/spi_device/rtl/spi_fwm_txf_ctrl.sv
-      - hw/ip/spi_device/rtl/spi_fwmode.sv
-      - hw/ip/spi_device/rtl/spi_p2s.sv
-      - hw/ip/spi_device/rtl/spi_passthrough.sv
-      - hw/ip/spi_device/rtl/spi_readcmd.sv
-      - hw/ip/spi_device/rtl/spi_s2p.sv
-      - hw/ip/spi_device/rtl/spid_fifo2sram_adapter.sv
-      - hw/ip/spi_device/rtl/spid_jedec.sv
-      - hw/ip/spi_device/rtl/spid_readbuffer.sv
-      - hw/ip/spi_device/rtl/spid_readsram.sv
-      - hw/ip/spi_device/rtl/spid_status.sv
-      - hw/ip/spi_device/rtl/spi_tpm.sv
-      - hw/ip/spi_device/rtl/spid_addr_4b.sv
-      - hw/ip/spi_device/rtl/spid_upload.sv
-#      - hw/ip/spi_device/rtl/spi_device.sv
+      #- hw/ip/spi_device/rtl/spi_device_reg_top.sv
+      #- hw/ip/spi_device/rtl/spi_cmdparse.sv
+      #- hw/ip/spi_device/rtl/spi_fwm_rxf_ctrl.sv
+      #- hw/ip/spi_device/rtl/spi_fwm_txf_ctrl.sv
+      #- hw/ip/spi_device/rtl/spi_fwmode.sv
+      #- hw/ip/spi_device/rtl/spi_p2s.sv
+      #- hw/ip/spi_device/rtl/spi_passthrough.sv
+      #- hw/ip/spi_device/rtl/spi_readcmd.sv
+      #- hw/ip/spi_device/rtl/spi_s2p.sv
+      #- hw/ip/spi_device/rtl/spid_fifo2sram_adapter.sv
+      #- hw/ip/spi_device/rtl/spid_jedec.sv
+      #- hw/ip/spi_device/rtl/spid_readbuffer.sv
+      #- hw/ip/spi_device/rtl/spid_readsram.sv
+      #- hw/ip/spi_device/rtl/spid_status.sv
+      #- hw/ip/spi_device/rtl/spi_tpm.sv
+      #- hw/ip/spi_device/rtl/spid_addr_4b.sv
+      #- hw/ip/spi_device/rtl/spid_upload.sv
+      #- hw/ip/spi_device/rtl/spi_device.sv
       - hw/ip/spi_device/rtl/spi_device_empty.sv
 
 ###### spi_host

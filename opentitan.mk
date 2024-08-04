@@ -74,10 +74,10 @@ clean:
 	rm -rf uart
 
 scripts/compile_opentitan.tcl: Bender.yml
-	$(call generate_vsim, $@, -t rtl -t test -t snitch_cluster ,..)
+	$(call generate_vsim, $@, -t use_idma -t rtl -t test -t snitch_cluster ,..)
 
 scripts/compile_opentitan_vip.tcl: Bender.yml
-	$(call generate_vsim, $@, -t rtl -t test_ot_vip -t snitch_cluster, ..)
+	$(call generate_vsim, $@, -t use_idma -t rtl -t test_ot_vip -t snitch_cluster, ..)
 
 secure_boot_jtag:
 	make clean sim BOOTMODE=0 SRAM=sw/tests/opentitan/flash_preload_hmac_smoketest/flash_preload_hmac_smoketest.elf jtag_sec_boot=1
