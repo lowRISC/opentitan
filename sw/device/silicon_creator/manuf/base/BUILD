@@ -211,18 +211,9 @@ filegroup(
     ],
 )
 
-opentitan_binary(
-    name = "ft_personalize",
-    testonly = True,
+cc_library(
+    name = "ft_personalize_base",
     srcs = ["ft_personalize.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-    },
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
@@ -256,14 +247,56 @@ opentitan_binary(
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
         "//sw/device/silicon_creator/manuf/lib:personalize",
-        "@provisioning_exts//:perso_fw_ext",
     ],
 )
 
-_FT_PROVISIONING_BINARIES = {
-    ":sram_ft_individualize_sival": "sram_ft_individualize",
-    ":ft_personalize": "ft_personalize",
-}
+cc_library(
+    name = "tpm_perso_fw_ext",
+    srcs = ["tpm_personalize_ext.c"],
+    deps = [
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:dice",
+        "//sw/device/silicon_creator/lib/cert",
+        "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
+        "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
+    ],
+)
+
+_FT_PERSO_EXTS = [
+    {
+        "suffix": "",
+        "ext_libs": ["@provisioning_exts//:perso_fw_ext"],
+    },
+    {
+        "suffix": "_tpm_ext",
+        "ext_libs": [":tpm_perso_fw_ext"],
+    },
+]
+
+[
+    opentitan_binary(
+        name = "ft_personalize{}".format(ext["suffix"]),
+        testonly = True,
+        srcs = ["ft_personalize.c"],
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        deps = [":ft_personalize_base"] + ext["ext_libs"],
+    )
+    for ext in _FT_PERSO_EXTS
+]
 
 config_setting(
     name = "ckms_cert_endorsement_params",
@@ -285,33 +318,42 @@ _FT_PROVISIONING_CMD_ARGS = """
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
-opentitan_test(
-    name = "ft_provision",
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-    },
-    fpga = fpga_params(
-        binaries = _FT_PROVISIONING_BINARIES,
-        changes_otp = True,
-        data = FT_PERSONALIZE_KEYS,
-        needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
-        tags = [
-            "lc_test_locked0",
-            "manuf",
-        ],
-        test_cmd = _FT_PROVISIONING_CMD_ARGS,
-        test_harness = _FT_PROVISIONING_HARNESS,
-    ),
-    silicon = silicon_params(
-        binaries = _FT_PROVISIONING_BINARIES,
-        changes_otp = True,
-        data = FT_PERSONALIZE_KEYS,
-        interface = "teacup",
-        needs_jtag = True,
-        test_cmd = _FT_PROVISIONING_CMD_ARGS,
-        test_harness = _FT_PROVISIONING_HARNESS,
-    ),
-)
+[
+    opentitan_test(
+        name = "ft_provision{}".format(ext["suffix"]),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+        fpga = fpga_params(
+            binaries = {
+                ":sram_ft_individualize_sival": "sram_ft_individualize",
+                ":ft_personalize{}".format(ext["suffix"]): "ft_personalize",
+            },
+            changes_otp = True,
+            data = FT_PERSONALIZE_KEYS,
+            needs_jtag = True,
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
+            tags = [
+                "lc_test_locked0",
+                "manuf",
+            ],
+            test_cmd = _FT_PROVISIONING_CMD_ARGS,
+            test_harness = _FT_PROVISIONING_HARNESS,
+        ),
+        silicon = silicon_params(
+            binaries = {
+                ":sram_ft_individualize_sival": "sram_ft_individualize",
+                ":ft_personalize{}".format(ext["suffix"]): "ft_personalize",
+            },
+            changes_otp = True,
+            data = FT_PERSONALIZE_KEYS,
+            interface = "teacup",
+            needs_jtag = True,
+            test_cmd = _FT_PROVISIONING_CMD_ARGS,
+            test_harness = _FT_PROVISIONING_HARNESS,
+        ),
+    )
+    for ext in _FT_PERSO_EXTS
+]
