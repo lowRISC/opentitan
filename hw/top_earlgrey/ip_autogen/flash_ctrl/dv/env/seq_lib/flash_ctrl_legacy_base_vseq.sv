@@ -29,7 +29,12 @@ class flash_ctrl_legacy_base_vseq extends flash_ctrl_otf_base_vseq;
         rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
       }
     }
-    rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
+    // This added because in some extending env the info2 has special use.
+    if (cfg.seq_cfg.exclude_info2) {
+        rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo1] :/ 1};
+     } else {
+        rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
+     }
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
     rand_op.addr[1:0] == 'h0;
     cfg.seq_cfg.addr_flash_word_aligned -> rand_op.addr[2] == 1'b0;
