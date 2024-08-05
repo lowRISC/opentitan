@@ -305,6 +305,16 @@ interface edn_cov_if (
     }
   endgroup : edn_hw_cmd_sts_cg
 
+  covergroup edn_endpoint_err_req_cg with function sample(uint endpoint);
+    option.name         = "edn_endpoint_err_req_cg";
+    option.per_instance = 1;
+
+    // Create one bin per endpoint of EDN.
+    endpoint_cg: coverpoint endpoint {
+      bins range[MAX_NUM_ENDPOINTS] = {[0:MAX_NUM_ENDPOINTS-1]};
+    }
+  endgroup : edn_endpoint_err_req_cg
+
   `DV_FCOV_INSTANTIATE_CG(edn_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_endpoints_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmds_cg, en_full_cov)
@@ -313,6 +323,7 @@ interface edn_cov_if (
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmd_response_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_sw_cmd_sts_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_hw_cmd_sts_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_endpoint_err_req_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(edn_env_cfg cfg);
@@ -373,5 +384,9 @@ interface edn_cov_if (
                                                    bit cmd_ack, csrng_pkg::acmd_e acmd);
     edn_hw_cmd_sts_cg_inst.sample(boot_mode, auto_mode, cmd_sts, cmd_ack, acmd);
   endfunction : cg_edn_hw_cmd_sts_sample
+
+  function automatic void cg_edn_endpoint_err_req_sample(uint endpoint);
+    edn_endpoint_err_req_cg_inst.sample(endpoint);
+  endfunction : cg_edn_endpoint_err_req_sample
 
 endinterface : edn_cov_if

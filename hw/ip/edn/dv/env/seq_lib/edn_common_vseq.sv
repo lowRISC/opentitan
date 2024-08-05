@@ -57,10 +57,11 @@ class edn_common_vseq extends edn_base_vseq;
   endtask
 
   virtual task send_edn_requests_during_fatal_alerts();
+    bit [edn_pkg::StateWidth-1:0] state;
+    bit req;
     push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH) m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
+    bit [MAX_NUM_ENDPOINTS-1:0] send_edn_reqs = $urandom();
 
-    // TODO(#19027): can only send one request due to TB errors. Fix it.
-    bit [MAX_NUM_ENDPOINTS-1:0] send_edn_reqs = 1;
     `uvm_info(`gfn, $sformatf("Send %0h EDN reqs during fatal alert", send_edn_reqs), UVM_HIGH)
 
     foreach (send_edn_reqs[i]) begin
@@ -68,18 +69,29 @@ class edn_common_vseq extends edn_base_vseq;
         automatic int index = i;
         m_endpoint_pull_seq[index] = push_pull_host_seq#(FIPS_ENDPOINT_BUS_WIDTH)::
             type_id::create($sformatf("m_endpoint_pull_seq[%0d]", index));
-        // TODO(#19027): investigate why agent will hang if this is set to value > 1.
         m_endpoint_pull_seq[index].num_trans = 1;
         `uvm_info(`gfn, $sformatf("Send EDN_%0d req during fatal alert", index), UVM_LOW)
 
-        // Assertion in design will check EDN should not response during fatal alert.
+        // Assertion in design will check EDN should not respond during fatal alert.
         fork
           m_endpoint_pull_seq[index].start(p_sequencer.endpoint_sequencer_h[index]);
+          begin
+            `DV_SPINWAIT(
+                do begin
+                  uvm_hdl_read($sformatf("%0s[%0d].edn_req", "tb.dut.u_edn_core.edn_i", index),
+                               req);
+                  cfg.clk_rst_vif.wait_clks(1);
+                end while (!req);,
+                $sformatf("Waiting for EDN endpoint request timeout")
+            )
+            csr_rd(.ptr(ral.main_sm_state.main_sm_state), .value(state), .backdoor(1));
+            if (edn_pkg::state_e'(state) == edn_pkg::Error) begin
+              cov_vif.cg_edn_endpoint_err_req_sample(.endpoint(index));
+            end
+          end
         join_none
       end
     end
-
-    // TODO(#19027): add fcov.
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
   endtask
 
