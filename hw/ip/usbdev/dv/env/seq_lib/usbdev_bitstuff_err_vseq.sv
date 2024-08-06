@@ -23,6 +23,11 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
       // so ensure that the endpoint has its MSB clear.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ep_default, ep_default < 8;)
       sel = sel & 1;  // We can only exercise cases 0 and 1.
+
+      // We also must ensure that a randomly-chosen device address and endpoint cannot, in
+      // combination with the OUT PID, produce a bit stuffing error in the OUT token packet. Doing
+      // so could lead to a PID error being reported too.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dev_addr, dev_addr < 7'h40 && !dev_addr[0];)
     end
 
     configure_out_trans(ep_default);
