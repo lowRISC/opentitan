@@ -347,7 +347,7 @@ static rom_error_t rom_ext_attestation_silicon(void) {
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id,
                                                    &curr_attestation_pubkey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kUdsAttestationKeySeed, kScKeymgrKeyTypeAttestation,
       kUdsKeymgrDiversifier));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
   uint32_t cert_size = 0;
