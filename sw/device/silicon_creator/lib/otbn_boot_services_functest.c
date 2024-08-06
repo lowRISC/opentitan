@@ -74,19 +74,19 @@ rom_error_t attestation_keygen_test(void) {
   // Check that key generations with different seeds result in different keys.
   ecdsa_p256_public_key_t pk_uds;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kUdsAttestationKeySeed,
-                                               kOtbnBootAttestationKeyTypeDice,
+                                               kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_uds));
   ecdsa_p256_public_key_t pk_cdi0;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
-                                               kOtbnBootAttestationKeyTypeDice,
+                                               kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_cdi0));
   ecdsa_p256_public_key_t pk_cdi1;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
-                                               kOtbnBootAttestationKeyTypeDice,
+                                               kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_cdi1));
   ecdsa_p256_public_key_t pk_tpm_ek;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kTpmEkAttestationKeySeed,
-                                               kOtbnBootAttestationKeyTypeTpm,
+                                               kScKeymgrKeyTypeSealing,
                                                kDiversification, &pk_tpm_ek));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds, (unsigned char *)&pk_cdi0,
                   sizeof(pk_uds));
@@ -100,7 +100,7 @@ rom_error_t attestation_keygen_test(void) {
   // Check that running the same key generation twice results in the same key.
   ecdsa_p256_public_key_t pk_uds_again;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice, kDiversification,
+      kUdsAttestationKeySeed, kScKeymgrKeyTypeAttestation, kDiversification,
       &pk_uds_again));
   CHECK_ARRAYS_EQ((unsigned char *)&pk_uds_again, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
@@ -113,7 +113,7 @@ rom_error_t attestation_keygen_test(void) {
   diversification_modified.salt[0] ^= 1;
   ecdsa_p256_public_key_t pk_uds_div;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kUdsAttestationKeySeed, kScKeymgrKeyTypeAttestation,
       diversification_modified, &pk_uds_div));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds_div, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
@@ -124,11 +124,10 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   // Generate and save the a keypair.
   ecdsa_p256_public_key_t pk;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kUdsAttestationKeySeed,
-                                               kOtbnBootAttestationKeyTypeDice,
+                                               kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk));
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
-      kDiversification));
+      kUdsAttestationKeySeed, kScKeymgrKeyTypeAttestation, kDiversification));
 
   // Advance keymgr to the next stage.
   CHECK_STATUS_OK(
@@ -161,14 +160,12 @@ rom_error_t attestation_advance_and_endorse_test(void) {
 rom_error_t attestation_save_clear_key_test(void) {
   // Save and then clear a private key.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
-      kDiversification));
+      kUdsAttestationKeySeed, kScKeymgrKeyTypeAttestation, kDiversification));
   RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
 
   // Save the private key again and check that endorsing succeeds.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
-      kDiversification));
+      kUdsAttestationKeySeed, kScKeymgrKeyTypeAttestation, kDiversification));
   hmac_digest_t digest;
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   ecdsa_p256_signature_t sig;
