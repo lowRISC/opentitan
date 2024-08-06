@@ -6,7 +6,6 @@ load(
     "//rules:certificates.bzl",
     "certificate_template",
 )
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -104,7 +103,6 @@ cc_library(
     name = "dice",
     srcs = ["dice.c"],
     hdrs = ["dice.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":cert",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
@@ -112,7 +110,6 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
@@ -131,12 +128,10 @@ cc_library(
     name = "tpm",
     srcs = ["tpm.c"],
     hdrs = ["tpm.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":cert",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
         "//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",

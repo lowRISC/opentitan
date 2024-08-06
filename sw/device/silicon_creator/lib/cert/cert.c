@@ -23,10 +23,8 @@ static uint8_t actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes] = {0};
  * endian in place.
  */
 static void curr_pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
-  util_le_be_buf_format((unsigned char *)pubkey->x,
-                        kEcdsaP256PublicKeyCoordBytes);
-  util_le_be_buf_format((unsigned char *)pubkey->y,
-                        kEcdsaP256PublicKeyCoordBytes);
+  util_reverse_bytes(pubkey->x, kEcdsaP256PublicKeyCoordBytes);
+  util_reverse_bytes(pubkey->y, kEcdsaP256PublicKeyCoordBytes);
 }
 
 rom_error_t cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
@@ -48,8 +46,8 @@ rom_error_t cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
   // Note: the certificate generation functions expect the digest to be in big
   // endian form, but the HMAC driver returns the digest in little endian, so we
   // re-format it.
-  hmac_sha256(pubkey, kEcdsaP256PublicKeyCoordBytes * 2, pubkey_id);
-  util_le_be_buf_format((unsigned char *)pubkey_id, kHmacDigestNumBytes);
+  hmac_sha256(pubkey, sizeof(*pubkey), pubkey_id);
+  util_reverse_bytes(pubkey_id, sizeof(*pubkey_id));
 
   return kErrorOk;
 }
