@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_UTIL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_UTIL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -27,6 +28,14 @@ uint32_t util_round_up_to(uint32_t input, uint32_t align_bits);
  * @return Size (in 32-bit words) required to store the input size in bytes.
  */
 uint32_t util_size_to_words(uint32_t bytes);
+
+/**
+ * Converts a buffer of bytes from little to big endian in place.
+ *
+ * @param[inout] buf Buffer of in little endian order.
+ * @param num_bytes Number of bytes in the buffer above.
+ */
+void util_le_be_buf_format(unsigned char *buf, size_t num_bytes);
 
 #ifdef __cplusplus
 }

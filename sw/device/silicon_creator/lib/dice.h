@@ -53,21 +53,6 @@ typedef struct dice_cert_key_id_pair {
 } dice_cert_key_id_pair_t;
 
 /**
- * Generates the requested attestation ECC P256 keypair, returning the public
- * key and a key ID (which is a SHA256 digest of the public key).
- *
- * Preconditions: keymgr has been initialized and cranked to the desired stage.
- *
- * @param desired_key The desired key to generate.
- * @param[out] pubkey_id The public key ID (for embedding into certificates).
- * @param[out] pubkey The public key.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t dice_attestation_keygen(sc_keymgr_ecc_key_t key,
-                                    hmac_digest_t *pubkey_id,
-                                    ecdsa_p256_public_key_t *pubkey);
-
-/**
  * Generates the UDS attestation keypair and (unendorsed) X.509 TBS certificate.
  *
  * @param key_ids Pointer to the (current and endorsement) public key IDs.

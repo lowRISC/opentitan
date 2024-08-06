@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"    // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"    // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
@@ -23,6 +24,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -74,28 +76,6 @@ static bool is_debug_exposed(void) {
   return true;
 }
 
-/**
- * Helper function to convert a buffer of bytes from little to big endian in
- * place.
- */
-static void le_be_buf_format(unsigned char *buf, size_t num_bytes) {
-  unsigned char temp;
-  for (size_t i = 0; i < (num_bytes / 2); ++i) {
-    temp = buf[i];
-    buf[i] = buf[num_bytes - i - 1];
-    buf[num_bytes - i - 1] = temp;
-  }
-}
-
-/**
- * Helper function to convert an attestation public key from little to big
- * endian in place.
- */
-static void curr_pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
-  le_be_buf_format((unsigned char *)pubkey->x, kEcdsaP256PublicKeyCoordBytes);
-  le_be_buf_format((unsigned char *)pubkey->y, kEcdsaP256PublicKeyCoordBytes);
-}
-
 const sc_keymgr_ecc_key_t kDiceKeyUds = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = 0,
@@ -133,38 +113,15 @@ const sc_keymgr_ecc_key_t kDiceKeyTpmCik = {
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
 
-rom_error_t dice_attestation_keygen(sc_keymgr_ecc_key_t key,
-                                    hmac_digest_t *pubkey_id,
-                                    ecdsa_p256_public_key_t *pubkey) {
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
-
-  // Generate / sideload key material into OTBN, and generate the ECC keypair.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      key.keygen_seed_idx, key.type, *key.keymgr_diversifier, pubkey));
-
-  // Keys are represented in certificates in big endian format, but the key is
-  // output from OTBN in little endian format, so we convert the key to
-  // big endian format.
-  curr_pubkey_le_to_be_convert(pubkey);
-
-  // Generate the key ID.
-  //
-  // Note: the certificate generation functions expect the digest to be in big
-  // endian form, but the HMAC driver returns the digest in little endian, so we
-  // re-format it.
-  hmac_sha256(pubkey, kEcdsaP256PublicKeyCoordBytes * 2, pubkey_id);
-  le_be_buf_format((unsigned char *)pubkey_id, kHmacDigestNumBytes);
-
-  return kErrorOk;
-}
-
 /**
  * Helper function to convert an attestation certificate signature from little
  * to big endian.
  */
 static void curr_tbs_signature_le_to_be_convert(ecdsa_p256_signature_t *sig) {
-  le_be_buf_format((unsigned char *)sig->r, kEcdsaP256SignatureComponentBytes);
-  le_be_buf_format((unsigned char *)sig->s, kEcdsaP256SignatureComponentBytes);
+  util_le_be_buf_format((unsigned char *)sig->r,
+                        kEcdsaP256SignatureComponentBytes);
+  util_le_be_buf_format((unsigned char *)sig->s,
+                        kEcdsaP256SignatureComponentBytes);
 }
 
 /**
