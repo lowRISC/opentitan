@@ -64,15 +64,15 @@ static hmac_digest_t uds_endorsement_key_id;
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
 static hmac_digest_t cdi_1_pubkey_id;
-static dice_cert_key_id_pair_t uds_key_ids = {
+static cert_key_id_pair_t uds_key_ids = {
     .endorsement = &uds_endorsement_key_id,
     .cert = &uds_pubkey_id,
 };
-static dice_cert_key_id_pair_t cdi_0_key_ids = {
+static cert_key_id_pair_t cdi_0_key_ids = {
     .endorsement = &uds_pubkey_id,
     .cert = &cdi_0_pubkey_id,
 };
-static dice_cert_key_id_pair_t cdi_1_key_ids = {
+static cert_key_id_pair_t cdi_1_key_ids = {
     .endorsement = &cdi_0_pubkey_id,
     .cert = &cdi_1_pubkey_id,
 };
