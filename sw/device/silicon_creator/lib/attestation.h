@@ -24,33 +24,6 @@ enum {
   kAttestationSeedWords = kAttestationSeedBytes / sizeof(uint32_t),
 };
 
-typedef enum {
-  /**
-   * The UDS attestation key seed.
-   */
-  kUdsAttestationKeySeed = 0,
-  /**
-   * The CDI_0 attestation key seed.
-   */
-  kCdi0AttestationKeySeed = 1,
-  /**
-   * The CDI_1 attestation key seed.
-   */
-  kCdi1AttestationKeySeed = 2,
-  /**
-   * The TPM EK attestation key seed.
-   */
-  kTpmEkAttestationKeySeed = 3,
-  /**
-   * The TPM CEK attestation key seed.
-   */
-  kTpmCekAttestationKeySeed = 4,
-  /**
-   * The TPM CIK attestation key seed.
-   */
-  kTpmCikAttestationKeySeed = 5,
-} attestation_key_seed_t;
-
 /**
  * Attestation key generation scheme version.
  */

@@ -47,17 +47,17 @@ rom_error_t otbn_boot_app_load(void);
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param additional_seed The attestation key generation seed to load.
- * @param key_type OTBN attestation key type to generate. "DICE" attestation
- *                 keys are based on "attestation" keys from the keymgr; "TPM"
- *                 attestation keys are based on "sealing keys from the keymgr.
+ * @param additional_seed_idx The attestation key generation seed index to load.
+ *                            The index corresponds to the seed offset in flash
+ *                            info page `kFlashCtrlInfoPageAttestationKeySeeds`.
+ * @param key_type Keymgr key type to generate, attestation or sealing.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
-    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
+    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
 
@@ -80,7 +80,7 @@ rom_error_t otbn_boot_attestation_keygen(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
-    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
+    uint32_t additional_seed, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification);
 
 /**
