@@ -31,14 +31,6 @@ OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_app_load(void);
 
 /**
- * OTBN attestation key types (DICE or TPM).
- */
-typedef enum otbn_boot_attestation_key_type {
-  kOtbnBootAttestationKeyTypeDice = kScKeymgrKeyTypeAttestation,
-  kOtbnBootAttestationKeyTypeTpm = kScKeymgrKeyTypeSealing,
-} otbn_boot_attestation_key_type_t;
-
-/**
  * Generate an attestation public key from a keymgr-derived secret.
  *
  * This routine triggers the key manager to sideload key material into OTBN,
@@ -65,8 +57,7 @@ typedef enum otbn_boot_attestation_key_type {
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
-    attestation_key_seed_t additional_seed,
-    otbn_boot_attestation_key_type_t key_type,
+    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
 
@@ -89,8 +80,7 @@ rom_error_t otbn_boot_attestation_keygen(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
-    attestation_key_seed_t additional_seed,
-    otbn_boot_attestation_key_type_t key_type,
+    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification);
 
 /**

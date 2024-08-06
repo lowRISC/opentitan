@@ -110,13 +110,12 @@ static rom_error_t load_attestation_keygen_seed(
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
 
 rom_error_t otbn_boot_attestation_keygen(
-    attestation_key_seed_t additional_seed,
-    otbn_boot_attestation_key_type_t key_type,
+    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into OTBN.
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_generate_key_otbn(
-      (sc_keymgr_key_type_t)key_type, diversification));
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_generate_key_otbn(key_type, diversification));
 
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeygen;
@@ -154,12 +153,11 @@ rom_error_t otbn_boot_attestation_keygen(
 }
 
 rom_error_t otbn_boot_attestation_key_save(
-    attestation_key_seed_t additional_seed,
-    otbn_boot_attestation_key_type_t key_type,
+    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification) {
   // Trigger key manager to sideload the attestation key into OTBN.
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_generate_key_otbn(
-      (sc_keymgr_key_type_t)key_type, diversification));
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_generate_key_otbn(key_type, diversification));
 
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeySave;
