@@ -36,7 +36,7 @@ class edn_common_vseq extends edn_base_vseq;
       cfg.clk_rst_vif.wait_n_clks(2);
     end
 
-    if (!uvm_re_match("*.cnt_q*", if_proxy.path)) begin
+    if (!uvm_re_match("*.u_prim_count_max_reqs_cntr", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));
       if (cfg.en_cov) begin
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
