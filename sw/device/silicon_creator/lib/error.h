@@ -52,7 +52,6 @@ enum module_ {
   kModuleRetRam =          MODULE_CODE('R', 'R'),
   kModuleXModem =          MODULE_CODE('X', 'M'),
   kModuleRescue =          MODULE_CODE('R', 'S'),
-  kModuleDice =            MODULE_CODE('D', 'C'),
   kModuleCert =            MODULE_CODE('C', 'E'),
   kModuleOwnership =       MODULE_CODE('O', 'W'),
   // clang-format on
@@ -197,8 +196,6 @@ enum module_ {
   X(kErrorRescueReboot,               ERROR_(0, kModuleRescue, kInternal)), \
   X(kErrorRescueBadMode,              ERROR_(1, kModuleRescue, kInvalidArgument)), \
   X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
-  \
-  X(kErrorDiceInvalidKeyType,         ERROR_(0, kModuleDice, kInvalidArgument)), \
   \
   X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
   X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
