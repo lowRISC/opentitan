@@ -229,7 +229,6 @@ cc_library(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert",
@@ -328,6 +327,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             "//hw/top_earlgrey:silicon_creator": None,
         },
         fpga = fpga_params(
+            timeout = "long",
             binaries = {
                 ":sram_ft_individualize_sival": "sram_ft_individualize",
                 ":ft_personalize{}".format(ext["suffix"]): "ft_personalize",
