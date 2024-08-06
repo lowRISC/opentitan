@@ -99,7 +99,7 @@ static void curr_pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
 rom_error_t dice_attestation_keygen(dice_key_t desired_key,
                                     hmac_digest_t *pubkey_id,
                                     ecdsa_p256_public_key_t *pubkey) {
-  otbn_boot_attestation_key_type_t key_type;
+  sc_keymgr_key_type_t key_type;
   attestation_key_seed_t otbn_ecc_keygen_seed;
   const sc_keymgr_diversification_t *keymgr_diversifier;
   sc_keymgr_state_t desired_keymgr_state;
@@ -107,37 +107,37 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
   switch (desired_key) {
     case kDiceKeyUds:
       desired_keymgr_state = kScKeymgrStateCreatorRootKey;
-      key_type = kOtbnBootAttestationKeyTypeDice;
+      key_type = kScKeymgrKeyTypeAttestation;
       keymgr_diversifier = &kUdsKeymgrDiversifier;
       otbn_ecc_keygen_seed = kUdsAttestationKeySeed;
       break;
     case kDiceKeyCdi0:
       desired_keymgr_state = kScKeymgrStateOwnerIntermediateKey;
-      key_type = kOtbnBootAttestationKeyTypeDice;
+      key_type = kScKeymgrKeyTypeAttestation;
       keymgr_diversifier = &kCdi0KeymgrDiversifier;
       otbn_ecc_keygen_seed = kCdi0AttestationKeySeed;
       break;
     case kDiceKeyCdi1:
       desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kOtbnBootAttestationKeyTypeDice;
+      key_type = kScKeymgrKeyTypeAttestation;
       keymgr_diversifier = &kCdi1KeymgrDiversifier;
       otbn_ecc_keygen_seed = kCdi1AttestationKeySeed;
       break;
     case kDiceKeyTpmEk:
       desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kOtbnBootAttestationKeyTypeTpm;
+      key_type = kScKeymgrKeyTypeSealing;
       keymgr_diversifier = &kTpmEkKeymgrDiversifier;
       otbn_ecc_keygen_seed = kTpmEkAttestationKeySeed;
       break;
     case kDiceKeyTpmCek:
       desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kOtbnBootAttestationKeyTypeTpm;
+      key_type = kScKeymgrKeyTypeSealing;
       keymgr_diversifier = &kTpmCekKeymgrDiversifier;
       otbn_ecc_keygen_seed = kTpmCekAttestationKeySeed;
       break;
     case kDiceKeyTpmCik:
       desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kOtbnBootAttestationKeyTypeTpm;
+      key_type = kScKeymgrKeyTypeSealing;
       keymgr_diversifier = &kTpmCikKeymgrDiversifier;
       otbn_ecc_keygen_seed = kTpmCikAttestationKeySeed;
       break;
@@ -287,7 +287,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi0AttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kCdi0AttestationKeySeed, kScKeymgrKeyTypeAttestation,
       kCdi0KeymgrDiversifier));
 
   return kErrorOk;
@@ -336,7 +336,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 
   // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi1AttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kCdi1AttestationKeySeed, kScKeymgrKeyTypeAttestation,
       kCdi1KeymgrDiversifier));
 
   return kErrorOk;
