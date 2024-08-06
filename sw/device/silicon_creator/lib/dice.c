@@ -96,44 +96,45 @@ static void curr_pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
   le_be_buf_format((unsigned char *)pubkey->y, kEcdsaP256PublicKeyCoordBytes);
 }
 
-const dice_key_t kDiceKeyUds = {
+const sc_keymgr_ecc_key_t kDiceKeyUds = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = 0,
     .keymgr_diversifier = &kUdsKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateCreatorRootKey,
 };
-const dice_key_t kDiceKeyCdi0 = {
+const sc_keymgr_ecc_key_t kDiceKeyCdi0 = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = 1,
     .keymgr_diversifier = &kCdi0KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
 };
-const dice_key_t kDiceKeyCdi1 = {
+const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = 2,
     .keymgr_diversifier = &kCdi1KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
-const dice_key_t kDiceKeyTpmEk = {
+const sc_keymgr_ecc_key_t kDiceKeyTpmEk = {
     .type = kScKeymgrKeyTypeSealing,
     .keygen_seed_idx = 3,
     .keymgr_diversifier = &kTpmEkKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
-const dice_key_t kDiceKeyTpmCek = {
+const sc_keymgr_ecc_key_t kDiceKeyTpmCek = {
     .type = kScKeymgrKeyTypeSealing,
     .keygen_seed_idx = 4,
     .keymgr_diversifier = &kTpmCekKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
-const dice_key_t kDiceKeyTpmCik = {
+const sc_keymgr_ecc_key_t kDiceKeyTpmCik = {
     .type = kScKeymgrKeyTypeSealing,
     .keygen_seed_idx = 5,
     .keymgr_diversifier = &kTpmCikKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
 
-rom_error_t dice_attestation_keygen(dice_key_t key, hmac_digest_t *pubkey_id,
+rom_error_t dice_attestation_keygen(sc_keymgr_ecc_key_t key,
+                                    hmac_digest_t *pubkey_id,
                                     ecdsa_p256_public_key_t *pubkey) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
 
