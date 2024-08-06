@@ -102,15 +102,15 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES_D3][]     | Done        |
 RTL           | [TODO_COMPLETE][]       | Done        |
-Code Quality  | [LINT_COMPLETE][]       | Done        |
+Code Quality  | [LINT_COMPLETE][]       | Done        | Waiver files approved by TC on 2024-08-08.
 Code Quality  | [CDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff.
 Code Quality  | [RDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff.
 Review        | [REVIEW_RTL][]          | Done        |
 Review        | [REVIEW_DELETED_FF][]   | Waived      | No block-level flow available - waived to top-level signoff.
 Review        | [REVIEW_SW_CHANGE][]    | Done        |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Review        | Reviewer(s)             | Done        | msf@ rswarbrick@ chencindy@ ttrippel@
-Review        | Signoff date            | Done        | 2022-05-24
+Review        | Reviewer(s)             | Done        | rswarbrick@ vogelpi@
+Review        | Signoff date            | Done        | 2024-08-08
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
