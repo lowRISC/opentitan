@@ -8,7 +8,6 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
@@ -73,6 +72,54 @@ static bool is_debug_exposed(void) {
   return true;
 }
 
+// UDS (Creator) attestation key diverisfier constants.
+// Note: versions are always set to 0 so these keys are always valid from the
+// perspective of the keymgr hardware.
+const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
+    .salt =
+        {
+            0xabffa6a9,
+            0xc781f1ad,
+            0x4c1107ad,
+            0xf9210d85,
+            0x0931f555,
+            0x6c5aef5d,
+            0xb9ba4df0,
+            0x77b248d2,
+        },
+    .version = 0,
+};
+// CDI_0 (OwnerIntermediate) attestation key diverisfier constants.
+const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
+    .salt =
+        {
+            0x3e5913c7,
+            0x41156f1d,
+            0x998ddb9f,
+            0xfa334191,
+            0x8a85380e,
+            0xba76ca1a,
+            0xdb17c4a7,
+            0xfb8852dc,
+        },
+    .version = 0,
+};
+// CDI_1 (Owner) attestation key diverisfier constants.
+const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
+    .salt =
+        {
+            0x2d12c2e3,
+            0x6acc6876,
+            0x4bfb07ee,
+            0xc45fc414,
+            0x5d4fa9de,
+            0xf295b128,
+            0x50f49882,
+            0xbbdefa29,
+        },
+    .version = 0,
+};
+
 const sc_keymgr_ecc_key_t kDiceKeyUds = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = kFlashInfoFieldUdsKeySeedIdx,
@@ -97,10 +144,8 @@ const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
  * to big endian.
  */
 static void curr_tbs_signature_le_to_be_convert(ecdsa_p256_signature_t *sig) {
-  util_le_be_buf_format((unsigned char *)sig->r,
-                        kEcdsaP256SignatureComponentBytes);
-  util_le_be_buf_format((unsigned char *)sig->s,
-                        kEcdsaP256SignatureComponentBytes);
+  util_reverse_bytes(sig->r, kEcdsaP256SignatureComponentBytes);
+  util_reverse_bytes(sig->s, kEcdsaP256SignatureComponentBytes);
 }
 
 /**
