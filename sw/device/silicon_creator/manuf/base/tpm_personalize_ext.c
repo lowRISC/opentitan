@@ -27,8 +27,8 @@ static dif_flash_ctrl_state_t flash_ctrl_state;
  */
 static hmac_digest_t tpm_endorsement_key_id;
 static hmac_digest_t tpm_pubkey_id;
-static dice_cert_key_id_pair_t tpm_key_ids = {
-    .endorsement = &tpm_endorsement_key_id, .cert = &tpm_pubkey_id};
+static cert_key_id_pair_t tpm_key_ids = {.endorsement = &tpm_endorsement_key_id,
+                                         .cert = &tpm_pubkey_id};
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static char *kTpmCertNames[] = {"EK", "CEK", "CIK"};
 

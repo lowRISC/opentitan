@@ -12,8 +12,9 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
-#include "sw/device/silicon_creator/lib/cert/cdi_0.h"    // Generated.
-#include "sw/device/silicon_creator/lib/cert/cdi_1.h"    // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_cik.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"   // Generated.
@@ -148,7 +149,7 @@ static void measure_otp_partition(otp_partition_t partition,
   }
 }
 
-rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+rom_error_t dice_uds_tbs_cert_build(cert_key_id_pair_t *key_ids,
                                     ecdsa_p256_public_key_t *uds_pubkey,
                                     uint8_t *tbs_cert, size_t *tbs_cert_size) {
   // Measure OTP partitions.
@@ -199,7 +200,7 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
 
 rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   uint32_t rom_ext_security_version,
-                                  dice_cert_key_id_pair_t *key_ids,
+                                  cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
@@ -244,7 +245,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   hmac_digest_t *owner_manifest_measurement,
                                   uint32_t owner_security_version,
-                                  dice_cert_key_id_pair_t *key_ids,
+                                  cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
@@ -290,7 +291,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+rom_error_t dice_tpm_ek_tbs_cert_build(cert_key_id_pair_t *key_ids,
                                        ecdsa_p256_public_key_t *tpm_ek_pubkey,
                                        uint8_t *tpm_ek_tbs,
                                        size_t *tpm_ek_tbs_size) {
@@ -317,7 +318,7 @@ rom_error_t dice_tpm_ek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_cek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+rom_error_t dice_tpm_cek_tbs_cert_build(cert_key_id_pair_t *key_ids,
                                         ecdsa_p256_public_key_t *tpm_cek_pubkey,
                                         uint8_t *tpm_cek_tbs,
                                         size_t *tpm_cek_tbs_size) {
@@ -338,7 +339,7 @@ rom_error_t dice_tpm_cek_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
   return kErrorOk;
 }
 
-rom_error_t dice_tpm_cik_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+rom_error_t dice_tpm_cik_tbs_cert_build(cert_key_id_pair_t *key_ids,
                                         ecdsa_p256_public_key_t *tpm_cik_pubkey,
                                         uint8_t *tpm_cik_tbs,
                                         size_t *tpm_cik_tbs_size) {

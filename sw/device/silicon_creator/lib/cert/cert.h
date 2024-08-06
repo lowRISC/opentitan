@@ -75,6 +75,21 @@ typedef struct cert_flash_info_layout {
 } cert_flash_info_layout_t;
 
 /**
+ * A set of public key IDs required to generate an X.509 certificate.
+ */
+typedef struct cert_key_id_pair {
+  /**
+   * Pointer to SHA256 digest of the public key matching the private key used to
+   * endorse the certificate.
+   */
+  hmac_digest_t *endorsement;
+  /**
+   * Pointer to SHA256 digest of the public key the certificate is created for.
+   */
+  hmac_digest_t *cert;
+} cert_key_id_pair_t;
+
+/**
  * Generates an ECC P256 keypair to build a certificate around, using Keymgr
  * and OTBN, returning the public key and a key ID (which is a SHA256 digest of
  * the public key).
