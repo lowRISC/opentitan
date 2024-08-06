@@ -1441,7 +1441,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (status_flds_we[1]),
-    .q      (reg2hw.status.done.q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)

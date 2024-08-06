@@ -634,7 +634,7 @@
         { bits: "1"
           name: "done"
           resval: 0x0
-          hwaccess: "hrw"
+          hwaccess: "hwo"
           desc: '''
                 Configured DMA operation is complete.
                 Cleared automatically by the hardware when starting a new transfer.
