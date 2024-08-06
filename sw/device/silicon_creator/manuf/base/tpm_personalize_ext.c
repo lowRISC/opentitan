@@ -104,7 +104,7 @@ static status_t personalize_gen_tpm_certificates(
 
   // Generate TPM EK keys and (TBS) cert.
   curr_cert_size = kTpmEkMaxTbsSizeBytes;
-  TRY(dice_attestation_keygen(kDiceKeyTpmEk, &tpm_pubkey_id, &curr_pubkey));
+  TRY(cert_ecc_p256_keygen(kDiceKeyTpmEk, &tpm_pubkey_id, &curr_pubkey));
   TRY(dice_tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
                                  &tbs_certs->certs[tbs_certs->next_free],
                                  &curr_cert_size));
@@ -113,7 +113,7 @@ static status_t personalize_gen_tpm_certificates(
 
   // Generate TPM CEK keys and (TBS) cert.
   curr_cert_size = kTpmCekMaxTbsSizeBytes;
-  TRY(dice_attestation_keygen(kDiceKeyTpmCek, &tpm_pubkey_id, &curr_pubkey));
+  TRY(cert_ecc_p256_keygen(kDiceKeyTpmCek, &tpm_pubkey_id, &curr_pubkey));
   TRY(dice_tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
                                   &tbs_certs->certs[tbs_certs->next_free],
                                   &curr_cert_size));
@@ -122,7 +122,7 @@ static status_t personalize_gen_tpm_certificates(
 
   // Generate TPM CIK keys and (TBS) cert.
   curr_cert_size = kTpmCikMaxTbsSizeBytes;
-  TRY(dice_attestation_keygen(kDiceKeyTpmCik, &tpm_pubkey_id, &curr_pubkey));
+  TRY(cert_ecc_p256_keygen(kDiceKeyTpmCik, &tpm_pubkey_id, &curr_pubkey));
   TRY(dice_tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
                                   &tbs_certs->certs[tbs_certs->next_free],
                                   &curr_cert_size));

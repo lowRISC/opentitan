@@ -369,7 +369,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate UDS keys and (TBS) cert.
   curr_cert_size = kUdsMaxTbsSizeBytes;
-  TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
+  TRY(cert_ecc_p256_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
@@ -386,7 +386,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
-  TRY(dice_attestation_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
+  TRY(cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
   TRY(dice_cdi_0_cert_build(
       (hmac_digest_t *)certgen_inputs.rom_ext_measurement,
       certgen_inputs.rom_ext_security_version, &cdi_0_key_ids, &curr_pubkey,
@@ -401,7 +401,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
                               &attestation_binding_value,
                               /*max_key_version=*/0));
-  TRY(dice_attestation_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
+  TRY(cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
   TRY(dice_cdi_1_cert_build(
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
