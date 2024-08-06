@@ -79,10 +79,11 @@ enum {
 };
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t load_attestation_keygen_seed(
-    attestation_key_seed_t additional_seed, uint32_t *seed) {
+static rom_error_t load_attestation_keygen_seed(uint32_t additional_seed_idx,
+                                                uint32_t *seed) {
   // Read seed from flash info page.
-  uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedBytes);
+  uint32_t seed_flash_offset =
+      0 + (additional_seed_idx * kAttestationSeedBytes);
   rom_error_t err =
       flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
                            seed_flash_offset, kAttestationSeedWords, seed);
@@ -110,7 +111,7 @@ static rom_error_t load_attestation_keygen_seed(
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
 
 rom_error_t otbn_boot_attestation_keygen(
-    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
+    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into OTBN.
@@ -124,7 +125,8 @@ rom_error_t otbn_boot_attestation_keygen(
 
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
-  HARDENED_RETURN_IF_ERROR(load_attestation_keygen_seed(additional_seed, seed));
+  HARDENED_RETURN_IF_ERROR(
+      load_attestation_keygen_seed(additional_seed_idx, seed));
 
   // Write the additional seed to OTBN DMEM.
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
@@ -153,7 +155,7 @@ rom_error_t otbn_boot_attestation_keygen(
 }
 
 rom_error_t otbn_boot_attestation_key_save(
-    attestation_key_seed_t additional_seed, sc_keymgr_key_type_t key_type,
+    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification) {
   // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(
@@ -166,7 +168,8 @@ rom_error_t otbn_boot_attestation_key_save(
 
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
-  HARDENED_RETURN_IF_ERROR(load_attestation_keygen_seed(additional_seed, seed));
+  HARDENED_RETURN_IF_ERROR(
+      load_attestation_keygen_seed(additional_seed_idx, seed));
   // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
   // (since data is aligned to 256-bit words).
   uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {

@@ -75,42 +75,42 @@ const flash_info_field_t kFlashInfoFieldUdsAttestationKeySeed = {
     .partition = 0,
     .bank = 0,
     .page = 4,
-    .byte_offset = 0,
+    .byte_offset = kFlashInfoFieldUdsKeySeedIdx * kAttestationSeedBytes,
 };
 
 const flash_info_field_t kFlashInfoFieldCdi0AttestationKeySeed = {
     .partition = 0,
     .bank = 0,
     .page = 4,
-    .byte_offset = kAttestationSeedBytes,
+    .byte_offset = kFlashInfoFieldCdi0KeySeedIdx * kAttestationSeedBytes,
 };
 
 const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed = {
     .partition = 0,
     .bank = 0,
     .page = 4,
-    .byte_offset = (2 * kAttestationSeedBytes),
+    .byte_offset = kFlashInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes,
 };
 
 const flash_info_field_t kFlashInfoFieldTpmEkAttestationKeySeed = {
     .partition = 0,
     .bank = 0,
     .page = 4,
-    .byte_offset = (3 * kAttestationSeedBytes),
+    .byte_offset = kFlashInfoFieldTpmEkKeySeedIdx * kAttestationSeedBytes,
 };
 
 const flash_info_field_t kFlashInfoFieldTpmCekAttestationKeySeed = {
     .partition = 0,
     .bank = 0,
     .page = 4,
-    .byte_offset = (4 * kAttestationSeedBytes),
+    .byte_offset = kFlashInfoFieldTpmCekKeySeedIdx * kAttestationSeedBytes,
 };
 
 const flash_info_field_t kFlashInfoFieldTpmCikAttestationKeySeed = {
     .partition = 0,
     .bank = 0,
     .page = 4,
-    .byte_offset = (5 * kAttestationSeedBytes),
+    .byte_offset = kFlashInfoFieldTpmCikKeySeedIdx * kAttestationSeedBytes,
 };
 
 const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion = {

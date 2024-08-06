@@ -370,9 +370,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // Generate UDS keys and (TBS) cert.
   curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
-  TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
-                                     kScKeymgrKeyTypeAttestation,
-                                     kUdsKeymgrDiversifier));
+  TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
+                                     kDiceKeyUds.type,
+                                     *kDiceKeyUds.keymgr_diversifier));
   TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey,
                               &tbs_certs.certs[tbs_certs.next_free],
                               &curr_cert_size));
