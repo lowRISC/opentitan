@@ -104,8 +104,8 @@ Review        | [REVIEW_RTL][]          | Done        |
 Review        | [REVIEW_DELETED_FF][]   | Waived      | No block-level flow available - waived to top-level signoff.
 Review        | [REVIEW_SW_CHANGE][]    | Done        |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Review        | Reviewer(s)             | Done        | msf@ vogelpi@ chencindy@ ttrippel@ tjaychen@
-Review        | Signoff date            | Done        | 2022-07-11
+Review        | Reviewer(s)             | Done        | adk@ vogelpi@
+Review        | Signoff date            | Done        | 2024-08-08
 
 [NEW_FEATURES_D3]:      ../../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../../doc/project_governance/checklist/README.md#todo_complete
