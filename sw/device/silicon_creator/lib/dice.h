@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
@@ -27,34 +28,40 @@ enum {
 };
 
 /**
- * Supported DICE/TPM attestation keys.
+ * DICE keyladder key descriptor.
  */
-typedef enum dice_key {
+typedef struct dice_key {
   /**
-   * DICE UDS key.
+   * Keymgr key type, either: attestation or sealing.
+   *
+   * Attestation keys are derived from keymgr state that changes when ROM_EXT or
+   * Owner firmware is updated, while Sealing keys remain stable as long as a
+   * device remains under the same ownership and hardware lifecycle state.
    */
-  kDiceKeyUds = 0,
+  sc_keymgr_key_type_t type;
   /**
-   * DICE CDI0 key.
+   * Index into the kFlashCtrlInfoPageAttestationKeySeeds flash info page that
+   * holds a seed for generating the ECC key pair.
    */
-  kDiceKeyCdi0 = 1,
+  uint32_t keygen_seed_idx;
   /**
-   * DICE CDI1 key.
+   * Pointer to the keymgr diversifier that is used when actuating the keymgr's
+   * "output-generate" function to generate another ECC keygen seed that will be
+   * sideloaded to OTBN.
    */
-  kDiceKeyCdi1 = 2,
+  const sc_keymgr_diversification_t *keymgr_diversifier;
   /**
-   * TPM EK key.
+   * Pointer to the keymgr diversifier that is used when actuating the keymgr's
    */
-  kDiceKeyTpmEk = 3,
-  /**
-   * TPM CEK key.
-   */
-  kDiceKeyTpmCek = 4,
-  /**
-   * TPM CIK key.
-   */
-  kDiceKeyTpmCik = 5,
+  sc_keymgr_state_t required_keymgr_state;
 } dice_key_t;
+
+extern const dice_key_t kDiceKeyUds;
+extern const dice_key_t kDiceKeyCdi0;
+extern const dice_key_t kDiceKeyCdi1;
+extern const dice_key_t kDiceKeyTpmEk;
+extern const dice_key_t kDiceKeyTpmCek;
+extern const dice_key_t kDiceKeyTpmCik;
 
 /**
  * A set of public key IDs required to generate an X.509 certificate.
@@ -77,13 +84,12 @@ typedef struct dice_cert_key_id_pair {
  *
  * Preconditions: keymgr has been initialized and cranked to the desired stage.
  *
- * @param desired_key The desired attestation key to generate.
+ * @param desired_key The desired key to generate.
  * @param[out] pubkey_id The public key ID (for embedding into certificates).
  * @param[out] pubkey The public key.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_attestation_keygen(dice_key_t desired_key,
-                                    hmac_digest_t *pubkey_id,
+rom_error_t dice_attestation_keygen(dice_key_t key, hmac_digest_t *pubkey_id,
                                     ecdsa_p256_public_key_t *pubkey);
 
 /**

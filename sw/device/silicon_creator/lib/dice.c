@@ -96,60 +96,50 @@ static void curr_pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
   le_be_buf_format((unsigned char *)pubkey->y, kEcdsaP256PublicKeyCoordBytes);
 }
 
-rom_error_t dice_attestation_keygen(dice_key_t desired_key,
-                                    hmac_digest_t *pubkey_id,
+const dice_key_t kDiceKeyUds = {
+    .type = kScKeymgrKeyTypeAttestation,
+    .keygen_seed_idx = 0,
+    .keymgr_diversifier = &kUdsKeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateCreatorRootKey,
+};
+const dice_key_t kDiceKeyCdi0 = {
+    .type = kScKeymgrKeyTypeAttestation,
+    .keygen_seed_idx = 1,
+    .keymgr_diversifier = &kCdi0KeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
+};
+const dice_key_t kDiceKeyCdi1 = {
+    .type = kScKeymgrKeyTypeAttestation,
+    .keygen_seed_idx = 2,
+    .keymgr_diversifier = &kCdi1KeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerKey,
+};
+const dice_key_t kDiceKeyTpmEk = {
+    .type = kScKeymgrKeyTypeSealing,
+    .keygen_seed_idx = 3,
+    .keymgr_diversifier = &kTpmEkKeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerKey,
+};
+const dice_key_t kDiceKeyTpmCek = {
+    .type = kScKeymgrKeyTypeSealing,
+    .keygen_seed_idx = 4,
+    .keymgr_diversifier = &kTpmCekKeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerKey,
+};
+const dice_key_t kDiceKeyTpmCik = {
+    .type = kScKeymgrKeyTypeSealing,
+    .keygen_seed_idx = 5,
+    .keymgr_diversifier = &kTpmCikKeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerKey,
+};
+
+rom_error_t dice_attestation_keygen(dice_key_t key, hmac_digest_t *pubkey_id,
                                     ecdsa_p256_public_key_t *pubkey) {
-  sc_keymgr_key_type_t key_type;
-  attestation_key_seed_t otbn_ecc_keygen_seed;
-  const sc_keymgr_diversification_t *keymgr_diversifier;
-  sc_keymgr_state_t desired_keymgr_state;
-
-  switch (desired_key) {
-    case kDiceKeyUds:
-      desired_keymgr_state = kScKeymgrStateCreatorRootKey;
-      key_type = kScKeymgrKeyTypeAttestation;
-      keymgr_diversifier = &kUdsKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kUdsAttestationKeySeed;
-      break;
-    case kDiceKeyCdi0:
-      desired_keymgr_state = kScKeymgrStateOwnerIntermediateKey;
-      key_type = kScKeymgrKeyTypeAttestation;
-      keymgr_diversifier = &kCdi0KeymgrDiversifier;
-      otbn_ecc_keygen_seed = kCdi0AttestationKeySeed;
-      break;
-    case kDiceKeyCdi1:
-      desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kScKeymgrKeyTypeAttestation;
-      keymgr_diversifier = &kCdi1KeymgrDiversifier;
-      otbn_ecc_keygen_seed = kCdi1AttestationKeySeed;
-      break;
-    case kDiceKeyTpmEk:
-      desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kScKeymgrKeyTypeSealing;
-      keymgr_diversifier = &kTpmEkKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kTpmEkAttestationKeySeed;
-      break;
-    case kDiceKeyTpmCek:
-      desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kScKeymgrKeyTypeSealing;
-      keymgr_diversifier = &kTpmCekKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kTpmCekAttestationKeySeed;
-      break;
-    case kDiceKeyTpmCik:
-      desired_keymgr_state = kScKeymgrStateOwnerKey;
-      key_type = kScKeymgrKeyTypeSealing;
-      keymgr_diversifier = &kTpmCikKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kTpmCikAttestationKeySeed;
-      break;
-    default:
-      return kErrorDiceInvalidKeyType;
-  };
-
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(desired_keymgr_state));
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
 
   // Generate / sideload key material into OTBN, and generate the ECC keypair.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      otbn_ecc_keygen_seed, key_type, *keymgr_diversifier, pubkey));
+      key.keygen_seed_idx, key.type, *key.keymgr_diversifier, pubkey));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from OTBN in little endian format, so we convert the key to
@@ -287,8 +277,8 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi0AttestationKeySeed, kScKeymgrKeyTypeAttestation,
-      kCdi0KeymgrDiversifier));
+      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
+      *kDiceKeyCdi0.keymgr_diversifier));
 
   return kErrorOk;
 }
@@ -336,8 +326,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 
   // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi1AttestationKeySeed, kScKeymgrKeyTypeAttestation,
-      kCdi1KeymgrDiversifier));
+      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
+      *kDiceKeyCdi1.keymgr_diversifier));
 
   return kErrorOk;
 }

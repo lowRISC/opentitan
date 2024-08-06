@@ -33,6 +33,14 @@ enum {
 
   // Wafer Authentication Secret - Bank 0, Page 3
   kFlashInfoWaferAuthSecretSizeIn32BitWords = 32 / sizeof(uint32_t),
+
+  // Attestation key gen seed indices
+  kFlashInfoFieldUdsKeySeedIdx = 0,
+  kFlashInfoFieldCdi0KeySeedIdx = 1,
+  kFlashInfoFieldCdi1KeySeedIdx = 2,
+  kFlashInfoFieldTpmEkKeySeedIdx = 3,
+  kFlashInfoFieldTpmCekKeySeedIdx = 4,
+  kFlashInfoFieldTpmCikKeySeedIdx = 5,
 };
 
 extern const flash_info_field_t kFlashInfoFieldDeviceId;
