@@ -554,10 +554,14 @@
       // particularly the CRC5 of a token packet.
       // We also cannot readily predict whether we shall raise a `link_in_err` by issuing a bus
       // reset during an IN DATA packet.
+      // Reliable prediction of reported bit stuffing violations would require examination of the
+      // OUT traffic to the device prior to the instant of a Bus Reset or VBUS Disconnection.
+      // These notifications are just informative in any case.
       run_opts: [
         "+en_scb_rdchk_rx_pid_err=0",
         "+en_scb_rdchk_rx_crc_err=0",
-        "+en_scb_rdchk_link_in_err=0"
+        "+en_scb_rdchk_link_in_err=0",
+        "+en_scb_rdchk_rx_bitstuff_err=0"
       ]
       reseed: 500
     }
