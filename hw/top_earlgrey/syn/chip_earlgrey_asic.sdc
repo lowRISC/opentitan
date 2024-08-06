@@ -5,12 +5,16 @@
 # Generic constraints file for simple testsynthesis flow
 
 # Note that we do not fix hold timing in this flow
+if { $synopsys_program_name eq "pt_shell" } {
+set SETUP_CLOCK_UNCERTAINTY 0.05
+} else {
 set SETUP_CLOCK_UNCERTAINTY 0.5
-set CLK_PERIOD_FACTOR 0.95 ;# clock period over constraining factor
+}
+set CLK_PERIOD_FACTOR $CLK_PERIOD_FACTOR ;# clock period over constraining factor
 puts "Applying constraints for top level"
 
 # Note: the netlist does include pads at this level, but not all IO interfaces
-# have been properly constrained yet. The clocks are generated inside AST and
+# have been constrained. The clocks are generated inside AST and
 # for the purpose of test synthesis, these clock nets are just set to ideal networks.
 
 #####################
@@ -30,29 +34,29 @@ if {!$IS_CDC_RUN} {
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN u_ast/clk_src_sys_o
+set MAIN_CLK_PIN $MAIN_CLK_PIN
 set MAIN_RST_PIN IO_RST_N
 # target is 100MHz, overconstrain by factor
 set MAIN_TCK_TARGET_PERIOD  10
-set MAIN_TCK_FACTOR 0.85
+set MAIN_TCK_FACTOR $MAIN_TCK_FACTOR
 set MAIN_TCK_PERIOD [expr $MAIN_TCK_TARGET_PERIOD*$MAIN_TCK_FACTOR] ;# over constraining
 # For now we remove this as clock is, by default, ideal. Reset, we'll try w/o ideal_network.
 #set_ideal_network [get_pins ${MAIN_CLK_PIN}]
 #set_ideal_network [get_ports ${MAIN_RST_PIN}]
 
-create_clock -name MAIN_CLK -period ${MAIN_TCK_PERIOD} [get_pins ${MAIN_CLK_PIN}]
+create_clock -name MAIN_CLK -period ${MAIN_TCK_PERIOD} [get_pins ${MAIN_CLK_PIN}] -add
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
 #set_false_path -from [get_clocks ${MAIN_CLK_PIN_AST}] -to [get_clocks ${MAIN_CLK_PIN}]
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN u_ast/clk_src_usb_o
+set USB_CLK_PIN $USB_CLK_PIN
 # target is 48MHz, overconstrain by 5%
 set USB_TCK_TARGET_PERIOD 20.8
 set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 # USB clock uncertainty needs to be within 2500ppm
 set USB_CLOCK_UNCERTAINTY [expr $USB_TCK_PERIOD * .0025]
-create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
+create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}] -add
 set_clock_uncertainty ${USB_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
 # This requires knowledge of actual pin names, hence we only run this if we're compiling against
@@ -64,7 +68,7 @@ if {$FOUNDRY_ROOT != ""} {
   set_max_delay 5 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_*_flop/${FLOP_PATH}/Q] \
                   -to   [get_ports USB_*]
   set_max_delay 5 -from [get_ports USB_*] \
-                  -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/${FLOP_PATH}/D]
+                  -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_generic_u_impl_generic/u_sync_1/${FLOP_PATH}/D]
 
   # The USB 2.0 spec specifies that full-speed driver rise/fall times can be 4ns to 20ns, and that
   # differential edges should be within +-10% to minimize skew. Assuming the fastest rise/fall time
@@ -75,20 +79,21 @@ if {$FOUNDRY_ROOT != ""} {
 
   # output enable timing
   set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_oe_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
+                                 -to  [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*usb_pad_wrap/u_pad_macro_PBIDIR_*/OE"]
   # dp output timing
   # note that there is a path to the OE as well due to virtual open drain emulation in the pad wrapper (although it is likely not being used for USB).
   set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dp_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*usb_pad_wrap/u_pad_macro_PBIDIR_*/OE"]
   set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dp_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/A"]
+                                 -to  [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*usb_pad_wrap/u_pad_macro_PBIDIR_*/A"]
 
   # dn output timing
   # note that there is a path to the OE as well due to virtual open drain emulation in the pad wrapper (although it is likely not being used for USB).
   set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dn_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*usb_pad_wrap/u_pad_macro_PBIDIR_*/OE"]
   set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dn_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/A"]
+                                 -to  [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*usb_pad_wrap/u_pad_macro_PBIDIR_*/A"]
+
 
   # We reuse the same set_max_delay constraints as for the driver paths to stay on the safe side
   # (there is more skew budget on the receiver side according to the spec, but we shouldn't be using that
@@ -111,38 +116,37 @@ if {$FOUNDRY_ROOT != ""} {
                                           [get_pins u_prim_usb_diff_rx/input_ni]]]
 
   # dp/dn input timing to regular regs
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/Y"] \
-                                 -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/${FLOP_PATH}/D]
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*usb_pad_wrap/u_pad_macro_PBIDIR_*/Y"] \
+                                 -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_generic_u_impl_generic/u_sync_1/${FLOP_PATH}/D]
 }
 
 #####################
 # IO clk            #
 #####################
-set IO_CLK_PIN u_ast/clk_src_io_o
+set IO_CLK_PIN $IO_CLK_PIN
 # target is 96MHz, overconstrain by factor
 set IO_TCK_TARGET_PERIOD 10.416
 set IO_TCK_PERIOD [expr $IO_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 
-create_clock -name IO_CLK -period ${IO_TCK_PERIOD} [get_pins ${IO_CLK_PIN}]
+create_clock -name IO_CLK -period ${IO_TCK_PERIOD} [get_pins ${IO_CLK_PIN}] -add
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # This requires knowledge of actual port name
-set CLK_DST_NAME clk_o
+set CLK_DST_NAME $CLK_DST_PIN
 
 # generated clocks (div2/div4)
 set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div
 create_generated_clock -name IO_DIV2_CLK  \
-    -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
+    -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
 set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
-    -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
+    -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
 # Define these variables for later use
 set IO_DIV2_TCK_PERIOD [expr $IO_TCK_PERIOD * 2]
 set IO_DIV4_TCK_PERIOD [expr $IO_TCK_PERIOD * 4]
 
-# TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
 
 # aggregate all IO banks
@@ -152,15 +156,15 @@ append_to_collection IO_BANKS [get_ports IOC*]
 append_to_collection IO_BANKS [get_ports IOR*]
 
 # constrain muxed IOs running on IO_DIV2_CLK and IO_DIV4_CLK
-set IO_IN_DEL_FRACTION 0.4
-set IO_OUT_DEL_FRACTION 0.4
+set IO_IN_DEL_FRACTION 0.40
+set IO_OUT_DEL_FRACTION 0.40
 
 # IO_DIV2_CLK
 set IO_DIV2_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
 set IO_DIV2_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
 
-set_input_delay ${IO_DIV2_IN_DEL}   ${IO_BANKS} -clock IO_DIV2_CLK
-set_output_delay ${IO_DIV2_OUT_DEL} ${IO_BANKS} -clock IO_DIV2_CLK
+set_input_delay ${IO_DIV2_IN_DEL}   ${IO_BANKS} -clock IO_DIV2_CLK -add_delay
+set_output_delay ${IO_DIV2_OUT_DEL} ${IO_BANKS} -clock IO_DIV2_CLK -add_delay
 
 # IO_DIV4_CLK
 set IO_DIV4_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
@@ -180,13 +184,13 @@ set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey
 #####################
 # AON clk           #
 #####################
-set AON_CLK_PIN u_ast/clk_src_aon_o
+set AON_CLK_PIN $AON_CLK_PIN
 # target is 200KHz, overconstrain by factor
 set AON_TCK_TARGET_PERIOD 5000.0
 set AON_TCK_PERIOD [expr $AON_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 #set_ideal_network [get_pins ${AON_CLK_PIN}]
 
-create_clock -name AON_CLK -period ${AON_TCK_PERIOD} [get_pins ${AON_CLK_PIN}]
+create_clock -name AON_CLK -period ${AON_TCK_PERIOD} [get_pins ${AON_CLK_PIN}] -add
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AON_CLK]
 
 #####################
@@ -197,15 +201,15 @@ set JTAG_CLK_PIN IOR3
 set JTAG_TCK_TARGET_PERIOD 33.3
 set JTAG_TCK_PERIOD [expr $JTAG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 
-create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
+create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN] -add
 #set_ideal_network [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 set_propagated_clock JTAG_TCK
 
 create_generated_clock -name LC_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
-    [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o]
+    [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 create_generated_clock -name RV_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
-    [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o]
+    [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 
 set LC_JTAG_TCK_INV_PIN \
   [get_pins -leaf -filter {@pin_direction == out} -of_objects \
@@ -231,13 +235,21 @@ set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -max  8.0 [get_ports {IO
 
 # Don't apply these constraints to the DFT TAP. Leave this to the
 # implementation.
+if { $synopsys_program_name eq "pt_shell" || $synopsys_program_name eq "icc2_shell" || $synopsys_program_name eq "dc_shell"  } {
+set_clock_sense -stop_propagation -clock JTAG_TCK \
+  [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
+    ] \
+  ]
+} else {
 set_clock_sense -logical_stop_propagation -clock JTAG_TCK \
   [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
       [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
     ] \
   ]
-
+}
 # Don't carry the JTAG clock through the pinmux.
 set_clock_sense -stop_propagation -clock JTAG_TCK \
   [get_pins -leaf -filter "@pin_direction == out" -of_objects \
@@ -263,7 +275,7 @@ set AST_EXT_CLK_PIN IOC6
 set AST_EXT_TCK_TARGET_PERIOD [expr $IO_TCK_TARGET_PERIOD*2]
 set AST_EXT_TCK_PERIOD [expr $AST_EXT_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 
-create_clock -name AST_EXT_CLK -period ${AST_EXT_TCK_PERIOD} [get_ports ${AST_EXT_CLK_PIN}]
+create_clock -name AST_EXT_CLK -period ${AST_EXT_TCK_PERIOD} [get_ports ${AST_EXT_CLK_PIN}] -add
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AST_EXT_CLK]
 
 # This is not needed by CDC runs because io_clk/usb_clk/main_clk/aon_clk are propagated from ast_ext_clk in ast.lib
@@ -286,7 +298,7 @@ set PCB_SKEW 0.51
 set HOST_SETUP_DEL 5
 set HOST_HOLD_DEL -5
 # Limit hold requirements for full-cycle sampling.
-set HOST_HOLD_DEL_FULL_CYCLE -3
+set HOST_HOLD_DEL_FULL_CYCLE -2
 
 # external spi host clk-to-q
 set HOST_OUT_DEL_MIN -2
@@ -299,6 +311,62 @@ set STORAGE_HOLD_DEL -3
 # external spi dev clk-to-q
 set STORAGE_OUT_DEL_MIN 0
 set STORAGE_OUT_DEL_MAX 9
+
+###################################################
+# SPI input outpt delay based Ziv Spec
+###################################################
+if { $synopsys_program_name eq "pt_shell" } {
+set out_val 0
+} else {
+set out_val 3
+}
+
+set spi_host_inp_max             11.5
+set spi_host_inp_min               -1
+set spi_host_out_val_max          [expr 5.5 + $out_val]
+set spi_host_out_val_min          -9
+
+set spi_host1_inp_max                8
+set spi_host1_inp_min                0
+set spi_host1_out_val_max          [expr 4.5 + $out_val]
+set spi_host1_out_val_min          -0.5
+
+set spi_dev_inp_max                 5
+set spi_dev_inp_min                -7
+set spi_dev_inp_csb_max             5
+set spi_dev_inp_csb_min            -3
+set spi_dev_out_val_max           [expr 7.5 + $out_val]
+set spi_dev_out_val_min            -2
+
+set spi_tpm_inp_max                18
+set spi_tpm_inp_min               -17
+set spi_tpm_inp_csb_max            15
+set spi_tpm_inp_csb_min           -17
+set spi_tpm_out_val_max           [expr 7.5 + $out_val]
+set spi_tpm_out_val_min           -22
+
+set spi_dev_hc_inp_max             15
+set spi_dev_hc_inp_min            -17
+set spi_dev_hc_inp_csb_max         15
+set spi_dev_hc_inp_csb_min        -17
+set spi_dev_hc_out_val_max        [expr 7.5 + $out_val]
+set spi_dev_hc_out_val_min        -22
+
+set spi_fast_pass_host_inp_max     16
+set spi_fast_pass_host_inp_min      0
+
+set spi_fast_pass_dev_out_val_max   [expr 12.5 + $out_val]
+set spi_fast_pass_dev_out_val_min   -2
+
+set spi_fast_pass_soc_in_max        4.8
+set spi_fast_pass_soc_in_min       -5
+set spi_fast_pass_flsh_out_max     [expr  5 + $out_val]
+set spi_fast_pass_flsh_out_min     -4.8
+
+set spi_slow_pass_flsh_in_max    10.7
+set spi_slow_pass_flsh_in_min       0
+set spi_slow_pass_soc_out_max      [expr 6.7 + $out_val]
+set spi_slow_pass_soc_out_min      -2
 
 #################
 # SPI DEV clock #
@@ -323,42 +391,66 @@ set SPI_DEV_OUT_DEL_MIN ${HOST_HOLD_DEL}
 set SPI_DEV_OUT_DEL_MIN_FC ${HOST_HOLD_DEL_FULL_CYCLE}
 set SPI_DEV_OUT_DEL_MAX [expr ${HOST_SETUP_DEL} + 2 * ${PCB_DEL}]
 
-create_clock -name SPI_DEV_CLK  -period ${SPI_DEV_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
+create_clock -name SPI_DEV_CLK  -period ${SPI_DEV_TCK} [get_ports ${SPI_DEV_CLK_PIN}] -add
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_CLK]
 set_propagated_clock SPI_DEV_CLK
 
 create_generated_clock -name SPI_DEV_IN_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/${CLK_PIN}] -master_clock SPI_DEV_CLK -add
 create_generated_clock -name SPI_DEV_OUT_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/${CLK_PIN}] -master_clock SPI_DEV_CLK -add
 
 # bidir ports
 set SPI_DEV_DATA_PORTS [get_ports {SPI_DEV_D0 SPI_DEV_D1 SPI_DEV_D2 SPI_DEV_D3}]
+if {$spec_constr} {
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_CLK -add_delay
 set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_CLK -add_delay
-
+} else {
+set_input_delay -min $spi_dev_inp_min ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_CLK -add_delay
+set_input_delay -max $spi_dev_inp_max ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_CLK -add_delay
+}
 # Full-cycle sampling has the host on the next falling edge.
+if {$spec_constr} {
 set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_CLK -add_delay
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_CLK -add_delay
+} else {
+set_output_delay -min $spi_dev_out_val_min ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_CLK -add_delay
+set_output_delay -max $spi_dev_out_val_max ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_CLK -add_delay
+}
 set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_IN_CLK] \
+    -to [get_clocks SPI_DEV_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
+#leonids updated based on interaction with Alex
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_IN_CLK] \
     -to [get_clocks SPI_DEV_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
 
 # SPI DEV CSB, the chip-select for non-TPM modes, acts as clock, data, and
 # reset.
 create_clock -name SPI_DEV_CSB_CLK -period [expr 2 * ${SPI_DEV_TCK}] \
     -waveform "${SPI_DEV_TCK_HALF} [expr ${SPI_DEV_TCK_HALF} + ${SPI_DEV_TCK}]" \
-    [get_ports SPI_DEV_CS_L]
+    [get_ports SPI_DEV_CS_L] -add
+if {$spec_constr} {
 set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} [get_clocks SPI_DEV_CSB_CLK]
 set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} [get_clocks SPI_DEV_CSB_CLK]
+} else {
+set_clock_latency -source -min $spi_dev_inp_csb_min [get_clocks SPI_DEV_CSB_CLK]
+set_clock_latency -source -max $spi_dev_inp_csb_max [get_clocks SPI_DEV_CSB_CLK]
+}
 set_propagated_clock [get_clocks SPI_DEV_CSB_CLK]
+if { $synopsys_program_name eq "pt_shell" || $synopsys_program_name eq "icc2_shell" || $synopsys_program_name eq "dc_shell"  } {
+set_clock_sense -stop_propagation [get_pins -leaf -of_objects top_earlgrey/u_spi_device/u_csb_buf/out_o[0]]
+} else {
 set_clock_sense -logical_stop_propagation [get_pins -leaf -of_objects [get_pins top_earlgrey/u_spi_device/u_csb_buf/out_o[0]]]
-
+}
 # CSB-clocked status bits to various negedge-triggered flops, especially in the
 # serializer.
 # Advance the hold edge by one cycle, since CSB changes nominally on the same
@@ -387,19 +479,6 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_CLK] \
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
 ##
-
-# These two false paths are slated to be removed. The originating nodes were
-# observed to all come from the generic mode module, which has been removed.
-#set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-#set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
 
 # This path is from locality logic that is on the *_IN_CLK domain and selects
 # between fixed values or the return-by-hw register value. The flopped bits
@@ -430,40 +509,60 @@ set SPI_DEV_CLK_PIN SPI_DEV_CLK
 set SPI_DEV_HC_TCK 40.0
 set SPI_DEV_HC_TCK_HALF [expr ${SPI_DEV_HC_TCK} / 2]
 
-create_clock -name SPI_DEV_HC_CLK -period ${SPI_DEV_HC_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
-set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_CLK]
+create_clock -name SPI_DEV_HC_CLK -period ${SPI_DEV_HC_TCK} [get_ports ${SPI_DEV_CLK_PIN}] -add
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_HC_CLK]
 set_propagated_clock SPI_DEV_HC_CLK
 
 create_generated_clock -name SPI_DEV_HC_IN_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/${CLK_PIN}] -add -master_clock SPI_DEV_HC_CLK
 create_generated_clock -name SPI_DEV_HC_OUT_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/${CLK_PIN}] -add -master_clock SPI_DEV_HC_CLK
 
 # bidir ports
 set SPI_DEV_DATA_PORTS [get_ports {SPI_DEV_D0 SPI_DEV_D1 SPI_DEV_D2 SPI_DEV_D3}]
+if {$spec_constr} {
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_HC_CLK -add_delay
 set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_HC_CLK -add_delay
-
+} else {
+set_input_delay -min $spi_dev_hc_inp_min ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_HC_CLK -add_delay
+set_input_delay -max $spi_dev_hc_inp_max ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_HC_CLK -add_delay
+}
 # Half-cycle sampling has the host on the next rising edge.
+if {$spec_constr} {
 set_output_delay -min ${SPI_DEV_OUT_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
     -clock SPI_DEV_HC_CLK -add_delay
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock SPI_DEV_HC_CLK -add_delay
-
+} else {
+set_output_delay -min $spi_dev_hc_out_val_min ${SPI_DEV_DATA_PORTS} \
+    -clock SPI_DEV_HC_CLK -add_delay
+set_output_delay -max $spi_dev_hc_out_val_max ${SPI_DEV_DATA_PORTS} \
+    -clock SPI_DEV_HC_CLK -add_delay
+}
 # SPI DEV CSB, the chip-select for non-TPM modes, acts as clock, data, and
 # reset.
 create_clock -name SPI_DEV_HC_CSB_CLK -period [expr 2 * ${SPI_DEV_HC_TCK}] \
-    -waveform "${SPI_DEV_HC_TCK_HALF} [expr ${SPI_DEV_TCK_HALF} + ${SPI_DEV_TCK}]" \
-    [get_ports SPI_DEV_CS_L]
+    -waveform "${SPI_DEV_HC_TCK_HALF} [expr ${SPI_DEV_HC_TCK_HALF} + ${SPI_DEV_HC_TCK}]" \
+    [get_ports SPI_DEV_CS_L] -add
+if {$spec_constr} {
 set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} [get_clocks SPI_DEV_HC_CSB_CLK]
 set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} [get_clocks SPI_DEV_HC_CSB_CLK]
+} else {
+set_clock_latency -source -min $spi_dev_hc_inp_csb_min [get_clocks SPI_DEV_HC_CSB_CLK]
+set_clock_latency -source -max $spi_dev_hc_inp_csb_max [get_clocks SPI_DEV_HC_CSB_CLK]
+}
 set_propagated_clock [get_clocks SPI_DEV_HC_CSB_CLK]
-set_clock_sense -logical_stop_propagation [get_pins -leaf -of_objects [get_pins top_earlgrey/u_spi_device/u_csb_buf/out_o[0]]]
-
+if { $synopsys_program_name eq "pt_shell" || $synopsys_program_name eq "icc2_shell" || $synopsys_program_name eq "dc_shell"  } {
+set_clock_sense -stop_propagation [get_pins -leaf -of_objects top_earlgrey/u_spi_device/u_csb_buf/out_o[0]]
+} else {
+set_clock_sense -logical_stop_propagation [get_pins -leaf -of_objects top_earlgrey/u_spi_device/u_csb_buf/out_o[0]]
+}
 # CSB-clocked status bits to various negedge-triggered flops, especially in the
 # serializer.
 # Advance the hold edge by one cycle, since CSB changes nominally on the same
@@ -493,19 +592,6 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_HC_CLK] \
 # real.
 ##
 
-# These two false paths are slated to be removed. The originating nodes were
-# observed to all come from the generic mode module, which has been removed.
-#set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-#set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
-
 # This path is from locality logic that is on the *_IN_CLK domain and selects
 # between fixed values or the return-by-hw register value. The flopped bits
 # settle in the middle of the command/address phase, many cycles before the
@@ -523,6 +609,17 @@ set_false_path -from [get_clocks SPI_DEV_HC_CSB_CLK] \
         [get_nets -segments -of_objects \
             [get_pins u_ast/u_scan_rst_n/in_i*]]]
 
+# false path from spi_cmdparse to the ports on SPI_DEV_HC_CLK
+set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
+    -to [get_clocks SPI_DEV_HC_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+        [get_cells -filter "@is_sequential" top_earlgrey/u_spi_device/u_cmdparse/*]]
+
+set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
+    -to [get_clocks SPI_DEV_HC_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+        [get_cells -filter "@is_sequential" top_earlgrey/u_spi_device/u_passthrough/cmd_info_reg_read_pipeline_mode*]]
+
 ####################
 # SPI DEV TPM mode #
 ####################
@@ -534,9 +631,9 @@ set_false_path -from [get_clocks SPI_DEV_HC_CSB_CLK] \
 set SPI_TPM_TCK 40.0
 set SPI_TPM_TCK_HALF [expr ${SPI_TPM_TCK} / 2]
 set SPI_TPM_CSB_HOLD 5.0
-set SPI_TPM_CSB_SETUP 5.0
-set SPI_TPM_MOSI_HOLD 3.0
-set SPI_TPM_MOSI_SETUP 2.0
+set SPI_TPM_CSB_SETUP 10.0
+set SPI_TPM_MOSI_HOLD 5.0
+set SPI_TPM_MOSI_SETUP 10.0
 set SPI_TPM_MISO_CLKQ_MIN 0.0
 set SPI_TPM_MISO_CLKQ_MAX 12.6
 set SPI_TPM_CSB_IN_DEL_MIN [expr ${SPI_TPM_CSB_HOLD} - ${SPI_TPM_TCK_HALF}]
@@ -546,49 +643,67 @@ set SPI_TPM_MOSI_IN_DEL_MAX [expr ${SPI_TPM_TCK_HALF} - ${SPI_TPM_MOSI_SETUP}]
 set SPI_TPM_MISO_OUT_DEL_MIN ${SPI_TPM_MISO_CLKQ_MIN}
 set SPI_TPM_MISO_OUT_DEL_MAX [expr ${SPI_TPM_TCK_HALF} - ${SPI_TPM_MISO_CLKQ_MAX}]
 
-create_clock -name SPI_TPM_CLK -add -period ${SPI_TPM_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
+create_clock -name SPI_TPM_CLK -add -period ${SPI_TPM_TCK} [get_ports ${SPI_DEV_CLK_PIN}] -add
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_TPM_CLK]
 set_propagated_clock SPI_TPM_CLK
 
 create_generated_clock -name SPI_TPM_IN_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
     -master_clock SPI_TPM_CLK -add \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/${CLK_PIN}]
 create_generated_clock -name SPI_TPM_OUT_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
     -master_clock SPI_TPM_CLK -add \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/${CLK_PIN}]
 
 # bidir ports
+if {$spec_constr} {
 set_input_delay -min ${SPI_TPM_MOSI_IN_DEL_MIN} [get_ports SPI_DEV_D0] \
     -clock_fall -clock SPI_TPM_CLK -add_delay
 set_input_delay -max ${SPI_TPM_MOSI_IN_DEL_MAX} [get_ports SPI_DEV_D0] \
     -clock_fall -clock SPI_TPM_CLK -add_delay
-
+} else {
+set_input_delay -min $spi_tpm_inp_min [get_ports SPI_DEV_D0] \
+    -clock_fall -clock SPI_TPM_CLK -add_delay
+set_input_delay -max $spi_tpm_inp_max [get_ports SPI_DEV_D0] \
+    -clock_fall -clock SPI_TPM_CLK -add_delay
+}
 # Half-cycle sampling has the host on the next rising edge.
+if {$spec_constr} {
 set_output_delay -min ${SPI_TPM_MISO_OUT_DEL_MIN} [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
 set_output_delay -max ${SPI_TPM_MISO_OUT_DEL_MAX} [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
-
+} else {
+set_output_delay -min $spi_tpm_out_val_min [get_ports SPI_DEV_D1] \
+    -clock SPI_TPM_CLK -add_delay
+set_output_delay -max $spi_tpm_out_val_max [get_ports SPI_DEV_D1] \
+    -clock SPI_TPM_CLK -add_delay
+}
 # SPI TPM CSB, the chip-select for TPM mode.
 # Any muxed port could be a SPI TPM CSB, but we only guarantee IOA7 meets
 # timing.
-set TPM_CSB_PORT [get_ports IOA7]
+set TPM_CSB_PORT [get_ports {IOA7 IOA2}]
 
 # TPM CSB input delays.
+if {$spec_constr} {
 set_input_delay -min ${SPI_TPM_CSB_IN_DEL_MIN} [get_ports ${TPM_CSB_PORT}] \
     -clock SPI_TPM_CLK -clock_fall -add_delay
 set_input_delay -max ${SPI_TPM_CSB_IN_DEL_MAX} [get_ports ${TPM_CSB_PORT}] \
     -clock SPI_TPM_CLK -clock_fall -add_delay
-
+} else {
+set_input_delay -min $spi_tpm_inp_csb_min [get_ports ${TPM_CSB_PORT}] \
+    -clock SPI_TPM_CLK -clock_fall -add_delay
+set_input_delay -max $spi_tpm_inp_csb_max [get_ports ${TPM_CSB_PORT}] \
+    -clock SPI_TPM_CLK -clock_fall -add_delay
+}
 # Relax hold path for TPM CSB, since CSB changes nominally on the same edge as
 # SPI_TPM_OUT_CLK, but the latter isn't actually toggling.
 set_multicycle_path -hold -end 1 -from [get_ports ${TPM_CSB_PORT}] \
     -to [get_clocks SPI_TPM_OUT_CLK] \
     -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets -segments -of_objects \
-            [get_pins top_earlgrey/u_spi_device/u_spi_tpm/rst_n]]]
+            [get_pins top_earlgrey/u_spi_device/u_spi_tpm/rst_ni]]]
 # Relax the hold time constraint for the passthrough clock gate. Really this is
 # to accommodate the gate for the inverted clock, which isn't active for the
 # modes used for these constraints. However, it would be an okay outcome if the
@@ -661,6 +776,15 @@ set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
 # Remove scan paths for timing analysis
 set_clock_sense -stop_propagation -clock SPI_TPM_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
 
+set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
+    -to [get_clocks SPI_TPM_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+        [get_cells -filter "@is_sequential" top_earlgrey/u_spi_device/u_cmdparse/*]]
+
+set_false_path -hold -from [get_clocks SPI_TPM_CLK] \
+    -to [get_clocks SPI_TPM_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+        [get_cells -filter "@is_sequential" top_earlgrey/u_spi_device/u_passthrough/cmd_info_reg_read_pipeline_mode*]]
 
 ##################
 # SPI HOST clock #
@@ -682,7 +806,7 @@ if {$FOUNDRY_ROOT != ""} {
 
 # cascaded generated clock on the port
 create_generated_clock -name SPI_HOST_CLK -source [get_pins ${IO_CLK_PIN}] \
-                       -divide_by 2 [get_ports SPI_HOST_CLK]
+                       -divide_by 2 [get_ports SPI_HOST_CLK] -master_clock  IO_CLK -add
 
 # Multi-cycle path to adjust the hold edge, since launch and capture edges are
 # opposite in the SPI_HOST_CLK domain.
@@ -703,6 +827,7 @@ set SPI_HOST_IN_DEL_MAX  [expr ${STORAGE_OUT_DEL_MAX} + 2 * ${PCB_DEL}]
 
 # bidir ports, with the downstream device launching on falling edge
 set SPI_HOST_DATA_PORTS [get_ports SPI_HOST_D*]
+if {$spec_constr} {
 set_input_delay -min ${SPI_HOST_IN_DEL_MIN} ${SPI_HOST_DATA_PORTS} \
     -clock_fall -clock SPI_HOST_CLK -add_delay
 set_input_delay -max ${SPI_HOST_IN_DEL_MAX} ${SPI_HOST_DATA_PORTS} \
@@ -713,7 +838,18 @@ set_output_delay -min ${SPI_HOST_OUT_DEL_MIN} \
 set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
     [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
     -clock SPI_HOST_CLK -add_delay
-
+} else {
+set_input_delay -min $spi_host_inp_min ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_CLK -add_delay
+set_input_delay -max $spi_host_inp_max ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_CLK -add_delay
+set_output_delay -min $spi_host_out_val_min \
+    [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
+    -clock SPI_HOST_CLK -add_delay
+set_output_delay -max $spi_host_out_val_max \
+    [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
+    -clock SPI_HOST_CLK -add_delay
+}
 
 ##########################################
 # SPI DEV SLOW clock Passthru Operation  #
@@ -740,11 +876,11 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_SLOW_PASS_C
 create_generated_clock -name SPI_DEV_SLOW_PASS_IN_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
     -master_clock SPI_DEV_SLOW_PASS_CLK -add \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/${CLK_PIN}]
 create_generated_clock -name SPI_DEV_SLOW_PASS_OUT_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
     -master_clock SPI_DEV_SLOW_PASS_CLK -add \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/${CLK_PIN}]
 
 
 # clocks accounting for propagation delay to the other side
@@ -760,6 +896,7 @@ set_propagated_clock [get_clock SPI_DEV_SLOW_PASS_CLK]
 set_propagated_clock [get_clock SPI_HOST_SLOW_PASS_CLK]
 
 # bidir ports facing host, with full-cycle sampling at the upstream host
+if {$spec_constr} {
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
@@ -768,10 +905,20 @@ set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
+} else {
+set_output_delay -min $spi_slow_pass_soc_out_min ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
+set_output_delay -max $spi_slow_pass_soc_out_max ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
+}
 set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
+    -to [get_clocks SPI_DEV_SLOW_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
+#leonids updated based on interaction with Alex
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
     -to [get_clocks SPI_DEV_SLOW_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
 
 # bidir ports facing storage device
+if {$spec_constr} {
 set_input_delay -min ${SPI_HOST_IN_DEL_MIN} ${SPI_HOST_DATA_PORTS} \
     -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 set_input_delay -max ${SPI_HOST_IN_DEL_MAX} ${SPI_HOST_DATA_PORTS} \
@@ -782,16 +929,28 @@ set_output_delay -min ${SPI_HOST_OUT_DEL_MIN} \
 set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
     [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
     -clock SPI_HOST_SLOW_PASS_CLK -add_delay
-
+} else {
+set_input_delay -min $spi_slow_pass_flsh_in_min ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
+set_input_delay -max $spi_slow_pass_flsh_in_max ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
+}
 # CSB clock from top-level port (added to SPI_DEV_CSB_CLK)
 create_clock -name SPI_DEV_SLOW_PASS_CSB_CLK -add \
     -period [expr 2 * ${SPI_DEV_SLOW_PASS_TCK}] \
     -waveform "${SPI_DEV_SLOW_PASS_TCK_HALF} [expr ${SPI_DEV_SLOW_PASS_TCK_HALF} + ${SPI_DEV_SLOW_PASS_TCK}]" \
     [get_ports SPI_DEV_CS_L]
+if {$spec_constr} {
 set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} \
     -clock SPI_DEV_SLOW_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
 set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} \
     -clock SPI_DEV_SLOW_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+} else {
+set_clock_latency -source -min $spi_dev_inp_csb_min \
+    -clock SPI_DEV_SLOW_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+set_clock_latency -source -max $spi_dev_inp_csb_max \
+    -clock SPI_DEV_SLOW_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+}
 set_propagated_clock [get_clock SPI_DEV_SLOW_PASS_CSB_CLK]
 
 # CSB-clocked status bits to various negedge-triggered flops, especially in the
@@ -823,19 +982,6 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_SLOW_PASS_CLK] \
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
 ##
-
-# These two false paths are slated to be removed. The originating nodes were
-# observed to all come from the generic mode module, which has been removed.
-#set_false_path -hold -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-#set_false_path -hold -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
 
 # This path is from locality logic that is on the *_IN_CLK domain and selects
 # between fixed values or the return-by-hw register value. The flopped bits
@@ -879,11 +1025,11 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_FAST_PASS_C
 create_generated_clock -name SPI_DEV_FAST_PASS_IN_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
     -master_clock SPI_DEV_FAST_PASS_CLK -add \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/${CLK_PIN}]
 create_generated_clock -name SPI_DEV_FAST_PASS_OUT_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
     -master_clock SPI_DEV_FAST_PASS_CLK -add \
-    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/${CLK_PIN}]
 
 
 # clocks accounting for propagation delay to the other side
@@ -899,6 +1045,7 @@ set_propagated_clock [get_clock SPI_DEV_FAST_PASS_CLK]
 set_propagated_clock [get_clock SPI_HOST_FAST_PASS_CLK]
 
 # bidir ports facing host, with full-cycle sampling at the upstream host
+if {$spec_constr} {
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
 set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
@@ -907,10 +1054,24 @@ set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+} else {
+set_input_delay -min $spi_fast_pass_soc_in_min ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_input_delay -max $spi_fast_pass_soc_in_max ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_output_delay -min $spi_fast_pass_dev_out_val_min ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_output_delay -max $spi_fast_pass_dev_out_val_max ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+}
 set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
+    -to [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
+#leonids updated based on interaction with Alex
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
     -to [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
 
 # bidir ports facing storage device
+if {$spec_constr} {
 set_input_delay -min ${SPI_HOST_IN_DEL_MIN} ${SPI_HOST_DATA_PORTS} \
     -clock_fall -clock SPI_HOST_FAST_PASS_CLK -add_delay
 set_input_delay -max ${SPI_HOST_IN_DEL_MAX} ${SPI_HOST_DATA_PORTS} \
@@ -921,22 +1082,45 @@ set_output_delay -min ${SPI_HOST_OUT_DEL_MIN} \
 set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
     [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
     -clock SPI_HOST_FAST_PASS_CLK -add_delay
-
+} else {
+set_input_delay -min $spi_fast_pass_host_inp_min ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_FAST_PASS_CLK -add_delay
+set_input_delay -max $spi_fast_pass_host_inp_max ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_FAST_PASS_CLK -add_delay
+set_output_delay -min $spi_fast_pass_flsh_out_min \
+    [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
+    -clock SPI_HOST_FAST_PASS_CLK -add_delay
+set_output_delay -max $spi_fast_pass_flsh_out_max \
+    [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
+    -clock SPI_HOST_FAST_PASS_CLK -add_delay
+}
 # Fast commands must use the fast read pipeline. Disable timing for the
 # combinatorial passthrough path.
 set_false_path -from [get_clocks SPI_HOST_FAST_PASS_CLK] \
     -through [get_ports ${SPI_DEV_DATA_PORTS}] \
     -to [get_clocks SPI_DEV_FAST_PASS_CLK]
 
+#leonids 03/06/2024 Updated based on interaction with Alex
+# full-cycle sampling flops
+set_false_path -from [get_clocks SPI_HOST_FAST_PASS_CLK] \
+    -to [get_clocks SPI_DEV_FAST_PASS_IN_CLK]
+
 # CSB clock from top-level port (added to SPI_DEV_CSB_CLK)
 create_clock -name SPI_DEV_FAST_PASS_CSB_CLK -add \
     -period [expr 2 * ${SPI_DEV_FAST_PASS_TCK}] \
     -waveform "${SPI_DEV_FAST_PASS_TCK_HALF} [expr ${SPI_DEV_FAST_PASS_TCK_HALF} + ${SPI_DEV_FAST_PASS_TCK}]" \
     [get_ports SPI_DEV_CS_L]
+if {$spec_constr} {
 set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} \
     -clock SPI_DEV_FAST_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
 set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} \
     -clock SPI_DEV_FAST_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+} else {
+set_clock_latency -source -min $spi_dev_inp_csb_min \
+    -clock SPI_DEV_FAST_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+set_clock_latency -source -max $spi_dev_inp_csb_max \
+    -clock SPI_DEV_FAST_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+}
 set_propagated_clock [get_clock SPI_DEV_FAST_PASS_CSB_CLK]
 
 # CSB-clocked status bits to various negedge-triggered flops, especially in the
@@ -969,19 +1153,6 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_FAST_PASS_CLK] \
 # real.
 ##
 
-# These two false paths are slated to be removed. The originating nodes were
-# observed to all come from the generic mode module, which has been removed.
-#set_false_path -hold -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-#set_false_path -hold -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
-
 # This path is from locality logic that is on the *_IN_CLK domain and selects
 # between fixed values or the return-by-hw register value. The flopped bits
 # settle in the middle of the command/address phase, many cycles before the
@@ -999,6 +1170,357 @@ set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CSB_CLK] \
         [get_nets -segments -of_objects \
             [get_pins u_ast/u_scan_rst_n/in_i*]]]
 
+# Alex Williams SPI_TPM constraints
+set_false_path -from [get_clocks SPI_TPM_CLK] -through [get_pins -leaf -filter "@pin_direction == out" -of_objects [get_nets -segments -of_objects  [get_pins top_earlgrey/u_spi_device/u_s2p/data_valid_o]]]
+set_false_path -from [get_clocks SPI_TPM_CLK] -through [get_pins -leaf -filter "@pin_direction == out" -of_objects [get_nets -segments -of_objects [get_pins top_earlgrey/u_spi_device/u_s2p/data_o*]]]
+ set_false_path -from [get_clocks SPI_TPM_CLK] -to [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_cells -filter "@is_sequential" top_earlgrey/u_spi_device/u_passthrough/*]]
+
+#leonids updated based on interaction with Alex
+set_multicycle_path -setup 2 -from [get_ports ${TPM_CSB_PORT}]     -to [get_clocks SPI_TPM_CLK]
+set_multicycle_path -hold -end 1 -from [get_ports ${TPM_CSB_PORT}] -to [get_clocks SPI_TPM_CLK]
+
+
+set_false_path -from [get_clocks SPI_DEV_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*]
+set_false_path -from [get_clocks SPI_DEV_HC_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*]
+set_false_path -from [get_clocks SPI_HOST_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*]
+set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ; #leonids updated based on interaction with Alex
+
+set_false_path -from SPI_HOST_D* -to SPI_HOST_D*
+set_false_path -from SPI_DEV_D* -to SPI_DEV_D*
+set_false_path -from SPI_DEV_CS_L -to SPI_DEV_D*
+
+##########################################
+# SPI HOST 1                             #
+##########################################
+
+# 1. Rework the blanket constraints for the muxed I/Os to only apply to the IO_DIV4_CLK IPs. Only SPI_HOST1 is on IO_DIV2_CLK, and its constraints are special:
+# aggregate all IO banks
+set IO_BANKS [get_ports IOA*]
+append_to_collection IO_BANKS [get_ports IOB*]
+append_to_collection IO_BANKS [get_ports IOC*]
+append_to_collection IO_BANKS [get_ports IOR*]
+
+# constrain muxed IOs running on IO_DIV4_CLK. Note that IO_DIV2_CLK is only used
+# for SPI_HOST1, which has special constraints that are defined later.
+set IO_IN_DEL_FRACTION 0.4
+set IO_OUT_DEL_FRACTION 0.4
+
+# IO_DIV4_CLK IPs are all either asynchronous or have a loose skew requirement.
+# Constrain the max delay from reg to port and port to reg, and ignore hold time.
+set IO_DIV4_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
+set IO_DIV4_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
+
+set_input_delay ${IO_DIV4_IN_DEL}   ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
+set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
+
+# 2. Create the generated clocks for SPI_HOST1, input and output delays, and multi-cycle paths just like SPI_HOST0. Place these after the SPI_HOST0 constraints.
+
+###########################################
+# SPI_HOST_1 timing (full-cycle sampling) #
+###########################################
+# Preferred sites for SPI HOST 1
+set SPI_HOST1_CLK_PORT IOB3
+set SPI_HOST1_DATA_PORTS "IOB0 IOB1 IOB2"
+
+set SPI_HOST1_SRC_CLK [get_pins top_earlgrey/u_spi_host1/u_spi_core/u_fsm/u_sck_flop/*/clk_i]
+set SPI_HOST1_DIV_CLK [get_pins top_earlgrey/u_spi_host1/u_spi_core/u_fsm/u_sck_flop/*/q_o[0]]
+
+# First model the clock divider that generates a new frequency internally.
+create_generated_clock -name SPI_HOST1_INTERNAL_CLK -divide_by 2 -add \
+  -source ${SPI_HOST1_SRC_CLK} \
+  -master_clock [get_clocks IO_DIV2_CLK] \
+  [get_pins ${SPI_HOST1_DIV_CLK}]
+
+# Then create a derived clock at the top-level port for input and output delays.
+create_generated_clock -name SPI_HOST1_CLK -divide_by 1 -add \
+  -source [get_pins ${SPI_HOST1_DIV_CLK}] \
+  -master_clock [get_clocks SPI_HOST1_INTERNAL_CLK] \
+  [get_ports ${SPI_HOST1_CLK_PORT}]
+
+if {$spec_constr} {
+set_input_delay  -clock SPI_HOST1_CLK -clock_fall -min ${SPI_HOST_IN_DEL_MIN} \
+    [get_ports ${SPI_HOST1_DATA_PORTS}] -add_delay
+set_input_delay  -clock SPI_HOST1_CLK -clock_fall -max ${SPI_HOST_IN_DEL_MAX} \
+    [get_ports ${SPI_HOST1_DATA_PORTS}] -add_delay
+set_output_delay -clock SPI_HOST1_CLK -min ${SPI_HOST_OUT_DEL_MIN} \
+    [get_ports ${SPI_HOST1_DATA_PORTS}] -add_delay
+set_output_delay -clock SPI_HOST1_CLK -max ${SPI_HOST_OUT_DEL_MAX} \
+    [get_ports ${SPI_HOST1_DATA_PORTS}] -add_delay
+} else {
+set_input_delay -min $spi_host1_inp_min  [get_ports ${SPI_HOST1_DATA_PORTS}] \
+    -clock_fall -clock SPI_HOST1_CLK -add_delay
+set_input_delay -max $spi_host1_inp_max  [get_ports ${SPI_HOST1_DATA_PORTS}] \
+    -clock_fall -clock SPI_HOST1_CLK -add_delay
+set_output_delay -min $spi_host1_out_val_min \
+    [get_ports ${SPI_HOST1_DATA_PORTS}] \
+    -clock SPI_HOST1_CLK -add_delay
+set_output_delay -max $spi_host1_out_val_max \
+    [get_ports ${SPI_HOST1_DATA_PORTS}] \
+    -clock SPI_HOST1_CLK -add_delay
+}
+# Multi-cycle path to adjust the hold edge, since launch and capture edges are
+# opposite in the SPI_HOST1_CLK domain.
+set_multicycle_path -setup -start 1 \
+    -from [get_clocks IO_DIV2_CLK] \
+    -to [get_clocks SPI_HOST1_CLK]
+set_multicycle_path -hold -start 1 \
+    -from [get_clocks IO_DIV2_CLK] \
+    -to [get_clocks SPI_HOST1_CLK]
+
+# set multicycle path for data going from SPI_HOST1_CLK to logic
+# the SPI host logic will read these paths at "full cycle"
+set_multicycle_path -setup -end 2 \
+    -from [get_clocks SPI_HOST1_CLK] \
+    -to [get_clocks IO_DIV2_CLK]
+set_multicycle_path -hold -end 1 \
+    -from [get_clocks SPI_HOST1_CLK] \
+    -to [get_clocks IO_DIV2_CLK]
+
+# 3. Adjust the asynchronous clock groups so SPI_HOST1_CLK is grouped with IO_DIV2_CLK.
+
+# -    -group [get_clocks IO_DIV2_CLK                                  ] \
+# +    -group [get_clocks {IO_DIV2_CLK SPI_HOST1_CLK}                  ] \
+
+# Approved by Ziv
+#  SPI_HOST_D0
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_HOST_D1
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_HOST_D2
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_HOST_D3
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_DEV_D0
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_DEV_D1
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_DEV_D2
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#  SPI_DEV_D3
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#IOB0
+set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#IOB1
+set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_10__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#IOB2
+set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_11__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#IOB3
+set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_12__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA0
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA1
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA2
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA3
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA4
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA5
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA6
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA7
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA8
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB10
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB11
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB12
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB3
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB4
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB5
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB6
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB7
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB8
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB9
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC0
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC1
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC10
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC11
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC12
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC2
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC3
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC4
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC5
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC6
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC7
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC8
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC9
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR0
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR10
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR11
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR12
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR13
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR2
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR3
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR4
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR5
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR6
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR7
+
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_DIV2_CLK
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_DIV2_CLK
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_DIV2_CLK
+set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_DIV2_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_DIV2_CLK
+
+if { $synopsys_program_name eq "pt_shell"  } {
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_DIV2_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_DIV2_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_DIV2_CLK
+
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA0
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA1
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA2
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA3
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA4
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA5
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA6
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA7
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA8
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB10
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB11
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB12
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB3
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB4
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB5
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB6
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB7
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB8
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB9
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC0
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC1
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC10
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC11
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC12
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC2
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC3
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC4
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC5
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC6
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC7
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC8
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOC9
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR0
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR10
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR11
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR12
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR13
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR2
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR3
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR4
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR5
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR6
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR7
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR1
+}
+
+set_false_path  -through   [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/IE"] -through [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/Y"]
+
+#leonids 06Jul False path that prevent SPI report
+set_false_path -from [get_clocks SPI*] -through [get_cells -hierarchical -filter "full_name =~ *u_ast_dft*"]
+
+#leonids 06Jul24 updated based on interaction with Alex
+# For the false clock-gating check, we could try something like this to remove the CSB "clock" from the analysis:
+set_sense -stop_propagation  \
+    -clocks SPI_DEV_CSB_CLK \
+    [get_pins -leaf \
+        -filter "@pin_direction == in and full_name =~ top_earlgrey/u_spi_device/u_passthrough/*" \
+        -of_objects \
+            [get_nets -segments -of_objects \
+                [get_pins top_earlgrey/u_spi_device/u_passthrough/rst_ni] \
+            ] \
+    ]
+set_sense -stop_propagation  \
+    -clocks SPI_DEV_*PASS_CSB_CLK \
+    [get_pins -leaf \
+        -filter "@pin_direction == in and full_name =~ top_earlgrey/u_spi_device/u_passthrough/*" \
+        -of_objects \
+            [get_nets -segments -of_objects \
+                [get_pins top_earlgrey/u_spi_device/u_passthrough/rst_ni] \
+            ] \
+    ]
+#leonids updated constraints probided by Alex do not prevent repot - Temp use of the next set_disable_clock_gating_check
+set_disable_clock_gating_check [get_cells -of_objects [gpo top_earlgrey/u_spi_device/u_passthrough/passthrough_o_csb]]
+
+# SPI Slew Rate and Drive Strength Constraints
+
+#  SPI_HOST_D0
+set_case_analysis 0 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_HOST_D1
+set_case_analysis 0 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_HOST_D2
+set_case_analysis 0 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_HOST_D3
+set_case_analysis 0 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_HOST_CLK
+set_case_analysis 0 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE
+#  SPI_HOST_CS_L
+set_case_analysis 0 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE
+#  SPI_DEV_D0
+set_case_analysis 0 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_D1
+set_case_analysis 0 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_D2
+set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_D3
+set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_CLK
+set_case_analysis 0 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_CS_L
+set_case_analysis 0 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#IOA7
+# Open drain pads have just one drive strength bit.
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/DS
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/IS
+#IOB0
+set_case_analysis 0 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+#IOB1
+set_case_analysis 0 u_padring/gen_mio_pads_10__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_mio_pads_10__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_mio_pads_10__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+#IOB2
+set_case_analysis 0 u_padring/gen_mio_pads_11__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_mio_pads_11__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_mio_pads_11__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+#IOB3
+set_case_analysis 0 u_padring/gen_mio_pads_12__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_mio_pads_12__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_mio_pads_12__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+
 ####################
 # SPI-specific CDC #
 ####################
@@ -1013,7 +1535,6 @@ set_clock_groups -physically_exclusive \
 #####################
 # CDC               #
 #####################
-# NOTE: Bad CDCs?
 # SPI_DEV_CSB_CLK -> SPI_HOST_CLK
 #
 set SPI_DEV_CLKS "SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_DEV_CSB_CLK"
@@ -1031,7 +1552,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
-    -group [get_clocks IO_DIV2_CLK                                  ] \
+    -group [get_clocks {IO_DIV2_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK} ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
     -group [get_clocks AON_CLK                                      ]
@@ -1076,3 +1597,31 @@ puts "Done applying constraints for top level"
 
 # assume a value of 0 for the open drain pad attribute
 set_case_analysis 0 [get_pins u_padring/*_pad/attr_i?od_en*]
+
+#SPI propagation through flop
+set_sense -stop_propagation top_earlgrey/u_spi_device/u_reg/u_control_mode/q_reg*/Q
+set_sense -stop_propagation top_earlgrey/u_pinmux_aon/dio_pad_attr_q_reg_*__invert/Q
+set_sense -stop_propagation top_earlgrey/u_pinmux_aon/dio_out_retreg_q_reg*/Q
+set_sense -stop_propagation top_earlgrey/u_pinmux_aon/u_reg/u_dio_pad_sleep_status_en*/q_reg*/Q
+
+set_false_path -from top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sync_lc_dft_en/gen_flops_u_prim_flop_2sync/gen_generic_u_impl_generic/u_sync_2/gen_techlib_u_impl_techlib/gen_flops*_u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sender_pinmux_hw_debug_en/gen_flops_u_prim_flop/u_secure_anchor_flop/gen_techlib_u_impl_techlib/gen_flops*_u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/mio_pad_attr_q_reg_*input_disable/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/tap_strap_q_reg*/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/mio_pad_attr_q_reg*invert/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/mio_pad_attr_q_reg*input_disable/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sender_pinmux_hw_debug_en/gen_flops_u_prim_flop/u_secure_anchor_flop/gen_techlib_u_impl_techlib/gen_flops_*u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sync_lc_dft_en/gen_flops_u_prim_flop_2sync/gen_generic_u_impl_generic/u_sync_2/gen_techlib_u_impl_techlib/gen_flops_*u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/tap_strap_q_reg*/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/u_pinmux_aon/dio_pad_attr_q_reg*input_disable/CK -to [get_ports IO*]
+
+if { $synopsys_program_name  == "pt_shell" } {
+  set_max_delay 5 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_*_flop/${FLOP_PATH}/Q] \
+                  -to   [get_ports USB_*] -probe
+  set_max_delay 5 -from [get_ports USB_*] \
+                  -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_generic_u_impl_generic/u_sync_1/gen_techlib_u_impl_techlib/gen_flops_0__gen_reset_to_0_u_size_only_reg/D] -probe
+  set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY} -probe
+}
+
+set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV2_CLK]
+set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV4_CLK]
