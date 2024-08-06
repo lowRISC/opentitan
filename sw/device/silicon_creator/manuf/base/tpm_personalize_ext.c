@@ -6,11 +6,12 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/tpm.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_cik.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"   // Generated.
-#include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
@@ -75,7 +76,7 @@ static status_t personalize_gen_tpm_certificates(
 
   // Set the endorsement key ID.
   memcpy(tpm_endorsement_key_id.digest, certgen_inputs->auth_key_key_id,
-         kDiceCertKeyIdSizeInBytes);
+         kCertKeyIdSizeInBytes);
 
   // Add three certs to the total number of certs set to the host.
   tbs_certs->num_certs += 3;
@@ -104,28 +105,28 @@ static status_t personalize_gen_tpm_certificates(
 
   // Generate TPM EK keys and (TBS) cert.
   curr_cert_size = kTpmEkMaxTbsSizeBytes;
-  TRY(cert_ecc_p256_keygen(kDiceKeyTpmEk, &tpm_pubkey_id, &curr_pubkey));
-  TRY(dice_tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                 &tbs_certs->certs[tbs_certs->next_free],
-                                 &curr_cert_size));
+  TRY(cert_ecc_p256_keygen(kTpmKeyEk, &tpm_pubkey_id, &curr_pubkey));
+  TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
+                            &tbs_certs->certs[tbs_certs->next_free],
+                            &curr_cert_size));
   tbs_certs->next_free += curr_cert_size;
   LOG_INFO("Generated TPM EK TBS certificate.");
 
   // Generate TPM CEK keys and (TBS) cert.
   curr_cert_size = kTpmCekMaxTbsSizeBytes;
-  TRY(cert_ecc_p256_keygen(kDiceKeyTpmCek, &tpm_pubkey_id, &curr_pubkey));
-  TRY(dice_tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                  &tbs_certs->certs[tbs_certs->next_free],
-                                  &curr_cert_size));
+  TRY(cert_ecc_p256_keygen(kTpmKeyCek, &tpm_pubkey_id, &curr_pubkey));
+  TRY(tpm_cek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
+                             &tbs_certs->certs[tbs_certs->next_free],
+                             &curr_cert_size));
   tbs_certs->next_free += curr_cert_size;
   LOG_INFO("Generated TPM CEK TBS certificate.");
 
   // Generate TPM CIK keys and (TBS) cert.
   curr_cert_size = kTpmCikMaxTbsSizeBytes;
-  TRY(cert_ecc_p256_keygen(kDiceKeyTpmCik, &tpm_pubkey_id, &curr_pubkey));
-  TRY(dice_tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                                  &tbs_certs->certs[tbs_certs->next_free],
-                                  &curr_cert_size));
+  TRY(cert_ecc_p256_keygen(kTpmKeyCik, &tpm_pubkey_id, &curr_pubkey));
+  TRY(tpm_cik_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
+                             &tbs_certs->certs[tbs_certs->next_free],
+                             &curr_cert_size));
   tbs_certs->next_free += curr_cert_size;
   LOG_INFO("Generated TPM CIK TBS certificate.");
 
