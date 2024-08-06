@@ -556,6 +556,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
         "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",

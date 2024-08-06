@@ -7,7 +7,10 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +73,23 @@ typedef struct cert_flash_info_layout {
    */
   char **names;
 } cert_flash_info_layout_t;
+
+/**
+ * Generates an ECC P256 keypair to build a certificate around, using Keymgr
+ * and OTBN, returning the public key and a key ID (which is a SHA256 digest of
+ * the public key).
+ *
+ * Preconditions: keymgr has been initialized and cranked to the desired stage.
+ *
+ * @param key The description of the desired key to generate.
+ * @param[out] pubkey_id The public key ID (for embedding into certificates).
+ * @param[out] pubkey The public key.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+                                 hmac_digest_t *pubkey_id,
+                                 ecdsa_p256_public_key_t *pubkey);
 
 /**
  * Decodes the ASN1 size header word to extract the number of bytes contained in
