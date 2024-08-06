@@ -202,6 +202,35 @@ typedef enum sc_keymgr_key_type {
 } sc_keymgr_key_type_t;
 
 /**
+ * Keymgr ECC key generation descriptor.
+ */
+typedef struct sc_keymgr_ecc_key {
+  /**
+   * Keymgr key type, either: attestation or sealing.
+   *
+   * Attestation keys are derived from keymgr state that changes when ROM_EXT or
+   * Owner firmware is updated, while Sealing keys remain stable as long as a
+   * device remains under the same ownership and hardware lifecycle state.
+   */
+  sc_keymgr_key_type_t type;
+  /**
+   * Index into the kFlashCtrlInfoPageAttestationKeySeeds flash info page that
+   * holds a seed for generating the ECC key pair.
+   */
+  uint32_t keygen_seed_idx;
+  /**
+   * Pointer to the keymgr diversifier that is used when actuating the keymgr's
+   * "output-generate" function to generate another ECC keygen seed that will be
+   * sideloaded to OTBN.
+   */
+  const sc_keymgr_diversification_t *keymgr_diversifier;
+  /**
+   * Pointer to the keymgr diversifier that is used when actuating the keymgr's
+   */
+  sc_keymgr_state_t required_keymgr_state;
+} sc_keymgr_ecc_key_t;
+
+/**
  * Generate a key manager key and sideload to the requested block.
  *
  * Calls the key manager to sideload a key into the requested hardware block and

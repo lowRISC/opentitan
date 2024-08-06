@@ -28,40 +28,14 @@ enum {
 };
 
 /**
- * DICE keyladder key descriptor.
+ * DICE ECC key descriptors.
  */
-typedef struct dice_key {
-  /**
-   * Keymgr key type, either: attestation or sealing.
-   *
-   * Attestation keys are derived from keymgr state that changes when ROM_EXT or
-   * Owner firmware is updated, while Sealing keys remain stable as long as a
-   * device remains under the same ownership and hardware lifecycle state.
-   */
-  sc_keymgr_key_type_t type;
-  /**
-   * Index into the kFlashCtrlInfoPageAttestationKeySeeds flash info page that
-   * holds a seed for generating the ECC key pair.
-   */
-  uint32_t keygen_seed_idx;
-  /**
-   * Pointer to the keymgr diversifier that is used when actuating the keymgr's
-   * "output-generate" function to generate another ECC keygen seed that will be
-   * sideloaded to OTBN.
-   */
-  const sc_keymgr_diversification_t *keymgr_diversifier;
-  /**
-   * Pointer to the keymgr diversifier that is used when actuating the keymgr's
-   */
-  sc_keymgr_state_t required_keymgr_state;
-} dice_key_t;
-
-extern const dice_key_t kDiceKeyUds;
-extern const dice_key_t kDiceKeyCdi0;
-extern const dice_key_t kDiceKeyCdi1;
-extern const dice_key_t kDiceKeyTpmEk;
-extern const dice_key_t kDiceKeyTpmCek;
-extern const dice_key_t kDiceKeyTpmCik;
+extern const sc_keymgr_ecc_key_t kDiceKeyUds;
+extern const sc_keymgr_ecc_key_t kDiceKeyCdi0;
+extern const sc_keymgr_ecc_key_t kDiceKeyCdi1;
+extern const sc_keymgr_ecc_key_t kDiceKeyTpmEk;
+extern const sc_keymgr_ecc_key_t kDiceKeyTpmCek;
+extern const sc_keymgr_ecc_key_t kDiceKeyTpmCik;
 
 /**
  * A set of public key IDs required to generate an X.509 certificate.
@@ -89,7 +63,8 @@ typedef struct dice_cert_key_id_pair {
  * @param[out] pubkey The public key.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_attestation_keygen(dice_key_t key, hmac_digest_t *pubkey_id,
+rom_error_t dice_attestation_keygen(sc_keymgr_ecc_key_t key,
+                                    hmac_digest_t *pubkey_id,
                                     ecdsa_p256_public_key_t *pubkey);
 
 /**
