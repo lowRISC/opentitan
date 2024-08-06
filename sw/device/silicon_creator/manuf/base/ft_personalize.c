@@ -25,8 +25,8 @@
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
-#include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -350,7 +350,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // We copy over the TPM/UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
-         kDiceCertKeyIdSizeInBytes);
+         kCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.
   TRY(entropy_complex_init());

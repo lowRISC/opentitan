@@ -24,8 +24,8 @@
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -98,11 +98,11 @@ static size_t dice_certs_page_offset = 0;
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
 static hmac_digest_t cdi_1_pubkey_id;
-static dice_cert_key_id_pair_t cdi_0_key_ids = {
+static cert_key_id_pair_t cdi_0_key_ids = {
     .endorsement = &uds_pubkey_id,
     .cert = &cdi_0_pubkey_id,
 };
-static dice_cert_key_id_pair_t cdi_1_key_ids = {
+static cert_key_id_pair_t cdi_1_key_ids = {
     .endorsement = &cdi_0_pubkey_id,
     .cert = &cdi_1_pubkey_id,
 };
