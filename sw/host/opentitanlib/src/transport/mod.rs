@@ -156,6 +156,14 @@ pub trait Transport {
         Err(TransportError::UnsupportedOperation.into())
     }
 
+    /// As long as the returned `MaintainConnection` object is kept by the caller, this driver may
+    /// assume that no other `opentitantool` processes attempt to access the same debugger device.
+    /// This allows for optimzations such as keeping USB handles open across function invocations.
+    fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
+        // For implementations that have not implemented any optimizations, return a no-op object.
+        Ok(Rc::new(()))
+    }
+
     /// Before nonblocking operations can be used on `Uart` or other traits, this
     /// `NonblockingHelp` object must be invoked, in order to get the `Transport` implementation a
     /// chance to register its internal event sources with the main event loop.
@@ -163,6 +171,15 @@ pub trait Transport {
         Ok(Rc::new(NoNonblockingHelp))
     }
 }
+
+/// As long as this object is kept alive, the `Transport` driver may assume that no other
+/// `opentitantool` processes attempt to access the same debugger device.  This allows for
+/// optimzations such as keeping USB handles open across function invocations.
+pub trait MaintainConnection {}
+
+/// No-op implmentation of the trait, for use by `Transport` implementations that do not do
+/// any optimizations to maintain connection between method calls.
+impl MaintainConnection for () {}
 
 /// Methods available only on the Proxy implementation of the Transport trait.
 pub trait ProxyOps {

@@ -146,8 +146,20 @@ fn start_session(run_file_fn: impl FnOnce(u16) -> PathBuf) -> Result<Box<dyn Ser
 // `SessionStartResult` sent through the stdout anonymous pipe, and finally enter an infnite
 // loop, processing connections on that socket
 fn session_child(listen_port: Option<u16>, backend_opts: &backend::BackendOpts) -> Result<()> {
+    // Open connection to transport backend (HyperDebug or other debugger device) based on
+    // command line arguments.
     let transport = backend::create(backend_opts)?;
+
+    // We do not need other invocations of `opentitantool` to directly access the debugger device
+    // while this session process runs (as any such invocations ought to instead establish TCP/IP
+    // connection and go through this session.)  Hence, we can inform the driver that it is free
+    // to e.g. hold on to open USB handles between function calls, or perform other similar
+    // optimizations.
+    let _maintain_connection = transport.maintain_connection()?;
+
+    // Bind to TCP socket, in preparation for servicing requests from network.
     let mut session = SessionHandler::init(&transport, listen_port)?;
+
     // Instantiation of Transport backend, and binding to a socket was successful, now go
     // through the process of making this process a daemon, disconnected from the
     // terminal that was used to start it.
