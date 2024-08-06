@@ -29,6 +29,13 @@ class edn_common_vseq extends edn_base_vseq;
 
   virtual task check_sec_cm_fi_resp(sec_cm_pkg::sec_cm_base_if_proxy if_proxy);
     bit [31:0] backdoor_err_code_val;
+    // The error output of the prim_count primitive is flopped, leading to a total delay of 2 clock
+    // cycles until error become visible via CSRs.
+    if (!uvm_re_match("*.u_prim_count_max_reqs_cntr", if_proxy.path) ||
+        !uvm_re_match("*.u_fifo_cnt.gen_secure_ptrs*", if_proxy.path)) begin
+      cfg.clk_rst_vif.wait_n_clks(2);
+    end
+
     if (!uvm_re_match("*.cnt_q*", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));
       if (cfg.en_cov) begin
