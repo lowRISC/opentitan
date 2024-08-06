@@ -287,16 +287,20 @@ endtask
 
   // Wait for the DUT to enter one of the given link states, with an optional timeout
   //   (the default of -1 disables the timeout).
+  //
   // Link state transitions occur in response to bus activity from the host driving the USB.
+  // The link state is polled via the `usbstat` register every 128 clock ticks unless the requested
+  // timeout is shorter than that.
   virtual task wait_for_link_state(usbdev_link_state_e states[], int timeout_clks = -1,
                                    bit fatal = 1);
     // Wait until the given state is attained or the (optionally
     usbdev_link_state_e rd;
     do begin
+      int delay_clks = (timeout_clks >= 0 && timeout_clks < 128) ? timeout_clks : 128;
       uvm_reg_data_t data;
       // Delay and if timeout was requested, decrease the cycle count.
-      cfg.clk_rst_vif.wait_clks(128);
-      if (timeout_clks >= 0) timeout_clks -= (timeout_clks > 128) ? 128 : timeout_clks;
+      cfg.clk_rst_vif.wait_clks(delay_clks);
+      if (timeout_clks >= 0) timeout_clks -= delay_clks;
       csr_rd(.ptr(ral.usbstat.link_state), .value(data));
       rd = usbdev_link_state_e'(data);
     end while (!(rd inside {states}) && (timeout_clks != 0));
