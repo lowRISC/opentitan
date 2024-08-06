@@ -292,11 +292,13 @@ class usb20_monitor extends dv_base_monitor #(
     int unsigned bit_cnt = 0;
     usb_symbol_e sym;
     bit valid;
-    collect_symbol(sym);
     // Scoreboard must be notified almost immediately that Resume Signaling has been detected but
     // is not yet completed, so that it can update its prediction of the link state. Resume
     // Signaling typically takes at least 20ms.
+    //
+    // Note that we have already collected a 'K' symbol at this point.
     resume_signaling_detected(1, .completed(1'b0));
+    collect_symbol(sym);
     while (sym == USB20Sym_K) begin
       bit_cnt++;
       collect_symbol(sym);
