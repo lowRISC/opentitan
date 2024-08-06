@@ -44,6 +44,11 @@ enum {
   kCertX509Asn1FirstBytesWithSerialNumber =
       kCertX509Asn1SerialNumberFieldByteOffset +
       kCertX509Asn1SerialNumberSizeInBytes + 3,
+
+  /**
+   * Cert key ID size (used for the serial number and auth key ID fields).
+   */
+  kCertKeyIdSizeInBytes = kCertX509Asn1SerialNumberSizeInBytes,
 };
 
 /**

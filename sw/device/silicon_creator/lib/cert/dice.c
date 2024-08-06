@@ -2,23 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/dice.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 
 #include <stdint.h>
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
-#include "sw/device/silicon_creator/lib/cert/tpm_cek.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/tpm_cik.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/tpm_ek.h"   // Generated.
-#include "sw/device/silicon_creator/lib/cert/uds.h"      // Generated.
+#include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -26,6 +21,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -79,38 +75,20 @@ static bool is_debug_exposed(void) {
 
 const sc_keymgr_ecc_key_t kDiceKeyUds = {
     .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = 0,
+    .keygen_seed_idx = kFlashInfoFieldUdsKeySeedIdx,
     .keymgr_diversifier = &kUdsKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateCreatorRootKey,
 };
 const sc_keymgr_ecc_key_t kDiceKeyCdi0 = {
     .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = 1,
+    .keygen_seed_idx = kFlashInfoFieldCdi0KeySeedIdx,
     .keymgr_diversifier = &kCdi0KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
 };
 const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
     .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = 2,
+    .keygen_seed_idx = kFlashInfoFieldCdi1KeySeedIdx,
     .keymgr_diversifier = &kCdi1KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
-};
-const sc_keymgr_ecc_key_t kDiceKeyTpmEk = {
-    .type = kScKeymgrKeyTypeSealing,
-    .keygen_seed_idx = 3,
-    .keymgr_diversifier = &kTpmEkKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
-};
-const sc_keymgr_ecc_key_t kDiceKeyTpmCek = {
-    .type = kScKeymgrKeyTypeSealing,
-    .keygen_seed_idx = 4,
-    .keymgr_diversifier = &kTpmCekKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
-};
-const sc_keymgr_ecc_key_t kDiceKeyTpmCik = {
-    .type = kScKeymgrKeyTypeSealing,
-    .keygen_seed_idx = 5,
-    .keymgr_diversifier = &kTpmCikKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
 
@@ -184,9 +162,9 @@ rom_error_t dice_uds_tbs_cert_build(cert_key_id_pair_t *key_ids,
       .otp_rot_creator_auth_state_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)key_ids->cert->digest,
-      .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
       .auth_key_key_id = (unsigned char *)key_ids->endorsement->digest,
-      .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .auth_key_key_id_size = kCertKeyIdSizeInBytes,
       .creator_pub_key_ec_x = (unsigned char *)uds_pubkey->x,
       .creator_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .creator_pub_key_ec_y = (unsigned char *)uds_pubkey->y,
@@ -209,9 +187,9 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
       .rom_ext_hash_size = kDiceMeasurementSizeInBytes,
       .rom_ext_security_version = rom_ext_security_version,
       .owner_intermediate_pub_key_id = (unsigned char *)key_ids->cert->digest,
-      .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
       .creator_pub_key_id = (unsigned char *)key_ids->endorsement->digest,
-      .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_ec_x = (unsigned char *)cdi_0_pubkey->x,
       .owner_intermediate_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .owner_intermediate_pub_key_ec_y = (unsigned char *)cdi_0_pubkey->y,
@@ -257,10 +235,10 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
       .owner_manifest_hash_size = kDiceMeasurementSizeInBytes,
       .owner_security_version = owner_security_version,
       .owner_pub_key_id = (unsigned char *)key_ids->cert->digest,
-      .owner_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .owner_pub_key_id_size = kCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_id =
           (unsigned char *)key_ids->endorsement->digest,
-      .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
       .owner_pub_key_ec_x = (unsigned char *)cdi_1_pubkey->x,
       .owner_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .owner_pub_key_ec_y = (unsigned char *)cdi_1_pubkey->y,
@@ -287,75 +265,6 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
       kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
       *kDiceKeyCdi1.keymgr_diversifier));
-
-  return kErrorOk;
-}
-
-rom_error_t dice_tpm_ek_tbs_cert_build(cert_key_id_pair_t *key_ids,
-                                       ecdsa_p256_public_key_t *tpm_ek_pubkey,
-                                       uint8_t *tpm_ek_tbs,
-                                       size_t *tpm_ek_tbs_size) {
-  tpm_ek_tbs_values_t tpm_ek_tbs_params = {
-      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
-      .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .tpm_ek_pub_key_ec_x = (unsigned char *)tpm_ek_pubkey->x,
-      .tpm_ek_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
-      .tpm_ek_pub_key_ec_y = (unsigned char *)tpm_ek_pubkey->y,
-      .tpm_ek_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
-      .tpm_ek_pub_key_id = (unsigned char *)key_ids->cert,
-      .tpm_ek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .tpm_version = "0.0.1",
-      .tpm_version_len = 5,
-      .tpm_vendor = "Nuvoton",
-      .tpm_vendor_len = 7,
-      .tpm_model = "Ti50",
-      .tpm_model_len = 4,
-  };
-
-  HARDENED_RETURN_IF_ERROR(
-      tpm_ek_build_tbs(&tpm_ek_tbs_params, tpm_ek_tbs, tpm_ek_tbs_size));
-
-  return kErrorOk;
-}
-
-rom_error_t dice_tpm_cek_tbs_cert_build(cert_key_id_pair_t *key_ids,
-                                        ecdsa_p256_public_key_t *tpm_cek_pubkey,
-                                        uint8_t *tpm_cek_tbs,
-                                        size_t *tpm_cek_tbs_size) {
-  tpm_cek_tbs_values_t tpm_cek_tbs_params = {
-      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
-      .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .tpm_cek_pub_key_ec_x = (unsigned char *)tpm_cek_pubkey->x,
-      .tpm_cek_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
-      .tpm_cek_pub_key_ec_y = (unsigned char *)tpm_cek_pubkey->y,
-      .tpm_cek_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
-      .tpm_cek_pub_key_id = (unsigned char *)key_ids->cert,
-      .tpm_cek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
-  };
-
-  HARDENED_RETURN_IF_ERROR(
-      tpm_cek_build_tbs(&tpm_cek_tbs_params, tpm_cek_tbs, tpm_cek_tbs_size));
-
-  return kErrorOk;
-}
-
-rom_error_t dice_tpm_cik_tbs_cert_build(cert_key_id_pair_t *key_ids,
-                                        ecdsa_p256_public_key_t *tpm_cik_pubkey,
-                                        uint8_t *tpm_cik_tbs,
-                                        size_t *tpm_cik_tbs_size) {
-  tpm_cik_tbs_values_t tpm_cik_tbs_params = {
-      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
-      .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .tpm_cik_pub_key_ec_x = (unsigned char *)tpm_cik_pubkey->x,
-      .tpm_cik_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
-      .tpm_cik_pub_key_ec_y = (unsigned char *)tpm_cik_pubkey->y,
-      .tpm_cik_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
-      .tpm_cik_pub_key_id = (unsigned char *)key_ids->cert,
-      .tpm_cik_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
-  };
-
-  HARDENED_RETURN_IF_ERROR(
-      tpm_cik_build_tbs(&tpm_cik_tbs_params, tpm_cik_tbs, tpm_cik_tbs_size));
 
   return kErrorOk;
 }
