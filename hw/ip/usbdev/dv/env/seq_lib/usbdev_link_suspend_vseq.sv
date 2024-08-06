@@ -14,10 +14,13 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
   // Generate traffic at the start of the test?
   rand bit gen_traffic;
 
+  // Generate a VBUS Disconnection when not (yet) Suspended?
+  rand bit gen_disconnect_not_suspended;
+
   // Generate a Bus Reset when not (yet) Suspended?
   rand bit gen_reset_not_suspended;
 
-  // Generate a Bus Reset when ..Suspended?
+  // Generate a Bus Reset when (Powered)Suspended?
   rand bit gen_reset_suspended;
 
   // Duration of Bus Reset Signaling in microseconds.
@@ -44,11 +47,28 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
   //  (Start Of Frame packets are 1ms apart, and 32 bits in duration like other token packets.)
   uint inter_sof_delay_clks = 1_000 * 48 - (32 * 4);  // 4 times oversampling per bit.
 
+  // Disconnect and reconnect the VBUS/SENSE signal.
+  task disconnect_and_reconnect();
+    set_vbus_state(0);
+
+    // VBUS/SENSE signal is filtered, so this link state change takes slightly longer than some
+    // other state changes.
+    wait_for_link_state({LinkDisconnected}, .timeout_clks(12), .fatal(1));
+
+    set_vbus_state(1);
+
+    // Wait a couple of microseconds with the USB in Idle because the next thing we must do is
+    // perform a Bus Reset.
+    cfg.clk_rst_vif.wait_clks(2 * 48);
+  endtask
+
   // Configure, run and suspend the DUT; this task is called by derived sequences.
   task run_and_suspend();
     // Declare our choices.
     `uvm_info(`gfn, $sformatf("Traffic %0d reset_not_suspended %0d reset_suspended %0d",
                               gen_traffic, gen_reset_not_suspended, gen_reset_suspended), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(" disconnect_not_suspended %0d", gen_disconnect_not_suspended),
+              UVM_LOW)
 
     if (gen_traffic) begin
       // Send transaction to make link active
@@ -83,8 +103,10 @@ class usbdev_link_suspend_vseq extends usbdev_pkt_sent_vseq;
     // Ensure the interrupt is not presently asserted.
     csr_wr(.ptr(ral.intr_state), .value(1 << IntrLinkSuspend));
 
-    // Shall we try generating a Bus Reset from the `Powered`/`Active` state?
-    if (gen_reset_not_suspended) begin
+    // Shall we try generating a VBUS Disconnect/Bus Reset from the `Powered`/`Active` state?
+    if (gen_disconnect_not_suspended) disconnect_and_reconnect();
+    // ... if we've just disconnected and reconnected we must perform a Bus Reset now anyway.
+    if (gen_disconnect_not_suspended | gen_reset_not_suspended) begin
       send_bus_reset(link_bus_reset_usecs);
 
       // Either should transition us to `ActiveNoSOF` because the USB link is now up but we have not
