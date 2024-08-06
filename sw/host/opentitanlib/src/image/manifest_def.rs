@@ -122,6 +122,10 @@ impl ManifestSpec {
     pub fn has_length(&self) -> bool {
         self.length.0.is_some()
     }
+
+    pub fn has_timestamp(&self) -> bool {
+        self.timestamp[0].0.is_some() || self.timestamp[1].0.is_some()
+    }
 }
 
 trait ManifestPacked<T> {
