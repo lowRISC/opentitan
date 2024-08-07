@@ -129,7 +129,27 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   virtual task process_usb20_req();
     usb20_item item;
     forever begin
-      req_usb20_fifo.get(item);
+      // Does the model presently have any timed activity pending?
+      if (bfm.timing()) begin
+        if (!req_usb20_fifo.try_get(item)) begin
+          // Delayed response to received packet, if any.
+          usb20_item rsp;
+          cfg.clk_rst_vif.wait_clks(1);
+          // Inform the model of the passage of time (in terms of DUT clock ticks) and post an
+          // expectation of a delayed response, if appropriate.
+          if (bfm.send_delayed_response(rsp)) begin
+            expected_rsp_q.push_back(rsp);
+            update_timed_regs();
+          end
+          continue;
+        end
+      end else begin
+        // Since we presently do not ever transition from '!timing -> timing' in response to CSR
+        // activity, we can safely block until the monitor informs us that something else has
+        // happened on the USB; with a more sophisticated model of Idle bus time this may not be
+        // possible.
+        req_usb20_fifo.get(item);
+      end
       if (item.m_ev_type == EvPacket) begin
         // Ignore all USB packets if the DUT is under reset.
         if (cfg.under_reset) begin
