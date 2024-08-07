@@ -4,15 +4,22 @@
 
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 
-void boot_svc_empty_init(boot_svc_empty_t *msg) {
-  size_t i = 0, j = kBootSvcEmptyPayloadWordCount - 1;
+void boot_svc_empty_req_init(boot_svc_empty_t *msg) {
+  // We use `uint32_t` instead of `size_t` so that end-of-loop check passes both
+  // on- and off-target tests.
+  uint32_t i = 0, j = kBootSvcEmptyPayloadWordCount - 1;
   for (; launder32(i) < kBootSvcEmptyPayloadWordCount &&
          launder32(j) < kBootSvcEmptyPayloadWordCount;
        ++i, --j) {
     msg->payload[i] = 0;
   }
   HARDENED_CHECK_EQ(i, kBootSvcEmptyPayloadWordCount);
-  HARDENED_CHECK_EQ(j, SIZE_MAX);
-  boot_svc_header_finalize(kBootSvcEmptyType, sizeof(boot_svc_empty_t),
+  HARDENED_CHECK_EQ(j, UINT32_MAX);
+  boot_svc_header_finalize(kBootSvcEmptyReqType, sizeof(boot_svc_empty_t),
+                           &msg->header);
+}
+
+void boot_svc_empty_res_init(boot_svc_empty_t *msg) {
+  boot_svc_header_finalize(kBootSvcEmptyResType, sizeof(boot_svc_empty_t),
                            &msg->header);
 }

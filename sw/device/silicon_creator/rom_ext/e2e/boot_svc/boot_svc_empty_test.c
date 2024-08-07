@@ -16,7 +16,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
-  boot_svc_empty_init(&msg.empty);
+  boot_svc_empty_req_init(&msg.empty);
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateCheckEmpty;
   rstmgr_reset();
@@ -27,7 +27,7 @@ static status_t check_empty(retention_sram_t *retram,
                             boot_svc_retram_t *state) {
   boot_svc_msg_t msg = retram->creator.boot_svc_msg;
   TRY(boot_svc_header_check(&msg.header));
-  TRY_CHECK(msg.header.type == kBootSvcEmptyType);
+  TRY_CHECK(msg.header.type == kBootSvcEmptyResType);
   state->state = kBootSvcTestStateFinal;
   return OK_STATUS();
 }

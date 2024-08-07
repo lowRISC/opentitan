@@ -152,12 +152,12 @@ opentitan_test(
             --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='ownership_state = LockedNone\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='ownership_state = .x00.x00.x00.x00\r\n' --exit-failure='{exit_failure}'"
             --exec="rescue boot-svc ownership-unlock \
                     --mode Any \
                     --nonce 0 \
                     --sign $(location //sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key)"
-            --exec="console --non-interactive --exit-success='ownership_state = UnlockedAny\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='ownership_state = UANY\r\n' --exit-failure='{exit_failure}'"
             no-op
         """,
     ),
@@ -221,7 +221,7 @@ opentitan_test(
         """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest_virtual",
+    manifest = "//sw/device/silicon_owner:manifest",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
