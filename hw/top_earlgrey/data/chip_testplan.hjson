@@ -121,6 +121,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
       name: chip_padctrl_attributes
@@ -140,6 +141,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
