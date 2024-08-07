@@ -71,8 +71,7 @@ rom_error_t boot_log_check(const boot_log_t *boot_log) {
   return kErrorBootLogInvalid;
 }
 
-void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
-                            const chip_info_t *info) {
+void boot_log_check_or_init(boot_log_t *boot_log, const chip_info_t *info) {
   rom_error_t error = boot_log_check(boot_log);
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
@@ -82,8 +81,8 @@ void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
   boot_log->chip_version.scm_revision_low = info->scm_revision.scm_revision_low;
   boot_log->chip_version.scm_revision_high =
       info->scm_revision.scm_revision_high;
-  boot_log->rom_ext_slot = rom_ext_slot;
-  boot_log->bl0_slot = 0;  // Unknown: no BL0 slot selected yet.
+  boot_log->rom_ext_slot = 0;  // To be filled in by the ROM_EXT.
+  boot_log->bl0_slot = 0;      // Unknown: no BL0 slot selected yet.
   for (size_t i = 0; i < ARRAYSIZE(boot_log->reserved); ++i) {
     boot_log->reserved[i] = 0;
   }

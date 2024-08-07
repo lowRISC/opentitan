@@ -108,11 +108,9 @@ rom_error_t boot_log_check(const boot_log_t *boot_log);
  * Check the boot_log and initialize it if not yet initialized.
  *
  * @param boot_log A buffer that holds the boot_log.
- * @param rom_ext_slot The current ROM_EXT slot.
  * @param info A pointer to the chip_info_t structure in ROM.
  */
-void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
-                            const chip_info_t *info);
+void boot_log_check_or_init(boot_log_t *boot_log, const chip_info_t *info);
 
 #ifdef __cplusplus
 }

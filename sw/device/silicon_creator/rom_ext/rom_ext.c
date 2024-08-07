@@ -788,7 +788,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
-  boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
+  boot_log_check_or_init(boot_log, rom_chip_info);
+  boot_log->rom_ext_slot = rom_ext_current_slot();
   boot_log->rom_ext_major = self->version_major;
   boot_log->rom_ext_minor = self->version_minor;
   boot_log->rom_ext_size = CHIP_ROM_EXT_SIZE_MAX;
