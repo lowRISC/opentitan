@@ -18,8 +18,8 @@
  * as an argument.  This check is used in multiple places so use a helper
  * function.
  */
-static inline bool is_ast_event_invalid(dif_sensor_ctrl_event_idx_t event_idx) {
-  return event_idx > SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS;
+static inline bool is_ast_event_valid(dif_sensor_ctrl_event_idx_t event_idx) {
+  return event_idx < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS;
 }
 
 /**
@@ -46,8 +46,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_get_ast_event_trigger(
     const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
     dif_toggle_t *enable) {
-  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx) ||
-      enable == NULL) {
+  if (sensor_ctrl == NULL || !is_ast_event_valid(event_idx) || enable == NULL) {
     return kDifBadArg;
   };
 
@@ -62,7 +61,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_set_ast_event_trigger(
     const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
     dif_toggle_t enable) {
-  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx)) {
+  if (sensor_ctrl == NULL || !is_ast_event_valid(event_idx)) {
     return kDifBadArg;
   };
 
@@ -79,7 +78,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_set_alert_en(const dif_sensor_ctrl_t *sensor_ctrl,
                                           dif_sensor_ctrl_event_idx_t event_idx,
                                           dif_toggle_t en) {
-  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx)) {
+  if (sensor_ctrl == NULL || !is_ast_event_valid(event_idx)) {
     return kDifBadArg;
   };
 
@@ -99,7 +98,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_set_alert_fatal(
     const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
     dif_toggle_t en_fatal) {
-  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx)) {
+  if (sensor_ctrl == NULL || !is_ast_event_valid(event_idx)) {
     return kDifBadArg;
   };
 
@@ -133,7 +132,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_clear_recov_event(
     const dif_sensor_ctrl_t *sensor_ctrl,
     dif_sensor_ctrl_event_idx_t event_idx) {
-  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx)) {
+  if (sensor_ctrl == NULL || !is_ast_event_valid(event_idx)) {
     return kDifBadArg;
   };
 
