@@ -818,13 +818,16 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(ownership_init());
 
   // Handle any pending boot_svc commands.
-  error = handle_boot_svc(boot_data);
-  if (error == kErrorWriteBootdataThenReboot) {
-    // Boot services reports errors by writing a status code into the reply
-    // messages.  Regardless of whether a boot service request produced an
-    // error, we want to continue booting unless the error specifically asks
-    // for a reboot.
-    return error;
+  uint32_t skip_boot_svc = reset_reasons & (1 << kRstmgrReasonLowPowerExit);
+  if (skip_boot_svc == 0) {
+    error = handle_boot_svc(boot_data);
+    if (error == kErrorWriteBootdataThenReboot) {
+      // Boot services reports errors by writing a status code into the reply
+      // messages.  Regardless of whether a boot service request produced an
+      // error, we want to continue booting unless the error specifically asks
+      // for a reboot.
+      return error;
+    }
   }
 
   // Re-sync the boot_log entries that could be changed by boot services.
