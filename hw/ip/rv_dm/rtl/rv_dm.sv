@@ -160,8 +160,8 @@ module rv_dm
   // Debug enable gating.
   localparam int LcEnDebugReqVal = 4 - 1;
   localparam int LcEnResetReqVal = LcEnDebugReqVal + NrHarts;
-  // +1 to get number of bits and another +1 because LcEnLastPos is one more than LcEnResetReq.
-  localparam int RvDmLcEnSize    = $clog2(LcEnResetReqVal + 2);
+  // +1 to get number of bits
+  localparam int RvDmLcEnSize    = $clog2(LcEnResetReqVal + 1);
   typedef enum logic [RvDmLcEnSize-1:0] {
     LcEnFetch,
     LcEnRom,
@@ -171,9 +171,7 @@ module rv_dm
     LcEnDebugReq,
     // The above literal accommodates NrHarts number of debug requests - so we number the next
     // literal accordingly.
-    LcEnResetReq = RvDmLcEnSize'(LcEnResetReqVal),
-    // LcEnLastPos must immediately follow LcEnResetReq to calculate RvDmLcEnSize.
-    LcEnLastPos
+    LcEnResetReq = RvDmLcEnSize'(LcEnResetReqVal)
   } rv_dm_lc_en_e;
   // These must be equal so that the difference between LcEnResetReq and LcEnDebugReq is NrHarts.
   `ASSERT(RvDmLcEnDebugVal_A, int'(LcEnDebugReq) == LcEnDebugReqVal)
@@ -246,9 +244,9 @@ module rv_dm
   // The pinmux_hw_debug_en signal on the other hand modulates the TAP side of the RV_DM.
   // In order for the RV_DM to remain response during a NDM reset request, the TAP side
   // is not further modulated with the LATE_DEBUG_ENABLE CSR.
-  lc_ctrl_pkg::lc_tx_t [LcEnLastPos-1:0] lc_hw_debug_en_gated;
+  lc_ctrl_pkg::lc_tx_t [rv_dm_pkg::NumDebugEnCopies-1:0] lc_hw_debug_en_gated;
   prim_lc_sync #(
-    .NumCopies(int'(LcEnLastPos)),
+    .NumCopies(int'(rv_dm_pkg::NumDebugEnCopies)),
     .AsyncOn(0) // No synchronization required since the input signal is already synchronous.
   ) u_lc_en_sync_copies (
     .clk_i,

@@ -9,4 +9,6 @@ package rv_dm_pkg;
 
   parameter next_dm_addr_t NEXT_DM_ADDR_DEFAULT = '0;
 
+  localparam int unsigned NumDebugEnCopies = 5;
+
 endpackage : rv_dm_pkg
