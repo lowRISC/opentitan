@@ -12,6 +12,7 @@ typedef enum boot_svc_test {
   kBootSvcTestNextBl0 = 2,
   kBootSvcTestBadNextBl0 = 3,
   kBootSvcTestBl0MinSecVer = 4,
+  kBootSvcTestWakeup = 5,
 } boot_svc_test_t;
 
 typedef enum boot_svc_test_state {
