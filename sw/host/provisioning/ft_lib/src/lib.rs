@@ -16,6 +16,7 @@ use zerocopy::AsBytes;
 use cert_lib::{
     get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
 };
+use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
@@ -254,6 +255,12 @@ fn provision_certificates(
         // info pages match those verified on the host.
         cert_hasher.update(cert_bytes);
     }
+
+    // Execute extension hook.
+    endorsed_cert_concat = ft_ext(endorsed_cert_concat)?;
+
+    // Complete hash of all certs that will be sent back to the device and written to flash. This
+    // is used as integrity check on what will be written to flash.
     let host_computed_certs_hash = cert_hasher.finalize();
 
     // Send endorsed certificates back to the device.
