@@ -17,7 +17,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
-  boot_svc_empty_init(&msg.empty);
   boot_svc_min_bl0_sec_ver_req_init(2, &msg.min_bl0_sec_ver_req);
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateMinSecAdvance;
