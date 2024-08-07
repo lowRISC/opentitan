@@ -36,6 +36,7 @@
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -861,13 +862,17 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Handle any pending boot_svc commands.
   rom_error_t error;
-  error = handle_boot_svc(boot_data);
-  if (error == kErrorWriteBootdataThenReboot) {
-    // Boot services reports errors by writing a status code into the reply
-    // messages.  Regardless of whether a boot service request produced an
-    // error, we want to continue booting unless the error specifically asks
-    // for a reboot.
-    return error;
+  uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;
+  uint32_t skip_boot_svc = reset_reasons & (1 << kRstmgrReasonLowPowerExit);
+  if (skip_boot_svc == 0) {
+    error = handle_boot_svc(boot_data);
+    if (error == kErrorWriteBootdataThenReboot) {
+      // Boot services reports errors by writing a status code into the reply
+      // messages.  Regardless of whether a boot service request produced an
+      // error, we want to continue booting unless the error specifically asks
+      // for a reboot.
+      return error;
+    }
   }
 
   // Re-sync the boot_log entries that could be changed by boot services.
