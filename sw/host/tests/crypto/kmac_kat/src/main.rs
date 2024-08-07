@@ -18,6 +18,7 @@ use cryptotest_commands::kmac_commands::{
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
@@ -57,7 +58,7 @@ const KMAC_CMD_MAX_KEY_BYTES: usize = 64;
 fn run_kmac_testcase(
     test_case: &KmacTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    uart: &dyn Uart,
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
@@ -65,10 +66,9 @@ fn run_kmac_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
 
     assert_eq!(test_case.algorithm.as_str(), "kmac");
-    CryptotestCommand::Kmac.send(&*uart)?;
+    CryptotestCommand::Kmac.send(uart)?;
 
     assert!(
         test_case.key.len() <= KMAC_CMD_MAX_KEY_BYTES,
@@ -94,35 +94,35 @@ fn run_kmac_testcase(
         256 => CryptotestKmacMode::Kmac256,
         _ => panic!("Unsupported KMAC mode"),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestKmacRequiredTagLength {
         // Set this to the expected tag length, so we guarantee we perform a fair comparison with
         // the expected value.
         required_tag_length: test_case.tag.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestKmacKey {
         key: ArrayVec::try_from(test_case.key.as_slice()).unwrap(),
         key_len: test_case.key.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestKmacMessage {
         message: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
         message_len: test_case.message.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestKmacCustomizationString {
         customization_string: ArrayVec::try_from(test_case.customization_string.as_slice())
             .unwrap(),
         customization_string_len: test_case.customization_string.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
-    let kmac_tag = CryptotestKmacTag::recv(&*uart, opts.timeout, false)?;
+    let kmac_tag = CryptotestKmacTag::recv(uart, opts.timeout, false)?;
     // Cryptolib could have chosen to return more tag bytes than we asked for. If it did, we can
     // ignore the extra ones.
     let success = test_case.tag[..] == kmac_tag.tag[..test_case.tag.len()];
@@ -155,7 +155,7 @@ fn test_kmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for kmac_test in &kmac_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_kmac_testcase(kmac_test, opts, transport, &mut fail_counter)?;
+            run_kmac_testcase(kmac_test, opts, &*uart, &mut fail_counter)?;
         }
     }
     assert_eq!(
