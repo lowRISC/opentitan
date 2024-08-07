@@ -180,5 +180,10 @@ class usbdev_iso_retraction_vseq extends usbdev_base_vseq;
       end
     end
     if (pkts_rcvd != pkts_sent) `uvm_fatal(`gfn, "Device- and host-side do not agree")
+
+    // Deactivate the DUT.
+    usbdev_disconnect();
+    csr_wr(.ptr(ral.in_iso[0].iso[ep_default]), .value(1'b0));
+    csr_wr(.ptr(ral.ep_in_enable[0].enable[ep_default]), .value(1'b0));
   endtask
 endclass : usbdev_iso_retraction_vseq
