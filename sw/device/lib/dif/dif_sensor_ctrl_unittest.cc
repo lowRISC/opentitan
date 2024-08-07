@@ -30,7 +30,7 @@ class SensorCtrlTest : public Test, public MmioTest {
 
 TEST_F(SensorCtrlTest, BadArgs) {
   uint32_t good_idx = 0;
-  uint32_t bad_idx = SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS + 1;
+  uint32_t bad_idx = SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS;
   dif_toggle_t toggle_arg{};
   dif_sensor_ctrl_events_t events_arg{};
   dif_sensor_ctrl_io_power_status_t power_arg{};
