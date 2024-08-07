@@ -31,9 +31,9 @@ TEST_F(BootSvcEmptyTest, Init) {
 
   boot_svc_empty_t msg{};
   EXPECT_CALL(boot_svc_header_,
-              Finalize(kBootSvcEmptyType, sizeof(msg), &msg.header));
+              Finalize(kBootSvcEmptyReqType, sizeof(msg), &msg.header));
 
-  boot_svc_empty_init(&msg);
+  boot_svc_empty_req_init(&msg);
 
   EXPECT_THAT(msg.payload, ElementsAreArray(payload));
 }
