@@ -84,9 +84,6 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
         "idcode": begin
-          // TODO: The upper bits of an IDCODE read should really all be zero, but the current value
-          //       depends on the td_i that we passed(!). See:
-          //       https://github.com/pulp-platform/riscv-dbg/issues/170
           `DV_CHECK_EQ(item.dout[31:0], selected_dtm_csr.get_mirrored_value())
           void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
