@@ -16,7 +16,9 @@ extern "C" {
 
 enum {
   /** Empty boot services request: `EMPT`. */
-  kBootSvcEmptyType = 0x54504d45,
+  kBootSvcEmptyReqType = 0x54504d45,
+  /** Empty boot services response: `TPME`. */
+  kBootSvcEmptyResType = 0x454d5054,
   kBootSvcEmptyPayloadWordCount =
       CHIP_BOOT_SVC_MSG_PAYLOAD_SIZE_MAX / sizeof(uint32_t),
 };
@@ -48,11 +50,18 @@ OT_ASSERT_MEMBER_OFFSET(boot_svc_empty_t, payload,
 OT_ASSERT_SIZE(boot_svc_empty_t, CHIP_BOOT_SVC_MSG_SIZE_MAX);
 
 /**
- * Initialize an empty boot services message.
+ * Initialize an empty boot services request.
  *
  * @param[out] msg Output buffer for the message.
  */
-void boot_svc_empty_init(boot_svc_empty_t *msg);
+void boot_svc_empty_req_init(boot_svc_empty_t *msg);
+
+/**
+ * Initialize an empty boot services response.
+ *
+ * @param[inout] msg Buffer for the message.
+ */
+void boot_svc_empty_res_init(boot_svc_empty_t *msg);
 
 #ifdef __cplusplus
 }  // extern "C"
