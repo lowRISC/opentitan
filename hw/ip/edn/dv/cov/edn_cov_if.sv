@@ -231,7 +231,9 @@ interface edn_cov_if (
     option.name         = "edn_cs_cmd_response_cg";
     option.per_instance = 1;
 
-    cp_csrng_rsp_sts_cg: coverpoint csrng_rsp_sts;
+    cp_csrng_rsp_sts_cg: coverpoint csrng_rsp_sts {
+      ignore_bins undriven = {csrng_pkg::CMD_STS_UNDRIVEN};
+    }
   endgroup : edn_cs_cmd_response_cg
 
   covergroup edn_sw_cmd_sts_cg with function sample(bit cmd_rdy, bit cmd_reg_rdy,
