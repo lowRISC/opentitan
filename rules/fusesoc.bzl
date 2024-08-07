@@ -31,7 +31,15 @@ def _fusesoc_build_impl(ctx):
     flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
     outputs = [out_dir]
     groups = {}
+
+    cache_dir = "{}/fusesoc-cache".format(out_dir.path)
+    cfg_file_path = "build.{}.fusesoc_config.toml".format(ctx.label.name)
+    cfg_file = ctx.actions.declare_file(cfg_file_path)
+    cfg_str = "[main]\n  cache_root = {}".format(cache_dir)
+    ctx.actions.write(cfg_file, cfg_str)
+
     args = ctx.actions.args()
+    args.add(cfg_file.path, format = "--config=%s")
 
     for group, files in ctx.attr.output_groups.items():
         deps = [ctx.actions.declare_file("{}/{}".format(dirname, f)) for f in files]
@@ -72,7 +80,9 @@ def _fusesoc_build_impl(ctx):
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
-        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc,
+        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + [
+            cfg_file,
+        ],
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
