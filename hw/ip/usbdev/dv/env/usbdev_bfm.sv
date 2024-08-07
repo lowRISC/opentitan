@@ -116,6 +116,14 @@ class usbdev_bfm extends uvm_component;
   // within this bank are replaced when actual bytes are received from the USB. (usbdev_usbif.sv)
   bit [31:0] wdata_q;
 
+  // The decision on whether and how to respond to an IN request cannot be actioned imediately
+  // because the CSR state may change in the interim; we introduce a short delay before deciding
+  // how to respond to an IN request.
+  token_pkt in_token;
+
+  // Count of elapsed DUT clock ticks whilst timing (currently just for servicing IN requests).
+  int unsigned tick_cnt = 0;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -171,6 +179,32 @@ class usbdev_bfm extends uvm_component;
     tx_ep = InvalidEP;
     // Nor any in-progress reception.
     rx_token = null;
+  endfunction
+
+  //------------------------------------------------------------------------------------------------
+  // Timing model.
+  //------------------------------------------------------------------------------------------------
+
+  // Returns 1 iff there is a need to track the passage of time in clock ticks; caller shall invoke
+  // `send_delayed_response()` once per clock cycle of the DUT whilst this is the case.
+  function bit timing();
+    return (in_token != null);
+  endfunction
+
+  // Advance by one clock tick and action any timed response that is now due; returns an indication
+  // of whether a response is expected from the DUT, and the response itself via 'rsp'.
+  function bit send_delayed_response(output usb20_item rsp);
+    bit send_rsp = 1'b0;
+    tick_cnt++;
+    `uvm_info(`gfn, $sformatf("BFM advanced tick count to 0x%0x", tick_cnt), UVM_MEDIUM)
+    if (tick_cnt >= 2 && in_token != null) begin
+      // Decide how to respond to the IN token packet.
+      rsp = in_packet(in_token);
+      send_rsp = 1'b1;
+      // Forget the IN request.
+      in_token = null;
+    end
+    return send_rsp;
   endfunction
 
   //------------------------------------------------------------------------------------------------
@@ -404,6 +438,8 @@ class usbdev_bfm extends uvm_component;
 
   // Cancel any in-progress IN transaction and update state.
   function void cancel_in();
+    // Forget any IN request about which we have not made a decision.
+    in_token = null;
     // Was there an IN transmission in progress?
     if (tx_ep != InvalidEP) begin
       configin[tx_ep].sending = 1'b0;
@@ -516,7 +552,14 @@ class usbdev_bfm extends uvm_component;
           // state.
         end
         PidTypeInToken: begin
-          return in_packet(token, rsp);
+          // Basic check of whether we should do anything at all for this transaction.
+          bit [3:0] ep = token.endpoint;
+          if (token.address != dev_address || ep >= NEndpoints || !ep_in_enable[ep]) return 0;
+
+          // Remember the IN token packet and, after a short delay, decide whether and how to
+          // respond.
+          `downcast(in_token, token.clone());
+          tick_cnt = 0;
         end
         default: begin
           // DUT shall ignore all other token packets; not relevant to Full Speed devices.
@@ -551,19 +594,16 @@ class usbdev_bfm extends uvm_component;
     return 0;
   endfunction
 
-  // Process an IN transaction from the USB host controller; returns an indication of whether
-  // a response packet is expected from the DUT, and the response itself via `rsp`.
-  // The response may be 'stall', 'data' or 'nak.'
-  function bit in_packet(ref token_pkt token, output usb20_item rsp);
+  // Process an IN transaction from the USB host controller; returns an expectation of the DUT
+  // response packet. The response may be 'stall', 'data' or 'nak.'
+  function usb20_item in_packet(ref token_pkt token);
+    usb20_item rsp;
     bit [3:0] ep;
 
     // Validate inputs.
     assert(token.m_ev_type  == EvPacket);
     assert(token.m_pkt_type == PktTypeToken);
-
-    // Basic check of whether we should do anything at all for this transaction.
     ep = token.endpoint;
-    if (token.address != dev_address || ep >= NEndpoints || !ep_in_enable[ep]) return 0;
 
     if (in_stall[ep] & (!in_iso[ep] | rxenable_setup[ep])) begin
       usb20_item stall = handshake_pkt::type_id::create("stall");
@@ -586,6 +626,8 @@ class usbdev_bfm extends uvm_component;
           in_iso_completed(ep);
           // Always use DATA0 for Full Speed Isochronous transactions.
           data.m_pid_type = PidTypeData0;
+          // Forget any IN request about which we have not made a decision.
+          in_token = null;
           tx_ep = InvalidEP;
         end else begin
           // Remember the endpoint involved in the IN transmission so that the handshake response
@@ -604,7 +646,7 @@ class usbdev_bfm extends uvm_component;
         rsp = nak;
       end
     end
-    return 1;
+    return rsp;
   endfunction
 
   // Process a handshake packet, in response to an attempted transaction to the given endpoint.
