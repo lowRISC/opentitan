@@ -16,8 +16,9 @@ OTTF_DEFINE_TEST_CONFIG();
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
   boot_svc_next_boot_bl0_slot_req_init(
-      /*primary_slot=*/kBootSlotUnspecified,
-      /*next_slot=*/kBootSlotB, &msg.next_boot_bl0_slot_req);
+      /*primary_slot=*/kBootSlotB,
+      /*next_slot=*/kBootSlotUnspecified, &msg.next_boot_bl0_slot_req);
+
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateNextSideB;
   rstmgr_reset();
@@ -31,7 +32,14 @@ static status_t check_side_b(retention_sram_t *retram,
   TRY_CHECK(msg.header.type == kBootSvcNextBl0SlotResType);
   TRY_CHECK(msg.next_boot_bl0_slot_res.status == kErrorOk);
   TRY_CHECK(state->current_side == 'B');
-  state->state = kBootSvcTestStateReturnSideA;
+  if (state->boots == 4) {
+    // When we reach 4 boots, transition back to SlotA.
+    boot_svc_next_boot_bl0_slot_req_init(
+        /*primary_slot=*/kBootSlotA,
+        /*next_slot=*/kBootSlotUnspecified, &msg.next_boot_bl0_slot_req);
+    retram->creator.boot_svc_msg = msg;
+    state->state = kBootSvcTestStateReturnSideA;
+  }
   rstmgr_reset();
   return INTERNAL();
 }
@@ -43,9 +51,9 @@ static status_t check_return_side_a(retention_sram_t *retram,
   return OK_STATUS();
 }
 
-static status_t next_bl0_slot_test(void) {
+static status_t next_boot_bl0_slot_test(void) {
   retention_sram_t *retram = retention_sram_get();
-  TRY(boot_svc_test_init(retram, kBootSvcTestNextBl0));
+  TRY(boot_svc_test_init(retram, kBootSvcTestPrimaryBl0));
   boot_svc_retram_t *state = (boot_svc_retram_t *)&retram->owner;
 
   for (;;) {
@@ -72,9 +80,9 @@ static status_t next_bl0_slot_test(void) {
 }
 
 bool test_main(void) {
-  status_t sts = next_bl0_slot_test();
+  status_t sts = next_boot_bl0_slot_test();
   if (status_err(sts)) {
-    LOG_ERROR("next_bl0_slot_test: %r", sts);
+    LOG_ERROR("next_boot_bl0_slot_test: %r", sts);
   }
   return status_ok(sts);
 }
