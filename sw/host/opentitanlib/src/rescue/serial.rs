@@ -151,14 +151,8 @@ impl RescueSerial {
         Ok(())
     }
 
-    pub fn set_next_bl0_slot(&self, slot: BootSlot) -> Result<()> {
-        let message = BootSvc::next_boot_bl0_slot(slot);
-        let data = message.to_bytes()?;
-        self.set_boot_svc_raw(&data)
-    }
-
-    pub fn set_primary_bl0_slot(&self, slot: BootSlot) -> Result<()> {
-        let message = BootSvc::primary_bl0_slot(slot);
+    pub fn set_next_bl0_slot(&self, primary: BootSlot, next: BootSlot) -> Result<()> {
+        let message = BootSvc::next_boot_bl0_slot(primary, next);
         let data = message.to_bytes()?;
         self.set_boot_svc_raw(&data)
     }

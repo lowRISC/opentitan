@@ -35,12 +35,18 @@ typedef struct boot_svc_next_boot_bl0_slot_req {
    * BL0 slot to boot on next reboot.
    */
   uint32_t next_bl0_slot;
+  /**
+   * BL0 slot to set as the primary boot slot.
+   */
+  uint32_t primary_bl0_slot;
 } boot_svc_next_boot_bl0_slot_req_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_next_boot_bl0_slot_req_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_next_boot_bl0_slot_req_t, next_bl0_slot,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-OT_ASSERT_SIZE(boot_svc_next_boot_bl0_slot_req_t, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_next_boot_bl0_slot_req_t, primary_bl0_slot,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
+OT_ASSERT_SIZE(boot_svc_next_boot_bl0_slot_req_t, 52);
 
 /**
  * A Next Boot BL0 Slot response message.
@@ -54,30 +60,40 @@ typedef struct boot_svc_next_boot_bl0_slot_res {
    * Response status from the ROM_EXT.
    */
   rom_error_t status;
+  /**
+   * Which slot is primary.
+   */
+  uint32_t primary_bl0_slot;
 } boot_svc_next_boot_bl0_slot_res_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_next_boot_bl0_slot_res_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_next_boot_bl0_slot_res_t, status,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-OT_ASSERT_SIZE(boot_svc_next_boot_bl0_slot_res_t, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_next_boot_bl0_slot_res_t, primary_bl0_slot,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
+OT_ASSERT_SIZE(boot_svc_next_boot_bl0_slot_res_t, 52);
 
 /**
  * Initialize a Next Boot BL0 Slot Request message.
  *
+ * @param primary_slot Slot to set as primary.
  * @param next_slot Slot to boot into on reboot.
  * @param[out] msg Output buffer for the message.
  */
 void boot_svc_next_boot_bl0_slot_req_init(
-    uint32_t next_slot, boot_svc_next_boot_bl0_slot_req_t *msg);
+    uint32_t primary_slot, uint32_t next_slot,
+    boot_svc_next_boot_bl0_slot_req_t *msg);
 
 /**
  * Initialize a Next Boot BL0 Slot Response message.
  *
+ * @param primary_slot Slot that is primary.
  * @param status Reponse from the ROM_EXT after receiving the request.
  * @param[out] msg Output buffer for the message.
  */
 void boot_svc_next_boot_bl0_slot_res_init(
-    rom_error_t status, boot_svc_next_boot_bl0_slot_res_t *msg);
+    rom_error_t status, uint32_t primary_slot,
+    boot_svc_next_boot_bl0_slot_res_t *msg);
 
 #ifdef __cplusplus
 }  // extern "C"
