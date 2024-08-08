@@ -142,8 +142,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         release_tck();
 
         `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
+        enable_tck();
         `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
                           wait (!cfg.vif.trst_n);)
+        release_tck();
 
         // Mark the item as having been handled. This passes the response (rsp) back to the
         // sequencer, and also pops the request that we have been handling.
@@ -197,7 +199,9 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // drive jtag req and retrieve rsp
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
-    enable_tck();
+    // This task should only be called in situations where tck is already enabled.
+    `DV_CHECK_FATAL(tck_in_use)
+
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
@@ -230,7 +234,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                     req.dr_pause_cycle,
                     req.exit_to_rti_dr);
     end
-    release_tck();
   endtask
 
   task drive_jtag_ir(int len,
