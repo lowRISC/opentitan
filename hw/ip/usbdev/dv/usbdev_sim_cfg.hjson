@@ -41,8 +41,9 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  // Add usbdev specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/usbdev/dv/cov/usbdev_unr_excl.el"]
+  // USBDEV coverage exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/usbdev/dv/cov/usbdev_manual_excl.el",
+                       "{proj_root}/hw/ip/usbdev/dv/cov/usbdev_unr_excl.el"]
 
   // Default UVM test and seq class name.
   uvm_test: usbdev_base_test
