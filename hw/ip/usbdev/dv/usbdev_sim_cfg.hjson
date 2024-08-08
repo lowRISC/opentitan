@@ -294,6 +294,9 @@
     {
       name: usbdev_low_speed_traffic
       uvm_test_seq: usbdev_low_speed_traffic_vseq
+      // Model has no concept of elapsed time, and cannot change state in the
+      // absence of a missing USB host controller handshake (Isochronous IN traffic).
+      run_opts: ["+en_scb_rdchk_configin=0"]
     }
     {
       name: usbdev_max_inter_pkt_delay

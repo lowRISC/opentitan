@@ -140,7 +140,13 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
   task transaction_pre(bit acceptable, bit stall_expected, ref byte unsigned data[$],
                       output bit rx_expected);
     low_speed_traffic = 1'b1;
-    send_setup_packet(target_ep, data, target_addr);
+    // Send all three transaction types as if to a Low Speed device; downstream traffic to actual
+    // Low Speed device is propagated by hubs, but must be ignored by the DUT.
+    randcase
+      1: send_setup_packet(target_ep, data, target_addr);
+      1: send_token_packet(target_ep, PidTypeInToken, target_addr);
+      1: send_out_packet(target_ep, ($urandom & 1) ? PidTypeData1 : PidTypeData0, data);
+    endcase
     low_speed_traffic = 1'b0;
     // Low Speed traffic prefixed with a PRE token shall never be received!
     rx_expected = 0;
