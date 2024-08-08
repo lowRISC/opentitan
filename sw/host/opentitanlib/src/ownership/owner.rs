@@ -251,10 +251,10 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000160: 66 06 00 00 00 01 00 02 77 17 11 88 77 17 11 11  f.......w...w...
 00000170: 49 4e 46 4f 20 00 00 00 00 01 00 00 66 06 00 99  INFO .......f...
 00000180: 66 06 00 00 01 05 00 00 77 17 11 88 77 17 11 11  f.......w...w...
-00000190: 52 45 53 51 3c 00 00 00 58 4d 44 4d 20 00 e0 00  RESQ<...XMDM ...
-000001a0: 46 45 59 b4 6e 9e c5 da 46 f5 ed e1 b8 47 6c 3d  FEY.n...F....Gl=
-000001b0: 55 4e 52 51 41 4f 52 51 52 45 53 51 42 4c 4f 47  UNRQAORQRESQBLOG
-000001c0: 42 52 45 51 42 52 53 50 4f 57 4e 52 5a 5a 5a 5a  BREQBRSPOWNRZZZZ
+00000190: 52 45 53 51 38 00 00 00 58 4d 44 4d 20 00 e0 00  RESQ8...XMDM ...
+000001a0: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK
+000001b0: 41 43 54 56 52 45 53 51 42 4c 4f 47 42 52 45 51  ACTVRESQBLOGBREQ
+000001c0: 42 52 53 50 4f 57 4e 52 5a 5a 5a 5a 5a 5a 5a 5a  BRSPOWNRZZZZZZZZ
 000001d0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000001e0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000001f0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
@@ -488,7 +488,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
       RescueConfig: {
         header: {
           identifier: "Rescue",
-          length: 60
+          length: 56
         },
         rescue_type: "Xmodem",
         start: 32,
@@ -497,7 +497,6 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
           "Empty",
           "MinBl0SecVerRequest",
           "NextBl0SlotRequest",
-          "PrimaryBl0SlotRequest",
           "UnlockOwnershipRequest",
           "ActivateOwnerRequest",
           "Rescue",

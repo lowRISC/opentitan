@@ -96,7 +96,7 @@ opentitan_test(
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             # Set next slot via the rescue protocol
-            --exec="rescue boot-svc set-next-bl0-slot SlotB"
+            --exec="rescue boot-svc set-next-bl0-slot --next=SlotB"
             # Check for firmware execution in slot B
             --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Reset and observe return to slot A.
@@ -126,7 +126,7 @@ opentitan_test(
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             # Set primary slot via the rescue protocol
-            --exec="rescue boot-svc set-primary-bl0-slot SlotB"
+            --exec="rescue boot-svc set-next-bl0-slot --primary=SlotB"
             # Check for firmware execution in slot B
             --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Reset and observe continued execution in slot B
@@ -134,7 +134,7 @@ opentitan_test(
             --exec="gpio remove RESET"
             --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Set primary slot via the rescue protocol
-            --exec="rescue boot-svc set-primary-bl0-slot SlotA"
+            --exec="rescue boot-svc set-next-bl0-slot --primary=SlotA"
             # Check for firmware execution in slot A
             --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
             no-op

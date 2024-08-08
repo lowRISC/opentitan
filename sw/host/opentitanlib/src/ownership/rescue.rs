@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::misc::{TlvHeader, TlvTag};
+use crate::chip::boot_svc::BootSvcKind;
 use crate::with_unknown;
 
 with_unknown! {
@@ -20,12 +21,11 @@ with_unknown! {
 
     pub enum CommandTag: u32 [default = Self::Unknown] {
         Unknown = 0,
-        Empty = 0xb4594546,
-        MinBl0SecVerRequest = 0xdac59e6e,
-        NextBl0SlotRequest = 0xe1edf546,
-        PrimaryBl0SlotRequest = 0x3d6c47b8,
-        UnlockOwnershipRequest = 0x51524e55,
-        ActivateOwnerRequest = 0x51524f41,
+        Empty = BootSvcKind::EmptyRequest.0,
+        MinBl0SecVerRequest = BootSvcKind::MinBl0SecVerRequest.0,
+        NextBl0SlotRequest = BootSvcKind::NextBl0SlotRequest.0,
+        UnlockOwnershipRequest = BootSvcKind::OwnershipUnlockRequest.0,
+        ActivateOwnerRequest = BootSvcKind::OwnershipActivateRequest.0,
         Rescue = u32::from_le_bytes(*b"RESQ"),
         GetBootLog = u32::from_le_bytes(*b"BLOG"),
         BootSvcReq = u32::from_le_bytes(*b"BREQ"),
@@ -107,7 +107,6 @@ impl OwnerRescueConfig {
                 CommandTag::Empty,
                 CommandTag::MinBl0SecVerRequest,
                 CommandTag::NextBl0SlotRequest,
-                CommandTag::PrimaryBl0SlotRequest,
                 CommandTag::UnlockOwnershipRequest,
                 CommandTag::ActivateOwnerRequest,
                 CommandTag::Rescue,
@@ -127,15 +126,15 @@ mod test {
     use crate::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_RESCUE_CONFIG_BIN: &str = "\
-00000000: 52 45 53 51 3c 00 00 00 58 4d 44 4d 20 00 64 00  RESQ<...XMDM .d.\n\
-00000010: 46 45 59 b4 6e 9e c5 da 46 f5 ed e1 b8 47 6c 3d  FEY.n...F....Gl=\n\
-00000020: 55 4e 52 51 41 4f 52 51 52 45 53 51 42 4c 4f 47  UNRQAORQRESQBLOG\n\
-00000030: 42 52 45 51 42 52 53 50 4f 57 4e 52              BREQBRSPOWNR\n\
+00000000: 52 45 53 51 38 00 00 00 58 4d 44 4d 20 00 64 00  RESQ8...XMDM .d.\n\
+00000010: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK\n\
+00000020: 41 43 54 56 52 45 53 51 42 4c 4f 47 42 52 45 51  ACTVRESQBLOGBREQ\n\
+00000030: 42 52 53 50 4f 57 4e 52                          BRSPOWNR\n\
 ";
     const OWNER_RESCUE_CONFIG_JSON: &str = r#"{
   header: {
     identifier: "Rescue",
-    length: 60
+    length: 56
   },
   rescue_type: "Xmodem",
   start: 32,
@@ -144,7 +143,6 @@ mod test {
     "Empty",
     "MinBl0SecVerRequest",
     "NextBl0SlotRequest",
-    "PrimaryBl0SlotRequest",
     "UnlockOwnershipRequest",
     "ActivateOwnerRequest",
     "Rescue",
@@ -166,7 +164,6 @@ mod test {
                 CommandTag::Empty,
                 CommandTag::MinBl0SecVerRequest,
                 CommandTag::NextBl0SlotRequest,
-                CommandTag::PrimaryBl0SlotRequest,
                 CommandTag::UnlockOwnershipRequest,
                 CommandTag::ActivateOwnerRequest,
                 CommandTag::Rescue,
