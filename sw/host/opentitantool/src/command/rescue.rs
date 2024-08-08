@@ -155,8 +155,20 @@ impl CommandDispatch for GetBootSvc {
 pub struct SetNextBl0Slot {
     #[command(flatten)]
     params: UartParams,
-    #[arg(default_value = "SlotA")]
-    slot: BootSlot,
+    #[arg(
+        long,
+        short,
+        default_value = "Unspecified",
+        help = "Set the primary boot slot"
+    )]
+    primary: BootSlot,
+    #[arg(
+        long,
+        short,
+        default_value = "Unspecified",
+        help = "Set the one-time next boot slot"
+    )]
+    next: BootSlot,
 }
 
 impl CommandDispatch for SetNextBl0Slot {
@@ -168,29 +180,7 @@ impl CommandDispatch for SetNextBl0Slot {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport)?;
-        rescue.set_next_bl0_slot(self.slot)?;
-        Ok(None)
-    }
-}
-
-#[derive(Debug, Args)]
-pub struct SetPrimaryBl0Slot {
-    #[command(flatten)]
-    params: UartParams,
-    #[arg(default_value = "SlotA")]
-    slot: BootSlot,
-}
-
-impl CommandDispatch for SetPrimaryBl0Slot {
-    fn run(
-        &self,
-        _context: &dyn Any,
-        transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
-        rescue.enter(transport)?;
-        rescue.set_primary_bl0_slot(self.slot)?;
+        rescue.set_next_bl0_slot(self.primary, self.next)?;
         Ok(None)
     }
 }
@@ -278,7 +268,6 @@ impl CommandDispatch for SetOwnerConfig {
 pub enum BootSvc {
     Get(GetBootSvc),
     SetNextBl0Slot(SetNextBl0Slot),
-    SetPrimaryBl0Slot(SetPrimaryBl0Slot),
     OwnershipUnlock(OwnershipUnlock),
     OwnershipActivate(OwnershipActivate),
 }
