@@ -264,6 +264,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, addr) == 1);
+
+            // At this point, we've forced the signal, which should cause the design to detect and
+            // error and lock up. For this signal, the detected error goes through a register stage,
+            // so we need to wait an extra cycle before telling the model to lock (and clear its
+            // insn_cnt register)
+            cfg.clk_rst_vif.wait_clks(1);
           end
           1: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_a_i";
