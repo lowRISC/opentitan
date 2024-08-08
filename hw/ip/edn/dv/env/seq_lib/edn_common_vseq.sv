@@ -29,12 +29,18 @@ class edn_common_vseq extends edn_base_vseq;
 
   virtual task check_sec_cm_fi_resp(sec_cm_pkg::sec_cm_base_if_proxy if_proxy);
     bit [31:0] backdoor_err_code_val;
+    bit [3:0] edn_enable;
+    bit exp_fifo_err;
     // The error output of the prim_count primitive is flopped, leading to a total delay of 2 clock
     // cycles until error become visible via CSRs.
     if (!uvm_re_match("*.u_prim_count_max_reqs_cntr", if_proxy.path) ||
         !uvm_re_match("*.u_fifo_cnt.gen_secure_ptrs*", if_proxy.path)) begin
       cfg.clk_rst_vif.wait_n_clks(2);
     end
+
+    // FIFO errors are only signaled via the ERR_CODE CSR while EDN is enabled.
+    csr_rd(.ptr(ral.ctrl.edn_enable), .value(edn_enable), .backdoor(1'b1));
+    exp_fifo_err = edn_enable == prim_mubi_pkg::MuBi4True;
 
     if (!uvm_re_match("*.u_prim_count_max_reqs_cntr", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));
@@ -50,6 +56,26 @@ class edn_common_vseq extends edn_base_vseq;
       end
     end else if (!uvm_re_match("*.u_edn_main_sm*", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_main_sm_err), .compare_value(1'b1));
+      if (cfg.en_cov) begin
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+      end
+    end else if (!uvm_re_match("*.u_prim_fifo_sync_gencmd*", if_proxy.path)) begin
+      `uvm_info(`gfn,
+          $sformatf("Expecting FIFO errors to be signaled via ERR_CODE CSR: %0d", exp_fifo_err),
+          UVM_MEDIUM)
+      csr_rd_check(.ptr(ral.err_code.sfifo_gencmd_err), .compare_value(exp_fifo_err));
+      csr_rd_check(.ptr(ral.err_code.fifo_state_err), .compare_value(exp_fifo_err));
+      if (cfg.en_cov) begin
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+      end
+    end else if (!uvm_re_match("*.u_prim_fifo_sync_rescmd*", if_proxy.path)) begin
+      `uvm_info(`gfn,
+          $sformatf("Expecting FIFO errors to be signaled via ERR_CODE CSR: %0d", exp_fifo_err),
+          UVM_MEDIUM)
+      csr_rd_check(.ptr(ral.err_code.sfifo_rescmd_err), .compare_value(exp_fifo_err));
+      csr_rd_check(.ptr(ral.err_code.fifo_state_err), .compare_value(exp_fifo_err));
       if (cfg.en_cov) begin
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
