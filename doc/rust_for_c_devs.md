@@ -169,8 +169,8 @@ struct MyCStruct {
 ```
 This is guaranteed to lay out fields in declaration order, adding padding for alignment.
 `#[repr(Rust)]` is the implicit default.
-`#[repr(packed)]` is analogous to `__attribute__((packed))`, and will not produce any padding[^21].
-The alignment of the whole struct can be forced to a larger value using `#[repr(align(N))]`, similar to `_Alignas`.
+`#[repr(C, packed)]` is analogous to `__attribute__((packed))`, and will not produce any padding[^21].
+The alignment of the whole struct can be forced to a larger value using `#[repr(C, align(N))]`, similar to `_Alignas`.
 
 Fields can be accessed using the same dot syntax as C: `my_struct.foo`, `my_struct.bar = 5;`.
 
