@@ -177,9 +177,18 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       // takes effect. Fortunately, we can see that this has happened by looking at the trst_n
       // signal: it will go high once everything has been connected. *That* signal is exposed
       // through jtag_mon_if in the tb, which is visible through the jtag agent's mon_vif interface.
-      wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
+      // Exit early if a system reset appears in the meantime.
+      fork begin : isolation_fork
+        fork
+          wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
+          wait(!cfg.clk_rst_vif.rst_n);
+        join_any
+        disable fork;
+      end join
+      if (!cfg.clk_rst_vif.rst_n) return;
 
-      // "Activate" the DM to facilitate ease of testing.
+      // "Activate" the DM to facilitate ease of testing. This will exit early if there is a JTAG
+      // reset.
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
     end
 
