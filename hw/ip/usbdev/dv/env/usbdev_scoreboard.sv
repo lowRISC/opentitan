@@ -330,6 +330,10 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     // PRE token used on the USB.
     if (handshake.low_speed) pid = PidTypePre;  // Coverage should show that PRE has been received.
     cov.pids_to_dut_cg.sample(pid);
+    // The endpoint to which the handshake is sent has been retained from the IN token packet.
+    if (bfm.tx_ep != usbdev_bfm::InvalidEP) begin
+      cov.data_tog_endp_cg.sample(handshake.m_pid_type, .dir_in(1'b1), .endp(bfm.tx_ep));
+    end
   endfunction
 
   // Collection of functional coverage for DUT responses.
