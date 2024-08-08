@@ -114,10 +114,17 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // Update the RAL model with expected values for the digest registers
+  //
+  // This works by using the predict function with UVM_PREDICT_READ. This tells the register model
+  // that we've just read the given value from the registers. We do this rather than using
+  // UVM_PREDICT_DIRECT (the default) because it avoids UVM thinking that there might be a race
+  // against CSR operations that are already in flight.
   virtual function void update_ral_digests();
     for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-      `DV_CHECK(ral.digest[i].predict(kmac_digest[i*TL_DW+:TL_DW]))
-      `DV_CHECK(ral.exp_digest[i].predict(expected_digest[i*TL_DW+:TL_DW]))
+      `DV_CHECK(ral.digest[i].predict(.value(kmac_digest[i*TL_DW+:TL_DW]),
+                                      .kind(UVM_PREDICT_READ)))
+      `DV_CHECK(ral.exp_digest[i].predict(.value(expected_digest[i*TL_DW+:TL_DW]),
+                                          .kind(UVM_PREDICT_READ)))
     end
   endfunction
 
