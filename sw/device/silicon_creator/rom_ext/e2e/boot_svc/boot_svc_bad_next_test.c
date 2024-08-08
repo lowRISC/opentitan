@@ -16,7 +16,9 @@ OTTF_DEFINE_TEST_CONFIG();
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
   // Intentionally request a bad boot slot of 'ZZZZ'.
-  boot_svc_next_boot_bl0_slot_req_init(0x5a5a5a5a, &msg.next_boot_bl0_slot_req);
+  boot_svc_next_boot_bl0_slot_req_init(
+      /*primary_slot=*/kBootSlotUnspecified,
+      /*next_slot=*/0x5a5a5a5a, &msg.next_boot_bl0_slot_req);
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateNextSideB;
   rstmgr_reset();

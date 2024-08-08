@@ -107,6 +107,40 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "boot_svc_primary_test",
+    srcs = ["boot_svc_primary_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
+        exit_failure = "BFV:.*|PASS|FAIL",
+        exit_success = "FinalBootLog: 5:ABBBA\r\n",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    deps = [
+        ":boot_svc_test_lib",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_test(
     name = "boot_svc_bad_next_test",
     srcs = ["boot_svc_bad_next_test.c"],
     exec_env = {
