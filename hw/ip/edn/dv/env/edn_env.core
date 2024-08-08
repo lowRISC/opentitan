@@ -23,7 +23,6 @@ filesets:
       - seq_lib/edn_base_vseq.sv: {is_include_file: true}
       - seq_lib/edn_common_vseq.sv: {is_include_file: true}
       - seq_lib/edn_smoke_vseq.sv: {is_include_file: true}
-      - seq_lib/edn_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/edn_genbits_vseq.sv: {is_include_file: true}
       - seq_lib/edn_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/edn_intr_vseq.sv: {is_include_file: true}

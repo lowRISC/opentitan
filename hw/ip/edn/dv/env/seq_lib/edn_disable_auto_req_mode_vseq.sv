@@ -54,8 +54,8 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
 
     csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(backdoor), .predict(backdoor));
 
-    // Let CSRNG agent know that EDN is disabled.
-    cfg.edn_vif.drive_edn_disable(1);
+    // Let CSRNG agent know that EDN is disabled, but only if REGWEN is enabled.
+    cfg.edn_vif.drive_edn_disable(!cfg.disable_regwen);
 
     // Clear the interrupt status register in case the SW command was aborted
     // right before checking the cmd req done interrupt.
@@ -63,7 +63,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
   endtask
 
   task randomly_disable_edn();
-    if ($urandom_range(1, 10) > 8) begin
+    if ($urandom_range(1, 10) > 8 || cfg.disable_regwen) begin
       uint wait_disable;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_disable, wait_disable inside { [1:300] };)
       `uvm_info(`gfn, $sformatf("Waiting %0d clock cycles before disabling EDN.", wait_disable),
@@ -74,7 +74,8 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
     end
 
     `uvm_info(`gfn, $sformatf("Wait complete, disabling EDN."), UVM_LOW)
-    disable_edn(.backdoor(1));
+    // Only use the backdoor if REGWEN is enabled.
+    disable_edn(.backdoor(!cfg.disable_regwen));
   endtask
 
   virtual task pre_start();
@@ -83,6 +84,10 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
     mbox_kill_edn_init = new();
     edn_reenable_done = 0;
 
+    // If REGWEN is disabled we want to initialize EDN first and then run the rest of the sequence.
+    if (cfg.disable_regwen) begin
+      super.pre_start();
+    end
     // Create background thread that randomly disables EDN and later re-enables it.
     fork
       begin
@@ -95,32 +100,38 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         randomly_disable_edn();
         // Abort any open SW commands and wait for CSR accesses to complete, as simply killing their
         // thread would create problems later due to unterminated accesses.
-        reset_asserted();
-        cfg.abort_sw_cmd = 1;
-        wait_no_outstanding_access();
-        // Kill EDN initialization and endpoint requests if necessary.
-        mbox_kill_edn_init.put(1'b1);
-        mbox_kill_endpoint_reqs.put(1'b1);
+        if (!cfg.disable_regwen) begin
+          reset_asserted();
+          cfg.abort_sw_cmd = 1;
+          wait_no_outstanding_access();
+          // Kill EDN initialization and endpoint requests if necessary.
+          mbox_kill_edn_init.put(1'b1);
+          mbox_kill_endpoint_reqs.put(1'b1);
+        end
         // Wait before re-enabling EDN.
         `uvm_info(`gfn, $sformatf("Waiting before re-enabling EDN"), UVM_LOW)
         cfg.clk_rst_vif.wait_n_clks($urandom_range(1, 1000));
         `uvm_info(`gfn, $sformatf("Wait complete"), UVM_LOW)
         // Empty mailbox (necessary in case the previous EDN initialization completed before we
         // killed it).
-        void'(mbox_kill_edn_init.try_get(unused));
-        cfg.abort_sw_cmd = 0;
-        reset_deasserted();
-        // Let CSRNG know that we're re-enabling EDN.
-        device_init();
-        // Initialize EDN again -- this time without randomly disabling EDN.
-        `uvm_info(`gfn, $sformatf("Re-enabling EDN"), UVM_LOW)
-        edn_init();
+        if (!cfg.disable_regwen) begin
+          void'(mbox_kill_edn_init.try_get(unused));
+          cfg.abort_sw_cmd = 0;
+          reset_deasserted();
+          // Let CSRNG know that we're re-enabling EDN.
+          device_init();
+          // Initialize EDN again -- this time without randomly disabling EDN.
+          `uvm_info(`gfn, $sformatf("Re-enabling EDN"), UVM_LOW)
+          edn_init();
+        end
         endpoint_reqs();
         edn_reenable_done = 1;
       end
     join_none
-
-    super.pre_start();
+    // If REGWEN is not disabled we want run the initialization and the re-enablement in parallel.
+    if (!cfg.disable_regwen) begin
+      super.pre_start();
+    end
   endtask
 
   virtual task edn_init(string reset_kind = "HARD");
@@ -174,18 +185,20 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
 
   task body();
     super.body();
-
-    `DV_SPINWAIT_EXIT(
-        // Thread 1: Start EDN endpoint requests, which is non-blocking, and keep the thread running
-        // until it gets killed.
-        endpoint_reqs();
-        wait(0);
-      ,
-        // Thread 2: Wait for signal to kill the other thread.
-        bit unused;
-        mbox_kill_endpoint_reqs.get(unused);
-      , "Killed endpoint_reqs in body"
-    )
+    // We only need to restart endpoint requests if EDN was disabled and re-enabled.
+    if (!cfg.disable_regwen) begin
+      `DV_SPINWAIT_EXIT(
+          // Thread 1: Start EDN endpoint requests, which is non-blocking, and keep the thread running
+          // until it gets killed.
+          endpoint_reqs();
+          wait(0);
+        ,
+          // Thread 2: Wait for signal to kill the other thread.
+          bit unused;
+          mbox_kill_endpoint_reqs.get(unused);
+        , "Killed endpoint_reqs in body"
+      )
+    end
 
     `DV_WAIT(edn_reenable_done)
     `uvm_info(`gfn, $sformatf("EDN re-enable done"), UVM_LOW)

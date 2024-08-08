@@ -16,6 +16,8 @@ class edn_genbits_test extends edn_base_test;
     cfg.max_num_boot_reqs = 4;
     cfg.min_num_ep_reqs   = 4;
     cfg.max_num_ep_reqs   = 64;
+    // This test needs to modify the CTRL register so we want REGWEN to stay enabled.
+    cfg.disable_regwen_pct = 0;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)

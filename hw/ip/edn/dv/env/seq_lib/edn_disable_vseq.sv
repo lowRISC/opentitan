@@ -22,6 +22,7 @@ class edn_disable_vseq extends edn_base_vseq;
     $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
 
+    super.pre_start();
     fork
       begin
         // Wait until reset and clock are ready.
@@ -55,20 +56,27 @@ class edn_disable_vseq extends edn_base_vseq;
         // If directly writing to ral.ctrl.edn_enable, sometimes it will override the
         // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
         ctrl_val = {MuBi4False, MuBi4False, MuBi4True, MuBi4False};
-        // Generally the register should not be busy but it is possible that the register is accessed
-        // simultaneously by the edn_base_vseq, which could cause the test to fail.
+        // Generally the register should not be busy but it is possible that the register is
+        // accessed simultaneously by the edn_base_vseq, which could cause the test to fail.
         wait(!ral.ctrl.is_busy());
-        csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(1));
-        cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
-        cfg.edn_vif.drive_edn_disable(1);
-        cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
-        // Enable edn
-        wait_no_outstanding_access();
-        cfg.edn_vif.drive_edn_disable(0);
+        if (!cfg.disable_regwen) begin
+          csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(1));
+          // Notify scoreboard of backdoor disable if regwen is enabled.
+          cfg.backdoor_disable = 1;
+          cfg.edn_vif.drive_edn_disable(1);
+          cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
+          // Enable edn
+          wait_no_outstanding_access();
+          cfg.edn_vif.drive_edn_disable(0);
+        end else begin
+          // If REGWEN is disabled EDN will stay enabled so we don't want to stop the interface
+          // sequences.
+          csr_wr(.ptr(ral.ctrl), .value(ctrl_val));
+          cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
+        end
         csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4True));
       end
     join_none
-    super.pre_start();
   endtask
 
   task body();
