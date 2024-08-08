@@ -45,7 +45,7 @@ with_unknown! {
         PrimaryBl0SlotRequest = u32::from_le_bytes(*b"PRIM"),
         PrimaryBl0SlotResponse = u32::from_le_bytes(*b"MIRP"),
         OwnershipUnlockRequest = u32::from_le_bytes(*b"UNLK"),
-        OwnershipUnlockResponse = u32::from_le_bytes(*b"LKNU"),
+        OwnershipUnlockResponse = u32::from_le_bytes(*b"KLNU"),
         OwnershipActivateRequest = u32::from_le_bytes(*b"ACTV"),
         OwnershipActivateResponse = u32::from_le_bytes(*b"VTCA"),
     }
