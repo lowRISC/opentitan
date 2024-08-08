@@ -7,16 +7,20 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 void boot_svc_next_boot_bl0_slot_req_init(
-    uint32_t next_slot, boot_svc_next_boot_bl0_slot_req_t *msg) {
+    uint32_t primary_slot, uint32_t next_slot,
+    boot_svc_next_boot_bl0_slot_req_t *msg) {
   msg->next_bl0_slot = next_slot;
+  msg->primary_bl0_slot = primary_slot;
   boot_svc_header_finalize(kBootSvcNextBl0SlotReqType,
                            sizeof(boot_svc_next_boot_bl0_slot_req_t),
                            &msg->header);
 }
 
 void boot_svc_next_boot_bl0_slot_res_init(
-    rom_error_t status, boot_svc_next_boot_bl0_slot_res_t *msg) {
+    rom_error_t status, uint32_t primary_slot,
+    boot_svc_next_boot_bl0_slot_res_t *msg) {
   msg->status = status;
+  msg->primary_bl0_slot = primary_slot;
   boot_svc_header_finalize(kBootSvcNextBl0SlotResType,
                            sizeof(boot_svc_next_boot_bl0_slot_res_t),
                            &msg->header);

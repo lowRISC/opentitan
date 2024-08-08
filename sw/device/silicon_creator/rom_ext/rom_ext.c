@@ -638,64 +638,53 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_svc_next_boot_bl0_slot_handler(
     boot_svc_msg_t *boot_svc_msg, boot_data_t *boot_data) {
-  uint32_t msg_bl0_slot = boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
-  // We overwrite the RAM copy of the primary slot to the requested  next slot.
-  // This will cause a one-time boot of the requested side.
+  uint32_t active_slot = boot_data->primary_bl0_slot;
+  uint32_t primary_slot = boot_svc_msg->next_boot_bl0_slot_req.primary_bl0_slot;
   rom_error_t error = kErrorOk;
-  switch (launder32(msg_bl0_slot)) {
+
+  // If the requested primary slot is the same as the active slot, this request
+  // is a no-op.
+  if (active_slot != primary_slot) {
+    switch (primary_slot) {
+      case kBootSlotA:
+      case kBootSlotB:
+        boot_data->primary_bl0_slot = primary_slot;
+        // Write boot data, updating relevant fields and recomputing the digest.
+        HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
+        // Read the boot data back to ensure the correct slot is booted this
+        // time.
+        HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
+        break;
+      case kBootSlotUnspecified:
+        // Do nothing.
+        break;
+      default:
+        error = kErrorBootSvcBadSlot;
+    }
+  }
+
+  // Record the new primary slot for use in the response message.
+  active_slot = boot_data->primary_bl0_slot;
+
+  uint32_t next_slot = boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
+  switch (launder32(next_slot)) {
     case kBootSlotA:
-      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSlotA);
-      boot_data->primary_bl0_slot = kBootSlotA;
-      break;
     case kBootSlotB:
-      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSlotB);
-      boot_data->primary_bl0_slot = kBootSlotB;
+      // We overwrite the RAM copy of the primary slot to the requested next
+      // slot. This will cause a one-time boot of the requested side.
+      boot_data->primary_bl0_slot = next_slot;
+      break;
+    case kBootSlotUnspecified:
+      // Do nothing.
       break;
     default:
       error = kErrorBootSvcBadSlot;
   }
 
-  boot_svc_next_boot_bl0_slot_res_init(error,
+  boot_svc_next_boot_bl0_slot_res_init(error, active_slot,
                                        &boot_svc_msg->next_boot_bl0_slot_res);
   // We always return OK here because we've logged any error status in the boot
   // services response message and we want the boot flow to continue.
-  return kErrorOk;
-}
-
-OT_WARN_UNUSED_RESULT
-static rom_error_t boot_svc_primary_boot_bl0_slot_handler(
-    boot_svc_msg_t *boot_svc_msg, boot_data_t *boot_data) {
-  uint32_t active_slot = boot_data->primary_bl0_slot;
-  uint32_t requested_slot = boot_svc_msg->primary_bl0_slot_req.primary_bl0_slot;
-
-  // In cases where the primary is already set to the requested slot, this
-  // function is a no-op.
-  if (launder32(active_slot) != launder32(requested_slot)) {
-    HARDENED_CHECK_NE(active_slot, requested_slot);
-    switch (launder32(requested_slot)) {
-      case kBootSlotA:
-        HARDENED_CHECK_EQ(requested_slot, kBootSlotA);
-        boot_data->primary_bl0_slot = requested_slot;
-        break;
-      case kBootSlotB:
-        HARDENED_CHECK_EQ(requested_slot, kBootSlotB);
-        boot_data->primary_bl0_slot = requested_slot;
-        break;
-      default:
-        HARDENED_TRAP();
-    }
-
-    // Write boot data, updating relevant fields and recomputing the digest.
-    HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
-    // Read the boot data back to ensure the correct slot is booted this time.
-    HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
-  } else {
-    HARDENED_CHECK_EQ(active_slot, requested_slot);
-  }
-
-  boot_svc_primary_bl0_slot_res_init(boot_data->primary_bl0_slot, kErrorOk,
-                                     &boot_svc_msg->primary_bl0_slot_res);
-
   return kErrorOk;
 }
 
@@ -765,9 +754,6 @@ static rom_error_t handle_boot_svc(boot_data_t *boot_data) {
       case kBootSvcNextBl0SlotReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
         return boot_svc_next_boot_bl0_slot_handler(boot_svc_msg, boot_data);
-      case kBootSvcPrimaryBl0SlotReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcPrimaryBl0SlotReqType);
-        return boot_svc_primary_boot_bl0_slot_handler(boot_svc_msg, boot_data);
       case kBootSvcMinBl0SecVerReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcMinBl0SecVerReqType);
         return boot_svc_min_sec_ver_handler(boot_svc_msg, boot_data);
@@ -776,7 +762,6 @@ static rom_error_t handle_boot_svc(boot_data_t *boot_data) {
         return ownership_unlock_handler(boot_svc_msg, boot_data);
       case kBootSvcEmptyResType:
       case kBootSvcNextBl0SlotResType:
-      case kBootSvcPrimaryBl0SlotResType:
       case kBootSvcMinBl0SecVerResType:
       case kBootSvcOwnershipUnlockResType:
         // For response messages left in ret-ram we do nothing.

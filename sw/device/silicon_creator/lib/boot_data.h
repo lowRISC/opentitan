@@ -170,6 +170,8 @@ typedef enum boot_slot {
   kBootSlotA = 0x5f5f4141,
   /** Slot B: `__BB`. */
   kBootSlotB = 0x42425f5f,
+  /** Slot Unspecified: `UUUU`. */
+  kBootSlotUnspecified = 0x55555555,
 } boot_slot_t;
 
 /**
