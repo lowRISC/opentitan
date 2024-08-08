@@ -37,7 +37,7 @@ OBJS := ${C_SRCS:.c=.o} ${ASM_SRCS:.S=.o} ${CRT:.S=.o}
 DEPS = $(OBJS:%.o=%.d)
 
 ifdef PROGRAM
-OUTFILES := $(PROGRAM).elf $(PROGRAM).vmem $(PROGRAM).bin $(PROGRAM).dis
+OUTFILES := $(PROGRAM).elf $(PROGRAM).bin $(PROGRAM).dis
 else
 OUTFILES := $(OBJS)
 endif
