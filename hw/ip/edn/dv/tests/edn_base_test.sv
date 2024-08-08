@@ -25,6 +25,7 @@ class edn_base_test extends cip_base_test #(
 
   virtual function void configure_env();
     cfg.enable_pct = 100;
+    cfg.disable_regwen_pct = 5;
 
     cfg.m_csrng_agent_cfg.cmd_zero_delays = 0; // For cmd_ack and cmd_ready
     cfg.m_csrng_agent_cfg.cmd_force_ack   = 0;
