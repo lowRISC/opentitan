@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::interface::serve_command;
+use clap::{Parser, Subcommand};
 use log::LevelFilter;
 use mio::{Events, Interest, Poll, Token};
 use opentitanlib::backend;
@@ -11,45 +12,44 @@ use opentitanlib::io::spi::SpiParams;
 use opentitanlib::tpm::{Driver, I2cDriver, SpiDriver};
 use opentitanlib::util::parse_int::ParseInt;
 use std::net::{SocketAddr, TcpListener};
-use structopt::StructOpt;
 
 mod interface;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Subcommand)]
 pub enum TpmBus {
     Spi {
-        #[structopt(flatten)]
+        #[command(flatten)]
         params: SpiParams,
     },
     I2C {
-        #[structopt(flatten)]
+        #[command(flatten)]
         params: I2cParams,
-        #[structopt(
+        #[arg(
             short,
             long,
             help = "7 bit I2C device address.",
-            parse(try_from_str = ParseInt::from_str)
+            value_parser = u8::from_str
         )]
         address: u8,
     },
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "tpm2-test-server",
     about = "A tool for processing TPM commands over a TCP port."
 )]
 struct Opts {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     bus: TpmBus,
 
-    #[structopt(long, default_value = "off")]
+    #[arg(long, default_value = "off")]
     logging: LevelFilter,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     backend_opts: backend::BackendOpts,
 
-    #[structopt(
+    #[arg(
         short,
         long,
         default_value = "9883",
@@ -62,7 +62,7 @@ const CMD_TOKEN: Token = Token(0);
 const PLATFORM_TOKEN: Token = Token(1);
 
 pub fn main() -> std::io::Result<()> {
-    let options = Opts::from_args();
+    let options = Opts::parse();
     env_logger::Builder::from_default_env()
         .filter(None, options.logging)
         .init();

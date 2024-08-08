@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -10,7 +11,6 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
@@ -20,7 +20,7 @@ use opentitanlib::transport::UpdateFirmware;
 /// Initialize state of a transport debugger device to fit the device under test.  This
 /// typically involves setting pins as input/output, open drain, etc. according to configuration
 /// files.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct TransportInit {}
 
 impl CommandDispatch for TransportInit {
@@ -40,16 +40,16 @@ impl CommandDispatch for TransportInit {
 /// "official" firmware will be used, if one such was compiled into the OpenTitanTool binary.  For
 /// instructions on how to build HyperDebug firmware locally, see
 /// https://docs.google.com/document/d/1ZEH7L5j9-wMw4tkW28-xt6JU5B6hTX0RdZD4h4OZzDo .
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct TransportUpdateFirmware {
-    #[structopt(
+    #[arg(
         short,
         long,
         help = "Local firmware file to use instead of official release"
     )]
     filename: Option<PathBuf>,
 
-    #[structopt(
+    #[arg(
         long,
         help = "Update even if transport already reports identical version number"
     )]
@@ -77,13 +77,13 @@ impl CommandDispatch for TransportUpdateFirmware {
 }
 
 /// Watch verilator's stdout for a regex or until a timeout is reached.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct VerilatorWatch {
-    #[structopt(help = "Regular expresion to watch for")]
+    #[arg(help = "Regular expresion to watch for")]
     regex: String,
-    #[structopt(
+    #[arg(
         short,
-        long, parse(try_from_str=humantime::parse_duration),
+        long, value_parser=humantime::parse_duration,
         help = "Duration to watch for the expresion",
     )]
     timeout: Option<Duration>,
@@ -103,9 +103,9 @@ impl CommandDispatch for VerilatorWatch {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct TransportQuery {
-    #[structopt(help = "User defined key to look up")]
+    #[arg(help = "User defined key to look up")]
     key: String,
 }
 
@@ -129,7 +129,7 @@ impl CommandDispatch for TransportQuery {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct TransportQueryAll {}
 
 impl CommandDispatch for TransportQueryAll {
@@ -144,7 +144,7 @@ impl CommandDispatch for TransportQueryAll {
 }
 
 /// Commands for interacting with the transport debugger device itself.
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum TransportCommand {
     Init(TransportInit),
     VerilatorWatch(VerilatorWatch),

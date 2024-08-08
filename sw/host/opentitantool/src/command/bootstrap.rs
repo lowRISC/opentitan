@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
+use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
@@ -16,27 +16,28 @@ use opentitanlib::transport;
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Bootstrap the target device.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct BootstrapCommand {
-    #[structopt(flatten)]
+    #[command(flatten)]
     bootstrap_options: BootstrapOptions,
-    #[structopt(
+    #[arg(
         long,
-        parse(try_from_str=usize::from_str),
-        default_value="1048576",
-        help="The size of the image to assemble (only valid with mutliple FILE arguments)"
+        value_parser = usize::from_str,
+        default_value = "1048576",
+        help = "The size of the image to assemble (only valid with mutliple FILE arguments)"
     )]
     size: usize,
-    #[structopt(
+    #[arg(
         long,
-        parse(try_from_str),
+        action = clap::ArgAction::Set,
         default_value = "true",
         help = "Whether or not the assembled image is mirrored (only valid with mutliple FILE arguments)"
     )]
     mirror: bool,
-    #[structopt(
+    #[arg(
         name = "FILE",
-        min_values(1),
+        required = true,
+        num_args = 1..,
         help = "An image to bootstrap or multiple filename@offset specifiers to assemble into a bootstrap image."
     )]
     filename: Vec<String>,
@@ -73,11 +74,6 @@ impl CommandDispatch for BootstrapCommand {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        // The `min_values` structopt attribute should take care of this, but it doesn't.
-        ensure!(
-            !self.filename.is_empty(),
-            "You must supply at least one filename"
-        );
         if self.bootstrap_options.protocol == BootstrapProtocol::Emulator {
             return self.bootstrap_using_direct_emulator_integration(transport);
         }

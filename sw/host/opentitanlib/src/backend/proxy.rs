@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use structopt::StructOpt;
+use clap::Args;
 
 use crate::transport::proxy::Proxy;
 use crate::transport::Transport;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct ProxyOpts {
-    #[structopt(long)]
+    #[arg(long)]
     proxy: Option<String>,
-    #[structopt(long, default_value = "9900")]
+    #[arg(long, default_value = "9900")]
     port: u16,
 }
 

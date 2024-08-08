@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "ecdsa",
+    name = "pkcs1",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -30,23 +30,17 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "arithmetic",
-        "der",
-        "digest",
-        "hazmat",
         "pem",
         "pkcs8",
-        "rfc6979",
-        "signing",
         "std",
-        "verifying",
+        "zeroize",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=ecdsa",
+        "crate-name=pkcs1",
         "manual",
         "noclippy",
         "norustfmt",
@@ -85,12 +79,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.16.6",
+    version = "0.7.5",
     deps = [
         "@crate_index__der-0.7.5//:der",
-        "@crate_index__digest-0.10.6//:digest",
-        "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
-        "@crate_index__rfc6979-0.4.0//:rfc6979",
-        "@crate_index__signature-2.1.0//:signature",
+        "@crate_index__pkcs8-0.10.2//:pkcs8",
+        "@crate_index__spki-0.7.3//:spki",
     ],
 )

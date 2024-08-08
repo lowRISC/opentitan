@@ -1,16 +1,20 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+use anyhow::{anyhow, ensure, Context, Result};
+use serde::{Deserialize, Serialize};
+use serde_annotate::Annotate;
 use std::io::{Read, Write};
 use std::path::Path;
-
-use anyhow::Result;
+use std::str::FromStr;
 
 use pqcrypto_sphincsplus::sphincsshake256128ssimple as spx;
 use pqcrypto_traits::sign::DetachedSignature;
 use pqcrypto_traits::sign::PublicKey;
 use pqcrypto_traits::sign::SecretKey;
 
+use super::Error;
 use crate::util::bigint::fixed_size_bigint;
 use crate::util::file::{FromReader, PemSerilizable, ToWriter};
 
@@ -60,19 +64,16 @@ impl SpxPublicKeyPart for SpxKey {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum SpxError {
-    #[error("SPHINCS+ key load error\nPublic key: {0}\nKey pair: {1}")]
-    LoadError(anyhow::Error, anyhow::Error),
-}
-
 /// Given the path to either a SPHINCS+ public key or full keypair returns the appropriate `SpxKey`.
 pub fn load_spx_key(key_file: &Path) -> Result<SpxKey> {
     Ok(match SpxKeypair::read_pem_file(key_file) {
         Ok(sk) => SpxKey::Private(sk),
-        Err(e1) => match SpxPublicKey::read_pem_file(key_file) {
+        Err(_) => match SpxPublicKey::read_pem_file(key_file) {
             Ok(pk) => SpxKey::Public(pk),
-            Err(e2) => Err(SpxError::LoadError(e1, e2))?,
+            Err(e2) => Err(Error::ReadFailed {
+                file: key_file.to_owned(),
+                source: anyhow!(e2),
+            })?,
         },
     })
 }
@@ -197,6 +198,56 @@ impl FromReader for SpxSignature {
 impl ToString for SpxSignature {
     fn to_string(&self) -> String {
         self.0.to_string()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Annotate)]
+pub struct SpxRawPublicKey {
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub key: Vec<u8>,
+}
+
+impl Default for SpxRawPublicKey {
+    fn default() -> Self {
+        Self { key: vec![0; 32] }
+    }
+}
+
+impl TryFrom<&spx::PublicKey> for SpxRawPublicKey {
+    type Error = Error;
+    fn try_from(v: &spx::PublicKey) -> Result<Self, Self::Error> {
+        Ok(Self {
+            key: v.as_bytes().to_vec(),
+        })
+    }
+}
+
+impl FromStr for SpxRawPublicKey {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let key = load_spx_key(s.as_ref())
+            .with_context(|| format!("Failed to load {s}"))
+            .map_err(Error::Other)?;
+        SpxRawPublicKey::try_from(key.pk())
+    }
+}
+
+impl SpxRawPublicKey {
+    pub const SIZE: usize = 32;
+    pub fn read(src: &mut impl Read) -> Result<Self> {
+        let mut key = Self::default();
+        key.key.resize(32, 0);
+        src.read_exact(&mut key.key)?;
+        Ok(key)
+    }
+    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+        ensure!(
+            self.key.len() == Self::SIZE,
+            Error::InvalidPublicKey(anyhow!("bad key length: {}", self.key.len()))
+        );
+        dest.write_all(&self.key)?;
+        Ok(())
     }
 }
 

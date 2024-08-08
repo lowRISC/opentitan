@@ -4,9 +4,9 @@
 #![allow(clippy::bool_assert_comparison)]
 
 use anyhow::{bail, Result};
+use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -14,13 +14,14 @@ use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "5s",
         help = "Bootstrap detection timeout",
     )]
@@ -86,7 +87,7 @@ fn test_bootstrap_disabled_not_requested(opts: &Opts, transport: &TransportWrapp
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Result};
+use clap::{Args, Subcommand};
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -31,6 +31,10 @@ fn load_pub_or_priv_key(path: &PathBuf) -> Result<RsaPublicKey> {
     ))
 }
 
+fn load_priv_key(path: &str) -> Result<RsaPrivateKey> {
+    RsaPrivateKey::from_pkcs8_der_file(path)
+}
+
 #[derive(serde::Serialize)]
 pub struct RsaKeyInfo {
     pub key_num_bits: usize,
@@ -50,9 +54,9 @@ pub struct RsaKeyInfoInWords {
 }
 
 /// Show public information of a private or public RSA key
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct RsaKeyShowCommand {
-    #[structopt(
+    #[arg(
         name = "DER_FILE",
         help = "RSA public or private key file in DER format"
     )]
@@ -80,11 +84,11 @@ impl CommandDispatch for RsaKeyShowCommand {
 /// Generate a 3072-bit RSA public private key pair with exponent 65537. RSA private key will
 /// be written to <OUTPUT_DIR>/<BASENAME>.der and RSA public key will be written to
 /// <OUTPUT_DIR>/<BASENAME>.pub.der
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct RsaKeyGenerateCommand {
-    #[structopt(name = "OUTPUT_DIR", help = "Output directory")]
+    #[arg(name = "OUTPUT_DIR", help = "Output directory")]
     output_dir: PathBuf,
-    #[structopt(name = "BASENAME", help = "Basename for the generated key pair")]
+    #[arg(name = "BASENAME", help = "Basename for the generated key pair")]
     basename: String,
 }
 
@@ -109,14 +113,14 @@ impl CommandDispatch for RsaKeyGenerateCommand {
 
 /// Export public information of a private or public RSA key
 /// to a C header that can be used in the ROM or ROM_EXT
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct RsaKeyExportCommand {
-    #[structopt(
+    #[arg(
         name = "DER_FILE",
         help = "RSA public or private key file in DER format"
     )]
     der_file: PathBuf,
-    #[structopt(name = "OUTPUT_FILE", help = "output header file to generate")]
+    #[arg(name = "OUTPUT_FILE", help = "output header file to generate")]
     output_file: Option<PathBuf>,
 }
 
@@ -243,7 +247,7 @@ impl CommandDispatch for RsaKeyExportCommand {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum RsaKeySubcommands {
     Show(RsaKeyShowCommand),
     Generate(RsaKeyGenerateCommand),
@@ -256,23 +260,23 @@ pub struct RsaSignResult {
     pub signature: String,
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct RsaSignCommand {
-    #[structopt(short, long, help = "File containing a SHA256 digest")]
+    #[arg(short, long, help = "File containing a SHA256 digest")]
     input: Option<PathBuf>,
-    #[structopt(short, long, help = "File name to write the signature to")]
+    #[arg(short, long, help = "File name to write the signature to")]
     output: Option<PathBuf>,
 
-    #[structopt(
+    #[arg(
         name = "DER_FILE",
-        parse(try_from_str=RsaPrivateKey::from_pkcs8_der_file),
+        value_parser = load_priv_key,
         help = "RSA private key file in PKCS#1 DER format"
     )]
     private_key: RsaPrivateKey,
-    #[structopt(
+    #[arg(
         name = "SHA256_DIGEST",
-        parse(try_from_str=ParseInt::from_str),
-        required_unless = "input",
+        value_parser = Sha256Digest::from_str,
+        required_unless_present = "input",
         help = "SHA256 digest of the message"
     )]
     digest: Option<Sha256Digest>,
@@ -301,16 +305,16 @@ impl CommandDispatch for RsaSignCommand {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct RsaVerifyCommand {
-    #[structopt(name = "KEY", help = "Key file in DER format")]
+    #[arg(name = "KEY", help = "Key file in DER format")]
     der_file: PathBuf,
-    #[structopt(
+    #[arg(
         name = "SHA256_DIGEST",
         help = "SHA256 digest of the message as a hex string (big-endian), i.e. 0x..."
     )]
     digest: String,
-    #[structopt(
+    #[arg(
         name = "SIGNATURE",
         help = "Signature to be verified as a hex string (big-endian), i.e. 0x..."
     )]
@@ -331,10 +335,11 @@ impl CommandDispatch for RsaVerifyCommand {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// RSA commands.
 #[allow(clippy::large_enum_variant)]
 pub enum Rsa {
+    #[command(subcommand)]
     Key(RsaKeySubcommands),
     Sign(RsaSignCommand),
     Verify(RsaVerifyCommand),

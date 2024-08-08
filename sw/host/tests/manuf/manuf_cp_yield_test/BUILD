@@ -15,7 +15,7 @@ rust_binary(
         "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:log",
-        "@crate_index//:structopt",
     ],
 )

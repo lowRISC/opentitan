@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::emu::{EmuState, EmuValue};
 use opentitanlib::transport::Capability;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Get State of Emulator instance
 pub struct EmuGetState {}
 
@@ -39,38 +39,26 @@ impl CommandDispatch for EmuGetState {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Start Emulator instance
 pub struct EmuStart {
-    #[structopt(
+    #[arg(
         long,
         help = "Reset all presistent storage (For example: flash, otp, eeprom) to factory state"
     )]
     pub factory_reset: bool,
-    #[structopt(long, help = "Emulator executable file name")]
+    #[arg(long, help = "Emulator executable file name")]
     pub emulator_exec: Option<String>,
-    #[structopt(
+    #[arg(
         long,
         help = "List of application names that will be provided in flash images"
     )]
     pub apps_list: Option<Vec<String>>,
-    #[structopt(
-        long,
-        parse(from_os_str),
-        help = "List of file paths representing Flash images"
-    )]
+    #[arg(long, help = "List of file paths representing Flash images")]
     pub flash_list: Option<Vec<PathBuf>>,
-    #[structopt(
-        long,
-        parse(from_os_str),
-        help = "Path to file representing Emulator version state"
-    )]
+    #[arg(long, help = "Path to file representing Emulator version state")]
     pub version_init_state: Option<PathBuf>,
-    #[structopt(
-        long,
-        parse(from_os_str),
-        help = "Path to file representing PMU initial state"
-    )]
+    #[arg(long, help = "Path to file representing PMU initial state")]
     pub pmu_init_state: Option<PathBuf>,
 }
 
@@ -106,7 +94,7 @@ impl CommandDispatch for EmuStart {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Stop Emulator instance
 pub struct EmuStop {}
 
@@ -126,7 +114,7 @@ impl CommandDispatch for EmuStop {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// Commands for interacting with Emulator instance
 pub enum EmuCommand {
     State(EmuGetState),

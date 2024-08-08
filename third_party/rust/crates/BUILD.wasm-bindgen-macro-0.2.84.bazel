@@ -77,7 +77,7 @@ rust_proc_macro(
     }),
     version = "0.2.84",
     deps = [
-        "@crate_index__quote-1.0.26//:quote",
+        "@crate_index__quote-1.0.36//:quote",
         "@crate_index__wasm-bindgen-macro-support-0.2.84//:wasm_bindgen_macro_support",
     ],
 )

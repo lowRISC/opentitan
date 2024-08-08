@@ -83,7 +83,7 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.10.6",
+    version = "0.10.7",
     deps = [
         "@crate_index__block-buffer-0.10.3//:block_buffer",
         "@crate_index__const-oid-0.9.2//:const_oid",

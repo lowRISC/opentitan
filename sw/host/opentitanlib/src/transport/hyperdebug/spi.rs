@@ -7,7 +7,7 @@ use rusb::{Direction, Recipient, RequestType};
 use std::cell::Cell;
 use std::mem::size_of;
 use std::rc::Rc;
-use zerocopy::{AsBytes, FromBytes};
+use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 use crate::io::eeprom;
 use crate::io::spi::{
@@ -70,7 +70,7 @@ const EEPROM_FLAGS_POLL_BUSY: u32 = 0x20000000;
 const EEPROM_FLAGS_DOUBLE_BUFFER: u32 = 0x40000000;
 const EEPROM_FLAGS_WRITE: u32 = 0x80000000;
 
-#[derive(AsBytes, FromBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 #[repr(C)]
 struct RspUsbSpiConfig {
     packet_id: u16,
@@ -79,7 +79,7 @@ struct RspUsbSpiConfig {
     feature_bitmap: u16,
 }
 
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdTransferStart {
     packet_id: u16,
@@ -98,7 +98,7 @@ impl CmdTransferStart {
     }
 }
 
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdEepromTransferStart {
     packet_id: u16,
@@ -117,7 +117,7 @@ impl CmdEepromTransferStart {
     }
 }
 
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdTransferContinue {
     packet_id: u16,
@@ -134,7 +134,7 @@ impl CmdTransferContinue {
     }
 }
 
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct RspTransferStart {
     packet_id: u16,
@@ -151,7 +151,7 @@ impl RspTransferStart {
     }
 }
 
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct RspTransferContinue {
     packet_id: u16,
@@ -168,7 +168,7 @@ impl RspTransferContinue {
     }
 }
 
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdChipSelect {
     packet_id: u16,
@@ -183,7 +183,7 @@ impl CmdChipSelect {
     }
 }
 
-#[derive(AsBytes, FromBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 #[repr(C)]
 struct RspChipSelect {
     packet_id: u16,
