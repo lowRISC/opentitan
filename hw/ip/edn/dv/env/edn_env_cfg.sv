@@ -36,7 +36,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
          force_disable_pct,
          min_num_boot_reqs, max_num_boot_reqs,
          min_num_ep_reqs, max_num_ep_reqs,
-         invalid_mubi4_pct;
+         invalid_mubi4_pct, disable_regwen_pct;
 
   bit    use_invalid_mubi;
 
@@ -52,6 +52,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   rand which_fifo_err_e               which_fifo_err;
   rand invalid_mubi_e                 which_invalid_mubi;
   rand csrng_pkg::csrng_cmd_sts_e     which_cmd_sts_err;
+  rand bit                            disable_regwen;
 
   // Constraints
   constraint glen_auto_mode_c {glen_auto_mode dist {
@@ -88,6 +89,11 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   // CMD_STS_SUCCESS is not an error so ignore it.
   constraint which_cmd_sts_err_c {{which_cmd_sts_err != csrng_pkg::CMD_STS_SUCCESS};}
+
+  constraint disable_regwen_c {disable_regwen dist {
+    1 :/ disable_regwen_pct,
+    0 :/ (100 - disable_regwen_pct)
+  };}
 
   // Functions
   function void post_randomize();

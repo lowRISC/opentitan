@@ -193,100 +193,101 @@ class edn_scoreboard extends cip_base_scoreboard #(
         edn_ctrl.boot_req_mode.q = `gmv(ral.ctrl.boot_req_mode);
         edn_ctrl.cmd_fifo_rst.q = `gmv(ral.ctrl.cmd_fifo_rst);
 
-        // Reset fifos if cmd_fifo_rst is true or if EDN is being disabled.
-        if (write && (edn_ctrl.cmd_fifo_rst.q == MuBi4True ||
-                      (edn_ctrl.edn_enable.q == MuBi4False &&
-                       edn_ctrl_pre.edn_enable.q == MuBi4True))) begin
-          reseed_cmd_q.delete();
-          generate_cmd_q.delete();
-        end
-        // Set all sw_cmd_sts fields to 0 if the EDN is being disabled.
-        if (write && (edn_ctrl.edn_enable.q == MuBi4False &&
-                      edn_ctrl_pre.edn_enable.q == MuBi4True)) begin
-          sw_cmd_sts = 32'b0;
-        end
-
-        if (write && (edn_ctrl.edn_enable.q == MuBi4True)) begin
-          // set boot mode flag if boot_req_mode is true and we are not already in auto mode
-          // boot mode has priority over auto mode if they are turned on at the same time
-          if (edn_ctrl.boot_req_mode.q == MuBi4True && !auto_mode) begin
-            boot_mode = 1'b1;
-            void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
+        if (write && `gmv(ral.regwen.regwen)) begin
+          // Reset fifos if cmd_fifo_rst is true or if EDN is being disabled.
+          if ((edn_ctrl.edn_enable.q == MuBi4False && edn_ctrl_pre.edn_enable.q == MuBi4True) ||
+              edn_ctrl.cmd_fifo_rst.q == MuBi4True) begin
+            reseed_cmd_q.delete();
+            generate_cmd_q.delete();
           end
-          // set auto mode flag if auto_req_mode is true and we are not already in boot mode
-          if (edn_ctrl.auto_req_mode.q == MuBi4True && !boot_mode)  begin
-            auto_mode = 1'b1;
+          // Set all sw_cmd_sts fields to 0 if the EDN is being disabled.
+          if ((edn_ctrl.edn_enable.q == MuBi4False) &&
+              (edn_ctrl_pre.edn_enable.q == MuBi4True)) begin
+            sw_cmd_sts = 32'b0;
           end
 
-          // If EDN was disabled/reset and is now enabled, set the initial state
-          if ((edn_ctrl_pre.edn_enable.q != MuBi4True) || cfg.backdoor_disable ||
-              reset_happened) begin
-            clen_cntr = 0;
-            reqs_between_reseeds_ctr = 32'b0;
-            instantiated = 1'b0;
-            boot_gen_cmd_sent = 1'b0;
-            sw_cmd_req_q.delete();
-
-            // Clear the auto mode FIFOs if Main_SM enters SW_Port_Mode or if the EDN has been
-            // disabled via backdoor and the FIFOs haven't been cleared yet.
-            if ((edn_ctrl.boot_req_mode.q != MuBi4True && edn_ctrl.auto_req_mode.q != MuBi4True) ||
-                (cfg.backdoor_disable && !backdoor_disable_fifo_clr)) begin
-              reseed_cmd_q.delete();
-              generate_cmd_q.delete();
+          if (edn_ctrl.edn_enable.q == MuBi4True) begin
+            // set boot mode flag if boot_req_mode is true and we are not already in auto mode
+            // boot mode has priority over auto mode if they are turned on at the same time
+            if (edn_ctrl.boot_req_mode.q == MuBi4True && !auto_mode) begin
+              boot_mode = 1'b1;
+              void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
             end
-            // We can reset the indicator bits since the backdoor disable is now accounted for.
-            cfg.backdoor_disable = 1'b0;
-            backdoor_disable_fifo_clr = 1'b0;
-            reset_happened = 1'b0;
-            sw_cmd_sts[sw_cmd_ack] = 1'b0;
-            sw_cmd_sts[sw_cmd_sts+:CMD_STS_SIZE-1] = csrng_pkg::CMD_STS_SUCCESS;
-            sw_cmd_sts[sw_cmd_rdy] = !boot_mode;
-            sw_cmd_sts[sw_cmd_reg_rdy] = !boot_mode;
+            // set auto mode flag if auto_req_mode is true and we are not already in boot mode
+            if (edn_ctrl.auto_req_mode.q == MuBi4True && !boot_mode)  begin
+              auto_mode = 1'b1;
+            end
 
-          // If boot mode is being disabled, wait for SM to enter the Idle state
-          // and predict the status ready signals to be high.
-          end else if ((edn_ctrl.boot_req_mode.q != MuBi4True) &&
-                       (edn_ctrl_pre.boot_req_mode.q == MuBi4True)) begin
-            fork
-              `DV_SPINWAIT_EXIT(
-                  wait(!boot_mode);
-                  csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
-                  csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1), .compare_op(CompareOpNe));
-                  if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
-                    auto_mode = 1'b1;
-                  end
-                  sw_cmd_sts[sw_cmd_rdy] = 1'b1;
-                  sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;,
-                  wait (cfg.backdoor_disable || reset_happened);
-              )
-            join_none
+            // If EDN was disabled/reset and is now enabled, set the initial state
+            if ((edn_ctrl_pre.edn_enable.q != MuBi4True) || cfg.backdoor_disable ||
+                reset_happened) begin
+              clen_cntr = 0;
+              reqs_between_reseeds_ctr = 32'b0;
+              instantiated = 1'b0;
+              boot_gen_cmd_sent = 1'b0;
+              sw_cmd_req_q.delete();
 
-          // If auto mode is being disabled wait for SM to go through the Idle state.
-          end else if ((edn_ctrl.auto_req_mode.q != MuBi4True) &&
-                       (edn_ctrl_pre.auto_req_mode.q == MuBi4True)) begin
-            fork
-              `DV_SPINWAIT_EXIT(
-                  csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
-                  // Clear the FIFOs since we left the auto mode.
-                  reseed_cmd_q.delete();
-                  generate_cmd_q.delete();
-                  auto_mode = 1'b0;
-                  // Check if the EDN will enter boot or SW mode.
-                  if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
-                    boot_mode = 1'b1;
-                    void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
-                  // If the EDN enters SW mode, set the prediction for sw_cmd_sts accordingly.
-                  end else begin
+              // Clear the auto mode FIFOs if Main_SM enters SW_Port_Mode or if the EDN has been
+              // disabled via backdoor and the FIFOs haven't been cleared yet.
+              if ((edn_ctrl.boot_req_mode.q != MuBi4True && edn_ctrl.auto_req_mode.q != MuBi4True)
+                  || (cfg.backdoor_disable && !backdoor_disable_fifo_clr)) begin
+                reseed_cmd_q.delete();
+                generate_cmd_q.delete();
+              end
+              // We can reset the indicator bits since the backdoor disable is now accounted for.
+              cfg.backdoor_disable = 1'b0;
+              backdoor_disable_fifo_clr = 1'b0;
+              reset_happened = 1'b0;
+              sw_cmd_sts[sw_cmd_ack] = 1'b0;
+              sw_cmd_sts[sw_cmd_sts+:CMD_STS_SIZE-1] = csrng_pkg::CMD_STS_SUCCESS;
+              sw_cmd_sts[sw_cmd_rdy] = !boot_mode;
+              sw_cmd_sts[sw_cmd_reg_rdy] = !boot_mode;
+
+            // If boot mode is being disabled, wait for SM to enter the Idle state
+            // and predict the status ready signals to be high.
+            end else if ((edn_ctrl.boot_req_mode.q != MuBi4True) &&
+                        (edn_ctrl_pre.boot_req_mode.q == MuBi4True)) begin
+              fork
+                `DV_SPINWAIT_EXIT(
+                    wait(!boot_mode);
+                    csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+                    csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1), .compare_op(CompareOpNe));
+                    if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
+                      auto_mode = 1'b1;
+                    end
                     sw_cmd_sts[sw_cmd_rdy] = 1'b1;
-                    sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
-                  end
-                  // Predict the EDN to have left the HW controlled part of auto mode.
-                  if (auto_mode) begin
-                    void'(ral.hw_cmd_sts.auto_mode.predict(.value(1'b0)));
-                  end,
-                  wait (cfg.backdoor_disable || reset_happened);
-              )
-            join_none
+                    sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;,
+                    wait (cfg.backdoor_disable || reset_happened);
+                )
+              join_none
+
+            // If auto mode is being disabled wait for SM to go through the Idle state.
+            end else if ((edn_ctrl.auto_req_mode.q != MuBi4True) &&
+                        (edn_ctrl_pre.auto_req_mode.q == MuBi4True)) begin
+              fork
+                `DV_SPINWAIT_EXIT(
+                    csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+                    // Clear the FIFOs since we left the auto mode.
+                    reseed_cmd_q.delete();
+                    generate_cmd_q.delete();
+                    auto_mode = 1'b0;
+                    // Check if the EDN will enter boot or SW mode.
+                    if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
+                      boot_mode = 1'b1;
+                      void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
+                    // If the EDN enters SW mode, set the prediction for sw_cmd_sts accordingly.
+                    end else begin
+                      sw_cmd_sts[sw_cmd_rdy] = 1'b1;
+                      sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
+                    end
+                    // Predict the EDN to have left the HW controlled part of auto mode.
+                    if (auto_mode) begin
+                      void'(ral.hw_cmd_sts.auto_mode.predict(.value(1'b0)));
+                    end,
+                    wait (cfg.backdoor_disable || reset_happened);
+                )
+              join_none
+            end
           end
         end
       end

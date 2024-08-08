@@ -19,13 +19,8 @@ class edn_base_vseq extends cip_base_vseq #(
   bit [11:0]                                    glen;
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
-  rand bit                                      set_regwen;
   rand bit                                      write_reserved_err_code_test_reg;
   virtual edn_cov_if                            cov_vif;
-
-  constraint regwen_c {
-    set_regwen == 0;
-  }
 
   virtual task body();
     cov_vif.cg_cfg_sample(.cfg(cfg));
@@ -120,14 +115,14 @@ class edn_base_vseq extends cip_base_vseq #(
     // Signal that the EDN has been enabled for the first time.
     cfg.base_vseq_edn_enabled = 1'b1;
 
-    // If set_regwen is set, write random value to the EDN, and expect the write won't be taken.
-    if (set_regwen) begin
+    // If cfg.disable_regwen is set, write random value to the EDN, and expect the write won't be taken.
+    if (cfg.disable_regwen) begin
       csr_wr(.ptr(ral.regwen), .value(0));
       csr_wr(.ptr(ral.ctrl), .value($urandom));
     end
 
     // Read and check ctrl register value. Check in scb.
-    if ($urandom_range(0, 19) == 19 || set_regwen) begin
+    if ($urandom_range(0, 19) == 19 || cfg.disable_regwen) begin
       bit [TL_DW-1:0] val;
       csr_rd(.ptr(ral.ctrl), .value(val));
     end

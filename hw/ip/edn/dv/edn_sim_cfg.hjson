@@ -62,8 +62,8 @@
 
     {
       name: edn_regwen
-      uvm_test: edn_smoke_test
-      uvm_test_seq: edn_regwen_vseq
+      uvm_test: edn_regwen_test
+      uvm_test_seq: edn_smoke_vseq
       reseed: 10
     }
 

@@ -12,6 +12,7 @@ filesets:
       - edn_test_pkg.sv
       - edn_base_test.sv: {is_include_file: true}
       - edn_smoke_test.sv: {is_include_file: true}
+      - edn_regwen_test.sv: {is_include_file: true}
       - edn_genbits_test.sv: {is_include_file: true}
       - edn_stress_all_test.sv: {is_include_file: true}
       - edn_intr_test.sv: {is_include_file: true}
