@@ -20,6 +20,7 @@ with_unknown! {
         Unknown = 0,
         SlotA = u32::from_le_bytes(*b"AA__"),
         SlotB = u32::from_le_bytes(*b"__BB"),
+        Unspecified = u32::from_le_bytes(*b"UUUU"),
     }
 
     /// The unlock mode for the OwnershipUnlock command.
@@ -37,13 +38,12 @@ with_unknown! {
 
     pub enum BootSvcKind: u32 [default = Self::Unknown] {
         Unknown = 0,
-        Empty = u32::from_le_bytes(*b"EMPT"),
+        EmptyRequest = u32::from_le_bytes(*b"EMPT"),
+        EmptyResponse = u32::from_le_bytes(*b"TPME"),
         MinBl0SecVerRequest = u32::from_le_bytes(*b"MSEC"),
         MinBl0SecVerResponse = u32::from_le_bytes(*b"CESM"),
         NextBl0SlotRequest = u32::from_le_bytes(*b"NEXT"),
         NextBl0SlotResponse = u32::from_le_bytes(*b"TXEN"),
-        PrimaryBl0SlotRequest = u32::from_le_bytes(*b"PRIM"),
-        PrimaryBl0SlotResponse = u32::from_le_bytes(*b"MIRP"),
         OwnershipUnlockRequest = u32::from_le_bytes(*b"UNLK"),
         OwnershipUnlockResponse = u32::from_le_bytes(*b"LKNU"),
         OwnershipActivateRequest = u32::from_le_bytes(*b"ACTV"),
@@ -94,6 +94,8 @@ pub struct MinBl0SecVerResponse {
 pub struct NextBl0SlotRequest {
     /// The slot to boot.
     pub next_bl0_slot: BootSlot,
+    /// The slot to configure as primary.
+    pub primary_bl0_slot: BootSlot,
 }
 
 /// Response to the set next boot slot request.
@@ -101,22 +103,8 @@ pub struct NextBl0SlotRequest {
 pub struct NextBl0SlotResponse {
     /// The status response to the request.
     pub status: u32,
-}
-
-/// Request to set the primary owner stage boot slot.
-#[derive(Debug, Default, Serialize, Annotate)]
-pub struct PrimaryBl0SlotRequest {
-    /// The slot to boot.
-    pub primary_bl0_slot: BootSlot,
-}
-
-/// Response to the set primary boot slot request.
-#[derive(Debug, Default, Serialize, Annotate)]
-pub struct PrimaryBl0SlotResponse {
     /// The current primary slot.
     pub primary_bl0_slot: BootSlot,
-    /// The status response to the request.
-    pub status: u32,
 }
 
 /// Request to unlock ownership of the chip.
@@ -179,12 +167,10 @@ pub enum Message {
     Empty(Empty),
     MinBl0SecVerRequest(MinBl0SecVerRequest),
     NextBl0SlotRequest(NextBl0SlotRequest),
-    PrimaryBl0SlotRequest(PrimaryBl0SlotRequest),
     OwnershipUnlockRequest(OwnershipUnlockRequest),
     OwnershipActivateRequest(OwnershipActivateRequest),
     MinBl0SecVerResponse(MinBl0SecVerResponse),
     NextBl0SlotResponse(NextBl0SlotResponse),
-    PrimaryBl0SlotResponse(PrimaryBl0SlotResponse),
     OwnershipUnlockResponse(OwnershipUnlockResponse),
     OwnershipActivateResponse(OwnershipActivateResponse),
 }
@@ -210,7 +196,8 @@ impl TryFrom<&[u8]> for BootSvc {
         }
         let buf = &buf[Header::SIZE..];
         let message = match header.kind {
-            BootSvcKind::Empty => Message::Empty(TryFrom::try_from(buf)?),
+            BootSvcKind::EmptyRequest => Message::Empty(TryFrom::try_from(buf)?),
+            BootSvcKind::EmptyResponse => Message::Empty(TryFrom::try_from(buf)?),
             BootSvcKind::MinBl0SecVerRequest => {
                 Message::MinBl0SecVerRequest(TryFrom::try_from(buf)?)
             }
@@ -220,12 +207,6 @@ impl TryFrom<&[u8]> for BootSvc {
             BootSvcKind::NextBl0SlotRequest => Message::NextBl0SlotRequest(TryFrom::try_from(buf)?),
             BootSvcKind::NextBl0SlotResponse => {
                 Message::NextBl0SlotResponse(TryFrom::try_from(buf)?)
-            }
-            BootSvcKind::PrimaryBl0SlotRequest => {
-                Message::PrimaryBl0SlotRequest(TryFrom::try_from(buf)?)
-            }
-            BootSvcKind::PrimaryBl0SlotResponse => {
-                Message::PrimaryBl0SlotResponse(TryFrom::try_from(buf)?)
             }
             BootSvcKind::OwnershipUnlockRequest => {
                 Message::OwnershipUnlockRequest(TryFrom::try_from(buf)?)
@@ -256,8 +237,6 @@ impl BootSvc {
             Message::MinBl0SecVerResponse(m) => m.write(&mut data)?,
             Message::NextBl0SlotRequest(m) => m.write(&mut data)?,
             Message::NextBl0SlotResponse(m) => m.write(&mut data)?,
-            Message::PrimaryBl0SlotRequest(m) => m.write(&mut data)?,
-            Message::PrimaryBl0SlotResponse(m) => m.write(&mut data)?,
             Message::OwnershipUnlockRequest(m) => m.write(&mut data)?,
             Message::OwnershipUnlockResponse(m) => m.write(&mut data)?,
             Message::OwnershipActivateRequest(m) => m.write(&mut data)?,
@@ -282,7 +261,7 @@ impl BootSvc {
         }
     }
 
-    pub fn next_boot_bl0_slot(slot: BootSlot) -> Self {
+    pub fn next_boot_bl0_slot(primary: BootSlot, next: BootSlot) -> Self {
         BootSvc {
             header: Header {
                 digest: [0u32; 8],
@@ -291,21 +270,8 @@ impl BootSvc {
                 length: (Header::SIZE + NextBl0SlotRequest::SIZE) as u32,
             },
             message: Message::NextBl0SlotRequest(NextBl0SlotRequest {
-                next_bl0_slot: slot,
-            }),
-        }
-    }
-
-    pub fn primary_bl0_slot(slot: BootSlot) -> Self {
-        BootSvc {
-            header: Header {
-                digest: [0u32; 8],
-                identifier: Header::IDENTIFIER,
-                kind: BootSvcKind::PrimaryBl0SlotRequest,
-                length: (Header::SIZE + PrimaryBl0SlotRequest::SIZE) as u32,
-            },
-            message: Message::PrimaryBl0SlotRequest(PrimaryBl0SlotRequest {
-                primary_bl0_slot: slot,
+                next_bl0_slot: next,
+                primary_bl0_slot: primary,
             }),
         }
     }
@@ -426,13 +392,15 @@ impl TryFrom<&[u8]> for NextBl0SlotRequest {
         let mut reader = std::io::Cursor::new(buf);
         Ok(NextBl0SlotRequest {
             next_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
+            primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
 impl NextBl0SlotRequest {
-    pub const SIZE: usize = 4;
+    pub const SIZE: usize = 8;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.next_bl0_slot))?;
+        dest.write_u32::<LittleEndian>(u32::from(self.primary_bl0_slot))?;
         Ok(())
     }
 }
@@ -443,6 +411,7 @@ impl TryFrom<&[u8]> for NextBl0SlotResponse {
         let mut reader = std::io::Cursor::new(buf);
         Ok(NextBl0SlotResponse {
             status: reader.read_u32::<LittleEndian>()?,
+            primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
@@ -450,42 +419,7 @@ impl NextBl0SlotResponse {
     pub const SIZE: usize = 4;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(self.status)?;
-        Ok(())
-    }
-}
-
-impl TryFrom<&[u8]> for PrimaryBl0SlotRequest {
-    type Error = ChipDataError;
-    fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
-        let mut reader = std::io::Cursor::new(buf);
-        Ok(PrimaryBl0SlotRequest {
-            primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
-        })
-    }
-}
-impl PrimaryBl0SlotRequest {
-    pub const SIZE: usize = 4;
-    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.primary_bl0_slot))?;
-        Ok(())
-    }
-}
-
-impl TryFrom<&[u8]> for PrimaryBl0SlotResponse {
-    type Error = ChipDataError;
-    fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
-        let mut reader = std::io::Cursor::new(buf);
-        Ok(PrimaryBl0SlotResponse {
-            primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
-            status: reader.read_u32::<LittleEndian>()?,
-        })
-    }
-}
-impl PrimaryBl0SlotResponse {
-    pub const SIZE: usize = 8;
-    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        dest.write_u32::<LittleEndian>(u32::from(self.primary_bl0_slot))?;
-        dest.write_u32::<LittleEndian>(self.status)?;
         Ok(())
     }
 }
