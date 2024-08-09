@@ -541,7 +541,6 @@
           resval: 0x0
           hwaccess: "hrw"
           swaccess: "ro"
-          hwaccess: "hrw"
           desc: '''
                 DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
@@ -558,11 +557,21 @@
                 '''
         }
         { bits: "2"
+          name: "chunk_done"
+          resval: 0x0
+          hwaccess: "hrw"
+          desc: '''
+                Transfer of a single chunk is complete.
+                Only raised for multi-chunk memory-to-memory transfers.
+                Cleared automatically by the hardware when starting the transfer of a new chunk.
+                '''
+        }
+        { bits: "3"
           name: "aborted"
           resval: 0x0
           desc: "Set once aborted operation drains."
         }
-        { bits: "3"
+        { bits: "4"
           name: "error"
           resval: 0x0
           hwaccess: "hrw"
@@ -572,7 +581,7 @@
                 ERROR_CODE register denotes the source of the error.
                 '''
         }
-        { bits: "4"
+        { bits: "5"
           name: "sha2_digest_valid"
           swaccess: "ro"
           resval: 0x0
