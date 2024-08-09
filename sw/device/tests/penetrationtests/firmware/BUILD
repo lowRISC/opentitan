@@ -13,6 +13,7 @@ package(default_visibility = ["//visibility:public"])
 
 FIRMWARE_DEPS_FPGA = [
     "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
+    "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/sca:aes_sca",
@@ -36,6 +37,7 @@ FIRMWARE_DEPS_FPGA = [
 
 FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
+    "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",

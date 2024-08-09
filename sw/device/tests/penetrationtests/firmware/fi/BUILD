@@ -28,6 +28,25 @@ cc_library(
 )
 
 cc_library(
+    name = "lc_ctrl_fi",
+    srcs = ["lc_ctrl_fi.c"],
+    hdrs = ["lc_ctrl_fi.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/json:lc_ctrl_fi_commands",
+    ],
+)
+
+cc_library(
     name = "otbn_fi",
     srcs = ["otbn_fi.c"],
     hdrs = ["otbn_fi.h"],
