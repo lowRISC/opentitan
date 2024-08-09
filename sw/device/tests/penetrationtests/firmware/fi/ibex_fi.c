@@ -9,17 +9,24 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
+#include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 // A function which takes an uint32_t as its only argument.
 typedef uint32_t (*str_fn_t)(uint32_t);
@@ -34,10 +41,33 @@ static str_fn_t increment_100x1_remapped = (str_fn_t)increment_100x1;
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
+// Interface to OTP.
+static dif_otp_ctrl_t otp;
+
 // Indicates whether flash already was initialized for the test or not.
 static bool flash_init;
 // Indicates whether flash content is valid or not.
 static bool flash_data_valid;
+// Indicates whether ret SRAM already was initialized for the test or not.
+static bool sram_ret_init;
+// Indicates whether the otp arrays hold the valid reference values read from
+// the OTP partitions.
+static bool otp_ref_init;
+
+// Arrays holding the reference data read from the OTP VENDOR_TEST,
+// CREATOR_SW_CFG, and OWNER_SW_CFG partitions.
+uint32_t
+    otp_data_read_ref_vendor_test[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                                   OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+                                  sizeof(uint32_t)];
+uint32_t otp_data_read_ref_creator_sw_cfg
+    [(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
+     sizeof(uint32_t)];
+uint32_t
+    otp_data_read_ref_owner_sw_cfg[(OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+                                    OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+                                   sizeof(uint32_t)];
 
 // Cond. branch macros.
 #define CONDBRANCHBEQ "beq x5, x6, endfitestfaultybeq\n"
@@ -65,6 +95,16 @@ static bool flash_data_valid;
 #define ADDI1000                                                          \
   ADDI100 ADDI100 ADDI100 ADDI100 ADDI100 ADDI100 ADDI100 ADDI100 ADDI100 \
       ADDI100
+
+// Init tmpregs = 0 macro.
+#define INIT_TMPREGS                                   \
+  "addi x5, x0, 0\n addi x6, x0, 0\n addi x7, x0, 0\n" \
+  "addi x28, x0, 0\n addi x29, x0, 0\n addi x30, x0, 0\n"
+
+// Addi chain macro.
+#define ADDI_CHAIN                                      \
+  "addi x6, x5, 1\n addi x7, x6, 1\n addi x28, x7, 1\n" \
+  "addi x29, x28, 1\n addi x30, x29, 1\n addi x5, x30, 1\n"
 
 // Init x6 = 10000 macro.
 #define INITX6 "li x6, 10000"
@@ -109,7 +149,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
 OT_SECTION(".data")
-static volatile uint32_t sram_main_buffer[32];
+static volatile uint32_t sram_main_buffer[256];
 
 // Init temporary registers t0...t7 with given value.
 static inline void init_temp_regs(uint32_t value) {
@@ -133,9 +173,457 @@ static inline void read_temp_regs(uint32_t buffer[]) {
   asm volatile("mv %0, x31" : "=r"(buffer[6]));
 }
 
+// Read back values from all registers x1...x31 into buffer.
+static inline void read_all_regs(uint32_t buffer[]) {
+  // The much nicer approach with
+  // asm volatile("sw x1, %0" : : "m"(buffer[1]));
+  // leads to two INSNs. Test in godbolt promised single INSN
+  // Uglier workaround below inserts single INSN, but requires
+  // read_all_regs() to be called prior to the FI trigger
+  // start to avoid register overwrite.
+  asm volatile("sw x1,    0(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x2,    4(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x3,    8(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x4,   12(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x5,   16(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x6,   20(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x7,   24(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x8,   28(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x9,   32(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x10,  36(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x11,  40(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x12,  44(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x13,  48(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x14,  52(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x15,  56(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x16,  60(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x17,  64(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x18,  68(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x19,  72(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x20,  76(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x21,  80(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x22,  84(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x23,  88(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x24,  92(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x25,  96(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x26, 100(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x27, 104(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x28, 108(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x29, 112(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x30, 116(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x31, 120(%0)" : : "r"(&buffer[0]));
+}
+
 // Make sure that this function does not get optimized by the compiler.
 void increment_counter(void) __attribute__((optnone)) {
   asm volatile("addi x5, x5, 1");
+}
+
+// Make sure that this function does not get optimized by the compiler.
+void not_increment_counter(void) __attribute__((optnone)) {
+  asm volatile("ret");
+  asm volatile(ADDI10);
+}
+
+status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Values are intentially not equal.
+  // uint32_t value1 = 0;
+  // uint32_t value2 = 1;
+  // JH: Changed 28th June. Tests before used unharded values
+  hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // clang-format off
+  asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
+    "unimp;" \
+    ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
+  // clang-format on
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.err_status = codes;
+  uj_output.result1 = value1;
+  uj_output.result2 = value2;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Values are intentially not equal.
+  // uint32_t value1 = 0;
+  // uint32_t value2 = 1;
+  // JH: Changed 28th June. Tests before used unharded values
+  hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // clang-format off
+  asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
+    "unimp; unimp;" \
+    ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
+  // clang-format on
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.err_status = codes;
+  uj_output.result1 = value1;
+  uj_output.result2 = value2;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Values are intentially not equal.
+  // uint32_t value1 = 0;
+  // uint32_t value2 = 1;
+  // JH: Changed 28th June. Tests before used unharded values
+  hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // clang-format off
+  asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
+    "unimp; unimp; unimp;" \
+    ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
+  // clang-format on
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.err_status = codes;
+  uj_output.result1 = value1;
+  uj_output.result2 = value2;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Values are intentially not equal.
+  // uint32_t value1 = 0;
+  // uint32_t value2 = 1;
+  // JH: Changed 28th June. Tests before used unharded values
+  hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // clang-format off
+  asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
+    "unimp; unimp; unimp; unimp;" \
+    ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
+  // clang-format on
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.err_status = codes;
+  uj_output.result1 = value1;
+  uj_output.result2 = value2;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Values are intentially not equal.
+  // uint32_t value1 = 0;
+  // uint32_t value2 = 1;
+  // JH: Changed 28th June. Tests before used unharded values
+  hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+  ;
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // clang-format off
+  asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
+    "unimp; unimp; unimp; unimp; unimp;" \
+    ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
+  // clang-format on
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.err_status = codes;
+  uj_output.result1 = value1;
+  uj_output.result2 = value2;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Values are intentially not equal.
+  // uint32_t value1 = 0;
+  // uint32_t value2 = 1;
+  // JH: Changed 28th June. Tests before used unharded values
+  hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // clang-format off
+  asm volatile(
+    "beq" " %0, %1, .L_HARDENED_%=;" \
+    ".UNIMP_%=: unimp;" \
+    "bne" " %0, %1, .UNIMP_%=;" \
+    ".L_HARDENED_%=:;"::"r"(value1), "r"(value2)
+  );
+  // clang-format on
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.err_status = codes;
+  uj_output.result1 = value1;
+  uj_output.result2 = value2;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint64_t faulty_token[kSecret0TestUnlockTokenSizeIn64BitWords];
+  for (size_t i = 0; i < kSecret0TestUnlockTokenSizeIn64BitWords; i++) {
+    faulty_token[i] = 0xdeadbeef;
+  }
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  TRY(otp_ctrl_testutils_dai_write64(
+      &otp, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
+      faulty_token, kSecret0TestUnlockTokenSizeIn64BitWords));
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result =
+      0;  // Writing to the locked OTP partition crashes the chip.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+static status_t init_ref_otp_data(void) {
+  // Fetch faulty-free reference values from OTP paritions.
+  if (!otp_ref_init) {
+    // Read VENDOR_TEST partition.
+    TRY(otp_ctrl_testutils_dai_read32_array(
+        &otp, kDifOtpCtrlPartitionVendorTest, 0, otp_data_read_ref_vendor_test,
+        (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+         OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+            sizeof(uint32_t)));
+
+    // Read CREATOR_SW_CFG partition.
+    TRY(otp_ctrl_testutils_dai_read32_array(
+        &otp, kDifOtpCtrlPartitionCreatorSwCfg, 0,
+        otp_data_read_ref_creator_sw_cfg,
+        (OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+         OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
+            sizeof(uint32_t)));
+
+    // READ OWNER_SW_CFG partition.
+    TRY(otp_ctrl_testutils_dai_read32_array(
+        &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0, otp_data_read_ref_owner_sw_cfg,
+        (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+         OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+            sizeof(uint32_t)));
+    otp_ref_init = true;
+  }
+  return OK_STATUS();
+}
+
+static status_t read_otp_partitions(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t
+      otp_data_read_res_vendor_test[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                                     OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+                                    sizeof(uint32_t)];
+  uint32_t otp_data_read_res_creator_sw_cfg
+      [(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
+       sizeof(uint32_t)];
+  uint32_t
+      otp_data_read_res_owner_sw_cfg[(OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+                                      OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+                                     sizeof(uint32_t)];
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  TRY(otp_ctrl_testutils_dai_read32_array(
+      &otp, kDifOtpCtrlPartitionVendorTest, 0, otp_data_read_res_vendor_test,
+      (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+       OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+          sizeof(uint32_t)));
+  TRY(otp_ctrl_testutils_dai_read32_array(
+      &otp, kDifOtpCtrlPartitionCreatorSwCfg, 0,
+      otp_data_read_res_creator_sw_cfg,
+      (OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+       OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
+          sizeof(uint32_t)));
+  TRY(otp_ctrl_testutils_dai_read32_array(
+      &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0, otp_data_read_res_owner_sw_cfg,
+      (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+          sizeof(uint32_t)));
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Detect potential mismatch caused by faults.
+  uint32_t res = 0;
+  for (size_t i = 0; i < ((OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                           OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+                          sizeof(uint32_t));
+       i++) {
+    if (otp_data_read_ref_vendor_test[i] != otp_data_read_res_vendor_test[i]) {
+      res |= 1;
+    }
+  }
+
+  for (size_t i = 0; i < ((OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                           OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+                          sizeof(uint32_t));
+       i++) {
+    if (otp_data_read_ref_creator_sw_cfg[i] !=
+        otp_data_read_res_creator_sw_cfg[i]) {
+      res |= 2;
+    }
+  }
+
+  for (size_t i = 0; i < ((OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                           OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+                          sizeof(uint32_t));
+       i++) {
+    if (otp_data_read_ref_owner_sw_cfg[i] !=
+        otp_data_read_res_owner_sw_cfg[i]) {
+      res |= 4;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) {
+  TRY(init_ref_otp_data());
+  TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionVendorTest));
+  TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionCreatorSwCfg));
+  TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionOwnerSwCfg));
+
+  TRY(read_otp_partitions(uj));
+
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_otp_data_read(ujson_t *uj) {
+  TRY(init_ref_otp_data());
+  TRY(read_otp_partitions(uj));
+  return OK_STATUS();
 }
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
@@ -574,6 +1062,75 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
+  if (!sram_ret_init) {
+    // Init retention SRAM, wipe and scramble it.
+    dif_sram_ctrl_t ret_sram;
+    mmio_region_t addr =
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+    TRY(dif_sram_ctrl_init(addr, &ret_sram));
+    TRY(sram_ctrl_testutils_wipe(&ret_sram));
+    TRY(sram_ctrl_testutils_scramble(&ret_sram));
+    sram_ret_init = true;
+  }
+
+  int max_words =
+      (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(uint32_t)) - 1;
+
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Get address of the ret. SRAM at the beginning of the owner section.
+  uintptr_t sram_ret_buffer_addr =
+      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+      offsetof(retention_sram_t, owner);
+  mmio_region_t sram_region_ret_addr =
+      mmio_region_from_addr(sram_ret_buffer_addr);
+
+  // Write reference value into SRAM.
+  for (int i = 0; i < max_words; i++) {
+    mmio_region_write32(sram_region_ret_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ref_values[0]);
+  }
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(NOP1000);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Compare against reference values.
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  int faulty_address_pos = 0;
+  for (int sram_pos = 0; sram_pos < max_words; sram_pos++) {
+    uint32_t res_value = mmio_region_read32(
+        sram_region_ret_addr, sram_pos * (ptrdiff_t)sizeof(uint32_t));
+    if (res_value != ref_values[0]) {
+      uj_output.addresses[faulty_address_pos] = (uint32_t)sram_pos;
+      uj_output.data[faulty_address_pos] = res_value;
+      faulty_address_pos++;
+      // Currently, we register only up to 8 faulty SRAM positions. If there
+      // are more, we overwrite the addresses array.
+      if (faulty_address_pos > 7) {
+        faulty_address_pos = 0;
+      }
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
@@ -614,6 +1171,325 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
     if (res_values[sram_pos] != ref_values[0]) {
       uj_output.addresses[sram_pos] = sram_pos;
       uj_output.data[sram_pos] = res_values[sram_pos];
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Get address of buffer located in SRAM.
+  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
+  mmio_region_t sram_region_main_addr =
+      mmio_region_from_addr(sram_main_buffer_addr);
+
+  // Initialize SRAM region with inverse ref_values to avoid that data from a
+  // previous run are still in memory.
+  for (int i = 0; i < 64; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ~ref_values[0]);
+  }
+
+  // FI code target.
+  // Unrolled for easier fault injection characterization.
+  sca_set_trigger_high();
+  mmio_region_write32(sram_region_main_addr, 0 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 1 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 2 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 3 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 4 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 5 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 6 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 7 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 8 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 9 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 10 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 11 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 12 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 13 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 14 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 15 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 16 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 17 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 18 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 19 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 20 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 21 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 22 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 23 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 24 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 25 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 26 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 27 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 28 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 29 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 30 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 31 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 32 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 33 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 34 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 35 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 36 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 37 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 38 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 39 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 40 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 41 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 42 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 43 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 44 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 45 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 46 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 47 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 48 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 49 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 50 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 51 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 52 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 53 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 54 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 55 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 56 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 57 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 58 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 59 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 60 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 61 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 62 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  mmio_region_write32(sram_region_main_addr, 63 * (ptrdiff_t)sizeof(uint32_t),
+                      ref_values[0]);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read back and compare against reference values.
+  uint32_t res_values[64];
+  uint32_t res = 0;
+  for (int i = 0; i < 64; i++) {
+    res_values[i] = mmio_region_read32(sram_region_main_addr,
+                                       i * (ptrdiff_t)sizeof(uint32_t));
+    if (res_values[i] != ref_values[0]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Initialize SRAM region with inverse reference value.
+  sram_main_buffer[0] = ~ref_values[0];
+
+  // Init x5, x6, x6 with the reference values.
+  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+  asm volatile("li x6, %0" : : "i"(ref_values[1]));
+  asm volatile("li x7, %0" : : "i"(ref_values[2]));
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t res_values[3];
+  asm volatile("mv %0, x5" : "=r"(res_values[0]));
+  asm volatile("mv %0, x6" : "=r"(res_values[1]));
+  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+
+  // Compare against reference values.
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+
+  for (uint32_t addr = 0; addr < 3; addr++) {
+    if (res_values[addr] != ref_values[addr]) {
+      uj_output.addresses[addr] = (uint32_t)&sram_main_buffer[0];
+      uj_output.data[addr] = res_values[addr];
     }
   }
 
@@ -735,6 +1611,70 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
+  uint32_t registers[32] = {0};
+  read_all_regs(registers);
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // FI code target.
+  uint32_t result = 0;
+  sca_set_trigger_high();
+  // Init x5 register we are using for the increment.
+  asm volatile(INITX5);
+  // Delay the trigger.
+  asm volatile(NOP10);
+  // Attack target.
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  read_all_regs(registers);
+  asm volatile("mv %0, x5" : "=r"(result));
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_registers_t uj_output;
+  uj_output.result = result;
+  memcpy(uj_output.registers, registers, sizeof(registers));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_registers_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -1302,6 +2242,52 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t addresses[8] = {0};
+  uint32_t data[8] = {0};
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(INIT_TMPREGS);
+  asm volatile(NOP10);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile(ADDI_CHAIN);
+  asm volatile("mv %0, x5" : "=r"(data[0]));
+  asm volatile("mv %0, x6" : "=r"(data[1]));
+  asm volatile("mv %0, x7" : "=r"(data[2]));
+  asm volatile("mv %0, x28" : "=r"(data[3]));
+  asm volatile("mv %0, x29" : "=r"(data[4]));
+  asm volatile("mv %0, x30" : "=r"(data[5]));
+  sca_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send data, alerts & ERR_STATUS to host.
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memcpy(uj_output.addresses, addresses, sizeof(addresses));
+  memcpy(uj_output.data, data, sizeof(data));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
@@ -1457,6 +2443,10 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
 
+  // Init OTP.
+  TRY(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
@@ -1470,6 +2460,10 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;
   flash_data_valid = false;
+  // Initialize retention SRAM.
+  sram_ret_init = false;
+  // Fetch reference values from OTP before OTP tests.
+  otp_ref_init = false;
 
   return OK_STATUS();
 }
@@ -1482,6 +2476,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_init(uj);
     case kIbexFiSubcommandCharUnrolledRegOpLoop:
       return handle_ibex_fi_char_unrolled_reg_op_loop(uj);
+    case kIbexFiSubcommandCharUnrolledRegOpLoopChain:
+      return handle_ibex_fi_char_unrolled_reg_op_loop_chain(uj);
     case kIbexFiSubcommandCharRegOpLoop:
       return handle_ibex_fi_char_reg_op_loop(uj);
     case kIbexFiSubcommandCharUnrolledMemOpLoop:
@@ -1506,10 +2502,18 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_conditional_branch_bltu(uj);
     case kIbexFiSubcommandCharUncondBranch:
       return handle_ibex_fi_char_unconditional_branch(uj);
+    case kIbexFiSubcommandCharUncondBranchNop:
+      return handle_ibex_fi_char_unconditional_branch_nop(uj);
     case kIbexFiSubcommandCharSramWrite:
       return handle_ibex_fi_char_sram_write(uj);
+    case kIbexFiSubcommandCharSramWriteRead:
+      return handle_ibex_fi_char_sram_write_read(uj);
+    case kIbexFiSubcommandCharSramWriteStaticUnrolled:
+      return handle_ibex_fi_char_sram_write_static_unrolled(uj);
     case kIbexFiSubcommandCharSramRead:
       return handle_ibex_fi_char_sram_read(uj);
+    case kIbexFiSubcommandCharSramStatic:
+      return handle_ibex_fi_char_sram_static(uj);
     case kIbexFiSubcommandCharFlashWrite:
       return handle_ibex_fi_char_flash_write(uj);
     case kIbexFiSubcommandCharFlashRead:
@@ -1522,6 +2526,24 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_address_translation_config(uj);
     case kIbexFiSubcommandAddressTranslation:
       return handle_ibex_fi_address_translation(uj);
+    case kIbexFiSubcommandOtpDataRead:
+      return handle_ibex_fi_otp_data_read(uj);
+    case kIbexFiSubcommandOtpReadLock:
+      return handle_ibex_fi_otp_read_lock(uj);
+    case kIbexFiSubcommandOtpWriteLock:
+      return handle_ibex_fi_otp_write_lock(uj);
+    case kIbexFiSubcommandCharHardenedCheckUnimp:
+      return handle_ibex_fi_char_hardened_check_eq_unimp(uj);
+    case kIbexFiSubcommandCharHardenedCheck2Unimps:
+      return handle_ibex_fi_char_hardened_check_eq_2_unimps(uj);
+    case kIbexFiSubcommandCharHardenedCheck3Unimps:
+      return handle_ibex_fi_char_hardened_check_eq_3_unimps(uj);
+    case kIbexFiSubcommandCharHardenedCheck4Unimps:
+      return handle_ibex_fi_char_hardened_check_eq_4_unimps(uj);
+    case kIbexFiSubcommandCharHardenedCheck5Unimps:
+      return handle_ibex_fi_char_hardened_check_eq_5_unimps(uj);
+    case kIbexFiSubcommandCharHardenedCheckComplementBranch:
+      return handle_ibex_fi_char_hardened_check_eq_complement_branch(uj);
     default:
       LOG_ERROR("Unrecognized IBEX FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
