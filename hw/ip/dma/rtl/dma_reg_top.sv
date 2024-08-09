@@ -184,12 +184,10 @@ module dma_reg_top (
   logic [3:0] control_opcode_wd;
   logic control_hardware_handshake_enable_qs;
   logic control_hardware_handshake_enable_wd;
-  logic control_memory_buffer_auto_increment_enable_qs;
-  logic control_memory_buffer_auto_increment_enable_wd;
-  logic control_fifo_auto_increment_enable_qs;
-  logic control_fifo_auto_increment_enable_wd;
-  logic control_data_direction_qs;
-  logic control_data_direction_wd;
+  logic [1:0] control_src_addr_increment_qs;
+  logic [1:0] control_src_addr_increment_wd;
+  logic [1:0] control_dst_addr_increment_qs;
+  logic [1:0] control_dst_addr_increment_wd;
   logic control_initial_transfer_qs;
   logic control_initial_transfer_wd;
   logic control_abort_wd;
@@ -212,6 +210,7 @@ module dma_reg_top (
   logic error_code_base_limit_error_qs;
   logic error_code_range_valid_error_qs;
   logic error_code_asid_error_qs;
+  logic error_code_addr_increment_error_qs;
   logic [31:0] sha2_digest_0_qs;
   logic [31:0] sha2_digest_1_qs;
   logic [31:0] sha2_digest_2_qs;
@@ -494,8 +493,8 @@ module dma_reg_top (
     .wd     (src_addr_lo_wd),
 
     // from internal hardware
-    .de     (hw2reg.src_addr_lo.de),
-    .d      (hw2reg.src_addr_lo.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -527,8 +526,8 @@ module dma_reg_top (
     .wd     (src_addr_hi_wd),
 
     // from internal hardware
-    .de     (hw2reg.src_addr_hi.de),
-    .d      (hw2reg.src_addr_hi.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -560,8 +559,8 @@ module dma_reg_top (
     .wd     (dst_addr_lo_wd),
 
     // from internal hardware
-    .de     (hw2reg.dst_addr_lo.de),
-    .d      (hw2reg.dst_addr_lo.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -593,8 +592,8 @@ module dma_reg_top (
     .wd     (dst_addr_hi_wd),
 
     // from internal hardware
-    .de     (hw2reg.dst_addr_hi.de),
-    .d      (hw2reg.dst_addr_hi.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -935,7 +934,7 @@ module dma_reg_top (
 
   // R[control]: V(False)
   logic control_qe;
-  logic [7:0] control_flds_we;
+  logic [6:0] control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -999,19 +998,19 @@ module dma_reg_top (
     .qs     (control_hardware_handshake_enable_qs)
   );
 
-  //   F[memory_buffer_auto_increment_enable]: 5:5
+  //   F[src_addr_increment]: 6:5
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_control_memory_buffer_auto_increment_enable (
+  ) u_control_src_addr_increment (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_we),
-    .wd     (control_memory_buffer_auto_increment_enable_wd),
+    .wd     (control_src_addr_increment_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1019,26 +1018,26 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (control_flds_we[2]),
-    .q      (reg2hw.control.memory_buffer_auto_increment_enable.q),
+    .q      (reg2hw.control.src_addr_increment.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (control_memory_buffer_auto_increment_enable_qs)
+    .qs     (control_src_addr_increment_qs)
   );
 
-  //   F[fifo_auto_increment_enable]: 6:6
+  //   F[dst_addr_increment]: 8:7
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_control_fifo_auto_increment_enable (
+  ) u_control_dst_addr_increment (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_we),
-    .wd     (control_fifo_auto_increment_enable_wd),
+    .wd     (control_dst_addr_increment_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1046,41 +1045,14 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (control_flds_we[3]),
-    .q      (reg2hw.control.fifo_auto_increment_enable.q),
+    .q      (reg2hw.control.dst_addr_increment.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (control_fifo_auto_increment_enable_qs)
+    .qs     (control_dst_addr_increment_qs)
   );
 
-  //   F[data_direction]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_control_data_direction (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (control_we),
-    .wd     (control_data_direction_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (control_flds_we[4]),
-    .q      (reg2hw.control.data_direction.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (control_data_direction_qs)
-  );
-
-  //   F[initial_transfer]: 8:8
+  //   F[initial_transfer]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1099,7 +1071,7 @@ module dma_reg_top (
     .d      (hw2reg.control.initial_transfer.d),
 
     // to internal hardware
-    .qe     (control_flds_we[5]),
+    .qe     (control_flds_we[4]),
     .q      (reg2hw.control.initial_transfer.q),
     .ds     (),
 
@@ -1126,7 +1098,7 @@ module dma_reg_top (
     .d      (hw2reg.control.abort.d),
 
     // to internal hardware
-    .qe     (control_flds_we[6]),
+    .qe     (control_flds_we[5]),
     .q      (reg2hw.control.abort.q),
     .ds     (),
 
@@ -1153,7 +1125,7 @@ module dma_reg_top (
     .d      (hw2reg.control.go.d),
 
     // to internal hardware
-    .qe     (control_flds_we[7]),
+    .qe     (control_flds_we[6]),
     .q      (reg2hw.control.go.q),
     .ds     (),
 
@@ -1528,6 +1500,33 @@ module dma_reg_top (
 
     // to register interface (read)
     .qs     (error_code_asid_error_qs)
+  );
+
+  //   F[addr_increment_error]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_addr_increment_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.addr_increment_error.de),
+    .d      (hw2reg.error_code.addr_increment_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_addr_increment_error_qs)
   );
 
 
@@ -3041,13 +3040,11 @@ module dma_reg_top (
 
   assign control_hardware_handshake_enable_wd = reg_wdata[4];
 
-  assign control_memory_buffer_auto_increment_enable_wd = reg_wdata[5];
+  assign control_src_addr_increment_wd = reg_wdata[6:5];
 
-  assign control_fifo_auto_increment_enable_wd = reg_wdata[6];
+  assign control_dst_addr_increment_wd = reg_wdata[8:7];
 
-  assign control_data_direction_wd = reg_wdata[7];
-
-  assign control_initial_transfer_wd = reg_wdata[8];
+  assign control_initial_transfer_wd = reg_wdata[9];
 
   assign control_abort_wd = reg_wdata[27];
 
@@ -3280,10 +3277,9 @@ module dma_reg_top (
       addr_hit[17]: begin
         reg_rdata_next[3:0] = control_opcode_qs;
         reg_rdata_next[4] = control_hardware_handshake_enable_qs;
-        reg_rdata_next[5] = control_memory_buffer_auto_increment_enable_qs;
-        reg_rdata_next[6] = control_fifo_auto_increment_enable_qs;
-        reg_rdata_next[7] = control_data_direction_qs;
-        reg_rdata_next[8] = control_initial_transfer_qs;
+        reg_rdata_next[6:5] = control_src_addr_increment_qs;
+        reg_rdata_next[8:7] = control_dst_addr_increment_qs;
+        reg_rdata_next[9] = control_initial_transfer_qs;
         reg_rdata_next[27] = '0;
         reg_rdata_next[31] = control_go_qs;
       end
@@ -3305,6 +3301,7 @@ module dma_reg_top (
         reg_rdata_next[5] = error_code_base_limit_error_qs;
         reg_rdata_next[6] = error_code_range_valid_error_qs;
         reg_rdata_next[7] = error_code_asid_error_qs;
+        reg_rdata_next[8] = error_code_addr_increment_error_qs;
       end
 
       addr_hit[20]: begin
