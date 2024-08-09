@@ -160,6 +160,9 @@ class edn_alert_vseq extends edn_base_vseq;
           ack_err_during_hs = valid && ready;
           ack_err_before_hs = ack_err_during_hs ? 1'b0 : ack_err_before_hs;
         end
+        if (cfg.en_cov) begin
+          cov_vif.cg_cs_cmd_response_sample(cfg.which_cmd_sts_err, 1'b1);
+        end
         // Reintroduce delays for CSRNG acknowledgements and stop forcing the acknowledgement.
         cfg.m_csrng_agent_cfg.cmd_zero_delays = 0;
         cfg.m_csrng_agent_cfg.cmd_force_ack = 0;
