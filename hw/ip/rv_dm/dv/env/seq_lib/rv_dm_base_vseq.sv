@@ -260,9 +260,14 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   // Stop running the m_tl_sba_device_seq seq.
+  //
+  // This is a no-op if the sequence is actually null (because we never completed dut_init, which
+  // would have constructed the object),
   virtual task sba_tl_device_seq_stop();
-    m_tl_sba_device_seq.seq_stop();
-    `uvm_info(`gfn, "Stopped running m_tl_sba_device_seq", UVM_MEDIUM)
+    if (m_tl_sba_device_seq != null) begin
+      m_tl_sba_device_seq.seq_stop();
+      `uvm_info(`gfn, "Stopped running m_tl_sba_device_seq", UVM_MEDIUM)
+    end
   endtask
 
   // Task forked off to disable TLUL host SBA assertions when injecting intg errors on the response
