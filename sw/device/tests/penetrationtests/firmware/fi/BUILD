@@ -5,6 +5,29 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "crypto_fi",
+    srcs = ["crypto_fi.c"],
+    hdrs = ["crypto_fi.h"],
+    deps = [
+        "//hw/ip/aes/data:aes_c_regs",
+        "//hw/ip/kmac/data:kmac_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/json:crypto_fi_commands",
+    ],
+)
+
+cc_library(
     name = "ibex_fi",
     srcs = [
         "ibex_fi.S",
