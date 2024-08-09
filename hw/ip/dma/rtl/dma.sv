@@ -21,6 +21,7 @@ module dma
   input prim_mubi_pkg::mubi4_t                      scanmode_i,
   // DMA interrupts and incoming LSIO triggers
   output  logic                                     intr_dma_done_o,
+  output  logic                                     intr_dma_chunk_done_o,
   output  logic                                     intr_dma_error_o,
   input   lsio_trigger_t                            lsio_trigger_i,
   // Alerts
@@ -1083,16 +1084,21 @@ module dma
 
   // Interrupt logic
   logic test_done_interrupt;
+  logic test_chunk_done_interrupt;
   logic test_error_interrupt;
   logic data_move_state, data_move_state_valid;
   logic update_dst_addr_reg, update_src_addr_reg;
 
-  assign test_done_interrupt  = reg2hw.intr_test.dma_done.q  && reg2hw.intr_test.dma_done.qe;
-  assign test_error_interrupt = reg2hw.intr_test.dma_error.q && reg2hw.intr_test.dma_error.qe;
+  assign test_done_interrupt       = reg2hw.intr_test.dma_done.q && reg2hw.intr_test.dma_done.qe;
+  assign test_chunk_done_interrupt = reg2hw.intr_test.dma_chunk_done.q &&
+                                     reg2hw.intr_test.dma_chunk_done.qe;
+  assign test_error_interrupt      = reg2hw.intr_test.dma_error.q && reg2hw.intr_test.dma_error.qe;
 
   // Signal interrupt controller whenever an enabled interrupt info bit is set
-  assign intr_dma_done_o  = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
-  assign intr_dma_error_o = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
+  assign intr_dma_done_o       = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
+  assign intr_dma_chunk_done_o = reg2hw.intr_state.dma_chunk_done.q  &&
+                                 reg2hw.intr_enable.dma_chunk_done.q;
+  assign intr_dma_error_o      = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
 
   // Data was moved if we get a write valid response
   assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite ||
@@ -1259,10 +1265,13 @@ module dma
     hw2reg.control.abort.d  = 1'b0;
 
     // Interrupt management
-    // Raise the done interrupt either when finishing finishing a single chunk or the whole
-    // transfer.
-    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | chunk_done | test_done_interrupt;
+    // Raise the done interrupt either when finishing finishing all chunks
+    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | test_done_interrupt;
     hw2reg.intr_state.dma_done.d  = 1'b1;
+
+    hw2reg.intr_state.dma_chunk_done.de = (hw2reg.status.chunk_done.d &
+                                           hw2reg.status.chunk_done.de) | test_chunk_done_interrupt;
+    hw2reg.intr_state.dma_chunk_done.d  = 1'b1;
 
     hw2reg.intr_state.dma_error.de = reg2hw.status.error.q | test_error_interrupt;
     hw2reg.intr_state.dma_error.d  = 1'b1;

@@ -279,6 +279,12 @@ class dma_generic_vseq extends dma_base_vseq;
           clear_interrupts(1 << DMA_DONE);
           status[StatusDone] = 1'b0;
         end
+        if (status[StatusChunkDone]) begin
+          // Clear STATUS.chunk_done bit and then clear the interrupt, if enabled.
+          clear_chunk_done();
+          clear_interrupts(1 << DMA_CHUNK_DONE);
+          status[StatusChunkDone] = 1'b0;
+        end
         if (status[StatusError]) begin
           // Clear STATUS.error condition and associcated interrupt.
           clear_errors(dma_config);
