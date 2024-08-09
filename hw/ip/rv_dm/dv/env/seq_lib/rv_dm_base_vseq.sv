@@ -201,8 +201,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.m_jtag_agent_cfg.vif.set_tck_period_ps(tck_period_ps);
     fork
       if (kind inside {"HARD", "TRST"}) begin
-        jtag_dtm_ral.reset("HARD");
-        jtag_dmi_ral.reset("HARD");
         cfg.m_jtag_agent_cfg.vif.do_trst_n();
       end
       if (kind inside {"HARD", "SCAN"}) apply_scan_reset();

@@ -400,6 +400,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     tl_sba_a_chan_fifo.flush();
     tl_sba_d_chan_fifo.flush();
     selected_dtm_csr = cfg.m_jtag_agent_cfg.jtag_dtm_ral.idcode;
+    cfg.jtag_dmi_ral.reset(kind);
   endfunction
 
   function void check_phase(uvm_phase phase);
