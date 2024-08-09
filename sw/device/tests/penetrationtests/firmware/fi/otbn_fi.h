@@ -9,6 +9,36 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
+ * otbn.fi.key_sideload command handler.
+ *
+ * Injects a fault when a key is sideloaded from the key manager into OTBN.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_key_sideload(ujson_t *uj);
+
+/**
+ * otbn.fi.load_integrity command handler.
+ *
+ * Tests, whether a fault during loading the OTBN app can manipulate data in
+ * DMEM without changing the CRC-32 checksum that is used to check the
+ * integrity of the DMEM and IMEM.
+ *
+ * As the OTBN app itself is not the target of this FI analysis, it only
+ * consists of NOPs. The DMEM is initialized with reference values that
+ * are checked.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_load_integrity(ujson_t *uj);
+
+/**
  * otbn.fi.char.hardware.dmem.op.loop command handler.
  *
  * This FI penetration tests executes the following instructions on OTBN:
@@ -74,6 +104,14 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj);
+
+/**
+ * Initializes the key manager.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_init_keymgr(ujson_t *uj);
 
 /**
  * Initializes the OTBN FI test.
