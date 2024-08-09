@@ -6,16 +6,7 @@
 #define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_OTBN_FI_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/ujson/ujson.h"
-
-/**
- * Read the error bits of the OTBN accelerator.
- *
- * @returns Error bits.
- */
-status_t read_otbn_err_bits(dif_otbn_err_bits_t *err_bits);
 
 /**
  * otbn.fi.char.hardware.dmem.op.loop command handler.
