@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@nonhermetic//:env.bzl", "ENV")
-load("@ot_python_deps//:requirements.bzl", "entry_point")
 
 """Rules for running FuseSoC.
 

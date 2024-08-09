@@ -57,7 +57,7 @@ def ot_binary(ctx, **kwargs):
     Returns:
       (elf_file, map_file) File objects.
     """
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
     features = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,

@@ -14,7 +14,7 @@ def _ot_static_library_impl(ctx):
     output_lib = ctx.actions.declare_file("lib{}.a".format(ctx.attr.name))
     output_flags = ctx.actions.declare_file("lib{}.link".format(ctx.attr.name))
 
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
 
     # Aggregate linker inputs of all dependencies
     lib_sets = []
