@@ -12,11 +12,14 @@ extern "C" {
 // clang-format off
 
 #define OTBNFI_SUBCOMMAND(_, value) \
+    value(_, InitKeyMgr) \
     value(_, Init) \
     value(_, CharUnrolledRegOpLoop) \
     value(_, CharUnrolledDmemOpLoop) \
     value(_, CharHardwareRegOpLoop) \
-    value(_, CharHardwareDmemOpLoop)
+    value(_, CharHardwareDmemOpLoop) \
+    value(_, LoadIntegrity) \
+    value(_, KeySideload)
 UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND);
 
 #define OTBNFI_LOOP_COUNTER_OUTPUT(field, string) \
@@ -25,6 +28,21 @@ UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND);
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(OtbnFiLoopCounterOutput, otbn_fi_loop_counter_t, OTBNFI_LOOP_COUNTER_OUTPUT);
+
+#define OTBNFI_RESULT_OUTPUT(field, string) \
+    field(result, uint32_t) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiResultOutput, otbn_fi_result_t, OTBNFI_RESULT_OUTPUT);
+
+#define OTBNFI_KEY_OUTPUT(field, string) \
+    field(res, uint32_t) \
+    field(keys, uint32_t, 4) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiKeyOutput, otbn_fi_keys_t, OTBNFI_KEY_OUTPUT);
 
 // clang-format on
 
