@@ -75,3 +75,23 @@ cc_library(
         "//sw/device/tests/penetrationtests/json:rng_fi_commands",
     ],
 )
+
+cc_library(
+    name = "rom_fi",
+    srcs = ["rom_fi.c"],
+    hdrs = ["rom_fi.h"],
+    deps = [
+        "//hw/ip/rom_ctrl/data:rom_ctrl_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rom_ctrl",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/json:rom_fi_commands",
+    ],
+)
