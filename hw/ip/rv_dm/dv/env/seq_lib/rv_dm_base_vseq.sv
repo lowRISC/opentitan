@@ -416,11 +416,21 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.lc_hw_debug_en <= bool_to_lc_tx_t(lc_hw_debug_en);
   endfunction
 
-  // Read the dtmcs register and check the dmistat field has the expected value.
+  // Read the dtmcs register and check the dmistat field has the expected value, skipping the check
+  // if the system is in reset.
   task check_dmistat(bit [1:0] expected_dmistat);
     uvm_reg_data_t rdata;
+    bit [1:0]      dmistat_seen;
+
     csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
-    `DV_CHECK_EQ(expected_dmistat, get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata))
+    if (!cfg.clk_rst_vif.rst_n) return;
+
+    dmistat_seen = get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata);
+    if (dmistat_seen != expected_dmistat) begin
+      `uvm_error(get_name(),
+                 $sformatf("Unexpected dtmcs.dmistat. Was expecting b%02b but saw b%02b.",
+                           expected_dmistat, dmistat_seen))
+    end
   endtask
 
   // Check that the cmderr field in abstractcs is as expected, skipping the check if the system is
