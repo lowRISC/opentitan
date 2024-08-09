@@ -37,7 +37,7 @@ const USB_MAX_SIZE: usize = 64;
 /// (receiving at most 127 bytes).
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[allow(dead_code)] // Fields not explicitly read anywhere
-#[repr(packed)]
+#[repr(C, packed)]
 struct CmdTransferShort {
     encapsulation_header: u8,
     port: u8,
@@ -51,7 +51,7 @@ struct CmdTransferShort {
 /// (receiving up to 32767 bytes).
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[allow(dead_code)] // Fields not explicitly read anywhere
-#[repr(packed)]
+#[repr(C, packed)]
 struct CmdTransferLong {
     encapsulation_header: u8,
     port: u8,
@@ -66,7 +66,7 @@ struct CmdTransferLong {
 /// Wire format of USB packet containing I2C transaction response.
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[allow(dead_code)] // Reserved field not read anywhere
-#[repr(packed)]
+#[repr(C, packed)]
 struct RspTransfer {
     encapsulation_header: u8,
     status_code: u16,
@@ -86,7 +86,7 @@ impl RspTransfer {
 
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[allow(dead_code)] // Fields not explicitly read anywhere
-#[repr(packed)]
+#[repr(C, packed)]
 struct CmdGetDeviceStatus {
     encapsulation_header: u8,
     port: u8,
@@ -102,7 +102,7 @@ const I2C_DEVICE_CMD_PREPARE_READ_DATA: u8 = 0x01;
 const I2C_DEVICE_FLAG_STICKY: u8 = 0x80;
 
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
-#[repr(packed)]
+#[repr(C, packed)]
 struct RspGetDeviceStatus {
     encapsulation_header: u8,
     struct_size: u16,
@@ -126,7 +126,7 @@ impl RspGetDeviceStatus {
 
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[allow(dead_code)] // Fields not explicitly read anywhere
-#[repr(packed)]
+#[repr(C, packed)]
 struct CmdPrepareReadData {
     encapsulation_header: u8,
     port: u8,
