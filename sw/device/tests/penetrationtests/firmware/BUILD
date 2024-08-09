@@ -26,6 +26,7 @@ PENTEST_EXEC_ENVS = dicts.add(
 FIRMWARE_DEPS_FPGA = [
     "//sw/device/tests/penetrationtests/firmware/fi:crypto_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
+    "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rom_fi",
@@ -51,6 +52,7 @@ FIRMWARE_DEPS_FPGA = [
 FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/fi:crypto_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
+    "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rom_fi",
