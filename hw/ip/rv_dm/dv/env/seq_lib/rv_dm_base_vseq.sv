@@ -297,11 +297,23 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     // is confusing to debug, so use a backdoor read to check that it isn't currently set.
     dmcontrol_t dmcontrol_val;
     read_dmcontrol(.backdoor(1), .value(dmcontrol_val));
+    if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK(!dmcontrol_val.ndmreset);
 
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
+    if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, 1)
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
+
+    // Wait a short time (up to 10 cycles, but stopping early if there's a reset)
+    fork begin : isolation_fork
+      fork
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
+        wait(!cfg.clk_rst_vif.rst_n);
+      join_any
+      disable fork;
+    end join
+    if (!cfg.clk_rst_vif.rst_n) return;
+
     csr_wr(.ptr(tl_mem_ral.halted), .value(0));
   endtask
 
