@@ -709,6 +709,8 @@ class cip_base_vseq #(
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
       bit do_read_and_check_all_csrs;
+      bit vseq_done = 1'b0;
+
       `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq iteration %0d/%0d",
                                 i, num_times), UVM_LOW)
       // Arbitration: requests at highest priority granted in FIFO order, so that we can predict
@@ -734,6 +736,7 @@ class cip_base_vseq #(
                   dv_vseq.start(p_sequencer);
                 end
               join
+              vseq_done = 1'b1;
               wait(ongoing_reset == 0);
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
@@ -749,10 +752,11 @@ class cip_base_vseq #(
                 @(cfg.clk_rst_vif.rst_n);
               end else begin
                 // If we aren't in reset for some other reason then we want to inject one ourselves
-                // now. Check that there are no CSR requests in flight as we trigger the reset. If
-                // any exist, they won't manage to complete (because apply_resets_concurrently will
-                // kill the task that is driving them) and everything will end up out of sync.
-                `DV_CHECK(!has_outstanding_access(),
+                // now. Unless can_reset_with_csr_accesses is true, check that there are no CSR
+                // requests in flight as we trigger the reset. If any exist, they won't manage to
+                // complete (because apply_resets_concurrently will kill the task that is driving
+                // them) and everything will end up out of sync.
+                `DV_CHECK(cfg.can_reset_with_csr_accesses || !has_outstanding_access(),
                           "Trying to trigger a reset with outstanding CSR items.")
 
                 ongoing_reset = 1'b1;
@@ -763,6 +767,18 @@ class cip_base_vseq #(
               end
             end
           join_any
+
+          // If vseq_done is false then we have issued a reset (the second process in the fork) but
+          // the vseq that we were racing against hasn't noticed the reset and stopped. Killing that
+          // process will cause confusing errors (because there will be some sequence that's waiting
+          // for a sequencer, but gets killed in the meantime). We tolerate that confusion when
+          // can_reset_with_csr_accesses is false (since that's the way the
+          // stress_all_with_rand_reset vseq was designed), but want to avoid it happening if
+          // can_reset_with_csr_accesses=1: we expect the vseq to run to completion before the reset
+          // signal is de-asserted. To make things easier to debug if it hasn't done, fail in an
+          // understandable way here.
+          if (cfg.can_reset_with_csr_accesses) `DV_CHECK_FATAL(vseq_done)
+
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
@@ -807,34 +823,38 @@ class cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(rand_reset_delay);
     cfg.set_intention_to_reset();
 
-    `uvm_info(`gfn, $sformatf(
-              "Waiting up to %0d cycles for a long enough run of no accesses", wait_cycles),
-              UVM_MEDIUM)
-    for (cycles_waited = 0;
-         cycles_waited < wait_cycles || cycles_with_no_accesses > 0;
-         ++cycles_waited) begin
-      // If we are actually in reset then there's no need to do any more waiting: the caller can
-      // "apply a reset now" (a no-op)
-      if (!cfg.clk_rst_vif.rst_n) return;
+    // If we are not happy to apply a reset when a CSR access in flight, we now have to wait until
+    // there has been a period with no CSR accesses.
+    if (!cfg.can_reset_with_csr_accesses) begin
+      `uvm_info(`gfn, $sformatf(
+                "Waiting up to %0d cycles for a long enough run of no accesses", wait_cycles),
+                UVM_MEDIUM)
+      for (cycles_waited = 0;
+           cycles_waited < wait_cycles || cycles_with_no_accesses > 0;
+           ++cycles_waited) begin
+        // If we are actually in reset then there's no need to do any more waiting: the caller can
+        // "apply a reset now" (a no-op)
+        if (!cfg.clk_rst_vif.rst_n) return;
 
-      if (!has_outstanding_access()) begin
-        ++cycles_with_no_accesses;
-        if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
-          `uvm_info(`gfn, $sformatf(
-                    "Finally no outstanding accesses after %d cycles", cycles_waited),
-                    UVM_MEDIUM)
-          break;
+        if (!has_outstanding_access()) begin
+          ++cycles_with_no_accesses;
+          if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
+            `uvm_info(`gfn, $sformatf(
+                      "Finally no outstanding accesses after %d cycles", cycles_waited),
+                      UVM_MEDIUM)
+            break;
+          end
+        end else begin
+          // And reset the count if there are outstanding accesses to count only consecutive
+          // cycles with no accesses. This will also break out of the loop if the wait has been
+          // too long.
+          cycles_with_no_accesses = 0;
         end
-      end else begin
-        // And reset the count if there are outstanding accesses to count only consecutive
-        // cycles with no accesses. This will also break out of the loop if the wait has been
-        // too long.
-        cycles_with_no_accesses = 0;
+        cfg.clk_rst_vif.wait_clks(1);
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      `DV_CHECK(!has_outstanding_access(), $sformatf(
+                "Waited %0d cycles to issue a reset with no outstanding accesses.", cycles_waited))
     end
-    `DV_CHECK(!has_outstanding_access(), $sformatf(
-              "Waited %0d cycles to issue a reset with no outstanding accesses.", cycles_waited))
 
     // Wait a portion of the clock period, to avoid the reset being synchronised with an edge of the
     // clock.
