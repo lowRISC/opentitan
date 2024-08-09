@@ -14,6 +14,7 @@ extern "C" {
 #define IBEXFI_SUBCOMMAND(_, value) \
     value(_, Init) \
     value(_, CharUnrolledRegOpLoop) \
+    value(_, CharUnrolledRegOpLoopChain) \
     value(_, CharRegOpLoop) \
     value(_, CharUnrolledMemOpLoop) \
     value(_, CharMemOpLoop) \
@@ -26,14 +27,27 @@ extern "C" {
     value(_, CharCondBranchBlt) \
     value(_, CharCondBranchBltu) \
     value(_, CharUncondBranch) \
+    value(_, CharUncondBranchNop) \
     value(_, CharSramWrite) \
+    value(_, CharSramWriteRead) \
+    value(_, CharSramWriteStaticUnrolled) \
     value(_, CharSramRead) \
+    value(_, CharSramStatic) \
     value(_, CharFlashWrite) \
     value(_, CharFlashRead) \
     value(_, CharCsrRead) \
     value(_, CharCsrWrite) \
     value(_, AddressTranslationCfg) \
-    value(_, AddressTranslation)
+    value(_, AddressTranslation) \
+    value(_, OtpDataRead) \
+    value(_, OtpReadLock) \
+    value(_, OtpWriteLock) \
+    value(_, CharHardenedCheckUnimp) \
+    value(_, CharHardenedCheck2Unimps) \
+    value(_, CharHardenedCheck3Unimps) \
+    value(_, CharHardenedCheck4Unimps) \
+    value(_, CharHardenedCheck5Unimps) \
+    value(_, CharHardenedCheckComplementBranch)
 UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
 
 #define IBEXFI_TEST_RESULT(field, string) \
@@ -41,6 +55,13 @@ UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(IbexFiTestResult, ibex_fi_test_result_t, IBEXFI_TEST_RESULT);
+
+#define IBEXFI_TEST_RESULT_REGISTERS(field, string) \
+    field(result, uint32_t) \
+    field(registers, uint32_t, 32) \
+    field(err_status, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(IbexFiTestResultRegisters, ibex_fi_test_result_registers_t, IBEXFI_TEST_RESULT_REGISTERS);
 
 #define IBEXFI_TEST_RESULT_MULT(field, string) \
     field(result1, uint32_t) \
@@ -58,7 +79,7 @@ UJSON_SERDE_STRUCT(IbexFiLoopCounterOutput, ibex_fi_loop_counter_t, IBEXFI_LOOP_
 #define IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT(field, string) \
     field(loop_counter1, uint32_t) \
     field(loop_counter2, uint32_t) \
-    field(err_status, uint32_t)  \
+    field(err_status, uint32_t) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrored_t, IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT);
 
@@ -68,6 +89,12 @@ UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrore
     field(data, uint32_t, 8) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(IbexFiFaultyAddressesData, ibex_fi_faulty_addresses_data_t, IBEXFI_FAULTY_ADDRESSES_DATA);
+
+#define IBEXFI_FAULTY_ADDRESSES(field, string) \
+    field(err_status, uint32_t) \
+    field(addresses, uint32_t, 8) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(IbexFiFaultyAddresses, ibex_fi_faulty_addresses_t, IBEXFI_FAULTY_ADDRESSES);
 
 // clang-format on
 
