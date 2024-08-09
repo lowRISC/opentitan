@@ -51,6 +51,7 @@ module tb;
     .scanmode_i (prim_mubi_pkg::MuBi4False),
     .lsio_trigger_i (handshake_i),
     .intr_dma_done_o (interrupts[DMA_DONE]),
+    .intr_dma_chunk_done_o (interrupts[DMA_CHUNK_DONE]),
     .intr_dma_error_o (interrupts[DMA_ERROR]),
     .alert_rx_i (alert_rx),
     .alert_tx_o (alert_tx),

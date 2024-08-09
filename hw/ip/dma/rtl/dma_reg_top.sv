@@ -122,14 +122,18 @@ module dma_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_dma_done_qs;
+  logic intr_state_dma_chunk_done_qs;
   logic intr_state_dma_error_qs;
   logic intr_enable_we;
   logic intr_enable_dma_done_qs;
   logic intr_enable_dma_done_wd;
+  logic intr_enable_dma_chunk_done_qs;
+  logic intr_enable_dma_chunk_done_wd;
   logic intr_enable_dma_error_qs;
   logic intr_enable_dma_error_wd;
   logic intr_test_we;
   logic intr_test_dma_done_wd;
+  logic intr_test_dma_chunk_done_wd;
   logic intr_test_dma_error_wd;
   logic alert_test_we;
   logic alert_test_wd;
@@ -329,7 +333,34 @@ module dma_reg_top (
     .qs     (intr_state_dma_done_qs)
   );
 
-  //   F[dma_error]: 1:1
+  //   F[dma_chunk_done]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state_dma_chunk_done (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.dma_chunk_done.de),
+    .d      (hw2reg.intr_state.dma_chunk_done.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.dma_chunk_done.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_dma_chunk_done_qs)
+  );
+
+  //   F[dma_error]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -385,7 +416,34 @@ module dma_reg_top (
     .qs     (intr_enable_dma_done_qs)
   );
 
-  //   F[dma_error]: 1:1
+  //   F[dma_chunk_done]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable_dma_chunk_done (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_dma_chunk_done_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.dma_chunk_done.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_dma_chunk_done_qs)
+  );
+
+  //   F[dma_error]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -415,7 +473,7 @@ module dma_reg_top (
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [1:0] intr_test_flds_we;
+  logic [2:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[dma_done]: 0:0
   prim_subreg_ext #(
@@ -433,7 +491,23 @@ module dma_reg_top (
   );
   assign reg2hw.intr_test.dma_done.qe = intr_test_qe;
 
-  //   F[dma_error]: 1:1
+  //   F[dma_chunk_done]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_dma_chunk_done (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_dma_chunk_done_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[1]),
+    .q      (reg2hw.intr_test.dma_chunk_done.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.dma_chunk_done.qe = intr_test_qe;
+
+  //   F[dma_error]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test_dma_error (
@@ -442,7 +516,7 @@ module dma_reg_top (
     .wd     (intr_test_dma_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (intr_test_flds_we[1]),
+    .qe     (intr_test_flds_we[2]),
     .q      (reg2hw.intr_test.dma_error.q),
     .ds     (),
     .qs     ()
@@ -3005,12 +3079,16 @@ module dma_reg_top (
 
   assign intr_enable_dma_done_wd = reg_wdata[0];
 
-  assign intr_enable_dma_error_wd = reg_wdata[1];
+  assign intr_enable_dma_chunk_done_wd = reg_wdata[1];
+
+  assign intr_enable_dma_error_wd = reg_wdata[2];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_dma_done_wd = reg_wdata[0];
 
-  assign intr_test_dma_error_wd = reg_wdata[1];
+  assign intr_test_dma_chunk_done_wd = reg_wdata[1];
+
+  assign intr_test_dma_error_wd = reg_wdata[2];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -3227,17 +3305,20 @@ module dma_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_dma_done_qs;
-        reg_rdata_next[1] = intr_state_dma_error_qs;
+        reg_rdata_next[1] = intr_state_dma_chunk_done_qs;
+        reg_rdata_next[2] = intr_state_dma_error_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_dma_done_qs;
-        reg_rdata_next[1] = intr_enable_dma_error_qs;
+        reg_rdata_next[1] = intr_enable_dma_chunk_done_qs;
+        reg_rdata_next[2] = intr_enable_dma_error_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[3]: begin

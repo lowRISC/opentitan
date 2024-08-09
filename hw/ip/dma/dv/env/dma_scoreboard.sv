@@ -612,9 +612,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
           if (curr_intr[i] !== exp_intr[i]) begin
             // Collect a list of the mismatched interrupts
             unique case (i)
-              DMA_DONE:      rsn = {rsn, "Done "};
-              DMA_ERROR:     rsn = {rsn, "Error "};
-              default:       rsn = {rsn, "Unknown intr"};
+              DMA_DONE:       rsn = {rsn, "Done "};
+              DMA_CHUNK_DONE: rsn = {rsn, "Chunk Done "};
+              DMA_ERROR:      rsn = {rsn, "Error "};
+              default:        rsn = {rsn, "Unknown intr"};
             endcase
           end
         end

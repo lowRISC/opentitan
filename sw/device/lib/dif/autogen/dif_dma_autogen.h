@@ -79,9 +79,13 @@ typedef enum dif_dma_irq {
    */
   kDifDmaIrqDmaDone = 0,
   /**
+   * Indicates the transfer of a single chunk has been completed.
+   */
+  kDifDmaIrqDmaChunkDone = 1,
+  /**
    * DMA error has occurred. DMA_STATUS.error_code register shows the details.
    */
-  kDifDmaIrqDmaError = 1,
+  kDifDmaIrqDmaError = 2,
 } dif_dma_irq_t;
 
 /**
