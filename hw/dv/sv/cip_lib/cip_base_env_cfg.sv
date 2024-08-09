@@ -8,6 +8,15 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   bit en_tl_err_cov      = 1;
   bit en_tl_intg_err_cov = 1;
 
+  // If this flag is set then we allow the stress_all_with_rand_reset task to apply a reset without
+  // waiting for CSR accesses to complete. This will only work if the IP block's vseqs
+  //
+  //  - Check for reset after performing a CSR read, skipping any check on the result if we are in
+  //  reset (because the result will be rubbish if we are in reset)
+  //
+  //  - Check for reset every so often (to run quickly to completion if a reset has been applied).
+  bit can_reset_with_csr_accesses = 1'b0;
+
   // Downstream agent cfg objects.
 
   // If the block supports only one RAL, just use `m_tl_agent_cfg`.
