@@ -17,6 +17,7 @@ cc_library(
         ":kmac_sca_commands",
         ":lc_ctrl_fi_commands",
         ":otbn_fi_commands",
+        ":otp_fi_commands",
         ":prng_sca_commands",
         ":rom_fi_commands",
         ":sha3_sca_commands",
@@ -85,6 +86,13 @@ cc_library(
     name = "otbn_fi_commands",
     srcs = ["otbn_fi_commands.c"],
     hdrs = ["otbn_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "otp_fi_commands",
+    srcs = ["otp_fi_commands.c"],
+    hdrs = ["otp_fi_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

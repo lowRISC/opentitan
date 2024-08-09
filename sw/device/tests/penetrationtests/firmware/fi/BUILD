@@ -130,6 +130,24 @@ cc_library(
 )
 
 cc_library(
+    name = "otp_fi",
+    srcs = ["otp_fi.c"],
+    hdrs = ["otp_fi.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/json:otp_fi_commands",
+    ],
+)
+
+cc_library(
     name = "rom_fi",
     srcs = ["rom_fi.c"],
     hdrs = ["rom_fi.h"],
