@@ -109,48 +109,36 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
     forever begin
-      // Wait until we either go into reset or we get an item to drive.
-      fork : isolation_fork
-        begin
-          fork
-            wait (! cfg.vif.trst_n);
-            seq_item_port.get_next_item(req);
-          join_any
-          disable fork;
-        end
-      join
+      // Read seq_item_port to get items to drive
+      seq_item_port.get_next_item(req);
 
-      if (!cfg.vif.trst_n) begin
-        @(posedge cfg.vif.trst_n);
-      end else begin
-        // Since trst_n is not 0, the get_next_item() task must have completed and has written the
-        // request to req
-        $cast(rsp, req.clone());
-        rsp.set_id_info(req);
+      $cast(rsp, req.clone());
+      rsp.set_id_info(req);
 
+      // If we're not currently in reset then we should actually drive the item (with tck enabled).
+      // Monitor the trst_n signal the whole time. If it becomes low, we immediately stop whatever
+      // we were doing.
+      enable_tck();
+      `DV_SPINWAIT_EXIT(
         // When we start an iteration of this loop, we always expect to either be in the
         // Run-Test/Idle FSM state (the normal situation) or in Test-Logic-Reset (which happens
         // after a test reset).
         //
         // Send a TCK cycle with tms=0. If we were in Run-Test/Idle, this is a no-op. If we were in
         // Test-Logic-Reset, this steps to Run-Test/Idle. As a side-effect, this also lines us up
-        // again with the negedge of tck.
-        enable_tck();
+        // again with the negedge of tck. Drop out early if trst_n goes low.
         cfg.vif.tms <= 1'b0;
         @(posedge cfg.vif.tck);
         @(`HOST_CB);
-        release_tck();
+        // Now drive the JTAG request itself.
+        drive_jtag_req(req, rsp);,
 
-        `uvm_info(`gfn, req.sprint(uvm_default_line_printer), UVM_HIGH)
-        enable_tck();
-        `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
-                          wait (!cfg.vif.trst_n);)
-        release_tck();
+        wait (!cfg.vif.trst_n);)
+      release_tck();
 
-        // Mark the item as having been handled. This passes the response (rsp) back to the
-        // sequencer, and also pops the request that we have been handling.
-        seq_item_port.item_done(rsp);
-      end
+      // Mark the item as having been handled. This passes the response (rsp) back to the
+      // sequencer, and also pops the request that we have been handling.
+      seq_item_port.item_done(rsp);
     end
   endtask
 
