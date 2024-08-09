@@ -19,6 +19,7 @@ extern "C" {
     value(_, KmacSca) \
     value(_, OtbnFi) \
     value(_, PrngSca) \
+    value(_, RngFi) \
     value(_, Sha3Sca) \
     value(_, TriggerSca)
 UJSON_SERDE_ENUM(PenetrationtestCommand, penetrationtest_cmd_t, COMMAND);
