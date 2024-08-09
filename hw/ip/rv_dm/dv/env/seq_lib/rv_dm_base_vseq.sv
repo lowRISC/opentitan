@@ -383,11 +383,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(expected_dmistat, get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata))
   endtask
 
-  // Check that the cmderr field in abstractcs is as expected
+  // Check that the cmderr field in abstractcs is as expected, skipping the check if the system is
+  // in reset.
   task check_cmderr(cmderr_e cmderr_exp);
     abstractcs_t abstractcs;
     read_abstractcs(abstractcs);
-    `DV_CHECK_EQ(abstractcs.cmderr, cmderr_exp);
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(abstractcs.cmderr, cmderr_exp);
   endtask
 
   // Clear the cmderr field of abstractcs.

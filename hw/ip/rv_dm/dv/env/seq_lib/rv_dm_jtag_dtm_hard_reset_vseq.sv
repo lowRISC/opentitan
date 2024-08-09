@@ -17,18 +17,20 @@ class rv_dm_jtag_dtm_hard_reset_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(value));
   endtask
 
-  // Read abstractdata[0] over DMI and check it has the expected value
+  // Read abstractdata[0] over DMI and check it has the expected value (unless the system is in
+  // reset)
   task check_abstractdata0(bit [31:0] expected);
     uvm_reg_data_t rdata;
     csr_rd(.ptr(jtag_dmi_ral.abstractdata[0]), .value(rdata));
-    `DV_CHECK_EQ(rdata, expected)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(rdata, expected)
   endtask
 
-  // Read progbuf[0] over DMI and check it has the expected value
+  // Read progbuf[0] over DMI and check it has the expected value (unless the system is in
+  // reset)
   task check_progbuf0(bit [31:0] expected);
     uvm_reg_data_t rdata;
     csr_rd(.ptr(jtag_dmi_ral.progbuf[0]), .value(rdata));
-    `DV_CHECK_EQ(rdata, expected)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(rdata, expected)
   endtask
 
   task body();
@@ -40,6 +42,7 @@ class rv_dm_jtag_dtm_hard_reset_vseq extends rv_dm_base_vseq;
     set_progbuf0(progbuf_val);
     check_abstractdata0(abstractdata_val);
     check_progbuf0(progbuf_val);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Perform the hard reset
     csr_wr(.ptr(jtag_dtm_ral.dtmcs.dmihardreset), .value(1));

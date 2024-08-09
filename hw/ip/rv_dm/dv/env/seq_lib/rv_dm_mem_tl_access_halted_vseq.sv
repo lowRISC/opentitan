@@ -18,11 +18,16 @@ class rv_dm_mem_tl_access_halted_vseq extends rv_dm_base_vseq;
     // the flush state.
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(0));
 
-    // Verify that writing to HALTED causes anyhalted and allhalted to be set.
+    // Write to HALTED, which should cause anyhalted and allhalted to be set.
     request_halt();
     csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(r_data));
-    `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.anyhalted, r_data))
-    `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.allhalted, r_data))
+
+    // Assuming that we haven't entered reset (in which case r_data could be anything), check that
+    // anyhalted and allhalted are indeed set.
+    if (cfg.clk_rst_vif.rst_n) begin
+      `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.anyhalted, r_data))
+      `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.allhalted, r_data))
+    end
   endtask : body
 
 endclass : rv_dm_mem_tl_access_halted_vseq

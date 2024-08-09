@@ -19,11 +19,12 @@ class rv_dm_cmderr_not_supported_vseq extends rv_dm_base_vseq;
     return cmd;
   endfunction
 
-  // Check that the cmderr field in abstractcs is as expected
+  // Check that the cmderr field in abstractcs is as expected. If the system is in reset, skip the
+  // check.
   task check_cmderr(cmderr_e cmderr_exp);
     abstractcs_t abstractcs;
     read_abstractcs(abstractcs);
-    `DV_CHECK_EQ(abstractcs.cmderr, cmderr_exp);
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(abstractcs.cmderr, cmderr_exp);
   endtask
 
   task body();
@@ -35,12 +36,16 @@ class rv_dm_cmderr_not_supported_vseq extends rv_dm_base_vseq;
     // the abstract command)
     request_halt();
 
+    if (!cfg.clk_rst_vif.rst_n) return;
+
     // Ask to start a (bogus) abstract command. This won't actually start, but should cause a
     // command error flag.
     csr_wr(.ptr(jtag_dmi_ral.command), .value(gen_bogus_abstract_cmd()));
 
     // Check that the cmderr field of the abstractcs register is now CmdErrNotSupported
     check_cmderr(CmdErrNotSupported);
+
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Clear the cmderr field. This has access W1C and is 3 bits wide, so writing 3'b111 should
     // clear all the bits.
