@@ -9,30 +9,34 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
   task mirror_dmstatus();
     uvm_status_e dmi_status;
     jtag_dmi_ral.dmstatus.mirror(.status(dmi_status), .check(UVM_NO_CHECK));
-    `DV_CHECK_EQ(dmi_status, UVM_IS_OK)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(dmi_status, UVM_IS_OK)
   endtask
 
   // Write to the resumereq field in dmcontrol to ask the (only) hart to resume. Check that the
   // resume request is reflected in RESUME (bit 1) of the FLAGS register. Then respond as the hart
   // to acknowledge the request.
+  //
+  // If reset is asserted in the middle of the task, exit quickly.
   task request_resume();
     uvm_status_e reg_status;
     uvm_reg_data_t mirrored_flags;
 
     jtag_dmi_ral.dmcontrol.resumereq.set(1'b1);
     jtag_dmi_ral.dmcontrol.update(.status(reg_status));
+    if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(reg_status, UVM_IS_OK)
 
     // Make sure that the FLAGS register reflects the resume request that we just made, because the
     // RESUME bit (at index 1) should be set.
     tl_mem_ral.flags[0].mirror(.status(reg_status), .check(UVM_NO_CHECK));
+    if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(reg_status, UVM_IS_OK)
     mirrored_flags = `gmv(tl_mem_ral.flags[0]);
     `DV_CHECK_EQ(mirrored_flags[1], 1'b1)
 
     // As the hart, we should respond to the resume request by writing the hart id the RESUMING flag
     tl_mem_ral.resuming.write(.status(reg_status), .value(0));
-    `DV_CHECK_EQ(reg_status, UVM_IS_OK)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(reg_status, UVM_IS_OK)
   endtask
 
   task body();
@@ -46,8 +50,9 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
     request_halt();
 
     // At this point, dmstatus should reflect the fact that the one and only hart has halted. Read
-    // it back and check this is true.
+    // it back and check this is true, dropping out early if there has been a system reset.
     mirror_dmstatus();
+    if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.anyhalted), 1'b1)
     `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.allhalted), 1'b1)
 
@@ -60,11 +65,14 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
     request_resume();
 
     // At this point, reading dmstatus from debug module should show that the one and only hart has
-    // acknowledged the resume request. It should also show that the hart is running.
+    // acknowledged the resume request. It should also show that the hart is running (provided that
+    // the system is not in reset)
     mirror_dmstatus();
-    `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.anyresumeack), 1'b1)
-    `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.allresumeack), 1'b1)
-    `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.anyrunning), 1'b1)
-    `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.allrunning), 1'b1)
+    if (cfg.clk_rst_vif.rst_n) begin
+      `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.anyresumeack), 1'b1)
+      `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.allresumeack), 1'b1)
+      `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.anyrunning), 1'b1)
+      `DV_CHECK_EQ(`gmv(jtag_dmi_ral.dmstatus.allrunning), 1'b1)
+    end
   endtask
 endclass

@@ -7,11 +7,11 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
   `uvm_object_new
 
   // Check that the busy field in abstractcs is as expected. It will be high if an abstract command
-  // is currently executing.
+  // is currently executing. Exit without a check if the system is in reset.
   task check_busy(bit exp_busy);
     abstractcs_t abstractcs;
     read_abstractcs(abstractcs);
-    `DV_CHECK_EQ(abstractcs.busy, exp_busy);
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(abstractcs.busy, exp_busy);
   endtask
 
   task body();
@@ -26,6 +26,7 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
     // Start an abstract command executing and check that it has started.
     csr_wr(.ptr(jtag_dmi_ral.command), .value(gen_read_register_cmd(0)));
     check_busy(1'b1);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Perform one of the operations that we expect to cause a "Busy" command error
     randcase
@@ -40,6 +41,7 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
 
     // Check that the abstractcs register has a Busy value in its cmderr field
     check_cmderr(CmdErrBusy);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Complete the abstract command.
     //
@@ -50,6 +52,7 @@ class rv_dm_cmderr_busy_vseq extends rv_dm_base_vseq;
     // Check that the abstract command has indeed completed (to make sure things don't get confused
     // if we chain them together)
     check_busy(1'b0);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Clear the cmderr field. This has access W1C and is 3 bits wide, so writing 3'b111 should
     // clear all the bits.

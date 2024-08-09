@@ -17,7 +17,7 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(data)
     csr_wr(.ptr(jtag_dtm_ral.idcode), .value(data));
     csr_rd(.ptr(jtag_dtm_ral.idcode), .value(data));
-    `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
   endtask
 
   // Check that writing to haltreq controls the debug_req_o output.
@@ -33,7 +33,7 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     // need to wait because the write goes through a jtag_dmi_agent, which follows the write
     // operation with a read operation (polling) to check that it was applied.
 
-    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
   endtask
 
   // Check that the ndmreset field controls the ndmreset_req_o output
@@ -43,7 +43,7 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   task check_ndmreset();
     uvm_reg_data_t data = $urandom_range(0, 1);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
-    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
   endtask
 
   // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
@@ -51,10 +51,12 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     uvm_reg_data_t data = $urandom_range(0, 1);
     cfg.rv_dm_vif.cb.unavailable <= data;
     csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
-    `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
-                 get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
-    `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
-                 get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
+    if (cfg.clk_rst_vif.rst_n) begin
+      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
+                   get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
+      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
+                   get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
+    end
   endtask
 
   // Verify that writing to dmactive causes dmactive output to be set.
