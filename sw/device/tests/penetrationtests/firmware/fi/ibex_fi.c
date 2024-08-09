@@ -34,11 +34,18 @@ static str_fn_t increment_100x1_remapped = (str_fn_t)increment_100x1;
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
-// Make sure that this function does not get optimized by the compiler.
-uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
-  uint32_t return_value = counter + 1;
-  return return_value;
-}
+// Indicates whether flash already was initialized for the test or not.
+static bool flash_init;
+// Indicates whether flash content is valid or not.
+static bool flash_data_valid;
+
+// Cond. branch macros.
+#define CONDBRANCHBEQ "beq x5, x6, endfitestfaultybeq\n"
+#define CONDBRANCHBNE "bne x5, x6, endfitestfaultybne\n"
+#define CONDBRANCHBGE "bge x5, x6, endfitestfaultybge\n"
+#define CONDBRANCHBGEU "bgeu x5, x6, endfitestfaultybgeu\n"
+#define CONDBRANCHBLT "blt x5, x6, endfitestfaultyblt\n"
+#define CONDBRANCHBLTU "bltu x5, x6, endfitestfaultybltu\n"
 
 // NOP macros.
 #define NOP1 "addi x0, x0, 0\n"
@@ -103,6 +110,33 @@ static dif_flash_ctrl_device_info_t flash_info;
 // used by the program.
 OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[32];
+
+// Init temporary registers t0...t7 with given value.
+static inline void init_temp_regs(uint32_t value) {
+  asm volatile("li x5, %0" : : "i"(value));
+  asm volatile("li x6, %0" : : "i"(value));
+  asm volatile("li x7, %0" : : "i"(value));
+  asm volatile("li x28, %0" : : "i"(value));
+  asm volatile("li x29, %0" : : "i"(value));
+  asm volatile("li x30, %0" : : "i"(value));
+  asm volatile("li x31, %0" : : "i"(value));
+}
+
+// Read back values fromo temporary registers t0...t7 into buffer.
+static inline void read_temp_regs(uint32_t buffer[]) {
+  asm volatile("mv %0, x5" : "=r"(buffer[0]));
+  asm volatile("mv %0, x6" : "=r"(buffer[1]));
+  asm volatile("mv %0, x7" : "=r"(buffer[2]));
+  asm volatile("mv %0, x28" : "=r"(buffer[3]));
+  asm volatile("mv %0, x29" : "=r"(buffer[4]));
+  asm volatile("mv %0, x30" : "=r"(buffer[5]));
+  asm volatile("mv %0, x31" : "=r"(buffer[6]));
+}
+
+// Make sure that this function does not get optimized by the compiler.
+void increment_counter(void) __attribute__((optnone)) {
+  asm volatile("addi x5, x5, 1");
+}
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
@@ -261,26 +295,51 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
+  // Init x5 with reference value.
+  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+
   // FI code target.
   sca_set_trigger_high();
   asm volatile(NOP10);
-  for (int i = 0; i < 100; i++) {
-    CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
-  }
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrw	mscratch, x5");
+  asm volatile("csrr x5,mscratch");
   asm volatile(NOP10);
   sca_set_trigger_low();
 
-  uint32_t res_values;
-  // Read values from CSRs.
-  CSR_READ(CSR_REG_MSCRATCH, &res_values);
+  uint32_t res_value;
+  asm volatile("mv %0, x5" : "=r"(res_value));
 
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
   // Compare against reference values.
-  uint32_t res = 0;
-  if (res_values != ref_values[0]) {
-    res = 1;
+  uj_output.result = 0;
+  if (res_value != ref_values[0]) {
+    uj_output.result = res_value;
   }
 
   // Read ERR_STATUS register.
@@ -288,7 +347,6 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send res & ERR_STATUS to host.
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
@@ -302,22 +360,33 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
 
-  uint32_t res_values[32];
+  // Init t0...t6 with 0.
+  init_temp_regs(0);
+
   // FI code target.
   sca_set_trigger_high();
   asm volatile(NOP10);
-  for (int i = 0; i < 32; i++) {
-    CSR_READ(CSR_REG_MSCRATCH, &res_values[i]);
-  }
+  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x6,mscratch");
+  asm volatile("csrr x7,mscratch");
+  asm volatile("csrr x28,mscratch");
+  asm volatile("csrr x29,mscratch");
+  asm volatile("csrr x30,mscratch");
+  asm volatile("csrr x31,mscratch");
   asm volatile(NOP10);
   sca_set_trigger_low();
+
+  // Load register values.
+  // Result buffer.
+  uint32_t res_values[7];
+  read_temp_regs(res_values);
 
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
   // Compare against reference values.
   uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < 7; i++) {
     if (res_values[i] != ref_values[0]) {
       res |= 1;
     }
@@ -336,62 +405,90 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
+status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  // Configure the data flash.
-  // Flash configuration.
-  dif_flash_ctrl_region_properties_t region_properties = {
-      .rd_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .erase_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4True,
-      .ecc_en = kMultiBitBool4True,
-      .high_endurance_en = kMultiBitBool4False};
+  if (!flash_init) {
+    // Configure the data flash.
+    // Flash configuration.
+    dif_flash_ctrl_region_properties_t region_properties = {
+        .rd_en = kMultiBitBool4True,
+        .prog_en = kMultiBitBool4True,
+        .erase_en = kMultiBitBool4True,
+        .scramble_en = kMultiBitBool4True,
+        .ecc_en = kMultiBitBool4True,
+        .high_endurance_en = kMultiBitBool4False};
 
-  dif_flash_ctrl_data_region_properties_t data_region = {
-      .base = FLASH_PAGES_PER_BANK,
-      .size = 0x1,
-      .properties = region_properties};
+    dif_flash_ctrl_data_region_properties_t data_region = {
+        .base = FLASH_PAGES_PER_BANK,
+        .size = 0x1,
+        .properties = region_properties};
 
-  TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-  TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+                                                  kDifToggleEnabled));
+
+    flash_init = true;
+  }
 
   ptrdiff_t flash_bank_1_addr =
       (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
   mmio_region_t flash_bank_1 = mmio_region_from_addr(
       TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
 
-  // Prepare page and write reference values into it.
-  uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
-  memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
-  for (int i = 0; i < 32; i++) {
-    input_page[i] = ref_values[i];
+  if (!flash_data_valid) {
+    // Prepare page and write reference values into it.
+    uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
+    memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
+    for (int i = 0; i < 32; i++) {
+      input_page[i] = ref_values[i];
+    }
+
+    // Erase flash and write page with reference values.
+    TRY(flash_ctrl_testutils_erase_and_write_page(
+        &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+        kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+
+    flash_data_valid = true;
   }
 
-  // Erase flash and write page with reference values.
-  TRY(flash_ctrl_testutils_erase_and_write_page(
-      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
-      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+  // Init t0...t6 with 0.
+  init_temp_regs(0);
 
   // FI code target.
-  uint32_t res_values[32];
   sca_set_trigger_high();
-  for (int i = 0; i < 32; i++) {
-    res_values[i] =
-        mmio_region_read32(flash_bank_1, i * (ptrdiff_t)sizeof(uint32_t));
-  }
+  asm volatile(NOP10);
+  asm volatile("lw x5, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x6, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x7, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x28, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x29, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x30, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x31, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile(NOP10);
   sca_set_trigger_low();
+
+  // Load register values.
+  // Result buffer.
+  uint32_t res_values[7];
+  read_temp_regs(res_values);
 
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
   // Compare against reference values.
-  uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
-    if (res_values[i] != ref_values[i]) {
-      res |= 1;
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+
+  for (uint32_t flash_pos = 0; flash_pos < 7; flash_pos++) {
+    if (res_values[flash_pos] != ref_values[0]) {
+      uj_output.addresses[flash_pos] = flash_pos;
+      uj_output.data[flash_pos] = res_values[flash_pos];
+
+      // Re-init flash with valid data.
+      flash_data_valid = false;
     }
   }
 
@@ -400,11 +497,9 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -412,21 +507,26 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  // Configure the data flash.
-  // Flash configuration.
-  dif_flash_ctrl_region_properties_t region_properties = {
-      .rd_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .erase_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4True,
-      .ecc_en = kMultiBitBool4True,
-      .high_endurance_en = kMultiBitBool4False};
-  dif_flash_ctrl_data_region_properties_t data_region = {
-      .base = FLASH_PAGES_PER_BANK,
-      .size = 0x1,
-      .properties = region_properties};
-  TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-  TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
+  if (!flash_init) {
+    // Configure the data flash.
+    // Flash configuration.
+    dif_flash_ctrl_region_properties_t region_properties = {
+        .rd_en = kMultiBitBool4True,
+        .prog_en = kMultiBitBool4True,
+        .erase_en = kMultiBitBool4True,
+        .scramble_en = kMultiBitBool4True,
+        .ecc_en = kMultiBitBool4True,
+        .high_endurance_en = kMultiBitBool4False};
+    dif_flash_ctrl_data_region_properties_t data_region = {
+        .base = FLASH_PAGES_PER_BANK,
+        .size = 0x1,
+        .properties = region_properties};
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+                                                  kDifToggleEnabled));
+
+    flash_init = true;
+  }
 
   ptrdiff_t flash_bank_1_addr =
       (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
@@ -478,34 +578,42 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  // Get address of buffer located in SRAM.
-  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
-  mmio_region_t sram_region_main_addr =
-      mmio_region_from_addr(sram_main_buffer_addr);
+  // Init t0...t6 with 0.
+  init_temp_regs(0);
 
-  // Write reference values into SRAM.
-  for (int i = 0; i < 32; i++) {
-    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
-                        ref_values[i]);
-  }
+  // Write reference value into SRAM.
+  sram_main_buffer[0] = ref_values[0];
 
-  uint32_t res_values[32];
   // FI code target.
   sca_set_trigger_high();
-  for (int i = 0; i < 32; i++) {
-    res_values[i] = mmio_region_read32(sram_region_main_addr,
-                                       i * (ptrdiff_t)sizeof(uint32_t));
-  }
+  asm volatile(NOP10);
+  // Read from SRAM into temporary registers.
+  asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x28, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x29, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x30, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x31, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile(NOP10);
   sca_set_trigger_low();
+
+  // Load register values.
+  // Result buffer.
+  uint32_t res_values[7];
+  read_temp_regs(res_values);
 
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
-  // Compare against reference values.
-  uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
-    if (res_values[i] != ref_values[i]) {
-      res |= 1;
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+
+  for (uint32_t sram_pos = 0; sram_pos < 7; sram_pos++) {
+    if (res_values[sram_pos] != ref_values[0]) {
+      uj_output.addresses[sram_pos] = sram_pos;
+      uj_output.data[sram_pos] = res_values[sram_pos];
     }
   }
 
@@ -514,11 +622,9 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -530,6 +636,13 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
   mmio_region_t sram_region_main_addr =
       mmio_region_from_addr(sram_main_buffer_addr);
+
+  // Initialize SRAM region with inverse ref_values to avoid that data from a
+  // previous run are still in memory.
+  for (int i = 0; i < 32; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ~ref_values[i]);
+  }
 
   // FI code target.
   sca_set_trigger_high();
@@ -572,107 +685,42 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // FI code target.
   uint32_t result = 0;
   sca_set_trigger_high();
+  // Init x5 register we are using for the increment.
+  asm volatile(INITX5);
+  // Delay the trigger.
   asm volatile(NOP10);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
+  // Attack target.
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("mv %0, x5" : "=r"(result));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
@@ -690,22 +738,59 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
+status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
   // FI code target.
-  uint32_t branch_if_ = 1;
-  uint32_t branch_else = 0;
   sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xef");
   asm volatile(NOP10);
-  for (int i = 0; i < 10000; i++) {
-    if (branch_if_ > 0) {
-      branch_if_++;
-    } else {
-      branch_else++;
-    }
-  }
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile(CONDBRANCHBEQ);
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbeq");
+  asm volatile(
+      "endfitestfaultybeq:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbeq:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
@@ -716,8 +801,363 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
 
   // Send loop counters & ERR_STATUS to host.
   ibex_fi_test_result_mult_t uj_output;
-  uj_output.result1 = branch_if_;
-  uj_output.result2 = branch_else;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xaf");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile(CONDBRANCHBNE);
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbne");
+  asm volatile(
+      "endfitestfaultybne:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbne:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xef");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile(CONDBRANCHBGE);
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbge");
+  asm volatile(
+      "endfitestfaultybge:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbge:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xef");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile(CONDBRANCHBGEU);
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbgeu");
+  asm volatile(
+      "endfitestfaultybgeu:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbgeu:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xef");
+  asm volatile("addi x6, x0, 0xaf");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile(CONDBRANCHBLT);
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestblt");
+  asm volatile(
+      "endfitestfaultyblt:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestblt:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xef");
+  asm volatile("addi x6, x0, 0xaf");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile(CONDBRANCHBLTU);
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbltu");
+  asm volatile(
+      "endfitestfaultybltu:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbltu:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
@@ -867,7 +1307,6 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[7];
-
   // Initialize temporary registers with reference values.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
@@ -919,36 +1358,69 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  uint32_t res_values[3];
-
+  uint32_t res_values[6];
   // Initialize temporary registers with reference values.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
   asm volatile("li x7, %0" : : "i"(ref_values[2]));
-  asm volatile("li x28, 0");
-  asm volatile("li x29, 0");
-  asm volatile("li x30, 0");
+  asm volatile("li x28, %0" : : "i"(ref_values[3]));
+  asm volatile("li x29, %0" : : "i"(ref_values[4]));
+  asm volatile("li x30, %0" : : "i"(ref_values[5]));
 
   // FI code target.
   sca_set_trigger_high();
-  asm volatile("mv x28, x5");
-  asm volatile("mv x29, x6");
-  asm volatile("mv x30, x7");
+  asm volatile(NOP10);
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
   // Load register values.
-  asm volatile("mv %0, x28" : "=r"(res_values[0]));
-  asm volatile("mv %0, x29" : "=r"(res_values[1]));
-  asm volatile("mv %0, x30" : "=r"(res_values[2]));
+  asm volatile("mv %0, x5" : "=r"(res_values[0]));
+  asm volatile("mv %0, x6" : "=r"(res_values[1]));
+  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+  asm volatile("mv %0, x28" : "=r"(res_values[3]));
+  asm volatile("mv %0, x29" : "=r"(res_values[4]));
+  asm volatile("mv %0, x30" : "=r"(res_values[5]));
 
   // Check if one or multiple registers values are faulty.
-  uint32_t res = 0;
-  for (int it = 0; it < 3; it++) {
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  for (uint32_t it = 0; it < 6; it++) {
     if (res_values[it] != ref_values[it]) {
-      res |= 1;
-      LOG_ERROR("reg %d exp=%u got=%u", it, ref_values[it], res_values[it]);
+      uj_output.addresses[it] = 1;  // 1 indicates an error in the register at
+                                    // position it
+      uj_output.data[it] = res_values[it];
     }
   }
 
@@ -957,11 +1429,9 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send result & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -997,6 +1467,10 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(sca_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
+  // Initialize flash for the flash test and write reference values into page.
+  flash_init = false;
+  flash_data_valid = false;
+
   return OK_STATUS();
 }
 
@@ -1018,8 +1492,18 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_register_file(uj);
     case kIbexFiSubcommandCharRegisterFileRead:
       return handle_ibex_fi_char_register_file_read(uj);
-    case kIbexFiSubcommandCharCondBranch:
-      return handle_ibex_fi_char_conditional_branch(uj);
+    case kIbexFiSubcommandCharCondBranchBeq:
+      return handle_ibex_fi_char_conditional_branch_beq(uj);
+    case kIbexFiSubcommandCharCondBranchBne:
+      return handle_ibex_fi_char_conditional_branch_bne(uj);
+    case kIbexFiSubcommandCharCondBranchBge:
+      return handle_ibex_fi_char_conditional_branch_bge(uj);
+    case kIbexFiSubcommandCharCondBranchBgeu:
+      return handle_ibex_fi_char_conditional_branch_bgeu(uj);
+    case kIbexFiSubcommandCharCondBranchBlt:
+      return handle_ibex_fi_char_conditional_branch_blt(uj);
+    case kIbexFiSubcommandCharCondBranchBltu:
+      return handle_ibex_fi_char_conditional_branch_bltu(uj);
     case kIbexFiSubcommandCharUncondBranch:
       return handle_ibex_fi_char_unconditional_branch(uj);
     case kIbexFiSubcommandCharSramWrite:
