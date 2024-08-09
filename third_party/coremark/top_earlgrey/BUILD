@@ -48,6 +48,9 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "eternal",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
     ),
     deps = [
         ":core_portme",

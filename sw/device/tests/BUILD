@@ -192,7 +192,7 @@ opentitan_test(
         # be run as part of the DV nightly regression.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
@@ -239,6 +239,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -278,7 +281,7 @@ opentitan_test(
         # be run as part of the DV nightly regression.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
@@ -330,7 +333,7 @@ opentitan_test(
         # be run as part of the DV nightly regression.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             # See #23038, this test requires a provisioned flash in sival.
@@ -523,6 +526,9 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -679,6 +685,8 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -962,7 +970,12 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = verilator_params(timeout = "eternal"),
+    verilator = verilator_params(
+        timeout = "eternal",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
+    ),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1042,6 +1055,9 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "eternal",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
     ),
     deps = [
         "//hw/ip/aes:model",
@@ -1316,6 +1332,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1399,7 +1418,7 @@ opentitan_test(
         timeout = "eternal",
         tags = ["manual"],
         test_cmd = " ".join([
-            "--firmware-elf=\"{firmware:elf}\"",
+            "\"{firmware:elf}\"",
         ]),
         test_harness = "//sw/host/tests/chip/mem",
     ),
@@ -1774,7 +1793,7 @@ opentitan_test(
         # Not compatible with the verilated top level.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:verilator"],
+            ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
             "//hw/top_earlgrey:silicon_creator": None,
@@ -2434,6 +2453,9 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -2586,6 +2608,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
+    # FIXME this test is also broken in Verilator for the same reason as in
+    # sival ROM_EXT above. Remove this line when fixed. See #21706.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2622,6 +2647,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2658,6 +2686,9 @@ opentitan_test(
         test_cmd = "--bootstrap={firmware}",
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2690,6 +2721,9 @@ opentitan_test(
         test_cmd = "--bootstrap={firmware}",
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2729,6 +2763,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -2767,6 +2804,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -2800,6 +2840,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2832,6 +2875,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2872,6 +2918,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2918,6 +2967,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2966,7 +3018,12 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = verilator_params(timeout = "long"),
+    verilator = verilator_params(
+        timeout = "long",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -3013,6 +3070,8 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
@@ -3218,6 +3277,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -3255,6 +3317,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -3344,7 +3409,12 @@ opentitan_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        # This test requires a flash connected to the SPI bus,
+        # which is not available in Verilator.
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(timeout = "moderate"),
@@ -3372,6 +3442,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":spi_host_flash_test_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3498,6 +3569,9 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "long",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
     ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
@@ -3606,6 +3680,9 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "long",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3626,6 +3703,9 @@ opentitan_test(
     ),
     verilator = verilator_params(
         timeout = "long",
+        # This test takes > 60 minutes, so mark it manual as it shouldn't
+        # run in CI.
+        tags = ["manual"],
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3865,7 +3945,13 @@ opentitan_test(
     name = "usbdev_aon_wake_reset_test",
     srcs = ["usbdev_aon_wake_reset_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            [
+                "//hw/top_earlgrey:sim_dv",
+                "//hw/top_earlgrey:sim_verilator",
+            ],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -3910,6 +3996,8 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3944,7 +4032,11 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
-    verilator = verilator_params(timeout = "long"),
+    verilator = verilator_params(
+        timeout = "long",
+        # Broken on Verilator. See #24182.
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -4108,7 +4200,11 @@ opentitan_test(
         timeout = "eternal",
         tags = ["manual"],
     ),
-    verilator = verilator_params(timeout = "long"),
+    verilator = verilator_params(
+        timeout = "long",
+        # Broken on Verilator. See #24182.
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -4436,6 +4532,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
@@ -5270,6 +5369,9 @@ opentitan_test(
         ]),
         test_harness = "//sw/host/tests/chip/example_sival",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_utils",
@@ -5578,6 +5680,9 @@ opentitan_test(
         test_cmd = "--elf={firmware}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -5663,6 +5768,9 @@ opentitan_test(
         test_cmd = "--elf={firmware}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -5728,6 +5836,9 @@ opentitan_test(
         ]),
         test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
@@ -5782,6 +5893,9 @@ opentitan_test(
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -5821,7 +5935,10 @@ opentitan_test(
     name = "rv_core_ibex_mem_test_prod",
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            ["//hw/top_earlgrey:sim_verilator"],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
@@ -5875,6 +5992,9 @@ opentitan_test(
         ]),
         test_harness = "//sw/host/tests/chip/uart:uart_baud_rate",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -5916,6 +6036,9 @@ opentitan_test(
         ]),
         test_harness = "//sw/host/tests/chip/uart:uart_loopback",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -5939,6 +6062,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":otbn_randomness_impl",
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
@@ -5992,6 +6118,9 @@ opentitan_test(
         ]),
         test_harness = "//sw/host/tests/chip/uart:uart_parity_break",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -6036,6 +6165,8 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
+    # Broken on Verilator. See #24182.
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
@@ -6122,6 +6253,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_mio_dio_val",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -6163,6 +6297,9 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_retention",
     ),
+    # This test takes > 40 minutes, so mark it manual as it shouldn't run
+    # in CI.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
