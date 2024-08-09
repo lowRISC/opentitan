@@ -49,6 +49,12 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
       rv_dm_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(rv_dm_vseq)
       rv_dm_vseq.start(p_sequencer);
+
+      // The subsequence might have applied a reset in dut_init (if do_apply_reset=1), but will
+      // normally have come out of reset by the end. If we are in reset now, that must mean that it
+      // has been applied from outside (probably in the stress_all_with_rand_reset vseq). Stop our
+      // vseq accordingly.
+      if (!cfg.clk_rst_vif.rst_n) return;
      end
    endtask
 
