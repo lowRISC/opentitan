@@ -128,12 +128,16 @@ class cip_base_vseq #(
 
     if (expect_fatal_alerts) begin
       // Fatal alert is triggered in this seq. Wait 10_000ns so the background check
-      // `check_fatal_alert_nonblocking` has enough time to execute before dut_init.
-      // Issue reset if reset is allowed, otherwise, reset will be called in upper vseq.
-      #10_000ns;
-      dut_init();
+      // `check_fatal_alert_nonblocking` has enough time to execute before we call dut_init. If
+      // there is a reset in the meantime, stop waiting.
+      `DV_SPINWAIT_EXIT(#10_000ns;,
+                        wait(!cfg.clk_rst_vif.rst_n);)
+
+      // If we are not in reset, ask the dut to re-initialise itself. This will issue a reset if the
+      // sequence has do_apply_reset=1. If not, the reset will be applied in an upper vseq.
+      if (cfg.clk_rst_vif.rst_n) dut_init();
     end else begin
-      check_no_fatal_alerts();
+      if (cfg.clk_rst_vif.rst_n) check_no_fatal_alerts();
     end
 
     // Some fatal alerts might trigger interrupt as well, so only check interrupt after fatal alert
@@ -535,20 +539,28 @@ class cip_base_vseq #(
       int check_cycles = $urandom_range(max_alert_handshake_cycles,
                                         max_alert_handshake_cycles * 3);
 
-      // This task wait for recoverable alerts handshake to complete, or fatal alert being
-      // triggered once by `alert_test` register.
-      cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
-      foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-        `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();)
-      end
+      fork begin : isolation_fork
+        fork
+          wait(!cfg.clk_rst_vif.rst_n);
+          begin
+            // This task wait for recoverable alerts handshake to complete, or fatal alert being
+            // triggered once by `alert_test` register.
+            cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
+            foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
+              `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();)
+            end
 
-      repeat(check_cycles) begin
-        cfg.clk_rst_vif.wait_clks(1);
-        foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-          `DV_CHECK_EQ(0, cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(),
-                       $sformatf("Alert %0s fired unexpectedly!", alert_name))
-        end
-      end
+            repeat(check_cycles) begin
+              cfg.clk_rst_vif.wait_clks(1);
+              foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
+                `DV_CHECK_EQ(0, cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(),
+                             $sformatf("Alert %0s fired unexpectedly!", alert_name))
+              end
+            end
+          end
+        join_any
+        disable fork;
+      end join
     end
   endtask
 
