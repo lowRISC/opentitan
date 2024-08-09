@@ -130,4 +130,56 @@ module tb;
     end
   end
 
+  // This is a sort of "workaround replacement" to avoid having to force the lc_hw_debug_en_gated
+  // signal in the design using uvm_hdl_force. The signal contains enum values and it turns out that
+  // they don't travel across the VPI boundary properly (you get an error when using
+  // uvm_hdl_release).
+  //
+  // When use_force becomes 1, we take a snapshot of the values in the design and save that in
+  // saved_en_values. Together with the contents of force_enable, this feeds into the
+  // local_en_values signal. We then force the values in the design to match that signal until
+  // use_force drops again, at which point we release the force.
+
+  // Enable the forcing of the signals in the design, as described above. Set this from a vseq with
+  // uvm_hdl_deposit.
+  bit use_force;
+
+  // A snapshot of the values in lc_hw_debug_en_gated on the last posedge of use_force.
+  logic [rv_dm_pkg::NumDebugEnCopies-1:0][3:0] saved_en_values;
+
+  // Bits that control which copies should be given an On value in local_en_values instead of
+  // whatever we snapshotted into saved_en_values.
+  //
+  // These get initialised to zero at the start of time, but can be set with uvm_hdl_deposit if
+  // necessary.
+  bit [4:0] force_enable;
+
+  // The computed lc_tx_t enable values based on saved_en_values and force_enable.
+  logic [rv_dm_pkg::NumDebugEnCopies-1:0][3:0] local_en_values;
+  for (genvar i = 0; i < rv_dm_pkg::NumDebugEnCopies; i++) begin : gen_local_en_values
+    assign local_en_values[i] = force_enable[i] ? lc_ctrl_pkg::On : saved_en_values[i];
+  end
+
+  initial begin
+    use_force = 1'b0;
+    forever begin
+      @(posedge use_force);
+      // Take a snapshot of the values from the design. This gets merged in the for loop above with
+      // the flags from force_enable to give local_en_values. These are then used to force the
+      // design values.
+      saved_en_values = dut.lc_hw_debug_en_gated;
+      force dut.lc_hw_debug_en_gated[0] = lc_ctrl_pkg::lc_tx_t'(local_en_values[0]);
+      force dut.lc_hw_debug_en_gated[1] = lc_ctrl_pkg::lc_tx_t'(local_en_values[1]);
+      force dut.lc_hw_debug_en_gated[2] = lc_ctrl_pkg::lc_tx_t'(local_en_values[2]);
+      force dut.lc_hw_debug_en_gated[3] = lc_ctrl_pkg::lc_tx_t'(local_en_values[3]);
+      force dut.lc_hw_debug_en_gated[4] = lc_ctrl_pkg::lc_tx_t'(local_en_values[4]);
+      @(negedge use_force);
+      release dut.lc_hw_debug_en_gated[0];
+      release dut.lc_hw_debug_en_gated[1];
+      release dut.lc_hw_debug_en_gated[2];
+      release dut.lc_hw_debug_en_gated[3];
+      release dut.lc_hw_debug_en_gated[4];
+    end
+  end
+
 endmodule

@@ -187,18 +187,21 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("Received SBA access item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
 
+      // If debug is enabled, check that the JTAG access was indeed translated into a TL access.
       if (is_debug_enabled()) begin
-        // If the debugger is enabled, the JTAG access should translate into an equivalent TL access
-        // which can be seen in sba_tl_access_q.
         `DV_CHECK_FATAL(sba_tl_access_q.size() > 0,
                         "Saw SBA access on the JTAG side which didn't translate into TL")
+      end
 
-        // Check that the access got translated appropriately.
-        compare_sba_access(item, sba_tl_access_q.pop_front());
-      end else begin
-        // If the debugger is not enabled, the TL access
-        // should never appear.
+      // If the debugger is not enabled and cfg.sba_tl_tx_requires_debug=1 then we should not have
+      // seen the SBA item translate into a TL access.
+      if (cfg.sba_tl_tx_requires_debug) begin
         `DV_CHECK(sba_tl_access_q.size() == 0)
+      end
+
+      // If there has been a translation, check it was correct.
+      if (sba_tl_access_q.size() > 0) begin
+        compare_sba_access(item, sba_tl_access_q.pop_front());
       end
     end
   endtask
@@ -209,8 +212,10 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       tl_sba_a_chan_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
-      `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
-                "Received an SBA TL item when SBA should have been disabled.")
+      if (cfg.sba_tl_tx_requires_debug) begin
+        `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
+                  "Received an SBA TL item when SBA should have been disabled.")
+      end
 
       process_tl_sba_access(item, AddrChannel);
     end
@@ -222,8 +227,10 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       tl_sba_d_chan_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
-      `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
-                "Received an SBA TL item when SBA should have been disabled.")
+      if (cfg.sba_tl_tx_requires_debug) begin
+        `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
+                  "Received an SBA TL item when SBA should have been disabled.")
+      end
       sba_tl_access_q.push_back(item);
       // check tl packet integrity
       // TODO: deal with item not being ok.
@@ -426,6 +433,10 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   // cip_base_scoreboard fails because we're responding with an error to an access that would
   // otherwise be perfectly reasonable.
   function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    if (!cfg.tl_err_prediction) begin
+      return item.d_error;
+    end
+
     if ((ral_name == "rv_dm_mem_reg_block") &&
         (channel == DataChannel) &&
         !is_debug_enabled()) begin
