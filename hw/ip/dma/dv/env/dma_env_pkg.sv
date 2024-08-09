@@ -35,12 +35,14 @@ package dma_env_pkg;
   // Index of interrupt in intf_vif
   // TODO: rename `DMA_x` to indicate that they are interrupt numbers.
   parameter uint DMA_DONE = 0;
-  parameter uint DMA_ERROR = 1;
-  parameter uint NumDmaInterrupts = 2;
+  parameter uint DMA_CHUNK_DONE = 1;
+  parameter uint DMA_ERROR = 2;
+  parameter uint NumDmaInterrupts = 3;
 
   // Completion status bits (DV-internal)
   typedef enum {
     StatusDone,
+    StatusChunkDone,
     StatusError,
     StatusAborted,
     StatusTimeout

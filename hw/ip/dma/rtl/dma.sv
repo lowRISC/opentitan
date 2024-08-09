@@ -21,6 +21,7 @@ module dma
   input prim_mubi_pkg::mubi4_t                      scanmode_i,
   // DMA interrupts and incoming LSIO triggers
   output  logic                                     intr_dma_done_o,
+  output  logic                                     intr_dma_chunk_done_o,
   output  logic                                     intr_dma_error_o,
   input   lsio_trigger_t                            lsio_trigger_i,
   // Alerts
@@ -1004,6 +1005,7 @@ module dma
               // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
               // and done bit, and release the go bit for the next FW-controlled chunk.
               clear_go     = !control_q.cfg_handshake_en;
+              chunk_done   = !control_q.cfg_handshake_en;
               ctrl_state_d = DmaIdle;
             end else begin
               ctrl_state_d = DmaAddrSetup;
@@ -1098,6 +1100,21 @@ module dma
     .hw2reg_intr_state_de_o ( hw2reg.intr_state.dma_done.de ),
     .hw2reg_intr_state_d_o  ( hw2reg.intr_state.dma_done.d  ),
     .intr_o                 ( intr_dma_done_o               )
+  );
+
+  prim_intr_hw #(
+    .IntrT ( "Status" )
+  ) u_intr_chunk_dma_done (
+    .clk_i                  ( clk_i                               ),
+    .rst_ni                 ( rst_ni                              ),
+    .event_intr_i           ( reg2hw.status.chunk_done.q          ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.dma_chunk_done.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.dma_chunk_done.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.dma_chunk_done.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.dma_chunk_done.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.dma_chunk_done.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.dma_chunk_done.d  ),
+    .intr_o                 ( intr_dma_chunk_done_o               )
   );
 
   prim_intr_hw #(

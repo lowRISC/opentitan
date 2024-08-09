@@ -102,6 +102,10 @@
       desc: "DMA operation has been completed."
       type: "status"
     }
+    { name: "dma_chunk_done"
+      desc: "Indicates the transfer of a single chunk has been completed."
+      type: "status"
+    }
     { name: "dma_error"
       desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
       type: "status"

@@ -23,6 +23,9 @@ package dma_reg_pkg;
     } dma_error;
     struct packed {
       logic        q;
+    } dma_chunk_done;
+    struct packed {
+      logic        q;
     } dma_done;
   } dma_reg2hw_intr_state_reg_t;
 
@@ -30,6 +33,9 @@ package dma_reg_pkg;
     struct packed {
       logic        q;
     } dma_error;
+    struct packed {
+      logic        q;
+    } dma_chunk_done;
     struct packed {
       logic        q;
     } dma_done;
@@ -40,6 +46,10 @@ package dma_reg_pkg;
       logic        q;
       logic        qe;
     } dma_error;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } dma_chunk_done;
     struct packed {
       logic        q;
       logic        qe;
@@ -182,6 +192,10 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } dma_chunk_done;
+    struct packed {
+      logic        d;
+      logic        de;
     } dma_error;
   } dma_hw2reg_intr_state_reg_t;
 
@@ -293,9 +307,9 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [1038:1037]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [1036:1035]
-    dma_reg2hw_intr_test_reg_t intr_test; // [1034:1031]
+    dma_reg2hw_intr_state_reg_t intr_state; // [1042:1040]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [1039:1037]
+    dma_reg2hw_intr_test_reg_t intr_test; // [1036:1031]
     dma_reg2hw_alert_test_reg_t alert_test; // [1030:1029]
     dma_reg2hw_src_addr_lo_reg_t src_addr_lo; // [1028:997]
     dma_reg2hw_src_addr_hi_reg_t src_addr_hi; // [996:965]
@@ -320,7 +334,7 @@ package dma_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    dma_hw2reg_intr_state_reg_t intr_state; // [701:698]
+    dma_hw2reg_intr_state_reg_t intr_state; // [703:698]
     dma_hw2reg_src_addr_lo_reg_t src_addr_lo; // [697:665]
     dma_hw2reg_src_addr_hi_reg_t src_addr_hi; // [664:632]
     dma_hw2reg_dst_addr_lo_reg_t dst_addr_lo; // [631:599]
@@ -396,8 +410,9 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_10_OFFSET = 9'h 144;
 
   // Reset values for hwext registers and their fields
-  parameter logic [1:0] DMA_INTR_TEST_RESVAL = 2'h 0;
+  parameter logic [2:0] DMA_INTR_TEST_RESVAL = 3'h 0;
   parameter logic [0:0] DMA_INTR_TEST_DMA_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] DMA_INTR_TEST_DMA_CHUNK_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_INTR_TEST_DMA_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;

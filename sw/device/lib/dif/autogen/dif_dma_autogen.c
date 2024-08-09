@@ -54,6 +54,9 @@ static bool dma_get_irq_bit_index(dif_dma_irq_t irq,
     case kDifDmaIrqDmaDone:
       *index_out = DMA_INTR_COMMON_DMA_DONE_BIT;
       break;
+    case kDifDmaIrqDmaChunkDone:
+      *index_out = DMA_INTR_COMMON_DMA_CHUNK_DONE_BIT;
+      break;
     case kDifDmaIrqDmaError:
       *index_out = DMA_INTR_COMMON_DMA_ERROR_BIT;
       break;
@@ -65,6 +68,7 @@ static bool dma_get_irq_bit_index(dif_dma_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
+    kDifIrqTypeStatus,
     kDifIrqTypeStatus,
     kDifIrqTypeStatus,
 };

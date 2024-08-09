@@ -156,7 +156,7 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  constexpr uint32_t num_irqs = 2;
+  constexpr uint32_t num_irqs = 3;
   constexpr uint32_t irq_mask = (uint64_t{1} << num_irqs) - 1;
   dif_dma_irq_state_snapshot_t irq_snapshot = 1;
 

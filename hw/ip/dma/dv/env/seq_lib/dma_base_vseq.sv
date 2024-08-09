@@ -646,6 +646,13 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.status));
   endtask : clear_done
 
+  // Clear 'STATUS.chunk_done' field after a chunk transfer has completed.
+  task clear_chunk_done();
+    `uvm_info(`gfn, "DMA: Clear STATUS.chunk_done", UVM_HIGH)
+    ral.status.chunk_done.set(1'b1);
+    csr_update(.csr(ral.status));
+  endtask : clear_chunk_done
+
   // Task: Abort the current transaction
   task abort();
     uvm_reg_data_t data = 0;
@@ -717,8 +724,9 @@ class dma_base_vseq extends cip_base_vseq #(
     if (intr_driven) begin
       forever begin
         delay(1);
-        if (cfg.intr_vif.pins[DMA_DONE])  status[StatusDone]  = 1'b1;
-        if (cfg.intr_vif.pins[DMA_ERROR]) status[StatusError] = 1'b1;
+        if (cfg.intr_vif.pins[DMA_DONE])       status[StatusDone]      = 1'b1;
+        if (cfg.intr_vif.pins[DMA_CHUNK_DONE]) status[StatusChunkDone] = 1'b1;
+        if (cfg.intr_vif.pins[DMA_ERROR])      status[StatusError]     = 1'b1;
       end
     end else begin
       // Rely upon the CSR reading in `poll_status` to detect completion.
@@ -739,8 +747,9 @@ class dma_base_vseq extends cip_base_vseq #(
       // Respond to the STATUS.done and STATUS.error bits only if we're not insisting upon
       // interrupt-driven completion.
       if (!intr_driven) begin
-        if (v[1]) status[StatusDone]  = 1'b1;
-        if (v[3]) status[StatusError] = 1'b1;
+        if (v[1]) status[StatusDone]      = 1'b1;
+        if (v[3]) status[StatusError]     = 1'b1;
+        if (v[5]) status[StatusChunkDone] = 1'b1;
       end
       // Note: sha2_digest_valid is not a completion event
       // v[12]
