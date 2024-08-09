@@ -1,0 +1,42 @@
+{
+    "repository" :"lowrisc/opentitan",
+    "title": "[chip-test, ${ip_block}] ${test_name}",
+    "body": '''
+     <%text>
+     ### Test point name
+     </%text>
+        ${test_name}
+
+     <%text>
+        ### Host side component
+        Rust?
+
+        ### Opentitantool infrastructure implemented
+        Yes
+
+        ### Silicon Validation (SiVal)
+    
+        Yes
+
+        ### Emulation targets
+            - [ ] None
+            - [ ] CW310
+            - [ ] Hyperdebug + CW310
+
+        ### Contact person
+
+
+        ### Checklist
+        Please fill out this checklist as items are completed. Link to PRs and issues as appropriate.
+        - [ ] Check if existing test covers most or all of this testpoint (if so, either extend said test to cover all points, or skip the next 3 checkboxes)
+        - [ ] Device-side (C) component developed
+        - [ ] Bazel build rules developed
+        - [ ] Host-side component developed
+        - [ ] Test added to dvsim nightly regression (and passing at time of checking)
+        - [ ] For SiVal test cases, test is running relevant FPGA or silicon regression
+     </%text>
+    ''',
+    "labels": ["SiVal:Autogen", "Component:ChipLevelTest", "IP:${ip_block}", "Priority:${priority}"],
+    "milestone": "Earlgrey ES ${stage}",
+    "assignee": "",
+}
