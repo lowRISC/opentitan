@@ -138,9 +138,16 @@
     }
     {
       name: sec_cm_exec_ctrl_mubi
-      desc: "Verify the countermeasure(s) EXEC.CTRL.MUBI."
+      desc: '''
+        Verify the countermeasure EXEC.CTRL.MUBI.
+
+        The multi-bit nature of the signal is checked by all tests that disable debug (since they do
+        so by choosing an arbitrary value other than On). An even tighter check for this
+        countermeasure comes from the rv_dm_buffered_enable test, which ensures fetch requests are
+        more tightly controlled than arbitrary TL requests.
+      '''
       stage: V2S
-      tests: []
+      tests: ["rv_dm_buffered_enable"]
     }
   ]
 }
