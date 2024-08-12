@@ -233,10 +233,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     sba_tl_device_seq_stop();
-    // Check for pending rv_dm operations and wait for them to complete.
-    // TODO: Improve this later.
-    `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(200);,
-                      wait (!cfg.clk_rst_vif.rst_n);)
   endtask
 
   // Spawns off a thread to auto-respond to incoming TL accesses on the SBA host interface.
