@@ -154,8 +154,8 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @remotejdk11_linux//... \
     @riscv-compliance//... \
     @rules_foreign_cc//toolchains/... \
-    @ninja_1.10.2_linux//... \
-    @cmake-3.22.2-linux-x86_64//... \
+    @ninja_1.11.0_linux//... \
+    @cmake-3.23.2-linux-x86_64//... \
     @rustfmt_nightly-2023-10-05__x86_64-unknown-linux-gnu_tools//... \
     @rust_analyzer_1.71.1_tools//... \
     @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
