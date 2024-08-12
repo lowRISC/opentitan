@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:ascon_model_dpi"
+description: "ASCON model DPI"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:ip:prim_ascon
+    files:
+      - vendor/ascon_ascon-c/ascon128/round.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/ascon.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/constants.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/printstate.c: { file_type: cSource}
+      - vendor/ascon_ascon-c/ascon128/printstate.h: { file_type: cSource, is_include_file: true }
+      - vendor/ascon_ascon-c/ascon128/word.h: { file_type: cSource, is_include_file: true }
+      - ascon_model_dpi.c: { file_type: cSource }
+      - ascon_model_dpi.h: { file_type: cSource, is_include_file: true }
+      - ascon_model_dpi_pkg.sv: { file_type: systemVerilogSource }
+
+targets:
+  default:
+    filesets:
+      - files_dv
