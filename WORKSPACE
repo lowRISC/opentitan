@@ -59,6 +59,11 @@ google_repos()
 load("//third_party/google:deps.bzl", "google_deps")
 google_deps()
 
+load("//third_party/google:repos.bzl", "fuzzing_repos")
+fuzzing_repos()
+load("//third_party/google:fuzzing_deps.bzl", "fuzzing_deps")
+fuzzing_deps()
+
 # Rust Toolchain + crates.io Dependencies
 load("//third_party/rust:repos.bzl", "rust_repos")
 rust_repos()

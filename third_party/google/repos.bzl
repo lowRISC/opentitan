@@ -58,6 +58,7 @@ def google_repos(
         url = "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz",
     )
 
+def fuzzing_repos():
     http_archive_or_local(
         name = "rules_fuzzing",
         sha256 = "f85dc70bb9672af0e350686461fe6fdd0d61e10e75645f9e44fedf549b21e369",
