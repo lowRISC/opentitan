@@ -7,6 +7,13 @@ load(
     "SiliconBinaryInfo",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_scrambled_rom_vmem",
+    "convert_to_vmem",
+    "extract_software_logs",
+    "scramble_flash",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
     "assemble_for_test",
     "get_fallback",
@@ -17,10 +24,6 @@ load(
     "common_test_setup",
     "exec_env_as_dict",
     "exec_env_common_attrs",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
-    "convert_to_scrambled_rom_vmem",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -61,12 +64,38 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     elif ctx.attr.kind == "ram":
         default = elf
         rom = None
+        vmem = None
     elif ctx.attr.kind == "flash":
         default = signed_bin if signed_bin else binary
         rom = None
+
+        # Build VMEM images to enable GLS testing.
+        vmem_base = convert_to_vmem(
+            ctx,
+            name = name,
+            src = default,
+            word_size = 64,
+        )
+        vmem = scramble_flash(
+            ctx,
+            name = name,
+            suffix = "64.scr.vmem",
+            src = vmem_base,
+            otp = get_fallback(ctx, "file.otp", exec_env),
+            otp_mmap = exec_env.otp_mmap,
+            otp_seed = exec_env.otp_seed,
+            otp_data_perm = exec_env.otp_data_perm,
+            _tool = exec_env.flash_scramble_tool.files_to_run,
+        )
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
+    logs = extract_software_logs(
+        ctx,
+        name = name,
+        src = elf,
+        _tool = exec_env.extract_sw_logs.files_to_run,
+    )
     return {
         "elf": elf,
         "binary": binary,
@@ -75,6 +104,8 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
+        "vmem": vmem,
+        "logs": logs,
     }
 
 def _test_dispatch(ctx, exec_env, firmware):
