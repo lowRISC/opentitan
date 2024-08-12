@@ -126,15 +126,29 @@
     }
     {
       name: sec_cm_sba_tl_lc_gate_fsm_sparse
-      desc: "Verify the countermeasure(s) SBA_TL_LC_GATE.FSM.SPARSE."
+      desc: '''
+        Verify the countermeasure SBA_TL_LC_GATE.FSM.SPARSE.
+
+        The gate at u_tlul_lc_gate_sba has a sparse FSM, so a fault injection of only a couple of
+        bits cannot change between valid values. Inject a 1- or 2-bit error and check that the
+        fatal_fault alert is triggered.
+
+      '''
       stage: V2S
-      tests: []
+      tests: ["rv_dm_sparse_lc_gate_fsm"]
     }
     {
       name: sec_cm_mem_tl_lc_gate_fsm_sparse
-      desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
+      desc: '''
+        Verify the countermeasure MEM_TL_LC_GATE.FSM.SPARSE.
+
+        The gate at u_tlul_lc_gate_rom has a sparse FSM, so a fault injection of only a couple of
+        bits cannot change between valid values. Inject a 1- or 2-bit error and check that the
+        fatal_fault alert is triggered.
+
+      '''
       stage: V2S
-      tests: []
+      tests: ["rv_dm_sparse_lc_gate_fsm"]
     }
     {
       name: sec_cm_exec_ctrl_mubi
