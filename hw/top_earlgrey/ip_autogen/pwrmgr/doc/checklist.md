@@ -236,16 +236,16 @@ Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
-Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | Not Started |
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Done        |
+Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | NA          |
 Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Not Started |
 Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Not Started |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Not Started |
-Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not Started |
-Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not Started |
-Code Quality  | [ALL_TODOS_RESOLVED][]            | Not Started |
+Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | NA          |
+Coverage      | [FPV_COI_COVERAGE_AT_100][]       | NA          |
+Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
-Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
+Code Quality  | [TB_LINT_COMPLETE][]              | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
 Issues        | [NO_ISSUES_PENDING][]             | Not Started |
 Review        | Reviewer(s)                       | Not Started |

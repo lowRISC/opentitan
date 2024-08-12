@@ -3,15 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "pwrmgr"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
-                     // TODO: Top-level specific Hjson imported here. This will likely be resolved
-                     // once we move to IPgen flow.
                      "pwrmgr_sec_cm_testplan.hjson"]
   testpoints: [
     {
