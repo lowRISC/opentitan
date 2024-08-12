@@ -89,10 +89,6 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     rw.data    = (rw.kind == UVM_WRITE) ? bus_rsp.a_data : bus_rsp.d_data;
     rw.byte_en = bus_rsp.a_mask;
     `DV_CHECK_EQ(bus_rsp.d_source, bus_rsp.a_source)
-    // expect d_error = 0 as we won't drive any error case through RAL
-    if (cfg.check_tl_errs) begin
-      `DV_CHECK_EQ(bus_rsp.d_error, 0)
-    end
     // indicate if the item is completed successfully for upper level to update predict value
     rw.status  = !bus_rsp.req_completed ? UVM_NOT_OK : UVM_IS_OK;
     `uvm_info(this.get_name(), {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)

@@ -48,11 +48,6 @@ class rv_dm_debug_disabled_vseq extends rv_dm_base_vseq;
 
 
   task body();
-    // Disable TL error checks in tl_reg_adapter. It doesn't expect to see TL errors (since it's not
-    // doing anything untoward), but we've configured rv_dm to respond with an error to *every*
-    // request.
-    cfg.m_tl_agent_cfgs["rv_dm_mem_reg_block"].check_tl_errs = 0;
-
     repeat (4) begin
       // Pick an arbitrary value for lc_hw_debug_en_i other than On and then wait a short time to
       // make sure it has had an effect.
