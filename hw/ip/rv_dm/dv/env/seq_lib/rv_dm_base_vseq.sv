@@ -416,7 +416,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     `DV_CHECK_FATAL(jtag_dmi_ral.abstractcs.cmderr.predict(3'b111));
     jtag_dmi_ral.abstractcs.cmderr.set(3'b111);
     jtag_dmi_ral.abstractcs.update(.status(status));
-    `DV_CHECK_EQ(status, UVM_IS_OK);
+    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(status, UVM_IS_OK);
   endtask
 
   // Generate an abstract command that tries to read the specified register
