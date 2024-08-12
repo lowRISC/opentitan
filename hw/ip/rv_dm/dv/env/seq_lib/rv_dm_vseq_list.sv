@@ -32,3 +32,4 @@
 `include "rv_dm_dmi_failed_op_vseq.sv"
 `include "rv_dm_hartsel_warl_vseq.sv"
 `include "rv_dm_buffered_enable_vseq.sv"
+`include "rv_dm_sparse_lc_gate_fsm_vseq.sv"

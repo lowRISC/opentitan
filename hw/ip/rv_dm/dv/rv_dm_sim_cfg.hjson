@@ -300,6 +300,11 @@
       reseed: 10
     }
     {
+      name: rv_dm_sparse_lc_gate_fsm
+      uvm_test_seq: rv_dm_sparse_lc_gate_fsm_vseq
+      reseed: 4
+    }
+    {
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
     }
