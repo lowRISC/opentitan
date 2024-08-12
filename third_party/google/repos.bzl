@@ -5,10 +5,18 @@
 load("//rules:repo.bzl", "http_archive_or_local")
 
 def google_repos(
+        platforms = None,
         rules_cc = None,
         rules_pkg = None,
         absl = None,
         googletest = None):
+    http_archive_or_local(
+        name = "platforms",
+        local = platforms,
+        url = "https://github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+        sha256 = "218efe8ee736d26a3572663b374a253c012b716d8af0c07e842e82f238a0a7ee",
+    )
+
     http_archive_or_local(
         name = "rules_cc",
         local = rules_cc,
