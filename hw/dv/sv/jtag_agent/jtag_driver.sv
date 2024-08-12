@@ -176,15 +176,21 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     end join
   endtask
 
-  // drive jtag req and retrieve rsp
+  // Drive a jtag request and respond with rsp.
+  //
+  // At the start and end of this task, the FSM will be in state Run-Test/Idle.
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
+    bit has_ir = req.ir_len > 0;
+    bit has_dr = req.dr_len > 0;
+
     // This task should only be called in situations where tck is already enabled.
     `DV_CHECK_FATAL(tck_in_use)
 
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
-    if (req.ir_len) begin
+
+    if (has_ir) begin
       if (req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len) begin
         `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_HIGH)
       end else begin
@@ -197,23 +203,34 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                       req.ir_pause_cycle);
       end
     end
-    if (req.dr_len) begin
-      if (req.dummy_dr) begin
-        drive_dummy_dr();
-      end
+    if (has_dr) begin
+      // At this point, the fsm will either be in state Update-IR (if has_ir=1) or Run-Test/Idle.
       drive_jtag_dr(req.dr_len,
                     req.dr,
                     rsp.dout,
                     req.dr_pause_count,
-                    req.dr_pause_cycle,
-                    req.exit_to_rti_dr);
+                    req.dr_pause_cycle);
+
+      if (req.dummy_dr) begin
+        drive_dummy_dr();
+      end
     end
+
+    // At this point, the fsm is in state Update-IR or Update-DR. Step to Run-Test/Idle.
+    tms_tdi_step(0, 0);
   endtask
 
+  // Send the given IR transaction. This sends len bits, transmitting ir.
+  //
+  // If pause_count is positive then we inject that many cycles in the PauseIR state after sending
+  // pause_cycle bits of data.
+  //
+  // At the start of the task, the JTAG fsm should be in state Run-Test/Idle. At the end of the
+  // task, the fsm is in state Update-IR.
   task drive_jtag_ir(int len,
                      bit [JTAG_DRW-1:0] ir,
-                     uint pause_count = 0,
-                     uint pause_cycle = 0);
+                     uint pause_count,
+                     uint pause_cycle);
     logic [JTAG_DRW-1:0] dout;
     `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_HIGH)
     // Assume starting in RTI state
@@ -254,19 +271,23 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // UpdateIR
     tms_tdi_step(1, 0);
 
-    // Go to RTI
-    tms_tdi_step(0, 0);
-
     selected_ir = ir;
     selected_ir_len = len;
   endtask
 
+  // Send a DR transaction, sending data dr, with length len. The td_o signal gets collected as
+  // dout.
+  //
+  // If pause_count is positive, inject that many cycles in PauseDR after sending pause_cycle bits
+  // of data.
+  //
+  // At the start of the task, the FSM should be in state Run-Test/Idle or Update-IR. At the end,
+  // the FSM will be in state Update-DR.
   task drive_jtag_dr(input  int                  len,
                      input  logic [JTAG_DRW-1:0] dr,
                      output logic [JTAG_DRW-1:0] dout,
                      input  uint                 pause_count,
-                     input  uint                 pause_cycle,
-                     input  bit                  exit_to_rti = 1'b1);
+                     input  uint                 pause_cycle);
     // A flag that tracks whether we injected a pause on the last iteration of the loop.
     bit pause_just_injected = 1'b0;
 
@@ -321,17 +342,14 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // go to UpdateDR
     tms_tdi_step(1, 0);
 
-    if (exit_to_rti) begin
-      // go to RTI
-      tms_tdi_step(0, 0);
-    end else begin
-      `uvm_info(`gfn, "drive_dr: skip going to RTI", UVM_HIGH)
-    end
     dout >>= (JTAG_DRW - len);
   endtask
 
   // Task to drive tms such that TAP FSM transitions through
-  // CaptureIR/CaptureDR -> Exit1IR/Exit1DR -> UpdateIR/UpdateDR -> RTI
+  // CaptureIR/CaptureDR -> Exit1IR/Exit1DR -> UpdateIR/UpdateDR
+  //
+  // At the start of the task, the fsm will be in state Select-IR or Select-DR. At the end of the
+  // task, it will be in Update-IR or Update-DR, respectively.
   task drive_dummy_ir_dr();
     // go to CaptureDR/CaptureIR
     tms_tdi_step(0, 0);
@@ -339,12 +357,13 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     tms_tdi_step(1, 0);
     // go to UpdateDR/UpdateIR
     tms_tdi_step(1, 0);
-    // go to RTI
-    tms_tdi_step(0, 0);
   endtask
 
   // Task to drive tms such that TAP FSM transitions through
   // IR sequence without going through ShiftIR state
+  //
+  // At the start of the task, the fsm should be in state Run-Test/Idle. At the end of the task, it
+  // will be in state Update-IR.
   task drive_dummy_ir();
     `uvm_info(`gfn, "Introducing dummy IR", UVM_HIGH)
     // assume starting in RTI
@@ -356,14 +375,14 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     drive_dummy_ir_dr();
   endtask
 
-  // Task to drive tms such that TAP FSM transitions through
-  // DR sequence without going through ShiftDR state
+  // Task to drive tms such that TAP FSM transitions through DR sequence without going through
+  // ShiftDR state.
+  //
+  // At the start and end of the task, the fsm will be in state Update-DR.
   task drive_dummy_dr();
     `uvm_info(`gfn, "Introducing dummy DR", UVM_HIGH)
-    // assume starting in RTI
-    // go to SelectDR
+    // Go to SelectDR
     tms_tdi_step(1, 0);
-
     drive_dummy_ir_dr();
   endtask
 
