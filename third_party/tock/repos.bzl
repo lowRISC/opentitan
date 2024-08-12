@@ -160,102 +160,109 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "libtock",
         local = libtock,
-        strip_prefix = "libtock-rs-552ff2fa6394a879267d8a8bbaae615c3f787781",
-        url = "https://github.com/tock/libtock-rs/archive/552ff2fa6394a879267d8a8bbaae615c3f787781.tar.gz",
-        sha256 = "0aad50044d4c5902f5ea175e98d0bd0fd7926cb4d80989a85ab90c2810e83a58",
+        strip_prefix = "libtock-rs-f4bd533a37a65c5eb15d1488be61b2d00872dfc5",
+        url = "https://github.com/tock/libtock-rs/archive/f4bd533a37a65c5eb15d1488be61b2d00872dfc5.tar.gz",
+        sha256 = "3169321d465fe54403cf524287efd98a514f6a9ad11a3b792e0ead2b764accf0",
         additional_files_content = {
             "BUILD": crate_build(
                 name = "libtock",
                 deps = [
-                    "//apis/adc",
-                    "//apis/air_quality",
-                    "//apis/alarm",
-                    "//apis/ambient_light",
-                    "//apis/buttons",
-                    "//apis/buzzer",
-                    "//apis/console",
-                    "//apis/gpio",
-                    "//apis/i2c_master",
-                    "//apis/i2c_master_slave",
-                    "//apis/key_value",
-                    "//apis/leds",
-                    "//apis/low_level_debug",
-                    "//apis/ninedof",
-                    "//apis/proximity",
-                    "//apis/rng",
-                    "//apis/sound_pressure",
-                    "//apis/temperature",
+                    "//apis/interface/buttons",
+                    "//apis/interface/buzzer",
+                    "//apis/interface/console",
+                    "//apis/interface/leds",
+                    "//apis/kernel/low_level_debug",
+                    "//apis/peripherals/adc",
+                    "//apis/peripherals/alarm",
+                    "//apis/peripherals/gpio",
+                    "//apis/peripherals/i2c_master",
+                    "//apis/peripherals/i2c_master_slave",
+                    "//apis/peripherals/rng",
+                    "//apis/peripherals/spi_controller",
+                    "//apis/sensors/air_quality",
+                    "//apis/sensors/ambient_light",
+                    "//apis/sensors/ninedof",
+                    "//apis/sensors/proximity",
+                    "//apis/sensors/sound_pressure",
+                    "//apis/sensors/temperature",
+                    "//apis/storage/key_value",
                     "//panic_handlers/debug_panic",
+                    "//panic_handlers/small_panic",
                     "//platform",
                     "//runtime",
                 ],
             ),
-            "apis/adc/BUILD": crate_build(
-                name = "adc",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/air_quality/BUILD": crate_build(
-                name = "air_quality",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/alarm/BUILD": crate_build(
-                name = "alarm",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/ambient_light/BUILD": crate_build(
-                name = "ambient_light",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/buttons/BUILD": crate_build(
+            "apis/interface/buttons/BUILD": crate_build(
                 name = "buttons",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/buzzer/BUILD": crate_build(
+            "apis/interface/buzzer/BUILD": crate_build(
                 name = "buzzer",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/console/BUILD": crate_build(
+            "apis/interface/console/BUILD": crate_build(
                 name = "console",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/gpio/BUILD": crate_build(
-                name = "gpio",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/i2c_master/BUILD": crate_build(
-                name = "i2c_master",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/i2c_master_slave/BUILD": crate_build(
-                name = "i2c_master_slave",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/key_value/BUILD": crate_build(
-                name = "key_value",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/leds/BUILD": crate_build(
+            "apis/interface/leds/BUILD": crate_build(
                 name = "leds",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/low_level_debug/BUILD": crate_build(
+            "apis/kernel/low_level_debug/BUILD": crate_build(
                 name = "low_level_debug",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/ninedof/BUILD": crate_build(
+            "apis/peripherals/adc/BUILD": crate_build(
+                name = "adc",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/peripherals/alarm/BUILD": crate_build(
+                name = "alarm",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/peripherals/gpio/BUILD": crate_build(
+                name = "gpio",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/peripherals/i2c_master/BUILD": crate_build(
+                name = "i2c_master",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/peripherals/i2c_master_slave/BUILD": crate_build(
+                name = "i2c_master_slave",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/peripherals/rng/BUILD": crate_build(
+                name = "rng",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/peripherals/spi_controller/BUILD": crate_build(
+                name = "spi_controller",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/sensors/air_quality/BUILD": crate_build(
+                name = "air_quality",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/sensors/ambient_light/BUILD": crate_build(
+                name = "ambient_light",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/sensors/ninedof/BUILD": crate_build(
                 name = "ninedof",
                 crate_name = "libtock_{name}",
                 deps = [
@@ -263,23 +270,23 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                     "@tock_index//:libm",
                 ],
             ),
-            "apis/proximity/BUILD": crate_build(
+            "apis/sensors/proximity/BUILD": crate_build(
                 name = "proximity",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/rng/BUILD": crate_build(
-                name = "rng",
-                crate_name = "libtock_{name}",
-                deps = ["//platform"],
-            ),
-            "apis/sound_pressure/BUILD": crate_build(
+            "apis/sensors/sound_pressure/BUILD": crate_build(
                 name = "sound_pressure",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
-            "apis/temperature/BUILD": crate_build(
+            "apis/sensors/temperature/BUILD": crate_build(
                 name = "temperature",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/storage/key_value/BUILD": crate_build(
+                name = "key_value",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
@@ -292,8 +299,8 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                 name = "debug_panic",
                 crate_name = "libtock_{name}",
                 deps = [
-                    "//apis/console",
-                    "//apis/low_level_debug",
+                    "//apis/interface/console",
+                    "//apis/kernel/low_level_debug",
                     "//platform",
                     "//runtime",
                 ],
@@ -302,7 +309,7 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                 name = "small_panic",
                 crate_name = "libtock_{name}",
                 deps = [
-                    "//apis/low_level_debug",
+                    "//apis/kernel/low_level_debug",
                     "//platform",
                     "//runtime",
                 ],
