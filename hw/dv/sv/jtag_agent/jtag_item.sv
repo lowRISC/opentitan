@@ -47,8 +47,6 @@ class jtag_item extends uvm_sequence_item;
   rand bit exit_via_pause_ir;
   // This field is used to indicate if DR transaction exit happens via PauseDR state
   rand bit exit_via_pause_dr;
-  // This field is used to indicate if at the end of DR transaction FSM moves to RunTestIdle state
-  rand bit exit_to_rti_dr;
   // This field is used to reset TAP FSM to TestLogicReset state
   rand bit reset_tap_fsm;
 
@@ -58,10 +56,6 @@ class jtag_item extends uvm_sequence_item;
 
   constraint dr_len_c {
     dr_len <= JTAG_DRW;
-  }
-
-  constraint exit_to_rti_dr_c {
-    soft exit_to_rti_dr == 1;
   }
 
   constraint reset_tap_fsm_c {
