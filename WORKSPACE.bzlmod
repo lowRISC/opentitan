@@ -92,10 +92,6 @@ hooks_repo(name = "manufacturer_test_hooks")
 secure_hooks_repo(name = "secure_manufacturer_test_hooks")
 provisioning_exts_repo(name = "provisioning_exts")
 
-# The nonhermetic_repo imports environment variables needed to run vivado.
-load("//rules:nonhermetic.bzl", "nonhermetic_repo")
-nonhermetic_repo(name = "nonhermetic")
-
 # Binary firmware image for HyperDebug
 load("//third_party/hyperdebug:repos.bzl", "hyperdebug_repos")
 hyperdebug_repos()

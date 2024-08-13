@@ -143,3 +143,6 @@ use_repo(tock, "elf2tab", "libtock", "tock")
 
 bitstreams = use_extension("//rules:extensions.bzl", "bitstreams")
 use_repo(bitstreams, "bitstreams")
+
+nonhermetic = use_extension("//rules:extensions.bzl", "nonhermetic")
+use_repo(nonhermetic, "nonhermetic")
