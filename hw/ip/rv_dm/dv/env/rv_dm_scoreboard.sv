@@ -195,7 +195,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
       // If the debugger is not enabled and cfg.sba_tl_tx_requires_debug=1 then we should not have
       // seen the SBA item translate into a TL access.
-      if (cfg.sba_tl_tx_requires_debug) begin
+      if (cfg.sba_tl_tx_requires_debug && cfg.rv_dm_vif.lc_hw_debug_en != lc_ctrl_pkg::On) begin
         `DV_CHECK(sba_tl_access_q.size() == 0)
       end
 
