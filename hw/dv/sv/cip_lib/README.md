@@ -224,18 +224,18 @@ Some examples:
   To ensure the reset functionality works correctly, user will have to disable
   any internal reset from the stress_all sequence. Below is an example of
   disabling internal reset in `hmac_stress_all_vseq.sv`:
-* **task run_same_csr_outstanding_vseq**: This task tests the same CSR with
-  non-blocking accesses as the regular CSR sequences don't cover that due to
-  limitation of uvm_reg.
-* **task run_mem_partial_access_vseq**: This task tests the partial access to the
-  memories by randomizing mask, size, and the 2 LSB bits of the address. It also runs
-  with non-blocking access enabled.
   ```
   // randomly trigger internal dut_init reset sequence
   // disable any internal reset if used in stress_all_with_rand_reset vseq
   if (do_dut_init) hmac_vseq.do_dut_init = $urandom_range(0, 1);
   else hmac_vseq.do_dut_init = 0;
   ```
+* **task run_same_csr_outstanding_vseq**: This task tests the same CSR with
+  non-blocking accesses as the regular CSR sequences don't cover that due to
+  limitation of uvm_reg.
+* **task run_mem_partial_access_vseq**: This task tests the partial access to the
+  memories by randomizing mask, size, and the 2 LSB bits of the address. It also runs
+  with non-blocking access enabled.
 
 This class is type parameterized with the env cfg class type `CFG_T`, ral class type
 `RAL_T` and the virtual sequencer class type `VIRTUAL_SEQUENCER_T` so that the
