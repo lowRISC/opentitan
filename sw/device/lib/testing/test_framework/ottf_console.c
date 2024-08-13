@@ -15,6 +15,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -77,17 +78,7 @@ void ottf_console_init(void) {
       ottf_console_configure_uart(base_addr);
       break;
     case (kOttfConsoleSpiDevice):
-      CHECK_DIF_OK(dif_spi_device_init_handle(
-          mmio_region_from_addr(kOttfTestConfig.console.base_addr),
-          &ottf_console_spi_device));
-      CHECK_DIF_OK(dif_spi_device_configure(
-          &ottf_console_spi_device,
-          (dif_spi_device_config_t){
-              .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-              .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-              .device_mode = kDifSpiDeviceModeFlashEmulation,
-          }));
-      CHECK(false, "spi_device not yet supported as OTTF console.");
+      ottf_console_configure_spi_device(base_addr);
       break;
     default:
       CHECK(false, "unsupported OTTF console interface.");
@@ -116,6 +107,91 @@ void ottf_console_configure_uart(uintptr_t base_addr) {
   if (kOttfTestConfig.enable_uart_flow_control) {
     ottf_console_flow_control_enable();
   }
+}
+
+void ottf_console_configure_spi_device(uintptr_t base_addr) {
+  CHECK_DIF_OK(dif_spi_device_init_handle(mmio_region_from_addr(base_addr),
+                                          &ottf_console_spi_device));
+  CHECK_DIF_OK(dif_spi_device_configure(
+      &ottf_console_spi_device,
+      (dif_spi_device_config_t){
+          .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+          .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+          .device_mode = kDifSpiDeviceModeFlashEmulation,
+      }));
+  dif_spi_device_flash_command_t read_commands[] = {
+      {
+          // Slot 0: ReadStatus1
+          .opcode = kSpiDeviceFlashOpReadStatus1,
+          .address_type = kDifSpiDeviceFlashAddrDisabled,
+          .dummy_cycles = 0,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+      {
+          // Slot 1: ReadStatus2
+          .opcode = kSpiDeviceFlashOpReadStatus2,
+          .address_type = kDifSpiDeviceFlashAddrDisabled,
+          .dummy_cycles = 0,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+      {
+          // Slot 2: ReadStatus3
+          .opcode = kSpiDeviceFlashOpReadStatus3,
+          .address_type = kDifSpiDeviceFlashAddrDisabled,
+          .dummy_cycles = 0,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+      {
+          // Slot 3: ReadJedecID
+          .opcode = kSpiDeviceFlashOpReadJedec,
+          .address_type = kDifSpiDeviceFlashAddrDisabled,
+          .dummy_cycles = 0,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+      {
+          // Slot 4: ReadSfdp
+          .opcode = kSpiDeviceFlashOpReadSfdp,
+          .address_type = kDifSpiDeviceFlashAddr3Byte,
+          .dummy_cycles = 8,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+      {
+          // Slot 5: ReadNormal
+          .opcode = kSpiDeviceFlashOpReadNormal,
+          .address_type = kDifSpiDeviceFlashAddr3Byte,
+          .dummy_cycles = 0,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+  };
+  for (size_t i = 0; i < ARRAYSIZE(read_commands); ++i) {
+    uint8_t slot = (uint8_t)i + kSpiDeviceReadCommandSlotBase;
+    CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
+        &ottf_console_spi_device, slot, kDifToggleEnabled, read_commands[i]));
+  }
+  dif_spi_device_flash_command_t write_commands[] = {
+      {
+          // Slot 11: PageProgram
+          .opcode = kSpiDeviceFlashOpPageProgram,
+          .address_type = kDifSpiDeviceFlashAddrCfg,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = false,
+          .upload = true,
+          .set_busy_status = true,
+      },
+  };
+  for (size_t i = 0; i < ARRAYSIZE(write_commands); ++i) {
+    uint8_t slot = (uint8_t)i + kSpiDeviceWriteCommandSlotBase;
+    CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
+        &ottf_console_spi_device, slot, kDifToggleEnabled, write_commands[i]));
+  }
+
+  base_spi_device_stdout(&ottf_console_spi_device);
 }
 
 static uint32_t get_flow_control_watermark_plic_id(void) {
