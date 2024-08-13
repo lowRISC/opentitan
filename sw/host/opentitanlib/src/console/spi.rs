@@ -8,34 +8,49 @@ use std::collections::VecDeque;
 use std::time::Duration;
 
 use crate::io::console::ConsoleDevice;
-use crate::io::spi::{Target, Transfer};
+use crate::io::eeprom::AddressMode;
+use crate::io::spi::Target;
+use crate::spiflash::flash::SpiFlash;
 
 pub struct SpiConsoleDevice<'a> {
     spi: &'a dyn Target,
+    flash: SpiFlash,
     console_next_frame_number: Cell<u32>,
     rx_buf: RefCell<VecDeque<u8>>,
+    next_read_address: Cell<u32>,
 }
 
 impl<'a> SpiConsoleDevice<'a> {
-    const SPI_FRAME_HEADER_SIZE: usize = 8;
-    const SPI_MAX_DATA_LENGTH: usize = 2032;
+    const SPI_FRAME_HEADER_SIZE: usize = 12;
+    const SPI_FLASH_READ_BUFFER_SIZE: u32 = 2048;
+    const SPI_MAX_DATA_LENGTH: usize = 2036;
+    const SPI_FRAME_MAGIC_NUMBER: u32 = 0xa5a5beef;
 
-    pub fn new(spi: &'a dyn Target) -> Self {
-        Self {
+    pub fn new(spi: &'a dyn Target) -> Result<Self> {
+        let mut flash = SpiFlash {
+            ..Default::default()
+        };
+        flash.set_address_mode(spi, AddressMode::Mode3b)?;
+        Ok(Self {
             spi,
+            flash,
             rx_buf: RefCell::new(VecDeque::new()),
             console_next_frame_number: Cell::new(0),
-        }
+            next_read_address: Cell::new(0),
+        })
     }
 
     fn read_from_spi(&self) -> Result<usize> {
         // Read the SPI console frame header.
+        let read_address = self.next_read_address.get();
         let mut header = vec![0u8; SpiConsoleDevice::SPI_FRAME_HEADER_SIZE];
-        self.spi
-            .run_transaction(&mut [Transfer::Write(&[0xff; 4]), Transfer::Read(&mut header)])?;
-        let frame_number: u32 = u32::from_le_bytes(header[0..4].try_into().unwrap());
-        let data_len_bytes: usize = u32::from_le_bytes(header[4..8].try_into().unwrap()) as usize;
-        if frame_number != self.console_next_frame_number.get()
+        self.read_data(read_address, &mut header)?;
+
+        let magic_number: u32 = u32::from_le_bytes(header[0..4].try_into().unwrap());
+        let frame_number: u32 = u32::from_le_bytes(header[4..8].try_into().unwrap());
+        let data_len_bytes: usize = u32::from_le_bytes(header[8..12].try_into().unwrap()) as usize;
+        if magic_number != SpiConsoleDevice::SPI_FRAME_MAGIC_NUMBER
+            || frame_number != self.console_next_frame_number.get()
             || data_len_bytes > SpiConsoleDevice::SPI_MAX_DATA_LENGTH
         {
             // This frame is junk, so we do not read the data.
@@ -46,12 +61,38 @@ impl<'a> SpiConsoleDevice<'a> {
         // Read the SPI console frame data.
         let data_len_bytes_w_pad = (data_len_bytes + 3) & !3;
         let mut data = vec![0u8; data_len_bytes_w_pad];
-        self.spi
-            .run_transaction(&mut [Transfer::Write(&[0xff; 4]), Transfer::Read(&mut data)])?;
+        let data_address: u32 = (read_address
+            + u32::try_from(SpiConsoleDevice::SPI_FRAME_HEADER_SIZE).unwrap())
+            % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
+        self.read_data(data_address, &mut data)?;
 
+        let next_read_address: u32 = (read_address
+            + u32::try_from(SpiConsoleDevice::SPI_FRAME_HEADER_SIZE + data_len_bytes_w_pad)
+                .unwrap())
+            % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
+        self.next_read_address.set(next_read_address);
         // Copy data to the internal data queue.
         self.rx_buf.borrow_mut().extend(&data[..data_len_bytes]);
         Ok(data_len_bytes)
+    }
+
+    fn read_data(&self, address: u32, buf: &mut [u8]) -> Result<&Self> {
+        let buf_len: usize = buf.len();
+        let space_to_end_of_buffer: usize =
+            usize::try_from(SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE - address).unwrap();
+        let first_part_size: usize = if buf_len > space_to_end_of_buffer {
+            space_to_end_of_buffer
+        } else {
+            buf_len
+        };
+        self.flash
+            .read(self.spi, address, &mut buf[0..first_part_size])?;
+        // Handle wrap-around
+        if first_part_size < buf_len {
+            self.flash
+                .read(self.spi, 0, &mut buf[first_part_size..buf_len])?;
+        }
+        Ok(self)
     }
 }
 
