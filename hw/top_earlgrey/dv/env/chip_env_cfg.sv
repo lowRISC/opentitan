@@ -431,19 +431,19 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
             sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
           end
         end else if (i inside {SwTypeTestSlotA, SwTypeTestSlotB}) begin
-          // If test type is `opentitan_test` and the flash image was generated
-          // by the `opentitan_test` Bazel macro itself, or it was generated
-          // by the `opentitan_flash_binary` or `opentitan_binary` Bazel macros,
-          // then we only need to append the device suffix.
-          if ("ot_flash_binary" inside {sw_image_flags[i]} ||
-              "new_rules" inside {sw_image_flags[i]}) begin
-            sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
           // If the tag `silicon_creator` is inside the list of flags, we want
           // to use a flash image built for the `silicon_creator` device. This
           // is used for GLS tests that integrate the ROM macro, which is built
           // for the `silicon_creator` device, not the `sim_dv` device.
-          end else if ("silicon_creator" inside {sw_image_flags[i]}) begin
+          if ("silicon_creator" inside {sw_image_flags[i]}) begin
             sw_images[i] = $sformatf("%0s_silicon_creator", sw_images[i]);
+          // If test type is `opentitan_test` and the flash image was generated
+          // by the `opentitan_test` Bazel macro itself, or it was generated
+          // by the `opentitan_flash_binary` or `opentitan_binary` Bazel macros,
+          // then we only need to append the device suffix.
+          end else if ("ot_flash_binary" inside {sw_image_flags[i]} ||
+              "new_rules" inside {sw_image_flags[i]}) begin
+            sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
           // If test type is `opentitan_functest` (the legacy OpenTitan Bazel
           // test macro), and said macro generated the flash image, then we
           // need to tweak the name, as the flash binary target has the `_prog`
