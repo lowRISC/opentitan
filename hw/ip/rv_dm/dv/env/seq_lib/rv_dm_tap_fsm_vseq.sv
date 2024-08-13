@@ -60,6 +60,8 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
     end
 
   task body();
+    `RUN_SPOT_RESETS
+
     // Read the JTAG IDCODE register and verify that it matches the expected value.
     run_smoke();
     `uvm_info(`gfn, "Starting fsm_tap sequence", UVM_LOW)
