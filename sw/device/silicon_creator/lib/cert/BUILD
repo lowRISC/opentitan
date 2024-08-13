@@ -35,16 +35,6 @@ certificate_template(
 )
 
 certificate_template(
-    name = "tpm_cek_template",
-    template = "tpm_cek.hjson",
-)
-
-certificate_template(
-    name = "tpm_cik_template",
-    template = "tpm_cik.hjson",
-)
-
-certificate_template(
     name = "tpm_ek_template",
     template = "tpm_ek.hjson",
 )
@@ -132,8 +122,6 @@ cc_library(
         ":cert",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/lib/cert:tpm_cek_template_library",
-        "//sw/device/silicon_creator/lib/cert:tpm_cik_template_library",
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
