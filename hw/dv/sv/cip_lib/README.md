@@ -87,6 +87,14 @@ Apart from these, there are several common settings such as `zero_delays`,
 `clk_freq_mhz`, which are randomized as well as knobs such as `en_scb` and
 `en_cov` to turn on/off scoreboard and coverage collection respectively.
 
+Another setting that can be configured is `can_reset_with_csr_accesses`. This
+should be set to true by environments for IPs that support resets when CSR
+accesses are in flight. For this to work properly, the environment must avoid
+checking correctness of CSR reads if a reset happens while the read is in
+progress. Any vseqs must also make sure to complete when a reset is asserted.
+This flag governs the behaviour of `run_seq_with_rand_reset_vseq`, described
+below.
+
 The base class provides a virtual method called `initialize()` which is called
 in `cip_base_test::build_phase` to create some of the objects listed above. If
 the extended IP env cfg class has more such objects added,  then the `initialize()`
@@ -216,20 +224,34 @@ Some examples:
   response (with `d_error` = 1), but also triggers a fatal alert and updates status CSRs
   such as `ERR_CODE`. The list of CSRs that are impacted by this alert event, maintained
   in `cfg.tl_intg_alert_fields`, are also checked for correctness.
-* **task run_seq_with_rand_reset_vseq**: This task runs 3 parallel threads,
-  which are a sequence provided, run_tl_errors_vseq and reset sequence. After
-  reset occurs, the other threads will be killed and then all the CSRs will be read
-  for check. This task runs multiple iterations to ensure DUT won't be broken after
-  reset and TL errors.
-  To ensure the reset functionality works correctly, user will have to disable
-  any internal reset from the stress_all sequence. Below is an example of
-  disabling internal reset in `hmac_stress_all_vseq.sv`:
+* **task run_seq_with_rand_reset_vseq**: This task runs a provided sequence
+  while injecting TL errors with `run_tl_errors_vseq`. After a randomised wait,
+  it injects a reset. Once the reset is complete, it reads all the CSRs to check
+  that they contain their expected reset values.
+
+  The provided sequence must make sure not to drive a reset itself. The reset
+  that would be driven in `dut_init` is disabled in this task by setting the
+  sequence's `do_apply_reset` value to zero, but this behaviour needs to be
+  passed on to any sub-sequence that it wishes to spawn by ensuring that they
+  also have `do_apply_reset=0`. An example from `hmac_stress_all_vseq.sv`:
   ```
   // randomly trigger internal dut_init reset sequence
   // disable any internal reset if used in stress_all_with_rand_reset vseq
   if (do_dut_init) hmac_vseq.do_dut_init = $urandom_range(0, 1);
   else hmac_vseq.do_dut_init = 0;
   ```
+
+  The exact mechanism for injecting this reset is configured by the
+  `can_reset_with_csr_accesses` flag from `cip_base_env_cfg` (described
+  elsewhere in this document). If the flag is false, the task is careful to wait
+  until there are no outstanding CSR accesses before it injects the reset. It
+  then injects the reset and uses `disable fork` to kill the sequence that was
+  being run.
+
+  If the flag is true, the task injects the reset at any time it feels
+  appropriate. It then asserts that the sequence that was running has run to
+  completion before the reset is de-asserted, which means it does not need to
+  kill the process.
 * **task run_same_csr_outstanding_vseq**: This task tests the same CSR with
   non-blocking accesses as the regular CSR sequences don't cover that due to
   limitation of uvm_reg.
