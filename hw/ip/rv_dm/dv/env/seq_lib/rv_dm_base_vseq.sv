@@ -55,11 +55,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   //
   // A vseq that actually wants to exercise scanmode should override this constraint and turn it
   // back on.
-  //
-  // TODO(#23763): We don't currently run any tests with scanmode enabled. This is because doing so
-  //               changes the internal JTAG interface so that it is clocked from the main clock
-  //               instead of the jtag_if TCK. Muxing the tck signal in jtag_if isn't all that easy
-  //               because the jtag driver expects to be able to control it.
   constraint no_scanmode_c {
     scanmode == 1'b0;
   }
