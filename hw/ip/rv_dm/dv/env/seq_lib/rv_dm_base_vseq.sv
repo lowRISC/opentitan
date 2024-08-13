@@ -187,9 +187,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       end join
       if (!cfg.clk_rst_vif.rst_n) return;
 
-      // "Activate" the DM to facilitate ease of testing. This will exit early if there is a JTAG
-      // reset.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+      // "Activate" the DM to facilitate ease of testing, but only if not in scanmode (where the
+      // JTAG driver won't work properly). This will exit early if there is a JTAG reset.
+      if (!scanmode) begin
+        csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+      end
     end
 
     // Start the SBA TL device seq.
