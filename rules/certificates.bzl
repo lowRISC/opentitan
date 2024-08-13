@@ -116,7 +116,7 @@ def certificate_template(name, template):
         srcs = [":{}_srcs".format(name)],
         hdrs = [":{}_hdrs".format(name)],
         deps = [
-            ":asn1",
+            "@//sw/device/silicon_creator/lib/cert:asn1",
         ],
     )
 
