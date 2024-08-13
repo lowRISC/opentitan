@@ -148,3 +148,8 @@ build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/
 
 # cquery output option.
 cquery --output=files
+
+# When test suites are specified in `bazel test`, only build the ones matching the tag filters.
+# This prevents having to build Verilator or an FPGA bitstream when not needed.
+# https://bazel.build/docs/user-manual#build-tests-only
+test --build_tests_only
