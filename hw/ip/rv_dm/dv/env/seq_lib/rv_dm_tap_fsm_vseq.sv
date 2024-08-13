@@ -106,8 +106,13 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
 
   task run_smoke();
     rv_dm_smoke_vseq seq;
+
+    `uvm_create_on(seq, p_sequencer)
+    if (!do_apply_reset) seq.do_apply_reset = 1'b0;
+    `DV_CHECK_RANDOMIZE_FATAL(seq)
+
     `uvm_info(`gfn, "Starting rv_dm_tap_fsm_vseq smoke test", UVM_LOW)
-    `uvm_do(seq)
+    `uvm_send(seq)
   endtask
 
 `undef RUN_SPOT_RESETS
