@@ -66,10 +66,6 @@ wycheproof_repos()
 load("//third_party/sphincsplus:repos.bzl", "sphincsplus_repos")
 sphincsplus_repos()
 
-# Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
-load("//rules:bitstreams.bzl", "bitstreams_repo")
-bitstreams_repo(name = "bitstreams")
-
 # Setup for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
 load("//rules:hooks_setup.bzl", "hooks_setup", "provisioning_exts_setup", "secure_hooks_setup")
