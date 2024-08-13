@@ -30,6 +30,36 @@ class mubi_cov #(parameter int Width = 4,
   endfunction : sample
 endclass : mubi_cov
 
+// TODO(#24142): This is a bit silly: it's just mubi_cov above, specialised to Width=32. But that
+// doesn't work properly with VCS (tried with version 2023.03) because it ends up creating an
+// enormous number of bins. Setting an explicit width here works around the problem. Fix this up
+// properly if we change tool version.
+class mubi32_cov extends uvm_object;
+  `uvm_object_param_utils(mubi32_cov)
+
+  // Collect true, false and at least N other values (N = 32)
+  covergroup mubi_cg(string name) with function sample(bit [32-1:0] value);
+    option.per_instance = 1;
+    option.name         = name;
+
+    cp_value: coverpoint value {
+      bins true = {prim_mubi_pkg::MuBi32True};
+      bins false = {prim_mubi_pkg::MuBi32False};
+      bins others[32] = {[0:{32{1'b1}}]} with (!(item inside {prim_mubi_pkg::MuBi32True,
+                                                              prim_mubi_pkg::MuBi32False}));
+    }
+  endgroup : mubi_cg
+
+  // use reg_field name as this name
+  function new(string name = "");
+    mubi_cg = new($sformatf("mubi%0d_cov_of_%s", 32, name));
+  endfunction : new
+
+  virtual function void sample(bit [32-1:0] value);
+    mubi_cg.sample(value);
+  endfunction : sample
+endclass
+
 typedef mubi_cov #(.Width(4),
                    .ValueTrue(prim_mubi_pkg::MuBi4True),
                    .ValueFalse(prim_mubi_pkg::MuBi4False)) mubi4_cov;
@@ -51,9 +81,6 @@ typedef mubi_cov #(.Width(24),
 typedef mubi_cov #(.Width(28),
                    .ValueTrue(prim_mubi_pkg::MuBi28True),
                    .ValueFalse(prim_mubi_pkg::MuBi28False)) mubi28_cov;
-typedef mubi_cov #(.Width(32),
-                   .ValueTrue(prim_mubi_pkg::MuBi32True),
-                   .ValueFalse(prim_mubi_pkg::MuBi32False)) mubi32_cov;
 
 // a mubi coverage object, which allows to dynamically select the width of mubi
 class dv_base_mubi_cov extends uvm_object;
