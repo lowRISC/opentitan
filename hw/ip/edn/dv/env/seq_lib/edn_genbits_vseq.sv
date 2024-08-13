@@ -169,7 +169,9 @@ class edn_genbits_vseq extends edn_base_vseq;
       // this command should not be allowed to appear at the CSRNG cmd interface
       `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s",
                                 exp_state.name()), UVM_HIGH)
-      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(exp_state), .backdoor(1'b1));
+      // Use a timeout of 100_000_000 ns for the maximum glen case.
+      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(exp_state), .backdoor(1'b1),
+                   .timeout_ns(100_000_000));
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
@@ -190,7 +192,9 @@ class edn_genbits_vseq extends edn_base_vseq;
       csr_update(.csr(ral.ctrl));
       mode = edn_env_pkg::SwMode;
       // Wait until the EDN enters the Idle state and finally the SWPortMode.
-      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::SWPortMode), .backdoor(1'b1));
+      // Use a timeout of 100_000_000 ns for the maximum glen case.
+      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::SWPortMode), .backdoor(1'b1),
+                   .timeout_ns(100_000_000));
       `DV_CHECK_EQ(cfg.m_csrng_agent_cfg.generate_between_reseeds_cnt, num_reqs_between_reseeds)
       // If the endpoint agents still expect more data, send another generate command
       if (total_glen > cfg.m_csrng_agent_cfg.generate_cnt*cfg.glen_auto_mode) begin
