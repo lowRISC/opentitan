@@ -48,6 +48,13 @@ void ottf_console_init(void);
 void ottf_console_configure_uart(uintptr_t base_addr);
 
 /**
+ * Configures the given SPI device to be used by the OTTF console.
+ *
+ * @param base_addr The base address of the SPI device to use.
+ */
+void ottf_console_configure_spi_device(uintptr_t base_addr);
+
+/**
  * Manage flow control by inspecting the OTTF console device's receive FIFO.
  *
  * @param uart A UART handle.

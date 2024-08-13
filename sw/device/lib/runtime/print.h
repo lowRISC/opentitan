@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
 /**
@@ -279,6 +280,16 @@ size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
  * @param out the sink to use for "default" printing.
  */
 void base_set_stdout(buffer_sink_t out);
+
+/**
+ * Configures SPI device stdout for `base_print.h` to use.
+ *
+ * Note that this function will save `spi_device` in a global variable, so the
+ * pointer must have static storage duration.
+ *
+ * @param spi_device The SPI device handle to use for stdout.
+ */
+void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device);
 
 /**
  * Configures UART stdout for `base_print.h` to use.
