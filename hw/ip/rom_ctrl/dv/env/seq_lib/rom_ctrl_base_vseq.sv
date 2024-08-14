@@ -84,14 +84,18 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
   // Read the digest[i] registers (computed by kmac) and the exp_digest[i] registers (which rom_ctrl
   // read from the top of the ROM). Check these registers all have their expected values.
+  //
+  // Exits early on a system reset.
   virtual task read_digest_regs();
     uvm_status_e status;
     for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       ral.digest[i].mirror(.status(status), .check(UVM_CHECK));
+      if (!cfg.clk_rst_vif.rst_n) return;
       `DV_CHECK_EQ(status, UVM_IS_OK)
     end
     for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
       ral.exp_digest[i].mirror(.status(status), .check(UVM_CHECK));
+      if (!cfg.clk_rst_vif.rst_n) return;
       `DV_CHECK_EQ(status, UVM_IS_OK)
     end
   endtask
