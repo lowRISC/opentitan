@@ -194,9 +194,12 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
     if (!as_expected) begin
       // We want to choose a digest that doesn't match. To do so, start with the expected digest and
-      // then xor with a random nonzero value.
+      // then xor with a nonzero value. If single_bit is set, the digest will only be wrong at a
+      // single index, which means that most of the words in the digest will match the expected
+      // digest (but not all of them).
       bit [kmac_pkg::AppDigestW-1:0] mask;
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, mask != 0;)
+      bit                            single_bit = $urandom_range(0, 1);
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, mask != 0; single_bit -> $countones(mask) == 1;)
       digest ^= mask;
     end
 
