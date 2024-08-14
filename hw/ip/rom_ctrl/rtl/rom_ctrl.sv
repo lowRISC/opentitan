@@ -514,8 +514,9 @@ module rom_ctrl
           |-> $stable(pwrmgr_data_o.good))
 
   // Check that pwrmgr_data_o.done is never de-asserted once asserted
-  `ASSERT(PwrmgrDataChk_A, $rose(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True) |->
-          always !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True),
+  `ASSERT(PwrmgrDataChk_A,
+          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True |=>
+          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True,
           clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
