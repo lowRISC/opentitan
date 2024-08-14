@@ -241,14 +241,12 @@ module dma
 
   // Masking incoming handshake triggers with their enable
   lsio_trigger_t lsio_trigger;
-  logic          handshake_interrupt;
   always_comb begin
     lsio_trigger = '0;
 
     for (int i = 0; i < NumIntClearSources; i++) begin
       lsio_trigger[i] = lsio_trigger_i[i] && reg2hw.handshake_intr_enable.q[i];
     end
-    handshake_interrupt = (|lsio_trigger);
   end
 
   // Following cast is only temporary until FSM becomes sparesly encoded
@@ -1081,7 +1079,7 @@ module dma
   // Interrupt logic
   logic test_done_interrupt;
   logic test_error_interrupt;
-  logic data_move_state, data_move_state_valid;
+  logic data_move_state;
   logic update_dst_addr_reg, update_src_addr_reg;
 
   assign test_done_interrupt  = reg2hw.intr_test.dma_done.q  && reg2hw.intr_test.dma_done.qe;
@@ -1090,10 +1088,6 @@ module dma
   // Signal interrupt controller whenever an enabled interrupt info bit is set
   assign intr_dma_done_o  = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
   assign intr_dma_error_o = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
-
-  // Data was moved if we get a write valid response
-  assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite ||
-                                                      ctrl_state_q == DmaWaitWriteResponse));
 
   assign data_move_state = (ctrl_state_q == DmaSendWrite)         ||
                            (ctrl_state_q == DmaWaitWriteResponse) ||
