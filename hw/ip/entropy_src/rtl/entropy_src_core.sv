@@ -3126,7 +3126,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Count number of valid bits from RNG input (RNG_BUS_WIDTH wide) while Entropy Source is enabled.
   logic [63:0] rng_valid_bit_cnt_d, rng_valid_bit_cnt_q;
-  assign rng_valid_bit_cnt_d = entropy_src_rng_i.rng_valid && es_delayed_enable_q ?
+  assign rng_valid_bit_cnt_d = entropy_src_rng_i.rng_valid && es_enable_fo[5] &&
+                               es_delayed_enable_q ?
                                rng_valid_bit_cnt_q + RNG_BUS_WIDTH :
                                rng_valid_bit_cnt_q;
 
@@ -3349,12 +3350,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     end
   end
 
-  // Track when entropy is expected to get dropped instead of pushed into the esfinal FIFO. This is
-  // the case whenever the esfinal FIFO is full. When routing to SW and the SW read finished at the
-  // same time, the entropy isn't dropped.
-  logic esfinal_exp_drop;
-  assign esfinal_exp_drop = sfifo_esfinal_full & (es_route_to_sw ? ~swread_done : 1'b1);
-
   // Count number of bits that are expected to have gotten pushed into precon FIFO and into esfinal
   // FIFO after boot and startup checks and while bypass mode was disabled.
   logic [63:0] precon_post_startup_exp_push_bit_cnt_d, precon_post_startup_exp_push_bit_cnt_q;
@@ -3372,7 +3367,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       // have gotten pushed into the precon FIFO.
       precon_post_startup_exp_push_bit_cnt_d += 4 * health_test_window;
     end
-    if (ht_state_q == HtStPassed && main_stage_push_raw && !esfinal_exp_drop) begin
+    if (ht_state_q == HtStPassed && main_stage_push_raw && sfifo_esfinal_not_full) begin
       // If none of the health tests failed and the alert threshold has not been exceeded, SeedLen
       // bits are expected to be pushed into the esfinal FIFO -- unless we expect them to get
       // dropped (see above).
