@@ -535,9 +535,12 @@ module rom_ctrl
   // to read requests.
   if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled_asserts
 
+    `ASSERT(InvalidStateTerminal_A,
+            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid |=>
+            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
     `ASSERT(BusLocalEscChk_A,
-            (gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
-            |-> always(!bus_rom_rvalid))
+            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid |->
+            !bus_rom_rvalid)
   end
 
   // Alert assertions for reg_we onehot check
