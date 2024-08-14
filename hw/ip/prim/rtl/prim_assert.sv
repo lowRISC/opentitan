@@ -179,7 +179,7 @@
        (!$stable(__state) & __name``_cond, initial_state = $past(__state)) |->                                   \
            (__state != initial_state) until (__rst == 1'b1);                                                     \
      endproperty                                                                                                 \
-   `ASSERT(__name, __name``_p, __clk, __rst)                                                                     \
+   `ASSERT(__name, __name``_p, __clk, 0)                                                                         \
   `endif
 
 `include "prim_assert_sec_cm.svh"
