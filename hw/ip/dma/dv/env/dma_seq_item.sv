@@ -436,7 +436,7 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\topcode                  : %0d",    opcode),
         $sformatf("\n\tper_transfer_width      : %0d",    per_transfer_width),
         $sformatf("\n\tchunk_data_size         : 0x%x",   chunk_data_size),
-        $sformatf("\n\ttotal_data_size         : 0x%x",   total_data_size)
+        $sformatf("\n\ttotal_data_size         : 0x%x",   total_data_size),
     };
 
     // Verdict on whether this is a valid DMA configuration, eg. post-randomization
@@ -493,11 +493,14 @@ class dma_seq_item extends uvm_sequence_item;
       // have had to be introduced to permit testing in block level DV (see `soc_system_hi_addr`
       // above); if the upper bits do not match then reads or writes will be faulted, and 32-bit
       // address wraparound is not permitted.
-      if (src_asid == SocSystemAddr) begin
-        if (src_addr[63:32] != soc_system_hi_addr || src_addr[31:0] >= ~memory_range) begin
-          `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Reads not met",
-                    UVM_MEDIUM)
-          valid_config = 0;
+      // No surce checks needed when doing a memset operation
+      if (opcode != OpcMemset) begin
+        if (src_asid == SocSystemAddr) begin
+          if (src_addr[63:32] != soc_system_hi_addr || src_addr[31:0] >= ~memory_range) begin
+            `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Reads not met",
+                      UVM_MEDIUM)
+            valid_config = 0;
+          end
         end
       end
       if (dst_asid == SocSystemAddr) begin
@@ -517,9 +520,12 @@ class dma_seq_item extends uvm_sequence_item;
       `uvm_info(`gfn, " - Destination ASID invalid", UVM_MEDIUM)
       valid_config = 0;
     end
-    if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
-      `uvm_info(`gfn, " - Source ASID invalid", UVM_MEDIUM)
-      valid_config = 0;
+    // Source ASID check not needed in memset operation
+    if (opcode != OpcMemset) begin
+      if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
+        `uvm_info(`gfn, " - Source ASID invalid", UVM_MEDIUM)
+        valid_config = 0;
+      end
     end
 
     // Check if operation is valid
@@ -528,7 +534,7 @@ class dma_seq_item extends uvm_sequence_item;
         `uvm_info(`gfn, $sformatf(" - SHA hashing operates only on 4B/txn"), UVM_MEDIUM)
         valid_config = 0;
       end
-    end else if (opcode != OpcCopy) begin
+    end else if (!(opcode inside {OpcCopy, OpcMemset})) begin
       `uvm_info(`gfn, $sformatf(" - Unsupported DMA operation: %s", opcode.name()), UVM_MEDIUM)
       valid_config = 0;
     end
@@ -549,27 +555,30 @@ class dma_seq_item extends uvm_sequence_item;
     // For all valid configurations, either source or destination address space Id must point
     // to OT internal address space, but the memory range restriction does not apply if _both_
     // are within the OT internal address space.
-    if (src_asid == OtInternalAddr && dst_asid != OtInternalAddr) begin
-      if (mem_range_valid && !is_buffer_in_dma_memory_region(src_addr[31:0], memory_range)) begin
-        // If source address space ID points to OT internal address space,
-        // it must be within DMA enabled address range.
-        `uvm_info(`gfn,
-                $sformatf(
-                  " - Invalid src addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
-                  src_addr[31:0], src_addr[63:32], mem_range_base, mem_range_limit),
-                UVM_MEDIUM)
-        valid_config = 0;
-      end
-    end else if (dst_asid == OtInternalAddr && src_asid != OtInternalAddr) begin
-      // If destination address space ID points to OT internal address space
-      // it must be within DMA enabled address range.
-      if (mem_range_valid && !is_buffer_in_dma_memory_region(dst_addr[31:0], memory_range)) begin
-        `uvm_info(`gfn,
+    if (opcode != OpcMemset) begin
+      if (src_asid == OtInternalAddr && dst_asid != OtInternalAddr) begin
+        if (mem_range_valid && !is_buffer_in_dma_memory_region(src_addr[31:0], memory_range)) begin
+          // If source address space ID points to OT internal address space,
+          // it must be within DMA enabled address range.
+          `uvm_info(`gfn,
                   $sformatf(
-                    " - Invalid dst addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
-                    dst_addr[31:0], dst_addr[63:32], mem_range_base, mem_range_limit),
+                    " - Invalid src addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
+                    src_addr[31:0], src_addr[63:32], mem_range_base, mem_range_limit),
                   UVM_MEDIUM)
-        valid_config = 0;
+          valid_config = 0;
+        end
+      end else if (dst_asid == OtInternalAddr && src_asid != OtInternalAddr) begin
+        // If destination address space ID points to OT internal address space
+        // it must be within DMA enabled address range.
+        if (mem_range_valid && !is_buffer_in_dma_memory_region(dst_addr[31:0], memory_range)) begin
+          `uvm_info(`gfn,
+                    $sformatf(
+                      " - Invalid dst addr range found lo: %08x hi: %08x with base: %08x",
+                      " limit: %0x",
+                      dst_addr[31:0], dst_addr[63:32], mem_range_base, mem_range_limit),
+                    UVM_MEDIUM)
+          valid_config = 0;
+        end
       end
     end
 
@@ -579,7 +588,7 @@ class dma_seq_item extends uvm_sequence_item;
       `uvm_info(`gfn, " - Destination address out of range for destination ASID", UVM_MEDIUM)
       valid_config = 0;
     end
-    if (src_asid != SocSystemAddr && |src_addr[63:32]) begin
+    if (opcode != OpcMemset && src_asid != SocSystemAddr && |src_addr[63:32]) begin
       `uvm_info(`gfn, " - Source addess out of range for source ASID", UVM_MEDIUM)
       valid_config = 0;
     end
@@ -596,7 +605,7 @@ class dma_seq_item extends uvm_sequence_item;
       end
     endcase
 
-    if (|(src_addr & align_mask)) begin
+    if (opcode != OpcMemset && |(src_addr & align_mask)) begin
       `uvm_info(`gfn, " - Source address does not meet alignment requirements", UVM_MEDIUM)
       valid_config = 0;
     end

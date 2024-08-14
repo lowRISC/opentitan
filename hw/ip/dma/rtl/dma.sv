@@ -465,6 +465,12 @@ module dma
   assign src_asid = reg2hw.addr_space_id.src_asid.q;
   assign dst_asid = reg2hw.addr_space_id.dst_asid.q;
 
+  // Memset allows to replicate a 64-bit pattern via src_addr_lo and src_addr_hi
+  // src_addr_lo is used for 64-bit aligned addresses, src_addr_hi used for non 64-bit aligned
+  // addresses
+  logic [top_pkg::TL_AW-1:0] memset_value;
+  assign memset_value = dst_addr_q[2]? reg2hw.src_addr_hi.q : reg2hw.src_addr_lo.q;
+
   // Note: bus signals shall be asserted only when configured and active, to ensure
   // that address and - especially - data are not leaked to other buses.
 
@@ -479,7 +485,8 @@ module dma
                              (dma_host_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                         (dma_host_clear_intr ? reg2hw.intr_src_addr[clear_index_q].q : 'b0));
     dma_host_tlul_req_we    = dma_host_write | dma_host_clear_intr;
-    dma_host_tlul_req_wdata = dma_host_write ? read_return_data_q :
+    dma_host_tlul_req_wdata = dma_host_write ?
+               (control_q.opcode == OpcMemset? memset_value : read_return_data_q) :
                         (dma_host_clear_intr ? reg2hw.intr_src_wr_val[clear_index_q].q : 'b0);
     dma_host_tlul_req_be    = dma_host_write ? req_dst_be_q :
                              (dma_host_read  ? req_src_be_q
@@ -497,7 +504,8 @@ module dma
                             (dma_ctn_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                        (dma_ctn_clear_intr ? reg2hw.intr_src_addr[clear_index_q].q : 'b0));
     dma_ctn_tlul_req_we    = dma_ctn_write | dma_ctn_clear_intr;
-    dma_ctn_tlul_req_wdata = dma_ctn_write ? read_return_data_q :
+    dma_ctn_tlul_req_wdata = dma_ctn_write ?
+             (control_q.opcode == OpcMemset? memset_value : read_return_data_q) :
                        (dma_ctn_clear_intr ? reg2hw.intr_src_wr_val[clear_index_q].q : 'b0);
     dma_ctn_tlul_req_be    = dma_ctn_write ? req_dst_be_q :
                             (dma_ctn_read  ? req_src_be_q : {top_pkg::TL_DBW{dma_ctn_clear_intr}});
@@ -515,7 +523,8 @@ module dma
                                          {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
     sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
 
-    sys_req_d.write_data = {SYS_DATA_WIDTH{dma_sys_write}} & read_return_data_q;
+    sys_req_d.write_data = dma_sys_write?
+                   (control_q.opcode == OpcMemset? memset_value : read_return_data_q) : b0;
     sys_req_d.write_be   = {SYS_DATA_BYTEWIDTH{dma_sys_write}} & req_dst_be_q;
 
     sys_req_d.vld_vec     [SysCmdRead] = dma_sys_read;
@@ -810,7 +819,8 @@ module dma
             next_error[DmaSizeErr] = 1'b1;
           end
 
-          if (!(control_q.opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
+          if (!(control_q.opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512,
+                                         OpcMemset})) begin
             next_error[DmaOpcodeErr] = 1'b1;
           end
 
@@ -823,9 +833,6 @@ module dma
 
           // Ensure that ASIDs have valid values
           // SEC_CM: ASID.INTERSIG.MUBI
-          if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
-            next_error[DmaAsidErr] = 1'b1;
-          end
           if (!(dst_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
             next_error[DmaAsidErr] = 1'b1;
           end
@@ -836,56 +843,66 @@ module dma
             next_error[DmaBaseLimitErr] = 1'b1;
           end
 
-          // In 4-byte transfers, source and destination address must be 4-byte aligned
-          if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-            (|reg2hw.src_addr_lo.q[1:0])) begin
-            next_error[DmaSrcAddrErr] = 1'b1;
-          end
-          if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-            (|reg2hw.dst_addr_lo.q[1:0])) begin
+          // In 2-byte transfers, destination address must be 2-byte aligned
+          if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.dst_addr_lo.q[0]) begin
             next_error[DmaDstAddrErr] = 1'b1;
           end
 
-          // In 2-byte transfers, source and destination address must be 2-byte aligned
-          if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.src_addr_lo.q[0]) begin
-            next_error[DmaSrcAddrErr] = 1'b1;
-          end
-          if (reg2hw.transfer_width.q == DmaXfer2BperTxn &&
-              reg2hw.dst_addr_lo.q[0]) begin
+          // In 4-byte transfers, destination address must be 4-byte aligned
+          if (reg2hw.transfer_width.q == DmaXfer4BperTxn && (|reg2hw.dst_addr_lo.q[1:0])) begin
             next_error[DmaDstAddrErr] = 1'b1;
           end
 
-          // If data from the SOC system bus or the control bus is transferred
-          // to the OT internal memory, we must check if the destination address range falls into
-          // the DMA enabled memory region.
-          if ((src_asid inside {SocControlAddr, SocSystemAddr}) && (dst_asid == OtInternalAddr) &&
-              // Out-of-bound check
-              ((reg2hw.dst_addr_lo.q > control_q.enabled_memory_range_limit) ||
-                (reg2hw.dst_addr_lo.q < control_q.enabled_memory_range_base) ||
-                ((SYS_ADDR_WIDTH'(reg2hw.dst_addr_lo.q) +
-                  SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
-            next_error[DmaDstAddrErr] = 1'b1;
-          end
+          // Source checks are only needed when reading from source and not in memset
+          if (control_q.opcode != OpcMemset) begin
+            // Ensure that ASIDs have valid values
+            // SEC_CM: ASID.INTERSIG.MUBI
+            if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
+              next_error[DmaAsidErr] = 1'b1;
+            end
 
-          // If data from the OT internal memory is transferred  to the SOC system bus or the
-          // control bus, we must check if the source address range falls into the
-          // DMA enabled memory region.
-          if ((dst_asid inside {SocControlAddr, SocSystemAddr}) && (src_asid == OtInternalAddr) &&
+            // In 2-byte transfers, source address must be 2-byte aligned
+            if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.src_addr_lo.q[0]) begin
+              next_error[DmaSrcAddrErr] = 1'b1;
+            end
+
+            // In 4-byte transfers, source address must be 4-byte aligned
+            if (reg2hw.transfer_width.q == DmaXfer4BperTxn && (|reg2hw.src_addr_lo.q[1:0])) begin
+              next_error[DmaSrcAddrErr] = 1'b1;
+            end
+
+            // If data from the SOC system bus or the control bus is transferred
+            // to the OT internal memory, we must check if the destination address range falls into
+            // the DMA enabled memory region.
+            if ((src_asid inside {SocControlAddr, SocSystemAddr}) && (dst_asid == OtInternalAddr) &&
                 // Out-of-bound check
-                ((reg2hw.src_addr_lo.q > control_q.enabled_memory_range_limit) ||
-                (reg2hw.src_addr_lo.q < control_q.enabled_memory_range_base)   ||
-                ((SYS_ADDR_WIDTH'(reg2hw.src_addr_lo.q) +
-                  SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
-            next_error[DmaSrcAddrErr] = 1'b1;
-          end
+                ((reg2hw.dst_addr_lo.q > control_q.enabled_memory_range_limit) ||
+                  (reg2hw.dst_addr_lo.q < control_q.enabled_memory_range_base) ||
+                  ((SYS_ADDR_WIDTH'(reg2hw.dst_addr_lo.q) +
+                    SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
+                    SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
+              next_error[DmaDstAddrErr] = 1'b1;
+            end
 
-          // If the source ASID is the SOC control port or the OT internal port, we are accessing a
-          // 32-bit address space. Thus the upper bits of the source address must be zero
-          if ((src_asid inside {SocControlAddr, OtInternalAddr}) &&
-              (|reg2hw.src_addr_hi.q)) begin
-            next_error[DmaSrcAddrErr] = 1'b1;
+            // If data from the OT internal memory is transferred  to the SOC system bus or the
+            // control bus, we must check if the source address range falls into the
+            // DMA enabled memory region.
+            if ((dst_asid inside {SocControlAddr, SocSystemAddr}) && (src_asid == OtInternalAddr) &&
+                  // Out-of-bound check
+                  ((reg2hw.src_addr_lo.q > control_q.enabled_memory_range_limit) ||
+                  (reg2hw.src_addr_lo.q < control_q.enabled_memory_range_base)   ||
+                  ((SYS_ADDR_WIDTH'(reg2hw.src_addr_lo.q) +
+                    SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
+                    SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
+              next_error[DmaSrcAddrErr] = 1'b1;
+            end
+
+            // If the source ASID is the SOC control port or the OT internal port, we are accessing
+            // a 32-bit address space. Thus the upper bits of the source address must be zero
+            if ((src_asid inside {SocControlAddr, OtInternalAddr}) &&
+                (|reg2hw.src_addr_hi.q)) begin
+              next_error[DmaSrcAddrErr] = 1'b1;
+            end
           end
 
           // If the destination ASID is the SOC control por or the OT internal port we are accessing
@@ -910,7 +927,13 @@ module dma
                 sha2_hash_start = 1'b1;
               end
             end
-            ctrl_state_d = DmaSendRead;
+
+            // In Memset, we can directly go the write operation, no read required
+            if (control_q.opcode == OpcMemset) begin
+              ctrl_state_d = DmaSendWrite;
+            end else begin
+              ctrl_state_d = DmaSendRead;
+            end
           end
         end
 

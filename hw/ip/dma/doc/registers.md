@@ -55,17 +55,17 @@
 | dma.[`INTR_SRC_ADDR_8`](#intr_src_addr)                         | 0xbc     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
 | dma.[`INTR_SRC_ADDR_9`](#intr_src_addr)                         | 0xc0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
 | dma.[`INTR_SRC_ADDR_10`](#intr_src_addr)                        | 0xc4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_WR_VAL_0`](#intr_src_wr_val)                     | 0x11c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_1`](#intr_src_wr_val)                     | 0x120    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_2`](#intr_src_wr_val)                     | 0x124    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_3`](#intr_src_wr_val)                     | 0x128    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_4`](#intr_src_wr_val)                     | 0x12c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_5`](#intr_src_wr_val)                     | 0x130    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_6`](#intr_src_wr_val)                     | 0x134    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_7`](#intr_src_wr_val)                     | 0x138    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_8`](#intr_src_wr_val)                     | 0x13c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_9`](#intr_src_wr_val)                     | 0x140    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_10`](#intr_src_wr_val)                    | 0x144    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_0`](#intr_src_wr_val)                     | 0x120    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_1`](#intr_src_wr_val)                     | 0x124    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_2`](#intr_src_wr_val)                     | 0x128    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_3`](#intr_src_wr_val)                     | 0x12c    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_4`](#intr_src_wr_val)                     | 0x130    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_5`](#intr_src_wr_val)                     | 0x134    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_6`](#intr_src_wr_val)                     | 0x138    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_7`](#intr_src_wr_val)                     | 0x13c    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_8`](#intr_src_wr_val)                     | 0x140    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_9`](#intr_src_wr_val)                     | 0x144    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_10`](#intr_src_wr_val)                    | 0x148    |        4 | Write value for interrupt clearing write.                                                                                                                |
 
 ## INTR_STATE
 Interrupt State Register
@@ -143,6 +143,7 @@ Lower 32 bits of the physical or virtual address of memory location within SoC m
 Data is read from this location in a copy operation.
 The address may be an IO virtual address.
 Must be aligned to the transfer width.
+When using the memset operation, this register is used as a memset value.
 - Offset: `0x10`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -162,6 +163,7 @@ Must be aligned to the transfer width.
 Upper 32 bits of the source address.
 Must be aligned to the transfer width.
 Source and destination address must have the same alignment.
+When using the memset operation, this register is used as a memset value.
 - Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -525,6 +527,7 @@ Defines the type of DMA operations.
 | 0x1     | SHA256 | Perform inline hashing using SHA256.                    |
 | 0x2     | SHA384 | Perform inline hashing using SHA384.                    |
 | 0x3     | SHA512 | Perform inline hashing using SHA512.                    |
+| 0x4     | MEMSET | Perform a memset operation.                             |
 
 Other values are reserved.
 
@@ -715,17 +718,17 @@ Write value for interrupt clearing write.
 
 | Name               | Offset   |
 |:-------------------|:---------|
-| INTR_SRC_WR_VAL_0  | 0x11c    |
-| INTR_SRC_WR_VAL_1  | 0x120    |
-| INTR_SRC_WR_VAL_2  | 0x124    |
-| INTR_SRC_WR_VAL_3  | 0x128    |
-| INTR_SRC_WR_VAL_4  | 0x12c    |
-| INTR_SRC_WR_VAL_5  | 0x130    |
-| INTR_SRC_WR_VAL_6  | 0x134    |
-| INTR_SRC_WR_VAL_7  | 0x138    |
-| INTR_SRC_WR_VAL_8  | 0x13c    |
-| INTR_SRC_WR_VAL_9  | 0x140    |
-| INTR_SRC_WR_VAL_10 | 0x144    |
+| INTR_SRC_WR_VAL_0  | 0x120    |
+| INTR_SRC_WR_VAL_1  | 0x124    |
+| INTR_SRC_WR_VAL_2  | 0x128    |
+| INTR_SRC_WR_VAL_3  | 0x12c    |
+| INTR_SRC_WR_VAL_4  | 0x130    |
+| INTR_SRC_WR_VAL_5  | 0x134    |
+| INTR_SRC_WR_VAL_6  | 0x138    |
+| INTR_SRC_WR_VAL_7  | 0x13c    |
+| INTR_SRC_WR_VAL_8  | 0x140    |
+| INTR_SRC_WR_VAL_9  | 0x144    |
+| INTR_SRC_WR_VAL_10 | 0x148    |
 
 
 ### Fields

@@ -129,6 +129,7 @@
             Data is read from this location in a copy operation.
             The address may be an IO virtual address.
             Must be aligned to the transfer width.
+            When using the memset operation, this register is used as a memset value.
             '''
       swaccess: "rw"
       hwaccess: "hrw"
@@ -147,6 +148,7 @@
       desc: '''Upper 32 bits of the source address.
             Must be aligned to the transfer width.
             Source and destination address must have the same alignment.
+            When using the memset operation, this register is used as a memset value.
             '''
       swaccess: "rw"
       hwaccess: "hrw"
@@ -448,6 +450,10 @@
               name: "SHA512"
               desc: "Perform inline hashing using SHA512."
             }
+            { value: "4",
+              name: "MEMSET"
+              desc: "Perform a memset operation."
+            }
           ]
         }
         { bits: "4"
@@ -721,7 +727,7 @@
         ]
       }
     }
-    { skipto: "0x11C" }
+    { skipto: "0x120" }
     { multireg: {
         name: "INTR_SRC_WR_VAL"
         desc: "Write value for interrupt clearing write."

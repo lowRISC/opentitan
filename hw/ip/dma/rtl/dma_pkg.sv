@@ -41,7 +41,8 @@ package dma_pkg;
     OpcCopy   = 4'h0,
     OpcSha256 = 4'h1,
     OpcSha384 = 4'h2,
-    OpcSha512 = 4'h3
+    OpcSha512 = 4'h3,
+    OpcMemset = 4'h4
   } opcode_e;
 
   // Control state captured during the operation

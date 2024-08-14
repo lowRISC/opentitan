@@ -169,9 +169,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // On-the-fly checking of write data against the pre-randomized source data
-  function void check_write_data(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
+  function void check_write_data(string if_name, bit [63:0] a_addr, ref tl_seq_item item,
+                                 ref dma_seq_item dma_config);
     bit [tl_agent_pkg::DataWidth-1:0] wdata = item.a_data;
     bit [31:0] offset = num_bytes_transferred;
+    bit [31:0] memset_value;
+    bit [7:0] src_data;
 
     `uvm_info(`gfn, $sformatf("if_name %s: write addr 0x%0x mask 0x%0x data 0x%0x", if_name,
                               a_addr, item.a_mask, item.a_data), UVM_HIGH)
@@ -179,9 +182,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
     // Check each of the bytes being written, Little Endian byte ordering
     for (int i = 0; i < $bits(item.a_mask); i++) begin
       if (item.a_mask[i]) begin
-        `uvm_info(`gfn, $sformatf("src_data %0x write data 0x%0x",
-                                  cfg.src_data[offset], wdata[7:0]), UVM_DEBUG)
-        `DV_CHECK_EQ(cfg.src_data[offset], wdata[7:0])
+        memset_value = a_addr[3]? dma_config.src_addr[63:32] : dma_config.src_addr[31:0];
+        src_data = dma_config.opcode == OpcMemset? memset_value[a_addr[1:0]*8:+8] :
+                                                   cfg.src_data[offset];
+
+        `uvm_info(`gfn, $sformatf("src_data %0x write data 0x%0x", src_data, wdata[7:0]), UVM_DEBUG)
+        `DV_CHECK_EQ(src_data, wdata[7:0])
         offset++;
       end
       wdata = wdata >> 8;
@@ -344,7 +350,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   num_bytes_this_txn, intr_source), UVM_HIGH);
 
         // On-the-fly checking of writing data
-        check_write_data(if_name, a_addr, item);
+        check_write_data(if_name, a_addr, item, dma_config);
 
         // Check if opcode is as expected
         if ((dma_config.per_transfer_width != DmaXfer4BperTxn) ||
@@ -763,20 +769,28 @@ class dma_scoreboard extends cip_base_scoreboard #(
     for (int i = 0; i < size; i++) begin
       // For the source data we access the original randomized data that we chose
       bit [7:0] src_data = cfg.src_data[src_offset + i];
+      bit [31:0] memset_value;
       bit [7:0] dst_data;
 
-      if (dst_fifo) begin
-        dst_data = get_fifo_data(dma_config.dst_asid, dst_addr);
+      if (dma_config.opcode != OpcMemset) begin
+        if (dst_fifo) begin
+          dst_data = get_fifo_data(dma_config.dst_asid, dst_addr);
+        end else begin
+          dst_data = get_model_data(dma_config.dst_asid, dst_addr);
+        end
+        src_addr++;
       end else begin
         dst_data = get_model_data(dma_config.dst_asid, dst_addr);
+        // Get the memset depending on the address alignment and the sub-byte index
+        memset_value = dst_addr[3]? dma_config.src_addr[63:32] : dma_config.src_addr[31:0];
+        src_data = memset_value[dst_addr[1:0]*8:+8];
       end
       `uvm_info(`gfn,
-                $sformatf("checking src_addr = %0x data = %0x : dst_addr = %0x data = %0x",
-                          src_addr, src_data, dst_addr, dst_data), UVM_DEBUG)
+                  $sformatf("checking src_addr = %0x data = %0x : dst_addr = %0x data = %0x",
+                            src_addr, src_data, dst_addr, dst_data), UVM_DEBUG)
       `DV_CHECK_EQ(src_data, dst_data,
-                   $sformatf("src_addr = %0x data = %0x : dst_addr = %0x data = %0x",
-                             src_addr, src_data, dst_addr, dst_data))
-      src_addr++;
+                    $sformatf("src_addr = %0x data = %0x : dst_addr = %0x data = %0x",
+                              src_addr, src_data, dst_addr, dst_data))
       if (!dst_fifo) begin
         dst_addr++;
       end
