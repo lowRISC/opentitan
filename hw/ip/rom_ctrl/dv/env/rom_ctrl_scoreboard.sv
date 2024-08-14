@@ -253,6 +253,24 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(rom_check_complete, 1'b1, "rom check didn't finish")
       `DV_CHECK_EQ(pwrmgr_complete, 1'b1, "pwrmgr signals never checked")
       `DV_CHECK_EQ(keymgr_complete, 1'b1, "keymgr signals never checked")
+
+      // We normally expect pwrmgr_complete to be true, which means that we have sent MuBi4True to
+      // the power manager to say that the rom check has finished. It won't be true if we saw a
+      // reset before the ROM check finished. In that case, the vseq should have finished before we
+      // came out of reset, so we will be in reset now.
+      //
+      // The other thing that can happen is an injected error that puts the FSM in rom_ctrl_fsm into
+      // the Invalid state. This is a terminal state, so we won't have told the power manager that
+      // the check has finished.
+      if (!pwrmgr_complete) begin
+        if (cfg.clk_rst_vif.rst_n) begin
+          string      fsm_state_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
+          logic [9:0] fsm_state;
+
+          `DV_CHECK(uvm_hdl_read(fsm_state_path, fsm_state));
+          `DV_CHECK_EQ(fsm_state, rom_ctrl_pkg::Invalid)
+        end
+      end
     end
   endfunction
 
