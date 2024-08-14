@@ -179,8 +179,8 @@
         },
         { bits: "30",
           name: "SW_RST",
-          desc: '''Clears the entire IP to the reset state when set to 1, including
-                   the FIFOs, the CDC's, the core state machine and the shift register.
+          desc: '''Clears the internal state (not registers) to the reset state when set to 1,
+                   including the FIFOs, the CDC's, the core state machine and the shift register.
                    In the current implementation, the CDC FIFOs are drained not reset.
                    Therefore software must confirm that both FIFO's empty before releasing
                    the IP from reset.''',
