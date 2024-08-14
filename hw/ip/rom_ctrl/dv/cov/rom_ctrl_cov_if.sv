@@ -21,7 +21,6 @@ interface rom_ctrl_cov_if (
 
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
-  bit pwrmgr_data_invalid = prim_mubi_pkg::mubi4_test_invalid(pwrmgr_data_o.good);
   /////////////////////////////////////
   // KMAC APP interface cover points //
   /////////////////////////////////////
@@ -66,12 +65,6 @@ interface rom_ctrl_cov_if (
                                {1'b1, prim_mubi_pkg::MuBi4True});
       bins req_after_done   = ({1'b0, prim_mubi_pkg::MuBi4True} =>
                                {1'b1, prim_mubi_pkg::MuBi4True});
-    }
-
-    // Cover the invalid case
-    cp_rom_invalid_condition: coverpoint pwrmgr_data_invalid {
-      bins check_invalid = {1};
-      bins check_valid = {0};
     }
 
     // Cover csr requests around the time of check completion
