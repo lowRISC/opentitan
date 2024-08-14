@@ -39,6 +39,8 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   function new (string name="");
     super.new(name);
 
+    can_reset_with_csr_accesses = 1'b1;
+
     list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal";
     ral_model_names.push_back("rom_ctrl_prim_reg_block");
