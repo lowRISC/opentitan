@@ -519,7 +519,7 @@ module rom_ctrl
           clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
-  `ASSERT(KeymgrValidChk_A, $rose(keymgr_data_o.valid) |-> always !$fell(keymgr_data_o.valid),
+  `ASSERT(KeymgrValidChk_A, keymgr_data_o.valid |=> keymgr_data_o.valid,
           clk_i, !rst_ni || internal_alert)
 
   // Check that rom_tl_o.d_valid is not asserted unless pwrmgr_data_o.done is asseterd.
