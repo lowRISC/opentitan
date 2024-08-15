@@ -265,6 +265,11 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "perso_object_headers",
+    hdrs = ["perso_tlv_data.h"],
+)
+
 _FT_PERSO_EXTS = [
     {
         "suffix": "",
