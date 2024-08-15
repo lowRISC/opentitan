@@ -556,16 +556,23 @@ package csr_utils_pkg;
                               input bit                 backdoor = 0,
                               input uvm_verbosity       verbosity = UVM_HIGH);
     static int count;
+    automatic int lcount;
+
+    // Increment count so that each call to csr_spinwait has a different index (to help debugging)
     count++;
+
+    // Take an (automatic) copy of lcount. This will act as a snapshot of the value that the count
+    // had when this task started, giving the index of *this* call.
+    lcount = count;
+
     `uvm_info($sformatf("%m()"), $sformatf(
                 "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
-                count,backdoor,exp_data, ptr.get_name()), verbosity)
+                lcount, backdoor, exp_data, ptr.get_name()), verbosity)
     fork
       begin : isolation_fork
         csr_field_t     csr_or_fld;
         uvm_reg_data_t  read_data;
         string          msg_id = {csr_utils_pkg::msg_id, "::csr_spinwait"};
-        automatic int lcount = count;
 
         csr_or_fld = decode_csr_or_field(ptr);
         if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
@@ -574,7 +581,7 @@ package csr_utils_pkg;
           // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads.
           forever begin
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
-            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d",lcount),
+            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d", lcount),
                       verbosity)
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
@@ -598,13 +605,10 @@ package csr_utils_pkg;
           wait (under_reset);
           // Wait for timeout_ns nanoseconds and then fail with an error (because this process
           // should have been killed before then)
-          begin
-            automatic int lcount = count;
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
-                             "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
-                             ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
-                             exp_data,lcount)})
-          end
+          `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
+                           "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
+                           ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
+                           exp_data, lcount)})
         join_any
         disable fork;
       end : isolation_fork
