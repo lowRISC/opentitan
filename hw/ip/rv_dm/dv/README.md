@@ -68,7 +68,7 @@ The alert_agents provide the ability to drive and independently monitor the aler
 
 ### JTAG Agent
 
-The RVDM testbench instantiates an instance of [jtag_agent](../../../dv/sv/jtag_agent/README.md).
+The RV_DM testbench instantiates an instance of [jtag_agent](../../../dv/sv/jtag_agent/README.md).
 
 ### JTAG DMI Agent
 
@@ -116,7 +116,22 @@ All four of these RAL models can be referenced (directly or indirectly) using th
 
 The test sequences reside in `hw/ip/rv_dm/dv/env/seq_lib`.
 All test sequences are extended from `rv_dm_base_vseq`, which is extended from `cip_base_vseq` and serves as a starting point.
-It provides the following commonly used handles, variables, functions and tasks that the test sequences can simply use / call.
+
+A fundamental aspect of interaction with rv_dm comes from the "debug enable" mode.
+This is provided with one of the ports `lc_dft_en_i` and `lc_hw_debug_en_i`.
+The rv_dm module decides which one of these ports to look at based on the "late debug enable" flag.
+This, in turn, is set by a combination of the `otp_dis_rv_dm_late_debug_i` pin and the `late_debug_enable` register.
+
+The `rv_dm_base_vseq` allows a subclass sequence to control these signals.
+This can be done with the `lc_hw_debug_en` and `late_debug_enable` flag.
+The "late debug enable" mode is then randomly controlled by either pin or register.
+Most subclasses will configure these flags before `dut_init` runs, and the base class will apply them in that task.
+
+The other major mode that controls interaction with rv_dm comes from the `pinmux_hw_debug_en_i` signal.
+This can be controlled by the `pinmux_hw_debug_en` flag in the base vseq.
+As with the debug enable flag, subclasses can configure the flag before `dut_init` runs and the base class will apply it in that task.
+
+The base class also provides the following commonly used tasks that the test sequences can simply use / call.
 * sba_tl_device_seq_start(): This task enables the auto-responding device sequence that is run on the TLUL device agent sequencer that is attached to the SBA TL interface.
   This task is non-blocking - it spawns off a separate, perpetually running thread which runs the sequence independently.
   The task provides some arguments to "pattern" the kind of randomized responses that are sent.
@@ -129,27 +144,26 @@ All test sequences extend from `rv_dm_base_vseq`.
 
 #### Functional coverage
 
-Please scroll down to the [testplan](#testplan) section for a detailed list of covergroups implemented for RV_DM.
+The DV environment for rv_dm doesn't currently contain any specialised covergroups.
+This is a state that could be improved in the future, but signoff is currently mostly based on code coverage and functional coverage from generic agents that have been instantiated.
 
 ### Self-checking strategy
 
 #### Scoreboard
 
-All transactions made to or coming from the DUT flow into the scoreboard, which models the design closely to verify the DUT behavior.
-* The `cfg` class provides a handle to the virtual interface `rv_dm_if` which enables sampling of the DUT IOs (spare pins).
-  * The scoreboard can sample the changes to input and output pins of the DUT and perform the necessary checks at the right instants.
-* The `cfg` class also provides handles to all four RAL models (two on the TL interfaces, and two on JTAG), which are used to maintain a mirror of what we predict the design would also reflect.
-* The TL device agents monitor transactions on the TL interfaces and send accesses seen on the "main" CSR and debug memory spaces.
-* The SBA TL host agent monitors transactions on the SBA TL host interface to compare against the SBA transactions predicted by the `sba_access_monitor`.
-* The `jtag_dmi_monitor` sends raw JTAG transactions that were not made to the JTAG DTM DMI register over its `non_dmi_jtag_dtm_analysis_port`.
-* Finally, the `sba_acccess_monitor` sends both, the DMI transactions that were not made to the SBA DMI registers over the `non_sba_jtag_dmi_analysis_port`, as well as predicted SBA transactions over its `analysis_port`.
+The DV environment for rv_dm currently has a very minimal scoreboard.
+In particular, there is not currently a functional model against which the design can be checked.
+Instead, the testing that exists comes from randomised directed testing where vseqs run with expectations about how the design state will change based on what they do.
 
 #### Assertions
 
-* TLUL assertions: The `tb/rv_dm_bind.sv` file binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
-* Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
+Assertion checks for rv_dm currently come from four places.
+* Assertions that are found in the design itself.
+* Assertions about the behaviour of CSRs, implemented by `rv_dm_regs_csr_assert_fpv` and bound in by `tb/rv_dm_bind`.
+* Assertions about TLUL behaviour for the register, memory and sba interfaces.
+  These are implemented by `tlul_assert` and bound in by `tb/rv_dm_bind`.
+* Assertions about the debug enable signals and what functionality they should control.
+  These are implemented by `rv_dm_enable_checker` and bound in by `rv_dm_bind`.
 
 ## Building and running tests
 
