@@ -20,9 +20,9 @@ class spi_host_spien_vseq extends spi_host_tx_rx_vseq;
 
   virtual task body();
     spi_host_status_t status;
-    csr_utils_pkg::csr_spinwait_ctrl_object spinwait_ctrl_obj;
+    csr_spinwait_ctrl_object spinwait_ctrl_obj;
     bit rd_rx_fifo_finished;
-    spinwait_ctrl_obj = csr_spinwait_ctrl_object::type_id::create("spien_ctrl_obj");
+    spinwait_ctrl_obj = csr_spinwait_ctrl_object::type_id::create("spinwait_ctrl_obj");
     fork start_agent_reactive_seqs(); join_none
     wait_ready_for_command();
 
