@@ -30,6 +30,9 @@ class spi_host_base_vseq extends cip_base_vseq #(
   // reactive sequences to run on spi_agent (configured as a Device)
   spi_device_cmd_rsp_seq m_spi_device_seq[SPI_HOST_NUM_CS];
 
+  // Used to control when csr_spinwaits are spinning
+  uvm_event start_stop_spinwait_ev = uvm_event_pool::get_global("start_stop_spinwait_ev");
+
   // constraints for simulation loops
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.host_spi_min_trans : cfg.seq_cfg.host_spi_max_trans]};
@@ -94,19 +97,31 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   function void post_randomize();
     super.post_randomize();
+    // We currently support 1 chip-select line only
+
+    // We set the timeout to it's default value every time upon entry here.
+    // This is because the sim may go through multiple resets and if we don't
+    // re-set it's value it may not be useful as a timeout value
+    cfg.set_default_csr_timeout();
     case(spi_config_regs.clkdiv) inside
       // After randomization we set a different timeout based on the clock divider
-      [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]: ; // no change
+      [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]: ;
       [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv]: begin
         cfg.csr_spinwait_timeout_ns *= 1.5;
       end
-      [cfg.seq_cfg.host_spi_middle_clkdiv+1 : 16'hFFF] : cfg.csr_spinwait_timeout_ns *= 5;
-      [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : cfg.csr_spinwait_timeout_ns *= 10;
-      default : begin
-        `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv=0x%0x is out range",
-                                   spi_config_regs.clkdiv))
+      [cfg.seq_cfg.host_spi_middle_clkdiv+1 : cfg.seq_cfg.host_spi_upper_middle_clkdiv]: begin
+        cfg.csr_spinwait_timeout_ns *= 3;
       end
+      [cfg.seq_cfg.host_spi_middle_clkdiv+1 : 16'hFFF] : begin
+        cfg.csr_spinwait_timeout_ns *= 5;
+      end
+      [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : begin
+        cfg.csr_spinwait_timeout_ns *= 10;
+      end
+      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out range"))
     endcase
+    `uvm_info(`gfn, $sformatf("%m: CSR_SPINWAIT Timeout set to %0dns", cfg.csr_spinwait_timeout_ns),
+              UVM_DEBUG)
   endfunction
 
 
@@ -306,13 +321,30 @@ class spi_host_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.intr_state), .value(intr_state));
   endtask : spi_host_init
 
+  // In addition to un/setting sw_rst also triggers a uvm_event (and uvm_object)
+  // so any csr_spinwaits can be halted until the reset is over
   virtual task program_spi_host_sw_reset(int drain_cycles = SPI_HOST_RX_DEPTH);
+    uvm_reg_data_t control_reg;
+    csr_spinwait_ctrl_object spinwait_ctrl_obj;
+    spinwait_ctrl_obj = csr_spinwait_ctrl_object::type_id::create("spinwait_ctrl_obj");
     ral.control.sw_rst.set(1'b1);
     csr_update(ral.control);
+
+    spinwait_ctrl_obj.stop = 1;
+    start_stop_spinwait_ev.trigger(spinwait_ctrl_obj);
+    `uvm_info(`gfn, "Triggered 'start_stop_spinwait_ev' due to SW_RST=1", UVM_DEBUG)
     // make sure data completely drained from fifo then release reset
     wait_for_fifos_empty(AllFifos);
-    ral.control.sw_rst.set(1'b0);
-    csr_update(ral.control);
+    // Backdoor read to avoid writing somethging different to what's there
+    csr_rd(.ptr(ral.control), .value(control_reg), .backdoor(1));
+    control_reg[30] = 0; // SW reset field
+    csr_wr(.ptr(ral.control), .value(control_reg));
+    spinwait_ctrl_obj.stop = 0;
+    start_stop_spinwait_ev.trigger(spinwait_ctrl_obj);
+    `uvm_info(`gfn, "Triggered 'start_stop_spinwait_ev' due to SW_RST=0", UVM_DEBUG)
+
+    start_stop_spinwait_ev.reset();
+    `uvm_info(`gfn, "Resetting 'start_stop_spinwait_ev'", UVM_DEBUG)
   endtask : program_spi_host_sw_reset
 
   virtual task program_spi_host_regs();
@@ -421,6 +453,9 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   // wait until fifos has available entries to read/write
   virtual task wait_for_fifos_available(spi_host_fifo_e fifo = AllFifos);
+    // Wait for control.sw_rst = 0 before checking for fifo availability, since
+    // a SW reset causes both TX/RX FIFOs to drain
+    csr_spinwait(.ptr(ral.control.sw_rst), .exp_data(1'b0));
     if (fifo == TxFifo || fifo == AllFifos) begin
       csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0));
     end

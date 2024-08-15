@@ -18,16 +18,26 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   // This lock can be used to control access to the DUT TL-interface between testbench tasks.
   semaphore spi_host_atomic = new(1);
 
+  int unsigned num_wr, num_rd; // Keeps score of the reads/writes sent
+  bit          spi_host_txn_sent;
+
   virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);
     spi_host_status_t status;
+    `uvm_info(`gfn, $sformatf("%m: start_spi_host_trans (num_transactions=%0d, bit wait_ready=%0d)",
+                              num_transactions, wait_ready), UVM_DEBUG)
     program_spi_host_regs();
-    if (wait_ready) wait_ready_for_command();
+    if (wait_ready) begin
+      wait_ready_for_command();
+    end
     csr_rd(.ptr(ral.status), .value(status));
 
+    num_wr = 0;
+    num_rd = 0;
     for (int n = 0; n < num_transactions; n++) begin
       generate_transaction();
       send_trans(transaction, wait_ready);
-      if (wait_ready) wait_ready_for_command();
+      if (wait_ready)
+        wait_ready_for_command();
     end
   endtask
 
@@ -44,7 +54,13 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
         // Add some delay here so other tb tasks can use the bus while we spin.
         #($urandom_range(500, 1000) * 1ns)
         csr_rd(.ptr(ral.status), .value(status));
+        // Read again if only 1 entry, in case we call 'access_data_fifo' at a time the Q is empty
+        // To avoid deadlock and timeout
+        if (status.rx_qd == 1)
+          csr_rd(.ptr(ral.status), .value(status), .backdoor(1));
         for (int i = 0; i < status.rx_qd; i++) begin
+          `uvm_info(`gfn, $sformatf("Calling 'access_data_fifo' since status.rx_qd = 0x%0x > 0",
+                                    status.rx_qd), UVM_DEBUG)
           access_data_fifo(read_q, RxFifo);
         end
       end while (status.rx_qd > 0);
@@ -66,7 +82,9 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   virtual task send_trans(spi_transaction_item trans, bit wait_ready = 1'b1);
     spi_segment_item segment;
     while (trans.segments.size() > 0) begin
-      if (wait_ready) wait_ready_for_command();
+      if (wait_ready)
+        wait_ready_for_command();
+
       // lock fifo to this seq
       spi_host_atomic.get(1);
       segment = trans.segments.pop_back();
@@ -75,6 +93,17 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
       if (segment.command_reg.direction inside {TxOnly, Bidir}) begin
         access_data_fifo(segment.spi_data, TxFifo);
       end
+
+      case(segment.command_reg.direction)
+        TxOnly: num_wr++;
+        RxOnly: num_rd++;
+        Bidir: begin
+          num_rd++;
+          num_wr++;
+        end
+        default: ;
+      endcase // case (segment.command_reg.direction)
+
       // As soon as the COMMAND reg is populated, the DUT will begin the transaction.
       program_command_reg(segment.command_reg);
       spi_host_atomic.put(1);

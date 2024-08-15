@@ -62,7 +62,7 @@ class spi_host_upper_range_clkdiv_vseq extends spi_host_speed_vseq;
     // Redefining the ranges to ensure 'num_cmd_bytes' gets randomised to a
     // lower value to ensure simulations finish sooner
     cfg.seq_cfg.host_spi_min_len = 1;
-    cfg.seq_cfg.host_spi_max_len = 3;
+    cfg.seq_cfg.host_spi_max_len = 2;
   endfunction
 
 endclass : spi_host_upper_range_clkdiv_vseq
