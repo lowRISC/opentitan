@@ -281,7 +281,7 @@
       name: vcs_waves_off
       is_sim_mode: 1
       build_opts: [// disable dumping assertion failures to improve runtime performance
-                   "-assert novpi+dbgopt"]
+                   "-assert dbgopt"]
     }
     {
       name: vcs_cov
@@ -296,7 +296,7 @@
                    // Dump toggle coverage on mdas, array of structs and on ports only
                    "-cm_tgl mda+structarr+portsonly",
                    // Report condition coverage within tasks, functions and for loops.
-                   "-cm_cond for+tf",
+                   "-cm_cond for",
                    // Ignore initial blocks for coverage
                    "-cm_report noinitial",
                    // Filter unreachable/statically constant blocks. seqnoconst does a more
