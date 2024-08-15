@@ -530,7 +530,20 @@ package csr_utils_pkg;
     end
    endtask
 
-  // poll a csr or csr field continuously until it reads the expected value.
+  // Poll a csr or csr field continuously until its value is as expected.
+  //
+  // The CSR or field is polled by performing reads at the given ptr and its current value is
+  // compared with exp_data using the comparison in compare_op. The task exits when the comparison
+  // becomes true.
+  //
+  // To avoid this task waiting forever, there is an upper bound given with timeout_ns. If the task
+  // does not finish for another reason in that time, the test will fail.
+  //
+  // CSR reads are performed using frontdoor access. If the backdoor argument is true, then they
+  // will be performed with a backdoor access instead.
+  //
+  // Successive CSR reads are back-to-back unless spinwait_delay_ns is positive. If backdoor is
+  // true, the delay between successive reads is made to be at least 1ns.
   task automatic csr_spinwait(input uvm_object          ptr,
                               input uvm_reg_data_t      exp_data,
                               input uvm_check_e         check = default_csr_check,
@@ -542,7 +555,7 @@ package csr_utils_pkg;
                               input compare_op_e        compare_op = CompareOpEq,
                               input bit                 backdoor = 0,
                               input uvm_verbosity       verbosity = UVM_HIGH);
-    static int                      count;
+    static int count;
     count++;
     `uvm_info($sformatf("%m()"), $sformatf(
                 "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
@@ -557,7 +570,9 @@ package csr_utils_pkg;
         csr_or_fld = decode_csr_or_field(ptr);
         if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
         fork
-          while (!under_reset) begin
+          // Repeatedly do reads of the value at path and stop when the value satisfies the supplied
+          // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads.
+          forever begin
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
             `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d",lcount),
                       verbosity)
@@ -579,6 +594,10 @@ package csr_utils_pkg;
               end
             endcase
           end
+          // Wait until we enter reset
+          wait (under_reset);
+          // Wait for timeout_ns nanoseconds and then fail with an error (because this process
+          // should have been killed before then)
           begin
             automatic int lcount = count;
             `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
