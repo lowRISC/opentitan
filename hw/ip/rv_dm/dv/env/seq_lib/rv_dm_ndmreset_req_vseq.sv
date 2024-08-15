@@ -105,6 +105,27 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     // auxiliary clk_rst_lc_ni pin.
     cfg.clk_lc_rst_vif.drive_rst_pin(1'b0);
 
+    // This is a bit of a hack to see a particular conditional coverage point in rv_dm.sv. The
+    // coverage point wants to see lc_rst_pending_q && !(ndmreset_pending_q && lc_rst_asserted). The
+    // lc_rst_pending_q only becomes true after both the other two have been true, so the only
+    // simple way to hit the coverage point is to cause lc_rst_asserted to drop again.
+    //
+    // This means we have to:
+    //
+    // 1. See the lc_ctrl reset happen (the statement just above this comment).
+    // 2. Wait long enough for that reset to be synchronised into lc_rst_asserted and then
+    //    lc_reset_pending_q.
+    // 3. Stop the reset again.
+    // 4. Wait a few cycles for the missing reset to by synchronised into lc_rst_asserted (which
+    //    should drop)
+    // 5. Finally apply the reset again.
+    //
+    // This dance (showing a "glitchy LC reset") shouldn't have any other effect.
+    cfg.clk_rst_vif.wait_clks(4);
+    cfg.clk_lc_rst_vif.drive_rst_pin(1'b1);
+    cfg.clk_rst_vif.wait_clks(10);
+    cfg.clk_lc_rst_vif.drive_rst_pin(1'b0);
+
     // Pretend that the "rest of the system" has indeed seen a reset by asserting the unavailable_i
     // input, which means that the hart is powered down.
     cfg.rv_dm_vif.cb.unavailable <= 1;
