@@ -803,7 +803,7 @@
     // macro into the netlist.
     // {
     //   name: rom_e2e_self_hash_no_bkdr_rom_load
-    //   uvm_test_seq: chip_sw_base_vseq
+    //   uvm_test_seq: chip_sw_rom_e2e_self_hash_gls_vseq
     //   sw_images: [
     //     "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules:silicon_creator",
     //     "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_prod:4",
@@ -815,6 +815,7 @@
     //   en_run_modes: ["sw_test_mode_common"]
     //   run_opts: [
     //     "+skip_rom_bkdr_load=1",
+    //     "+uart_baud_rate=115200",
     //     "+sw_test_timeout_ns=200_000_000",
     //     "+use_otp_image=OtpTypeCustom",
     //   ]
