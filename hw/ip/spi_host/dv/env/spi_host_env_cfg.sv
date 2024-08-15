@@ -69,8 +69,14 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
     // create the seq_cfg
     seq_cfg = spi_host_seq_cfg::type_id::create("seq_cfg");
 
+    set_default_csr_timeout();
+
     // set num_interrupts & num_alerts
     num_interrupts = ral.intr_state.get_n_used_bits();
+  endfunction
+
+  function void set_default_csr_timeout();
+    csr_spinwait_timeout_ns = csr_utils_pkg::default_spinwait_timeout_ns;
   endfunction
 
   // clk_core_freq_mhz is set by
