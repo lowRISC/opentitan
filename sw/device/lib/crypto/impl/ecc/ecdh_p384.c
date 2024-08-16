@@ -14,7 +14,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'x')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdh);        // The OTBN ECDSH/P-384 app.
+// Declare the OTBN app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdh);
+static const otbn_app_t kOtbnAppEcdh = OTBN_APP_T_INIT(p384_ecdh);
+
+// Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, mode);  // ECDH application mode.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, x);     // The public key x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, y);     // The public key y-coordinate.
@@ -23,34 +27,31 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
                          d1);  // The private key scalar d (share 1).
 
-static const otbn_app_t kOtbnAppEcdh = OTBN_APP_T_INIT(p384_ecdh);
 static const otbn_addr_t kOtbnVarEcdhMode = OTBN_ADDR_T_INIT(p384_ecdh, mode);
 static const otbn_addr_t kOtbnVarEcdhX = OTBN_ADDR_T_INIT(p384_ecdh, x);
 static const otbn_addr_t kOtbnVarEcdhY = OTBN_ADDR_T_INIT(p384_ecdh, y);
 static const otbn_addr_t kOtbnVarEcdhD0 = OTBN_ADDR_T_INIT(p384_ecdh, d0);
 static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p384_ecdh, d1);
 
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, MODE_KEYPAIR_RANDOM);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, MODE_SHARED_KEY);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, MODE_KEYPAIR_FROM_SEED);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, MODE_SHARED_KEY_FROM_SEED);
+static const uint32_t kOtbnEcdhModeKeypairRandom =
+    OTBN_ADDR_T_INIT(p384_ecdh, MODE_KEYPAIR_RANDOM);
+static const uint32_t kOtbnEcdhModeSharedKey =
+    OTBN_ADDR_T_INIT(p384_ecdh, MODE_SHARED_KEY);
+static const uint32_t kOtbnEcdhModeKeypairFromSeed =
+    OTBN_ADDR_T_INIT(p384_ecdh, MODE_KEYPAIR_FROM_SEED);
+static const uint32_t kOtbnEcdhModeSharedKeyFromSeed =
+    OTBN_ADDR_T_INIT(p384_ecdh, MODE_SHARED_KEY_FROM_SEED);
+
 enum {
   /*
    * Mode is represented by a single word.
    */
   kOtbnEcdhModeWords = 1,
-  /*
-   * Mode to generate a new random keypair.
-   */
-  kOtbnEcdhModeKeypairRandom = 0x3f1,
-  /*
-   * Mode to generate a new shared key.
-   */
-  kOtbnEcdhModeSharedKey = 0x5ec,
-  /*
-   * Mode to generate a new sideloaded keypair.
-   */
-  kOtbnEcdhModeKeypairFromSeed = 0x29f,
-  /*
-   * Mode to generate a new sideloaded shared key.
-   */
-  kOtbnEcdhModeSharedKeyFromSeed = 0x74b,
 };
 
 status_t ecdh_p384_keypair_start(void) {

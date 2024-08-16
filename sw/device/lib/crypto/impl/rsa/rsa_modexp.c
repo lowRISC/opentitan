@@ -9,13 +9,16 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'm', 'e')
 
-OTBN_DECLARE_APP_SYMBOLS(run_rsa_modexp);         // The OTBN RSA modexp binary.
+// Declare the OTBN app.
+OTBN_DECLARE_APP_SYMBOLS(run_rsa_modexp);
+static const otbn_app_t kOtbnAppRsaModexp = OTBN_APP_T_INIT(run_rsa_modexp);
+
+// Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, mode);   // Application mode.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, n);      // Public modulus n.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d);      // Private exponent d.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);  // Input/output buffer.
 
-static const otbn_app_t kOtbnAppRsaModexp = OTBN_APP_T_INIT(run_rsa_modexp);
 static const otbn_addr_t kOtbnVarRsaMode =
     OTBN_ADDR_T_INIT(run_rsa_modexp, mode);
 static const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa_modexp, n);
@@ -23,17 +26,27 @@ static const otbn_addr_t kOtbnVarRsaD = OTBN_ADDR_T_INIT(run_rsa_modexp, d);
 static const otbn_addr_t kOtbnVarRsaInOut =
     OTBN_ADDR_T_INIT(run_rsa_modexp, inout);
 
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_2048_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_2048_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_3072_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_3072_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_4096_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_4096_MODEXP_F4);
+static const uint32_t kMode2048Modexp =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_2048_MODEXP);
+static const uint32_t kMode2048ModexpF4 =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_2048_MODEXP_F4);
+static const uint32_t kMode3072Modexp =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_3072_MODEXP);
+static const uint32_t kMode3072ModexpF4 =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_3072_MODEXP_F4);
+static const uint32_t kMode4096Modexp =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_4096_MODEXP);
+static const uint32_t kMode4096ModexpF4 =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_4096_MODEXP_F4);
+
 enum {
-  /**
-   * Available modes for the OTBN application. Must match the values from
-   * `run_rsa_modexp.s`.
-   */
-  kMode2048Modexp = 0x76b,
-  kMode2048ModexpF4 = 0x565,
-  kMode3072Modexp = 0x378,
-  kMode3072ModexpF4 = 0x6d1,
-  kMode4096Modexp = 0x70b,
-  kMode4096ModexpF4 = 0x0ee,
   /**
    * Common RSA exponent with a specialized implementation.
    *
@@ -52,25 +65,15 @@ status_t rsa_modexp_wait(size_t *num_words) {
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
 
   *num_words = 0;
-  switch (mode) {
-    case kMode2048Modexp:
-      OT_FALLTHROUGH_INTENDED;
-    case kMode2048ModexpF4:
-      *num_words = kRsa2048NumWords;
-      break;
-    case kMode3072Modexp:
-      OT_FALLTHROUGH_INTENDED;
-    case kMode3072ModexpF4:
-      *num_words = kRsa3072NumWords;
-      break;
-    case kMode4096Modexp:
-      OT_FALLTHROUGH_INTENDED;
-    case kMode4096ModexpF4:
-      *num_words = kRsa4096NumWords;
-      break;
-    default:
-      // Unrecognized mode.
-      return OTCRYPTO_FATAL_ERR;
+  if (mode == kMode2048Modexp || mode == kMode2048ModexpF4) {
+    *num_words = kRsa2048NumWords;
+  } else if (mode == kMode3072Modexp || mode == kMode3072ModexpF4) {
+    *num_words = kRsa3072NumWords;
+  } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4) {
+    *num_words = kRsa4096NumWords;
+  } else {
+    // Unrecognized mode.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;

@@ -32,6 +32,16 @@
 .equ MODE_COFACTOR_RSA_3072, 0x0db
 .equ MODE_COFACTOR_RSA_4096, 0x794
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_GEN_RSA_2048
+.globl MODE_COFACTOR_RSA_2048
+.globl MODE_GEN_RSA_3072
+.globl MODE_COFACTOR_RSA_3072
+.globl MODE_GEN_RSA_4096
+.globl MODE_COFACTOR_RSA_4096
+
 .section .text.start
 start:
   /* Init all-zero register. */

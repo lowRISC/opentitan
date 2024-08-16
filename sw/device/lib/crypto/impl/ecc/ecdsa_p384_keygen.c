@@ -13,7 +13,12 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'k')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_keygen);  // The OTBN ECDSA/P-384 app.
+// Declare the OTBN app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_keygen);
+static const otbn_app_t kOtbnAppEcdsaKeygen =
+    OTBN_APP_T_INIT(p384_ecdsa_keygen);
+
+// Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen,
                          mode);  // ECDSA keygen application mode.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, d0);  // Private key first share.
@@ -21,8 +26,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, d1);  // Private key second share.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, x);   // x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, y);   // y-coordinate.
 
-static const otbn_app_t kOtbnAppEcdsaKeygen =
-    OTBN_APP_T_INIT(p384_ecdsa_keygen);
 static const otbn_addr_t kOtbnVarEcdsaMode =
     OTBN_ADDR_T_INIT(p384_ecdsa_keygen, mode);
 static const otbn_addr_t kOtbnVarEcdsaX =
@@ -34,23 +37,19 @@ static const otbn_addr_t kOtbnVarEcdsaD0 =
 static const otbn_addr_t kOtbnVarEcdsaD1 =
     OTBN_ADDR_T_INIT(p384_ecdsa_keygen, d1);
 
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, MODE_KEYGEN_RANDOM);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, MODE_KEYGEN_FROM_SEED);
+static const uint32_t kOtbnEcdsaModeKeygen =
+    OTBN_ADDR_T_INIT(p384_ecdsa_keygen, MODE_KEYGEN_RANDOM);
+static const uint32_t kOtbnEcdsaModeSideloadKeygen =
+    OTBN_ADDR_T_INIT(p384_ecdsa_keygen, MODE_KEYGEN_FROM_SEED);
+
 enum {
   /*
    * Mode is represented by a single word.
    */
   kOtbnEcdsaModeWords = 1,
-  /*
-   * Mode to generate a new random keypair.
-   *
-   * Value taken from `p384_ecdsa_keygen.s`.
-   */
-  kOtbnEcdsaModeKeygen = 0x3d4,
-  /*
-   * Mode to generate a sideloaded key.
-   *
-   * Value taken from `p384_ecdsa_keygen.s`.
-   */
-  kOtbnEcdsaModeSideloadKeygen = 0x5e8,
 };
 
 status_t ecdsa_p384_keygen_start(void) {

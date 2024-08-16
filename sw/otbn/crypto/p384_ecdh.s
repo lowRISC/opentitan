@@ -37,6 +37,14 @@
 .equ MODE_KEYPAIR_FROM_SEED, 0x29f
 .equ MODE_SHARED_KEY_FROM_SEED, 0x74b
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_SHARED_KEY
+.globl MODE_KEYPAIR_RANDOM
+.globl MODE_KEYPAIR_FROM_SEED
+.globl MODE_SHARED_KEY_FROM_SEED
+
 .section .text.start
 start:
   /* Init all-zero register. */
