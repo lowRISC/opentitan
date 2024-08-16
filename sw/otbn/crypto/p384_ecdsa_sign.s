@@ -28,6 +28,12 @@
 .equ MODE_SIGN, 0x15b
 .equ MODE_SIDELOAD_SIGN, 0x49e
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_SIGN
+.globl MODE_SIDELOAD_SIGN
+
 .section .text.start
 .globl start
 start:

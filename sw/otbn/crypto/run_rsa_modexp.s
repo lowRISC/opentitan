@@ -40,6 +40,16 @@
 .equ MODE_RSA_4096_MODEXP, 0x70b
 .equ MODE_RSA_4096_MODEXP_F4, 0x0ee
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_RSA_2048_MODEXP
+.globl MODE_RSA_2048_MODEXP_F4
+.globl MODE_RSA_3072_MODEXP
+.globl MODE_RSA_3072_MODEXP_F4
+.globl MODE_RSA_4096_MODEXP
+.globl MODE_RSA_4096_MODEXP_F4
+
 .section .text.start
 start:
   /* Init all-zero register. */

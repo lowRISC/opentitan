@@ -31,6 +31,14 @@
 .equ MODE_SHARED_KEY_FROM_SEED, 0x74b
 
 /**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_KEYPAIR_RANDOM
+.globl MODE_SHARED_KEY
+.globl MODE_KEYPAIR_FROM_SEED
+.globl MODE_SHARED_KEY_FROM_SEED
+
+/**
  * Hardened boolean values.
  *
  * Should match the values in `hardened_asm.h`.

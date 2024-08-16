@@ -11,13 +11,16 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'k', 'g')
 
-OTBN_DECLARE_APP_SYMBOLS(run_rsa_keygen);         // The OTBN RSA keygen binary.
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, mode);   // Application mode.
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_n);  // Public exponent n.
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_d);  // Private exponent d.
+// Declare the OTBN app.
+OTBN_DECLARE_APP_SYMBOLS(run_rsa_keygen);
+static const otbn_app_t kOtbnAppRsaKeygen = OTBN_APP_T_INIT(run_rsa_keygen);
+
+// Declare offsets for input and output buffers.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, mode);          // Application mode.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_n);         // Public exponent n.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_d);         // Private exponent d.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_cofactor);  // Cofactor p or q.
 
-static const otbn_app_t kOtbnAppRsaKeygen = OTBN_APP_T_INIT(run_rsa_keygen);
 static const otbn_addr_t kOtbnVarRsaMode =
     OTBN_ADDR_T_INIT(run_rsa_keygen, mode);
 static const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_n);
@@ -25,25 +28,26 @@ static const otbn_addr_t kOtbnVarRsaD = OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_d);
 static const otbn_addr_t kOtbnVarRsaCofactor =
     OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_cofactor);
 
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_GEN_RSA_2048);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_COFACTOR_RSA_2048);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_GEN_RSA_3072);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, MODE_GEN_RSA_4096);
+static const uint32_t kOtbnRsaModeGen2048 =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, MODE_GEN_RSA_2048);
+static const uint32_t kOtbnRsaModeCofactor2048 =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, MODE_COFACTOR_RSA_2048);
+static const uint32_t kOtbnRsaModeGen3072 =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, MODE_GEN_RSA_3072);
+static const uint32_t kOtbnRsaModeGen4096 =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, MODE_GEN_RSA_4096);
+
 enum {
   /* Fixed public exponent for generated keys. This exponent is 2^16 + 1, also
      known as "F4" because it's the fourth Fermat number. */
   kFixedPublicExponent = 65537,
   /* Number of words used to represent the application mode. */
   kOtbnRsaModeWords = 1,
-};
-
-// Available application modes. Must match the values from `run_rsa_keygen.s`.
-// TODO: I think it's possible to pull these values directly from symbols in
-// the binary. See:
-//   hw/ip/otbn/util/otbn_objdump.py -t run_rsa_keygen.rv32embed.o
-enum {
-  kOtbnRsaModeGen2048 = 0x137,
-  kOtbnRsaModeGen3072 = 0x4e5,
-  kOtbnRsaModeGen4096 = 0x63a,
-  kOtbnRsaModeCofactor2048 = 0x34e,
-  kOtbnRsaModeCofactor3072 = 0x0db,
-  kOtbnRsaModeCofactor4096 = 0x794,
 };
 
 /**

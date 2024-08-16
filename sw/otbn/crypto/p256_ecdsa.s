@@ -32,6 +32,15 @@
 .equ MODE_SIDELOAD_KEYGEN, 0x5e8
 .equ MODE_SIDELOAD_SIGN, 0x49e
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_KEYGEN
+.globl MODE_SIGN
+.globl MODE_VERIFY
+.globl MODE_SIDELOAD_KEYGEN
+.globl MODE_SIDELOAD_SIGN
+
 .section .text.start
 .globl start
 start:

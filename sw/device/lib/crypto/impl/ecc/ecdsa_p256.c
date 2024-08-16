@@ -13,7 +13,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '2', 's')
 
-OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);        // The OTBN ECDSA/P-256 app.
+// Declare the OTBN app.
+OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);  // The OTBN ECDSA/P-256 app.
+static const otbn_app_t kOtbnAppEcdsa = OTBN_APP_T_INIT(p256_ecdsa);
+
+// Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, mode);  // ECDSA mode (sign or verify).
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, msg);   // Message digest.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, r);     // The signature scalar R.
@@ -27,7 +31,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa,
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);  // Verification result.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, ok);   // Status code.
 
-static const otbn_app_t kOtbnAppEcdsa = OTBN_APP_T_INIT(p256_ecdsa);
 static const otbn_addr_t kOtbnVarEcdsaMode = OTBN_ADDR_T_INIT(p256_ecdsa, mode);
 static const otbn_addr_t kOtbnVarEcdsaMsg = OTBN_ADDR_T_INIT(p256_ecdsa, msg);
 static const otbn_addr_t kOtbnVarEcdsaR = OTBN_ADDR_T_INIT(p256_ecdsa, r);
@@ -39,41 +42,28 @@ static const otbn_addr_t kOtbnVarEcdsaD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarEcdsaXr = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 static const otbn_addr_t kOtbnVarEcdsaOk = OTBN_ADDR_T_INIT(p256_ecdsa, ok);
 
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, MODE_KEYGEN);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, MODE_SIGN);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, MODE_VERIFY);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, MODE_SIDELOAD_KEYGEN);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, MODE_SIDELOAD_SIGN);
+static const uint32_t kOtbnEcdsaModeKeygen =
+    OTBN_ADDR_T_INIT(p256_ecdsa, MODE_KEYGEN);
+static const uint32_t kOtbnEcdsaModeSign =
+    OTBN_ADDR_T_INIT(p256_ecdsa, MODE_SIGN);
+static const uint32_t kOtbnEcdsaModeVerify =
+    OTBN_ADDR_T_INIT(p256_ecdsa, MODE_VERIFY);
+static const uint32_t kOtbnEcdsaModeSideloadKeygen =
+    OTBN_ADDR_T_INIT(p256_ecdsa, MODE_SIDELOAD_KEYGEN);
+static const uint32_t kOtbnEcdsaModeSideloadSign =
+    OTBN_ADDR_T_INIT(p256_ecdsa, MODE_SIDELOAD_SIGN);
+
 enum {
   /*
    * Mode is represented by a single word.
    */
   kOtbnEcdsaModeWords = 1,
-  /*
-   * Mode to generate a new random keypair.
-   *
-   * Value taken from `p256_ecdsa.s`.
-   */
-  kOtbnEcdsaModeKeygen = 0x3d4,
-  /*
-   * Mode to generate a signature.
-   *
-   * Value taken from `p256_ecdsa.s`.
-   */
-  kOtbnEcdsaModeSign = 0x15b,
-  /*
-   * Mode to verify a signature.
-   *
-   * Value taken from `p256_ecdsa.s`.
-   */
-  kOtbnEcdsaModeVerify = 0x727,
-  /*
-   * Mode to generate a sideloaded key.
-   *
-   * Value taken from `p256_ecdsa.s`.
-   */
-  kOtbnEcdsaModeSideloadKeygen = 0x5e8,
-  /*
-   * Mode to sign with a sideloaded key.
-   *
-   * Value taken from `p256_ecdsa.s`.
-   */
-  kOtbnEcdsaModeSideloadSign = 0x49e,
 };
 
 status_t ecdsa_p256_keygen_start(void) {

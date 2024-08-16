@@ -15,6 +15,12 @@
 .equ MODE_KEYGEN_RANDOM, 0x3d4
 .equ MODE_KEYGEN_FROM_SEED, 0x5e8
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_KEYGEN_RANDOM
+.globl MODE_KEYGEN_FROM_SEED
+
 .section .text.start
 .globl start
 start:

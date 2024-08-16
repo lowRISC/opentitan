@@ -13,7 +13,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 's')
 
+// Declare the OTBN app.
 OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sign);  // The OTBN ECDSA/P-384 app.
+static const otbn_app_t kOtbnAppEcdsaSign = OTBN_APP_T_INIT(p384_ecdsa_sign);
+
+// Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign,
                          mode);                  // ECDSA sign application mode.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, d0);   // private key first share
@@ -22,7 +26,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, msg);  // hash message to sign/verify
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, r);    // r part of signature
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, s);    // s part of signature
 
-static const otbn_app_t kOtbnAppEcdsaSign = OTBN_APP_T_INIT(p384_ecdsa_sign);
 static const otbn_addr_t kOtbnVarEcdsaMode =
     OTBN_ADDR_T_INIT(p384_ecdsa_sign, mode);
 static const otbn_addr_t kOtbnVarEcdsaD0 =
@@ -34,23 +37,19 @@ static const otbn_addr_t kOtbnVarEcdsaMsg =
 static const otbn_addr_t kOtbnVarEcdsaR = OTBN_ADDR_T_INIT(p384_ecdsa_sign, r);
 static const otbn_addr_t kOtbnVarEcdsaS = OTBN_ADDR_T_INIT(p384_ecdsa_sign, s);
 
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, MODE_SIGN);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, MODE_SIDELOAD_SIGN);
+static const uint32_t kOtbnEcdsaModeSign =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sign, MODE_SIGN);
+static const uint32_t kOtbnEcdsaModeSideloadSign =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sign, MODE_SIDELOAD_SIGN);
+
 enum {
   /*
    * Mode is represented by a single word.
    */
   kOtbnEcdsaModeWords = 1,
-  /*
-   * Mode to generate a signature.
-   *
-   * Value taken from `p384_ecdsa.s`.
-   */
-  kOtbnEcdsaModeSign = 0x15b,
-  /*
-   * Mode to sign with a sideloaded key.
-   *
-   * Value taken from `p384_ecdsa.s`.
-   */
-  kOtbnEcdsaModeSideloadSign = 0x49e,
 };
 
 status_t ecdsa_p384_sign_start(const uint32_t digest[kP384ScalarWords],
