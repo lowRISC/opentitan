@@ -278,7 +278,10 @@ module prim_ascon_duplex_tb (
   logic         dut_input_valid;
 
   logic  [4:0] dut_data_valid_bytes;
-  logic        dut_read_data;
+  logic        dut_ready_data;
+
+  logic  dut_read_data;
+  assign dut_read_data = dut_ready_data & dut_input_valid;
 
   logic [127:0] dut_response_data;
   logic         dut_response_data_valid;
@@ -329,16 +332,16 @@ module prim_ascon_duplex_tb (
   .last_block_ad_i(dut_last_block_ad),
   .last_block_msg_i(dut_last_block_msg),
   .data_in_valid_i(dut_input_valid),
-  .data_in_read_o(dut_read_data),
+  .data_in_ready_o(dut_ready_data),
 
   // Cipher Output Port
   .data_out_o(dut_response_data),
   // TODO: Test backpreasure
-  .data_out_read_i(1'b1),
-  .data_out_we_o(dut_response_data_valid),
+  .data_out_ready_i(1'b1),
+  .data_out_valid_o(dut_response_data_valid),
 
   .tag_out_o(dut_response_tag),
-  .tag_out_we_o(dut_response_tag_valid),
+  .tag_out_valid_o(dut_response_tag_valid),
 
   .err_o()
   );

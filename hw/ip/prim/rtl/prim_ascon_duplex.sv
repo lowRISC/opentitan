@@ -40,22 +40,22 @@ module prim_ascon_duplex
   input  mubi4_t       last_block_ad_i,
   input  mubi4_t       last_block_msg_i,
   input  logic         data_in_valid_i,
-  output logic         data_in_read_o,
+  output logic         data_in_ready_o,
 
   // Cipher Output Port
   output logic [127:0] data_out_o,
-  input  logic         data_out_read_i,
-  output logic         data_out_we_o,
+  input  logic         data_out_ready_i,
+  output logic         data_out_valid_o,
 
   output logic [127:0] tag_out_o,
-  output logic         tag_out_we_o,
+  output logic         tag_out_valid_o,
 
   output logic err_o
 );
 
 // TODO: Add backpressure check
-logic unused_data_out_read_i;
-assign unused_data_out_read_i = data_out_read_i;
+logic unused_data_out_ready_i;
+assign unused_data_out_ready_i = data_out_ready_i;
 
 logic round_count_error;
 logic sparse_fsm_error;
@@ -64,17 +64,21 @@ logic set_round_counter;
 logic inc_round_counter;
 
 logic [4:0][63:0] ascon_state_q, ascon_state_d;
-logic             ascon_state_update;
 
 // Ascon's 320 bit state
 always_ff @(posedge clk_i) begin : ascon_state_reg
-  if (ascon_state_update) begin
+  if (!rst_ni) begin
+    ascon_state_q <= '0;
+  end else begin
     ascon_state_q <= ascon_state_d;
   end
 end
 
 logic [319:0] state_to_round;
 logic [319:0] state_from_round;
+
+logic [4:0][63:0] round_to_mux;
+assign round_to_mux = state_from_round;
 
 fsm_state_e fsm_state_d, fsm_state_q;
 perm_offset_e perm_offset;
@@ -177,18 +181,167 @@ prim_count #(
     .err_o(round_count_error)
   );
 
+// Duplexswitch muxes
+// Selects data input source
+padding_mux_e sel_padding;
+
+// Main multiplexer per word
+ascon_word_mux_e sel_mux_word0;
+ascon_word_mux_e sel_mux_word1;
+ascon_word_mux_e sel_mux_word2;
+ascon_word_mux_e sel_mux_word3;
+ascon_word_mux_e sel_mux_word4;
+
+// Multiplexer before XOR
+word_low_key_hi_mux_e sel_mux_key_word1;
+key_hi_low_mux_e      sel_mux_key_word2;
+key_hi_low_mux_e      sel_mux_key_word3;
+
+// Selects round input
+ascon_round_input_mux_e sel_round_input;
+
+// Set domain separation
+logic set_dom_sep;
+
+// Intermediate signals
+logic [4:0][63:0] xor_with_state;
+logic      [63:0] word4_dom_sep;
+logic     [127:0] data_to_duplex;
+
+// Enc Dec Padding Mux
+always_comb begin : Padding
+  unique case (sel_padding)
+    DATA_IN_PAD:  data_to_duplex = data_in_padded;
+    DATA_OUT_PAD: data_to_duplex = data_out_padded;
+    EMPTY_PAD:    data_to_duplex = empty_padding;
+    default:      data_to_duplex = empty_padding;
+  endcase
+end
+
+// State input mux
+always_comb begin : state_input
+  unique case (sel_round_input)
+    STATE:    state_to_round = ascon_state_q;
+    BLINDING: state_to_round = '0;
+    default:  state_to_round = '0;
+  endcase
+end
+
+// Main mux word0
+assign xor_with_state[0] = data_to_duplex[127:64];
+always_comb begin : state_word0
+  unique case (sel_mux_word0)
+    INIT:    ascon_state_d[0] = iv;
+    ABSORB:  ascon_state_d[0] = ascon_state_q[0] ^ xor_with_state[0];
+    KEEP:    ascon_state_d[0] = ascon_state_q[0];
+    ROUND:   ascon_state_d[0] = round_to_mux[0];
+    default: ascon_state_d[0] = ascon_state_q[0];
+  endcase
+end
+
+// Select key high or data low for XOR
+always_comb begin : key_word1
+  unique case (sel_mux_key_word1)
+    WORD:    xor_with_state[1] = data_to_duplex[63:0];
+    KEY:     xor_with_state[1] = key_i[127:64];
+    default: xor_with_state[1] = key_i[127:64];
+  endcase
+end
+
+// Main mux word1
+always_comb begin : state_word1
+  unique case (sel_mux_word1)
+    INIT:    ascon_state_d[1] = key_i[127:64];
+    ABSORB:  ascon_state_d[1] = ascon_state_q[1] ^ xor_with_state[1];
+    KEEP:    ascon_state_d[1] = ascon_state_q[1];
+    ROUND:   ascon_state_d[1] = round_to_mux[1];
+    default: ascon_state_d[1] = ascon_state_q[1];
+  endcase
+end
+
+// Slect key high or low for XOR
+always_comb begin : key_word2
+  unique case (sel_mux_key_word2)
+    KEY_LOW: xor_with_state[2] = key_i[63:0];
+    KEY_HI:  xor_with_state[2] = key_i[127:64];
+    default: xor_with_state[2] = key_i[127:64];
+  endcase
+end
+
+// Main mux word2
+always_comb begin : state_word2
+  unique case (sel_mux_word2)
+    INIT:    ascon_state_d[2] = key_i[63:0];
+    ABSORB:  ascon_state_d[2] = ascon_state_q[2] ^ xor_with_state[2];
+    KEEP :   ascon_state_d[2] = ascon_state_q[2];
+    ROUND:   ascon_state_d[2] = round_to_mux[2];
+    default: ascon_state_d[2] = ascon_state_q[2];
+  endcase
+end
+
+// Select key high or low for XOR
+always_comb begin : key_word3
+  unique case (sel_mux_key_word3)
+    KEY_LOW: xor_with_state[3] = key_i[63:0];
+    KEY_HI:  xor_with_state[3] = key_i[127:64];
+    default: xor_with_state[3] = key_i[127:64];
+  endcase
+end
+
+// Main mux word3
+always_comb begin : state_word3
+  unique case (sel_mux_word3)
+    INIT:    ascon_state_d[3] = nonce_i[127:64];
+    ABSORB:  ascon_state_d[3] = ascon_state_q[3] ^ xor_with_state[3];
+    KEEP:    ascon_state_d[3] = ascon_state_q[3];
+    ROUND:   ascon_state_d[3] = round_to_mux[3];
+    default: ascon_state_d[3] = ascon_state_q[3];
+  endcase
+end
+
+// Set domain separation bit
+assign word4_dom_sep = {ascon_state_q[4][63:1], ascon_state_q[4][0] ^ set_dom_sep};
+// For word 4 only the lower part of the key can be xored to the state
+assign xor_with_state[4] = key_i[63:0];
+
+// Main mux word4
+always_comb begin : state_word4
+  unique case (sel_mux_word4)
+    INIT:    ascon_state_d[4] = nonce_i[63:0];
+    ABSORB:  ascon_state_d[4] = word4_dom_sep ^ xor_with_state[4];
+    KEEP:    ascon_state_d[4] = word4_dom_sep;
+    ROUND:   ascon_state_d[4] = round_to_mux[4];
+    default: ascon_state_d[4] = word4_dom_sep;
+  endcase
+end
+
 always_comb begin : p_fsm
   // Default assignments
   fsm_state_d = fsm_state_q;
-  data_in_read_o = 1'b0;
-  data_out_we_o = 1'b0;
-  tag_out_we_o = 1'b0;
+  data_in_ready_o = 1'b0;
+  data_out_valid_o = 1'b0;
+  tag_out_valid_o = 1'b0;
   sparse_fsm_error = 1'b0;
-  ascon_state_update = 1'b0;
   set_round_counter = 1'b0;
   inc_round_counter = 1'b0;
   perm_offset = P12;
   idle_o = 1'b0;
+
+  // Default: Don't update state
+  set_dom_sep   = 1'b0;
+  sel_mux_word0 = KEEP;
+  sel_mux_word1 = KEEP;
+  sel_mux_word2 = KEEP;
+  sel_mux_word3 = KEEP;
+  sel_mux_word4 = KEEP;
+
+  sel_mux_key_word3 = KEY_HI;
+  sel_mux_key_word2 = KEY_LOW;
+  sel_mux_key_word1 = KEY;
+
+  sel_padding = EMPTY_PAD;
+
+  sel_round_input = BLINDING;
 
   unique case (fsm_state_q)
     Idle: begin
@@ -198,21 +351,32 @@ always_comb begin : p_fsm
       end
     end
     Init: begin
+      sel_mux_word0 = INIT;
+      sel_mux_word1 = INIT;
+      sel_mux_word2 = INIT;
+      sel_mux_word3 = INIT;
+      sel_mux_word4 = INIT;
       fsm_state_d = PermInit;
       perm_offset = P12;
       set_round_counter = 1'b1;
-      ascon_state_update = 1'b1;
     end
     PermInit: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
         fsm_state_d = Xor0Key;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     Xor0Key: begin
-      ascon_state_update = 1'b1;
+      sel_mux_word3 = ABSORB;
+      sel_mux_key_word3 = KEY_HI;
+      sel_mux_word4 = ABSORB;
       if (no_ad) begin
         fsm_state_d = XorDomSep;
       end else begin
@@ -221,9 +385,14 @@ always_comb begin : p_fsm
     end
     AbsorbAD: begin
       // There will be AD, otherwise we wouldn't be in this state/path
+      data_in_ready_o = 1'b1;
       if (data_in_valid_i) begin
-        data_in_read_o = 1'b1; // data_in_valid_i is registered. We don't create a loop here!
-        ascon_state_update = 1'b1;
+        sel_mux_word0 = ABSORB;
+        sel_padding = DATA_IN_PAD;
+        if (ascon_variant == ASCON_128A) begin
+          sel_mux_word1 = ABSORB;
+          sel_mux_key_word1 = WORD;
+        end
         if (mubi4_test_true_strict(last_block_ad_i)) begin
           if (mubi4_test_true_strict(complete_block)) begin
             fsm_state_d = PermADEmpty;
@@ -242,41 +411,63 @@ always_comb begin : p_fsm
       set_round_counter = 1'b1;
     end
     PermAD: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
         fsm_state_d = AbsorbAD;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     PermADLast: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
         fsm_state_d = XorDomSep;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     PermADEmpty: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
         fsm_state_d = AbsorbADEmpty;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     AbsorbADEmpty: begin
-      ascon_state_update = 1'b1;
+      sel_mux_word0 = ABSORB;
+      sel_padding = EMPTY_PAD;
       fsm_state_d = PermADLast;
       if (ascon_variant == ASCON_128) begin
         perm_offset = P6;
       end else begin //ASCON_128A
         perm_offset = P8;
+        // This should be optimized by the tool.
+        // It is left here, so that the structure of the case
+        // is the same as AbsorbAD.
+        sel_mux_word1 = ABSORB;
+        sel_padding = EMPTY_PAD;
       end
       set_round_counter = 1'b1;
     end
     XorDomSep: begin
-      ascon_state_update = 1'b1;
+      set_dom_sep = 1'b1;
+      sel_mux_word4 = KEEP;
       if (no_msg) begin
         fsm_state_d = AbsorbMSGEmpty;
       end else begin
@@ -284,10 +475,23 @@ always_comb begin : p_fsm
       end
     end
     AbsorbMSG: begin
+      data_in_ready_o = 1'b1;
       if (data_in_valid_i) begin
-        data_in_read_o = 1'b1; // data_in_valid_i is registered. We don't create a loop here!
-        data_out_we_o = 1'b1;
-        ascon_state_update = 1'b1;
+        data_out_valid_o = 1'b1;
+        if (ascon_operation == ASCON_ENC) begin
+          sel_mux_word0 = ABSORB;
+          sel_padding = DATA_IN_PAD;
+          if (ascon_variant == ASCON_128A) begin
+            sel_mux_word1 = ABSORB;
+          end
+        end else begin // ASCON_DEC
+          sel_mux_word0 = ABSORB;
+          sel_padding = DATA_OUT_PAD;
+          if (ascon_variant == ASCON_128A) begin
+            sel_mux_word1 = ABSORB;
+            sel_mux_key_word1 = WORD;
+          end
+        end
         if (mubi4_test_true_strict(last_block_msg_i)) begin
           if (mubi4_test_true_strict(complete_block)) begin // we need extra padding
             fsm_state_d = PermMSGEmpty;
@@ -307,41 +511,75 @@ always_comb begin : p_fsm
       set_round_counter = 1'b1;
     end
     PermMSG: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
-          fsm_state_d = AbsorbMSG;
+        fsm_state_d = AbsorbMSG;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     PermMSGEmpty: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
-          fsm_state_d = AbsorbMSGEmpty;
+        fsm_state_d = AbsorbMSGEmpty;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     AbsorbMSGEmpty: begin
-      ascon_state_update = 1'b1;
+      // The padding for an empty block is the same for encryption and decryption.
+      sel_padding = EMPTY_PAD;
+      sel_mux_word0 = ABSORB;
+      if (ascon_variant == ASCON_128A) begin
+        // This should be optimized by the tool.
+        // It is left here, so that the structure of the case
+        // is the same as AbsorbAD.
+        sel_mux_word1 = ABSORB;
+        sel_mux_key_word1 = WORD;
+      end
       fsm_state_d = XorKey0;
     end
     XorKey0: begin
-       ascon_state_update = 1'b1;
-       fsm_state_d = PermFinal;
-       set_round_counter = 1'b1;
-       perm_offset = P12;
+      if (ascon_variant == ASCON_128) begin
+        sel_mux_word1 = ABSORB;
+        sel_mux_key_word1 = KEY;
+        sel_mux_word2 = ABSORB;
+        sel_mux_key_word2 = KEY_LOW;
+      end else begin //ASCON_128a
+        sel_mux_word2 = ABSORB;
+        sel_mux_key_word2 = KEY_HI;
+        sel_mux_word3 = ABSORB;
+        sel_mux_key_word3 = KEY_LOW;
+      end
+      fsm_state_d = PermFinal;
+      set_round_counter = 1'b1;
+      perm_offset = P12;
     end
     PermFinal: begin
+      sel_round_input = STATE;
+      sel_mux_word0 = ROUND;
+      sel_mux_word1 = ROUND;
+      sel_mux_word2 = ROUND;
+      sel_mux_word3 = ROUND;
+      sel_mux_word4 = ROUND;
       if (current_round == ROUND_MAX) begin
-          fsm_state_d = SqueezeTagXorKey;
+        fsm_state_d = SqueezeTagXorKey;
       end else begin
         inc_round_counter = 1'b1;
       end
-      ascon_state_update = 1'b1;
     end
     SqueezeTagXorKey: begin
-      tag_out_we_o = 1'b1;
+      tag_out_valid_o = 1'b1;
       fsm_state_d = Idle;
     end
     Error: begin
@@ -356,111 +594,6 @@ always_comb begin : p_fsm
 end
 
 `PRIM_FLOP_SPARSE_FSM(u_state_regs, fsm_state_d, fsm_state_q, fsm_state_e, Idle)
-
-
-always_comb begin : ascon_state_mux
-  // Default assignments
-  ascon_state_d = ascon_state_q;
-  // TODO: random values?
-  state_to_round = '0;
-
-  unique case (fsm_state_q)
-    Init: begin
-      ascon_state_d[0] = iv;
-      ascon_state_d[1] = key_i[127:64];
-      ascon_state_d[2] = key_i[63:0];
-      ascon_state_d[3] = nonce_i[127:64];
-      ascon_state_d[4] = nonce_i[63:0];
-    end
-    PermInit: begin
-       state_to_round = ascon_state_q;
-       ascon_state_d = state_from_round;
-    end
-    Xor0Key: begin
-      ascon_state_d[3] = ascon_state_q[3] ^ key_i[127:64];
-      ascon_state_d[4] = ascon_state_q[4] ^ key_i[63:0];
-    end
-    AbsorbAD: begin
-      // padding is not an issue here. It is done on the fly.
-      ascon_state_d[0] = ascon_state_q[0] ^ data_in_padded[127:64];
-      if (ascon_variant == ASCON_128A) begin
-        ascon_state_d[1] = ascon_state_q[1] ^ data_in_padded[63:0];
-      end
-    end
-    PermAD: begin
-      state_to_round = ascon_state_q;
-      ascon_state_d = state_from_round;
-    end
-    PermADLast: begin
-      state_to_round = ascon_state_q;
-      ascon_state_d = state_from_round;
-    end
-    PermADEmpty: begin
-      state_to_round = ascon_state_q;
-      ascon_state_d = state_from_round;
-    end
-    AbsorbADEmpty: begin
-      ascon_state_d[0] = ascon_state_q[0] ^ empty_padding[127:64];
-      if (ascon_variant == ASCON_128A) begin
-        // This should be optimized by the tool.
-        // It is left here, so that the structure of the case
-        // is the same as AbsorbAD.
-        ascon_state_d[1] = ascon_state_q[1] ^ empty_padding[63:0];
-      end
-    end
-    XorDomSep: begin
-        // Invert MSB in Ascon's state
-        // C-Code: s.x[4] ^= 1;
-        // Double checked with C-output
-        ascon_state_d[4][0] = ascon_state_q[4][0] ^ 1'b1;
-    end
-    AbsorbMSG: begin
-      if (ascon_operation == ASCON_ENC) begin
-        ascon_state_d[0] = ascon_state_q[0] ^ data_in_padded[127:64];
-        if (ascon_variant == ASCON_128A) begin
-          ascon_state_d[1] = ascon_state_q[0] ^ data_in_padded[63:0];
-        end
-      end else begin // ASCON_DEC
-        ascon_state_d[0] = ascon_state_q[0] ^ data_out_padded[127:64];
-        if (ascon_variant == ASCON_128A) begin
-          ascon_state_d[1] = ascon_state_q[1] ^ data_out_padded[63:0];
-        end
-      end
-    end
-    PermMSG: begin
-       state_to_round = ascon_state_q;
-       ascon_state_d = state_from_round;
-    end
-    PermMSGEmpty: begin
-      state_to_round = ascon_state_q;
-      ascon_state_d = state_from_round;
-    end
-    AbsorbMSGEmpty: begin
-      // The padding for an empty block is the same for encryption and decryption.
-      ascon_state_d[0] = ascon_state_q[0] ^ empty_padding[127:64];
-      if (ascon_variant == ASCON_128A) begin
-        // This should be optimized by the tool.
-        // It is left here, so that the structure of the case
-        // is the same as AbsorbAD.
-        ascon_state_d[1] = ascon_state_q[1] ^ empty_padding[63:0];
-      end
-    end
-    XorKey0: begin
-        if (ascon_variant == ASCON_128) begin
-          ascon_state_d[2] = ascon_state_q[2] ^ key_i[63:0];
-          ascon_state_d[1] = ascon_state_q[1] ^ key_i[127:64];
-        end else begin //ASCON_128a
-          ascon_state_d[3] = ascon_state_q[3] ^ key_i[63:0];
-          ascon_state_d[2] = ascon_state_q[2] ^ key_i[127:64];
-        end
-    end
-    PermFinal: begin
-       state_to_round = ascon_state_q;
-       ascon_state_d = state_from_round;
-    end
-    default: ascon_state_d = ascon_state_q;
-  endcase
-end
 
 assign err_o = round_count_error | sparse_fsm_error;
 
