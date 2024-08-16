@@ -40,6 +40,9 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  // Add specific exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/aon_timer/dv/cov/aon_timer_unr_excl.el"]
+
   // Default UVM test and seq class name.
   uvm_test: aon_timer_base_test
   uvm_test_seq: aon_timer_base_vseq
