@@ -95,7 +95,7 @@
       name: "{name}_long_msg_and_output"
       uvm_test_seq: kmac_long_msg_and_output_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
-      run_timeout_mins: 90
+      run_timeout_mins: 120
     }
     {
       name: "{name}_sideload"
@@ -147,7 +147,7 @@
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_shake_variant=128"]
-      run_timeout_mins: 180
+      run_timeout_mins: 90
       reseed: 5
     }
     {
@@ -156,7 +156,7 @@
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_shake_variant=256"]
-      run_timeout_mins: 180
+      run_timeout_mins: 90
       reseed: 5
     }
     {
