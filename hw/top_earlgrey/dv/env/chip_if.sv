@@ -681,8 +681,8 @@ interface chip_if;
   wire rv_core_ibex_icache_otp_key_req = 0;
   wire rv_core_ibex_icache_otp_key_ack = 0;
 
-  wire sram_main_init_done = 0;
-  wire sram_ret_init_done = 0;
+  wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.u_status_init_done.qs[0:0];
+  wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.u_status_init_done.qs[0:0];
 
   wire flash_core1_host_req = 0;
 `else
@@ -791,13 +791,82 @@ interface chip_if;
   wire [31:0] pmp_addr[16];
   // TODO: merge with probed_cpu_csrs_t below.
 `ifdef GATE_LEVEL
-  assign pmp_mseccfg = 0;
-  for(genvar i = 0; i < 16; i++) begin : gen_ibex_pmp_cfg_conn
-    assign pmp_cfg[i] = 0;
-    assign pmp_addr[i] = 0;
-  end : gen_ibex_pmp_cfg_conn
+  assign pmp_mseccfg =  {
+                          `IBEX_CSRS_HIER.g_pmp_registers_u_pmp_mseccfg.rd_data_o[2]
+                          , 1'b1
+                          ,`IBEX_CSRS_HIER.g_pmp_registers_u_pmp_mseccfg.rd_data_o[0]
+                        };
 
-  wire mstatus_mie = 0;
+  // pmp_cfg
+  assign pmp_cfg[0] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_0__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[1] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_1__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[2] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_2__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[3] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_3__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[4] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_4__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[5] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_5__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[6] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_6__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[7] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_7__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[8] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_8__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[9] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_9__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[10] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_10__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[11] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_11__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[12] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_12__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[13] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_13__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[14] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_14__u_pmp_cfg_csr.rd_data_o[5:0];
+  assign pmp_cfg[15] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_15__u_pmp_cfg_csr.rd_data_o[5:0];
+
+  // pmp_addr
+  assign pmp_addr[0] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_0__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[1] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_1__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[2] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_2__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[3] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_3__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[4] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_4__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[5] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_5__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[6] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_6__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[7] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_7__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[8] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_9__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[9] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_9__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[10] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_10__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[11] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_11__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[12] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_12__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[13] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_13__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[14] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_14__u_pmp_addr_csr.rd_data_o[31:0];
+  assign pmp_addr[15] =
+    `IBEX_CSRS_HIER.g_pmp_registers_g_pmp_csrs_15__u_pmp_addr_csr.rd_data_o[31:0];
+
+  wire mstatus_mie = `IBEX_CSRS_HIER.u_mstatus_csr.rd_data_o[5];
+
 `else
   assign pmp_mseccfg = `IBEX_CSRS_HIER.g_pmp_registers.pmp_mseccfg_q;
   for(genvar i = 0; i < 16; i++) begin : gen_ibex_pmp_cfg_conn
