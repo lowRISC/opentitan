@@ -7,7 +7,7 @@ pub use dif;
 pub use earlgrey;
 pub use hardened;
 pub use multibits;
-pub use perso_objects;
+pub use perso_tlv_objects;
 pub use sram_program;
 pub use status;
 pub use test_status;

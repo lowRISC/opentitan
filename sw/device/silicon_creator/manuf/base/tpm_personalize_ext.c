@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "perso_tlv_data.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
@@ -29,7 +30,6 @@ static hmac_digest_t tpm_pubkey_id;
 static cert_key_id_pair_t tpm_key_ids = {.endorsement = &tpm_endorsement_key_id,
                                          .cert = &tpm_pubkey_id};
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static char *kTpmCertNames[] = {"EK"};
 
 /**
  * Initializes all DIF handles used in this program.
@@ -42,12 +42,6 @@ static status_t peripheral_handles_init(void) {
 }
 
 enum {
-  /**
-   * Index of the TPM EK TBS in the `tbs_certs` struct that is sent to the host
-   * during personalization.
-   */
-  kTpmEkTbsCertStructIdx = 3,
-
   /**
    * Index of the `cert_flash_layout` array in the `ft_personalize.c` base
    * firmware to use to hold the TPM EK certificate.
@@ -65,26 +59,21 @@ static status_t config_and_erase_tpm_certificate_flash_pages(void) {
   return OK_STATUS();
 }
 
-static status_t personalize_gen_tpm_ek_certificate(
-    ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout) {
-  size_t curr_cert_size = 0;
+// Temp buffer for storing generated EK certificate.
+static uint8_t cert_buffer[kTpmEkMaxTbsSizeBytes];
 
+static status_t personalize_gen_tpm_ek_certificate(
+    manuf_certgen_inputs_t *certgen_inputs, perso_blob_t *perso_blob,
+    cert_flash_info_layout_t *cert_flash_layout) {
+  size_t curr_cert_size = 0;
   // Set the endorsement key ID.
   memcpy(tpm_endorsement_key_id.digest, certgen_inputs->auth_key_key_id,
          kCertKeyIdSizeInBytes);
-
-  // Account for the new certificate.
-  tbs_certs->num_certs++;
-
-  // Host side endorsement is required.
-  tbs_certs->tbs[kTpmEkTbsCertStructIdx] = true;
 
   // Set the flash info page layout.
   cert_flash_layout[kTpmCertFlashLayoutIdx].used = true;
   cert_flash_layout[kTpmCertFlashLayoutIdx].group_name = "TPM";
   cert_flash_layout[kTpmCertFlashLayoutIdx].num_certs = 1;
-  cert_flash_layout[kTpmCertFlashLayoutIdx].names = kTpmCertNames;
 
   // Provision TPM keygen seeds to flash info.
   TRY(manuf_personalize_flash_asymm_key_seed(
@@ -92,31 +81,29 @@ static status_t personalize_gen_tpm_ek_certificate(
       kAttestationSeedWords));
 
   // Generate TPM EK keys and (TBS) cert.
-  curr_cert_size = kTpmEkMaxTbsSizeBytes;
   TRY(cert_ecc_p256_keygen(kTpmKeyEk, &tpm_pubkey_id, &curr_pubkey));
-  TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey,
-                            &tbs_certs->certs[tbs_certs->next_free],
-                            &curr_cert_size));
-  tbs_certs->next_free += curr_cert_size;
-  LOG_INFO("Generated TPM EK TBS certificate.");
 
-  return OK_STATUS();
+  curr_cert_size = sizeof(cert_buffer);
+  TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey, cert_buffer,
+                            &curr_cert_size));
+  return prepare_cert_for_shipping("TPM EK", true, cert_buffer, curr_cert_size,
+                                   perso_blob);
 }
 
 status_t personalize_extension_pre_cert_endorse(
     ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
+    perso_blob_t *perso_blob, cert_flash_info_layout_t *cert_flash_layout,
     dif_flash_ctrl_state_t *flash_ctrl_handle) {
   LOG_INFO("Running TPM perso extension ...");
   TRY(peripheral_handles_init());
   TRY(config_and_erase_tpm_certificate_flash_pages());
-  TRY(personalize_gen_tpm_ek_certificate(uj, certgen_inputs, tbs_certs,
+  TRY(personalize_gen_tpm_ek_certificate(certgen_inputs, perso_blob,
                                          cert_flash_layout));
   return OK_STATUS();
 }
 
 status_t personalize_extension_post_cert_endorse(
-    ujson_t *uj, manuf_certs_t *endorsed_certs,
+    ujson_t *uj, perso_blob_t *perso_blob_from_host,
     cert_flash_info_layout_t *cert_flash_layout) {
   /* Empty because it is unused but we still need to link to something. */
   return OK_STATUS();

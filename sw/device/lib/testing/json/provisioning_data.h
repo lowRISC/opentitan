@@ -80,31 +80,24 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 // clang-format on
 
 /**
- * All certificates exported/imported during personalization.
+ * Container of data exported/imported during personalization.
  *
- * This struct may hold up to eight different certificate blobs, the cumulative
- * size of which must be <= 4k. The layout is such that the cumulative blob
- * array can hold several concatenated TBS and/or endorsed certificates.
+ * The data is passed as a set of LTV objects concatenated in the 'body' field.
  *
- * The `tbs` value indicates if the certificate needs be endorsed or not.
+ * See details of LTV objects' structure in
+ * sw/device/silicon_creator/manuf/base/perso_tlv_data.h
  *
- * During certificate export, the first three slots are:
- * 1. UDS TBS certificate.
- * 2. CDI_0 certificate.
- * 3. CDI_1 certificate.
- *
- * During certificate import, the first slot is:
- * 1. UDS certificate.
+ * The header of the container includes the number of stored objects and the
+ * index of the next free location in the container body.
  */
 // clang-format off
-#define STRUCT_MANUF_CERTS(field, string) \
-    field(num_certs, size_t) \
+#define STRUCT_PERSO_BLOB(field, string) \
+    field(num_objs, size_t) \
     field(next_free, size_t) \
-    field(tbs, bool, 8) \
-    field(certs, uint8_t, 4096)
-UJSON_SERDE_STRUCT(ManufCerts, \
-                   manuf_certs_t, \
-                   STRUCT_MANUF_CERTS);
+    field(body, uint8_t, 4096)
+UJSON_SERDE_STRUCT(PersoBlob, \
+                   perso_blob_t, \
+                   STRUCT_PERSO_BLOB);
 // clang-format on
 
 /**
