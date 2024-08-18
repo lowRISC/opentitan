@@ -10,13 +10,13 @@
 
 status_t personalize_extension_pre_cert_endorse(
     ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
+    perso_blob_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
     dif_flash_ctrl_state_t *flash_ctrl_handle) {
   return OK_STATUS();
 }
 
 status_t personalize_extension_post_cert_endorse(
-    ujson_t *uj, manuf_certs_t *endorsed_certs,
+    ujson_t *uj, perso_blob_t *perso_blob_from_host,
     cert_flash_info_layout_t *cert_flash_layout) {
   return OK_STATUS();
 }

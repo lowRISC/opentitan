@@ -32,6 +32,7 @@
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
@@ -76,13 +77,8 @@ static cert_key_id_pair_t cdi_1_key_ids = {
     .cert = &cdi_1_pubkey_id,
 };
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static manuf_certs_t tbs_certs = {
-    .num_certs = 3,
-    .next_free = 0,
-    .tbs = {true, false, false, false, false, false, false, false},
-    .certs = {0},
-};
-static manuf_certs_t endorsed_certs;
+static perso_blob_t perso_blob_to_host;    // Perso data device => host.
+static perso_blob_t perso_blob_from_host;  // Perso data host => device.
 
 /**
  * Certificates flash info page layout.
@@ -90,14 +86,12 @@ static manuf_certs_t endorsed_certs;
 static uint8_t all_certs[8192];
 static size_t cdi_0_offset;
 static size_t cdi_1_offset;
-static char *kDiceCertNames[] = {"UDS", "CDI_0", "CDI_1"};
 static cert_flash_info_layout_t cert_flash_layout[] = {
     {
         .used = true,
         .group_name = "DICE",
         .info_page = &kFlashCtrlInfoPageDiceCerts,
         .num_certs = 3,
-        .names = kDiceCertNames,
     },
     // These flash info pages can be used by provisioning extensions to store
     // additional certificates SKU owners may desire to provision.
@@ -106,14 +100,12 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .group_name = "Ext0",
         .info_page = &kFlashCtrlInfoPageOwnerReserved7,
         .num_certs = 0,
-        .names = NULL,
     },
     {
         .used = false,
         .group_name = "Ext1",
         .info_page = &kFlashCtrlInfoPageOwnerReserved8,
         .num_certs = 0,
-        .names = NULL,
     },
 };
 
@@ -372,29 +364,29 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
-  TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey,
-                              &tbs_certs.certs[tbs_certs.next_free],
+
+  // Build the certificate in a temp buffer, use all_certs for that.
+  TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey, all_certs,
                               &curr_cert_size));
-  tbs_certs.next_free += curr_cert_size;
-  LOG_INFO("Generated UDS TBS certificate.");
+  TRY(perso_tlv_prepare_cert_for_shipping("UDS", true, all_certs,
+                                          curr_cert_size, &perso_blob_to_host));
 
   // Generate CDI_0 keys and cert.
-  cdi_0_offset = tbs_certs.next_free;
   curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_owner_int_binding(&certgen_inputs);
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
-  TRY(dice_cdi_0_cert_build(
-      (hmac_digest_t *)certgen_inputs.rom_ext_measurement,
-      certgen_inputs.rom_ext_security_version, &cdi_0_key_ids, &curr_pubkey,
-      &tbs_certs.certs[tbs_certs.next_free], &curr_cert_size));
-  tbs_certs.next_free += curr_cert_size;
-  LOG_INFO("Generated CDI_0 certificate.");
+  TRY(dice_cdi_0_cert_build((hmac_digest_t *)certgen_inputs.rom_ext_measurement,
+                            certgen_inputs.rom_ext_security_version,
+                            &cdi_0_key_ids, &curr_pubkey, all_certs,
+                            &curr_cert_size));
+  cdi_0_offset = perso_blob_to_host.next_free;
+  TRY(perso_tlv_prepare_cert_for_shipping("CDI_O", false, all_certs,
+                                          curr_cert_size, &perso_blob_to_host));
 
   // Generate CDI_1 keys and cert.
-  cdi_1_offset = tbs_certs.next_free;
   curr_cert_size = kCdi1MaxCertSizeBytes;
   compute_keymgr_owner_binding(&certgen_inputs);
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
@@ -405,10 +397,71 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
       certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
-      &tbs_certs.certs[tbs_certs.next_free], &curr_cert_size));
-  tbs_certs.next_free += curr_cert_size;
-  LOG_INFO("Generated CDI_1 certificate.");
+      all_certs, &curr_cert_size));
+  cdi_1_offset = perso_blob_to_host.next_free;
+  return perso_tlv_prepare_cert_for_shipping(
+      "CDI_1", false, all_certs, curr_cert_size, &perso_blob_to_host);
+}
 
+// How much data could there be in the receive buffer.
+static size_t max_available(void) {
+  if (perso_blob_from_host.next_free > sizeof(perso_blob_from_host.body))
+    return 0;  // This could never happen, but just in case.
+
+  return sizeof(perso_blob_from_host.body) - perso_blob_from_host.next_free;
+}
+
+/**
+ * Find the next certificate object in the receive perso buffer and copy it out
+ * to the passed in location.
+ *
+ * @param dest pointer to pointer in the destination buffer, this function
+ *             advances the pointer by the size of the copied certificate
+ * @param free_room pointer to the size of the destination buffer, this function
+ *             reduces the size of the buffer by the size of the copied
+ *             certificate
+ */
+static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
+  // A just in case sanity check.
+  if (perso_blob_from_host.next_free > sizeof(perso_blob_from_host.body)) {
+    return INTERNAL();  // Something is really screwed up.
+  }
+
+  // Scan the received buffer until the next endorsed cert is found.
+  while (perso_blob_from_host.num_objs != 0) {
+    perso_tlv_cert_block_t block;
+    status_t status;
+
+    status = perso_tlv_set_cert_block(
+        perso_blob_from_host.body + perso_blob_from_host.next_free,
+        max_available(), &block);
+    switch (status_err(status)) {
+      case kOk:
+        break;
+      case kNotFound: {
+        // The object must be not an endorsed certificate.
+        perso_blob_from_host.next_free += block.obj_size;
+        perso_blob_from_host.num_objs--;
+        continue;
+      }
+      default:
+        return status;
+    }
+    if (*free_room < block.wrapped_cert_size)
+      return RESOURCE_EXHAUSTED();  // Another case of really screwed up.
+
+    uint8_t *dest_p = *dest;
+    memcpy(dest_p, block.wrapped_cert_p, block.wrapped_cert_size);
+    LOG_INFO("Copied %s certificate", block.name);
+
+    *dest = dest_p + block.wrapped_cert_size;
+    *free_room = *free_room - block.wrapped_cert_size;
+
+    perso_blob_from_host.next_free +=
+        block.wrapped_cert_size + sizeof(perso_tlv_object_header_t);
+    perso_blob_from_host.num_objs--;
+    return OK_STATUS();
+  }
   return OK_STATUS();
 }
 
@@ -420,13 +473,14 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Exporting TBS certificates ...");
-  RESP_OK(ujson_serialize_manuf_certs_t, uj, &tbs_certs);
+
+  RESP_OK(ujson_serialize_perso_blob_t, uj, &perso_blob_to_host);
 
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Importing endorsed certificates ...");
-  TRY(ujson_deserialize_manuf_certs_t(uj, &endorsed_certs));
+  TRY(ujson_deserialize_perso_blob_t(uj, &perso_blob_from_host));
 
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
@@ -438,69 +492,90 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
    * 3. CDI_1 cert
    * 4. Provision Extension certs
    ****************************************************************************/
-  size_t ec_i = 0;
-  size_t ac_i = 0;
-  size_t size = 0;
-
+  // We start scanning the received buffer from zero, the assumption is that the
+  // endorsed UDS cert is the first certificate in the buffer (even if preceeded
+  // by other types of objects).
+  perso_blob_from_host.next_free = 0;
+  // Location where the next cert will be copied.
+  uint8_t *next_cert = all_certs;
+  // How much room left in the destination buffer.
+  size_t free_room = sizeof(all_certs);
+  // Helper structure caching certificate information.
+  perso_tlv_cert_block_t block;
   // UDS cert.
-  size = cert_x509_asn1_decode_size_header(endorsed_certs.certs);
-  memcpy(all_certs, endorsed_certs.certs, size);
-  ec_i += size;
-  ac_i += size;
+  TRY(extract_next_cert(&next_cert, &free_room));
 
-  // CDI_0 cert.
-  size = cert_x509_asn1_decode_size_header(&tbs_certs.certs[cdi_0_offset]);
-  memcpy(&all_certs[ac_i], &tbs_certs.certs[cdi_0_offset], size);
-  ac_i += size;
+  // Now the two CDI certs which were endorsed locally and sent to the host
+  // earlier.
+  size_t cdis[] = {cdi_0_offset, cdi_1_offset};
+  for (size_t i = 0; i < ARRAYSIZE(cdis); i++) {
+    size_t offset = cdis[i];
+    TRY(perso_tlv_set_cert_block(perso_blob_to_host.body + offset,
+                                 sizeof(perso_blob_to_host.body) - offset,
+                                 &block));
+    if (block.wrapped_cert_size > free_room)
+      return RESOURCE_EXHAUSTED();
 
-  // CDI_1 cert.
-  size = cert_x509_asn1_decode_size_header(&tbs_certs.certs[cdi_1_offset]);
-  memcpy(&all_certs[ac_i], &tbs_certs.certs[cdi_1_offset], size);
-  ac_i += size;
-
-  // Remaining (endorsed) certs.
-  size = cert_x509_asn1_decode_size_header(&endorsed_certs.certs[ec_i]);
-  while (size > 0) {
-    memcpy(&all_certs[ac_i], &endorsed_certs.certs[ec_i], size);
-    ec_i += size;
-    ac_i += size;
-    OT_ASSERT_MEMBER_SIZE(manuf_certs_t, certs, 4096);
-    size = ec_i < 4096
-               ? cert_x509_asn1_decode_size_header(&endorsed_certs.certs[ec_i])
-               : 0;
+    memcpy(next_cert, block.wrapped_cert_p, block.wrapped_cert_size);
+    LOG_INFO("Copied %s certificate", block.name);
+    next_cert += block.wrapped_cert_size;
+    free_room -= block.wrapped_cert_size;
   }
+
+  // Now the rest of endorsed certificates received from the host, if any.
+  while (perso_blob_from_host.num_objs)
+    TRY(extract_next_cert(&next_cert, &free_room));
 
   /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
-  size_t all_certs_offset = 0;
+  // This is where the certificates to be copied are stored, each one wrapped in
+  // with its name prepended to it.
+  uint8_t *certs = all_certs;
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
+
     // Skip the page if it is not in use.
     if (!curr_layout.used) {
       continue;
     }
+
+    // This is a bit brittle, but we expect the sum of {layout}.num_certs values
+    // in the following flash layout sections to be equal to the number of
+    // endorsed  extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      // Compute the number of words necessary for certificate storage (rounded
-      // up to word alignment).
-      uint32_t cert_size_bytes =
-          cert_x509_asn1_decode_size_header(&all_certs[all_certs_offset]);
+      uint16_t name_len;
+      char name[kCrthNameSizeFieldMask + 1];
+      perso_tlv_cert_header_t crth;
+
+      // We just prepared the set of wrapped certificates, let's trust that the
+      // data is correct and does not need more validation.
+      memcpy(&crth, certs, sizeof(crth));
+      crth = __builtin_bswap16(crth);
+      certs += sizeof(crth);
+      PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
+      memcpy(name, certs, name_len);
+      name[name_len] = '\0';
+      certs += name_len;
+
+      // Compute the number of words necessary for certificate storage
+      // (rounded up to word alignment).
+      uint32_t cert_size_bytes = cert_x509_asn1_decode_size_header(certs);
       uint32_t cert_size_words = util_size_to_words(cert_size_bytes);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
 
       if ((page_offset + cert_size_bytes_ru) >
           FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
         LOG_ERROR("%s %s certificate did not fit into the info page.",
-                  curr_layout.group_name, curr_layout.names[j]);
+                  curr_layout.group_name, name);
         return OUT_OF_RANGE();
       }
       TRY(flash_ctrl_info_write(curr_layout.info_page, page_offset,
-                                cert_size_words, &all_certs[all_certs_offset]));
-      LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
-               curr_layout.names[j]);
+                                cert_size_words, certs));
+      LOG_INFO("Imported %s %s certificate.", curr_layout.group_name, name);
       page_offset += cert_size_bytes_ru;
-      all_certs_offset += cert_size_bytes;
+      certs += cert_size_bytes;
 
       // Each certificate must be 8 bytes aligned (flash word size).
       page_offset = util_round_up_to(page_offset, 3);
@@ -523,7 +598,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
  */
 extern status_t personalize_extension_pre_cert_endorse(
     ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
+    perso_blob_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
     dif_flash_ctrl_state_t *flash_ctrl_handle);
 
 /**
@@ -532,10 +607,10 @@ extern status_t personalize_extension_pre_cert_endorse(
  * This extension runs *AFTER* (endorsed) certificates are sent back to the
  * device from the host. Implementing this extension enables SKU owners to
  * provision additional data into flash, in addition to the endorsed
- * certificates in the `endorsed_certs` struct.
+ * certificates in the `perso_blob_from_host` struct.
  */
 extern status_t personalize_extension_post_cert_endorse(
-    ujson_t *uj, manuf_certs_t *endorsed_certs,
+    ujson_t *uj, perso_blob_t *perso_blob_from_host,
     cert_flash_info_layout_t *cert_flash_layout);
 
 bool test_main(void) {
@@ -546,10 +621,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
   CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(
-      &uj, &certgen_inputs, &tbs_certs, cert_flash_layout, &flash_ctrl_state));
+      &uj, &certgen_inputs, &perso_blob_to_host, cert_flash_layout,
+      &flash_ctrl_state));
   CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
-  CHECK_STATUS_OK(personalize_extension_post_cert_endorse(&uj, &endorsed_certs,
-                                                          cert_flash_layout));
+  CHECK_STATUS_OK(personalize_extension_post_cert_endorse(
+      &uj, &perso_blob_from_host, cert_flash_layout));
   CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in

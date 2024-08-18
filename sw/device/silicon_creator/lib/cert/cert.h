@@ -73,10 +73,7 @@ typedef struct cert_flash_info_layout {
    * The number of certificates that will be written to the flash info page.
    */
   size_t num_certs;
-  /**
-   * A array of name strings, one for each certificate in the group.
-   */
-  char **names;
+
 } cert_flash_info_layout_t;
 
 /**
