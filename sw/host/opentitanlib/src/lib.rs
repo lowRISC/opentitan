@@ -19,6 +19,7 @@ pub mod image;
 pub mod io;
 pub mod otp;
 pub mod ownership;
+pub mod perso_tlv;
 pub mod proxy;
 pub mod rescue;
 pub mod spiflash;

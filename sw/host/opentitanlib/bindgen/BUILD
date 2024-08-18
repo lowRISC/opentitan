@@ -247,16 +247,16 @@ rust_bindgen_library(
 )
 
 rust_bindgen_library(
-    name = "perso_objects",
+    name = "perso_tlv_objects",
     bindgen_flags = [
-        "--allowlist-type=perso_object_type_t",
-        "--allowlist-type=object_header_t",
-        "--allowlist-type=cert_header_t",
-        "--allowlist-type=dev_seed_header_t",
-        "--allowlist-type=obj_header_fields_t",
-        "--allowlist-type=cert_header_fields_t",
+        "--allowlist-type=perso_tlv_object_type_t",
+        "--allowlist-type=perso_tlv_object_header_t",
+        "--allowlist-type=perso_tlv_cert_header_t",
+        "--allowlist-type=perso_tlv_dev_seed_header_t",
+        "--allowlist-type=perso_tlv_obj_header_fields_t",
+        "--allowlist-type=perso_tlv_cert_header_fields_t",
     ],
-    cc_lib = "//sw/device/silicon_creator/manuf/base:perso_object_headers",
+    cc_lib = "//sw/device/silicon_creator/manuf/base:perso_tlv_headers",
     header = "//sw/device/silicon_creator/manuf/base:perso_tlv_data.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -274,7 +274,7 @@ rust_library(
         ":earlgrey",
         ":hardened",
         ":multibits",
-        ":perso_objects",
+        ":perso_tlv_objects",
         ":sram_program",
         ":status",
         ":test_status",
