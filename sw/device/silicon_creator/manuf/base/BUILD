@@ -241,6 +241,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
         "//sw/device/silicon_creator/manuf/lib:personalize",
@@ -261,13 +262,32 @@ cc_library(
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
 
 cc_library(
-    name = "perso_object_headers",
+    name = "perso_tlv_data",
+    srcs = ["perso_tlv_data.c"],
+    deps = [
+        ":perso_tlv_headers",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib/cert",
+    ],
+)
+
+# Need a separate library for the headers, because adding a dependency on
+#//sw/device/silicon_creator/lib/cert required by perso_tlv_data above causes
+# bindgen failures due to otbn (which is a cert dependency) requiring risc32
+# environment.
+cc_library(
+    name = "perso_tlv_headers",
     hdrs = ["perso_tlv_data.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/json:provisioning_data",
+    ],
 )
 
 _FT_PERSO_EXTS = [

@@ -8,6 +8,7 @@ use std::time::Duration;
 
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
+use bindgen::perso_tlv_objects;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::SecretKey;
 use p256::NistP256;
@@ -20,6 +21,9 @@ use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::perso_tlv;
+use opentitanlib::perso_tlv::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
+use opentitanlib::perso_tlv_get_field;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
@@ -29,7 +33,7 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
 use ujson_lib::provisioning_data::{
-    LcTokenHash, ManufCertgenInputs, ManufCerts, ManufFtIndividualizeData, SerdesSha256Hash,
+    LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
 };
 use util_lib::hash_lc_token;
 
@@ -186,9 +190,95 @@ fn send_rma_unlock_token_hash(
     Ok(())
 }
 
-const CERT_LABELS: [&str; 8] = [
-    "UDS", "CDI_0", "CDI_1", "TPM_EK", "CEK", "CIK", "Unknown", "Unknown",
-];
+// Extract LTV object header from the input buffer.
+fn get_obj_header(data: &[u8]) -> Result<ObjHeader> {
+    let header_len = std::mem::size_of::<ObjHeaderType>();
+    // The header is 2 bytes in size.
+    if data.len() < header_len {
+        bail!(
+            "Insufficient amount of data ({} bytes) for object header",
+            data.len()
+        );
+    }
+
+    let typesize = u16::from_be_bytes([data[0], data[1]]);
+    let obj_size = perso_tlv_get_field!("obj", "size", typesize);
+    let obj_type = ObjType::from_usize(perso_tlv_get_field!("obj", "type", typesize))?;
+
+    if obj_size > data.len() {
+        bail!(
+            "Object {} length {} exceeds buffer size {}",
+            obj_type as u8,
+            obj_size,
+            data.len()
+        );
+    }
+    Ok(ObjHeader { obj_type, obj_size })
+}
+
+// Extract certificate payload header from the input buffer.
+fn get_cert(data: &[u8]) -> Result<CertHeader> {
+    let header_len = std::mem::size_of::<CertHeaderType>();
+
+    if data.len() < header_len {
+        bail!(
+            "Insufficient amount of data ({} bytes) for cert header",
+            data.len()
+        );
+    }
+
+    let header = u16::from_be_bytes([data[0], data[1]]);
+    let wrapped_size = perso_tlv_get_field!("crth", "size", header);
+    if wrapped_size > data.len() {
+        bail!(
+            "Cert object size {} exceeds buffer size {}",
+            wrapped_size,
+            data.len()
+        );
+    }
+
+    let name_len = perso_tlv_get_field!("crth", "name", header);
+    let cert_name = std::str::from_utf8(&data[header_len..header_len + name_len])?;
+    log::info!("processing cert {cert_name}");
+    let header_size = header_len + name_len;
+    let cert_body: Vec<u8> = data[header_size..wrapped_size].to_vec();
+
+    // Sanity check, total size and cert size must  match
+    let cert_size = get_cert_size(&cert_body)?;
+    if cert_size != cert_body.len() {
+        bail!(
+            "cert size {} does not match length {}",
+            cert_size,
+            cert_body.len()
+        );
+    }
+    Ok(CertHeader {
+        wrapped_size,
+        cert_name,
+        cert_body,
+    })
+}
+
+fn push_endorsed_cert(
+    cert: &Vec<u8>,
+    ref_cert: &CertHeader,
+    output: &mut ArrayVec<u8, 4096>,
+) -> Result<()> {
+    // Need to wrap the new cert in CertHeader
+    let total_size = std::mem::size_of::<ObjHeaderType>()
+        + std::mem::size_of::<CertHeaderType>()
+        + ref_cert.cert_name.len()
+        + cert.len();
+
+    let obj_header = perso_tlv::make_obj_header(total_size, ObjType::EndorsedX509Cert)?;
+    let cert_wrapper_header = perso_tlv::make_cert_wrapper_header(cert.len(), ref_cert.cert_name)?;
+    output.try_extend_from_slice(&obj_header.to_be_bytes())?;
+    output.try_extend_from_slice(&cert_wrapper_header.to_be_bytes())?;
+    output.try_extend_from_slice(ref_cert.cert_name.as_bytes())?;
+    output.try_extend_from_slice(cert.as_slice())?;
+
+    Ok(())
+}
 
 fn provision_certificates(
     transport: &TransportWrapper,
@@ -205,7 +295,7 @@ fn provision_certificates(
 
     // Wait until the device exports the TBS certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting TBS certificates ...", timeout)?;
-    let manuf_certs = ManufCerts::recv(&*uart, timeout, true)?;
+    let perso_blob = PersoBlob::recv(&*uart, timeout, true)?;
 
     // Select the CA endorsement key to use.
     let key = match cert_endorsement_key_wrapper {
@@ -219,6 +309,8 @@ fn provision_certificates(
         }
     };
 
+    log::info!("start of the body {}", hex::encode(&perso_blob.body[0..10]));
+
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
     // During the process, both:
     //   1. prepare a UJSON payload of endorsed certs to send back to the device,
@@ -229,28 +321,46 @@ fn provision_certificates(
     let mut host_endorsed_certs: Vec<Vec<u8>> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
-    for (i, label) in CERT_LABELS.iter().enumerate().take(manuf_certs.num_certs) {
-        let cert_size = get_cert_size(&manuf_certs.certs[start..])?;
-        let mut cert_bytes = manuf_certs.certs[start..start + cert_size].to_vec();
-        start += cert_size;
-        // Not all certificates need to be endorsed, some certs are already fully endorsed.
-        if manuf_certs.tbs[i] {
+
+    for _ in 0..perso_blob.num_objs {
+        log::info!("Processing next object");
+        let header = get_obj_header(&perso_blob.body[start..])?;
+        match header.obj_type {
+            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => (),
+            ObjType::DevSeed => {
+                start += header.obj_size;
+                continue;
+            }
+        }
+        start += std::mem::size_of::<ObjHeaderType>();
+
+        // The next object is a cert, let's retrieve its properties (name, needs
+        // endorsement, etc.)
+        let cert = get_cert(&perso_blob.body[start..])?;
+        start += cert.wrapped_size;
+
+        let cert_bytes = if header.obj_type == ObjType::UnendorsedX509Cert {
             // Endorse the cert and updates its size.
-            cert_bytes = parse_and_endorse_x509_cert(cert_bytes.clone(), &key)?;
+            let cert_bytes = parse_and_endorse_x509_cert(cert.cert_body.clone(), &key)?;
+
             // Prepare a collection of certs whose endorsements should be checked with OpenSSL.
             // TODO: verify the endorsement of the UDS certificate with OpenSSL. It is currently
             // failing signature verification due to the custom DiceTcbInfo extension being a
             // non-recognizable extension that is marked "critical".
-            if i > 0 {
+            if cert.cert_name != "UDS" {
                 host_endorsed_certs.push(cert_bytes.clone());
             }
+
             // Prepare the UJSON data payloads that will be sent back to the device.
-            endorsed_cert_concat.try_extend_from_slice(cert_bytes.as_slice())?;
+            push_endorsed_cert(&cert_bytes, &cert, &mut endorsed_cert_concat)?;
             num_host_endorsed_certs += 1;
-        }
+            cert_bytes
+        } else {
+            cert.cert_body
+        };
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
-        log::info!("{} Cert: {}", label, hex::encode(cert_bytes.clone()));
-        let _ = parse_certificate(cert_bytes.as_slice())?;
+        log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
+        let _ = parse_certificate(&cert_bytes)?;
         // Push the cert into the hasher so we can ensure the certs written to the device's flash
         // info pages match those verified on the host.
         cert_hasher.update(cert_bytes);
@@ -264,14 +374,13 @@ fn provision_certificates(
     let host_computed_certs_hash = cert_hasher.finalize();
 
     // Send endorsed certificates back to the device.
-    let manuf_endorsed_certs = ManufCerts {
-        num_certs: num_host_endorsed_certs,
+    let manuf_perso_data_back = PersoBlob {
+        num_objs: num_host_endorsed_certs,
         next_free: endorsed_cert_concat.len(),
-        tbs: ArrayVec::<bool, 8>::try_from([false; 8]).unwrap(),
-        certs: endorsed_cert_concat,
+        body: endorsed_cert_concat,
     };
     let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;
-    manuf_endorsed_certs.send(&*uart)?;
+    manuf_perso_data_back.send(&*uart)?;
     let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
 
     // Check the integrity of the certificates written to the device's flash by comparing a
