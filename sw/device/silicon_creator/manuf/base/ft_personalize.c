@@ -523,7 +523,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
  */
 extern status_t personalize_extension_pre_cert_endorse(
     ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout);
+    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
+    dif_flash_ctrl_state_t *flash_ctrl_handle);
 
 /**
  * A custom extension to the personalization flow.
@@ -545,7 +546,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
   CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(
-      &uj, &certgen_inputs, &tbs_certs, cert_flash_layout));
+      &uj, &certgen_inputs, &tbs_certs, cert_flash_layout, &flash_ctrl_state));
   CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
   CHECK_STATUS_OK(personalize_extension_post_cert_endorse(&uj, &endorsed_certs,
                                                           cert_flash_layout));
