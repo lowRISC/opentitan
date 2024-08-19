@@ -355,14 +355,20 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       end
       // Handshake packets sent by the DUT.
       PidTypeAck, PidTypeNak: begin
-        // The endpoint number for the OUT DATA transfer is sent in the preceding token packet,
+        // The endpoint number for the IN DATA transfer is sent in the preceding token packet,
         // if there was one and it was valid.
-        if (bfm.rx_token != null) begin
-          cov.data_tog_endp_cg.sample(item.m_pid_type, .dir_in(1'b0), .endp(bfm.rx_token.endpoint));
+        if (bfm.tx_ep != usbdev_bfm::InvalidEP) begin
+          cov.data_tog_endp_cg.sample(item.m_pid_type, .dir_in(1'b1), .endp(bfm.tx_ep));
+        end
+        // The endpoint number for the OUT DATA transfer is sent in the preceding token packet;
+        // if there was one and it was valid the BFM will have retained the endpoint number since
+        // it is not present in the DUT response.
+        if (bfm.rx_ep != usbdev_bfm::InvalidEP) begin
+          cov.data_tog_endp_cg.sample(item.m_pid_type, .dir_in(1'b0), .endp(bfm.rx_ep));
         end
       end
       default: begin
-        // Nothing to do for other packet types.
+        // Nothing more to do for other packet types.
       end
     endcase
   endfunction

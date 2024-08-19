@@ -76,6 +76,7 @@ class usbdev_bfm extends uvm_component;
 
   // Current reception (SETUP and OUT) state information.
   token_pkt rx_token; // Most recent OUT-side token packet.
+  bit [3:0] rx_ep;    // Retain the endpoint for the handshake packet.
   // Current transmission (IN) state information.
   bit [3:0] tx_ep;
 
@@ -178,6 +179,7 @@ class usbdev_bfm extends uvm_component;
     for (int unsigned ep = 0; ep < NEndpoints; ep++) configin[ep] = configin_rst;
     tx_ep = InvalidEP;
     // Nor any in-progress reception.
+    rx_ep = InvalidEP;
     rx_token = null;
   endfunction
 
@@ -450,6 +452,7 @@ class usbdev_bfm extends uvm_component;
 
   // Cancel any in-progress OUT transaction and update state.
   function void cancel_out();
+    rx_ep = InvalidEP;
     if (rx_token != null) begin
       intr_state[IntrLinkOutErr] = 1'b1;
       rx_token = null;
@@ -701,6 +704,7 @@ class usbdev_bfm extends uvm_component;
         bit avsetup_empty = !avsetup_fifo.size();
         // Silently ignore SETUP packets to endpoints not configured to receive them.
         if (!rxenable_setup[ep]) begin
+          rx_ep = InvalidEP;
           rx_token = null;
           return 0;
         end
@@ -748,6 +752,8 @@ class usbdev_bfm extends uvm_component;
           // Construct a NAK response indicating that we're busy, unless Isochronous. If an endpoint
           // is misconfigured to be both Control and Isochronous, Control wins.
           if (out_iso[ep] & !rxenable_setup[ep]) return 0;
+          // Retain the endpoint number for subsequent processing of the DUT handshake response.
+          rx_ep = ep;
           nak = handshake_pkt::type_id::create("nak");
           nak.m_pid_type = PidTypeNak;
           // NAK response.
@@ -787,6 +793,8 @@ class usbdev_bfm extends uvm_component;
       intr_state[IntrPktReceived] = 1'b1;
     end
 
+    // Retain the endpoint number for subsequent processing of the DUT handshake response.
+    rx_ep = ep;
     // Now forget the OUT transaction; successfully completed.
     rx_token = null;
     // Isochronous transactions do not include a handshake packet, but 'control endpoints' take
