@@ -56,6 +56,7 @@ fn test_update_phase(
 
 fn test_end(opts: &Opts, end_test_address: u32, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
+    uart.set_flow_control(true)?;
     let end_test_value = MemRead32Req::execute(&*uart, end_test_address)?;
     assert!(end_test_value == 0);
     MemWrite32Req::execute(&*uart, end_test_address, /*value=*/ 1)?;

@@ -17,6 +17,7 @@ use cryptotest_commands::hmac_commands::{
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
@@ -52,7 +53,7 @@ const HMAC_CMD_MAX_KEY_BYTES: usize = 192;
 fn run_hmac_testcase(
     test_case: &HmacTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    uart: &dyn Uart,
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
@@ -60,10 +61,9 @@ fn run_hmac_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
 
     assert_eq!(test_case.algorithm.as_str(), "hmac");
-    CryptotestCommand::Hmac.send(&*uart)?;
+    CryptotestCommand::Hmac.send(uart)?;
 
     assert!(
         test_case.key.len() <= HMAC_CMD_MAX_KEY_BYTES,
@@ -87,21 +87,21 @@ fn run_hmac_testcase(
         "sha3-512" => CryptotestHmacHashAlg::Sha3_512,
         _ => panic!("Unsupported HMAC hash mode"),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestHmacKey {
         key: ArrayVec::try_from(test_case.key.as_slice()).unwrap(),
         key_len: test_case.key.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestHmacMessage {
         message: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
         message_len: test_case.message.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
-    let hmac_tag = CryptotestHmacTag::recv(&*uart, opts.timeout, false)?;
+    let hmac_tag = CryptotestHmacTag::recv(uart, opts.timeout, false)?;
     let success = if test_case.tag.len() > hmac_tag.tag_len {
         // If we got a shorter tag back then the test asks for, we can't accept the tag, even if
         // the beginning bytes match.
@@ -140,7 +140,7 @@ fn test_hmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for hmac_test in &hmac_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_hmac_testcase(hmac_test, opts, transport, &mut fail_counter)?;
+            run_hmac_testcase(hmac_test, opts, &*uart, &mut fail_counter)?;
         }
     }
     assert_eq!(

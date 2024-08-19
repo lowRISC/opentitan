@@ -297,8 +297,7 @@ fn read_all_verify(
     Ok(())
 }
 
-fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     log::info!(
         "Configuring pinmux for {:?}",
         opts.init.backend_opts.interface
@@ -306,7 +305,7 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, None, Some(&config.output))?;
+    PinmuxConfig::configure(uart, None, Some(&config.output))?;
 
     log::info!("Configuring debugger GPIOs as inputs");
     // The outputs (with respect to pinmux config) correspond to the input pins on the debug board.
@@ -317,18 +316,17 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     log::info!("Enabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
-    write_all_verify(transport, &*uart, 0x5555_5555, &config.output)?;
-    write_all_verify(transport, &*uart, 0xAAAA_AAAA, &config.output)?;
+    GpioSet::set_enabled_all(uart, 0xFFFFFFFF)?;
+    write_all_verify(transport, uart, 0x5555_5555, &config.output)?;
+    write_all_verify(transport, uart, 0xAAAA_AAAA, &config.output)?;
 
     for i in 0..32 {
-        write_all_verify(transport, &*uart, 1 << i, &config.output)?;
+        write_all_verify(transport, uart, 1 << i, &config.output)?;
     }
     Ok(())
 }
 
-fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
+fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     log::info!(
         "Configuring pinmux for {:?}",
         opts.init.backend_opts.interface
@@ -336,7 +334,7 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, Some(&config.input), None)?;
+    PinmuxConfig::configure(uart, Some(&config.input), None)?;
 
     log::info!("Configuring debugger GPIOs as outputs");
     // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
@@ -347,13 +345,13 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     log::info!("Disabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0x0)?;
+    GpioSet::set_enabled_all(uart, 0x0)?;
 
-    read_all_verify(transport, &*uart, 0x5555_5555, &config.input)?;
-    read_all_verify(transport, &*uart, 0xAAAA_AAAA, &config.input)?;
+    read_all_verify(transport, uart, 0x5555_5555, &config.input)?;
+    read_all_verify(transport, uart, 0xAAAA_AAAA, &config.input)?;
 
     for i in 0..32 {
-        read_all_verify(transport, &*uart, 1 << i, &config.input)?;
+        read_all_verify(transport, uart, 1 << i, &config.input)?;
     }
     Ok(())
 }
@@ -367,7 +365,7 @@ fn main() -> Result<()> {
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
-    execute_test!(test_gpio_outputs, &opts, &transport);
-    execute_test!(test_gpio_inputs, &opts, &transport);
+    execute_test!(test_gpio_outputs, &opts, &transport, &*uart);
+    execute_test!(test_gpio_inputs, &opts, &transport, &*uart);
     Ok(())
 }

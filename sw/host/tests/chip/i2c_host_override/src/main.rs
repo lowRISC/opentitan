@@ -46,6 +46,7 @@ fn test_override(
     data: u8,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
+    uart.set_flow_control(true)?;
     let gpio_bitbanging = transport.gpio_bitbanging()?;
 
     const SAMPLES: usize = 5000;

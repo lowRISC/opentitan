@@ -18,6 +18,7 @@ use cryptotest_commands::commands::CryptotestCommand;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
@@ -52,33 +53,27 @@ const AES_CMD_MAX_MSG_BYTES: usize = 64;
 const AES_CMD_MAX_KEY_BYTES: usize = 256 / 8;
 const AES_BLOCK_BYTES: usize = 128 / 8;
 
-fn run_aes_testcase(
-    test_case: &AesTestCase,
-    opts: &Opts,
-    transport: &TransportWrapper,
-) -> Result<()> {
-    let uart = transport.uart("console")?;
-
+fn run_aes_testcase(test_case: &AesTestCase, opts: &Opts, uart: &dyn Uart) -> Result<()> {
     assert_eq!(test_case.algorithm.as_str(), "aes");
-    CryptotestCommand::Aes.send(&*uart)?;
-    AesSubcommand::AesBlock.send(&*uart)?;
+    CryptotestCommand::Aes.send(uart)?;
+    AesSubcommand::AesBlock.send(uart)?;
 
     match test_case.mode.as_str() {
-        "cbc" => CryptotestAesMode::Cbc.send(&*uart)?,
-        "cfb128" => CryptotestAesMode::Cfb.send(&*uart)?,
-        "ecb" => CryptotestAesMode::Ecb.send(&*uart)?,
-        "ofb" => CryptotestAesMode::Ofb.send(&*uart)?,
+        "cbc" => CryptotestAesMode::Cbc.send(uart)?,
+        "cfb128" => CryptotestAesMode::Cfb.send(uart)?,
+        "ecb" => CryptotestAesMode::Ecb.send(uart)?,
+        "ofb" => CryptotestAesMode::Ofb.send(uart)?,
         _ => panic!("Invalid AES mode"),
     }
     match test_case.operation.as_str() {
-        "encrypt" => CryptotestAesOperation::Encrypt.send(&*uart)?,
-        "decrypt" => CryptotestAesOperation::Decrypt.send(&*uart)?,
+        "encrypt" => CryptotestAesOperation::Encrypt.send(uart)?,
+        "decrypt" => CryptotestAesOperation::Decrypt.send(uart)?,
         _ => panic!("Invalid AES operation"),
     }
     match test_case.padding.as_str() {
-        "null" => CryptotestAesPadding::Null.send(&*uart)?,
-        "pkcs7" => CryptotestAesPadding::Pkcs7.send(&*uart)?,
-        "iso9797m2" => CryptotestAesPadding::Iso9797M2.send(&*uart)?,
+        "null" => CryptotestAesPadding::Null.send(uart)?,
+        "pkcs7" => CryptotestAesPadding::Pkcs7.send(uart)?,
+        "iso9797m2" => CryptotestAesPadding::Iso9797M2.send(uart)?,
         _ => panic!("Invalid AES padding scheme"),
     }
 
@@ -119,9 +114,9 @@ fn run_aes_testcase(
         input,
         input_len,
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
-    let aes_output = CryptotestAesOutput::recv(&*uart, opts.timeout, false)?;
+    let aes_output = CryptotestAesOutput::recv(uart, opts.timeout, false)?;
     assert_eq!(
         aes_output.output[0..input_len],
         expected_output[0..input_len]
@@ -143,7 +138,7 @@ fn test_aes(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for aes_test in &aes_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_aes_testcase(aes_test, opts, transport)?;
+            run_aes_testcase(aes_test, opts, &*uart)?;
         }
     }
     Ok(())

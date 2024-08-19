@@ -30,6 +30,7 @@ use cryptotest_commands::ecdsa_commands::{
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
@@ -180,7 +181,7 @@ fn p384_verify_signature(
 fn run_ecdsa_testcase(
     test_case: &EcdsaTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    uart: &dyn Uart,
     failures: &mut Vec<String>,
 ) -> Result<()> {
     log::info!(
@@ -188,7 +189,6 @@ fn run_ecdsa_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
     assert_eq!(test_case.algorithm.as_str(), "ecdsa");
     let mut qx: Vec<u8> = BigInt::from_str_radix(&test_case.qx, 16)
         .unwrap()
@@ -398,10 +398,10 @@ fn run_ecdsa_testcase(
     };
 
     // Send everything
-    CryptotestCommand::Ecdsa.send(&*uart)?;
-    operation.send(&*uart)?;
-    hash_alg.send(&*uart)?;
-    curve.send(&*uart)?;
+    CryptotestCommand::Ecdsa.send(uart)?;
+    operation.send(uart)?;
+    hash_alg.send(uart)?;
+    curve.send(uart)?;
 
     // Size of `input` is determined at compile-time by type inference
     let mut input = ArrayVec::new();
@@ -417,7 +417,7 @@ fn run_ecdsa_testcase(
         input,
         input_len: msg_len,
     };
-    msg.send(&*uart)?;
+    msg.send(uart)?;
 
     CryptotestEcdsaSignature {
         r: ArrayVec::try_from(r.as_slice()).unwrap(),
@@ -425,19 +425,19 @@ fn run_ecdsa_testcase(
         s: ArrayVec::try_from(s.as_slice()).unwrap(),
         s_len: s.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestEcdsaCoordinate {
         coordinate: ArrayVec::try_from(qx.as_slice()).unwrap(),
         coordinate_len: qx.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestEcdsaCoordinate {
         coordinate: ArrayVec::try_from(qy.as_slice()).unwrap(),
         coordinate_len: qy.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
 
     CryptotestEcdsaPrivateKey {
         d0: ArrayVec::try_from(d0.as_slice()).unwrap(),
@@ -446,10 +446,10 @@ fn run_ecdsa_testcase(
         d1_len: d1.len(),
         unmasked_len: d0.len(),
     }
-    .send(&*uart)?;
+    .send(uart)?;
     let success = match operation {
         CryptotestEcdsaOperation::Sign => {
-            let mut output_signature = CryptotestEcdsaSignature::recv(&*uart, opts.timeout, false)?;
+            let mut output_signature = CryptotestEcdsaSignature::recv(uart, opts.timeout, false)?;
             // Truncate signature values to correct size for curve and convert to big-endian
             output_signature.r.truncate(output_signature.r_len);
             output_signature.s.truncate(output_signature.s_len);
@@ -476,7 +476,7 @@ fn run_ecdsa_testcase(
             }
         }
         CryptotestEcdsaOperation::Verify => {
-            let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(&*uart, opts.timeout, false)?;
+            let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(uart, opts.timeout, false)?;
             match ecdsa_output {
                 CryptotestEcdsaVerifyOutput::Success => true,
                 CryptotestEcdsaVerifyOutput::Failure => false,
@@ -523,7 +523,7 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdsa_test in &ecdsa_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdsa_testcase(ecdsa_test, opts, transport, &mut failures)?;
+            run_ecdsa_testcase(ecdsa_test, opts, &*uart, &mut failures)?;
         }
     }
     assert_eq!(
