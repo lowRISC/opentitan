@@ -9,46 +9,59 @@ use serde::Serialize;
 use std::io::Write;
 use std::time::Duration;
 
-use crate::io::uart::{Uart, UartError};
+use crate::io::console::{ConsoleDevice, ConsoleError};
 use crate::test_utils::status::Status;
 use crate::uart::console::{ExitStatus, UartConsole};
 
 // Bring in the auto-generated sources.
 include!(env!("ottf"));
 
-pub trait UartSend {
-    fn send(&self, uart: &dyn Uart) -> Result<()>;
-
-    fn send_with_crc(&self, uart: &dyn Uart) -> Result<()>;
+pub trait UartSend<T>
+where
+    T: ConsoleDevice + ?Sized,
+{
+    fn send(&self, device: &T) -> Result<()>;
+    fn send_with_crc(&self, device: &T) -> Result<()>;
 }
 
-impl<T: Serialize> UartSend for T {
-    fn send(&self, uart: &dyn Uart) -> Result<()> {
+impl<T, U> UartSend<T> for U
+where
+    T: ConsoleDevice + ?Sized,
+    U: Serialize,
+{
+    fn send(&self, device: &T) -> Result<()> {
         let s = serde_json::to_string(self)?;
         log::info!("Sending: {}", s);
-        uart.write(s.as_bytes())?;
+        device.console_write(s.as_bytes())?;
         Ok(())
     }
 
-    fn send_with_crc(&self, uart: &dyn Uart) -> Result<()> {
+    fn send_with_crc(&self, device: &T) -> Result<()> {
         let s = serde_json::to_string(self)?;
         log::info!("Sending: {}", s);
-        uart.write(s.as_bytes())?;
+        device.console_write(s.as_bytes())?;
         let actual_crc = OttfCrc {
             crc: Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(s.as_bytes()),
         };
-        actual_crc.send(uart)
+        actual_crc.send(device)
     }
 }
 
-pub trait UartRecv {
-    fn recv(uart: &dyn Uart, timeout: Duration, quiet: bool) -> Result<Self>
+pub trait UartRecv<T>
+where
+    T: ConsoleDevice + ?Sized,
+{
+    fn recv(device: &T, timeout: Duration, quiet: bool) -> Result<Self>
     where
         Self: Sized;
 }
 
-impl<T: DeserializeOwned> UartRecv for T {
-    fn recv(uart: &dyn Uart, timeout: Duration, quiet: bool) -> Result<Self>
+impl<T, U> UartRecv<T> for U
+where
+    T: ConsoleDevice + ?Sized,
+    U: DeserializeOwned,
+{
+    fn recv(device: &T, timeout: Duration, quiet: bool) -> Result<Self>
     where
         Self: Sized,
     {
@@ -67,7 +80,7 @@ impl<T: DeserializeOwned> UartRecv for T {
         } else {
             None
         };
-        let result = console.interact(uart, None, out)?;
+        let result = console.interact(device, None, out)?;
         println!();
         match result {
             ExitStatus::ExitSuccess => {
@@ -89,7 +102,7 @@ impl<T: DeserializeOwned> UartRecv for T {
                 let err = serde_json::from_str::<Status>(json_str)?;
                 Err(err.into())
             }
-            ExitStatus::Timeout => Err(UartError::GenericError("Timed Out".into()).into()),
+            ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
             _ => Err(anyhow!("Impossible result: {:?}", result)),
         }
     }
@@ -99,7 +112,9 @@ fn check_crc(json_str: &str, crc_str: &str) -> Result<()> {
     let crc = crc_str.parse::<u32>()?;
     let actual_crc = Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(json_str.as_bytes());
     if crc != actual_crc {
-        return Err(UartError::GenericError("CRC didn't match received json body.".into()).into());
+        return Err(
+            ConsoleError::GenericError("CRC didn't match received json body.".into()).into(),
+        );
     }
     Ok(())
 }
