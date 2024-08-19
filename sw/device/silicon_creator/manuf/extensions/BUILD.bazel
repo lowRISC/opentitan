@@ -23,6 +23,7 @@ cc_library(
     name = "example_perso_fw_ext",
     srcs = ["example_personalize_ext.c"],
     deps = [
+        "@//sw/device/lib/dif:flash_ctrl",
         "@//sw/device/lib/runtime:log",
         "@//sw/device/lib/testing/json:provisioning_data",
         "@//sw/device/lib/testing/test_framework:status",
@@ -35,6 +36,7 @@ cc_library(
     name = "default_perso_fw_ext",
     srcs = ["default_personalize_ext.c"],
     deps = [
+        "@//sw/device/lib/dif:flash_ctrl",
         "@//sw/device/lib/testing/json:provisioning_data",
         "@//sw/device/lib/testing/test_framework:status",
         "@//sw/device/lib/testing/test_framework:ujson_ottf",
