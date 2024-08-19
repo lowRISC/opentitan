@@ -135,7 +135,8 @@ static status_t personalize_gen_tpm_certificates(
 
 status_t personalize_extension_pre_cert_endorse(
     ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout) {
+    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
+    dif_flash_ctrl_state_t *flash_ctrl_handle) {
   LOG_INFO("Running TPM perso extension ...");
   TRY(peripheral_handles_init());
   TRY(config_and_erase_tpm_certificate_flash_pages());
