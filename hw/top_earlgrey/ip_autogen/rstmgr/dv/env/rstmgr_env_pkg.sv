@@ -48,6 +48,7 @@ package rstmgr_env_pkg;
     // There are 4 rstmgr_leaf_rst instances with security checks disabled.
     // "u_d0_lc_io_div4",
     // "u_d0_lc_io_div4_shadowed",
+    "u_d0_lc_shadowed",
     "u_d0_lc_usb",
     "u_d0_spi_device",
     "u_d0_spi_host0",
@@ -74,6 +75,7 @@ package rstmgr_env_pkg;
 
   // Instances of rstmgr_leaf_rst modules which have a shadow pair.
   parameter string LIST_OF_SHADOW_LEAFS[] = {
+    "u_d0_lc",
     "u_d0_lc_io_div4",
     "u_daon_lc",
     "u_daon_lc_io_div4"
