@@ -20,7 +20,7 @@ sudo ip netns exec airgapped ip addr add 127.0.0.1/8 dev lo
 sudo ip netns exec airgapped ip link set dev lo up
 
 # Enter the network namespace and perform several builds.
-sudo ip netns exec airgapped sudo -u "$USER" bash -c \
+sudo ip netns exec airgapped sudo -u "$USER" bash -e -x -c \
   "export BAZEL_BITSTREAMS_CACHE=$(pwd)/bazel-airgapped/bitstreams-cache;
   export BITSTREAM=\"--offline latest\";
   export BAZEL_PYTHON_WHEELS_REPO=$(pwd)/bazel-airgapped/ot_python_wheels;
