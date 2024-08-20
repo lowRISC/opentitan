@@ -20,8 +20,6 @@ import xml.etree.ElementTree
 from pathlib import Path
 from typing import Dict, Set
 
-import jsonschema
-
 # The schema version used for legacy cache entries, JSON files missing a version
 # entry, and entries that use a higher version of the schema than supported here
 # (attempted in case there is forwards compatibility).
@@ -401,10 +399,17 @@ class BitstreamCache(object):
             manifest["schema_version"] = MANIFEST_SCHEMA_VERSION
 
         if manifest["schema_version"] == 2:
-            schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest.schema.json")
-            with open(schema_path) as schema_file:
-                schema = json.load(schema_file)
-            jsonschema.validate(manifest, schema)
+            # Attempt to check the schema if `jsonschema` is available.
+            try:
+                import jsonschema
+            except ImportError:
+                logging.warning("jsonschema not found, skipping schema validation")
+            else:
+                schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest.schema.json")
+                with open(schema_path) as schema_file:
+                    schema = json.load(schema_file)
+                jsonschema.validate(manifest, schema)
+
             for design_name, metadata in manifest["designs"].items():
                 design = collections.defaultdict(dict)
                 design["bitstream"] = metadata["bitstream"]["file"]
