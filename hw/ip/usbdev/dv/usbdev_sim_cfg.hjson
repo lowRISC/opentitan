@@ -542,7 +542,7 @@
                  "+wt_bitstuff_errs=1",
                  "+en_scb_rdchk_linkstate=0"]
       // Very long simulation times
-      reseed: 5
+      reseed: 10
     }
     {
       name: usbdev_stream_len_max
