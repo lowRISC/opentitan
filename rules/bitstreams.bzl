@@ -49,16 +49,6 @@ design (i.e. mix-and-match).
 """
 
 load("@python3//:defs.bzl", "interpreter")
-load("@ot_python_deps//:requirements.bzl", "all_requirements")
-
-def _make_pythonpath(rctx):
-    # Create a PYTHONPATH with all the pip deps from requirements.txt
-    directories = [
-        rctx.path(Label(pip_req + ":BUILD.bazel")).dirname
-        for pip_req in all_requirements
-    ]
-    pythonpath = ":".join([str(directory) for directory in directories])
-    return pythonpath
 
 def _bitstreams_repo_impl(rctx):
     # First, check if an existing pre-built bitstream cache repo exists, and if
@@ -76,9 +66,6 @@ def _bitstreams_repo_impl(rctx):
             "--cache={}".format(cache_path),
             "--refresh-time={}".format(rctx.attr.refresh_time),
         ],
-        environment = {
-            "PYTHONPATH": _make_pythonpath(rctx),
-        },
         quiet = False,
     )
     if result.return_code != 0:
