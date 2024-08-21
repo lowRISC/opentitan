@@ -1,0 +1,62 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Rerun Failed Workflow
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  actions: write
+  contents: write # For repository dispatch
+  pull-requests: write # For label removal
+
+jobs:
+  rerun:
+    name: Rerun Failed CI
+    if: github.event.label.name == 'CI:Rerun'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun failed GitHub actions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            for await (const response of github.paginate.iterator(
+              github.rest.actions.listWorkflowRunsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                // Only return completed workflows, not queued and in_progress.
+                status: 'completed',
+                head_sha: context.payload.pull_request.head.sha,
+              }
+            )) {
+              for (let run of response.data) {
+                if (run.conclusion !== 'failure') continue;
+
+                await github.rest.actions.reRunWorkflowFailedJobs({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                });
+              }
+            }
+
+            // Trigger a cross-repo-ci-rerun event for private CI
+            github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'cross-repo-ci-rerun',
+              client_payload: {
+                sha: context.payload.pull_request.head.sha,
+              }
+            });
+
+            // Remove label once failed job retriggered.
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              name: 'CI:Rerun',
+            });
