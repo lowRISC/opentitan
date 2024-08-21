@@ -640,6 +640,24 @@ jobs:
     tag_filters: "manuf,-hyper310"
     timeout: 60
 
+# Verify that we have indeed run all jobs without duplication
+- template: ci/verify-fpga-jobs.yml
+  parameters:
+    fpga_tags: fpga
+    fpga_jobs:
+      - execute_test_rom_fpga_tests_cw310
+      - execute_rom_fpga_tests_cw310
+      - execute_rom_ext_fpga_tests_cw310
+      - execute_sival_fpga_tests_cw310
+      - execute_sival_rom_ext_fpga_tests_cw310
+      - execute_manuf_fpga_tests_cw310
+      - execute_test_rom_fpga_tests_cw340
+      - execute_rom_fpga_tests_cw340
+      - execute_rom_ext_fpga_tests_cw340
+      - execute_sival_fpga_tests_cw340
+      - execute_sival_rom_ext_fpga_tests_cw340
+      - execute_manuf_fpga_tests_cw340
+
 - job: deploy_release_artifacts
   displayName: Package & deploy release
   pool:
