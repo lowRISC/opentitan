@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:opentitan_test.bzl", "opentitan_functest")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -76,6 +77,7 @@ cc_library(
         ":keymgr_binding",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/sigverify:ecdsa_p256_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
     ],
@@ -157,9 +159,26 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:otbn",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:dbg_print",
         "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
+    ],
+)
+
+opentitan_functest(
+    name = "otbn_boot_services_functest",
+    srcs = ["otbn_boot_services_functest.c"],
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    deps = [
+        ":otbn_boot_services",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/otbn/crypto:boot",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
     ],
 )
 

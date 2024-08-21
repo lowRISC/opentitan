@@ -30,7 +30,8 @@ class OtbnTest : public rom_test::RomTest {
    * @param err_bits Error bits to be returned.
    * @param status   Status of OTBN to be returned after the command is done.
    */
-  void ExpectCmdRun(otbn_cmd_t cmd, uint32_t err_bits, otbn_status_t status) {
+  void ExpectCmdRun(sc_otbn_cmd_t cmd, uint32_t err_bits,
+                    sc_otbn_status_t status) {
     EXPECT_ABS_WRITE32(base_ + OTBN_INTR_STATE_REG_OFFSET,
                        {
                            {OTBN_INTR_COMMON_DONE_BIT, 1},
@@ -50,7 +51,7 @@ class OtbnTest : public rom_test::RomTest {
     EXPECT_ABS_READ32(base_ + OTBN_ERR_BITS_REG_OFFSET, err_bits);
     EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, status);
 
-    if (err_bits == err_bits_ok_ && status == kOtbnStatusIdle) {
+    if (err_bits == err_bits_ok_ && status == kScOtbnStatusIdle) {
       EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, status);
     }
   }
@@ -69,103 +70,106 @@ TEST_F(ExecuteTest, ExecuteSuccess) {
   static_assert(OTBN_IMEM_SIZE_BYTES >= 8, "OTBN IMEM size too small.");
 
   // Read twice for hardening.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
 
   EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  ExpectCmdRun(kOtbnCmdExecute, err_bits_ok_, kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdExecute, err_bits_ok_, kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_execute(), kErrorOk);
+  EXPECT_EQ(sc_otbn_execute(), kErrorOk);
 }
 
 TEST_F(ExecuteTest, ExecuteError) {
   // Read twice for hardening.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
 
   EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
   // Nonzero error bits.
-  ExpectCmdRun(kOtbnCmdExecute, 1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
-               kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdExecute, 1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
+               kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_execute(), kErrorOtbnExecutionFailed);
+  EXPECT_EQ(sc_otbn_execute(), kErrorOtbnExecutionFailed);
 }
 
 TEST_F(ExecuteTest, ExecuteBusy) {
   // Read twice for hardening.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
 
   EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x01);
 
   // Return a busy status after the `done` interrupt.
-  ExpectCmdRun(kOtbnCmdExecute, err_bits_ok_, kOtbnStatusBusyExecute);
+  ExpectCmdRun(kScOtbnCmdExecute, err_bits_ok_, kScOtbnStatusBusyExecute);
 
-  EXPECT_EQ(otbn_execute(), kErrorOtbnExecutionFailed);
+  EXPECT_EQ(sc_otbn_execute(), kErrorOtbnExecutionFailed);
 }
 
 TEST_F(ExecuteTest, ExecuteBlockUntilIdle) {
   // Test assumption.
   static_assert(OTBN_IMEM_SIZE_BYTES >= 8, "OTBN IMEM size too small.");
 
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusySecWipeDmem);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusySecWipeDmem);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET,
+                    kScOtbnStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET,
+                    kScOtbnStatusBusySecWipeDmem);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET,
+                    kScOtbnStatusBusySecWipeDmem);
 
   // Read twice for hardening.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
 
   EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
 
-  ExpectCmdRun(kOtbnCmdExecute, err_bits_ok_, kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdExecute, err_bits_ok_, kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_execute(), kErrorOk);
+  EXPECT_EQ(sc_otbn_execute(), kErrorOk);
 }
 
 class IsBusyTest : public OtbnTest {};
 
 TEST_F(IsBusyTest, Success) {
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_busy_wait_for_done(), kErrorOk);
+  EXPECT_EQ(sc_otbn_busy_wait_for_done(), kErrorOk);
 }
 
 class ImemSecWipeTest : public OtbnTest {};
 
 TEST_F(ImemSecWipeTest, Success) {
-  ExpectCmdRun(kOtbnCmdSecWipeImem, err_bits_ok_, kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdSecWipeImem, err_bits_ok_, kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_imem_sec_wipe(), kErrorOk);
+  EXPECT_EQ(sc_otbn_imem_sec_wipe(), kErrorOk);
 }
 
 TEST_F(ImemSecWipeTest, Failure) {
-  ExpectCmdRun(kOtbnCmdSecWipeImem, 1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
-               kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdSecWipeImem, 1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
+               kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_imem_sec_wipe(), kErrorOtbnSecWipeImemFailed);
+  EXPECT_EQ(sc_otbn_imem_sec_wipe(), kErrorOtbnSecWipeImemFailed);
 }
 
 class DmemSecWipeTest : public OtbnTest {};
 
 TEST_F(DmemSecWipeTest, Success) {
-  ExpectCmdRun(kOtbnCmdSecWipeDmem, err_bits_ok_, kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdSecWipeDmem, err_bits_ok_, kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_dmem_sec_wipe(), kErrorOk);
+  EXPECT_EQ(sc_otbn_dmem_sec_wipe(), kErrorOk);
 }
 
 TEST_F(DmemSecWipeTest, Failure) {
-  ExpectCmdRun(kOtbnCmdSecWipeDmem, 1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
-               kOtbnStatusIdle);
+  ExpectCmdRun(kScOtbnCmdSecWipeDmem, 1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
+               kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_dmem_sec_wipe(), kErrorOtbnSecWipeDmemFailed);
+  EXPECT_EQ(sc_otbn_dmem_sec_wipe(), kErrorOtbnSecWipeDmemFailed);
 }
 
 class DmemWriteTest : public OtbnTest {};
@@ -175,14 +179,14 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   static_assert(OTBN_DMEM_SIZE_BYTES >= 8, "OTBN DMEM size too small.");
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
-  otbn_addr_t dest_addr = 0;
+  sc_otbn_addr_t dest_addr = 0;
 
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
                      test_data[1]);
 
-  EXPECT_EQ(otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
+  EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
 
 TEST_F(DmemWriteTest, SuccessWithOffset) {
@@ -190,21 +194,21 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
   static_assert(OTBN_DMEM_SIZE_BYTES >= 12, "OTBN DMEM size too small.");
 
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
-  otbn_addr_t dest_addr = 4;
+  sc_otbn_addr_t dest_addr = 4;
 
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
                      test_data[1]);
 
-  EXPECT_EQ(otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
+  EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
 
 TEST_F(DmemWriteTest, FailureOutOfRange) {
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
-  otbn_addr_t dest_addr = OTBN_DMEM_SIZE_BYTES;
+  sc_otbn_addr_t dest_addr = OTBN_DMEM_SIZE_BYTES;
 
-  EXPECT_EQ(otbn_dmem_write(2, test_data.data(), dest_addr),
+  EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr),
             kErrorOtbnBadOffsetLen);
 }
 
@@ -212,18 +216,18 @@ TEST_F(DmemWriteTest, FailureOverflowNumWords) {
   // Try to trigger an integer overflow with `num_words`.
   size_t num_words =
       (std::numeric_limits<size_t>::max() / sizeof(uint32_t)) + 1;
-  otbn_addr_t dest_addr = 0;
+  sc_otbn_addr_t dest_addr = 0;
 
-  EXPECT_EQ(otbn_dmem_write(num_words, NULL, dest_addr),
+  EXPECT_EQ(sc_otbn_dmem_write(num_words, NULL, dest_addr),
             kErrorOtbnBadOffsetLen);
 }
 
 TEST_F(DmemWriteTest, FailureOverflowOffset) {
   // Try to trigger an integer overflow with `dest_addr`.
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
-  otbn_addr_t dest_addr = std::numeric_limits<uint32_t>::max();
+  sc_otbn_addr_t dest_addr = std::numeric_limits<uint32_t>::max();
 
-  EXPECT_EQ(otbn_dmem_write(test_data.size(), test_data.data(), dest_addr),
+  EXPECT_EQ(sc_otbn_dmem_write(test_data.size(), test_data.data(), dest_addr),
             kErrorOtbnBadOffsetLen);
 }
 
@@ -239,8 +243,8 @@ TEST_F(DmemReadTest, SuccessWithoutOffset) {
 
   std::array<uint32_t, 2> test_data = {0};
 
-  otbn_addr_t src_addr = 0;
-  EXPECT_EQ(otbn_dmem_read(2, src_addr, test_data.data()), kErrorOk);
+  sc_otbn_addr_t src_addr = 0;
+  EXPECT_EQ(sc_otbn_dmem_read(2, src_addr, test_data.data()), kErrorOk);
   EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 
@@ -253,8 +257,8 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
 
   std::array<uint32_t, 2> test_data = {0};
 
-  otbn_addr_t src_addr = 4;
-  EXPECT_EQ(otbn_dmem_read(2, src_addr, test_data.data()), kErrorOk);
+  sc_otbn_addr_t src_addr = 4;
+  EXPECT_EQ(sc_otbn_dmem_read(2, src_addr, test_data.data()), kErrorOk);
   EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 
@@ -263,8 +267,8 @@ class OtbnAppTest : public OtbnTest {};
 TEST_F(OtbnAppTest, OtbnLoadAppSuccess) {
   std::array<uint32_t, 2> imem_data = {0x01234567, 0x89abcdef};
   std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
-  otbn_addr_t dmem_data_offset = 0x12;
-  otbn_app_t app = {
+  sc_otbn_addr_t dmem_data_offset = 0x12;
+  sc_otbn_app_t app = {
       .imem_start = imem_data.data(),
       .imem_end = imem_data.data() + imem_data.size(),
       .dmem_data_start = dmem_data.data(),
@@ -278,22 +282,24 @@ TEST_F(OtbnAppTest, OtbnLoadAppSuccess) {
   static_assert(OTBN_IMEM_SIZE_BYTES >= sizeof(uint32_t) * imem_data.size(),
                 "OTBN IMEM size too small");
 
-  // `otbn_busy_wait_for_done` - begin with busy to ensure we wait until idle.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusyExecute);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusBusySecWipeDmem);
+  // `sc_otbn_busy_wait_for_done` - begin with busy to ensure we wait until
+  // idle.
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusBusyExecute);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET,
+                    kScOtbnStatusBusySecWipeDmem);
   // Read twice for hardening.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  // `otbn_dmem_sec_wipe`
-  ExpectCmdRun(kOtbnCmdSecWipeDmem, err_bits_ok_, kOtbnStatusIdle);
-  // `otbn_imem_sec_wipe`
-  ExpectCmdRun(kOtbnCmdSecWipeImem, err_bits_ok_, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  // `sc_otbn_dmem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeDmem, err_bits_ok_, kScOtbnStatusIdle);
+  // `sc_otbn_imem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeImem, err_bits_ok_, kScOtbnStatusIdle);
   // `otbn_imem_write`
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, imem_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + sizeof(uint32_t),
                      imem_data[1]);
-  // `otbn_dmem_write`
+  // `sc_otbn_dmem_write`
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dmem_data_offset,
                      dmem_data[0]);
@@ -301,15 +307,15 @@ TEST_F(OtbnAppTest, OtbnLoadAppSuccess) {
       base_ + OTBN_DMEM_REG_OFFSET + dmem_data_offset + sizeof(uint32_t),
       dmem_data[1]);
 
-  EXPECT_EQ(otbn_load_app(app), kErrorOk);
+  EXPECT_EQ(sc_otbn_load_app(app), kErrorOk);
 }
 
 TEST_F(OtbnAppTest, OtbnLoadInvalidAppEmptyImem) {
   // Create an invalid app with an empty IMEM range.
   std::array<uint32_t, 0> imem_data = {};
   std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
-  otbn_addr_t dmem_data_offset = 0x12;
-  otbn_app_t app = {
+  sc_otbn_addr_t dmem_data_offset = 0x12;
+  sc_otbn_app_t app = {
       .imem_start = imem_data.data(),
       .imem_end = imem_data.data() + imem_data.size(),
       .dmem_data_start = dmem_data.data(),
@@ -323,7 +329,7 @@ TEST_F(OtbnAppTest, OtbnLoadInvalidAppEmptyImem) {
   static_assert(OTBN_IMEM_SIZE_BYTES >= sizeof(uint32_t) * imem_data.size(),
                 "OTBN IMEM size too small");
 
-  EXPECT_EQ(otbn_load_app(app), kErrorOtbnInvalidArgument);
+  EXPECT_EQ(sc_otbn_load_app(app), kErrorOtbnInvalidArgument);
 }
 
 TEST_F(OtbnAppTest, OtbnLoadInvalidAppImemOutOfRange) {
@@ -331,8 +337,8 @@ TEST_F(OtbnAppTest, OtbnLoadInvalidAppImemOutOfRange) {
   std::array<uint32_t, (OTBN_IMEM_SIZE_BYTES / sizeof(uint32_t)) + 1>
       imem_data = {0};
   std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
-  otbn_addr_t dmem_data_offset = 0x12;
-  otbn_app_t app = {
+  sc_otbn_addr_t dmem_data_offset = 0x12;
+  sc_otbn_app_t app = {
       .imem_start = imem_data.data(),
       .imem_end = imem_data.data() + imem_data.size(),
       .dmem_data_start = dmem_data.data(),
@@ -341,14 +347,14 @@ TEST_F(OtbnAppTest, OtbnLoadInvalidAppImemOutOfRange) {
   };
 
   // Read twice for hardening.
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kOtbnStatusIdle);
-  // `otbn_dmem_sec_wipe`
-  ExpectCmdRun(kOtbnCmdSecWipeDmem, err_bits_ok_, kOtbnStatusIdle);
-  // `otbn_imem_sec_wipe`
-  ExpectCmdRun(kOtbnCmdSecWipeImem, err_bits_ok_, kOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  // `sc_otbn_dmem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeDmem, err_bits_ok_, kScOtbnStatusIdle);
+  // `sc_otbn_imem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeImem, err_bits_ok_, kScOtbnStatusIdle);
 
-  EXPECT_EQ(otbn_load_app(app), kErrorOtbnBadOffsetLen);
+  EXPECT_EQ(sc_otbn_load_app(app), kErrorOtbnBadOffsetLen);
 }
 
 class OtbnWriteTest : public OtbnTest {};
@@ -368,7 +374,7 @@ TEST_F(OtbnWriteTest, Success) {
       base_ + OTBN_DMEM_REG_OFFSET + kDestAddr + sizeof(uint32_t),
       test_data[1]);
 
-  EXPECT_EQ(otbn_dmem_write(2, test_data.data(), kDestAddr), kErrorOk);
+  EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), kDestAddr), kErrorOk);
 }
 
 class OtbnReadTest : public OtbnTest {};
@@ -386,7 +392,7 @@ TEST_F(OtbnReadTest, Success) {
   EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + kSrcAddr + sizeof(uint32_t),
                     0xabcdef01);
 
-  EXPECT_EQ(otbn_dmem_read(2, kSrcAddr, test_data.data()), kErrorOk);
+  EXPECT_EQ(sc_otbn_dmem_read(2, kSrcAddr, test_data.data()), kErrorOk);
   EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 }  // namespace

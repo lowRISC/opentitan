@@ -33,27 +33,28 @@ rom_error_t otbn_boot_app_load(void);
  * Generate an attestation public key from a keymgr-derived secret.
  *
  * This routine triggers the key manager to sideload key material into OTBN,
- * and also takes in an extra seed to XOR with the key material. The final
+ * and also loads in an extra seed to XOR with the key material. The final
  * private key is:
  *   d = (additional_seed ^ keymgr_seed) mod n
  * ...where n is the P256 curve order. The public key is d*G, where G is the
  * P256 base point.
  *
- * The `additional_seed` is expected to be the output from a specially seeded
- * DRBG. It must be fully independent from the key manager seed.
+ * The extra seed is expected to be the output from a specially seeded DRBG, and
+ * is provisioned into flash at manufacturing time. It must be fully independent
+ * from the key manager seed.
  *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param additional_seed Seed material from DRBG.
+ * @param additional_seed The attestation key generation seed to load.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
-    const attestation_seed_t *additional_seed,
-    keymgr_diversification_t diversification,
+    attestation_key_seed_t additional_seed,
+    sc_keymgr_diversification_t diversification,
     attestation_public_key_t *public_key);
 
 /**
@@ -66,14 +67,14 @@ rom_error_t otbn_boot_attestation_keygen(
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param additional_seed Seed material from DRBG.
+ * @param additional_seed The attestation key generation seed to load.
  * @param diversification Salt and version information for key manager.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
-    const attestation_seed_t *additional_seed,
-    keymgr_diversification_t diversification);
+    attestation_key_seed_t additional_seed,
+    sc_keymgr_diversification_t diversification);
 
 /**
  * Clears any saved attestation key from OTBN's scratchpad.
@@ -97,6 +98,10 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  * caller should hash the certificate with SHA-256 before calling this
  * function.
  *
+ * Note that the digest gets interpreted by OTBN in little-endian order. If the
+ * HMAC block has not been set to produce little-endian digests, then the
+ * digest bytes should be reversed before they are passed here.
+ *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
@@ -109,27 +114,27 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
                                           attestation_signature_t *sig);
 
 /**
- * Computes the modular exponentiation of an RSA signature on OTBN.
+ * Computes an ECDSA-P256 signature verification on OTBN.
  *
- * Given an RSA public key and sig, this function computes sig^e mod n using
- * Montgomery multiplication, where
- * - sig is an RSA signature,
- * - e and n are the exponent and the modulus of the key, respectively.
- *
- * The key exponent is always 65537; no other exponents are supported.
+ * May be used for code signatures as well as attestation signatures. Returns
+ * the recovered `r` value in `result`. The signature is valid if this `r`
+ * value matches the `r` component of the signature, but the caller is
+ * responsible for the final comparison.
  *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param key An RSA public key.
- * @param sig Buffer that holds the signature, little-endian.
- * @param[out] result Buffer to write the result to, little-endian.
+ * @param key An ECDSA-P256 public key.
+ * @param sig An ECDSA-P256 signature.
+ * @param digest Message digest to check against.
+ * @param[out] recovered_r Buffer for the recovered `r` value.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_boot_sigverify_mod_exp(const sigverify_rsa_key_t *key,
-                                        const sigverify_rsa_buffer_t *sig,
-                                        sigverify_rsa_buffer_t *result);
+rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
+                                const attestation_signature_t *sig,
+                                const hmac_digest_t *digest,
+                                uint32_t *recovered_r);
 
 #ifdef __cplusplus
 }  // extern "C"

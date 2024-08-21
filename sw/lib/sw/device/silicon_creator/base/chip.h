@@ -21,6 +21,10 @@
 #define CHIP_MANIFEST_VERSION_MINOR_1 0x6c47
 #define CHIP_MANIFEST_VERSION_MAJOR_1 0x71c3
 
+// TODO(moidx): Update to a valid number once we figure out a manifest
+// versioning scheme.
+#define CHIP_MANIFEST_VERSION_MAJOR_2 0x0002
+
 /**
  * Number of entries in the manifest extensions table.
  */
