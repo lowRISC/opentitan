@@ -39,6 +39,13 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
       seq = create_seq_by_name(cur_vseq_name);
       `downcast(sram_vseq, seq)
 
+      // Wait a few cycles until the memory init request is finished. Without
+      // this wait, we could land up resetting the SRAM controller when the last
+      // write of the memory init is in the write pipeline. This could result in
+      // having an uninitialized memory.
+      if (i == 0) begin
+        cfg.clk_rst_vif.wait_clks(2);
+      end
       sram_vseq.do_apply_reset = (do_apply_reset) ? $urandom_range(0, 1) : 0;
 
       sram_vseq.set_sequencer(p_sequencer);
