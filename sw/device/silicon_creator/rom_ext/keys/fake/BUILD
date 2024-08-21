@@ -8,17 +8,20 @@ cc_library(
     name = "fake",
     srcs = [
         "sigverify_rsa_keys_fake.c",
+        "sigverify_spx_keys_fake.c",
         "//sw/device/silicon_creator/rom_ext:sigverify_keys.h",
     ],
     hdrs = [
         "rom_ext_dev_key_0_rsa_3072_exp_f4.h",
         "rom_ext_prod_key_0_rsa_3072_exp_f4.h",
         "rom_ext_test_key_0_rsa_3072_exp_f4.h",
+        "rom_ext_test_spx_0_key.h",
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 

@@ -264,8 +264,28 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
 
   uint32_t flash_exec = 0;
-  return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
-                              lc_state, &flash_exec);
+  RETURN_IF_ERROR(sigverify_rsa_verify(&manifest->rsa_signature, key,
+                                       &act_digest, lc_state, &flash_exec));
+
+  const manifest_ext_spx_key_t *ext_spx_key;
+  RETURN_IF_ERROR(manifest_ext_get_spx_key(manifest, &ext_spx_key));
+
+  const sigverify_spx_key_t *spx_key;
+  RETURN_IF_ERROR(sigverify_spx_key_get(
+      sigverify_spx_key_id_get(&ext_spx_key->key), &spx_key));
+
+  const manifest_ext_spx_signature_t *ext_spx_signature;
+  RETURN_IF_ERROR(manifest_ext_get_spx_signature(manifest, &ext_spx_signature));
+
+  // Owner's image SPX signing mode is fixed to pre-hashed.
+  sigverify_spx_config_id_t spx_config = kSigverifySpxConfigIdSha2128sPrehash;
+  const sigverify_spx_signature_t *spx_signature =
+      &ext_spx_signature->signature;
+
+  return sigverify_spx_verify(
+      spx_signature, spx_key, spx_config, kLcStateDev,
+      &usage_constraints_from_hw, sizeof(usage_constraints_from_hw), NULL, 0,
+      digest_region.start, digest_region.length, &act_digest, &flash_exec);
 }
 
 /**
