@@ -1,0 +1,63 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for an FPGA test job verification.
+# This script downloads the target pattern file from all FPGA jobs that are
+# dependencies and performs some checks on them.
+
+parameters:
+# List of all FPGA jobs
+- name: 'fpga_jobs'
+  type: object
+# Test tag filter to find all FPGA tests
+- name: 'fpga_tags'
+  type: string
+
+jobs:
+- job: verify_fpga_jobs
+  displayName: Verify FPGA jobs
+  pool:
+    vmImage: ubuntu-20.04
+  dependsOn: ${{ parameters.fpga_jobs }}
+  # Run even if dependencies failed: some flaky tests might cause the job to fail
+  # but we still want to verify the FPGA jobs.
+  condition: succeededOrFailed()
+  steps:
+  - ${{ each job in parameters.fpga_jobs }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: current
+        targetPath: '$(Pipeline.Workspace)/verify_fpga_jobs/${{ job }}'
+        artifact: "${{ job }}"
+        patterns: target_pattern_file.txt
+      displayName: Download target pattern files from job ${{ job }}
+  - bash: |
+      ls -R $(Pipeline.Workspace)/verify_fpga_jobs
+  - bash: |
+      # Find and display all duplicates:
+      # - for each target file and each line, print '<job_name> <target>'
+      # - then sort by the target name
+      # - then keep all duplicated lines
+      pattern_files=$(find $(Pipeline.Workspace)/verify_fpga_jobs -name target_pattern_file.txt)
+      awk '{ print(gensub(/.*\/(.+)\/target_pattern_file.txt/, "\\1", "g", FILENAME) " " $0) }' $pattern_files | sort -k2 | uniq -D -f1 > duplicates.txt
+      if [ -s duplicates.txt ]; then
+        echo "The following tests ran in two or more jobs:"
+        cat duplicates.txt
+        false
+      fi
+    displayName: Checking for duplicate test runs
+  - bash: |
+      # Find and display tests that did not run:
+      ./ci/scripts/run-bazel-test-query.sh all_fpga.txt "${{ parameters.fpga_tags }}",-manual,-broken,-skip_in_ci //... @manufacturer_test_hooks//...
+      sort -o all_fpga.txt all_fpga.txt
+      pattern_files=$(find $(Pipeline.Workspace)/verify_fpga_jobs -name target_pattern_file.txt)
+      sort $pattern_files > all_run.txt
+      comm -23 all_fpga.txt all_run.txt > missing.txt
+      if [ -s missing.txt ]; then
+        echo "The following tests did not run in any job:"
+        cat missing.txt
+        false
+      fi
+    displayName: Checking for missing test runs
+    condition: succeededOrFailed()
