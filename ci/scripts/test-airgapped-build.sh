@@ -20,26 +20,15 @@ sudo ip netns exec airgapped ip addr add 127.0.0.1/8 dev lo
 sudo ip netns exec airgapped ip link set dev lo up
 
 # Enter the network namespace and perform several builds.
-sudo ip netns exec airgapped sudo -u "$USER" bash -e -x -c \
-  "export BAZEL_BITSTREAMS_CACHE=$(pwd)/bazel-airgapped/bitstreams-cache;
-  export BITSTREAM=\"--offline latest\";
-  export BAZEL_PYTHON_WHEELS_REPO=$(pwd)/bazel-airgapped/ot_python_wheels;
-  TARGET_PATTERN_FILE=\$(mktemp)
-  echo //sw/device/silicon_creator/rom:mask_rom > \"\${TARGET_PATTERN_FILE}\"
-  bazel-airgapped/bazel cquery \
-    --distdir=$(pwd)/bazel-airgapped/bazel-distdir \
-    --repository_cache=$(pwd)/bazel-airgapped/bazel-cache \
-    --noinclude_aspects \
-    --output=starlark \
-    --starlark:expr='\"-{}\".format(target.label)' \
-    --define DISABLE_VERILATOR_BUILD=true \
-    -- \"rdeps(//..., kind(bitstream_splice, //...))\" \
-    >> \"\${TARGET_PATTERN_FILE}\"
-  echo Building target pattern:
-  cat \"\${TARGET_PATTERN_FILE}\"
-  bazel-airgapped/bazel build \
-    --distdir=$(pwd)/bazel-airgapped/bazel-distdir \
-    --repository_cache=$(pwd)/bazel-airgapped/bazel-cache \
-    --define DISABLE_VERILATOR_BUILD=true \
-    --target_pattern_file=\"\${TARGET_PATTERN_FILE}\""
+sudo ip netns exec airgapped sudo -u "$USER" \
+  env \
+    BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache"   \
+    BAZEL_PYTHON_WHEELS_REPO="${PWD}/bazel-airgapped/ot_python_wheels" \
+    BITSTREAM="--offline latest"                                       \
+  "${PWD}/bazel-airgapped/bazel" build                                  \
+    --distdir="${PWD}/bazel-airgapped/bazel-distdir"                   \
+    --repository_cache="${PWD}/bazel-airgapped/bazel-cache"            \
+    --define DISABLE_VERILATOR_BUILD=true                              \
+    //sw/device/silicon_creator/rom:mask_rom
+
 exit 0
