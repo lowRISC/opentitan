@@ -186,8 +186,6 @@ static const corruption_word_t kWords2Corrupt[] = {
 
     // Code corruption offsets.
     {.offset = kCodeFirstWordOffset, .description = "code_first_word"},
-    {.offset = kCodeMiddleWordOffset, .description = "code_middle_word"},
-    {.offset = kCodeLastWordOffset, .description = "code_last_word"},
 };
 
 static void init_peripherals(void) {

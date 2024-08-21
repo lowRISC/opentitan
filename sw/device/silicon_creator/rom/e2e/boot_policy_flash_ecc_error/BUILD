@@ -22,7 +22,6 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
@@ -87,17 +86,13 @@ FLASH_ECC_ERROR_CAUSES = [
         "cause": "manifest_extension_spx_signature",
         "id": 12,
     },
+    # We only test corrupting the first flash word since this is likely not in
+    # the range of test code that needs to execute successfully to drive the
+    # test, but still exercising the scenario of a flash corruption happening
+    # in the code region.
     {
         "cause": "code_first_word",
         "id": 13,
-    },
-    {
-        "cause": "code_middle_word",
-        "id": 14,
-    },
-    {
-        "cause": "code_last_word",
-        "id": 15,
     },
 ]
 
