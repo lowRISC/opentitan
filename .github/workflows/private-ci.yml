@@ -1,0 +1,46 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Private CI
+
+on:
+  push:
+    branches-ignore:
+      - "backport-*"
+    tags:
+      - "*"
+  pull_request_target:
+    branches:
+      - "*"
+
+permissions:
+  contents: write # For repository dispatch
+
+jobs:
+  trigger:
+    name: Trigger Private CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Private CI
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const payload = {
+              sha: context.eventName === 'pull_request_target' ? context.payload.pull_request.head.sha : context.sha,
+              pull_request: context.issue.number,
+              inputs: {
+                // For push events, also send branch name (for batching)
+                branch: context.eventName === 'pull_request_target' ? undefined : context.ref,
+                run_name: context.eventName === 'pull_request_target' ? context.payload.pull_request.title : context.payload.head_commit.message.split('\n')[0],
+              },
+            };
+            await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'cross-repo-ci',
+              client_payload: {
+                ...payload,
+                target: `${context.repo.owner}/opentitan-private-ci/master/private-ci-integrated.yml`,
+              }
+            });
