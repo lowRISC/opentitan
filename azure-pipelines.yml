@@ -131,6 +131,7 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
+  - bash: util/prep-bazel-airgapped-build.sh
   - bash: ci/scripts/test-airgapped-build.sh
 
 - job: slow_lints

@@ -142,8 +142,8 @@ rust_library(
         "src/spiflash/mod.rs",
         "src/spiflash/sfdp.rs",
         "src/test_utils/bitbanging/i2c.rs",
-        "src/test_utils/bitbanging/spi.rs",
         "src/test_utils/bitbanging/mod.rs",
+        "src/test_utils/bitbanging/spi.rs",
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",
         "src/test_utils/epmp.rs",
@@ -330,7 +330,7 @@ rust_library(
         "@crate_index//:thiserror",
         "@crate_index//:typetag",
         "@crate_index//:zerocopy",
-        "@lowrisc_serde_annotate//serde_annotate",
+        "@crate_index//:serde_annotate",
     ],
 )
 

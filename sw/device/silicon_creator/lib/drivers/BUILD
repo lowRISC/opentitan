@@ -182,7 +182,7 @@ cc_test(
     srcs = ["flash_ctrl_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":flash_ctrl"),
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:str_format",
         "@googletest//:gtest_main",
     ],
 )

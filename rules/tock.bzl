@@ -12,7 +12,6 @@ load(
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
 )
-load("@tockloader_deps//:requirements.bzl", "entry_point")
 
 TockApplication = provider(
     fields = {
@@ -98,7 +97,7 @@ opt_mode = transition(
 )
 
 def _tock_image_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx).cc
+    cc_toolchain = find_cc_toolchain(ctx)
 
     kernel_binary = ctx.actions.declare_file("{}_kernel.bin".format(ctx.attr.name))
     images = [ctx.actions.declare_file("{}0.bin".format(ctx.attr.name))]
@@ -182,10 +181,7 @@ tock_image = rv_rule(
         "debug": attr.bool(default = True, doc = "Tockloader debug output"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_tockloader": attr.label(
-            default = entry_point(
-                pkg = "tockloader",
-                script = "tockloader",
-            ),
+            default = "//third_party/tock:tockloader",
             executable = True,
             cfg = "exec",
         ),

@@ -4,8 +4,6 @@
 
 load("@//rules:repo.bzl", "bare_repository", "http_archive_or_local")
 load("@//rules:rust.bzl", "crate_build")
-load("@python3//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_install")
 
 # Exports the kernel_layout.ld file so it can be used in opentitan rules.
 _KERNEL_LAYOUT = """
@@ -36,10 +34,9 @@ filegroup(
 )
 """
 
-def tock_repos(tock = None, libtock = None, elf2tab = None):
+def tock_repos(elf2tab = None):
     bare_repository(
         name = "tock",
-        local = tock,
         strip_prefix = "tock-e81987f6a41e9b92f60fda1d5283f46b3cb597b5",
         url = "https://github.com/tock/tock/archive/e81987f6a41e9b92f60fda1d5283f46b3cb597b5.tar.gz",
         sha256 = "b7c239f3bd7e7727eee99814661424e1e50587fe9068cec1943a7bb6743ed777",
@@ -78,7 +75,7 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                     "//kernel",
                     "//libraries/enum_primitive",
                     "//libraries/tickv",
-                    "@tock_index//:ghash",
+                    "@crate_index//:ghash",
                 ],
             ),
             "capsules/core/BUILD": crate_build(
@@ -151,7 +148,6 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
 
     bare_repository(
         name = "libtock",
-        local = libtock,
         strip_prefix = "libtock-rs-a2c6ad80648e3ba073e7433b4330706df052a6ae",
         url = "https://github.com/tock/libtock-rs/archive/a2c6ad80648e3ba073e7433b4330706df052a6ae.tar.gz",
         sha256 = "888d1925cd760e818385d13187286d6b87f763c548a4dc1bb26e55786dc95636",
@@ -233,7 +229,7 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                 crate_name = "libtock_{name}",
                 deps = [
                     "//platform",
-                    "@tock_index//:libm",
+                    "@crate_index//:libm",
                 ],
             ),
             "apis/proximity/BUILD": crate_build(
@@ -296,10 +292,4 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
         sha256 = "b8b2ec7d8b9d052667d34190f98a0f5e69a0ba93ce69f00f2fdda7b5e241b963",
         strip_prefix = "elf2tab-2f0e2f0ef01e37799850d1b12f48b93a0b32a203",
         build_file = Label("//third_party/tock:BUILD.elf2tab.bazel"),
-    )
-
-    pip_install(
-        name = "tockloader_deps",
-        python_interpreter_target = interpreter,
-        requirements = "//:third_party/tock/tockloader_requirements.txt",
     )

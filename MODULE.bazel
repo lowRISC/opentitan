@@ -1,0 +1,210 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+module(name = "lowrisc_opentitan")
+
+bazel_dep(name = "abseil-cpp", version = "20240116.2")
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
+bazel_dep(name = "googletest", version = "1.14.0")
+bazel_dep(name = "lowrisc_bazel_release", version = "0.1.0")
+bazel_dep(name = "lowrisc_misc_linters")
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+bazel_dep(name = "rules_fuzzing", version = "0.5.2")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_python", version = "0.34.0")
+bazel_dep(name = "rules_rust", version = "0.47.1")
+bazel_dep(name = "rules_shellcheck", version = "0.3.3")
+bazel_dep(name = "toolchains_llvm", version = "1.0.0")
+
+git_override(
+    module_name = "lowrisc_bazel_release",
+    commit = "89f1f10ccc2eb61127e0a57718b1137688d46109",
+    remote = "https://github.com/lowRISC/bazel-release",
+)
+
+git_override(
+    module_name = "lowrisc_misc_linters",
+    commit = "aed701007ebc25df45e50f161eca73d37739df45",
+    remote = "https://github.com/lowRISC/misc-linters",
+)
+
+git_override(
+    module_name = "rules_rust",
+    commit = "5b4111da6393a7639a182c011a9fad92c451891a",
+    remote = "https://github.com/bazelbuild/rules_rust",
+)
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    extra_target_triples = [
+        "riscv32imc-unknown-none-elf",
+    ],
+    versions = [
+        "1.71.1",
+        "nightly/2023-07-30",
+    ],
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+crate = use_extension("@rules_rust//crate_universe:docs_bzlmod.bzl", "crate")
+crate.from_cargo(
+    name = "crate_index",
+    cargo_lockfile = "//third_party/rust:Cargo.lock",
+    manifests = [
+        "//third_party/rust:Cargo.toml",
+    ],
+)
+crate.annotation(
+    crate = "libudev-sys",
+    patch_args = ["-p1"],
+    patches = ["@//third_party/rust/patches:libudev-sys-0.1.4.patch"],
+)
+crate.annotation(
+    crate = "mdbook",
+    gen_binaries = ["mdbook"],
+    patch_args = ["-p1"],
+    patches = ["@//third_party/rust/patches:mdbook-landing-page-links.patch"],
+)
+crate.annotation(
+    crate = "cryptoki",
+    patch_args = ["-p2"],
+    patches = [
+        "@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
+    ],
+)
+crate.annotation(
+    additive_build_file_content = """
+        filegroup(
+            name = "binding_srcs",
+            srcs = [
+                "src/lib.rs",
+                "src/bindings/x86_64-unknown-linux-gnu.rs",
+            ],
+        )
+    """,
+    crate = "cryptoki-sys",
+    extra_aliased_targets = {
+        "cryptoki-sys-binding-srcs": "binding_srcs",
+    },
+)
+crate.annotation(
+    build_script_env = {
+        "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
+        "OPENSSL_STATIC": "1",
+    },
+    build_script_toolchains = ["@//third_party/rust:openssl_pkg_config_path"],
+    crate = "openssl-sys",
+)
+use_repo(crate, "crate_index")
+
+register_toolchains("//third_party/rust:bindgen_toolchain")
+
+# LLVM toolchain used by bindgen (not for device software).
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_versions = {
+        "": "10.0.0",
+    },
+)
+use_repo(llvm, "llvm_toolchain_llvm")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.9",
+    # Required because CI containers currently run as the `root` user.
+    # We lose caching of `.pyc` files.
+    # See <https://github.com/bazelbuild/rules_python/pull/713>.
+    ignore_root_user_error = True,
+)
+use_repo(python, "pythons_hub")
+
+register_toolchains("@pythons_hub//:all")
+
+use_repo(python, python3 = "python_3_9", python3_host = "python_3_9_host")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "ot_python_deps",
+    python_version = "3.9",
+    requirements_lock = "//:python-requirements.txt",
+)
+use_repo(pip, "ot_python_deps")
+pip.parse(
+    hub_name = "tockloader_deps",
+    python_version = "3.9",
+    requirements_lock = "//:third_party/tock/tockloader_requirements.txt",
+)
+use_repo(pip, "tockloader_deps")
+
+tock = use_extension("//third_party/tock:extension.bzl", "tock")
+use_repo(tock, "elf2tab", "libtock", "tock")
+
+bitstreams = use_extension("//rules:extensions.bzl", "bitstreams")
+use_repo(bitstreams, "bitstreams")
+
+nonhermetic = use_extension("//rules:extensions.bzl", "nonhermetic")
+use_repo(nonhermetic, "nonhermetic")
+
+lychee = use_extension("//third_party/lychee:extension.bzl", "lychee")
+use_repo(lychee, "lychee")
+
+openocd = use_extension("//third_party/openocd:extension.bzl", "openocd")
+use_repo(openocd, "openocd")
+
+freertos = use_extension("//third_party/freertos:extension.bzl", "freertos")
+use_repo(freertos, "freertos")
+
+llvm_compiler_rt = use_extension("//third_party/llvm_compiler_rt:extension.bzl", "llvm_compiler_rt")
+use_repo(llvm_compiler_rt, "llvm_compiler_rt")
+
+riscv_compliance = use_extension("//third_party/riscv-compliance:extension.bzl", "riscv_compliance")
+use_repo(riscv_compliance, "riscv-compliance")
+
+coremark = use_extension("//third_party/coremark:extension.bzl", "coremark")
+use_repo(coremark, "coremark")
+
+xkcp = use_extension("//third_party/xkcp:extension.bzl", "xkcp")
+use_repo(xkcp, "xkcp")
+
+hsm = use_extension("//third_party/hsm:extension.bzl", "hsm")
+use_repo(hsm, "cloud_kms_hsm", "sc_hsm", "softhsm2")
+
+nist_cavp_testvectors = use_extension("//third_party/nist_cavp_testvectors:extension.bzl", "nist_cavp_testvectors")
+use_repo(
+    nist_cavp_testvectors,
+    "nist_cavp_aes_gcm",
+    "nist_cavp_aes_kw_sp_800_38f",
+    "nist_cavp_drbg_sp_800_90a_root",
+    "nist_cavp_ecdh_sp_800_56a",
+    "nist_cavp_ecdsa_fips_186_4",
+    "nist_cavp_hmac_fips_198_1",
+    "nist_cavp_rsa_fips_186_3",
+    "nist_cavp_sha2_fips_180_4",
+    "nist_cavp_sha3_fips_202",
+    "nist_cavp_shake_fips_202",
+)
+
+wycheproof = use_extension("//third_party/wycheproof:extension.bzl", "wycheproof")
+use_repo(wycheproof, "wycheproof")
+
+sphincsplus = use_extension("//third_party/sphincsplus:extension.bzl", "sphincsplus")
+use_repo(
+    sphincsplus,
+    "sphincsplus_fips205_ipd",
+    "sphincsplus_sha256_kat",
+    "sphincsplus_shake256_kat",
+)
+
+hyperdebug = use_extension("//third_party/hyperdebug:extension.bzl", "hyperdebug")
+use_repo(hyperdebug, "hyperdebug_firmware")
+
+register_toolchains("//rules/opentitan:localtools")
