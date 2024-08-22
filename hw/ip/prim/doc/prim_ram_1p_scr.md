@@ -2,9 +2,10 @@
 
 # Overview
 
-The scrambling primitive `prim_ram_1p_scr` employs a reduced-round (7 instead of 11) PRINCE block cipher in CTR mode to scramble the data.
+The scrambling primitive `prim_ram_1p_scr` employs a reduced-round (5 or 7 instead of 11) PRINCE block cipher in CTR mode to scramble the data.
 The PRINCE lightweight block cipher has been selected due to its low latency and low area characteristics, see also [prim_prince](./prim_prince.md) for more information on PRINCE.
-The number of rounds is reduced to 7 in order to ease timing pressure and ensure single cycle operation (the number of rounds can always be increased if it turns out that there is enough timing slack).
+In the default configuration, the number of rounds is reduced to 7 in order to ease timing pressure and ensure single cycle operation (the number of rounds can always be increased via the `NumPrinceRoundsHalf` parameter if it turns out that there is enough timing slack).
+To ease timing closure at the top level, the number of rounds used for scrambling the main SRAM and the instruction cache of the Ibex processor core is 5 (`NumPrinceRoundsHalf` = 2).
 
 In [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Counter_(CTR)), the block cipher is used to encrypt a 64bit IV with the scrambling key in order to create a 64bit keystream block that is bitwise XOR'ed with the data in order to transform plaintext into ciphertext and vice versa.
 The IV is assembled by concatenating a nonce with the word address.
