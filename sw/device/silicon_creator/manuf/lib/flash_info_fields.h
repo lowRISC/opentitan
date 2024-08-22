@@ -41,8 +41,6 @@ enum {
   kFlashInfoFieldCdi0KeySeedIdx = 1,
   kFlashInfoFieldCdi1KeySeedIdx = 2,
   kFlashInfoFieldTpmEkKeySeedIdx = 3,
-  kFlashInfoFieldTpmCekKeySeedIdx = 4,
-  kFlashInfoFieldTpmCikKeySeedIdx = 5,
 };
 
 extern const flash_info_field_t kFlashInfoFieldDeviceId;
@@ -58,6 +56,7 @@ extern const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldTpmEkAttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldTpmCekAttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldTpmCikAttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldDevSeedSeed;
 extern const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion;
 
 /**

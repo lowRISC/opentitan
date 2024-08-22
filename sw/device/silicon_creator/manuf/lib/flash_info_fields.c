@@ -99,20 +99,6 @@ const flash_info_field_t kFlashInfoFieldTpmEkAttestationKeySeed = {
     .byte_offset = kFlashInfoFieldTpmEkKeySeedIdx * kAttestationSeedBytes,
 };
 
-const flash_info_field_t kFlashInfoFieldTpmCekAttestationKeySeed = {
-    .partition = 0,
-    .bank = 0,
-    .page = 4,
-    .byte_offset = kFlashInfoFieldTpmCekKeySeedIdx * kAttestationSeedBytes,
-};
-
-const flash_info_field_t kFlashInfoFieldTpmCikAttestationKeySeed = {
-    .partition = 0,
-    .bank = 0,
-    .page = 4,
-    .byte_offset = kFlashInfoFieldTpmCikKeySeedIdx * kAttestationSeedBytes,
-};
-
 const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion = {
     .partition = 0,
     .bank = 0,
