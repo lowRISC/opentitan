@@ -97,7 +97,7 @@ module top_earlgrey #(
   // parameters for edn1
   // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
-  parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
+  parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
