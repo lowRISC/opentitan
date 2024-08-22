@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -91,20 +92,18 @@ static status_t personalize_gen_tpm_ek_certificate(
 }
 
 status_t personalize_extension_pre_cert_endorse(
-    ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    perso_blob_t *perso_blob, cert_flash_info_layout_t *cert_flash_layout,
-    dif_flash_ctrl_state_t *flash_ctrl_handle) {
+    personalize_extension_pre_endorse_t *pre_params) {
   LOG_INFO("Running TPM perso extension ...");
   TRY(peripheral_handles_init());
   TRY(config_and_erase_tpm_certificate_flash_pages());
-  TRY(personalize_gen_tpm_ek_certificate(certgen_inputs, perso_blob,
-                                         cert_flash_layout));
+  TRY(personalize_gen_tpm_ek_certificate(pre_params->certgen_inputs,
+                                         pre_params->perso_blob_to_host,
+                                         pre_params->cert_flash_layout));
   return OK_STATUS();
 }
 
 status_t personalize_extension_post_cert_endorse(
-    ujson_t *uj, perso_blob_t *perso_blob_from_host,
-    cert_flash_info_layout_t *cert_flash_layout) {
+    personalize_extension_post_endorse_t *post_params) {
   /* Empty because it is unused but we still need to link to something. */
   return OK_STATUS();
 }
