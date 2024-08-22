@@ -41,6 +41,15 @@ const flash_info_field_t kFlashInfoFieldAstCalibrationData = {
         OTP_CTRL_PARAM_DEVICE_ID_SIZE + OTP_CTRL_PARAM_MANUF_STATE_SIZE,
 };
 
+const flash_info_field_t kFlashInfoFieldCharacterizationData = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = OTP_CTRL_PARAM_DEVICE_ID_SIZE +
+                   OTP_CTRL_PARAM_MANUF_STATE_SIZE +
+                   kFlashInfoAstCalibrationDataSizeIn32BitWords,
+};
+
 const flash_info_field_t kFlashInfoFieldCreatorSeed = {
     .partition = 0,
     .bank = 0,
