@@ -29,6 +29,7 @@ cc_library(
         "@//sw/device/lib/testing/test_framework:status",
         "@//sw/device/lib/testing/test_framework:ujson_ottf",
         "@//sw/device/silicon_creator/lib/cert",
+        "@//sw/device/silicon_creator/manuf/base:personalize_ext",
     ],
 )
 
@@ -41,6 +42,7 @@ cc_library(
         "@//sw/device/lib/testing/test_framework:status",
         "@//sw/device/lib/testing/test_framework:ujson_ottf",
         "@//sw/device/silicon_creator/lib/cert",
+        "@//sw/device/silicon_creator/manuf/base:personalize_ext",
     ],
 )
 
