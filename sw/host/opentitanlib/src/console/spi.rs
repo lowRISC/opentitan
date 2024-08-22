@@ -25,6 +25,8 @@ impl<'a> SpiConsoleDevice<'a> {
     const SPI_FLASH_READ_BUFFER_SIZE: u32 = 2048;
     const SPI_MAX_DATA_LENGTH: usize = 2036;
     const SPI_FRAME_MAGIC_NUMBER: u32 = 0xa5a5beef;
+    const SPI_FLASH_PAYLOAD_BUFFER_SIZE: usize = 256;
+    const SPI_TX_LAST_CHUNK_MAGIC_ADDRESS: u32 = 0x100;
 
     pub fn new(spi: &'a dyn Target) -> Result<Self> {
         let mut flash = SpiFlash {
@@ -111,5 +113,28 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         }
 
         Ok(i)
+    }
+
+    fn console_write(&self, buf: &[u8]) -> Result<()> {
+        let buf_len: usize = buf.len();
+        let mut written_data_len: usize = 0;
+        while written_data_len < buf_len {
+            let mut write_address = SpiConsoleDevice::SPI_TX_LAST_CHUNK_MAGIC_ADDRESS;
+            let mut data_len: usize = buf_len - written_data_len;
+
+            if data_len > SpiConsoleDevice::SPI_FLASH_PAYLOAD_BUFFER_SIZE {
+                data_len = SpiConsoleDevice::SPI_FLASH_PAYLOAD_BUFFER_SIZE;
+                write_address = 0;
+            }
+
+            self.flash.program(
+                self.spi,
+                write_address,
+                &buf[written_data_len..written_data_len + data_len],
+            )?;
+            written_data_len += data_len;
+        }
+
+        Ok(())
     }
 }
