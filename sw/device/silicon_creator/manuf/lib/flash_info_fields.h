@@ -25,8 +25,10 @@ enum {
    *
    * Number of AST calibration words that will be stored in flash / OTP.
    */
+  kFlashInfoAstCalibrationDataSizeInBytes =
+      AST_REGAL_REG_OFFSET + sizeof(uint32_t),
   kFlashInfoAstCalibrationDataSizeIn32BitWords =
-      (AST_REGAL_REG_OFFSET + sizeof(uint32_t)) / sizeof(uint32_t),
+      kFlashInfoAstCalibrationDataSizeInBytes / sizeof(uint32_t),
 
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kFlashInfoKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
@@ -38,6 +40,7 @@ enum {
 extern const flash_info_field_t kFlashInfoFieldDeviceId;
 extern const flash_info_field_t kFlashInfoFieldManufState;
 extern const flash_info_field_t kFlashInfoFieldAstCalibrationData;
+extern const flash_info_field_t kFlashInfoFieldCharacterizationData;
 extern const flash_info_field_t kFlashInfoFieldCreatorSeed;
 extern const flash_info_field_t kFlashInfoFieldOwnerSeed;
 extern const flash_info_field_t kFlashInfoFieldWaferAuthSecret;
