@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Result};
-use bindgen::perso_tlv_objects;
 
 // Types of objects which can come from the device in the perso blob.
 #[repr(C)]
