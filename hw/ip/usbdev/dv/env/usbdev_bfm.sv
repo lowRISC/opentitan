@@ -590,7 +590,14 @@ class usbdev_bfm extends uvm_component;
         // Process the most recent SETUP/OUT packet and DATA packet together.
         return out_packet(rx_token, data, rsp);
       end
-    end else cancel_out();
+    end else begin
+      // A SETUP packet that would not be received does not result in a LinkOutErr if the DATA
+      // packet is invalid because the OUT Packet Engine does not start accepting it.
+      if (rx_token != null && rx_token.m_pid_type == PidTypeSetupToken &&
+          !rxenable_setup[rx_token.endpoint]) begin
+        rx_token = null;
+      end else cancel_out();
+    end
     return 0;
   endfunction
 

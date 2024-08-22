@@ -667,7 +667,9 @@ class usb20_monitor extends dv_base_monitor #(
         else consecutive_ones_count = 0;
       end
     end
-    if (consecutive_ones_count >= 6) begin
+    // See explanation in `usb20_agent_cfg.sv` => the DUT presently does not detect bit stuffing
+    // violations that occur right at the end of the packet.
+    if (!cfg.rtl_limited_bitstuff_detection && consecutive_ones_count >= 6) begin
       `uvm_info(`gfn, $sformatf("Bit stuffing violation detected in %p at bit %d", packet, i),
                 UVM_LOW)
       valid_stuffing = 0;
