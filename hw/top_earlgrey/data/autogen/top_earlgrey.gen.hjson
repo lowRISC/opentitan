@@ -4760,6 +4760,14 @@
           expose: "true"
           name_top: SramCtrlRetAonInstrExec
         }
+        {
+          name: NumPrinceRoundsHalf
+          desc: Number of PRINCE half rounds for the SRAM scrambling feature
+          type: int
+          default: "3"
+          expose: "true"
+          name_top: SramCtrlRetAonNumPrinceRoundsHalf
+        }
       ]
       inter_signal_list:
       [
@@ -7340,6 +7348,14 @@
           default: "1"
           expose: "true"
           name_top: SramCtrlMainInstrExec
+        }
+        {
+          name: NumPrinceRoundsHalf
+          desc: Number of PRINCE half rounds for the SRAM scrambling feature
+          type: int
+          default: "3"
+          expose: "true"
+          name_top: SramCtrlMainNumPrinceRoundsHalf
         }
       ]
       inter_signal_list:
