@@ -1016,8 +1016,6 @@ endtask
     csr_wr(.ptr(ral.ep_out_enable[0]), .value({NEndpoints{1'b1}}));
     // Enable rx SETUP
     csr_wr(.ptr(ral.rxenable_setup[0]), .value({NEndpoints{1'b1}}));
-    // Clear STALL by default, as a precaution.
-    csr_wr(.ptr(ral.out_stall[0]), .value({NEndpoints{1'b1}}));
   endtask
 
   virtual task configure_setup_trans(bit [3:0] ep);

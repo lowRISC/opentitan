@@ -385,7 +385,7 @@
     {
       name: host_lost
       desc: '''
-            Verify that if link is active (ie. not completely idle) but SOF was not received from
+            Verify that if link is active (i.e. not completely idle) but SOF was not received from
             host for 4.096 ms, the 'host lost' interrupt becomes asserted.
 
             - Note that there must be _some_ non-idle signaling on the USB during this time because
@@ -927,7 +927,7 @@
             - Read from the 'wake_events' CSR of the USB device and check that the 'bus_not_idle'
               bit is asserted.
             - Disable the AON/Wake module and verify that the USB device is still connected,
-              ie. the DP pullup is enabled and DP is high.
+              i.e. the DP pullup is enabled and DP is high.
             '''
       stage: V2
       tests: ["usbdev_aon_wake_resume"]
@@ -949,7 +949,7 @@
             - Read from the 'wake_events' CSR of the USB device and check that the 'bus_reset'
               bit is asserted.
             - Disable the AON/Wake module and verify that the USB device is still connected,
-              ie. the DP pullup is enabled and DP is high.
+              i.e. the DP pullup is enabled and DP is high.
             '''
       stage: V2
       tests: ["usbdev_aon_wake_reset"]
@@ -1041,7 +1041,7 @@
             subsequent reconfiguration.
 
             - Configure the USB device to receive SETUP, OUT and IN traffic (the regular
-              Default Pipe, ie. just Endpoint Zero, should suffice).
+              Default Pipe, i.e. just Endpoint Zero, should suffice).
             - During the process of normal device configuration, issue a Bus Reset to the device at
               a random time (ensuring that it may occur during all transaction types), and then
               restart the configuration, checking that it completes successfully this time when no
@@ -1061,7 +1061,7 @@
             was host-initiated, and before configuration traffic commences.)
 
             - Configure the USB device to receive SETUP, OUT and IN traffic (the regular
-              Default Pipe, ie. just Endpoint Zero should suffice).
+              Default Pipe, i.e. just Endpoint Zero should suffice).
             - During the process of normal device configuration, disconnect the USB at a random
               time (ensuring that it may occur during all transaction types), and then restart
               the configuration after a Bus Reset and check that
@@ -1194,7 +1194,7 @@
       tests: ["usbdev_fifo_rst"]
     }
     {
-      name: usbdev_tx_rx_disruption
+      name: tx_rx_disruption
       desc: '''
             Verify that the DUT is still capable of transmitting and receiving after a spontaneous
             disruption to the connection during transmission or reception, without requiring an
@@ -1216,6 +1216,26 @@
             '''
       stage: V2
       tests: ["usbdev_tx_rx_disruption"]
+    }
+    {
+      name: fifo_levels
+      desc: '''
+            Verify the DUT response to SETUP/OUT data packets under the various possible states of
+            the Available OUT/SETUP Buffer FIFOs and Rx FIFO.
+
+            - Choose levels for each of the FIFOs at random and populate the FIFOs accordingly,
+              i.e. in the case of Av OUT/SETUP buffer FIFOs supply the appropriate number of buffers
+              for use, and for the Rx FIFO send that number of SETUP DATA packets without removing
+              them from the FIFO.
+            - Use ascending endpoint numbers for each transmitted packet so that there is no issue
+              of a data toggle mismatch leading to packet drops.
+            - Choose at random whether to send a SETUP DATA packet, a regular OUT DATA packet or
+              an Isochronous OUT DATA packet.
+            - Predict the response of the device, which may be either ACK, NAK or no response.
+            - Send the packet and verify that the DUT produces the expected response.
+            '''
+      stage: V2
+      tests: ["usbdev_fifo_levels"]
     }
     {
       name: dpi_config_host
