@@ -12,6 +12,7 @@ use std::time::Duration;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
+use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
@@ -34,6 +35,8 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
+const SYNC_MSG: &str = r"SYNC:.*\r\n";
+
 fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let mut console = UartConsole {
         timeout: Some(opts.timeout),
@@ -54,20 +57,40 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     let mut data = test_utils::object::symbol_data(&object, "kTestStr")?;
     let mut data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    log::info!("Sending test string to Device...");
+    _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
+    spi_console_device.console_write(&data)?;
+
     data = test_utils::object::symbol_data(&object, "kTest64bDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    log::info!("Sending 64B data to Device...");
+    _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
+    spi_console_device.console_write(&data)?;
+
     data = test_utils::object::symbol_data(&object, "kTest256bDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    log::info!("Sending 256 data to Device...");
+    _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
+    spi_console_device.console_write(&data)?;
+
     data = test_utils::object::symbol_data(&object, "kTest1KbDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     // 1KB data will be sent twice.
-    _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
-    _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    for _round in 0..2 {
+        _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+        log::info!("Sending 1KB data to Device...");
+        _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
+        spi_console_device.console_write(&data)?;
+    }
+
     data = test_utils::object::symbol_data(&object, "kTest4KbDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    log::info!("Sending 4KB data to Device...");
+    _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
+    spi_console_device.console_write(&data)?;
 
     let result = console.interact(&spi_console_device, None, Some(&mut stdout))?;
     match result {
