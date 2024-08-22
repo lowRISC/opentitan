@@ -59,6 +59,7 @@ module top_earlgrey #(
   // parameters for sensor_ctrl_aon
   // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 0,
+  parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   // parameters for flash_ctrl
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
@@ -96,6 +97,7 @@ module top_earlgrey #(
   // parameters for edn1
   // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
+  parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -2067,7 +2069,8 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm),
     .MemSizeRam(4096),
-    .InstrExec(SramCtrlRetAonInstrExec)
+    .InstrExec(SramCtrlRetAonInstrExec),
+    .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf)
   ) u_sram_ctrl_ret_aon (
       // [34]: fatal_error
       .alert_tx_o  ( alert_tx[34:34] ),
@@ -2534,7 +2537,8 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(131072),
-    .InstrExec(SramCtrlMainInstrExec)
+    .InstrExec(SramCtrlMainInstrExec),
+    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
   ) u_sram_ctrl_main (
       // [59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),
