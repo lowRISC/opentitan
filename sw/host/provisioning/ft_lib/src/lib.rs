@@ -8,7 +8,6 @@ use std::time::Duration;
 
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
-use bindgen::perso_tlv_objects;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::SecretKey;
 use p256::NistP256;
@@ -21,9 +20,6 @@ use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
-use opentitanlib::perso_tlv;
-use opentitanlib::perso_tlv::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
-use opentitanlib::perso_tlv_get_field;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
@@ -32,6 +28,8 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
+use perso_tlv_lib::perso_tlv_get_field;
+use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
 use ujson_lib::provisioning_data::{
     LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
 };
@@ -270,8 +268,9 @@ fn push_endorsed_cert(
         + ref_cert.cert_name.len()
         + cert.len();
 
-    let obj_header = perso_tlv::make_obj_header(total_size, ObjType::EndorsedX509Cert)?;
-    let cert_wrapper_header = perso_tlv::make_cert_wrapper_header(cert.len(), ref_cert.cert_name)?;
+    let obj_header = perso_tlv_lib::make_obj_header(total_size, ObjType::EndorsedX509Cert)?;
+    let cert_wrapper_header =
+        perso_tlv_lib::make_cert_wrapper_header(cert.len(), ref_cert.cert_name)?;
     output.try_extend_from_slice(&obj_header.to_be_bytes())?;
     output.try_extend_from_slice(&cert_wrapper_header.to_be_bytes())?;
     output.try_extend_from_slice(ref_cert.cert_name.as_bytes())?;
