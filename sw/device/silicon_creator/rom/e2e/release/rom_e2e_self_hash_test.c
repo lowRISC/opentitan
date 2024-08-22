@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
@@ -14,7 +15,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.silence_console_prints = true);
 
 enum {
   // Hash size.
@@ -58,10 +59,14 @@ status_t hash_rom(void) {
   hmac_digest_t rom_hash;
   hmac_sha256((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes,
               &rom_hash);
-  LOG_INFO("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x", rom_hash.digest[7],
-           rom_hash.digest[6], rom_hash.digest[5], rom_hash.digest[4],
-           rom_hash.digest[3], rom_hash.digest[2], rom_hash.digest[1],
-           rom_hash.digest[0]);
+  // Use printf directly here instead of the `LOG()` macros which print extra
+  // filenames and line numbers which bloat DV and GLS runtimes.
+  // DO NOT MODIFY the printf immediately below without modifying the check in
+  // `hw/top_earlgrey/dv/env/seq_lib/chip_sw_rom_e2e_self_hash_gls_vseq.sv`
+  base_printf("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x\r\n",
+              rom_hash.digest[7], rom_hash.digest[6], rom_hash.digest[5],
+              rom_hash.digest[4], rom_hash.digest[3], rom_hash.digest[2],
+              rom_hash.digest[1], rom_hash.digest[0]);
   chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
   LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
   LOG_INFO("scm_revision = %08x%08x",
@@ -90,8 +95,4 @@ status_t hash_rom(void) {
   return OK_STATUS();
 };
 
-bool test_main(void) {
-  status_t test_result = OK_STATUS();
-  EXECUTE_TEST(test_result, hash_rom);
-  return status_ok(test_result);
-}
+bool test_main(void) { return status_ok(hash_rom()); }
