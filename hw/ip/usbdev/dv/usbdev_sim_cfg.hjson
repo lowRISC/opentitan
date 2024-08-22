@@ -166,6 +166,11 @@
       reseed: 200
     }
     {
+      name: usbdev_fifo_levels
+      uvm_test_seq: usbdev_fifo_levels_vseq
+      reseed: 160
+    }
+    {
       name: usbdev_fifo_rst
       uvm_test_seq: usbdev_fifo_rst_vseq
     }

@@ -18,6 +18,7 @@
 `include "usbdev_disconnected_vseq.sv"
 `include "usbdev_dpi_config_host_vseq.sv"
 `include "usbdev_enable_vseq.sv"
+`include "usbdev_fifo_levels_vseq.sv"
 `include "usbdev_fifo_rst_vseq.sv"
 `include "usbdev_host_lost_vseq.sv"
 `include "usbdev_in_iso_vseq.sv"
