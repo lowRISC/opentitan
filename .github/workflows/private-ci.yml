@@ -27,12 +27,12 @@ jobs:
         with:
           script: |
             const payload = {
-              sha: context.eventName === 'pull_request' ? context.payload.pull_request.head.sha : context.sha,
+              sha: context.eventName === 'pull_request_target' ? context.payload.pull_request.head.sha : context.sha,
               pull_request: context.issue.number,
               inputs: {
                 // For push events, also send branch name (for batching)
-                branch: context.eventName === 'pull_request' ? undefined : context.ref,
-                run_name: context.eventName === 'pull_request' ? context.payload.pull_request.title : context.payload.head_commit.message.split('\n')[0],
+                branch: context.eventName === 'pull_request_target' ? undefined : context.ref,
+                run_name: context.eventName === 'pull_request_target' ? context.payload.pull_request.title : context.payload.head_commit.message.split('\n')[0],
               },
             };
             await github.rest.repos.createDispatchEvent({
