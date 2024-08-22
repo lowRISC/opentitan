@@ -9,10 +9,15 @@ def openocd_repos(local = None):
     http_archive_or_local(
         name = "openocd",
         local = local,
-        url = "https://sourceforge.net/projects/openocd/files/openocd/{version}/openocd-{version}.tar.gz".format(version = OPENOCD_VERSION),
+        urls = [
+            # The sourceforge URL is the canonical one, but the site is not reliable and slow to download.
+            # Prefer to use Debian mirror of the tar ball and have sourceforge as backup.
+            "https://deb.debian.org/debian/pool/main/o/openocd/openocd_{version}.orig.tar.bz2".format(version = OPENOCD_VERSION),
+            "https://sourceforge.net/projects/openocd/files/openocd/{version}/openocd-{version}.tar.gz".format(version = OPENOCD_VERSION),
+        ],
         strip_prefix = "openocd-" + OPENOCD_VERSION,
         build_file = "//third_party/openocd:BUILD.openocd.bazel",
-        sha256 = "bb367fd19ab96a65ee5b269b60326d9f36bca1c64d9865cc36985d3651aba563",
+        sha256 = "af254788be98861f2bd9103fe6e60a774ec96a8c374744eef9197f6043075afa",
         # See Issue(#18087)
         patches = [
             Label("//third_party/openocd:reset_on_dmi_op_error.patch"),
