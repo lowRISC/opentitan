@@ -81,6 +81,10 @@ typedef struct ottf_test_config {
   bool clear_reset_reason;
 
   /**
+   */
+  bool silence_console_prints;
+
+  /**
    * Name of the file in which `kOttfTestConfig` is defined. Most of the time,
    * this will be the file that defines `test_main()`.
    */
