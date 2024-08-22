@@ -107,7 +107,9 @@ static void report_test_status(bool result) {
     if (kOttfTestConfig.console.test_may_clobber) {
       ottf_console_init();
     }
-    LOG_INFO("Finished %s", kOttfTestConfig.file);
+    if (!kOttfTestConfig.silence_console_prints) {
+      LOG_INFO("Finished %s", kOttfTestConfig.file);
+    }
   }
   // Print the reported status in case of error. Beware that
   // status_report_list_cnt might be greater than kStatusReportListSize which
@@ -160,7 +162,9 @@ void _ottf_main(void) {
   // Initialize the console to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
     ottf_console_init();
-    LOG_INFO("Running %s", kOttfTestConfig.file);
+    if (!kOttfTestConfig.silence_console_prints) {
+      LOG_INFO("Running %s", kOttfTestConfig.file);
+    }
   }
 
   // Initialize a global random number generator testutil context to provide
