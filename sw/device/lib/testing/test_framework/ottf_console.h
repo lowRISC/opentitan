@@ -94,4 +94,19 @@ bool ottf_console_flow_control_isr(uint32_t *exc_info);
  */
 uint32_t ottf_console_get_flow_control_irqs(void);
 
+/**
+ * Read data from the host via the OTTF SPI device console into a provided
+ * buffer.
+ *
+ * The function waits for spi upload commands, then transfers data in chunks
+ * until a transmission complete signal is received. If the size of data sent
+ * from the host is greater than the provided buffer, then the excess data will
+ * be discarded.
+ *
+ * @param buf_size The size, in bytes, of the `buf`.
+ * @param[out] buf A pointer to the location where the data should be stored.
+ * @return The number of bytes actually received from the host.
+ */
+size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_H_
