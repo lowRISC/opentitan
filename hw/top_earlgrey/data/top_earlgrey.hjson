@@ -727,6 +727,7 @@
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       param_decl: {
         InstrExec: "1",
+        NumPrinceRoundsHalf: "2",
       },
       base_addrs: {regs: "0x411C0000", ram: "0x10000000"},
       // Memory regions must be associated with a dedicated
