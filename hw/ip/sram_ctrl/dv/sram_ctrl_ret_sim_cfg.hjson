@@ -12,5 +12,6 @@
 
   // These parameters are used for top_earlgrey retention sram
   build_opts: ["+define+SRAM_ADDR_WIDTH=10",
-               "+define+INSTR_EXEC=0"]
+               "+define+INSTR_EXEC=0",
+               "+define+NUM_PRINCE_ROUNDS_HALF=3"]
 }

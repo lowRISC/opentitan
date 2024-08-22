@@ -63,7 +63,9 @@ module tb;
   sram_ctrl #(
     // memory size in bytes
     .MemSizeRam(4 * 2 ** `SRAM_ADDR_WIDTH),
-    .InstrExec(`INSTR_EXEC)
+    .InstrExec(`INSTR_EXEC),
+    // number of PRINCE half rounds for the SRAM scrambling feature
+    .NumPrinceRoundsHalf(`NUM_PRINCE_ROUNDS_HALF)
   ) dut (
     // main clock
     .clk_i               (clk                       ),
@@ -112,7 +114,8 @@ module tb;
                           .n_bits($bits(`SRAM_CTRL_MEM_HIER)),
                           // Due to the end-to-end bus integrity scheme, the memory primitive itself
                           // does not encode and decode the redundancy information.
-                          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+                          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+                          .num_prince_rounds_half(`NUM_PRINCE_ROUNDS_HALF));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
