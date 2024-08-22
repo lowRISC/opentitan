@@ -7,16 +7,14 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 
 status_t personalize_extension_pre_cert_endorse(
-    ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
-    perso_blob_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout,
-    dif_flash_ctrl_state_t *flash_ctrl_handle) {
+    personalize_extension_pre_endorse_t *pre_params) {
   return OK_STATUS();
 }
 
 status_t personalize_extension_post_cert_endorse(
-    ujson_t *uj, perso_blob_t *perso_blob_from_host,
-    cert_flash_info_layout_t *cert_flash_layout) {
+    personalize_extension_post_endorse_t *post_params) {
   return OK_STATUS();
 }

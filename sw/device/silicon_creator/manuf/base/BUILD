@@ -212,9 +212,16 @@ filegroup(
 )
 
 cc_library(
+    name = "personalize_ext",
+    hdrs = ["personalize_ext.h"],
+)
+
+cc_library(
     name = "ft_personalize_base",
     srcs = ["ft_personalize.c"],
     deps = [
+        ":perso_tlv_data",
+        ":personalize_ext",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -241,7 +248,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
         "//sw/device/silicon_creator/manuf/lib:personalize",
@@ -252,6 +258,7 @@ cc_library(
     name = "tpm_perso_fw_ext",
     srcs = ["tpm_personalize_ext.c"],
     deps = [
+        ":personalize_ext",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:status",
