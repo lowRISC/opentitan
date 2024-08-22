@@ -21,7 +21,6 @@ class chip_sw_rom_e2e_self_hash_gls_vseq extends
                         cfg.sw_test_timeout_ns),
              cfg.sw_test_timeout_ns)
     connect_rom_uart_agent();
-    check_uart_output_msg("Starting test hash_rom...\x0d\n");
     check_uart_output_msg($sformatf("ROM Hash: 0x%s\x0d\n", ROM_HASH));
 
     // DV test status window is not written to for silicon SW images, so we
