@@ -289,9 +289,8 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   return OK_STATUS();
 }
 
-static status_t log_hash_of_all_certs(ujson_t *uj) {
+static status_t hash_all_certs(void) {
   uint32_t cert_size;
-  serdes_sha256_hash_t hash;
   hmac_sha256_init();
 
   // Push all certificates into the hash.
@@ -308,14 +307,6 @@ static status_t log_hash_of_all_certs(ujson_t *uj) {
       page_offset = util_round_up_to(page_offset, 3);
     }
   }
-
-  // Log the final hash of all certificates to the host and console.
-  hmac_sha256_process();
-  hmac_sha256_final((hmac_digest_t *)&hash);
-  RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &hash);
-  LOG_INFO("SHA256 hash of all certificates: %08x%08x%08x%08x%08x%08x%08x%08x",
-           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
-           hash.data[2], hash.data[1], hash.data[0]);
 
   return OK_STATUS();
 }
@@ -589,6 +580,10 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   return OK_STATUS();
 }
 
+static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
+  return RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, hash);
+}
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   ujson_t uj = ujson_ottf_console();
@@ -606,6 +601,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(&pre_endorse));
 
   CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
+  CHECK_STATUS_OK(hash_all_certs());
 
   personalize_extension_post_endorse_t post_endorse = {
       .uj = &uj,
@@ -613,7 +609,14 @@ bool test_main(void) {
       .cert_flash_layout = cert_flash_layout};
   CHECK_STATUS_OK(personalize_extension_post_cert_endorse(&post_endorse));
 
-  CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
+  // Log the hash of all perso objects to the host and console.
+  serdes_sha256_hash_t hash;
+  hmac_sha256_process();
+  hmac_sha256_final((hmac_digest_t *)&hash);
+  CHECK_STATUS_OK(send_final_hash(&uj, &hash));
+  LOG_INFO("SHA256 hash of all perso objects: %08x%08x%08x%08x%08x%08x%08x%08x",
+           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
+           hash.data[2], hash.data[1], hash.data[0]);
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs

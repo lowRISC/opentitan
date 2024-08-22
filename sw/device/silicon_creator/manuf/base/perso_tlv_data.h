@@ -47,6 +47,19 @@ typedef enum perso_tlv_obj_header_fields {
   kObjhTypeFieldMask = (1 << kObjhTypeFieldWidth) - 1,
 } perso_tlv_obj_header_fields_t;
 
+typedef struct perso_tlv_dev_seed_element {
+  uint32_t el[8];
+} perso_tlv_dev_seed_element_t;
+
+typedef struct perso_tlv_dev_seed {
+  perso_tlv_dev_seed_element_t key;
+  perso_tlv_dev_seed_element_t context;
+} perso_tlv_dev_seed_t;
+
+typedef struct perso_tlv_dev_seed_set {
+  perso_tlv_dev_seed_t seeds[2];
+} perso_tlv_dev_seed_set_t;
+
 /**
  * The x509 certificate is prepended by a 16 bits header followed by the ASCII
  * characters of the certificate name, followed by the certificate body.
