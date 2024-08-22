@@ -86,6 +86,13 @@
       expose:    "true",
       default:   "1"
     },
+    { name:      "NumPrinceRoundsHalf",
+      desc:      "Number of PRINCE half rounds for the SRAM scrambling feature",
+      type:      "int",
+      local:     "false",
+      expose:    "true",
+      default:   "3"
+    },
   ]
 
   features: [

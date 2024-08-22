@@ -17,6 +17,11 @@ module sram_ctrl
   parameter logic [NumAlerts-1:0] AlertAsyncOn          = {NumAlerts{1'b1}},
   // Enables the execute from SRAM feature.
   parameter bit InstrExec                               = 1,
+  // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
+  // Note that this needs to be low-latency, hence we have to keep the amount of cipher rounds low.
+  // PRINCE has 5 half rounds in its original form, which corresponds to 2*5 + 1 effective rounds.
+  // Setting this to 3 lowers this to approximately 7 effective rounds.
+  parameter int NumPrinceRoundsHalf                     = 3,
   // Random netlist constants
   parameter otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
@@ -535,7 +540,8 @@ module sram_ctrl
     .Width(DataWidth),
     .Depth(Depth),
     .EnableParity(0),
-    .DataBitsPerMask(DataWidth)
+    .DataBitsPerMask(DataWidth),
+    .NumPrinceRoundsHalf(NumPrinceRoundsHalf)
   ) u_prim_ram_1p_scr (
     .clk_i,
     .rst_ni,
