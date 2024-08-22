@@ -4,7 +4,9 @@
 
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -93,22 +95,53 @@ static const char kTest4KbDataStr[] =
     "B30518D571FDD6D38E0477F6CB83C7729A45494F5D7805CCC1432C816B7D8CB089CEA56216"
     "9489E4F80E70FA685F39E1CD0AD7AD703C2E9601D442004F3D4CE043F0E84007FB7438FE82"
     "DF4D9304C90B48BB25762DD29D";
+
+static uint8_t input_buf[5120];
+
 bool test_main(void) {
-  LOG_INFO("Sending empty string...");
+  LOG_INFO("Sending empty string to Host...");
   LOG_INFO("");
-  LOG_INFO("Sending test string...");
+  LOG_INFO("Sending test string to Host...");
   LOG_INFO("%s", kTestStr);
-  LOG_INFO("Sending 64B data...");
+  LOG_INFO("SYNC: Waiting for console data");
+  size_t received_data_len =
+      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  CHECK(received_data_len == sizeof(kTestStr));
+  CHECK_ARRAYS_EQ(input_buf, kTestStr, ARRAYSIZE(kTestStr));
+
+  LOG_INFO("Sending 64B data to Host...");
   LOG_INFO("%s", kTest64bDataStr);
-  LOG_INFO("Sending 256B data...");
+  LOG_INFO("SYNC: Waiting for console data");
+  received_data_len =
+      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  CHECK(received_data_len == sizeof(kTest64bDataStr));
+  CHECK_ARRAYS_EQ(input_buf, kTest64bDataStr, ARRAYSIZE(kTest64bDataStr));
+
+  LOG_INFO("Sending 256B data to Host...");
   LOG_INFO("%s", kTest256bDataStr);
-  LOG_INFO("Sending 1KB data...");
+  LOG_INFO("SYNC: Waiting for console data");
+  received_data_len =
+      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  CHECK(received_data_len == sizeof(kTest256bDataStr));
+  CHECK_ARRAYS_EQ(input_buf, kTest256bDataStr, ARRAYSIZE(kTest256bDataStr));
+
+  LOG_INFO("Sending 1KB data to Host...");
   for (int i = 1; i <= 2; i++) {
     LOG_INFO("Round: %d", i);
     LOG_INFO("%s", kTest1KbDataStr);
+    LOG_INFO("SYNC: Waiting for console data");
+    received_data_len =
+        ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+    CHECK(received_data_len == sizeof(kTest1KbDataStr));
+    CHECK_ARRAYS_EQ(input_buf, kTest1KbDataStr, ARRAYSIZE(kTest1KbDataStr));
   }
-  LOG_INFO("Sending 4KB data...");
-  LOG_INFO("%s", kTest4KbDataStr);
 
+  LOG_INFO("Sending 4KB data to Host...");
+  LOG_INFO("%s", kTest4KbDataStr);
+  LOG_INFO("SYNC: Waiting for console data");
+  received_data_len =
+      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  CHECK(received_data_len == sizeof(kTest4KbDataStr));
+  CHECK_ARRAYS_EQ(input_buf, kTest4KbDataStr, ARRAYSIZE(kTest4KbDataStr));
   return true;
 }
