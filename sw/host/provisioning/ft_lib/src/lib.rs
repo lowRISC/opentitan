@@ -279,6 +279,22 @@ fn push_endorsed_cert(
     Ok(())
 }
 
+fn process_dev_seeds(seeds: &[u8]) -> Result<()> {
+    let expected_seed_num = 2usize;
+    let seed_size = 64usize;
+
+    if seeds.len() != seed_size * expected_seed_num {
+        bail!("Unexpected seeds perso object size {}", seeds.len())
+    }
+
+    for i in 0..expected_seed_num {
+        let seed = &seeds[i * seed_size..(i + 1) * seed_size];
+
+        log::info!("Seed #{}: {}", i, hex::encode(seed))
+    }
+    Ok(())
+}
+
 fn provision_certificates(
     transport: &TransportWrapper,
     cert_endorsement_key_wrapper: KeyWrapper,
@@ -308,8 +324,6 @@ fn provision_certificates(
         }
     };
 
-    log::info!("start of the body {}", hex::encode(&perso_blob.body[0..10]));
-
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
     // During the process, both:
     //   1. prepare a UJSON payload of endorsed certs to send back to the device,
@@ -324,14 +338,23 @@ fn provision_certificates(
     for _ in 0..perso_blob.num_objs {
         log::info!("Processing next object");
         let header = get_obj_header(&perso_blob.body[start..])?;
+        let obj_header_size = std::mem::size_of::<ObjHeaderType>();
+
+        if header.obj_size > (perso_blob.body.len() - start) {
+            bail!("Perso blob overflow!");
+        }
+        start += obj_header_size;
         match header.obj_type {
             ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => (),
             ObjType::DevSeed => {
-                start += header.obj_size;
+                let dev_seed_size = header.obj_size - obj_header_size;
+                let seeds = &perso_blob.body[start..start + dev_seed_size];
+                cert_hasher.update(seeds);
+                process_dev_seeds(seeds)?;
+                start += dev_seed_size;
                 continue;
             }
         }
-        start += std::mem::size_of::<ObjHeaderType>();
 
         // The next object is a cert, let's retrieve its properties (name, needs
         // endorsement, etc.)

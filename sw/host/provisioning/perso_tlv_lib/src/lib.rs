@@ -6,7 +6,7 @@ use anyhow::{bail, Result};
 
 // Types of objects which can come from the device in the perso blob.
 #[repr(C)]
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ObjType {
     UnendorsedX509Cert = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeX509Tbs as isize,
     EndorsedX509Cert = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeX509Cert as isize,
@@ -18,7 +18,7 @@ impl ObjType {
         match value {
             0 => Ok(ObjType::UnendorsedX509Cert),
             1 => Ok(ObjType::EndorsedX509Cert),
-            3 => Ok(ObjType::DevSeed),
+            2 => Ok(ObjType::DevSeed),
             _ => bail!("incorrect input value of {value} for ObjType"),
         }
     }
