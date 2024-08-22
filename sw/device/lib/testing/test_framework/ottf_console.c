@@ -296,3 +296,31 @@ status_t ottf_console_flow_control(const dif_uart_t *uart,
 }
 
 uint32_t ottf_console_get_flow_control_irqs(void) { return flow_control_irqs; }
+
+static bool spi_tx_last_data_chunk(upload_info_t *info) {
+  const static size_t kSpiTxTerminateMagicAddress = 0x100;
+  return info->address == kSpiTxTerminateMagicAddress;
+}
+
+size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf) {
+  size_t received_data_len = 0;
+  upload_info_t info;
+  memset(&info, 0, sizeof(upload_info_t));
+  while (!spi_tx_last_data_chunk(&info)) {
+    CHECK_STATUS_OK(
+        spi_device_testutils_wait_for_upload(&ottf_console_spi_device, &info));
+    if (received_data_len < buf_size) {
+      size_t remaining_buf_size = buf_size - received_data_len;
+      size_t bytes_to_copy = remaining_buf_size < info.data_len
+                                 ? remaining_buf_size
+                                 : info.data_len;
+      memcpy(buf + received_data_len, info.data, bytes_to_copy);
+    }
+
+    received_data_len += info.data_len;
+    CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(
+        &ottf_console_spi_device, 0x00));
+  }
+
+  return received_data_len;
+}
