@@ -12,5 +12,6 @@
 
   // These parameters are used for top_earlgrey main sram
   build_opts: ["+define+SRAM_ADDR_WIDTH=15",
-               "+define+INSTR_EXEC=1"]
+               "+define+INSTR_EXEC=1",
+               "+define+NUM_PRINCE_ROUNDS_HALF=3"]
 }
