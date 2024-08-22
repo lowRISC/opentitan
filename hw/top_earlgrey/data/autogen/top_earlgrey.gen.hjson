@@ -7265,6 +7265,7 @@
       param_decl:
       {
         InstrExec: "1"
+        NumPrinceRoundsHalf: "2"
       }
       base_addrs:
       {
@@ -7353,7 +7354,7 @@
           name: NumPrinceRoundsHalf
           desc: Number of PRINCE half rounds for the SRAM scrambling feature
           type: int
-          default: "3"
+          default: "2"
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
         }
