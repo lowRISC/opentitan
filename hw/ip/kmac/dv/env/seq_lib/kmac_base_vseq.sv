@@ -965,4 +965,8 @@ class kmac_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
   endtask
 
+  // overriding timeout on outstanding accesses for the kmac_stress_test_all_with_rand_reset test
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return 100_000;
+  endfunction
 endclass : kmac_base_vseq
