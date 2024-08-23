@@ -221,9 +221,9 @@ status_t handle_aes_sca_key_set(ujson_t *uj) {
 /**
  * Encrypts a plaintext using the AES peripheral.
  *
- * This function uses `sca_call_and_sleep()` from the sca library to put Ibex
- * to sleep in order to minimize noise during captures. The plaintext must be
- * `kAesTextLength` bytes long.
+ * This function uses `pentest_call_and_sleep()` from the pentest library to put
+ * Ibex to sleep in order to minimize noise during captures. The plaintext must
+ * be `kAesTextLength` bytes long.
  *
  * @param plaintext Plaintext.
  * @param plaintext_len Length of the plaintext.
@@ -249,12 +249,14 @@ static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
   // Start AES operation (this triggers the capture) and go to sleep.
   if (fpga_mode) {
     // On the FPGA, the AES block automatically sets and unsets the trigger.
-    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false);
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false,
+                           false);
   } else {
     // On the chip, we need to manually set and unset the trigger. This is done
     // in this function to have the trigger as close as possible to the AES
     // operation.
-    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true);
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true,
+                           false);
   }
   return aesScaOk;
 }
