@@ -101,8 +101,8 @@ injective. This can be achieved by fixing the width of all the operands.
 
 ```
 CreatorRootKey = KM_DERIVE(RootKey,
-    DiversificationKey | HealthStateMeasurement | DeviceIdentifier |
-    ROMExtSecurityDescriptor | HardwareRevisionSecret)
+    HardwareRevisionSecret | RomHash | HealthStateMeasurement |
+    DeviceIdentifier | ROMExtSecurityDescriptor)
 ```
 
 <table>
@@ -121,13 +121,38 @@ Hidden from software once personalization is complete.
     </td>
   </tr>
   <tr>
-    <td id="diversification-key">DiversificationKey</td>
-    <td>Flash</td>
+    <td>HardwareRevisionSecret</td>
+    <td>Gates</td>
     <td>
-Additional diversification key stored in flash. Provisioned at
-manufacturing time by the Silicon Creator.
+Encoded in gates. Provisioned by Silicon Creator before tapeout. Hidden from
+software.
+    </td>
+  </tr>
+  <tr>
+    <td id="rom-hash">RomHash</td>
+    <td>Computed by ROM controller</td>
+    <td>
+SHA-3-256 hash of the ROM image.
+    </td>
+  </tr>
+  <tr>
+    <td>Health State Measurement</td>
+    <td>Computed by Lifecycle controller</td>
+    <td>
+Comprises the following measurements:
 
-Hidden from software once provisioned.
+* Device life cycle state.
+* Debug mode state.
+
+The debug mode shall be used as well if there are multiple debug configurations
+supported by a single life cycle state.
+    </td>
+  </tr>
+  <tr>
+    <td>DeviceIdentifier</td>
+    <td>OTP</td>
+    <td>
+Provisioned at manufacturing time. Readable from software and JTAG interface.
     </td>
   </tr>
   <tr>
@@ -142,38 +167,6 @@ The implementation may choose one of the following options:
    retain the Creator Identity across validated updates of the ROM_EXT.
    The implementation may opt to use the software binding interface
    described in later sections to fulfill this property.
-    </td>
-  </tr>
-  <tr>
-    <td>DeviceIdentifier</td>
-    <td>OTP</td>
-    <td>
-Provisioned at manufacturing time. Readable from software and JTAG interface.
-    </td>
-  </tr>
-  <tr>
-    <td>HardwareRevisionSecret</td>
-    <td>Gates</td>
-    <td>
-Encoded in gates. Provisioned by Silicon Creator before tapeout. Hidden from
-software.
-    </td>
-  </tr>
-  <tr>
-    <td>Health State Measurement</td>
-    <td>Register (ROM stage)</td>
-    <td>
-Comprises the following measurements:
-
-* Device life cycle state.
-* Debug mode state.
-* ROM Hash.
-
-Some values are read from the device life cycle controller. The device life
-cycle state should be consumed by the ROM stage.
-
-The debug mode shall be used as well if there are multiple debug configurations
-supported by a single life cycle state.
     </td>
   </tr>
 </table>
@@ -243,7 +236,7 @@ The `OwnerIntermediateKey` is generated as follows:
 
 ```
 OwnerIntermediateKey =
-   KM_DERIVE(CreatorRootKey, OwnerRootSecret | SoftwareBindingValue)
+   KM_DERIVE(CreatorRootKey, CreatorSecret | SoftwareBindingValue)
 ```
 
 <table>
@@ -253,18 +246,13 @@ OwnerIntermediateKey =
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td id="owner-root-secret">OwnerRootSecret</td>
+    <td> id="creator-secret"CreatorSecret</td>
     <td>Flash</td>
     <td>
-Used as a diversification constant with acceptable entropy. Provisioned at
-Ownership Transfer time by the Silicon Creator.
+Additional diversification key stored in flash. Provisioned at
+manufacturing time by the Silicon Creator.
 
-The OwnerRootSecret has different visibility options depending on the level of
-isolation provided in hardware:
-
-*   The value should be hidden from software after provisioning.
-*   The value is visible to ROM and ROM Extension, but hidden from all Silicon
-    Owner software. The ROM Extension implements this property.
+Hidden from software once provisioned.
     </td>
   </tr>
   <tr>
@@ -326,7 +314,7 @@ The key manager supports the generation of versioned keys with lineage to the
 
 ```
 OwnerRootKey =
-   KM_DERIVE(OwnerIntermediateKey, SoftwareBindingValue)
+   KM_DERIVE(OwnerIntermediateKey, OwnerRootSecret | SoftwareBindingValue)
 
 VersionedKey = KM_DERIVE(OwnerRootKey,
     KeyVersion | KeyID | Salt | SoftwareExportConstant)
@@ -340,6 +328,21 @@ width of all the operands.
     <td><strong>Name</strong></td>
     <td><strong>Encoding</strong></td>
     <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td id="owner-root-secret">OwnerRootSecret</td>
+    <td>Flash</td>
+    <td>
+Used as a diversification constant with acceptable entropy. Provisioned at
+Ownership Transfer time by the Silicon Creator.
+
+The OwnerRootSecret has different visibility options depending on the level of
+isolation provided in hardware:
+
+*   The value should be hidden from software after provisioning.
+*   The value is visible to ROM and ROM Extension, but hidden from all Silicon
+    Owner software. The ROM Extension implements this property.
+    </td>
   </tr>
   <tr>
     <td>OwnerRootKey</td>
