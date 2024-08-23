@@ -25,13 +25,13 @@ def _corefiles2rootarg(core):
     return core.dirname
 
 def _fusesoc_build_impl(ctx):
-    dirname = "build.{}".format(ctx.label.name)
-    out_dir = ctx.actions.declare_directory(dirname)
+    build_dir = "build.{}".format(ctx.label.name)
+    out_dir = "{}/{}/{}".format(ctx.bin_dir.path, ctx.label.package, build_dir)
     flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
-    outputs = [out_dir]
+    outputs = []
     groups = {}
 
-    cache_dir = "{}/fusesoc-cache".format(out_dir.path)
+    cache_dir = "{}/fusesoc-cache".format(out_dir)
     cfg_file_path = "build.{}.fusesoc_config.toml".format(ctx.label.name)
     cfg_file = ctx.actions.declare_file(cfg_file_path)
     cfg_str = "[main]\n  cache_root = {}".format(cache_dir)
@@ -41,7 +41,7 @@ def _fusesoc_build_impl(ctx):
     args.add(cfg_file.path, format = "--config=%s")
 
     for group, files in ctx.attr.output_groups.items():
-        deps = [ctx.actions.declare_file("{}/{}".format(dirname, f)) for f in files]
+        deps = [ctx.actions.declare_file("{}/{}".format(build_dir, f)) for f in files]
         outputs.extend(deps)
         groups[group] = depset(deps)
 
@@ -69,7 +69,7 @@ def _fusesoc_build_impl(ctx):
         "--setup",
         "--build",
     ])
-    args.add(out_dir.path, format = "--build-root=%s")
+    args.add(out_dir, format = "--build-root=%s")
 
     args.add_all(ctx.attr.systems)
     args.add_all(flags)
