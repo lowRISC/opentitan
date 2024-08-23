@@ -31,6 +31,7 @@ FIRMWARE_DEPS_FPGA = [
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rom_fi",
     "//sw/device/tests/penetrationtests/firmware/sca:aes_sca",
+    "//sw/device/tests/penetrationtests/firmware/sca:hmac_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:ibex_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:kmac_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
@@ -71,6 +72,7 @@ FIRMWARE_DEPS_FI = [
 
 FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/firmware/sca:aes_sca",
+    "//sw/device/tests/penetrationtests/firmware/sca:hmac_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:ibex_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:kmac_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
