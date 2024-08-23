@@ -55,6 +55,7 @@ cc_library(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:sca",
         "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
         "//sw/device/tests/penetrationtests/json:ibex_sca_commands",
