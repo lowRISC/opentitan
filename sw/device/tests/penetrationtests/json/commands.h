@@ -15,6 +15,7 @@ extern "C" {
     value(_, AesSca) \
     value(_, CryptoFi) \
     value(_, ExtClkScaFi) \
+    value(_, HmacSca) \
     value(_, IbexFi) \
     value(_, IbexSca) \
     value(_, KmacSca) \
