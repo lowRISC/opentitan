@@ -41,6 +41,14 @@ _manifest_code_end = _text_end - _slot_start_address;
  * slot for use in the manifest.
  */
 _manifest_entry_point = _start_boot - _slot_start_address;
+/*
+ * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
+ * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is
+ * selected.
+ */
+_manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
+                                 _text_start < (ORIGIN(eflash)
+                                              + LENGTH(eflash))) ? 0x1d4 : 0x739;
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
