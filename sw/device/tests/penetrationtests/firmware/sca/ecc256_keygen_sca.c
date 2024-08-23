@@ -14,6 +14,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -173,7 +174,7 @@ static status_t p256_run_keygen(uint32_t mode, const uint32_t *share0,
   TRY(otbn_dmem_write(kEcc256SeedNumWords, share1, kOtbnVarSeed1));
 
   // Execute program. Trigger is set inside this function.
-  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, true);
+  pentest_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, true, true);
 
   return OK_STATUS();
 }
