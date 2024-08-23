@@ -11,6 +11,7 @@ cc_library(
     deps = [
         ":aes_sca_commands",
         ":extclk_sca_fi_commands",
+        ":hmac_sca_commands",
         ":ibex_fi_commands",
         ":kmac_sca_commands",
         ":otbn_fi_commands",
@@ -32,6 +33,13 @@ cc_library(
     name = "extclk_sca_fi_commands",
     srcs = ["extclk_sca_fi_commands.c"],
     hdrs = ["extclk_sca_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "hmac_sca_commands",
+    srcs = ["hmac_sca_commands.c"],
+    hdrs = ["hmac_sca_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

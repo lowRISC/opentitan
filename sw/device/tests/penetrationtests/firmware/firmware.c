@@ -14,6 +14,7 @@
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/extclk_sca_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
@@ -29,6 +30,7 @@
 #include "fi/rng_fi.h"
 #include "lib/extclk_sca_fi.h"
 #include "sca/aes_sca.h"
+#include "sca/hmac_sca.h"
 #include "sca/ibex_sca.h"
 #include "sca/kmac_sca.h"
 #include "sca/prng_sca.h"
@@ -47,6 +49,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kPenetrationtestCommandExtClkScaFi:
         RESP_ERR(uj, handle_extclk_sca_fi(uj));
+        break;
+      case kPenetrationtestCommandHmacSca:
+        RESP_ERR(uj, handle_hmac_sca(uj));
         break;
       case kPenetrationtestCommandIbexFi:
         RESP_ERR(uj, handle_ibex_fi(uj));
