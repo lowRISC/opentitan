@@ -40,6 +40,7 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:sca",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
         "//sw/otbn/crypto:p256_key_from_seed_sca",
     ],
