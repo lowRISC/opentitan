@@ -352,7 +352,7 @@ module ibex_controller #(
 
     // As integrity error is the only internal interrupt implement, set irq_nm_* signals directly
     // within this generate block.
-    assign irq_nm_int       = mem_resp_intg_err_irq_set | mem_resp_intg_err_irq_pending_q;
+    assign irq_nm_int       = mem_resp_intg_err_irq_pending_q;
     assign irq_nm_int_cause = NMI_INT_CAUSE_ECC;
     assign irq_nm_int_mtval = mem_resp_intg_err_addr_q;
   end else begin : g_no_intg_irq_int
