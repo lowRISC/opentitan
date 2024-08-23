@@ -21,6 +21,7 @@ extern "C" {
     value(_, KmacSca) \
     value(_, LCCtrlFi) \
     value(_, OtbnFi) \
+    value(_, OtbnSca) \
     value(_, OtpFi) \
     value(_, PrngSca) \
     value(_, RngFi) \
