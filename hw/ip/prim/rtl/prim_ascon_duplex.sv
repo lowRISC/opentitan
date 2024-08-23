@@ -66,7 +66,7 @@ logic inc_round_counter;
 logic [4:0][63:0] ascon_state_q, ascon_state_d;
 
 // Ascon's 320 bit state
-always_ff @(posedge clk_i) begin : ascon_state_reg
+always_ff @(posedge clk_i or negedge rst_ni) begin : ascon_state_reg
   if (!rst_ni) begin
     ascon_state_q <= '0;
   end else begin
