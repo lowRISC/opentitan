@@ -89,7 +89,7 @@ class ResultsServer:
     def mv(self, from_path: str, to_path: str) -> None:
         """Use gsutil mv to move a file/directory."""
         try:
-            subprocess.run(['gsutil', 'mv',
+            subprocess.run(['gsutil', '-m', 'mv',
                             self._path_in_bucket(from_path),
                             self._path_in_bucket(to_path)],
                            check=True)
@@ -114,7 +114,7 @@ class ResultsServer:
         On failure, prints a message to the log but returns as normal.
         """
         try:
-            sub_cmd = ['cp']
+            sub_cmd = ['-m', 'cp']
             if recursive:
                 sub_cmd.append('-r')
             subprocess.run(['gsutil'] + sub_cmd +
