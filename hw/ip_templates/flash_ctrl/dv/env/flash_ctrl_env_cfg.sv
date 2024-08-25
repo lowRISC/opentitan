@@ -1188,6 +1188,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                                           int page);
     addr_t addr = '0;
     addr[OTFBankId-1:11] = page;
+    `uvm_info(`gfn, $sformatf("in load_otf_mem_page bank:%0d %s, page:%0d", bank, part.name, page),
+              UVM_HIGH)
     update_otf_mem_read_zone(part, bank, addr, addr + BytesPerPage - 1);
   endfunction : load_otf_mem_page
 
@@ -1195,8 +1197,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                                          addr_t start_addr, addr_t end_addr);
     start_addr = align_to_flash_word(start_addr);
     `uvm_info(`gfn, $sformatf(
-              "mem_bkdr initializing from 0x%x to 0x%x per attributes", start_addr, end_addr),
-              UVM_MEDIUM)
+              "mem_bkdr initializing bank:%0d %s from 0x%x to 0x%x per attributes",
+              bank, part.name, start_addr, end_addr),
+              UVM_HIGH)
     for (addr_t addr = start_addr; addr <= end_addr; addr += 8) begin
       flash_otf_item item;
       int page;
