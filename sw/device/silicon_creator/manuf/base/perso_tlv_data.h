@@ -73,23 +73,25 @@ typedef enum perso_tlv_cert_header_fields {
   kCrthNameSizeFieldMask = (1 << kCrthNameSizeFieldWidth) - 1,
 } perso_tlv_cert_header_fields_t;
 
-// Helper macros allowing set or get various header fields.
-#define PERSO_TLV_SET_FIELD(type_name, field_name, full_value, field_value)   \
-  {                                                                           \
-    uint16_t mask = k##type_name##field_name##FieldMask;                      \
-    uint16_t shift = k##type_name##field_name##FieldShift;                    \
-    uint16_t fieldv = (uint16_t)field_value;                                  \
-    uint16_t fullv = (uint16_t)full_value;                                    \
-    fieldv = field_value & mask;                                              \
-    mask = (uint16_t)(mask << shift);                                         \
-    full_value = (uint16_t)((fullv & ~mask) | (((uint16_t)fieldv) << shift)); \
+// Helper macros allowing set or get various object and certificate header
+// fields. Operate on objects in big endian representation, as they are
+// transferred over wire.
+#define PERSO_TLV_SET_FIELD(type_name, field_name, full_value, field_value) \
+  {                                                                         \
+    uint16_t mask = k##type_name##field_name##FieldMask;                    \
+    uint16_t shift = k##type_name##field_name##FieldShift;                  \
+    uint16_t fieldv = (uint16_t)(field_value)&mask;                         \
+    uint16_t fullv = __builtin_bswap16((uint16_t)(full_value));             \
+    mask = (uint16_t)(mask << shift);                                       \
+    (full_value) = __builtin_bswap16(                                       \
+        (uint16_t)((fullv & ~mask) | (((uint16_t)fieldv) << shift)));       \
   }
 
 #define PERSO_TLV_GET_FIELD(type_name, field_name, full_value, field_value) \
   {                                                                         \
     uint16_t mask = k##type_name##field_name##FieldMask;                    \
     uint16_t shift = k##type_name##field_name##FieldShift;                  \
-    *field_value = (full_value >> shift) & mask;                            \
+    *(field_value) = (__builtin_bswap16(full_value) >> shift) & mask;       \
   }
 
 /**
