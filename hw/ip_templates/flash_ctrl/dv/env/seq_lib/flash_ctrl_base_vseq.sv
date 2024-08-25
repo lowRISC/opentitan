@@ -92,26 +92,29 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
-  // This is a binary search for an address in the address ranges. It also returns the index
-  // of the last range examined, which is useful for the caller.
+  // This is a binary search for any overlap of an address range with any in the address ranges.
   local function bit address_in_ranges(input int bank, input flash_dv_part_e part,
-                                       input address_ranges_t ranges, input addr_t addr,
-                                       ref int index);
+                                       input address_ranges_t ranges,
+                                       input address_range_t addr_range);
     int bottom = 0;
     int top = ranges.size() - 1;
     do
       begin
-        index = (top + bottom) / 2;
+        int index = (top + bottom) / 2;
         `uvm_info("address_written", $sformatf(
                   "bot:%0d, index:%0d, top:%0d, [0x%x : 0x%x]", bottom, index, top,
                   ranges[index].first, ranges[index].last), UVM_MEDIUM)
-        if (addr < ranges[index].first) top = index - 1;
-        else if (addr <= ranges[index].last) begin
-           `uvm_info("address_written", $sformatf(
-                     "addr:0x%x found in range [0x%x : 0x%x] for bank:%0d, part %s", addr,
-                     ranges[index].first, ranges[index].last, bank, part.name), UVM_MEDIUM)
+        if (addr_range.last < ranges[index].first) top = index - 1;
+        else if (addr_range.first > ranges[index].last) bottom = index + 1;
+        else begin
+          `DV_CHECK(
+              addr_range.last >= ranges[index].first && addr_range.first <= ranges[index].last)
+          `uvm_info("address_written", $sformatf(
+                    "address range:[0x%x : 0x%x] overlaps [0x%x : 0x%x] for bank:%0d, part %s",
+                    addr_range.first, addr_range.last, ranges[index].first, ranges[index].last,
+                    bank, part.name), UVM_MEDIUM)
           return 1;
-        end else bottom = index + 1;
+        end
       end
      while (top >= bottom);
      return 1'b0;
@@ -125,22 +128,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       input int bank, input flash_dv_part_e part,
       input addr_t start_addr, input addr_t end_addr);
     if (part_address_ranges_written[bank].exists(part)) begin
+      address_range_t range = '{start_addr, end_addr};
       address_ranges_t ranges = part_address_ranges_written[bank][part];
-      int index;
-      bit success = address_in_ranges(bank, part, ranges, start_addr, index);
-      if (success) return 1'b1;
-      else begin
-        `uvm_info("address_written", $sformatf(
-                  "end range [0x%x : 0x%x]", ranges[index].first, ranges[index].last), UVM_MEDIUM)
-        if (ranges[index].first > start_addr) begin
-          if (ranges[index].first <= end_addr) begin
-            `uvm_info("address_written", $sformatf(
-                      "range [0x%x : 0x%x] overlaps [0x%x : 0x%x]", ranges[index].first,
-                      ranges[index].last, start_addr, end_addr), UVM_MEDIUM)
-            return 1'b1;
-          end
-        end
-      end
+      return address_in_ranges(bank, part, ranges, range);
     end
     return 1'b0;
   endfunction
@@ -157,8 +147,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                              input addr_t addr);
     if (part_address_ranges_written[bank].exists(part)) begin
       address_ranges_t ranges = part_address_ranges_written[bank][part];
-      int index;
-      if (address_in_ranges(bank, part, ranges, addr, index)) begin
+      address_range_t range = '{addr, addr + FlashBankBytesPerWord - 1};
+      if (address_in_ranges(bank, part, ranges, range)) begin
         return 1'b1;
       end
     end
@@ -169,8 +159,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Returns 1 if any address between start_addr and end_addr were written.
   protected function bit address_range_was_written(input int bank, input flash_dv_part_e part,
                                                    input addr_t start_addr, input addr_t end_addr);
-    int index;
-
     `uvm_info(`gfn, $sformatf(
               "Query address_range_written from %x to %x in bank:%0d %0s",
               start_addr, end_addr, bank, part.name),
