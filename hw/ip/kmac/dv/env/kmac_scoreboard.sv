@@ -60,6 +60,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit entropy_fast_process;
   bit entropy_ready;
 
+  // The scoreboard overwrites the value configured by software with the value of the application
+  // interface. Keep a separate copy of the CSR value to restore it after application interface
+  // transactions finish.
+  sha3_pkg::keccak_strength_e strength_csr;
+
   // Set this bit when entropy_ready is 1 and entropy_mode is EntropyModeEdn,
   // to indicate that we are now waiting on the EDN to return valid entropy
   bit in_edn_fetch = 0;
@@ -356,6 +361,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end
 
             @(posedge sha3_idle);
+            // Restore the strength value provided by software via CSR interface.
+            strength = strength_csr;
           end
           ,
           wait(cfg.under_reset || kmac_err.code == ErrKeyNotValid ||
@@ -745,6 +752,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           hash_mode = sha3_pkg::sha3_mode_e'(item.a_data[KmacModeMSB:KmacModeLSB]);
 
           strength = sha3_pkg::keccak_strength_e'(item.a_data[KmacStrengthMSB:KmacStrengthLSB]);
+          strength_csr = strength;
 
           entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyModeMSB:KmacEntropyModeLSB]);
 
