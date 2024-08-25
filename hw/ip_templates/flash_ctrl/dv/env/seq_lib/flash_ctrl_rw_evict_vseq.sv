@@ -45,12 +45,13 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
           `DV_CHECK(try_create_prog_op(ctrl, bank, num), "Could not create a prog flash op")
           ctrl.num_words = fractions;
           if (evict_start && addr_q.size >= TargetAddrQSize) begin
+            string entries = $sformatf("%p", addr_q);
             addr_q.shuffle();
             entry = addr_q.pop_front();
             ctrl.addr = entry.addr;
             ctrl.otf_addr = entry.addr;
             `uvm_info(`gfn, $sformatf(
-                      "The address to evict is 0x%x, chosen from %p", entry.addr, addr_q),
+                      "The address to evict is 0x%x, chosen from %s", entry.addr, entries),
                       UVM_MEDIUM)
             ctrl.partition = entry.part;
             init_ctrl = ctrl;
@@ -120,6 +121,9 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
 
   // We evict two bus words (one flash word).
   virtual task send_evict(flash_op_t ctrl, int bank);
+    `uvm_info(`gfn, $sformatf(
+              "Sending eviction write bank:%0d %s addr:0x%x",
+              bank, ctrl.partition.name, ctrl.addr), UVM_MEDIUM)
     prog_flash(ctrl, bank, /*num=*/1, /*wd=*/2);
   endtask : send_evict
 
