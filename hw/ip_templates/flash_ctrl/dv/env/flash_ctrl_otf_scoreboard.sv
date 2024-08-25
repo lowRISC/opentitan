@@ -518,16 +518,23 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         skip_comp = 1;
       end
 
+      // Data will be corrupted if some bits to be written cannot be flipped to 1.
       if (rcv.mem_part == FlashPartData) begin
         if (data_mem[bank].exists(rcv.mem_addr)) begin
-          corrupt_entry[entry] = 1;
           rd_data = data_mem[bank][rcv.mem_addr];
-          if (cfg.seq_cfg.use_vendor_flash == 0) begin
-            exp.req.prog_full_data &= rd_data;
-          end else begin
-            skip_comp = 1;
+          if ((exp.req.prog_full_data & rd_data) != exp.req.prog_full_data) begin
+            corrupt_entry[entry] = 1;
+            `uvm_info(`gfn, $sformatf(
+                      "Overwriting data bank:%0d, %s, addr:0x%x, data:0x%x, wr_data:0x%x",
+                      bank, rcv.mem_part.name, entry.addr, rd_data, exp.req.prog_full_data),
+                      UVM_MEDIUM)
+            if (cfg.seq_cfg.use_vendor_flash == 0) begin
+              exp.req.prog_full_data &= rd_data;
+            end else begin
+              skip_comp = 1;
+            end
+            data_mem[bank].delete(rcv.mem_addr);
           end
-          data_mem[bank].delete(rcv.mem_addr);
         end
         data_mem[bank][rcv.mem_addr] = exp.req.prog_full_data;
       end else begin
@@ -536,14 +543,24 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         `uvm_info(`gfn, $sformatf("scb_rd_data:%x prog_data:%x",
              info_mem[bank][rcv.mem_info_sel][rcv.mem_addr], exp.req.prog_full_data), UVM_HIGH)
         if (info_mem[bank][rcv.mem_info_sel].exists(rcv.mem_addr)) begin
-          corrupt_entry[entry] = 1;
           rd_data = info_mem[bank][rcv.mem_info_sel][rcv.mem_addr];
-          if (cfg.seq_cfg.use_vendor_flash == 0) begin
-            exp.req.prog_full_data &= rd_data;
-          end else begin
-            skip_comp = 1;
+          if ((exp.req.prog_full_data & rd_data) != exp.req.prog_full_data) begin
+            corrupt_entry[entry] = 1;
+            `uvm_info(`gfn, $sformatf(
+                      "Overwriting data bank:%0d, %s, addr:0x%x, data:0x%x, wr_data:0x%x",
+                      bank, rcv.mem_part.name, entry.addr, rd_data, exp.req.prog_full_data),
+                      UVM_MEDIUM)
+            if (cfg.seq_cfg.use_vendor_flash == 0) begin
+              exp.req.prog_full_data &= rd_data;
+            end else begin
+              skip_comp = 1;
+            end
+            info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
           end
-          info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
+          `uvm_info(`gfn, $sformatf(
+                    "Updating info_mem bank:%0d, info:%0d, addr:0x%x",
+                    bank, rcv.mem_info_sel, rcv.mem_addr << 3),
+                    UVM_MEDIUM)
         end
         info_mem[bank][rcv.mem_info_sel][rcv.mem_addr] = exp.req.prog_full_data;
       end
