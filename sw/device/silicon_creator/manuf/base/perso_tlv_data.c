@@ -30,7 +30,6 @@ status_t perso_tlv_set_cert_block(const uint8_t *buf, size_t max_room,
   perso_tlv_object_header_t obj_type;
 
   memcpy(&objh, buf, sizeof(objh));
-  objh = __builtin_bswap16(objh);
   PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
 
   if (obj_size > max_room)
@@ -53,7 +52,6 @@ status_t perso_tlv_set_cert_block(const uint8_t *buf, size_t max_room,
   // Let's retrieve cert wrapper header.
   block->wrapped_cert_p = buf;
   memcpy(&crth, buf, sizeof(crth));
-  crth = __builtin_bswap16(crth);
   max_room -= sizeof(crth);
   buf += sizeof(crth);
   PERSO_TLV_GET_FIELD(Crth, Size, crth, &wrapped_cert_size);
@@ -148,10 +146,8 @@ status_t perso_tlv_prepare_cert_for_shipping(const char *name,
   PERSO_TLV_SET_FIELD(Crth, Size, cert_header, wrapped_len);
   PERSO_TLV_SET_FIELD(Crth, NameSize, cert_header, name_len);
 
-  uint16_t swapped = __builtin_bswap16(obj_header);
-  TRY(perso_tlv_push_to_blob(&swapped, sizeof(obj_header), pb));
-  swapped = __builtin_bswap16(cert_header);
-  TRY(perso_tlv_push_to_blob(&swapped, sizeof(cert_header), pb));
+  TRY(perso_tlv_push_to_blob(&obj_header, sizeof(obj_header), pb));
+  TRY(perso_tlv_push_to_blob(&cert_header, sizeof(cert_header), pb));
   TRY(perso_tlv_push_to_blob(name, name_len, pb));
   TRY(perso_tlv_push_to_blob(cert_body, cert_size, pb));
   pb->num_objs++;
