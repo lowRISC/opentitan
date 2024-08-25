@@ -69,6 +69,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   function void add_address_range(input int bank, input flash_dv_part_e part,
                                   input addr_t first_address, input addr_t last_address);
+    `uvm_info("address_written", $sformatf(
+              "Adding address_range bank:%0d %s: [0x%x : 0x%x]",
+              bank, part.name, first_address, last_address), UVM_MEDIUM)
     part_address_ranges_written[bank][part].push_back('{first: first_address, last: last_address});
   endfunction
 
@@ -152,7 +155,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         return 1'b1;
       end
     end
-    if (addr >= 16'h800 && addr < 16'h2000) return 1'b1;
     return address_in_words(bank, part, addr);
   endfunction
 
@@ -167,7 +169,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       return 1'b1;
     end
     `uvm_info("address_written", "Cleared ranges", UVM_MEDIUM)
-    if (start_addr >= 16'h800 && end_addr < 16'h2000) return 1'b1;
     for (addr_t addr = start_addr; addr < end_addr; addr += FlashBankBytesPerWord) begin
       if (address_in_words(bank, part, addr)) begin
         `uvm_info("address_words", $sformatf("addr:0x%x is already written", addr), UVM_MEDIUM)
@@ -1607,14 +1608,16 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_hdl_data_t data;
     flash_otf_item item;
     bit [BankAddrW-1:0] mem_addr;
-    int                 page = 1;
+    int start_page = 1;
+    int number_of_secret_pages = 3;
     `uvm_info(`gfn, $sformatf("Updating secret partition with addr_key:%x, data_key:%x",
               otp_addr_key, otp_data_key), UVM_MEDIUM)
 
-    repeat(3) begin
-      int page_st_addr = page*2048;
+    for (int page = start_page; page < start_page + number_of_secret_pages; ++page) begin
       mubi4_t scramble_en;
       mubi4_t ecc_en;
+      int page_st_addr = page * BytesPerPage;
+      int page_en_addr = page_st_addr + BytesPerPage - 1;
       // Only scr/ecc enable matter; cfg.ovrd_src_dis can be randomized in directed test,
       // but otherwise it has the same default value as HW_INFO_CFG_OVERRIDE.
       if (page != 3) begin
@@ -1626,9 +1629,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
         ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
       end
-      `uvm_info(`gfn, $sformatf("info page %0d scr_en:%x, ecc_en:%x", page, scramble_en, ecc_en),
+      `uvm_info(`gfn, $sformatf(
+                "info page %0d [0x%x : 0x%x] scr_en:%x, ecc_en:%x",
+                page, page_st_addr, page_st_addr + BytesPerPage - 1, scramble_en, ecc_en),
                 UVM_MEDIUM)
-      for (int addr = page_st_addr; addr < (page_st_addr + 8*256); addr += 8) begin
+      for (int addr = page_st_addr; addr <= page_en_addr; addr += 8) begin
         `uvm_create_obj(flash_otf_item, item)
         data = cfg.mem_bkdr_util_h[FlashPartInfo][0].read(addr);
         item.dq.push_back(data[31:0]);
@@ -1642,8 +1647,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         cfg.scb_flash_info[addr] = item.fq[0][31:0];
         cfg.scb_flash_info[addr+4] = item.fq[0][63:32];
       end
-      page++;
     end
+    add_address_range(0, FlashPartInfo, start_page * BytesPerPage,
+                      (start_page + number_of_secret_pages) * BytesPerPage - 1);
+    sort_all_address_ranges();
   endfunction // update_secret_partition
 
    function void update_mp_region_cfg_mubifalse(ref flash_mp_region_cfg_t cfg);
