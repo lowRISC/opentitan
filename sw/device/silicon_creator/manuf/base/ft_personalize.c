@@ -556,7 +556,6 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       // We just prepared the set of wrapped certificates, let's trust that the
       // data is correct and does not need more validation.
       memcpy(&crth, certs, sizeof(crth));
-      crth = __builtin_bswap16(crth);
       certs += sizeof(crth);
       PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
       memcpy(name, certs, name_len);
