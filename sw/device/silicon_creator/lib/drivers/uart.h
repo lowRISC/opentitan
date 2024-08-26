@@ -93,6 +93,14 @@ OT_WARN_UNUSED_RESULT
 size_t uart_read(uint8_t *data, size_t len, uint32_t timeout_ms);
 
 /**
+ * Returns true if UART TX is idle, otherwise returns false.
+ *
+ * @return Boolean indicating UART TX activity status.
+ */
+OT_WARN_UNUSED_RESULT
+bool uart_tx_idle(void);
+
+/**
  * Detect if a UART break is asserted for a given period of time.
  *
  * UART break must already be asserted upon entry to this function and must

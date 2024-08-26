@@ -679,6 +679,14 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
         OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH_OFFSET);
     uintptr_t immutable_rom_ext_entry_point =
         (uintptr_t)manifest + immutable_rom_ext_start_offset;
+    // If address translation is enabled, adjust the entry_point.
+    if (launder32(manifest->address_translation) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+      immutable_rom_ext_entry_point =
+          rom_ext_vma_get(manifest, immutable_rom_ext_entry_point);
+    } else {
+      HARDENED_CHECK_NE(manifest->address_translation, kHardenedBoolTrue);
+    }
 
     // Compute a hash of the code section.
     // Include the start offset and the length of the section in the hash.
