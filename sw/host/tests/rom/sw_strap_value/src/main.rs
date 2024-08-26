@@ -10,7 +10,7 @@ use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
+use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
 use std::time::Duration;

@@ -16,7 +16,7 @@ use opentitanlib::test_utils;
 use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTestConfig, I2cTransferStart};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
+use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
 use std::borrow::Borrow;

@@ -16,7 +16,7 @@ use cryptotest_commands::drbg_commands::{CryptotestDrbgInput, CryptotestDrbgOutp
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
+use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, Parser)]

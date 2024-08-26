@@ -16,7 +16,7 @@ use crate::uart::console::{ExitStatus, UartConsole};
 // Bring in the auto-generated sources.
 include!(env!("ottf"));
 
-pub trait UartSend<T>
+pub trait ConsoleSend<T>
 where
     T: ConsoleDevice + ?Sized,
 {
@@ -24,7 +24,7 @@ where
     fn send_with_crc(&self, device: &T) -> Result<()>;
 }
 
-impl<T, U> UartSend<T> for U
+impl<T, U> ConsoleSend<T> for U
 where
     T: ConsoleDevice + ?Sized,
     U: Serialize,
@@ -47,7 +47,7 @@ where
     }
 }
 
-pub trait UartRecv<T>
+pub trait ConsoleRecv<T>
 where
     T: ConsoleDevice + ?Sized,
 {
@@ -56,7 +56,7 @@ where
         Self: Sized;
 }
 
-impl<T, U> UartRecv<T> for U
+impl<T, U> ConsoleRecv<T> for U
 where
     T: ConsoleDevice + ?Sized,
     U: DeserializeOwned,

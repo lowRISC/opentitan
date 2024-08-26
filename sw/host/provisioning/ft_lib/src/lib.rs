@@ -25,7 +25,7 @@ use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
-use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
+use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
 use ujson_lib::provisioning_data::{
