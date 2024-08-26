@@ -14,7 +14,7 @@ use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
-use opentitanlib::test_utils::rpc::UartSend;
+use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
 
