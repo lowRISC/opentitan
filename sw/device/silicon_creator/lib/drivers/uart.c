@@ -72,8 +72,7 @@ static bool uart_rx_empty(void) {
   return bitfield_bit32_read(reg, UART_STATUS_RXEMPTY_BIT);
 }
 
-OT_WARN_UNUSED_RESULT
-static bool uart_tx_idle(void) {
+bool uart_tx_idle(void) {
   uint32_t reg =
       abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, UART_STATUS_TXIDLE_BIT);

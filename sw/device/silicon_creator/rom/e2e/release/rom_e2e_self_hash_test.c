@@ -40,16 +40,16 @@ enum {
 
 const size_t kGoldenRomSizeBytes = 32652 - sizeof(chip_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x953cca70, 0x018fb4c7, 0xcd2ebc02, 0x95680df3,
-    0x220ca956, 0xe890a35d, 0xe8b62c21, 0x15bfa5e0,
+    0xc16e04d6, 0x2e94b881, 0x0759b405, 0xd0a28cde,
+    0xa8c900f3, 0x57b8c7f6, 0xacc910b0, 0x43000c0a,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x876747cf, 0xec01137f, 0x159bdc7f, 0x8177d11c,
-    0xcad1fb4e, 0xc0d3ccd0, 0xc7cb8699, 0x99c8a56b,
+    0xf3508c51, 0xef65a542, 0xc20e55d9, 0xada4c934,
+    0x8015bbca, 0xa863db5a, 0xd1ead827, 0x968d94cb,
 };
 const uint32_t kSiliconGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x5d02eeae, 0x76d7386c, 0x063a84ea, 0x279865f6,
-    0xf05b04e8, 0x06a569e0, 0xa8f2053b, 0x66c2cb77,
+    0x43b60e89, 0xbfa80347, 0xeeceb60a, 0x356bc7f1,
+    0xbd023b8a, 0xe5a4ddfc, 0xf66b45b5, 0x5b2ba0ba,
 };
 
 extern const char _chip_info_start[];

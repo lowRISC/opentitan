@@ -15,8 +15,7 @@ from elftools.elf import elffile
 
 _OTP_PARTITION_NAME = "CREATOR_SW_CFG"
 
-# TODO(#23425): extract this from the ELF file as well.
-_EARLGREY_EFLASH_START_ADDR = 0x20000000
+_OTTF_START_OFFSET_SYMBOL_NAME = "_ottf_start_address"
 _ROM_EXT_IMMUTABLE_SECTION_NAME = ".rom_ext_immutable"
 
 _START_OFFSET_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET"
@@ -30,17 +29,25 @@ class RomExtImmutableSectionOtpFields:
         self.rom_ext_elf = rom_ext_elf
         self.json_data = json_data
         self.immutable_section_idx = None
+        self.manifest_offset = None
         self.start_offset = None
         self.size_in_bytes = None
         self.hash = None
         with open(self.rom_ext_elf, 'rb') as f:
             elf = elffile.ELFFile(f)
+            # Find the offset of the current slot we are in.
+            for symbol in elf.get_section_by_name(".symtab").iter_symbols():
+                if symbol.name == _OTTF_START_OFFSET_SYMBOL_NAME:
+                    self.manifest_offset = symbol.entry["st_value"]
+            assert self.manifest_offset, "Manifest start address not found."
+
+            # Find the immutable section and compute the OTP values.
             for section_idx in range(elf.num_sections()):
                 section = elf.get_section(section_idx)
                 if section.name == _ROM_EXT_IMMUTABLE_SECTION_NAME:
                     self.immutable_section_idx = section_idx
                     self.start_offset = (int(section.header['sh_addr']) -
-                                         _EARLGREY_EFLASH_START_ADDR)
+                                         self.manifest_offset)
                     self.size_in_bytes = int(section.header['sh_size'])
                     assert self.size_in_bytes == len(section.data())
                     # Prepend the start offset and length to section data
