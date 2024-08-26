@@ -13,7 +13,7 @@ use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::epmp::constants::*;
 use opentitanlib::test_utils::epmp::{Epmp, EpmpAddressRange, EpmpEntry, EpmpRegionKind};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
+use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 use std::time::Duration;
 
