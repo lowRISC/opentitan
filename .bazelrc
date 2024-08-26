@@ -17,10 +17,12 @@ build --strip='never'
 # Override default enablement of flags from @crt//common to control C compiler
 # warnings.
 build --features=-pedantic_warnings
+build --host_features=-pedantic_warnings
 
 # Enable toolchain hardening features.
 # `guards` adds `unimp` guard instructions after unconditional jumps.
 build --features=guards
+build --host_features=guards
 
 # Use --config=disable_hardening to disable hardening to measure the
 # impact of the hardened sequences on code size.
