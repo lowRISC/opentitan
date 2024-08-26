@@ -10,7 +10,7 @@ class edn_alert_test extends edn_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.en_scb            = 0;
+    cfg.en_scb            = 1;
     cfg.enable_pct        = 100;
     // For test_edn_cs_sts_alert() only hardware controlled modes can be tested.
     cfg.boot_req_mode_pct = 50;

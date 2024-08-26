@@ -62,7 +62,9 @@ class edn_alert_vseq extends edn_base_vseq;
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");
 
+    `uvm_info(`gfn, $sformatf("---------------------------"), UVM_LOW)
     if (cfg.boot_req_mode == MuBi4True) begin
+      `uvm_info(`gfn, $sformatf("---------------------------1"), UVM_LOW)
       // If EDN is configured in Boot mode, randomly select one of the Boot states.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
                                          exp_state inside {BootLoadIns, BootInsAckWait,
@@ -73,6 +75,7 @@ class edn_alert_vseq extends edn_base_vseq;
       wr_cmd(.cmd_type(edn_env_pkg::BootGen), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False),
              .glen(1), .mode(edn_env_pkg::BootReqMode));
     end else if (cfg.auto_req_mode == MuBi4True) begin
+      `uvm_info(`gfn, $sformatf("---------------------------12"), UVM_LOW)
       // If instead EDN is configured in auto mode, randomly select one of the auto mode states.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
                                          exp_state inside {AutoLoadIns, AutoFirstAckWait,
@@ -86,13 +89,14 @@ class edn_alert_vseq extends edn_base_vseq;
       wr_cmd(.cmd_type(edn_env_pkg::AutoGen), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False),
              .glen(1), .mode(edn_env_pkg::AutoReqMode));
     end
+    `uvm_info(`gfn, $sformatf("---------------------------"), UVM_LOW)
 
     // Wait for the EDN main SM to enter the desired state and apply the rsp_sts_err setting to
     // make the next CSRNG acknowledgement return an error.
     fork
       `DV_SPINWAIT(
         `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s",
-                                  exp_state.name()), UVM_MEDIUM)
+                                  exp_state.name()), UVM_LOW)
         forever begin
           uvm_hdl_data_t val;
           state_e act_state;
@@ -146,6 +150,8 @@ class edn_alert_vseq extends edn_base_vseq;
         csr_rd(.ptr(ral.hw_cmd_sts), .value(hw_cmd_sts_prev), .backdoor(1));
         cmd_type_prev = hw_cmd_sts_prev[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type];
         auto_mode_prev = hw_cmd_sts_prev[hw_cmd_auto_mode];
+        // Tell the scoreboard that a command status error response is incoming.
+        cfg.expect_cmd_sts_alert = 1;
         // The next acknowledgement should return an error status.
         cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
         cfg.m_csrng_agent_cfg.cmd_zero_delays = 1;
@@ -174,6 +180,7 @@ class edn_alert_vseq extends edn_base_vseq;
     ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
     ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
     ral.ctrl.cmd_fifo_rst.set(cfg.cmd_fifo_rst);
+    `uvm_info(`gfn, $sformatf("SETTING EDN CTRL VALUES"), UVM_LOW)
     csr_update(.csr(ral.ctrl));
     // Read the hw_cmd_sts for coverage.
     csr_rd(.ptr(ral.hw_cmd_sts), .value(value));
@@ -185,6 +192,7 @@ class edn_alert_vseq extends edn_base_vseq;
           .cmd_ack(value[hw_cmd_ack]),
           .acmd(csrng_pkg::acmd_e'(value[hw_cmd_type+:CMD_TYPE_SIZE])));
     end
+    `uvm_info(`gfn, $sformatf("STARTING start_transition_to_main_sm_state"), UVM_LOW)
     // Issue the commands that are needed to get to exp_state in a fork.
     start_transition_to_main_sm_state(exp_state);
     send_generate = (exp_state inside {BootPulse, BootDone, BootLoadUni, BootUniAckWait,
@@ -199,26 +207,29 @@ class edn_alert_vseq extends edn_base_vseq;
     // Disable the boot mode to trigger the uninstaniate command if needed.
     if (exp_state inside {BootLoadUni, BootUniAckWait}) begin
       ral.ctrl.boot_req_mode.set(MuBi4False);
+      `uvm_info(`gfn, $sformatf("UPDATING CTRL BOOT TO FALSE"), UVM_LOW)
       csr_update(.csr(ral.ctrl));
     end
 
+    `uvm_info(`gfn, $sformatf("SOME SPINWAITING"), UVM_LOW)
     // Wait for the CSRNG error status response to propagate through the EDN
     // to the hw_cmd_sts register.
     // If the expected state is AutoLoadIns or AutoFirstAckWait we are expecting a SW command
     // status failure instead of a HW command status failure.
     if (exp_state inside {AutoLoadIns, AutoFirstAckWait}) begin
-      `uvm_info(`gfn, "Backdoor polling sw_cmd_sts for error", UVM_MEDIUM)
+      `uvm_info(`gfn, "Backdoor polling sw_cmd_sts for error", UVM_LOW)
       csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
       exp_cmd_sts[hw_cmd_sts+CMD_STS_SIZE-1:hw_cmd_sts] = csrng_pkg::CMD_STS_SUCCESS;
       exp_cmd_sts[hw_cmd_ack] = 1'b0;
     end else begin
-      `uvm_info(`gfn, "Backdoor polling hw_cmd_sts for error", UVM_MEDIUM)
+      `uvm_info(`gfn, "Backdoor polling hw_cmd_sts for error", UVM_LOW)
       csr_spinwait(.ptr(ral.hw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
       exp_cmd_sts[hw_cmd_sts+CMD_STS_SIZE-1:hw_cmd_sts] = cfg.which_cmd_sts_err;
       exp_cmd_sts[hw_cmd_ack] = 1'b1;
     end
     cfg.clk_rst_vif.wait_clks(10);
 
+    `uvm_info(`gfn, $sformatf("CHECK recov_alert_sts"), UVM_LOW)
     // Expect the csrng_ack_err bit to be set in the recov_alert_sts register.
     `uvm_info(`gfn, "Checking recov_alert_sts for error", UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;
@@ -284,6 +295,7 @@ class edn_alert_vseq extends edn_base_vseq;
         exp_cmd_type = csrng_pkg::INV;
       end
     endcase
+    `uvm_info(`gfn, $sformatf("CHECK hw_cmd_sts"), UVM_LOW)
     exp_cmd_sts[hw_cmd_type+CMD_TYPE_SIZE-1:hw_cmd_type] = {exp_cmd_type};
     csr_rd_check(.ptr(ral.hw_cmd_sts), .compare_value(exp_cmd_sts));
     // If coverage is enabled, record the values of the hw_cmd_sts register.
@@ -352,7 +364,7 @@ class edn_alert_vseq extends edn_base_vseq;
     fork
       `DV_SPINWAIT(
         `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s",
-                                  exp_state.name()), UVM_HIGH)
+                                  exp_state.name()), UVM_LOW)
         forever begin
           uvm_hdl_data_t val;
           state_e act_state;
@@ -361,7 +373,9 @@ class edn_alert_vseq extends edn_base_vseq;
           act_state = state_e'(val);
           if (act_state == exp_state) break;
         end
-        `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("State reached"), UVM_LOW)
+        // Tell the scoreboard that a command status error response is incoming.
+        cfg.expect_cmd_sts_alert = 1;
         // The next acknowledgement should return an error status.
         cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
         cfg.m_csrng_agent_cfg.cmd_zero_delays = 1;
@@ -378,6 +392,7 @@ class edn_alert_vseq extends edn_base_vseq;
 
     // Wait for the CSRNG error status response to propagate through the EDN
     // to the sw_cmd_sts register.
+    `uvm_info(`gfn, $sformatf("READING sw_cmd_sts 1"), UVM_LOW)
     csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
     cfg.clk_rst_vif.wait_clks(10);
     // Expect the csrng_ack_err bit to be set in the recov_alert_sts register.
@@ -389,6 +404,7 @@ class edn_alert_vseq extends edn_base_vseq;
     exp_sw_cmd_sts[sw_cmd_ack] = 1'b1;
     exp_sw_cmd_sts[sw_cmd_rdy] = 1'b0;
     exp_sw_cmd_sts[sw_cmd_reg_rdy] = 1'b0;
+    `uvm_info(`gfn, $sformatf("READING sw_cmd_sts 2"), UVM_LOW)
     csr_rd_check(.ptr(ral.sw_cmd_sts), .compare_value(exp_sw_cmd_sts));
     // Check if the current main SM state is RejectCsrngEntropy.
     csr_rd_check(.ptr(ral.main_sm_state), .compare_value(edn_pkg::RejectCsrngEntropy));
@@ -477,6 +493,17 @@ class edn_alert_vseq extends edn_base_vseq;
       cfg.edn_assert_vif.assert_off_alert();
     end
 
+    // Set the CTRL register to all false, since it has already been set in the init phase.
+    ral.ctrl.edn_enable.set(MuBi4False);
+    ral.ctrl.boot_req_mode.set(MuBi4False);
+    ral.ctrl.auto_req_mode.set(MuBi4False);
+    ral.ctrl.cmd_fifo_rst.set(MuBi4False);
+    csr_update(.csr(ral.ctrl));
+
+    // Clear the recov_alert_sts register.
+    csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
+    cfg.clk_rst_vif.wait_clks(100);
+
     // Depending on the value of cfg.which_invalid_mubi, one of the following ctrl register fields
     // will be set to an invalid MuBI value.
     // Apply the bad settings, and confirm the corresponding alert is fired.
@@ -512,12 +539,19 @@ class edn_alert_vseq extends edn_base_vseq;
     $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     // Set the CTRL register fields back to some valid MuBi4 value.
-    value = {prim_mubi_pkg::MuBi4False, // edn_enable
-             prim_mubi_pkg::MuBi4False, // boot_req_mode
-             prim_mubi_pkg::MuBi4False, // auto_req_mode
-             prim_mubi_pkg::MuBi4True}; // cmd_fifo_rst
-    csr_wr(.ptr(ral.ctrl), .value(value));
+    `uvm_info(`gfn, $sformatf("WRITING CLEAR CTRL"), UVM_LOW)
+    // value = {prim_mubi_pkg::MuBi4False, // edn_enable
+    //          prim_mubi_pkg::MuBi4False, // boot_req_mode
+    //          prim_mubi_pkg::MuBi4False, // auto_req_mode
+    //          prim_mubi_pkg::MuBi4True}; // cmd_fifo_rst
+    // csr_wr(.ptr(ral.ctrl), .value(value)); 
+    ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
+    ral.ctrl.boot_req_mode.set(prim_mubi_pkg::MuBi4False);
+    ral.ctrl.auto_req_mode.set(prim_mubi_pkg::MuBi4False);
+    ral.ctrl.cmd_fifo_rst.set(prim_mubi_pkg::MuBi4True);
+    csr_update(.csr(ral.ctrl));
     // Stop clearing the EDN FIFOs.
+    `uvm_info(`gfn, $sformatf("WRITING DISABLE ALL CTRL"), UVM_LOW)
     csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(prim_mubi_pkg::MuBi4False));
     // Turn the assertions back on.
     $asserton(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
@@ -530,8 +564,11 @@ class edn_alert_vseq extends edn_base_vseq;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     // Start the CSRNG error status response alert test.
+    `uvm_info(`gfn, $sformatf("STARTING test_edn_cs_hw_sts_alert"), UVM_LOW)
     test_edn_cs_hw_sts_alert();
+    `uvm_info(`gfn, $sformatf("DONE test_edn_cs_hw_sts_alert"), UVM_LOW)
     test_edn_cs_sw_sts_alert();
+    `uvm_info(`gfn, $sformatf("DONE test_edn_cs_sw_sts_alert"), UVM_LOW)
 
     // Disable the EDN and clear the FIFOs.
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);

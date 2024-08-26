@@ -39,6 +39,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
          invalid_mubi4_pct;
 
   bit    use_invalid_mubi;
+  bit    expect_cmd_sts_alert = 0;
 
   rand int       glen_auto_mode;
   rand mubi4_t   enable, boot_req_mode, auto_req_mode, cmd_fifo_rst;

@@ -65,6 +65,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // MAX_NUM_REQS_BETWEEN_RESEEDS state and ctr
   bit [31:0] max_num_reqs_between_reseeds = edn_reg_pkg::MaxNumReqsBetweenReseedsResval;
   bit [31:0] reqs_between_reseeds_ctr     = edn_reg_pkg::MaxNumReqsBetweenReseedsResval;
+  // Variable used to predict the EDN bus compare alert, when two consecutive genbit values match.
+  bit[csrng_pkg::GENBITS_BUS_WIDTH - 1:0] genbits_prev = '0;
 
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
   bit [NumEdnIntr-1:0] intr_pins;
@@ -187,6 +189,27 @@ class edn_scoreboard extends cip_base_scoreboard #(
         end
       end
       "ctrl": begin
+        if (addr_phase_write && !mubi4_test_invalid(mubi4_t'(edn_ctrl.edn_enable.q)) &&
+            mubi4_test_invalid(mubi4_t'(`gmv(ral.ctrl.edn_enable)))) begin
+          `DV_CHECK_FATAL(ral.recov_alert_sts.edn_enable_field_alert.predict(1'b1));
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+        end
+        if (addr_phase_write && !mubi4_test_invalid(mubi4_t'(edn_ctrl.auto_req_mode.q)) &&
+            mubi4_test_invalid(mubi4_t'(`gmv(ral.ctrl.auto_req_mode)))) begin
+          `DV_CHECK_FATAL(ral.recov_alert_sts.auto_req_mode_field_alert.predict(1'b1));
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+        end
+        if (addr_phase_write && !mubi4_test_invalid(mubi4_t'(edn_ctrl.boot_req_mode.q)) &&
+            mubi4_test_invalid(mubi4_t'(`gmv(ral.ctrl.boot_req_mode)))) begin
+          `DV_CHECK_FATAL(ral.recov_alert_sts.boot_req_mode_field_alert.predict(1'b1));
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+        end
+        if (addr_phase_write && !mubi4_test_invalid(mubi4_t'(edn_ctrl.cmd_fifo_rst.q)) &&
+            mubi4_test_invalid(mubi4_t'(`gmv(ral.ctrl.cmd_fifo_rst)))) begin
+          `DV_CHECK_FATAL(ral.recov_alert_sts.cmd_fifo_rst_field_alert.predict(1'b1));
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+        end
+
         // update current ctrl state
         edn_ctrl.edn_enable.q = `gmv(ral.ctrl.edn_enable);
         edn_ctrl.auto_req_mode.q = `gmv(ral.ctrl.auto_req_mode);
@@ -195,23 +218,24 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
         // Reset fifos if cmd_fifo_rst is true or if EDN is being disabled.
         if (write && (edn_ctrl.cmd_fifo_rst.q == MuBi4True ||
-                      (edn_ctrl.edn_enable.q == MuBi4False &&
+                      (edn_ctrl.edn_enable.q != MuBi4True &&
                        edn_ctrl_pre.edn_enable.q == MuBi4True))) begin
           reseed_cmd_q.delete();
           generate_cmd_q.delete();
         end
         // Set all sw_cmd_sts fields to 0 if the EDN is being disabled.
-        if (write && (edn_ctrl.edn_enable.q == MuBi4False &&
+        if (write && (edn_ctrl.edn_enable.q != MuBi4True &&
                       edn_ctrl_pre.edn_enable.q == MuBi4True)) begin
           sw_cmd_sts = 32'b0;
         end
 
         if (write && (edn_ctrl.edn_enable.q == MuBi4True)) begin
+          boot_mode = 1'b0;
+          auto_mode = 1'b0;
           // set boot mode flag if boot_req_mode is true and we are not already in auto mode
           // boot mode has priority over auto mode if they are turned on at the same time
           if (edn_ctrl.boot_req_mode.q == MuBi4True && !auto_mode) begin
             boot_mode = 1'b1;
-            void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
           end
           // set auto mode flag if auto_req_mode is true and we are not already in boot mode
           if (edn_ctrl.auto_req_mode.q == MuBi4True && !boot_mode)  begin
@@ -226,6 +250,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
             instantiated = 1'b0;
             boot_gen_cmd_sent = 1'b0;
             sw_cmd_req_q.delete();
+            genbits_prev = '0;
 
             // Clear the auto mode FIFOs if Main_SM enters SW_Port_Mode or if the EDN has been
             // disabled via backdoor and the FIFOs haven't been cleared yet.
@@ -238,10 +263,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
             cfg.backdoor_disable = 1'b0;
             backdoor_disable_fifo_clr = 1'b0;
             reset_happened = 1'b0;
-            sw_cmd_sts[sw_cmd_ack] = 1'b0;
-            sw_cmd_sts[sw_cmd_sts+:CMD_STS_SIZE-1] = csrng_pkg::CMD_STS_SUCCESS;
-            sw_cmd_sts[sw_cmd_rdy] = !boot_mode;
-            sw_cmd_sts[sw_cmd_reg_rdy] = !boot_mode;
+            sw_cmd_sts[edn_env_pkg::sw_cmd_ack] = 1'b0;
+            sw_cmd_sts[edn_env_pkg::sw_cmd_sts+:CMD_STS_SIZE-1] = csrng_pkg::CMD_STS_SUCCESS;
+            sw_cmd_sts[edn_env_pkg::sw_cmd_rdy] = !boot_mode;
+            sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] = !boot_mode;
 
           // If boot mode is being disabled, wait for SM to enter the Idle state
           // and predict the status ready signals to be high.
@@ -255,8 +280,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
                   if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
                     auto_mode = 1'b1;
                   end
-                  sw_cmd_sts[sw_cmd_rdy] = 1'b1;
-                  sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;,
+                  sw_cmd_sts[edn_env_pkg::sw_cmd_rdy] = 1'b1;
+                  sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] = 1'b1;,
                   wait (cfg.backdoor_disable || reset_happened);
               )
             join_none
@@ -274,11 +299,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
                   // Check if the EDN will enter boot or SW mode.
                   if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
                     boot_mode = 1'b1;
-                    void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
                   // If the EDN enters SW mode, set the prediction for sw_cmd_sts accordingly.
                   end else begin
-                    sw_cmd_sts[sw_cmd_rdy] = 1'b1;
-                    sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
+                    sw_cmd_sts[edn_env_pkg::sw_cmd_rdy] = 1'b1;
+                    sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] = 1'b1;
                   end
                   // Predict the EDN to have left the HW controlled part of auto mode.
                   if (auto_mode) begin
@@ -295,11 +319,11 @@ class edn_scoreboard extends cip_base_scoreboard #(
         bit sw_cmd_allowed = (!boot_mode && !auto_mode) ||
                              (auto_mode && !instantiated);
 
-        if (addr_phase_write && sw_cmd_sts[sw_cmd_reg_rdy] && sw_cmd_allowed) begin
+        if (addr_phase_write && sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] && sw_cmd_allowed) begin
           // If a SW command is issued, reset the SW_CMD_STS register (apart from the cmd_sts field).
-          sw_cmd_sts[sw_cmd_ack] = 1'b0;
-          sw_cmd_sts[sw_cmd_rdy] = 1'b0;
-          sw_cmd_sts[sw_cmd_reg_rdy]= 1'b0;
+          sw_cmd_sts[edn_env_pkg::sw_cmd_ack] = 1'b0;
+          sw_cmd_sts[edn_env_pkg::sw_cmd_rdy] = 1'b0;
+          sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy]= 1'b0;
           sw_cmd_req_q.push_back(item.a_data);
         end
       end
@@ -325,6 +349,12 @@ class edn_scoreboard extends cip_base_scoreboard #(
         end
       end
       "hw_cmd_sts": begin
+        `uvm_info(`gfn, $sformatf("HW_CMD_STS is %x", item.d_data), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("boot_mode is %x", `gmv(ral.hw_cmd_sts.boot_mode)), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("auto_mode is %x", `gmv(ral.hw_cmd_sts.auto_mode)), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("cmd_sts is %x", `gmv(ral.hw_cmd_sts.cmd_sts)), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("cmd_ack is %x", `gmv(ral.hw_cmd_sts.cmd_ack)), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("cmd_type is %x", `gmv(ral.hw_cmd_sts.cmd_type)), UVM_LOW)
       end
       "boot_ins_cmd": begin
         if (addr_phase_write) begin
@@ -389,6 +419,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     forever begin
       cs_cmd_fifo.get(cs_cmd_item);
+      `uvm_info(`gfn, $sformatf("CMD SENT TO CSRNG"), UVM_LOW)
       cs_cmd = cs_cmd_item.h_data[csrng_pkg::CSRNG_CMD_WIDTH-1:0];
       predict_sts = 1'b1;
 
@@ -516,6 +547,11 @@ class edn_scoreboard extends cip_base_scoreboard #(
                               $sformatf({"Instantiate command 0x%h in sw mode",
                                          " has to match the value in sw_cmd_req register 0x%h."},
                                         cs_cmd, sw_cmd_req_comp))
+            end
+            
+            // If EDN is in boot mode, the hw_cmd_sts reg should now indicate this.
+            if (boot_mode) begin
+              void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
             end
           end
           csrng_pkg::RES: begin
@@ -661,8 +697,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
         // the ack and command type need to be set.
         if ((auto_mode && instantiated) || boot_mode) begin
           hw_cmd_sts = `gmv(ral.hw_cmd_sts);
-          hw_cmd_sts[hw_cmd_ack] = 1'b0;
-          hw_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE-1] = acmd_cur;
+          hw_cmd_sts[edn_env_pkg::hw_cmd_ack] = 1'b0;
+          hw_cmd_sts[edn_env_pkg::hw_cmd_type+:CMD_TYPE_SIZE-1] = acmd_cur;
           void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
         end
       end
@@ -671,20 +707,26 @@ class edn_scoreboard extends cip_base_scoreboard #(
       // In auto mode the signal also goes high but only for the initial instantiate command.
       if ((!auto_mode || (!instantiated && clen_cntr) || (instantiated && inst_ack_outstanding))
           && !boot_mode && predict_sts) begin
-        sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
+        sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] = 1'b1;
       end
     end
 
   endtask
 
   task process_genbits_fifo();
-    genbits_item_t                  genbits_item;
-    bit[ENDPOINT_BUS_WIDTH - 1:0]   endpoint_data;
-    bit                             fips;
+    genbits_item_t                          genbits_item;
+    bit[ENDPOINT_BUS_WIDTH - 1:0]           endpoint_data;
+    bit                                     fips;
 
     forever begin
       genbits_fifo.get(genbits_item);
       fips = genbits_item.h_data[csrng_pkg::GENBITS_BUS_WIDTH];
+      if (genbits_prev == genbits_item.h_data[csrng_pkg::GENBITS_BUS_WIDTH - 1:0]) begin
+        `uvm_info(`gfn, $sformatf("BUS CMP EXPECTING ALERT"), UVM_LOW)
+        `DV_CHECK_FATAL(ral.recov_alert_sts.edn_bus_cmp_alert.predict(1'b1));
+        set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(2000));
+      end
+      genbits_prev = genbits_item.h_data[csrng_pkg::GENBITS_BUS_WIDTH - 1:0];
       for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH; i++) begin
         endpoint_data = genbits_item.h_data >> (i * ENDPOINT_BUS_WIDTH);
         endpoint_data_q.push_back({fips, endpoint_data});
@@ -696,7 +738,34 @@ class edn_scoreboard extends cip_base_scoreboard #(
     csrng_pkg::csrng_rsp_t   rsp_sts;
 
     forever begin
-      rsp_sts_fifo.get(rsp_sts);
+      
+      `DV_SPINWAIT_EXIT(rsp_sts_fifo.get(rsp_sts);,
+                        wait(cfg.expect_cmd_sts_alert))
+      `uvm_info(`gfn, $sformatf("SCB RECEIVED RSP STS"), UVM_LOW)
+      if ((rsp_sts.csrng_rsp_sts != csrng_pkg::CMD_STS_SUCCESS) || cfg.expect_cmd_sts_alert) begin
+        `uvm_info(`gfn, $sformatf("ERROR STATUS EXPECTING ALERT"), UVM_LOW)
+        `DV_CHECK_FATAL(ral.recov_alert_sts.csrng_ack_err.predict(1'b1));
+        set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+      end
+      if (cfg.expect_cmd_sts_alert) begin
+        cfg.expect_cmd_sts_alert = 0;
+        `uvm_info(`gfn, $sformatf("boot_mode %x auto_mode %x inst_ack_outstanding %x", boot_mode, auto_mode, inst_ack_outstanding), UVM_LOW)
+        if (!boot_mode && (!auto_mode || inst_ack_outstanding)) begin
+          sw_cmd_sts[edn_env_pkg::sw_cmd_ack] = 1'b1;
+          sw_cmd_sts[edn_env_pkg::sw_cmd_sts+:CMD_STS_SIZE-1] = cfg.which_cmd_sts_err;
+          sw_cmd_sts[edn_env_pkg::sw_cmd_rdy] = 1'b0;
+          sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] = 1'b0;
+        end else begin
+          hw_cmd_sts = `gmv(ral.hw_cmd_sts);
+          hw_cmd_sts[edn_env_pkg::hw_cmd_ack] = 1'b1;
+          `uvm_info(`gfn, $sformatf("hw_cmd_sts %x", hw_cmd_sts), UVM_LOW)
+          hw_cmd_sts[edn_env_pkg::hw_cmd_sts+:CMD_STS_SIZE-1] = cfg.which_cmd_sts_err;
+          `uvm_info(`gfn, $sformatf("hw_cmd_sts2 %x", hw_cmd_sts), UVM_LOW)
+          void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
+        end
+        continue;
+      end
+      `uvm_info(`gfn, $sformatf("CONTINUED"), UVM_LOW)
       if (cfg.en_cov) begin
         cov_vif.cg_cs_cmd_response_sample(rsp_sts.csrng_rsp_sts, rsp_sts.csrng_rsp_ack);
       end
@@ -709,18 +778,18 @@ class edn_scoreboard extends cip_base_scoreboard #(
           `DV_SPINWAIT_EXIT(
               csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_ack),
                            .exp_data(rsp_sts.csrng_rsp_ack), .backdoor(1'b1));
-              sw_cmd_sts[sw_cmd_ack] = rsp_sts.csrng_rsp_ack;
-              sw_cmd_sts[sw_cmd_sts+:CMD_STS_SIZE-1] = rsp_sts.csrng_rsp_sts;
-              sw_cmd_sts[sw_cmd_rdy] = !auto_mode;
-              sw_cmd_sts[sw_cmd_reg_rdy] = !auto_mode;,
+              sw_cmd_sts[edn_env_pkg::sw_cmd_ack] = rsp_sts.csrng_rsp_ack;
+              sw_cmd_sts[edn_env_pkg::sw_cmd_sts+:CMD_STS_SIZE-1] = rsp_sts.csrng_rsp_sts;
+              sw_cmd_sts[edn_env_pkg::sw_cmd_rdy] = !auto_mode;
+              sw_cmd_sts[edn_env_pkg::sw_cmd_reg_rdy] = !auto_mode;,
               wait (cfg.backdoor_disable || reset_happened);
           )
         join_none
         inst_ack_outstanding = 0;
       end else begin
         hw_cmd_sts = `gmv(ral.hw_cmd_sts);
-        hw_cmd_sts[hw_cmd_ack] = rsp_sts.csrng_rsp_ack;
-        hw_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE-1] = rsp_sts.csrng_rsp_sts;
+        hw_cmd_sts[edn_env_pkg::hw_cmd_ack] = rsp_sts.csrng_rsp_ack;
+        hw_cmd_sts[edn_env_pkg::hw_cmd_sts+:CMD_STS_SIZE-1] = rsp_sts.csrng_rsp_sts;
         void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
       end
     end
