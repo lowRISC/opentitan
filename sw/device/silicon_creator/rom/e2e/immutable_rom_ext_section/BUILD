@@ -3,10 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
+load(
     "//rules:const.bzl",
     "CONST",
+    "hex",
     "hex_digits",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VERSION",
+)
+load("//rules:manifest.bzl", "manifest")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -29,6 +39,11 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
+
+ROM_EXT_LINKER_SCRIPTS = [
+    "a",
+    "virtual",
+]
 
 IMMUTABLE_PARTITION_TEST_CASES = [
     {
@@ -125,7 +140,10 @@ IMMUTABLE_PARTITION_TEST_CASES = [
 
 [
     otp_json_immutable_rom_ext(
-        name = "otp_json_immutable_rom_ext_{}".format(t["name"]),
+        name = "otp_json_immutable_rom_ext_{}_{}".format(
+            t["name"],
+            ld_script,
+        ),
         testonly = True,
         partitions = [
             otp_partition(
@@ -133,59 +151,102 @@ IMMUTABLE_PARTITION_TEST_CASES = [
                 items = t["otp_fields"],
             ),
         ],
-        rom_ext = ":immutable_rom_ext_section_test",
+        rom_ext = ":immutable_rom_ext_section_test_{}".format(ld_script),
         visibility = ["//visibility:private"],
     )
+    for ld_script in ROM_EXT_LINKER_SCRIPTS
     for t in IMMUTABLE_PARTITION_TEST_CASES
 ]
 
 [
     otp_image(
-        name = "otp_img_immutable_rom_ext_{}".format(t["name"]),
+        name = "otp_img_immutable_rom_ext_{}_{}".format(
+            t["name"],
+            ld_script,
+        ),
         testonly = True,
         src = "//hw/ip/otp_ctrl/data:otp_json_prod",
         overlays = STD_OTP_OVERLAYS + [
-            ":otp_json_immutable_rom_ext_{}".format(t["name"]),
+            ":otp_json_immutable_rom_ext_{}_{}".format(
+                t["name"],
+                ld_script,
+            ),
         ],
         visibility = ["//visibility:private"],
     )
+    for ld_script in ROM_EXT_LINKER_SCRIPTS
     for t in IMMUTABLE_PARTITION_TEST_CASES
 ]
 
-opentitan_binary(
-    name = "immutable_rom_ext_section_test",
-    testonly = True,
-    srcs = ["immutable_rom_ext_section_test.c"],
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_sival",
-    ],
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
-)
+_MANIFEST_CONFIG = {
+    "identifier": hex(CONST.ROM_EXT),
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
+}
+
+manifest(d = dicts.add(
+    _MANIFEST_CONFIG,
+    {
+        "name": "manifest_addr_trans_on",
+        "address_translation": hex(CONST.HARDENED_TRUE),
+    },
+))
+
+manifest(d = dicts.add(
+    _MANIFEST_CONFIG,
+    {
+        "name": "manifest_addr_trans_off",
+        "address_translation": hex(CONST.HARDENED_FALSE),
+    },
+))
+
+[
+    opentitan_binary(
+        name = "immutable_rom_ext_section_test_{}".format(ld_script),
+        testonly = True,
+        srcs = ["immutable_rom_ext_section_test.c"],
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310_sival",
+        ],
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(ld_script),
+        manifest = ":manifest_addr_trans_on" if ld_script == "virtual" else ":manifest_addr_trans_off",
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:uart",
+        ],
+    )
+    for ld_script in ROM_EXT_LINKER_SCRIPTS
+]
 
 [
     opentitan_test(
-        name = "immutable_section_{}".format(t["name"]),
+        name = "immutable_section_{}_{}".format(
+            t["name"],
+            ld_script,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
         fpga = fpga_params(
             binaries = {
-                ":immutable_rom_ext_section_test": "firmware",
+                ":immutable_rom_ext_section_test_{}".format(ld_script): "firmware",
             },
             exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
-            otp = ":otp_img_immutable_rom_ext_{}".format(t["name"]),
+            otp = ":otp_img_immutable_rom_ext_{}_{}".format(
+                t["name"],
+                ld_script,
+            ),
         ),
     )
+    for ld_script in ROM_EXT_LINKER_SCRIPTS
     for t in IMMUTABLE_PARTITION_TEST_CASES
 ]
 
@@ -193,7 +254,11 @@ test_suite(
     name = "immutable_rom_ext_section",
     tags = ["manual"],
     tests = [
-        "immutable_section_{}".format(t["name"])
+        "immutable_section_{}_{}".format(
+            t["name"],
+            ld_script,
+        )
+        for ld_script in ROM_EXT_LINKER_SCRIPTS
         for t in IMMUTABLE_PARTITION_TEST_CASES
     ],
 )
