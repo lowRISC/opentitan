@@ -36,6 +36,10 @@ void rom_ext_non_mutable(void) {
   uart_write_imm(kStr2);
   uart_write_imm(kNewline);
 
+  // Wait until the UART is done transmitting.
+  while (!uart_tx_idle()) {
+  }
+
   // Set a magic value ("PASS") in retention SRAM.
   retention_sram_get()->owner.reserved[0] = kSramValuePass;
 
@@ -63,6 +67,15 @@ bool test_main(void) {
       immutable_rom_ext_hash[5], immutable_rom_ext_hash[4],
       immutable_rom_ext_hash[3], immutable_rom_ext_hash[2],
       immutable_rom_ext_hash[1], immutable_rom_ext_hash[0]);
+
+  // Check the same immutable section offset is used by every test to ensure it
+  // is portable across various ROM_EXT slot configurations.
+  if (immutable_rom_ext_section_enabled == kHardenedBoolTrue) {
+    CHECK(
+        otp_read32(
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET_OFFSET) ==
+        0x400);
+  }
 
   // Check the immutabled section executed by reading out the retention SRAM.
   if (immutable_rom_ext_section_enabled == kHardenedBoolTrue) {
