@@ -29,6 +29,12 @@
  */
 
 /**
+ * Function pointer type for data sink.
+ * The function should return the number of bytes actually written.
+ */
+typedef size_t (*sink_func_ptr)(void *data, const char *buf, size_t len);
+
+/**
  * A buffer_sink_t represents a place to write bytes to, implemented as a
  * C-style "closure".
  *
@@ -36,12 +42,21 @@
  * information, and a sink function, which takes the data pointer, a buffer, and
  * that buffer's length.
  *
- * The sink function should return the number of bytes actually written.
  */
 typedef struct buffer_sink {
   void *data;
-  size_t (*sink)(void *data, const char *buf, size_t len);
+  sink_func_ptr sink;
 } buffer_sink_t;
+
+/**
+ * Returns a function pointer to the spi device sink function.
+ */
+sink_func_ptr get_spi_device_sink(void);
+
+/**
+ * Returns a function pointer to the uart sink function.
+ */
+sink_func_ptr get_uart_sink(void);
 
 /**
  * Prints out a message to stdout, formatted according to the format string
