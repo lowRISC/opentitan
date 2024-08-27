@@ -1,0 +1,22 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: CI
+on:
+  pull_request:
+
+jobs:
+  airgapped_build:
+    name: Airgapped build
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Install system dependencies
+        run: grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
+      - name: Prepare airgapped environment
+        run: ./util/prep-bazel-airgapped-build.sh
+      - name: Build in the airgapped environment
+        run: ./ci/scripts/test-airgapped-build.sh
