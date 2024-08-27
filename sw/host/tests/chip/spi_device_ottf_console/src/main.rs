@@ -88,9 +88,12 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     data = test_utils::object::symbol_data(&object, "kTest4KbDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
-    log::info!("Sending 4KB data to Device...");
-    _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
-    spi_console_device.console_write(&data)?;
+    // 4KB data will be sent twice.
+    for _round in 0..2 {
+        log::info!("Sending 4KB data to Device...");
+        _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
+        spi_console_device.console_write(&data)?;
+    }
 
     let result = console.interact(&spi_console_device, None, Some(&mut stdout))?;
     match result {
