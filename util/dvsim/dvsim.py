@@ -616,6 +616,10 @@ def parse_args():
                       action='store_true',
                       help="Publish results to reports.opentitan.org.")
 
+    pubg.add_argument("--disable-html",
+                      action="store_true",
+                      help="disable HTML report generation.")
+
     dvg = parser.add_argument_group('Controlling DVSim itself')
 
     dvg.add_argument("--print-interval",

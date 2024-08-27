@@ -85,6 +85,9 @@ compile_commands.json
 # Local binaries that should not be committed to the codebase
 .bin/
 
+# python virtual env dir
+.venv/
+
 # Clangd index directory.
 .cache/clangd/
 
