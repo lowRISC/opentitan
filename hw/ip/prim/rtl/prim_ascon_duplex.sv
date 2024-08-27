@@ -15,7 +15,6 @@
 
 module prim_ascon_duplex
   import prim_ascon_pkg::*;
-  import prim_mubi_pkg::*;
  (
   input logic clk_i,
   input logic rst_ni,
@@ -24,7 +23,7 @@ module prim_ascon_duplex
   input duplex_op_e ascon_operation,
 
   input  logic   start_i,
-  output mubi4_t idle_o,
+  output prim_mubi_pkg::mubi4_t idle_o,
 
   // It is assumed that no_ad, no_msg, key, and nonce are always
   // valid and constant, when the cipher is triggered by the start command
@@ -35,12 +34,12 @@ module prim_ascon_duplex
   input logic [127:0] nonce_i,
 
   // Cipher Input Port
-  input  logic [127:0] data_in_i,
-  input  logic   [4:0] data_in_valid_bytes_i,
-  input  mubi4_t       last_block_ad_i,
-  input  mubi4_t       last_block_msg_i,
-  input  logic         data_in_valid_i,
-  output logic         data_in_ready_o,
+  input  logic [127:0]          data_in_i,
+  input  logic   [4:0]          data_in_valid_bytes_i,
+  input  prim_mubi_pkg::mubi4_t last_block_ad_i,
+  input  prim_mubi_pkg::mubi4_t last_block_msg_i,
+  input  logic                  data_in_valid_i,
+  output logic                  data_in_ready_o,
 
   // Cipher Output Port
   output logic [127:0] data_out_o,
@@ -87,12 +86,12 @@ logic  [63:0] iv;
 assign iv = (ascon_variant == ASCON_128) ? IV_128 : IV_128A;
 
 // internal combinatorial signals
-mubi4_t complete_block;
+prim_mubi_pkg::mubi4_t complete_block;
 
 // TODO add a check what to do, if data_in_valid_bytes_i is greater than blocksize
 assign complete_block =  (ascon_variant == ASCON_128  && data_in_valid_bytes_i ==  8)
                        ||(ascon_variant == ASCON_128A && data_in_valid_bytes_i == 16) ?
-                          MuBi4True : MuBi4False;
+                          prim_mubi_pkg::MuBi4True : prim_mubi_pkg::MuBi4False;
 
 // Padding:
 // 1) Associated Data
@@ -144,7 +143,7 @@ logic [127:0] data_out_padded; // is only used intenrally for decryption.
 // Therefore, it is easier to always XOR the padded plaintext
 
 always_comb begin
-  if (mubi4_test_true_strict(complete_block)) begin
+  if (prim_mubi_pkg::mubi4_test_true_strict(complete_block)) begin
       data_in_padded = data_in_valid_bytes;
       data_out_padded = data_out;
     end else begin
@@ -325,7 +324,7 @@ always_comb begin : p_fsm
   set_round_counter = 1'b0;
   inc_round_counter = 1'b0;
   perm_offset = P12;
-  idle_o = MuBi4False;
+  idle_o = prim_mubi_pkg::MuBi4False;
 
   // Default: Don't update state
   set_dom_sep   = 1'b0;
@@ -345,7 +344,7 @@ always_comb begin : p_fsm
 
   unique case (fsm_state_q)
     Idle: begin
-      idle_o = MuBi4True;
+      idle_o = prim_mubi_pkg::MuBi4True;
       if (start_i) begin
         fsm_state_d = Init;
       end
@@ -393,8 +392,8 @@ always_comb begin : p_fsm
           sel_mux_word1 = ABSORB;
           sel_mux_key_word1 = WORD;
         end
-        if (mubi4_test_true_strict(last_block_ad_i)) begin
-          if (mubi4_test_true_strict(complete_block)) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(last_block_ad_i)) begin
+          if (prim_mubi_pkg::mubi4_test_true_strict(complete_block)) begin
             fsm_state_d = PermADEmpty;
           end else begin
             fsm_state_d = PermADLast;
@@ -492,8 +491,8 @@ always_comb begin : p_fsm
             sel_mux_key_word1 = WORD;
           end
         end
-        if (mubi4_test_true_strict(last_block_msg_i)) begin
-          if (mubi4_test_true_strict(complete_block)) begin // we need extra padding
+        if (prim_mubi_pkg::mubi4_test_true_strict(last_block_msg_i)) begin
+          if (prim_mubi_pkg::mubi4_test_true_strict(complete_block)) begin // we need extra padding
             fsm_state_d = PermMSGEmpty;
           end else begin // padding is done on the fly
             fsm_state_d = XorKey0;

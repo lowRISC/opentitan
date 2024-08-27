@@ -7,7 +7,6 @@
 module ascon_core
   import ascon_reg_pkg::*;
   import ascon_pkg::*;
-  import prim_mubi_pkg::*;
   import prim_ascon_pkg::*;
 (
   input clk_i,
@@ -27,7 +26,7 @@ module ascon_core
   input  ascon_reg2hw_t reg2hw,
   output ascon_hw2reg_t hw2reg,
 
-  output mubi4_t idle_o
+  output prim_mubi_pkg::mubi4_t idle_o
 );
 
 
@@ -472,11 +471,13 @@ module ascon_core
     assign data_in[i] = data_share0_in_q[i] ^ data_share1_in_q[i];
   end
 
-  mubi4_t last_ad_block;
-  mubi4_t last_msg_block;
+  prim_mubi_pkg::mubi4_t last_ad_block;
+  prim_mubi_pkg::mubi4_t last_msg_block;
 
-  assign last_ad_block  = (data_type_last ==  AD_IN) ? MuBi4True : MuBi4False;
-  assign last_msg_block = (data_type_last == MSG_IN) ? MuBi4True : MuBi4False;
+  assign last_ad_block  = (data_type_last ==  AD_IN) ? prim_mubi_pkg::MuBi4True :
+                                                       prim_mubi_pkg::MuBi4False;
+  assign last_msg_block = (data_type_last == MSG_IN) ? prim_mubi_pkg::MuBi4True :
+                                                       prim_mubi_pkg::MuBi4False;
 
   assign msg_out_d = swap_endianess_byte(msg_out);
   assign tag_out_d = swap_endianess_byte(tag_out);

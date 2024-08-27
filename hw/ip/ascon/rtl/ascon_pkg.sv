@@ -7,11 +7,10 @@
 package ascon_pkg;
 
 typedef enum logic [11:0] {
-  // This encoding represents mubi4True and mubi4False
-  MSG_IN = {4'h6, 4'h9, 4'h9},
-  AD_IN =  {4'h9, 4'h6, 4'h9},
-  TAG_IN = {4'h9, 4'h9, 4'h6},
-  NONE =   {4'h9, 4'h9, 4'h9}
+  MSG_IN = {prim_mubi_pkg::MuBi4True, prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4False},
+  AD_IN =  {prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4True, prim_mubi_pkg::MuBi4False},
+  TAG_IN = {prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4True},
+  NONE =   {prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4False}
 } data_type_e;
 
 function automatic logic [127:0] swap_endianess_byte(logic [127:0] vector_in);
