@@ -53,6 +53,7 @@ fusesoc_build(
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
         "mmi": ["synth-vivado/memories.mmi"],
+        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310"],
     tags = ["manual"],
@@ -93,6 +94,7 @@ fusesoc_build(
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
         "mmi": ["synth-vivado/memories.mmi"],
+        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
     tags = ["manual"],
@@ -133,6 +135,7 @@ fusesoc_build(
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
         "mmi": ["synth-vivado/memories.mmi"],
+        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
     tags = ["manual"],
