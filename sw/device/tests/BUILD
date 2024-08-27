@@ -1387,7 +1387,10 @@ opentitan_test(
 opentitan_test(
     name = "example_mem_ujcmd_test",
     srcs = ["example_mem_ujcmd.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+    ),
     fpga = fpga_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
