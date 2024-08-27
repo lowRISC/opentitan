@@ -143,5 +143,18 @@ bool test_main(void) {
       ottf_console_spi_device_read(sizeof(input_buf), input_buf);
   CHECK(received_data_len == sizeof(kTest4KbDataStr));
   CHECK_ARRAYS_EQ(input_buf, kTest4KbDataStr, ARRAYSIZE(kTest4KbDataStr));
+
+  // Verify that reading data byte-by-byte using `ottf_console_getc` matches the
+  // expected output. This function is crucial in the UJSON OTTF console data
+  // pipeline.
+  memset(&input_buf, 0, sizeof(input_buf));
+  LOG_INFO("SYNC: Waiting for console data");
+  for (int i = 0; i < sizeof(kTest4KbDataStr); i++) {
+    status_t s = ottf_console_getc(ottf_console_get());
+    CHECK_STATUS_OK(s);
+    input_buf[i] = (uint8_t)s.value;
+  }
+  CHECK_ARRAYS_EQ(input_buf, kTest4KbDataStr, ARRAYSIZE(kTest4KbDataStr));
+
   return true;
 }
