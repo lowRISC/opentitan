@@ -109,4 +109,21 @@ uint32_t ottf_console_get_flow_control_irqs(void);
  */
 size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf);
 
+/**
+ * Write a buffer to the OTTF console.
+ *
+ * @param context An IO context
+ * @param buf The buffer to write to the OTTF console.
+ * @param len The length of the buffer.
+ * @return OK or an error.
+ */
+status_t ottf_console_putbuf(void *io, const char *buf, size_t len);
+
+/**
+ * Get a single character from the OTTF console.
+ *
+ * @return The next character or an error.
+ */
+status_t ottf_console_getc(void *io);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_H_
