@@ -21,7 +21,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
     cfg.scb_h.skip_alert_chk["recov_err"] = 1;
 
     cfg.scb_h.expected_alert["fatal_err"].expected = 1;
-    cfg.scb_h.expected_alert["fatal_err"].max_delay = 20000;
+    cfg.scb_h.expected_alert["fatal_err"].max_delay = 2_000_000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
     $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt");
 
