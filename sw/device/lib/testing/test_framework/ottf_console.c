@@ -49,6 +49,11 @@ enum {
 static dif_spi_device_handle_t ottf_console_spi_device;
 static dif_uart_t ottf_console_uart;
 
+// Function pointer to the currently active data sink.
+static sink_func_ptr sink;
+// Function pointer to a function that retrieves a single character.
+static status_t (*getc)(void *);
+
 // The `flow_control_state` and `flow_control_irqs` variables are shared between
 // the interrupt service handler and user code.
 static volatile ottf_console_flow_control_t flow_control_state;
@@ -61,6 +66,35 @@ void *ottf_console_get(void) {
     default:
       return &ottf_console_uart;
   }
+}
+
+static status_t uart_getc(void *io) {
+  const dif_uart_t *uart = (const dif_uart_t *)io;
+  uint8_t byte;
+  TRY(dif_uart_byte_receive_polled(uart, &byte));
+  TRY(ottf_console_flow_control(uart, kOttfConsoleFlowControlAuto));
+  return OK_STATUS(byte);
+}
+
+/*
+ * The user of this function needs to be aware of the following:
+ * 1. The exact amount of data expected to be sent from the host side must be
+ * known in advance.
+ * 2. Characters should be retrieved from the console as soon as they become
+ * available. Failure to do so may result in an SPI transaction timeout.
+ */
+static status_t spi_device_getc(void *io) {
+  static size_t index = 0;
+  static upload_info_t info = {0};
+  dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)io;
+  if (index == info.data_len) {
+    memset(&info, 0, sizeof(upload_info_t));
+    CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
+    index = 0;
+    CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
+  }
+
+  return OK_STATUS(info.data[index++]);
 }
 
 void ottf_console_init(void) {
@@ -76,9 +110,13 @@ void ottf_console_init(void) {
       }
 
       ottf_console_configure_uart(base_addr);
+      sink = get_uart_sink();
+      getc = uart_getc;
       break;
     case (kOttfConsoleSpiDevice):
       ottf_console_configure_spi_device(base_addr);
+      sink = get_spi_device_sink();
+      getc = spi_device_getc;
       break;
     default:
       CHECK(false, "unsupported OTTF console interface.");
@@ -324,3 +362,13 @@ size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf) {
 
   return received_data_len;
 }
+
+status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
+  size_t written_len = sink(io, buf, len);
+  if (len != written_len) {
+    return DATA_LOSS((int32_t)(len - written_len));
+  }
+  return OK_STATUS((int32_t)len);
+}
+
+status_t ottf_console_getc(void *io) { return getc(io); }

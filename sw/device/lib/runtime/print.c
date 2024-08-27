@@ -241,6 +241,8 @@ static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
   return write_data_len;
 }
 
+sink_func_ptr get_spi_device_sink(void) { return &base_dev_spi_device; }
+
 static size_t base_dev_uart(void *data, const char *buf, size_t len) {
   const dif_uart_t *uart = (const dif_uart_t *)data;
   for (size_t i = 0; i < len; ++i) {
@@ -250,6 +252,8 @@ static size_t base_dev_uart(void *data, const char *buf, size_t len) {
   }
   return len;
 }
+
+sink_func_ptr get_uart_sink(void) { return &base_dev_uart; }
 
 void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
   // Reset the frame counter.
