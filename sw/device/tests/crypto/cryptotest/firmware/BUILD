@@ -186,6 +186,7 @@ opentitan_binary(
     srcs = [":firmware.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
     deps = FIRMWARE_DEPS,
