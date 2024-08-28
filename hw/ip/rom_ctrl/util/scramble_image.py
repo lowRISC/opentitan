@@ -391,14 +391,14 @@ class Scrambler:
         num_digest_words = 256 // 32
 
         # Read out the scrambled data in logical address order
-        to_hash = b''
+        to_hash = bytearray()
         for log_addr in range(self.rom_size_words - num_digest_words):
             phy_addr = self.addr_sp_enc(log_addr)
             scr_word = scr_chunk.words[phy_addr]
             # Note that a scrambled word with ECC amounts to 39bit. The
             # expression (39 + 7) // 8 calculates the amount of bytes that are
             # required to store these bits.
-            to_hash += scr_word.to_bytes((39 + 7) // 8, byteorder='little')
+            to_hash.extend(scr_word.to_bytes((39 + 7) // 8, byteorder='little'))
 
         # Hash it
         hash_obj = cSHAKE256.new(data=to_hash,
@@ -465,8 +465,9 @@ def main() -> int:
     scrambler.add_hash(scr_mem)
 
     # Check for collisions
-    collisions = scr_mem.collisions()
-    if collisions:
+    collision = scr_mem.first_collision()
+    if collision:
+        addr0, addr1 = collision
         print(
             'ERROR: This combination of ROM contents and scrambling\n'
             '       key results in one or more collisions where\n'
@@ -475,11 +476,9 @@ def main() -> int:
             '       Looks like we\'ve been (very) unlucky with the\n'
             '       birthday problem. As a work-around, try again after\n'
             '       generating some different RndCnst* parameters.\n',
+            '\n'
+            f'First colliding addresses: {addr0:#010x}, {addr1:#010x}',
             file=sys.stderr)
-        print('{} colliding addresses:'.format(len(collisions)),
-              file=sys.stderr)
-        for addr0, addr1 in collisions:
-            print('  {:#010x}, {:#010x}'.format(addr0, addr1), file=sys.stderr)
         return 1
 
     scr_mem.write_vmem(args.outfile)

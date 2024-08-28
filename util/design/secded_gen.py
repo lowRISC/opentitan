@@ -409,7 +409,7 @@ def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> 
 def ecc_encode_some(config: Dict[str, Any],
                     codetype: str,
                     k: int,
-                    datawords: int) -> Tuple[List[int], int]:
+                    datawords: List[int]) -> Tuple[List[int], int]:
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
     codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
                  for w in datawords]
