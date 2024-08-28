@@ -33,7 +33,7 @@ static dif_pinmux_t pinmux;
 
 static manuf_ft_individualize_data_t in_data;
 static uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
-static uint32_t ast_cfg_data[kHwCfgDeviceIdSizeIn32BitWords];
+static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
 
 /**
  * Initializes all DIF handles used in this SRAM program.
