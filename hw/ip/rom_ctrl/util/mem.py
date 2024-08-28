@@ -323,24 +323,16 @@ class MemFile:
             chunk.add_ecc32(self.config)
         self.width = 39
 
-    def collisions(self) -> List[Tuple[int, int]]:
-        '''Find "collisions" in the scrambled memory
+    def first_collision(self) -> Optional[Tuple[int, int]]:
+        '''Return the address of the first pair of colliding addresses
 
-        This looks at all pairs of words in the memory, looking for addresses
-        where the words are equal. Returns a list of pairs (addr0, addr1) of
-        such addresses where addr0 < addr1 and in ascending order of addr0.
-
+           If there is no such pair (which is hopefully the case), return None.
         '''
-        ret = []
-        for idx0, chunk0 in enumerate(self.chunks):
-            for off0, word0 in enumerate(chunk0.words):
-                for diff_idx, chunk1 in enumerate(self.chunks[idx0:]):
-                    first_off1 = 0 if diff_idx else off0 + 1
-                    for diff_off, word1 in enumerate(chunk1.words[first_off1:]):
-                        off1 = first_off1 + diff_off
-
-                        if word0 == word1:
-                            addr0 = chunk0.base_addr + off0
-                            addr1 = chunk1.base_addr + off1
-                            ret.append((addr0, addr1))
-        return ret
+        known = {}  # type: Dict[int, int]
+        for chunk in self.chunks:
+            addr = chunk.base_addr
+            for off, word in enumerate(chunk.words):
+                if word in known:
+                    return known[word], addr + off
+                known[word] = addr + off
+        return None
