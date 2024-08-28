@@ -191,6 +191,7 @@ FIRMWARE_DEPS = [
     )
     for exec_env in [
         "fpga_cw310_test_rom",
+        "fpga_cw340_test_rom",
         "silicon_owner_sival_rom_ext",
         "silicon_owner_prodc_rom_ext",
     ]

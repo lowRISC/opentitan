@@ -16,10 +16,12 @@ load(
 # opentitan_test must have the following attributes to configure
 # each execution environment:
 # - cw310
+# - cw340
 # - silicon
 # - silicon_prodc
 CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
     "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_prodc",
 }
@@ -38,6 +40,15 @@ def cryptotest(name, test_vectors, test_args, test_harness):
         fpga = fpga_params(
             timeout = "long",
             binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
+            data = test_vectors,
+            test_cmd = """
+                --bootstrap={firmware}
+            """ + test_args,
+            test_harness = test_harness,
+        ),
+        fpga_cw340 = fpga_params(
+            timeout = "long",
+            binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw340_test_rom": "firmware"},
             data = test_vectors,
             test_cmd = """
                 --bootstrap={firmware}
