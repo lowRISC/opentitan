@@ -35,7 +35,7 @@ _POSITIONS = {
             "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
         ],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext",
         ],
         linker_script = position["linker_script"],
         deps = [
@@ -52,7 +52,7 @@ _POSITIONS = {
     opentitan_test(
         name = "rescue_firmware_{}".format(name),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -60,7 +60,6 @@ _POSITIONS = {
                 ":boot_test_{}".format(name): "payload",
             },
             slot = position["slot"],
-            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
@@ -81,7 +80,7 @@ _POSITIONS = {
 opentitan_test(
     name = "next_slot",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
@@ -89,8 +88,6 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
-        # This test requires serial break support which is not available in CI yet.
-        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
@@ -111,7 +108,7 @@ opentitan_test(
 opentitan_test(
     name = "primary_slot",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
@@ -119,8 +116,6 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
-        # This test requires serial break support which is not available in CI yet.
-        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"

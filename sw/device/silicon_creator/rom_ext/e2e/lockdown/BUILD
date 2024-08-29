@@ -14,7 +14,7 @@ opentitan_test(
     name = "otp_creator_lockdown",
     srcs = ["otp_creator_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
@@ -36,7 +36,7 @@ opentitan_test(
     name = "otp_dai_lockdown",
     srcs = ["otp_dai_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
@@ -60,7 +60,7 @@ opentitan_test(
     name = "sram_lockdown",
     srcs = ["sram_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
@@ -74,7 +74,7 @@ opentitan_test(
     name = "epmp_rlb_lockdown",
     srcs = ["epmp_rlb_lockdown.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
