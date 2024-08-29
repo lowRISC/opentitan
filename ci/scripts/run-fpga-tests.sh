@@ -121,6 +121,10 @@ then
     > "${pattern_file}"
     # We need to remove tests tagged as manual since we are not using a wildcard target.
     test_args="${test_args} --test_tag_filters=cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf,-broken,-skip_in_ci,-manual"
+elif [ "${fpga_tags}" == "fpga_hyper310_rom_ext_tests" ]
+then
+    test_args="${test_args} --test_tag_filters=hyper310_rom_ext,-broken,-skip_in_ci"
+    echo "//sw/device/silicon_creator/rom_ext/e2e/..." > "${pattern_file}"
 else
     test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci"
     echo "//..." > "${pattern_file}"
