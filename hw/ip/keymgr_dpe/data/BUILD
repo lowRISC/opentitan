@@ -4,10 +4,21 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 
-autogen_hjson_header(
-    name = "keymgr_dpe_regs",
+autogen_hjson_c_header(
+    name = "keymgr_dpe_c_regs",
+    srcs = [
+        "keymgr_dpe.hjson",
+    ],
+)
+
+autogen_hjson_rust_header(
+    name = "keymgr_dpe_rust_regs",
     srcs = [
         "keymgr_dpe.hjson",
     ],
