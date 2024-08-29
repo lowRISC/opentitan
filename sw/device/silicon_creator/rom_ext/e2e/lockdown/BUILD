@@ -64,6 +64,9 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
+    fpga = fpga_params(
+        tags = ["broken"],
+    ),
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
