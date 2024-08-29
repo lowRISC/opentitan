@@ -6,6 +6,7 @@
 
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -150,6 +151,40 @@ rom_error_t otbn_boot_attestation_keygen(
                                              kOtbnVarBootX, public_key->x));
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256PublicKeyCoordWords,
                                              kOtbnVarBootY, public_key->y));
+
+  return kErrorOk;
+}
+
+/**
+ * Helper function to convert an ECC P256 public key from little to big endian
+ * in place.
+ */
+static void pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
+  util_reverse_bytes(pubkey->x, kEcdsaP256PublicKeyCoordBytes);
+  util_reverse_bytes(pubkey->y, kEcdsaP256PublicKeyCoordBytes);
+}
+
+rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+                                           hmac_digest_t *pubkey_id,
+                                           ecdsa_p256_public_key_t *pubkey) {
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
+
+  // Generate / sideload key material into OTBN, and generate the ECC keypair.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      key.keygen_seed_idx, key.type, *key.keymgr_diversifier, pubkey));
+
+  // Keys are represented in certificates in big endian format, but the key is
+  // output from OTBN in little endian format, so we convert the key to
+  // big endian format.
+  pubkey_le_to_be_convert(pubkey);
+
+  // Generate the key ID.
+  //
+  // Note: the certificate generation functions expect the digest to be in big
+  // endian form, but the HMAC driver returns the digest in little endian, so we
+  // re-format it.
+  hmac_sha256(pubkey, sizeof(*pubkey), pubkey_id);
+  util_reverse_bytes(pubkey_id, sizeof(*pubkey_id));
 
   return kErrorOk;
 }
