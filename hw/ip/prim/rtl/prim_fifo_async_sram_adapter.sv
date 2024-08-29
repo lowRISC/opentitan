@@ -404,11 +404,14 @@ module prim_fifo_async_sram_adapter #(
   `ASSERT(NoWAckInFull_A, w_wptr_inc |-> !w_full,
           clk_wr_i, !rst_wr_ni)
 
+  // If a valid/ready handshake happens for the write pointer, that pointer should increment by one
   `ASSERT(WptrIncrease_A,
-          w_wptr_inc |=> w_wptr_v == PtrVW'($past(w_wptr_v,2) + 1),
+          w_wptr_inc |=> w_wptr_q == $past(w_wptr_q) + PtrW'(1),
           clk_wr_i, !rst_wr_ni)
+  // Check that the Gray coding works correctly, so the increment to w_wptr_gray_q changes exactly
+  // one bit.
   `ASSERT(WptrGrayOneBitAtATime_A,
-          w_wptr_inc |=> $countones(w_wptr_gray_q ^ $past(w_wptr_gray_q,2)) == 1,
+          w_wptr_inc |=> $countones(w_wptr_gray_q ^ $past(w_wptr_gray_q)) == 1,
           clk_wr_i, !rst_wr_ni)
 
   `ASSERT(NoRAckInEmpty_A, r_rptr_inc |-> !r_empty,
