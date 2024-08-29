@@ -264,6 +264,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/cert",
         "//sw/device/silicon_creator/lib/cert:tpm",
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",

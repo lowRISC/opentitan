@@ -60,8 +60,17 @@ rom_error_t otbn_boot_attestation_keygen(
     uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
+
 /**
- * Generate an attestation public key from a keymgr-derived secret.
+ * Generate a deterministic ECC P256 attestation public key from a
+ * keymgr-derived secret.
+ *
+ * This routine may be used to generate DICE attestation keys, TPM identity
+ * keys, or any other deterministic asymmetric ECC P256 keys required. DICE keys
+ * should be contructed from the "attestation" keymgr key type, while TPM keys
+ * should be constructed form the "sealing" key type. The former are bound to
+ * firmware updates, and change when ROM_EXT or Owner firmware is updated. The
+ * latter remain stable across the lifetime of an ownership of the chip.
  *
  * This routine triggers the key manager to sideload key material into OTBN,
  * and also loads in an extra seed to XOR with the key material. The final
@@ -90,6 +99,24 @@ rom_error_t otbn_boot_attestation_keygen(
     uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
+
+/**
+ * Wrapper for `otbn_boot_attestation_keygen()` that generates an ECC P256
+ * keypair to build a certificate around, using Keymgr and OTBN, returning the
+ * public key (in big endian order for inserting into a cert) and a key ID
+ * (which is a SHA256 digest of the public key).
+ *
+ * Preconditions: keymgr has been initialized and cranked to the desired stage.
+ *
+ * @param key The description of the desired key to generate.
+ * @param[out] pubkey_id The public key ID (for embedding into certificates).
+ * @param[out] pubkey The public key.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+                                           hmac_digest_t *pubkey_id,
+                                           ecdsa_p256_public_key_t *pubkey);
 
 /**
  * Saves an attestation private key to OTBN's scratchpad.

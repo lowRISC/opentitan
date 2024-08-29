@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
@@ -82,7 +83,7 @@ static status_t personalize_gen_tpm_ek_certificate(
       kAttestationSeedWords));
 
   // Generate TPM EK keys and (TBS) cert.
-  TRY(cert_ecc_p256_keygen(kTpmKeyEk, &tpm_pubkey_id, &curr_pubkey));
+  TRY(otbn_boot_cert_ecc_p256_keygen(kTpmKeyEk, &tpm_pubkey_id, &curr_pubkey));
 
   curr_cert_size = sizeof(cert_buffer);
   TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey, cert_buffer,
