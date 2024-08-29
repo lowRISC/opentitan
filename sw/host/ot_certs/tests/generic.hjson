@@ -104,6 +104,15 @@
             type: "string",
             size: 100,
         }
+        key_usage_cert_sign: {
+            type: "boolean"
+        }
+        key_usage_key_agreement: {
+            type: "boolean"
+        }
+        key_usage_digital_signature: {
+            type: "boolean"
+        }
     },
 
     certificate: {
@@ -135,6 +144,11 @@
             { tpm_model: { var: "tpm_model" } },
             { tpm_version: { var: "tpm_version" } },
         ],
+        key_usage: {
+            digital_signature: {var: "key_usage_digital_signature" },
+            key_agreement: {var: "key_usage_key_agreement" },
+            cert_sign: {var: "key_usage_cert_sign" },
+        }
         private_extensions: [
             {
                 type: "dice_tcb_info",

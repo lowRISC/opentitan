@@ -22,7 +22,7 @@ use crate::asn1::der;
 use crate::asn1::x509;
 
 use crate::template::{
-    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, Name, Signature,
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, Signature,
     SubjectPublicKeyInfo, Value,
 };
 
@@ -221,6 +221,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
         extension::x509_get_extensions(&x509).context("could not parse X509 extensions")?;
     let mut private_extensions = Vec::new();
     let mut basic_constraints = None;
+    let mut key_usage: Option<KeyUsage> = None;
     for ext in raw_extensions {
         match ext.object.nid() {
             // Ignore extensions that are standard and handled by openssl.
@@ -234,7 +235,11 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
                         .context("could not parse X509 basic constraints")?,
                 );
             }
-            Nid::KEY_USAGE => (),
+            Nid::KEY_USAGE => {
+                key_usage = Some(
+                    extension::parse_key_usage(&ext).context("could not parse X509 key usage")?,
+                );
+            }
             Nid::AUTHORITY_KEY_IDENTIFIER => (),
             Nid::SUBJECT_ALT_NAME => (),
             Nid::SUBJECT_KEY_IDENTIFIER => (),
@@ -266,6 +271,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
                 .context("the certificate has not subject key id")?,
         ),
         basic_constraints,
+        key_usage,
         subject_alt_name: get_subject_alt_name(&x509)?,
         private_extensions,
         signature: extract_signature(&x509)?,
