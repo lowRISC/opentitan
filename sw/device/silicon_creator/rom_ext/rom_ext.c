@@ -343,8 +343,8 @@ static rom_error_t rom_ext_attestation_silicon(void) {
 
   // Generate UDS keys.
   sc_keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(cert_ecc_p256_keygen(kDiceKeyUds, &uds_pubkey_id,
-                                                &curr_attestation_pubkey));
+  HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
+      kDiceKeyUds, &uds_pubkey_id, &curr_attestation_pubkey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
       kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
       *kDiceKeyUds.keymgr_diversifier));
@@ -395,8 +395,8 @@ static rom_error_t rom_ext_attestation_creator(
       sc_keymgr_owner_int_advance(/*sealing_binding=*/&seal_binding_value,
                                   /*attest_binding=*/&boot_measurements.rom_ext,
                                   rom_ext_manifest->max_key_version));
-  HARDENED_RETURN_IF_ERROR(cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
-                                                &curr_attestation_pubkey));
+  HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
+      kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_attestation_pubkey));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
   uint32_t cert_size = 0;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
@@ -437,8 +437,8 @@ static rom_error_t rom_ext_attestation_owner(const manifest_t *owner_manifest) {
       sc_keymgr_owner_advance(/*sealing_binding=*/&zero_binding_value,
                               /*attest_binding=*/&boot_measurements.bl0,
                               owner_manifest->max_key_version));
-  HARDENED_RETURN_IF_ERROR(cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
-                                                &curr_attestation_pubkey));
+  HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
+      kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_attestation_pubkey));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
   uint32_t cert_size = 0;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
