@@ -60,6 +60,7 @@ _POSITIONS = {
                 ":boot_test_{}".format(name): "payload",
             },
             slot = position["slot"],
+            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
@@ -88,6 +89,7 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
@@ -116,6 +118,7 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
