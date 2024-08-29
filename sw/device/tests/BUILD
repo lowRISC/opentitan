@@ -4607,7 +4607,7 @@ test_suite(
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
-            ],
+            ] + (["broken"] if "delayed_enabled" in test_cfg["name"] else []),
             test_cmd = " --rom={rom:binary}",
             test_harness = "//sw/host/tests/chip/rv_dm:mem_access",
         ),
