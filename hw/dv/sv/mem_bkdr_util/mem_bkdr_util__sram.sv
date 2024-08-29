@@ -67,7 +67,7 @@ function logic [38:0] get_sram_encrypt32_intg_data (
 
   wdata_arr = {<<{integ_data}};
   wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-      wdata_arr, 39, 39, addr_arr, full_addr_width, key_arr, nonce_arr
+      wdata_arr, 39, 39, addr_arr, full_addr_width, key_arr, nonce_arr, num_prince_rounds_half
   );
   scrambled_data = {<<{wdata_arr}};
   return scrambled_data;
@@ -110,7 +110,7 @@ local function logic [38:0] _sram_decrypt_read39(
   `uvm_info(`gfn, $sformatf("scr data: 0x%0x", rdata39), UVM_HIGH)
   rdata_arr = {<<{rdata39}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 39, 39, addr_arr, full_addr_width, key_arr, nonce_arr
+      rdata_arr, 39, 39, addr_arr, full_addr_width, key_arr, nonce_arr, num_prince_rounds_half
   );
   rdata39 = {<<{rdata_arr}};
   return rdata39;

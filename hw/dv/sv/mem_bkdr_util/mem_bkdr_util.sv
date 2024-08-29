@@ -57,12 +57,17 @@ class mem_bkdr_util extends uvm_object;
   event readmemh_event;
   event writememh_event;
 
+  // Number of PRINCE half rounds for scrambling, can be [1..5].
+  protected int num_prince_rounds_half;
+
   // Initialize the class instance.
   // `extra_bits_per_subword` is the width any additional metadata that is not captured in secded
   // package.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
+               int num_prince_rounds_half = 3,
                int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
+
 
     bit res;
     super.new(name);
@@ -74,6 +79,7 @@ class mem_bkdr_util extends uvm_object;
     this.depth = depth;
     this.width = n_bits / depth;
     this.err_detection_scheme = err_detection_scheme;
+    this.num_prince_rounds_half = num_prince_rounds_half;
 
     if (`HAS_ECC) begin
       import prim_secded_pkg::prim_secded_e;
@@ -151,6 +157,10 @@ class mem_bkdr_util extends uvm_object;
 
   function err_detection_e get_err_detection_scheme();
     return err_detection_scheme;
+  endfunction
+
+  function int get_num_prince_rounds_half();
+    return num_prince_rounds_half;
   endfunction
 
   function uint32_t get_data_width();
