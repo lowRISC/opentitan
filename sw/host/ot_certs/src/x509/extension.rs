@@ -12,7 +12,7 @@ use openssl::x509::X509;
 use crate::asn1::Oid;
 use crate::template::{
     BasicConstraints, CertificateExtension, DiceTcbInfoExtension, DiceTcbInfoFlags, FirmwareId,
-    HashAlgorithm, Value,
+    HashAlgorithm, KeyUsage, Value,
 };
 
 /// X509 extension reference.
@@ -228,6 +228,44 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for DiceTcbInfoFlags {
     }
 }
 
+// From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3
+// KeyUsage ::= BIT STRING {
+//    digitalSignature        (0),
+//    nonRepudiation          (1), -- recent editions of X.509 have
+//                         -- renamed this bit to contentCommitment
+//    keyEncipherment         (2),
+//    dataEncipherment        (3),
+//    keyAgreement            (4),
+//    keyCertSign             (5),
+//    cRLSign                 (6),
+//    encipherOnly            (7),
+//    decipherOnly            (8) }
+impl<'a> asn1::SimpleAsn1Readable<'a> for KeyUsage {
+    const TAG: asn1::Tag = asn1::OwnedBitString::TAG;
+    fn parse_data(_data: &'a [u8]) -> asn1::ParseResult<Self> {
+        let result = asn1::OwnedBitString::parse_data(_data)?;
+        let bs = result.as_bitstring();
+        // List of bits that this parser supports. Any bit set outside of
+        // these will be an error because we cannot record it.
+        const PARSED_BITS: &[usize] = &[0, 4, 5];
+        let len = bs.as_bytes().len() * 8 - bs.padding_bits() as usize;
+        for i in 0..len {
+            if bs.has_bit_set(i) && !PARSED_BITS.contains(&i) {
+                // FIXME This will not return a very readable error message but the asn1
+                // does not support arbitrary string errors.
+                return asn1::ParseResult::Err(asn1::ParseError::new(
+                    asn1::ParseErrorKind::ExtraData,
+                ));
+            }
+        }
+        Ok(KeyUsage {
+            digital_signature: Some(Value::Literal(bs.has_bit_set(0))),
+            key_agreement: Some(Value::Literal(bs.has_bit_set(4))),
+            cert_sign: Some(Value::Literal(bs.has_bit_set(5))),
+        })
+    }
+}
+
 /// Try to parse an X509 extension as a DICE TCB info extension.
 pub fn parse_dice_tcb_info_extension(ext: &[u8]) -> Result<DiceTcbInfoExtension> {
     asn1::parse_single::<DiceTcbInfo>(ext)
@@ -250,6 +288,10 @@ impl BasicConstraintsInternal {
             ca: Value::Literal(self.ca),
         })
     }
+}
+
+pub fn parse_key_usage(ext: &X509ExtensionRef) -> Result<KeyUsage> {
+    Ok(asn1::parse_single::<KeyUsage>(ext.data.as_slice())?)
 }
 
 pub fn parse_basic_constraints(ext: &X509ExtensionRef) -> Result<BasicConstraints> {

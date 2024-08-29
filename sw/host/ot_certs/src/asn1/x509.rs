@@ -10,7 +10,7 @@ use crate::asn1::builder::{concat_suffix, Builder};
 use crate::asn1::{Oid, Tag};
 use crate::template::{
     AttributeType, BasicConstraints, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo,
-    EcdsaSignature, HashAlgorithm, Name, Signature, SubjectPublicKeyInfo, Value,
+    EcdsaSignature, HashAlgorithm, KeyUsage, Name, Signature, SubjectPublicKeyInfo, Value,
 };
 
 impl HashAlgorithm {
@@ -150,7 +150,9 @@ impl X509 {
                             Self::push_basic_constraints_ext(builder, constraints)?;
                         }
                         Self::push_subject_alt_name_ext(builder, &cert.subject_alt_name)?;
-                        Self::push_key_usage_ext(builder)?;
+                        if let Some(key_usage) = &cert.key_usage {
+                            Self::push_key_usage_ext(builder, key_usage)?;
+                        }
                         Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
                         Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
                         for ext in &cert.private_extensions {
@@ -271,7 +273,7 @@ impl X509 {
         })
     }
 
-    pub fn push_key_usage_ext<B: Builder>(builder: &mut B) -> Result<()> {
+    pub fn push_key_usage_ext<B: Builder>(builder: &mut B, key_usage: &KeyUsage) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3
         // KeyUsage ::= BIT STRING {
         //    digitalSignature        (0),
@@ -284,21 +286,23 @@ impl X509 {
         //    cRLSign                 (6),
         //    encipherOnly            (7),
         //    decipherOnly            (8) }
-        //
-        // From the Open Profile for DICE specification:
-        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
-        // The standard extensions are fixed by the specification.
         Self::push_extension(builder, &Oid::KeyUsage, true, |builder| {
             builder.push_bitstring(
                 Some("key_usage".into()),
                 &Tag::BitString,
                 &[
-                    /* digitalSignature */ Value::Literal(false),
+                    key_usage
+                        .digital_signature
+                        .clone()
+                        .unwrap_or(Value::literal(false)),
                     /* nonRepudiation */ Value::Literal(false),
                     /* keyEncipherment */ Value::Literal(false),
                     /* dataEncipherment */ Value::Literal(false),
-                    /* keyAgreement */ Value::Literal(false),
-                    /* keyCertSign */ Value::Literal(true),
+                    key_usage
+                        .key_agreement
+                        .clone()
+                        .unwrap_or(Value::literal(false)),
+                    key_usage.cert_sign.clone().unwrap_or(Value::literal(false)),
                     /* cRLSign */ Value::Literal(false),
                     /* encipherOnly */ Value::Literal(false),
                     /* decipherOnly */ Value::Literal(false),

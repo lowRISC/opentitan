@@ -14,8 +14,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
-    DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, Signature,
-    SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
+    DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
+    Signature, SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -362,6 +362,10 @@ impl Subst for Certificate {
                 .basic_constraints
                 .subst(data)
                 .context("cannot substitute basic constraints")?,
+            key_usage: self
+                .key_usage
+                .subst(data)
+                .context("cannot substitute key usage")?,
             private_extensions: self
                 .private_extensions
                 .iter()
@@ -460,6 +464,25 @@ impl Subst for DiceTcbInfoFlags {
                 .debug
                 .subst(data)
                 .context("cannot substitute not_configured flag")?,
+        })
+    }
+}
+
+impl Subst for KeyUsage {
+    fn subst(&self, data: &SubstData) -> Result<KeyUsage> {
+        Ok(KeyUsage {
+            digital_signature: self
+                .digital_signature
+                .subst(data)
+                .context("cannot substitute digital signature key usage")?,
+            key_agreement: self
+                .key_agreement
+                .subst(data)
+                .context("cannot substitute key agreement")?,
+            cert_sign: self
+                .cert_sign
+                .subst(data)
+                .context("cannot substitute cert sign")?,
         })
     }
 }
