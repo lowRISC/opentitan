@@ -31,7 +31,7 @@ opentitan_test(
     name = "boot_svc_empty_test",
     srcs = ["boot_svc_empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
@@ -56,7 +56,7 @@ opentitan_test(
     name = "boot_svc_wakeup_test",
     srcs = ["boot_svc_wakeup_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000",
@@ -84,7 +84,7 @@ opentitan_test(
     name = "boot_svc_next_test",
     srcs = ["boot_svc_next_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
@@ -110,7 +110,7 @@ opentitan_test(
     name = "boot_svc_primary_test",
     srcs = ["boot_svc_primary_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
@@ -144,7 +144,7 @@ opentitan_test(
     name = "boot_svc_bad_next_test",
     srcs = ["boot_svc_bad_next_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
@@ -172,26 +172,27 @@ opentitan_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         data = [
             "//sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key",
         ],
         exit_failure = "(PASS|FAIL|FAULT).*\n",
-        # This test requires serial break support which is not available in CI yet.
-        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='ownership_state: \\x00\\x00\\x00\\x00\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='ownership_state = OWND\r\n' --exit-failure='{exit_failure}'"
             --exec="rescue boot-svc ownership-unlock \
                     --mode Any \
                     --nonce 0 \
                     --sign $(location //sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key)"
             --exec="console --non-interactive --exit-success='ownership_state = UANY\r\n' --exit-failure='{exit_failure}'"
+
+            # Since we've altered the ownership state, clear the bitstream to not affect later tests.
+            --exec="fpga clear-bitstream"
             no-op
         """,
     ),
@@ -215,7 +216,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["boot_svc_min_sec_ver_test.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest_version_4",
@@ -237,7 +238,7 @@ opentitan_test(
     name = "boot_svc_min_sec_ver_test",
     srcs = ["boot_svc_min_sec_ver_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {min_sec_ver_4:signed_bin}@0x90000",
