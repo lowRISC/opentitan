@@ -120,7 +120,9 @@ def _parameter_name(env, pname):
 def _hacky_tags(env):
     (_, suffix) = env.split(":")
     tags = []
-    if suffix.startswith("fpga_cw310_") or suffix.startswith("fpga_cw340_"):
+    if (suffix.startswith("fpga_cw310_") or
+        suffix.startswith("fpga_cw340_") or
+        suffix.startswith("fpga_hyper310")):
         # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the

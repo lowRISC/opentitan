@@ -654,23 +654,23 @@ jobs:
     demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
-    - chip_earlgrey_cw310
+    - chip_earlgrey_cw310_hyperdebug
     - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
+        - chip_earlgrey_cw310_hyperdebug
         - sw_build
   - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 fpga_cw310_rom_ext_tests || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh hyper310 fpga_hyper310_rom_ext_tests || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
