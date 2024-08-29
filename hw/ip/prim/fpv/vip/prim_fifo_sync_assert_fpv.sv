@@ -170,7 +170,12 @@ module prim_fifo_sync_assert_fpv #(
     `ASSERT(UnusedClr_A, prim_fifo_sync.gen_passthru_fifo.unused_clr == clr_i)
   end else begin : gen_depth_gt0
     // check wready
-    `ASSERT(Wready_A, depth_o < Depth |-> wready_o)
+
+    // The wready_o signal should be high (saying that we can accept an item in the fifo) if the
+    // FIFO is not currently full, which can be checked my seeing that depth_o < Depth. This
+    // property is delayed for a single cycle after coming out of reset (because of an under_rst
+    // signal that gets cleared on the first clock afterwards).
+    `ASSERT(Wready_A, 1 |=> depth_o < Depth -> wready_o)
     // check rvalid
     `ASSERT(Rvalid_A, depth_o > 0 |-> rvalid_o)
     // check write only
@@ -206,8 +211,9 @@ module prim_fifo_sync_assert_fpv #(
     `ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0)
   end
 
-  // no more space in the FIFO
-  `ASSERT(WreadyNoSpaceBkwd_A, !wready_o |-> depth_o == Depth)
+  // If the wready_o signal is not high, the FIFO should be full. As with Wready_A, this property is
+  // delayed by a cycle after coming out of reset, to handle the clearing of the under_rst signal.
+  `ASSERT(WreadyNoSpaceBkwd_A, 1 |=> !wready_o -> depth_o == Depth)
   // elements ready to be read
   `ASSERT(RvalidNoElemskBkwd_A, !rvalid_o |-> depth_o == 0)
 
