@@ -84,6 +84,7 @@
         // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
         // The standard extensions are fixed by the specification.
         basic_constraints: { ca: true },
+        key_usage: { cert_sign: true },
         private_extensions: [
             {
                 type: "dice_tcb_info",

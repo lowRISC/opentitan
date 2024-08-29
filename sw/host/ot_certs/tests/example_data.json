@@ -24,5 +24,8 @@
     "basic_constraints_ca": true,
     "tpm_vendor": "TPM Vendor",
     "tpm_model": "TPM Model",
-    "tpm_version": "TPM Version"
+    "tpm_version": "TPM Version",
+    "key_usage_digital_signature": true,
+    "key_usage_key_agreement": false,
+    "key_usage_cert_sign": true
 }
