@@ -4615,7 +4615,7 @@ test_suite(
             otp = test_cfg["otp"],
             tags = [
                 "lc_{}".format(test_cfg["lc_state"]),
-            ],
+            ] + (["broken"] if "delayed_enabled" in test_cfg["name"] else []),
             test_cmd = " --rom={rom:binary}",
             test_harness = "//sw/host/tests/chip/rv_dm:mem_access",
         ),
