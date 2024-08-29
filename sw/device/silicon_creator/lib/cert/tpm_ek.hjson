@@ -82,6 +82,7 @@
         authority_key_identifier: { var: "auth_key_key_id" },
         subject_key_identifier: { var: "tpm_ek_pub_key_id" },
         basic_constraints: { ca: false },
+        key_usage: { cert_sign: true },
         subject_alt_name: [
             { tpm_vendor: { var: "tpm_vendor" } },
             { tpm_model: { var: "tpm_model" } },

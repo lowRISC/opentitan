@@ -40,6 +40,11 @@
             { tpm_model: "TPM Model" },
             { tpm_version: "TPM Version" },
         ],
+        key_usage: {
+            digital_signature: true,
+            key_agreement: false,
+            cert_sign: true,
+        }
         private_extensions: [
             {
                 type: "dice_tcb_info",

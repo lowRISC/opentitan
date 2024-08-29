@@ -75,6 +75,7 @@ pub struct Certificate {
     pub subject_key_identifier: Value<Vec<u8>>,
     // X509 basic constraints extension, optional.
     pub basic_constraints: Option<BasicConstraints>,
+    pub key_usage: Option<KeyUsage>,
     /// X509 Subject Alternative Name extension, optional.
     #[serde(default)]
     pub subject_alt_name: Name,
@@ -97,6 +98,13 @@ pub type Name = Vec<IndexMap<AttributeType, Value<String>>>;
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct BasicConstraints {
     pub ca: Value<bool>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+pub struct KeyUsage {
+    pub digital_signature: Option<Value<bool>>,
+    pub key_agreement: Option<Value<bool>>,
+    pub cert_sign: Option<Value<bool>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -466,6 +474,7 @@ mod tests {
                 },
                 authority_key_identifier: { var: "signing_pub_key_id" },
                 subject_key_identifier: { var: "owner_pub_key_id" },
+                key_usage: { key_agreement: true },
                 private_extensions: [
                     {
                         type: "dice_tcb_info",
@@ -562,6 +571,11 @@ mod tests {
             authority_key_identifier: Value::variable("signing_pub_key_id"),
             subject_key_identifier: Value::variable("owner_pub_key_id"),
             basic_constraints: None,
+            key_usage: Some(KeyUsage {
+                digital_signature: None,
+                key_agreement: Some(Value::literal(true)),
+                cert_sign: None,
+            }),
             subject_alt_name: vec![],
             private_extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
