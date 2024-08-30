@@ -78,10 +78,10 @@ package ascon_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } no_ad;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } no_msg;
     struct packed {
       logic        q;
@@ -249,17 +249,17 @@ package ascon_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ascon_reg2hw_alert_test_reg_t alert_test; // [1267:1264]
-    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1263:1132]
-    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1131:1000]
-    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [999:868]
-    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [867:736]
-    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [735:604]
-    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [603:472]
-    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [471:340]
-    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [339:208]
-    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [207:76]
-    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [75:66]
+    ascon_reg2hw_alert_test_reg_t alert_test; // [1273:1270]
+    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1269:1138]
+    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1137:1006]
+    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [1005:874]
+    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [873:742]
+    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [741:610]
+    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [609:478]
+    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [477:346]
+    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [345:214]
+    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [213:82]
+    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [81:66]
     ascon_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [65:64]
     ascon_reg2hw_block_ctrl_shadowed_reg_t block_ctrl_shadowed; // [63:35]
     ascon_reg2hw_trigger_reg_t trigger; // [34:33]

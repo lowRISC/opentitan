@@ -27,8 +27,8 @@ module prim_ascon_duplex
 
   // It is assumed that no_ad, no_msg, key, and nonce are always
   // valid and constant, when the cipher is triggered by the start command
-  input logic no_ad,
-  input logic no_msg,
+  input prim_mubi_pkg::mubi4_t no_ad_i,
+  input prim_mubi_pkg::mubi4_t no_msg_i,
 
   input logic [127:0] key_i,
   input logic [127:0] nonce_i,
@@ -380,7 +380,7 @@ always_comb begin : p_fsm
       sel_mux_word3 = ABSORB;
       sel_mux_key_word3 = KEY_HI;
       sel_mux_word4 = ABSORB;
-      if (no_ad) begin
+      if (prim_mubi_pkg::mubi4_test_true_strict(no_ad_i)) begin
         fsm_state_d = XorDomSep;
       end else begin
         fsm_state_d = AbsorbAD;
@@ -471,7 +471,7 @@ always_comb begin : p_fsm
     XorDomSep: begin
       set_dom_sep = 1'b1;
       sel_mux_word4 = KEEP;
-      if (no_msg) begin
+      if (prim_mubi_pkg::mubi4_test_true_strict(no_msg_i)) begin
         fsm_state_d = AbsorbMSGEmpty;
       end else begin
         fsm_state_d = AbsorbMSG;
@@ -598,7 +598,14 @@ end
 
 `PRIM_FLOP_SPARSE_FSM(u_state_regs, fsm_state_d, fsm_state_q, duplex_fsm_state_e, Idle)
 
-assign err_o = round_count_error | sparse_fsm_error;
+logic mubi_error;
+assign mubi_error = prim_mubi_pkg::mubi4_test_invalid(no_ad_i)
+                  | prim_mubi_pkg::mubi4_test_invalid(no_msg_i)
+                  | prim_mubi_pkg::mubi4_test_invalid(complete_block)
+                  | prim_mubi_pkg::mubi4_test_invalid(last_block_ad_i)
+                  | prim_mubi_pkg::mubi4_test_invalid(last_block_msg_i);
+
+assign err_o = round_count_error | sparse_fsm_error | mubi_error;
 
 prim_ascon_round u_prim_ascon_round (
   .state_o(state_from_round),

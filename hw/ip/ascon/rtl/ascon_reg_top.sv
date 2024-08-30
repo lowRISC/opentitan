@@ -222,12 +222,12 @@ module ascon_reg_top (
   logic ctrl_shadowed_masked_msg_input_wd;
   logic ctrl_shadowed_masked_msg_input_storage_err;
   logic ctrl_shadowed_masked_msg_input_update_err;
-  logic ctrl_shadowed_no_msg_qs;
-  logic ctrl_shadowed_no_msg_wd;
+  logic [3:0] ctrl_shadowed_no_msg_qs;
+  logic [3:0] ctrl_shadowed_no_msg_wd;
   logic ctrl_shadowed_no_msg_storage_err;
   logic ctrl_shadowed_no_msg_update_err;
-  logic ctrl_shadowed_no_ad_qs;
-  logic ctrl_shadowed_no_ad_wd;
+  logic [3:0] ctrl_shadowed_no_ad_qs;
+  logic [3:0] ctrl_shadowed_no_ad_wd;
   logic ctrl_shadowed_no_ad_storage_err;
   logic ctrl_shadowed_no_ad_update_err;
   logic ctrl_aux_shadowed_re;
@@ -1305,11 +1305,11 @@ module ascon_reg_top (
     .err_storage (ctrl_shadowed_masked_msg_input_storage_err)
   );
 
-  //   F[no_msg]: 8:8
+  //   F[no_msg]: 11:8
   prim_subreg_shadow #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (4'h6),
     .Mubi    (1'b0)
   ) u_ctrl_shadowed_no_msg (
     .clk_i   (clk_i),
@@ -1341,11 +1341,11 @@ module ascon_reg_top (
     .err_storage (ctrl_shadowed_no_msg_storage_err)
   );
 
-  //   F[no_ad]: 9:9
+  //   F[no_ad]: 15:12
   prim_subreg_shadow #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (4'h9),
     .Mubi    (1'b0)
   ) u_ctrl_shadowed_no_ad (
     .clk_i   (clk_i),
@@ -2300,9 +2300,9 @@ module ascon_reg_top (
 
   assign ctrl_shadowed_masked_msg_input_wd = reg_wdata[7];
 
-  assign ctrl_shadowed_no_msg_wd = reg_wdata[8];
+  assign ctrl_shadowed_no_msg_wd = reg_wdata[11:8];
 
-  assign ctrl_shadowed_no_ad_wd = reg_wdata[9];
+  assign ctrl_shadowed_no_ad_wd = reg_wdata[15:12];
   assign ctrl_aux_shadowed_re = addr_hit[38] & reg_re & !reg_error;
   assign ctrl_aux_shadowed_we = addr_hit[38] & reg_we & !reg_error;
 
@@ -2541,8 +2541,8 @@ module ascon_reg_top (
         reg_rdata_next[5] = ctrl_shadowed_sideload_key_qs;
         reg_rdata_next[6] = ctrl_shadowed_masked_ad_input_qs;
         reg_rdata_next[7] = ctrl_shadowed_masked_msg_input_qs;
-        reg_rdata_next[8] = ctrl_shadowed_no_msg_qs;
-        reg_rdata_next[9] = ctrl_shadowed_no_ad_qs;
+        reg_rdata_next[11:8] = ctrl_shadowed_no_msg_qs;
+        reg_rdata_next[15:12] = ctrl_shadowed_no_ad_qs;
       end
 
       addr_hit[38]: begin

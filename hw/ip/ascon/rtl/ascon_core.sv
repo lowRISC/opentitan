@@ -80,9 +80,8 @@ module ascon_core
 
   logic [4:0] valid_bytes;
 
-  // TODO: change to mubi4
-  logic no_ad;
-  logic no_msg;
+  prim_mubi_pkg::mubi4_t no_ad;
+  prim_mubi_pkg::mubi4_t no_msg;
 
   data_type_e data_type_last;
   data_type_e data_type_start;
@@ -109,7 +108,6 @@ module ascon_core
   logic [3:0]       tag_out_read_d, tag_out_read_q;
   logic             tag_out_read;
 
-  assign alert_recov_o = 1'b0;
 
   logic duplex_fatal_error;
   assign alert_fatal_o = duplex_fatal_error;
@@ -253,8 +251,32 @@ module ascon_core
   assign valid_bytes          = reg2hw.block_ctrl_shadowed.valid_bytes.q;
   assign data_type_last       = reg2hw.block_ctrl_shadowed.data_type_last.q;
   assign data_type_start      = reg2hw.block_ctrl_shadowed.data_type_start.q;
-  assign no_ad                = reg2hw.ctrl_shadowed.no_ad.q;
-  assign no_msg               = reg2hw.ctrl_shadowed.no_msg.q;
+
+  logic no_msg_mubi4invalid;
+  logic no_ad_mubi4invalid;
+
+  always_comb begin : sanitize_mubi_reg
+  // Sanitize values written by SW
+  // TODO: This should be added to the register_top/reggen-tool, as it would
+  //       be better to sanitize the values before they are written to the register.
+    if(prim_mubi_pkg::mubi4_test_invalid(reg2hw.ctrl_shadowed.no_ad.q)) begin
+      no_ad_mubi4invalid = 1'b1;
+      no_ad              = prim_mubi_pkg::MuBi4False;
+    end else begin
+      no_ad_mubi4invalid = 1'b0;
+      no_ad              = reg2hw.ctrl_shadowed.no_ad.q;
+    end
+
+    if(prim_mubi_pkg::mubi4_test_invalid(reg2hw.ctrl_shadowed.no_msg.q)) begin
+      no_msg_mubi4invalid = 1'b1;
+      no_msg              = prim_mubi_pkg::MuBi4True;
+    end else begin
+      no_msg_mubi4invalid = 1'b0;
+      no_msg              = reg2hw.ctrl_shadowed.no_msg.q;
+    end
+  end
+
+  assign alert_recov_o = no_ad_mubi4invalid | no_msg_mubi4invalid;
 
   // TRIGGER
   assign start                = reg2hw.trigger.start.q;
@@ -496,8 +518,8 @@ module ascon_core
 
     // It is assumed that no_ad, no_msg, key, and nonce are always
     // valid and constant, when the cipher is triggered by the start command
-    .no_ad(no_ad),
-    .no_msg(no_msg),
+    .no_ad_i(no_ad),
+    .no_msg_i(no_msg),
 
     .key_i(swap_endianess_byte(key_in)),
     .nonce_i(swap_endianess_byte(nonce_in)),
