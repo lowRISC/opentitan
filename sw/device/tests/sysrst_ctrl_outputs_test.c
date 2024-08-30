@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "devicetables.h"  // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
@@ -13,13 +14,12 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 /* We need control flow for the ujson messages exchanged
  * with the host in OTTF_WAIT_FOR on real devices. */
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static dif_pinmux_t pinmux;
+static const dt_sysrst_ctrl_t *kSysrstCtrlDt = &kDtSysrstCtrl[0];
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_flash_ctrl_state_t flash;
 
@@ -48,11 +48,11 @@ enum {
   kOutputNumPads = 0x8,
 };
 
-static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+static const dt_sysrst_ctrl_pin_t kPeripheralInputs[] = {
+    kDtSysrstCtrlPinKey0In,
+    kDtSysrstCtrlPinKey1In,
+    kDtSysrstCtrlPinKey2In,
+    kDtSysrstCtrlPinPwrbIn,
 };
 
 static const dif_pinmux_index_t kInputPadsDV[] = {
@@ -69,13 +69,10 @@ static const dif_pinmux_index_t kInputPadsReal[] = {
     kTopEarlgreyPinmuxInselIor5,
 };
 
-static const dif_pinmux_index_t kPeripheralOutputs[] = {
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonPwrbOut,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
+static const dt_sysrst_ctrl_pin_t kPeripheralOutputs[] = {
+    kDtSysrstCtrlPinKey0Out,    kDtSysrstCtrlPinKey1Out,
+    kDtSysrstCtrlPinKey2Out,    kDtSysrstCtrlPinPwrbOut,
+    kDtSysrstCtrlPinBatDisable, kDtSysrstCtrlPinZ3Wakeup,
 };
 
 static const dif_pinmux_index_t kOutputPadsDV[] = {
@@ -118,14 +115,22 @@ static void pinmux_setup(void) {
   const dif_pinmux_index_t *kInputPads =
       kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kNumMioInputs; ++i) {
-    CHECK_DIF_OK(
-        dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));
+    dt_pin_t pin = dt_sysrst_ctrl_pin(kSysrstCtrlDt, kPeripheralInputs[i]);
+    // TODO The following will be replaced by better code when we have the
+    // "board side" configuration done.
+    CHECK(dt_pin_type(pin) == kDtPinTypeMio);
+    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, dt_pin_mio_periph_input(pin),
+                                         kInputPads[i]));
   }
   const dif_pinmux_index_t *kOutputPads =
       kDeviceType == kDeviceSimDV ? kOutputPadsDV : kOutputPadsReal;
   for (int i = 0; i < kNumMioOutputs; ++i) {
+    dt_pin_t pin = dt_sysrst_ctrl_pin(kSysrstCtrlDt, kPeripheralOutputs[i]);
+    // TODO The following will be replaced by better code when we have the
+    // "board side" configuration done.
+    CHECK(dt_pin_type(pin) == kDtPinTypeMio);
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kOutputPads[i],
-                                          kPeripheralOutputs[i]));
+                                          dt_pin_mio_outsel(pin)));
   }
 }
 
@@ -181,9 +186,7 @@ static void set_output_overrides(uint8_t override_value) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
   if (kDeviceType == kDeviceSimDV) {
     CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
   }
