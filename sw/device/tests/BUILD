@@ -6365,7 +6365,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_outputs",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
