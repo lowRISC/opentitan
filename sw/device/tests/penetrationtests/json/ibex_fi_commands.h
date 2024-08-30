@@ -12,42 +12,42 @@ extern "C" {
 // clang-format off
 
 #define IBEXFI_SUBCOMMAND(_, value) \
-    value(_, Init) \
-    value(_, CharUnrolledRegOpLoop) \
-    value(_, CharUnrolledRegOpLoopChain) \
-    value(_, CharRegOpLoop) \
-    value(_, CharUnrolledMemOpLoop) \
-    value(_, CharMemOpLoop) \
-    value(_, CharRegisterFile) \
-    value(_, CharRegisterFileRead) \
+    value(_, AddressTranslation) \
+    value(_, AddressTranslationCfg) \
     value(_, CharCondBranchBeq) \
-    value(_, CharCondBranchBne) \
     value(_, CharCondBranchBge) \
     value(_, CharCondBranchBgeu) \
     value(_, CharCondBranchBlt) \
     value(_, CharCondBranchBltu) \
-    value(_, CharUncondBranch) \
-    value(_, CharUncondBranchNop) \
-    value(_, CharSramWrite) \
-    value(_, CharSramWriteRead) \
-    value(_, CharSramWriteStaticUnrolled) \
-    value(_, CharSramRead) \
-    value(_, CharSramStatic) \
-    value(_, CharFlashWrite) \
-    value(_, CharFlashRead) \
+    value(_, CharCondBranchBne) \
     value(_, CharCsrRead) \
     value(_, CharCsrWrite) \
-    value(_, AddressTranslationCfg) \
-    value(_, AddressTranslation) \
-    value(_, OtpDataRead) \
-    value(_, OtpReadLock) \
-    value(_, OtpWriteLock) \
+    value(_, CharFlashRead) \
+    value(_, CharFlashWrite) \
+    value(_, CharHardenedCheckComplementBranch) \
     value(_, CharHardenedCheckUnimp) \
     value(_, CharHardenedCheck2Unimps) \
     value(_, CharHardenedCheck3Unimps) \
     value(_, CharHardenedCheck4Unimps) \
     value(_, CharHardenedCheck5Unimps) \
-    value(_, CharHardenedCheckComplementBranch)
+    value(_, CharMemOpLoop) \
+    value(_, CharRegisterFile) \
+    value(_, CharRegisterFileRead) \
+    value(_, CharRegOpLoop) \
+    value(_, CharSramRead) \
+    value(_, CharSramStatic) \
+    value(_, CharSramWrite) \
+    value(_, CharSramWriteRead) \
+    value(_, CharSramWriteStaticUnrolled) \
+    value(_, CharUncondBranch) \
+    value(_, CharUncondBranchNop) \
+    value(_, CharUnrolledMemOpLoop) \
+    value(_, CharUnrolledRegOpLoop) \
+    value(_, CharUnrolledRegOpLoopChain) \
+    value(_, Init) \
+    value(_, OtpDataRead) \
+    value(_, OtpReadLock) \
+    value(_, OtpWriteLock)
 UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
 
 #define IBEXFI_TEST_RESULT(field, string) \
