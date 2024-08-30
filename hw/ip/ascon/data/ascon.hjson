@@ -436,18 +436,22 @@
             Once all registers of Share 0 have been written, Ascon starts to process the data depending on the !!CTRL_AUX_SHADOWED.manual_start_trigger.
           '''
         }
-        { bits: "8",
+        { bits: "11:8",
           name: "NO_MSG",
+          resval: "0x6",
           desc:  '''
-            There is no (1) message (plaintext/ciphertext) to be processed.
-            There is (0) a message.
+            This field is mubi4 encoded.
+            There is no (4'h6) message (plaintext/ciphertext) to be processed.
+            There is (4'h9) a message.
           '''
         }
-        { bits: "9",
+        { bits: "15:12",
           name: "NO_AD",
+          resval: "0x9",
           desc:  '''
-            There is no (1) associated data to be processed.
-            There is (0) associated data.
+            This field is mubi4 encoded.
+            There is no (4'h6) associated data to be processed.
+            There is (4'h9) associated data.
           '''
         }
       ]

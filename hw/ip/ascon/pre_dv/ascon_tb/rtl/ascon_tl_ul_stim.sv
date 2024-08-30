@@ -58,10 +58,12 @@ module ascon_tl_ul_stim
       put_full_data(32'h0, ASCON_KEY_SHARE1_2_OFFSET),
       put_full_data(32'h0, ASCON_KEY_SHARE1_3_OFFSET),
 
-      //Varaint+ Operation:
+      // Varaint+ Operation:
       // 5'b01_001 :  Ascon-128 Enc
-      put_full_data(32'h00000009, ASCON_CTRL_SHADOWED_OFFSET),
-      put_full_data(32'h00000009, ASCON_CTRL_SHADOWED_OFFSET),
+      // no_ad=false, no_msg = false
+      // 16'1001_1001_0000_0000
+      put_full_data(32'h00009909, ASCON_CTRL_SHADOWED_OFFSET),
+      put_full_data(32'h00009909, ASCON_CTRL_SHADOWED_OFFSET),
 
       // BLock Info
       // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bist start (ignored)

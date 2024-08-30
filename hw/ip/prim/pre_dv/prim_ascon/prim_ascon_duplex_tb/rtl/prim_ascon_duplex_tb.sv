@@ -289,14 +289,15 @@ module prim_ascon_duplex_tb (
   logic [127:0] dut_response_tag;
   logic         dut_response_tag_valid;
 
-  logic dut_no_msg;
-  logic dut_no_ad;
+  prim_mubi_pkg::mubi4_t dut_no_msg;
+  prim_mubi_pkg::mubi4_t dut_no_ad;
 
   assign dut_no_msg =
          ((OPERATION == ASCON_ENC && STIMULUS_MSG_LEN == 0)
         ||(OPERATION == ASCON_DEC && EXPECTED_MSG_LEN == 0))
-         ? 1'b1 : 1'b0;
-  assign dut_no_ad  = STIMULUS_AD_LEN  == 0 ? 1'b1 : 1'b0;
+         ? prim_mubi_pkg::MuBi4True : prim_mubi_pkg::MuBi4False;
+  assign dut_no_ad  = STIMULUS_AD_LEN  == 0 ? prim_mubi_pkg::MuBi4True :
+                                              prim_mubi_pkg::MuBi4False;
 
   mubi4_t dut_last_block_ad;
   mubi4_t dut_last_block_msg;
@@ -320,8 +321,8 @@ module prim_ascon_duplex_tb (
 
   // It is assumed that no_ad, no_msg, key, and nonce are always
   // valid and constant, when the cipher is triggered by the start command
-  .no_ad(dut_no_ad),
-  .no_msg(dut_no_msg),
+  .no_ad_i(dut_no_ad),
+  .no_msg_i(dut_no_msg),
 
   .key_i(key),
   .nonce_i(nonce),

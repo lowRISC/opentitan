@@ -376,20 +376,20 @@ Any write operation to this register will clear the status tracking required for
 A write to the Control Register is considered the start of a new message.
 Hence, software needs to provide a new Nonce and input data afterwards.
 - Offset: `0x94`
-- Reset default: `0x0`
-- Reset mask: `0x3ff`
+- Reset default: `0x9600`
+- Reset mask: `0xffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "ASCON_VARIANT", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SIDELOAD_KEY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_AD_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_MSG_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_MSG", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_AD", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "ASCON_VARIANT", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SIDELOAD_KEY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_AD_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_MSG_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_MSG", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "NO_AD", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                 |
 |:------:|:------:|:-------:|:-----------------------------------------------------|
-| 31:10  |        |         | Reserved                                             |
-|   9    |   rw   |   0x0   | [NO_AD](#ctrl_shadowed--no_ad)                       |
-|   8    |   rw   |   0x0   | [NO_MSG](#ctrl_shadowed--no_msg)                     |
+| 31:16  |        |         | Reserved                                             |
+| 15:12  |   rw   |   0x9   | [NO_AD](#ctrl_shadowed--no_ad)                       |
+|  11:8  |   rw   |   0x6   | [NO_MSG](#ctrl_shadowed--no_msg)                     |
 |   7    |   rw   |   0x0   | [MASKED_MSG_INPUT](#ctrl_shadowed--masked_msg_input) |
 |   6    |   rw   |   0x0   | [MASKED_AD_INPUT](#ctrl_shadowed--masked_ad_input)   |
 |   5    |   rw   |   0x0   | [SIDELOAD_KEY](#ctrl_shadowed--sideload_key)         |
@@ -397,12 +397,14 @@ Hence, software needs to provide a new Nonce and input data afterwards.
 |  2:0   |   rw   |   0x0   | [OPERATION](#ctrl_shadowed--operation)               |
 
 ### CTRL_SHADOWED . NO_AD
-There is no (1) associated data to be processed.
-There is (0) associated data.
+This field is mubi4 encoded.
+There is no (4'h6) associated data to be processed.
+There is (4'h9) associated data.
 
 ### CTRL_SHADOWED . NO_MSG
-There is no (1) message (plaintext/ciphertext) to be processed.
-There is (0) a message.
+This field is mubi4 encoded.
+There is no (4'h6) message (plaintext/ciphertext) to be processed.
+There is (4'h9) a message.
 
 ### CTRL_SHADOWED . MASKED_MSG_INPUT
 Controls whether the message input is provided in shares (1) or not (0).
