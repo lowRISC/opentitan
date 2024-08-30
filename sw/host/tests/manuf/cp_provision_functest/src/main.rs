@@ -13,6 +13,7 @@ use zerocopy::AsBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -42,12 +43,17 @@ pub struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     pub timeout: Duration,
+
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "BOOTSTRAP")]
+    console_spi: String,
 }
 
 fn cp_provision(
     opts: &Opts,
     transport: &TransportWrapper,
     provisioning_data: &ManufCpProvisioningData,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     let provisioning_sram_program: SramProgramParams = SramProgramParams {
         elf: opts.provisioning_sram_elf.clone(),
@@ -64,6 +70,7 @@ fn cp_provision(
         opts.init.bootstrap.options.reset_delay,
         &provisioning_sram_program,
         provisioning_data,
+        spi_console,
         opts.timeout,
     )?;
     reset_and_lock(
@@ -124,6 +131,7 @@ fn check_cp_provisioning(
     opts: &Opts,
     transport: &TransportWrapper,
     provisioning_data: &ManufCpProvisioningData,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     let test_sram_program: SramProgramParams = SramProgramParams {
         elf: opts.test_sram_elf.clone(),
@@ -144,8 +152,6 @@ fn check_cp_provisioning(
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
     jtag.reset(/*run=*/ false)?;
-    let uart = transport.uart("console")?;
-    uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
     let result = test_sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
@@ -154,19 +160,18 @@ fn check_cp_provisioning(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
-    // Get UART, set flow control, and wait for test to start running.
-    uart.set_flow_control(true)?;
+    // Wait for test to start running.
     let _ = UartConsole::wait_for(
-        &*uart,
+        spi_console,
         r"Waiting for expected CP provisioning data ...",
         opts.timeout,
     )?;
 
     // Inject ground truth provisioning data into the device.
-    provisioning_data.send(&*uart)?;
+    provisioning_data.send(spi_console)?;
 
     // Wait for test complete.
-    let _ = UartConsole::wait_for(&*uart, r"Checks complete. Success.", opts.timeout)?;
+    let _ = UartConsole::wait_for(spi_console, r"Checks complete. Success.", opts.timeout)?;
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
@@ -178,6 +183,8 @@ fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
+    let spi = transport.spi(&opts.console_spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
 
     // Generate random provisioning values for testing.
     let mut device_id = ArrayVec::new();
@@ -203,7 +210,7 @@ fn main() -> Result<()> {
         test_unlock_token_hash: hash_lc_token(test_unlock_token.as_bytes())?,
         test_exit_token_hash: hash_lc_token(test_exit_token.as_bytes())?,
     };
-    cp_provision(&opts, &transport, &provisioning_data)?;
+    cp_provision(&opts, &transport, &provisioning_data, &spi_console_device)?;
 
     // Transition to TEST_UNLOCKED1 and check provisioning operations over JTAG.
     test_unlock(
@@ -211,7 +218,7 @@ fn main() -> Result<()> {
         &transport,
         Some(test_unlock_token.into_inner().unwrap()),
     )?;
-    check_cp_provisioning(&opts, &transport, &provisioning_data)?;
+    check_cp_provisioning(&opts, &transport, &provisioning_data, &spi_console_device)?;
 
     Ok(())
 }
