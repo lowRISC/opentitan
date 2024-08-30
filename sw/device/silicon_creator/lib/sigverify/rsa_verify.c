@@ -154,7 +154,6 @@ static rom_error_t sigverify_encoded_message_check(
 rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
                                  const hmac_digest_t *act_digest,
-                                 lifecycle_state_t lc_state,
                                  uint32_t *flash_exec) {
   sigverify_rsa_buffer_t enc_msg;
   rom_error_t error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
