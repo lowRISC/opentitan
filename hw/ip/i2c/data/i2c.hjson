@@ -571,6 +571,9 @@
           desc: "Value for SDA Override. Set to 0 to drive TX Low, and set to 1 for high-Z"
         }
       ]
+      tags: [// Overriding can cause sda/scl_interference interrupts to trigger continously.
+             // These then become unclearable interrupts at the end of csr_tests (clear_all_interrupts() fails).
+             "excl:CsrRwTest:CsrExclWriteCheck"]
     }
     { name: "VAL"
       desc: "Oversampled RX values"
