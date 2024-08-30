@@ -40,9 +40,9 @@ module prim_alert_rxtx_assert_fpv
 
   logic init_pending;
   assign init_pending = mubi4_test_true_strict(init_trig_i) ||
-                        prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q inside {
-                        prim_alert_rxtx_fpv.i_prim_alert_receiver.InitReq,
-                        prim_alert_rxtx_fpv.i_prim_alert_receiver.InitAckWait};
+                        prim_alert_rxtx_tb.i_prim_alert_receiver.state_q inside {
+                        prim_alert_rxtx_tb.i_prim_alert_receiver.InitReq,
+                        prim_alert_rxtx_tb.i_prim_alert_receiver.InitAckWait};
 
   // note: we can only detect sigint errors where one wire is flipped.
   `ASSUME_FPV(PingErrorsAreOH_M,  $onehot0({ping_err_pi, ping_err_ni}),   clk_i, !rst_ni)
@@ -56,91 +56,91 @@ module prim_alert_rxtx_assert_fpv
       (ping_ok_o || error_present)[->1] ##1 $fell(ping_req_i),
       clk_i, !rst_ni)
   sequence FullHandshake_S;
-    $rose(prim_alert_rxtx_fpv.alert_tx_out.alert_p)   ##1
-    $rose(prim_alert_rxtx_fpv.alert_rx_out.ack_p)     &&
-    $stable(prim_alert_rxtx_fpv.alert_tx_out.alert_p) ##1
-    $fell(prim_alert_rxtx_fpv.alert_tx_out.alert_p)   &&
-    $stable(prim_alert_rxtx_fpv.alert_rx_out.ack_p)   ##1
-    $fell(prim_alert_rxtx_fpv.alert_rx_out.ack_p)     &&
-    $stable(prim_alert_rxtx_fpv.alert_tx_out.alert_p) ;
+    $rose(prim_alert_rxtx_tb.alert_tx_out.alert_p)   ##1
+    $rose(prim_alert_rxtx_tb.alert_rx_out.ack_p)     &&
+    $stable(prim_alert_rxtx_tb.alert_tx_out.alert_p) ##1
+    $fell(prim_alert_rxtx_tb.alert_tx_out.alert_p)   &&
+    $stable(prim_alert_rxtx_tb.alert_rx_out.ack_p)   ##1
+    $fell(prim_alert_rxtx_tb.alert_rx_out.ack_p)     &&
+    $stable(prim_alert_rxtx_tb.alert_tx_out.alert_p) ;
   endsequence
 
   // note: injected errors may lockup the FSMs, and hence the full HS can
   // only take place if both FSMs are in a good state
-  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_fpv.alert_rx_out.ping_p) &&
-      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |=> FullHandshake_S,
+  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_tb.alert_rx_out.ping_p) &&
+      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |=> FullHandshake_S,
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   `ASSERT(AlertHs_A, alert_req_i &&
-      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |=>
+      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |=>
       FullHandshake_S |-> alert_ack_o,
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   `ASSERT(AlertTestHs_A, alert_test_i &&
-      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |=>
+      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |=>
       FullHandshake_S,
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   // Make sure we eventually get an ACK
   `ASSERT(AlertReqAck_A, alert_req_i &&
-      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |-> strong(##[1:$] alert_ack_o),
+      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) &&
+      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |-> strong(##[1:$] alert_ack_o),
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
 
   // transmission of pings
   // note: the complete transmission of pings only happen when no ping handshake is in progress
-  `ASSERT(AlertPingOk_A, !(prim_alert_rxtx_fpv.i_prim_alert_sender.state_q inside {
-      prim_alert_rxtx_fpv.i_prim_alert_sender.PingHsPhase1,
-      prim_alert_rxtx_fpv.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
+  `ASSERT(AlertPingOk_A, !(prim_alert_rxtx_tb.i_prim_alert_sender.state_q inside {
+      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase1,
+      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
       ##[1:9] ping_ok_o,
       clk_i, !rst_ni || error_present || init_pending)
-  `ASSERT(AlertPingIgnored_A, (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q inside {
-      prim_alert_rxtx_fpv.i_prim_alert_sender.PingHsPhase1,
-      prim_alert_rxtx_fpv.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
+  `ASSERT(AlertPingIgnored_A, (prim_alert_rxtx_tb.i_prim_alert_sender.state_q inside {
+      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase1,
+      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
       ping_ok_o == 0 throughout ping_req_i [->1],
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   // transmission of alerts in case of no collision with ping enable
   `ASSERT(AlertCheck0_A, !ping_req_i [*3] ##0 ($rose(alert_req_i) || $rose(alert_test_i)) &&
-      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) |=>
+      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) |=>
       alert_o,
       clk_i, !rst_ni || error_present || ping_req_i || init_pending)
   // transmission of alerts in the general case which can include continous ping collisions
   `ASSERT(AlertCheck1_A, alert_req_i || alert_test_i |=>
-      strong(##[1:$] ((prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) && !ping_req_i) ##1 alert_o),
+      strong(##[1:$] ((prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) && !ping_req_i) ##1 alert_o),
       clk_i,
-      !rst_ni || error_present || prim_alert_rxtx_fpv.i_prim_alert_sender.alert_clr ||
+      !rst_ni || error_present || prim_alert_rxtx_tb.i_prim_alert_sender.alert_clr ||
       mubi4_test_true_strict(init_trig_i))
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A,
-      (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q !=
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle)),
+      (prim_alert_rxtx_tb.i_prim_alert_sender.state_q !=
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle) |->
+      strong(##[1:$] (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle)),
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   `ASSERT(FsmLivenessReceiver_A,
-      (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q !=
-      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_fpv.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_receiver.Idle)),
+      (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q !=
+      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |->
+      strong(##[1:$] (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_receiver.Idle)),
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
 
   // check that the in-band reset moves sender FSM into Idle state.
   `ASSERT(InBandInitFromReceiverToSender_A,
       mubi4_test_true_strict(init_trig_i)
       |->
-      ##[1:20] (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_fpv.i_prim_alert_sender.Idle),
+      ##[1:20] (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
+      prim_alert_rxtx_tb.i_prim_alert_sender.Idle),
       clk_i, !rst_ni || error_present)
 
 endmodule : prim_alert_rxtx_assert_fpv
