@@ -87,7 +87,9 @@
     end
 
 `define ASSERT_KNOWN(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-  `ASSERT(__name, !$isunknown(__sig), __clk, __rst)
+`ifndef FPV_ON                                                                                \
+  `ASSERT(__name, !$isunknown(__sig), __clk, __rst)                                           \
+`endif
 
 `define COVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
   __name: cover property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop));
