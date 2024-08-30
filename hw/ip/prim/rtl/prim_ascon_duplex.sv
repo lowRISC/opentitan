@@ -22,7 +22,9 @@ module prim_ascon_duplex
   input duplex_variant_e ascon_variant,
   input duplex_op_e ascon_operation,
 
-  input  logic   start_i,
+  input  logic start_i,
+  output logic done_o,
+
   output prim_mubi_pkg::mubi4_t idle_o,
 
   // It is assumed that no_ad, no_msg, key, and nonce are always
@@ -328,6 +330,7 @@ always_comb begin : p_fsm
   set_round_counter = 1'b0;
   inc_round_counter = 1'b0;
   perm_offset = P12;
+  done_o = 1'b0;
   idle_o = prim_mubi_pkg::MuBi4False;
 
   // Default: Don't update state
@@ -584,6 +587,7 @@ always_comb begin : p_fsm
     SqueezeTagXorKey: begin
       tag_out_valid_o = 1'b1;
       fsm_state_d = Idle;
+      done_o = 1'b1;
     end
     Error: begin
       fsm_state_d = Error;
