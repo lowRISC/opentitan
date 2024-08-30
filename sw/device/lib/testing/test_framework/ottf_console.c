@@ -22,6 +22,7 @@
 
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "spi_device_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'c')
 
@@ -95,6 +96,28 @@ static status_t spi_device_getc(void *io) {
   }
 
   return OK_STATUS(info.data[index++]);
+}
+
+static void spi_device_wait_for_sync(dif_spi_device_handle_t *spi_device) {
+  const uint8_t kBootMagicPattern[4] = {0x02, 0xb0, 0xfe, 0xca};
+  const uint8_t kEmptyPattern[4] = {0};
+
+  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
+    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
+        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
+        i * ARRAYSIZE(kBootMagicPattern), ARRAYSIZE(kBootMagicPattern),
+        kBootMagicPattern));
+  }
+
+  upload_info_t info = {0};
+  CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
+  // Clear the boot magic in the read buffer.
+  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
+    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
+        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
+        i * ARRAYSIZE(kEmptyPattern), ARRAYSIZE(kEmptyPattern), kEmptyPattern));
+  }
+  CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
 }
 
 void ottf_console_init(void) {
@@ -228,7 +251,7 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
     CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
         &ottf_console_spi_device, slot, kDifToggleEnabled, write_commands[i]));
   }
-
+  spi_device_wait_for_sync(&ottf_console_spi_device);
   base_spi_device_stdout(&ottf_console_spi_device);
 }
 

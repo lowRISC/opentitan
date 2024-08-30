@@ -27,6 +27,7 @@ impl<'a> SpiConsoleDevice<'a> {
     const SPI_FRAME_MAGIC_NUMBER: u32 = 0xa5a5beef;
     const SPI_FLASH_PAYLOAD_BUFFER_SIZE: usize = 256;
     const SPI_TX_LAST_CHUNK_MAGIC_ADDRESS: u32 = 0x100;
+    const SPI_BOOT_MAGIC_PATTERN: u32 = 0xcafeb002;
 
     pub fn new(spi: &'a dyn Target) -> Result<Self> {
         let mut flash = SpiFlash {
@@ -42,6 +43,20 @@ impl<'a> SpiConsoleDevice<'a> {
         })
     }
 
+    fn check_device_boot_up(&self, buf: &[u8]) -> Result<usize> {
+        for i in (0..buf.len()).step_by(4) {
+            let pattern: u32 = u32::from_le_bytes(buf[i..i + 4].try_into().unwrap());
+            if pattern != SpiConsoleDevice::SPI_BOOT_MAGIC_PATTERN {
+                return Ok(0);
+            }
+        }
+        // Set busy bit and wait for the device to clear the boot magic.
+        self.flash.program(self.spi, 0, buf)?;
+        self.console_next_frame_number.set(0);
+        self.next_read_address.set(0);
+        Ok(0)
+    }
+
     fn read_from_spi(&self) -> Result<usize> {
         // Read the SPI console frame header.
         let read_address = self.next_read_address.get();
@@ -55,7 +70,8 @@ impl<'a> SpiConsoleDevice<'a> {
             || frame_number != self.console_next_frame_number.get()
             || data_len_bytes > SpiConsoleDevice::SPI_MAX_DATA_LENGTH
         {
-            // This frame is junk, so we do not read the data.
+            self.check_device_boot_up(&header)?;
+            // This frame is junk, so we do not read the data
             return Ok(0);
         }
         self.console_next_frame_number.set(frame_number + 1);
