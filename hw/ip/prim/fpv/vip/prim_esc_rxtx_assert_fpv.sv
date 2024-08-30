@@ -139,7 +139,7 @@ module prim_esc_rxtx_assert_fpv
       strong(##[1:$] (prim_esc_rxtx_tb.u_prim_esc_receiver.state_q
       == prim_esc_rxtx_tb.u_prim_esc_receiver.Idle)),
       clk_i,
-      rst_ni ||
+      !rst_ni ||
       error_present)
 
   // The assertions below use TimeoutCntDw to bound some sequence lengths. Add an assertion to check
