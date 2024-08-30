@@ -74,8 +74,11 @@ void base_set_stdout(buffer_sink_t out) {
 static const size_t kSpiDeviceReadBufferSizeBytes =
     SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t);
 static const size_t kSpiDeviceFrameHeaderSizeBytes = 12;
+static const size_t kSpiDeviceBufferPreservedSizeBytes =
+    kSpiDeviceFrameHeaderSizeBytes;
 static const size_t kSpiDeviceMaxFramePayloadSizeBytes =
-    kSpiDeviceReadBufferSizeBytes - kSpiDeviceFrameHeaderSizeBytes - 4;
+    kSpiDeviceReadBufferSizeBytes - kSpiDeviceFrameHeaderSizeBytes -
+    kSpiDeviceBufferPreservedSizeBytes - 4;
 static const uint32_t kSpiDeviceFrameMagicNumber = 0xa5a5beef;
 static uint32_t spi_device_frame_num = 0;
 
@@ -179,14 +182,9 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
           next_read_address +
           (kSpiDeviceReadBufferSizeBytes - next_write_address) - 1;
     }
-  } while (frame_size_bytes > available_buffer_size);
+  } while ((frame_size_bytes + kSpiDeviceBufferPreservedSizeBytes) >
+           available_buffer_size);
 
-  // Send frame header.
-  if (!status_ok(spi_device_send_data(spi_device, frame_header_bytes,
-                                      kSpiDeviceFrameHeaderSizeBytes,
-                                      next_write_address))) {
-    return 0;
-  }
   // Send aligned data.
   size_t data_write_address =
       (next_write_address + kSpiDeviceFrameHeaderSizeBytes) %
@@ -212,7 +210,10 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
     }
   }
 
-  if (dif_spi_device_set_flash_status_registers(spi_device, 0x00) != kDifOk) {
+  // Send frame header.
+  if (!status_ok(spi_device_send_data(spi_device, frame_header_bytes,
+                                      kSpiDeviceFrameHeaderSizeBytes,
+                                      next_write_address))) {
     return 0;
   }
 
