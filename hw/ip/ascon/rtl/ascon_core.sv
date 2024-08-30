@@ -7,7 +7,6 @@
 module ascon_core
   import ascon_reg_pkg::*;
   import ascon_pkg::*;
-  import prim_ascon_pkg::*;
 (
   input clk_i,
   input rst_ni,
@@ -88,8 +87,8 @@ module ascon_core
   data_type_e data_type_last;
   data_type_e data_type_start;
 
-  duplex_op_e      operation;
-  duplex_variant_e variant;
+  prim_ascon_pkg::duplex_op_e      operation;
+  prim_ascon_pkg::duplex_variant_e variant;
 
   logic [127:0]     msg_out;
   logic [3:0][31:0] msg_out_d;
@@ -293,15 +292,16 @@ module ascon_core
   assign hw2reg.output_valid.tag_comparison_valid.d  = 2'b00;
   assign hw2reg.output_valid.tag_comparison_valid.de = 1'b1;
 
-  // TODO FSM_STATE
-  assign hw2reg.fsm_state.d  = '0;
+  // FSM_STATE Debug Output
+  prim_ascon_pkg::duplex_fsm_state_e duplex_fsm_state;
+  assign hw2reg.fsm_state.d  = {{(32-prim_ascon_pkg::AsconDuplexFSMStateWidth){1'b0}},
+                                duplex_fsm_state};
+
   logic [31:0] unused_fsm_state_q;
   logic        unused_fsm_state_qe;
   assign unused_fsm_state_q  = reg2hw.fsm_state.q;
   assign unused_fsm_state_qe = reg2hw.fsm_state.qe;
 
-
-  // TODO FSM_STATE_REGEN
 
   // TODO ERROR
   assign hw2reg.error.no_key.d  = 1'b0;
@@ -518,6 +518,7 @@ module ascon_core
     .tag_out_o(tag_out),
     .tag_out_valid_o(tag_out_valid),
 
+    .fsm_state_o(duplex_fsm_state),
     .err_o(duplex_fatal_error)
   );
 

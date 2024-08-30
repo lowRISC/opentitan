@@ -343,6 +343,7 @@ module prim_ascon_duplex_tb (
   .tag_out_o(dut_response_tag),
   .tag_out_valid_o(dut_response_tag_valid),
 
+  .fsm_state_o(),
   .err_o()
   );
 
