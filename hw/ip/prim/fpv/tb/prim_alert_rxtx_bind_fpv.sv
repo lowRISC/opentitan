@@ -5,7 +5,7 @@
 
 module prim_alert_rxtx_bind_fpv;
 
-  bind prim_alert_rxtx_fpv
+  bind prim_alert_rxtx_tb
         prim_alert_rxtx_assert_fpv prim_alert_rxtx_assert_fpv (
     .clk_i,
     .rst_ni,
