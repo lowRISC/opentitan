@@ -5,7 +5,7 @@
 
 module prim_alert_rxtx_async_fatal_bind_fpv;
 
-  bind prim_alert_rxtx_async_fpv
+  bind prim_alert_rxtx_async_tb
         prim_alert_rxtx_async_assert_fpv prim_alert_rxtx_async_assert_fpv (
     .clk_i,
     .rst_ni,
