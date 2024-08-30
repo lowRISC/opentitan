@@ -3341,6 +3341,36 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "spi_device_ujson_console_test",
+    srcs = ["spi_device_ujson_console_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_CW340_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_ujson_console_test",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
+    ],
+)
+
+opentitan_test(
     name = "spi_device_sleep_test",
     srcs = ["spi_device_sleep_test.c"],
     exec_env = dicts.add(
