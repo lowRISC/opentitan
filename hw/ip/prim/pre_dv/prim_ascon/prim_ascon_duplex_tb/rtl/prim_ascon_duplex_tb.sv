@@ -317,6 +317,7 @@ module prim_ascon_duplex_tb (
   .ascon_operation(OPERATION),
 
   .start_i(start),
+  .done_o(),
   .idle_o(idle),
 
   // It is assumed that no_ad, no_msg, key, and nonce are always

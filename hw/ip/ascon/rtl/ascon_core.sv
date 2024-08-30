@@ -74,7 +74,7 @@ module ascon_core
   logic force_data_overwrite;
   logic manual_start_trigger;
   logic sideload_key;
-  logic start, wipe;
+  logic start, start_ok, wipe;
   logic masked_ad_input;
   logic masked_msg_input;
 
@@ -108,6 +108,13 @@ module ascon_core
   logic [3:0]       tag_out_read_d, tag_out_read_q;
   logic             tag_out_read;
 
+
+  prim_mubi_pkg::mubi4_t duplex_idle;
+  assign idle_o = duplex_idle;
+
+  logic duplex_done;
+
+  logic ascon_error;
 
   logic duplex_fatal_error;
   assign alert_fatal_o = duplex_fatal_error;
@@ -290,15 +297,12 @@ module ascon_core
   assign hw2reg.trigger.wipe.d  = 1'b0;
   assign hw2reg.trigger.wipe.de = 1'b1;
 
-  // TODO STATUS
-  assign hw2reg.status.idle.d  = 1'b0;
+  // STATUS
+  assign hw2reg.status.idle.d  = prim_mubi_pkg::mubi4_test_true_strict(duplex_idle);
   assign hw2reg.status.idle.de = 1'b1;
-  assign hw2reg.status.stall.d  = 1'b0;
-  assign hw2reg.status.stall.de = 1'b1;
-  assign hw2reg.status.wait_edn.d  = 1'b0;
-  assign hw2reg.status.wait_edn.de = 1'b1;
-  assign hw2reg.status.ascon_error.d  = 1'b0;
+  assign hw2reg.status.ascon_error.d  = ascon_error;
   assign hw2reg.status.ascon_error.de = 1'b1;
+  // TODO STATUS
   assign hw2reg.status.alert_recov_ctrl_update_err.d  = 1'b0;
   assign hw2reg.status.alert_recov_ctrl_update_err.de = 1'b1;
   assign hw2reg.status.alert_recov_ctrl_aux_update_err.d  = 1'b0;
@@ -307,6 +311,10 @@ module ascon_core
   assign hw2reg.status.alert_recov_block_ctrl_update_err.de = 1'b1;
   assign hw2reg.status.alert_fatal_fault.d  = 1'b0;
   assign hw2reg.status.alert_fatal_fault.de = 1'b1;
+  assign hw2reg.status.stall.d  = 1'b0;
+  assign hw2reg.status.stall.de = 1'b1;
+  assign hw2reg.status.wait_edn.d  = 1'b0;
+  assign hw2reg.status.wait_edn.de = 1'b1;
 
   // TODO BLOCK STATUS
   assign hw2reg.output_valid.data_type.d  = 3'b000;
@@ -324,39 +332,28 @@ module ascon_core
   assign unused_fsm_state_q  = reg2hw.fsm_state.q;
   assign unused_fsm_state_qe = reg2hw.fsm_state.qe;
 
-
-  // TODO ERROR
-  assign hw2reg.error.no_key.d  = 1'b0;
-  assign hw2reg.error.no_key.de = 1'b1;
-  assign hw2reg.error.no_nonce.d  = 1'b0;
-  assign hw2reg.error.no_nonce.de = 1'b1;
-  assign hw2reg.error.wrong_order.d  = 1'b0;
-  assign hw2reg.error.wrong_order.de = 1'b1;
-  assign hw2reg.error.flag_input_missmatch.d  = 1'b0;
-  assign hw2reg.error.flag_input_missmatch.de = 1'b1;
-
   // DETECTION LOGIC
   // Detect new key, new input, output read
   // Edge detectors are cleared by the FSM
   assign key_share0_in_new_d = key_share0_in_load ? '0 : key_share0_in_new_q |
       {reg2hw.key_share0[3].qe, reg2hw.key_share0[2].qe,
        reg2hw.key_share0[1].qe, reg2hw.key_share0[0].qe};
-  assign key_share0_in_new = &key_share0_in_new_d;
+  assign key_share0_in_new = &key_share0_in_new_q;
 
   assign key_share1_in_new_d = key_share1_in_load ? '0 : key_share1_in_new_q |
       {reg2hw.key_share1[3].qe, reg2hw.key_share1[2].qe,
        reg2hw.key_share1[1].qe, reg2hw.key_share1[0].qe};
-  assign key_share1_in_new = &key_share1_in_new_d;
+  assign key_share1_in_new = &key_share1_in_new_q;
 
   assign nonce_share0_in_new_d = nonce_share0_in_load ? '0 : nonce_share0_in_new_q |
       {reg2hw.nonce_share0[3].qe, reg2hw.nonce_share0[2].qe,
        reg2hw.nonce_share0[1].qe, reg2hw.nonce_share0[0].qe};
-  assign nonce_share0_in_new = &nonce_share0_in_new_d;
+  assign nonce_share0_in_new = &nonce_share0_in_new_q;
 
   assign nonce_share1_in_new_d = nonce_share1_in_load ? '0 : nonce_share1_in_new_q |
       {reg2hw.nonce_share1[3].qe, reg2hw.nonce_share1[2].qe,
        reg2hw.nonce_share1[1].qe, reg2hw.nonce_share1[0].qe};
-  assign nonce_share1_in_new = &nonce_share1_in_new_d;
+  assign nonce_share1_in_new = &nonce_share1_in_new_q;
 
   assign data_share0_in_new_d = data_share0_in_load ? '0 : data_share0_in_new_q |
       {reg2hw.data_in_share0[3].qe, reg2hw.data_in_share0[2].qe,
@@ -404,6 +401,60 @@ module ascon_core
     end
   end
 
+  // ERROR
+  logic key_error, nonce_error;
+  logic no_new_key, no_new_nonce;
+  assign no_new_key   = !(key_share0_in_new & key_share1_in_new);
+  assign key_error    = no_new_key;
+  assign no_new_nonce = !(nonce_share0_in_new & nonce_share1_in_new);
+  assign nonce_error  = no_new_nonce;
+
+  // only start if nonce and key are set
+  assign start_ok = start & !(key_error | nonce_error);
+
+  // TODO: This implementations forces a new key write for each AEAD
+  //       This can be relaxed.
+  assign key_share0_in_load = start_ok;
+  assign key_share1_in_load = start_ok;
+  assign nonce_share0_in_load = start_ok;
+  assign nonce_share1_in_load = start_ok;
+    // otherwise set error
+  assign hw2reg.error.no_key.d  = key_error;
+  assign hw2reg.error.no_key.de = start;
+  assign hw2reg.error.no_nonce.d  = nonce_error;
+  assign hw2reg.error.no_nonce.de = start;
+
+  // detect error during operation
+  logic flag_error;
+
+  // the no_ad or no_msg flag was set, but there is ad or msg
+  assign flag_error = (prim_mubi_pkg::mubi4_test_true_strict(no_ad) &&
+                      ((data_type_start == AD_IN) || (data_type_last == AD_IN))) ||
+                      (prim_mubi_pkg::mubi4_test_true_strict(no_msg) &&
+                      ((data_type_start == MSG_IN) || (data_type_last == MSG_IN)));
+  assign hw2reg.error.flag_input_missmatch.d  = flag_error;
+  assign hw2reg.error.flag_input_missmatch.de = prim_mubi_pkg::mubi4_test_false_strict(
+                                                  duplex_idle);
+
+  // AD was provided after MSG
+  logic order_error;
+  logic msg_received_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_track_msg
+    if (!rst_ni) begin
+      msg_received_q <= 1'b0;
+    end else if (duplex_done) begin
+      msg_received_q <= 1'b0;
+    end else if ((data_type_start == MSG_IN) || (data_type_last == MSG_IN)) begin
+      msg_received_q <= 1'b1;
+    end
+  end
+
+  assign order_error = msg_received_q & ((data_type_start == AD_IN) || (data_type_last == AD_IN));
+  assign hw2reg.error.wrong_order.d  = order_error;
+  assign hw2reg.error.wrong_order.de = prim_mubi_pkg::mubi4_test_false_strict(duplex_idle);
+
+  assign ascon_error = key_error | nonce_error | flag_error | order_error;
+
   // Generate a ready signal from a read signal:
   // ready and read share mostly the same logic: A register is ready to receive new data, after
   // it has been read (logical 1'b1). A write to the register resets both the read and the ready
@@ -436,24 +487,13 @@ module ascon_core
 
   // TODO: We don't use the edge detection atm
   logic unused_tag_in_new;
-  logic unused_key_share0_in_new;
-  logic unused_key_share1_in_new;
-  logic unused_nonce_share0_in_new;
-  logic unused_nonce_share1_in_new;
   logic unused_tag_out_read;
   assign unused_tag_in_new   = tag_in_new;
-  assign unused_nonce_share0_in_new = nonce_share0_in_new;
-  assign unused_nonce_share1_in_new = nonce_share1_in_new;
-  assign unused_key_share0_in_new  = key_share0_in_new;
-  assign unused_key_share1_in_new  = key_share1_in_new;
   assign unused_tag_out_read = tag_out_read;
 
 
   // TODO: Build a very basic FSM here
-  assign key_share0_in_load = 1'b0;
-  assign key_share1_in_load = 1'b0;
-  assign nonce_share0_in_load = 1'b0;
-  assign nonce_share1_in_load = 1'b0;
+
   assign tag_in_load = 1'b0;
 
   // TODO: We don't use any control signals
@@ -463,7 +503,6 @@ module ascon_core
   logic        unused_masked_msg_input;
   logic        unused_masked_ad_input;
   logic        unused_sideload_key;
-  logic [11:0] unused_data_type_start;
 
   assign unused_force_data_overwrite = force_data_overwrite;
   assign unused_manual_start_trigger = manual_start_trigger;
@@ -471,7 +510,6 @@ module ascon_core
   assign unused_masked_ad_input      = masked_ad_input;
   assign unused_masked_msg_input     = masked_msg_input;
   assign unused_sideload_key         = sideload_key;
-  assign unused_data_type_start      = data_type_start;
 
 
   logic data_in_valid;
@@ -513,8 +551,9 @@ module ascon_core
     .ascon_variant(variant),
     .ascon_operation(operation),
 
-    .start_i(start),
-    .idle_o(idle_o),
+    .start_i(start_ok),
+    .done_o(duplex_done),
+    .idle_o(duplex_idle),
 
     // It is assumed that no_ad, no_msg, key, and nonce are always
     // valid and constant, when the cipher is triggered by the start command
