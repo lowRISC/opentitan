@@ -1,3 +1,7 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
 # expected text output from:
 #  (cat gpio0 & cat usb0) | tee /tmp/log
 00000000000000001111111100000000
