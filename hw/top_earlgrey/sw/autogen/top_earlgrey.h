@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
+// -o hw/top_earlgrey
 
 #ifndef OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 #define OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
@@ -1767,6 +1772,20 @@ typedef enum top_earlgrey_hintable_clocks {
   kTopEarlgreyHintableClocksMainOtbn = 3, /**< Clock clk_main_otbn in group trans */
   kTopEarlgreyHintableClocksLast = 3, /**< \internal Last Valid Hintable Clock */
 } top_earlgrey_hintable_clocks_t;
+
+/**
+ * Clock IDs for peripherals to map against properties.
+ */
+typedef enum top_earlgrey_clock_src {
+  kTopEarlgreyClockSrcUnknown = 0, /**< ID representing unknown clock */
+  kTopEarlgreyClockSrcMain = 1, /**< Clock main */
+  kTopEarlgreyClockSrcIo = 2, /**< Clock io */
+  kTopEarlgreyClockSrcUsb = 3, /**< Clock usb */
+  kTopEarlgreyClockSrcAon = 4, /**< Clock aon */
+  kTopEarlgreyClockSrcIoDiv2 = 5, /**< Clock io_div2 */
+  kTopEarlgreyClockSrcIoDiv4 = 6, /**< Clock io_div4 */
+  kTopEarlgreyClockSrcCount = 7, /**< Number of clock IDs */
+} top_earlgrey_clock_src_t;
 
 /**
  * MMIO Region
