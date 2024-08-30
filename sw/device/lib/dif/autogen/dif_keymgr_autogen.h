@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_keymgr.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,25 @@ typedef struct dif_keymgr {
  * @param base_addr The MMIO base address of the keymgr peripheral.
  * @param[out] keymgr Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_init(mmio_region_t base_addr, dif_keymgr_t *keymgr);
+
+/**
+ * Creates a new handle for a(n) keymgr peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] keymgr Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_init_from_dt(const dt_keymgr_t *dt,
+                                     dif_keymgr_t *keymgr);
 
 /**
  * A keymgr alert type.
@@ -77,13 +94,21 @@ dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
 
 /**
  * A keymgr interrupt request type.
+ *
+ * DEPRECATED Use `dt_keymgr_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_keymgr_irq {
-  /**
-   * Operation complete
-   */
-  kDifKeymgrIrqOpDone = 0,
-} dif_keymgr_irq_t;
+/**
+ * Operation complete
+ */
+#define kDifKeymgrIrqOpDone kDtKeymgrIrqOpDone
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_keymgr_irq_t dif_keymgr_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -103,8 +128,7 @@ typedef uint32_t dif_keymgr_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_get_type(const dif_keymgr_t *keymgr,
-                                     dif_keymgr_irq_t irq,
-                                     dif_irq_type_t *type);
+                                     dif_keymgr_irq_t, dif_irq_type_t *type);
 
 /**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
@@ -127,7 +151,7 @@ dif_result_t dif_keymgr_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_is_pending(const dif_keymgr_t *keymgr,
-                                       dif_keymgr_irq_t irq, bool *is_pending);
+                                       dif_keymgr_irq_t, bool *is_pending);
 
 /**
  * Acknowledges all interrupts that were pending at the time of the state
@@ -161,7 +185,7 @@ dif_result_t dif_keymgr_irq_acknowledge_all(const dif_keymgr_t *keymgr);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_acknowledge(const dif_keymgr_t *keymgr,
-                                        dif_keymgr_irq_t irq);
+                                        dif_keymgr_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -173,8 +197,8 @@ dif_result_t dif_keymgr_irq_acknowledge(const dif_keymgr_t *keymgr,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_keymgr_irq_force(const dif_keymgr_t *keymgr,
-                                  dif_keymgr_irq_t irq, const bool val);
+dif_result_t dif_keymgr_irq_force(const dif_keymgr_t *keymgr, dif_keymgr_irq_t,
+                                  const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
@@ -195,8 +219,7 @@ typedef uint32_t dif_keymgr_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_get_enabled(const dif_keymgr_t *keymgr,
-                                        dif_keymgr_irq_t irq,
-                                        dif_toggle_t *state);
+                                        dif_keymgr_irq_t, dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -208,8 +231,7 @@ dif_result_t dif_keymgr_irq_get_enabled(const dif_keymgr_t *keymgr,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_set_enabled(const dif_keymgr_t *keymgr,
-                                        dif_keymgr_irq_t irq,
-                                        dif_toggle_t state);
+                                        dif_keymgr_irq_t, dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

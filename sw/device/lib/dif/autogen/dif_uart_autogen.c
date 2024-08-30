@@ -24,6 +24,18 @@ dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_uart_init_from_dt(const dt_uart_t *dt, dif_uart_t *uart) {
+  if (uart == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  uart->base_addr =
+      mmio_region_from_addr(dt_uart_reg_block(dt, kDtUartRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_uart_alert_force(const dif_uart_t *uart,
                                   dif_uart_alert_t alert) {
   if (uart == NULL) {
@@ -52,31 +64,31 @@ dif_result_t dif_uart_alert_force(const dif_uart_t *uart,
 static bool uart_get_irq_bit_index(dif_uart_irq_t irq,
                                    bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifUartIrqTxWatermark:
+    case kDtUartIrqTxWatermark:
       *index_out = UART_INTR_COMMON_TX_WATERMARK_BIT;
       break;
-    case kDifUartIrqRxWatermark:
+    case kDtUartIrqRxWatermark:
       *index_out = UART_INTR_COMMON_RX_WATERMARK_BIT;
       break;
-    case kDifUartIrqTxDone:
+    case kDtUartIrqTxDone:
       *index_out = UART_INTR_COMMON_TX_DONE_BIT;
       break;
-    case kDifUartIrqRxOverflow:
+    case kDtUartIrqRxOverflow:
       *index_out = UART_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
-    case kDifUartIrqRxFrameErr:
+    case kDtUartIrqRxFrameErr:
       *index_out = UART_INTR_COMMON_RX_FRAME_ERR_BIT;
       break;
-    case kDifUartIrqRxBreakErr:
+    case kDtUartIrqRxBreakErr:
       *index_out = UART_INTR_COMMON_RX_BREAK_ERR_BIT;
       break;
-    case kDifUartIrqRxTimeout:
+    case kDtUartIrqRxTimeout:
       *index_out = UART_INTR_COMMON_RX_TIMEOUT_BIT;
       break;
-    case kDifUartIrqRxParityErr:
+    case kDtUartIrqRxParityErr:
       *index_out = UART_INTR_COMMON_RX_PARITY_ERR_BIT;
       break;
-    case kDifUartIrqTxEmpty:
+    case kDtUartIrqTxEmpty:
       *index_out = UART_INTR_COMMON_TX_EMPTY_BIT;
       break;
     default:
@@ -95,7 +107,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_irq_get_type(const dif_uart_t *uart, dif_uart_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (uart == NULL || type == NULL || irq == kDifUartIrqTxEmpty + 1) {
+  if (uart == NULL || type == NULL || irq == kDtUartIrqCount) {
     return kDifBadArg;
   }
 

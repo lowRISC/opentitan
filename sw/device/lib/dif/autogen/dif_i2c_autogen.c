@@ -24,6 +24,18 @@ dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_init_from_dt(const dt_i2c_t *dt, dif_i2c_t *i2c) {
+  if (i2c == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  i2c->base_addr =
+      mmio_region_from_addr(dt_i2c_reg_block(dt, kDtI2cRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert) {
   if (i2c == NULL) {
     return kDifBadArg;
@@ -51,49 +63,49 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert) {
 static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifI2cIrqFmtThreshold:
+    case kDtI2cIrqFmtThreshold:
       *index_out = I2C_INTR_COMMON_FMT_THRESHOLD_BIT;
       break;
-    case kDifI2cIrqRxThreshold:
+    case kDtI2cIrqRxThreshold:
       *index_out = I2C_INTR_COMMON_RX_THRESHOLD_BIT;
       break;
-    case kDifI2cIrqAcqThreshold:
+    case kDtI2cIrqAcqThreshold:
       *index_out = I2C_INTR_COMMON_ACQ_THRESHOLD_BIT;
       break;
-    case kDifI2cIrqRxOverflow:
+    case kDtI2cIrqRxOverflow:
       *index_out = I2C_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
-    case kDifI2cIrqControllerHalt:
+    case kDtI2cIrqControllerHalt:
       *index_out = I2C_INTR_COMMON_CONTROLLER_HALT_BIT;
       break;
-    case kDifI2cIrqSclInterference:
+    case kDtI2cIrqSclInterference:
       *index_out = I2C_INTR_COMMON_SCL_INTERFERENCE_BIT;
       break;
-    case kDifI2cIrqSdaInterference:
+    case kDtI2cIrqSdaInterference:
       *index_out = I2C_INTR_COMMON_SDA_INTERFERENCE_BIT;
       break;
-    case kDifI2cIrqStretchTimeout:
+    case kDtI2cIrqStretchTimeout:
       *index_out = I2C_INTR_COMMON_STRETCH_TIMEOUT_BIT;
       break;
-    case kDifI2cIrqSdaUnstable:
+    case kDtI2cIrqSdaUnstable:
       *index_out = I2C_INTR_COMMON_SDA_UNSTABLE_BIT;
       break;
-    case kDifI2cIrqCmdComplete:
+    case kDtI2cIrqCmdComplete:
       *index_out = I2C_INTR_COMMON_CMD_COMPLETE_BIT;
       break;
-    case kDifI2cIrqTxStretch:
+    case kDtI2cIrqTxStretch:
       *index_out = I2C_INTR_COMMON_TX_STRETCH_BIT;
       break;
-    case kDifI2cIrqTxThreshold:
+    case kDtI2cIrqTxThreshold:
       *index_out = I2C_INTR_COMMON_TX_THRESHOLD_BIT;
       break;
-    case kDifI2cIrqAcqStretch:
+    case kDtI2cIrqAcqStretch:
       *index_out = I2C_INTR_COMMON_ACQ_STRETCH_BIT;
       break;
-    case kDifI2cIrqUnexpStop:
+    case kDtI2cIrqUnexpStop:
       *index_out = I2C_INTR_COMMON_UNEXP_STOP_BIT;
       break;
-    case kDifI2cIrqHostTimeout:
+    case kDtI2cIrqHostTimeout:
       *index_out = I2C_INTR_COMMON_HOST_TIMEOUT_BIT;
       break;
     default:
@@ -113,7 +125,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_irq_get_type(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (i2c == NULL || type == NULL || irq == kDifI2cIrqHostTimeout + 1) {
+  if (i2c == NULL || type == NULL || irq == kDtI2cIrqCount) {
     return kDifBadArg;
   }
 

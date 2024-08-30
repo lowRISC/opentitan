@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_pinmux.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,25 @@ typedef struct dif_pinmux {
  * @param base_addr The MMIO base address of the pinmux peripheral.
  * @param[out] pinmux Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_init(mmio_region_t base_addr, dif_pinmux_t *pinmux);
+
+/**
+ * Creates a new handle for a(n) pinmux peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] pinmux Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_init_from_dt(const dt_pinmux_t *dt,
+                                     dif_pinmux_t *pinmux);
 
 /**
  * A pinmux alert type.

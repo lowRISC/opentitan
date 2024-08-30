@@ -24,6 +24,18 @@ dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_init_from_dt(const dt_otbn_t *dt, dif_otbn_t *otbn) {
+  if (otbn == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  otbn->base_addr =
+      mmio_region_from_addr(dt_otbn_reg_block(dt, kDtOtbnRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_otbn_alert_force(const dif_otbn_t *otbn,
                                   dif_otbn_alert_t alert) {
   if (otbn == NULL) {
@@ -55,7 +67,7 @@ dif_result_t dif_otbn_alert_force(const dif_otbn_t *otbn,
 static bool otbn_get_irq_bit_index(dif_otbn_irq_t irq,
                                    bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifOtbnIrqDone:
+    case kDtOtbnIrqDone:
       *index_out = OTBN_INTR_COMMON_DONE_BIT;
       break;
     default:
@@ -72,7 +84,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_irq_get_type(const dif_otbn_t *otbn, dif_otbn_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (otbn == NULL || type == NULL || irq == kDifOtbnIrqDone + 1) {
+  if (otbn == NULL || type == NULL || irq == kDtOtbnIrqCount) {
     return kDifBadArg;
   }
 

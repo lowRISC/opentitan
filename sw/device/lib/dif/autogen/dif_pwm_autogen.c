@@ -24,6 +24,18 @@ dif_result_t dif_pwm_init(mmio_region_t base_addr, dif_pwm_t *pwm) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwm_init_from_dt(const dt_pwm_t *dt, dif_pwm_t *pwm) {
+  if (pwm == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  pwm->base_addr =
+      mmio_region_from_addr(dt_pwm_reg_block(dt, kDtPwmRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_pwm_alert_force(const dif_pwm_t *pwm, dif_pwm_alert_t alert) {
   if (pwm == NULL) {
     return kDifBadArg;

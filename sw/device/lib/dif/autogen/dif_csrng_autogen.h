@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_csrng.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_csrng {
  * @param base_addr The MMIO base address of the csrng peripheral.
  * @param[out] csrng Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_init(mmio_region_t base_addr, dif_csrng_t *csrng);
+
+/**
+ * Creates a new handle for a(n) csrng peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] csrng Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_init_from_dt(const dt_csrng_t *dt, dif_csrng_t *csrng);
 
 /**
  * A csrng alert type.
@@ -79,27 +95,35 @@ dif_result_t dif_csrng_alert_force(const dif_csrng_t *csrng,
 
 /**
  * A csrng interrupt request type.
+ *
+ * DEPRECATED Use `dt_csrng_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_csrng_irq {
-  /**
-   * Asserted when a command request is completed.
-   */
-  kDifCsrngIrqCsCmdReqDone = 0,
-  /**
-   * Asserted when a request for entropy has been made.
-   */
-  kDifCsrngIrqCsEntropyReq = 1,
-  /**
-   * Asserted when a hardware-attached CSRNG instance encounters a command
-   * exception
-   */
-  kDifCsrngIrqCsHwInstExc = 2,
-  /**
-   * Asserted when a FIFO error or a fatal alert occurs. Check the !!ERR_CODE
-   * register to get more information.
-   */
-  kDifCsrngIrqCsFatalErr = 3,
-} dif_csrng_irq_t;
+/**
+ * Asserted when a command request is completed.
+ */
+#define kDifCsrngIrqCsCmdReqDone kDtCsrngIrqCsCmdReqDone
+/**
+ * Asserted when a request for entropy has been made.
+ */
+#define kDifCsrngIrqCsEntropyReq kDtCsrngIrqCsEntropyReq
+/**
+ * Asserted when a hardware-attached CSRNG instance encounters a command
+ * exception
+ */
+#define kDifCsrngIrqCsHwInstExc kDtCsrngIrqCsHwInstExc
+/**
+ * Asserted when a FIFO error or a fatal alert occurs. Check the !!ERR_CODE
+ * register to get more information.
+ */
+#define kDifCsrngIrqCsFatalErr kDtCsrngIrqCsFatalErr
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_csrng_irq_t dif_csrng_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -118,8 +142,8 @@ typedef uint32_t dif_csrng_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_irq_get_type(const dif_csrng_t *csrng,
-                                    dif_csrng_irq_t irq, dif_irq_type_t *type);
+dif_result_t dif_csrng_irq_get_type(const dif_csrng_t *csrng, dif_csrng_irq_t,
+                                    dif_irq_type_t *type);
 
 /**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
@@ -141,8 +165,8 @@ dif_result_t dif_csrng_irq_get_state(const dif_csrng_t *csrng,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_irq_is_pending(const dif_csrng_t *csrng,
-                                      dif_csrng_irq_t irq, bool *is_pending);
+dif_result_t dif_csrng_irq_is_pending(const dif_csrng_t *csrng, dif_csrng_irq_t,
+                                      bool *is_pending);
 
 /**
  * Acknowledges all interrupts that were pending at the time of the state
@@ -176,7 +200,7 @@ dif_result_t dif_csrng_irq_acknowledge_all(const dif_csrng_t *csrng);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_irq_acknowledge(const dif_csrng_t *csrng,
-                                       dif_csrng_irq_t irq);
+                                       dif_csrng_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -188,7 +212,7 @@ dif_result_t dif_csrng_irq_acknowledge(const dif_csrng_t *csrng,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_irq_force(const dif_csrng_t *csrng, dif_csrng_irq_t irq,
+dif_result_t dif_csrng_irq_force(const dif_csrng_t *csrng, dif_csrng_irq_t,
                                  const bool val);
 
 /**
@@ -210,8 +234,7 @@ typedef uint32_t dif_csrng_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_irq_get_enabled(const dif_csrng_t *csrng,
-                                       dif_csrng_irq_t irq,
-                                       dif_toggle_t *state);
+                                       dif_csrng_irq_t, dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -223,7 +246,7 @@ dif_result_t dif_csrng_irq_get_enabled(const dif_csrng_t *csrng,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_irq_set_enabled(const dif_csrng_t *csrng,
-                                       dif_csrng_irq_t irq, dif_toggle_t state);
+                                       dif_csrng_irq_t, dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

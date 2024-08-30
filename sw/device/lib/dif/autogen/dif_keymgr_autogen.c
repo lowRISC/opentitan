@@ -24,6 +24,19 @@ dif_result_t dif_keymgr_init(mmio_region_t base_addr, dif_keymgr_t *keymgr) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_init_from_dt(const dt_keymgr_t *dt,
+                                     dif_keymgr_t *keymgr) {
+  if (keymgr == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  keymgr->base_addr =
+      mmio_region_from_addr(dt_keymgr_reg_block(dt, kDtKeymgrRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
                                     dif_keymgr_alert_t alert) {
   if (keymgr == NULL) {
@@ -55,7 +68,7 @@ dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
 static bool keymgr_get_irq_bit_index(dif_keymgr_irq_t irq,
                                      bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifKeymgrIrqOpDone:
+    case kDtKeymgrIrqOpDone:
       *index_out = KEYMGR_INTR_COMMON_OP_DONE_BIT;
       break;
     default:
@@ -73,7 +86,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_get_type(const dif_keymgr_t *keymgr,
                                      dif_keymgr_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (keymgr == NULL || type == NULL || irq == kDifKeymgrIrqOpDone + 1) {
+  if (keymgr == NULL || type == NULL || irq == kDtKeymgrIrqCount) {
     return kDifBadArg;
   }
 

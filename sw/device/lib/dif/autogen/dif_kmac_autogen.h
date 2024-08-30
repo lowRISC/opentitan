@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_kmac.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_kmac {
  * @param base_addr The MMIO base address of the kmac peripheral.
  * @param[out] kmac Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_init(mmio_region_t base_addr, dif_kmac_t *kmac);
+
+/**
+ * Creates a new handle for a(n) kmac peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] kmac Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_init_from_dt(const dt_kmac_t *dt, dif_kmac_t *kmac);
 
 /**
  * A kmac alert type.
@@ -82,29 +98,37 @@ dif_result_t dif_kmac_alert_force(const dif_kmac_t *kmac,
 
 /**
  * A kmac interrupt request type.
+ *
+ * DEPRECATED Use `dt_kmac_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_kmac_irq {
-  /**
-   * KMAC/SHA3 absorbing has been completed
-   */
-  kDifKmacIrqKmacDone = 0,
-  /**
-   * The message FIFO is empty. This interrupt is raised only if the message
-   * FIFO is actually writable by software, i.e., if all of the following
-   * conditions are met: i) The KMAC block is not exercised by a hardware
-   * application interface. ii) The SHA3 block is in the Absorb state. iii)
-   * Software has not yet written the Process command to finish the absorption
-   * process. For the interrupt to be raised, the message FIFO must also have
-   * been full previously. Otherwise, the hardware empties the FIFO faster than
-   * software can fill it and there is no point in interrupting the software to
-   * inform it about the message FIFO being empty.
-   */
-  kDifKmacIrqFifoEmpty = 1,
-  /**
-   * KMAC/SHA3 error occurred. ERR_CODE register shows the details
-   */
-  kDifKmacIrqKmacErr = 2,
-} dif_kmac_irq_t;
+/**
+ * KMAC/SHA3 absorbing has been completed
+ */
+#define kDifKmacIrqKmacDone kDtKmacIrqKmacDone
+/**
+ * The message FIFO is empty. This interrupt is raised only if the message FIFO
+ * is actually writable by software, i.e., if all of the following conditions
+ * are met: i) The KMAC block is not exercised by a hardware application
+ * interface. ii) The SHA3 block is in the Absorb state. iii) Software has not
+ * yet written the Process command to finish the absorption process. For the
+ * interrupt to be raised, the message FIFO must also have been full previously.
+ * Otherwise, the hardware empties the FIFO faster than software can fill it and
+ * there is no point in interrupting the software to inform it about the message
+ * FIFO being empty.
+ */
+#define kDifKmacIrqFifoEmpty kDtKmacIrqFifoEmpty
+/**
+ * KMAC/SHA3 error occurred. ERR_CODE register shows the details
+ */
+#define kDifKmacIrqKmacErr kDtKmacIrqKmacErr
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_kmac_irq_t dif_kmac_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -123,7 +147,7 @@ typedef uint32_t dif_kmac_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_irq_get_type(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
+dif_result_t dif_kmac_irq_get_type(const dif_kmac_t *kmac, dif_kmac_irq_t,
                                    dif_irq_type_t *type);
 
 /**
@@ -146,7 +170,7 @@ dif_result_t dif_kmac_irq_get_state(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_irq_is_pending(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
+dif_result_t dif_kmac_irq_is_pending(const dif_kmac_t *kmac, dif_kmac_irq_t,
                                      bool *is_pending);
 
 /**
@@ -180,8 +204,7 @@ dif_result_t dif_kmac_irq_acknowledge_all(const dif_kmac_t *kmac);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_irq_acknowledge(const dif_kmac_t *kmac,
-                                      dif_kmac_irq_t irq);
+dif_result_t dif_kmac_irq_acknowledge(const dif_kmac_t *kmac, dif_kmac_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -193,7 +216,7 @@ dif_result_t dif_kmac_irq_acknowledge(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_irq_force(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
+dif_result_t dif_kmac_irq_force(const dif_kmac_t *kmac, dif_kmac_irq_t,
                                 const bool val);
 
 /**
@@ -214,8 +237,8 @@ typedef uint32_t dif_kmac_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_irq_get_enabled(const dif_kmac_t *kmac,
-                                      dif_kmac_irq_t irq, dif_toggle_t *state);
+dif_result_t dif_kmac_irq_get_enabled(const dif_kmac_t *kmac, dif_kmac_irq_t,
+                                      dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -226,8 +249,8 @@ dif_result_t dif_kmac_irq_get_enabled(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_irq_set_enabled(const dif_kmac_t *kmac,
-                                      dif_kmac_irq_t irq, dif_toggle_t state);
+dif_result_t dif_kmac_irq_set_enabled(const dif_kmac_t *kmac, dif_kmac_irq_t,
+                                      dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

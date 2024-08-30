@@ -24,6 +24,18 @@ dif_result_t dif_rv_dm_init(mmio_region_t base_addr, dif_rv_dm_t *rv_dm) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_dm_init_from_dt(const dt_rv_dm_t *dt, dif_rv_dm_t *rv_dm) {
+  if (rv_dm == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  rv_dm->base_addr =
+      mmio_region_from_addr(dt_rv_dm_reg_block(dt, kDtRvDmRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_rv_dm_alert_force(const dif_rv_dm_t *rv_dm,
                                    dif_rv_dm_alert_t alert) {
   if (rv_dm == NULL) {

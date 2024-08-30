@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_edn.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_edn {
  * @param base_addr The MMIO base address of the edn peripheral.
  * @param[out] edn Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn);
+
+/**
+ * Creates a new handle for a(n) edn peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] edn Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_edn_init_from_dt(const dt_edn_t *dt, dif_edn_t *edn);
 
 /**
  * A edn alert type.
@@ -77,17 +93,25 @@ dif_result_t dif_edn_alert_force(const dif_edn_t *edn, dif_edn_alert_t alert);
 
 /**
  * A edn interrupt request type.
+ *
+ * DEPRECATED Use `dt_edn_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_edn_irq {
-  /**
-   * Asserted when a software CSRNG request has completed.
-   */
-  kDifEdnIrqEdnCmdReqDone = 0,
-  /**
-   * Asserted when a FIFO error occurs.
-   */
-  kDifEdnIrqEdnFatalErr = 1,
-} dif_edn_irq_t;
+/**
+ * Asserted when a software CSRNG request has completed.
+ */
+#define kDifEdnIrqEdnCmdReqDone kDtEdnIrqEdnCmdReqDone
+/**
+ * Asserted when a FIFO error occurs.
+ */
+#define kDifEdnIrqEdnFatalErr kDtEdnIrqEdnFatalErr
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_edn_irq_t dif_edn_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -106,7 +130,7 @@ typedef uint32_t dif_edn_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_get_type(const dif_edn_t *edn, dif_edn_irq_t irq,
+dif_result_t dif_edn_irq_get_type(const dif_edn_t *edn, dif_edn_irq_t,
                                   dif_irq_type_t *type);
 
 /**
@@ -129,7 +153,7 @@ dif_result_t dif_edn_irq_get_state(const dif_edn_t *edn,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_is_pending(const dif_edn_t *edn, dif_edn_irq_t irq,
+dif_result_t dif_edn_irq_is_pending(const dif_edn_t *edn, dif_edn_irq_t,
                                     bool *is_pending);
 
 /**
@@ -163,7 +187,7 @@ dif_result_t dif_edn_irq_acknowledge_all(const dif_edn_t *edn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn, dif_edn_irq_t irq);
+dif_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn, dif_edn_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -175,7 +199,7 @@ dif_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn, dif_edn_irq_t irq);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq,
+dif_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t,
                                const bool val);
 
 /**
@@ -196,7 +220,7 @@ typedef uint32_t dif_edn_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn, dif_edn_irq_t irq,
+dif_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn, dif_edn_irq_t,
                                      dif_toggle_t *state);
 
 /**
@@ -208,7 +232,7 @@ dif_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn, dif_edn_irq_t irq,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_set_enabled(const dif_edn_t *edn, dif_edn_irq_t irq,
+dif_result_t dif_edn_irq_set_enabled(const dif_edn_t *edn, dif_edn_irq_t,
                                      dif_toggle_t state);
 
 /**

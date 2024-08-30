@@ -24,6 +24,19 @@ dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rstmgr_init_from_dt(const dt_rstmgr_t *dt,
+                                     dif_rstmgr_t *rstmgr) {
+  if (rstmgr == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  rstmgr->base_addr =
+      mmio_region_from_addr(dt_rstmgr_reg_block(dt, kDtRstmgrRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_rstmgr_alert_force(const dif_rstmgr_t *rstmgr,
                                     dif_rstmgr_alert_t alert) {
   if (rstmgr == NULL) {

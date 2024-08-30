@@ -25,6 +25,19 @@ dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_init_from_dt(const dt_entropy_src_t *dt,
+                                          dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  entropy_src->base_addr = mmio_region_from_addr(
+      dt_entropy_src_reg_block(dt, kDtEntropySrcRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
                                          dif_entropy_src_alert_t alert) {
   if (entropy_src == NULL) {
@@ -57,16 +70,16 @@ dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
 static bool entropy_src_get_irq_bit_index(dif_entropy_src_irq_t irq,
                                           bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifEntropySrcIrqEsEntropyValid:
+    case kDtEntropySrcIrqEsEntropyValid:
       *index_out = ENTROPY_SRC_INTR_COMMON_ES_ENTROPY_VALID_BIT;
       break;
-    case kDifEntropySrcIrqEsHealthTestFailed:
+    case kDtEntropySrcIrqEsHealthTestFailed:
       *index_out = ENTROPY_SRC_INTR_COMMON_ES_HEALTH_TEST_FAILED_BIT;
       break;
-    case kDifEntropySrcIrqEsObserveFifoReady:
+    case kDtEntropySrcIrqEsObserveFifoReady:
       *index_out = ENTROPY_SRC_INTR_COMMON_ES_OBSERVE_FIFO_READY_BIT;
       break;
-    case kDifEntropySrcIrqEsFatalErr:
+    case kDtEntropySrcIrqEsFatalErr:
       *index_out = ENTROPY_SRC_INTR_COMMON_ES_FATAL_ERR_BIT;
       break;
     default:
@@ -87,8 +100,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_get_type(const dif_entropy_src_t *entropy_src,
                                           dif_entropy_src_irq_t irq,
                                           dif_irq_type_t *type) {
-  if (entropy_src == NULL || type == NULL ||
-      irq == kDifEntropySrcIrqEsFatalErr + 1) {
+  if (entropy_src == NULL || type == NULL || irq == kDtEntropySrcIrqCount) {
     return kDifBadArg;
   }
 

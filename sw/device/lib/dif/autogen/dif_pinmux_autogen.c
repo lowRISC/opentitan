@@ -24,6 +24,19 @@ dif_result_t dif_pinmux_init(mmio_region_t base_addr, dif_pinmux_t *pinmux) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_init_from_dt(const dt_pinmux_t *dt,
+                                     dif_pinmux_t *pinmux) {
+  if (pinmux == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  pinmux->base_addr =
+      mmio_region_from_addr(dt_pinmux_reg_block(dt, kDtPinmuxRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_pinmux_alert_force(const dif_pinmux_t *pinmux,
                                     dif_pinmux_alert_t alert) {
   if (pinmux == NULL) {

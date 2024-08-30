@@ -25,6 +25,19 @@ dif_result_t dif_sensor_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sensor_ctrl_init_from_dt(const dt_sensor_ctrl_t *dt,
+                                          dif_sensor_ctrl_t *sensor_ctrl) {
+  if (sensor_ctrl == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  sensor_ctrl->base_addr = mmio_region_from_addr(
+      dt_sensor_ctrl_reg_block(dt, kDtSensorCtrlRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_sensor_ctrl_alert_force(const dif_sensor_ctrl_t *sensor_ctrl,
                                          dif_sensor_ctrl_alert_t alert) {
   if (sensor_ctrl == NULL) {
@@ -57,10 +70,10 @@ dif_result_t dif_sensor_ctrl_alert_force(const dif_sensor_ctrl_t *sensor_ctrl,
 static bool sensor_ctrl_get_irq_bit_index(dif_sensor_ctrl_irq_t irq,
                                           bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSensorCtrlIrqIoStatusChange:
+    case kDtSensorCtrlIrqIoStatusChange:
       *index_out = SENSOR_CTRL_INTR_COMMON_IO_STATUS_CHANGE_BIT;
       break;
-    case kDifSensorCtrlIrqInitStatusChange:
+    case kDtSensorCtrlIrqInitStatusChange:
       *index_out = SENSOR_CTRL_INTR_COMMON_INIT_STATUS_CHANGE_BIT;
       break;
     default:
@@ -79,8 +92,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_irq_get_type(const dif_sensor_ctrl_t *sensor_ctrl,
                                           dif_sensor_ctrl_irq_t irq,
                                           dif_irq_type_t *type) {
-  if (sensor_ctrl == NULL || type == NULL ||
-      irq == kDifSensorCtrlIrqInitStatusChange + 1) {
+  if (sensor_ctrl == NULL || type == NULL || irq == kDtSensorCtrlIrqCount) {
     return kDifBadArg;
   }
 

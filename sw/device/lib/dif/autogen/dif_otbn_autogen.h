@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_otbn.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_otbn {
  * @param base_addr The MMIO base address of the otbn peripheral.
  * @param[out] otbn Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn);
+
+/**
+ * Creates a new handle for a(n) otbn peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] otbn Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_init_from_dt(const dt_otbn_t *dt, dif_otbn_t *otbn);
 
 /**
  * A otbn alert type.
@@ -77,13 +93,21 @@ dif_result_t dif_otbn_alert_force(const dif_otbn_t *otbn,
 
 /**
  * A otbn interrupt request type.
+ *
+ * DEPRECATED Use `dt_otbn_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_otbn_irq {
-  /**
-   * OTBN has completed the operation.
-   */
-  kDifOtbnIrqDone = 0,
-} dif_otbn_irq_t;
+/**
+ * OTBN has completed the operation.
+ */
+#define kDifOtbnIrqDone kDtOtbnIrqDone
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_otbn_irq_t dif_otbn_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -102,7 +126,7 @@ typedef uint32_t dif_otbn_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otbn_irq_get_type(const dif_otbn_t *otbn, dif_otbn_irq_t irq,
+dif_result_t dif_otbn_irq_get_type(const dif_otbn_t *otbn, dif_otbn_irq_t,
                                    dif_irq_type_t *type);
 
 /**
@@ -125,7 +149,7 @@ dif_result_t dif_otbn_irq_get_state(const dif_otbn_t *otbn,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otbn_irq_is_pending(const dif_otbn_t *otbn, dif_otbn_irq_t irq,
+dif_result_t dif_otbn_irq_is_pending(const dif_otbn_t *otbn, dif_otbn_irq_t,
                                      bool *is_pending);
 
 /**
@@ -159,8 +183,7 @@ dif_result_t dif_otbn_irq_acknowledge_all(const dif_otbn_t *otbn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otbn_irq_acknowledge(const dif_otbn_t *otbn,
-                                      dif_otbn_irq_t irq);
+dif_result_t dif_otbn_irq_acknowledge(const dif_otbn_t *otbn, dif_otbn_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -172,7 +195,7 @@ dif_result_t dif_otbn_irq_acknowledge(const dif_otbn_t *otbn,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otbn_irq_force(const dif_otbn_t *otbn, dif_otbn_irq_t irq,
+dif_result_t dif_otbn_irq_force(const dif_otbn_t *otbn, dif_otbn_irq_t,
                                 const bool val);
 
 /**
@@ -193,8 +216,8 @@ typedef uint32_t dif_otbn_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otbn_irq_get_enabled(const dif_otbn_t *otbn,
-                                      dif_otbn_irq_t irq, dif_toggle_t *state);
+dif_result_t dif_otbn_irq_get_enabled(const dif_otbn_t *otbn, dif_otbn_irq_t,
+                                      dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -205,8 +228,8 @@ dif_result_t dif_otbn_irq_get_enabled(const dif_otbn_t *otbn,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otbn_irq_set_enabled(const dif_otbn_t *otbn,
-                                      dif_otbn_irq_t irq, dif_toggle_t state);
+dif_result_t dif_otbn_irq_set_enabled(const dif_otbn_t *otbn, dif_otbn_irq_t,
+                                      dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

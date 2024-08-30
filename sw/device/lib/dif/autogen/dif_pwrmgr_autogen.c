@@ -24,6 +24,19 @@ dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_init_from_dt(const dt_pwrmgr_t *dt,
+                                     dif_pwrmgr_t *pwrmgr) {
+  if (pwrmgr == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  pwrmgr->base_addr =
+      mmio_region_from_addr(dt_pwrmgr_reg_block(dt, kDtPwrmgrRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
                                     dif_pwrmgr_alert_t alert) {
   if (pwrmgr == NULL) {
@@ -52,7 +65,7 @@ dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
 static bool pwrmgr_get_irq_bit_index(dif_pwrmgr_irq_t irq,
                                      bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifPwrmgrIrqWakeup:
+    case kDtPwrmgrIrqWakeup:
       *index_out = PWRMGR_INTR_COMMON_WAKEUP_BIT;
       break;
     default:
@@ -70,7 +83,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_get_type(const dif_pwrmgr_t *pwrmgr,
                                      dif_pwrmgr_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (pwrmgr == NULL || type == NULL || irq == kDifPwrmgrIrqWakeup + 1) {
+  if (pwrmgr == NULL || type == NULL || irq == kDtPwrmgrIrqCount) {
     return kDifBadArg;
   }
 

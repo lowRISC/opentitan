@@ -25,6 +25,19 @@ dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_init_from_dt(const dt_otp_ctrl_t *dt,
+                                       dif_otp_ctrl_t *otp_ctrl) {
+  if (otp_ctrl == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  otp_ctrl->base_addr = mmio_region_from_addr(
+      dt_otp_ctrl_reg_block(dt, kDtOtpCtrlRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_otp_ctrl_alert_force(const dif_otp_ctrl_t *otp_ctrl,
                                       dif_otp_ctrl_alert_t alert) {
   if (otp_ctrl == NULL) {
@@ -66,10 +79,10 @@ dif_result_t dif_otp_ctrl_alert_force(const dif_otp_ctrl_t *otp_ctrl,
 static bool otp_ctrl_get_irq_bit_index(dif_otp_ctrl_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifOtpCtrlIrqOtpOperationDone:
+    case kDtOtpCtrlIrqOtpOperationDone:
       *index_out = OTP_CTRL_INTR_COMMON_OTP_OPERATION_DONE_BIT;
       break;
-    case kDifOtpCtrlIrqOtpError:
+    case kDtOtpCtrlIrqOtpError:
       *index_out = OTP_CTRL_INTR_COMMON_OTP_ERROR_BIT;
       break;
     default:
@@ -88,7 +101,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_irq_get_type(const dif_otp_ctrl_t *otp_ctrl,
                                        dif_otp_ctrl_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (otp_ctrl == NULL || type == NULL || irq == kDifOtpCtrlIrqOtpError + 1) {
+  if (otp_ctrl == NULL || type == NULL || irq == kDtOtpCtrlIrqCount) {
     return kDifBadArg;
   }
 

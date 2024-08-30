@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_sram_ctrl.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -45,10 +46,26 @@ typedef struct dif_sram_ctrl {
  * @param base_addr The MMIO base address of the sram_ctrl peripheral.
  * @param[out] sram_ctrl Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sram_ctrl_init(mmio_region_t base_addr,
                                 dif_sram_ctrl_t *sram_ctrl);
+
+/**
+ * Creates a new handle for a(n) sram_ctrl peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] sram_ctrl Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_init_from_dt(const dt_sram_ctrl_t *dt,
+                                        dif_sram_ctrl_t *sram_ctrl);
 
 /**
  * A sram_ctrl alert type.

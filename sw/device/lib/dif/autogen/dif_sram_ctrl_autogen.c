@@ -25,6 +25,19 @@ dif_result_t dif_sram_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_init_from_dt(const dt_sram_ctrl_t *dt,
+                                        dif_sram_ctrl_t *sram_ctrl) {
+  if (sram_ctrl == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  sram_ctrl->base_addr = mmio_region_from_addr(
+      dt_sram_ctrl_reg_block(dt, kDtSramCtrlRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_sram_ctrl_alert_force(const dif_sram_ctrl_t *sram_ctrl,
                                        dif_sram_ctrl_alert_t alert) {
   if (sram_ctrl == NULL) {
