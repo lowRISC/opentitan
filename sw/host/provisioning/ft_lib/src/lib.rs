@@ -18,6 +18,7 @@ use cert_lib::{
 };
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -82,6 +83,7 @@ pub fn run_sram_ft_individualize(
     sram_program: &SramProgramParams,
     ft_individualize_data_in: &ManufFtIndividualizeData,
     timeout: Duration,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
@@ -91,8 +93,6 @@ pub fn run_sram_ft_individualize(
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
     jtag.reset(/*run=*/ false)?;
-    let uart = transport.uart("console")?;
-    uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
     let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
@@ -101,19 +101,18 @@ pub fn run_sram_ft_individualize(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
-    // Get UART, set flow control, and wait for SRAM program to complete execution.
-    uart.set_flow_control(true)?;
+    // Wait for SRAM program to complete execution.
     let _ = UartConsole::wait_for(
-        &*uart,
+        spi_console,
         r"Waiting for FT SRAM provisioning data ...",
         timeout,
     )?;
 
     // Inject provisioning data into the device.
-    ft_individualize_data_in.send(&*uart)?;
+    ft_individualize_data_in.send(spi_console)?;
 
     // Wait for provisioning operations to complete.
-    let _ = UartConsole::wait_for(&*uart, r"FT SRAM provisioning done.", timeout)?;
+    let _ = UartConsole::wait_for(spi_console, r"FT SRAM provisioning done.", timeout)?;
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
@@ -171,20 +170,21 @@ pub enum KeyWrapper {
 }
 
 fn send_rma_unlock_token_hash(
-    transport: &TransportWrapper,
     rma_unlock_token_hash: &ArrayVec<u32, 4>,
     timeout: Duration,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
-
     let rma_token_hash = LcTokenHash {
         hash: hash_lc_token(rma_unlock_token_hash.as_bytes())?,
     };
 
-    // Get UART, set flow control, and wait for test to start running.
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting For RMA Unlock Token Hash ...", timeout)?;
-    rma_token_hash.send_with_crc(&*uart)?;
+    // Wait for test to start running.
+    let _ = UartConsole::wait_for(
+        spi_console,
+        r"Waiting For RMA Unlock Token Hash ...",
+        timeout,
+    )?;
+    rma_token_hash.send_with_crc(spi_console)?;
     Ok(())
 }
 
@@ -296,21 +296,19 @@ fn process_dev_seeds(seeds: &[u8]) -> Result<()> {
 }
 
 fn provision_certificates(
-    transport: &TransportWrapper,
     cert_endorsement_key_wrapper: KeyWrapper,
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
     ca_certificate: PathBuf,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
-
     // Send attestation TCB measurements for generating DICE certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for certificate inputs ...", timeout)?;
-    perso_certgen_inputs.send(&*uart)?;
+    let _ = UartConsole::wait_for(spi_console, r"Waiting for certificate inputs ...", timeout)?;
+    perso_certgen_inputs.send(spi_console)?;
 
     // Wait until the device exports the TBS certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting TBS certificates ...", timeout)?;
-    let perso_blob = PersoBlob::recv(&*uart, timeout, true)?;
+    let _ = UartConsole::wait_for(spi_console, r"Exporting TBS certificates ...", timeout)?;
+    let perso_blob = PersoBlob::recv(spi_console, timeout, true)?;
 
     // Select the CA endorsement key to use.
     let key = match cert_endorsement_key_wrapper {
@@ -401,13 +399,13 @@ fn provision_certificates(
         next_free: endorsed_cert_concat.len(),
         body: endorsed_cert_concat,
     };
-    let _ = UartConsole::wait_for(&*uart, r"Importing endorsed certificates ...", timeout)?;
-    manuf_perso_data_back.send(&*uart)?;
-    let _ = UartConsole::wait_for(&*uart, r"Finished importing certificates.", timeout)?;
+    let _ = UartConsole::wait_for(spi_console, r"Importing endorsed certificates ...", timeout)?;
+    manuf_perso_data_back.send(spi_console)?;
+    let _ = UartConsole::wait_for(spi_console, r"Finished importing certificates.", timeout)?;
 
     // Check the integrity of the certificates written to the device's flash by comparing a
     // SHA256 over all certificates computed on the host and device sides.
-    let device_computed_certs_hash = SerdesSha256Hash::recv(&*uart, timeout, false)?;
+    let device_computed_certs_hash = SerdesSha256Hash::recv(spi_console, timeout, false)?;
     if !device_computed_certs_hash
         .data
         .as_bytes()
@@ -431,6 +429,7 @@ fn provision_certificates(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
@@ -439,28 +438,23 @@ pub fn run_ft_personalize(
     timeout: Duration,
     ca_certificate: PathBuf,
     rma_unlock_token_hash: &ArrayVec<u32, 4>,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
-
     // Bootstrap personalization binary into flash.
-    uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
-
     // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
-    let _ = UartConsole::wait_for(&*uart, r"Bootstrap requested.", timeout)?;
-    uart.clear_rx_buffer()?;
+    let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
     init.bootstrap.init(transport)?;
-
-    send_rma_unlock_token_hash(transport, rma_unlock_token_hash, timeout)?;
+    send_rma_unlock_token_hash(rma_unlock_token_hash, timeout, spi_console)?;
     provision_certificates(
-        transport,
         cert_endorsement_key_wrapper,
         perso_certgen_inputs,
         timeout,
         ca_certificate,
+        spi_console,
     )?;
 
-    let _ = UartConsole::wait_for(&*uart, r"Personalization done.", timeout)?;
+    let _ = UartConsole::wait_for(spi_console, r"Personalization done.", timeout)?;
 
     Ok(())
 }

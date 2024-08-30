@@ -41,7 +41,9 @@
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
+OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
+                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.test_may_clobber = false, );
 
 /**
  * Peripheral handles.
@@ -184,7 +186,6 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     // Wait for host the host generated RMA unlock token hash to arrive over the
     // console.
     LOG_INFO("Waiting For RMA Unlock Token Hash ...");
-
     CHECK_STATUS_OK(
         UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
 
