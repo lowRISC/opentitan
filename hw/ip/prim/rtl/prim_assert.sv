@@ -127,8 +127,10 @@
 // Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is
 // set.  It can be called as a module (or interface) body item.
 `define ASSERT_KNOWN_IF(__name, __sig, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifndef FPV_ON                                                                                             \
   `ASSERT_KNOWN(__name``KnownEnable, __enable, __clk, __rst)                                               \
-  `ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst)
+  `ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst)                                           \
+`endif
 
 //////////////////////////////////
 // For formal verification only //
