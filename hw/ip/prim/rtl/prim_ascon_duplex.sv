@@ -49,6 +49,8 @@ module prim_ascon_duplex
   output logic [127:0] tag_out_o,
   output logic         tag_out_valid_o,
 
+  output duplex_fsm_state_e fsm_state_o,
+
   output logic err_o
 );
 
@@ -79,8 +81,10 @@ logic [319:0] state_from_round;
 logic [4:0][63:0] round_to_mux;
 assign round_to_mux = state_from_round;
 
-fsm_state_e fsm_state_d, fsm_state_q;
+duplex_fsm_state_e fsm_state_d, fsm_state_q;
 perm_offset_e perm_offset;
+
+assign fsm_state_o = fsm_state_q;
 
 logic  [63:0] iv;
 assign iv = (ascon_variant == ASCON_128) ? IV_128 : IV_128A;
@@ -592,7 +596,7 @@ always_comb begin : p_fsm
   endcase
 end
 
-`PRIM_FLOP_SPARSE_FSM(u_state_regs, fsm_state_d, fsm_state_q, fsm_state_e, Idle)
+`PRIM_FLOP_SPARSE_FSM(u_state_regs, fsm_state_d, fsm_state_q, duplex_fsm_state_e, Idle)
 
 assign err_o = round_count_error | sparse_fsm_error;
 

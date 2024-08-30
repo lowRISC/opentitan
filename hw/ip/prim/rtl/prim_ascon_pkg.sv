@@ -116,8 +116,8 @@ typedef enum logic [PADDING_MUX_WIDTH-1:0] {
 // Minimum Hamming weight: 3
 // Maximum Hamming weight: 8
 //
-localparam int AsconFSMStateWidth = 10;
-typedef enum logic [AsconFSMStateWidth-1:0] {
+localparam int AsconDuplexFSMStateWidth = 10;
+typedef enum logic [AsconDuplexFSMStateWidth-1:0] {
   Idle             = 10'b1010101110,
   Init             = 10'b0110000110,
   PermInit         = 10'b1011110110,
@@ -136,7 +136,7 @@ typedef enum logic [AsconFSMStateWidth-1:0] {
   PermMSGEmpty     = 10'b1011111000,
   PermADEmpty      = 10'b0010111100,
   Error            = 10'b0100011110
-} fsm_state_e;
+} duplex_fsm_state_e;
 
 function automatic logic [127:0] bin2thermo(logic [4:0] valid_bytes);
   logic [127:0] valid_bytes_mask;
