@@ -10,6 +10,7 @@ use clap::{Args, Parser};
 
 use ft_lib::{run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock, KeyWrapper};
 use opentitanlib::backend;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
@@ -93,6 +94,10 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
+
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "BOOTSTRAP")]
+    console_spi: String,
 }
 
 fn main() -> Result<()> {
@@ -103,6 +108,8 @@ fn main() -> Result<()> {
     // want to perform bootstrap yet.
     let transport = backend::create(&opts.init.backend_opts)?;
     transport.apply_default_configuration(None)?;
+    let spi = transport.spi(&opts.console_spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
     InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
 
     // Format test tokens.
@@ -186,6 +193,7 @@ fn main() -> Result<()> {
                 &opts.sram_program,
                 &_ft_individualize_data_in,
                 opts.timeout,
+                &spi_console_device,
             )?;
             test_exit(
                 &transport,
@@ -223,6 +231,7 @@ fn main() -> Result<()> {
         opts.timeout,
         opts.provisioning_data.ca_certificate,
         &rma_unlock_token_hash,
+        &spi_console_device,
     )?;
 
     log::info!("Provisioning Done");
