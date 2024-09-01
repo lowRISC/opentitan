@@ -5,6 +5,7 @@
 use anyhow::{bail, ensure, Result};
 use memoffset::offset_of;
 use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
@@ -83,7 +84,11 @@ impl SigverifyParams {
     // Verify the optional SPX+ signature.
     pub fn spx_verify(&self, b: &[u8], domain: SpxDomain) -> Result<()> {
         if let Some(spx) = &self.spx_sig_params {
-            spx.key.verify(domain, &spx.signature, b)?;
+            let msg = match domain {
+                SpxDomain::PreHashedSha256 => Cow::from(sha256::sha256(b).to_le_bytes()),
+                _ => Cow::from(b),
+            };
+            spx.key.verify(domain, &spx.signature, &msg)?;
         } else {
             bail!("No SPX signature found");
         }
