@@ -53,6 +53,11 @@ module prim_alert_rxtx_async_assert_fpv
   assign sender_is_pinging = i_prim_alert_sender.state_q inside
                              {i_prim_alert_sender.PingHsPhase1, i_prim_alert_sender.PingHsPhase2};
 
+  // A signal that is true if the alert sender is sending an alert (p & !n)
+  logic alert_from_sender;
+  assign alert_from_sender = prim_alert_rxtx_async_tb.alert_tx_out.alert_p &&
+                             !prim_alert_rxtx_async_tb.alert_tx_out.alert_n;
+
   // used to check that an error has never occured so far
   // this is used to check the handshake below. the handshake can lock up
   // the protocol FSMs causing the handshake to never complete.
@@ -109,13 +114,24 @@ module prim_alert_rxtx_async_assert_fpv
       sender_is_idle && receiver_is_idle |-> strong(##[1:$] alert_ack_o),
       clk_i, !rst_ni || error_setreg_q || init_pending)
 
-  // transmission of pings
-  // this bound is relatively large as in the worst case, we need to resolve
-  // staggered differential signal patterns on all three differential channels
-  // note: the complete transmission of pings only happen when no ping handshake is in progress
+  // Transmission of pings
+  //
+  // Check that if we tell the receiver to request a ping then it will send one and get a response
+  // in a bounded time.
+  //
+  // This bound is relatively large as in the worst case, we need to resolve staggered differential
+  // signal patterns on all three differential channels.
+  //
+  // Note 1: The complete transmission of pings only happens when no ping handshake is in progress,
+  // so we only allow the property to start when the sender isn't in a ping handshake FSM state.
+  //
+  // Note 2: The receiver gives up on a ping request if it receives an alert (this is strong
+  // evidence that alerts can come through, so it doesn't really need to do the ping at all!) To see
+  // the ping handshake go through, we constrain things to ensure this doesn't happen.
   `ASSERT(AlertPingOk_A,
           !sender_is_pinging && $rose(ping_req_i) |-> ##[1:23] ping_ok_o,
-          clk_i, !rst_ni || error_setreg_q || init_pending)
+          clk_i,
+          (!rst_ni || error_setreg_q || init_pending || alert_from_sender))
 
   `ASSERT(AlertPingIgnored_A,
           sender_is_pinging && $rose(ping_req_i) |-> ping_ok_o == 0 throughout ping_req_i[->1],
