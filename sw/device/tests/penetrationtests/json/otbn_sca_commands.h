@@ -17,13 +17,13 @@ extern "C" {
 // OTBN SCA arguments
 
 #define OTBNSCA_SUBCOMMAND(_, value) \
+    value(_, Ecc256EcdsaKeygenFvsrKeyBatch) \
+    value(_, Ecc256EcdsaKeygenFvsrSeedBatch) \
+    value(_, Ecc256EnMasks) \
+    value(_, Ecc256SetC) \
+    value(_, Ecc256SetSeed) \
     value(_, Init) \
     value(_, InitKeyMgr) \
-    value(_, Ecc256EcdsaKeygenFvsrSeedBatch) \
-    value(_, Ecc256EcdsaKeygenFvsrKeyBatch) \
-    value(_, Ecc256SetSeed) \
-    value(_, Ecc256SetC) \
-    value(_, Ecc256EnMasks) \
     value(_, KeySideloadFvsr)
 UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND);
 
