@@ -278,6 +278,13 @@ jobs:
         --target_pattern_file="${TARGET_PATTERN_FILE}"
     displayName: Build & test SW
   - template: ci/publish-bazel-test-results.yml
+  # We run this lint in the sw_test job instead of lints because it requires an expensive
+  # cquery. By running it after we have run the tests, we can save most of the preparation
+  # time of the query.
+  - bash: ci/scripts/check-unrunnable-tests.sh
+    displayName: Check for unrunnable tests
+    condition: succeededOrFailed()
+    continueOnError: True
 
 - job: chip_englishbreakfast_verilator
   displayName: Verilated English Breakfast (Build)
