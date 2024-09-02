@@ -549,6 +549,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -595,6 +609,20 @@
       param_list: []
       inter_signal_list:
       [
+        {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart1
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -643,6 +671,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart2
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -689,6 +731,20 @@
       param_list: []
       inter_signal_list:
       [
+        {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart3
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -15976,6 +16032,20 @@
     signals:
     [
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart0
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15986,6 +16056,20 @@
         default: ""
         end_idx: -1
         top_signame: uart0_tl
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart1
         index: -1
       }
       {
@@ -16002,6 +16086,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart2
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16012,6 +16110,20 @@
         default: ""
         end_idx: -1
         top_signame: uart2_tl
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart3
         index: -1
       }
       {
