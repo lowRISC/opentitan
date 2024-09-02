@@ -47,6 +47,12 @@ module prim_alert_rxtx_async_assert_fpv
                         prim_alert_rxtx_async_tb.i_prim_alert_receiver.InitReq,
                         prim_alert_rxtx_async_tb.i_prim_alert_receiver.InitAckWait};
 
+  logic sender_is_idle, receiver_is_idle, sender_is_pinging;
+  assign sender_is_idle = i_prim_alert_sender.state_q == i_prim_alert_sender.Idle;
+  assign receiver_is_idle = i_prim_alert_receiver.state_q == i_prim_alert_receiver.Idle;
+  assign sender_is_pinging = i_prim_alert_sender.state_q inside
+                             {i_prim_alert_sender.PingHsPhase1, i_prim_alert_sender.PingHsPhase2};
+
   // used to check that an error has never occured so far
   // this is used to check the handshake below. the handshake can lock up
   // the protocol FSMs causing the handshake to never complete.
@@ -90,79 +96,58 @@ module prim_alert_rxtx_async_assert_fpv
   // note: injected errors may lockup the FSMs, and hence the full HS can
   // only take place if both FSMs are in a good state
   `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_async_tb.ping_pd) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
+      sender_is_idle && receiver_is_idle |-> ##[0:5] FullHandshake_S,
       clk_i, !rst_ni || error_setreg_q || init_pending)
   `ASSERT(AlertHs_A, alert_req_i &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
+      sender_is_idle && receiver_is_idle |-> ##[0:5] FullHandshake_S,
       clk_i, !rst_ni || error_setreg_q || init_pending)
   `ASSERT(AlertTestHs_A, alert_test_i &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |-> ##[0:5] FullHandshake_S,
+      sender_is_idle && receiver_is_idle |-> ##[0:5] FullHandshake_S,
       clk_i, !rst_ni || error_setreg_q || init_pending)
   // Make sure we eventually get an ACK
   `ASSERT(AlertReqAck_A, alert_req_i &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |-> strong(##[1:$] alert_ack_o),
+      sender_is_idle && receiver_is_idle |-> strong(##[1:$] alert_ack_o),
       clk_i, !rst_ni || error_setreg_q || init_pending)
 
   // transmission of pings
   // this bound is relatively large as in the worst case, we need to resolve
   // staggered differential signal patterns on all three differential channels
   // note: the complete transmission of pings only happen when no ping handshake is in progress
-  `ASSERT(AlertPingOk_A, !(prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q inside {
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.PingHsPhase1,
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
-      ##[1:23] ping_ok_o,
-      clk_i, !rst_ni || error_setreg_q || init_pending)
-  `ASSERT(AlertPingIgnored_A, (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q inside {
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.PingHsPhase1,
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
-      ping_ok_o == 0 throughout ping_req_i[->1],
-      clk_i, !rst_ni || error_setreg_q)
+  `ASSERT(AlertPingOk_A,
+          !sender_is_pinging && $rose(ping_req_i) |-> ##[1:23] ping_ok_o,
+          clk_i, !rst_ni || error_setreg_q || init_pending)
+
+  `ASSERT(AlertPingIgnored_A,
+          sender_is_pinging && $rose(ping_req_i) |-> ping_ok_o == 0 throughout ping_req_i[->1],
+          clk_i, !rst_ni || error_setreg_q)
+
   // transmission of first alert assertion (no ping collision)
-  `ASSERT(AlertCheck0_A, !ping_req_i [*10] ##1 ($rose(alert_req_i) || $rose(alert_test_i)) &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) |->
+  `ASSERT(AlertCheck0_A,
+      !ping_req_i [*10] ##1 ($rose(alert_req_i) || $rose(alert_test_i)) && sender_is_idle |->
       ##[3:5] alert_o,
       clk_i, !rst_ni || ping_req_i || error_setreg_q || init_pending)
   // eventual transmission of alerts in the general case which can include continous ping
   // collisions
-  `ASSERT(AlertCheck1_A, alert_req_i || alert_test_i |->
-      strong(##[1:$] (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle && !ping_req_i) ##[3:5] alert_o),
+  `ASSERT(AlertCheck1_A,
+      alert_req_i || alert_test_i |-> strong(##[1:$] sender_is_idle ##[3:5] alert_o),
       clk_i, !rst_ni || error_setreg_q ||
       prim_alert_rxtx_async_tb.i_prim_alert_sender.alert_clr || init_pending)
 
   // basic liveness of FSMs in case no errors are present
-  `ASSERT(FsmLivenessSender_A, !error_present [*2] ##1 !error_present &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q !=
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle)),
+  `ASSERT(FsmLivenessSender_A,
+      !error_present [*2] ##1 !error_present && !sender_is_idle |->
+      strong(##[1:$] sender_is_idle),
       clk_i, !rst_ni || error_present || init_pending)
-  `ASSERT(FsmLivenessReceiver_A, !error_present [*2] ##1 !error_present &&
-      (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q !=
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle) |->
-      strong(##[1:$] (prim_alert_rxtx_async_tb.i_prim_alert_receiver.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_receiver.Idle)),
+  `ASSERT(FsmLivenessReceiver_A,
+      !error_present [*2] ##1 !error_present && receiver_is_idle |->
+      strong(##[1:$] receiver_is_idle),
       clk_i, !rst_ni || error_present || init_pending)
 
   // check that the in-band reset moves sender FSM into Idle state.
   `ASSERT(InBandInitFromReceiverToSender_A,
       mubi4_test_true_strict(init_trig_i)
       |->
-      ##[1:30] (prim_alert_rxtx_async_tb.i_prim_alert_sender.state_q ==
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.Idle),
+      ##[1:30] sender_is_idle,
       clk_i, !rst_ni || error_present)
 
 endmodule : prim_alert_rxtx_async_assert_fpv
