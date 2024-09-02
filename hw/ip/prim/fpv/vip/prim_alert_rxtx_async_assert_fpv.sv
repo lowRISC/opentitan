@@ -78,11 +78,11 @@ module prim_alert_rxtx_async_assert_fpv
   // be parameterized accordingly if different clock ratios are to be used here.
   // TODO: tighten bounds if possible
   sequence FullHandshake_S;
-    $rose(prim_alert_rxtx_async_tb.alert_pd)   ##[3:5]
+    $rose(prim_alert_rxtx_async_tb.alert_pd)   ##[3:6]
     $rose(prim_alert_rxtx_async_tb.ack_pd)     &&
-    $stable(prim_alert_rxtx_async_tb.alert_pd) ##[3:5]
+    $stable(prim_alert_rxtx_async_tb.alert_pd) ##[3:6]
     $fell(prim_alert_rxtx_async_tb.alert_pd)   &&
-    $stable(prim_alert_rxtx_async_tb.ack_pd)   ##[3:5]
+    $stable(prim_alert_rxtx_async_tb.ack_pd)   ##[3:6]
     $fell(prim_alert_rxtx_async_tb.ack_pd)     &&
     $stable(prim_alert_rxtx_async_tb.alert_pd);
   endsequence
