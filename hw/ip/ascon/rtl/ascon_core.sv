@@ -107,6 +107,7 @@ module ascon_core
   logic [3:0][31:0] unused_tag_out_q;
   logic [3:0]       tag_out_read_d, tag_out_read_q;
   logic             tag_out_read;
+  logic             tag_out_ready;
 
 
   prim_mubi_pkg::mubi4_t duplex_idle;
@@ -121,6 +122,9 @@ module ascon_core
 
   lc_ctrl_pkg::lc_tx_t      unused_lc_escalate_en_i;
   keymgr_pkg::hw_key_req_t  unused_keymgr_key_i;
+
+  prim_mubi_pkg::mubi4_t tag_match;
+  prim_mubi_pkg::mubi4_t tag_calculated;
 
   // TODO
   assign unused_keymgr_key_i     = keymgr_key_i;
@@ -203,17 +207,6 @@ module ascon_core
     assign hw2reg.nonce_share1[i].d = '0;
   end
 
-  for (genvar i = 0; i < NumRegsTag; i++) begin : gen_hw_ext_tag_regs
-    // Input conversion
-    assign tag_in_q[i] = reg2hw.tag_in[i].q;
-
-    // hwext input tag registers
-    // TODO: Add this feature
-  end
-
-  // TODO: Add tag comparison
-  logic [3:0][31:0] unused_tag_in_q;
-  assign unused_tag_in_q = tag_in_q;
 
   // hwext output registers
   for (genvar i = 0; i < NumRegsData; i++) begin : gen_hw_ext_data_output_regs
@@ -319,8 +312,7 @@ module ascon_core
   // TODO BLOCK STATUS
   assign hw2reg.output_valid.data_type.d  = 3'b000;
   assign hw2reg.output_valid.data_type.de = 1'b1;
-  assign hw2reg.output_valid.tag_comparison_valid.d  = 2'b00;
-  assign hw2reg.output_valid.tag_comparison_valid.de = 1'b1;
+
 
   // FSM_STATE Debug Output
   prim_ascon_pkg::duplex_fsm_state_e duplex_fsm_state;
@@ -375,7 +367,7 @@ module ascon_core
 
   assign tag_out_read_d = tag_out_we ? '0 : tag_out_read_q |
       {reg2hw.tag_out[3].re, reg2hw.tag_out[2].re, reg2hw.tag_out[1].re, reg2hw.tag_out[0].re};
-  assign tag_out_read = &tag_out_read_d;
+  assign tag_out_read = &tag_out_read_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_edge_detection
     if (!rst_ni) begin
@@ -465,36 +457,71 @@ module ascon_core
   // Two different signals are needed, as the signal to the core should be called ready (as part
   // of a ready-valid-handshaking, but the register tracking the reads from SW should be read.
 
-  logic track_reset_q;
+  logic track_reset_msg_q;
+  logic track_reset_tag_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_track_reset
     if (!rst_ni) begin
-      track_reset_q <= 1'b1;
-    end else if (msg_out_we) begin
-      track_reset_q <= 1'b0;
+      track_reset_msg_q <= 1'b1;
+      track_reset_tag_q <= 1'b1;
+    end else begin
+      if (msg_out_we) begin
+        track_reset_msg_q <= 1'b0;
+      end
+      if (tag_out_we) begin
+        track_reset_tag_q <= 1'b0;
+      end
     end
   end
 
-  assign msg_out_ready = msg_out_read | track_reset_q;
+  assign msg_out_ready = msg_out_read | track_reset_msg_q;
   // only write to the data out register if there is valid data and
   // the register is ready (has been read)
   assign msg_out_we = msg_out_valid & msg_out_ready;
 
-  // there is no backpreassure logic for the tag register
-  // atm it is assumed that a new run is only started after the previous run has been completed
-  assign tag_out_we = tag_out_valid;
+  assign tag_out_ready = tag_out_read | track_reset_tag_q;
+  // atm there is no backpreassure logic inside the duplex module for the tag register, as
+  // it is assumed that a new run is only started after the previous run has been completed.
+  // Nevertheless, we need the not tag_out_ready signal for the tag comparision.
+  assign tag_out_we = tag_out_valid & tag_out_ready;
 
-  // FUNCTIONALITY
 
-  // TODO: We don't use the edge detection atm
-  logic unused_tag_in_new;
-  logic unused_tag_out_read;
-  assign unused_tag_in_new   = tag_in_new;
-  assign unused_tag_out_read = tag_out_read;
+  // Tag comparison
+  for (genvar i = 0; i < NumRegsTag; i++) begin : gen_tag_in_conversion
+    assign tag_in_q[i] = reg2hw.tag_in[i].q;
+  end
+  assign tag_match = (tag_in_q == tag_out_q) ? prim_mubi_pkg::MuBi4True :
+                                               prim_mubi_pkg::MuBi4False;
 
+  // There is a valid tag comparision if there is
+  // 1) a (new) tag in the input register
+  // 2) a (new) tag in the output register. This equivalent to the output register not being
+  //    ready. The output register is not ready, if there is a tag in the register.
+  assign tag_calculated = (tag_in_new && !tag_out_ready) ? prim_mubi_pkg::MuBi4True :
+                                                           prim_mubi_pkg::MuBi4False;
+
+  always_comb begin : tag_recoding
+    // Indicates if the tag could be successfully compared 2'b01, or not 2'b10
+    // 2'b00 indicates that the tag hasn't been calculated, yet
+    // 2'b11 is invalid.
+    if (prim_mubi_pkg::mubi4_test_true_strict(tag_calculated)) begin
+      if (prim_mubi_pkg::mubi4_test_true_strict(tag_match)) begin
+        hw2reg.output_valid.tag_comparison_valid.d  = 2'b01;
+      end else begin
+        hw2reg.output_valid.tag_comparison_valid.d  = 2'b10;
+      end
+    end else begin
+      hw2reg.output_valid.tag_comparison_valid.d  = 2'b00;
+    end
+  end
+
+  assign hw2reg.output_valid.tag_comparison_valid.de = 1'b1;
+
+  // Mark the input tag as invalid/used, if the output tag is read.
+  // This also invalidates the tag_calculated.
+  // If the tag ist not read, the start of a new AEAD-Enc/Dec also clears the flag.
+  assign tag_in_load = tag_out_read | start_ok;
 
   // TODO: Build a very basic FSM here
-
-  assign tag_in_load = 1'b0;
 
   // TODO: We don't use any control signals
   logic        unused_force_data_overwrite;
