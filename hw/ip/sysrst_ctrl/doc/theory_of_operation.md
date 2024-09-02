@@ -159,9 +159,9 @@ Note that since the `sysrst_ctrl` does not have control over the pad open-drain 
 ## Flash Write Protect Output
 
 Upon reset, the `flash_wp_l_o` signal will be asserted active low.
-The software can release `flash_wp_l_o` explicitly by setting [`PIN_OUT_CTL.FLASH_WP_L`](registers.md#pin_out_ctl) to 0 when needed.
 The `flash_wp_l_o` signal does have a corresponding input signal `flash_wp_l_i` - but that one is mainly intended for pad observability and does not have a bypass path to `flash_wp_l_o`.
-Hence, the value of `flash_wp_l_o` defaults to logic 0 when it is not explicitly driven via the override function.
+Hence, the value of `flash_wp_l_o` defaults to asserted low when it is not explicitly driven via the override function.
+The software can release `flash_wp_l_o` explicitly by setting an override to 1, that is setting [`PIN_ALLOWED_CTL.FLASH_WP_L_1`](registers.md#pin_allowed_ctl) to 1, [`PIN_OUT_CTL.FLASH_WP_L`](registers.md#pin_out_ctl) to 1 and [`PIN_OUT_VALUE.FLASH_WP_L`](registers.md#pin_out_value) to 1.
 
 Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../../pinmux/README.md) before releasing `flash_wp_l_o`.
 
