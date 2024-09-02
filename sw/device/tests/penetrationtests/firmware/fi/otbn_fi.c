@@ -127,141 +127,6 @@ status_t clear_otbn_load_checksum(void) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
-  TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
-  // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
-
-  if (!key_sideloading_init) {
-    // Setup keymanager for sideloading key into OTBN.
-    otbn_load_app(kOtbnAppKeySideload);
-    // Get reference keys.
-    otbn_execute();
-    otbn_busy_wait_for_done();
-
-    otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l_ref);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h_ref);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l_ref);
-    otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h_ref);
-
-    key_sideloading_init = true;
-  }
-
-  // FI code target.
-  sca_set_trigger_high();
-  otbn_execute();
-  otbn_busy_wait_for_done();
-  sca_set_trigger_low();
-
-  // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
-
-  // Read loop counter from OTBN data memory.
-  uint32_t key_share_0_l, key_share_0_h;
-  uint32_t key_share_1_l, key_share_1_h;
-  otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l);
-  otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h);
-  otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l);
-  otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h);
-
-  // Read ERR_STATUS register from OTBN.
-  dif_otbn_err_bits_t err_otbn;
-  read_otbn_err_bits(&err_otbn);
-
-  // Read ERR_STATUS register from Ibex.
-  dif_rv_core_ibex_error_status_t err_ibx;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
-
-  otbn_fi_keys_t uj_output;
-  uj_output.keys[0] = key_share_0_l;
-  uj_output.keys[1] = key_share_0_h;
-  uj_output.keys[2] = key_share_1_l;
-  uj_output.keys[3] = key_share_1_h;
-
-  uj_output.res = 0;
-  if ((key_share_0_l != key_share_0_l_ref) ||
-      (key_share_0_h != key_share_0_h_ref) ||
-      (key_share_1_l != key_share_1_l_ref) ||
-      (key_share_1_h != key_share_1_h_ref)) {
-    uj_output.res = 1;
-  }
-
-  // Send result & ERR_STATUS to host.
-  uj_output.err_otbn = err_otbn;
-  uj_output.err_ibx = err_ibx;
-  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_otbn_fi_keys_t, uj, &uj_output);
-  return OK_STATUS();
-}
-
-status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
-  // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
-
-  if (!load_integrity_init) {
-    // Load the OTBN app and read the load checksum without FI to retrieve
-    // reference value.
-    clear_otbn_load_checksum();
-    otbn_load_app(kOtbnAppLoadIntegrity);
-    read_otbn_load_checksum(&load_checksum_ref);
-    clear_otbn_load_checksum();
-
-    load_integrity_init = true;
-  }
-
-  // FI code target.
-  sca_set_trigger_high();
-  otbn_load_app(kOtbnAppLoadIntegrity);
-  sca_set_trigger_low();
-  // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
-
-  // Read back checksum.
-  uint32_t load_checksum;
-  read_otbn_load_checksum(&load_checksum);
-  clear_otbn_load_checksum();
-
-  // Read loop counter from OTBN data memory.
-  uint32_t ref_val1, ref_val2, ref_val3;
-  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal1, &ref_val1);
-  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal2, &ref_val2);
-  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal3, &ref_val3);
-
-  // Check if DMEM is corrupted.
-  bool dmem_corrupted = false;
-  if ((ref_val1 != 0x1BADB002) || (ref_val2 != 0x8BADF00D) ||
-      (ref_val3 != 0xA5A5A5A5)) {
-    dmem_corrupted = true;
-  }
-
-  // If DMEM is corrupted and the checksum is still correct, we achieved the
-  // attack goal.
-  uint32_t res = 0;
-  if ((load_checksum_ref == load_checksum) && dmem_corrupted) {
-    res = 1;
-  }
-
-  // Read ERR_STATUS register from OTBN.
-  dif_otbn_err_bits_t err_otbn;
-  read_otbn_err_bits(&err_otbn);
-
-  // Read ERR_STATUS register from Ibex.
-  dif_rv_core_ibex_error_status_t err_ibx;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
-
-  // Clear OTBN memory.
-  TRY(clear_otbn());
-
-  // Send result & ERR_STATUS to host.
-  otbn_fi_result_t uj_output;
-  uj_output.result = res;
-  uj_output.err_otbn = err_otbn;
-  uj_output.err_ibx = err_ibx;
-  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_otbn_fi_result_t, uj, &uj_output);
-  return OK_STATUS();
-}
-
 status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
@@ -450,19 +315,6 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_fi_init_keymgr(ujson_t *uj) {
-  dif_kmac_t kmac;
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
-                      &keymgr));
-  TRY(keymgr_testutils_initialize(&keymgr, &kmac));
-
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParamsOTBNFI;
-  sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
-  TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  return OK_STATUS();
-}
-
 status_t handle_otbn_fi_init(ujson_t *uj) {
   // Configure the entropy complex for OTBN. Set the reseed interval to max
   // to avoid a non-constant trigger window.
@@ -502,26 +354,174 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_otbn_fi_init_keymgr(ujson_t *uj) {
+  dif_kmac_t kmac;
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
+                      &keymgr));
+  TRY(keymgr_testutils_initialize(&keymgr, &kmac));
+
+  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParamsOTBNFI;
+  sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
+  TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
+  TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  if (!key_sideloading_init) {
+    // Setup keymanager for sideloading key into OTBN.
+    otbn_load_app(kOtbnAppKeySideload);
+    // Get reference keys.
+    otbn_execute();
+    otbn_busy_wait_for_done();
+
+    otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l_ref);
+    otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h_ref);
+    otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l_ref);
+    otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h_ref);
+
+    key_sideloading_init = true;
+  }
+
+  // FI code target.
+  sca_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  sca_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read loop counter from OTBN data memory.
+  uint32_t key_share_0_l, key_share_0_h;
+  uint32_t key_share_1_l, key_share_1_h;
+  otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l);
+  otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h);
+  otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l);
+  otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h);
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  otbn_fi_keys_t uj_output;
+  uj_output.keys[0] = key_share_0_l;
+  uj_output.keys[1] = key_share_0_h;
+  uj_output.keys[2] = key_share_1_l;
+  uj_output.keys[3] = key_share_1_h;
+
+  uj_output.res = 0;
+  if ((key_share_0_l != key_share_0_l_ref) ||
+      (key_share_0_h != key_share_0_h_ref) ||
+      (key_share_1_l != key_share_1_l_ref) ||
+      (key_share_1_h != key_share_1_h_ref)) {
+    uj_output.res = 1;
+  }
+
+  // Send result & ERR_STATUS to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_keys_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  if (!load_integrity_init) {
+    // Load the OTBN app and read the load checksum without FI to retrieve
+    // reference value.
+    clear_otbn_load_checksum();
+    otbn_load_app(kOtbnAppLoadIntegrity);
+    read_otbn_load_checksum(&load_checksum_ref);
+    clear_otbn_load_checksum();
+
+    load_integrity_init = true;
+  }
+
+  // FI code target.
+  sca_set_trigger_high();
+  otbn_load_app(kOtbnAppLoadIntegrity);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read back checksum.
+  uint32_t load_checksum;
+  read_otbn_load_checksum(&load_checksum);
+  clear_otbn_load_checksum();
+
+  // Read loop counter from OTBN data memory.
+  uint32_t ref_val1, ref_val2, ref_val3;
+  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal1, &ref_val1);
+  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal2, &ref_val2);
+  otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal3, &ref_val3);
+
+  // Check if DMEM is corrupted.
+  bool dmem_corrupted = false;
+  if ((ref_val1 != 0x1BADB002) || (ref_val2 != 0x8BADF00D) ||
+      (ref_val3 != 0xA5A5A5A5)) {
+    dmem_corrupted = true;
+  }
+
+  // If DMEM is corrupted and the checksum is still correct, we achieved the
+  // attack goal.
+  uint32_t res = 0;
+  if ((load_checksum_ref == load_checksum) && dmem_corrupted) {
+    res = 1;
+  }
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
+  // Send result & ERR_STATUS to host.
+  otbn_fi_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_result_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_otbn_fi(ujson_t *uj) {
   otbn_fi_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
-    case kOtbnFiSubcommandInitKeyMgr:
-      return handle_otbn_fi_init_keymgr(uj);
-    case kOtbnFiSubcommandInit:
-      return handle_otbn_fi_init(uj);
-    case kOtbnFiSubcommandCharUnrolledRegOpLoop:
-      return handle_otbn_fi_char_unrolled_reg_op_loop(uj);
-    case kOtbnFiSubcommandCharUnrolledDmemOpLoop:
-      return handle_otbn_fi_char_unrolled_dmem_op_loop(uj);
-    case kOtbnFiSubcommandCharHardwareRegOpLoop:
-      return handle_otbn_fi_char_hardware_reg_op_loop(uj);
     case kOtbnFiSubcommandCharHardwareDmemOpLoop:
       return handle_otbn_fi_char_hardware_dmem_op_loop(uj);
-    case kOtbnFiSubcommandLoadIntegrity:
-      return handle_otbn_fi_load_integrity(uj);
+    case kOtbnFiSubcommandCharHardwareRegOpLoop:
+      return handle_otbn_fi_char_hardware_reg_op_loop(uj);
+    case kOtbnFiSubcommandCharUnrolledDmemOpLoop:
+      return handle_otbn_fi_char_unrolled_dmem_op_loop(uj);
+    case kOtbnFiSubcommandCharUnrolledRegOpLoop:
+      return handle_otbn_fi_char_unrolled_reg_op_loop(uj);
+    case kOtbnFiSubcommandInit:
+      return handle_otbn_fi_init(uj);
+    case kOtbnFiSubcommandInitKeyMgr:
+      return handle_otbn_fi_init_keymgr(uj);
     case kOtbnFiSubcommandKeySideload:
       return handle_otbn_fi_key_sideload(uj);
+    case kOtbnFiSubcommandLoadIntegrity:
+      return handle_otbn_fi_load_integrity(uj);
     default:
       LOG_ERROR("Unrecognized OTBN FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();

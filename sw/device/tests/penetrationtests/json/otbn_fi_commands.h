@@ -12,14 +12,14 @@ extern "C" {
 // clang-format off
 
 #define OTBNFI_SUBCOMMAND(_, value) \
-    value(_, InitKeyMgr) \
-    value(_, Init) \
-    value(_, CharUnrolledRegOpLoop) \
-    value(_, CharUnrolledDmemOpLoop) \
-    value(_, CharHardwareRegOpLoop) \
     value(_, CharHardwareDmemOpLoop) \
-    value(_, LoadIntegrity) \
-    value(_, KeySideload)
+    value(_, CharHardwareRegOpLoop) \
+    value(_, CharUnrolledDmemOpLoop) \
+    value(_, CharUnrolledRegOpLoop) \
+    value(_, Init) \
+    value(_, InitKeyMgr) \
+    value(_, KeySideload)  \
+    value(_, LoadIntegrity)
 UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND);
 
 #define OTBNFI_LOOP_COUNTER_OUTPUT(field, string) \
