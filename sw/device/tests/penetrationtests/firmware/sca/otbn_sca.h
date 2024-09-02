@@ -9,24 +9,26 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
- * Command handler for the otbn.sca.key_sideload_fvsr test.
+ * Starts the P-256 ECDSA Key Generation from a key in batch mode.
  *
- * Side-load 16 fixed vs. random keys from keymanager to OTBN.
+ * Num_traces fixed vs random keys are generated using the SCA PRNG and
+ * for each key the key generation operation on OTBN is started.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj);
+status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj);
 
 /**
- * Select the OTBN app to load.
+ * Starts the P-256 ECDSA Key Generation from a seed in batch mode.
  *
- * Currently, only the P256KeyFromSeed application is supported.
+ * Num_traces fixed vs random seeds are generated using the SCA PRNG and
+ * for each seed the key generation operation on OTBN is started.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_sca_ecc256_app_select(ujson_t *uj);
+status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj);
 
 /**
  * Enable or disable masking.
@@ -63,26 +65,12 @@ status_t handle_otbn_sca_ecc256_set_c(ujson_t *uj);
 status_t handle_otbn_sca_ecc256_set_seed(ujson_t *uj);
 
 /**
- * Starts the P-256 ECDSA Key Generation from a key in batch mode.
- *
- * Num_traces fixed vs random keys are generated using the SCA PRNG and
- * for each key the key generation operation on OTBN is started.
+ * Initializes the OTBN SCA test on the device.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj);
-
-/**
- * Starts the P-256 ECDSA Key Generation from a seed in batch mode.
- *
- * Num_traces fixed vs random seeds are generated using the SCA PRNG and
- * for each seed the key generation operation on OTBN is started.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj);
+status_t handle_otbn_sca_init(ujson_t *uj);
 
 /**
  * Initializes the Keymanager used for the OTBN SCA tests.
@@ -93,12 +81,14 @@ status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj);
 status_t handle_otbn_sca_init_keymgr(ujson_t *uj);
 
 /**
- * Initializes the OTBN SCA test on the device.
+ * Command handler for the otbn.sca.key_sideload_fvsr test.
+ *
+ * Side-load 16 fixed vs. random keys from keymanager to OTBN.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_sca_init(ujson_t *uj);
+status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj);
 
 /**
  * OTBN SCA command handler.

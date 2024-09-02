@@ -179,31 +179,77 @@ static status_t p256_run_keygen(uint32_t mode, const uint32_t *share0,
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_en_masks(ujson_t *uj) {
-  penetrationtest_otbn_sca_en_masks_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_en_masks_t(uj, &uj_data));
-  if (uj_data.en_masks) {
-    en_masks = true;
-  } else {
-    en_masks = false;
+status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj) {
+  penetrationtest_otbn_sca_num_traces_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_num_traces_t(uj, &uj_data));
+
+  uint32_t num_traces = uj_data.num_traces;
+  uint32_t batch_digest[kEcc256SeedNumWords];
+
+  if (num_traces > kNumBatchOpsMax) {
+    return OUT_OF_RANGE();
   }
-  return OK_STATUS();
-}
 
-status_t handle_otbn_sca_ecc256_set_seed(ujson_t *uj) {
-  penetrationtest_otbn_sca_seed_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_seed_t(uj, &uj_data));
+  // Zero the batch digest.
+  for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
+    batch_digest[j] = 0;
+  }
 
-  memcpy(ecc256_seed, uj_data.seed, kEcc256SeedNumBytes);
+  for (size_t i = 0; i < num_traces; ++i) {
+    // Set mask to a random mask (en_masks = true) or to 0 (en_masks = false).
+    if (en_masks) {
+      for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
+        batch_share1[i][j] = prng_rand_uint32();
+      }
+    } else {
+      for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
+        batch_share1[i][j] = 0;
+      }
+    }
 
-  return OK_STATUS();
-}
+    // If the run is fixed, take the fixed seed received from the host. Else,
+    // generate a random seed.
+    if (run_fixed) {
+      memcpy(batch_share0[i], ecc256_seed, kEcc256SeedNumBytes);
+    } else {
+      // Here change to random_number + C.
+      // It is necessary to set the C first.
+      memcpy(batch_share0[i], ecc256_C, kEcc256SeedNumBytes);
+      for (size_t j = 0; j < kEcc256CoordNumWords; ++j) {
+        random_number[j] = prng_rand_uint32();
+      }
+      add_arrays((unsigned char *)batch_share0[i],
+                 (unsigned char *)random_number, kEcc256SeedNumBytes,
+                 kEcc256CoordNumBytes);
+    }
+    for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
+      batch_share0[i][j] ^= batch_share1[i][j];
+    }
+    // Another PRNG run to determine 'run_fixed' for the next cycle.
+    run_fixed = prng_rand_uint32() & 0x1;
+  }
 
-status_t handle_otbn_sca_ecc256_set_c(ujson_t *uj) {
-  penetrationtest_otbn_sca_constant_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_constant_t(uj, &uj_data));
+  for (size_t i = 0; i < num_traces; ++i) {
+    TRY(p256_run_keygen(kEcc256ModePrivateKeyOnly, batch_share0[i],
+                        batch_share1[i]));
 
-  memcpy(ecc256_C, uj_data.constant, kEcc256SeedNumBytes);
+    // Read results.
+    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
+    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
+
+    // The correctness of each batch is verified by computing and sending
+    // the batch digest. This digest is computed by XORing all d0 shares of
+    // the batch.
+    for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
+      batch_digest[j] ^= d0_batch[j];
+    }
+  }
+  // Send the batch digest to the host for verification.
+  penetrationtest_otbn_sca_batch_digest_t uj_output;
+  memcpy(uj_output.batch_digest, (uint8_t *)batch_digest,
+         kEcc256SeedNumWords * 4);
+  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_batch_digest_t, uj,
+          &uj_output);
 
   return OK_STATUS();
 }
@@ -278,77 +324,31 @@ status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(ujson_t *uj) {
-  penetrationtest_otbn_sca_num_traces_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_num_traces_t(uj, &uj_data));
-
-  uint32_t num_traces = uj_data.num_traces;
-  uint32_t batch_digest[kEcc256SeedNumWords];
-
-  if (num_traces > kNumBatchOpsMax) {
-    return OUT_OF_RANGE();
+status_t handle_otbn_sca_ecc256_en_masks(ujson_t *uj) {
+  penetrationtest_otbn_sca_en_masks_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_en_masks_t(uj, &uj_data));
+  if (uj_data.en_masks) {
+    en_masks = true;
+  } else {
+    en_masks = false;
   }
+  return OK_STATUS();
+}
 
-  // Zero the batch digest.
-  for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
-    batch_digest[j] = 0;
-  }
+status_t handle_otbn_sca_ecc256_set_c(ujson_t *uj) {
+  penetrationtest_otbn_sca_constant_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_constant_t(uj, &uj_data));
 
-  for (size_t i = 0; i < num_traces; ++i) {
-    // Set mask to a random mask (en_masks = true) or to 0 (en_masks = false).
-    if (en_masks) {
-      for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
-        batch_share1[i][j] = prng_rand_uint32();
-      }
-    } else {
-      for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
-        batch_share1[i][j] = 0;
-      }
-    }
+  memcpy(ecc256_C, uj_data.constant, kEcc256SeedNumBytes);
 
-    // If the run is fixed, take the fixed seed received from the host. Else,
-    // generate a random seed.
-    if (run_fixed) {
-      memcpy(batch_share0[i], ecc256_seed, kEcc256SeedNumBytes);
-    } else {
-      // Here change to random_number + C.
-      // It is necessary to set the C first.
-      memcpy(batch_share0[i], ecc256_C, kEcc256SeedNumBytes);
-      for (size_t j = 0; j < kEcc256CoordNumWords; ++j) {
-        random_number[j] = prng_rand_uint32();
-      }
-      add_arrays((unsigned char *)batch_share0[i],
-                 (unsigned char *)random_number, kEcc256SeedNumBytes,
-                 kEcc256CoordNumBytes);
-    }
-    for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
-      batch_share0[i][j] ^= batch_share1[i][j];
-    }
-    // Another PRNG run to determine 'run_fixed' for the next cycle.
-    run_fixed = prng_rand_uint32() & 0x1;
-  }
+  return OK_STATUS();
+}
 
-  for (size_t i = 0; i < num_traces; ++i) {
-    TRY(p256_run_keygen(kEcc256ModePrivateKeyOnly, batch_share0[i],
-                        batch_share1[i]));
+status_t handle_otbn_sca_ecc256_set_seed(ujson_t *uj) {
+  penetrationtest_otbn_sca_seed_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_seed_t(uj, &uj_data));
 
-    // Read results.
-    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
-    TRY(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
-
-    // The correctness of each batch is verified by computing and sending
-    // the batch digest. This digest is computed by XORing all d0 shares of
-    // the batch.
-    for (size_t j = 0; j < kEcc256SeedNumWords; ++j) {
-      batch_digest[j] ^= d0_batch[j];
-    }
-  }
-  // Send the batch digest to the host for verification.
-  penetrationtest_otbn_sca_batch_digest_t uj_output;
-  memcpy(uj_output.batch_digest, (uint8_t *)batch_digest,
-         kEcc256SeedNumWords * 4);
-  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_batch_digest_t, uj,
-          &uj_output);
+  memcpy(ecc256_seed, uj_data.seed, kEcc256SeedNumBytes);
 
   return OK_STATUS();
 }

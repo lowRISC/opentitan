@@ -75,10 +75,60 @@ static status_t clear_otbn(void) {
   return OK_STATUS();
 }
 
+status_t handle_otbn_sca_init(ujson_t *uj) {
+  // Configure the entropy complex for OTBN. Set the reseed interval to max
+  // to avoid a non-constant trigger window.
+  TRY(pentest_configure_entropy_source_max_reseed_interval());
+
+  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
+                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
+                                      kScaPeripheralEdn | kScaPeripheralHmac |
+                                      kScaPeripheralKmac);
+
+  // Init the OTBN core.
+  TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+
+  // Load p256 keygen from seed app into OTBN.
+  if (otbn_load_app(kOtbnAppP256KeyFromSeed).value != OTCRYPTO_OK.value) {
+    return ABORTED();
+  }
+
+  // Disable the instruction cache and dummy instructions for better SCA
+  // measurements.
+  pentest_configure_cpu();
+
+  // Read device ID and return to host.
+  penetrationtest_device_id_t uj_output;
+  TRY(pentest_read_device_id(uj_output.device_id));
+  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_otbn_sca_init_keymgr(ujson_t *uj) {
+  if (kBootStage != kBootStageOwner) {
+    TRY(keymgr_testutils_startup(&keymgr, &kmac));
+    // Advance to OwnerIntermediateKey state.
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+    TRY(keymgr_testutils_check_state(&keymgr,
+                                     kDifKeymgrStateOwnerIntermediateKey));
+    LOG_INFO("Keymgr entered OwnerIntKey State");
+  } else {
+    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
+                        &keymgr));
+    TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+  }
+
+  dif_otbn_t otbn;
+  TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+
+  return OK_STATUS();
+}
+
 status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   // Get fixed seed.
   penetrationtest_otbn_sca_fixed_seed_t uj_data;
-  TRY(pentest_configure_entropy_source_max_reseed_interval_seed_t(uj, &uj_data));
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_fixed_seed_t(uj, &uj_data));
 
   // Key generation parameters.
   dif_keymgr_versioned_key_params_t sideload_params[kKeySideloadNumIt];
@@ -140,74 +190,24 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_init_keymgr(ujson_t *uj) {
-  if (kBootStage != kBootStageOwner) {
-    TRY(keymgr_testutils_startup(&keymgr, &kmac));
-    // Advance to OwnerIntermediateKey state.
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_check_state(&keymgr,
-                                     kDifKeymgrStateOwnerIntermediateKey));
-    LOG_INFO("Keymgr entered OwnerIntKey State");
-  } else {
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
-                        &keymgr));
-    TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
-  }
-
-  dif_otbn_t otbn;
-  TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-
-  return OK_STATUS();
-}
-
-status_t handle_otbn_sca_init(ujson_t *uj) {
-  // Configure the entropy complex for OTBN. Set the reseed interval to max
-  // to avoid a non-constant trigger window.
-  TRY(pentest_configure_entropy_source_max_reseed_interval());
-
-  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralHmac |
-                                      kScaPeripheralKmac);
-
-  // Init the OTBN core.
-  TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-
-  // Load p256 keygen from seed app into OTBN.
-  if (otbn_load_app(kOtbnAppP256KeyFromSeed).value != OTCRYPTO_OK.value) {
-    return ABORTED();
-  }
-
-  // Disable the instruction cache and dummy instructions for better SCA
-  // measurements.
-  pentest_configure_cpu();
-
-  // Read device ID and return to host.
-  penetrationtest_device_id_t uj_output;
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
-
-  return OK_STATUS();
-}
-
 status_t handle_otbn_sca(ujson_t *uj) {
   otbn_sca_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
+    case kOtbnScaSubcommandEcc256EcdsaKeygenFvsrKeyBatch:
+      return handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(uj);
+    case kOtbnScaSubcommandEcc256EcdsaKeygenFvsrSeedBatch:
+      return handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(uj);
+    case kOtbnScaSubcommandEcc256EnMasks:
+      return handle_otbn_sca_ecc256_en_masks(uj);
+    case kOtbnScaSubcommandEcc256SetC:
+      return handle_otbn_sca_ecc256_set_c(uj);
+    case kOtbnScaSubcommandEcc256SetSeed:
+      return handle_otbn_sca_ecc256_set_seed(uj);
     case kOtbnScaSubcommandInit:
       return handle_otbn_sca_init(uj);
     case kOtbnScaSubcommandInitKeyMgr:
       return handle_otbn_sca_init_keymgr(uj);
-    case kOtbnScaSubcommandEcc256EcdsaKeygenFvsrSeedBatch:
-      return handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_seed_batch(uj);
-    case kOtbnScaSubcommandEcc256EcdsaKeygenFvsrKeyBatch:
-      return handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(uj);
-    case kOtbnScaSubcommandEcc256SetSeed:
-      return handle_otbn_sca_ecc256_set_seed(uj);
-    case kOtbnScaSubcommandEcc256SetC:
-      return handle_otbn_sca_ecc256_set_c(uj);
-    case kOtbnScaSubcommandEcc256EnMasks:
-      return handle_otbn_sca_ecc256_en_masks(uj);
     case kOtbnScaSubcommandKeySideloadFvsr:
       return handle_otbn_sca_key_sideload_fvsr(uj);
     default:
