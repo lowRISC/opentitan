@@ -43,13 +43,6 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
   }
 
   constraint flash_op_c {
-    // Add read only constraint for closed source env
-    if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
-    }
-    if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
-    }
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
     // 8Byte (2 words) aligned.
     // With scramble enabled, odd size of word access (or address) will cause
@@ -60,6 +53,14 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
     flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
     flash_op.num_words % 2 == 0;
+
+    // This added because in some extending env the info2 has special use.
+    if (cfg.seq_cfg.exclude_info2) {
+      flash_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo1] :/ 1};
+    } else {
+      flash_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
+    }
+
   }
 
   // Memory protection regions settings.
@@ -161,6 +162,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_mp_info_page_cfg(i, j, k, mp_info_pages[i][j][k]);
       `uvm_info(`gfn, $sformatf("MP INFO regions values %p", mp_info_pages[i][j][k]), UVM_HIGH)
     end
+
     //Enable Bank erase
     bank_erase_en = {NumBanks{1'b1}};
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
@@ -168,32 +170,53 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     flash_op_inv = flash_op;
     flash_op_rd  = flash_op;
     flash_op_er  = flash_op;
-    cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-    flash_ctrl_start_op(flash_op);
-    flash_ctrl_write(flash_op_data, poll_fifo_status);
-    wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-    // Add guard time between previous alert detection complete and set the next expected alert
-    cfg.clk_rst_vif.wait_clks(100);
+    // When testing RO partitions, skip the program and erase parts.
+    if ((cfg.seq_cfg.op_readonly_on_info_partition && flash_op.partition == FlashPartInfo) ||
+        (cfg.seq_cfg.op_readonly_on_info1_partition && flash_op.partition == FlashPartInfo1)) begin
+      expect_alert          = 1;
+      cfg.scb_h.expected_alert["recov_err"].expected = 1;
+      cfg.scb_h.expected_alert["recov_err"].max_delay = 1000;
+      flash_op_inv.op       = FlashOpInvalid;
+      flash_ctrl_start_op(flash_op_inv);
+      wait_flash_op_done();
 
-    expect_alert          = 1;
-    cfg.scb_h.expected_alert["recov_err"].expected = 1;
-    cfg.scb_h.expected_alert["recov_err"].max_delay = 1000;
-    flash_op_inv.op       = FlashOpInvalid;
-    flash_ctrl_start_op(flash_op_inv);
-    wait_flash_op_done();
+      ral.err_code.op_err.predict(expect_alert);
+      check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
+      cfg.scb_h.expected_alert["recov_err"].expected = 0;
 
-    ral.err_code.op_err.predict(expect_alert);
-    check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
-    cfg.scb_h.expected_alert["recov_err"].expected = 0;
+      flash_op_rd.op = FlashOpRead;
+      flash_op_data = {};
+      flash_ctrl_start_op(flash_op_rd);
+      flash_ctrl_read(flash_op_rd.num_words, flash_op_data, poll_fifo_status);
+      wait_flash_op_done();
+    end else begin
+      cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
+      flash_ctrl_start_op(flash_op);
+      flash_ctrl_write(flash_op_data, poll_fifo_status);
+      wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+      // Add guard time between previous alert detection complete and set the next expected alert
+      cfg.clk_rst_vif.wait_clks(100);
 
-    flash_op_rd.op = FlashOpRead;
-    flash_op_data = {};
-    flash_ctrl_start_op(flash_op_rd);
-    flash_ctrl_read(flash_op_rd.num_words, flash_op_data, poll_fifo_status);
-    wait_flash_op_done();
-    flash_op_er.op = FlashOpErase;
-    flash_ctrl_start_op(flash_op_er);
-    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+      expect_alert          = 1;
+      cfg.scb_h.expected_alert["recov_err"].expected = 1;
+      cfg.scb_h.expected_alert["recov_err"].max_delay = 1000;
+      flash_op_inv.op       = FlashOpInvalid;
+      flash_ctrl_start_op(flash_op_inv);
+      wait_flash_op_done();
+
+      ral.err_code.op_err.predict(expect_alert);
+      check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
+      cfg.scb_h.expected_alert["recov_err"].expected = 0;
+
+      flash_op_rd.op = FlashOpRead;
+      flash_op_data = {};
+      flash_ctrl_start_op(flash_op_rd);
+      flash_ctrl_read(flash_op_rd.num_words, flash_op_data, poll_fifo_status);
+      wait_flash_op_done();
+      flash_op_er.op = FlashOpErase;
+      flash_ctrl_start_op(flash_op_er);
+      wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+    end
 
     flash_op_inv.op = FlashOpInvalid;
     cfg.scb_h.expected_alert["recov_err"].expected = 1;
