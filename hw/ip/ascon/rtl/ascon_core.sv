@@ -18,6 +18,10 @@ module ascon_core
   output logic alert_recov_o,
   output logic alert_fatal_o,
 
+  // Input Errors for status register
+  input logic error_recov_i,
+  input logic error_fatal_i,
+
   // Key Manager
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
@@ -295,15 +299,11 @@ module ascon_core
   assign hw2reg.status.idle.de = 1'b1;
   assign hw2reg.status.ascon_error.d  = ascon_error;
   assign hw2reg.status.ascon_error.de = 1'b1;
-  // TODO STATUS
-  assign hw2reg.status.alert_recov_ctrl_update_err.d  = 1'b0;
+  assign hw2reg.status.alert_recov_ctrl_update_err.d  = error_recov_i;
   assign hw2reg.status.alert_recov_ctrl_update_err.de = 1'b1;
-  assign hw2reg.status.alert_recov_ctrl_aux_update_err.d  = 1'b0;
-  assign hw2reg.status.alert_recov_ctrl_aux_update_err.de = 1'b1;
-  assign hw2reg.status.alert_recov_block_ctrl_update_err.d  = 1'b0;
-  assign hw2reg.status.alert_recov_block_ctrl_update_err.de = 1'b1;
-  assign hw2reg.status.alert_fatal_fault.d  = 1'b0;
+  assign hw2reg.status.alert_fatal_fault.d  = error_fatal_i;
   assign hw2reg.status.alert_fatal_fault.de = 1'b1;
+  // TODO STATUS
   assign hw2reg.status.stall.d  = 1'b0;
   assign hw2reg.status.stall.de = 1'b1;
   assign hw2reg.status.wait_edn.d  = 1'b0;

@@ -202,14 +202,6 @@ package ascon_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } alert_recov_ctrl_aux_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } alert_recov_block_ctrl_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
     } alert_fatal_fault;
   } ascon_hw2reg_status_reg_t;
 
@@ -268,16 +260,16 @@ package ascon_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    ascon_hw2reg_key_share0_mreg_t [3:0] key_share0; // [1090:963]
-    ascon_hw2reg_key_share1_mreg_t [3:0] key_share1; // [962:835]
-    ascon_hw2reg_nonce_share0_mreg_t [3:0] nonce_share0; // [834:707]
-    ascon_hw2reg_nonce_share1_mreg_t [3:0] nonce_share1; // [706:579]
-    ascon_hw2reg_data_in_share0_mreg_t [3:0] data_in_share0; // [578:451]
-    ascon_hw2reg_data_in_share1_mreg_t [3:0] data_in_share1; // [450:323]
-    ascon_hw2reg_msg_out_mreg_t [3:0] msg_out; // [322:195]
-    ascon_hw2reg_tag_out_mreg_t [3:0] tag_out; // [194:67]
-    ascon_hw2reg_trigger_reg_t trigger; // [66:63]
-    ascon_hw2reg_status_reg_t status; // [62:47]
+    ascon_hw2reg_key_share0_mreg_t [3:0] key_share0; // [1086:959]
+    ascon_hw2reg_key_share1_mreg_t [3:0] key_share1; // [958:831]
+    ascon_hw2reg_nonce_share0_mreg_t [3:0] nonce_share0; // [830:703]
+    ascon_hw2reg_nonce_share1_mreg_t [3:0] nonce_share1; // [702:575]
+    ascon_hw2reg_data_in_share0_mreg_t [3:0] data_in_share0; // [574:447]
+    ascon_hw2reg_data_in_share1_mreg_t [3:0] data_in_share1; // [446:319]
+    ascon_hw2reg_msg_out_mreg_t [3:0] msg_out; // [318:191]
+    ascon_hw2reg_tag_out_mreg_t [3:0] tag_out; // [190:63]
+    ascon_hw2reg_trigger_reg_t trigger; // [62:59]
+    ascon_hw2reg_status_reg_t status; // [58:47]
     ascon_hw2reg_output_valid_reg_t output_valid; // [46:40]
     ascon_hw2reg_fsm_state_reg_t fsm_state; // [39:8]
     ascon_hw2reg_error_reg_t error; // [7:0]
