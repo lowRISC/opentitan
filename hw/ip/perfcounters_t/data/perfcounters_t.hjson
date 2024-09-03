@@ -1,0 +1,227 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "perfcounters_t",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  available_input_list: [
+  ],
+  available_output_list: [
+  ],
+  interrupt_list: [
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "event_reg",
+      desc: "PERFCOUNTERS_T event register",
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "event_0",
+          desc: "EVENT 0"
+        }
+        { bits: "1",
+          name: "event_1",
+          desc: "EVENT 1"
+        }
+        { bits: "2",
+          name: "event_2",
+          desc: "EVENT 2"
+        }
+        { bits: "3",
+          name: "event_3",
+          desc: "EVENT 3"
+        }
+        { bits: "4",
+          name: "event_4",
+          desc: "EVENT 4"
+        }
+        { bits: "5",
+          name: "event_5",
+          desc: "EVENT 5"
+        }
+        { bits: "6",
+          name: "event_6",
+          desc: "EVENT 6"
+        }
+        { bits: "7",
+          name: "event_7",
+          desc: "EVENT 7"
+        }
+        { bits: "31:8",
+          name: "UNUSED",
+          desc: "UNUSED bits"
+        }
+      ]
+    },
+    { name:     "events_counters_mux_reg"
+      desc:     "EVENTS MUX register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "2:0"
+          name: "events_counter0_mux"
+          desc: "MUX EVENTS to COUNTER 0"
+        }
+        { bits: "5:3"
+          name: "events_counter1_mux"
+          desc: "MUX EVENTS to COUNTER 1"
+        }
+        { bits: "8:6"
+          name: "events_counter2_mux"
+          desc: "MUX EVENTS to COUNTER 2"
+        }
+        { bits: "11:9"
+          name: "events_counter3_mux"
+          desc: "MUX EVENTS to COUNTER 3"
+        }
+        { bits: "31:12"
+          name: "UNUSED",
+          desc: "UNUSED bits"
+        }
+      ]
+    }
+    { name: "event_counters_rst_reg",
+      desc: "PERFCOUNTERS_T RESET register",
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "event_counter0_rst",
+          desc: "EVENT COUNTER0 RESET"
+        }
+        { bits: "1",
+          name: "event_clk_counter0_rst",
+          desc: "EVENT CLK COUNTER0 RESET"
+        }
+        { bits: "2",
+          name: "event_counter1_rst",
+          desc: "EVENT COUNTER1 RESET"
+        }
+        { bits: "3",
+          name: "event_clk_counter1_rst",
+          desc: "EVENT CLK COUNTER1 RESET"
+        }
+        { bits: "4",
+          name: "event_counter2_rst",
+          desc: "EVENT COUNTER2 RESET"
+        }
+        { bits: "5",
+          name: "event_clk_counter2_rst",
+          desc: "EVENT CLK COUNTER2 RESET"
+        }
+        { bits: "6",
+          name: "event_counter3_rst",
+          desc: "EVENT COUNTER3 RESET"
+        }
+        { bits: "7",
+          name: "event_clk_counter3_rst",
+          desc: "EVENT CLK COUNTER3 RESET"
+        }
+        { bits: "31:8",
+          name: "UNUSED",
+          desc: "UNUSED bits"
+        }
+      ]
+    }
+    { name: "event_counter3_reg",
+      desc: "PERFCOUNTER3_T register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT COUNTER3 REGISTER"
+        }
+      ]
+    }
+    { name: "event_counter2_reg",
+      desc: "PERFCOUNTER3_T register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT COUNTER2 REGISTER"
+        }
+      ]
+    }
+    { name: "event_counter1_reg",
+      desc: "PERFCOUNTER3_T register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT COUNTER1 REGISTER"
+        }
+      ]
+    }
+    { name: "event_counter0_reg",
+      desc: "PERFCOUNTER0_T register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT COUNTER0 REGISTER"
+        }
+      ]
+    }
+    { name: "event_clk_counter3_reg",
+      desc: "PERFCOUNTER3_CLK register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT CLOCKS COUNTER3 REGISTER"
+        }
+      ]
+    }
+    { name: "event_clk_counter2_reg",
+      desc: "PERFCOUNTER2_CLK register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT CLOCKS COUNTER2 REGISTER"
+        }
+      ]
+    }
+    { name: "event_clk_counter1_reg",
+      desc: "PERFCOUNTER1_CLK register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT CLOCKS COUNTER1 REGISTER"
+        }
+      ]
+    }
+    { name: "event_clk_counter0_reg",
+      desc: "PERFCOUNTER0_CLK register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0",
+          name: "counter",
+          desc: "EVENT CLOCKS COUNTER0 REGISTER"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "uart",
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  available_input_list: [
+    { name: "rx", desc: "Serial receive bit" }
+  ],
+  available_output_list: [
+    { name: "tx", desc: "Serial transmit bit" }
+  ],
+  interrupt_list: [
+    { name: "tx_watermark"
+      desc: "raised if the transmit FIFO is past the high-water mark."}
+    { name: "rx_watermark"
+      desc: "raised if the receive FIFO is past the high-water mark."}
+    { name: "tx_empty"
+      desc: "raised if the transmit FIFO has emptied and no transmit is ongoing."}
+    { name: "rx_overflow"
+      desc: "raised if the receive FIFO has overflowed."}
+    { name: "rx_frame_err"
+      desc: "raised if a framing error has been detected on receive."}
+    { name: "rx_break_err"
+      desc: "raised if break condition has been detected on receive."}
+    { name: "rx_timeout"
+      desc: '''
+          raised if RX FIFO has characters remaining in the FIFO without being
+          retrieved for the programmed time period.
+          '''
+    }
+    { name: "rx_parity_err"
+      desc: "raised if the receiver has detected a parity error."}
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+  regwidth: "32",
+  registers: [
+    { name: "CTRL",
+      desc: "UART control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "TX",
+          desc: "TX enable"
+        }
+        { bits: "1",
+          name: "RX",
+          desc: "RX enable"
+          tags: [// enable RX in other tests only. In top-level, RX pin is driven by 0 when it's
+                 // not selected at pinmux, which causes RX related status updated to non-default
+                 // value
+            "excl:CsrAllTests:CsrExclWrite"]
+        }
+        { bits: "2",
+          name: "NF",
+          desc: '''RX noise filter enable.
+                If the noise filter is enabled, RX line goes through the 3-tap
+                repetition code. It ignores single IP clock period noise.
+          '''
+        }
+        { bits: "4",
+          name: "SLPBK",
+          desc: '''System loopback enable.
+
+                If this bit is turned on, any outgoing bits to TX are received through RX.
+                See Block Diagram. Note that the TX line goes 1 if System loopback is enabled.
+                '''
+        }
+        { bits: "5",
+          name: "LLPBK",
+          desc: '''Line loopback enable.
+
+                If this bit is turned on, incoming bits are forwarded to TX for testing purpose.
+                See Block Diagram. Note that the internal design sees RX value as 1 always if line
+                loopback is enabled.
+                '''
+        }
+        { bits: "6",
+          name: "PARITY_EN",
+          desc: "If true, parity is enabled in both RX and TX directions."
+        }
+        { bits: "7",
+          name: "PARITY_ODD",
+          desc: "If PARITY_EN is true, this determines the type, 1 for odd parity, 0 for even."
+        }
+        { bits: "9:8",
+          name: "RXBLVL",
+          desc: '''
+                Trigger level for RX break detection. Sets the number of character
+                times the line must be low to detect a break.
+                ''',
+          enum: [
+            { value: "0",
+              name: "break2",
+              desc: "2 characters"
+            },
+            { value: "1",
+              name: "break4",
+              desc: "4 characters"
+            },
+            { value: "2",
+              name: "break8",
+              desc: "8 characters"
+            },
+            { value: "3",
+              name: "break16",
+              desc: "16 characters"
+            }
+          ]
+        }
+        { bits: "31:16",
+          name: "NCO",
+          desc: "BAUD clock rate control."
+        }
+      ]
+    },
+    { name:     "STATUS"
+      desc:     "UART live status register"
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwext:    "true"
+      hwre:     "true"
+      fields: [
+        { bits: "0"
+          name: "TXFULL"
+          desc: "TX buffer is full"
+        }
+        { bits: "1"
+          name: "RXFULL"
+          desc: "RX buffer is full"
+        }
+        { bits: "2"
+          name: "TXEMPTY"
+          desc: "TX FIFO is empty"
+          resval: "1"
+        }
+        { bits: "3"
+          name: "TXIDLE"
+          desc: "TX FIFO is empty and all bits have been transmitted"
+          resval: "1"
+        }
+        { bits: "4"
+          name: "RXIDLE"
+          desc: "RX is idle"
+          resval: "1",
+        }
+        { bits: "5"
+          name: "RXEMPTY"
+          desc: "RX FIFO is empty"
+          resval: "1"
+        }
+      ]
+    }
+    { name: "RDATA",
+      desc: "UART read data",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "7:0" }
+      ]
+      tags: [// read wdata when fifo is empty, dut may return unknown data
+             "excl:CsrAllTests:CsrExclCheck"]
+    }
+    { name: "WDATA",
+      desc: "UART write data",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe: "true",
+      fields: [
+        { bits: "7:0" }
+      ]
+      tags: [// don't write to wdata - it affects several other csrs
+             "excl:CsrNonInitTests:CsrExclWrite"]
+    }
+    { name: "FIFO_CTRL",
+      desc: "UART FIFO control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe:     "true",
+      fields: [
+        { bits: "0",
+          swaccess: "wo",
+          hwaccess: "hro",
+          name: "RXRST",
+          desc: "RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0"
+        }
+        { bits: "1",
+          swaccess: "wo",
+          hwaccess: "hro",
+          name: "TXRST",
+          desc: "TX fifo reset. Write 1 to the register resets TX_FIFO. Read returns 0"
+        }
+        { bits: "4:2",
+          name: "RXILVL",
+          desc: '''Trigger level for RX interrupts. If the FIFO depth is greater than or equal to
+                the setting, it raises rx_watermark interrupt.
+                ''',
+          enum: [
+            { value: "0",
+              name: "rxlvl1",
+              desc: "1 character"
+            },
+            { value: "1",
+              name: "rxlvl4",
+              desc: "4 characters"
+            },
+            { value: "2",
+              name: "rxlvl8",
+              desc: "8 characters"
+            },
+            { value: "3",
+              name: "rxlvl16",
+              desc: "16 characters"
+            },
+            { value: "4",
+              name: "rxlvl30",
+              desc: "30 characters"
+            },
+          ]
+        }
+        { bits: "6:5",
+          name: "TXILVL",
+          desc: '''Trigger level for TX interrupts. If the FIFO depth is less than the setting, it
+                raises tx_watermark interrupt.
+                ''',
+          enum: [
+            { value: "0",
+              name: "txlvl1",
+              desc: "2 characters"
+            },
+            { value: "1",
+              name: "txlvl4",
+              desc: "4 characters"
+            },
+            { value: "2",
+              name: "txlvl8",
+              desc: "8 characters"
+            },
+            { value: "3",
+              name: "txlvl16",
+              desc: "16 characters"
+            }
+          ]
+        }
+      ]
+    }
+    { name: "FIFO_STATUS",
+      desc: "UART FIFO status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "5:0",
+          name: "TXLVL",
+          desc: "Current fill level of TX fifo"
+        }
+        { bits: "21:16",
+          name: "RXLVL",
+          desc: "Current fill level of RX fifo"
+        }
+      ]
+    }
+    { name: "OVRD",
+      desc: "TX pin override control. Gives direct SW control over TX pin state",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "TXEN",
+          desc: "Enable TX pin override control",
+          tags: [// writes to ovrd.txen causes tx output to be forced to ovrd.txval
+                 // causing protocol violation
+                 "excl:CsrAllTests:CsrExclWrite"]
+        }
+        { bits: "1",
+          name: "TXVAL",
+          desc: "Write to set the value of the TX pin"
+        }
+      ]
+    }
+    { name: "VAL",
+      desc: "UART oversampled values",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "15:0",
+          name: "RX",
+          desc: '''
+                Last 16 oversampled values of RX. Most recent bit is bit 0, oldest 15.
+                '''
+          tags: [// UART oversampled values are updated by design according to setting and pin RX
+                 "excl:CsrNonInitTests:CsrExclCheck"]
+        }
+      ]
+    }
+    { name: "TIMEOUT_CTRL",
+      desc: "UART RX timeout control",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "23:0",
+          name: "VAL",
+          desc: "RX timeout value in UART bit times"
+        }
+        { bits: "31",
+          name: "EN",
+          desc: "Enable RX timeout feature"
+        }
+      ]
+    }
+  ]
+}

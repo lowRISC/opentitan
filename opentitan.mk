@@ -17,7 +17,8 @@ DPI-LIB ?= work-dpi
 run_script := scripts/opentitan_start.tcl
 SRAM ?= ""
 BOOTMODE ?= 0
-QUESTA = questa-2022.3-bt
+@QUESTA = questa-2022.3-bt
+QUESTA = vsim
 IDMA_ROOT ?= $(shell $(BENDER) path idma)
 
 dpi-library    ?= work-dpi
@@ -58,7 +59,8 @@ build:  $(dpi-library)/elfloader.so scripts/compile_opentitan.tcl scripts/compil
 	$(QUESTA) vsim -c -do 'source $(compile_script); quit'
 
 sim: build
-	$(QUESTA) vsim -do 'set SRAM $(SRAM); set BOOTMODE $(BOOTMODE); source $(run_script)'
+	#$(QUESTA) vsim -do 'set SRAM $(SRAM); set BOOTMODE $(BOOTMODE); source $(run_script)'
+	vsim -do 'set SRAM $(SRAM); set BOOTMODE $(BOOTMODE); source $(run_script)'
 
 update:
 	$(BENDER) update

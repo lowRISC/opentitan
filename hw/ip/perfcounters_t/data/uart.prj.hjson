@@ -1,0 +1,30 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "uart",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_uart",
+    revisions: [
+      {
+        version:            "1.0",
+        life_stage:         "L2",
+        design_stage:       "D3",
+        verification_stage: "V3",
+        commit_id:          "4166794b902cc72b4cfdfacca0869ffc56e6b42a",
+        notes:              ""
+      }
+      {
+        version:            "1.1",
+        life_stage:         "L1",
+        design_stage:       "D3",
+        verification_stage: "V2",
+        dif_stage:          "S2",
+        commit_id:          "558942bb7869d9a5d8abd4bd0eb46dab820d3564"
+        notes:              ""
+      }
+    ]
+}

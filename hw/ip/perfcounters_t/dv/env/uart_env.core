@@ -1,0 +1,52 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:uart_env:0.1"
+description: "UART DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:uart_agent
+      - lowrisc:dv:cip_lib
+    files:
+      - uart_env_pkg.sv
+      - uart_env_cfg.sv: {is_include_file: true}
+      - uart_env_cov.sv: {is_include_file: true}
+      - uart_virtual_sequencer.sv: {is_include_file: true}
+      - uart_scoreboard.sv: {is_include_file: true}
+      - uart_env.sv: {is_include_file: true}
+      - seq_lib/uart_vseq_list.sv: {is_include_file: true}
+      - seq_lib/uart_base_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_common_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_fifo_full_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_fifo_overflow_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_fifo_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_loopback_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_noise_filter_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_perf_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_rx_oversample_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_rx_parity_err_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_rx_start_bit_filter_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_tx_ovrd_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_long_xfer_wo_dly_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: uart
+      ip_hjson: ../../data/uart.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

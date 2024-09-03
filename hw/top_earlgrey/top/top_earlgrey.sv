@@ -15,7 +15,7 @@
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
-
+// algrin add perfcounters
 module top_earlgrey #(
   parameter int unsigned AxiAddrWidth = 64,
   parameter int unsigned AxiDataWidth = 64,
@@ -235,6 +235,8 @@ module top_earlgrey #(
   import top_pkg::*;
   import tl_main_pkg::*;
   import top_earlgrey_pkg::*;
+  import perfcounters_t_reg_pkg::* ;
+
   // Compile-time random constants
   import top_earlgrey_rnd_cnst_pkg::*;
 
@@ -597,6 +599,10 @@ module top_earlgrey #(
 
 
   // define inter-module signals
+  //
+ perfcounters_t_reg_pkg::perfcounters_t_reg2hw_t perfcounters_t_rsp; // Write
+ perfcounters_t_reg_pkg::perfcounters_t_hw2reg_t perfcounters_t_req; // Read
+ 
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
   prim_ram_2p_pkg::ram_2p_cfg_t       ast_ram_2p_cfg;
@@ -731,6 +737,10 @@ module top_earlgrey #(
   tlul_ot_pkg::tl_d2h_t       kmac_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       aes_tl_req;
   tlul_ot_pkg::tl_d2h_t       aes_tl_rsp;
+//Alex Grinshpun 
+  tlul_ot_pkg::tl_h2d_t       perfcounters_t_top_req;
+  tlul_ot_pkg::tl_d2h_t       perfcounters_t_top_rsp;
+
   tlul_ot_pkg::tl_h2d_t       entropy_src_tl_req;
   tlul_ot_pkg::tl_d2h_t       entropy_src_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       csrng_tl_req;
@@ -3180,6 +3190,10 @@ module top_earlgrey #(
     .tl_tlul2axi_o(tlul2axi_tl_req),
     .tl_tlul2axi_i(tlul2axi_tl_rsp),
 
+    // port: ttl_perfcounters_t_top
+    .tl_perfcounters_t_o(perfcounters_t_top_req),
+    .tl_perfcounters_t_i(perfcounters_t_top_rsp),
+
     .tl_crypto_sram_o(crypto_sram_tl_req),
     .tl_crypto_sram_i(crypto_sram_tl_rsp),
 
@@ -3188,6 +3202,20 @@ module top_earlgrey #(
 
     .scanmode_i
   );
+
+  perfcounters_t perfcounters_t(
+	        // Clock and reset connections
+    .clk_i (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .tl_i(perfcounters_t_top_req),
+    .tl_o(perfcounters_t_top_rsp)
+  // To HW
+
+  // Integrity check errors
+
+  // Config
+);
+
   xbar_peri u_xbar_peri (
     .clk_peri_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_peri_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),

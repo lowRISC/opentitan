@@ -784,6 +784,15 @@ sources:
       - hw/top_earlgrey/ip/crossbar/xbar_main/rtl/autogen/tl_main_pkg.sv
       - hw/top_earlgrey/ip/crossbar/xbar_main/rtl/autogen/xbar_main.sv
  
+##### PERCOUNTERS_T 
+     
+      - hw/ip/perfcounters_t/rtl/perfcounters_t_reg_pkg.sv
+      - hw/ip/perfcounters_t/rtl/perfcounters_t_reg_top.sv
+      - hw/ip/perfcounters_t/rtl/perfcounters_t_event.sv
+      - hw/ip/perfcounters_t/rtl/perfcounters_t_core.sv
+      - hw/ip/perfcounters_t/rtl/perfcounters_t.sv
+
+
 ##### tlul2axi
 
       - hw/ip/tlul2axi/rtl/tlul2axi_pkg.sv

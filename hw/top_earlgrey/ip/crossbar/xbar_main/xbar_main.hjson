@@ -65,6 +65,7 @@
       sram_ctrl_main.ram
       flash_ctrl.mem
       tlul2axi
+      perfcounters_t
       crypto_sram
     ]
     rv_core_ibex.cored:
@@ -73,6 +74,7 @@
       rom_ctrl.regs
       rv_dm.mem
       tlul2axi
+      perfcounters_t
       rv_dm.regs
       sram_ctrl_main.ram
       peri
@@ -105,6 +107,7 @@
       rom_ctrl.regs
       peri
       tlul2axi
+      perfcounters_t
       spi_host0
       usbdev
       spi_host1
@@ -701,6 +704,23 @@
         {
           base_addr: 0x80000000
           size_byte: 0x20000000
+        }
+      ]
+      xbar: true
+      stub: false
+      pipeline: true
+    }
+    {
+      name: perfcounters_t
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: alsaqr
+      addr_range:
+      [
+        {
+          base_addr: 0x00020000
+          size_byte: 0x00100
         }
       ]
       xbar: true
