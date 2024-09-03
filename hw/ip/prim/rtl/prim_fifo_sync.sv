@@ -148,7 +148,7 @@ module prim_fifo_sync #(
   // Known Assertions //
   //////////////////////
 
-  `ASSERT(DataKnown_A, rvalid_o |-> !$isunknown(rdata_o))
+  `ASSERT_KNOWN_IF(DataKnown_A, rdata_o, rvalid_o)
   `ASSERT_KNOWN(DepthKnown_A, depth_o)
   `ASSERT_KNOWN(RvalidKnown_A, rvalid_o)
   `ASSERT_KNOWN(WreadyKnown_A, wready_o)
