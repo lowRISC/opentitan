@@ -21,9 +21,9 @@ cc_library(
 )
 
 cc_library(
-    name = "sca_lib",
-    srcs = ["sca_lib.c"],
-    hdrs = ["sca_lib.h"],
+    name = "pentest_lib",
+    srcs = ["pentest_lib.c"],
+    hdrs = ["pentest_lib.h"],
     deps = [
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:mmio",
@@ -42,6 +42,6 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
-        "//sw/device/tests/penetrationtests/json:sca_lib_commands",
+        "//sw/device/tests/penetrationtests/json:pentest_lib_commands",
     ],
 )
