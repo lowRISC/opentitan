@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -129,7 +129,7 @@ status_t clear_otbn_load_checksum(void) {
 
 status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_hardware_dmem_op_loop);
@@ -148,7 +148,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharHardwareDmemOpLoopLC, &loop_counter);
@@ -176,7 +176,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
 
 status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_hardware_reg_op_loop);
@@ -195,7 +195,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharHardwareRegOpLoopLC, &loop_counter);
@@ -223,7 +223,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
 
 status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_unrolled_dmem_op_loop);
@@ -242,7 +242,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharUnrolledDmemOpLoopLC, &loop_counter);
@@ -270,7 +270,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
 
 status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_unrolled_reg_op_loop);
@@ -289,7 +289,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharUnrolledRegOpLoopLC, &loop_counter);
@@ -318,7 +318,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 status_t handle_otbn_fi_init(ujson_t *uj) {
   // Configure the entropy complex for OTBN. Set the reseed interval to max
   // to avoid a non-constant trigger window.
-  TRY(sca_configure_entropy_source_max_reseed_interval());
+  TRY(pentest_configure_entropy_source_max_reseed_interval());
 
   sca_select_trigger_type(kScaTriggerTypeSw);
   sca_init(kScaTriggerSourceOtbn,
@@ -336,10 +336,10 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // The load integrity & key sideloading tests get initialized at the first
   // run.
@@ -348,7 +348,7 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -370,7 +370,7 @@ status_t handle_otbn_fi_init_keymgr(ujson_t *uj) {
 status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
   TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!key_sideloading_init) {
     // Setup keymanager for sideloading key into OTBN.
@@ -394,7 +394,7 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   uint32_t key_share_0_l, key_share_0_h;
@@ -436,7 +436,7 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
 
 status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!load_integrity_init) {
     // Load the OTBN app and read the load checksum without FI to retrieve
@@ -454,7 +454,7 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   otbn_load_app(kOtbnAppLoadIntegrity);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read back checksum.
   uint32_t load_checksum;

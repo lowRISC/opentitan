@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -31,7 +31,7 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
   sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralCsrng);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
@@ -44,11 +44,11 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -56,7 +56,7 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
 
 status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read LC CTRL to get reference values.
   dif_lc_ctrl_state_t lc_state_ref;
@@ -71,7 +71,7 @@ status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Check if we have managed to manipulate the LC Controller.
   dif_lc_ctrl_state_t lc_state_cmp;
