@@ -620,27 +620,11 @@
           name: "ALERT_RECOV_CTRL_UPDATE_ERR",
           resval: "0",
           desc:  '''
-            An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
-            Ascon operation needs to be restarted by re-writing the Control Register.
+            An update error has not occurred (0) or has occurred (1) in one of the shadowed Control
+            Registers. Ascon operation needs to be restarted by re-writing the Control Registers.
           '''
         }
         { bits: "5",
-          name: "ALERT_RECOV_CTRL_AUX_UPDATE_ERR",
-          resval: "0",
-          desc:  '''
-            An update error has not occurred (0) or has occurred (1) in the shadowed Auxiliary Control Register.
-            The register has to be rewritten.
-          '''
-        }
-        { bits: "6",
-          name: "ALERT_RECOV_BLOCK_CTRL_UPDATE_ERR",
-          resval: "0",
-          desc:  '''
-            An update error has not occurred (0) or has occurred (1) in the shadowed block Control Register.
-            The register has to be rewritten.
-          '''
-        }
-        { bits: "7",
           name: "ALERT_FATAL_FAULT",
           resval: "0",
           desc:  '''

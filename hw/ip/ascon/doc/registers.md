@@ -549,25 +549,23 @@ Writes to the Message and associated data Registers are not ignored but the data
 Status Register
 - Offset: `0xa8`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "STALL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "WAIT_EDN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASCON_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_AUX_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_BLOCK_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 350}}
+{"reg": [{"name": "IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "STALL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "WAIT_EDN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASCON_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                            |
-|:------:|:------:|:-------:|:--------------------------------------------------------------------------------|
-|  31:8  |        |         | Reserved                                                                        |
-|   7    |   ro   |   0x0   | [ALERT_FATAL_FAULT](#status--alert_fatal_fault)                                 |
-|   6    |   ro   |   0x0   | [ALERT_RECOV_BLOCK_CTRL_UPDATE_ERR](#status--alert_recov_block_ctrl_update_err) |
-|   5    |   ro   |   0x0   | [ALERT_RECOV_CTRL_AUX_UPDATE_ERR](#status--alert_recov_ctrl_aux_update_err)     |
-|   4    |   ro   |   0x0   | [ALERT_RECOV_CTRL_UPDATE_ERR](#status--alert_recov_ctrl_update_err)             |
-|   3    |   ro   |   0x0   | [ASCON_ERROR](#status--ascon_error)                                             |
-|   2    |   ro   |   0x0   | [WAIT_EDN](#status--wait_edn)                                                   |
-|   1    |   ro   |   0x0   | [STALL](#status--stall)                                                         |
-|   0    |   ro   |   0x0   | [IDLE](#status--idle)                                                           |
+|  Bits  |  Type  |  Reset  | Name                                                                |
+|:------:|:------:|:-------:|:--------------------------------------------------------------------|
+|  31:6  |        |         | Reserved                                                            |
+|   5    |   ro   |   0x0   | [ALERT_FATAL_FAULT](#status--alert_fatal_fault)                     |
+|   4    |   ro   |   0x0   | [ALERT_RECOV_CTRL_UPDATE_ERR](#status--alert_recov_ctrl_update_err) |
+|   3    |   ro   |   0x0   | [ASCON_ERROR](#status--ascon_error)                                 |
+|   2    |   ro   |   0x0   | [WAIT_EDN](#status--wait_edn)                                       |
+|   1    |   ro   |   0x0   | [STALL](#status--stall)                                             |
+|   0    |   ro   |   0x0   | [IDLE](#status--idle)                                               |
 
 ### STATUS . ALERT_FATAL_FAULT
 No fatal fault has occurred inside the Asconunit (0).
@@ -580,17 +578,9 @@ iv) errors in the internal round counter,
 v) escalations triggered by the life cycle controller, and
 vi) fatal integrity failures on the TL-UL bus.
 
-### STATUS . ALERT_RECOV_BLOCK_CTRL_UPDATE_ERR
-An update error has not occurred (0) or has occurred (1) in the shadowed block Control Register.
-The register has to be rewritten.
-
-### STATUS . ALERT_RECOV_CTRL_AUX_UPDATE_ERR
-An update error has not occurred (0) or has occurred (1) in the shadowed Auxiliary Control Register.
-The register has to be rewritten.
-
 ### STATUS . ALERT_RECOV_CTRL_UPDATE_ERR
-An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
-Ascon operation needs to be restarted by re-writing the Control Register.
+An update error has not occurred (0) or has occurred (1) in one of the shadowed Control
+Registers. Ascon operation needs to be restarted by re-writing the Control Registers.
 
 ### STATUS . ASCON_ERROR
 An error due to a misconfiguration has happened.

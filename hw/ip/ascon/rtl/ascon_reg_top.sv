@@ -267,8 +267,6 @@ module ascon_reg_top (
   logic status_wait_edn_qs;
   logic status_ascon_error_qs;
   logic status_alert_recov_ctrl_update_err_qs;
-  logic status_alert_recov_ctrl_aux_update_err_qs;
-  logic status_alert_recov_block_ctrl_update_err_qs;
   logic status_alert_fatal_fault_qs;
   logic [2:0] output_valid_data_type_qs;
   logic [1:0] output_valid_tag_comparison_valid_qs;
@@ -1785,61 +1783,7 @@ module ascon_reg_top (
     .qs     (status_alert_recov_ctrl_update_err_qs)
   );
 
-  //   F[alert_recov_ctrl_aux_update_err]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_status_alert_recov_ctrl_aux_update_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.status.alert_recov_ctrl_aux_update_err.de),
-    .d      (hw2reg.status.alert_recov_ctrl_aux_update_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (status_alert_recov_ctrl_aux_update_err_qs)
-  );
-
-  //   F[alert_recov_block_ctrl_update_err]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_status_alert_recov_block_ctrl_update_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.status.alert_recov_block_ctrl_update_err.de),
-    .d      (hw2reg.status.alert_recov_block_ctrl_update_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (status_alert_recov_block_ctrl_update_err_qs)
-  );
-
-  //   F[alert_fatal_fault]: 7:7
+  //   F[alert_fatal_fault]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2571,9 +2515,7 @@ module ascon_reg_top (
         reg_rdata_next[2] = status_wait_edn_qs;
         reg_rdata_next[3] = status_ascon_error_qs;
         reg_rdata_next[4] = status_alert_recov_ctrl_update_err_qs;
-        reg_rdata_next[5] = status_alert_recov_ctrl_aux_update_err_qs;
-        reg_rdata_next[6] = status_alert_recov_block_ctrl_update_err_qs;
-        reg_rdata_next[7] = status_alert_fatal_fault_qs;
+        reg_rdata_next[5] = status_alert_fatal_fault_qs;
       end
 
       addr_hit[43]: begin
