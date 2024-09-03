@@ -133,57 +133,6 @@ jobs:
   - template: ci/install-package-dependencies.yml
   - bash: ci/scripts/test-airgapped-build.sh
 
-- job: slow_lints
-  displayName: Quality (in-depth lint)
-  # Run code quality checks (in-depth lint)
-  dependsOn: lint
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  # Check that all earlgrey countermeasures are implemented.
-  - bash: ci/scripts/check-countermeasures.sh earlgrey
-    displayName: Check countermeasures for top_earlgrey
-    continueOnError: True
-  # Bazel test suites are a common cause of problematic tags. Check test suites
-  # before checking for other tag issues.
-  - bash:  ci/scripts/check_bazel_test_suites.py
-    displayName: Check Bazel test suites (Experimental)
-    continueOnError: True
-  # #21973: Disabled until Verilator tags are fixed in our build tree.
-  #- bash: ci/scripts/check-bazel-tags.sh
-  #  displayName: Check Bazel Tags (Experimental)
-  #  continueOnError: True
-  - bash: ci/scripts/check-bazel-banned-rules.sh
-    displayName: Check for banned rules
-  - bash:  ci/scripts/check_bazel_target_names.py
-    displayName: Check Bazel target names (Experimental)
-    continueOnError: True
-  - bash: ci/scripts/check_dv_sw_images.sh
-    displayName: Check DV software images (Experimental)
-    continueOnError: True
-  - bash: ci/scripts/build-docs.sh
-    displayName: Render documentation
-  # Define OT_DESTRUCTIVE=1 to enable ci/scripts/check-generated.sh to delete
-  # uncommitted changes.
-  - bash: OT_DESTRUCTIVE=1 ci/scripts/check-generated.sh
-    displayName: Check Generated
-    # Ensure all generated files are clean and up-to-date
-  - bash: ci/bazelisk.sh test //quality:buildifier_check --test_output=streamed
-    displayName: Buildifier (Bazel lint)
-  - bash: ci/scripts/check-vendoring.sh
-    displayName: Vendored directories
-  - bash: ci/scripts/verible-lint.sh rtl
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible RTL (Verilog lint)
-  - bash: ci/scripts/verible-lint.sh dv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible DV (Verilog lint)
-  - bash: ci/scripts/verible-lint.sh fpv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible FPV (Verilog lint)
-
 - job: sw_build
   displayName: Earl Grey SW Build
   # Build software tests for the Earl Grey toplevel design
@@ -256,6 +205,58 @@ jobs:
     parameters:
       includePatterns:
         - "/sw/***"
+
+- job: slow_lints
+  displayName: Quality (in-depth lint)
+  # Run code quality checks (in-depth lint)
+  dependsOn: sw_build
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/load-bazel-cache-write-creds.yml
+  # Check that all earlgrey countermeasures are implemented.
+  - bash: ci/scripts/check-countermeasures.sh earlgrey
+    displayName: Check countermeasures for top_earlgrey
+    continueOnError: True
+  # Bazel test suites are a common cause of problematic tags. Check test suites
+  # before checking for other tag issues.
+  - bash:  ci/scripts/check_bazel_test_suites.py
+    displayName: Check Bazel test suites (Experimental)
+    continueOnError: True
+  # #21973: Disabled until Verilator tags are fixed in our build tree.
+  #- bash: ci/scripts/check-bazel-tags.sh
+  #  displayName: Check Bazel Tags (Experimental)
+  #  continueOnError: True
+  - bash: ci/scripts/check-bazel-banned-rules.sh
+    displayName: Check for banned rules
+  - bash:  ci/scripts/check_bazel_target_names.py
+    displayName: Check Bazel target names (Experimental)
+    continueOnError: True
+  - bash: ci/scripts/check_dv_sw_images.sh
+    displayName: Check DV software images (Experimental)
+    continueOnError: True
+  - bash: ci/scripts/build-docs.sh
+    displayName: Render documentation
+  # Define OT_DESTRUCTIVE=1 to enable ci/scripts/check-generated.sh to delete
+  # uncommitted changes.
+  - bash: OT_DESTRUCTIVE=1 ci/scripts/check-generated.sh
+    displayName: Check Generated
+    # Ensure all generated files are clean and up-to-date
+  - bash: ci/bazelisk.sh test //quality:buildifier_check --test_output=streamed
+    displayName: Buildifier (Bazel lint)
+  - bash: ci/scripts/check-vendoring.sh
+    displayName: Vendored directories
+  - bash: ci/scripts/verible-lint.sh rtl
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Verible RTL (Verilog lint)
+  - bash: ci/scripts/verible-lint.sh dv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Verible DV (Verilog lint)
+  - bash: ci/scripts/verible-lint.sh fpv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Verible FPV (Verilog lint)
 
 - job: sw_test
   displayName: Earl Grey SW Test
