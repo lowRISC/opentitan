@@ -16,7 +16,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -121,14 +121,14 @@ status_t handle_ibex_sca_init(ujson_t *uj) {
   sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
 
   // Disable the instruction cache and dummy instructions for SCA.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Key manager not initialized for the handle_ibex_sca_key_sideloading test.
   key_manager_init = false;
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();

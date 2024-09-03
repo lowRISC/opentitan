@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 
 #include "edn_regs.h"  // Generated
@@ -133,7 +133,7 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
 
 status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
@@ -168,7 +168,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
@@ -187,7 +187,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 
 status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!firmware_override_init) {
     // Check if we keep heal tests enabled.
@@ -226,7 +226,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
@@ -245,7 +245,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 
 status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   TRY(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
@@ -295,7 +295,7 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   }
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
@@ -311,7 +311,7 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 
 status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Enable entropy complex, CSRNG and EDN so Ibex can get entropy.
   // Configure entropy in auto_mode to avoid starving the system from entropy,
   // given that boot mode entropy has a limited number of generated bits.
@@ -346,7 +346,7 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   }
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
@@ -368,7 +368,7 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
                                      kScaPeripheralCsrng | kScaPeripheralEdn);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
@@ -377,7 +377,7 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Initialize peripherals used in this FI test.
   TRY(dif_entropy_src_init(
@@ -389,7 +389,7 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   firmware_override_init = false;
@@ -402,7 +402,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   crypto_fi_csrng_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_csrng_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   TRY(csrng_testutils_cmd_ready_wait(&csrng));
   TRY(dif_csrng_uninstantiate(&csrng));
@@ -449,7 +449,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   }
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
@@ -485,7 +485,7 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralCsrng);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
@@ -494,7 +494,7 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Initialize CSRNG.
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
@@ -503,7 +503,7 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();

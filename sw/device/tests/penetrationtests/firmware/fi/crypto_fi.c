@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 
 #include "aes_regs.h"
@@ -156,7 +156,7 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
   crypto_fi_aes_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_aes_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Write the key into the AES block. Set and unset the trigger when
   // key_trigger is true.
@@ -214,7 +214,7 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
   }
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -236,10 +236,10 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
                kScaPeripheralEdn | kScaPeripheralCsrng | kScaPeripheralEntropy);
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Init the AES block.
   TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
@@ -279,7 +279,7 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -290,7 +290,7 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
   crypto_fi_kmac_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Configure and write key to the KMAC block. Set and unset the trigger when
   // key_trigger is true.
@@ -348,7 +348,7 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
                        /*capacity=*/NULL));
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   TRY(dif_kmac_end(&kmac, &kmac_operation_state));
 
@@ -371,7 +371,7 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   crypto_fi_kmac_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Configure and write key to the KMAC block.
   dif_kmac_operation_state_t kmac_operation_state;
@@ -396,7 +396,7 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -426,7 +426,7 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
 
 status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   crypto_fi_test_result_mult_t uj_output;
 
@@ -459,7 +459,7 @@ status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -482,7 +482,7 @@ status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
 
 status_t handle_crypto_fi_shadow_reg_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   crypto_fi_test_result_mult_t uj_output;
 
@@ -538,7 +538,7 @@ status_t handle_crypto_fi_shadow_reg_read(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
