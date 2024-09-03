@@ -126,9 +126,9 @@ cc_library(
 )
 
 cc_library(
-    name = "sca_lib_commands",
-    srcs = ["sca_lib_commands.c"],
-    hdrs = ["sca_lib_commands.h"],
+    name = "pentest_lib_commands",
+    srcs = ["pentest_lib_commands.c"],
+    hdrs = ["pentest_lib_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
