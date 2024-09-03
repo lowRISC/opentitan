@@ -292,10 +292,14 @@ module prim_count
           $past(clr_i || set_i || (commit_i && (incr_en_i || decr_en_i))),
           clk_i, err_d || fpv_err_present || !rst_ni)
 
-  // Check that count errors are reported properly in err_d
-  `ASSERT(CntErrReported_A, ((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_d)
+  // Check that count errors are reported properly in err_o
+  //
+  // This is essentially a "|=> implication", but is structured in a way to avoid generating a cover
+  // property for the left hand side if PrimCountFpv is not defined (because we won't have a way to
+  // inject an error if not)
+  `ASSERT(CntErrReported_A, ##1 $past((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o)
  `ifdef PrimCountFpv
-  `COVER(CntErr_C, err_d)
+  `COVER(CntErr_C, err_o)
  `endif
 
   // This logic that will be assign to one, when user adds macro
