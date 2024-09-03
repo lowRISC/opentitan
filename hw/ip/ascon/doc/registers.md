@@ -214,6 +214,7 @@ Otherwise the engine stalls until all registers have been written.
 For Ascon 128 the upper 64 bit can be set to any value
 For partial blocks the unused bytes can be set to any value.
 The order in which the registers are updated does not matter.
+Writing to this register will invalidate previous values in the [`MSG_OUT`](#msg_out) register.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -251,6 +252,7 @@ This basically disables input masking.
 For Ascon 128 the upper 64 bit can be set to any value.
 For partial blocks the unused bytes can be set to any value.
 The order in which the registers are updated does not matter.
+Writing to this register will invalidate previous values in the [`MSG_OUT`](#msg_out) register.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

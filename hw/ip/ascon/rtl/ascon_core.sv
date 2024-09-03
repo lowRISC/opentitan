@@ -87,8 +87,8 @@ module ascon_core
   prim_mubi_pkg::mubi4_t no_ad;
   prim_mubi_pkg::mubi4_t no_msg;
 
-  data_type_e data_type_last;
-  data_type_e data_type_start;
+  data_type_in_e data_type_last;
+  data_type_in_e data_type_start;
 
   prim_ascon_pkg::duplex_op_e      operation;
   prim_ascon_pkg::duplex_variant_e variant;
@@ -309,8 +309,66 @@ module ascon_core
   assign hw2reg.status.wait_edn.d  = 1'b0;
   assign hw2reg.status.wait_edn.de = 1'b1;
 
-  // TODO BLOCK STATUS
-  assign hw2reg.output_valid.data_type.d  = 3'b000;
+  logic  data_in_valid;
+  assign data_in_valid = data_share1_in_new & data_share0_in_new;
+
+  logic  data_in_ready;
+  logic  data_in_read;
+  assign data_in_read = data_in_ready & data_in_valid;
+  assign data_share1_in_load = data_in_read;
+  assign data_share0_in_load = data_in_read;
+
+  logic msg_out_reg_valid;
+  logic tag_out_reg_valid;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : track_output_status
+    if (!rst_ni) begin
+      msg_out_reg_valid <= 1'b0;
+      tag_out_reg_valid <= 1'b0;
+    end else begin
+      // The output msg (PT or CT) is valid if it has been written to output register
+      // This output stays valid until a new input (CT or PT) has been read from the
+      // input register
+      if (msg_out_we) begin
+        msg_out_reg_valid <= 1'b1;
+      end else if (data_in_read) begin
+        msg_out_reg_valid <= 1'b0;
+      end
+      // The same logic applies for the tag.
+      // TODO: reconsider the clear logic. Als take the tag_comparison into account
+      if (tag_out_we) begin
+        tag_out_reg_valid <= 1'b1;
+      end else if (tag_out_read) begin
+        tag_out_reg_valid <= 1'b0;
+      end
+    end
+  end
+
+  // According to the spec only one data type can be valid, however the implementation
+  // allows the tag to be valid while the last word of the message is also still valid
+  // This implementation now gives priority to the message, as the message should be read
+  // before the tag. It thus follows the spec "which output register [...] should be read next"
+  // TODO: Reconsider if the spec should be adjusted and only the value of
+  //       tag_out_reg_valid and msg_out_reg_valid should be exposed.
+
+  data_type_out_e msg_out_type;
+  assign msg_out_type = (operation == prim_ascon_pkg::ASCON_ENC) ? CT_OUT : PT_OUT;
+
+  always_comb begin : priority_mux_for_output_valid_data_type_reg
+    if (msg_out_reg_valid && !tag_out_reg_valid) begin
+      hw2reg.output_valid.data_type.d  = msg_out_type;
+    end else if (msg_out_reg_valid && tag_out_reg_valid) begin
+      if (msg_out_read) begin
+        hw2reg.output_valid.data_type.d  = TAG_OUT;
+      end else begin
+        hw2reg.output_valid.data_type.d  = msg_out_type;
+      end
+    end else if (tag_out_reg_valid) begin
+      hw2reg.output_valid.data_type.d  = TAG_OUT;
+    end else begin
+      hw2reg.output_valid.data_type.d  = NONE_OUT;
+    end
+  end
   assign hw2reg.output_valid.data_type.de = 1'b1;
 
 
@@ -538,15 +596,6 @@ module ascon_core
   assign unused_masked_msg_input     = masked_msg_input;
   assign unused_sideload_key         = sideload_key;
 
-
-  logic data_in_valid;
-  assign data_in_valid = data_share1_in_new & data_share0_in_new;
-
-  logic data_in_ready;
-  logic data_in_read;
-  assign data_in_read = data_in_ready & data_in_valid;
-  assign data_share1_in_load = data_in_read;
-  assign data_share0_in_load = data_in_read;
 
   // XOR shares for unprotected implementation
   logic [3:0][31:0] key_in;
