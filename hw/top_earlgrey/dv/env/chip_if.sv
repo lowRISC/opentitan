@@ -664,7 +664,7 @@ interface chip_if;
   clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
 
 `ifdef GATE_LEVEL
-  wire lc_ready = `LC_CTRL_HIER.u_lc_ctrl_fsm.idle_o;
+  wire lc_ready = !`LC_CTRL_HIER.u_lc_ctrl_fsm.idle_o_BAR;
 `else
   wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
 `endif
