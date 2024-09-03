@@ -9,6 +9,9 @@
 // Note that the lc_en_i should be synchronized and buffered outside of this module using
 // an instance of prim_lc_sync.
 
+`include "prim_assert.sv"
+`include "prim_flop_macros.sv"
+
 module tlul_lc_gate
   import tlul_pkg::*;
   import lc_ctrl_pkg::*;
