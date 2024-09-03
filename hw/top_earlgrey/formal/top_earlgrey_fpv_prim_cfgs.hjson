@@ -95,7 +95,8 @@
                dut: prim_count_tb
                fusesoc_core: lowrisc:fpv:prim_count_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define ResetValue -1 -define PrimCountFpv 1"]
+               build_opts: ["-define ResetValue -1"]
+               defines: "PrimCountFpv"
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: true
              }
@@ -104,7 +105,8 @@
                dut: prim_count_tb
                fusesoc_core: lowrisc:fpv:prim_count_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               build_opts: ["-define ResetValue 0 -define PrimCountFpv 1"]
+               build_opts: ["-define ResetValue 0"]
+               defines: "PrimCountFpv"
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: true
              }
