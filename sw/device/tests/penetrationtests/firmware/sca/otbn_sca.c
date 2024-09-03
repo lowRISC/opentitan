@@ -20,7 +20,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -78,7 +78,7 @@ static status_t clear_otbn(void) {
 status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   // Get fixed seed.
   penetrationtest_otbn_sca_fixed_seed_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_otbn_sca_fixed_seed_t(uj, &uj_data));
+  TRY(pentest_configure_entropy_source_max_reseed_interval_seed_t(uj, &uj_data));
 
   // Key generation parameters.
   dif_keymgr_versioned_key_params_t sideload_params[kKeySideloadNumIt];
@@ -163,7 +163,7 @@ status_t handle_otbn_sca_init_keymgr(ujson_t *uj) {
 status_t handle_otbn_sca_init(ujson_t *uj) {
   // Configure the entropy complex for OTBN. Set the reseed interval to max
   // to avoid a non-constant trigger window.
-  TRY(sca_configure_entropy_source_max_reseed_interval());
+  TRY(pentest_configure_entropy_source_max_reseed_interval());
 
   sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
                                       kScaPeripheralOtbn | kScaPeripheralCsrng |
@@ -180,11 +180,11 @@ status_t handle_otbn_sca_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();

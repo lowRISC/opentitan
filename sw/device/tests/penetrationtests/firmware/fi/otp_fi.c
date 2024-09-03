@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -96,7 +96,7 @@ status_t otp_life_cycle_dump(uint32_t *buffer) {
 
 status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_hw_cfg_dump(otp_read32_result_hw_cfg_comp));
@@ -116,7 +116,7 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   TRY(otp_hw_cfg_dump(otp_read32_result_hw_cfg_fi));
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -150,10 +150,10 @@ status_t handle_otp_fi_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
@@ -165,7 +165,7 @@ status_t handle_otp_fi_init(ujson_t *uj) {
 
 status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_life_cycle_dump(otp_read32_result_life_cycle_comp));
@@ -185,7 +185,7 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   TRY(otp_life_cycle_dump(otp_read32_result_life_cycle_fi));
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -210,7 +210,7 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
 
 status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_owner_sw_cfg_dump(otp_read32_result_owner_sw_cfg_comp));
@@ -230,7 +230,7 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   TRY(otp_owner_sw_cfg_dump(otp_read32_result_owner_sw_cfg_fi));
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -255,7 +255,7 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
 
 status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_vendor_test_dump(otp_read32_result_vendor_test_comp));
@@ -275,7 +275,7 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   TRY(otp_vendor_test_dump(otp_read32_result_vendor_test_fi));
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
