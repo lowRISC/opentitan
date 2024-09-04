@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class lc_ctrl_base_vseq extends cip_base_vseq #(
-  .RAL_T              (lc_ctrl_reg_block),
+  .RAL_T              (lc_ctrl_regs_reg_block),
   .CFG_T              (lc_ctrl_env_cfg),
   .COV_T              (lc_ctrl_env_cov),
   .VIRTUAL_SEQUENCER_T(lc_ctrl_virtual_sequencer)

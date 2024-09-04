@@ -51,7 +51,7 @@
       pinmux_aon
       otp_ctrl.core
       otp_ctrl.prim
-      lc_ctrl
+      lc_ctrl.regs
       sensor_ctrl_aon
       alert_handler
       ast
@@ -457,7 +457,7 @@
       req_fifo_pass: true
     }
     {
-      name: lc_ctrl
+      name: lc_ctrl.regs
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni

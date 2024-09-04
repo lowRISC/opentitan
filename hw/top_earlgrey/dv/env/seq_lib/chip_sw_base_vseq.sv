@@ -814,7 +814,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [TL_DW-1:0] status_val;
       lc_ctrl_status_e dummy;
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
-      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.status.get_offset(),
+      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.status.get_offset(),
                                           p_sequencer.jtag_sequencer_h,
                                           status_val);
 
@@ -878,14 +878,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
     dec_lc_state_e dest_state = DecLcStTestUnlocked0;
 
     wait_lc_ready();
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
                                         p_sequencer.jtag_sequencer_h,
                                         current_lc_state);
     `DV_CHECK_EQ(DecLcStRaw, current_lc_state)
 
     `uvm_info(`gfn, $sformatf("Start LC transition request to %0s state", dest_state.name),
                               UVM_LOW)
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.claim_transition_if.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          prim_mubi_pkg::MuBi8True);
 
@@ -899,12 +899,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, "Switching to VOLATILE_RAW_UNLOCK via JTAG...", UVM_LOW)
     jtag_riscv_agent_pkg::jtag_write_csr(
-      ral.lc_ctrl.transition_ctrl.get_offset(),
+      ral.lc_ctrl_regs.transition_ctrl.get_offset(),
       p_sequencer.jtag_sequencer_h,
       (2 | use_ext_clk));
 
     jtag_riscv_agent_pkg::jtag_read_csr(
-      ral.lc_ctrl.transition_ctrl.get_offset(),
+      ral.lc_ctrl_regs.transition_ctrl.get_offset(),
       p_sequencer.jtag_sequencer_h,
       transition_ctrl);
     // In this case we expect the transition_ctrl bit to stay 0.
@@ -924,7 +924,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     begin
       bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
       foreach (token_csr_vals[index]) begin
-        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_token[index].get_offset(),
+        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_token[index].get_offset(),
                                              p_sequencer.jtag_sequencer_h,
                                              token_csr_vals[index]);
       end
@@ -935,17 +935,17 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.chip_vif.tap_straps_if.drive(target_strap);
 
     `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_target.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_target.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          {DecLcStateNumRep{DecLcStTestUnlocked0}});
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_cmd.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_cmd.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          1);
 
     if (target_strap == JtagTapLc) begin
       if (expect_success) begin
         wait_lc_transition_successful(.max_attempt(max_attempt));
-        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.claim_transition_if.get_offset(),
                                              p_sequencer.jtag_sequencer_h,
                                              prim_mubi_pkg::MuBi8False);
       end else begin
@@ -974,7 +974,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Check that the LC controller is ready to accept a transition.
     wait_lc_ready();
 
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
                                         p_sequencer.jtag_sequencer_h,
                                         actual_src_state);
     `DV_CHECK_EQ({DecLcStateNumRep{src_state}}, actual_src_state)
@@ -1060,7 +1060,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Start LC transition request from %0s state to %0s state",
                               src_state.name, dest_state.name), UVM_LOW)
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.claim_transition_if.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          prim_mubi_pkg::MuBi8True);
 
@@ -1068,16 +1068,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     begin
       bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {test_unlock_token}}}};
       foreach (token_csr_vals[index]) begin
-        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_token[index].get_offset(),
+        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_token[index].get_offset(),
                                              p_sequencer.jtag_sequencer_h,
                                              token_csr_vals[index]);
       end
     end
 
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_target.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_target.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          {DecLcStateNumRep{dest_state}});
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_cmd.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_cmd.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          1);
     `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
@@ -1100,7 +1100,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   protected task claim_transition_interface();
     `uvm_info(`gfn, "Claiming LC controller transition interface by JTAG...", UVM_MEDIUM)
     jtag_riscv_agent_pkg::jtag_write_csr(
-        ral.lc_ctrl.claim_transition_if.get_offset(),
+        ral.lc_ctrl_regs.claim_transition_if.get_offset(),
         p_sequencer.jtag_sequencer_h,
         prim_mubi_pkg::MuBi8True);
   endtask : claim_transition_interface
@@ -1131,7 +1131,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Switch to external clock via LC controller.
     `uvm_info(`gfn, "Switching to external clock via JTAG...", UVM_MEDIUM)
     jtag_riscv_agent_pkg::jtag_write_csr(
-      ral.lc_ctrl.transition_ctrl.get_offset(),
+      ral.lc_ctrl_regs.transition_ctrl.get_offset(),
       p_sequencer.jtag_sequencer_h,
       1);
 

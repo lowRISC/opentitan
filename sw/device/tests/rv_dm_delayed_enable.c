@@ -31,7 +31,7 @@ static dif_rv_dm_t rv_dm;
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
 
   CHECK_DIF_OK(dif_rv_dm_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_DM_REGS_BASE_ADDR), &rv_dm));

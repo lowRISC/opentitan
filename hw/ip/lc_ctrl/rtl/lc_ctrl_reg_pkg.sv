@@ -22,11 +22,11 @@ package lc_ctrl_reg_pkg;
   parameter int NumAlerts = 3;
 
   // Address widths within the block
-  parameter int BlockAw = 8;
+  parameter int RegsAw = 8;
 
-  ////////////////////////////
-  // Typedefs for registers //
-  ////////////////////////////
+  ///////////////////////////////////////////////
+  // Typedefs for registers for regs interface //
+  ///////////////////////////////////////////////
 
   typedef struct packed {
     struct packed {
@@ -189,7 +189,7 @@ package lc_ctrl_reg_pkg;
     logic [31:0] d;
   } lc_ctrl_hw2reg_manuf_state_mreg_t;
 
-  // Register -> HW type
+  // Register -> HW type for regs interface
   typedef struct packed {
     lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [216:211]
     lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [210:202]
@@ -198,9 +198,9 @@ package lc_ctrl_reg_pkg;
     lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [195:64]
     lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [63:33]
     lc_ctrl_reg2hw_otp_vendor_test_ctrl_reg_t otp_vendor_test_ctrl; // [32:0]
-  } lc_ctrl_reg2hw_t;
+  } lc_ctrl_regs_reg2hw_t;
 
-  // HW -> register type
+  // HW -> register type for regs interface
   typedef struct packed {
     lc_ctrl_hw2reg_status_reg_t status; // [887:876]
     lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [875:868]
@@ -217,46 +217,46 @@ package lc_ctrl_reg_pkg;
     lc_ctrl_hw2reg_hw_revision1_reg_t hw_revision1; // [543:512]
     lc_ctrl_hw2reg_device_id_mreg_t [7:0] device_id; // [511:256]
     lc_ctrl_hw2reg_manuf_state_mreg_t [7:0] manuf_state; // [255:0]
-  } lc_ctrl_hw2reg_t;
+  } lc_ctrl_regs_hw2reg_t;
 
-  // Register offsets
-  parameter logic [BlockAw-1:0] LC_CTRL_ALERT_TEST_OFFSET = 8'h 0;
-  parameter logic [BlockAw-1:0] LC_CTRL_STATUS_OFFSET = 8'h 4;
-  parameter logic [BlockAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_OFFSET = 8'h 8;
-  parameter logic [BlockAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_OFFSET = 8'h c;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_REGWEN_OFFSET = 8'h 10;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_CMD_OFFSET = 8'h 14;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_CTRL_OFFSET = 8'h 18;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_0_OFFSET = 8'h 1c;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_1_OFFSET = 8'h 20;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_2_OFFSET = 8'h 24;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_3_OFFSET = 8'h 28;
-  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TARGET_OFFSET = 8'h 2c;
-  parameter logic [BlockAw-1:0] LC_CTRL_OTP_VENDOR_TEST_CTRL_OFFSET = 8'h 30;
-  parameter logic [BlockAw-1:0] LC_CTRL_OTP_VENDOR_TEST_STATUS_OFFSET = 8'h 34;
-  parameter logic [BlockAw-1:0] LC_CTRL_LC_STATE_OFFSET = 8'h 38;
-  parameter logic [BlockAw-1:0] LC_CTRL_LC_TRANSITION_CNT_OFFSET = 8'h 3c;
-  parameter logic [BlockAw-1:0] LC_CTRL_LC_ID_STATE_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] LC_CTRL_HW_REVISION0_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] LC_CTRL_HW_REVISION1_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_0_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_1_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_2_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_3_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_4_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_5_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_0_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_1_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_2_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_3_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_4_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_5_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_6_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] LC_CTRL_MANUF_STATE_7_OFFSET = 8'h 88;
+  // Register offsets for regs interface
+  parameter logic [RegsAw-1:0] LC_CTRL_ALERT_TEST_OFFSET = 8'h 0;
+  parameter logic [RegsAw-1:0] LC_CTRL_STATUS_OFFSET = 8'h 4;
+  parameter logic [RegsAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_OFFSET = 8'h 8;
+  parameter logic [RegsAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_OFFSET = 8'h c;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_REGWEN_OFFSET = 8'h 10;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_CMD_OFFSET = 8'h 14;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_CTRL_OFFSET = 8'h 18;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_TOKEN_0_OFFSET = 8'h 1c;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_TOKEN_1_OFFSET = 8'h 20;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_TOKEN_2_OFFSET = 8'h 24;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_TOKEN_3_OFFSET = 8'h 28;
+  parameter logic [RegsAw-1:0] LC_CTRL_TRANSITION_TARGET_OFFSET = 8'h 2c;
+  parameter logic [RegsAw-1:0] LC_CTRL_OTP_VENDOR_TEST_CTRL_OFFSET = 8'h 30;
+  parameter logic [RegsAw-1:0] LC_CTRL_OTP_VENDOR_TEST_STATUS_OFFSET = 8'h 34;
+  parameter logic [RegsAw-1:0] LC_CTRL_LC_STATE_OFFSET = 8'h 38;
+  parameter logic [RegsAw-1:0] LC_CTRL_LC_TRANSITION_CNT_OFFSET = 8'h 3c;
+  parameter logic [RegsAw-1:0] LC_CTRL_LC_ID_STATE_OFFSET = 8'h 40;
+  parameter logic [RegsAw-1:0] LC_CTRL_HW_REVISION0_OFFSET = 8'h 44;
+  parameter logic [RegsAw-1:0] LC_CTRL_HW_REVISION1_OFFSET = 8'h 48;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_0_OFFSET = 8'h 4c;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_1_OFFSET = 8'h 50;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_2_OFFSET = 8'h 54;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_3_OFFSET = 8'h 58;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_4_OFFSET = 8'h 5c;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_5_OFFSET = 8'h 60;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 8'h 64;
+  parameter logic [RegsAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 8'h 68;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_0_OFFSET = 8'h 6c;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_1_OFFSET = 8'h 70;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_2_OFFSET = 8'h 74;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_3_OFFSET = 8'h 78;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_4_OFFSET = 8'h 7c;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_5_OFFSET = 8'h 80;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_6_OFFSET = 8'h 84;
+  parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_7_OFFSET = 8'h 88;
 
-  // Reset values for hwext registers and their fields
+  // Reset values for hwext registers and their fields for regs interface
   parameter logic [2:0] LC_CTRL_ALERT_TEST_RESVAL = 3'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_RESVAL = 1'h 0;
@@ -298,7 +298,7 @@ package lc_ctrl_reg_pkg;
   parameter logic [31:0] LC_CTRL_MANUF_STATE_6_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_MANUF_STATE_7_RESVAL = 32'h 0;
 
-  // Register index
+  // Register index for regs interface
   typedef enum int {
     LC_CTRL_ALERT_TEST,
     LC_CTRL_STATUS,
@@ -335,10 +335,10 @@ package lc_ctrl_reg_pkg;
     LC_CTRL_MANUF_STATE_5,
     LC_CTRL_MANUF_STATE_6,
     LC_CTRL_MANUF_STATE_7
-  } lc_ctrl_id_e;
+  } lc_ctrl_regs_id_e;
 
-  // Register width information to check illegal writes
-  parameter logic [3:0] LC_CTRL_PERMIT [35] = '{
+  // Register width information to check illegal writes for regs interface
+  parameter logic [3:0] LC_CTRL_REGS_PERMIT [35] = '{
     4'b 0001, // index[ 0] LC_CTRL_ALERT_TEST
     4'b 0011, // index[ 1] LC_CTRL_STATUS
     4'b 0001, // index[ 2] LC_CTRL_CLAIM_TRANSITION_IF_REGWEN

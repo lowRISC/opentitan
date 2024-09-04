@@ -20,7 +20,7 @@ using ::testing::ElementsAreArray;
 
 class LifecycleTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_LC_CTRL_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR;
   rom_test::MockSecMmio mmio_;
 };
 

@@ -37,8 +37,8 @@ module lc_ctrl
   input                                              clk_kmac_i,
   input                                              rst_kmac_ni,
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t                          tl_i,
-  output tlul_pkg::tl_d2h_t                          tl_o,
+  input  tlul_pkg::tl_h2d_t                          regs_tl_i,
+  output tlul_pkg::tl_d2h_t                          regs_tl_o,
   // TL-UL-based DMI
   input  tlul_pkg::tl_h2d_t                          dmi_tl_h2d_i,
   output tlul_pkg::tl_d2h_t                          dmi_tl_d2h_o,
@@ -136,16 +136,16 @@ module lc_ctrl
   // Regfile //
   /////////////
 
-  lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t reg2hw;
-  lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t hw2reg;
+  lc_ctrl_reg_pkg::lc_ctrl_regs_reg2hw_t reg2hw;
+  lc_ctrl_reg_pkg::lc_ctrl_regs_hw2reg_t hw2reg;
 
   // SEC_CM: TRANSITION.CONFIG.REGWEN, STATE.CONFIG.SPARSE
   logic fatal_bus_integ_error_q, fatal_bus_integ_error_csr_d, fatal_bus_integ_error_tap_dmi_d;
-  lc_ctrl_reg_top u_reg (
+  lc_ctrl_regs_reg_top u_reg_regs (
     .clk_i,
     .rst_ni,
-    .tl_i,
-    .tl_o,
+    .tl_i      ( regs_tl_i                   ),
+    .tl_o      ( regs_tl_o                   ),
     .reg2hw    ( reg2hw                      ),
     .hw2reg    ( hw2reg                      ),
     // SEC_CM: BUS.INTEGRITY
@@ -156,8 +156,8 @@ module lc_ctrl
   // Life Cycle TAP/DMI Regs //
   /////////////////////////////
 
-  lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t tap_dmi_reg2hw;
-  lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t tap_dmi_hw2reg;
+  lc_ctrl_reg_pkg::lc_ctrl_regs_reg2hw_t tap_dmi_reg2hw;
+  lc_ctrl_reg_pkg::lc_ctrl_regs_hw2reg_t tap_dmi_hw2reg;
 
   tlul_pkg::tl_h2d_t tap_dmi_tl_h2d;
   tlul_pkg::tl_d2h_t tap_dmi_tl_d2h;
@@ -177,7 +177,7 @@ module lc_ctrl
     assign unused_signal = ^{dmi_tl_h2d_i};
   end
 
-  lc_ctrl_reg_top u_reg_tap_dmi (
+  lc_ctrl_regs_reg_top u_reg_tap_dmi (
     .clk_i,
     .rst_ni,
     .tl_i      ( tap_dmi_tl_h2d              ),
@@ -806,7 +806,7 @@ module lc_ctrl
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(TlOKnown,               tl_o                       )
+  `ASSERT_KNOWN(RegsTlOKnown,           regs_tl_o                  )
   `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
   `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
   `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
@@ -850,7 +850,7 @@ module lc_ctrl
       u_lc_ctrl_fsm.esc_scrap_state1_i)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[2])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[2])
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(TapDmiRegWeOnehotCheck_A,
                                                  u_reg_tap_dmi, alert_tx_o[2], 0)
 endmodule : lc_ctrl

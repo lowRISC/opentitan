@@ -6,7 +6,7 @@
 
 class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   .CFG_T(lc_ctrl_env_cfg),
-  .RAL_T(lc_ctrl_reg_block),
+  .RAL_T(lc_ctrl_regs_reg_block),
   .COV_T(lc_ctrl_env_cov)
 );
   `uvm_component_utils(lc_ctrl_scoreboard)
@@ -223,8 +223,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         tl_item.d_opcode = (jt_item.op === DmiRead) ? tlul_pkg::Get : tlul_pkg::PutFullData;
 
 
-        process_tl_access(tl_item, AddrChannel, "lc_ctrl_reg_block");
-        process_tl_access(tl_item, DataChannel, "lc_ctrl_reg_block");
+        process_tl_access(tl_item, AddrChannel, "lc_ctrl_regs_reg_block");
+        process_tl_access(tl_item, DataChannel, "lc_ctrl_regs_reg_block");
 
 
       end

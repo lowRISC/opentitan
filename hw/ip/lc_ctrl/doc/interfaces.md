@@ -20,7 +20,7 @@ Parameter                        | Default (Max)  | Top Earlgrey   | Description
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`lc_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_kmac_i`**
-- Bus Device Interfaces (TL-UL): **`tl`**
+- Bus Device Interfaces (TL-UL): **`regs_tl`**
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
@@ -63,7 +63,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | otp_manuf_state          | otp_ctrl_pkg::otp_manuf_state    | uni     | rcv   |       1 |                                                                                                                                                                                                                                                                                 |
 | hw_rev                   | lc_ctrl_pkg::lc_hw_rev           | uni     | req   |       1 |                                                                                                                                                                                                                                                                                 |
 | strap_en_override        | logic                            | uni     | req   |       1 | This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps. The signal stays at 1 until reset. Note that this is only used in test chips when SecVolatileRawUnlockEn = 1. Otherwise this signal is tied off to 0. |
-| tl                       | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                                                                                                                                                                                 |
+| regs_tl                  | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                                                                                                                                                                                 |
 
 ## Security Alerts
 
