@@ -142,14 +142,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES = 32'h20;
 
   /**
-   * Peripheral base address for lc_ctrl in top earlgrey.
+   * Peripheral base address for regs device on lc_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_LC_CTRL_BASE_ADDR = 32'h40140000;
+  parameter int unsigned TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR = 32'h40140000;
 
   /**
-   * Peripheral size in bytes for lc_ctrl in top earlgrey.
+   * Peripheral size in bytes for regs device on lc_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_LC_CTRL_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_EARLGREY_LC_CTRL_REGS_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for alert_handler in top earlgrey.

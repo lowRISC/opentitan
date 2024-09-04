@@ -85,7 +85,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     bit dft_straps_en = 1;
     chip_jtag_tap_e allowed_taps_q[$];
 
-    ral.lc_ctrl.get_registers(lc_csrs);
+    ral.lc_ctrl_regs.get_registers(lc_csrs);
 
     // load rom/flash and wait for rom_check to complete
     cpu_init();
@@ -188,10 +188,10 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task test_lc_access_via_jtag();
-    foreach (ral.lc_ctrl.device_id[i]) begin
+    foreach (ral.lc_ctrl_regs.device_id[i]) begin
       bit [31:0] act_device_id, exp_device_id;
-      exp_device_id = csr_peek(ral.lc_ctrl.device_id[i]);
-      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.device_id[i].get_offset(),
+      exp_device_id = csr_peek(ral.lc_ctrl_regs.device_id[i]);
+      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.device_id[i].get_offset(),
                                           p_sequencer.jtag_sequencer_h,
                                           act_device_id);
       `DV_CHECK_EQ(act_device_id, exp_device_id, $sformatf("device_id index: %0d", i))
