@@ -1890,6 +1890,10 @@
         {
           hart: 0x40140000
         }
+        dmi:
+        {
+          hart: 0x0
+        }
       }
       param_decl:
       {
@@ -2042,28 +2046,6 @@
           inst_name: lc_ctrl
           default: ""
           top_signame: pinmux_aon_lc_jtag
-          index: -1
-        }
-        {
-          name: dmi_tl_h2d
-          desc: TL-UL-based DMI request input port
-          struct: tl_h2d
-          package: tlul_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: lc_ctrl
-          index: -1
-        }
-        {
-          name: dmi_tl_d2h
-          desc: TL-UL-based DMI response output port
-          struct: tl_d2h
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: lc_ctrl
           index: -1
         }
         {
@@ -2493,6 +2475,16 @@
           default: ""
           end_idx: -1
           top_signame: lc_ctrl_regs_tl
+          index: -1
+        }
+        {
+          name: dmi_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: lc_ctrl
           index: -1
         }
       ]
@@ -17291,28 +17283,6 @@
         index: -1
       }
       {
-        name: dmi_tl_h2d
-        desc: TL-UL-based DMI request input port
-        struct: tl_h2d
-        package: tlul_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: lc_ctrl
-        index: -1
-      }
-      {
-        name: dmi_tl_d2h
-        desc: TL-UL-based DMI response output port
-        struct: tl_d2h
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: lc_ctrl
-        index: -1
-      }
-      {
         name: esc_scrap_state0_tx
         struct: esc_tx
         package: prim_esc_pkg
@@ -17739,6 +17709,16 @@
         default: ""
         end_idx: -1
         top_signame: lc_ctrl_regs_tl
+        index: -1
+      }
+      {
+        name: dmi_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: lc_ctrl
         index: -1
       }
       {

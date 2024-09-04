@@ -25,7 +25,8 @@
     {clock: "clk_kmac_i", reset: "rst_kmac_ni"}
   ]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", name: "regs" }
+    { protocol: "tlul", direction: "device", name: "regs" },
+    { protocol: "tlul", direction: "device", name: "dmi"  }
   ],
   scan: "true", // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
@@ -229,25 +230,6 @@
       name:    "jtag"
       act:     "rsp"
       package: "jtag_pkg"
-    }
-    // TL-UL-based DMI
-    { struct:  "tl_h2d"
-      package: "tlul_pkg"
-      type:    "uni"
-      name:    "dmi_tl_h2d"
-      act:     "rcv"
-      desc:    '''
-               TL-UL-based DMI request input port
-               '''
-    }
-    { struct:  "tl_d2h"
-      package: "tlul_pkg"
-      type:    "uni"
-      name:    "dmi_tl_d2h"
-      act:     "req"
-      desc:    '''
-               TL-UL-based DMI response output port
-               '''
     }
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
@@ -1410,6 +1392,19 @@
           ]
         }
       }
+    ]
+    // Debug bus attachment
+    dmi: [
+      { window: {
+          name: "dmi"
+          // 0x0 ... 0x400 word addresses are allocated here.
+          items: "1024"
+          swaccess: "rw",
+          data-intg-passthru: "true",
+          byte-write: "false",
+          desc: '''Access window to lc_ctrl CSRs and .'''
+        }
+      },
     ]
   }
 }

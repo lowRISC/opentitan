@@ -1,7 +1,7 @@
 # Registers
 
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/lc_ctrl/data/lc_ctrl.hjson -->
-## Summary
+## Summary of the **`regs`** interface's registers
 
 | Name                                                                | Offset   |   Length | Description                                                                              |
 |:--------------------------------------------------------------------|:---------|---------:|:-----------------------------------------------------------------------------------------|
@@ -626,6 +626,20 @@ This is a 256bit field used for keeping track of the manufacturing state.
 |  Bits  |  Type  |  Reset  | Name        | Description   |
 |:------:|:------:|:-------:|:------------|:--------------|
 |  31:0  |   ro   |    x    | MANUF_STATE |               |
+
+## Summary of the **`dmi`** interface's registers
+
+| Name                  | Offset   |   Length | Description                         |
+|:----------------------|:---------|---------:|:------------------------------------|
+| lc_ctrl.[`dmi`](#dmi) | 0x0      |     4096 | Access window to lc_ctrl CSRs and . |
+
+## dmi
+Access window to lc_ctrl CSRs and .
+
+- Word Aligned Offset Range: `0x0`to`0xffc`
+- Size (words): `1024`
+- Access: `rw`
+- Byte writes are *not* supported.
 
 
 <!-- END CMDGEN -->
