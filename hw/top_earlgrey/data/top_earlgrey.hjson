@@ -302,7 +302,10 @@
       clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
-      base_addrs: {regs: "0x40140000"},
+      base_addrs: {
+        regs: "0x40140000",
+        dmi: "0"  // DMI is not used in EarlGrey
+      },
       param_decl: {
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
         // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
