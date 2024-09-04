@@ -125,7 +125,7 @@ module prim_alert_rxtx_async_assert_fpv
   `ASSERT(AlertCheck0_A,
       !ping_req_i [*10] ##1 ($rose(alert_req_i) || $rose(alert_test_i)) && sender_is_idle |->
       ##[3:5] alert_o,
-      clk_i, !rst_ni || ping_req_i || error_setreg_q || init_pending)
+      clk_i, !rst_ni || ping_req_i || error_setreg_q || init_pending || alert_skew_i || ack_skew_i)
   // eventual transmission of alerts in the general case which can include continous ping
   // collisions
   `ASSERT(AlertCheck1_A,
