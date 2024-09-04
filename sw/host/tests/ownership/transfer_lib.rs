@@ -95,21 +95,69 @@ pub fn ownership_activate(
 const CFG_CORRUPT: u32 = 0x0000_0001;
 // Request a config with a flash configuration.
 const CFG_FLASH1: u32 = 0x0000_0002;
+// Request flash config lockdown in the flash configuration.
+const CFG_FLASH_LOCK: u32 = 0x0000_0004;
 // Request a config with a rescue configuration.
-const CFG_RESCUE1: u32 = 0x0000_0004;
+const CFG_RESCUE1: u32 = 0x0000_0008;
 // Request a rescue configuration that restricts the set of allowed commands
 // (e.g. this one removes "SetNextBl0Slot" from the set of allowed commands).
-const CFG_RESCUE_RESTRICT: u32 = 0x0000_0008;
+const CFG_RESCUE_RESTRICT: u32 = 0x0000_0010;
 
 #[repr(u32)]
-#[derive(Debug, Default, Copy, Clone, ValueEnum)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, ValueEnum)]
 pub enum OwnerConfigKind {
     #[default]
     Basic = 0,
     Corrupt = CFG_CORRUPT,
     WithFlash = CFG_FLASH1 | CFG_RESCUE1,
+    WithFlashLocked = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK,
     WithRescue = CFG_RESCUE1,
     WithRescueRestricted = CFG_FLASH1 | CFG_RESCUE1 | CFG_RESCUE_RESTRICT,
+}
+
+impl OwnerConfigKind {
+    pub fn is_flash_locked(&self) -> bool {
+        *self as u32 & CFG_FLASH_LOCK != 0
+    }
+}
+
+fn rom_ext(lock: bool) -> FlashFlags {
+    FlashFlags {
+        read: true,
+        program: true,
+        erase: true,
+        scramble: false,
+        ecc: false,
+        high_endurance: false,
+        protect_when_primary: true,
+        lock,
+    }
+}
+
+fn firmware(lock: bool) -> FlashFlags {
+    FlashFlags {
+        read: true,
+        program: true,
+        erase: true,
+        scramble: true,
+        ecc: true,
+        high_endurance: false,
+        protect_when_primary: true,
+        lock,
+    }
+}
+
+fn filesystem(lock: bool) -> FlashFlags {
+    FlashFlags {
+        read: true,
+        program: true,
+        erase: true,
+        scramble: false,
+        ecc: false,
+        high_endurance: true,
+        protect_when_primary: false,
+        lock,
+    }
 }
 
 /// Prepares an OwnerBlock and sends it to the chip.
@@ -140,18 +188,19 @@ pub fn create_owner(
         ..Default::default()
     };
     if config & CFG_FLASH1 != 0 {
+        let lock = config & CFG_FLASH_LOCK != 0;
         owner
             .data
             .push(OwnerConfigItem::FlashConfig(OwnerFlashConfig {
                 config: vec![
                     // Side A: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                    OwnerFlashRegion::new(0, 32, FlashFlags::rom_ext()),
-                    OwnerFlashRegion::new(32, 192, FlashFlags::firmware()),
-                    OwnerFlashRegion::new(224, 32, FlashFlags::filesystem()),
+                    OwnerFlashRegion::new(0, 32, rom_ext(lock)),
+                    OwnerFlashRegion::new(32, 192, firmware(lock)),
+                    OwnerFlashRegion::new(224, 32, filesystem(lock)),
                     // Side B: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                    OwnerFlashRegion::new(256, 32, FlashFlags::rom_ext()),
-                    OwnerFlashRegion::new(256 + 32, 192, FlashFlags::firmware()),
-                    OwnerFlashRegion::new(256 + 224, 32, FlashFlags::filesystem()),
+                    OwnerFlashRegion::new(256, 32, rom_ext(lock)),
+                    OwnerFlashRegion::new(256 + 32, 192, firmware(lock)),
+                    OwnerFlashRegion::new(256 + 224, 32, filesystem(lock)),
                 ],
                 ..Default::default()
             }));
