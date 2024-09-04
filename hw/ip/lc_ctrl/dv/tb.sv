@@ -135,8 +135,8 @@ module tb;
     .clk_kmac_i (clk),
     .rst_kmac_ni(rst_n),
 
-    .tl_i      (tl_if.h2d),
-    .tl_o      (tl_if.d2h),
+    .regs_tl_i (tl_if.h2d),
+    .regs_tl_o (tl_if.d2h),
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 

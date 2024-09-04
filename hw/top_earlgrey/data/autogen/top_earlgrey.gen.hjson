@@ -1638,6 +1638,10 @@
           domain: "0"
         }
       }
+      base_addrs:
+      {
+        regs: 0x40140000
+      }
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
@@ -2230,7 +2234,7 @@
           index: -1
         }
         {
-          name: tl
+          name: regs_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -2239,14 +2243,10 @@
           inst_name: lc_ctrl
           default: ""
           end_idx: -1
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_regs_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null: 0x40140000
-      }
     }
     {
       name: alert_handler
@@ -8883,9 +8883,9 @@
       [
         peri.tl_otp_ctrl__prim
       ]
-      lc_ctrl.tl:
+      lc_ctrl.regs_tl:
       [
-        peri.tl_lc_ctrl
+        peri.tl_lc_ctrl__regs
       ]
       sensor_ctrl_aon.tl:
       [
@@ -9981,7 +9981,7 @@
           pinmux_aon
           otp_ctrl.core
           otp_ctrl.prim
-          lc_ctrl
+          lc_ctrl.regs
           sensor_ctrl_aon
           alert_handler
           ast
@@ -10332,7 +10332,7 @@
           req_fifo_pass: true
         }
         {
-          name: lc_ctrl
+          name: lc_ctrl.regs
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -10727,7 +10727,7 @@
           index: -1
         }
         {
-          name: tl_lc_ctrl
+          name: tl_lc_ctrl__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -10735,7 +10735,7 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_regs_tl
           index: -1
         }
         {
@@ -17023,7 +17023,7 @@
         index: -1
       }
       {
-        name: tl
+        name: regs_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -17032,7 +17032,7 @@
         inst_name: lc_ctrl
         default: ""
         end_idx: -1
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_regs_tl
         index: -1
       }
       {
@@ -20966,7 +20966,7 @@
         index: -1
       }
       {
-        name: tl_lc_ctrl
+        name: tl_lc_ctrl__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -20974,7 +20974,7 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_regs_tl
         index: -1
       }
       {
@@ -23898,7 +23898,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: lc_ctrl_tl_req
+        signame: lc_ctrl_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -23909,7 +23909,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: lc_ctrl_tl_rsp
+        signame: lc_ctrl_regs_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
