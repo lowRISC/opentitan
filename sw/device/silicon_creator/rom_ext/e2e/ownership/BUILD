@@ -38,6 +38,24 @@ opentitan_binary(
     ],
 )
 
+opentitan_binary(
+    name = "flash_regions",
+    testonly = True,
+    srcs = ["flash_regions.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    rsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_transfer_any_test
 ownership_transfer_test(
     name = "transfer_any_test",
@@ -317,4 +335,36 @@ ownership_transfer_test(
         """,
         test_harness = "//sw/host/tests/ownership:rescue_permission_test",
     ),
+)
+
+# rom_ext_e2e_testplan.hjson%rom_ext_e2e_flash_permission_test
+# Note: rescue-after-activate tests that rescue correctly accesses regions with
+# different scrambling/ECC properties than the default flash configuration.
+ownership_transfer_test(
+    name = "flash_permission_test",
+    srcs = ["flash_regions.c"],
+    fpga = fpga_params(
+        binaries = {
+            ":flash_regions": "flash_regions",
+        },
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --config-kind=with-flash-locked
+            --rescue-after-activate={flash_regions}
+        """,
+        test_harness = "//sw/host/tests/ownership:flash_permission_test",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
