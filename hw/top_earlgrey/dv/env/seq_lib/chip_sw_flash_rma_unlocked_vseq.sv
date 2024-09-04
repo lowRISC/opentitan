@@ -107,7 +107,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     // acquire access for JTAG to LC CTRL
     wait_lc_initialized(.allow_err(1));
     // check LC state is correct
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
                                         p_sequencer.jtag_sequencer_h, state);
     `DV_CHECK_EQ(state, {DecLcStateNumRep{exp_state}})
   endtask
@@ -119,23 +119,23 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     wait_lc_initialized(.allow_err(1));
 
     // Check Revision
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.hw_revision0.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.hw_revision0.get_offset(),
                                         p_sequencer.jtag_sequencer_h, word);
     `DV_CHECK_EQ(word, {silicon_creator_id, product_id})
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.hw_revision1.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.hw_revision1.get_offset(),
                                         p_sequencer.jtag_sequencer_h, word);
     `DV_CHECK_EQ(word, {revision_id})
 
     // Check Device ID
     for (int k = 0; k < lc_ctrl_reg_pkg::NumDeviceIdWords; k++) begin
-      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.device_id[k].get_offset(),
+      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.device_id[k].get_offset(),
                                           p_sequencer.jtag_sequencer_h, word);
       `DV_CHECK_EQ(word, device_id[k*BUS_DW +: BUS_DW])
     end
 
     // Check Manuf State
     for (int k = 0; k < lc_ctrl_reg_pkg::NumManufStateWords; k++) begin
-      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.manuf_state[k].get_offset(),
+      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.manuf_state[k].get_offset(),
                                           p_sequencer.jtag_sequencer_h, word);
       `DV_CHECK_EQ(word, manuf_state[k*BUS_DW +: BUS_DW])
     end

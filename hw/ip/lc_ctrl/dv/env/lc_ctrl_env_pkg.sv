@@ -12,7 +12,7 @@ package lc_ctrl_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
-  import lc_ctrl_ral_pkg::*;
+  import lc_ctrl_regs_ral_pkg::*;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;

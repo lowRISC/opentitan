@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class lc_ctrl_env_cfg extends cip_base_env_cfg #(
-  .RAL_T(lc_ctrl_reg_block)
+  .RAL_T(lc_ctrl_regs_reg_block)
 );
   // DUT parameters
   lc_ctrl_parameters_cfg parameters_cfg;

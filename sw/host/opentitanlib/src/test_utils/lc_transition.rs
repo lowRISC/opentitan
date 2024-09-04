@@ -298,7 +298,7 @@ pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlSta
             JtagTap::RiscvTap => {
                 let mut status = [0u32];
                 jtag.read_memory32(
-                    top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::Status as u32,
+                    top_earlgrey::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::Status as u32,
                     &mut status,
                 )?;
                 status[0]

@@ -66,7 +66,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .connect(JtagTap::RiscvTap)?;
     jtag.halt()?;
     // Definitions for hardware registers
-    let lc_ctrl_base_addr = top_earlgrey::LC_CTRL_BASE_ADDR as u32;
+    let lc_ctrl_base_addr = top_earlgrey::LC_CTRL_REGS_BASE_ADDR as u32;
     let lc_ctrl_transition_if_addr = lc_ctrl_base_addr + LcCtrlReg::ClaimTransitionIf.byte_offset();
     let lc_ctrl_state_addr = lc_ctrl_base_addr + LcCtrlReg::LcState.byte_offset();
     let lc_ctrl_transition_regwen_addr =

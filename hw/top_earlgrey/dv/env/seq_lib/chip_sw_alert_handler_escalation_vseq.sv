@@ -26,7 +26,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
              cfg.sw_test_timeout_ns)
 
     // Read current lc state to establish baseline
-    jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+    jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
       p_sequencer.jtag_sequencer_h,
       init_state
     );
@@ -38,7 +38,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
              cfg.sw_test_timeout_ns)
 
     // Read lc state to ensure that we are still in normal operating mode
-    jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+    jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
       p_sequencer.jtag_sequencer_h,
       reg_val
     );
@@ -52,7 +52,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
     end
 
     // poll for state to transition into escalate
-    jtag_csr_spinwait(ral.lc_ctrl.lc_state.get_offset(),
+    jtag_csr_spinwait(ral.lc_ctrl_regs.lc_state.get_offset(),
       p_sequencer.jtag_sequencer_h,
       {DecLcStateNumRep{DecLcStEscalate}},
       cfg.sw_test_timeout_ns);
