@@ -143,8 +143,8 @@ module tb;
     .jtag_i     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
     .jtag_o     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
 
-    .dmi_tl_h2d_i(dmi_tl_h2d),
-    .dmi_tl_d2h_o(dmi_tl_d2h),
+    .dmi_tl_i(dmi_tl_h2d),
+    .dmi_tl_o(dmi_tl_d2h),
 
     .scanmode_i (lc_ctrl_if.scanmode_i),
     .scan_rst_ni(lc_ctrl_if.scan_rst_ni),
