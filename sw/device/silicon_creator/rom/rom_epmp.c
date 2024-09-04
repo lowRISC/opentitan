@@ -17,9 +17,9 @@ extern char _text_end[];     // End of executable code.
 
 // Note: Hardcoding these values since the way we generate this range is not
 // very robust at the moment. See #14345 and #14336.
-static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
+static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x0,
               "MMIO region changed, update ePMP configuration if needed");
-static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x10000000,
+static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x50000000,
               "MMIO region changed, update ePMP configuration if needed");
 
 static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=

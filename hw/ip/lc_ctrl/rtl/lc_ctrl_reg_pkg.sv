@@ -23,6 +23,7 @@ package lc_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int RegsAw = 8;
+  parameter int DmiAw = 12;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
@@ -375,5 +376,10 @@ package lc_ctrl_reg_pkg;
     4'b 1111, // index[33] LC_CTRL_MANUF_STATE_6
     4'b 1111  // index[34] LC_CTRL_MANUF_STATE_7
   };
+
+  // Window parameters for dmi interface
+  parameter logic [DmiAw-1:0] LC_CTRL_DMI_OFFSET = 12'h 0;
+  parameter int unsigned      LC_CTRL_DMI_SIZE   = 'h 1000;
+  parameter int unsigned      LC_CTRL_DMI_IDX    = 0;
 
 endpackage
