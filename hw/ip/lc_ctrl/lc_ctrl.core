@@ -24,6 +24,7 @@ filesets:
       - lowrisc:ip_interfaces:alert_handler_reg
     files:
       - rtl/lc_ctrl_regs_reg_top.sv
+      - rtl/lc_ctrl_dmi_reg_top.sv
       - rtl/lc_ctrl_state_decode.sv
       - rtl/lc_ctrl_state_transition.sv
       - rtl/lc_ctrl_signal_decode.sv

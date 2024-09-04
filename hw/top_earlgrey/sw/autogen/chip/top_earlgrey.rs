@@ -217,6 +217,20 @@ pub const LC_CTRL_REGS_BASE_ADDR: usize = 0x40140000;
 /// `LC_CTRL_REGS_BASE_ADDR + LC_CTRL_REGS_SIZE_BYTES`.
 pub const LC_CTRL_REGS_SIZE_BYTES: usize = 0x100;
 
+/// Peripheral base address for dmi device on lc_ctrl in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const LC_CTRL_DMI_BASE_ADDR: usize = 0x0;
+
+/// Peripheral size for dmi device on lc_ctrl in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #LC_CTRL_DMI_BASE_ADDR and
+/// `LC_CTRL_DMI_BASE_ADDR + LC_CTRL_DMI_SIZE_BYTES`.
+pub const LC_CTRL_DMI_SIZE_BYTES: usize = 0x1000;
+
 /// Peripheral base address for alert_handler in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

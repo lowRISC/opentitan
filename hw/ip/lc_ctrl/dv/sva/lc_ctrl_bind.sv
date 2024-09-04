@@ -18,8 +18,8 @@ module lc_ctrl_bind;
   ) tlul_assert_device_dmi (
     .clk_i,
     .rst_ni,
-    .h2d  (dmi_tl_h2d_i),
-    .d2h  (dmi_tl_d2h_o)
+    .h2d  (dmi_tl_i),
+    .d2h  (dmi_tl_o)
   );
 
   bind lc_ctrl lc_ctrl_regs_csr_assert_fpv lc_ctrl_csr_assert (

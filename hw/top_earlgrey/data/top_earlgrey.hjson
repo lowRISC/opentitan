@@ -394,6 +394,7 @@
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
       base_addrs: {
         regs: {hart: "0x40140000"},
+        dmi:  {hart: "0x0"}, // DMI is not used in EarlGrey
       },
       param_decl: {
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE

@@ -1509,8 +1509,6 @@ module top_earlgrey #(
       // Inter-module signals
       .jtag_i(pinmux_aon_lc_jtag_req),
       .jtag_o(pinmux_aon_lc_jtag_rsp),
-      .dmi_tl_h2d_i(tlul_pkg::TL_H2D_DEFAULT),
-      .dmi_tl_d2h_o(),
       .esc_scrap_state0_tx_i(alert_handler_esc_tx[1]),
       .esc_scrap_state0_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state1_tx_i(alert_handler_esc_tx[2]),
@@ -1548,6 +1546,8 @@ module top_earlgrey #(
       .strap_en_override_o(lc_ctrl_strap_en_override),
       .regs_tl_i(lc_ctrl_regs_tl_req),
       .regs_tl_o(lc_ctrl_regs_tl_rsp),
+      .dmi_tl_i(tlul_pkg::TL_H2D_DEFAULT),
+      .dmi_tl_o(),
       .scanmode_i,
       .scan_rst_ni,
 

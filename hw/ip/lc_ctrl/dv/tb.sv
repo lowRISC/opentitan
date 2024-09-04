@@ -96,6 +96,7 @@ module tb;
 
   `DV_ALERT_IF_CONNECT()
 
+`ifdef USE_DMI_INTERFACE
   // Helper module to translate JTAG -> TL-UL requests.
   // TODO: In the long term this JTAG agent should probably be replaced by a TL-UL agent.
   tlul_jtag_dtm #(
@@ -110,13 +111,20 @@ module tb;
     .tl_h2d_o    (dmi_tl_h2d),
     .tl_d2h_i    (dmi_tl_d2h)
   );
+`else
+  assign dmi_tl_h2d = tlul_pkg::TL_H2D_DEFAULT;
+`endif
 
   // dut
   lc_ctrl #(
     .AlertAsyncOn(AlertAsyncOn),
     // Idcode value for the JTAG.
     .IdcodeValue(IdcodeValue),
+`ifdef USE_DMI_INTERFACE
+    .UseDmiInterface(1'b1),
+`else
     .UseDmiInterface(1'b0),
+`endif
     // Random netlist constants
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcKeymgrDivTestUnlocked),
@@ -140,11 +148,15 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
+`ifdef USE_DMI_INTERFACE
+    .jtag_i     ('0),
+    .jtag_o     (),
+`else
     .jtag_i     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
     .jtag_o     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
-
-    .dmi_tl_h2d_i(dmi_tl_h2d),
-    .dmi_tl_d2h_o(dmi_tl_d2h),
+`endif
+    .dmi_tl_i(dmi_tl_h2d),
+    .dmi_tl_o(dmi_tl_d2h),
 
     .scanmode_i (lc_ctrl_if.scanmode_i),
     .scan_rst_ni(lc_ctrl_if.scan_rst_ni),
