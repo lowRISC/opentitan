@@ -90,7 +90,7 @@ the
 [UICC EID Specification](https://www.gsma.com/newsroom/wp-content/uploads/SGP.02-v4.0.pdf)
 as an example.
 
-## Creator Root Key (`CreatorRootKey`)
+## CreatorRootKey
 
 The following sequence describes the creation of the `CreatorRootKey`. All
 inputs into the key manager can be locked down during ROM execution.
@@ -99,10 +99,13 @@ The size of the inputs is dependent on the security strength and masking
 configuration of the implementation. The input concatenation function must be
 injective. This can be achieved by fixing the width of all the operands.
 
+Note that `CreatorRootKey` refers to a pair of keys, one used for sealing and
+the other for attestation purposes. The chain of attestation and sealing keys
+deviate from each other with the use of SW binding values.
 ```
 CreatorRootKey = KM_DERIVE(RootKey,
     HardwareRevisionSecret | RomHash | HealthStateMeasurement |
-    DeviceIdentifier | ROMExtSecurityDescriptor)
+    DeviceIdentifier | SoftwareBindingValue)
 ```
 
 <table>
@@ -156,36 +159,36 @@ Provisioned at manufacturing time. Readable from software and JTAG interface.
     </td>
   </tr>
   <tr>
-    <td>ROMExtSecurityDescriptor</td>
+    <td>SoftwareBindingValue</td>
     <td>SW register</td>
     <td>
-The implementation may choose one of the following options:
+For the attestation chain, this register is populated with the hash of the OTP
+image. Therefore, changes in the OTP configuration will trigger an update of
+the CreatorIdentity for attestation.
 
-1. Hash of the ROM extension. Changes in the ROM extension code will trigger an
-   update of the Creator Identity.
-2. Use a software binding tag stored in the ROM_EXT manifest. This is to
-   retain the Creator Identity across validated updates of the ROM_EXT.
-   The implementation may opt to use the software binding interface
-   described in later sections to fulfill this property.
+For the sealing chain, this register uses a binding tag stored in the ROM_EXT
+manifest. This is to retain the same CreatorIdentity across validated updates of
+the ROM_EXT. This allows sealing keys to be persistent across ROM_EXT updates.
     </td>
   </tr>
 </table>
 
-The CreatorRootKey can be used to generate the Creator Identity key and the
+The CreatorRootKey can be used to generate the CreatorIdentity and the
 OwnerIntermediateKey described in the following sections.
 
-## Creator Identity
+## CreatorIdentity
 
-The Creator Identity is an asymmetric key derived from the `CreatorRootKey`. It
+The CreatorIdentity is an asymmetric key derived from the `CreatorRootKey`. It
 is used as a cryptographic identifier bound to the device and the Silicon
 Creator. It is used to attest to the authenticity of the physical device and the
-ROM and ROM\_EXT configuration.
+ROM and OTP configuration.
 
-The Creator Identity is generated as follows:
+CreatorIdentity becomes part of the UDS certificate and it is
+generated as follows:
 
 ```
 CreatorIdentitySeed =
-  KM_DERIVE(CreatorRootKey, IdentityDiversificationConstant)
+  KM_DERIVE(CreatorRootKey, OTBNDiversificationConstant | IdentityDiversificationConstant)
 
 // ASYM_KDF is a KDF function compliant to the Asymmetric Key
 // requirements defined in the Attestation specification document.
@@ -201,13 +204,19 @@ CLEAR_BEFORE_NEXT_BOOT_STAGE(CreatorIdentitySeed, CreatorIdentity_Private)
     </td>
   </tr>
   <tr>
-    <td>IdentityDiversificationConstant</td>
+    <td>OTBNDiversificationConstant</td>
     <td>Gates</td>
     <td>
-A constant defined in gates. Used to derive the CreatorIdentitySeed from the
-CreatorRootKey.
+A constant defined in gates. Used to diversify sideloaded values to OTBN.
 
 Hidden from software.
+    </td>
+  </tr>
+<tr>
+    <td>IdentityDiversificationConstant</td>
+    <td>SW Register</td>
+    <td>
+A constant public diversification value fixed during provisioning.
     </td>
   </tr>
   <tr>
@@ -223,20 +232,15 @@ first boot stage.
 
 ## OwnerIntermediateKey
 
-The `OwnerIntermediateKey` is used as a root component of the Silicon Owner key
-hierarchy. It is used to establish a cryptographic link to the root secrets
-provisioned at manufacturing time.
-
-**Visibility**
-
-The `OwnerIntermediateKey` shall be kept hidden from software to mitigate owner
-impersonation attacks.
+The `OwnerIntermediateKey` is used as an intermediate virtual entity between the
+SiliconCreator and SiliconOwner. It is used to establish a cryptographic link
+to CreatorSeed as well as the integrity of ROM_EXT image.
 
 The `OwnerIntermediateKey` is generated as follows:
 
 ```
 OwnerIntermediateKey =
-   KM_DERIVE(CreatorRootKey, CreatorSecret | SoftwareBindingValue)
+   KM_DERIVE(CreatorRootKey, CreatorSeed | SoftwareBindingValue)
 ```
 
 <table>
@@ -246,7 +250,7 @@ OwnerIntermediateKey =
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td> id="creator-secret"CreatorSecret</td>
+    <td> id="creator-secret"CreatorSeed</td>
     <td>Flash</td>
     <td>
 Additional diversification key stored in flash. Provisioned at
@@ -259,21 +263,104 @@ Hidden from software once provisioned.
     <td>SoftwareBindingValue</td>
     <td>SW Register<br>Lockable Input</td>
     <td>
-Software binding value configured during secure boot. See
-<a href="#software-binding">Software Binding</a> for more details.
+For the attestation chain, this register is populated with ROM_EXT measurement.
+
+For the sealing chain, this register uses a diversification value determined by
+ROM_EXT.
     </td>
   </tr>
 </table>
 
-## Owner Identity
+## OwnerIntermediateIdentity
 
-The Owner Identity is used as a cryptographic identifier bound to the device and
-the Silicon Owner. It is used in Attestation flows. The Owner Identity is not
-expected to change during the lifetime of the device ownership assignment.
+The OwnerIntermediateIdentity is associated with CDI_0 in the DICE attestation
+chain.
+
+```
+OwnerIntermediateIdentitySeed =
+  KM_DERIVE(OwnerIntermediateKey, OTBNDiversificationConstant)
+
+// ASYM_KDF is a KDF function compliant to the Asymmetric Key
+// requirements defined in the Attestation specification document.
+OwnerIntermediateIdentity_Private = ASYM_KDF(OwnerIntermediateIdentitySeed)
+CLEAR_BEFORE_NEXT_BOOT_STAGE(OwnerIntermediateIdentitySeed, OwnerIntermediateIdentity_Private)
+```
+
+<table>
+  <tr>
+    <td><strong>Name</strong></td>
+    <td><strong>Encoding</strong></td>
+    <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td>OwnerIntermediateIdentitySeed</td>
+    <td>SW Register Output</td>
+    <td>Seed used to generate the OwnerIntermediateIdentity asymmetric key.</td>
+  </tr>
+  <tr>
+    <td>OTBNDiversificationConstant</td>
+    <td>Gates</td>
+    <td>
+A constant defined in gates. Used to diversify sideloaded values to OTBN.
+
+Hidden from software.
+    </td>
+  </tr>
+</table>
+
+The `OwnerIntermediateIdentitySeed` and the private portion of the
+OwnerIntermediateIdentity shall be cleared before the bootloader (BL0) hands
+over execution to the kernel.
+
+## OwnerKey
+
+The `OwnerKey` is the key diversified with `OwnerSeed` and it is associated
+with the CDI_1 certificate. It also provides a cryptographic link to the Owner FW image and Owner Configuration Block.
+
+The `OwnerKey` is generated as follows:
+
+```
+OwnerKey =
+   KM_DERIVE(OwnerIntermediateKey, OwnerSeed | SoftwareBindingValue)
+```
+
+<table>
+  <tr>
+    <td><strong>Name</strong></td>
+    <td><strong>Encoding</strong></td>
+    <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td> id="creator-secret"OwnerSeed</td>
+    <td>Flash</td>
+    <td>
+Additional diversification key stored in flash. Provisioned during ownership
+transfer.
+
+Hidden from software once provisioned.
+    </td>
+  </tr>
+  <tr>
+    <td>SoftwareBindingValue</td>
+    <td>SW Register<br>Lockable Input</td>
+    <td>
+For the attestation chain, this register is populated with owner-specific
+measurements. This measurement is the combination of the Owner Configuration Block and Owner FW.
+
+For the sealing chain, this register uses a diversification value determined by
+owner. This diversification value is the combination of the application key domain (i.e., which key, from {prod,dev,test}, is used to verify the ROM_EXT to Owner firmware jump), and a diversifier specified by the owner configuration.
+    </td>
+  </tr>
+</table>
+
+## OwnerIdentity
+
+The OwnerIdentity is used as a cryptographic identifier bound to the device and
+the SiliconOwner. It is used in Attestation flows.
 
 ```
 OwnerIdentitySeed =
-  KM_DERIVE(OwnerIntermediateKey, OwnerRootIdentityKey)
+  KM_DERIVE(OwnerKey, OTBNDiversificationConstant)
 
 // ASYM_KDF is a KDF function compliant to the Asymmetric Key
 // requirements defined in the Attestation specification document.
@@ -288,24 +375,23 @@ CLEAR_BEFORE_NEXT_BOOT_STAGE(OwnerIdentitySeed, OwnerIdentity_Private)
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td>Owner Root Identity Key</td>
+    <td>OTBNDiversificationConstant</td>
     <td>Gates</td>
     <td>
-The OwnerRootIdentityKey is a diversification constant with acceptable entropy
-provisioned in gates.
+A constant defined in gates. Used to diversify sideloaded values to OTBN.
 
-Visibility: Hidden from software.
+Hidden from software.
     </td>
   </tr>
   <tr>
-    <td>Owner Identity Seed</td>
+    <td>OwnerIdentitySeed</td>
     <td>SW Register Output</td>
     <td>Seed used to generate the OwnerIdentity asymmetric key.</td>
   </tr>
 </table>
 
-The `OwnerIdentitySeed` and the private portion of the Owner Identity shall be
-cleared before the bootloader (BL0) hands over execution to the kernel.
+The `OwnerIdentitySeed` and the private portion of the OwnerIdentity shall be
+cleared after use by the Owner firmware.
 
 ## Owner Root Key and Versioned Keys
 
@@ -314,7 +400,7 @@ The key manager supports the generation of versioned keys with lineage to the
 
 ```
 OwnerRootKey =
-   KM_DERIVE(OwnerIntermediateKey, OwnerRootSecret | SoftwareBindingValue)
+   KM_DERIVE(OwnerIntermediateKey, OwnerSeed | SoftwareBindingValue)
 
 VersionedKey = KM_DERIVE(OwnerRootKey,
     KeyVersion | KeyID | Salt | SoftwareExportConstant)
@@ -330,13 +416,13 @@ width of all the operands.
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td id="owner-root-secret">OwnerRootSecret</td>
+    <td id="owner-root-secret">OwnerSeed</td>
     <td>Flash</td>
     <td>
 Used as a diversification constant with acceptable entropy. Provisioned at
 Ownership Transfer time by the Silicon Creator.
 
-The OwnerRootSecret has different visibility options depending on the level of
+The OwnerSeed has different visibility options depending on the level of
 isolation provided in hardware:
 
 *   The value should be hidden from software after provisioning.
