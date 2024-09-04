@@ -59,3 +59,17 @@ rust_binary(
         "@crate_index//:regex",
     ],
 )
+
+rust_binary(
+    name = "flash_permission_test",
+    srcs = ["flash_permission_test.rs"],
+    deps = [
+        ":transfer_lib",
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:regex",
+    ],
+)
