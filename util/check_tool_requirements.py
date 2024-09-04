@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-from distutils.version import StrictVersion
 import logging as log
 import os
+from packaging.version import Version
 import re
 import shlex
 import subprocess
@@ -14,6 +14,14 @@ import sys
 
 # Display INFO log messages and up.
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
+
+try:
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    log.error("importlib cannot be found. "
+              "This likely means that you're using a very old version of Python. "
+              "Please update Python to the version defined in tool_requirements.py and retry.")
+    sys.exit(1)
 
 
 def get_tool_requirements_path():
@@ -156,7 +164,7 @@ class ToolReq:
                     'Failed to convert requirement to semantic version: {}'
                     .format(err))
         try:
-            min_sv = StrictVersion(min_semver)
+            min_sv = Version(min_semver)
         except ValueError as err:
             return (False,
                     'Bad semver inferred from required version ({}): {}'
@@ -174,7 +182,7 @@ class ToolReq:
                     'Failed to convert installed to semantic version: {}'
                     .format(err))
         try:
-            actual_sv = StrictVersion(actual_semver)
+            actual_sv = Version(actual_semver)
         except ValueError as err:
             return (False,
                     'Bad semver inferred from installed version ({}): {}'
@@ -212,7 +220,7 @@ class VeribleToolReq(ToolReq):
 
     def to_semver(self, version, from_req):
         # Drop the hash suffix and convert into version string that
-        # is compatible with StrictVersion in check_version below.
+        # is compatible with Version in check_version below.
         # Example: v0.0-808-g1e17daa -> 0.0.808
         m = re.fullmatch(r'v([0-9]+)\.([0-9]+)-([0-9]+)-g[0-9a-f]+$', version)
         if m is None:
@@ -252,7 +260,7 @@ class VcsToolReq(ToolReq):
         # already. A version always has the "2020.03" (year and month) part,
         # and may also have an -SP<n> and/or -<patch> suffix.
         #
-        # Since StrictVersion expects a 3 digit versioning scheme, we multiply
+        # Since Version expects a 3 digit versioning scheme, we multiply
         # any SP number by 100, which should work as long as the patch version
         # isn't greater than 99.
         #
@@ -292,11 +300,12 @@ class NinjaToolReq(ToolReq):
 
 
 class PyModuleToolReq(ToolReq):
-    '''A tool in a Python module (its version can be found by running pip)'''
-    version_regex = re.compile(r'Version: (.*)')
+    '''A tool in a Python module (its version can be found by reading its metadata)'''
 
-    def _get_tool_cmd(self):
-        return ['pip3', 'show', self.tool]
+    # For Python modules, use metadata directly instead of call into pip3, which
+    # may not always be available for some systems.
+    def get_version(self):
+        return version(self.tool)
 
 
 def dict_to_tool_req(path, tool, raw):
