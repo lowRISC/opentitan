@@ -147,11 +147,20 @@ def _otbn_binary(ctx, additional_srcs = []):
         ),
     ]
 
-def _run_sim_test(ctx, exp, additional_srcs = []):
+def _run_sim_test(ctx, exp, dexp, additional_srcs = []):
     providers = _otbn_binary(ctx, additional_srcs)
 
     # Extract the output .elf file from the output group.
     elf = providers[1].elf.to_list()[0]
+
+    exp_content = ""
+    exp_files = []
+    if exp != None:
+        exp_content += "--expected_regs {} ".format(exp.short_path)
+        exp_files.append(exp)
+    if dexp != None:
+        exp_content += "--expected_dmem {}".format(dexp.short_path)
+        exp_files.append(dexp)
 
     # Create a simple script that runs the OTBN test wrapper on the .elf file
     # using the provided simulator path.
@@ -159,12 +168,12 @@ def _run_sim_test(ctx, exp, additional_srcs = []):
     simulator = ctx.executable._simulator
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "{} {} {} {}".format(sim_test_wrapper.short_path, simulator.short_path, exp.short_path, elf.short_path),
+        content = "{} {} {} {}".format(sim_test_wrapper.short_path, exp_content, simulator.short_path, elf.short_path),
     )
 
     # Runfiles include sources, the .elf file, the simulator and test wrapper
     # themselves, and all the simulator and test wrapper runfiles.
-    runfiles = ctx.runfiles(files = (ctx.files.srcs + additional_srcs + [elf, exp, ctx.executable._simulator, ctx.executable._sim_test_wrapper]))
+    runfiles = ctx.runfiles(files = (ctx.files.srcs + additional_srcs + exp_files + [elf, ctx.executable._simulator, ctx.executable._sim_test_wrapper]))
     runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
     runfiles = runfiles.merge(ctx.attr._sim_test_wrapper[DefaultInfo].default_runfiles)
     return [
@@ -180,7 +189,7 @@ def _otbn_sim_test(ctx):
     them on the simulator. Tests are expected to count failures in the w0
     register; the test checks that w0=0 to determine if the test passed.
     """
-    return _run_sim_test(ctx, ctx.file.exp)
+    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp)
 
 def _otbn_autogen_sim_test_impl(ctx):
     """
@@ -209,7 +218,7 @@ def _otbn_autogen_sim_test_impl(ctx):
         executable = ctx.executable.testgen,
     )
 
-    return _run_sim_test(ctx, exp, additional_srcs = [data])
+    return _run_sim_test(ctx, exp, None, additional_srcs = [data])
 
 def _otbn_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.
@@ -325,6 +334,7 @@ otbn_sim_test = rv_rule(
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
         "exp": attr.label(allow_single_file = True),
+        "dexp": attr.label(allow_single_file = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(
             default = "//hw/ip/otbn/util:otbn_as",
