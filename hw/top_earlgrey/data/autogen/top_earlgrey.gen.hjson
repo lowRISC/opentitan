@@ -2366,6 +2366,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        UpdateSdEnOnSck: 1'b1
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_peri
@@ -2374,8 +2378,23 @@
       [
         "0"
       ]
-      param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: UpdateSdEnOnSck
+          desc:
+            '''
+            Whether to update `cio_sd_en_o` on `cio_sck_o`.  If this parameter is `1'b1`, the logic
+            driving `cio_sd_en_o` (in non-passthrough mode) combinationally depends on `cio_sck_o`.
+            If this parameter is `1'b0`, `cio_sd_en_o` does not combinationally depend on `cio_sck_o`.
+            '''
+          type: bit
+          default: 1'b1
+          expose: "true"
+          name_top: SpiHost0UpdateSdEnOnSck
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -2425,6 +2444,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        UpdateSdEnOnSck: 1'b0
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div2_peri
@@ -2433,8 +2456,23 @@
       [
         "0"
       ]
-      param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: UpdateSdEnOnSck
+          desc:
+            '''
+            Whether to update `cio_sd_en_o` on `cio_sck_o`.  If this parameter is `1'b1`, the logic
+            driving `cio_sd_en_o` (in non-passthrough mode) combinationally depends on `cio_sck_o`.
+            If this parameter is `1'b0`, `cio_sd_en_o` does not combinationally depend on `cio_sck_o`.
+            '''
+          type: bit
+          default: 1'b0
+          expose: "true"
+          name_top: SpiHost1UpdateSdEnOnSck
+        }
+      ]
       inter_signal_list:
       [
         {

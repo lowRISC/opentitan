@@ -11,7 +11,8 @@
 module spi_host
   import spi_host_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit UpdateSdEnOnSck = 1'b0
 ) (
   input              clk_i,
   input              rst_ni,
@@ -434,7 +435,8 @@ module spi_host
   assign en_sw  = reg2hw.control.spien.q;
 
   spi_host_core #(
-    .NumCS(NumCS)
+    .NumCS(NumCS),
+    .UpdateSdEnOnSck(UpdateSdEnOnSck)
   ) u_spi_core (
     .clk_i,
     .rst_ni,

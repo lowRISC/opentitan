@@ -73,6 +73,17 @@
       desc: "The size of the Cmd FIFO (one segment descriptor per entry)",
       type: "int",
       default: "4"
+    },
+    { name: "UpdateSdEnOnSck",
+      type: "bit",
+      desc: '''
+        Whether to update `cio_sd_en_o` on `cio_sck_o`.  If this parameter is `1'b1`, the logic
+        driving `cio_sd_en_o` (in non-passthrough mode) combinationally depends on `cio_sck_o`.
+        If this parameter is `1'b0`, `cio_sd_en_o` does not combinationally depend on `cio_sck_o`.
+      ''',
+      default: "1'b0",
+      local: "false",
+      expose: "true",
     }
   ],
   available_output_list: [

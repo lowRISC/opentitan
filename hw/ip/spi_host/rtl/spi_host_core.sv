@@ -6,7 +6,8 @@
 //
 
 module spi_host_core #(
-  parameter  int NumCS     = 1
+  parameter int NumCS = 1,
+  parameter bit UpdateSdEnOnSck = 1'b0
 ) (
   input                             clk_i,
   input                             rst_ni,
@@ -122,7 +123,8 @@ module spi_host_core #(
   );
 
   spi_host_fsm #(
-    .NumCS(NumCS)
+    .NumCS(NumCS),
+    .UpdateSdEnOnSck(UpdateSdEnOnSck)
   ) u_fsm (
     .clk_i,
     .rst_ni,

@@ -330,6 +330,9 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host0"},
       base_addr: "0x40300000",
+      param_decl: {
+        UpdateSdEnOnSck: "1'b1",
+      },
     },
     { name: "spi_host1",
       type: "spi_host",
@@ -337,6 +340,9 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host1"},
       base_addr: "0x40310000",
+      param_decl: {
+        UpdateSdEnOnSck: "1'b0",
+      },
     },
     { name: "usbdev",
       type: "usbdev",
