@@ -162,6 +162,32 @@ TEST(ComputeTimingTest, StandardSpeed) {
   };
   EXPECT_DIF_OK(dif_i2c_compute_timing(config, &params));
   EXPECT_EQ(params, expected);
+
+  // Test that the SCL high and low times are bounded at a minimum
+  // of 4 cycles. for these branches to execute we need to have
+  // scl_time_high_cycles < 4 and scl_time_low_cycles < 4
+  // and lengthened_high_cycles (calculated in the DIF) < 4.
+  // Based on our config and the DIFs calculations we choose the
+  // smallest valid multiple of 100, which is 1600.
+  static_assert(kDifI2cInputDelayCycles == 4,
+                "I2C DIF unit tests are hardcoded for 4 input delay cycles.");
+  config = kBaseConfigSlow;
+  config.lowest_target_device_speed = kDifI2cSpeedStandard;
+  config.clock_period_nanos = 1600;
+  expected = {
+      .scl_time_high_cycles = 4,
+      .scl_time_low_cycles = 4,
+      .rise_cycles = 1,
+      .fall_cycles = 1,
+      .start_signal_setup_cycles = 3,
+      .start_signal_hold_cycles = 3,
+      .data_signal_setup_cycles = 1,
+      .data_signal_hold_cycles = 1,
+      .stop_signal_setup_cycles = 3,
+      .stop_signal_hold_cycles = 3,
+  };
+  EXPECT_DIF_OK(dif_i2c_compute_timing(config, &params));
+  EXPECT_EQ(params, expected);
 }
 
 TEST(ComputeTimingTest, FastSpeed) {
@@ -219,6 +245,32 @@ TEST(ComputeTimingTest, FastSpeed) {
   };
   EXPECT_DIF_OK(dif_i2c_compute_timing(config, &params));
   EXPECT_EQ(params, expected);
+
+  // Test that the SCL high and low times are bounded at a minimum
+  // of 4 cycles. for these branches to execute we need to have
+  // scl_time_high_cycles < 4 and scl_time_low_cycles < 4
+  // and lengthened_high_cycles (calculated in the DIF) < 4.
+  // Based on our config and the DIFs calculations we choose the
+  // smallest valid multiple of 100, which is 500.
+  static_assert(kDifI2cInputDelayCycles == 4,
+                "I2C DIF unit tests are hardcoded for 4 input delay cycles.");
+  config = kBaseConfigSlow;
+  config.lowest_target_device_speed = kDifI2cSpeedFast;
+  config.clock_period_nanos = 500;
+  expected = {
+      .scl_time_high_cycles = 4,
+      .scl_time_low_cycles = 4,
+      .rise_cycles = 1,
+      .fall_cycles = 1,
+      .start_signal_setup_cycles = 2,
+      .start_signal_hold_cycles = 2,
+      .data_signal_setup_cycles = 1,
+      .data_signal_hold_cycles = 1,
+      .stop_signal_setup_cycles = 2,
+      .stop_signal_hold_cycles = 3,
+  };
+  EXPECT_DIF_OK(dif_i2c_compute_timing(config, &params));
+  EXPECT_EQ(params, expected);
 }
 
 TEST(ComputeTimingTest, FastPlusSpeed) {
@@ -256,6 +308,32 @@ TEST(ComputeTimingTest, FastPlusSpeed) {
       .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 13,
       .stop_signal_hold_cycles = 25,
+  };
+  EXPECT_DIF_OK(dif_i2c_compute_timing(config, &params));
+  EXPECT_EQ(params, expected);
+
+  // Test that the SCL high and low times are bounded at a minimum
+  // of 4 cycles. for these branches to execute we need to have
+  // scl_time_high_cycles < 4 and scl_time_low_cycles < 4
+  // and lengthened_high_cycles (calculated in the DIF) < 4.
+  // Based on our config and the DIFs calculations we choose the
+  // smallest valid multiple of 100, which is 200.
+  static_assert(kDifI2cInputDelayCycles == 4,
+                "I2C DIF unit tests are hardcoded for 4 input delay cycles.");
+  config = kBaseConfigFast;
+  config.lowest_target_device_speed = kDifI2cSpeedFastPlus;
+  config.clock_period_nanos = 200;
+  expected = {
+      .scl_time_high_cycles = 4,
+      .scl_time_low_cycles = 4,
+      .rise_cycles = 1,
+      .fall_cycles = 1,
+      .start_signal_setup_cycles = 2,
+      .start_signal_hold_cycles = 2,
+      .data_signal_setup_cycles = 1,
+      .data_signal_hold_cycles = 1,
+      .stop_signal_setup_cycles = 2,
+      .stop_signal_hold_cycles = 3,
   };
   EXPECT_DIF_OK(dif_i2c_compute_timing(config, &params));
   EXPECT_EQ(params, expected);
