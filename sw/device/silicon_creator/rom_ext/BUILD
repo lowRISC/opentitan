@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
@@ -92,59 +91,6 @@ cc_test(
         ":rom_ext_boot_policy",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "bootstrap",
-    srcs = ["bootstrap.c"],
-    hdrs = ["bootstrap.h"],
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:bootstrap",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
-)
-
-cc_test(
-    name = "bootstrap_unittest",
-    srcs = ["bootstrap_unittest.cc"],
-    deps = [
-        ":bootstrap",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:bootstrap",
-        "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
-        "//sw/device/silicon_creator/lib:error_unittest_util",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:spi_device",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@abseil-cpp//absl/types:optional",
-        "@abseil-cpp//absl/types:span",
-        "@googletest//:gtest_main",
-    ],
-)
-
-# To test this target, you must specify `--config=asan-libfuzzer`.
-cc_fuzz_test(
-    name = "bootstrap_fuzz_test",
-    srcs = ["bootstrap_fuzz_test.cc"],
-    tags = [
-        "fuzzer",
-        "manual",
-    ],
-    deps = [
-        ":bootstrap",
-        "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",
-        "@abseil-cpp//absl/types:span",
     ],
 )
 
