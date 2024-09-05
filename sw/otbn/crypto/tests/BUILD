@@ -177,7 +177,7 @@ otbn_sim_test(
     srcs = [
         "mul_test.s",
     ],
-    exp = "mul_test.exp",
+    dexp = "mul_test.dexp",
     deps = [
         "//sw/otbn/crypto:mul",
     ],
