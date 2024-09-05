@@ -64,6 +64,8 @@ py_binary(
     srcs = ["otbn_sim_test.py"],
     deps = [
         "//hw/ip/otbn/util/shared:check",
+        "//hw/ip/otbn/util/shared:mem_layout",
         "//hw/ip/otbn/util/shared:reg_dump",
+        requirement("pyelftools"),
     ],
 )
