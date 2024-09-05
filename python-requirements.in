@@ -51,8 +51,6 @@ mypy==0.971
 yapf==0.32.0
 
 # Type stubs for mypy checking.
-# types-dataclasses is only needed for Python <= 3.6.
-types-dataclasses==0.6.6
 types-pkg_resources==0.1.3
 types-pyyaml==6.0.11
 types-tabulate==0.8.11
