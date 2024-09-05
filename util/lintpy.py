@@ -10,13 +10,7 @@ import subprocess
 import sys
 
 from typing import List
-
-# TODO: Once we depend on Python 3.8, we can switch to unconditionally using
-# importlib.metadata and drop the get_version function.
-try:
-    import importlib.metadata
-except ModuleNotFoundError:
-    import pkg_resources
+import importlib.metadata
 
 # A map from tool name to the tuple (check, fix). These are two commands which
 # should be run to check for and fix errors, respectively. If the tool doesn't
@@ -26,13 +20,6 @@ _KNOWN_TOOLS = {
     'isort': (['isort', '-c', '-w79'], ['isort', '-w79']),
     'flake8': (['flake8'], None)
 }
-
-
-def get_version(pkg_name: str) -> str:
-    try:
-        return importlib.metadata.version(pkg_name)
-    except NameError:
-        return pkg_resources.require(pkg_name)[0].version
 
 
 # include here because in hook case don't want to import reggen
@@ -46,7 +33,7 @@ def show_and_exit(clitool: str, packages: List[str]) -> None:
         ver = 'not found (not in Git repository?)'
     sys.stderr.write(clitool + " Git version " + ver + '\n')
     for p in packages:
-        sys.stderr.write(p + ' ' + get_version(p) + '\n')
+        sys.stderr.write(p + ' ' + importlib.metadata.version(p) + '\n')
     sys.exit(0)
 
 
