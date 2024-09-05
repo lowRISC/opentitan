@@ -308,6 +308,21 @@ TEST_F(PrintfTest, StatusErrorWithArg) {
   EXPECT_EQ(buf_, absl::StrFormat("Hello, InvalidArgument:[\"PRI\",%d]\n", 2));
 }
 
+TEST_F(PrintfTest, FourCharacterCode) {
+  EXPECT_EQ(base_printf("Hello, %C\n", 0x5CA245D3), 18);
+  EXPECT_EQ(buf_, "Hello, \\xd3E\\xa2\\\n");
+}
+
+TEST_F(PrintfTest, FourCharacterCodePrintable) {
+  EXPECT_EQ(base_printf("Hello, %C\n", 0x65766144), 12);
+  EXPECT_EQ(buf_, "Hello, Dave\n");
+}
+
+TEST_F(PrintfTest, FourCharacterCodeNonPrintable) {
+  EXPECT_EQ(base_printf("Hello, %C\n", 0xAABBCCDD), 24);
+  EXPECT_EQ(buf_, "Hello, \\xdd\\xcc\\xbb\\xaa\n");
+}
+
 TEST_F(PrintfTest, IncompleteSpec) {
   base_printf("Hello, %");
   EXPECT_THAT(buf_, StartsWith("Hello, "));
