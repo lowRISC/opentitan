@@ -16,8 +16,9 @@ from results_server import NoGCPError, ResultsServer
 from CfgJson import set_target_attribute
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
-from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
-                   md_results_to_html, mk_path, rm_path, subst_wildcards)
+from utils import (VERBOSE, git_commit_hash, find_and_substitute_wildcards,
+                   md_results_to_html, mk_path, rm_path, subst_wildcards,
+                   gen_html_redirect_file)
 
 
 # Interface class for extensions.
@@ -142,15 +143,25 @@ class FlowCfg():
         # _expand and add the code at the start.
         self._expand()
 
-        # Construct the path variables after variable expansion.
-        self.results_dir = (Path(self.scratch_base_path) / "reports" /
-                            self.rel_path / "latest")
-        self.results_page = (self.results_dir / self.results_html_name)
+        # Use the full hash as short hash may not be strong enough in the future
+        # as the repo grows. Git increases the short hash length as needed as
+        # the repo grows.
+        commit_id = git_commit_hash()
 
-        tmp_path = (self.results_server + "/" + self.rel_path +
-                    "/latest/" + self.results_html_name)
-        self.results_server_page = self.results_server_prefix + tmp_path
-        self.results_server_url = "https://" + tmp_path
+        # Hack - override the results.html page name
+        self.results_html_name = f"{self.timestamp}.html"
+
+        # Construct the path variables after variable expansion.
+        self._results_dir_base = Path(self.scratch_base_path) / "reports"
+        self.results_dir = self._results_dir_base / commit_id / self.rel_path
+        self.results_page = self.results_dir / self.results_html_name
+
+        tmp_path = (
+            f"{self.results_server}/{commit_id}/{self.rel_path}"
+            f"/{self.results_html_name}"
+        )
+        self.results_server_page = f"{self.results_server_prefix}{tmp_path}"
+        self.results_server_url = f"https://{tmp_path}"
 
         # Run any final checks
         self._post_init()
@@ -412,6 +423,7 @@ class FlowCfg():
         results should be a dictionary mapping deployed item to result.
 
         '''
+
         for item in self.cfgs:
             json_str = (item._gen_json_results(results)
                         if hasattr(item, '_gen_json_results')
@@ -430,12 +442,25 @@ class FlowCfg():
             self.write_results(self.results_html_name,
                                self.results_summary_md)
 
+            # Generate a relative redirects to the summary page
+            # Redirect within the summary dir
+            gen_html_redirect_file(
+                file_path=self.results_page.parent / "latest.html",
+                url=self.results_html_name,
+            )
+
+            # Update the top level latest.html redirect
+            gen_html_redirect_file(
+                file_path=self._results_dir_base / "latest.html",
+                url=self.results_page.relative_to(self._results_dir_base),
+            )
+
     def gen_results_summary(self):
         '''Public facing API to generate summary results for each IP/cfg file
         '''
         return
 
-    def write_results(self, html_filename, text_md, json_str=None):
+    def write_results(self, html_filename, text_md, json_str=None) -> None:
         """Write results to files.
 
         This function converts text_md to HTML and writes the result to a file
@@ -445,20 +470,23 @@ class FlowCfg():
         as suffix.
         """
 
-        # Prepare reports directory, keeping 90 day history.
-        clean_odirs(odir=self.results_dir, max_odirs=89)
+        # Prepare reports directory
         mk_path(self.results_dir)
+
+        html_path = Path(self.results_dir) / html_filename
 
         # Write results to the report area.
         if not self._disable_html:
-            with open(self.results_dir / html_filename, "w") as f:
-                f.write(
-                    md_results_to_html(self.results_title, self.css_file, text_md))
+            html_path.write_text(
+                md_results_to_html(self.results_title, self.css_file, text_md),
+                encoding="utf-8",
+            )
 
         if json_str is not None:
-            filename = Path(html_filename).with_suffix('.json')
-            with open(self.results_dir / filename, "w") as f:
-                f.write(json_str)
+            html_path.with_suffix('.json').write_text(
+                json_str,
+                encoding="utf-8",
+            )
 
     def _get_results_page_link(self, relative_to, link_text=''):
         """Create a relative markdown link to the results page."""
