@@ -21,18 +21,6 @@ main:
   la      x12, result
   jal     x1, bignum_mul
 
-  /* Load result into w0 through w3.
-       [w0..w3] <= dmem[result] */
-  la      x2, result
-  li      x3, 0
-  bn.lid  x3, 0(x2++)
-  addi    x3, x3, 1
-  bn.lid  x3, 0(x2++)
-  addi    x3, x3, 1
-  bn.lid  x3, 0(x2++)
-  addi    x3, x3, 1
-  bn.lid  x3, 0(x2)
-
   ecall
 
 
