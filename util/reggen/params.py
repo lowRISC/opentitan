@@ -267,10 +267,9 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
 
 
 # Note: With a modern enough Python, we'd like this to derive from
-#       "MutableMapping[str, BaseParam]". Unfortunately, this doesn't work with
-#       Python 3.6 (where collections.abc.MutableMapping isn't subscriptable).
-#       So we derive from just "MutableMapping" and tell mypy not to worry
-#       about it.
+#       "MutableMapping[str, BaseParam]". Unfortunately, the MutableMapping
+#       class only become subscriptable in Python 3.9. So we derive from just
+#       "MutableMapping" and tell mypy not to worry about it.
 class Params(MutableMapping):  # type: ignore
     def __init__(self) -> None:
         self.by_name = {}  # type: Dict[str, BaseParam]
