@@ -627,9 +627,6 @@ tomli==2.0.1 \
 typer==0.6.1 \
     --hash=sha256:2d5720a5e63f73eaf31edaa15f6ab87f35f0690f8ca233017d7d23d743a91d73 \
     --hash=sha256:54b19e5df18654070a82f8c2aa1da456a4ac16a2a83e6dcd9f170e291c56338e
-types-dataclasses==0.6.6 \
-    --hash=sha256:4b5a2fcf8e568d5a1974cd69010e320e1af8251177ec968de7b9bb49aa49f7b9 \
-    --hash=sha256:a0a1ab5324ba30363a15c9daa0f053ae4fff914812a1ebd8ad84a08e5349574d
 types-pkg-resources==0.1.3 \
     --hash=sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c \
     --hash=sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae
