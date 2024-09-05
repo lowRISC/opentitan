@@ -27,6 +27,11 @@ enum {
    * The number of contiguous samples we want to capture.
    */
   kContiguousSamplesCount = 1024,
+  /**
+   * The number of contiguous samples we want to capture when running on
+   * Verilator.
+   */
+  kVerilatorContiguousSamplesCount = 8,
   /*
    * Timeout to read kContiguousSamplesCount.
    */
@@ -203,10 +208,19 @@ bool test_main(void) {
       kDifEntropySrcSingleBitMode1,        kDifEntropySrcSingleBitMode2,
       kDifEntropySrcSingleBitMode3,
   };
+  uint32_t contiguous_sample_count = kContiguousSamplesCount;
+  if (kDeviceType == kDeviceSimVerilator) {
+    // If running on Verilator, then entropy is observed much more slowly,
+    // in addition to the standard simulator overhead. Observing 1024 words
+    // would take around 30+ seconds each, which would take dozens of hours
+    // to simulate. We only care that entropy observation works on Verilator
+    // and not that it works at a given rate, so we just observe 8 samples.
+    contiguous_sample_count = kVerilatorContiguousSamplesCount;
+  }
   status_t test_result = OK_STATUS();
   for (size_t i = 0; i < ARRAYSIZE(kModes); i++) {
     EXECUTE_TEST(test_result, firmware_override_observe,
-                 kContiguousSamplesCount, kModes[i], kTimeoutUsec,
+                 contiguous_sample_count, kModes[i], kTimeoutUsec,
                  kRepeatCount);
   }
 
