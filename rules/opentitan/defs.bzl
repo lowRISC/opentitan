@@ -108,6 +108,16 @@ EARLGREY_CW340_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
 }
 
+################################varunkumart@###################################
+EARLGREY_SIM_VERILATOR_ENVS = {
+    "//hw/top_earlgrey:sim_verilator": None,
+}
+################################varunkumart@###################################
+EARLGREY_CW340_CUSTOM_TEST_ENVS = {
+    "//hw/top_earlgrey:fpga_cw340_sival": None,  # Updated for CW340
+    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,  # Updated for CW340
+}
+################################varunkumart@###################################
 # Messages we expect for possible test outcomes.
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"

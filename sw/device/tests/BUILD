@@ -37,6 +37,27 @@ load(
     "verilator_params",
 )
 
+################################varunkumart@###################################
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_TEST_ENVS",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
+    "opentitan_test",
+)
+################################varunkumart@###################################
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_SIM_VERILATOR_ENVS",
+)
+################################varunkumart@###################################
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_CUSTOM_TEST_ENVS",
+)
+################################varunkumart@###################################
+
+
 package(default_visibility = ["//visibility:public"])
 
 # TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
@@ -150,6 +171,91 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+
+################################varunkumart@###################################
+## cc_library(
+##     name = "aes_example_lib",
+##     srcs = ["hw/ip/aes/model/aes_example.c"],
+##     hdrs = ["hw/ip/aes/model/aes_example.h"],
+##     deps = [
+##         "//sw/device/lib/base:base",
+##         "//sw/device/lib/dif:dif_aes",
+##         "//sw/device/lib/runtime:log",
+##     ],
+## )
+
+opentitan_test(
+    name = "aes_smoketest_custom_hw",
+    srcs = ["aes_basic_enc_dec.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    exec_env = dicts.add(
+        {
+            "//hw/top_earlgrey:sim_verilator": None,
+            ##"//hw/top_earlgrey:fpga_cw340_sival": None,
+            ##"//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            ## "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/testing:entropy_testutils",
+        ##"//hw/ip/aes/rtl/autogen:aes_regs.h",
+        ##"//hw/ip/aes/rtl/autogen:aes_autogen_headers",
+        ##"//sw/device/tests/aes_regs.h",
+    ],
+)
+################################varunkumart@###################################
+
+opentitan_test(
+    name = "aes_example",
+    srcs = ["aes_example.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    exec_env = dicts.add(
+        {
+            "//hw/top_earlgrey:sim_verilator": None,
+            ##"//hw/top_earlgrey:fpga_cw340_sival": None,
+            ##"//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            ## "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing",
+        ##"//sw/device/lib/testing:aes_example.h",
+        ##"//hw/ip/aes/rtl/autogen:aes_regs.h",
+        ##"//hw/ip/aes/rtl/autogen:aes_autogen_headers",
+        ##"//sw/device/tests/aes_regs.h",
+        ##"//sw/device/lib/dif:dif_entropy_src.h",
+    ],
+)
+################################varunkumart@###################################
+
+
+
+
+
 
 opentitan_test(
     name = "alert_handler_ping_timeout_test",
@@ -2475,6 +2581,152 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+################################varunkumart@###################################
+opentitan_test(
+    name = "otp_ctrl_smoketest_custom_sim",
+    srcs = ["otp_ctrl_smoketest.c"],
+    exec_env = dicts.add(
+        EARLGREY_SIM_VERILATOR_ENVS,
+        ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+################################varunkumart@###################################
+opentitan_test(
+    name = "otp_ctrl_smoketest_custom_hw",
+    srcs = ["otp_ctrl_smoketest.c"],
+    exec_env = dicts.add(
+        EARLGREY_CW340_CUSTOM_TEST_ENVS,
+        ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+################################varunkumart@###################################
+
+
+## nw ## opentitan_test(
+## nw ##     name = "otp_ctrl_smoketest_custom_hw",
+## nw ##     srcs = ["otp_ctrl_smoketest.c"],
+## nw ##     fpga = fpga_params(
+## nw ##         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
+## nw ##     ),
+## nw ##     exec_env = dicts.add(
+## nw ##         EARLGREY_CW340_CUSTOM_TEST_ENVS,
+## nw ##     ),
+## nw ##     deps = [
+## nw ##         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+## nw ##         "//sw/device/lib/base:bitfield",
+## nw ##         "//sw/device/lib/base:macros",
+## nw ##         "//sw/device/lib/base:memory",
+## nw ##         "//sw/device/lib/dif:otp_ctrl",
+## nw ##         "//sw/device/lib/runtime:log",
+## nw ##         "//sw/device/lib/testing:otp_ctrl_testutils",
+## nw ##         "//sw/device/lib/testing/test_framework:ottf_main",
+## nw ##     ],
+## nw ## )
+
+################################varunkumart@###################################
+## w ##opentitan_test(
+## w ##    name = "otp_ctrl_smoketest_custom_sim",
+## w ##    srcs = ["otp_ctrl_smoketest.c"],
+## w ##    exec_env = {
+## w ##        "//hw/top_earlgrey:sim_verilator": None,
+## w ##    },
+## w ##    deps = [
+## w ##        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+## w ##        "//sw/device/lib/base:bitfield",
+## w ##        "//sw/device/lib/base:macros",
+## w ##        "//sw/device/lib/base:memory",
+## w ##        "//sw/device/lib/dif:otp_ctrl",
+## w ##        "//sw/device/lib/runtime:log",
+## w ##        "//sw/device/lib/testing:otp_ctrl_testutils",
+## w ##        "//sw/device/lib/testing/test_framework:ottf_main",
+## w ##    ],
+## w ##)
+################################varunkumart@###################################
+## w ##opentitan_test(
+## w ##    name = "otp_ctrl_smoketest_custom_hw",
+## w ##    srcs = ["otp_ctrl_smoketest.c"],
+## w ##    exec_env = {
+## w ##        "//hw/top_earlgrey:fpga_cw340_sival": None,  # Updated for CW340
+## w ##        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,  # Updated for CW340
+## w ##    },
+## w ##    deps = [
+## w ##        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+## w ##        "//sw/device/lib/base:bitfield",
+## w ##        "//sw/device/lib/base:macros",
+## w ##        "//sw/device/lib/base:memory",
+## w ##        "//sw/device/lib/dif:otp_ctrl",
+## w ##        "//sw/device/lib/runtime:log",
+## w ##        "//sw/device/lib/testing:otp_ctrl_testutils",
+## w ##        "//sw/device/lib/testing/test_framework:ottf_main",
+## w ##    ],
+## w ##)
+################################varunkumart@###################################
+
+## w ## opentitan_test(
+## w ##     name = "otp_ctrl_smoketest_fpga_cw340",
+## w ##     srcs = ["otp_ctrl_smoketest.c"],
+## w ##     exec_env = {
+## w ##         # This test needs to program OTP which is blocked by rom_ext.
+## w ##         "//hw/top_earlgrey:fpga_cw340_sival": None,  # Updated for CW340
+## w ##         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,  # Updated for CW340
+## w ##         "//hw/top_earlgrey:sim_dv": None,
+## w ##         "//hw/top_earlgrey:sim_verilator": None,
+## w ##     },
+## w ##     deps = [
+## w ##         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+## w ##         "//sw/device/lib/base:bitfield",
+## w ##         "//sw/device/lib/base:macros",
+## w ##         "//sw/device/lib/base:memory",
+## w ##         "//sw/device/lib/dif:otp_ctrl",
+## w ##         "//sw/device/lib/runtime:log",
+## w ##         "//sw/device/lib/testing:otp_ctrl_testutils",
+## w ##         "//sw/device/lib/testing/test_framework:ottf_main",
+## w ##     ],
+## w ## )
+## w ## 
+################################varunkumart@###################################
+## w ## opentitan_test(
+## w ##     name = "otp_ctrl_smoketest_fpga_cw340",
+## w ##     srcs = ["otp_ctrl_smoketest.c"],
+## w ##     exec_env = dicts.add(
+## w ##         EARLGREY_TEST_ENVS,
+## w ##         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+## w ##         EARLGREY_CW340_TEST_ENVS,
+## w ##         {
+## w ##             "//hw/top_earlgrey:silicon_creator": None,
+## w ##         },
+## w ##     ),
+## w ##     deps = [
+## w ##         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+## w ##         "//sw/device/lib/base:bitfield",
+## w ##         "//sw/device/lib/base:macros",
+## w ##         "//sw/device/lib/base:memory",
+## w ##         "//sw/device/lib/dif:otp_ctrl",
+## w ##         "//sw/device/lib/runtime:log",
+## w ##         "//sw/device/lib/testing:otp_ctrl_testutils",
+## w ##         "//sw/device/lib/testing/test_framework:ottf_main",
+## w ##     ],
+## w ## )
+################################varunkumart@###################################
+
 
 opentitan_test(
     name = "plic_sw_irq_test",
@@ -2515,6 +2767,24 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+################################varunkumart@###################################
+opentitan_test(
+    name = "pmp_smoketest_napot_custom_hw",
+    srcs = ["pmp_smoketest_napot.c"],
+    exec_env = dicts.add(
+        EARLGREY_CW340_CUSTOM_TEST_ENVS,
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+################################varunkumart@###################################
 
 opentitan_test(
     name = "pmp_smoketest_tor",
@@ -3751,6 +4021,29 @@ opentitan_test(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "gpio_smoketest_fpga_cw340_test_rom",
+    srcs = ["gpio_smoketest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing:pinmux_testutils",
     ],
 )
 
