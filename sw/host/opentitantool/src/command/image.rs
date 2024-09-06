@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -26,7 +26,7 @@ use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId, ManifestExtSpec};
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
-use sphincsplus::{DecodeKey, SpxDomain, SpxPublicKey, SpxSecretKey};
+use sphincsplus::{DecodeKey, SpxDomain, SpxError, SpxPublicKey, SpxSecretKey};
 
 /// Bootstrap the target device.
 #[derive(Debug, Args)]
@@ -232,11 +232,19 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Load / write SPX+ public key.
         let mut spx_private_key: Option<SpxSecretKey> = None;
         if let Some(key) = &self.spx_key {
-            let (pk, sk) = if let Ok(sk) = SpxSecretKey::read_pem_file(key) {
-                (SpxPublicKey::from(&sk), Some(sk))
-            } else {
-                (SpxPublicKey::read_pem_file(key)?, None)
+            let (pk, sk) = match SpxSecretKey::read_pem_file(key.clone()) {
+                Ok(sk) => (SpxPublicKey::from(&sk), Some(sk)),
+                Err(SpxError::Io(_)) => {
+                    // Return error if file could not be read.
+                    bail!(std::io::Error::new(
+                        std::io::ErrorKind::NotFound,
+                        format!("{} not found", key.display())
+                    ));
+                }
+                // Maybe it is a public key, try reading it as such.
+                _ => (SpxPublicKey::read_pem_file(key)?, None),
             };
+
             let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;
             spx_private_key = sk;

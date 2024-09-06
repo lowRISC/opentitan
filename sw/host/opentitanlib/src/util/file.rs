@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{ensure, Context, Result};
 use pem_rfc7468::{Decoder, Encoder, LineEnding};
 use thiserror::Error;
 
@@ -72,7 +72,7 @@ pub trait FromReader: Sized {
 
     /// Reads an instance of `Self` from a binary file at `path`.
     fn read_from_file(path: &Path) -> Result<Self> {
-        let file = File::open(path)?;
+        let file = File::open(path).with_context(|| format!("Failed to open {path:?}"))?;
         Self::from_reader(file)
     }
 }
@@ -84,7 +84,7 @@ pub trait ToWriter: Sized {
 
     /// Writes `self` to a file at `path` in binary format.
     fn write_to_file(self, path: &Path) -> Result<()> {
-        let mut file = File::create(path)?;
+        let mut file = File::create(path).with_context(|| format!("Failed to create {path:?}"))?;
         self.to_writer(&mut file)
     }
 }
