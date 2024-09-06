@@ -24,7 +24,7 @@ struct Opts {
     init: InitializeTest,
 
     /// Console receive timeout.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "30s")]
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "60s")]
     timeout: Duration,
 
     /// Name of the SPI interface to connect to the OTTF console.
