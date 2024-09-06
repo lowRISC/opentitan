@@ -58,6 +58,19 @@
             "type": "array"
           }
         },
+        // If the si_stage is not tagged NA, then require the bazel property be present.
+        "if": {
+          "properties": {
+            "si_stage": {
+              "not": {
+                "const": "NA"
+              }
+            }
+          }
+        },
+        "then": {
+          "required": ["bazel"]
+        },
         "required": ["name", "desc", "stage", "si_stage", "tests"]
       }
     }
