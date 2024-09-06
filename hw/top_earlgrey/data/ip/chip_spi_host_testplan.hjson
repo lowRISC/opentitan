@@ -54,6 +54,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["//sw/device/tests:spi_passthru_test"]
+      bazel: []
     }
     {
       name: chip_sw_spi_host_configuration
@@ -70,6 +71,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["//sw/device/tests:spi_host_config_test"]
+      bazel: []
     }
     {
       name: chip_sw_spi_host_events
