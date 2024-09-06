@@ -59,6 +59,7 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
     // Clear the halt request
     jtag_dmi_ral.dmcontrol.haltreq.set(1'b0);
     jtag_dmi_ral.dmcontrol.update(.status(dmi_status));
+    if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(dmi_status, UVM_IS_OK)
 
     // Now tell the hart to resume, and acknowledge the request as the hart.
