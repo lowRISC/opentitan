@@ -155,6 +155,14 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
     // and then drop the unavailable_i signal to show that the CPU is back. Also behave as lc_ctrl
     // and re-enable debug.
     cfg.clk_lc_rst_vif.drive_rst_pin(1'b1);
+
+    // Debugging should be enabled again (through lc_hw_debug_en), but that will take a short while
+    // (as the rest of the system comes up). Wait 16 cycles to represent this, which allows rv_dm to
+    // see the state where the de-asserted LC reset signal has been synchronised (4 cycles) but we
+    // haven't yet got far enough to allow debug to work again.
+    //
+    // Also drop the unavailable_i signal to represent the hart coming back.
+    cfg.clk_rst_vif.wait_clks(16);
     cfg.rv_dm_vif.cb.unavailable <= 0;
     lc_hw_debug_en = 1'b1;
     upd_lc_hw_debug_en();
