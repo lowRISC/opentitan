@@ -43,6 +43,7 @@
         "chip_sw_keymgr_key_derivation",
         "chip_sw_keymgr_key_derivation_jitter_en",
       ]
+      bazel: []
     }
     {
       name: chip_sw_keymgr_sideload_kmac_error
