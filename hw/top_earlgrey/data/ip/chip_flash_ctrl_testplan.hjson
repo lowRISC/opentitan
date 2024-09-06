@@ -94,6 +94,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_rma_unlocked"]
+      bazel: []
     }
     {
       name: chip_sw_flash_scramble
@@ -251,6 +252,7 @@
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       boot_stages: ["rom_ext"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      bazel: []
     }
     {
       name: chip_sw_flash_lc_escalate_en
