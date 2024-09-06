@@ -12,7 +12,9 @@
             It also performs a sanity region protection check to make sure a protected page cannot be modified.
             When the test passes, it will output "PASS!".'''
       stage: V1
+      si_stage: SV4
       tests: ["flash_test"]
+      bazel: []
     }
     {
       name: hmac
@@ -20,7 +22,9 @@
             It computes the hash of a known input and compares it against the known digest.
             When the test passes, it will output "PASS!".'''
       stage: V1
+      si_stage: SV4
       tests: ["sha256_test"]
+      bazel: []
     }
     {
       name: rv_timer
@@ -29,7 +33,9 @@
             If the interrupt handling is incorrect, the test will never complete.
             When the test passes, it will output "PASS!".'''
       stage: V1
+      si_stage: SV4
       tests: ["rv_timer_test"]
+      bazel: []
     }
   ]
 }

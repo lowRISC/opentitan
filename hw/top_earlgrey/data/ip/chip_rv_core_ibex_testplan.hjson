@@ -222,6 +222,7 @@
      stage: V2S
      si_stage: None
      tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
+     bazel: []
     }
     {
       name: chip_sw_rv_core_ibex_alerts
