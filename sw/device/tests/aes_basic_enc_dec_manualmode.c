@@ -186,8 +186,6 @@ dif_aes_transaction_t transaction = {
   LOG_INFO("AES registers after AES decryption configured");
   monitor_aes_registers(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR));
 
-  ////CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
-
   // Load the previously produced cipher text to start the decryption operation.
   LOG_INFO("AES decryption waiting for Status Input Ready");
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
