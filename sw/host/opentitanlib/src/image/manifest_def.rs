@@ -177,8 +177,23 @@ impl ManifestPacked<[ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT]>
 
     fn overwrite(&mut self, o: Self) {
         for i in 0..self.len() {
-            if !matches!(o[i].0, ManifestExtEntryVar::None) {
-                self[i].0 = o[i].0.clone();
+            match o[i].0 {
+                ManifestExtEntryVar::Name(other_id) => match self[i].0 {
+                    ManifestExtEntryVar::IdOffset {
+                        identifier: self_id,
+                        offset: _,
+                    } => {
+                        if self_id == other_id {
+                            // Do not overwrite existing entries with matching IDs.
+                            continue;
+                        } else {
+                            self[i].0 = o[i].0.clone()
+                        }
+                    }
+                    _ => self[i].0 = o[i].0.clone(),
+                },
+                ManifestExtEntryVar::None => (),
+                _ => self[i].0 = o[i].0.clone(),
             }
         }
     }
