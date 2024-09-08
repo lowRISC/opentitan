@@ -185,7 +185,6 @@ impl CommandDispatch for ManifestUpdateCommand {
         image
             .manifest_sanity_check()
             .context("Image doesn't appear to contain a manifest, or the manifest is corrupted")?;
-
         // Load the manifest HJSON definition and update the image.
         if let Some(manifest) = &self.manifest {
             let def = ManifestSpec::read_from_file(manifest)?;
@@ -242,13 +241,21 @@ impl CommandDispatch for ManifestUpdateCommand {
             image.add_manifest_extension(key_ext)?;
             spx_private_key = sk;
 
-            // Allocate space for `spx_signature` (this impacts the manifest
-            // `length` field which is in the signed region of the image).
-            // Adding this facilitates offline signing.
-            image.allocate_manifest_extension(
-                ManifestExtId::spx_signature.into(),
-                std::mem::size_of::<ManifestExtSpxSignature>(),
-            )?;
+            if !image
+                .borrow_manifest()?
+                .extensions
+                .entries
+                .iter()
+                .any(|e| e.identifier == u32::from(ManifestExtId::spx_signature) && e.offset != 0)
+            {
+                // Allocate space for `spx_signature` (this impacts the manifest
+                // `length` field which is in the signed region of the image).
+                // Adding this facilitates offline signing.
+                image.allocate_manifest_extension(
+                    ManifestExtId::spx_signature.into(),
+                    std::mem::size_of::<ManifestExtSpxSignature>(),
+                )?;
+            }
         }
 
         // Update the manifest fields that are in the unsigned region.
