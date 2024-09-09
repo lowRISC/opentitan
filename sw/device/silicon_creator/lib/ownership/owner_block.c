@@ -4,20 +4,68 @@
 
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 
-#include <stdio.h>
-
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
 
+// RAM copy of the owner INFO pages from flash.
+owner_block_t owner_page[2];
+owner_page_status_t owner_page_valid[2];
+
 enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
 };
+
+hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
+  if (bootdata->ownership_state == kOwnershipStateLockedOwner &&
+      owner_page_valid[1] == kOwnerPageStatusSealed) {
+    return kHardenedBoolTrue;
+  }
+  if (owner_page_valid[1] == kOwnerPageStatusSigned) {
+    hmac_digest_t digest;
+    switch (bootdata->ownership_state) {
+      case kOwnershipStateUnlockedAny:
+        // In UnlockedAny, any valid (signed) Owner Page 1 is acceptable.
+        return kHardenedBoolTrue;
+      case kOwnershipStateLockedUpdate:
+        // In LockedUpdate, the owner key must be the same.  If not,
+        // skip parsing of Owner Page 1.
+        if (hardened_memeq(
+                owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
+                ARRAYSIZE(owner_page[0].owner_key.raw)) == kHardenedBoolTrue) {
+          return kHardenedBoolTrue;
+        }
+        break;
+      case kOwnershipStateUnlockedEndorsed:
+        // In UnlockedEndorsed, the owner key must match the key endorsed by the
+        // next_owner field in bootdata.  If not, skip parsing owner page 1.
+        hmac_sha256(owner_page[1].owner_key.raw,
+                    sizeof(owner_page[1].owner_key.raw), &digest);
+        if (hardened_memeq(bootdata->next_owner, digest.digest,
+                           ARRAYSIZE(digest.digest)) == kHardenedBoolTrue) {
+          return kHardenedBoolTrue;
+        }
+        break;
+      default:
+          /* nothing */;
+    }
+  }
+  return kHardenedBoolFalse;
+}
+
+void owner_block_page_seal(size_t page) {
+  size_t seal_len = (uintptr_t)&owner_page[0].seal - (uintptr_t)&owner_page[0];
+  hmac_digest_t digest;
+  hmac_sha256(&owner_page[page], seal_len, &digest);
+  memcpy(&owner_page[page].seal, digest.digest, sizeof(digest.digest));
+}
 
 void owner_config_default(owner_config_t *config) {
   // Use a bogus pointer value to avoid the all-zeros pattern of NULL.

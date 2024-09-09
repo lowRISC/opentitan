@@ -19,7 +19,7 @@
 #include "sw/device/silicon_creator/lib/nonce.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
-#include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
@@ -53,7 +53,7 @@ class OwnershipActivateTest : public rom_test::RomTest {
             }}));
       case kOwnershipStateLockedUpdate:
         owner_page[1].owner_key = owner_page[0].owner_key;
-        owner_page[1].owner_key.key[0] += modifier;
+        owner_page[1].owner_key.raw[0] += modifier;
         break;
       case kOwnershipStateUnlockedAny:
         // In UnlockedAny, there are no conditions that page1 must meet.
@@ -61,7 +61,7 @@ class OwnershipActivateTest : public rom_test::RomTest {
       case kOwnershipStateLockedOwner:
         owner_page_valid[1] = kOwnerPageStatusSealed;
         break;
-      case kOwnershipStateLockedNone:
+      case kOwnershipStateRecovery:
         owner_page_valid[1] = kOwnerPageStatusInvalid;
         break;
     }
@@ -108,7 +108,7 @@ TEST_P(OwnershipActivateInvalidStateTest, InvalidState) {
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateInvalidStateTest,
                          testing::Values(kOwnershipStateLockedOwner,
-                                         kOwnershipStateLockedNone));
+                                         kOwnershipStateRecovery));
 
 // Tests that an owner block with an invalid signature fails.
 TEST_P(OwnershipActivateValidStateTest, InvalidSignature) {

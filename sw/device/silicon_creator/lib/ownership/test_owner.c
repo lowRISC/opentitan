@@ -32,9 +32,18 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
   owner_page[0].version = 0;
   owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
   owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
-  owner_page[0].owner_key = (owner_key_t){OWNER_ECDSA_P256};
-  owner_page[0].activate_key = (owner_key_t){ACTIVATE_ECDSA_P256};
-  owner_page[0].unlock_key = (owner_key_t){UNLOCK_ECDSA_P256};
+  owner_page[0].owner_key = (owner_key_t){
+      // Although this is an ECDSA key, we initialize the `raw` member of the
+      // union to zero-initialize the unused space.
+      .raw = OWNER_ECDSA_P256};
+  owner_page[0].activate_key = (owner_key_t){
+      // Although this is an ECDSA key, we initialize the `raw` member of the
+      // union to zero-initialize the unused space.
+      .raw = ACTIVATE_ECDSA_P256};
+  owner_page[0].unlock_key = (owner_key_t){
+      // Although this is an ECDSA key, we initialize the `raw` member of the
+      // union to zero-initialize the unused space.
+      .raw = UNLOCK_ECDSA_P256};
 
   owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
   *app = (owner_application_key_t){
@@ -93,7 +102,8 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
                (uintptr_t)app;
   memset(app, 0x5a, len);
 
-  ownership_page_seal(/*page=*/0);
+  ownership_seal_page(/*page=*/0);
+  memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
 
   RETURN_IF_ERROR(owner_block_parse(&owner_page[0], config, keyring));
   RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotA,
