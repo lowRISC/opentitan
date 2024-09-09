@@ -36,14 +36,15 @@ rom_error_t ecdsa_init(void) {
 #endif
 }
 
-hardened_bool_t ecdsa_verify_digest(const owner_key_t *pubkey,
-                                    const owner_signature_t *signature,
-                                    const hmac_digest_t *digest) {
+hardened_bool_t ecdsa_verify_digest(
+    const sigverify_ecdsa_p256_buffer_t *pubkey,
+    const sigverify_ecdsa_p256_buffer_t *signature,
+    const hmac_digest_t *digest) {
 #if USE_OTBN == 1
   const attestation_public_key_t *key =
-      (const attestation_public_key_t *)pubkey;
+      (const attestation_public_key_t *)pubkey->data;
   const attestation_signature_t *sig =
-      (const attestation_signature_t *)signature;
+      (const attestation_signature_t *)signature->data;
   uint32_t rr[8];
   rom_error_t error = otbn_boot_sigverify(key, sig, digest, rr);
   if (error != kErrorOk) {
@@ -51,10 +52,10 @@ hardened_bool_t ecdsa_verify_digest(const owner_key_t *pubkey,
   }
   return hardened_memeq(sig->r, rr, ARRAYSIZE(rr));
 #elif USE_CRYPTOC == 1
-  const p256_int *x = (const p256_int *)&pubkey->key[0];
-  const p256_int *y = (const p256_int *)&pubkey->key[8];
-  const p256_int *r = (const p256_int *)&signature->signature[0];
-  const p256_int *s = (const p256_int *)&signature->signature[8];
+  const p256_int *x = (const p256_int *)&pubkey->data[0];
+  const p256_int *y = (const p256_int *)&pubkey->data[8];
+  const p256_int *r = (const p256_int *)&signature->data[0];
+  const p256_int *s = (const p256_int *)&signature->data[8];
   const p256_int *message = (const p256_int *)&digest->digest;
 
   int ok = p256_ecdsa_verify(x, y, message, r, s);
@@ -63,9 +64,10 @@ hardened_bool_t ecdsa_verify_digest(const owner_key_t *pubkey,
 #endif
 }
 
-hardened_bool_t ecdsa_verify_message(const owner_key_t *pubkey,
-                                     const owner_signature_t *signature,
-                                     const void *message, size_t message_len) {
+hardened_bool_t ecdsa_verify_message(
+    const sigverify_ecdsa_p256_buffer_t *pubkey,
+    const sigverify_ecdsa_p256_buffer_t *signature, const void *message,
+    size_t message_len) {
   hmac_digest_t digest;
   hmac_sha256(message, message_len, &digest);
   return ecdsa_verify_digest(pubkey, signature, &digest);

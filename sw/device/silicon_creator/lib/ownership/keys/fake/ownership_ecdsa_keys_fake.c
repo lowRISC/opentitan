@@ -8,5 +8,5 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 const owner_key_t *const kNoOwnerRecoveryKey = &(const owner_key_t){
-    .key = NO_OWNER_RECOVERY_ECDSA_P256,
+    .ecdsa = {NO_OWNER_RECOVERY_ECDSA_P256},
 };

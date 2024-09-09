@@ -51,7 +51,7 @@ static const char kGettysburgSignature[] =
 // clang-format on
 
 static const owner_key_t kNoOwnerRecoveryKey = {
-    .key = NO_OWNER_RECOVERY_ECDSA_P256,
+    .ecdsa = {NO_OWNER_RECOVERY_ECDSA_P256},
 };
 
 void __assert_func(const char *file, int line, const char *func,
@@ -70,9 +70,10 @@ status_t ecdsa_verify_digest_test(void) {
   hmac_digest_t digest;
   TRY(hexstr_decode(&digest, sizeof(digest), kGettysburgDigest));
   owner_signature_t signature;
-  TRY(hexstr_decode(&signature, sizeof(signature), kGettysburgSignature));
-  hardened_bool_t result =
-      ecdsa_verify_digest(&kNoOwnerRecoveryKey, &signature, &digest);
+  TRY(hexstr_decode(&signature.ecdsa, sizeof(signature.ecdsa),
+                    kGettysburgSignature));
+  hardened_bool_t result = ecdsa_verify_digest(&kNoOwnerRecoveryKey.ecdsa,
+                                               &signature.ecdsa, &digest);
   TRY_CHECK(result == kHardenedBoolTrue);
   return OK_STATUS();
 }
@@ -81,10 +82,11 @@ status_t ecdsa_verify_digest_test(void) {
 // The message is first sha256-hashed to a digest and then verified.
 status_t ecdsa_verify_message_test(void) {
   owner_signature_t signature;
-  TRY(hexstr_decode(&signature, sizeof(signature), kGettysburgSignature));
+  TRY(hexstr_decode(&signature.ecdsa, sizeof(signature.ecdsa),
+                    kGettysburgSignature));
   hardened_bool_t result =
-      ecdsa_verify_message(&kNoOwnerRecoveryKey, &signature, kGettysburgPrelude,
-                           sizeof(kGettysburgPrelude) - 1);
+      ecdsa_verify_message(&kNoOwnerRecoveryKey.ecdsa, &signature.ecdsa,
+                           kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
   TRY_CHECK(result == kHardenedBoolTrue);
   return OK_STATUS();
 }
