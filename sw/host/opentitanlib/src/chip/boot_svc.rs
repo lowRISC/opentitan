@@ -124,6 +124,10 @@ pub struct OwnershipUnlockRequest {
     pub nonce: u64,
     /// The next owner's key (for unlock Endorsed mode).
     pub next_owner_key: EcdsaRawPublicKey,
+    // TODO(cfrantz): Hybrid key material
+    #[serde(with = "serde_bytes", skip_serializing_if = "Vec::is_empty")]
+    #[annotate(format=hexstr)]
+    pub hybrid_padding: Vec<u8>,
     /// A signature over [unlock_mode..next_owner_key] with the current owner unlock key.
     pub signature: EcdsaRawSignature,
 }
@@ -438,13 +442,18 @@ impl TryFrom<&[u8]> for OwnershipUnlockRequest {
         reader.read_exact(&mut val.reserved)?;
         val.nonce = reader.read_u64::<LittleEndian>()?;
         val.next_owner_key = EcdsaRawPublicKey::read(&mut reader).map_err(ChipDataError::Anyhow)?;
+
+        // SPX+ public key size is 32 bytes.
+        val.hybrid_padding.resize(32, 0);
+        reader.read_exact(&mut val.hybrid_padding)?;
+
         val.signature = EcdsaRawSignature::read(&mut reader).map_err(ChipDataError::Anyhow)?;
         Ok(val)
     }
 }
 impl OwnershipUnlockRequest {
     pub const SIZE: usize = 212;
-    const RESERVED_SIZE: usize = 18 * std::mem::size_of::<u32>();
+    const RESERVED_SIZE: usize = 10 * std::mem::size_of::<u32>();
     const SIGNATURE_OFFSET: usize = 148;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.unlock_mode))?;
@@ -454,6 +463,13 @@ impl OwnershipUnlockRequest {
         }
         dest.write_u64::<LittleEndian>(self.nonce)?;
         self.next_owner_key.write(dest)?;
+
+        // SPX+ public key size is 32 bytes.
+        for i in 0..32 {
+            let p = self.hybrid_padding.get(i).unwrap_or(&0x00);
+            dest.write_all(std::slice::from_ref(p))?;
+        }
+
         self.signature.write(dest)?;
         Ok(())
     }

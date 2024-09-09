@@ -16,24 +16,26 @@ hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                        const owner_signature_t *signature,
                                        const void *message, size_t len) {
   if ((key & kOwnershipKeyUnlock) == kOwnershipKeyUnlock) {
-    if (ecdsa_verify_message(&owner_page[page].unlock_key, signature, message,
+    if (ecdsa_verify_message(&owner_page[page].unlock_key.ecdsa,
+                             &signature->ecdsa, message,
                              len) == kHardenedBoolTrue) {
       return kHardenedBoolTrue;
     }
   }
   if ((key & kOwnershipKeyActivate) == kOwnershipKeyActivate) {
-    if (ecdsa_verify_message(&owner_page[page].activate_key, signature, message,
+    if (ecdsa_verify_message(&owner_page[page].activate_key.ecdsa,
+                             &signature->ecdsa, message,
                              len) == kHardenedBoolTrue) {
       return kHardenedBoolTrue;
     }
   }
   if (kNoOwnerRecoveryKey &&
       (key & kOwnershipKeyRecovery) == kOwnershipKeyRecovery) {
-    if (ecdsa_verify_message(kNoOwnerRecoveryKey, signature, message, len) ==
-        kHardenedBoolTrue) {
+    if (ecdsa_verify_message(&kNoOwnerRecoveryKey->ecdsa, &signature->ecdsa,
+                             message, len) == kHardenedBoolTrue) {
       return kHardenedBoolTrue;
     }
   }
-  return ecdsa_verify_message(&owner_page[page].owner_key, signature, message,
-                              len);
+  return ecdsa_verify_message(&owner_page[page].owner_key.ecdsa,
+                              &signature->ecdsa, message, len);
 }

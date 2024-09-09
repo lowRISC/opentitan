@@ -118,6 +118,7 @@ cc_library(
         ":datatypes",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
@@ -146,7 +147,6 @@ cc_library(
     hdrs = ["ownership_unlock.h"],
     deps = [
         ":datatypes",
-        ":ownership",
         ":ownership_key",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:boot_data",
@@ -180,7 +180,7 @@ cc_library(
     hdrs = ["ownership_activate.h"],
     deps = [
         ":datatypes",
-        ":ownership",
+        ":owner_block",
         ":ownership_key",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:boot_data",

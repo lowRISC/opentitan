@@ -10,15 +10,14 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/ownership/ecdsa.h"
-#include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   size_t len = (uintptr_t)&msg->ownership_activate_req.signature -
                (uintptr_t)&msg->ownership_activate_req.primary_bl0_slot;
   // First check if page1 is even in a valid state for a transfer.
-  if (ownership_page1_valid_for_transfer(bootdata) != kHardenedBoolTrue) {
+  if (owner_block_page1_valid_for_transfer(bootdata) != kHardenedBoolTrue) {
     return kErrorOwnershipInvalidInfoPage;
   }
 
@@ -34,7 +33,7 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   }
 
   // Seal page one to this chip.
-  ownership_page_seal(/*page=*/1);
+  owner_block_page_seal(/*page=*/1);
 
   // TODO(cfrantz): Consider reading back the flash pages to check that the
   // flash writes succeeded.

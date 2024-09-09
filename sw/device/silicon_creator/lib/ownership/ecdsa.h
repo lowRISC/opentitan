@@ -32,9 +32,10 @@ rom_error_t ecdsa_init(void);
  * @return hardened_bool_t
  */
 
-hardened_bool_t ecdsa_verify_digest(const owner_key_t *pubkey,
-                                    const owner_signature_t *signature,
-                                    const hmac_digest_t *digest);
+hardened_bool_t ecdsa_verify_digest(
+    const sigverify_ecdsa_p256_buffer_t *pubkey,
+    const sigverify_ecdsa_p256_buffer_t *signature,
+    const hmac_digest_t *digest);
 
 /**
  * Verifies an ECDSA P-256 signature.
@@ -47,9 +48,10 @@ hardened_bool_t ecdsa_verify_digest(const owner_key_t *pubkey,
  * @param message_len The length of the message to verify.
  * @return hardened_bool_t
  */
-hardened_bool_t ecdsa_verify_message(const owner_key_t *pubkey,
-                                     const owner_signature_t *signature,
-                                     const void *message, size_t message_len);
+hardened_bool_t ecdsa_verify_message(
+    const sigverify_ecdsa_p256_buffer_t *pubkey,
+    const sigverify_ecdsa_p256_buffer_t *signature, const void *message,
+    size_t message_len);
 
 #ifdef __cplusplus
 }

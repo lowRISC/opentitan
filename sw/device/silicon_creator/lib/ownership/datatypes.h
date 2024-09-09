@@ -21,15 +21,20 @@ extern "C" {
  * An owner_key can be either a ECDSA P256 or SPX+ key.  The type of the key
  * material will be determined by a separate field on the owner block
  */
-typedef struct owner_key {
-  uint32_t key[16];
+typedef union owner_key {
+  /** ECDSA P256 public key */
+  sigverify_ecdsa_p256_buffer_t ecdsa;
+  /** Enough space to hold an ECDSA key and a SPX+ key for hybrid schemes */
+  uint32_t raw[16 + 8];
 } owner_key_t;
 
 /**
  * An owner_signature is an ECDSA P256 signature.
  */
-typedef struct owner_signature {
-  uint32_t signature[16];
+typedef union owner_signature {
+  /** ECDSA P256 signature key */
+  sigverify_ecdsa_p256_buffer_t ecdsa;
+  uint32_t raw[16];
 } owner_signature_t;
 
 typedef enum ownership_state {
@@ -102,7 +107,7 @@ typedef struct owner_block {
   /** Ownership key algorithm (currently, only ECDSA is supported). */
   uint32_t ownership_key_alg;
   /** Reserved space for future use. */
-  uint32_t reserved[3];
+  uint32_t reserved[27];
   /** Owner public key. */
   owner_key_t owner_key;
   /** Owner's Activate public key. */
@@ -110,7 +115,7 @@ typedef struct owner_block {
   /** Owner's Unlock public key. */
   owner_key_t unlock_key;
   /** Data region to hold the other configuration structs. */
-  uint8_t data[1728];
+  uint8_t data[1536];
   /** Signature over the owner block with the Owner private key. */
   owner_signature_t signature;
   /** A sealing value to seal the owner block to a specific chip. */
@@ -122,10 +127,10 @@ OT_ASSERT_MEMBER_OFFSET(owner_block_t, version, 8);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, sram_exec_mode, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, ownership_key_alg, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 20);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 32);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 96);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 160);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, data, 224);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 128);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 224);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 320);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, data, 416);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, signature, 1952);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, seal, 2016);
 OT_ASSERT_SIZE(owner_block_t, 2048);
