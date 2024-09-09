@@ -49,7 +49,7 @@ typedef struct boot_svc_ownership_unlock_req {
   /**
    * Reserved for future use.
    */
-  uint32_t reserved[18];
+  uint32_t reserved[10];
   /**
    * The current ownership nonce.
    */
@@ -71,9 +71,9 @@ OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, unlock_mode,
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, reserved,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, nonce,
-                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 76);
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 44);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, next_owner_key,
-                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 84);
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 52);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, signature,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 148);
 OT_ASSERT_SIZE(boot_svc_ownership_unlock_req_t, 256);
