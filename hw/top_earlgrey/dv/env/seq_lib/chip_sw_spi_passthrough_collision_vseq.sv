@@ -120,7 +120,7 @@ class chip_sw_spi_passthrough_collision_vseq extends chip_sw_spi_passthrough_vse
         `uvm_send(m_spi_host_seq);
         if (opcode == SpiFlashReadSts1 && m_spi_host_seq.rsp.payload_q[0][0] != 0) begin
           // Wait until software clears the WIP and WEL bits.
-          spi_host_wait_on_busy();
+          spi_host_wait_on_busy(.min_interval_ns(10));
         end
         host_rsp_q.push_back(m_spi_host_seq.rsp);
 
