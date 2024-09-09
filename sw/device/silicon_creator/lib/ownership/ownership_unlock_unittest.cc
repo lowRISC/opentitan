@@ -17,7 +17,6 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
-#include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
@@ -290,7 +289,7 @@ TEST_P(OwnershipUnlockedUpdateStateTest, InvalidState) {
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockedUpdateStateTest,
                          testing::Values(kOwnershipStateLockedUpdate,
                                          kOwnershipStateUnlockedEndorsed,
-                                         kOwnershipStateLockedNone));
+                                         kOwnershipStateRecovery));
 
 // Test that requesting an UnlockAbort from valid states works.
 TEST_P(OwnershipUnlockAbortValidStateTest, UnlockAbort) {
@@ -327,5 +326,5 @@ TEST_P(OwnershipUnlockAbortInvalidStateTest, UnlockAbort) {
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockAbortInvalidStateTest,
                          testing::Values(kOwnershipStateLockedOwner,
-                                         kOwnershipStateLockedNone));
+                                         kOwnershipStateRecovery));
 }  // namespace

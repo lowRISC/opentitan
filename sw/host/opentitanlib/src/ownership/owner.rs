@@ -38,7 +38,7 @@ pub struct OwnerBlock {
     pub ownership_key_alg: OwnershipKeyAlg,
     #[serde(default)]
     #[annotate(format=hex)]
-    pub reserved: [u32; 3],
+    pub reserved: [u32; 27],
     /// The owner identity key.
     pub owner_key: KeyMaterial,
     /// The owner activation key.
@@ -65,7 +65,7 @@ impl Default for OwnerBlock {
             version: 0,
             sram_exec: SramExecMode::default(),
             ownership_key_alg: OwnershipKeyAlg::default(),
-            reserved: [0u32; 3],
+            reserved: [0u32; 27],
             owner_key: KeyMaterial::default(),
             activate_key: KeyMaterial::default(),
             unlock_key: KeyMaterial::default(),
@@ -78,7 +78,7 @@ impl Default for OwnerBlock {
 
 impl OwnerBlock {
     const SIZE: usize = 2048;
-    const DATA_SIZE: usize = 1728;
+    const DATA_SIZE: usize = 1536;
     const SIGNATURE_OFFSET: usize = 1952;
     // The not present value must be reflected in the TlvTag::NotPresent value.
     const NOT_PRESENT: u8 = 0x5a;
@@ -104,9 +104,9 @@ impl OwnerBlock {
         for x in &self.reserved {
             dest.write_u32::<LittleEndian>(*x)?;
         }
-        self.owner_key.write_length(dest, 64)?;
-        self.activate_key.write_length(dest, 64)?;
-        self.unlock_key.write_length(dest, 64)?;
+        self.owner_key.write_length(dest, 96)?;
+        self.activate_key.write_length(dest, 96)?;
+        self.unlock_key.write_length(dest, 96)?;
         let mut data = Vec::new();
         for item in &self.data {
             item.write(&mut data)?;
@@ -122,11 +122,11 @@ impl OwnerBlock {
         let version = src.read_u32::<LittleEndian>()?;
         let sram_exec = SramExecMode(src.read_u32::<LittleEndian>()?);
         let ownership_key_alg = OwnershipKeyAlg(src.read_u32::<LittleEndian>()?);
-        let mut reserved = [0u32; 3];
+        let mut reserved = [0u32; 27];
         src.read_u32_into::<LittleEndian>(&mut reserved)?;
-        let owner_key = KeyMaterial::read_length(src, ownership_key_alg, 64)?;
-        let activate_key = KeyMaterial::read_length(src, ownership_key_alg, 64)?;
-        let unlock_key = KeyMaterial::read_length(src, ownership_key_alg, 64)?;
+        let owner_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
+        let activate_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
+        let unlock_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
         let mut bytes = vec![0u8; Self::DATA_SIZE];
         src.read_exact(&mut bytes)?;
         let mut cursor = std::io::Cursor::new(&bytes);
@@ -228,45 +228,45 @@ mod test {
     const OWNER_BIN: &str =
 r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000010: 50 32 35 36 00 00 00 00 00 00 00 00 00 00 00 00  P256............
-00000020: 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11  ................
-00000030: 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11  ................
-00000040: 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21  !!!!!!!!!!!!!!!!
-00000050: 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21  !!!!!!!!!!!!!!!!
-00000060: 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33  3333333333333333
-00000070: 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33  3333333333333333
-00000080: 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44  DDDDDDDDDDDDDDDD
-00000090: 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44  DDDDDDDDDDDDDDDD
-000000a0: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55  UUUUUUUUUUUUUUUU
-000000b0: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55  UUUUUUUUUUUUUUUU
-000000c0: 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66  ffffffffffffffff
-000000d0: 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66  ffffffffffffffff
-000000e0: 41 50 50 4b 70 00 00 00 50 32 35 36 70 72 6f 64  APPKp...P256prod
-000000f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-00000100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-00000110: aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa  ................
-00000120: aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa  ................
-00000130: bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb  ................
-00000140: bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb  ................
-00000150: 46 4c 53 48 20 00 00 00 00 00 00 01 66 06 00 99  FLSH .......f...
-00000160: 66 06 00 00 00 01 00 02 77 17 11 88 77 17 11 11  f.......w...w...
-00000170: 49 4e 46 4f 20 00 00 00 00 01 00 00 66 06 00 99  INFO .......f...
-00000180: 66 06 00 00 01 05 00 00 77 17 11 88 77 17 11 11  f.......w...w...
-00000190: 52 45 53 51 38 00 00 00 58 4d 44 4d 20 00 e0 00  RESQ8...XMDM ...
-000001a0: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK
-000001b0: 41 43 54 56 51 53 45 52 47 4f 4c 42 51 45 52 42  ACTVQSERGOLBQERB
-000001c0: 50 53 52 42 52 4e 57 4f 5a 5a 5a 5a 5a 5a 5a 5a  PSRBRNWOZZZZZZZZ
-000001d0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-000001e0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-000001f0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000200: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000210: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000220: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000230: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000240: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000250: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000260: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000270: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-00000280: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
+00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000080: 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11  ................
+00000090: 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11  ................
+000000a0: 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21  !!!!!!!!!!!!!!!!
+000000b0: 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21 21  !!!!!!!!!!!!!!!!
+000000c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+000000d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+000000e0: 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33  3333333333333333
+000000f0: 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33  3333333333333333
+00000100: 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44  DDDDDDDDDDDDDDDD
+00000110: 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44  DDDDDDDDDDDDDDDD
+00000120: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000130: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000140: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55  UUUUUUUUUUUUUUUU
+00000150: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55  UUUUUUUUUUUUUUUU
+00000160: 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66  ffffffffffffffff
+00000170: 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66 66  ffffffffffffffff
+00000180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000190: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+000001a0: 41 50 50 4b 70 00 00 00 50 32 35 36 70 72 6f 64  APPKp...P256prod
+000001b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+000001c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+000001d0: aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa  ................
+000001e0: aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa  ................
+000001f0: bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb  ................
+00000200: bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb bb  ................
+00000210: 46 4c 53 48 20 00 00 00 00 00 00 01 66 06 00 99  FLSH .......f...
+00000220: 66 06 00 00 00 01 00 02 77 17 11 88 77 17 11 11  f.......w...w...
+00000230: 49 4e 46 4f 20 00 00 00 00 01 00 00 66 06 00 99  INFO .......f...
+00000240: 66 06 00 00 01 05 00 00 77 17 11 88 77 17 11 11  f.......w...w...
+00000250: 52 45 53 51 38 00 00 00 58 4d 44 4d 20 00 e0 00  RESQ8...XMDM ...
+00000260: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK
+00000270: 41 43 54 56 51 53 45 52 47 4f 4c 42 51 45 52 42  ACTVQSERGOLBQERB
+00000280: 50 53 52 42 52 4e 57 4f 5a 5a 5a 5a 5a 5a 5a 5a  PSRBRNWOZZZZZZZZ
 00000290: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002a0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002b0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
@@ -365,6 +365,30 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
   sram_exec: "DisabledLocked",
   ownership_key_alg: "EcdsaP256",
   reserved: [
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+    0x0,
     0x0,
     0x0,
     0x0
