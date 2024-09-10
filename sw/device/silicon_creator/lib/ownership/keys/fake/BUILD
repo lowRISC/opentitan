@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:keyutils.bzl", "key_ecdsa")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -9,8 +11,11 @@ cc_library(
     testonly = True,
     hdrs = [
         "activate_ecdsa_p256.h",
+        "app_dev_ecdsa_p256.h",
         "app_dev_key_rsa_3072_exp_f4.h",
+        "app_prod_ecdsa_p256.h",
         "app_prod_key_rsa_3072_exp_f4.h",
+        "app_test_ecdsa_p256.h",
         "app_test_key_rsa_3072_exp_f4.h",
         "owner_ecdsa_p256.h",
         "unlock_ecdsa_p256.h",
@@ -64,4 +69,40 @@ filegroup(
 filegroup(
     name = "app_prod_pub",
     srcs = ["app_prod_key_rsa_3072_exp_f4.pub.der"],
+)
+
+key_ecdsa(
+    name = "app_prod_ecdsa",
+    config = "EcdsaP256",
+    method = "local",
+    private_key = "app_prod_ecdsa_p256.der",
+    pub_key = "app_prod_ecdsa_p256.pub.der",
+    type = "ProdKey",
+)
+
+key_ecdsa(
+    name = "app_dev_ecdsa",
+    config = "EcdsaP256",
+    method = "local",
+    private_key = "app_dev_ecdsa_p256.der",
+    pub_key = "app_dev_ecdsa_p256.pub.der",
+    type = "DevKey",
+)
+
+key_ecdsa(
+    name = "app_test_ecdsa",
+    config = "EcdsaP256",
+    method = "local",
+    private_key = "app_test_ecdsa_p256.der",
+    pub_key = "app_test_ecdsa_p256.pub.der",
+    type = "TestKey",
+)
+
+key_ecdsa(
+    name = "app_unauthorized_ecdsa",
+    config = "EcdsaP256",
+    method = "local",
+    private_key = "app_unauthorized_ecdsa_p256.der",
+    pub_key = "app_unauthorized_ecdsa_p256.pub.der",
+    type = "TestKey",
 )
