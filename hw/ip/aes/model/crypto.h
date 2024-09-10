@@ -14,7 +14,8 @@ typedef enum crypto_mode {
   kCryptoAesCfb = 1 << 2,
   kCryptoAesOfb = 1 << 3,
   kCryptoAesCtr = 1 << 4,
-  kCryptoAesNone = 1 << 5
+  kCryptoAesGcm = 1 << 5,
+  kCryptoAesNone = 0x3f
 } crypto_mode_t;
 
 /**
@@ -28,11 +29,17 @@ typedef enum crypto_mode {
  * @param  key       Encryption key
  * @param  key_len   Encryption key length in bytes (16, 24, 32)
  * @param  mode      AES cipher mode @see crypto_mode.
+ * @param  aad       Associated data.
+ * @param  aad_len   Length of the associated data.
+ * @param  tag       Output tag for AES GCM.
+ * @param  tag_len   Length of the output tag.
  * @return Length of the output cipher text in bytes, -1 in case of error
  */
 int crypto_encrypt(unsigned char *output, const unsigned char *iv,
                    const unsigned char *input, int input_len,
-                   const unsigned char *key, int key_len, crypto_mode_t mode);
+                   const unsigned char *key, int key_len, crypto_mode_t mode,
+                   const unsigned char *aad, int aad_len, unsigned char *tag,
+                   int tag_len);
 
 /**
  * Decrypt using BoringSSL/OpenSSL
@@ -45,10 +52,16 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
  * @param  key       Encryption key, decryption key is derived internally
  * @param  key_len   Encryption key length in bytes (16, 24, 32)
  * @param  mode      AES cipher mode @see crypto_mode.
+ * @param  aad       Associated data.
+ * @param  aad_len   Length of the associated data.
+ * @param  tag       Tag for AES GCM.
+ * @param  tag_len   Length of the output tag.
  * @return Length of the output plain text in bytes, -1 in case of error
  */
 int crypto_decrypt(unsigned char *output, const unsigned char *iv,
                    const unsigned char *input, int input_len,
-                   const unsigned char *key, int key_len, crypto_mode_t mode);
+                   const unsigned char *key, int key_len, crypto_mode_t mode,
+                   const unsigned char *aad, int aad_len, unsigned char *tag,
+                   int tag_len);
 
 #endif  // OPENTITAN_HW_IP_AES_MODEL_CRYPTO_H_
