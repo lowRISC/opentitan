@@ -47,6 +47,30 @@ cc_library(
 )
 
 cc_library(
+    name = "edn_sca",
+    srcs = ["edn_sca.c"],
+    hdrs = ["edn_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:edn_sca_commands",
+    ],
+)
+
+cc_library(
     name = "extclk_sca_fi",
     srcs = ["extclk_sca_fi.c"],
     hdrs = ["extclk_sca_fi.h"],
