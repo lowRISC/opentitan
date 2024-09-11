@@ -9,6 +9,7 @@ load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_a
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
+    "SLOTS",
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
@@ -36,81 +37,50 @@ manifest(d = {
 # in the manifest definition).  You can manually create such a bitstream with:
 #
 # bazel build //hw/bitstream/universal:splice --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_sival
-opentitan_binary(
-    name = "rom_ext_fake_prod_signed_slot_a",
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
-    linkopts = LINK_ORDER,
-    manifest = ":manifest_sival",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
+[
+    opentitan_binary(
+        name = "rom_ext_fake_prod_signed_slot_{}".format(slot),
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = [
+            "//hw/top_earlgrey:silicon_creator",
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_earlgrey:sim_dv_base",
+            "//hw/top_earlgrey:sim_verilator_base",
+        ],
+        linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
+        linkopts = LINK_ORDER,
+        manifest = ":manifest_sival",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        deps = [
+            ":sival_owner",
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/rom_ext",
+        ],
+    )
+    for slot in SLOTS
+]
 
-opentitan_binary(
-    name = "rom_ext_fake_prod_signed_slot_b",
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
-    linkopts = LINK_ORDER,
-    manifest = ":manifest_sival",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_real_prod_signed_slot_a",
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
-    linkopts = LINK_ORDER,
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_real_prod_signed_slot_b",
-    exec_env = [
-        "//hw/top_earlgrey:silicon_creator",
-        "//hw/top_earlgrey:fpga_cw310",
-    ],
-    linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
-    linkopts = LINK_ORDER,
-    deps = [
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/sival/keys",
-    ],
-)
+[
+    opentitan_binary(
+        name = "rom_ext_real_prod_signed_slot_{}".format(slot),
+        exec_env = [
+            "//hw/top_earlgrey:silicon_creator",
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:fpga_cw340",
+        ],
+        linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
+        linkopts = LINK_ORDER,
+        deps = [
+            ":sival_owner",
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/rom_ext",
+        ],
+    )
+    for slot in SLOTS
+]
 
 offline_presigning_artifacts(
     name = "presigning",
@@ -144,4 +114,18 @@ offline_signature_attach(
         "//sw/device/silicon_creator/rom_ext/sival/signatures:ecdsa_signatures",
     ],
     tags = ["manual"],
+)
+
+cc_library(
+    name = "sival_owner",
+    srcs = ["sival_owner.c"],
+    deps = [
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:includes",
+    ],
+    alwayslink = True,
 )
