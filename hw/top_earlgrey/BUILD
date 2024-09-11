@@ -5,6 +5,7 @@
 load("//rules:autogen.bzl", "autogen_hjson_header")
 load(
     "//rules/opentitan:defs.bzl",
+    "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_cw305",
@@ -110,6 +111,7 @@ fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,
     base = ":fpga_cw310_test_rom",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
     exec_env = "fpga_cw310_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -126,7 +128,7 @@ fpga_cw310(
     },
     rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
-    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+    rsa_key = CLEAR_KEY_SET,
 )
 
 fpga_cw310(
@@ -164,6 +166,7 @@ fpga_cw310(
     name = "fpga_hyper310_rom_ext",
     testonly = True,
     base = ":fpga_hyper310_rom_with_fake_keys",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
     exec_env = "fpga_hyper310_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -179,7 +182,7 @@ fpga_cw310(
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
-    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+    rsa_key = CLEAR_KEY_SET,
 )
 
 # FPGA configuration used to emulate silicon targets. This rule can be used by
@@ -209,6 +212,13 @@ fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
     base = ":fpga_hyper310_rom_ext",
+    # TODO(#24641): Simplify key selection after eliminating RSA keys.
+    ecdsa_key = select({
+        "//signing:owner_key_ecdsa": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "appkey_test_0"},
+        "//signing:owner_key_rsa": CLEAR_KEY_SET,
+        "//signing:test_keys_ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "//signing:test_keys_rsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+    }),
     exec_env = "fpga_cw310_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -220,8 +230,10 @@ fpga_cw310(
         "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
     }),
     rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:owner_key_ecdsa": CLEAR_KEY_SET,
+        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:test_keys_ecdsa": CLEAR_KEY_SET,
+        "//signing:test_keys_rsa": CLEAR_KEY_SET,
     }),
     tags = ["cw310_sival_rom_ext"],
 )
@@ -363,6 +375,13 @@ silicon(
         "--interface={interface}",
     ],
     design = "earlgrey",
+    # TODO(#24641): Simplify key selection after eliminating RSA keys.
+    ecdsa_key = select({
+        "//signing:owner_key_ecdsa": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "appkey_test_0"},
+        "//signing:owner_key_rsa": CLEAR_KEY_SET,
+        "//signing:test_keys_ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "//signing:test_keys_rsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+    }),
     exec_env = "silicon_owner_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -381,8 +400,10 @@ silicon(
         "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_real_prod_signed_slot_a",
     }),
     rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:owner_key_ecdsa": CLEAR_KEY_SET,
+        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:test_keys_ecdsa": CLEAR_KEY_SET,
+        "//signing:test_keys_rsa": CLEAR_KEY_SET,
     }),
     test_cmd = """
         --exec="transport init"
@@ -396,6 +417,7 @@ silicon(
     name = "silicon_owner_prodc_rom_ext",
     testonly = True,
     base = ":silicon_owner_sival_rom_ext",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "silicon_owner_prodc_rom_ext",
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
@@ -411,6 +433,7 @@ silicon(
     name = "silicon_owner_proda_rom_ext",
     testonly = True,
     base = ":silicon_owner_sival_rom_ext",
+    ecdsa_key = CLEAR_KEY_SET,
     exec_env = "silicon_owner_proda_rom_ext",
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/proda:rom_ext_fake_prod_signed_slot_a",
