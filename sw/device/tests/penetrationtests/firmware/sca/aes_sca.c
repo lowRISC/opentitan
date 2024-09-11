@@ -431,6 +431,71 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
 }
 
 /**
+ * Batch encrypt random command handler.
+ *
+ * This command is designed to maximize the capture rate for side-channel
+ * attacks. Instead of expecting a plaintext and sending the resulting
+ * ciphertext from and to the host for each encryption, this command repeatedly
+ * encrypts random plaintexts that are generated on the device. This minimizes
+ * the overhead of UART communication and significantly improves the capture
+ * rate. The host must use the same PRNG to be able to compute the plaintext and
+ * the ciphertext of each trace.
+ *
+ * Packet payload must be a `uint32_t` representation of the number of
+ * encryptions to perform. Since generated plaintexts are not cached, there is
+ * no limit on the number of encryptions.
+ *
+ * The PRNG should be initialized using the seed PRNG command before
+ * starting batch encryption. In addition, the key should also be set
+ * using key set command before starting batch captures.
+ *
+ * Note that the host can partially verify this operation by checking the
+ * contents of UART reponse that is sent at the end.
+ *
+ * The uJSON data contains:
+ *  - data: The number of encryptions.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
+  cryptotest_aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
+  uint32_t num_encryptions = 0;
+  num_encryptions = read_32(uj_data.data);
+
+  block_ctr += num_encryptions;
+  // Rewrite the key to reset the internal block counter. Otherwise, the AES
+  // peripheral might trigger the reseeding of the internal masking PRNG which
+  // disturbs SCA measurements.
+  if (block_ctr > kBlockCtrMax) {
+    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
+      return ABORTED();
+    }
+    block_ctr = num_encryptions;
+  }
+
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
+      return ABORTED();
+    }
+    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
+      return ABORTED();
+    }
+    aes_serial_advance_random();
+  }
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
+
+  TRY(aes_send_ciphertext(true, uj));
+
+  return OK_STATUS();
+}
+
+/**
  * Simple serial 'a' (alternative batch encrypt) command handler.
  *
  * This command is designed to maximize the capture rate for side-channel
@@ -943,6 +1008,9 @@ status_t handle_aes_sca(ujson_t *uj) {
       break;
     case kAesScaSubcommandBatchEncrypt:
       return handle_aes_sca_batch_encrypt(uj);
+      break;
+    case kAesScaSubcommandBatchEncryptRandom:
+      return handle_aes_sca_batch_encrypt_random(uj);
       break;
     case kAesScaSubcommandFvsrKeySet:
       return handle_aes_sca_fvsr_key_set(uj);
