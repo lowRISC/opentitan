@@ -8,7 +8,6 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_cw305",
