@@ -23,6 +23,7 @@ extern "C" {
     value(_, KeySet) \
     value(_, SingleEncrypt) \
     value(_, BatchEncrypt) \
+    value(_, BatchEncryptRandom) \
     value(_, FvsrKeySet) \
     value(_, FvsrKeyBatchGenerate) \
     value(_, FvsrKeyBatchEncrypt) \
