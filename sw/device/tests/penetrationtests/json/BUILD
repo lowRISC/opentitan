@@ -11,6 +11,7 @@ cc_library(
     deps = [
         ":aes_sca_commands",
         ":crypto_fi_commands",
+        ":edn_sca_commands",
         ":extclk_sca_fi_commands",
         ":hmac_sca_commands",
         ":ibex_fi_commands",
@@ -38,6 +39,13 @@ cc_library(
     name = "crypto_fi_commands",
     srcs = ["crypto_fi_commands.c"],
     hdrs = ["crypto_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "edn_sca_commands",
+    srcs = ["edn_sca_commands.c"],
+    hdrs = ["edn_sca_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
