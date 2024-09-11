@@ -13,12 +13,12 @@ def ownership_transfer_test(
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         },
-        rsa_key = {
-            "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
+        ecdsa_key = {
+            "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
         },
         data = [
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key",
-            "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub",
+            "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub",
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key",
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_pub",
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key",
@@ -26,7 +26,7 @@ def ownership_transfer_test(
             "//sw/device/silicon_creator/lib/ownership/keys/fake:activate_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key_pub",
-            "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_pub",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub",
         ],
         deps = [
             "//sw/device/lib/base:status",
@@ -39,7 +39,7 @@ def ownership_transfer_test(
         name = name,
         srcs = srcs,
         exec_env = exec_env,
-        rsa_key = rsa_key,
+        ecdsa_key = ecdsa_key,
         data = data,
         deps = deps,
         **kwargs

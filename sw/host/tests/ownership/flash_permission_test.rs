@@ -37,7 +37,7 @@ struct Opts {
     next_activate_key: PathBuf,
     #[arg(long, help = "Next Owner unlock private key (ECDSA P256)")]
     next_unlock_key: PathBuf,
-    #[arg(long, help = "Next Owner's application public key (RSA3K)")]
+    #[arg(long, help = "Next Owner's application public key (ECDSA P256)")]
     next_application_key: PathBuf,
 
     #[arg(
@@ -220,7 +220,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         opts.timeout,
     )?;
     if capture[0].starts_with("BFV") {
-        return RomError(u32::from_str_radix(&capture[3], 16)?).into();
+        return RomError(u32::from_str_radix(&capture[2], 16)?).into();
     }
     let region = FlashRegion::find_all(&capture[1])?;
     // Flash SideA is the primary side and has protect_when_primary = true.
