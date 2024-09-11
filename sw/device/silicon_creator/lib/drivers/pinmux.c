@@ -187,6 +187,9 @@ void pinmux_init(void) {
     configure_input(kInputSwStrap2);
   }
 
+  // Pull the UART_RX line high (idle state for UART).  This prevents a
+  // floating UART_RX from incorrectly triggering serial break.
+  enable_pull(kInputUart0.pad, /*enable=*/true, /*up=*/true);
   configure_input(kInputUart0);
   configure_output(kOutputUart0);
 }
