@@ -14,6 +14,8 @@ extern "C" {
 #define RNGFI_SUBCOMMAND(_, value) \
     value(_, CsrngInit) \
     value(_, CsrngBias) \
+    value(_, CsrngBiasFWOverride) \
+    value(_, CsrngBiasFWOverrideStatic) \
     value(_, EdnInit) \
     value(_, EdnRespAck) \
     value(_, EdnBias) \
@@ -34,6 +36,13 @@ UJSON_SERDE_STRUCT(CryptoFiCsrngMode, crypto_fi_csrng_mode_t, CRYPTOFI_CSRNG_MOD
     field(alerts, uint32_t, 3) \
     field(err_status, uint32_t)
 UJSON_SERDE_STRUCT(RngFiCsrngOutput, rng_fi_csrng_output_t, RNGFI_CSRNG_OUTPUT);
+
+#define RNGFI_CSRNG_OV_OUTPUT(field, string) \
+    field(res, uint32_t) \
+    field(rand, uint32_t, 12) \
+    field(alerts, uint32_t, 3) \
+    field(err_status, uint32_t)
+UJSON_SERDE_STRUCT(RngFiCsrngOvOutput, rng_fi_csrng_ov_output_t, RNGFI_CSRNG_OV_OUTPUT);
 
 #define RNGFI_ENTRBIAS_OUTPUT(field, string) \
     field(rand, uint32_t, 32) \
@@ -57,6 +66,10 @@ UJSON_SERDE_STRUCT(RngFiEdn, rng_fi_edn_t, RNGFI_EDN);
 #define RNGFI_FWOVERWRITE_HEALTH(field, string) \
     field(disable_health_check, bool)
 UJSON_SERDE_STRUCT(RngFiFwOverwriteHealt, rng_fi_fw_overwrite_health_t, RNGFI_FWOVERWRITE_HEALTH);
+
+#define RNGFI_SEED(field, string) \
+    field(seed, uint32_t, 12)
+UJSON_SERDE_STRUCT(RngFiSeed, rng_fi_seed_t, RNGFI_SEED);
 
 // clang-format on
 
