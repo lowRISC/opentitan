@@ -12,11 +12,8 @@ cc_library(
     hdrs = [
         "activate_ecdsa_p256.h",
         "app_dev_ecdsa_p256.h",
-        "app_dev_key_rsa_3072_exp_f4.h",
         "app_prod_ecdsa_p256.h",
-        "app_prod_key_rsa_3072_exp_f4.h",
         "app_test_ecdsa_p256.h",
-        "app_test_key_rsa_3072_exp_f4.h",
         "owner_ecdsa_p256.h",
         "unlock_ecdsa_p256.h",
     ],
@@ -62,13 +59,23 @@ filegroup(
 )
 
 filegroup(
-    name = "app_prod",
-    srcs = ["app_prod_key_rsa_3072_exp_f4.der"],
+    name = "app_ecdsa_prod",
+    srcs = ["app_prod_ecdsa_p256.der"],
 )
 
 filegroup(
-    name = "app_prod_pub",
-    srcs = ["app_prod_key_rsa_3072_exp_f4.pub.der"],
+    name = "app_prod_ecdsa_pub",
+    srcs = ["app_prod_ecdsa_p256.pub.der"],
+)
+
+filegroup(
+    name = "app_dev",
+    srcs = ["app_dev_ecdsa_p256.der"],
+)
+
+filegroup(
+    name = "app_dev_pub",
+    srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
 key_ecdsa(

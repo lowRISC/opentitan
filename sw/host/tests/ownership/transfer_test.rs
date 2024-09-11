@@ -37,7 +37,7 @@ struct Opts {
     next_activate_key: PathBuf,
     #[arg(long, help = "Next Owner unlock private key (ECDSA P256)")]
     next_unlock_key: PathBuf,
-    #[arg(long, help = "Next Owner's application public key (RSA3K)")]
+    #[arg(long, help = "Next Owner's application public key (ECDSA P256)")]
     next_application_key: PathBuf,
 
     #[arg(
