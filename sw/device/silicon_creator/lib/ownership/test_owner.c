@@ -8,9 +8,9 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_key_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_key_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_key_rsa_3072_exp_f4.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/owner_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -36,58 +36,62 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
   owner_page[0].activate_key = (owner_key_t){ACTIVATE_ECDSA_P256};
   owner_page[0].unlock_key = (owner_key_t){UNLOCK_ECDSA_P256};
 
-  // Fill the data segment with the end tag (0x5a5a5a5a).
-  memset(owner_page[0].data, 0x5a, sizeof(owner_page[0].data));
-
-  // TODO: we're temporarily using RSA keys.
-  // We'll change these to ECDSA keys after the ECDSA changes from
-  // master are merged.
   owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
-  app[0] = (owner_application_key_t){
+  *app = (owner_application_key_t){
       .header =
           {
               .tag = kTlvTagApplicationKey,
-              .length = sizeof(owner_application_key_t),
+              .length = kTlvLenApplicationKeyEcdsa,
           },
-      .key_alg = kOwnershipKeyAlgRsa,
+      .key_alg = kOwnershipKeyAlgEcdsaP256,
       .key_domain = kOwnerAppDomainTest,
       .key_diversifier = {0},
       .usage_constraint = 0,
       .data =
           {
-              .rsa = APP_TEST_KEY_RSA_3072_EXP_F4,
+              .ecdsa = APP_TEST_ECDSA_P256,
           },
   };
-  app[1] = (owner_application_key_t){
+
+  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
+  *app = (owner_application_key_t){
       .header =
           {
               .tag = kTlvTagApplicationKey,
-              .length = sizeof(owner_application_key_t),
+              .length = kTlvLenApplicationKeyEcdsa,
           },
-      .key_alg = kOwnershipKeyAlgRsa,
+      .key_alg = kOwnershipKeyAlgEcdsaP256,
       .key_domain = kOwnerAppDomainDev,
       .key_diversifier = {0},
       .usage_constraint = 0,
       .data =
           {
-              .rsa = APP_DEV_KEY_RSA_3072_EXP_F4,
+              .ecdsa = APP_DEV_ECDSA_P256,
           },
   };
-  app[2] = (owner_application_key_t){
+
+  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
+  *app = (owner_application_key_t){
       .header =
           {
               .tag = kTlvTagApplicationKey,
-              .length = sizeof(owner_application_key_t),
+              .length = kTlvLenApplicationKeyEcdsa,
           },
-      .key_alg = kOwnershipKeyAlgRsa,
+      .key_alg = kOwnershipKeyAlgEcdsaP256,
       .key_domain = kOwnerAppDomainProd,
       .key_diversifier = {0},
       .usage_constraint = 0,
       .data =
           {
-              .rsa = APP_PROD_KEY_RSA_3072_EXP_F4,
+              .ecdsa = APP_PROD_ECDSA_P256,
           },
   };
+
+  // Fill the remainder of the data segment with the end tag (0x5a5a5a5a).
+  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
+  size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -
+               (uintptr_t)app;
+  memset(app, 0x5a, len);
 
   ownership_page_seal(/*page=*/0);
 
