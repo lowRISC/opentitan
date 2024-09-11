@@ -193,32 +193,6 @@ static void aes_manual_trigger(void) {
 }
 
 /**
- * Key set command handler.
- *
- * This command is designed to set the fixed_key variable and in addition also
- * configures the key into the AES peripheral.
- *
- * The key must be `kAesKeyLength` bytes long.
- *
- * The uJSON data contains:
- *  - key: The key to use.
- *  - key_length: The length of the key.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_key_set(ujson_t *uj) {
-  cryptotest_aes_sca_key_t uj_key_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_key_t(uj, &uj_key_data));
-
-  memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
-  block_ctr = 0;
-  if (aes_key_mask_and_config(key_fixed, uj_key_data.key_length) != aesScaOk) {
-    return ABORTED();
-  }
-  return OK_STATUS();
-}
-
-/**
  * Encrypts a plaintext using the AES peripheral.
  *
  * This function uses `pentest_call_and_sleep()` from the pentest library to put
@@ -278,7 +252,7 @@ static status_t aes_send_ciphertext(bool only_first_word, ujson_t *uj) {
     return OUT_OF_RANGE();
   }
 
-  cryptotest_aes_sca_ciphertext_t uj_output;
+  aes_sca_ciphertext_t uj_output;
   memset(uj_output.ciphertext, 0, AESSCA_CMD_MAX_DATA_BYTES);
   uj_output.ciphertext_length = kAesTextLength;
   if (only_first_word) {
@@ -286,52 +260,7 @@ static status_t aes_send_ciphertext(bool only_first_word, ujson_t *uj) {
   }
   memcpy(uj_output.ciphertext, (uint8_t *)ciphertext.data,
          uj_output.ciphertext_length);
-  RESP_OK(ujson_serialize_cryptotest_aes_sca_ciphertext_t, uj, &uj_output);
-  return OK_STATUS();
-}
-
-/**
- * Single encrypt command handler.
- *
- * Encrypts a `kAesTextLength` bytes long plaintext using the AES peripheral and
- * sends the ciphertext over UART. This function also handles the trigger
- * signal.
- *
- * The uJSON data contains:
- *  - text: The plaintext.
- *  - text_length: The length of the plaintext.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
-  cryptotest_aes_sca_text_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_text_t(uj, &uj_data));
-  if (uj_data.text_length != kAesTextLength) {
-    return OUT_OF_RANGE();
-  }
-
-  block_ctr++;
-  // Rewrite the key to reset the internal block counter. Otherwise, the AES
-  // peripheral might trigger the reseeding of the internal masking PRNG which
-  // disturbs SCA measurements.
-  if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    block_ctr = 1;
-  }
-
-  if (fpga_mode) {
-    sca_set_trigger_high();
-  }
-  if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
-    return ABORTED();
-  }
-  if (fpga_mode) {
-    sca_set_trigger_low();
-  }
-
-  TRY(aes_send_ciphertext(false, uj));
+  RESP_OK(ujson_serialize_aes_sca_ciphertext_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -371,158 +300,58 @@ static void aes_serial_advance_random_data(void) {
 }
 
 /**
- * Batch encrypt command handler.
+ * Fixed vs random key batch generate command handler.
  *
- * This command is designed to maximize the capture rate for side-channel
- * attacks. Instead of expecting a plaintext and sending the resulting
- * ciphertext from and to the host for each encryption, this command repeatedly
- * encrypts random plaintexts that are generated on the device. This minimizes
- * the overhead of UART communication and significantly improves the capture
- * rate. The host must use the same PRNG to be able to compute the plaintext and
- * the ciphertext of each trace.
+ * This command generates random plaintexts and fixed or random keys using PRNG
+ * for AES fixed vs random key batch capture in order to remove fake leakage.
+ * Fixed or random key sequence is also determined here by using the lsb bit of
+ * the plaintext. In order to simplify the analysis, the first encryption has to
+ * use fixed key. The data collection method is based on the derived test
+ * requirements (DTR) for TVLA:
+ * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
+ * The measurements are taken by using either fixed or randomly selected keys.
+ * In addition, a PRNG is used for random key and plaintext generation instead
+ * of AES algorithm as specified in the TVLA DTR.
  *
  * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Since generated plaintexts are not cached, there is
- * no limit on the number of encryptions.
+ * encryptions to perform. Number of operations of a batch should not be greater
+ * than the 'kNumBatchOpsMax' value.
  *
- * The PRNG should be initialized using the seed PRNG command before
- * starting batch encryption. In addition, the key should also be set
- * using key set command before starting batch captures.
- *
- * Note that the host can partially verify this operation by checking the
- * contents of UART reponse that is sent at the end.
+ * The PRNG should be initialized using the 's' (seed PRNG) command before
+ * starting batch captures. In addition, the fixed key should also be set
+ * using 't' (fvsr key set) command before starting batch captures.
  *
  * The uJSON data contains:
  *  - data: The number of encryptions.
  *
  * @param uj The received uJSON data.
  */
-status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
+static status_t aes_sca_fvsr_key_batch_generate(aes_sca_data_t uj_data) {
   uint32_t num_encryptions = 0;
   num_encryptions = read_32(uj_data.data);
-
-  block_ctr += num_encryptions;
-  // Rewrite the key to reset the internal block counter. Otherwise, the AES
-  // peripheral might trigger the reseeding of the internal masking PRNG which
-  // disturbs SCA measurements.
-  if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    block_ctr = num_encryptions;
+  if (num_encryptions > kNumBatchOpsMax) {
+    return OUT_OF_RANGE();
   }
 
-  if (fpga_mode) {
-    sca_set_trigger_high();
-  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
-      return ABORTED();
+    if (sample_fixed) {
+      memcpy(batch_keys[i], key_fixed, kAesKeyLength);
+      memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
+      aes_serial_advance_fixed();
+    } else {
+      memcpy(batch_keys[i], key_random, kAesKeyLength);
+      memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
+      aes_serial_advance_random();
     }
-    aes_serial_advance_random();
+    sample_fixed = batch_plaintexts[i][0] & 0x1;
   }
-  if (fpga_mode) {
-    sca_set_trigger_low();
-  }
-
-  TRY(aes_send_ciphertext(true, uj));
 
   return OK_STATUS();
 }
 
-/**
- * Batch encrypt random command handler.
- *
- * This command is designed to maximize the capture rate for side-channel
- * attacks. Instead of expecting a plaintext and sending the resulting
- * ciphertext from and to the host for each encryption, this command repeatedly
- * encrypts random plaintexts that are generated on the device. This minimizes
- * the overhead of UART communication and significantly improves the capture
- * rate. The host must use the same PRNG to be able to compute the plaintext and
- * the ciphertext of each trace.
- *
- * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Since generated plaintexts are not cached, there is
- * no limit on the number of encryptions.
- *
- * The PRNG should be initialized using the seed PRNG command before
- * starting batch encryption. In addition, the key should also be set
- * using key set command before starting batch captures.
- *
- * Note that the host can partially verify this operation by checking the
- * contents of UART reponse that is sent at the end.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
-
-  block_ctr += num_encryptions;
-  // Rewrite the key to reset the internal block counter. Otherwise, the AES
-  // peripheral might trigger the reseeding of the internal masking PRNG which
-  // disturbs SCA measurements.
-  if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    block_ctr = num_encryptions;
-  }
-
-  if (fpga_mode) {
-    sca_set_trigger_high();
-  }
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
-    aes_serial_advance_random();
-  }
-  if (fpga_mode) {
-    sca_set_trigger_low();
-  }
-
-  TRY(aes_send_ciphertext(true, uj));
-
-  return OK_STATUS();
-}
-
-/**
- * Simple serial 'a' (alternative batch encrypt) command handler.
- *
- * This command is designed to maximize the capture rate for side-channel
- * attacks. It uses the first supplied plaintext and repeats AES encryptions
- * by using every ciphertext as next plaintext with a constant key. This
- * minimizes the overhead of UART communication and significantly improves the
- * capture rate.
-
- * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Since generated plaintexts are not cached, there is
- * no limit on the number of encryptions.
- *
- * The key should also be set using 'k' (key set) command.
- *
- * The host can verify the operation by checking the last 'r' (ciphertext)
- * packet that is sent at the end.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
- * @param uj The received uJSON data.
- */
 status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
 
   // Get num_encryptions from input
   uint32_t num_encryptions = 0;
@@ -571,30 +400,89 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   }
 
   // send last ciphertext
-  cryptotest_aes_sca_ciphertext_t uj_output;
+  aes_sca_ciphertext_t uj_output;
   memcpy(uj_output.ciphertext, (uint8_t *)ciphertext.data, kAesTextLength);
-  RESP_OK(ujson_serialize_cryptotest_aes_sca_ciphertext_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_aes_sca_ciphertext_t, uj, &uj_output);
 
   return OK_STATUS();
 }
 
-/**
- * Batch plaintext command handler.
- *
- * This command is designed to set the initial plaintext for
- * aes_serial_batch_alternative_encrypt.
- *
- * The plaintext must be `kAesTextLength` bytes long.
- *
- *  * The uJSON data contains:
- *  - text: The plaintext.
- *  - text_length: Plaintext length.
- *
- * @param uj The received uJSON data.
- */
+status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
+  uint32_t num_encryptions = 0;
+  num_encryptions = read_32(uj_data.data);
+
+  block_ctr += num_encryptions;
+  // Rewrite the key to reset the internal block counter. Otherwise, the AES
+  // peripheral might trigger the reseeding of the internal masking PRNG which
+  // disturbs SCA measurements.
+  if (block_ctr > kBlockCtrMax) {
+    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
+      return ABORTED();
+    }
+    block_ctr = num_encryptions;
+  }
+
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
+      return ABORTED();
+    }
+    aes_serial_advance_random();
+  }
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
+
+  TRY(aes_send_ciphertext(true, uj));
+
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
+  uint32_t num_encryptions = 0;
+  num_encryptions = read_32(uj_data.data);
+
+  block_ctr += num_encryptions;
+  // Rewrite the key to reset the internal block counter. Otherwise, the AES
+  // peripheral might trigger the reseeding of the internal masking PRNG which
+  // disturbs SCA measurements.
+  if (block_ctr > kBlockCtrMax) {
+    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
+      return ABORTED();
+    }
+    block_ctr = num_encryptions;
+  }
+
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
+      return ABORTED();
+    }
+    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
+      return ABORTED();
+    }
+    aes_serial_advance_random();
+  }
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
+
+  TRY(aes_send_ciphertext(true, uj));
+
+  return OK_STATUS();
+}
+
 status_t handle_aes_sca_batch_plaintext_set(ujson_t *uj) {
-  cryptotest_aes_sca_text_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_text_t(uj, &uj_data));
+  aes_sca_text_t uj_data;
+  TRY(ujson_deserialize_aes_sca_text_t(uj, &uj_data));
 
   if (uj_data.text_length != kAesTextLength) {
     return OUT_OF_RANGE();
@@ -604,193 +492,9 @@ status_t handle_aes_sca_batch_plaintext_set(ujson_t *uj) {
   return OK_STATUS();
 }
 
-/**
- * Fvsr key set command handler.
- *
- * This command is designed to set the fixed key which is used for fvsr key TVLA
- * captures.
- *
- * The key must be `kAesKeyLength` bytes long.
- *
- * The uJSON data contains:
- *  - key: The key to use.
- *  - key_length: The length of the key.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_fvsr_key_set(ujson_t *uj) {
-  cryptotest_aes_sca_key_t uj_key_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_key_t(uj, &uj_key_data));
-
-  if (uj_key_data.key_length != kAesKeyLength) {
-    return OUT_OF_RANGE();
-  }
-  memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
-  return OK_STATUS();
-}
-
-/**
- * Fixed vs random key batch generate command handler.
- *
- * This command generates random plaintexts and fixed or random keys using PRNG
- * for AES fixed vs random key batch capture in order to remove fake leakage.
- * Fixed or random key sequence is also determined here by using the lsb bit of
- * the plaintext. In order to simplify the analysis, the first encryption has to
- * use fixed key. The data collection method is based on the derived test
- * requirements (DTR) for TVLA:
- * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
- * The measurements are taken by using either fixed or randomly selected keys.
- * In addition, a PRNG is used for random key and plaintext generation instead
- * of AES algorithm as specified in the TVLA DTR.
- *
- * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Number of operations of a batch should not be greater
- * than the 'kNumBatchOpsMax' value.
- *
- * The PRNG should be initialized using the 's' (seed PRNG) command before
- * starting batch captures. In addition, the fixed key should also be set
- * using 't' (fvsr key set) command before starting batch captures.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
- * @param uj The received uJSON data.
- */
-status_t aes_sca_fvsr_key_batch_generate(cryptotest_aes_sca_data_t uj_data) {
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
-  if (num_encryptions > kNumBatchOpsMax) {
-    return OUT_OF_RANGE();
-  }
-
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (sample_fixed) {
-      memcpy(batch_keys[i], key_fixed, kAesKeyLength);
-      memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
-      aes_serial_advance_fixed();
-    } else {
-      memcpy(batch_keys[i], key_random, kAesKeyLength);
-      memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
-      aes_serial_advance_random();
-    }
-    sample_fixed = batch_plaintexts[i][0] & 0x1;
-  }
-
-  return OK_STATUS();
-}
-
-/**
- * Fixed vs random key batch generate command handler.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_fvsr_key_batch_generate(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
-
-  return aes_sca_fvsr_key_batch_generate(uj_data);
-}
-
-/**
- * Fixed vs random key batch encrypt and generate command handler.
- *
- * This command is designed to maximize the capture rate for side-channel
- * attacks. Instead of expecting a plaintext and sending the resulting
- * ciphertext from and to the host for each encryption, this command repeatedly
- * encrypts random plaintexts that are generated on the device. The data
- * collection method is based on the derived test requirements (DTR) for TVLA:
- * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
- * The measurements are taken by using either fixed or randomly selected keys.
- * In order to simplify the analysis, the first encryption has to use fixed key.
- * In addition, a PRNG is used for random key and plaintext generation instead
- * of AES algorithm as specified in the TVLA DTR.
- * This minimizes the overhead of UART communication and significantly improves
- * the capture rate. The host must use the same PRNG to be able to compute the
- * random plaintext, random key and the ciphertext of each trace.
- *
- * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Number of operations of a batch should not be greater
- * than the 'kNumBatchOpsMax' value.
- *
- * The PRNG should be initialized using the 's' (seed PRNG) command before
- * starting batch encryption. In addition, the fixed key should also be set
- * using 't' (fvsr key set) command before starting batch encryption.
- *
- * Note that the host can partially verify this operation by checking the
- * contents of the 'r' (last ciphertext) packet that is sent at the end of every
- * batch.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
-
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
-  if (num_encryptions > kNumBatchOpsMax) {
-    return OUT_OF_RANGE();
-  }
-
-  if (fpga_mode) {
-    sca_set_trigger_high();
-  }
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    if (aes_encrypt(batch_plaintexts[i], kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
-  }
-  if (fpga_mode) {
-    sca_set_trigger_low();
-  }
-
-  TRY(aes_send_ciphertext(false, uj));
-
-  // Start to generate random keys and plaintexts for the next batch when the
-  // waves are getting from scope by the host to increase capture rate.
-  return aes_sca_fvsr_key_batch_generate(uj_data);
-}
-
-/**
- * Fixed vs random data batch encrypt and generate command handler.
- *
- * This command is designed to maximize the capture rate for side-channel
- * attacks. Instead of expecting a plaintext and sending the resulting
- * ciphertext from and to the host for each encryption, this command repeatedly
- * encrypts plaintexts that are generated on the device. The data
- * collection method is based on the derived test requirements (DTR) for TVLA:
- * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
- * The measurements are taken by using either fixed or randomly selected
- * plaintexts. In order to simplify the analysis, the first encryption has to
- * use fixed plaintext. This minimizes the overhead of UART communication and
- * significantly improves the capture rate. The host must use the same PRNG to
- * be able to compute the random plaintext and the ciphertext of each trace.
- *
- * Packet payload must be a `uint32_t` representation of the number of
- * encryptions to perform. Number of operations of a batch should not be greater
- * than the 'kNumBatchOpsMax' value.
- *
- * Note that the host can partially verify this operation by checking the
- * contents of the 'r' (last ciphertext) packet that is sent at the end of every
- * batch.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
- * @param uj The received uJSON data.
- */
 status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
 
   uint32_t num_encryptions = 0;
   num_encryptions = read_32(uj_data.data);
@@ -825,90 +529,59 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
   return OK_STATUS();
 }
 
-/**
- * Seed lfsr command handler.
- *
- * This function only supports 4-byte seeds.
- * Enables/disables masking depending on seed value, i.e. 0 for disable.
- *
- * The uJSON data contains:
- *  - seed: A buffer holding the seed.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
-  cryptotest_aes_sca_lfsr_t uj_lfsr_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_lfsr_t(uj, &uj_lfsr_data));
+status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
 
-  uint32_t seed_local = read_32(uj_lfsr_data.seed);
-  if (seed_local == 0) {
-    // disable masking
-    transaction.force_masks = true;
-  } else {
-    // enable masking
-    transaction.force_masks = false;
+  uint32_t num_encryptions = 0;
+  num_encryptions = read_32(uj_data.data);
+  if (num_encryptions > kNumBatchOpsMax) {
+    return OUT_OF_RANGE();
   }
-  sca_seed_lfsr(seed_local, kScaLfsrMasking);
 
-#if !OT_IS_ENGLISH_BREAKFAST
-  if (transaction.force_masks) {
-    LOG_INFO("Disabling masks.");
-    status_t res = aes_testutils_masking_prng_zero_output_seed();
-    if (res.value != 0) {
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
       return ABORTED();
     }
-    // Load the magic seed into the PRNG. After this, the PRNG outputs
-    // an all-zero vector.
-    TRY(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
-    bool idle = false;
-    do {
-      TRY(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
-    } while (!idle);
-    // Load the PRNG output into the buffer stage.
-    TRY(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+    if (aes_encrypt(batch_plaintexts[i], kAesTextLength) != aesScaOk) {
+      return ABORTED();
+    }
   }
-#endif
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
 
+  TRY(aes_send_ciphertext(false, uj));
+
+  // Start to generate random keys and plaintexts for the next batch when the
+  // waves are getting from scope by the host to increase capture rate.
+  return aes_sca_fvsr_key_batch_generate(uj_data);
+}
+
+status_t handle_aes_sca_fvsr_key_batch_generate(ujson_t *uj) {
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
+
+  return aes_sca_fvsr_key_batch_generate(uj_data);
+}
+
+status_t handle_aes_sca_fvsr_key_set(ujson_t *uj) {
+  aes_sca_key_t uj_key_data;
+  TRY(ujson_deserialize_aes_sca_key_t(uj, &uj_key_data));
+
+  if (uj_key_data.key_length != kAesKeyLength) {
+    return OUT_OF_RANGE();
+  }
+  memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
   return OK_STATUS();
 }
 
-/**
- * Seed lfsr command handler.
- *
- * This function only supports 4-byte seeds.
- * Sets the seed for the LFSR used to determine the order of measurements
- * in fixed-vs-random-data dataset.
- *
- * The uJSON data contains:
- *  - seed: A buffer holding the seed.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_seed_lfsr_order(ujson_t *uj) {
-  cryptotest_aes_sca_lfsr_t uj_lfsr_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_lfsr_t(uj, &uj_lfsr_data));
-
-  uint32_t seed_local = read_32(uj_lfsr_data.seed);
-  sca_seed_lfsr(seed_local, kScaLfsrOrder);
-
-  return OK_STATUS();
-}
-
-/**
- * Set starting values command handler.
- *
- * This function sets starting values for FvsR data generation
- * if the received value is 1.
- * These values are specified in DTR for AES TVLA.
- *
- * The uJSON data contains:
- *  - seed: A buffer holding the seed.
- *
- * @param uj The received uJSON data.
- */
 status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
-  cryptotest_aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
+  aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
   uint32_t command = 0;
   command = read_32(uj_data.data);
 
@@ -958,17 +631,10 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
   return OK_STATUS();
 }
 
-/**
- * Initialize AES command handler.
- *
- * This command is designed to setup the AES.
- *
- * @param uj The received uJSON data.
- */
 status_t handle_aes_sca_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
-  cryptotest_aes_sca_fpga_mode_t uj_data;
-  TRY(ujson_deserialize_cryptotest_aes_sca_fpga_mode_t(uj, &uj_data));
+  aes_sca_fpga_mode_t uj_data;
+  TRY(ujson_deserialize_aes_sca_fpga_mode_t(uj, &uj_data));
   if (uj_data.fpga_mode == 0x01) {
     fpga_mode = true;
   }
@@ -995,52 +661,128 @@ status_t handle_aes_sca_init(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_aes_sca_key_set(ujson_t *uj) {
+  aes_sca_key_t uj_key_data;
+  TRY(ujson_deserialize_aes_sca_key_t(uj, &uj_key_data));
+
+  memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
+  block_ctr = 0;
+  if (aes_key_mask_and_config(key_fixed, uj_key_data.key_length) != aesScaOk) {
+    return ABORTED();
+  }
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
+  aes_sca_lfsr_t uj_lfsr_data;
+  TRY(ujson_deserialize_aes_sca_lfsr_t(uj, &uj_lfsr_data));
+
+  uint32_t seed_local = read_32(uj_lfsr_data.seed);
+  if (seed_local == 0) {
+    // disable masking
+    transaction.force_masks = true;
+  } else {
+    // enable masking
+    transaction.force_masks = false;
+  }
+  sca_seed_lfsr(seed_local, kScaLfsrMasking);
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    LOG_INFO("Disabling masks.");
+    status_t res = aes_testutils_masking_prng_zero_output_seed();
+    if (res.value != 0) {
+      return ABORTED();
+    }
+    // Load the magic seed into the PRNG. After this, the PRNG outputs
+    // an all-zero vector.
+    TRY(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+    bool idle = false;
+    do {
+      TRY(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
+    } while (!idle);
+    // Load the PRNG output into the buffer stage.
+    TRY(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+  }
+#endif
+
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_seed_lfsr_order(ujson_t *uj) {
+  aes_sca_lfsr_t uj_lfsr_data;
+  TRY(ujson_deserialize_aes_sca_lfsr_t(uj, &uj_lfsr_data));
+
+  uint32_t seed_local = read_32(uj_lfsr_data.seed);
+  sca_seed_lfsr(seed_local, kScaLfsrOrder);
+
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
+  aes_sca_text_t uj_data;
+  TRY(ujson_deserialize_aes_sca_text_t(uj, &uj_data));
+  if (uj_data.text_length != kAesTextLength) {
+    return OUT_OF_RANGE();
+  }
+
+  block_ctr++;
+  // Rewrite the key to reset the internal block counter. Otherwise, the AES
+  // peripheral might trigger the reseeding of the internal masking PRNG which
+  // disturbs SCA measurements.
+  if (block_ctr > kBlockCtrMax) {
+    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
+      return ABORTED();
+    }
+    block_ctr = 1;
+  }
+
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
+  if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
+    return ABORTED();
+  }
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
+
+  TRY(aes_send_ciphertext(false, uj));
+  return OK_STATUS();
+}
+
 status_t handle_aes_sca(ujson_t *uj) {
   aes_sca_subcommand_t cmd;
   TRY(ujson_deserialize_aes_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
-    case kAesScaSubcommandInit:
-      return handle_aes_sca_init(uj);
-      break;
-    case kAesScaSubcommandKeySet:
-      return handle_aes_sca_key_set(uj);
-      break;
-    case kAesScaSubcommandSingleEncrypt:
-      return handle_aes_sca_single_encrypt(uj);
-      break;
-    case kAesScaSubcommandBatchEncrypt:
-      return handle_aes_sca_batch_encrypt(uj);
-      break;
-    case kAesScaSubcommandBatchEncryptRandom:
-      return handle_aes_sca_batch_encrypt_random(uj);
-      break;
-    case kAesScaSubcommandFvsrKeySet:
-      return handle_aes_sca_fvsr_key_set(uj);
-      break;
-    case kAesScaSubcommandFvsrKeyBatchGenerate:
-      return handle_aes_sca_fvsr_key_batch_generate(uj);
-      break;
-    case kAesScaSubcommandFvsrKeyBatchEncrypt:
-      return handle_aes_sca_fvsr_key_batch_encrypt(uj);
-      break;
-    case kAesScaSubcommandFvsrKeyStartBatchGenerate:
-      return handle_aes_sca_fvsr_key_start_batch_generate(uj);
-      break;
-    case kAesScaSubcommandFvsrDataBatchEncrypt:
-      return handle_aes_sca_fvsr_data_batch_encrypt(uj);
-      break;
-    case kAesScaSubcommandSeedLfsr:
-      return handle_aes_sca_seed_lfsr(uj);
-      break;
-    case kAesScaSubcommandSeedLfsrOrder:
-      return handle_aes_sca_seed_lfsr_order(uj);
-      break;
     case kAesScaSubcommandBatchAlternativeEncrypt:
       return handle_aes_sca_batch_alternative_encrypt(uj);
-      break;
+    case kAesScaSubcommandBatchEncrypt:
+      return handle_aes_sca_batch_encrypt(uj);
+    case kAesScaSubcommandBatchEncryptRandom:
+      return handle_aes_sca_batch_encrypt_random(uj);
     case kAesScaSubcommandBatchPlaintextSet:
       return handle_aes_sca_batch_plaintext_set(uj);
-      break;
+    case kAesScaSubcommandFvsrDataBatchEncrypt:
+      return handle_aes_sca_fvsr_data_batch_encrypt(uj);
+    case kAesScaSubcommandFvsrKeyBatchEncrypt:
+      return handle_aes_sca_fvsr_key_batch_encrypt(uj);
+    case kAesScaSubcommandFvsrKeyBatchGenerate:
+      return handle_aes_sca_fvsr_key_batch_generate(uj);
+    case kAesScaSubcommandFvsrKeySet:
+      return handle_aes_sca_fvsr_key_set(uj);
+    case kAesScaSubcommandFvsrKeyStartBatchGenerate:
+      return handle_aes_sca_fvsr_key_start_batch_generate(uj);
+    case kAesScaSubcommandInit:
+      return handle_aes_sca_init(uj);
+    case kAesScaSubcommandKeySet:
+      return handle_aes_sca_key_set(uj);
+    case kAesScaSubcommandSeedLfsr:
+      return handle_aes_sca_seed_lfsr(uj);
+    case kAesScaSubcommandSeedLfsrOrder:
+      return handle_aes_sca_seed_lfsr_order(uj);
+    case kAesScaSubcommandSingleEncrypt:
+      return handle_aes_sca_single_encrypt(uj);
     default:
       LOG_ERROR("Unrecognized AES SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
