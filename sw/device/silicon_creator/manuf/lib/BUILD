@@ -204,6 +204,7 @@ opentitan_test(
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
