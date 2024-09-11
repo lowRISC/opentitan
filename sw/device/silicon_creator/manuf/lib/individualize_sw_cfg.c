@@ -52,11 +52,16 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // immediately before the transport image is loaded, after all other
     // provisioning is complete.
     //
+    // We also skip the provisioning of the ROM bootstrap disablement
+    // configuration. This should only be disabled after all bootstrap
+    // operations in the personalization flow have been completed.
+    //
     // Additionally, we skip the provisioning of the AST configuration data, as
     // this should already be written to a flash info page. We will pull the
     // data directly from there.
     if (kv[i].offset ==
             OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
+        kv[i].offset == OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET ||
         (kv[i].offset >= kValidAstCfgOtpAddrLow &&
          kv[i].offset < kInvalidAstCfgOtpAddrHigh)) {
       continue;
@@ -194,6 +199,23 @@ status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
                     kOtpKvOwnerSwCfgSize));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  uint32_t offset;
+  TRY(dif_otp_ctrl_relative_address(
+      kDifOtpCtrlPartitionOwnerSwCfg,
+      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET, &offset));
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
+                                     offset, &kOwnerSwCfgRomBootstrapDisValue,
+                                     /*len=*/1));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_owner_sw_cfg_lock(
+    const dif_otp_ctrl_t *otp_ctrl) {
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg));
   return OK_STATUS();
 }

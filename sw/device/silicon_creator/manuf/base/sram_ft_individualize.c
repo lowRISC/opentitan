@@ -83,7 +83,9 @@ static status_t print_flash_info_0_data_to_console(void) {
  *
  * Note: CreatorSwCfg partition is not locked yet, as the flash scrambling OTP
  * field is not provisioned until after the Secret1 partition is provisioned
- * during personalization.
+ * during personalization. OwnerSwCfg partition is also not locked yet, as the
+ * bootstrap disablement OTP field is not provisioned until the last bootstrap
+ * operation is done in the personalization flow.
  */
 static status_t provision(ujson_t *uj) {
   LOG_INFO("Waiting for FT SRAM provisioning data ...");
