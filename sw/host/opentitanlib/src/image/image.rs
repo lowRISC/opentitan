@@ -325,13 +325,24 @@ impl Image {
 
         // TODO(moidx): Remove check once we have migrated away from RSA keys
         // and start using a key type field in the manifest.
-        ensure!(
-            manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR2,
-            ImageError::InvalidManifestVersionforEcdsa(
-                manifest.manifest_version.major,
-                CHIP_MANIFEST_VERSION_MAJOR2
-            )
-        );
+        //
+        // Note(cfrantz): I have disabled this error return because we want to test
+        // manifests with bad version numbers.  I've replaced the error return with
+        // a log message.  As stated by moidx@, we'll remove this once we've
+        // completely migrated away from RSA keys.
+        // ensure!(
+        //     manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR2,
+        //     ImageError::InvalidManifestVersionforEcdsa(
+        //         manifest.manifest_version.major,
+        //         CHIP_MANIFEST_VERSION_MAJOR2
+        //     )
+        // );
+        if manifest.manifest_version.major != CHIP_MANIFEST_VERSION_MAJOR2 {
+            log::error!(
+                "Invalid manifest version for ECDSA: {:?}",
+                manifest.manifest_version
+            );
+        }
 
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
 
@@ -393,8 +404,9 @@ impl Image {
         // key type.
         // TODO(moidx): Replace this with a key type field in the manifest once
         // support for RSA keys is removed.
-        manifest.manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR2;
-        manifest.manifest_version.minor = CHIP_MANIFEST_VERSION_MINOR1;
+        if manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR1 {
+            manifest.manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR2;
+        }
         Ok(())
     }
 
