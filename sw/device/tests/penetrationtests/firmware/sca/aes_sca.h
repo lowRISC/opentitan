@@ -35,6 +35,7 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj);
 status_t handle_aes_sca_fvsr_key_batch_generate(ujson_t *uj);
 status_t handle_aes_sca_fvsr_key_set(ujson_t *uj);
 status_t handle_aes_sca_batch_encrypt(ujson_t *uj);
+status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj);
 status_t handle_aes_sca_single_encrypt(ujson_t *uj);
 status_t handle_aes_sca_key_set(ujson_t *uj);
 status_t handle_aes_sca_select_trigger_source(ujson_t *uj);
