@@ -22,6 +22,7 @@ extern const uint32_t kCreatorSwCfgFlashDataDefaultCfgValue;
  */
 extern const size_t kOtpKvOwnerSwCfgSize;
 extern const otp_kv_t kOtpKvOwnerSwCfg[];
+extern const uint32_t kOwnerSwCfgRomBootstrapDisValue;
 
 /**
  * Configures the CREATOR_SW_CFG OTP partition.
@@ -101,13 +102,40 @@ status_t manuf_individualize_device_creator_sw_cfg_check(
  * Note:
  *  - The operation will fail if there are any pre-programmed words not equal to
  *    the expected test values.
- *  - The operation will lock the OWNER_SW_CFG OTP partition.
  *
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the HW_CFG0 partition is locked.
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_owner_sw_cfg(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures the ROM_BOOTSTRAP_DIS field in the OWNER_SW_CFG OTP
+ * partition.
+ *
+ * This must be called before `manuf_individualize_device_owner_sw_cfg_lock()`
+ * is called. The operation will fail if there are any pre-programmed words not
+ * equal to the expected test values.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROM_BOOTSTRAP_DIS field was provisioned.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Locks the OWNER_SW_CFG OTP partition.
+ *
+ * This must be called after both `manuf_individualize_device_owner_sw_cfg()`
+ * and `manuf_individualize_device_rom_bootstrap_dis_cfg()` have been called.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the OWNER_SW_CFG partition was locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_owner_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**

@@ -129,6 +129,9 @@ bool test_main(void) {
 
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(
+        manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
     LOG_INFO("Provisioned and locked OWNER_SW_CFG OTP partition.");
     // Perform SW reset to complete locking of the OWNER_SW_CFG partition.
     sw_reset();

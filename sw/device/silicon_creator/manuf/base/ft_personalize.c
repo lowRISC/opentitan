@@ -179,6 +179,13 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     wait_for_interrupt();
   }
 
+  // The last bootstrap process in the perso flow is done.
+  // Complete the provisioning of OTP OwnerSwCfg partition.
+  if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
+  }
+
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
   // and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
