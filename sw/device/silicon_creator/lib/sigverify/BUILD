@@ -360,6 +360,7 @@ cc_library(
     name = "sigverify",
     hdrs = ["sigverify.h"],
     deps = [
+        ":ecdsa_p256_verify",
         ":rsa_verify",
         ":spx_verify",
         ":usage_constraints",

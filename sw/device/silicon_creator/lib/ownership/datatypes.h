@@ -182,6 +182,15 @@ OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, usage_constraint, 44);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, data, 48);
 OT_ASSERT_SIZE(owner_application_key_t, 464);
 
+enum {
+  kTlvLenApplicationKeyRsa =
+      offsetof(owner_application_key_t, data) + sizeof(sigverify_rsa_key_t),
+  kTlvLenApplicationKeySpx =
+      offsetof(owner_application_key_t, data) + sizeof(sigverify_spx_key_t),
+  kTlvLenApplicationKeyEcdsa = offsetof(owner_application_key_t, data) +
+                               sizeof(sigverify_ecdsa_p256_buffer_t),
+};
+
 // clang-format off
 /**
  * Bitfields for the `access` word of flash region configs.
