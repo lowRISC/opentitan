@@ -575,6 +575,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     string txt="";
     bit [3:0][31:0] tmp_input;
     bit [3:0][31:0] tmp_output;
+    bit [3:0][31:0] tag_out;
     forever begin
       bit operation;
       aes_message_item msg;
@@ -586,9 +587,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
         //ref-model     / operation     / cipher mode /    IV   / key_len   / key /data i /data o //
         operation = msg.aes_operation == AES_ENC ? 1'b0 :
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
+        // TODO: msg.input_msg and '0 are placeholders for the actual AAD and Tag that need to
+        // be replaced when GCM once gets supported.
         c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,
                                 msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
-                                msg.input_msg, msg.predicted_msg);
+                                msg.input_msg, msg.input_msg, '0, msg.predicted_msg, tag_out);
 
         `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string()),
                   UVM_MEDIUM)
