@@ -37,7 +37,9 @@ enum {
   kEdnKatOutputLen = 16,
   kEdnKatWordsPerBlock = 4,
   kEntropyFifoBufferSize = 32,
+  kCsrngBiasFWFifoBufferSize = 12,
   kMaxReadCountNotBlocking = 32,
+  kTestParamEntropySrcMaxAttempts = 256,
 };
 
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -48,6 +50,11 @@ static dif_edn_t edn1;
 static bool disable_health_check;
 
 static bool firmware_override_init;
+
+static const uint32_t kInputMsg[kCsrngBiasFWFifoBufferSize] = {
+    0xa52a0da9, 0xcae141b2, 0x6d5bab9d, 0x2c3e5cc0, 0x225afc93, 0x5d31a610,
+    0x91b7f960, 0x0d566bb3, 0xef35e170, 0x94ba7d8e, 0x534eb741, 0x6b60b0da,
+};
 
 // Seed material for the EDN KAT instantiate command.
 static const dif_edn_seed_material_t kEdnKatSeedMaterialInstantiate = {
@@ -129,6 +136,24 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
       break;
     }
   }
+}
+
+/**
+ * Stops the entropy_src conditioner.
+ *
+ * @param entropy_src A entropy source handle.
+ */
+static void entropy_conditioner_stop(const dif_entropy_src_t *entropy_src) {
+  uint32_t fail_count = 0;
+  dif_result_t op_result;
+  do {
+    op_result = dif_entropy_src_conditioner_stop(entropy_src);
+    if (op_result == kDifIpFifoFull) {
+      CHECK(fail_count++ < kTestParamEntropySrcMaxAttempts);
+    } else {
+      CHECK_DIF_OK(op_result);
+    }
+  } while (op_result == kDifIpFifoFull);
 }
 
 status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
@@ -478,6 +503,82 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t received_data[kCsrngBiasFWFifoBufferSize];
+  const dif_csrng_seed_material_t kEmptySeedMaterial = {0};
+
+  uint32_t seed[kCsrngBiasFWFifoBufferSize];
+
+  if (static_seed) {
+    memcpy(seed, kInputMsg, sizeof(kInputMsg));
+  } else {
+    rng_fi_seed_t uj_data;
+    TRY(ujson_deserialize_rng_fi_seed_t(uj, &uj_data));
+    memcpy(seed, uj_data.seed, sizeof(uj_data.seed));
+  }
+
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
+  CHECK_STATUS_OK(entropy_testutils_fw_override_enable(
+      &entropy_src, kCsrngBiasFWFifoBufferSize,
+      /*route_to_firmware=*/false,
+      /*bypass_conditioner=*/false));
+
+  entropy_data_flush(&entropy_src);
+
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+
+  CHECK_DIF_OK(dif_entropy_src_conditioner_start(&entropy_src));
+
+  uint32_t fail_count = 0;
+  uint32_t total = 0;
+  do {
+    uint32_t count;
+    dif_result_t op_result = dif_entropy_src_fw_ov_data_write(
+        &entropy_src, seed + total, ARRAYSIZE(seed) - total, &count);
+    total += count;
+    if (op_result == kDifIpFifoFull) {
+      CHECK(fail_count++ < kTestParamEntropySrcMaxAttempts);
+    } else {
+      fail_count = 0;
+      CHECK_DIF_OK(op_result);
+    }
+  } while (total < ARRAYSIZE(seed));
+
+  sca_set_trigger_high();
+  entropy_conditioner_stop(&entropy_src);
+
+  TRY(csrng_testutils_cmd_ready_wait(&csrng));
+  CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
+                                     &kEmptySeedMaterial));
+
+  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, received_data,
+                                                   ARRAYSIZE(received_data)));
+
+  asm volatile(NOP30);
+  sca_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  rng_fi_csrng_ov_output_t uj_output;
+
+  // Send result & ERR_STATUS to host.
+  uj_output.res = 0;  // No result is returned.
+  memcpy(uj_output.rand, received_data, sizeof(received_data));
+  uj_output.err_status = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_rng_fi_csrng_ov_output_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   sca_select_trigger_type(kScaTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
@@ -517,6 +618,10 @@ status_t handle_rng_fi(ujson_t *uj) {
       return handle_rng_fi_csrng_init(uj);
     case kRngFiSubcommandCsrngBias:
       return handle_rng_fi_csrng_bias(uj);
+    case kRngFiSubcommandCsrngBiasFWOverride:
+      return handle_rng_fi_csrng_bias_fw_override(uj, false);
+    case kRngFiSubcommandCsrngBiasFWOverrideStatic:
+      return handle_rng_fi_csrng_bias_fw_override(uj, true);
     case kRngFiSubcommandEdnInit:
       return handle_rng_fi_edn_init(uj);
     case kRngFiSubcommandEdnRespAck:
