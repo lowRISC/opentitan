@@ -257,9 +257,18 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
   size_t kindex = 0;
-  RETURN_IF_ERROR(owner_keyring_find_key(
-      &keyring, kOwnershipKeyAlgRsa,
-      sigverify_rsa_key_id_get(&manifest->rsa_modulus), &kindex));
+  ownership_key_alg_t key_alg = kOwnershipKeyAlgEcdsaP256;
+  if (manifest->manifest_version.major == kManifestVersionMajor1) {
+    // TODO(cfrantz): Migrate all owner binaries to ECDSA and remove RSA3K.
+    key_alg = kOwnershipKeyAlgRsa;
+    RETURN_IF_ERROR(owner_keyring_find_key(
+        &keyring, key_alg, sigverify_rsa_key_id_get(&manifest->rsa_modulus),
+        &kindex));
+  } else {
+    RETURN_IF_ERROR(owner_keyring_find_key(
+        &keyring, key_alg,
+        sigverify_ecdsa_key_id_get(&manifest->ecdsa_public_key), &kindex));
+  }
 
   dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", kindex,
              keyring.key[kindex]->key_alg, keyring.key[kindex]->key_domain);
@@ -281,9 +290,16 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   hmac_sha256_final(&act_digest);
 
   uint32_t flash_exec = 0;
-  return sigverify_rsa_verify_ibex(&manifest->rsa_signature,
-                                   &keyring.key[kindex]->data.rsa, &act_digest,
-                                   lc_state, &flash_exec);
+  if (manifest->manifest_version.major == kManifestVersionMajor1) {
+    // TODO(cfrantz): Migrate all owner binaries to ECDSA and remove RSA3K.
+    return sigverify_rsa_verify_ibex(&manifest->rsa_signature,
+                                     &keyring.key[kindex]->data.rsa,
+                                     &act_digest, lc_state, &flash_exec);
+  } else {
+    return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
+                                       &keyring.key[kindex]->data.ecdsa,
+                                       &act_digest, &flash_exec);
+  }
 }
 
 /**
@@ -830,6 +846,12 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   if (error == kErrorWriteBootdataThenReboot) {
     return error;
   }
+  // TODO(cfrantz): evaluate permissible ownership init failure conditions
+  // and change this to HARDENED_RETURN_IF_ERROR.
+  if (error == kErrorOk) {
+    dbg_printf("ownership_init: %x\r\n", error);
+  }
+
   // Configure SRAM execution as the owner requested.
   rom_ext_sram_exec(owner_config.sram_exec);
 

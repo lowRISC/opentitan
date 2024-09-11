@@ -484,8 +484,10 @@ typedef struct manifest_ext_secver_write {
  */
 OT_WARN_UNUSED_RESULT
 inline rom_error_t manifest_check(const manifest_t *manifest) {
-  // Major version must be `kManifestVersionMajor1`.
-  if (manifest->manifest_version.major != kManifestVersionMajor1) {
+  // Major version must be `kManifestVersionMajor1` or `kManifestVersionMajor2`.
+  // TODO(cfrantz): Accept only version 2 after eliminating use of RSA keys.
+  if (manifest->manifest_version.major != kManifestVersionMajor1 &&
+      manifest->manifest_version.major != kManifestVersionMajor2) {
     return kErrorManifestBadVersionMajor;
   }
 
