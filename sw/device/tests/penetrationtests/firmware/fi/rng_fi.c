@@ -505,7 +505,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
 
 status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t received_data[kCsrngBiasFWFifoBufferSize];
   const dif_csrng_seed_material_t kEmptySeedMaterial = {0};
@@ -561,7 +561,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
