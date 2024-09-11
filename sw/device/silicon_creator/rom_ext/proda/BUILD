@@ -50,7 +50,10 @@ manifest(d = {
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         manifest = ":manifest_proda",
-        rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        rsa_key = select({
+            "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+            "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0"},
+        }),
         deps = [
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
