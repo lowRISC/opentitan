@@ -290,6 +290,7 @@ dependencies = [
  "crc",
  "cryptoki",
  "cryptoki-sys",
+ "der",
  "deser-hjson",
  "directories",
  "ecdsa",

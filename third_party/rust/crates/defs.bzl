@@ -310,6 +310,7 @@ _NORMAL_DEPENDENCIES = {
             "crc": "@crate_index__crc-3.0.1//:crc",
             "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
+            "der": "@crate_index__der-0.7.8//:der",
             "deser-hjson": "@crate_index__deser-hjson-2.1.0//:deser_hjson",
             "directories": "@crate_index__directories-5.0.1//:directories",
             "ecdsa": "@crate_index__ecdsa-0.16.9//:ecdsa",
@@ -961,7 +962,7 @@ def crate_repositories():
         name = "crate_index__const-oid-0.9.6",
         sha256 = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/const-oid/0.9.6/download"],
+        urls = ["https://static.crates.io/crates/const-oid/0.9.6/download"],
         strip_prefix = "const-oid-0.9.6",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.const-oid-0.9.6.bazel"),
     )

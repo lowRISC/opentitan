@@ -24,6 +24,7 @@ chrono = "0.4"
 const-oid = { version = "0.9.6", features=["std"] }
 clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
+der = { version = "0.7.8", features = ["alloc"] }
 deser-hjson = "2.0.0"
 directories = "5.0.1"
 ecdsa = { version = "0.16.9", features = ["pkcs8", "pem", "signing", "verifying", "sha2", "std"] }
