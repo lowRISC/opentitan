@@ -106,7 +106,7 @@ dif_aes_transaction_t transaction = {
                                        // operation
    .reseed_on_key_change = true,  // Enable PRNG reseeding every time the key
                                   // is changed (KEY_TOUCH_FORCES_RESEED)
-   .force_masks = true,     // Enable forced masking for the key (important for
+   .force_masks = false,     // Enable forced masking for the key (important for
                             // security during testing)
    .ctrl_aux_lock = false,  // Do not lock the auxiliary control settings,
                              // allowing further modifications

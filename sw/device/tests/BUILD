@@ -187,7 +187,8 @@ opentitan_test(
 
 opentitan_test(
     name = "aes_smoketest_custom_hw",
-    srcs = ["aes_basic_enc_dec.c"],
+    ##srcs = ["aes_basic_enc_dec_manualmode.c"],
+    srcs = ["aes_force_prng_reseed_test.c"],
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -211,6 +212,7 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/sca/lib:simple_serial",
         ##"//hw/ip/aes/rtl/autogen:aes_regs.h",
         ##"//hw/ip/aes/rtl/autogen:aes_autogen_headers",
         ##"//sw/device/tests/aes_regs.h",
