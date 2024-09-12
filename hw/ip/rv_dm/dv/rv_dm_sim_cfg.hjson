@@ -61,7 +61,7 @@
     }
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg+{proj_root}/hw/ip/rv_dm/dv/cov/cover.cfg"
+      value: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg"
     }
     {
       name: cover_reg_top_vcs_cov_cfg_file
