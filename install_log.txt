@@ -1,3 +1,0 @@
-Using pip 24.1.1 from /opt/security/user/rprakas/myenv/opentitan-env/lib/python3.11/site-packages/pip (python 3.11)
-Requirement already satisfied: libcst in /opt/security/user/rprakas/myenv/opentitan-env/lib/python3.11/site-packages (1.4.0)
-Requirement already satisfied: pyyaml>=5.2 in /opt/security/user/rprakas/myenv/opentitan-env/lib/python3.11/site-packages (from libcst) (6.0.1)
