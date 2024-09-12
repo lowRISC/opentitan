@@ -12,8 +12,7 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
   }
 
   task body();
-    string seq_names[] = {
-                          "rv_dm_mem_tl_access_resuming_vseq",
+    string seq_names[] = {"rv_dm_mem_tl_access_resuming_vseq",
                           "rv_dm_halt_resume_whereto_vseq",
                           "rv_dm_cmderr_busy_vseq",
                           "rv_dm_smoke_vseq",
@@ -24,8 +23,8 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
                           "rv_dm_jtag_dtm_hard_reset_vseq",
                           "rv_dm_jtag_dmi_dm_inactive_vseq",
                           "rv_dm_jtag_dtm_idle_hint_vseq",
-                          "rv_dm_jtag_dmi_debug_disabled_vseq"
-                          };
+                          "rv_dm_jtag_dmi_debug_disabled_vseq",
+                          "rv_dm_scanmode_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence    seq;
       rv_dm_base_vseq rv_dm_vseq;
