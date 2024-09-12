@@ -505,5 +505,3 @@ I00061 aes_force_prng_reseed_test.c:430] AES comparison out_data with CipherText
 I00062 ottf_main.c:109] Finished sw/device/tests/aes_force_prng_reseed_test.c
 I00063 status.c:28] PASS!
 */
-
-
