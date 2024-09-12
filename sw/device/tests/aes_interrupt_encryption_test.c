@@ -34,17 +34,23 @@ enum {
 // beginning.
 
 
-static const unsigned char kAesModesCipherTextCbc128_block12[32] = {
-    0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46, 0xce, 0xe9, 0x8e,
-    0x9b, 0x12, 0xe9, 0x19, 0x7d, 0x50, 0x86, 0xcb, 0x9b, 0x50, 0x72,
-    0x19, 0xee, 0x95, 0xdb, 0x11, 0x3a, 0x91, 0x76, 0x78, 0xb2,
-};
+//static const unsigned char kAesModesCipherTextCbc128_block12[32] = {
+//    0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46, 0xce, 0xe9, 0x8e,
+//    0x9b, 0x12, 0xe9, 0x19, 0x7d, 0x50, 0x86, 0xcb, 0x9b, 0x50, 0x72,
+//    0x19, 0xee, 0x95, 0xdb, 0x11, 0x3a, 0x91, 0x76, 0x78, 0xb2,
+//};
 
 static const unsigned char kAesModesPlainText_block12[32] = {
-    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e,
-    0x11, 0x73, 0x93, 0x17, 0x2a, 0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03,
+   0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e,
+   0x11, 0x73, 0x93, 0x17, 0x2a, 0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03,
     0xac, 0x9c, 0x9e, 0xb7, 0x6f, 0xac, 0x45, 0xaf, 0x8e, 0x51,
 };
+
+static const unsigned char kAesModesPlainText_block34[32] = {
+    0x30, 0xc8, 0x1c, 0x46, 0xa3, 0x5c, 0xe4, 0x11, 0xe5, 0xfb, 0xc1,
+    0x19, 0x1a, 0x0a, 0x52, 0xef, 0xf6, 0x9f, 0x24, 0x45, 0xdf, 0x4f,
+    0x9b, 0x17, 0xad, 0x2b, 0x41, 0x7b, 0xe6, 0x6c, 0x37, 0x10};
+
 
 
 static const uint8_t kKeyShare1[] = {
@@ -60,12 +66,12 @@ status_t execute_test(void) {
   
   // Initialise AES.
   dif_aes_t aes;
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
+
   uint8_t key_share0[sizeof(kAesModesKey128)];
   for (int i = 0; i < sizeof(kAesModesKey128); ++i) {
     key_share0[i] = kAesModesKey128[i] ^ kKeyShare1[i];
@@ -76,7 +82,7 @@ status_t execute_test(void) {
   memcpy(key.share0, key_share0, sizeof(key.share0));
   memcpy(key.share1, kKeyShare1, sizeof(key.share1));
 
- dif_aes_iv_t iv;
+  dif_aes_iv_t iv;
   memcpy(iv.iv, kAesModesIvCbc, sizeof(iv.iv));
   
 
@@ -143,14 +149,36 @@ do {
 
      transaction.manual_operation = kDifAesManualOperationManual;
      
-     CHECK_DIF_OK(dif_aes_trigger(aes,kDifAesTriggerDataOutClear));
-     CHECK_DIF_OK(dif_aes_trigger(aes,kDifAesTriggerKeyIvDataInClear));
+     CHECK_DIF_OK(dif_aes_trigger(&aes,kDifAesTriggerDataOutClear));
+     CHECK_DIF_OK(dif_aes_trigger(&aes,kDifAesTriggerKeyIvDataInClear));
 
-//  Perform an encryption using a different data and key. Message size, key size and mode can be chosen arbitrarily.
+//  Perform an trial encryption using a different data and key. Message size, key size and mode can be chosen arbitrarily.
      
- dif_aes_transaction_t transaction = {
+     dif_aes_t aes2;
+     
+  CHECK_DIF_OK(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes2));
+  CHECK_DIF_OK(dif_aes_reset(&aes2));
+
+
+  // Mask the key. Note that this should not be done manually. Software is
+  // expected to get the key in two shares right from the beginning.
+
+  uint8_t key_share0_t[sizeof(kAesModesKey256)];
+  for (int i = 0; i < sizeof(kAesModesKey256); ++i) {
+    key_share0_t[i] = kAesModesKey256[i] ^ kKeyShare1[i];
+  }
+
+  // "Convert" key share byte arrays to `dif_aes_key_share_t`.
+  dif_aes_key_share_t key_t;
+  memcpy(key_t.share0, key_share0, sizeof(key_t.share0));
+  memcpy(key_t.share1, kKeyShare1, sizeof(key_t.share1));
+
+    dif_aes_iv_t iv2;
+  memcpy(iv2.iv, kAesModesIvCtr, sizeof(iv2.iv));
+  
+dif_aes_transaction_t transaction_trial = {
       .operation = kDifAesOperationEncrypt,
-      .mode = kDifAesModeCfb,
+      .mode = kDifAesModeCtr,
       .key_len = kDifAesKey256,
       .key_provider = kDifAesKeySoftwareProvided,
       .mask_reseeding = kDifAesReseedPerBlock,
@@ -160,29 +188,29 @@ do {
   };
 
 
- // CHECK_STATUS_OK(aes_testutils_setup_encryption(transaction, aes));
-  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, &iv));
+ 
+  CHECK_DIF_OK(dif_aes_start(&aes2, &transaction_trial, &key_t, &iv2));
 
   
   // "Convert" plain data byte arrays to `dif_aes_data_t` array.
   enum {
-    kAesNumBlocks = 2,
+    kAesNumBlocks_t2 = 4,
   };
 
-  dif_aes_data_t plain_text[kAesNumBlocks];
-  dif_aes_data_t cipher_text[kAesNumBlocks];
-  memcpy(plain_text[0].data, kAesModesPlainText_block12, sizeof(kAesModesPlainText_block12));
+  dif_aes_data_t plain_text2[kAesNumBlocks_t2];
+  dif_aes_data_t cipher_text2[kAesNumBlocks_t2];
+  memcpy(plain_text2[0].data, kAesModesPlainText, sizeof(kAesModesPlainText));
   //memcpy(plain_text.data, kAesModesPlainText, sizeof(kAesModesPlainText));
 
   
   // Encrypt kAesNumBlocks blocks.
 
   CHECK_DIF_OK(dif_aes_process_data(&aes2, plain_text2, cipher_text2,
-                                    (size_t)kAesNumBlocks));
+                                    (size_t)kAesNumBlocks_t2));
 
   
 
-  CHECK_DIF_OK(dif_aes_load_data(&aes, plain_text[0]));
+CHECK_DIF_OK(dif_aes_load_data(&aes2, plain_text2[0]));
    
    //   CHECK_DIF_OK(dif_aes_load_data(&aes, plain_text[1]));
  
@@ -190,19 +218,19 @@ do {
   ////CHECK_ARRAYS_EQ((uint8_t *)cipher_text[0].data, kAesModesCipherTextEcb128,
    //            sizeof(kAesModesCipherTextEcb128));
 
- LOG_INFO("Started  AES Encrypt with load function");
-
-
+ LOG_INFO("Started AES trial Encrypt");
 
  
 
-   CHECK_DIF_OK(dif_aes_end(&aes));
+ 
+
+   CHECK_DIF_OK(dif_aes_end(&aes2));
 
   
-
+   // No need to check for the successful encryption commands below since its a trial transaction
  // Check the ciphertext against the expected value.
-   CHECK_ARRAYS_EQ((uint8_t *)cipher_text[0].data, kAesModesCipherTextCbc128_block12,
-                  sizeof(kAesModesCipherTextCbc128_block12));
+//   CHECK_ARRAYS_EQ((uint8_t *)cipher_text[0].data, kAesModesCipherTextCbc128_block12,
+//                  sizeof(kAesModesCipherTextCbc128_block12));
    //   CHECK_ARRAYS_EQ((uint8_t *)cipher_text[1].data, kAesModesCipherTextCbc128,
    //                sizeof(kAesModesCipherTextCbc128));
    
@@ -210,6 +238,47 @@ do {
 
    // CHECK_DIF_OK(dif_aes_end(&aes));
 // Encryption started
+
+   // End trial encryption
+   // Resume the Original Encryption here
+     
+     memcpy(iv.iv, &iv_encrypt1, sizeof(iv.iv));
+     transaction.manual_operation = kDifAesManualOperationAuto;
+     
+     //  uint8_t key_share0[sizeof(kAesModesKey128)];
+     //for (int i = 0; i < sizeof(kAesModesKey128); ++i) {
+     //key_share0[i] = kAesModesKey128[i] ^ kKeyShare1[i];
+     // }
+
+  // "Convert" key share byte arrays to `dif_aes_key_share_t`.
+     //dif_aes_key_share_t key;
+     //memcpy(key.share0, key_share0, sizeof(key.share0));
+     //memcpy(key.share1, kKeyShare1, sizeof(key.share1));
+
+     
+  
+     // no dif_aes_start 
+   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, &iv));
+
+ memcpy(plain_text[0].data, kAesModesPlainText_block34, sizeof(kAesModesPlainText_block34));
+
+ 
+  CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready));
+   LOG_INFO("Resuming Encrypt - Input data pass");
+  
+ 
+  CHECK_DIF_OK(dif_aes_process_data(&aes, plain_text, cipher_text,
+                                   (size_t)kAesNumBlocks));
+ CHECK_DIF_OK(dif_aes_load_data(&aes, plain_text[0]));
+
+  
+do {
+      CHECK_DIF_OK(
+          dif_aes_get_status(&aes, kDifAesStatusOutputValid, &ready));
+    } while (!ready);
+
+ 
+  // CHECK_DIF_OK(dif_aes_load_data(&aes, plain_text)); 
 
    // CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, &iv));
    // Decrypt operation below
@@ -249,7 +318,7 @@ do {
 
   
   //Start 
-   CHECK_DIF_OK(dif_aes_start(&aes, &transactiond, &key, &iv));
+      CHECK_DIF_OK(dif_aes_start(&aes, &transactiond, &key, &iv));
    
 
    memcpy(cipher_text[0].data, kAesModesCipherTextCbc128,
@@ -269,7 +338,7 @@ do {
    CHECK_DIF_OK(dif_aes_end(&aes));
   // Finish the CBC decryption transaction.
  
-    CHECK_ARRAYS_EQ((uint8_t *)out_data2.data, kAesModesPlainText_block12,
+    CHECK_ARRAYS_EQ((uint8_t *)out_data2.data, kAesModesPlainText,
                       sizeof(out_data2.data));
    
 //// transaction.manual_operation = kDifAesManualOperationManual;
