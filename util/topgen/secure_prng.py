@@ -173,23 +173,25 @@ class secure_prng():
         from previous instantiation.
         """
         if seed == 0:
-            entropy_input = seed.to_bytes(32, 'big')
             log.error("ERROR: PRNG seeded with 0.")
             sys.exit(1)
-        # Check if the provided seed is at least 32 bytes long.
-        elif sys.getsizeof(seed) < sys.getsizeof(1 << 255):
-            # Error out if seed is shorter than 256 bits.
-            log.error("ERROR: Seed shorter than 256 bits.")
-            sys.exit(1)
+
+        if seed.bit_length() < 250:
+            # Warn, but don't fail, because the DV logic always passes in 32-bit
+            # seeds and this can naturally happen about 1% of the time.
+            log.warn('PRNG seed is only {seed.bit_length()} bits long, which is '
+                     'unlikely for a sample from a 256-bit distribution. Please '
+                     'double-check the logic.')
         # Check if the seed is longer than 256 bits. Trim the excess bits and
         # issue a warning if it is.
-        elif seed > (1 << 256):
+        if seed.bit_length() > 256:
             new_seed = seed % (1 << 256)
             log.warning("Seed longer than 256 bits. CTR_DRBG seeded with: " +
                         hex(new_seed))
             entropy_input = new_seed.to_bytes(32, 'big')
         else:
             entropy_input = seed.to_bytes(32, 'big')
+
         self.CTR_DRBG_Instantiate(entropy_input)
         self.returned_bits = []
 
