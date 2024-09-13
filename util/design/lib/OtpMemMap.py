@@ -8,7 +8,7 @@ documentation, and to create OTP memory images for preloading.
 import logging as log
 from math import ceil, log2
 
-from lib.common import check_bool, check_int, expand_seed, random_or_hexvalue
+from lib.common import check_bool, check_int, random_or_hexvalue
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
 from topgen import secure_prng as sp
@@ -405,7 +405,7 @@ class OtpMemMap():
         config["seed"] = check_int(config["seed"])
 
         # Initialize RNG.
-        sp.reseed(expand_seed(OTP_SEED_DIVERSIFIER + int(config['seed'])))
+        sp.reseed(OTP_SEED_DIVERSIFIER + int(config['seed']))
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
