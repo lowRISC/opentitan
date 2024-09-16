@@ -236,7 +236,7 @@ ownership_transfer_test(
 )
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_bad_locked_update_test
-# Part 1: Ensure a LockedUpdate with a new owner key is rejected.
+# Part 1: Ensure in UnlockedSelf that a new owner key is rejected.
 ownership_transfer_test(
     name = "bad_locked_update_test",
     fpga = fpga_params(
@@ -262,7 +262,7 @@ ownership_transfer_test(
 )
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_bad_locked_update_test
-# Part 2: Ensure a LockedUpdate denies execution to anything signed with new app keys.
+# Part 2: Ensure the UnlockedSelf state denies execution to anything signed with new app keys.
 ownership_transfer_test(
     name = "bad_locked_update_no_exec_test",
     fpga = fpga_params(

@@ -145,7 +145,7 @@ TEST_P(OwnershipUnlockAnyStateTest, InvalidState) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockAnyStateTest,
-                         testing::Values(kOwnershipStateLockedUpdate,
+                         testing::Values(kOwnershipStateUnlockedSelf,
                                          kOwnershipStateUnlockedAny,
                                          kOwnershipStateUnlockedEndorsed));
 
@@ -223,11 +223,11 @@ TEST_P(OwnershipUnlockEndorsedStateTest, InvalidState) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockEndorsedStateTest,
-                         testing::Values(kOwnershipStateLockedUpdate,
+                         testing::Values(kOwnershipStateUnlockedSelf,
                                          kOwnershipStateUnlockedAny,
                                          kOwnershipStateUnlockedEndorsed));
 
-// Test that requesting LockedOwner->LockedUpdate works.
+// Test that requesting LockedOwner->UnlockedSelf works.
 TEST_F(OwnershipUnlockTest, UnlockUpdate) {
   message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockUpdate;
   EXPECT_CALL(
@@ -241,10 +241,10 @@ TEST_F(OwnershipUnlockTest, UnlockUpdate) {
   EXPECT_EQ(error, kErrorWriteBootdataThenReboot);
   EXPECT_EQ(bootdata_.nonce.value[0], 5);
   EXPECT_EQ(bootdata_.nonce.value[1], 5);
-  EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedUpdate);
+  EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateUnlockedSelf);
 }
 
-// Test that requesting LockedOwner->LockedUpdate fails when the signature is
+// Test that requesting LockedOwner->UnlockedSelf fails when the signature is
 // bad.
 TEST_F(OwnershipUnlockTest, UnlockedUpdateBadSignature) {
   message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockUpdate;
@@ -259,7 +259,7 @@ TEST_F(OwnershipUnlockTest, UnlockedUpdateBadSignature) {
   EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
 }
 
-// Test that requesting LockedOwner->LockedUpdate fails when the nonce doesn't
+// Test that requesting LockedOwner->UnlockedSelf fails when the nonce doesn't
 // match.
 TEST_F(OwnershipUnlockTest, UnlockedUpdateBadNonce) {
   message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockUpdate;
@@ -287,7 +287,7 @@ TEST_P(OwnershipUnlockedUpdateStateTest, InvalidState) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockedUpdateStateTest,
-                         testing::Values(kOwnershipStateLockedUpdate,
+                         testing::Values(kOwnershipStateUnlockedSelf,
                                          kOwnershipStateUnlockedEndorsed,
                                          kOwnershipStateRecovery));
 
@@ -310,7 +310,7 @@ TEST_P(OwnershipUnlockAbortValidStateTest, UnlockAbort) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockAbortValidStateTest,
-                         testing::Values(kOwnershipStateLockedUpdate,
+                         testing::Values(kOwnershipStateUnlockedSelf,
                                          kOwnershipStateUnlockedEndorsed,
                                          kOwnershipStateUnlockedAny));
 

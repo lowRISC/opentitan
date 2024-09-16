@@ -60,7 +60,7 @@ class OwnershipActivateTest : public rom_test::RomTest {
                 bootdata_.next_owner[6],
                 bootdata_.next_owner[7],
             }}));
-      case kOwnershipStateLockedUpdate:
+      case kOwnershipStateUnlockedSelf:
         owner_page[1].owner_key = owner_page[0].owner_key;
         owner_page[1].owner_key.raw[0] += modifier;
         break;
@@ -176,7 +176,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageInvalid) {
   MakePage1Valid(false);
 
   switch (state) {
-    case kOwnershipStateLockedUpdate:
+    case kOwnershipStateUnlockedSelf:
     case kOwnershipStateUnlockedEndorsed:
       // Test should fail with "Invalid Info Page".
       expected_result = kErrorOwnershipInvalidInfoPage;
@@ -206,7 +206,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
       .WillOnce(Return(kHardenedBoolTrue));
 
   switch (state) {
-    case kOwnershipStateLockedUpdate:
+    case kOwnershipStateUnlockedSelf:
     case kOwnershipStateUnlockedAny:
     case kOwnershipStateUnlockedEndorsed:
       // Test should pass.
@@ -250,7 +250,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateValidStateTest,
-                         testing::Values(kOwnershipStateLockedUpdate,
+                         testing::Values(kOwnershipStateUnlockedSelf,
                                          kOwnershipStateUnlockedAny,
                                          kOwnershipStateUnlockedEndorsed));
 

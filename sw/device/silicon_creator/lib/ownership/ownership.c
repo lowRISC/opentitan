@@ -97,9 +97,9 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
                                  owner_application_keyring_t *keyring) {
   uint32_t secondary =
       bootdata->primary_bl0_slot == kBootSlotA ? kBootSlotB : kBootSlotA;
-  if (bootdata->ownership_state == kOwnershipStateLockedUpdate &&
+  if (bootdata->ownership_state == kOwnershipStateUnlockedSelf &&
       owner_page_valid[0] != kOwnerPageStatusSealed) {
-    // Owner Page 0 must be sealed in the "LockedUpdate" state.  If not,
+    // Owner Page 0 must be sealed in the "UnlockedSelf" state.  If not,
     // go to the Recovery state.
     bootdata->ownership_state = kOwnershipStateRecovery;
     nonce_new(&bootdata->nonce);
@@ -168,7 +168,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   //     - Make sure page0 and page1 are identical and fix if not.
   //     - Set up flash config.
   //     - Enumerate application keys.
-  // - kOwnershipStateLockedUpdate:
+  // - kOwnershipStateUnlockedSelf:
   //     - Allow the pages to be different if the owner keys are the same.
   //     - Set up flash config: primary from page0, secondary from page 1.
   //     - Enumerate application keys from both pages.
@@ -192,7 +192,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
     case kOwnershipStateLockedOwner:
       error = locked_owner_init(bootdata, config, keyring);
       break;
-    case kOwnershipStateLockedUpdate:
+    case kOwnershipStateUnlockedSelf:
       OT_FALLTHROUGH_INTENDED;
     case kOwnershipStateUnlockedAny:
       OT_FALLTHROUGH_INTENDED;

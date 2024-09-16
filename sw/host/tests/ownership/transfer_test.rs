@@ -111,7 +111,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         match opts.unlock_mode {
             UnlockMode::Any => assert_eq!(capture[1], "UANY"),
             UnlockMode::Endorsed => assert_eq!(capture[1], "UEND"),
-            UnlockMode::Update => assert_eq!(capture[1], "LUPD"),
+            UnlockMode::Update => assert_eq!(capture[1], "USLF"),
             _ => return Err(anyhow!("Unexpected ownership state: {}", capture[1])),
         }
         transfers0 = capture[2].parse::<u32>()?;
