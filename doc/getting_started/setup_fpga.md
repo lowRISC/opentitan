@@ -240,8 +240,8 @@ On your CW340 base board (the red board):
     1. UART1 RX/TX (OpenTitan pins IOA0/1): JP3 & JP4
     1. JTAG TAP select straps (OpenTitan pins IOC5/8): JP11 & JP12
 1. Connect the following blue socket-to-socket jumpers in the middle of the board to `HD` (for "HyperDebug").
-    1. SPI Device: connect JP23 to JP25
-    1. JTAG: connect JP13 to JP15
+    1. SPI Device: connect J23 to J25
+    1. JTAG: connect J12 to J13
 
 ##### Connecting HyperDebug to the CW340 Base Board
 
@@ -250,7 +250,6 @@ On your CW340 base board (the red board):
     1. Connected via USB-C to your PC (described above).
 1. Ensure the HyperDebug jumper JP4 is set to select `1.8V`.
 1. Connect the HyperDebug board to the ST Zio connectors in the bottom left of the board.
-1. Connect the PC USB-C cable back to your HyperDebug board.
 1. Connect the PC USB-C cable back to your HyperDebug board.
 1. Power on the CW340 by setting the *Control Power* switch in the top left corner, *SW7*, to the left towards the barrel jack.
 
