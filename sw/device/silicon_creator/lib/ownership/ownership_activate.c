@@ -81,7 +81,7 @@ rom_error_t ownership_activate_handler(boot_svc_msg_t *msg,
                                        boot_data_t *bootdata) {
   rom_error_t error = kErrorOwnershipInvalidState;
   switch (bootdata->ownership_state) {
-    case kOwnershipStateLockedUpdate:
+    case kOwnershipStateUnlockedSelf:
     case kOwnershipStateUnlockedAny:
     case kOwnershipStateUnlockedEndorsed:
       error = activate(msg, bootdata);

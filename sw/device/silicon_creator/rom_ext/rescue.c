@@ -60,7 +60,7 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
 
 rom_error_t flash_owner_block(rescue_state_t *state, boot_data_t *bootdata) {
   if (bootdata->ownership_state == kOwnershipStateUnlockedAny ||
-      bootdata->ownership_state == kOwnershipStateLockedUpdate ||
+      bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
       bootdata->ownership_state == kOwnershipStateUnlockedEndorsed) {
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
         &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
@@ -129,7 +129,7 @@ static void validate_mode(uint32_t mode, rescue_state_t *state,
         break;
       case kRescueModeOwnerBlock:
         if (bootdata->ownership_state == kOwnershipStateUnlockedAny ||
-            bootdata->ownership_state == kOwnershipStateLockedUpdate ||
+            bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
             bootdata->ownership_state == kOwnershipStateUnlockedEndorsed) {
           dbg_printf("ok: send owner_block via xmodem-crc\r\n");
         } else {

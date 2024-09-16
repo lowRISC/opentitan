@@ -389,7 +389,7 @@
         Verify that ROM_EXT accepts an owner configuration update.
 
         - Start in an locked & owned state with the `fake` owner as owner.
-        - Unlock the chip into the LockedUpdate state using the `fake` owner unlock key.
+        - Unlock the chip into the UnlockedSelf state using the `fake` owner unlock key.
         - Upload an new owner block using the `fake` owner key (ie: embed the `dummy` app key in the `fake` owner block).
         - Activate ownership with the `fake` activate key.
         - Confirm code execution with the `dummy` owner application key.
@@ -413,7 +413,7 @@
         Verify that ROM_EXT rejects an owner configuration update.
 
         - Start in an locked & owned state with the `fake` owner as owner.
-        - Unlock the chip into the LockedUpdate state using the `fake` owner unlock key.
+        - Unlock the chip into the UnlockedSelf state using the `fake` owner unlock key.
         - Upload an new owner block using the wrong owner key (ie: use the `dummy` owner and app key).
         - Activate ownership with the `fake` activate key.
         - Confirm the activate is rejected with an `OwnershipInvalidInfoPage` error.
