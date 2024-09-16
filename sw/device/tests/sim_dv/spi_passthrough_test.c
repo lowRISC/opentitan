@@ -136,6 +136,21 @@ static const pinmux_select_t pinmux_in_config[] = {
     //     },
 };
 
+static const top_earlgrey_direct_pads_t spi_host0_direct_pads[5] = {
+    kTopEarlgreyDirectPadsSpiHost0Sck,  // sck
+    kTopEarlgreyDirectPadsSpiHost0Sd3,  // sio[3]
+    kTopEarlgreyDirectPadsSpiHost0Sd2,  // sio[2]
+    kTopEarlgreyDirectPadsSpiHost0Sd1,  // sio[1]
+    kTopEarlgreyDirectPadsSpiHost0Sd0   // sio[0]
+};
+
+static const top_earlgrey_direct_pads_t spi_device_direct_pads[4] = {
+    kTopEarlgreyDirectPadsSpiDeviceSd3,  // sio[3]
+    kTopEarlgreyDirectPadsSpiDeviceSd2,  // sio[2]
+    kTopEarlgreyDirectPadsSpiDeviceSd1,  // sio[1]
+    kTopEarlgreyDirectPadsSpiDeviceSd0   // sio[0]
+};
+
 /**
  * Initialize the provided SPI host. For the most part, the values provided are
  * filler, as spi_host0 will be in passthrough mode and spi_host1 will remain
@@ -375,6 +390,72 @@ bool test_main(void) {
     pinmux_select_t setting = pinmux_out_config[i];
     CHECK_DIF_OK(
         dif_pinmux_output_select(&pinmux, setting.pad, setting.peripheral));
+  }
+
+  // Set fast slew rate and strong drive strengh for SPI host0 pads.
+  dif_pinmux_pad_attr_t out_attr;
+  dif_pinmux_pad_attr_t in_attr = {
+      .slew_rate = 1,
+      .drive_strength = 3,
+      // Set weak pull-ups for all the pads.
+      .flags = kDifPinmuxPadAttrPullResistorEnable |
+               kDifPinmuxPadAttrPullResistorUp};
+  dif_result_t res;
+  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host0_direct_pads); ++i) {
+    res = dif_pinmux_pad_write_attrs(&pinmux, spi_host0_direct_pads[i],
+                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
+    if (res == kDifError) {
+      // Some target platforms may not support the specified value for slew rate
+      // and drive strength. If that's the case, use the values actually
+      // supported.
+      if (out_attr.slew_rate != in_attr.slew_rate) {
+        LOG_INFO(
+            "Specified slew rate not supported, trying supported slew rate");
+        in_attr.slew_rate = out_attr.slew_rate;
+      }
+      if (out_attr.drive_strength != in_attr.drive_strength) {
+        LOG_INFO(
+            "Specified drive strength not supported, trying supported drive "
+            "strength");
+        in_attr.drive_strength = out_attr.drive_strength;
+      }
+      CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, spi_host0_direct_pads[i],
+                                              kDifPinmuxPadKindDio, in_attr,
+                                              &out_attr));
+      // Note: fallthrough with the modified `in_attr` so that the same
+      // attributes are used for all pads.
+    }
+  }
+
+  // Set fast slew rate and strong drive strengh for SPI device pads.
+  in_attr.slew_rate = 1;
+  in_attr.drive_strength = 3;
+  // Don't enable pull-ups for SPI device pads.
+  in_attr.flags = 0;
+  for (uint32_t i = 0; i <= ARRAYSIZE(spi_device_direct_pads); ++i) {
+    res = dif_pinmux_pad_write_attrs(&pinmux, spi_device_direct_pads[i],
+                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
+    if (res == kDifError) {
+      // Some target platforms may not support the specified value for slew rate
+      // and drive strength. If that's the case, use the values actually
+      // supported.
+      if (out_attr.slew_rate != in_attr.slew_rate) {
+        LOG_INFO(
+            "Specified slew rate not supported, trying supported slew rate");
+        in_attr.slew_rate = out_attr.slew_rate;
+      }
+      if (out_attr.drive_strength != in_attr.drive_strength) {
+        LOG_INFO(
+            "Specified drive strength not supported, trying supported drive "
+            "strength");
+        in_attr.drive_strength = out_attr.drive_strength;
+      }
+      CHECK_DIF_OK(
+          dif_pinmux_pad_write_attrs(&pinmux, spi_device_direct_pads[i],
+                                     kDifPinmuxPadKindDio, in_attr, &out_attr));
+      // Note: fallthrough with the modified `in_attr` so that the same
+      // attributes are used for all pads.
+    }
   }
 
   // Initialize the PLIC.
