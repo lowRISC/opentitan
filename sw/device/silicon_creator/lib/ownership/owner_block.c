@@ -34,8 +34,8 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
       case kOwnershipStateUnlockedAny:
         // In UnlockedAny, any valid (signed) Owner Page 1 is acceptable.
         return kHardenedBoolTrue;
-      case kOwnershipStateLockedUpdate:
-        // In LockedUpdate, the owner key must be the same.  If not,
+      case kOwnershipStateUnlockedSelf:
+        // In UnlockedSelf, the owner key must be the same.  If not,
         // skip parsing of Owner Page 1.
         if (hardened_memeq(
                 owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
