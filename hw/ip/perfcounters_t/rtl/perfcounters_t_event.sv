@@ -99,6 +99,7 @@ logic	     event_clk_counter3_en;
   assign hw2reg.event_reg.event_5.d = 1'b0;
   assign hw2reg.event_reg.event_6.d = 1'b0;
   assign hw2reg.event_reg.event_7.d = 1'b0;
+  assign hw2reg.event_reg.unused.d = 'b0;
 
   assign hw2reg.event_reg.event_0.de = reg2hw.event_reg.event_0.q;
   assign hw2reg.event_reg.event_1.de = reg2hw.event_reg.event_1.q;
@@ -108,6 +109,7 @@ logic	     event_clk_counter3_en;
   assign hw2reg.event_reg.event_5.de = reg2hw.event_reg.event_5.q;
   assign hw2reg.event_reg.event_6.de = reg2hw.event_reg.event_6.q;
   assign hw2reg.event_reg.event_7.de = reg2hw.event_reg.event_7.q;
+  assign hw2reg.event_reg.unused.de = 1'b1;
 
 
   // Derive 1 clk pulse on RST
@@ -119,11 +121,13 @@ logic	     event_clk_counter3_en;
   assign hw2reg.event_counters_rst_reg.event_clk_counter1_rst.d = 1'b0;
   assign hw2reg.event_counters_rst_reg.event_clk_counter2_rst.d = 1'b0;
   assign hw2reg.event_counters_rst_reg.event_clk_counter3_rst.d = 1'b0;
+  assign hw2reg.event_counters_rst_reg.unused.d = 'b0;
 
   assign hw2reg.event_counters_rst_reg.event_counter0_rst.de = reg2hw.event_counters_rst_reg.event_counter0_rst.q;
   assign hw2reg.event_counters_rst_reg.event_counter1_rst.de = reg2hw.event_counters_rst_reg.event_counter1_rst.q;
   assign hw2reg.event_counters_rst_reg.event_counter2_rst.de = reg2hw.event_counters_rst_reg.event_counter2_rst.q;
   assign hw2reg.event_counters_rst_reg.event_counter3_rst.de = reg2hw.event_counters_rst_reg.event_counter3_rst.q;
+  assign hw2reg.event_counters_rst_reg.unused.de = 1'b1;
 
   assign hw2reg.event_counters_rst_reg.event_clk_counter0_rst.de = reg2hw.event_counters_rst_reg.event_clk_counter0_rst.q;
   assign hw2reg.event_counters_rst_reg.event_clk_counter1_rst.de = reg2hw.event_counters_rst_reg.event_clk_counter1_rst.q;

@@ -15,7 +15,7 @@
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
-// algrin add perfcounters
+
 module top_earlgrey #(
   parameter int unsigned AxiAddrWidth = 64,
   parameter int unsigned AxiDataWidth = 64,
@@ -599,10 +599,7 @@ module top_earlgrey #(
 
 
   // define inter-module signals
-  //
- perfcounters_t_reg_pkg::perfcounters_t_reg2hw_t perfcounters_t_rsp; // Write
- perfcounters_t_reg_pkg::perfcounters_t_hw2reg_t perfcounters_t_req; // Read
- 
+
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
   prim_ram_2p_pkg::ram_2p_cfg_t       ast_ram_2p_cfg;

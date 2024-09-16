@@ -35,7 +35,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_USBDEV               = 32'h c0320000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__RAM  = 32'h e0000000;
   localparam logic [1:0][31:0] ADDR_SPACE_TLUL2AXI             = {
-    32'h 0c000000,
+    32'h 02000000,
     32'h 00010000
   };
   localparam logic [0:0][31:0] ADDR_SPACE_PERFCOUNTERS_T       = {
