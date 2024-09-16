@@ -348,8 +348,13 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
     end else `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
 
+    `uvm_info(`gfn, $sformatf("%m - csr_name = %s, write = %0d, channel = %s",
+                              csr_name, write, channel.name), UVM_DEBUG)
+
+
     if (cmd_phase_write) begin
-      `uvm_info(`gfn, $sformatf("Accessing CSR: %s",csr_name), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("Accessing CSR: %s - data = 0x%0x / mask = 0x%0x",
+                                csr_name, item.a_data, item.a_mask), UVM_DEBUG)
       case (csr_name)
         default:; // Do nothing
         "control": begin

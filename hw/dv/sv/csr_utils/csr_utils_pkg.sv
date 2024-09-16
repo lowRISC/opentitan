@@ -24,6 +24,15 @@ package csr_utils_pkg;
   int               max_outstanding_accesses    = 100;
   uvm_reg_frontdoor default_user_frontdoor      = null;
 
+  class csr_spinwait_ctrl_object extends uvm_object;
+    `uvm_object_utils(csr_spinwait_ctrl_object)
+    bit stop;
+    function new(string name = "csr_spinwait_ctrl_object");
+      super.new(name);
+    endfunction
+  endclass
+
+
   function automatic void increment_outstanding_access();
     outstanding_accesses++;
     `uvm_info("csr_utils_pkg", $sformatf("increment_outstanding_access %0d", outstanding_accesses),
@@ -585,6 +594,107 @@ package csr_utils_pkg;
                              "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
                              ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
                              exp_data,lcount)})
+          end
+        join_any
+        disable fork;
+      end : isolation_fork
+    join
+  endtask
+
+  // Like csr_spinwait, only the timeout can be stop by using an event.
+  // In addition, one needs to pass the clock cycle period.
+  // This can be used instead of csr_spinwait for moments in which the timeout needs to be
+  // controlled due to RTL conditions such as SW_rest or the module being disabled.
+  task automatic csr_spinwait_stoppable(input   uvm_object ptr,
+                                        input   uvm_reg_data_t exp_data,
+                                        input   uvm_check_e check = default_csr_check,
+                                        input   uvm_path_e path = UVM_DEFAULT_PATH,
+                                        input   uvm_reg_map map = null,
+                                        input   uvm_reg_frontdoor user_ftdr =
+                                                default_user_frontdoor,
+                                        input   uint spinwait_delay_ns = 0,
+                                        input   uint timeout_ns = default_spinwait_timeout_ns,
+                                        input   compare_op_e compare_op = CompareOpEq,
+                                        input   bit backdoor = 0,
+                                        input   uvm_verbosity verbosity = UVM_HIGH,
+                                        input   uint clk_cycle_period_ns,
+                                        input   string start_stop_ev_name =
+                                                           "start_stop_spinwait_ev"
+                                        );
+    static int                      count;
+    count++;
+    `uvm_info($sformatf("%m()"), $sformatf(
+                "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
+                count,backdoor,exp_data, ptr.get_name()), verbosity)
+    fork
+      begin : isolation_fork
+        csr_field_t     csr_or_fld;
+        uvm_reg_data_t  read_data;
+        string          msg_id = {csr_utils_pkg::msg_id, "::csr_spinwait"};
+        automatic int lcount = count;
+
+        csr_or_fld = decode_csr_or_field(ptr);
+        if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
+        fork
+          while (!under_reset) begin
+            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
+            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d",lcount),
+                      verbosity)
+            csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
+                   .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
+            `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",
+                                        ptr.get_full_name(), read_data), verbosity)
+            case (compare_op)
+              CompareOpEq:     if (read_data ==  exp_data) break;
+              CompareOpCaseEq: if (read_data === exp_data) break;
+              CompareOpNe:     if (read_data !=  exp_data) break;
+              CompareOpCaseNe: if (read_data !== exp_data) break;
+              CompareOpGt:     if (read_data >   exp_data) break;
+              CompareOpGe:     if (read_data >=  exp_data) break;
+              CompareOpLt:     if (read_data <   exp_data) break;
+              CompareOpLe:     if (read_data <=  exp_data) break;
+              default: begin
+                `uvm_fatal(ptr.get_full_name(), $sformatf("invalid operator:%0s", compare_op))
+              end
+            endcase
+          end
+          begin: timeout_block
+            automatic int lcount = count;
+            automatic int unsigned clk_cycles = 0;
+            automatic csr_spinwait_ctrl_object obj;
+            automatic uvm_event start_stop_spinwait_ev;
+            start_stop_spinwait_ev = uvm_event_pool::get_global(start_stop_ev_name);
+
+            while ( (clk_cycles * clk_cycle_period_ns) <= timeout_ns) begin
+              clk_cycles++;
+              #(clk_cycle_period_ns * 1ns);
+              if (start_stop_spinwait_ev.is_on()) begin
+                uvm_object ev_obj;
+                // Event triggerred
+                ev_obj = start_stop_spinwait_ev.get_trigger_data();
+                if (!$cast(obj, ev_obj))
+                  `uvm_fatal($sformatf("%m()"), "CAST FAILED")
+
+                if (obj.stop) begin
+                  start_stop_spinwait_ev.wait_ptrigger_data(ev_obj);
+                  $display("EVENT TRIGGERED AND STOP");
+                  `uvm_info($sformatf("%m"), "Event triggered to halt the timeout", UVM_DEBUG)
+                  if (!$cast(obj, ev_obj))
+                    `uvm_fatal($sformatf("%m()"), "CAST FAILED")
+                  if(obj.stop)
+                    `uvm_fatal($sformatf("%m"), "Event has already been triggered with stop=1")
+                end
+              end
+
+            end
+
+            `uvm_fatal($sformatf("%m()"),
+                               {$sformatf("timeout = %0dns  %0s (addr=0x%0h,",timeout_ns,
+                                          ptr.get_full_name(), csr_or_fld.csr.get_address()),
+                                $sformatf(" Comparison=%s, exp_data=0x%0h, call_count=%0d)",
+                                          compare_op.name, exp_data,lcount)}
+                                       )
+
           end
         join_any
         disable fork;
