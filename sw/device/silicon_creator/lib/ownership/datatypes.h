@@ -101,7 +101,7 @@ typedef struct owner_block {
    */
   tlv_header_t header;
   /** Version of the owner struct.  Currently `0`. */
-  uint32_t version;
+  uint32_t struct_version;
   /** SRAM execution configuration (DisabledLocked, Disabled, Enabled). */
   uint32_t sram_exec_mode;
   /** Ownership key algorithm (currently, only ECDSA is supported). */
@@ -123,7 +123,7 @@ typedef struct owner_block {
 } owner_block_t;
 
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, header, 0);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, version, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, struct_version, 8);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, sram_exec_mode, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, ownership_key_alg, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 20);

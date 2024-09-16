@@ -14,14 +14,23 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
-  size_t len = (uintptr_t)&msg->ownership_activate_req.signature -
-               (uintptr_t)&msg->ownership_activate_req.primary_bl0_slot;
-  // First check if page1 is even in a valid state for a transfer.
+  // Check if page1 is in a valid state for a transfer (e.g. signature and owner
+  // requirements are met). We do this first (rather than parse) because if the
+  // signature requirements are not met, the RAM copy of the owner page will be
+  // destroyed.
   if (owner_block_page1_valid_for_transfer(bootdata) != kHardenedBoolTrue) {
     return kErrorOwnershipInvalidInfoPage;
   }
 
+  // Check if page1 parses correctly.
+  owner_config_t config;
+  owner_application_keyring_t keyring;
+  HARDENED_RETURN_IF_ERROR(
+      owner_block_parse(&owner_page[1], &config, &keyring));
+
   // Check the activation key and the nonce.
+  size_t len = (uintptr_t)&msg->ownership_activate_req.signature -
+               (uintptr_t)&msg->ownership_activate_req.primary_bl0_slot;
   if (ownership_key_validate(/*page=*/1, kOwnershipKeyActivate,
                              &msg->ownership_activate_req.signature,
                              &msg->ownership_activate_req.primary_bl0_slot,

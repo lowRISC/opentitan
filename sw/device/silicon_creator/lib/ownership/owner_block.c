@@ -78,12 +78,14 @@ void owner_config_default(owner_config_t *config) {
 rom_error_t owner_block_parse(const owner_block_t *block,
                               owner_config_t *config,
                               owner_application_keyring_t *keyring) {
+  owner_config_default(config);
   if (block->header.tag != kTlvTagOwner)
     return kErrorOwnershipInvalidTag;
   if (block->header.length != sizeof(owner_block_t))
     return kErrorOwnershipInvalidTagLength;
+  if (block->struct_version != 0)
+    return kErrorOwnershipInvalidVersion;
 
-  owner_config_default(config);
   config->sram_exec = block->sram_exec_mode;
 
   uint32_t remain = sizeof(block->data);

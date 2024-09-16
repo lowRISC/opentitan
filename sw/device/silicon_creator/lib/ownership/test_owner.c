@@ -32,7 +32,7 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
 
   owner_page[0].header.tag = kTlvTagOwner;
   owner_page[0].header.length = 2048;
-  owner_page[0].version = 0;
+  owner_page[0].struct_version = 0;
   owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
   owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
   owner_page[0].owner_key = (owner_key_t){
