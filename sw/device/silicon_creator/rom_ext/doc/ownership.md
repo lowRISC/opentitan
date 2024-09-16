@@ -18,7 +18,7 @@ Ownership Transfer allows the owner of the chip to securely root an OpenTitan ch
 - Unlock Key: an ECDSA P-256 public/private key-pair used to authenticate an Unlock Owner command.
   This key is endorsed by the Owner key by virtue of being present in the owner configuration.
 - Ownership State: The state of a chip with respect to ownership transfer.
-  A chip may be in one of the following states: `LockedOwner`, `LockedUpdate`, `UnlockedAny`, `UnlockedEndorsed`, `LockedNone`.
+  A chip may be in one of the following states: `LockedOwner`, `UnlockedSelf`, `UnlockedAny`, `UnlockedEndorsed`, `LockedNone`.
 - Ownership Nonce: A 64-bit random integer used as a validation challenge for all ownership-related boot services requests.
 - Owner Page 0 & 1: The Owner Configuration is stored by the chip in a pair of flash INFO pages.
   Normally the two pages are identical and serve as redundant backups.
@@ -37,13 +37,13 @@ Ownership Transfer gives each owner of a chip the ability to specify their own a
 The ownership state is a non-volatile chip state that controls the ownership transfer mechanism.
 A chip may be in one of the following states:
 - `LockedOwner`: The chip is currently owned and will not accept new owner configurations.
-- `LockedUpdate`: The chip is currently owned and is expecting an ownership block update for the same owner (ie: config change or key rotation).
+- `UnlockedSelf`: The chip is currently owned and is expecting an ownership block update for the same owner (ie: config change or key rotation).
 - `UnlockedAny`: The chip is currently owned but will accept an ownership block for any new owner.
 - `UnlockedEndorsed`: The chip is currently owned but will accept an ownership block only from a new owner endorsed by the current owner.
 - `LockedNone` The chip doesn’t have an owner and is unable to accept a new owner.
   This is a nearly-fatal error state and requires intervention by *silicon\_creator* to recover the chip.
 
-When the chip is in the `LockedUpdate` or one of the `Unlocked` states, the ROM\_EXT will unlock Owner Page 1 allowing firmware to write a new owner configuration into that location.
+When the chip is in one of the `Unlocked` states, the ROM\_EXT will unlock Owner Page 1 allowing firmware to write a new owner configuration into that location.
 
 The ownership state is stored in the `boot_data` record.
 
@@ -87,9 +87,9 @@ Each of the flows assumes the owner currently has `primary_bl0` set to SideA (th
 
 A locked update allows an owner to update their Owner Configuration without transferring ownership to a new owner.
 
-1. The owner prepares for the update by staging a signed boot services `OwnershipUnlock` command with the current ownership nonce and the mode set to `LockedUpdate`.
+1. The owner prepares for the update by staging a signed boot services `OwnershipUnlock` command with the current ownership nonce and the mode set to `UnlockedSelf`.
    - After staging the command, the chip is rebooted.
-   - Upon booting, the ROM\_EXT will move the chip into the `LockedUpdate` state and will unlock Owner Page 1 to accept an Owner Configuration update.
+   - Upon booting, the ROM\_EXT will move the chip into the `UnlockedSelf` state and will unlock Owner Page 1 to accept an Owner Configuration update.
 2. The owner updates the Owner Configuration in Owner Page 1 to the new preferred settings (e.g. key rotation or configuration change).  The owner configuration must be signed with the owner key.
    - After updating the page, the chip is rebooted.
    - Upon booting, the ROM\_EXT will inspect the new configuration block.  If and only if the new owner configuration is valid, the ROM\_EXT will configure the non-primary half of the flash (i.e. Side B) as requested in the new owner configuration.
@@ -114,7 +114,7 @@ subgraph container["<font size=6>Flow: Locked Configuration Update</font>"]
         start((<b>Start</b>))
         prepare[
             <b>Prepare</b>
-            Send <code>OwnershipUnlock</code> with <code>mode=LockedUpdate</code>.
+            Send <code>OwnershipUnlock</code> with <code>mode=UnlockedSelf</code>.
             Reboot.
         ]
         update[<b>Update Owner Config</b>
@@ -342,7 +342,7 @@ The ownership unlock command must include the current ROM\_EXT nonce and a signa
 ```c
 struct boot_svc_ownership_unlock_request {
     boot_svc_header_t header;
-    uint32_t unlock_mode;           // One of UnlockedAny, UnlockedEndorsed, LockedUpdate or Abort.
+    uint32_t unlock_mode;           // One of UnlockedAny, UnlockedEndorsed, UnlockedSelf or Abort.
     uint32_t reserved[18];          // Reserved for future use.
     uint64_t nonce;                 // The current ownership nonce.
     uint32_t next_owner_key[16];    // The public key of the next owner (for endorsed mode).
@@ -353,7 +353,7 @@ See the definition in [boot_svc_ownership_unlock.h](../../lib/boot_svc/boot_svc_
 
 A valid ownership unlock command will prepare the chip for an ownership transfer.
 
-When the mode is `UnlockedAny`, `UnlockedEndorsed` or `LockedUpdate`, the ROM\_EXT will:
+When the mode is `UnlockedAny`, `UnlockedEndorsed` or `UnlockedSelf`, the ROM\_EXT will:
 - Rotate the ROM\_EXT nonce value.
 - Update the ownership state.
 - If endorsed mode, save the next owner key into `boot_data`.

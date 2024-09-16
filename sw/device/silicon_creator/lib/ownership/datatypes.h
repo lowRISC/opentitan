@@ -40,8 +40,8 @@ typedef union owner_signature {
 typedef enum ownership_state {
   /* Locked Owner: `OWND`. */
   kOwnershipStateLockedOwner = 0x444e574f,
-  /* Locked Update: `LUPD`. */
-  kOwnershipStateLockedUpdate = 0x4450554c,
+  /* Locked Update: `USLF`. */
+  kOwnershipStateUnlockedSelf = 0x464c5355,
   /* Unlocked Any: `UANY`. */
   kOwnershipStateUnlockedAny = 0x594e4155,
   /* Unlocked Endorsed: `UEND`. */
