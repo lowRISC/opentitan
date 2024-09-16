@@ -17,7 +17,7 @@ with_unknown! {
     pub enum OwnershipState: u32 [default = Self::Recovery] {
         Recovery = 0,
         LockedOwner = 0x444e574f,
-        LockedUpdate = 0x4450554c,
+        UnlockedSelf = 0x464c5355,
         UnlockedAny = 0x594e4155,
         UnlockedEndorsed = 0x444e4555,
     }

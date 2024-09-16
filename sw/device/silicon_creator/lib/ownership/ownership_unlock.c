@@ -14,7 +14,7 @@
 
 static hardened_bool_t is_locked_none(uint32_t ownership_state) {
   if (ownership_state == kOwnershipStateLockedOwner ||
-      ownership_state == kOwnershipStateLockedUpdate ||
+      ownership_state == kOwnershipStateUnlockedSelf ||
       ownership_state == kOwnershipStateUnlockedAny ||
       ownership_state == kOwnershipStateUnlockedEndorsed) {
     return kHardenedBoolFalse;
@@ -36,7 +36,7 @@ static rom_error_t do_unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   } else if (msg->ownership_unlock_req.unlock_mode == kBootSvcUnlockAny) {
     bootdata->ownership_state = kOwnershipStateUnlockedAny;
   } else if (msg->ownership_unlock_req.unlock_mode == kBootSvcUnlockUpdate) {
-    bootdata->ownership_state = kOwnershipStateLockedUpdate;
+    bootdata->ownership_state = kOwnershipStateUnlockedSelf;
   } else {
     return kErrorOwnershipInvalidMode;
   }
@@ -95,7 +95,7 @@ static rom_error_t unlock_abort(boot_svc_msg_t *msg, boot_data_t *bootdata) {
                (uintptr_t)&msg->ownership_unlock_req.unlock_mode;
   if (bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
       bootdata->ownership_state == kOwnershipStateUnlockedAny ||
-      bootdata->ownership_state == kOwnershipStateLockedUpdate) {
+      bootdata->ownership_state == kOwnershipStateUnlockedSelf) {
     // Check the signature against the unlock key.
     if (ownership_key_validate(/*page=*/0, kOwnershipKeyUnlock,
                                &msg->ownership_unlock_req.signature,
