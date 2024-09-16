@@ -1604,7 +1604,18 @@ module clkmgr_reg_top (
     io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen;
   //   F[hi]: 7:0
   logic async_io_div4_meas_ctrl_shadowed_hi_err_update;
-  logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
+  logic async_io_div4_meas_ctrl_shadowed_hi_err_storage, deglitched_io_div4_meas_ctrl_shadowed_hi_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_deglitch (
+    .clk_i (clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d_i   (async_io_div4_meas_ctrl_shadowed_hi_err_storage),
+    .q_o   (deglitched_io_div4_meas_ctrl_shadowed_hi_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1613,11 +1624,12 @@ module clkmgr_reg_top (
   ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div4_meas_ctrl_shadowed_hi_err_storage),
+    .d_i(deglitched_io_div4_meas_ctrl_shadowed_hi_err_storage),
     .q_o(io_div4_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
+  // prim_pulse_sync flops update_err before sending it across CDC
   prim_pulse_sync u_io_div4_meas_ctrl_shadowed_hi_err_update_sync (
     .clk_src_i(clk_io_div4_i),
     .rst_src_ni(rst_io_div4_ni),
@@ -1663,7 +1675,18 @@ module clkmgr_reg_top (
 
   //   F[lo]: 15:8
   logic async_io_div4_meas_ctrl_shadowed_lo_err_update;
-  logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
+  logic async_io_div4_meas_ctrl_shadowed_lo_err_storage, deglitched_io_div4_meas_ctrl_shadowed_lo_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_deglitch (
+    .clk_i (clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d_i   (async_io_div4_meas_ctrl_shadowed_lo_err_storage),
+    .q_o   (deglitched_io_div4_meas_ctrl_shadowed_lo_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1672,11 +1695,12 @@ module clkmgr_reg_top (
   ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div4_meas_ctrl_shadowed_lo_err_storage),
+    .d_i(deglitched_io_div4_meas_ctrl_shadowed_lo_err_storage),
     .q_o(io_div4_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
+  // prim_pulse_sync flops update_err before sending it across CDC
   prim_pulse_sync u_io_div4_meas_ctrl_shadowed_lo_err_update_sync (
     .clk_src_i(clk_io_div4_i),
     .rst_src_ni(rst_io_div4_ni),
