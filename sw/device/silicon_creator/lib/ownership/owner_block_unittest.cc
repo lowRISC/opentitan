@@ -356,19 +356,34 @@ TEST_F(OwnerBlockTest, ParseBlock) {
   EXPECT_EQ(keyring.key[0]->header.tag, kTlvTagApplicationKey);
 }
 
-TEST_F(OwnerBlockTest, ParseBlockBadHeader) {
+TEST_F(OwnerBlockTest, ParseBlockBadHeaderLength) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the header length to a bad value
-  block.Seek(sizeof(uint32_t)).Write(12345);
+  block.Seek(offsetof(owner_block_t, header.length)).Write(12345);
   owner_config_t config;
   owner_application_keyring_t keyring{};
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOwnershipInvalidTagLength);
+}
 
+TEST_F(OwnerBlockTest, ParseBlockBadHeaderTag) {
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the header tag from `OWNR` to `AAAA`.
-  block.Reset().Write(0x41414141);
-  error = owner_block_parse(block.get(), &config, &keyring);
+  block.Seek(offsetof(owner_block_t, header.tag)).Write(0x41414141);
+  owner_config_t config;
+  owner_application_keyring_t keyring{};
+  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOwnershipInvalidTag);
+}
+
+TEST_F(OwnerBlockTest, ParseBlockBadStructVersion) {
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
+  // Rewrite the struct_version to a bad value.
+  block.Seek(offsetof(owner_block_t, struct_version)).Write(2);
+  owner_config_t config;
+  owner_application_keyring_t keyring{};
+  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, kErrorOwnershipInvalidVersion);
 }
 
 TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
