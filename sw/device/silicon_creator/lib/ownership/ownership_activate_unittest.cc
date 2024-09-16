@@ -31,11 +31,20 @@ constexpr nonce_t kDefaultNonce = {1, 2};
 
 class OwnershipActivateTest : public rom_test::RomTest {
  protected:
+  void MakePage1StructValid() {
+    owner_page[1].header.tag = kTlvTagOwner;
+    owner_page[1].header.length = sizeof(owner_page[1]);
+    owner_page[1].struct_version = 0;
+    memset(owner_page[1].data, 0x5a, sizeof(owner_page[1].data));
+  }
+
   void MakePage1Valid(bool valid) {
+    MakePage1StructValid();
     ownership_state_t state =
         static_cast<ownership_state_t>(bootdata_.ownership_state);
     owner_page_valid[1] = kOwnerPageStatusSigned;
     uint32_t modifier = valid ? 0 : 1;
+
     switch (state) {
       case kOwnershipStateUnlockedEndorsed:
         // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
@@ -109,6 +118,18 @@ TEST_P(OwnershipActivateInvalidStateTest, InvalidState) {
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateInvalidStateTest,
                          testing::Values(kOwnershipStateLockedOwner,
                                          kOwnershipStateRecovery));
+
+// Tests that an owner block with an invalid signature fails.
+TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
+  bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
+  MakePage1Valid(true);
+  owner_page[1].struct_version = 5;
+
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+
+  rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, kErrorOwnershipInvalidVersion);
+}
 
 // Tests that an owner block with an invalid signature fails.
 TEST_P(OwnershipActivateValidStateTest, InvalidSignature) {
