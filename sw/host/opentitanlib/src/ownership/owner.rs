@@ -30,7 +30,7 @@ pub struct OwnerBlock {
     pub header: TlvHeader,
     /// Version of this structure (ie: currently, zero).
     #[serde(default)]
-    pub version: u32,
+    pub struct_version: u32,
     /// Whether the owner wants to permit code execution in SRAM.
     #[serde(default)]
     pub sram_exec: SramExecMode,
@@ -62,7 +62,7 @@ impl Default for OwnerBlock {
     fn default() -> Self {
         Self {
             header: TlvHeader::new(TlvTag::Owner, 0),
-            version: 0,
+            struct_version: 0,
             sram_exec: SramExecMode::default(),
             ownership_key_alg: OwnershipKeyAlg::default(),
             reserved: [0u32; 27],
@@ -98,7 +98,7 @@ impl OwnerBlock {
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         let header = TlvHeader::new(TlvTag::Owner, Self::SIZE);
         header.write(dest)?;
-        dest.write_u32::<LittleEndian>(self.version)?;
+        dest.write_u32::<LittleEndian>(self.struct_version)?;
         dest.write_u32::<LittleEndian>(u32::from(self.sram_exec))?;
         dest.write_u32::<LittleEndian>(u32::from(self.ownership_key_alg))?;
         for x in &self.reserved {
@@ -119,7 +119,7 @@ impl OwnerBlock {
     }
 
     pub fn read(src: &mut impl Read, header: TlvHeader) -> Result<Self> {
-        let version = src.read_u32::<LittleEndian>()?;
+        let struct_version = src.read_u32::<LittleEndian>()?;
         let sram_exec = SramExecMode(src.read_u32::<LittleEndian>()?);
         let ownership_key_alg = OwnershipKeyAlg(src.read_u32::<LittleEndian>()?);
         let mut reserved = [0u32; 27];
@@ -142,7 +142,7 @@ impl OwnerBlock {
         src.read_exact(&mut seal)?;
         Ok(Self {
             header,
-            version,
+            struct_version,
             sram_exec,
             ownership_key_alg,
             reserved,
@@ -361,7 +361,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     identifier: "Owner",
     length: 2048
   },
-  version: 0,
+  struct_version: 0,
   sram_exec: "DisabledLocked",
   ownership_key_alg: "EcdsaP256",
   reserved: [
@@ -542,7 +542,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     #[test]
     fn test_owner_write() -> Result<()> {
         let own = OwnerBlock {
-            version: 0,
+            struct_version: 0,
             sram_exec: SramExecMode::default(),
             ownership_key_alg: OwnershipKeyAlg::EcdsaP256,
             owner_key: KeyMaterial::Ecdsa(EcdsaRawPublicKey {
