@@ -2,8 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// jtag interface with default 50MHz tck
-interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
+// TODO(#24580): A JTAG UVM agent should configure the JTAG frequency (and not this interface)
+`ifdef GATE_LEVEL
+  // jtag interface with default 24MHz tck for GLS
+  interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
+`else
+  // jtag interface with default 50MHz tck for faster DV simulations
+  interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 41_664) ();
+`endif
 
   // interface pins
   // TODO; make these wires and add `_oe` versions to internally control the driving of these
