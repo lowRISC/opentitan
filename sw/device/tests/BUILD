@@ -6326,8 +6326,8 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    # This test can take > 40 minutes, so mark it manual as it shouldn't run
-    # in CI/nightlies.
+    # This takes around 2 hours to run on Verilator, and so should only be
+    # run manually for debugging purposes.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":otbn_randomness_impl",

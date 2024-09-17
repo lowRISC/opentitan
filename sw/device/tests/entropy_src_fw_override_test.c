@@ -66,6 +66,30 @@ enum {
    * firmware override mode.
    */
   kEntropyFifoBufferSize = 12,
+  /**
+   * The amount of random numbers to generate as entropy consumers in each test.
+   */
+  kRandomNumberCount = 16,
+  /*
+   * Timeout to generate a random number in micro seconds.
+   */
+  kRandomNumberTimeoutUsec = 100 * 1000,
+  /**
+   * Timeout to generate a random number in micro seconds when running in a
+   * Verilator simulation environment. Verilator observes entropy more slowly
+   * than other environments, and so is given a longer timeout.
+   */
+  kVerilatorRandomNumberTimeoutUsec = 48 * 100 * 1000,
+  /**
+   * Timeout to run AES testutils in micro seconds.
+   */
+  kAesTestutilsTimeoutUsec = 1 * 1000 * 1000,
+  /**
+   * Timeout to run AES testutils in micro seconds when running in a
+   * Verilator simulation environment. Verilator observes entropy more slowly
+   * than other environments, and so is given a longer timeout.
+   */
+  kVerilatorAesTestutilsTimeoutUsec = 48 * 1000 * 1000,
 };
 
 static dif_aes_t aes;
@@ -360,10 +384,17 @@ status_t firmware_override_extract_insert(
 
   // Generate some random numbers.
   LOG_INFO("Generating random numbers...");
+  uint32_t rnd_timeout_usec = kRandomNumberTimeoutUsec;
+  if (kDeviceType == kDeviceSimVerilator) {
+    // Simulation on Verilator generates entropy much more slowly than other
+    // execution environments. As a result, the timeout to generate random
+    // numbers is increased only when running on Verilator.
+    rnd_timeout_usec = kVerilatorRandomNumberTimeoutUsec;
+  }
   uint32_t data;
-  for (size_t i = 0; i < 16; i++) {
+  for (size_t i = 0; i < kRandomNumberCount; i++) {
     TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex,
-                                            /*timeout_usec=*/100 * 1000,
+                                            /*timeout_usec=*/rnd_timeout_usec,
                                             &data));
   }
 
@@ -386,9 +417,16 @@ status_t firmware_override_extract_insert(
   };
 
   LOG_INFO("Running AES...");
+  uint32_t aes_timeout_usec = kAesTestutilsTimeoutUsec;
+  if (kDeviceType == kDeviceSimVerilator) {
+    // Simulation on Verilator generates entropy much more slowly than other
+    // execution environments. As a result, the timeout for AES testuils is
+    // increased only when running on Verilator.
+    aes_timeout_usec = kVerilatorAesTestutilsTimeoutUsec;
+  }
   TRY(aes_testutils_setup_encryption(transaction, &aes));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
-                                /*timeout_usec=*/1 * 1000 * 1000);
+                                /*timeout_usec=*/aes_timeout_usec);
   TRY(aes_testutils_decrypt_ciphertext(transaction, &aes));
 
   // Run KMAC
@@ -466,20 +504,39 @@ bool test_main(void) {
       kDifEntropySrcSingleBitMode3,
   };
 
+  size_t entropy_src_mode_count = ARRAYSIZE(kModes);
+
+  // If running on Verilator, then we only test ModeDisabled and Mode0, since
+  // the subsequent 3 modes are very similar and are much slower, causing
+  // Verilator simulation to take an impractical amount of time.
+  if (kDeviceType == kDeviceSimVerilator) {
+    entropy_src_mode_count = 2;
+  }
+
   status_t test_result = OK_STATUS();
 
-  for (size_t i = 0; i < ARRAYSIZE(kModes); i++) {
+  for (size_t i = 0; i < entropy_src_mode_count; i++) {
     EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i],
                  false, false);
     EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i], true,
                  false);
   }
+
   // Rerun the test with single bit mode disabled, this time we reenable the
   // entropy_src without reenabling the rest of the entropy complex.
   EXECUTE_TEST(test_result, firmware_override_extract_insert,
                kDifEntropySrcSingleBitModeDisabled, false, true);
   EXECUTE_TEST(test_result, firmware_override_extract_insert,
                kDifEntropySrcSingleBitModeDisabled, true, true);
+
+  if (kDeviceType == kDeviceSimVerilator) {
+    // If running on Verilator, then we skip the final phase of testing,
+    // since entropy is generated much more slowly on Verilator and we do not
+    // learn a lot of useful information from running these tests. This stops
+    // simulaton on Verilator taking an impractical amount of time.
+    return status_ok(test_result);
+  }
+
   // Rerun the test with single bit mode disabled,
   // this time with an output delay.
   fw_ov_insert_wait_enabled = true;
