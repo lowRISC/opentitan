@@ -10,7 +10,7 @@ requires-python = ">=3.8"
 
 dependencies = [
   # Dependency management
-  "pip-tools==7.1.0",
+  "uv==0.4.10",
 
   # Keep sorted
   "beautifulsoup4==4.12.2",
