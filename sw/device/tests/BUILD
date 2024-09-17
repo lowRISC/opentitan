@@ -5998,6 +5998,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    # This takes around 2 hours to run on Verilator, and so should only be
+    # run manually for debugging purposes.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":otbn_randomness_impl",
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
