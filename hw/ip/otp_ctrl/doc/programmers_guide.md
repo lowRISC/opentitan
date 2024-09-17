@@ -148,7 +148,8 @@ In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger a `f
 
 If software receives an `otp_error` interrupt, but all error codes read back as 0x0 (`NoError`), this should be treated as a fatal error condition, and the system should be shut down as soon as possible.
 
-Note that while the `MacroWriteBlankError` is marked as a recoverable error, the affected OTP word may be in an inconsistent state after this error has been returned.
+Note that the `MacroWriteBlankError` will only be generated if the write attempt over already written data fails within the OTP macro after applying any means supported within it to enable a write on existing data, e.g., a bit-reversal option.
+Also note that while this error is marked as a recoverable error, the affected OTP word may be in an inconsistent state after this error has been returned.
 This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check).
 It is important that SW ensures that each word is only written once, since this can render the device useless.
 
