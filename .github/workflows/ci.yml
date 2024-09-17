@@ -11,9 +11,48 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  quick_lint:
+    name: Lint (quick)
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required so we can lint commit messages.
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Environment
+        run: ./ci/scripts/show-env.sh
+      - name: Commit metadata
+        run: ./ci/scripts/lint-commits.sh "$GITHUB_BASE_REF"
+      - name: License headers
+        run: ./ci/scripts/check-licence-headers.sh "$GITHUB_BASE_REF"
+      - name: Executable bits
+        run: ./ci/scripts/exec-check.sh
+      - name: Non-ASCII characters
+        run: ./ci/scripts/check-ascii.sh
+      - name: Python (flake8)
+        run: ./ci/scripts/python-lint.sh "$GITHUB_BASE_REF"
+      - name: Python (mypy)
+        run: ./ci/scripts/mypy.sh
+      - name: C/C++ formatting
+        run: ./ci/scripts/clang-format.sh "$GITHUB_BASE_REF"
+      - name: Rust formatting
+        run: ./ci/scripts/rust-format.sh "$GITHUB_BASE_REF"
+      - name: Shellcheck
+        run: ./ci/bazelisk.sh test //quality:shellcheck_check
+      - name: Header guards
+        run: ./ci/scripts/include-guard.sh "$GITHUB_BASE_REF"
+      - name: Trailing whitespace
+        run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
+      - name: Broken links
+        run: ./ci/scripts/check-links.sh
+      - name: Generated documentation
+        run: ./ci/scripts/check-cmdgen.sh
+
   airgapped_build:
     name: Airgapped build
     runs-on: ubuntu-20.04
+    needs: quick_lint
     steps:
       - uses: actions/checkout@v4
         with:
