@@ -96,8 +96,6 @@ tock_repos(
     #tock = "../tock",
     #libtock = "../libtock-rs",
 )
-load("@tockloader_deps//:requirements.bzl", install_tockloader_python_deps="install_deps")
-install_tockloader_python_deps()
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
