@@ -14,8 +14,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
-      - name: Install system dependencies
-        run: grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
       - name: Prepare airgapped environment
         run: ./util/prep-bazel-airgapped-build.sh
       - name: Build in the airgapped environment
