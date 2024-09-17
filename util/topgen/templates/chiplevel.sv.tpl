@@ -1291,11 +1291,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // 20-pin connector. This is used for SCA/FI experiments only.
 
   logic unused_inputs;
-  % if target["name"] == "cw305":
-  assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger ^ manual_in_io_utx_debug;
-  % else:
   assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger;
-  % endif
 
   // Synchronous clock output to capture board.
   assign manual_out_io_clkout = manual_in_io_clk;
@@ -1371,13 +1367,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_io_trigger =
       manual_in_io_clk_trigger_sw_en | (manual_in_io_clk_trigger_hw_en &
           prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle));
-% endif
-## This separate UART debugging output is needed for the CW305 only.
-% if target["name"] == "cw305":
-
-  // UART Tx for debugging. The UART itself is connected to the capture board.
-  assign manual_out_io_utx_debug = top_${top["name"]}.cio_uart0_tx_d2p;
-  assign manual_oe_io_utx_debug = 1'b1;
 % endif
 
 endmodule : chip_${top["name"]}_${target["name"]}

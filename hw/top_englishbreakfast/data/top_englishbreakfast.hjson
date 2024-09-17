@@ -900,7 +900,6 @@
           // ChipWhisperer IO
           { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
           { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}
-          { name: 'IO_UTX_DEBUG',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual UART TX debug output'}
         ],
       }
 
