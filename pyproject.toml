@@ -68,6 +68,9 @@ dependencies = [
   # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
   "anytree==2.8.0",
 
+  # Dependency of third_party/tock
+  "tockloader==1.13",
+
   # Development version with OT-specific changes
   "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
 
