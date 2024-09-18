@@ -45,7 +45,7 @@ status_t handle_edn_sca_bus_data_batch_random(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_edn_sca_init(ujson_t *uj);
+status_t handle_edn_pentest_init(ujson_t *uj);
 
 /**
  * EDN SCA command handler.

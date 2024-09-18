@@ -13,7 +13,6 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/aes.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 
@@ -167,16 +166,16 @@ static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
   dif_aes_key_share_t key_shares;
   // Mask the provided key.
   for (int i = 0; i < key_len / 4; ++i) {
-    key_shares.share1[i] = sca_non_linear_layer(
-        sca_linear_layer(sca_next_lfsr(1, kScaLfsrMasking)));
+    key_shares.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
     key_shares.share0[i] = *((uint32_t *)key + i) ^ key_shares.share1[i];
   }
   // Provide random shares for unused key bits.
   for (size_t i = key_len / 4; i < kAesKeyLengthMax / 4; ++i) {
     key_shares.share1[i] =
-        sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
     key_shares.share0[i] =
-        sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
   if (dif_aes_start(&aes, &transaction, &key_shares, NULL) != kDifOk) {
     return aesScaAborted;
@@ -373,7 +372,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
   // AES operation
   if (fpga_mode) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
@@ -396,7 +395,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
   if (fpga_mode) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // send last ciphertext
@@ -425,7 +424,7 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
   }
 
   if (fpga_mode) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
@@ -434,7 +433,7 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
     aes_serial_advance_random();
   }
   if (fpga_mode) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(true, uj));
@@ -460,7 +459,7 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
   }
 
   if (fpga_mode) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
@@ -472,7 +471,7 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
     aes_serial_advance_random();
   }
   if (fpga_mode) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(true, uj));
@@ -510,18 +509,18 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
       memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
       aes_serial_advance_random_data();
     }
-    sample_fixed = sca_next_lfsr(1, kScaLfsrOrder) & 0x1;
+    sample_fixed = pentest_next_lfsr(1, kPentestLfsrOrder) & 0x1;
   }
 
   if (fpga_mode) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
   if (fpga_mode) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -540,7 +539,7 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
   }
 
   if (fpga_mode) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
@@ -551,7 +550,7 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
     }
   }
   if (fpga_mode) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -626,19 +625,20 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
     memcpy(plaintext_random, kPlaintextRandomStartFvsrData, kAesTextLength);
   }
 
-  sca_seed_lfsr(kPrngInitialState, kScaLfsrOrder);
+  pentest_seed_lfsr(kPrngInitialState, kPentestLfsrOrder);
 
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_init(ujson_t *uj) {
+status_t handle_aes_pentest_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
   aes_sca_fpga_mode_t uj_data;
   TRY(ujson_deserialize_aes_sca_fpga_mode_t(uj, &uj_data));
   if (uj_data.fpga_mode == 0x01) {
     fpga_mode = true;
   }
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralAes);
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralAes);
 
   if (dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) !=
       kDifOk) {
@@ -673,7 +673,7 @@ status_t handle_aes_sca_key_set(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
+status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
   aes_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_aes_sca_lfsr_t(uj, &uj_lfsr_data));
 
@@ -685,7 +685,7 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
     // enable masking
     transaction.force_masks = false;
   }
-  sca_seed_lfsr(seed_local, kScaLfsrMasking);
+  pentest_seed_lfsr(seed_local, kPentestLfsrMasking);
 
 #if !OT_IS_ENGLISH_BREAKFAST
   if (transaction.force_masks) {
@@ -709,12 +709,12 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_seed_lfsr_order(ujson_t *uj) {
+status_t handle_aes_pentest_seed_lfsr_order(ujson_t *uj) {
   aes_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_aes_sca_lfsr_t(uj, &uj_lfsr_data));
 
   uint32_t seed_local = read_32(uj_lfsr_data.seed);
-  sca_seed_lfsr(seed_local, kScaLfsrOrder);
+  pentest_seed_lfsr(seed_local, kPentestLfsrOrder);
 
   return OK_STATUS();
 }
@@ -738,13 +738,13 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   }
 
   if (fpga_mode) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
     return ABORTED();
   }
   if (fpga_mode) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -774,13 +774,13 @@ status_t handle_aes_sca(ujson_t *uj) {
     case kAesScaSubcommandFvsrKeyStartBatchGenerate:
       return handle_aes_sca_fvsr_key_start_batch_generate(uj);
     case kAesScaSubcommandInit:
-      return handle_aes_sca_init(uj);
+      return handle_aes_pentest_init(uj);
     case kAesScaSubcommandKeySet:
       return handle_aes_sca_key_set(uj);
     case kAesScaSubcommandSeedLfsr:
-      return handle_aes_sca_seed_lfsr(uj);
+      return handle_aes_pentest_seed_lfsr(uj);
     case kAesScaSubcommandSeedLfsrOrder:
-      return handle_aes_sca_seed_lfsr_order(uj);
+      return handle_aes_pentest_seed_lfsr_order(uj);
     case kAesScaSubcommandSingleEncrypt:
       return handle_aes_sca_single_encrypt(uj);
     default:
