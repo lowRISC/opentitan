@@ -87,6 +87,72 @@ autogen_hjson_c_header = rule(
     },
 )
 
+def _hjson_dt_header(ctx):
+    output_stem = (ctx.attr.output_stem if ctx.attr.output_stem else "dt_" + ctx.label.name.replace("_dt", ""))
+    header = ctx.actions.declare_file("{}.h".format(output_stem))
+    node = []
+    if ctx.attr.node:
+        node.append("--default-node={}".format(ctx.attr.node))
+
+    arguments = [
+        "--gen-ip",
+        "--outdir",
+        header.dirname,
+    ] + node
+
+    for f in ctx.files.srcs:
+        arguments.extend(["-i", f.path])
+
+    ctx.actions.run(
+        outputs = [header],
+        inputs = ctx.files.srcs,
+        arguments = arguments,
+        executable = ctx.executable._dttool,
+    )
+
+    cc_infos = [dep[CcInfo] for dep in ctx.attr.deps if CcInfo in dep]
+
+    cc_infos.append(
+        CcInfo(compilation_context = cc_common.create_compilation_context(
+            includes = depset([header.dirname]),
+            headers = depset([header]),
+        ))
+    )
+
+    return [
+        cc_common.merge_cc_infos(cc_infos = cc_infos),
+        DefaultInfo(files = depset([header], transitive=[dep[DefaultInfo].files for dep in ctx.attr.deps])),
+        OutputGroupInfo(
+            header = depset([header]),
+        ),
+    ]
+
+autogen_hjson_dt_header = rule(
+    implementation = _hjson_dt_header,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "node": attr.string(
+            doc = "Register block node to make the default",
+        ),
+        "output_stem": attr.string(
+            doc = """
+                The name of the output file with no suffix.
+                This is optional, and if not given it will be set to the
+                target name without the "_dt" suffix and with the "dt_" prefix.
+                """,
+        ),
+        "deps": attr.label_list(
+            doc = "Dependencies to compile the header.",
+            default = ["//hw/top:dt_api"],
+        ),
+        "_dttool": attr.label(
+            default = "//util:dttool",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
 def _hjson_rust_header(ctx):
     node = []
     if ctx.attr.node:
@@ -146,10 +212,11 @@ def autogen_hjson_sw_headers(name_prefix, srcs, **kwargs):
     create the following targets:
     - `{name_prefix}_c_regs`: C headers with register definitions.
     - `{name_prefix}_rust_regs`: Rust register definitions.
-    
+    - `{name_prefix}_dt`: DT definitions.
+
     The following optional extra arguments are supported:
     - `node`: select the register block node for which to generate
-              the definitions.
+              the definitions; for DT selects the default node.
     """
     autogen_hjson_c_header(
         name = "{}_c_regs".format(name_prefix),
@@ -158,6 +225,11 @@ def autogen_hjson_sw_headers(name_prefix, srcs, **kwargs):
     )
     autogen_hjson_rust_header(
         name = "{}_rust_regs".format(name_prefix),
+        srcs = srcs,
+        **kwargs
+    )
+    autogen_hjson_dt_header(
+        name = "{}_dt".format(name_prefix),
         srcs = srcs,
         **kwargs
     )
