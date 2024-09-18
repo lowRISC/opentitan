@@ -848,7 +848,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   }
   // TODO(cfrantz): evaluate permissible ownership init failure conditions
   // and change this to HARDENED_RETURN_IF_ERROR.
-  if (error == kErrorOk) {
+  if (error != kErrorOk) {
     dbg_printf("ownership_init: %x\r\n", error);
   }
 

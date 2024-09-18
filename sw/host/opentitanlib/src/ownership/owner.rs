@@ -20,6 +20,10 @@ with_unknown! {
         Disabled = u32::from_le_bytes(*b"NOEX"),
         Enabled = u32::from_le_bytes(*b"EXEC"),
     }
+
+    pub enum MinSecurityVersion: u32 [default = Self::NoChange] {
+        NoChange = 0xFFFFFFFFu32,
+    }
 }
 
 /// Describes the owner configuration and key material.
@@ -36,9 +40,15 @@ pub struct OwnerBlock {
     pub sram_exec: SramExecMode,
     /// The key algorithm of the ownership keys.
     pub ownership_key_alg: OwnershipKeyAlg,
+    /// Configuraion version (monotonically increasing per owner).
+    #[serde(default)]
+    pub config_version: u32,
+    /// Set the minimum security version to this value.
+    #[serde(default)]
+    pub min_security_version_bl0: MinSecurityVersion,
     #[serde(default)]
     #[annotate(format=hex)]
-    pub reserved: [u32; 27],
+    pub reserved: [u32; 25],
     /// The owner identity key.
     pub owner_key: KeyMaterial,
     /// The owner activation key.
@@ -65,7 +75,9 @@ impl Default for OwnerBlock {
             struct_version: 0,
             sram_exec: SramExecMode::default(),
             ownership_key_alg: OwnershipKeyAlg::default(),
-            reserved: [0u32; 27],
+            config_version: 0,
+            min_security_version_bl0: MinSecurityVersion::default(),
+            reserved: [0u32; 25],
             owner_key: KeyMaterial::default(),
             activate_key: KeyMaterial::default(),
             unlock_key: KeyMaterial::default(),
@@ -101,6 +113,8 @@ impl OwnerBlock {
         dest.write_u32::<LittleEndian>(self.struct_version)?;
         dest.write_u32::<LittleEndian>(u32::from(self.sram_exec))?;
         dest.write_u32::<LittleEndian>(u32::from(self.ownership_key_alg))?;
+        dest.write_u32::<LittleEndian>(self.config_version)?;
+        dest.write_u32::<LittleEndian>(u32::from(self.min_security_version_bl0))?;
         for x in &self.reserved {
             dest.write_u32::<LittleEndian>(*x)?;
         }
@@ -122,7 +136,9 @@ impl OwnerBlock {
         let struct_version = src.read_u32::<LittleEndian>()?;
         let sram_exec = SramExecMode(src.read_u32::<LittleEndian>()?);
         let ownership_key_alg = OwnershipKeyAlg(src.read_u32::<LittleEndian>()?);
-        let mut reserved = [0u32; 27];
+        let config_version = src.read_u32::<LittleEndian>()?;
+        let min_security_version_bl0 = MinSecurityVersion(src.read_u32::<LittleEndian>()?);
+        let mut reserved = [0u32; 25];
         src.read_u32_into::<LittleEndian>(&mut reserved)?;
         let owner_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
         let activate_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
@@ -145,6 +161,8 @@ impl OwnerBlock {
             struct_version,
             sram_exec,
             ownership_key_alg,
+            config_version,
+            min_security_version_bl0,
             reserved,
             owner_key,
             activate_key,
@@ -227,7 +245,7 @@ mod test {
     #[rustfmt::skip]
     const OWNER_BIN: &str =
 r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
-00000010: 50 32 35 36 00 00 00 00 00 00 00 00 00 00 00 00  P256............
+00000010: 50 32 35 36 00 00 00 00 ff ff ff ff 00 00 00 00  P256............
 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
@@ -364,9 +382,9 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
   struct_version: 0,
   sram_exec: "DisabledLocked",
   ownership_key_alg: "EcdsaP256",
+  config_version: 0,
+  min_security_version_bl0: "NoChange",
   reserved: [
-    0x0,
-    0x0,
     0x0,
     0x0,
     0x0,

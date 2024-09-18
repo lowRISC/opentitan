@@ -35,6 +35,8 @@ class OwnershipActivateTest : public rom_test::RomTest {
     owner_page[1].header.tag = kTlvTagOwner;
     owner_page[1].header.length = sizeof(owner_page[1]);
     owner_page[1].struct_version = 0;
+    owner_page[1].config_version = 0;
+    owner_page[1].min_security_version_bl0 = UINT32_MAX;
     memset(owner_page[1].data, 0x5a, sizeof(owner_page[1].data));
   }
 
@@ -192,7 +194,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageInvalid) {
 }
 
 // Tests that an owner block with a valid owner page with respect to the current
-// update state succeeds.
+// unlock state succeeds.
 TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   ownership_state_t state = GetParam();
   bootdata_.ownership_state = static_cast<uint32_t>(state);
@@ -243,10 +245,77 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
   EXPECT_EQ(error, kErrorWriteBootdataThenReboot);
   // After succeeding, the page should be sealed, the nonce changed and the
-  // ownership state set to LocedOwner.
+  // ownership state set to LockedOwner.
   EXPECT_EQ(owner_page[1].seal[0], 0x5a5a5a5a);
   EXPECT_FALSE(nonce_equal(&bootdata_.nonce, &kDefaultNonce));
   EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
+  // The default value of `owner_page.min_security_version_bl0` should perform
+  // no update to the bootdata's minimum version.
+  EXPECT_EQ(bootdata_.min_security_version_bl0, 0);
+}
+
+// Tests that an owner update with a non-default value of
+// `min_security_version_bl0` updates bootdata's copy.
+//
+// TODO(cfrantz): Refactor this test as it is nearly a complete copy of the
+// previous test except for the manipulation of the min_sec_ver.
+TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
+  ownership_state_t state = GetParam();
+  bootdata_.ownership_state = static_cast<uint32_t>(state);
+
+  owner_page[0].owner_key = {{1}};
+  memset(bootdata_.next_owner, 0, sizeof(bootdata_.next_owner));
+  bootdata_.next_owner[0] = 12345;
+  MakePage1Valid(true);
+  owner_page[1].min_security_version_bl0 = 5;
+
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
+      .WillOnce(Return(kHardenedBoolTrue));
+
+  switch (state) {
+    case kOwnershipStateUnlockedSelf:
+    case kOwnershipStateUnlockedAny:
+    case kOwnershipStateUnlockedEndorsed:
+      // Test should pass.
+      break;
+    default:
+      FAIL() << "Invalid state for this test: " << state;
+  }
+  // Once the new owner page is determined to be valid, the page will be sealed.
+  EXPECT_CALL(hmac_, sha256(_, _, _))
+      .WillOnce(SetArgPointee<2>((hmac_digest_t){{0x5a5a5a5a}}));
+
+  // The sealed page will be written into flash owner slot 1 first.
+  EXPECT_CALL(flash_ctrl_,
+              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+                                     sizeof(owner_page[1]) / sizeof(uint32_t),
+                                     &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+  // The sealed page will be written into flash owner slot 0 second.
+  EXPECT_CALL(flash_ctrl_,
+              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+                                     sizeof(owner_page[1]) / sizeof(uint32_t),
+                                     &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+
+  // The nonce will be regenerated.
+  EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(99));
+  // The boot_svc response will be finalized.
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+
+  rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, kErrorWriteBootdataThenReboot);
+  // After succeeding, the page should be sealed, the nonce changed and the
+  // ownership state set to LockedOwner.
+  EXPECT_EQ(owner_page[1].seal[0], 0x5a5a5a5a);
+  EXPECT_FALSE(nonce_equal(&bootdata_.nonce, &kDefaultNonce));
+  EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
+  // Bootdata should receive the owner_block's minimum version upon activation.
+  EXPECT_EQ(bootdata_.min_security_version_bl0, 5);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateValidStateTest,

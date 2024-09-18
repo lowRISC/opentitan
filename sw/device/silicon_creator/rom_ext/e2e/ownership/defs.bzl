@@ -11,7 +11,7 @@ def ownership_transfer_test(
         name,
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         },
         rsa_key = {
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
