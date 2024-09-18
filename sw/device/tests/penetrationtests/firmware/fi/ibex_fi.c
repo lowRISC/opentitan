@@ -19,7 +19,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
@@ -239,7 +238,7 @@ static inline void read_all_regs(uint32_t buffer[]) {
 
 static status_t read_otp_partitions(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t
       otp_data_read_res_vendor_test[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
@@ -254,7 +253,7 @@ static status_t read_otp_partitions(ujson_t *uj) {
                                       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
                                      sizeof(uint32_t)];
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   TRY(otp_ctrl_testutils_dai_read32_array(
       &otp, kDifOtpCtrlPartitionVendorTest, 0, otp_data_read_res_vendor_test,
@@ -273,7 +272,7 @@ static status_t read_otp_partitions(ujson_t *uj) {
        OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
           sizeof(uint32_t)));
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -342,7 +341,7 @@ void not_increment_counter(void) __attribute__((optnone)) {
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Create translation descriptions.
   dif_rv_core_ibex_addr_translation_mapping_t increment_100x10_mapping = {
@@ -389,10 +388,10 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
 
   // FI code target.
   uint32_t result_expected = 0;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP100);
   result_expected = increment_100x10_remapped(0);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -422,7 +421,7 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
 
 status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1 = {
@@ -445,12 +444,12 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   // FI code target.
   // Either slot 0 config, which is already written, or slot 1 config, which
   // gets written is targeted using FI.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   TRY(dif_rv_core_ibex_configure_addr_translation(
       &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
       kDifRvCoreIbexAddrTranslationDBus, mapping2));
   asm volatile(NOP1000);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -495,13 +494,13 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
 status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xef");
   asm volatile(NOP10);
@@ -545,7 +544,7 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbeq:\n");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -566,13 +565,13 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xef");
   asm volatile(NOP10);
@@ -616,7 +615,7 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbge:\n");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -637,13 +636,13 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xef");
   asm volatile(NOP10);
@@ -687,7 +686,7 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbgeu:\n");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -708,13 +707,13 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xef");
   asm volatile("addi x6, x0, 0xaf");
   asm volatile(NOP10);
@@ -758,7 +757,7 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestblt:\n");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -779,13 +778,13 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xef");
   asm volatile("addi x6, x0, 0xaf");
   asm volatile(NOP10);
@@ -829,7 +828,7 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbltu:\n");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -850,13 +849,13 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xaf");
   asm volatile(NOP10);
@@ -900,7 +899,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbne:\n");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -920,7 +919,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
 
 status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
@@ -929,7 +928,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   init_temp_regs(0);
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   asm volatile("csrr x5,mscratch");
   asm volatile("csrr x6,mscratch");
@@ -939,7 +938,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   asm volatile("csrr x30,mscratch");
   asm volatile("csrr x31,mscratch");
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Load register values.
   // Result buffer.
@@ -973,13 +972,13 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
 status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Init x5 with reference value.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   asm volatile("csrw	mscratch, x5");
   asm volatile("csrr x5,mscratch");
@@ -1008,7 +1007,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   asm volatile("csrw	mscratch, x5");
   asm volatile("csrr x5,mscratch");
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   uint32_t res_value;
   asm volatile("mv %0, x5" : "=r"(res_value));
@@ -1035,7 +1034,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!flash_init) {
     // Configure the data flash.
@@ -1085,7 +1084,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   init_temp_regs(0);
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   asm volatile("lw x5, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x6, (%0)" : : "r"((flash_bank_1.base)));
@@ -1095,7 +1094,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("lw x30, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x31, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Load register values.
   // Result buffer.
@@ -1133,7 +1132,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!flash_init) {
     // Configure the data flash.
@@ -1169,12 +1168,12 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   }
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Erase flash and write page with reference values.
   TRY(flash_ctrl_testutils_erase_and_write_page(
       &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1205,7 +1204,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
 status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1214,7 +1213,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
@@ -1226,7 +1225,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   );
   // clang-format on
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1247,7 +1246,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1256,7 +1255,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
@@ -1265,7 +1264,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1286,7 +1285,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1295,7 +1294,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
@@ -1304,7 +1303,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1325,7 +1324,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1334,7 +1333,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
@@ -1343,7 +1342,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1364,7 +1363,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1373,7 +1372,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
@@ -1382,7 +1381,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1403,13 +1402,13 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
@@ -1418,7 +1417,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1438,18 +1437,18 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
 
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP100);
   for (int loop_cnt = 0; loop_cnt < 10000; loop_cnt++) {
     asm volatile(LWADDISW1 : : "r"((uint32_t *)&loop_counter1));
     asm volatile(LWSUBISW1 : : "r"((uint32_t *)&loop_counter2));
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1469,7 +1468,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t res_values[7];
   // Initialize temporary registers with reference values.
@@ -1482,9 +1481,9 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   asm volatile("li x31, %0" : : "i"(ref_values[6]));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP1000);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1521,7 +1520,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t res_values[6];
   // Initialize temporary registers with reference values.
@@ -1533,7 +1532,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   asm volatile("li x30, %0" : : "i"(ref_values[5]));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
@@ -1565,7 +1564,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1602,12 +1601,12 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(INITX5);
   asm volatile(INITX6);
   asm volatile(NOP100);
@@ -1617,7 +1616,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   }
   asm volatile("mv %0, x5" : "=r"(loop_counter1));
   asm volatile("mv %0, x6" : "=r"(loop_counter2));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1637,7 +1636,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Init t0...t6 with 0.
   init_temp_regs(0);
@@ -1646,7 +1645,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   sram_main_buffer[0] = ref_values[0];
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   // Read from SRAM into temporary registers.
   asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[0]));
@@ -1657,7 +1656,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   asm volatile("lw x30, (%0)" : : "r"(&sram_main_buffer[0]));
   asm volatile("lw x31, (%0)" : : "r"(&sram_main_buffer[0]));
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Load register values.
   // Result buffer.
@@ -1705,7 +1704,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
       (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(uint32_t)) - 1;
 
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Get address of the ret. SRAM at the beginning of the owner section.
   uintptr_t sram_ret_buffer_addr =
@@ -1721,9 +1720,9 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   }
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP1000);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1760,7 +1759,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -1775,12 +1774,12 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   }
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   for (int i = 0; i < 32; i++) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
                         ref_values[i]);
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1811,7 +1810,7 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
 status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Initialize SRAM region with inverse reference value.
   sram_main_buffer[0] = ~ref_values[0];
@@ -1821,7 +1820,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
   asm volatile("li x7, %0" : : "i"(ref_values[2]));
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
@@ -1920,7 +1919,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -1954,7 +1953,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
 
 status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -1970,7 +1969,7 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
 
   // FI code target.
   // Unrolled for easier fault injection characterization.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   mmio_region_write32(sram_region_main_addr, 0 * (ptrdiff_t)sizeof(uint32_t),
                       ref_values[0]);
   mmio_region_write32(sram_region_main_addr, 1 * (ptrdiff_t)sizeof(uint32_t),
@@ -2099,7 +2098,7 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
                       ref_values[0]);
   mmio_region_write32(sram_region_main_addr, 63 * (ptrdiff_t)sizeof(uint32_t),
                       ref_values[0]);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -2129,11 +2128,11 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t result = 0;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Init x5 register we are using for the increment.
   asm volatile(INITX5);
   // Delay the trigger.
@@ -2170,7 +2169,7 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   asm volatile("jal ra, increment_counter");
   asm volatile("jal ra, increment_counter");
   asm volatile("mv %0, x5" : "=r"(result));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -2191,11 +2190,11 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   uint32_t registers[32] = {0};
   read_all_regs(registers);
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t result = 0;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Init x5 register we are using for the increment.
   asm volatile(INITX5);
   // Delay the trigger.
@@ -2233,7 +2232,7 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   asm volatile("jal ra, not_increment_counter");
   read_all_regs(registers);
   asm volatile("mv %0, x5" : "=r"(result));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -2253,11 +2252,11 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP100);
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
@@ -2269,7 +2268,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -2288,11 +2287,11 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(INITX5);
   asm volatile(NOP100);
   asm volatile(ADDI1000);
@@ -2306,7 +2305,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   asm volatile(ADDI1000);
   asm volatile(ADDI1000);
   asm volatile("mv %0, x5" : "=r"(loop_counter));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
 
@@ -2325,13 +2324,13 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t addresses[8] = {0};
   uint32_t data[8] = {0};
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(INIT_TMPREGS);
   asm volatile(NOP10);
   asm volatile(ADDI_CHAIN);
@@ -2350,7 +2349,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   asm volatile("mv %0, x28" : "=r"(data[3]));
   asm volatile("mv %0, x29" : "=r"(data[4]));
   asm volatile("mv %0, x30" : "=r"(data[5]));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2370,13 +2369,15 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
 }
 
 status_t handle_ibex_fi_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes,
-           kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
-               kScaPeripheralEntropy | kScaPeripheralAes | kScaPeripheralHmac |
-               kScaPeripheralKmac | kScaPeripheralOtbn);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
+                   kPentestPeripheralCsrng | kPentestPeripheralEntropy |
+                   kPentestPeripheralAes | kPentestPeripheralHmac |
+                   kPentestPeripheralKmac | kPentestPeripheralOtbn);
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
@@ -2435,19 +2436,19 @@ status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) {
 
 status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint64_t faulty_token[kSecret0TestUnlockTokenSizeIn64BitWords];
   for (size_t i = 0; i < kSecret0TestUnlockTokenSizeIn64BitWords; i++) {
     faulty_token[i] = 0xdeadbeef;
   }
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   TRY(otp_ctrl_testutils_dai_write64(
       &otp, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
       faulty_token, kSecret0TestUnlockTokenSizeIn64BitWords));
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;

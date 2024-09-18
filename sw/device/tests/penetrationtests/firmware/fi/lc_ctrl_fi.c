@@ -10,7 +10,6 @@
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
 
@@ -25,10 +24,12 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_lc_ctrl_t lc;
 
 status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralCsrng);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   pentest_configure_cpu();
@@ -56,7 +57,7 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
 
 status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read LC CTRL to get reference values.
   dif_lc_ctrl_state_t lc_state_ref;
@@ -64,11 +65,11 @@ status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
   TRY(dif_lc_ctrl_get_state(&lc, &lc_state_ref));
   TRY(dif_lc_ctrl_get_attempts(&lc, &lc_count_ref));
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP100);
   asm volatile(NOP100);
   asm volatile(NOP100);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();

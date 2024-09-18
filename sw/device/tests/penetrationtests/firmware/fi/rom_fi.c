@@ -13,7 +13,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 
@@ -31,13 +30,13 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rom_ctrl_t rom_ctrl;
 
 status_t handle_rom_read(ujson_t *uj) {
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   dif_rom_ctrl_digest_t expected_digest;
   dif_rom_ctrl_digest_t fi_digest[8];
   TRY(dif_rom_ctrl_get_digest(&rom_ctrl, &expected_digest));
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   TRY(dif_rom_ctrl_get_digest(&rom_ctrl, &fi_digest[0]));
   TRY(dif_rom_ctrl_get_digest(&rom_ctrl, &fi_digest[1]));
@@ -48,7 +47,7 @@ status_t handle_rom_read(ujson_t *uj) {
   TRY(dif_rom_ctrl_get_digest(&rom_ctrl, &fi_digest[6]));
   TRY(dif_rom_ctrl_get_digest(&rom_ctrl, &fi_digest[7]));
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -76,10 +75,11 @@ status_t handle_rom_read(ujson_t *uj) {
 }
 
 status_t handle_rom_fi_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
-  sca_init(kScaTriggerSourceAes,
-           kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
-               kScaPeripheralEntropy | kScaPeripheralKmac);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
+                   kPentestPeripheralCsrng | kPentestPeripheralEntropy |
+                   kPentestPeripheralKmac);
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
