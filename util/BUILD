@@ -68,6 +68,24 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "dttool",
+    srcs = ["dttool.py"],
+    data = [
+        "//util/dtgen:tpl_files",
+    ],
+    deps = [
+        "//util/dtgen:helper",
+        "//util/ipgen",
+        "//util/reggen:ip_block",
+        "//util/reggen:version",
+        "//util/topgen",
+        requirement("mako"),
+        # FIXME this is actually used by reggen that has a deps on it but it doesn't work...
+        requirement("pyyaml"),
+    ],
+)
+
 py_test(
     name = "generate_compilation_db_test",
     srcs = [
