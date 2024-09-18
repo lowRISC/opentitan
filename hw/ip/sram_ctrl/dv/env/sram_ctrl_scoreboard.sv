@@ -550,6 +550,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       "exec": begin
         // do nothing
       end
+      "readback_regwen": begin
+        // do nothing
+      end
       "readback": begin
         // do nothing
       end

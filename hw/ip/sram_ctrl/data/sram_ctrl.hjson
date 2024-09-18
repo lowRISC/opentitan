@@ -196,6 +196,9 @@
     { name: "EXEC.CONFIG.REGWEN",
       desc: "The SRAM execution enable register is protected by a REGWEN."
     }
+    { name: "READBACK.CONFIG.REGWEN",
+      desc: "The SRAM readback enable register is protected by a REGWEN."
+    }
     { name: "EXEC.CONFIG.MUBI",
       desc: "The SRAM execution enable register is multibit encoded."
     }
