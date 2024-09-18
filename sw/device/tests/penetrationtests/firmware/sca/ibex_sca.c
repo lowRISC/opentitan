@@ -15,7 +15,6 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 
@@ -113,12 +112,14 @@ static void generate_random(size_t num_iterations, uint32_t values[]) {
   }
 }
 
-status_t handle_ibex_sca_init(ujson_t *uj) {
+status_t handle_ibex_pentest_init(ujson_t *uj) {
   // Setup trigger and enable peripherals needed for the test.
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
   // Disable the instruction cache and dummy instructions for SCA.
   pentest_configure_cpu();
@@ -160,9 +161,9 @@ status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
   }
 
   // Trigger keymanager to create a new key based on the provided salt.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Read back generated key provided at the software interface.
   dif_keymgr_output_t key;
@@ -187,14 +188,14 @@ status_t handle_ibex_sca_register_file_read(ujson_t *uj) {
                     uj_data.data[3], uj_data.data[4], uj_data.data[5], 0);
 
   // SCA code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Give the trigger time to rise.
   asm volatile(NOP30);
   // Copy registers.
   asm volatile("mv x28, x5");
   asm volatile("mv x29, x6");
   asm volatile("mv x30, x7");
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Acknowledge test.
   ibex_sca_result_t uj_output;
@@ -218,14 +219,14 @@ status_t handle_ibex_sca_register_file_read_batch_fvsr(ujson_t *uj) {
     copy_to_registers(0, 0, 0, values[i], values[i], values[i], values[i]);
     asm volatile(NOP30);
     // SCA code target.
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Copy registers.
     asm volatile("mv x5, x28");
     asm volatile("mv x6, x29");
     asm volatile("mv x7, x30");
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Write back last value written into the RF to validate generated data.
@@ -250,14 +251,14 @@ status_t handle_ibex_sca_register_file_read_batch_random(ujson_t *uj) {
     copy_to_registers(0, 0, 0, values[i], values[i], values[i], values[i]);
     asm volatile(NOP30);
     // SCA code target.
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Copy registers.
     asm volatile("mv x5, x28");
     asm volatile("mv x6, x29");
     asm volatile("mv x7, x30");
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Write back last value written into the RF to validate generated data.
@@ -273,14 +274,14 @@ status_t handle_ibex_sca_register_file_write(ujson_t *uj) {
   TRY(ujson_deserialize_ibex_sca_test_data_t(uj, &uj_data));
 
   // SCA code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Give the trigger time to rise.
   asm volatile(NOP30);
   // Write provided data into register file.
   copy_to_registers(uj_data.data[0], uj_data.data[1], uj_data.data[2],
                     uj_data.data[3], uj_data.data[4], uj_data.data[5],
                     uj_data.data[6]);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Acknowledge test.
   ibex_sca_result_t uj_output;
@@ -301,14 +302,14 @@ status_t handle_ibex_sca_register_file_write_batch_fvsr(ujson_t *uj) {
 
   // SCA code target.
   for (size_t i = 0; i < uj_data.num_iterations; i++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     init_registers(values[i], values[i], values[i], values[i], values[i],
                    values[i]);
     // Give the trigger time to rise.
     asm volatile(NOP10);
     // Write provided data into register file.
     move_bw_registers();
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -331,7 +332,7 @@ status_t handle_ibex_sca_register_file_write_batch_random(ujson_t *uj) {
 
   // SCA code target.
   for (size_t i = 0; i < uj_data.num_iterations; i++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     init_registers(values[i * DEST_REGS_CNT], values[i * DEST_REGS_CNT + 1],
                    values[i * DEST_REGS_CNT + 2], values[i * DEST_REGS_CNT + 3],
                    values[i * DEST_REGS_CNT + 4],
@@ -340,7 +341,7 @@ status_t handle_ibex_sca_register_file_write_batch_random(ujson_t *uj) {
     asm volatile(NOP10);
     // Write provided data into register file.
     move_bw_registers();
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -370,7 +371,7 @@ status_t handle_ibex_sca_tl_read(ujson_t *uj) {
   uint32_t read_data[8];
 
   // SCA code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Give the trigger time to rise.
   asm volatile(NOP30);
   // Fetch data from SRAM.
@@ -378,7 +379,7 @@ status_t handle_ibex_sca_tl_read(ujson_t *uj) {
     read_data[i] = mmio_region_read32(sram_region_main_addr,
                                       i * (ptrdiff_t)sizeof(uint32_t));
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Acknowledge test.
   ibex_sca_result_t uj_output;
   uj_output.result = 0;
@@ -412,12 +413,12 @@ status_t handle_ibex_sca_tl_read_batch_fvsr(ujson_t *uj) {
   // SCA code target.
   // Fetch data from SRAM.
   for (int i = 0; i < uj_data.num_iterations; i++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     read_data[i] = mmio_region_read32(sram_region_main_addr,
                                       i * (ptrdiff_t)sizeof(uint32_t));
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -450,11 +451,11 @@ status_t handle_ibex_sca_tl_read_batch_fvsr_fix_address(ujson_t *uj) {
   for (size_t i = 0; i < uj_data.num_iterations; i++) {
     mmio_region_write32(sram_region_main_addr, 0, values[i]);
     asm volatile(NOP30);
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     read_data[i] = mmio_region_read32(sram_region_main_addr, 0);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Write back last value read from SRAM to validate generated data.
@@ -491,12 +492,12 @@ status_t handle_ibex_sca_tl_read_batch_random(ujson_t *uj) {
 
   // Fetch data from SRAM.
   for (int i = 0; i < uj_data.num_iterations; i++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     read_data[i] = mmio_region_read32(sram_region_main_addr,
                                       i * (ptrdiff_t)sizeof(uint32_t));
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -528,11 +529,11 @@ status_t handle_ibex_sca_tl_read_batch_random_fix_address(ujson_t *uj) {
   for (size_t i = 0; i < uj_data.num_iterations; i++) {
     mmio_region_write32(sram_region_main_addr, 0, values[i]);
     asm volatile(NOP30);
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     read_data[i] = mmio_region_read32(sram_region_main_addr, 0);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Write back last value read from SRAM to validate generated data.
@@ -553,7 +554,7 @@ status_t handle_ibex_sca_tl_write(ujson_t *uj) {
       mmio_region_from_addr(sram_main_buffer_addr);
 
   // SCA code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   // Give the trigger time to rise.
   asm volatile(NOP30);
   // Write provided data into SRAM.
@@ -561,7 +562,7 @@ status_t handle_ibex_sca_tl_write(ujson_t *uj) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
                         uj_data.data[i]);
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Acknowledge test.
   ibex_sca_result_t uj_output;
@@ -587,13 +588,13 @@ status_t handle_ibex_sca_tl_write_batch_fvsr(ujson_t *uj) {
 
   // SCA code target.
   for (int it = 0; it < uj_data.num_iterations; it++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Write random data into SRAM.
     mmio_region_write32(sram_region_main_addr, it * (ptrdiff_t)sizeof(uint32_t),
                         values[it]);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -621,12 +622,12 @@ status_t handle_ibex_sca_tl_write_batch_fvsr_fix_address(ujson_t *uj) {
 
   // SCA code target.
   for (int it = 0; it < uj_data.num_iterations; it++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Write random data into SRAM at the first address.
     mmio_region_write32(sram_region_main_addr, 0, values[it]);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -654,13 +655,13 @@ status_t handle_ibex_sca_tl_write_batch_random(ujson_t *uj) {
 
   // SCA code target.
   for (int it = 0; it < uj_data.num_iterations; it++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Write random data into SRAM.
     mmio_region_write32(sram_region_main_addr, it * (ptrdiff_t)sizeof(uint32_t),
                         values[it]);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -688,12 +689,12 @@ status_t handle_ibex_sca_tl_write_batch_random_fix_address(ujson_t *uj) {
 
   // SCA code target.
   for (int it = 0; it < uj_data.num_iterations; it++) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Write random data into SRAM.
     mmio_region_write32(sram_region_main_addr, 0, values[it]);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
   }
 
@@ -709,7 +710,7 @@ status_t handle_ibex_sca(ujson_t *uj) {
   TRY(ujson_deserialize_ibex_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kIbexScaSubcommandInit:
-      return handle_ibex_sca_init(uj);
+      return handle_ibex_pentest_init(uj);
     case kIbexScaSubcommandKeySideloading:
       return handle_ibex_sca_key_sideloading(uj);
     case kIbexScaSubcommandRFRead:

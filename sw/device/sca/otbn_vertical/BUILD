@@ -21,8 +21,8 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
-        "//sw/device/sca/lib:sca",
         "//sw/device/sca/lib:simple_serial",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/otbn/crypto:p256_key_from_seed_sca",
     ],
 )
@@ -42,8 +42,8 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
-        "//sw/device/sca/lib:sca",
         "//sw/device/sca/lib:simple_serial",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/otbn/crypto:p256_mod_inv_sca",
     ],
 )
@@ -67,10 +67,10 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
-        "//sw/device/sca/lib:sca",
         "//sw/device/sca/lib:simple_serial",
         "//sw/device/sca/otbn_vertical:ecc256_keygen_serial",
         "//sw/device/sca/otbn_vertical:ecc256_modinv_serial",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/otbn/crypto:p256_mod_inv_sca",
     ],
 )

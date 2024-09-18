@@ -11,7 +11,6 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
 
@@ -96,13 +95,13 @@ status_t otp_life_cycle_dump(uint32_t *buffer) {
 
 status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_hw_cfg_dump(otp_read32_result_hw_cfg_comp));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
 
   // Point for FI
   asm volatile(NOP1000);
@@ -110,7 +109,7 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   asm volatile(NOP1000);
   asm volatile(NOP1000);
 
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Read OTP partition again to see if values changed
   TRY(otp_hw_cfg_dump(otp_read32_result_hw_cfg_fi));
@@ -140,13 +139,15 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
 }
 
 status_t handle_otp_fi_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes,
-           kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
-               kScaPeripheralEntropy | kScaPeripheralAes | kScaPeripheralHmac |
-               kScaPeripheralKmac | kScaPeripheralOtbn);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
+                   kPentestPeripheralCsrng | kPentestPeripheralEntropy |
+                   kPentestPeripheralAes | kPentestPeripheralHmac |
+                   kPentestPeripheralKmac | kPentestPeripheralOtbn);
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
@@ -165,13 +166,13 @@ status_t handle_otp_fi_init(ujson_t *uj) {
 
 status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_life_cycle_dump(otp_read32_result_life_cycle_comp));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
 
   // Point for FI
   asm volatile(NOP1000);
@@ -179,7 +180,7 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   asm volatile(NOP1000);
   asm volatile(NOP1000);
 
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Read OTP partition again to see if values changed
   TRY(otp_life_cycle_dump(otp_read32_result_life_cycle_fi));
@@ -210,13 +211,13 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
 
 status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_owner_sw_cfg_dump(otp_read32_result_owner_sw_cfg_comp));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
 
   // Point for FI
   asm volatile(NOP1000);
@@ -224,7 +225,7 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   asm volatile(NOP1000);
   asm volatile(NOP1000);
 
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Read OTP partition again to see if values changed
   TRY(otp_owner_sw_cfg_dump(otp_read32_result_owner_sw_cfg_fi));
@@ -255,13 +256,13 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
 
 status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_vendor_test_dump(otp_read32_result_vendor_test_comp));
 
   // FI code target.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
 
   // Point for FI
   asm volatile(NOP1000);
@@ -269,7 +270,7 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   asm volatile(NOP1000);
   asm volatile(NOP1000);
 
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Read OTP partition again to see if values changed
   TRY(otp_vendor_test_dump(otp_read32_result_vendor_test_fi));

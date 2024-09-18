@@ -19,7 +19,6 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
 
@@ -75,15 +74,16 @@ static status_t clear_otbn(void) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_init(ujson_t *uj) {
+status_t handle_otbn_pentest_init(ujson_t *uj) {
   // Configure the entropy complex for OTBN. Set the reseed interval to max
   // to avoid a non-constant trigger window.
   TRY(pentest_configure_entropy_source_max_reseed_interval());
 
-  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralHmac |
-                                      kScaPeripheralKmac);
+  pentest_init(kPentestTriggerSourceOtbn,
+               kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
+                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralEdn | kPentestPeripheralHmac |
+                   kPentestPeripheralKmac);
 
   // Init the OTBN core.
   TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
@@ -105,7 +105,7 @@ status_t handle_otbn_sca_init(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_sca_init_keymgr(ujson_t *uj) {
+status_t handle_otbn_pentest_init_keymgr(ujson_t *uj) {
   if (kBootStage != kBootStageOwner) {
     TRY(keymgr_testutils_startup(&keymgr, &kmac));
     // Advance to OwnerIntermediateKey state.
@@ -159,12 +159,12 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
 
     TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
 
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     // Give the trigger time to rise.
     asm volatile(NOP30);
     otbn_execute();
     otbn_busy_wait_for_done();
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
     asm volatile(NOP30);
 
     otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l[it]);
@@ -205,9 +205,9 @@ status_t handle_otbn_sca(ujson_t *uj) {
     case kOtbnScaSubcommandEcc256SetSeed:
       return handle_otbn_sca_ecc256_set_seed(uj);
     case kOtbnScaSubcommandInit:
-      return handle_otbn_sca_init(uj);
+      return handle_otbn_pentest_init(uj);
     case kOtbnScaSubcommandInitKeyMgr:
-      return handle_otbn_sca_init_keymgr(uj);
+      return handle_otbn_pentest_init_keymgr(uj);
     case kOtbnScaSubcommandKeySideloadFvsr:
       return handle_otbn_sca_key_sideload_fvsr(uj);
     default:
