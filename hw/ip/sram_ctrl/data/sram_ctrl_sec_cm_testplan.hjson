@@ -34,8 +34,19 @@
       desc: '''Verify the countermeasure(s) CTRL.CONFIG.REGWEN.
 
             The `ctrl` CSR is excluded in CSR tests, add another test to verify:
-             - When `ctrl_regwen` is 1, writting to `ctrl` can take effect.
-             - When `ctrl_regwen` is 0, writting to `ctrl` has no effect.
+             - When `ctrl_regwen` is 1, writing to `ctrl` can take effect.
+             - When `ctrl_regwen` is 0, writing to `ctrl` has no effect.
+            '''
+      stage: V2S
+      tests: ["{name}_regwen"]
+    }
+    {
+      name: sec_cm_readback_config_regwen
+      desc: '''Verify the countermeasure(s) READBACK.CONFIG.REGWEN.
+
+            The `readback` CSR is excluded in CSR tests, add another test to verify:
+             - When `readback_regwen` is 1, writing to `readback` can take effect.
+             - When `readback_regwen` is 0, writing to `readback` has no effect.
             '''
       stage: V2S
       tests: ["{name}_regwen"]
