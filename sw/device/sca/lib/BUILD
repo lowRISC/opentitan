@@ -34,7 +34,6 @@ cc_library(
     hdrs = ["simple_serial.h"],
     deps = [
         ":prng",
-        ":sca",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -42,32 +41,6 @@ cc_library(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:print",
-    ],
-)
-
-cc_library(
-    name = "sca",
-    srcs = ["sca.c"],
-    hdrs = ["sca.h"],
-    deps = [
-        "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:rv_timer",
-        "//sw/device/lib/dif:uart",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     ],
 )
