@@ -140,6 +140,28 @@ autogen_hjson_rust_header = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
+def autogen_hjson_sw_headers(name_prefix, srcs, **kwargs):
+    """
+    Generate all IP-specific software headers. This macro will
+    create the following targets:
+    - `{name_prefix}_c_regs`: C headers with register definitions.
+    - `{name_prefix}_rust_regs`: Rust register definitions.
+    
+    The following optional extra arguments are supported:
+    - `node`: select the register block node for which to generate
+              the definitions.
+    """
+    autogen_hjson_c_header(
+        name = "{}_c_regs".format(name_prefix),
+        srcs = srcs,
+        **kwargs
+    )
+    autogen_hjson_rust_header(
+        name = "{}_rust_regs".format(name_prefix),
+        srcs = srcs,
+        **kwargs
+    )
+
 def _chip_info_src(ctx):
     stamp_args = []
     stamp_files = []

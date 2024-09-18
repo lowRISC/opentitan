@@ -4,8 +4,7 @@
 
 load(
     "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
+    "autogen_hjson_sw_headers",
 )
 load(
     "//rules/opentitan:defs.bzl",
@@ -22,33 +21,20 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-autogen_hjson_c_header(
-    name = "rv_plic_c_regs",
+autogen_hjson_sw_headers(
+    name_prefix = "rv_plic",
     srcs = [
         "ip_autogen/rv_plic/data/rv_plic.hjson",
     ],
 )
 
-autogen_hjson_rust_header(
-    name = "rv_plic_rust_regs",
-    srcs = [
-        "ip_autogen/rv_plic/data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_c_header(
-    name = "alert_handler_c_regs",
+autogen_hjson_sw_headers(
+    name_prefix = "alert_handler",
     srcs = [
         "ip_autogen/alert_handler/data/alert_handler.hjson",
     ],
 )
 
-autogen_hjson_rust_header(
-    name = "alert_handler_rust_regs",
-    srcs = [
-        "ip_autogen/alert_handler/data/alert_handler.hjson",
-    ],
-)
 
 filegroup(
     name = "all_files",
