@@ -742,6 +742,16 @@ def _process_top(
         else:
             ip_hjson = hjson_dir.parent / f"ip/{ip}/data/{ip}.hjson"
 
+            # In this situation, we are computing the path to the IP's hjson
+            # file by walking a relative path from hjson_dir. That hjson file
+            # should exist at this point, but things get confused if we started
+            # from a top file in an unexpected place. Check now to make sure
+            # this hasn't happened.
+            if not ip_hjson.is_file():
+                log.error(f'Cannot find a file at {ip_hjson}, which was '
+                          f'computed as a relative path from {args.topcfg}')
+                sys.exit(1)
+
         ips.append(ip_hjson)
 
     # load Hjson and pass validate from reggen
