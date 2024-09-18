@@ -23,7 +23,6 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #endif

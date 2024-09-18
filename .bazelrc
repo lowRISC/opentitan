@@ -39,6 +39,10 @@ build --workspace_status_command=util/get_workspace_status.sh
 # --config=riscv32
 build:riscv32 --platforms=@crt//platforms/riscv32:opentitan
 
+# This enables convenient building for englishbreakast with the argument
+# --config=english_breakfast
+build:english_breakfast --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_ --features=-rv32_bitmanip
+
 # These options are required to build `cc_fuzz_test` targets. Enable with
 # --config=asan-libfuzzer
 build:asan-libfuzzer --action_env=CC=clang
