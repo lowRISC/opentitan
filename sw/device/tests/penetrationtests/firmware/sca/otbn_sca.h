@@ -70,7 +70,7 @@ status_t handle_otbn_sca_ecc256_set_seed(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_sca_init(ujson_t *uj);
+status_t handle_otbn_pentest_init(ujson_t *uj);
 
 /**
  * Initializes the Keymanager used for the OTBN SCA tests.
@@ -78,7 +78,7 @@ status_t handle_otbn_sca_init(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_sca_init_keymgr(ujson_t *uj);
+status_t handle_otbn_pentest_init_keymgr(ujson_t *uj);
 
 /**
  * Command handler for the otbn.sca.key_sideload_fvsr test.

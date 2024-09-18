@@ -28,11 +28,11 @@ typedef enum sha3_sca_error {
 } sha3_sca_error_t;
 
 status_t handle_sha3_sca_disable_masking(ujson_t *uj);
-status_t handle_sha3_sca_seed_lfsr(ujson_t *uj);
+status_t handle_sha3_pentest_seed_lfsr(ujson_t *uj);
 status_t handle_sha3_sca_fixed_message_set(ujson_t *uj);
 status_t handle_sha3_sca_batch(ujson_t *uj);
 status_t handle_sha3_sca_single_absorb(ujson_t *uj);
-status_t handle_sha3_sca_init(ujson_t *uj);
+status_t handle_sha3_pentest_init(ujson_t *uj);
 status_t handle_sha3_sca(ujson_t *uj);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_SHA3_SCA_H_
