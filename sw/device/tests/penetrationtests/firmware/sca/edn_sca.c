@@ -15,7 +15,6 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/edn_sca_commands.h"
 
@@ -103,11 +102,11 @@ static status_t config_run_edn(uint32_t init_seed[12], uint32_t reseed[12]) {
   uint32_t ibex_rnd_data;
 
   // Capture trace during generation and transportation of random data.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, kEdnKatTimeout,
                                           &ibex_rnd_data));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   asm volatile(NOP30);
 
   return OK_STATUS();
@@ -194,12 +193,14 @@ status_t handle_edn_sca_bus_data_batch_random(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_edn_sca_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
+status_t handle_edn_pentest_init(ujson_t *uj) {
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralEntropy |
-                                     kScaPeripheralCsrng | kScaPeripheralEdn);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
+                   kPentestPeripheralCsrng | kPentestPeripheralEdn);
 
   // Disable the instruction cache and dummy instructions for SCA attacks.
   pentest_configure_cpu();
@@ -230,7 +231,7 @@ status_t handle_edn_sca(ujson_t *uj) {
     case kEdnScaSubcommandBusDataBatchRandom:
       return handle_edn_sca_bus_data_batch_random(uj);
     case kEdnScaSubcommandInit:
-      return handle_edn_sca_init(uj);
+      return handle_edn_pentest_init(uj);
     default:
       LOG_ERROR("Unrecognized EDN SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();

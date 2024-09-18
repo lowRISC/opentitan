@@ -9,8 +9,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"
@@ -222,7 +222,7 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
   mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
     // Run LFSR for 32 steps to ensure that all state bits are updated.
-    const uint32_t a = sca_next_lfsr(32, kScaLfsrMasking);
+    const uint32_t a = pentest_next_lfsr(32, kPentestLfsrMasking);
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET +
                             (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
@@ -480,7 +480,7 @@ static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
   // configured to start operation 40 cycles after receiving the START and PROC
   // commands. This allows Ibex to go to sleep in order to not disturb the
   // capture.
-  sca_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles, false);
+  pentest_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles, false, false);
 }
 
 /**
@@ -497,9 +497,9 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
   SS_CHECK(msg_len == kMessageLength);
 
   // Ungate the capture trigger signal and then start the operation.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   sha3_serial_absorb(msg, msg_len);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Check KMAC has finsihed processing the message.
   kmac_msg_done();
@@ -544,9 +544,9 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
     kmac_reset();
     memcpy(kmac_key.share0, batch_keys[i], kKeyLength);
 
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     sha3_serial_absorb(batch_messages[i], kMessageLength);
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
 
     kmac_msg_done();
     SS_CHECK_DIF_OK(kmac_get_digest(out, kDigestLength));
@@ -571,7 +571,7 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
  */
 static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
   SS_CHECK(seed_len == sizeof(uint32_t));
-  sca_seed_lfsr(read_32(seed), kScaLfsrMasking);
+  pentest_seed_lfsr(read_32(seed), kPentestLfsrMasking);
 }
 
 /**
@@ -581,12 +581,13 @@ static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
  * UART.
  */
 bool test_main(void) {
-  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
+  pentest_init(kPentestTriggerSourceKmac,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
   LOG_INFO("Running kmac_serial");
 
   LOG_INFO("Initializing simple serial interface to capture board.");
-  simple_serial_init(sca_get_uart());
+  simple_serial_init(pentest_get_uart());
   simple_serial_register_handler('k', sha3_serial_set_key);
   simple_serial_register_handler('p', sha3_serial_single_absorb);
   simple_serial_register_handler('b', sha3_serial_batch);

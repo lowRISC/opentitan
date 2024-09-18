@@ -249,7 +249,7 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_aes_sca_init(ujson_t *uj);
+status_t handle_aes_pentest_init(ujson_t *uj);
 
 /**
  * Key set command handler.
@@ -280,7 +280,7 @@ status_t handle_aes_sca_key_set(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_aes_sca_seed_lfsr(ujson_t *uj);
+status_t handle_aes_pentest_seed_lfsr(ujson_t *uj);
 
 /**
  * Seed lfsr command handler.
@@ -295,7 +295,7 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_aes_sca_seed_lfsr_order(ujson_t *uj);
+status_t handle_aes_pentest_seed_lfsr_order(ujson_t *uj);
 
 /**
  * Single encrypt command handler.

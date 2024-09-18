@@ -12,8 +12,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"
@@ -91,10 +91,11 @@ static void p256_run_modinv(uint32_t *k0, uint32_t *k1) {
       otbn_dmem_write(kEcc256ModInvInputShareNumWords, k1, kOtbnVarModInvK1));
 
   // Execute program.
-  sca_set_trigger_high();
-  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false);
+  pentest_set_trigger_high();
+  pentest_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false,
+                         false);
   otbn_busy_wait_for_done();
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 }
 
 void ecc256_modinv(const uint8_t *k0_k1, size_t k0_k1_len) {

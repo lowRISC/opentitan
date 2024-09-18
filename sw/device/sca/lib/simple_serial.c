@@ -10,7 +10,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -173,7 +173,7 @@ static void simple_serial_seed_prng(const uint8_t *seed, size_t seed_len) {
 static void simple_serial_select_trigger_type(const uint8_t *trigger,
                                               size_t trigger_len) {
   SS_CHECK(trigger_len == 1);
-  sca_select_trigger_type((sca_trigger_type_t)trigger[0]);
+  pentest_select_trigger_type((pentest_trigger_type_t)trigger[0]);
 }
 
 /**

@@ -16,7 +16,6 @@
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 
@@ -158,7 +157,7 @@ static void entropy_conditioner_stop(const dif_entropy_src_t *entropy_src) {
 
 status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
@@ -182,7 +181,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 
   uint32_t entropy_bits[kMaxReadCountNotBlocking] = {0};
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   for (size_t it = 0; it < kMaxReadCountNotBlocking; it++) {
     while (dif_entropy_src_non_blocking_read(&entropy_src, &entropy_bits[it]) !=
@@ -190,7 +189,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
       ;
   }
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -212,7 +211,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 
 status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!firmware_override_init) {
     // Check if we keep heal tests enabled.
@@ -238,7 +237,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 
   uint32_t buf[kEntropyFifoBufferSize] = {0};
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   for (size_t it = 0; it < kEntropyFifoBufferSize; it++) {
     while (buf[it] == 0) {
@@ -248,7 +247,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   }
 
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -270,7 +269,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 
 status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   TRY(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
@@ -298,14 +297,14 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 
   uint32_t ibex_rnd_data_got[kEdnBiasMaxData];
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   for (size_t it = 0; it < kEdnBiasMaxData; it++) {
     CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
         &rv_core_ibex, kEdnKatTimeout, &ibex_rnd_data_got[it]));
   }
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   rng_fi_edn_t uj_output;
   memset(uj_output.rand, 0, sizeof(uj_output.rand));
@@ -336,7 +335,7 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 
 status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Enable entropy complex, CSRNG and EDN so Ibex can get entropy.
   // Configure entropy in auto_mode to avoid starving the system from entropy,
   // given that boot mode entropy has a limited number of generated bits.
@@ -347,13 +346,13 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Inject faults during generating and receiving random data.
   // Goal is to manipulate ACK on bus to trigger that the same
   // data chunk is transmitted multiple times.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   for (size_t it = 0; it < kEdnBusAckMaxData; it++) {
     TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, kEdnKatTimeout,
                                             &ibex_rnd_data[it]));
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Check if there are any collisions.
   rng_fi_edn_t uj_output;
@@ -386,11 +385,13 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
 }
 
 status_t handle_rng_fi_edn_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralEntropy |
-                                     kScaPeripheralCsrng | kScaPeripheralEdn);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
+                   kPentestPeripheralCsrng | kPentestPeripheralEdn);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   pentest_configure_cpu();
@@ -427,7 +428,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   crypto_fi_csrng_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_csrng_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   TRY(csrng_testutils_cmd_ready_wait(&csrng));
   TRY(dif_csrng_uninstantiate(&csrng));
@@ -447,30 +448,30 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   TRY(csrng_testutils_cmd_ready_wait(&csrng));
 
   if (uj_data.all_trigger || uj_data.start_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_csrng_generate_start(&csrng, kCsrngExpectedOutputLen));
   if (uj_data.start_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   if (uj_data.valid_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   dif_csrng_output_status_t output_status;
   do {
     TRY(dif_csrng_get_output_status(&csrng, &output_status));
   } while (!output_status.valid_data);
   if (uj_data.valid_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   if (uj_data.read_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_csrng_generate_read(&csrng, rand_data_got, kCsrngExpectedOutputLen));
   if (uj_data.all_trigger || uj_data.read_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Get registered alerts from alert handler.
@@ -505,7 +506,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
 
 status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t received_data[kCsrngBiasFWFifoBufferSize];
   const dif_csrng_seed_material_t kEmptySeedMaterial = {0};
@@ -547,7 +548,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
     }
   } while (total < ARRAYSIZE(seed));
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   entropy_conditioner_stop(&entropy_src);
 
   TRY(csrng_testutils_cmd_ready_wait(&csrng));
@@ -558,7 +559,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
                                                    ARRAYSIZE(received_data)));
 
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -580,10 +581,12 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
 }
 
 status_t handle_rng_fi_csrng_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
-  // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralCsrng);
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   pentest_configure_cpu();
