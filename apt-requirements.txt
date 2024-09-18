@@ -9,26 +9,19 @@
 # and are maintained in yum-requirements.txt.
 #
 # Keep it sorted.
-autoconf
-bison
 brotli
 build-essential
 clang-format
-cmake
 curl
 doxygen
-flex
 g++
 git
-golang
-lcov
 libelf1
 libelf-dev
 libftdi1-2
 libftdi1-dev
 # A requirement of the prebuilt clang toolchain.
 libncursesw5
-libpcsclite-dev
 libssl-dev
 libudev-dev
 libusb-1.0-0
@@ -36,17 +29,13 @@ lld
 lrzsz
 lsb-release
 make
-ninja-build
 openssl
-perl
-pkgconf
 python3
 python3-pip
 python3-setuptools
 python3-urllib3
 python3-wheel
 srecord
-tree
 xsltproc
 zlib1g-dev
 xz-utils

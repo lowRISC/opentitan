@@ -6,17 +6,12 @@
 #
 # Keep it sorted.
 "Development Tools"
-autoconf
-bison
 brotli
-cmake
 curl
 doxygen
 epel-release
-flex
 gcc-c++
 git
-golang
 elfutils-libelf
 elfutils-libelf-devel
 libftdi
@@ -29,17 +24,13 @@ openssl-devel
 redhat-lsb-core
 # A requirement of the prebuilt clang toolchain.
 ncurses
-ninja-build
 openssl11-libs
 openssl11-devel
-perl
-pkgconfig
 python3
 python3-pip
 python3-setuptools
 python3-wheel
 srecord
-tree
 libxslt
 zlib-devel
 xz-libs
