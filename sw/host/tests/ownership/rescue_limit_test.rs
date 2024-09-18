@@ -89,6 +89,7 @@ fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         &opts.next_unlock_key,
         &opts.next_application_key,
         opts.config_kind,
+        /*customize=*/ |_| {},
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");

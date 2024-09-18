@@ -19,6 +19,8 @@ use opentitanlib::rescue::serial::RescueSerial;
 
 use std::path::Path;
 
+pub const TEST_OWNER_CONFIG_VERSION: u32 = 1;
+
 /// Gets the BootLog.
 pub fn get_boot_log(transport: &TransportWrapper, rescue: &RescueSerial) -> Result<BootLog> {
     rescue.enter(transport, /*reset=*/ true)?;
@@ -161,7 +163,8 @@ fn filesystem(lock: bool) -> FlashFlags {
 }
 
 /// Prepares an OwnerBlock and sends it to the chip.
-pub fn create_owner(
+#[allow(clippy::too_many_arguments)]
+pub fn create_owner<F>(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
     owner_key: &Path,
@@ -169,7 +172,11 @@ pub fn create_owner(
     unlock_key: &Path,
     app_key: &Path,
     config: OwnerConfigKind,
-) -> Result<()> {
+    customize: F,
+) -> Result<()>
+where
+    F: Fn(&mut OwnerBlock),
+{
     let config = config as u32;
     let owner_key = EcdsaPrivateKey::load(owner_key)?;
     let activate_key = EcdsaPrivateKey::load(activate_key)?;
@@ -217,6 +224,7 @@ pub fn create_owner(
         }
         owner.data.push(OwnerConfigItem::RescueConfig(rescue));
     }
+    customize(&mut owner);
     owner.sign(&owner_key)?;
     if config & CFG_CORRUPT != 0 {
         owner.signature.r[0] += 1;

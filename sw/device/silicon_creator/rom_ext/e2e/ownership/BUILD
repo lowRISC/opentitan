@@ -368,3 +368,30 @@ ownership_transfer_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+# Test that the `sku_creator_owner_init` function responsible for installing the test owner on
+# FPGA builds will automatically update from an older owner block.
+ownership_transfer_test(
+    name = "fpga_owner_upgrade_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Update
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            # `sku_creator_owner_init` has a newer version number than this and should self-update.
+            --config-version=0
+            # NOTE: Should sku_creator_owner_init fail to upgrade to its built-in owner block, then the
+            # dummy key will prevent the test program from executing and we'll get a failure from the test.
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    rsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod": "app_prod",
+    },
+)

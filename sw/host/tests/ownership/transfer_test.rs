@@ -39,6 +39,12 @@ struct Opts {
     next_unlock_key: PathBuf,
     #[arg(long, help = "Next Owner's application public key (RSA3K)")]
     next_application_key: PathBuf,
+    #[arg(
+        long,
+        default_value_t = transfer_lib::TEST_OWNER_CONFIG_VERSION,
+        help = "Configuration version to put in the owner config"
+    )]
+    config_version: u32,
 
     #[arg(
         long,
@@ -92,6 +98,10 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         &opts.next_unlock_key,
         &opts.next_application_key,
         opts.config_kind,
+        /*customize=*/
+        |owner| {
+            owner.config_version = opts.config_version;
+        },
     )?;
 
     let mut transfers0 = 0;
