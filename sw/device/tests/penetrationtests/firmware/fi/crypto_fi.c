@@ -16,7 +16,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 
@@ -156,13 +155,13 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
   crypto_fi_aes_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_aes_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Write the key into the AES block. Set and unset the trigger when
   // key_trigger is true.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kAesWaitTimeout);
   if (uj_data.key_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_aes_start(&aes, &transaction, &aes_key_shares, NULL));
   // Busy polling because AES_TESTUTILS_WAIT_FOR_STATUS seems to take longer
@@ -170,7 +169,7 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
   while (!aes_testutils_get_status(&aes, kDifAesStatusInputReady))
     ;
   if (uj_data.key_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Write the plaintext into the AES block. Set and unset the trigger when
@@ -179,17 +178,17 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                 kAesWaitTimeout);
   if (uj_data.plaintext_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_aes_load_data(&aes, aes_plaintext));
   if (uj_data.plaintext_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Start the encryption. Set and unset the trigger when encrypt_trigger is
   // true.
   if (uj_data.encrypt_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   asm volatile(NOP30);
   TRY(dif_aes_trigger(&aes, kDifAesTriggerStart));
@@ -199,18 +198,18 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
     ;
   asm volatile(NOP30);
   if (uj_data.encrypt_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Read the ciphertext. Set and unset the trigger when ciphertext_trigger is
   // true.
   dif_aes_data_t ciphertext;
   if (uj_data.ciphertext_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_aes_read_output(&aes, &ciphertext));
   if (uj_data.ciphertext_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Get registered alerts from alert handler.
@@ -230,10 +229,11 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
 }
 
 status_t handle_crypto_fi_init(ujson_t *uj) {
-  sca_select_trigger_type(kScaTriggerTypeSw);
-  sca_init(kScaTriggerSourceAes,
-           kScaPeripheralIoDiv4 | kScaPeripheralAes | kScaPeripheralKmac |
-               kScaPeripheralEdn | kScaPeripheralCsrng | kScaPeripheralEntropy);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralAes |
+                   kPentestPeripheralKmac | kPentestPeripheralEdn |
+                   kPentestPeripheralCsrng | kPentestPeripheralEntropy);
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
   pentest_configure_alert_handler();
@@ -290,53 +290,53 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
   crypto_fi_kmac_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Configure and write key to the KMAC block. Set and unset the trigger when
   // key_trigger is true.
   dif_kmac_operation_state_t kmac_operation_state;
   if (uj_data.key_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
 
   TRY(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
                                kKmacTestVector.mode, 0, &kKmacTestVector.key,
                                NULL));
   if (uj_data.key_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Absorb. Set and unset the trigger when absorb_trigger is true.
   if (uj_data.absorb_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacTestVector.message,
                       kKmacTestVector.message_len, NULL));
   if (uj_data.absorb_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Static. Set and unset the trigger when static_trigger is true.
   if (uj_data.static_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   asm volatile(NOP30);
   asm volatile(NOP30);
   asm volatile(NOP30);
   if (uj_data.static_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // Squeeze. Set and unset the trigger when squeeze_trigger is true.
   uint32_t digest[kKmacTestVector.digest_len];
   if (uj_data.squeeze_trigger) {
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
   }
   TRY(dif_kmac_squeeze(&kmac, &kmac_operation_state, digest,
                        kKmacTestVector.digest_len, /*processed=*/NULL,
                        /*capacity=*/NULL));
   if (uj_data.squeeze_trigger) {
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
   }
 
   // 2nd Squeeze. This shall enforce a permutation. Any injected fault will
@@ -371,7 +371,7 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   crypto_fi_kmac_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Configure and write key to the KMAC block.
   dif_kmac_operation_state_t kmac_operation_state;
@@ -389,11 +389,11 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
                        /*capacity=*/NULL));
 
   // Static.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   asm volatile(NOP30);
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -426,7 +426,7 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
 
 status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   crypto_fi_test_result_mult_t uj_output;
 
@@ -450,13 +450,13 @@ status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
   uint32_t ctrl_reg_kmac_addr =
       TOP_EARLGREY_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET;
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP10);
   SHADOW_REG_ACCESS_10(ctrl_reg_kmac_addr, ctrl_reg_kmac)
   SHADOW_REG_ACCESS_10(ctrl_reg_kmac_addr, ctrl_reg_kmac)
   SHADOW_REG_ACCESS_10(ctrl_reg_kmac_addr, ctrl_reg_kmac)
   asm volatile(NOP10);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -482,7 +482,7 @@ status_t handle_crypto_fi_shadow_reg_access(ujson_t *uj) {
 
 status_t handle_crypto_fi_shadow_reg_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   crypto_fi_test_result_mult_t uj_output;
 
@@ -528,14 +528,14 @@ status_t handle_crypto_fi_shadow_reg_read(ujson_t *uj) {
       TOP_EARLGREY_KMAC_BASE_ADDR + KMAC_CFG_SHADOWED_REG_OFFSET,
       ctrl_reg_kmac_init);
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   asm volatile(NOP30);
   uint32_t ctrl_reg_aes_read = abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR +
                                                AES_CTRL_SHADOWED_REG_OFFSET);
   uint32_t ctrl_reg_kmac_read = abs_mmio_read32(TOP_EARLGREY_KMAC_BASE_ADDR +
                                                 KMAC_CFG_SHADOWED_REG_OFFSET);
   asm volatile(NOP30);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();

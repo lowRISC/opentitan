@@ -27,12 +27,12 @@ typedef enum kmac_sca_error {
   kmacScaOutOfRange = 2
 } kmac_sca_error_t;
 
-status_t handle_kmac_sca_seed_lfsr(ujson_t *uj);
+status_t handle_kmac_pentest_seed_lfsr(ujson_t *uj);
 status_t handle_kmac_sca_fixed_key_set(ujson_t *uj);
 status_t handle_kmac_sca_batch(ujson_t *uj);
 status_t handle_kmac_sca_single_absorb(ujson_t *uj);
 status_t handle_kmac_sca_set_key(ujson_t *uj);
-status_t handle_kmac_sca_init(ujson_t *uj);
+status_t handle_kmac_pentest_init(ujson_t *uj);
 status_t handle_kmac_sca(ujson_t *uj);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_KMAC_SCA_H_

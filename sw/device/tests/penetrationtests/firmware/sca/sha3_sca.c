@@ -12,7 +12,6 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 
@@ -571,10 +570,10 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
  *
  * @param uj The received uJSON data.
  */
-status_t handle_sha3_sca_seed_lfsr(ujson_t *uj) {
+status_t handle_sha3_pentest_seed_lfsr(ujson_t *uj) {
   cryptotest_sha3_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_lfsr_t(uj, &uj_lfsr_data));
-  sca_seed_lfsr(read_32(uj_lfsr_data.seed), kScaLfsrMasking);
+  pentest_seed_lfsr(read_32(uj_lfsr_data.seed), kPentestLfsrMasking);
 
   return OK_STATUS();
 }
@@ -587,7 +586,7 @@ status_t handle_sha3_sca_seed_lfsr(ujson_t *uj) {
  *
  * @param uj The received uJSON data.
  */
-status_t handle_sha3_sca_init(ujson_t *uj) {
+status_t handle_sha3_pentest_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
   cryptotest_sha3_sca_fpga_mode_t uj_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_fpga_mode_t(uj, &uj_data));
@@ -595,7 +594,8 @@ status_t handle_sha3_sca_init(ujson_t *uj) {
     fpga_mode = true;
   }
 
-  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
+  pentest_init(kPentestTriggerSourceKmac,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
   TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
@@ -627,7 +627,7 @@ status_t handle_sha3_sca(ujson_t *uj) {
   TRY(ujson_deserialize_sha3_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kSha3ScaSubcommandInit:
-      return handle_sha3_sca_init(uj);
+      return handle_sha3_pentest_init(uj);
     case kSha3ScaSubcommandSingleAbsorb:
       return handle_sha3_sca_single_absorb(uj);
     case kSha3ScaSubcommandBatch:
@@ -635,7 +635,7 @@ status_t handle_sha3_sca(ujson_t *uj) {
     case kSha3ScaSubcommandFixedMessageSet:
       return handle_sha3_sca_fixed_message_set(uj);
     case kSha3ScaSubcommandSeedLfsr:
-      return handle_sha3_sca_seed_lfsr(uj);
+      return handle_sha3_pentest_seed_lfsr(uj);
     case kSha3ScaSubcommandDisableMasking:
       return handle_sha3_sca_disable_masking(uj);
     default:

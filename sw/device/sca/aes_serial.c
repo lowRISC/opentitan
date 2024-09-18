@@ -10,8 +10,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/aes.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/testing/aes_testutils.h"
@@ -181,16 +181,16 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   dif_aes_key_share_t key_shares;
   // Mask the provided key.
   for (int i = 0; i < key_len / 4; ++i) {
-    key_shares.share1[i] = sca_non_linear_layer(
-        sca_linear_layer(sca_next_lfsr(1, kScaLfsrMasking)));
+    key_shares.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
     key_shares.share0[i] = *((uint32_t *)key + i) ^ key_shares.share1[i];
   }
   // Provide random shares for unused key bits.
   for (size_t i = key_len / 4; i < kAesKeyLengthMax / 4; ++i) {
     key_shares.share1[i] =
-        sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
     key_shares.share0[i] =
-        sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 }
@@ -223,9 +223,9 @@ static void aes_serial_key_set(const uint8_t *key, size_t key_len) {
 /**
  * Encrypts a plaintext using the AES peripheral.
  *
- * This function uses `sca_call_and_sleep()` from the sca library to put Ibex to
- * sleep in order to minimize noise during captures. The plaintext must be
- * `kAesTextLength` bytes long.
+ * This function uses `pentest_call_and_sleep()` from the sca library to put
+ * Ibex to sleep in order to minimize noise during captures. The plaintext must
+ * be `kAesTextLength` bytes long.
  *
  * @param plaintext Plaintext.
  * @param plaintext_len Length of the plaintext.
@@ -245,7 +245,7 @@ static void aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   // Using the SecAesStartTriggerDelay hardware parameter, the AES unit is
   // configured to start operation 40 cycles after receiving the start trigger.
   // This allows Ibex to go to sleep in order to not disturb the capture.
-  sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false);
+  pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false, false);
 }
 
 /**
@@ -293,9 +293,9 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
     block_ctr = 1;
   }
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   aes_encrypt(plaintext, plaintext_len);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   aes_send_ciphertext(false);
 }
@@ -374,12 +374,12 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
     block_ctr = num_encryptions;
   }
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_encrypt(plaintext_random, kAesTextLength);
     aes_serial_advance_random();
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   aes_send_ciphertext(true);
 }
@@ -427,7 +427,7 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
   // Set trigger high outside of loop
   // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
   // AES operation
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     // Encrypt
@@ -444,7 +444,7 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
     // Use ciphertext as next plaintext (incl. next call to this function)
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   // Acknowledge command
   simple_serial_send_status(0);
   // send last ciphertext
@@ -563,12 +563,12 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   num_encryptions = read_32(data);
   SS_CHECK(num_encryptions <= kNumBatchOpsMax);
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Acknowledge command
   simple_serial_send_status(0);
@@ -622,15 +622,15 @@ static void aes_serial_fvsr_data_batch_encrypt(const uint8_t *data,
       memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
       aes_serial_advance_random_data();
     }
-    sample_fixed = sca_next_lfsr(1, kScaLfsrOrder) & 0x1;
+    sample_fixed = pentest_next_lfsr(1, kPentestLfsrOrder) & 0x1;
   }
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Acknowledge command
   simple_serial_send_status(0);
@@ -656,7 +656,7 @@ static void aes_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
     // enable masking
     transaction.force_masks = false;
   }
-  sca_seed_lfsr(seed_local, kScaLfsrMasking);
+  pentest_seed_lfsr(seed_local, kPentestLfsrMasking);
 }
 
 /**
@@ -671,7 +671,7 @@ static void aes_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
 static void aes_serial_seed_lfsr_order(const uint8_t *seed, size_t seed_len) {
   SS_CHECK(seed_len == sizeof(uint32_t));
   uint32_t seed_local = read_32(seed);
-  sca_seed_lfsr(seed_local, kScaLfsrOrder);
+  pentest_seed_lfsr(seed_local, kPentestLfsrOrder);
 }
 
 /**
@@ -730,7 +730,7 @@ static void aes_serial_set_default_values(const uint8_t *data,
     memcpy(plaintext_random, kPlaintextRandomStartFvsrData, kAesTextLength);
   }
 
-  sca_seed_lfsr(kPrngInitialState, kScaLfsrOrder);
+  pentest_seed_lfsr(kPrngInitialState, kPentestLfsrOrder);
 }
 
 /**
@@ -749,12 +749,13 @@ static void init_aes(void) {
  * UART.
  */
 bool test_main(void) {
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralAes);
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralAes);
 
   LOG_INFO("Running AES serial");
 
   LOG_INFO("Initializing simple serial interface to capture board.");
-  simple_serial_init(sca_get_uart());
+  simple_serial_init(pentest_get_uart());
   simple_serial_register_handler('k', aes_serial_key_set);
   simple_serial_register_handler('p', aes_serial_single_encrypt);
   simple_serial_register_handler('b', aes_serial_batch_encrypt);

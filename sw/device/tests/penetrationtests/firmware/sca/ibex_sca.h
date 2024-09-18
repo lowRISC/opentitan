@@ -15,7 +15,7 @@
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_ibex_sca_init(ujson_t *uj);
+status_t handle_ibex_pentest_init(ujson_t *uj);
 
 /**
  * ibex.sca.key_sideloading

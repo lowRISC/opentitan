@@ -11,10 +11,10 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/sca/otbn_vertical/ecc256_keygen_serial.h"
 #include "sw/device/sca/otbn_vertical/ecc256_modinv_serial.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"
@@ -65,14 +65,15 @@ static void ecc256_app_select(const uint8_t *app_cmd, size_t app_cmd_len) {
 static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralHmac);
+  pentest_init(kPentestTriggerSourceOtbn,
+               kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
+                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralEdn | kPentestPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
   LOG_INFO("Initializing simple serial interface to capture board.");
 
-  simple_serial_init(sca_get_uart());
+  simple_serial_init(pentest_get_uart());
   SS_CHECK(simple_serial_register_handler(
                'b', ecc256_ecdsa_keygen_fvsr_seed_batch) == kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler(
