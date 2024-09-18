@@ -69,6 +69,11 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
     bootdata->primary_bl0_slot = kBootSlotA;
   }
 
+  // If requested, reset the mim security version of the application firmware.
+  if (owner_page[1].min_security_version_bl0 != UINT32_MAX) {
+    bootdata->min_security_version_bl0 = owner_page[1].min_security_version_bl0;
+  }
+
   // Set the ownership state to LockedOwner.
   nonce_new(&bootdata->nonce);
   bootdata->ownership_state = kOwnershipStateLockedOwner;
