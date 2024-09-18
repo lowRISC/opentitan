@@ -106,8 +106,12 @@ typedef struct owner_block {
   uint32_t sram_exec_mode;
   /** Ownership key algorithm (currently, only ECDSA is supported). */
   uint32_t ownership_key_alg;
+  /** Configuraion version (monotonically increasing per owner) */
+  uint32_t config_version;
+  /** Set the minimum security version to this value (UINT32_MAX: no change) */
+  uint32_t min_security_version_bl0;
   /** Reserved space for future use. */
-  uint32_t reserved[27];
+  uint32_t reserved[25];
   /** Owner public key. */
   owner_key_t owner_key;
   /** Owner's Activate public key. */
@@ -126,7 +130,9 @@ OT_ASSERT_MEMBER_OFFSET(owner_block_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, struct_version, 8);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, sram_exec_mode, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, ownership_key_alg, 16);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 20);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, config_version, 20);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, min_security_version_bl0, 24);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 28);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 128);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 224);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 320);

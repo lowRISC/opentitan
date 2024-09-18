@@ -43,11 +43,10 @@ static owner_page_status_t owner_page_validity_check(size_t page) {
   return kOwnerPageStatusSigned;
 }
 
-OT_WEAK rom_error_t test_owner_init(boot_data_t *bootdata,
-                                    owner_config_t *config,
-                                    owner_application_keyring_t *keyring) {
-  dbg_printf("error: no owner.\r\n");
-  return kErrorOwnershipNoOwner;
+OT_WEAK rom_error_t
+sku_creator_owner_init(boot_data_t *bootdata, owner_config_t *config,
+                       owner_application_keyring_t *keyring) {
+  return kErrorOk;
 }
 
 static rom_error_t locked_owner_init(boot_data_t *bootdata,
@@ -186,6 +185,19 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
 
   dbg_printf("ownership: %C\r\n", bootdata->ownership_state);
   owner_config_default(config);
+
+  // We give the weak `sku_creator_owner_init` function the opportunity to
+  // initialize ownership if it is uninitialized or needs updating.
+  //
+  // This is a temporary measure to get ownership configs installed on
+  // pre-existing silicon and to update the owner configuration automatically
+  // should we decide to update it during development.
+  //
+  // When we settle on a default ownership configuration, we'll remove this
+  // function and possibly relegate it to the `default` case below, only to
+  // be used should the chip enter the "no owner recovery" state.
+  HARDENED_RETURN_IF_ERROR(sku_creator_owner_init(bootdata, config, keyring));
+
   rom_error_t error = kErrorOwnershipNoOwner;
   // TODO(#22386): Harden this switch/case statement.
   switch (bootdata->ownership_state) {
@@ -200,9 +212,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
       error = unlocked_init(bootdata, config, keyring);
       break;
     default:
-      // The `test_owner_init` function is weak and the default implementation
-      // does nothing.
-      error = test_owner_init(bootdata, config, keyring);
+        /* Do nothing. */;
   }
   return error;
 }
