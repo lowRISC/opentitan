@@ -405,3 +405,117 @@ autogen_cryptotest_header = rule(
         ),
     },
 )
+
+def _autogen_dttool_impl(ctx):
+    # We output everything in the package directory.
+    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+    outputs = []
+    groups = {}
+    for group, files in ctx.attr.output_groups.items():
+        deps = []
+        for f in files:
+            # Declared files are relative to the package directory.
+            deps.append(ctx.actions.declare_file(f))
+        outputs.extend(deps)
+        groups[group] = depset(deps)
+
+    # Ignore the values since `dtgen` can recover them from the file content.
+    ips = []
+    for iphjson in ctx.files.ip_to_hjson:
+        ips.extend(["-i", iphjson.path])
+
+    ctx.actions.run(
+        inputs = [ctx.file.top_gen_cfg] + ctx.files.ip_to_hjson + ctx.files.data,
+        outputs = outputs,
+        executable = ctx.executable._dttool,
+        arguments = [
+            "-t", ctx.file.top_gen_cfg.path,
+            "--outdir", outdir,
+            "--gen-top",
+        ] + ips + ctx.attr.arguments,
+        mnemonic = "DtGen",
+        progress_message = "Running dttool on {}".format(ctx.file.top_gen_cfg.path),
+    )
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+        ),
+        OutputGroupInfo(**groups),
+    ]
+
+autogen_dttool = rule(
+    implementation = _autogen_dttool_impl,
+    attrs = {
+        "top_gen_cfg": attr.label(mandatory = True, allow_single_file = [".hjson"]),
+        "ip_to_hjson": attr.label_keyed_string_dict(
+            allow_files = True,
+            default = {},
+            doc = "Mapping from hjson files to IP names.",
+        ),
+        "output_groups": attr.string_list_dict(
+            allow_empty = True,
+            doc = "Mapping of group name to lists of files or directories in that named group (use '/' at the to make it a directory)",
+        ),
+        "data": attr.label_list(
+            allow_files = True,
+            # See https://bazel.build/reference/be/common-definitions#typical-attributes.
+            doc = "Files needed by this rule at runtime. May list file or rule targets. Generally allows any target."
+        ),
+        "arguments": attr.string_list(
+            default = [],
+            doc = "Arguments to pass to the tool",
+        ),
+        "_dttool": attr.label(
+            default = "//util:dttool",
+            executable = True,
+            cfg = "exec",
+        ),
+    }
+)
+
+def autogen_top_dt(
+    topname,
+    top_gen_cfg,
+    ip_to_hjson,
+    top_lib,
+    dt_ip_deps,
+    data = []):
+    """
+    TODO document
+    """
+    output_groups = {
+        "dt_api": ["dt_api.h"],
+        "dt_lib_srcs": ["devicetables.c"],
+        "dt_lib_hdrs": ["devicetables.h"],
+    }
+    name = topname + "_dttool"
+    # The output of this rule is a directory that contains everything.
+    autogen_dttool(
+        name = name,
+        output_groups = output_groups,
+        top_gen_cfg = top_gen_cfg,
+        ip_to_hjson = ip_to_hjson,
+        data = data
+    )
+    # Extract groups.
+    for group in output_groups.keys():
+        native.filegroup(
+            name = "{}_{}".format(name, group),
+            srcs = [":{}".format(name)],
+            output_group = group,
+        )
+    # Create software artefacts.
+    native.cc_library(
+        name = "dt_api",
+        hdrs = [":{}_dt_api".format(name)],
+        deps = [top_lib],
+        # Make the dt_api.h header accessible as "dt_api.h".
+        includes = ["."],
+    )
+
+    native.cc_library(
+        name = "devicetables",
+        srcs = [":{}_dt_lib_srcs".format(name)],
+        hdrs = [":{}_dt_lib_hdrs".format(name)],
+        deps = [":dt_api"] + dt_ip_deps,
+    )
