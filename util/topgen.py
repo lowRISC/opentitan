@@ -691,7 +691,7 @@ def _process_top(
     top_name = f"top_{topcfg['name']}"
 
     # Sweep the IP directory and gather the config files
-    ip_dir = Path(__file__).parents[1] / "hw/ip"
+    ip_dir = SRCTREE_TOP / "hw/ip"
     ips = search_ips(ip_dir)
 
     # exclude filtered IPs (to use ${top_name} one) and
