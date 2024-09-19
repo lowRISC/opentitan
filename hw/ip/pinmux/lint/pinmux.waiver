@@ -37,3 +37,6 @@ waive -rules CLOCK_USE -location {pinmux.sv} -regexp {'(dio_wkup_mux\[12\]|dio_w
 
 waive -rules CLOCK_MUX -location {pinmux.sv} -regexp {Clock 'dio_in_i\[12\]' reaches a multiplexer here, used as a clock 'clk_i'} \
       -comment "This mux is required to filter designated scan clock inputs (e.g. 'DioSpiDeviceSck' at index 12) from wakeup detector inputs"
+
+waive -rules RESET_ONLY -location {pinmux.sv} -regexp {'mio_pad_attr_q\[0\]' is asynchronously reset but has no other assignments in this block} \
+      -comment "This error can safely be ignored: The signal is obviously driven further down in the very same block, changing the TargetCfg.tap_strap0_idx value to a non-zero value (which it actually is in the Earlgrey top level) makes the error go away."
