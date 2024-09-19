@@ -186,12 +186,27 @@
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
       clock_srcs: {clk_i: "io_div4"},
-
+      clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_io_div4"},
+      reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40000000",
+    },
+    { name: "uart1",    // instance name
+      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+                        // and `hw/ip/{type}`
+
+      // clock connections defines the port to top level clock connection
+      // the ip.hjson will declare the clock port names
+      // If none are defined at ip.hjson, clk_i is used by default
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "peri",
+      // reset connections defines the port to top level reset connection
+      // the ip.hjson will declare the reset port names
+      // If none are defined at ip.hjson, rst_ni is used by default
+      reset_connections: {rst_ni: "lc_io_div4"},
+      base_addr: "0x40010000",
     },
     { name: "gpio",
       type: "gpio",
@@ -681,6 +696,7 @@
   // Modules whose interrupts are connected to RV_PLIC.
   interrupt_module: [
     "uart0",
+    "uart1",
     "gpio",
     "spi_device",
     "spi_host0",
@@ -852,6 +868,7 @@
       // MIOs
       { instance: "gpio",            port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "uart1",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "flash_ctrl",      port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: 'usbdev',          port: 'sense', connection: 'muxed' , pad: ''             , desc: ''},
     ],
