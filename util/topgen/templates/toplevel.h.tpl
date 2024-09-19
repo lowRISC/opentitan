@@ -4,6 +4,7 @@
 <%
 import textwrap
 %>\
+${gencmd}
 
 #ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
 #define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
