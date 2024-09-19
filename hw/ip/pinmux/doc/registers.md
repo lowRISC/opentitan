@@ -965,6 +965,7 @@ Register write enable for MIO PAD attributes.
 Muxed pad attributes.
 This register has WARL behavior since not each pad type may support
 all attributes.
+The muxed pad that is used for TAP strap 0 has a different reset value, with `pull_en` set to 1.
 - Reset default: `0x0`
 - Reset mask: `0xf300ff`
 

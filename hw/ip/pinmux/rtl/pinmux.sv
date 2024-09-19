@@ -161,7 +161,17 @@ module pinmux
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       dio_pad_attr_q <= '0;
-      mio_pad_attr_q <= '0;
+      for (int kk = 0; kk < NMioPads; kk++) begin
+        if (kk == TargetCfg.tap_strap0_idx) begin
+          // TAP strap 0 is sampled after reset (and only once for life cycle states that are not
+          // TEST_UNLOCKED* or RMA).  To ensure it gets sampled as 0 unless driven to 1 from an
+          // external source (and specifically that it gets sampled as 0 when left floating / not
+          // connected), this enables the pull-down of the pad at reset.
+          mio_pad_attr_q[kk] <= '{pull_en: 1'b1, default: '0};
+        end else begin
+          mio_pad_attr_q[kk] <= '0;
+        end
+      end
     end else begin
       // dedicated pads
       for (int kk = 0; kk < NDioPads; kk++) begin
