@@ -863,6 +863,7 @@ class TopGen:
         self._init_pwrmgr_reset_requests()
         self._init_clkmgr_clocks()
         self._init_subranges()
+        self._init_clocks()
 
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
         '''Return a list of MemoryRegion objects for devices on the bus
@@ -1325,3 +1326,17 @@ class TopGen:
             subspace_regions.append((subspace['name'], subspace['desc'], subspace_region))
 
         self.subranges = subspace_regions
+
+    def _init_clocks(self):
+        """
+        Collects the clocks in the design and assigns them IDs.
+        """
+        clocks = self.top['clocks']
+        clock_list = self._enum_type(self._top_name, Name(["clock", "src"]))
+        clock_list.add_constant(Name(["unknown"]), "ID representing unknown clock")
+        for clock in clocks.all_srcs.keys():
+            clock_name = Name.from_snake_case(clock)
+            docstring = "Clock {}".format(clock)
+            clock_list.add_constant(clock_name, docstring)
+        clock_list.add_constant(Name(["count"]), "Number of clock IDs")
+        self.clocks = clock_list
