@@ -1082,17 +1082,39 @@ module dma
   assign sha2_data.mask = {<<1{req_dst_be_q}};
 
   // Interrupt logic
-  logic test_done_interrupt;
-  logic test_error_interrupt;
+
+  prim_intr_hw #(
+    .IntrT ( "Status" )
+  ) u_intr_dma_done (
+    .clk_i                  ( clk_i                         ),
+    .rst_ni                 ( rst_ni                        ),
+    .event_intr_i           ( reg2hw.intr_state.dma_done.q  ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.dma_done.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.dma_done.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.dma_done.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.dma_done.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.dma_done.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.dma_done.d  ),
+    .intr_o                 ( intr_dma_done_o               )
+  );
+
+  prim_intr_hw #(
+    .IntrT ( "Status" )
+  ) u_intr_error (
+    .clk_i                  ( clk_i                          ),
+    .rst_ni                 ( rst_ni                         ),
+    .event_intr_i           ( reg2hw.intr_state.dma_error.q  ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.dma_error.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.dma_error.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.dma_error.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.dma_error.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.dma_error.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.dma_error.d  ),
+    .intr_o                 ( intr_dma_error_o               )
+  );
+
   logic data_move_state, data_move_state_valid;
   logic update_dst_addr_reg, update_src_addr_reg;
-
-  assign test_done_interrupt  = reg2hw.intr_test.dma_done.q  && reg2hw.intr_test.dma_done.qe;
-  assign test_error_interrupt = reg2hw.intr_test.dma_error.q && reg2hw.intr_test.dma_error.qe;
-
-  // Signal interrupt controller whenever an enabled interrupt info bit is set
-  assign intr_dma_done_o  = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
-  assign intr_dma_error_o = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
 
   // Data was moved if we get a write valid response
   assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite ||
@@ -1121,8 +1143,6 @@ module dma
                             transfer_remaining_bytes : chunk_remaining_bytes;
 
   always_comb begin
-    hw2reg = '0;
-
     // Clear the go bit if we are in a single transfer and finished the DMA operation,
     // hardware handshake mode when we finished all transfers, or when aborting the transfer.
     hw2reg.control.go.de = clear_go || cfg_abort_en;
@@ -1257,15 +1277,6 @@ module dma
     // Clear the control.abort bit once we have handled the abort request
     hw2reg.control.abort.de = hw2reg.status.aborted.de;
     hw2reg.control.abort.d  = 1'b0;
-
-    // Interrupt management
-    // Raise the done interrupt either when finishing finishing a single chunk or the whole
-    // transfer.
-    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | chunk_done | test_done_interrupt;
-    hw2reg.intr_state.dma_done.d  = 1'b1;
-
-    hw2reg.intr_state.dma_error.de = reg2hw.status.error.q | test_error_interrupt;
-    hw2reg.intr_state.dma_error.d  = 1'b1;
 
     // Clear the SHA2 digests if the SHA2 valid flag is cleared (RW1C)
     if (reg2hw.status.sha2_digest_valid.qe & reg2hw.status.sha2_digest_valid.q) begin

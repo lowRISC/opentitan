@@ -76,14 +76,14 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "dma_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "dma_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name      | Description                                                               |
 |:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------|
 |  31:2  |        |         |           | Reserved                                                                  |
-|   1    |  rw1c  |   0x0   | dma_error | DMA error has occurred. DMA_STATUS.error_code register shows the details. |
-|   0    |  rw1c  |   0x0   | dma_done  | DMA operation has been completed.                                         |
+|   1    |   ro   |   0x0   | dma_error | DMA error has occurred. DMA_STATUS.error_code register shows the details. |
+|   0    |   ro   |   0x0   | dma_done  | DMA operation has been completed.                                         |
 
 ## INTR_ENABLE
 Interrupt Enable Register
