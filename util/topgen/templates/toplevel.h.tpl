@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+${gencmd}
 
 #ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
 #define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
