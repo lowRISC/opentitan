@@ -809,10 +809,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // that may be changed according to the new enable bits.
         predict_interrupts(CSRtoIntrLatency, `gmv(ral.intr_state), item.a_data);
       end
-      "intr_state": begin
-        // Writing 1 to an INTR_STATE bit clears the corresponding asserted interrupt.
-        predict_interrupts(CSRtoIntrLatency, item.a_data & `gmv(ral.intr_enable), 0);
-      end
       "intr_test": begin
         `uvm_info(`gfn, $sformatf("intr_test write 0x%x with enables 0x%0x",
                                   item.a_data, intr_enable), UVM_HIGH)
@@ -952,6 +948,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
         index = get_index_from_reg_name(csr.get_name());
         dma_config.intr_src_wr_val[index] = item.a_data;
+      end
+      "status": begin
+        bit done, error;
+        done = get_field_val(ral.status.done, item.a_data);
+        error = get_field_val(ral.status.error, item.a_data);
+        // Clearing the status bits also clears the status interrupt
+        predict_interrupts(CSRtoIntrLatency, done << DMA_DONE & `gmv(ral.intr_enable), 0);
+        predict_interrupts(CSRtoIntrLatency, error << DMA_ERROR & `gmv(ral.intr_enable), 0);
       end
       "control": begin
         bit go, initial_transfer, start_transfer;

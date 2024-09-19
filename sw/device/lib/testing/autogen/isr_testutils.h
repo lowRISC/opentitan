@@ -691,11 +691,13 @@ void isr_testutils_csrng_isr(
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param dma_ctx A(n) dma ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_dma_isr(plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
+                           bool mute_status_irq,
                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
                            dif_dma_irq_t *irq_serviced);
 
