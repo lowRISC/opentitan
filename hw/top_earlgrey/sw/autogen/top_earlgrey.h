@@ -1810,6 +1810,20 @@ typedef enum top_earlgrey_hintable_clocks {
 } top_earlgrey_hintable_clocks_t;
 
 /**
+ * Clock IDs for peripherals to map against properties.
+ */
+typedef enum top_earlgrey_clock_src {
+  kTopEarlgreyClockSrcUnknown = 0, /**< ID representing unknown clock */
+  kTopEarlgreyClockSrcMain = 1, /**< Clock main */
+  kTopEarlgreyClockSrcIo = 2, /**< Clock io */
+  kTopEarlgreyClockSrcUsb = 3, /**< Clock usb */
+  kTopEarlgreyClockSrcAon = 4, /**< Clock aon */
+  kTopEarlgreyClockSrcIoDiv2 = 5, /**< Clock io_div2 */
+  kTopEarlgreyClockSrcIoDiv4 = 6, /**< Clock io_div4 */
+  kTopEarlgreyClockSrcCount = 7, /**< Number of clock IDs */
+} top_earlgrey_clock_src_t;
+
+/**
  * MMIO Region
  *
  * MMIO region excludes any memory that is separate from the module
