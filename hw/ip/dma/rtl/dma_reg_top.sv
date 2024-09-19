@@ -121,11 +121,8 @@ module dma_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_we;
   logic intr_state_dma_done_qs;
-  logic intr_state_dma_done_wd;
   logic intr_state_dma_error_qs;
-  logic intr_state_dma_error_wd;
   logic intr_enable_we;
   logic intr_enable_dma_done_qs;
   logic intr_enable_dma_done_wd;
@@ -308,7 +305,7 @@ module dma_reg_top (
   //   F[dma_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_dma_done (
@@ -316,8 +313,8 @@ module dma_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_dma_done_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.dma_done.de),
@@ -335,7 +332,7 @@ module dma_reg_top (
   //   F[dma_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_dma_error (
@@ -343,8 +340,8 @@ module dma_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_dma_error_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.dma_error.de),
@@ -3004,11 +3001,6 @@ module dma_reg_top (
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign intr_state_dma_done_wd = reg_wdata[0];
-
-  assign intr_state_dma_error_wd = reg_wdata[1];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_dma_done_wd = reg_wdata[0];
@@ -3166,7 +3158,7 @@ module dma_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = intr_state_we;
+    reg_we_check[0] = 1'b0;
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
     reg_we_check[3] = alert_test_we;
