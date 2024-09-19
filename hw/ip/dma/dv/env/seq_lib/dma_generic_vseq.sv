@@ -120,8 +120,6 @@ class dma_generic_vseq extends dma_base_vseq;
       ral.status.error.set(1'b1);
       csr_update(ral.status);
     end
-    // Clear the Error interrupt if set
-    clear_interrupts(1 << DMA_ERROR);
   endtask
 
   virtual task body();
@@ -276,7 +274,6 @@ class dma_generic_vseq extends dma_base_vseq;
         if (status[StatusDone]) begin
           // Clear STATUS.done bit and then clear the interrupt, if enabled.
           clear_done();
-          clear_interrupts(1 << DMA_DONE);
           status[StatusDone] = 1'b0;
         end
         if (status[StatusError]) begin

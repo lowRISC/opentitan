@@ -100,9 +100,11 @@
   interrupt_list: [
     { name: "dma_done"
       desc: "DMA operation has been completed."
+      type: "status"
     }
     { name: "dma_error"
       desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
+      type: "status"
     }
   ]
   alert_list: [

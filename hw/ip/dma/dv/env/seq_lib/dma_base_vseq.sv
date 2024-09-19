@@ -386,12 +386,6 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg_interrupts(interrupts, enable);
   endtask : enable_interrupts
 
-  // Clear one or more interrupts
-  task clear_interrupts(bit [31:0] clear);
-    `uvm_info(`gfn, $sformatf("DMA: Clear Interrupt(s) 0x%0x", clear), UVM_HIGH)
-    csr_wr(ral.intr_state, clear);
-  endtask : clear_interrupts
-
   // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
