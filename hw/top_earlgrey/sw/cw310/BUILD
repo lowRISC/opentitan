@@ -13,8 +13,8 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:dt_api",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
-        "//hw/top:dt_api",
     ],
 )
