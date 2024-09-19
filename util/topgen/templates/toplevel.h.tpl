@@ -207,6 +207,11 @@ ${helper.clkmgr_gateable_clocks.render()}
  */
 ${helper.clkmgr_hintable_clocks.render()}
 
+/**
+ * Clock IDs for peripherals to map against properties.
+ */
+${helper.clocks.render()}
+
 % for (subspace_name, description, subspace_range) in helper.subranges:
 /**
  * ${subspace_name.upper()} Region

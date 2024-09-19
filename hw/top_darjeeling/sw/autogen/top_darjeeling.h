@@ -1661,6 +1661,20 @@ typedef enum top_darjeeling_hintable_clocks {
 } top_darjeeling_hintable_clocks_t;
 
 /**
+ * Clock IDs for peripherals to map against properties.
+ */
+typedef enum top_darjeeling_clock_src {
+  kTopDarjeelingClockSrcUnknown = 0, /**< ID representing unknown clock */
+  kTopDarjeelingClockSrcMain = 1, /**< Clock main */
+  kTopDarjeelingClockSrcIo = 2, /**< Clock io */
+  kTopDarjeelingClockSrcUsb = 3, /**< Clock usb */
+  kTopDarjeelingClockSrcAon = 4, /**< Clock aon */
+  kTopDarjeelingClockSrcIoDiv2 = 5, /**< Clock io_div2 */
+  kTopDarjeelingClockSrcIoDiv4 = 6, /**< Clock io_div4 */
+  kTopDarjeelingClockSrcCount = 7, /**< Number of clock IDs */
+} top_darjeeling_clock_src_t;
+
+/**
  * MMIO Region
  *
  * MMIO region excludes any memory that is separate from the module
