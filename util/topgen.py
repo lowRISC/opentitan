@@ -911,6 +911,27 @@ def _check_countermeasures(completecfg: Dict[str, object],
     return success
 
 
+def path_to_bazel_label(path):
+    """
+    Given a repository path, find the first ancestor that contains a BUILD
+    file and return a bazel path to point to the file, assuming that this
+    BUILD file exports all files.
+
+    Example:
+      Called on hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson
+      The directory hw/top_earlgrey/data/autogen/ does not have a BUILD file.
+      The directory hw/top_earlgrey/data/ does have a BUILD file.
+      Return "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson".
+    """
+    path = path.resolve().relative_to(SRCTREE_TOP)
+    for p in path.parents:
+        if (p / "BUILD").exists():
+            label = "//{}:{}".format(p, path.relative_to(p))
+            return label
+    log.warning("could not find any BUILD file to point to {}".format(path))
+    return "//:{}".format(path)
+
+
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
     parser.add_argument("--topcfg",
@@ -1299,12 +1320,18 @@ def main():
                             helper=c_helper,
                             gencmd=gencmd_c)
 
+            name_to_hjson_label = {
+                ip: path_to_bazel_label(path)
+                for (ip, path) in name_to_hjson.items()
+            }
             # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
             memory_cheader_path = cformat_dir / "BUILD"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
                             memory_cheader_path,
                             helper=c_helper,
-                            gencmd=gencmd_c)
+                            gencmd=gencmd_c,
+                            topgencfg=path_to_bazel_label(genhjson_path),
+                            name_to_hjson=name_to_hjson_label)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
