@@ -205,6 +205,11 @@ ${helper.clkmgr_gateable_clocks.render()}
 ${helper.clkmgr_hintable_clocks.render()}
 
 /**
+ * Clock IDs for peripherals to map against properties.
+ */
+${helper.clocks.render()}
+
+/**
  * MMIO Region
  *
  * MMIO region excludes any memory that is separate from the module
