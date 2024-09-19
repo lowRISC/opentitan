@@ -71,55 +71,58 @@
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "dma_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "dma_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "dma_chunk_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                               |
-|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------|
-|  31:2  |        |         |           | Reserved                                                                  |
-|   1    |  rw1c  |   0x0   | dma_error | DMA error has occurred. DMA_STATUS.error_code register shows the details. |
-|   0    |  rw1c  |   0x0   | dma_done  | DMA operation has been completed.                                         |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                               |
+|:------:|:------:|:-------:|:---------------|:--------------------------------------------------------------------------|
+|  31:3  |        |         |                | Reserved                                                                  |
+|   2    |  rw1c  |   0x0   | dma_error      | DMA error has occurred. DMA_STATUS.error_code register shows the details. |
+|   1    |  rw1c  |   0x0   | dma_chunk_done | Indicated the transfer of a single chunk has been completed.              |
+|   0    |  rw1c  |   0x0   | dma_done       | DMA operation has been completed.                                         |
 
 ## INTR_ENABLE
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "dma_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "dma_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dma_chunk_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                         |
-|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------|
-|  31:2  |        |         |           | Reserved                                                            |
-|   1    |   rw   |   0x0   | dma_error | Enable interrupt when [`INTR_STATE.dma_error`](#intr_state) is set. |
-|   0    |   rw   |   0x0   | dma_done  | Enable interrupt when [`INTR_STATE.dma_done`](#intr_state) is set.  |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                              |
+|:------:|:------:|:-------:|:---------------|:-------------------------------------------------------------------------|
+|  31:3  |        |         |                | Reserved                                                                 |
+|   2    |   rw   |   0x0   | dma_error      | Enable interrupt when [`INTR_STATE.dma_error`](#intr_state) is set.      |
+|   1    |   rw   |   0x0   | dma_chunk_done | Enable interrupt when [`INTR_STATE.dma_chunk_done`](#intr_state) is set. |
+|   0    |   rw   |   0x0   | dma_done       | Enable interrupt when [`INTR_STATE.dma_done`](#intr_state) is set.       |
 
 ## INTR_TEST
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "dma_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "dma_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "dma_chunk_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                  |
-|:------:|:------:|:-------:|:----------|:-------------------------------------------------------------|
-|  31:2  |        |         |           | Reserved                                                     |
-|   1    |   wo   |   0x0   | dma_error | Write 1 to force [`INTR_STATE.dma_error`](#intr_state) to 1. |
-|   0    |   wo   |   0x0   | dma_done  | Write 1 to force [`INTR_STATE.dma_done`](#intr_state) to 1.  |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                       |
+|:------:|:------:|:-------:|:---------------|:------------------------------------------------------------------|
+|  31:3  |        |         |                | Reserved                                                          |
+|   2    |   wo   |   0x0   | dma_error      | Write 1 to force [`INTR_STATE.dma_error`](#intr_state) to 1.      |
+|   1    |   wo   |   0x0   | dma_chunk_done | Write 1 to force [`INTR_STATE.dma_chunk_done`](#intr_state) to 1. |
+|   0    |   wo   |   0x0   | dma_done       | Write 1 to force [`INTR_STATE.dma_done`](#intr_state) to 1.       |
 
 ## ALERT_TEST
 Alert Test Register
@@ -532,20 +535,21 @@ Other values are reserved.
 Status indication for DMA data movement.
 - Offset: `0x48`
 - Reset default: `0x0`
-- Reset mask: `0x1f`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "busy", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "aborted", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sha2_digest_valid", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "busy", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "chunk_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "aborted", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sha2_digest_valid", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                                                                        |
 |:------:|:------:|:-------:|:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:5  |        |         |                   | Reserved                                                                                                                                                                           |
-|   4    |   ro   |   0x0   | sha2_digest_valid | Indicates whether the SHA2_DIGEST register contains a valid digest. This value is cleared on the initial transfer and set when the digest is written.                              |
-|   3    |  rw1c  |   0x0   | error             | Error occurred during the operation. ERROR_CODE register denotes the source of the error.                                                                                          |
-|   2    |  rw1c  |   0x0   | aborted           | Set once aborted operation drains.                                                                                                                                                 |
+|  31:6  |        |         |                   | Reserved                                                                                                                                                                           |
+|   5    |   ro   |   0x0   | sha2_digest_valid | Indicates whether the SHA2_DIGEST register contains a valid digest. This value is cleared on the initial transfer and set when the digest is written.                              |
+|   4    |  rw1c  |   0x0   | error             | Error occurred during the operation. ERROR_CODE register denotes the source of the error.                                                                                          |
+|   3    |  rw1c  |   0x0   | aborted           | Set once aborted operation drains.                                                                                                                                                 |
+|   2    |  rw1c  |   0x0   | chunk_done        | Transfer of a single chunk is complete. Only raised for multi-chunk memory-to-memory transfers. Cleared automatically by the hardware when starting the transfer of a new chunk.   |
 |   1    |  rw1c  |   0x0   | done              | Configured DMA operation is complete. Cleared automatically by the hardware when starting a new transfer.                                                                          |
 |   0    |   ro   |   0x0   | busy              | DMA operation is active if this bit is set. DMA engine clears this bit when operation is complete. This bit may be set as long as hardware handshake mode is active and triggered. |
 

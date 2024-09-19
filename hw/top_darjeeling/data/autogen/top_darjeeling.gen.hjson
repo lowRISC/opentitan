@@ -15923,6 +15923,12 @@
       module_name: dma
     }
     {
+      name: dma_dma_chunk_done
+      width: 1
+      type: interrupt
+      module_name: dma
+    }
+    {
       name: dma_dma_error
       width: 1
       type: interrupt
