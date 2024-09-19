@@ -4,25 +4,25 @@
 #
 # ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------#
 # PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-# util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
-# -o hw/top_earlgrey
+# util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+# -o hw/top_darjeeling
 
 load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "top_earlgrey",
+    name = "top_darjeeling",
     srcs = [
-        "top_earlgrey.c",
+        "top_darjeeling.c",
     ],
     hdrs = [
-        "top_earlgrey.h",
-        "top_earlgrey_memory.h",
+        "top_darjeeling.h",
+        "top_darjeeling_memory.h",
     ],
 )
 
 ld_library(
-    name = "top_earlgrey_memory",
-    includes = ["top_earlgrey_memory.ld"],
+    name = "top_darjeeling_memory",
+    includes = ["top_darjeeling_memory.ld"],
 )
