@@ -37,6 +37,7 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
@@ -218,6 +219,7 @@ fpga_cw305(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw305",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
@@ -380,6 +382,7 @@ silicon(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:silicon",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
@@ -454,6 +457,7 @@ sim_verilator(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_verilator",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
@@ -514,6 +518,7 @@ sim_dv(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
