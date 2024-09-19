@@ -78,5 +78,5 @@ py_library(
 
 filegroup(
     name = "tpl_files",
-    srcs = glob(["**/*.tpl"]),
+    srcs = glob(["**/*.tpl"]) + ["templates/clang-format"],
 )
