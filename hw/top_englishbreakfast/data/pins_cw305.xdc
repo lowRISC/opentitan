@@ -38,6 +38,10 @@ set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get
 set_property -dict { PACKAGE_PIN D6 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8 }]; #USB_A18 (SAM3X)
 set_property -dict { PACKAGE_PIN C4 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5 }]; #USB_A19 (SAM3X)
 
+# UART0
+set_property -dict { PACKAGE_PIN A12 IOSTANDARD LVCMOS33 } [get_ports { IOC3 }]; #JP3.A12 - IO5 - OpenTitan UART0 RX
+set_property -dict { PACKAGE_PIN B12 IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]; #JP3.B12 - IO6 - OpenTitan UART0 TX
+
 ## OTHER IO
 set_property -dict { PACKAGE_PIN B16 IOSTANDARD LVCMOS33 } [get_ports { IOA4 }]; #JP3.B16
 set_property -dict { PACKAGE_PIN C13 IOSTANDARD LVCMOS33 } [get_ports { IOA5 }]; #JP3.C13
@@ -45,9 +49,7 @@ set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 } [get_ports { IOA6 }];
 set_property -dict { PACKAGE_PIN E15 IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; #JP3.E15
 set_property -dict { PACKAGE_PIN E13 IOSTANDARD LVCMOS33 } [get_ports { IOB2 }]; #JP3.E13
 set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 } [get_ports { IOB3 }]; #JP3.F15
-set_property -dict { PACKAGE_PIN E11 IOSTANDARD LVCMOS33 } [get_ports { IOB4 }]; #JP3.E11
-set_property -dict { PACKAGE_PIN F13 IOSTANDARD LVCMOS33 } [get_ports { IOB5 }]; #JP3.F13
-set_property -dict { PACKAGE_PIN A12 IOSTANDARD LVCMOS33 } [get_ports { IOB6 }]; #JP3.A12
+set_property -dict { PACKAGE_PIN F13 IOSTANDARD LVCMOS33 } [get_ports { IOB6 }]; #JP3.F13
 
 set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { USB_P }]; #JP3.C16
 set_property -dict { PACKAGE_PIN D13 IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { USB_N }]; #JP3.D13
@@ -55,12 +57,12 @@ set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_D
 set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE0 }]; #JP3.D16
 set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DNPULLUP0 }]; #JP3.E16
 
-## Unused pins of JP3: B12, F12, G16
+## Unused pins of JP3: E11, F12, G16
 
 ## 20-Pin Connector (JP1)
 
-set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IOC4 }];      #JP1 PIN 12 TIO2    - OpenTitan UART0 TX
-set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { IOC3 }];      #JP1 PIN 10 TIO1    - OpenTitan UART0 RX
+set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IOB5 }];      #JP1 PIN 12 TIO2    - OpenTitan UART1 TX
+set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { IOB4 }];      #JP1 PIN 10 TIO1    - OpenTitan UART1 RX
 set_property -dict { PACKAGE_PIN T14 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIGGER }]; #JP1 PIN 16 TIO4    - Capture Trigger
 set_property -dict { PACKAGE_PIN M16 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #JP1 PIN  4 TIO_HS1 - Target clock
 

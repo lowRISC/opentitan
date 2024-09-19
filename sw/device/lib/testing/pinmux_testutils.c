@@ -37,7 +37,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc4,
                                         kTopEarlgreyPinmuxOutselUart0Tx));
 
-#if !OT_IS_ENGLISH_BREAKFAST
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
   if (kDeviceType == kDeviceSimDV) {
@@ -63,6 +62,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob5,
                                         kTopEarlgreyPinmuxOutselUart1Tx));
 
+#if !OT_IS_ENGLISH_BREAKFAST
   // Configure a higher drive strength for the USB_P and USB_N pads because we
   // must the pad drivers must be capable of overpowering the 'pull' signal
   // strength of the internal pull ups in the differential receiver.

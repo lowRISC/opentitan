@@ -67,12 +67,12 @@ enum {
 static unsigned int trigger_bit_index = kTriggerHwGateBitIndex;
 
 static dif_uart_t uart0;
+static dif_uart_t uart1;
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
 static dif_rv_timer_t timer;
 
 #if !OT_IS_ENGLISH_BREAKFAST
-static dif_uart_t uart1;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
@@ -101,11 +101,9 @@ static void sca_init_uart(void) {
   OT_DISCARD(dif_uart_configure(&uart0, uart_config));
   base_uart_stdout(&uart0);
 
-#if !OT_IS_ENGLISH_BREAKFAST
   OT_DISCARD(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR),
                            &uart1));
   OT_DISCARD(dif_uart_configure(&uart1, uart_config));
-#endif
 }
 
 /**
@@ -285,13 +283,7 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
   sca_disable_peripherals(~enable);
 }
 
-const dif_uart_t *sca_get_uart(void) {
-#if !OT_IS_ENGLISH_BREAKFAST
-  return &uart1;
-#else
-  return &uart0;
-#endif
-}
+const dif_uart_t *sca_get_uart(void) { return &uart1; }
 
 void sca_select_trigger_type(sca_trigger_type_t trigger_type) {
   if (trigger_type == kScaTriggerTypeHwGated) {
