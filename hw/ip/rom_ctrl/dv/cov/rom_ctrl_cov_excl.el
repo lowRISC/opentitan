@@ -18,3 +18,9 @@ Transition Checking->RomAhead "341->917"
 ANNOTATION: "UNR"
 Fsm state_d "1410404563"
 Transition KmacAhead->ReadingHigh "629->181"
+
+// In rom_ctrl_scrambled_rom, the wire scr_nonce is having a fixed value and is a part of RHS of
+// the continuous assignment on line 81 and 82
+INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom
+ANNOTATION: "Waived the continuous assignment block as RHS is a fixed wire"
+Block 1 "3862690173" "assign data_scr_nonce = scr_nonce[(63 - Aw):0];"
