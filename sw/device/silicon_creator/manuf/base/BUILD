@@ -216,43 +216,56 @@ cc_library(
     hdrs = ["personalize_ext.h"],
 )
 
-cc_library(
-    name = "ft_personalize_base",
-    srcs = ["ft_personalize.c"],
-    deps = [
-        ":perso_tlv_data",
-        ":personalize_ext",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/json:provisioning_data",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
-        "//sw/device/silicon_creator/lib/base:util",
-        "//sw/device/silicon_creator/lib/cert",
-        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
-        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:dice",
-        "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
-        "//sw/device/silicon_creator/lib/cert:uds_template_library",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
-        "//sw/device/silicon_creator/manuf/lib:personalize",
-    ],
-)
+_DICE_EXTS = [
+    {
+        "suffix": "",
+        "ext_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
+    },
+    {
+        "suffix": "_dice_cwt",
+        "ext_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
+    },
+]
+
+[
+    cc_library(
+        name = "ft_personalize_base{}".format(dice["suffix"]),
+        srcs = ["ft_personalize.c"],
+        deps = [
+            ":perso_tlv_data",
+            ":personalize_ext",
+            "//sw/device/lib/crypto/drivers:entropy",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rstmgr",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/lib/testing/json:provisioning_data",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/lib/testing/test_framework:status",
+            "//sw/device/lib/testing/test_framework:ujson_ottf",
+            "//sw/device/silicon_creator/lib:attestation",
+            "//sw/device/silicon_creator/lib:otbn_boot_services",
+            "//sw/device/silicon_creator/lib/base:util",
+            "//sw/device/silicon_creator/lib/cert",
+            "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
+            "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+            "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
+            "//sw/device/silicon_creator/lib/cert:uds_template_library",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:keymgr",
+            "//sw/device/silicon_creator/lib/drivers:kmac",
+            "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
+            "//sw/device/silicon_creator/manuf/lib:personalize",
+        ] + dice["ext_libs"],
+    )
+    for dice in _DICE_EXTS
+]
 
 cc_library(
     name = "tpm_perso_fw_ext",
@@ -312,7 +325,7 @@ _FT_PERSO_EXTS = [
 
 [
     opentitan_binary(
-        name = "ft_personalize{}".format(ext["suffix"]),
+        name = "ft_personalize{}".format(ext["suffix"] + dice["suffix"]),
         testonly = True,
         srcs = ["ft_personalize.c"],
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -323,9 +336,10 @@ _FT_PERSO_EXTS = [
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-        deps = [":ft_personalize_base"] + ext["ext_libs"],
+        deps = [":ft_personalize_base{}".format(dice["suffix"])] + ext["ext_libs"],
     )
     for ext in _FT_PERSO_EXTS
+    for dice in _DICE_EXTS
 ]
 
 config_setting(
@@ -350,7 +364,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
 [
     opentitan_test(
-        name = "ft_provision{}".format(ext["suffix"]),
+        name = "ft_provision{}".format(ext["suffix"] + dice["suffix"]),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
@@ -360,7 +374,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             timeout = "long",
             binaries = {
                 ":sram_ft_individualize_sival": "sram_ft_individualize",
-                ":ft_personalize{}".format(ext["suffix"]): "ft_personalize",
+                ":ft_personalize{}".format(ext["suffix"] + dice["suffix"]): "ft_personalize",
             },
             changes_otp = True,
             data = FT_PERSONALIZE_KEYS,
@@ -376,7 +390,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
         silicon = silicon_params(
             binaries = {
                 ":sram_ft_individualize_sival": "sram_ft_individualize",
-                ":ft_personalize{}".format(ext["suffix"]): "ft_personalize",
+                ":ft_personalize{}".format(ext["suffix"] + dice["suffix"]): "ft_personalize",
             },
             changes_otp = True,
             data = FT_PERSONALIZE_KEYS,
@@ -387,4 +401,5 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
         ),
     )
     for ext in _FT_PERSO_EXTS
+    for dice in _DICE_EXTS
 ]

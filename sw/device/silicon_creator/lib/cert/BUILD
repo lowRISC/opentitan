@@ -113,6 +113,19 @@ cc_library(
 )
 
 cc_library(
+    name = "dice_cwt",
+    srcs = ["dice_cwt.c"],
+    hdrs = ["dice.h"],
+    deps = [
+        ":cert",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//sw/device/lib/base:status",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ],
+)
+
+cc_library(
     name = "tpm",
     srcs = ["tpm.c"],
     hdrs = ["tpm.h"],
