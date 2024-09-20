@@ -58,6 +58,38 @@ Normally, the rescue payload is stored into slot A of the flash.
 The alternative code `RESB` causes the ROM_EXT to store the payload in slot B of the flash.
 After receiving the payload, the ROM_EXT will reboot the chip (unless commanded to `WAIT`).
 
+#### Request a change in the serial data rate (`BAUD`)
+
+The user may request a change in the serial data rate.
+By default, the ROM_EXT operates at 115200 bps, however, a number of alternate speeds are supported.
+
+To change speeds, the user first issues the 4-byte code `BAUD`.
+The ROM_EXT will respond with the following message:
+```
+ok: waiting for baudrate
+```
+
+The user has 10 seconds to enter one of the following 4-byte symbols specifying a new rate:
+
+- `115K` - 115,200 bps
+- `230K` - 230,400 bps
+- `460K` - 460,800 bps
+- `921K` - 921,600 bps
+- `1M33` - 1,333,333 bps
+- `1M50` - 1,500,000 bps
+
+If a supported symbol is entered, the ROM_EXT will respond with the following message and then adjust the rate:
+```
+ok: new baudrate <symbol>
+```
+
+If an unsupported symbol is entered, the ROM_EXT will responde with the following message:
+```
+error: unsupported baudrate <symbol>
+```
+
+After changing the serial data rate, the ROM_EXT resumes operating in the prior operating mode.
+
 #### Request Boot Log Data (`BLOG`)
 
 The user may request a copy of the Boot Log with the 4-byte code `BLOG`.
@@ -113,6 +145,33 @@ The ROM_EXT will then will prompt for the transfer to start by sending the Xmode
 After receiving the payload, the ROM_EXT will reboot the chip (unless commanded to `WAIT`).
 
 Note: the ROM_EXT will only accept the Owner Block if the chip is in an ownership transfer state and the receive owner block meets all validity criteria.
+
+#### Get Owner Page (`OPG0`, `OPG1`)
+
+The user may request the current contents of the owner pages.
+The ROM_EXT will acknowledge this request with the following message:
+
+```
+mode: OPG0
+ok: receive owner page via xmodem-crc
+```
+
+The ROM_EXT will then transmit the request owner page to the user via the Xmodem-CRC protocol.
+After completing this action, the ROM_EXT will switch back to firmware rescue mode.
+
+
+#### Get OpenTitan Device ID (`OTID`)
+
+The user may request the OpenTitan Device ID with the 4-byte code `OTID`.
+The ROM_EXT will acknowledge this request with the following message:
+
+```
+mode: OTID
+ok: receive device ID via xmodem-crc
+```
+
+The ROM_EXT will then transmit the 256-bit device ID to the user via the Xmodem-CRC protocol.
+After completing this action, the ROM_EXT will switch back to firmware rescue mode.
 
 #### Request a Reboot (`REBO`)
 
