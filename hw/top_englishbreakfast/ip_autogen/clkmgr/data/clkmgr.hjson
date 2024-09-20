@@ -1,0 +1,884 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+# CLKMGR register template
+#
+{
+  name:               "clkmgr",
+  human_name:         "Clock Manager",
+  one_line_desc:      "Derives and monitors on-chip clock signals, handles clock gating requests from power manager and software",
+  one_paragraph_desc: '''
+  Clock Manager derives on-chip clocks from root clock signals provided by Analog Sensor Top (AST).
+  Input and output clocks may be asynchronous to each other.
+  During clock derivation, Clock Manager can divide clocks to lower frequencies and gate clocks based on control signals from the power manager and to a limited extent from software.
+  For example, the idle status of relevant hardware blocks is tracked and clock gating requests from software are ignored as long as these blocks are active.
+  Further security features include switchable clock jitter, continuous monitoring of clock frequencies, and various countermeasures to deter fault injection (FI) attacks.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "4",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_clkmgr",
+  revisions: [
+    {
+      version:            "1.0.1",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+    }
+  ]
+  scan: "true",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {reset: "rst_root_ni"},
+    {clock: "clk_main_i", reset: "rst_main_ni"},
+    {clock: "clk_io_i", reset: "rst_io_ni"},
+    {clock: "clk_usb_i", reset: "rst_usb_ni"},
+    {clock: "clk_aon_i", reset: "rst_aon_ni"},
+    {clock: "clk_io_div2_i", reset: "rst_io_div2_ni", internal: true},
+    {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
+    {reset: "rst_root_main_ni"},
+    {reset: "rst_root_io_ni"},
+    {reset: "rst_root_io_div2_ni"},
+    {reset: "rst_root_io_div4_ni"},
+    {reset: "rst_root_usb_ni"},
+  ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  alert_list: [
+    { name: "recov_fault",
+      desc: '''
+      This recoverable alert is triggered when there are measurement errors.
+      '''
+    }
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+  regwidth: "32",
+  param_list: [
+    { name: "NumGroups",
+      desc: "Number of clock groups",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumSwGateableClocks",
+      desc: "Number of SW gateable clocks",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "NumHintableClocks",
+      desc: "Number of hintable clocks",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+  ],
+
+  features: [
+    { name: "CLKMGR.ENABLE.IO_DIV4",
+      desc: "Gating of IO_DIV4 peripheral clock."
+    }
+    { name: "CLKMGR.ENABLE.IO_DIV2",
+      desc: "Gating of IO_DIV2 peripheral clock."
+    }
+    { name: "CLKMGR.ENABLE.IO",
+      desc: "Gating of IO peripheral clock."
+    }
+    { name: "CLKMGR.ENABLE.USB",
+      desc: "Gating of USB peripheral clock."
+    }
+    { name: "CLKMGR.HINT.AES",
+      desc: "Gating of AES transactional clock."
+    }
+    { name: "CLKMGR.MEAS_CTRL.REGWEN",
+      desc: '''Control modification of all clock frequency and timeout
+            measurements.
+            '''
+    }
+    { name: "CLKMGR.MEAS_CTRL.IO",
+      desc: "Frequency and timeout measurements of IO clock."
+    }
+    { name: "CLKMGR.MEAS_CTRL.IO_DIV4",
+      desc: "Frequency and timeout measurements of IO_DIV4 clock."
+    }
+    { name: "CLKMGR.MEAS_CTRL.MAIN",
+      desc: "Frequency and timeout measurements of MAIN clock."
+    }
+    { name: "CLKMGR.MEAS_CTRL.USB",
+      desc: "Frequency and timeout measurements of USB clock."
+    }
+    { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
+      desc: "Frequency and timeout measurements can flag recoverable errors."
+    }
+    { name: "CLKMGR.LC_EXTCLK.SPEED",
+      desc: "Speed of LC controlled modification of external clock."
+    }
+    { name: "CLKMGR.SW_EXTCLK.REGWEN",
+      desc: "Control software modification of external clock configuration."
+    }
+    { name: "CLKMGR.SW_EXTCLK.HIGH_SPEED",
+      desc: "Software configuration of external clock running at 96 MHz."
+    }
+    { name: "CLKMGR.SW_EXTCLK.LOW_SPEED",
+      desc: "Software configuration of external clock running at 48 MHz."
+    }
+    { name: "CLKMGR.JITTER.REGWEN",
+      desc: "Control modification of clock jitter enable."
+    }
+    { name: "CLKMGR.JITTER.ENABLE",
+      desc: "Enable clock jitter."
+    }
+    { name: "CLKMGR.ALERT_HANDLER.CLOCK_STATUS",
+      desc: "Inform alert handler about clock enable status for each clock."
+    }
+]
+
+  inter_signal_list: [
+    { struct:  "clkmgr_out",
+      type:    "uni",
+      name:    "clocks",
+      act:     "req",
+      package: "clkmgr_pkg",
+    },
+
+    { struct:  "clkmgr_cg_en",
+      type:    "uni",
+      name:    "cg_en",
+      act:     "req",
+      package: "clkmgr_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_hw_debug_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "io_clk_byp_req",
+      act:     "req",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "io_clk_byp_ack",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "all_clk_byp_req",
+      act:     "req",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "all_clk_byp_ack",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "hi_speed_sel",
+      act:     "req",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "div_step_down_req",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_clk_byp_req",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_clk_byp_ack",
+      act:     "req",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "jitter_en",
+      act:     "req",
+      package: "prim_mubi_pkg"
+    },
+
+  // Exported clocks
+
+    { struct:  "pwr_clk",
+      type:    "req_rsp",
+      name:    "pwr",
+      act:     "rsp",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "idle",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      width:   "1"
+    },
+
+    { struct:  "mubi4",
+      desc:    "Indicates clocks are calibrated and frequencies accurate",
+      type:    "uni",
+      name:    "calib_rdy",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4True"
+    },
+  ],
+
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    },
+    { name: "TIMEOUT.CLK.BKGN_CHK",
+      desc: "Background check for clock timeout."
+    },
+    { name: "MEAS.CLK.BKGN_CHK",
+      desc: "Background check for clock frequency."
+    },
+    { name: "MEAS.CONFIG.SHADOW",
+      desc: "Measurement configurations are shadowed."
+    }
+    { name: "IDLE.INTERSIG.MUBI",
+      desc: "Idle inputs are multibit encoded."
+    }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: "The life cycle control signals are multibit encoded."
+    }
+    { name: "LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI",
+      desc: "The life cycle clock req/ack signals are multibit encoded."
+    }
+    { name: "CLK_HANDSHAKE.INTERSIG.MUBI",
+      desc: "The external clock req/ack signals are multibit encoded."
+    }
+    { name: "DIV.INTERSIG.MUBI",
+      desc: "Divider step down request is multibit encoded."
+    }
+    { name: "JITTER.CONFIG.MUBI",
+      desc: "The jitter enable configuration is multibit encoded."
+    }
+    { name: "IDLE.CTR.REDUN",
+      desc: "Idle counter is duplicated."
+    }
+    { name: "MEAS.CONFIG.REGWEN",
+      desc: "The measurement controls protected with regwen."
+    }
+    { name: "CLK_CTRL.CONFIG.REGWEN",
+      desc: "Software controlled clock requests are proteced with regwen."
+    }
+
+  ]
+
+  registers: [
+    { name: "EXTCLK_CTRL_REGWEN",
+      desc: "External clock control write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of !!EXTCLK_CTRL can be set.  When 0, writes to !!EXTCLK_CTRL have no
+            effect.
+          '''
+        },
+      ]
+    },
+
+    { name: "EXTCLK_CTRL",
+      desc: '''
+        Select external clock
+      ''',
+      regwen: "EXTCLK_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "3:0",
+          name: "SEL",
+          mubi: true,
+          desc: '''
+            When the current value is not kMultiBitBool4True, writing a value of kMultiBitBool4True
+            selects external clock as clock for the system.  Writing any other value has
+            no impact.
+
+            When the current value is kMultiBitBool4True, writing a value of kMultiBitBool4False
+            selects internal clock as clock for the system. Writing any other value during this stage
+            has no impact.
+
+            While this register can always be programmed, it only takes effect when debug functions are enabled
+            in life cycle TEST, DEV or RMA states.
+          '''
+          resval: "false"
+        },
+        {
+          bits: "7:4",
+          name: "HI_SPEED_SEL",
+          mubi: true,
+          desc: '''
+            A value of kMultiBitBool4True selects nominal speed external clock.
+            All other values selects low speed clocks.
+
+            Note this field only has an effect when the !!EXTCLK_CTRL.SEL field is set to
+            kMultiBitBool4True.
+
+            Nominal speed means the external clock is approximately the same frequency as
+            the internal oscillator source.  When this option is used, all clocks operate
+            at roughly the nominal frequency.
+
+            Low speed means the external clock is approximately half the frequency of the
+            internal oscillator source. When this option is used, the internal dividers are
+            stepped down.  As a result, previously undivided clocks now run at half frequency,
+            while previously divided clocks run at roughly the nominal frequency.
+
+            See external clock switch support in documentation for more details.
+          '''
+          resval: false
+        }
+      ]
+      // avoid writing random values to this register as it could trigger transient checks
+      // in mubi sync
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "EXTCLK_STATUS",
+      desc: '''
+        Status of requested external clock switch
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        {
+          bits: "3:0",
+          name: "ACK",
+          mubi: true,
+          desc: '''
+            When !!EXTCLK_CTRL.SEL is set to kMultiBitBool4True, this field reflects
+            whether the clock has been switched the external source.
+
+            kMultiBitBool4True indicates the switch is complete.
+            kMultiBitBool4False indicates the switch is either not possible or still ongoing.
+          '''
+          resval: "false"
+        },
+      ]
+    },
+
+    { name: "JITTER_REGWEN",
+      desc: "Jitter write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of !!JITTER_ENABLE can be changed.  When 0, writes have no
+            effect.
+          '''
+        },
+      ]
+    },
+
+    { name: "JITTER_ENABLE",
+      desc: '''
+        Enable jittery clock
+      ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          mubi: true,
+          bits: "3:0",
+          name: "VAL",
+          desc: '''
+            Enable jittery clock.
+            A value of kMultiBitBool4False disables the jittery clock,
+            while all other values enable jittery clock.
+          ''',
+          resval: false
+          // avoid writing random values to this register as it could trigger transient checks
+          // in mubi sync
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
+        }
+      ]
+    },
+
+    { name: "CLK_ENABLES",
+      desc: '''
+        Clock enable for software gateable clocks.
+        These clocks are directly controlled by software.
+      ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "CLK_IO_DIV4_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_IO_DIV4_PERI is disabled.
+            1 CLK_IO_DIV4_PERI is enabled.
+          '''
+        }
+        {
+          bits: "1",
+          name: "CLK_IO_DIV2_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_IO_DIV2_PERI is disabled.
+            1 CLK_IO_DIV2_PERI is enabled.
+          '''
+        }
+        {
+          bits: "2",
+          name: "CLK_IO_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_IO_PERI is disabled.
+            1 CLK_IO_PERI is enabled.
+          '''
+        }
+        {
+          bits: "3",
+          name: "CLK_USB_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_USB_PERI is disabled.
+            1 CLK_USB_PERI is enabled.
+          '''
+        }
+      ]
+      // the CLK_ENABLE register cannot be written.
+      // During top level randomized tests, it is possible to disable the clocks and then access
+      // a register in the disabled block.  This would lead to a top level hang.
+      tags: ["excl:CsrAllTests:CsrExclAll"]
+    },
+
+    { name: "CLK_HINTS",
+      desc: '''
+        Clock hint for software gateable transactional clocks during active mode.
+        During low power mode, all clocks are gated off regardless of the software hint.
+
+        Transactional clocks are not fully controlled by software.  Instead software provides only a disable hint.
+
+        When software provides a disable hint, the clock manager checks to see if the associated hardware block is idle.
+        If the hardware block is idle, then the clock is disabled.
+        If the hardware block is not idle, the clock is kept on.
+
+        For the enable case, the software hint is immediately honored and the clock turned on.  Hardware does not provide any
+        feedback in this case.
+      ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "CLK_MAIN_AES_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_AES can be disabled.
+            1 CLK_MAIN_AES is enabled.
+          '''
+        }
+      ]
+      // the CLK_HINT register cannot be written.
+      // During top level randomized tests, it is possible to disable the clocks to transactional blocks
+      // and then access a register in the disabled block.  This would lead to a top level hang.
+      tags: ["excl:CsrAllTests:CsrExclAll"]
+    },
+
+    { name: "CLK_HINTS_STATUS",
+      desc: '''
+        Since the final state of !!CLK_HINTS is not always determined by software,
+        this register provides read feedback for the current clock state.
+
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        {
+          bits: "0",
+          name: "CLK_MAIN_AES_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_AES is disabled.
+            1 CLK_MAIN_AES is enabled.
+          '''
+        }
+      ]
+      // the CLK_HINT_STATUS register is read-only and cannot be checked.
+      // This register's value depends on the IDLE inputs, so cannot be predicted.
+      tags: ["excl:CsrNonInitTests:CsrExclCheck:CsrExclCheck"]
+    },
+
+    { name: "MEASURE_CTRL_REGWEN",
+      desc: "Measurement control write enable",
+      swaccess: "rw0c",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of the measurement control can be set.  When 0, writes have no
+            effect.
+          '''
+        },
+      ]
+    },
+    { name: "IO_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_io_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for io",
+          mubi: true,
+          resval: false,
+        },
+      ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "IO_MEAS_CTRL_SHADOWED",
+      desc: '''
+        Configuration controls for io measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_io_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
+      fields: [
+        {
+          bits: "9:0",
+          name: "HI",
+          desc: "Max threshold for io measurement",
+          resval: "490"
+        },
+
+        {
+          bits: "19:10",
+          name: "LO",
+          desc: "Min threshold for io measurement",
+          resval: "470"
+        },
+      ]
+    },
+    { name: "IO_DIV4_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_io_div4_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for io_div4",
+          mubi: true,
+          resval: false,
+        },
+      ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "IO_DIV4_MEAS_CTRL_SHADOWED",
+      desc: '''
+        Configuration controls for io_div4 measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_io_div4_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
+      fields: [
+        {
+          bits: "7:0",
+          name: "HI",
+          desc: "Max threshold for io_div4 measurement",
+          resval: "130"
+        },
+
+        {
+          bits: "15:8",
+          name: "LO",
+          desc: "Min threshold for io_div4 measurement",
+          resval: "110"
+        },
+      ]
+    },
+    { name: "MAIN_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_main_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for main",
+          mubi: true,
+          resval: false,
+        },
+      ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "MAIN_MEAS_CTRL_SHADOWED",
+      desc: '''
+        Configuration controls for main measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_main_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
+      fields: [
+        {
+          bits: "9:0",
+          name: "HI",
+          desc: "Max threshold for main measurement",
+          resval: "510"
+        },
+
+        {
+          bits: "19:10",
+          name: "LO",
+          desc: "Min threshold for main measurement",
+          resval: "490"
+        },
+      ]
+    },
+    { name: "USB_MEAS_CTRL_EN",
+      desc: '''
+        Enable for measurement control
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_usb_i",
+      fields: [
+        {
+          bits: "3:0",
+          name: "EN",
+          desc: "Enable measurement for usb",
+          mubi: true,
+          resval: false,
+        },
+      ]
+      // Measurements can cause recoverable errors depending on the
+      // thresholds which randomized CSR tests will not predict correctly.
+      // To provide better CSR coverage we allow writing the threshold
+      // fields, but not enabling the counters.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "USB_MEAS_CTRL_SHADOWED",
+      desc: '''
+        Configuration controls for usb measurement.
+
+        The threshold fields are made wider than required (by 1 bit) to ensure
+        there is room to adjust for measurement inaccuracies.
+      ''',
+      regwen: "MEASURE_CTRL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_usb_i",
+      shadowed: "true",
+      update_err_alert: "recov_fault",
+      storage_err_alert: "fatal_fault",
+      fields: [
+        {
+          bits: "8:0",
+          name: "HI",
+          desc: "Max threshold for usb measurement",
+          resval: "250"
+        },
+
+        {
+          bits: "17:9",
+          name: "LO",
+          desc: "Min threshold for usb measurement",
+          resval: "230"
+        },
+      ]
+    },
+
+    { name: "RECOV_ERR_CODE",
+      desc: "Recoverable Error code",
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "SHADOW_UPDATE_ERR",
+          resval: 0
+          desc: '''
+            One of the shadow registers encountered an update error.
+          '''
+        },
+        {
+          bits: "1",
+          name: "IO_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            io has encountered a measurement error.
+          '''
+        },
+        {
+          bits: "2",
+          name: "IO_DIV4_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            io_div4 has encountered a measurement error.
+          '''
+        },
+        {
+          bits: "3",
+          name: "MAIN_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            main has encountered a measurement error.
+          '''
+        },
+        {
+          bits: "4",
+          name: "USB_MEASURE_ERR",
+          resval: 0,
+          desc: '''
+            usb has encountered a measurement error.
+          '''
+        },
+        {
+          bits: "5",
+          name: "IO_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            io has timed out.
+          '''
+        }
+        {
+          bits: "6",
+          name: "IO_DIV4_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            io_div4 has timed out.
+          '''
+        }
+        {
+          bits: "7",
+          name: "MAIN_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            main has timed out.
+          '''
+        }
+        {
+          bits: "8",
+          name: "USB_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            usb has timed out.
+          '''
+        }
+      ]
+    },
+
+    { name: "FATAL_ERR_CODE",
+      desc: "Error code",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "REG_INTG",
+          resval: 0
+          desc: '''
+            Register file has experienced a fatal integrity error.
+          '''
+        },
+        { bits: "1",
+          name: "IDLE_CNT",
+          resval: 0
+          desc: '''
+            One of the idle counts encountered a duplicate error.
+          '''
+        },
+        { bits: "2",
+          name: "SHADOW_STORAGE_ERR",
+          resval: 0
+          desc: '''
+            One of the shadow registers encountered a storage error.
+          '''
+        },
+      ]
+    },
+  ]
+}

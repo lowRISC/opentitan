@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:clkmgr_sva_ifs:0.1"
+description: "CLKMGR SVA interfaces."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:mubi
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:dv:clkmgr_pwrmgr_sva_if
+    files:
+      - clkmgr_aon_cg_en_sva_if.sv
+      - clkmgr_cg_en_sva_if.sv
+      - clkmgr_div_sva_if.sv
+      - clkmgr_extclk_sva_if.sv
+      - clkmgr_gated_clock_sva_if.sv
+      - clkmgr_lost_calib_ctrl_en_sva_if.sv
+      - clkmgr_lost_calib_regwen_sva_if.sv
+      - clkmgr_trans_sva_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

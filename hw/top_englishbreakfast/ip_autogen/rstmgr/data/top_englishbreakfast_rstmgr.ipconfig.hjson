@@ -1,0 +1,455 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_rstmgr
+  param_values:
+  {
+    clks:
+    [
+      aon
+      io_div4
+      main
+      io
+      io_div2
+      usb
+    ]
+    reqs:
+    {
+      peripheral:
+      [
+        {
+          name: aon_timer_rst_req
+          width: "1"
+          module: aon_timer_aon
+          desc: watchdog reset requestt
+        }
+      ]
+      int:
+      [
+        {
+          name: MainPwr
+          desc: main power glitch reset request
+          module: pwrmgr_aon
+        }
+        {
+          name: Esc
+          desc: escalation reset request
+          module: alert_handler
+        }
+      ]
+      debug:
+      [
+        {
+          name: Ndm
+          desc: non-debug-module reset request
+          module: rv_dm
+        }
+      ]
+    }
+    power_domains:
+    [
+      Aon
+      "0"
+    ]
+    num_rstreqs: 1
+    sw_rsts:
+    [
+      spi_device
+      spi_host0
+      usb
+    ]
+    output_rsts:
+    [
+      {
+        name: por_aon
+        gen: false
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_aon_n
+        clock: aon
+      }
+      {
+        name: por
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_n
+        parent: por_aon
+        clock: main
+      }
+      {
+        name: por_io
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_io_n
+        parent: por_aon
+        clock: io
+      }
+      {
+        name: por_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_io_div2_n
+        parent: por_aon
+        clock: io_div2
+      }
+      {
+        name: por_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_por_io_div4_n
+        parent: por_aon
+        clock: io_div4
+      }
+      {
+        name: por_usb
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_usb_n
+        parent: por_aon
+        clock: usb
+      }
+      {
+        name: lc
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_lc_n
+        parent: lc_src
+        clock: main
+      }
+      {
+        name: lc_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_lc_io_div4_n
+        parent: lc_src
+        clock: io_div4
+      }
+      {
+        name: sys
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_n
+        parent: sys_src
+        clock: main
+      }
+      {
+        name: sys_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_io_div4_n
+        parent: sys_src
+        clock: io_div4
+      }
+      {
+        name: sys_aon
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_aon_n
+        parent: sys_src
+        clock: aon
+      }
+      {
+        name: spi_device
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_spi_device_n
+        parent: sys_src
+        clock: io_div2
+      }
+      {
+        name: spi_host0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_spi_host0_n
+        parent: sys_src
+        clock: io
+      }
+      {
+        name: usb
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_usb_n
+        parent: sys_src
+        clock: usb
+      }
+    ]
+    leaf_rsts:
+    [
+      {
+        name: por
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_n
+        parent: por_aon
+        clock: main
+      }
+      {
+        name: por_io
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_io_n
+        parent: por_aon
+        clock: io
+      }
+      {
+        name: por_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_io_div2_n
+        parent: por_aon
+        clock: io_div2
+      }
+      {
+        name: por_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_por_io_div4_n
+        parent: por_aon
+        clock: io_div4
+      }
+      {
+        name: por_usb
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_por_usb_n
+        parent: por_aon
+        clock: usb
+      }
+      {
+        name: lc
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_lc_n
+        parent: lc_src
+        clock: main
+      }
+      {
+        name: lc_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_lc_io_div4_n
+        parent: lc_src
+        clock: io_div4
+      }
+      {
+        name: sys
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: true
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_n
+        parent: sys_src
+        clock: main
+      }
+      {
+        name: sys_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_io_div4_n
+        parent: sys_src
+        clock: io_div4
+      }
+      {
+        name: sys_aon
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+          Aon
+        ]
+        shadowed: false
+        sw: false
+        path: rstmgr_aon_resets.rst_sys_aon_n
+        parent: sys_src
+        clock: aon
+      }
+      {
+        name: spi_device
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_spi_device_n
+        parent: sys_src
+        clock: io_div2
+      }
+      {
+        name: spi_host0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_spi_host0_n
+        parent: sys_src
+        clock: io
+      }
+      {
+        name: usb
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_usb_n
+        parent: sys_src
+        clock: usb
+      }
+    ]
+    rst_ni: lc_io_div4
+    export_rsts: {}
+    topname: englishbreakfast
+  }
+}

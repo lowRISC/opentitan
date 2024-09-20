@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<refinement-file-root>
+  <information comment-version="1" creation-time="Tue 17 May 2022 17:10:14 BST" creator="none" csCheck="false" save-ref-method="seq" tool-version="Cadence vManager21.03" rules-signature-c="72963ce7f9a7531698c243376da366e0">
+    <ucm-files>
+    </ucm-files>
+    <ccf-files>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="type" domain="icc" entityName="prim_generic_flash/scanmode_i" entityType="toggle" excTime="1652803988" name="exclude" packageName="worklib" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="type" domain="icc" entityName="prim_generic_flash/scan_en_i" entityType="toggle" excTime="1652803988" name="exclude" packageName="worklib" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="type" domain="icc" entityName="prim_generic_flash/scan_rst_ni" entityType="toggle" excTime="1652803988" name="exclude" packageName="worklib" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_valid&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_opcode&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_param&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_size&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_source&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_address&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_mask&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_data&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_user.rsvd&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_user.instr_type&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_user.cmd_intg&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.a_user.data_intg&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_i.d_ready&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_valid&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_opcode&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_param&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_size&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_source&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_sink&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_data&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_user.rsp_intg&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_user.data_intg&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.d_error&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="flash_ctrl/&quot;prim_tl_o.a_ready&quot;" entityType="toggle" excTime="1652804137" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/1" entityType="top-expr" excTime="1653576309" file="1" im-checksum="95618010" line="42" name="exclude" reviewer="unknown" text="op_start_i &amp; op_addr_oob_i" ung="0" user="0" vscope="default"></rule>
+    <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/7" entityType="top-expr" excTime="1653576316" file="1" im-checksum="95618010" line="56" name="exclude" reviewer="unknown" text="op_start_i &amp; (~ op_addr_oob_i)" ung="0" user="0" vscope="default"></rule>
+    <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/2" entityType="top-expr" excTime="1653908436" file="1" im-checksum="95618010" line="45" name="exclude" reviewer="unknown" text="flash_req_o &amp; (flash_done_i | oob_err)" ung="0" user="2" vscope="default"></rule>
+    <rule ccType="inst" ccfFlagsMask="4205506-42" domain="icc" entityName="flash_ctrl/u_flash_ctrl_erase/4" entityType="top-expr" excTime="1653908436" file="1" im-checksum="95618010" line="49" name="exclude" reviewer="unknown" text="op_done_o &amp; oob_err" ung="0" user="2" vscope="default"></rule>
+  </rules>
+  <cache-map>
+    <cache-entry key="0" value="None"></cache-entry>
+  </cache-map>
+</refinement-file-root>

@@ -1,0 +1,77 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_alert_handler
+  param_values:
+  {
+    n_alerts: 28
+    esc_cnt_dw: 32
+    accu_cnt_dw: 16
+    async_on:
+    [
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+      1'b1
+    ]
+    n_classes: 4
+    n_lpg: 14
+    lpg_map:
+    [
+      4'd0
+      4'd0
+      4'd1
+      4'd2
+      4'd3
+      4'd4
+      4'd5
+      4'd6
+      4'd7
+      4'd7
+      4'd6
+      4'd6
+      4'd7
+      4'd8
+      4'd10
+      4'd10
+      4'd10
+      4'd10
+      4'd10
+      4'd11
+      4'd12
+      4'd12
+      4'd11
+      4'd13
+      4'd13
+      4'd13
+      4'd13
+      4'd13
+    ]
+    topname: englishbreakfast
+  }
+}

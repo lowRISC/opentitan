@@ -1,0 +1,97 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl:0.1
+description: "Flash Controller"
+virtual:
+  - lowrisc:ip_interfaces:flash_ctrl
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:count
+      - lowrisc:prim:edge_detector
+      - lowrisc:prim:flash
+      - lowrisc:prim:flop_2sync
+      - lowrisc:prim:gf_mult
+      - lowrisc:prim:lc_sync
+      - lowrisc:prim:lfsr
+      - lowrisc:prim:secded
+      - lowrisc:prim:sparse_fsm
+      - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_pkg
+      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_reg
+      - lowrisc:ip:jtag_pkg
+    files:
+      - rtl/flash_ctrl.sv
+      - rtl/flash_ctrl_erase.sv
+      - rtl/flash_ctrl_prog.sv
+      - rtl/flash_ctrl_rd.sv
+      - rtl/flash_ctrl_arb.sv
+      - rtl/flash_ctrl_info_cfg.sv
+      - rtl/flash_ctrl_lcmgr.sv
+      - rtl/flash_ctrl_region_cfg.sv
+      - rtl/flash_mp.sv
+      - rtl/flash_mp_data_region_sel.sv
+      - rtl/flash_phy.sv
+      - rtl/flash_phy_core.sv
+      - rtl/flash_phy_rd.sv
+      - rtl/flash_phy_rd_buffers.sv
+      - rtl/flash_phy_rd_buf_dep.sv
+      - rtl/flash_phy_prog.sv
+      - rtl/flash_phy_erase.sv
+      - rtl/flash_phy_scramble.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/flash_ctrl.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/flash_ctrl.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl
+    toplevel: flash_ctrl
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -1,0 +1,28 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_flash_ctrl
+  param_values:
+  {
+    banks: 2
+    pages_per_bank: 16
+    program_resolution: 8
+    words_per_page: 256
+    data_width: 64
+    metadata_width: 12
+    info_types: 3
+    infos_per_bank:
+    [
+      10
+      1
+      2
+    ]
+    word_bytes: 8
+    pgm_resolution_bytes: 64
+    bytes_per_page: 2048
+    bytes_per_bank: 32768
+    size: 65536
+    topname: englishbreakfast
+  }
+}

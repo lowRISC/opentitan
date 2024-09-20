@@ -1,0 +1,63 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_pwrmgr
+  param_values:
+  {
+    NumWkups: 3
+    Wkups:
+    [
+      {
+        name: pin_wkup_req
+        width: "1"
+        module: pinmux_aon
+      }
+      {
+        name: usb_wkup_req
+        width: "1"
+        module: pinmux_aon
+      }
+      {
+        name: wkup_req
+        width: "1"
+        module: aon_timer_aon
+      }
+    ]
+    rst_reqs:
+    {
+      peripheral:
+      [
+        {
+          name: aon_timer_rst_req
+          width: "1"
+          module: aon_timer_aon
+          desc: watchdog reset requestt
+        }
+      ]
+      int:
+      [
+        {
+          name: MainPwr
+          desc: main power glitch reset request
+          module: pwrmgr_aon
+        }
+        {
+          name: Esc
+          desc: escalation reset request
+          module: alert_handler
+        }
+      ]
+      debug:
+      [
+        {
+          name: Ndm
+          desc: non-debug-module reset request
+          module: rv_dm
+        }
+      ]
+    }
+    NumRstReqs: 1
+    topname: englishbreakfast
+  }
+}

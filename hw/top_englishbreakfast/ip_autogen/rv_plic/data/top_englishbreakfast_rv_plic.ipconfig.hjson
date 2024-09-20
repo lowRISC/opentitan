@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_rv_plic
+  param_values:
+  {
+    src: 88
+    target: 1
+    prio: 3
+    topname: englishbreakfast
+  }
+}

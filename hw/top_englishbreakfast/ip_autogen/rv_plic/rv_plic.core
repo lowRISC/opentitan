@@ -1,0 +1,40 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:opentitan:top_englishbreakfast_rv_plic
+description: "RISC-V Platform Interrupt Controller (PLIC)"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:tlul
+      - lowrisc:prim:subreg
+    files:
+      - rtl/rv_plic_reg_pkg.sv
+      - rtl/rv_plic_reg_top.sv
+      - rtl/rv_plic.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: rv_plic
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

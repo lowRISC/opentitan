@@ -1,0 +1,37 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for rstmgr
+
+# dedicated reset drivers / muxes
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+set_clock_drivers prim_clock_buf
+
+waive -rules TERMINAL_STATE -location {rstmgr_cnsty_chk.sv} -regexp {Terminal state 'Error' is detected} \
+      -comment "Intentional terminal state"
+
+# All leaf resets have a reset multiplexer for scan reset
+waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regexp {Asynchronous reset '(resets_o\.)?rst_[A-Za-z_0-9]+_n(\[[0-9:]+\])?' is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_MUX -location {rstmgr_leaf_rst.sv} -regexp {Asynchronous reset 'leaf_rst_o' is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_MUX -location {rstmgr_leaf_rst.sv} -regexp {Asynchronous reset 'gen_rst_chk.leaf_chk_rst_n' is driven by a multiplexer here, used as a reset 'rst_dst_ni' at} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_USE -location {rstmgr.sv} -regexp {'rst_(por_aon_)?n\[1\]' is connected to 'rstmgr_ctrl' port 'rst_.*ni*} \
+      -comment "Parent Non always on resets are combined with the always on reset first before being used as resets"
+
+waive -rules RESET_USE -location {rstmgr.sv} -regexp {rst_lc_src_n.* is connected to 'rstmgr_ctrl' port 'rst_parent_ni.*} \
+      -comment "Parent resets are used synchronously instead of directly as async resets"
+
+waive -rules CONST_FF -location {rstmgr_crash_info.sv} -regexp {Flip-flop \'slots_q\[.*\]\[.*\]\' is driven by constant zeros in module \'rstmgr_crash_info\'} \
+      -comment "Some bits int the last slot are tied off to zero."
+
+waive -rules CONST_FF -location {rstmgr_cnsty_chk.sv} -regexp {Flip-flop '(parent|child)_rst_asserted' is driven by constant zero} \
+      -comment "These flipflop inputs are driven by zero."
+
+waive -rules CONST_FF -location {rstmgr_por.sv} -msg {Flip-flop 'rst_filter_n[0]' is driven by constant one} \
+      -comment "This flipflops is a reset filter, and the first index is driven by a constant one."
