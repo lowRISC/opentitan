@@ -60,7 +60,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                key_256b_weight            = 10;
 
   // reseed weigth
-  int                per8_weight                = 60;
+  int                per1_weight                = 60;
   int                per64_weight               = 30;
   int                per8k_weight               = 10;
 

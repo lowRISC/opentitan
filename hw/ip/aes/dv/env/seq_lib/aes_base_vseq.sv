@@ -1022,7 +1022,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.fixed_keylen         = cfg.fixed_keylen;
     aes_message.fixed_iv_en          = cfg.fixed_iv_en;
     aes_message.sideload_pct         = cfg.sideload_pct;
-    aes_message.per8_weight          = cfg.per8_weight;
+    aes_message.per1_weight          = cfg.per1_weight;
     aes_message.per64_weight         = cfg.per64_weight;
     aes_message.per8k_weight         = cfg.per8k_weight;
   endfunction
