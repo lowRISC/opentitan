@@ -81,6 +81,7 @@ rust_library(
         "src/chip/boolean.rs",
         "src/chip/boot_log.rs",
         "src/chip/boot_svc.rs",
+        "src/chip/device_id.rs",
         "src/chip/helper.rs",
         "src/chip/rom_error.rs",
         "src/chip/mod.rs",

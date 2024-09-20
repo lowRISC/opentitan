@@ -9,6 +9,7 @@ pub mod autogen;
 pub mod boolean;
 pub mod boot_log;
 pub mod boot_svc;
+pub mod device_id;
 pub mod helper;
 pub mod rom_error;
 

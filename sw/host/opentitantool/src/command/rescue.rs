@@ -16,6 +16,7 @@ use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::image::image::Image;
 use opentitanlib::image::manifest::ManifestKind;
+use opentitanlib::ownership::{OwnerBlock, TlvHeader};
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
@@ -119,7 +120,7 @@ impl CommandDispatch for GetBootLog {
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
-            let data = rescue.get_boot_log_raw()?;
+            let data = rescue.get_raw(RescueSerial::BOOT_LOG)?;
             Ok(Some(Box::new(RawBytes(data))))
         } else {
             let data = rescue.get_boot_log()?;
@@ -153,10 +154,44 @@ impl CommandDispatch for GetBootSvc {
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
-            let data = rescue.get_boot_svc_raw()?;
+            let data = rescue.get_raw(RescueSerial::BOOT_SVC_RSP)?;
             Ok(Some(Box::new(RawBytes(data))))
         } else {
             let data = rescue.get_boot_svc()?;
+            Ok(Some(Box::new(data)))
+        }
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct GetDeviceId {
+    #[command(flatten)]
+    params: UartParams,
+    #[arg(
+        long,
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        help = "Reset the target to enter rescue mode"
+    )]
+    reset_target: bool,
+    #[arg(long, short, default_value = "false")]
+    raw: bool,
+}
+
+impl CommandDispatch for GetDeviceId {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport, self.reset_target)?;
+        if self.raw {
+            let data = rescue.get_raw(RescueSerial::OT_ID)?;
+            Ok(Some(Box::new(RawBytes(data))))
+        } else {
+            let data = rescue.get_device_id()?;
             Ok(Some(Box::new(data)))
         }
     }
@@ -345,6 +380,58 @@ impl CommandDispatch for SetOwnerConfig {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct GetOwnerConfig {
+    #[command(flatten)]
+    params: UartParams,
+    #[arg(
+        long,
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        help = "Reset the target to enter rescue mode"
+    )]
+    reset_target: bool,
+    #[arg(long, short, default_value = "false", conflicts_with = "output")]
+    raw: bool,
+    #[arg(long, short, default_value = "0", help = "Owner page number")]
+    page: u32,
+    #[arg(
+        short,
+        long,
+        conflicts_with = "raw",
+        help = "Write the binary form to a file"
+    )]
+    output: Option<PathBuf>,
+}
+
+impl CommandDispatch for GetOwnerConfig {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let page = match self.page {
+            0 => RescueSerial::GET_OWNER_PAGE0,
+            1 => RescueSerial::GET_OWNER_PAGE1,
+            _ => return Err(anyhow!("Unsupported page {}", self.page)),
+        };
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport, self.reset_target)?;
+        let data = rescue.get_raw(page)?;
+        if let Some(output) = &self.output {
+            std::fs::write(output, &data)?;
+            Ok(None)
+        } else if self.raw {
+            Ok(Some(Box::new(RawBytes(data))))
+        } else {
+            let mut cursor = std::io::Cursor::new(&data);
+            let header = TlvHeader::read(&mut cursor)?;
+            Ok(Some(Box::new(OwnerBlock::read(&mut cursor, header)?)))
+        }
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum BootSvcCommand {
     Get(GetBootSvc),
@@ -358,6 +445,8 @@ pub enum RescueCommand {
     #[command(subcommand)]
     BootSvc(BootSvcCommand),
     GetBootLog(GetBootLog),
+    GetDeviceId(GetDeviceId),
     Firmware(Firmware),
     SetOwnerConfig(SetOwnerConfig),
+    GetOwnerConfig(GetOwnerConfig),
 }
