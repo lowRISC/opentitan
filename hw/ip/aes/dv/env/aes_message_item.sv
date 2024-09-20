@@ -68,7 +68,7 @@ class aes_message_item extends uvm_sequence_item;
   int    key_256b_weight      = 10;
 
   // reseed weight
-  int    per8_weight          = 60;
+  int    per1_weight          = 60;
   int    per64_weight         = 30;
   int    per8k_weight         = 10;
 
@@ -143,7 +143,7 @@ class aes_message_item extends uvm_sequence_item;
     solve cfg_error_type before reseed_rate;
     if (!(has_config_error && cfg_error_type.rsd_rate) ) {
       reseed_rate inside { 3'b001, 3'b010, 3'b100 };
-      reseed_rate dist   { 3'b001 :/ per8_weight,
+      reseed_rate dist   { 3'b001 :/ per1_weight,
                            3'b010 :/ per64_weight,
                            3'b100 :/ per8k_weight };
     } else {
