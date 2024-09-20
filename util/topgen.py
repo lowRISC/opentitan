@@ -1370,10 +1370,10 @@ def main():
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
 
-        # Auto-generate tests in "sw/device/tests/autogen" area.
+        # Auto-generate tests in "sw/device/tests/autogen/top_<top>" area.
         gencmd = warnhdr + GENCMD.format(top_name=top_name)
         for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
+            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / top_name / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
                             outfile,
                             helper=c_helper,
