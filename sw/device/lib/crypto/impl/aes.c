@@ -355,40 +355,67 @@ otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Perform the cipher operation for all full blocks (excluding last block).
-  // The input and output are offset by one, so if unrolled this loop would
-  // look like:
+  // Perform the cipher operation for all full blocks. The input and output are
+  // offset by `block_offset` number of blocks, where `block_offset` can be 1
+  // or 2. So if unrolled, these loops would look like:
+  //
+  // - block_offset == 1
   //   aes_update(NULL, input[0]);
   //   aes_update(output[0], input[1]);
   //   aes_update(output[1], input[2]);
-  //   ...
+  //   aes_update(output[2], NULL);
+  //
+  // - block_offset == 2
+  //   aes_update(NULL, input[0]);
+  //   aes_update(NULL, input[1]);
+  //   aes_update(output[0], input[2]); // The HW is processing input[1].
+  //   aes_update(output[1], input[3]); // The HW is processing input[2].
+  //   aes_update(output[2], NULL);
+  //   aes_update(output[3], NULL);
+  //
+  // Using a `block_offset` of 2 allows having 3 blocks in flight which is
+  // beneficial from a hardening and performance point of view:
+  // - Software retrieves Block x-1 from the data output registers.
+  // - Hardware processes Block x.
+  // - Software provides  Block x+1 via the data input registers.
+  //
   // See the AES driver for details.
+  const size_t block_offset = input_nblocks >= 3 ? 2 : 1;
   aes_block_t block_in;
   aes_block_t block_out;
   size_t i;
-  for (i = 0; launder32(i) < input_nblocks; i++) {
+
+  // Provide the first `block_offset` number of input blocks and call the AES
+  // cipher.
+  for (i = 0; launder32(i) < block_offset; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
-
-    // Call the AES cipher and copy data to output buffer if needed.
-    if (launder32(i) == 0) {
-      HARDENED_CHECK_EQ(i, 0);
-      HARDENED_TRY(aes_update(/*dest=*/NULL, &block_in));
-    } else {
-      HARDENED_TRY(aes_update(&block_out, &block_in));
-      // TODO(#17711) Change to `hardened_memcpy`.
-      memcpy(&cipher_output.data[(i - 1) * kAesBlockNumBytes], block_out.data,
-             kAesBlockNumBytes);
-    }
+    TRY(aes_update(/*dest=*/NULL, &block_in));
   }
+  // Check that the loop ran for the correct number of iterations.
+  HARDENED_CHECK_EQ(i, block_offset);
 
+  // Call the AES cipher while providing new input and copying data to the
+  // output buffer.
+  for (i = block_offset; launder32(i) < input_nblocks; ++i) {
+    HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
+    TRY(aes_update(&block_out, &block_in));
+    // TODO(#17711) Change to `hardened_memcpy`.
+    memcpy(&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
+           block_out.data, kAesBlockNumBytes);
+  }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, input_nblocks);
 
-  // Retrieve the output from the final block (providing no input).
-  HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
-  // TODO(#17711) Change to `hardened_memcpy`.
-  memcpy(&cipher_output.data[(input_nblocks - 1) * kAesBlockNumBytes],
-         block_out.data, kAesBlockNumBytes);
+  // Retrieve the output from the final `block_offset` blocks (providing no
+  // input).
+  for (i = block_offset; launder32(i) > 0; --i) {
+    HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
+    // TODO(#17711) Change to `hardened_memcpy`.
+    memcpy(&cipher_output.data[(input_nblocks - i) * kAesBlockNumBytes],
+           block_out.data, kAesBlockNumBytes);
+  }
+  // Check that the loop ran for the correct number of iterations.
+  HARDENED_CHECK_EQ(i, 0);
 
   // Deinitialize the AES block and update the IV (in ECB mode, skip the IV).
   if (aes_mode == launder32(kAesCipherModeEcb)) {
