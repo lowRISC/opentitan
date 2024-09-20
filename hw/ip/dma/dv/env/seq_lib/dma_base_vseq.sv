@@ -741,12 +741,12 @@ class dma_base_vseq extends cip_base_vseq #(
       csr_rd(ral.status, v);
       // Collect some STATUS bit that do not generate interrupts, and inform parallel threads
       // if (v[0]) ->e_busy;
-      if (v[2]) status[StatusAborted] = 1'b1;
+      if (v[3]) status[StatusAborted] = 1'b1;
       // Respond to the STATUS.done and STATUS.error bits only if we're not insisting upon
       // interrupt-driven completion.
       if (!intr_driven) begin
         if (v[1]) status[StatusDone]  = 1'b1;
-        if (v[3]) status[StatusError] = 1'b1;
+        if (v[4]) status[StatusError] = 1'b1;
       end
       // Note: sha2_digest_valid is not a completion event
       // v[12]

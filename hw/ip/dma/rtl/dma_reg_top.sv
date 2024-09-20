@@ -124,11 +124,8 @@ module dma_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_we;
   logic intr_state_dma_done_qs;
-  logic intr_state_dma_done_wd;
   logic intr_state_dma_error_qs;
-  logic intr_state_dma_error_wd;
   logic intr_enable_we;
   logic intr_enable_dma_done_qs;
   logic intr_enable_dma_done_wd;
@@ -199,6 +196,8 @@ module dma_reg_top (
   logic status_busy_qs;
   logic status_done_qs;
   logic status_done_wd;
+  logic status_chunk_done_qs;
+  logic status_chunk_done_wd;
   logic status_aborted_qs;
   logic status_aborted_wd;
   logic status_error_qs;
@@ -309,7 +308,7 @@ module dma_reg_top (
   //   F[dma_done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_dma_done (
@@ -317,8 +316,8 @@ module dma_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_dma_done_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.dma_done.de),
@@ -336,7 +335,7 @@ module dma_reg_top (
   //   F[dma_error]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_dma_error (
@@ -344,8 +343,8 @@ module dma_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_dma_error_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.dma_error.de),
@@ -1165,14 +1164,14 @@ module dma_reg_top (
 
   // R[status]: V(False)
   logic status_qe;
-  logic [4:0] status_flds_we;
+  logic [5:0] status_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
   ) u_status0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&(status_flds_we | 5'h11)),
+    .d_i(&(status_flds_we | 6'h21)),
     .q_o(status_qe)
   );
   //   F[busy]: 0:0
@@ -1229,7 +1228,34 @@ module dma_reg_top (
     .qs     (status_done_qs)
   );
 
-  //   F[aborted]: 2:2
+  //   F[chunk_done]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_chunk_done (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_chunk_done_wd),
+
+    // from internal hardware
+    .de     (hw2reg.status.chunk_done.de),
+    .d      (hw2reg.status.chunk_done.d),
+
+    // to internal hardware
+    .qe     (status_flds_we[2]),
+    .q      (reg2hw.status.chunk_done.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_chunk_done_qs)
+  );
+
+  //   F[aborted]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1248,7 +1274,7 @@ module dma_reg_top (
     .d      (hw2reg.status.aborted.d),
 
     // to internal hardware
-    .qe     (status_flds_we[2]),
+    .qe     (status_flds_we[3]),
     .q      (),
     .ds     (),
 
@@ -1256,7 +1282,7 @@ module dma_reg_top (
     .qs     (status_aborted_qs)
   );
 
-  //   F[error]: 3:3
+  //   F[error]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1275,7 +1301,7 @@ module dma_reg_top (
     .d      (hw2reg.status.error.d),
 
     // to internal hardware
-    .qe     (status_flds_we[3]),
+    .qe     (status_flds_we[4]),
     .q      (reg2hw.status.error.q),
     .ds     (),
 
@@ -1284,7 +1310,7 @@ module dma_reg_top (
   );
   assign reg2hw.status.error.qe = status_qe;
 
-  //   F[sha2_digest_valid]: 4:4
+  //   F[sha2_digest_valid]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -1303,7 +1329,7 @@ module dma_reg_top (
     .d      (hw2reg.status.sha2_digest_valid.d),
 
     // to internal hardware
-    .qe     (status_flds_we[4]),
+    .qe     (status_flds_we[5]),
     .q      (reg2hw.status.sha2_digest_valid.q),
     .ds     (),
 
@@ -2978,11 +3004,6 @@ module dma_reg_top (
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign intr_state_dma_done_wd = reg_wdata[0];
-
-  assign intr_state_dma_error_wd = reg_wdata[1];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_dma_done_wd = reg_wdata[0];
@@ -3056,9 +3077,11 @@ module dma_reg_top (
 
   assign status_done_wd = reg_wdata[1];
 
-  assign status_aborted_wd = reg_wdata[2];
+  assign status_chunk_done_wd = reg_wdata[2];
 
-  assign status_error_wd = reg_wdata[3];
+  assign status_aborted_wd = reg_wdata[3];
+
+  assign status_error_wd = reg_wdata[4];
   assign handshake_intr_enable_we = addr_hit[36] & reg_we & !reg_error;
 
   assign handshake_intr_enable_wd = reg_wdata[10:0];
@@ -3138,7 +3161,7 @@ module dma_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = intr_state_we;
+    reg_we_check[0] = 1'b0;
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
     reg_we_check[3] = alert_test_we;
@@ -3291,9 +3314,10 @@ module dma_reg_top (
       addr_hit[18]: begin
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_done_qs;
-        reg_rdata_next[2] = status_aborted_qs;
-        reg_rdata_next[3] = status_error_qs;
-        reg_rdata_next[4] = status_sha2_digest_valid_qs;
+        reg_rdata_next[2] = status_chunk_done_qs;
+        reg_rdata_next[3] = status_aborted_qs;
+        reg_rdata_next[4] = status_error_qs;
+        reg_rdata_next[5] = status_sha2_digest_valid_qs;
       end
 
       addr_hit[19]: begin

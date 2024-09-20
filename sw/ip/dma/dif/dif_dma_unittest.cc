@@ -321,6 +321,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(std::vector<status_reg_t>{{
         {1 << DMA_STATUS_BUSY_BIT, kDifDmaStatusBusy},
         {1 << DMA_STATUS_DONE_BIT, kDifDmaStatusDone},
+        {1 << DMA_STATUS_CHUNK_DONE_BIT, kDifDmaStatusChunkDone},
         {1 << DMA_STATUS_ABORTED_BIT, kDifDmaStatusAborted},
         {1 << DMA_STATUS_ERROR_BIT, kDifDmaStatusError},
         {1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT, kDifDmaStatusSha2DigestValid},
@@ -347,6 +348,7 @@ INSTANTIATE_TEST_SUITE_P(
     StatusWriteTest, StatusWriteTest,
     testing::ValuesIn(std::vector<status_reg_t>{{
         {1 << DMA_STATUS_DONE_BIT, kDifDmaStatusDone},
+        {1 << DMA_STATUS_CHUNK_DONE_BIT, kDifDmaStatusChunkDone},
         {1 << DMA_STATUS_ABORTED_BIT, kDifDmaStatusAborted},
         {1 << DMA_STATUS_ERROR_BIT, kDifDmaStatusError},
         {1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT, kDifDmaStatusSha2DigestValid},
