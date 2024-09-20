@@ -6279,3 +6279,22 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
+
+opentitan_test(
+    name = "aes_interrupt_encryption_test",
+    srcs = ["aes_interrupt_encryption_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+    },
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
