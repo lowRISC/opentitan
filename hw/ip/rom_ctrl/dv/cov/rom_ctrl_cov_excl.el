@@ -24,3 +24,17 @@ Transition KmacAhead->ReadingHigh "629->181"
 INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom
 ANNOTATION: "Waived the continuous assignment block as RHS is a fixed wire"
 Block 1 "3862690173" "assign data_scr_nonce = scr_nonce[(63 - Aw):0];"
+
+// In tlul_rsp_intg_gen, the wires on the RHS of continuous assignment at L32 and L43 are having
+// constant bits
+INSTANCE: tb.dut.u_reg_regs.u_reg_if.u_rsp_intg_gen
+ANNOTATION: "Waived the continuous assignment block on L32 and L43 as the RHS is a fixed wire"
+Block 1 "461445014" "assign rsp_intg = tl_i.d_user.rsp_intg;"
+Block 2 "2643129081" "assign data_intg = tl_i.d_user.data_intg;"
+
+// In u_tl_adapter_rom, data_i is wired to paramter (DataWhenError)
+INSTANCE: tb.dut.u_tl_adapter_rom.u_tlul_data_integ_enc_data.u_data_gen
+ANNOTATION: "Waived the assignment as the input is wired to a parameter"
+Block 1 "3318159292" "data_o = 39'(data_i);"
+INSTANCE: tb.dut.u_tl_adapter_rom.u_tlul_data_integ_enc_instr.u_data_gen
+Block 1 "3318159292" "data_o = 39'(data_i);"
