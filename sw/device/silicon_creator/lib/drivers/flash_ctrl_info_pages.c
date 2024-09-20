@@ -5,13 +5,22 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"
+
+#ifdef OT_IS_ENGLISH_BREAKFAST
+#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
+#else
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#endif
 
 enum {
-  /**
-   * Base address of the flash_ctrl registers.
-   */
+/**
+ * Base address of the flash_ctrl registers.
+ */
+#ifdef OT_IS_ENGLISH_BREAKFAST
+  kBase = TOP_ENGLISHBREAKFAST_FLASH_CTRL_CORE_BASE_ADDR,
+#else
   kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+#endif
 };
 
 #define INFO_PAGE_STRUCT_(name_, bank_, page_)                                \

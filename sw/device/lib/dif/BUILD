@@ -129,6 +129,11 @@ cc_test(
         ":test_base",
         "@googletest//:gtest_main",
     ],
+    # This test is not compatible with english_breakfast
+    target_compatible_with = select({
+        "//sw/device:is_english_breakfast": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(
@@ -820,7 +825,10 @@ cc_library(
     name = "rstmgr_intf",
     srcs = ["autogen/dif_rstmgr_autogen.h"],
     hdrs = ["dif_rstmgr.h"],
-    deps = [":base"],
+    deps = [
+        ":base",
+        "//hw/top:rstmgr_dt",
+    ],
 )
 
 cc_library(
@@ -833,7 +841,6 @@ cc_library(
         ":base",
         ":rstmgr_intf",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top:rstmgr_dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -953,6 +960,11 @@ cc_test(
         ":test_base",
         "@googletest//:gtest_main",
     ],
+    # This test is not compatible with english_breakfast
+    target_compatible_with = select({
+        "//sw/device:is_english_breakfast": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(

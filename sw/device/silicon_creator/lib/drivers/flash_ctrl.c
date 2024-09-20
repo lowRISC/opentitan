@@ -17,8 +17,13 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
+
+#ifdef OT_IS_ENGLISH_BREAKFAST
+#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
+#else
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#endif
 
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
 // other, and `kFlashCtrlRegionInfo* >> 1` should give the correct
@@ -33,10 +38,16 @@ static_assert(kFlashCtrlPartitionInfo2 >> 1 == 2,
               "Incorrect enum value for kFlashCtrlRegionInfo2");
 
 enum {
-  /**
-   * Base address of the flash_ctrl registers.
-   */
+/**
+ * Base address of the flash_ctrl registers.
+ */
+#ifdef OT_IS_ENGLISH_BREAKFAST
+  kBase = TOP_ENGLISHBREAKFAST_FLASH_CTRL_CORE_BASE_ADDR,
+  kBaseMem = TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR
+#else
   kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+  kBaseMem = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
+#endif
 };
 
 /**
@@ -415,8 +426,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   size_t i = 0, r = byte_count - 1;
   for (; launder32(i) < byte_count && launder32(r) < byte_count;
        i += sizeof(uint32_t), r -= sizeof(uint32_t)) {
-    uint32_t word =
-        abs_mmio_read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
+    uint32_t word = abs_mmio_read32(kBaseMem + addr + i);
     mask &= word;
     error &= word;
   }

@@ -259,7 +259,7 @@ dual_cc_library(
     deps = dual_inputs(
         shared = [
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:devicetables",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
@@ -719,8 +719,8 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         ":ibex",
+        "//hw/top:devicetables",
         "//hw/ip/uart/data:uart_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",

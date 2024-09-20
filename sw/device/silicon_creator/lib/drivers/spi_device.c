@@ -11,14 +11,23 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"
 
+#ifdef OT_IS_ENGLISH_BREAKFAST
+#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
+#else
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#endif
+
 enum {
-  /**
-   * Base address of the spi_device registers.
-   */
+/**
+ * Base address of the spi_device registers.
+ */
+#ifdef OT_IS_ENGLISH_BREAKFAST
+  kBase = TOP_ENGLISHBREAKFAST_SPI_DEVICE_BASE_ADDR,
+#else
   kBase = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+#endif
   /**
    * Start address of the SFDP space in spi_device buffer.
    */
