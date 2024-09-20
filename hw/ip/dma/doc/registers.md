@@ -453,26 +453,25 @@ Other values are reserved.
 Control register for DMA data movement.
 - Offset: `0x44`
 - Reset default: `0x0`
-- Reset mask: `0x880001ff`
+- Reset mask: `0x880003ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "opcode", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "hardware_handshake_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "memory_buffer_auto_increment_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fifo_auto_increment_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "data_direction", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "initial_transfer", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 18}, {"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "go", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 370}}
+{"reg": [{"name": "opcode", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "hardware_handshake_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "src_addr_increment", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "dst_addr_increment", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "initial_transfer", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 17}, {"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "go", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                                 |
-|:------:|:------:|:-------:|:-------------------------------------------------------------------------------------|
-|   31   |   rw   |   0x0   | [go](#control--go)                                                                   |
-| 30:28  |        |         | Reserved                                                                             |
-|   27   |   wo   |   0x0   | [abort](#control--abort)                                                             |
-|  26:9  |        |         | Reserved                                                                             |
-|   8    |   rw   |   0x0   | [initial_transfer](#control--initial_transfer)                                       |
-|   7    |   rw   |   0x0   | [data_direction](#control--data_direction)                                           |
-|   6    |   rw   |   0x0   | [fifo_auto_increment_enable](#control--fifo_auto_increment_enable)                   |
-|   5    |   rw   |   0x0   | [memory_buffer_auto_increment_enable](#control--memory_buffer_auto_increment_enable) |
-|   4    |   rw   |   0x0   | [hardware_handshake_enable](#control--hardware_handshake_enable)                     |
-|  3:0   |   rw   |   0x0   | [opcode](#control--opcode)                                                           |
+|  Bits  |  Type  |  Reset  | Name                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------|
+|   31   |   rw   |   0x0   | [go](#control--go)                                               |
+| 30:28  |        |         | Reserved                                                         |
+|   27   |   wo   |   0x0   | [abort](#control--abort)                                         |
+| 26:10  |        |         | Reserved                                                         |
+|   9    |   rw   |   0x0   | [initial_transfer](#control--initial_transfer)                   |
+|  8:7   |   rw   |   0x0   | [dst_addr_increment](#control--dst_addr_increment)               |
+|  6:5   |   rw   |   0x0   | [src_addr_increment](#control--src_addr_increment)               |
+|   4    |   rw   |   0x0   | [hardware_handshake_enable](#control--hardware_handshake_enable) |
+|  3:0   |   rw   |   0x0   | [opcode](#control--opcode)                                       |
 
 ### CONTROL . go
 Trigger the DMA operation when the Go bit is set.
@@ -490,21 +489,27 @@ Marks the initial transfer to initialize the DMA and SHA engine for one transfer
 Used for hardware handshake and ordinary transfers, in which multiple transfers contribute to a final digest.
 Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
 
-### CONTROL . data_direction
-Used in conjunction with the hardware handshake enable.
-0: Receive data from LSIO FIFO to memory buffer.
-1: Send data from memory buffer to LSIO FIFO.
+### CONTROL . dst_addr_increment
+Defines the address increment behavior for the destination address.
 
-### CONTROL . fifo_auto_increment_enable
-Used in conjunction with the hardware handshake mode of operation.
-If set, reads/writes from/to incremental addresses for FIFO data accesses within each chunk, resetting to the initial value at the beginning of each new chunk.
-Else uses the same address for all transactions.
+| Value   | Name   | Description                                                     |
+|:--------|:-------|:----------------------------------------------------------------|
+| 0x0     | FIX    | Do not increment the address, always write to the same address. |
+| 0x1     | WRAP   | Wrap the address to the beginning after transferring one chunk. |
+| 0x2     | LINEAR | Always increment the destination address.                       |
 
-### CONTROL . memory_buffer_auto_increment_enable
-Used in conjunction with the hardware handshake mode of operation.
-Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
-Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in limit address register to prevent destination buffer overflow.
-Enables firmware to take appropriate action prior to reaching the limit.
+Other values are reserved.
+
+### CONTROL . src_addr_increment
+Defines the address increment behavior for the source address.
+
+| Value   | Name   | Description                                                      |
+|:--------|:-------|:-----------------------------------------------------------------|
+| 0x0     | FIX    | Do not increment the address, always read from the same address. |
+| 0x1     | WRAP   | Wrap the address to the beginning after transferring one chunk.  |
+| 0x2     | LINEAR | Always increment the source address.                             |
+
+Other values are reserved.
 
 ### CONTROL . hardware_handshake_enable
 Enable hardware handshake mode.
@@ -554,25 +559,26 @@ Denotes the source of the operational error.
 The error is cleared by writing the RW1C STATUS.error register.
 - Offset: `0x4c`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "src_addr_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dst_addr_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "opcode_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "size_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "base_limit_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "range_valid_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "asid_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "src_addr_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dst_addr_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "opcode_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "size_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "base_limit_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "range_valid_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "asid_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "addr_increment_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                           |
-|:------:|:------:|:-------:|:------------------|:--------------------------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |                   | Reserved                                                                                                                              |
-|   7    |   ro   |   0x0   | asid_error        | The source or destination ASID contains an invalid value.                                                                             |
-|   6    |   ro   |   0x0   | range_valid_error | The DMA enabled memory range is not configured.                                                                                       |
-|   5    |   ro   |   0x0   | base_limit_error  | The base and limit addresses contain an invalid value.                                                                                |
-|   4    |   ro   |   0x0   | bus_error         | The bus transfer returned an error.                                                                                                   |
-|   3    |   ro   |   0x0   | size_error        | TRANSFER_WIDTH encodes an invalid value, TOTAL_DATA_SIZE or CHUNK_SIZE are zero, or inline hashing is not using 32-bit transfer width |
-|   2    |   ro   |   0x0   | opcode_error      | Opcode is invalid.                                                                                                                    |
-|   1    |   ro   |   0x0   | dst_addr_error    | Destination address is invalid.                                                                                                       |
-|   0    |   ro   |   0x0   | src_addr_error    | Source address is invalid.                                                                                                            |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                           |
+|:------:|:------:|:-------:|:---------------------|:--------------------------------------------------------------------------------------------------------------------------------------|
+|  31:9  |        |         |                      | Reserved                                                                                                                              |
+|   8    |   ro   |   0x0   | addr_increment_error | The source or destination address increment mode contains an invalid value.                                                           |
+|   7    |   ro   |   0x0   | asid_error           | The source or destination ASID contains an invalid value.                                                                             |
+|   6    |   ro   |   0x0   | range_valid_error    | The DMA enabled memory range is not configured.                                                                                       |
+|   5    |   ro   |   0x0   | base_limit_error     | The base and limit addresses contain an invalid value.                                                                                |
+|   4    |   ro   |   0x0   | bus_error            | The bus transfer returned an error.                                                                                                   |
+|   3    |   ro   |   0x0   | size_error           | TRANSFER_WIDTH encodes an invalid value, TOTAL_DATA_SIZE or CHUNK_SIZE are zero, or inline hashing is not using 32-bit transfer width |
+|   2    |   ro   |   0x0   | opcode_error         | Opcode is invalid.                                                                                                                    |
+|   1    |   ro   |   0x0   | dst_addr_error       | Destination address is invalid.                                                                                                       |
+|   0    |   ro   |   0x0   | src_addr_error       | Source address is invalid.                                                                                                            |
 
 ## SHA2_DIGEST
 Digest register for the inline hashing operation.

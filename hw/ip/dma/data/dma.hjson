@@ -131,7 +131,7 @@
             Must be aligned to the transfer width.
             '''
       swaccess: "rw"
-      hwaccess: "hrw"
+      hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
@@ -149,7 +149,7 @@
             Source and destination address must have the same alignment.
             '''
       swaccess: "rw"
-      hwaccess: "hrw"
+      hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
@@ -172,7 +172,7 @@
             Source and destination address must have the same alignment.
             '''
       swaccess: "rw"
-      hwaccess: "hrw"
+      hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
@@ -191,7 +191,7 @@
             Source and destination address must have the same alignment.
             '''
       swaccess: "rw"
-      hwaccess: "hrw"
+      hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
@@ -464,35 +464,49 @@
                 No explicit clearing necessary.
                 '''
         }
-        { bits: "5"
-          name: "memory_buffer_auto_increment_enable"
+        { bits: "6:5"
+          name: "src_addr_increment"
           resval: 0x0
           desc: '''
-                Used in conjunction with the hardware handshake mode of operation.
-                Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
-                Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in limit address register to prevent destination buffer overflow.
-                Enables firmware to take appropriate action prior to reaching the limit.
+                Defines the address increment behavior for the source address.
                 '''
+          enum: [
+            { value: "0",
+              name: "FIX"
+              desc: "Do not increment the address, always read from the same address."
+            }
+            { value: "1",
+              name: "WRAP"
+              desc: "Wrap the address to the beginning after transferring one chunk."
+            }
+            { value: "2",
+              name: "LINEAR"
+              desc: "Always increment the source address."
+            }
+          ]
         }
-        { bits: "6"
-          name: "fifo_auto_increment_enable"
+        { bits: "8:7"
+          name: "dst_addr_increment"
           resval: 0x0
           desc: '''
-                Used in conjunction with the hardware handshake mode of operation.
-                If set, reads/writes from/to incremental addresses for FIFO data accesses within each chunk, resetting to the initial value at the beginning of each new chunk.
-                Else uses the same address for all transactions.
+                Defines the address increment behavior for the destination address.
                 '''
+          enum: [
+            { value: "0",
+              name: "FIX"
+              desc: "Do not increment the address, always write to the same address."
+            }
+            { value: "1",
+              name: "WRAP"
+              desc: "Wrap the address to the beginning after transferring one chunk."
+            }
+            { value: "2",
+              name: "LINEAR"
+              desc: "Always increment the destination address."
+            }
+          ]
         }
-        { bits: "7"
-          name: "data_direction"
-          resval: 0x0
-          desc: '''
-                Used in conjunction with the hardware handshake enable.
-                0: Receive data from LSIO FIFO to memory buffer.
-                1: Send data from memory buffer to LSIO FIFO.
-                '''
-        }
-        { bits: "8"
+        { bits: "9"
           name: "initial_transfer"
           resval: 0x0
           hwaccess: "hrw"
@@ -632,6 +646,11 @@
           name: "asid_error"
           resval: 0x0
           desc: "The source or destination ASID contains an invalid value."
+        }
+        { bits: "8"
+          name: "addr_increment_error"
+          resval: 0x0
+          desc: "The source or destination address increment mode contains an invalid value."
         }
       ]
     }
