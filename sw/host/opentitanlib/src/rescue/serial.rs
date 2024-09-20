@@ -9,6 +9,7 @@ use std::time::Duration;
 use crate::app::TransportWrapper;
 use crate::chip::boot_log::BootLog;
 use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
+use crate::chip::device_id::DeviceId;
 use crate::io::uart::Uart;
 use crate::rescue::xmodem::Xmodem;
 use crate::rescue::RescueError;
@@ -30,6 +31,9 @@ impl RescueSerial {
     pub const BOOT_SVC_REQ: [u8; 4] = *b"BREQ";
     pub const BOOT_SVC_RSP: [u8; 4] = *b"BRSP";
     pub const OWNER_BLOCK: [u8; 4] = *b"OWNR";
+    pub const GET_OWNER_PAGE0: [u8; 4] = *b"OPG0";
+    pub const GET_OWNER_PAGE1: [u8; 4] = *b"OPG1";
+    pub const OT_ID: [u8; 4] = *b"OTID";
     pub const WAIT: [u8; 4] = *b"WAIT";
 
     const BAUD_115K: [u8; 4] = *b"115K";
@@ -120,30 +124,27 @@ impl RescueSerial {
         Ok(())
     }
 
-    pub fn get_boot_log_raw(&self) -> Result<Vec<u8>> {
-        self.set_mode(Self::BOOT_LOG)?;
-        let mut blog = Vec::new();
+    pub fn get_raw(&self, mode: [u8; 4]) -> Result<Vec<u8>> {
+        self.set_mode(mode)?;
+        let mut data = Vec::new();
         let xm = Xmodem::new();
-        xm.receive(&*self.uart, &mut blog)?;
-        Ok(blog)
+        xm.receive(&*self.uart, &mut data)?;
+        Ok(data)
     }
 
     pub fn get_boot_log(&self) -> Result<BootLog> {
-        let blog = self.get_boot_log_raw()?;
+        let blog = self.get_raw(Self::BOOT_LOG)?;
         Ok(BootLog::try_from(blog.as_slice())?)
     }
 
-    pub fn get_boot_svc_raw(&self) -> Result<Vec<u8>> {
-        self.set_mode(Self::BOOT_SVC_RSP)?;
-        let mut bsvc = Vec::new();
-        let xm = Xmodem::new();
-        xm.receive(&*self.uart, &mut bsvc)?;
-        Ok(bsvc)
+    pub fn get_boot_svc(&self) -> Result<BootSvc> {
+        let bsvc = self.get_raw(Self::BOOT_SVC_RSP)?;
+        Ok(BootSvc::try_from(bsvc.as_slice())?)
     }
 
-    pub fn get_boot_svc(&self) -> Result<BootSvc> {
-        let bsvc = self.get_boot_svc_raw()?;
-        Ok(BootSvc::try_from(bsvc.as_slice())?)
+    pub fn get_device_id(&self) -> Result<DeviceId> {
+        let id = self.get_raw(Self::OT_ID)?;
+        DeviceId::read(&mut std::io::Cursor::new(&id))
     }
 
     pub fn set_boot_svc_raw(&self, data: &[u8]) -> Result<()> {
