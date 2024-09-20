@@ -9,6 +9,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
@@ -141,6 +142,13 @@ static void validate_mode(uint32_t mode, rescue_state_t *state,
       case kRescueModeFirmwareSlotB:
         dbg_printf("ok: send firmware via xmodem-crc\r\n");
         break;
+      case kRescueModeOwnerPage0:
+      case kRescueModeOwnerPage1:
+        dbg_printf("ok: receive owner page via xmodem-crc\r\n");
+        break;
+      case kRescueModeOpenTitanID:
+        dbg_printf("ok: receive device ID via xmodem-crc\r\n");
+        break;
       case kRescueModeReboot:
         dbg_printf("ok: reboot\r\n");
         break;
@@ -176,6 +184,22 @@ static rom_error_t handle_send_modes(rescue_state_t *state,
       HARDENED_RETURN_IF_ERROR(xmodem_send(iohandle, &rr->creator.boot_svc_msg,
                                            sizeof(rr->creator.boot_svc_msg)));
       break;
+    case kRescueModeOpenTitanID: {
+      lifecycle_device_id_t id;
+      lifecycle_device_id_get(&id);
+      HARDENED_RETURN_IF_ERROR(xmodem_send(iohandle, &id, sizeof(id)));
+      break;
+    }
+    case kRescueModeOwnerPage0:
+    case kRescueModeOwnerPage1:
+      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(
+          state->mode == kRescueModeOwnerPage0 ? &kFlashCtrlInfoPageOwnerSlot0
+                                               : &kFlashCtrlInfoPageOwnerSlot1,
+          0, sizeof(state->data) / sizeof(uint32_t), state->data));
+      HARDENED_RETURN_IF_ERROR(
+          xmodem_send(iohandle, state->data, sizeof(state->data)));
+      break;
+
     case kRescueModeBootSvcReq:
     case kRescueModeOwnerBlock:
     case kRescueModeFirmware:
@@ -207,6 +231,9 @@ static rom_error_t handle_recv_modes(rescue_state_t *state,
   switch (state->mode) {
     case kRescueModeBootLog:
     case kRescueModeBootSvcRsp:
+    case kRescueModeOpenTitanID:
+    case kRescueModeOwnerPage0:
+    case kRescueModeOwnerPage1:
       // Nothing to do for send modes.
       break;
     case kRescueModeBootSvcReq:
