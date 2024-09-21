@@ -34,9 +34,9 @@ opentitan_ram_binary(
     archive_symbol_prefix = "sram_hello_world",
     testonly = True,
     deps = [
-        "//sw/tests/opentitan/common:common",
-        "//sw/tests/opentitan/common:linker",
-        "//sw/tests/opentitan/common:crt",
+        "//sw/tests/common:common",
+        "//sw/tests/common:linker",
+        "//sw/tests/common:crt",
 	      "//sw/device/silicon_creator/rom:rom_common",
      ],
 )

@@ -54,7 +54,7 @@ endef
 
 .PHONY: init build sim update clean secure_boot_jtag secure_boot_spi
 
-build: $(dpi-library)/elfloader.so scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
+build:  $(dpi-library)/elfloader.so scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
 	$(QUESTA) vsim -c -do 'source $(compile_script); quit'
 
 sim: build
@@ -121,4 +121,3 @@ $(dpi-library)/elfloader.o: $(dpi_hdr)
 
 $(dpi-library)/elfloader.so: $(dpi)
 	$(CXX) -shared -m64 -o $(dpi-library)/elfloader.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
-

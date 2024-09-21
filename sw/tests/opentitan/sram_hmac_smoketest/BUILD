@@ -35,9 +35,9 @@ opentitan_ram_binary(
     archive_symbol_prefix = "sram_hmac_smoketest",
     testonly = True,
     deps = [
-        "//sw/tests/opentitan/common:common",
-        "//sw/tests/opentitan/common:linker",
-        "//sw/tests/opentitan/common:crt",
+        "//sw/tests/common:common",
+        "//sw/tests/common:linker",
+        "//sw/tests/common:crt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
