@@ -572,19 +572,21 @@
                   regwen:       "MIO_PAD_ATTR_REGWEN",
                   regwen_multi: "true",
                   cname:        "MIO_PAD",
-                  resval:       0
                   fields: [
                     { bits: "0",
                       name: "invert",
                       desc: "Invert input and output levels."
+                      resval: 0
                     },
                     { bits: "1",
                       name: "virtual_od_en",
                       desc: "Enable virtual open drain."
+                      resval: 0
                     },
                     { bits: "2",
                       name: "pull_en",
                       desc: "Enable pull-up or pull-down resistor."
+                      resval: 0
                     },
                     { bits: "3",
                       name: "pull_select",
@@ -599,18 +601,22 @@
                           desc:  "Select the pull-up resistor."
                         }
                       ]
+                      resval: 0
                     },
                     { bits: "4",
                       name: "keeper_en",
                       desc: "Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`."
+                      resval: 0
                     },
                     { bits: "5",
                       name: "schmitt_en",
                       desc: "Enable the schmitt trigger."
+                      resval: 0
                     },
                     { bits: "6",
                       name: "od_en",
                       desc: "Enable open drain."
+                      resval: 0
                     },
                     { bits: "7",
                       name: "input_disable",
@@ -618,14 +624,17 @@
                             Disable input drivers.
                             Setting this to 1 for pads that are not used as input can reduce their leakage current.
                             '''
+                      resval: 0
                     },
                     { bits: "17:16",
                       name: "slew_rate",
                       desc: "Slew rate (0x0: slowest, 0x3: fastest)."
+                      resval: 0
                     },
                     { bits: "23:20",
                       name: "drive_strength",
                       desc: "Drive strength (0x0: weakest, 0xf: strongest)"
+                      resval: 0
                     }
                   ],
                   // these CSRs have WARL behavior and may not
