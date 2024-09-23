@@ -1,0 +1,69 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // This is a cfg hjson group for DV simulations. It includes ALL individual DV simulation
+  // cfgs of the IPs and the full chip used in top_darjeeling. This enables the common
+  // regression sets to be run in one shot.
+  name: top_darjeeling_batch_sim
+
+  import_cfgs: [// Project wide common cfg file
+                "{proj_root}/hw/data/common_project_cfg.hjson"]
+
+  flow: sim
+
+  rel_path: "hw/top_darjeeling/dv/summary"
+
+  // Maintain alphabetical order below.
+  use_cfgs: [
+             // Unit tests for UVCs.
+             "{proj_root}/hw/dv/sv/tl_agent/dv/tl_agent_sim_cfg.hjson",
+             // IPs.
+             "{proj_root}/hw/ip/aes/dv/aes_unmasked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aes/dv/aes_masked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
+             "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
+             "{proj_root}/hw/ip/dma/dv/dma_sim_cfg.hjson",
+             "{proj_root}/hw/ip/edn/dv/edn_sim_cfg.hjson",
+             "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
+             "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
+             "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
+             "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",
+            //  "{proj_root}/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson",
+             "{proj_root}/hw/ip/kmac/dv/kmac_masked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_volatile_unlock_disabled_sim_cfg.hjson",
+             "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_volatile_unlock_enabled_sim_cfg.hjson",
+            //  "{proj_root}/hw/ip/mbx/dv/mbx_sim_cfg.hjson",
+             "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
+             "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
+             "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",
+             "{proj_root}/hw/ip/prim/dv/prim_esc/prim_esc_sim_cfg.hjson",
+             "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
+             "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
+             "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
+             "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_32kB_sim_cfg.hjson",
+             "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",
+             "{proj_root}/hw/ip/rv_dm/dv/rv_dm_sim_cfg.hjson",
+             "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
+             "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
+             "{proj_root}/hw/ip/spi_device/dv/spi_device_1r1w_sim_cfg.hjson",
+             "{proj_root}/hw/ip/spi_device/dv/spi_device_2p_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
+             "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
+             // Top level IPs.
+            //  "{proj_root}/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip_autogen/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip/xbar_dbg/dv/autogen/xbar_dbg_sim_cfg.hjson",
+            //  "{proj_root}/hw/top_darjeeling/ip/xbar_mbx/dv/autogen/xbar_mbx_sim_cfg.hjson",
+            //  // Top level.
+            //  "{proj_root}/hw/top_darjeeling/dv/chip_sim_cfg.hjson"
+             ]
+}
