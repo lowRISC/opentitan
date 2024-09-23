@@ -47,9 +47,13 @@ typedef struct boot_svc_ownership_unlock_req {
    */
   uint32_t unlock_mode;
   /**
+   * The 64-bit ID subfield of the full 256-bit device ID.
+   */
+  uint32_t din[2];
+  /**
    * Reserved for future use.
    */
-  uint32_t reserved[10];
+  uint32_t reserved[8];
   /**
    * The current ownership nonce.
    */
@@ -68,8 +72,10 @@ typedef struct boot_svc_ownership_unlock_req {
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, unlock_mode,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, reserved,
+OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, din,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, reserved,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 12);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, nonce,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 44);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, next_owner_key,
