@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
@@ -22,6 +23,7 @@
 namespace {
 using ::testing::_;
 using ::testing::Return;
+using ::testing::SetArgPointee;
 
 /*
  * The OwnershipUnlockTest fixture provides a pre-initialized bootdata and
@@ -42,6 +44,7 @@ class OwnershipUnlockTest : public rom_test::RomTest {
                   {
                       .type = kBootSvcOwnershipUnlockReqType,
                   },
+              .din = {0, 0},
               .nonce = {1, 2},
           },
   };
@@ -49,6 +52,7 @@ class OwnershipUnlockTest : public rom_test::RomTest {
   rom_test::MockHmac hmac_;
   rom_test::MockRnd rnd_;
   rom_test::MockBootSvcHeader hdr_;
+  rom_test::MockLifecycle lifecycle_;
   rom_test::MockOwnershipKey ownership_key_;
 };
 
@@ -89,6 +93,8 @@ TEST_F(OwnershipUnlockTest, UnlockAny) {
                                                     kOwnershipKeyRecovery),
                        _, _, _))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(5));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
@@ -113,6 +119,25 @@ TEST_F(OwnershipUnlockTest, UnlockAnyBadSignature) {
 
   rom_error_t error = ownership_unlock_handler(&message_, &bootdata_);
   EXPECT_EQ(error, kErrorOwnershipInvalidSignature);
+  EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
+}
+
+// Test that requesting LockedOwner->UnlockedAny fails when the DIN doesn't
+// match.
+TEST_F(OwnershipUnlockTest, UnlockAnyBadDin) {
+  message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockAny;
+  EXPECT_CALL(ownership_key_,
+              validate(0,
+                       static_cast<ownership_key_t>(kOwnershipKeyUnlock |
+                                                    kOwnershipKeyRecovery),
+                       _, _, _))
+      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0, 1, 1}));
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+
+  rom_error_t error = ownership_unlock_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, kErrorOwnershipInvalidDin);
   EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
 }
 
@@ -158,6 +183,8 @@ TEST_F(OwnershipUnlockTest, UnlockEndorsed) {
                                                     kOwnershipKeyRecovery),
                        _, _, _))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(hmac_, sha256(_, _, _))
       .WillOnce([&](const void *, size_t, hmac_digest_t *digest) {
         for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
@@ -234,6 +261,8 @@ TEST_F(OwnershipUnlockTest, UnlockUpdate) {
       ownership_key_,
       validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock), _, _, _))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(5));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
@@ -299,6 +328,8 @@ TEST_P(OwnershipUnlockAbortValidStateTest, UnlockAbort) {
       ownership_key_,
       validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock), _, _, _))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(5));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 

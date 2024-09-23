@@ -158,6 +158,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
@@ -173,6 +174,7 @@ cc_test(
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_header",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -191,6 +193,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 

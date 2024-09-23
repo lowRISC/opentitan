@@ -8,6 +8,7 @@ use clap::ValueEnum;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_log::BootLog;
 use opentitanlib::chip::boot_svc::{Message, UnlockMode};
+use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::EcdsaPrivateKey;
 use opentitanlib::crypto::rsa::RsaPublicKey;
@@ -22,9 +23,12 @@ use std::path::Path;
 pub const TEST_OWNER_CONFIG_VERSION: u32 = 1;
 
 /// Gets the BootLog.
-pub fn get_boot_log(transport: &TransportWrapper, rescue: &RescueSerial) -> Result<BootLog> {
+pub fn get_device_info(
+    transport: &TransportWrapper,
+    rescue: &RescueSerial,
+) -> Result<(BootLog, DeviceId)> {
     rescue.enter(transport, /*reset=*/ true)?;
-    rescue.get_boot_log()
+    Ok((rescue.get_boot_log()?, rescue.get_device_id()?))
 }
 
 /// Prepares an UnlockOwnership command, sends it to the chip and gets the response.
@@ -33,12 +37,14 @@ pub fn ownership_unlock(
     rescue: &RescueSerial,
     mode: UnlockMode,
     nonce: u64,
+    din: u64,
     unlock_key: &Path,
     next_owner: Option<&Path>,
 ) -> Result<()> {
     let unlock = OwnershipUnlockParams {
         mode: Some(mode),
         nonce: Some(nonce),
+        din: Some(din),
         next_owner: next_owner.map(|p| p.into()),
         sign: Some(unlock_key.into()),
         ..Default::default()
@@ -60,9 +66,18 @@ pub fn ownership_unlock_any(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
     nonce: u64,
+    din: u64,
     unlock_key: &Path,
 ) -> Result<()> {
-    ownership_unlock(transport, rescue, UnlockMode::Any, nonce, unlock_key, None)
+    ownership_unlock(
+        transport,
+        rescue,
+        UnlockMode::Any,
+        nonce,
+        din,
+        unlock_key,
+        None,
+    )
 }
 
 /// Prepares an OwnershipActivate command, sends it to the chip and gets the response.
@@ -70,10 +85,12 @@ pub fn ownership_activate(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
     nonce: u64,
+    din: u64,
     activate_key: &Path,
 ) -> Result<()> {
     let activate = OwnershipActivateParams {
         nonce: Some(nonce),
+        din: Some(din),
         sign: Some(activate_key.into()),
         ..Default::default()
     }

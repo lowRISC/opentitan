@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
@@ -97,6 +98,7 @@ class OwnershipActivateTest : public rom_test::RomTest {
   rom_test::MockRnd rnd_;
   rom_test::MockFlashCtrl flash_ctrl_;
   rom_test::MockBootSvcHeader hdr_;
+  rom_test::MockLifecycle lifecycle_;
   rom_test::MockOwnershipKey ownership_key_;
 };
 
@@ -162,6 +164,22 @@ TEST_P(OwnershipActivateValidStateTest, InvalidNonce) {
   EXPECT_EQ(error, kErrorOwnershipInvalidNonce);
 }
 
+// Tests that an owner block with an invalid DIN fails.
+TEST_P(OwnershipActivateValidStateTest, InvalidDin) {
+  bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
+  // We want to pass the page 1 validity test to check the nonce of the
+  // message.
+  MakePage1Valid(true);
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
+      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0, 1, 1}));
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+
+  rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, kErrorOwnershipInvalidDin);
+}
+
 // Tests that an owner block with an invalid owner page with respect to the
 // current update state fails.
 TEST_P(OwnershipActivateValidStateTest, OwnerPageInvalid) {
@@ -206,6 +224,8 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
 
   EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
   switch (state) {
     case kOwnershipStateUnlockedSelf:
@@ -269,6 +289,8 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
 
   EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
   switch (state) {
     case kOwnershipStateUnlockedSelf:

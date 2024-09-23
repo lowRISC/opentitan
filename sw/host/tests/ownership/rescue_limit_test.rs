@@ -65,13 +65,14 @@ fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let rescue = RescueSerial::new(Rc::clone(&uart));
 
     log::info!("###### Get Boot Log (1/2) ######");
-    let data = transfer_lib::get_boot_log(transport, &rescue)?;
+    let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
     log::info!("###### Ownership Unlock ######");
     transfer_lib::ownership_unlock(
         transport,
         &rescue,
         opts.unlock_mode,
         data.rom_ext_nonce,
+        devid.din,
         &opts.unlock_key,
         if opts.unlock_mode == UnlockMode::Endorsed {
             opts.next_owner_key_pub.as_deref()
@@ -93,13 +94,14 @@ fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");
-    let data = transfer_lib::get_boot_log(transport, &rescue)?;
+    let (data, _) = transfer_lib::get_device_info(transport, &rescue)?;
 
     log::info!("###### Ownership Activate Block ######");
     transfer_lib::ownership_activate(
         transport,
         &rescue,
         data.rom_ext_nonce,
+        devid.din,
         opts.activate_key
             .as_deref()
             .unwrap_or(&opts.next_activate_key),
