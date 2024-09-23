@@ -281,11 +281,11 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000220: 66 06 00 00 00 01 00 02 77 17 11 88 77 17 11 11  f.......w...w...
 00000230: 49 4e 46 4f 20 00 00 00 00 01 00 00 66 06 00 99  INFO .......f...
 00000240: 66 06 00 00 01 05 00 00 77 17 11 88 77 17 11 11  f.......w...w...
-00000250: 52 45 53 51 38 00 00 00 58 4d 44 4d 20 00 e0 00  RESQ8...XMDM ...
+00000250: 52 45 53 51 50 00 00 00 58 4d 44 4d 20 00 e0 00  RESQP...XMDM ...
 00000260: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK
-00000270: 41 43 54 56 51 53 45 52 47 4f 4c 42 51 45 52 42  ACTVQSERGOLBQERB
-00000280: 50 53 52 42 52 4e 57 4f 5a 5a 5a 5a 5a 5a 5a 5a  PSRBRNWOZZZZZZZZ
-00000290: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
+00000270: 41 43 54 56 51 53 45 52 42 53 45 52 4f 42 45 52  ACTVQSERBSEROBER
+00000280: 47 4f 4c 42 51 45 52 42 50 53 52 42 52 4e 57 4f  GOLBQERBPSRBRNWO
+00000290: 30 47 50 4f 31 47 50 4f 44 49 54 4f 54 49 41 57  0GPO1GPODITOTIAW
 000002a0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002b0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002c0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
@@ -530,7 +530,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
       RescueConfig: {
         header: {
           identifier: "Rescue",
-          length: 56
+          length: 80
         },
         rescue_type: "Xmodem",
         start: 32,
@@ -542,10 +542,16 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
           "OwnershipUnlockRequest",
           "OwnershipActivateRequest",
           "Rescue",
+          "RescueB",
+          "Reboot",
           "GetBootLog",
           "BootSvcReq",
           "BootSvcRsp",
-          "OwnerBlock"
+          "OwnerBlock",
+          "GetOwnerPage0",
+          "GetOwnerPage1",
+          "GetDeviceId",
+          "Wait"
         ]
       }
     }
