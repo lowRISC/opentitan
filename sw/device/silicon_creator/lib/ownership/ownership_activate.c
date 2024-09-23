@@ -42,7 +42,7 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   }
 
   // Seal page one to this chip.
-  owner_block_page_seal(/*page=*/1);
+  ownership_seal_page(/*page=*/1);
 
   // TODO(cfrantz): Consider reading back the flash pages to check that the
   // flash writes succeeded.

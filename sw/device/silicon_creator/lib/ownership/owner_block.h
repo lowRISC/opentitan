@@ -67,15 +67,6 @@ typedef struct owner_application_keyring {
 hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata);
 
 /**
- * Seal an owner page.
- *
- * Calculates and applies the seal to an owner page in RAM.
- *
- * @param page Which owner page to seal.
- */
-void owner_block_page_seal(size_t page);
-
-/**
  * Initialize the owner config with default values.
  *
  * The sram_exec mode is set to DisabledLocked and the three configuration
