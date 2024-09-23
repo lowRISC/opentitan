@@ -217,8 +217,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
       FAIL() << "Invalid state for this test: " << state;
   }
   // Once the new owner page is determined to be valid, the page will be sealed.
-  EXPECT_CALL(hmac_, sha256(_, _, _))
-      .WillOnce(SetArgPointee<2>((hmac_digest_t){{0x5a5a5a5a}}));
+  EXPECT_CALL(ownership_key_, seal_page(1));
 
   // The sealed page will be written into flash owner slot 1 first.
   EXPECT_CALL(flash_ctrl_,
@@ -246,7 +245,6 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   EXPECT_EQ(error, kErrorWriteBootdataThenReboot);
   // After succeeding, the page should be sealed, the nonce changed and the
   // ownership state set to LockedOwner.
-  EXPECT_EQ(owner_page[1].seal[0], 0x5a5a5a5a);
   EXPECT_FALSE(nonce_equal(&bootdata_.nonce, &kDefaultNonce));
   EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
   // The default value of `owner_page.min_security_version_bl0` should perform
@@ -282,8 +280,7 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
       FAIL() << "Invalid state for this test: " << state;
   }
   // Once the new owner page is determined to be valid, the page will be sealed.
-  EXPECT_CALL(hmac_, sha256(_, _, _))
-      .WillOnce(SetArgPointee<2>((hmac_digest_t){{0x5a5a5a5a}}));
+  EXPECT_CALL(ownership_key_, seal_page(1));
 
   // The sealed page will be written into flash owner slot 1 first.
   EXPECT_CALL(flash_ctrl_,
@@ -311,7 +308,6 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
   EXPECT_EQ(error, kErrorWriteBootdataThenReboot);
   // After succeeding, the page should be sealed, the nonce changed and the
   // ownership state set to LockedOwner.
-  EXPECT_EQ(owner_page[1].seal[0], 0x5a5a5a5a);
   EXPECT_FALSE(nonce_equal(&bootdata_.nonce, &kDefaultNonce));
   EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
   // Bootdata should receive the owner_block's minimum version upon activation.
