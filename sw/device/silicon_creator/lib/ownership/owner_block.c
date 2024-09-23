@@ -60,13 +60,6 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
   return kHardenedBoolFalse;
 }
 
-void owner_block_page_seal(size_t page) {
-  size_t seal_len = (uintptr_t)&owner_page[0].seal - (uintptr_t)&owner_page[0];
-  hmac_digest_t digest;
-  hmac_sha256(&owner_page[page], seal_len, &digest);
-  memcpy(&owner_page[page].seal, digest.digest, sizeof(digest.digest));
-}
-
 void owner_config_default(owner_config_t *config) {
   // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
   config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
