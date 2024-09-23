@@ -247,14 +247,26 @@ class aes_message_item extends uvm_sequence_item;
     this.aes_operation = item.operation;
     this.aes_key       = item.key;
     this.aes_iv        = item.iv;
+    this.reseed_rate   = item.reseed_rate;
 
-    // check for valid keylen
-    if (item.key_len inside { 3'b001, 3'b010, 3'b100 }) begin
-      this.aes_keylen  = item.key_len;
+    // Check for invalid configuration values and resolve them if necessary. Illegal mode values
+    // don't need to be handled here as they don't result in the DUT actually producing output
+    // data.
+    if (item.key_len inside {AES_128, AES_192, AES_256}) begin
+      this.aes_keylen = item.key_len;
     end else begin
-      this.aes_keylen = 3'b100; // force to 256b
-      `uvm_info(`gfn, $sformatf("\n\t ---| Illegal key len detected reverting to default 256"),
-                UVM_MEDIUM)
+      this.aes_keylen = AES_256;
+      `uvm_info(`gfn,
+          $sformatf("\n\t ---| Illegal key length value detected. Resolving to default AES_256"),
+          UVM_MEDIUM)
+    end
+    if (item.reseed_rate inside {PER_1, PER_64, PER_8K}) begin
+      this.reseed_rate = item.reseed_rate;
+    end else begin
+      this.reseed_rate = PER_1;
+      `uvm_info(`gfn,
+          $sformatf("\n\t ---| Illegal reseed rate value detected. Resolving to default PER_1"),
+          UVM_MEDIUM)
     end
     add_data_item(item);
   endfunction // add_start_msg_item
