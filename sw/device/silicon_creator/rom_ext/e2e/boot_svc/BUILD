@@ -1,6 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
 load("//rules:const.bzl", "CONST", "hex")
 load(
     "//rules/opentitan:defs.bzl",
@@ -27,6 +28,12 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+
+# Note: the boot_svc commands for ownership_{activate,unlock} are tested by
+# the ownership transfer tests.  These two commands are unlike the rest of
+# the ownership commands in that they require a nonce, the device
+# identification number and a signature, and thus require far more test
+# infrastructure than the common boot_svc commands.
 
 opentitan_test(
     name = "boot_svc_empty_test",
@@ -164,44 +171,6 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
-)
-
-opentitan_test(
-    name = "boot_svc_ownership_unlock_test",
-    srcs = [
-        "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
-    ],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
-    },
-    fpga = fpga_params(
-        data = [
-            "//sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key",
-        ],
-        exit_failure = "(PASS|FAIL|FAULT).*\n",
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='ownership_state = OWND\r\n' --exit-failure='{exit_failure}'"
-            --exec="rescue boot-svc ownership-unlock \
-                    --mode Any \
-                    --nonce 0 \
-                    --sign $(location //sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key)"
-            --exec="console --non-interactive --exit-success='ownership_state = UANY\r\n' --exit-failure='{exit_failure}'"
-
-            # Since we've altered the ownership state, clear the bitstream to not affect later tests.
-            --exec="fpga clear-bitstream"
-            no-op
-        """,
-    ),
-    deps = [
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:boot_log",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 

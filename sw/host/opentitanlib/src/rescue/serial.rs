@@ -96,7 +96,13 @@ impl RescueSerial {
         self.uart.write(&mode)?;
         let enter = b'\r';
         self.uart.write(std::slice::from_ref(&enter))?;
-        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND)?;
+        let mode = std::str::from_utf8(&mode)?;
+        let result = UartConsole::wait_for(
+            &*self.uart,
+            &format!("mode: {mode}\r\n(ok|error):.*\r\n"),
+            Self::ONE_SECOND,
+        )?;
+
         if result[1] == "error" {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
