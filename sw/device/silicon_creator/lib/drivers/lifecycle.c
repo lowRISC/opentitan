@@ -100,3 +100,9 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
           reg1, LC_CTRL_HW_REVISION1_REVISION_ID_FIELD),
   };
 }
+
+hardened_bool_t lifecycle_din_eq(lifecycle_device_id_t *id, uint32_t *din) {
+  if (id->device_id[1] == din[0] && id->device_id[2] == din[1])
+    return kHardenedBoolTrue;
+  return kHardenedBoolFalse;
+}

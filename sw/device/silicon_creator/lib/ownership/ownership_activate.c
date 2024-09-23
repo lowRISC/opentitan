@@ -9,6 +9,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
@@ -39,6 +40,14 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   }
   if (!nonce_equal(&msg->ownership_activate_req.nonce, &bootdata->nonce)) {
     return kErrorOwnershipInvalidNonce;
+  }
+
+  // Verify the device identification number is correct.
+  lifecycle_device_id_t device_id;
+  lifecycle_device_id_get(&device_id);
+  if (lifecycle_din_eq(&device_id, msg->ownership_activate_req.din) !=
+      kHardenedBoolTrue) {
+    return kErrorOwnershipInvalidDin;
   }
 
   // Seal page one to this chip.

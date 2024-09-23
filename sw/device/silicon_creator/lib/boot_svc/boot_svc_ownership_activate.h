@@ -38,13 +38,17 @@ typedef struct boot_svc_ownership_activate_req {
    */
   uint32_t primary_bl0_slot;
   /**
+   * The 64-bit DIN subfield of the full 256-bit device ID.
+   */
+  uint32_t din[2];
+  /**
    * Erase previous owner's flash (hardened_bool_t).
    */
   uint32_t erase_previous;
   /**
    * Reserved for future use.
    */
-  uint32_t reserved[33];
+  uint32_t reserved[31];
   /**
    * The current ownership nonce.
    */
@@ -59,10 +63,12 @@ typedef struct boot_svc_ownership_activate_req {
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, primary_bl0_slot,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, erase_previous,
+OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, din,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, erase_previous,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 12);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, reserved,
-                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 8);
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 16);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, nonce,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 140);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_req_t, signature,
