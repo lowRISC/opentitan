@@ -19,6 +19,7 @@
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 /*
  * This module overrides the weak `sku_creator_owner_init` symbol in
@@ -166,7 +167,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                (uintptr_t)app;
   memset(app, 0x5a, len);
 
-  owner_block_page_seal(/*page=*/0);
+  ownership_seal_page(/*page=*/0);
   memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
 
   RETURN_IF_ERROR(owner_block_parse(&owner_page[0], config, keyring));
