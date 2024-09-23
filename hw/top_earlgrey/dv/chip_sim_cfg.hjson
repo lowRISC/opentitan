@@ -873,6 +873,18 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_otp_ctrl_descrambling
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/tests:otp_ctrl_descrambling_test:1:new_rules",
+        "//sw/device/tests:otp_ctrl_descrambling_otp_image:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+use_otp_image=OtpTypeCustom",
+      ]
+    }
+    {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq

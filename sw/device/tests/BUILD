@@ -1980,6 +1980,71 @@ opentitan_test(
     ],
 )
 
+otp_json(
+    name = "otp_ctrl_descrambling_otp_json",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                "TEST_UNLOCK_TOKEN": "117dbd7aca3f7de6749f1cb4a7daf4f5",
+                "TEST_EXIT_TOKEN": "1dc4b32c25ef2c31d6313735da1740e4",
+            },
+            lock = False,
+        ),
+        otp_partition(
+            name = "SECRET1",
+            items = {
+                "FLASH_ADDR_KEY_SEED": "434677540fdc9956038c1b4e7bd7394c8251c8921ed1a7fc8ed040844dde2dca",
+                "FLASH_DATA_KEY_SEED": "7cdb1a9d39c20016dcc70e44beeff5f4871b3d2726a673365cc32c34646c9a9f",
+                "SRAM_DATA_KEY_SEED": "57f20b5b2e200c010e83fabc03c68203",
+            },
+            lock = False,
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "RMA_TOKEN": "6ef5b95acb3ded39bed4fd235f6b24d4",
+                "CREATOR_ROOT_KEY_SHARE0": "f915734729d70391ea9f54f370a2fdf8196906bfe0051fa8a9398fab0bba1e23",
+                "CREATOR_ROOT_KEY_SHARE1": "e889c1ccf0f57d6ddda3ceb51b6cbc3bbaa7bc074a97c885d3bd2ecfc0fc7581",
+            },
+            lock = False,
+        ),
+    ],
+)
+
+otp_image(
+    name = "otp_ctrl_descrambling_otp_image",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":otp_ctrl_descrambling_otp_json"],
+    visibility = ["//visibility:private"],
+)
+
+opentitan_test(
+    name = "otp_ctrl_descrambling_test",
+    srcs = ["otp_ctrl_descrambling_test.c"],
+    dv = dv_params(
+        otp = ":otp_ctrl_descrambling_otp_image",
+    ),
+    exec_env = dicts.add(
+        {
+            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            # This test is not expected to run on silicon, as it would require a very specific OTP configuration that is only useful for this test.
+        },
+    ),
+    fpga = fpga_params(
+        otp = ":otp_ctrl_descrambling_otp_image",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
