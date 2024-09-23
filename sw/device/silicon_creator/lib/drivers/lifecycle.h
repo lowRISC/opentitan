@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
@@ -116,6 +117,14 @@ void lifecycle_device_id_get(lifecycle_device_id_t *device_id);
  * @param[out] hw_rev Hardware revision.
  */
 void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev);
+
+/**
+ * Determine if the device identification number subfield of the Device Id is
+ * equal to the supplied DIN.
+ *
+ * @returns kHardenedBoolTrue if equal, kHardenedBoolFalse if not equal.
+ */
+hardened_bool_t lifecycle_din_eq(lifecycle_device_id_t *id, uint32_t *din);
 
 #ifdef __cplusplus
 }
