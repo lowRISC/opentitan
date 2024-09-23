@@ -118,10 +118,16 @@ impl OwnerRescueConfig {
                 CommandTag::OwnershipUnlockRequest,
                 CommandTag::OwnershipActivateRequest,
                 CommandTag::Rescue,
+                CommandTag::RescueB,
+                CommandTag::Reboot,
                 CommandTag::GetBootLog,
                 CommandTag::BootSvcReq,
                 CommandTag::BootSvcRsp,
                 CommandTag::OwnerBlock,
+                CommandTag::GetOwnerPage0,
+                CommandTag::GetOwnerPage1,
+                CommandTag::GetDeviceId,
+                CommandTag::Wait,
             ],
             ..Default::default()
         }
