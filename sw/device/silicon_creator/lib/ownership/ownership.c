@@ -18,18 +18,12 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 static owner_page_status_t owner_page_validity_check(size_t page) {
-  size_t seal_len = (uintptr_t)&owner_page[0].seal - (uintptr_t)&owner_page[0];
   size_t sig_len =
       (uintptr_t)&owner_page[0].signature - (uintptr_t)&owner_page[0];
 
-  // TODO(cfrantz): validate owner pages.
-  // For now, we consider the seal to be just the sha256 over the page.
-  // This really needs to be the KMAC over the page with a keymgr-created
-  // sealing secret.
-  hmac_digest_t digest;
-  hmac_sha256(&owner_page[page], seal_len, &digest);
-  if (hardened_memeq(owner_page[page].seal, digest.digest,
-                     ARRAYSIZE(digest.digest)) == kHardenedBoolTrue) {
+  rom_error_t sealed = ownership_seal_check(page);
+  if (sealed == kErrorOk) {
+    HARDENED_CHECK_EQ(sealed, kErrorOk);
     return kOwnerPageStatusSealed;
   }
   hardened_bool_t result = ownership_key_validate(page, kOwnershipKeyOwner,
@@ -143,6 +137,8 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+
+  ownership_seal_init();
   // We don't want to abort ownership setup if we fail to
   // read the INFO pages, so we discard the error result.
   if (flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0,
