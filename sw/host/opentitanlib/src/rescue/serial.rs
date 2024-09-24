@@ -34,6 +34,7 @@ impl RescueSerial {
     pub const GET_OWNER_PAGE0: [u8; 4] = *b"OPG0";
     pub const GET_OWNER_PAGE1: [u8; 4] = *b"OPG1";
     pub const OT_ID: [u8; 4] = *b"OTID";
+    pub const ERASE_OWNER: [u8; 4] = *b"KLBR";
     pub const WAIT: [u8; 4] = *b"WAIT";
 
     const BAUD_115K: [u8; 4] = *b"115K";
@@ -182,6 +183,11 @@ impl RescueSerial {
         self.set_mode(Self::OWNER_BLOCK)?;
         let xm = Xmodem::new();
         xm.send(&*self.uart, data)?;
+        Ok(())
+    }
+
+    pub fn erase_owner(&self) -> Result<()> {
+        self.set_mode(Self::ERASE_OWNER)?;
         Ok(())
     }
 }
