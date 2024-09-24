@@ -130,8 +130,10 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task set_operation(bit [1:0] operation);
+    if (ral.ctrl_shadowed.operation.get_mirrored_value() != operation) begin
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
   endtask // set_operation
 
 
@@ -1011,7 +1013,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.message_len_min      = cfg.message_len_min;
     aes_message.config_error_pct     = cfg.config_error_pct;
     aes_message.error_types          = cfg.error_types;
-    aes_message.config_error_type_en = cfg.config_error_type;
+    aes_message.config_error_type_en = cfg.config_error_type_en;
     aes_message.manual_operation_pct = cfg.manual_operation_pct;
     aes_message.keymask              = cfg.key_mask;
     aes_message.fixed_key_en         = cfg.fixed_key_en;
@@ -1032,7 +1034,11 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message_item cloned_message;
     for (int i=0; i < cfg.num_messages; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(aes_message)
-      if (aes_message.cfg_error_type[1] == 1'b1) cfg.num_corrupt_messages += 1;
+      // For errors in the mode field, the DUT will not produce any output. Such messages are
+      // counted as corrupt messages.
+      if (aes_message.cfg_error_type.mode == 1'b1) begin
+        cfg.num_corrupt_messages += 1;
+      end
       `downcast(cloned_message, aes_message.clone());
       message_queue.push_front(cloned_message);
       `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE # %d \n %s",i, cloned_message.convert2string())
