@@ -110,10 +110,37 @@ static void change_speed(void) {
   }
 }
 
+#ifdef ROM_EXT_KLOBBER_ALLOWED
+// In order to facilitate debuging and manual test flows for ownerhsip transfer,
+// we allow the owner pages to be erased if and only if the chip is in the DEV
+// lifecycle state AND the ROM_EXT was specifically built to allow owner erase.
+//
+// In the general case, the `KLBR` command does not exist.  It can only be
+// enabled by silicon_creator and only for DEV chips.
+static void ownership_erase(void) {
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  if (lc_state == kLcStateDev) {
+    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
+                                     kFlashCtrlEraseTypePage));
+    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
+                                     kFlashCtrlEraseTypePage));
+    dbg_printf("ok: erased owner blocks\r\n");
+  } else {
+    dbg_printf("error: erase not allowed in state %x\r\n", lc_state);
+  }
+}
+#endif
+
 static void validate_mode(uint32_t mode, rescue_state_t *state,
                           boot_data_t *bootdata) {
   dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
   hardened_bool_t allow = owner_rescue_command_allowed(state->config, mode);
+#ifdef ROM_EXT_KLOBBER_ALLOWED
+  if (mode == kRescueModeKlobber) {
+    ownership_erase();
+    return;
+  }
+#endif
   if (allow == kHardenedBoolTrue) {
     switch (mode) {
       case kRescueModeBaud:
