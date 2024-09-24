@@ -432,6 +432,39 @@ impl CommandDispatch for GetOwnerConfig {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct EraseOwner {
+    #[command(flatten)]
+    params: UartParams,
+    #[arg(
+        long,
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        help = "Reset the target to enter rescue mode"
+    )]
+    reset_target: bool,
+    #[arg(long, default_value_t = false, help = "Really erase the owner config")]
+    really: bool,
+}
+
+impl CommandDispatch for EraseOwner {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        if self.really {
+            let uart = self.params.create(transport)?;
+            let rescue = RescueSerial::new(uart);
+            rescue.enter(transport, self.reset_target)?;
+            rescue.erase_owner()?;
+            Ok(None)
+        } else {
+            Err(anyhow!("The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."))
+        }
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum BootSvcCommand {
     Get(GetBootSvc),
@@ -444,6 +477,7 @@ pub enum BootSvcCommand {
 pub enum RescueCommand {
     #[command(subcommand)]
     BootSvc(BootSvcCommand),
+    EraseOwner(EraseOwner),
     GetBootLog(GetBootLog),
     GetDeviceId(GetDeviceId),
     Firmware(Firmware),
