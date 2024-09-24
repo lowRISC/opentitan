@@ -262,8 +262,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
             rdback_wait    = 1'b1;
             rdback_check_d = MuBi4False;
 
-            // Perform the readback check. Omit the check if the transaction contains an error.
-            if (!rdback_chk_ok && !error_i) begin
+            // Perform the readback check.
+            if (!rdback_chk_ok) begin
               alert_o = 1'b1;
             end
           end
