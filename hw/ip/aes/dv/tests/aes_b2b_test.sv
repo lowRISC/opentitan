@@ -34,7 +34,7 @@ class aes_b2b_test extends aes_base_test;
     cfg.fixed_key_en             = 0;
 
     cfg.fixed_operation_en       = 0;
-    cfg.fixed_operation          = 0;
+    cfg.fixed_operation          = aes_pkg::AES_ENC;
 
     cfg.fixed_keylen_en          = 0;
     cfg.fixed_keylen             = 3'b010;

@@ -76,7 +76,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   bit                fixed_data_en              = 0;
   // fixed operation
   bit                fixed_operation_en         = 0;
-  bit                fixed_operation            = 1'b0;
+  bit [1:0]          fixed_operation            = AES_ENC;
   // fixed iv (will set all to bits 0)
   bit                fixed_iv_en                = 0;
 
@@ -90,10 +90,14 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [3]: inject Lc_escalate
   error_types_t      error_types                = 4'b1111;
 
-  //   [2]: reseed error
-  //   [1]: mode error
-  //   [0]: key_len
-  cfg_error_type_t   config_error_type          = 3'b111;
+  //   [0]: op_error
+  //   [1]: reseed error
+  //   [2]: mode error
+  //   [3]: key_len
+  cfg_error_type_t   config_error_type_en       = '{key_len:  1'b1,
+                                                    mode:     1'b1,
+                                                    rsd_rate: 1'b1,
+                                                    op:       1'b1};
   int                config_error_pct           = 30;
 
   // min and max wait (clk) before an error injection
