@@ -85,8 +85,7 @@ void xmodem_ack(void *iohandle, bool ack) {
 rom_error_t xmodem_recv_frame(void *iohandle, uint32_t frame, uint8_t *data,
                               size_t *rxlen, uint8_t *unknown_rx) {
   uint8_t ch;
-  size_t n = xmodem_read(iohandle, &ch, sizeof(ch),
-                         frame == 1 ? kXModemLongTimeout : kXModemShortTimeout);
+  size_t n = xmodem_read(iohandle, &ch, sizeof(ch), kXModemLongTimeout);
   if (n == 0) {
     return kErrorXModemTimeoutStart;
   } else if (ch == kXModemStx || ch == kXModemSoh) {
@@ -117,6 +116,7 @@ rom_error_t xmodem_recv_frame(void *iohandle, uint32_t frame, uint8_t *data,
       return kErrorXModemTimeoutCrc;
     }
     if (cancel) {
+      xmodem_cancel(iohandle);
       return kErrorXModemCancel;
     }
 
