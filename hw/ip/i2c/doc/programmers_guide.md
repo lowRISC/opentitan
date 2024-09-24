@@ -46,7 +46,7 @@ $$ \textrm{TLOW_MIN}=\lceil{t\_{LOW,min}/t\_{clk}}\rceil $$
 $$ \textrm{THD_STA_MIN}= \lceil{t\_{HD,STA,min}/t\_{clk}}\rceil $$
 $$ \textrm{TSU_STA_MIN}= \lceil{t\_{SU,STA,min}/t\_{clk}}\rceil $$
 $$ \textrm{THD_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
-$$ \textrm{TSU_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
+$$ \textrm{TSU_DAT_MIN}= \lceil{t\_{SU,DAT,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_BUF_MIN}= \lceil{t\_{BUF,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
 
