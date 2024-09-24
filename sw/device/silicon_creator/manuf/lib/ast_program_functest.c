@@ -63,8 +63,6 @@ static status_t program_page(void) {
   for (size_t i = 0; i < ARRAYSIZE(ast_cfg_data); ++i) {
     ast_cfg_data[i] = i;
   }
-
-  // The AST blob is 1 count word plus 2 additional words for every <count>.
   return flash_ctrl_testutils_write(
       &flash_state, byte_address, kFlashInfoFieldAstCalibrationData.partition,
       ast_cfg_data, kDifFlashCtrlPartitionTypeInfo,

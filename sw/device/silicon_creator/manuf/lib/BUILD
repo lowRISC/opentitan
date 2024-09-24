@@ -177,6 +177,7 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/dif:flash_ctrl",
