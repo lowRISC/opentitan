@@ -28,6 +28,8 @@ typedef enum {
   kRescueModeBootSvcRsp = 0x42525350,
   /** `BREQ` */
   kRescueModeBootSvcReq = 0x42524551,
+  /** `KLBR` */
+  kRescueModeKlobber = 0x4b4c4252,
   /** `OWNR` */
   kRescueModeOwnerBlock = 0x4f574e52,
   /** `OPG0` */
