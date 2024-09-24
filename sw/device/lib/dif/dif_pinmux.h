@@ -337,6 +337,36 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
                                       dif_pinmux_index_t outsel);
 
 /**
+ * Sets a connection between a peripheral input and a MIO pad input.
+ *
+ * A peripheral input can be connected to any available MIO pad input.
+ *
+ * @param pinmux A Pin Multiplexer handle.
+ * @param pad A pad.
+ * @param pin A peripheral I/O.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_mio_select_input(const dif_pinmux_t *pinmux,
+                                         dt_periph_io_t periph_io,
+                                         dt_pad_t pad);
+
+/**
+ * Sets a connection between a MIO pad output and peripheral output.
+ *
+ * A MIO pad output can be connected to any available peripheral output.
+ *
+ * @param pinmux A Pin Multiplexer handle.
+ * @param pad A pad.
+ * @param pin A peripheral I/O.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_mio_select_output(const dif_pinmux_t *pinmux,
+                                          dt_pad_t pad,
+                                          dt_periph_io_t periph_io);
+
+/**
  * Writes attributes for a pad.
  *
  * This function completely overwrites the existing configuration of a pad, and
