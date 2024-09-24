@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -15,6 +16,7 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
+#include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -24,6 +26,9 @@ enum {
       kValidAstCfgOtpAddrLow + OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
 
 };
+
+static uint32_t
+    flash_info_page_buf[FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t)];
 
 /**
  * Writes OTP values to target OTP `partition`.
@@ -124,8 +129,12 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 
 static status_t manuf_individualize_device_ast_cfg(
     const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
-  // Copy AST configuration data out of the flash info page.
-  uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+  // Clear flash info page buffer.
+  memset(flash_info_page_buf, UINT8_MAX, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
+
+  // Copy all of flash info page 0 into RAM. This contains the AST configuration
+  // data, which we will extract and then delete.
+  uint32_t page_byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       flash_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
@@ -133,20 +142,25 @@ static status_t manuf_individualize_device_ast_cfg(
       (dif_flash_ctrl_region_properties_t){
           .ecc_en = kMultiBitBool4True,
           .high_endurance_en = kMultiBitBool4False,
-          .erase_en = kMultiBitBool4False,
-          .prog_en = kMultiBitBool4False,
+          .erase_en = kMultiBitBool4True,
+          .prog_en = kMultiBitBool4True,
           .rd_en = kMultiBitBool4True,
           .scramble_en = kMultiBitBool4False},
-      /*offset=*/NULL));
-  TRY(manuf_flash_info_field_read(
-      flash_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
-      kFlashInfoAstCalibrationDataSizeIn32BitWords));
+      &page_byte_address));
+  TRY(flash_ctrl_testutils_read(
+      flash_state, page_byte_address,
+      kFlashInfoFieldAstCalibrationData.partition, flash_info_page_buf,
+      kDifFlashCtrlPartitionTypeInfo,
+      FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
+      /*delay=*/0));
 
   // Write AST configuration data to OTP.
+  size_t ast_cfg_offset =
+      kFlashInfoFieldAstCalibrationData.byte_offset / sizeof(uint32_t);
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
     uint32_t addr =
         OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + i * sizeof(uint32_t);
-    uint32_t data = ast_cfg_data[i];
+    uint32_t data = flash_info_page_buf[ast_cfg_offset + i];
     uint32_t relative_addr;
     // Check the range is valid.
     if (addr < kValidAstCfgOtpAddrLow || addr >= kInvalidAstCfgOtpAddrHigh) {
@@ -157,7 +171,22 @@ static status_t manuf_individualize_device_ast_cfg(
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl,
                                        kDifOtpCtrlPartitionCreatorSwCfg,
                                        relative_addr, &data, /*len=*/1));
+    flash_info_page_buf[ast_cfg_offset + i] =
+        UINT32_MAX;  // Erase AST config data after use.
   }
+
+  // Erase AST data from flash by erasing the entire page and rewriting the
+  // modified buffered contents back to the page.
+  TRY(flash_ctrl_testutils_erase_page(
+      flash_state, page_byte_address,
+      kFlashInfoFieldAstCalibrationData.partition,
+      kDifFlashCtrlPartitionTypeInfo));
+  TRY(flash_ctrl_testutils_write(
+      flash_state, page_byte_address,
+      kFlashInfoFieldAstCalibrationData.partition, flash_info_page_buf,
+      kDifFlashCtrlPartitionTypeInfo,
+      FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t)));
+
   return OK_STATUS();
 }
 
