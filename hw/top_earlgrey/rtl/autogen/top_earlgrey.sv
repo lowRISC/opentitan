@@ -830,7 +830,7 @@ module top_earlgrey #(
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
-  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
+  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM; 
 
 
   // Struct breakout module tool-inserted DFT TAP signals
