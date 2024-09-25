@@ -115,6 +115,13 @@ rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
                                    size_t *index);
 
 /**
+ * Determine whether the given key is on owner page 0 or page 1.
+ *
+ * @return page number.
+ */
+size_t owner_block_key_page(const owner_application_key_t *key);
+
+/**
  * Determine whether a particular rescue command is allowed.
  *
  * @param rescue A pointer to the rescue configuration.
@@ -123,6 +130,14 @@ rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
  */
 hardened_bool_t owner_rescue_command_allowed(
     const owner_rescue_config_t *rescue, uint32_t command);
+
+/**
+ * Measure the content of the owner page.
+ *
+ * @param page The owner page to measure.
+ * @param measurement The measurement value.
+ */
+void owner_block_measurement(size_t page, hmac_digest_t *mesaurment);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
