@@ -400,13 +400,13 @@ Hence, software needs to provide a new Nonce and input data afterwards.
 
 ### CTRL_SHADOWED . NO_AD
 This field is mubi4 encoded.
-There is no (4'h6) associated data to be processed.
-There is (4'h9) associated data.
+Mubi4True:  There are no associated data to be processed.
+Mubi4False: There are associated data.
 
 ### CTRL_SHADOWED . NO_MSG
 This field is mubi4 encoded.
-There is no (4'h6) message (plaintext/ciphertext) to be processed.
-There is (4'h9) a message.
+Mubi4True:  There is no message (plaintext/ciphertext) to be processed.
+Mubi4False: There is a message.
 
 ### CTRL_SHADOWED . MASKED_MSG_INPUT
 Controls whether the message input is provided in shares (1) or not (0).
@@ -601,23 +601,24 @@ The Ascon unit is idle (0) or busy (1).
 
 ## OUTPUT_VALID
 Output Valid Register
-This register specifies which output register contains valid data and should be read next.
+This register specifies which output register contains valid data.
 It also contains the status information whether the TAG comparison was valid or not.
 - Offset: `0xac`
 - Reset default: `0x0`
-- Reset mask: `0x1f`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DATA_TYPE", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "TAG_COMPARISON_VALID", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "MSG_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TAG_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TAG_COMPARISON_VALID", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                        |
-|:------:|:------:|:-------:|:---------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:5  |        |         |                      | Reserved                                                                                                                                           |
-|  4:3   |   ro   |   0x0   | TAG_COMPARISON_VALID | Indicates if the tag could be successfully compared 2'b01, or not 2'b10 2'b00 indicates that the tag hasn't been calculated, yet 2'b11 is invalid. |
-|  2:0   |   ro   |   0x0   | DATA_TYPE            | Specifies which output type/register is valid. There are: PT_OUT, CT_OUT, TAG_OUT, NONE                                                            |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                                                       |
+|:------:|:------:|:-------:|:---------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |                      | Reserved                                                                                                                                                                                                                                                          |
+|  3:2   |   ro   |   0x0   | TAG_COMPARISON_VALID | Indicates if the tag could be successfully compared 2'b01, or not 2'b10 2'b00 indicates that the tag hasn't been calculated, yet 2'b11 is invalid.                                                                                                                |
+|   1    |   ro   |   0x0   | TAG_VALID            | Indicates if there is (1) or if there is not (0) valid data in the [`TAG_OUT`](#tag_out) register. If [`OUTPUT_VALID.MSG_VALID`](#output_valid) and [`OUTPUT_VALID.TAG_VALID`](#output_valid) are both set, [`MSG_OUT`](#msg_out) should be read before !TAG_OUT. |
+|   0    |   ro   |   0x0   | MSG_VALID            | Indicates if there is (1) or if there is not (0) valid data in the [`MSG_OUT`](#msg_out) register. If [`OUTPUT_VALID.MSG_VALID`](#output_valid) and [`OUTPUT_VALID.TAG_VALID`](#output_valid) are both set, [`MSG_OUT`](#msg_out) should be read before !TAG_OUT. |
 
 ## FSM_STATE
 Main FSM State register.

@@ -207,9 +207,13 @@ package ascon_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  d;
+      logic        d;
       logic        de;
-    } data_type;
+    } msg_valid;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tag_valid;
     struct packed {
       logic [1:0]  d;
       logic        de;

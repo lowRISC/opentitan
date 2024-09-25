@@ -443,8 +443,8 @@
           resval: "0x6",
           desc:  '''
             This field is mubi4 encoded.
-            There is no (4'h6) message (plaintext/ciphertext) to be processed.
-            There is (4'h9) a message.
+            Mubi4True:  There is no message (plaintext/ciphertext) to be processed.
+            Mubi4False: There is a message.
           '''
         }
         { bits: "15:12",
@@ -452,8 +452,8 @@
           resval: "0x9",
           desc:  '''
             This field is mubi4 encoded.
-            There is no (4'h6) associated data to be processed.
-            There is (4'h9) associated data.
+            Mubi4True:  There are no associated data to be processed.
+            Mubi4False: There are associated data.
           '''
         }
       ]
@@ -646,21 +646,28 @@
     { name: "OUTPUT_VALID",
       desc: '''
         Output Valid Register
-        This register specifies which output register contains valid data and should be read next.
+        This register specifies which output register contains valid data.
         It also contains the status information whether the TAG comparison was valid or not.
       ''',
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "2:0",
-          name: "DATA_TYPE",
+        { bits: "0",
+          name: "MSG_VALID",
           desc:  '''
-            Specifies which output type/register is valid.
-            There are:
-            PT_OUT, CT_OUT, TAG_OUT, NONE
+            Indicates if there is (1) or if there is not (0) valid data in the !!MSG_OUT register.
+            If !!OUTPUT_VALID.MSG_VALID and !!OUTPUT_VALID.TAG_VALID are both set, !!MSG_OUT should be read before !TAG_OUT.
           '''
         }
-        { bits: "4:3",
+        { bits: "1",
+          name: "TAG_VALID",
+          desc:  '''
+            Indicates if there is (1) or if there is not (0) valid data in the !!TAG_OUT register.
+            If !!OUTPUT_VALID.MSG_VALID and !!OUTPUT_VALID.TAG_VALID are both set,
+            !!MSG_OUT should be read before !TAG_OUT.
+          '''
+        }
+        { bits: "3:2",
           name: "TAG_COMPARISON_VALID",
           desc:  '''
             Indicates if the tag could be successfully compared 2'b01, or not 2'b10

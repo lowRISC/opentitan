@@ -344,33 +344,13 @@ module ascon_core
     end
   end
 
-  // According to the spec only one data type can be valid, however the implementation
-  // allows the tag to be valid while the last word of the message is also still valid
-  // This implementation now gives priority to the message, as the message should be read
-  // before the tag. It thus follows the spec "which output register [...] should be read next"
-  // TODO: Reconsider if the spec should be adjusted and only the value of
-  //       tag_out_reg_valid and msg_out_reg_valid should be exposed.
+  // TODO: directly assign hw2reg.output_valid.msg_valid and hw2reg.output_valid.tag_valid.d
+  //       in the track_output_status process above.
+  assign hw2reg.output_valid.msg_valid.d  = msg_out_reg_valid;
+  assign hw2reg.output_valid.msg_valid.de = 1'b1;
 
-  data_type_out_e msg_out_type;
-  assign msg_out_type = (operation == prim_ascon_pkg::ASCON_ENC) ? CT_OUT : PT_OUT;
-
-  always_comb begin : priority_mux_for_output_valid_data_type_reg
-    if (msg_out_reg_valid && !tag_out_reg_valid) begin
-      hw2reg.output_valid.data_type.d  = msg_out_type;
-    end else if (msg_out_reg_valid && tag_out_reg_valid) begin
-      if (msg_out_read) begin
-        hw2reg.output_valid.data_type.d  = TAG_OUT;
-      end else begin
-        hw2reg.output_valid.data_type.d  = msg_out_type;
-      end
-    end else if (tag_out_reg_valid) begin
-      hw2reg.output_valid.data_type.d  = TAG_OUT;
-    end else begin
-      hw2reg.output_valid.data_type.d  = NONE_OUT;
-    end
-  end
-  assign hw2reg.output_valid.data_type.de = 1'b1;
-
+  assign hw2reg.output_valid.tag_valid.d  = tag_out_reg_valid;
+  assign hw2reg.output_valid.tag_valid.de = 1'b1;
 
   // FSM_STATE Debug Output
   prim_ascon_pkg::duplex_fsm_state_e duplex_fsm_state;
