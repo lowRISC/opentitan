@@ -77,6 +77,9 @@ owner_config_t owner_config;
 // Owner application keys.
 owner_application_keyring_t keyring;
 
+// Verifying key index
+size_t verify_key;
+
 // ePMP regions for important address spaces.
 const epmp_region_t kRamRegion = {
     .start = TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
@@ -249,14 +252,15 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
-  size_t kindex = 0;
   ownership_key_alg_t key_alg = kOwnershipKeyAlgEcdsaP256;
   RETURN_IF_ERROR(owner_keyring_find_key(
       &keyring, key_alg,
-      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key), &kindex));
+      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key),
+      &verify_key));
 
-  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", kindex,
-             keyring.key[kindex]->key_alg, keyring.key[kindex]->key_domain);
+  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key,
+             keyring.key[verify_key]->key_alg,
+             keyring.key[verify_key]->key_domain);
 
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
          sizeof(boot_measurements.bl0.data));
@@ -285,7 +289,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
 
   uint32_t flash_exec = 0;
   return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
-                                     &keyring.key[kindex]->data.ecdsa,
+                                     &keyring.key[verify_key]->data.ecdsa,
                                      &act_digest, &flash_exec);
 }
 
@@ -448,17 +452,46 @@ static rom_error_t rom_ext_attestation_creator(
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_attestation_owner(const manifest_t *owner_manifest) {
-  keymgr_binding_value_t zero_binding_value = {.data = {0}};
+static rom_error_t rom_ext_attestation_owner(const boot_data_t *boot_data,
+                                             const manifest_t *owner_manifest) {
   // Generate CDI_1 attestation keys and (potentially) update certificate.
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
-  // TODO(cfrantz): setup sealing binding to value specified in owner
-  // configuration block.
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_owner_advance(/*sealing_binding=*/&zero_binding_value,
-                              /*attest_binding=*/&boot_measurements.bl0,
-                              owner_manifest->max_key_version));
+
+  static_assert(
+      sizeof(hmac_digest_t) == sizeof(keymgr_binding_value_t),
+      "Expect the keymgr binding value to be the same size as a sha256 digest");
+  // Get the verification key that verified the owner code.
+  const owner_application_key_t *key = keyring.key[verify_key];
+  hmac_digest_t owner_measurement;
+  hmac_digest_t attest_measurement;
+  // Determine which owner block the key came from and measure that block.
+  // Combine the measurement with the BL0 measurement.
+  owner_block_measurement(owner_block_key_page(key), &owner_measurement);
+  hmac_sha256_init();
+  hmac_sha256_update(&boot_measurements.bl0, sizeof(boot_measurements.bl0));
+  hmac_sha256_update(&owner_measurement, sizeof(owner_measurement));
+  hmac_sha256_process();
+  hmac_sha256_final(&attest_measurement);
+
+  // If we're not in LockedOwner state, we don't want to derive any valid
+  // sealing keys, so set the binding constant to a nonsense value.
+  keymgr_binding_value_t sealing_binding = {
+      .data = {0x55555555, 0x55555555, 0x55555555, 0x55555555, 0x55555555,
+               0x55555555, 0x55555555, 0x55555555}};
+
+  if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
+    HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
+    static_assert(
+        sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),
+        "Expect the keymgr binding value to be the same size as an application "
+        "key diversifier");
+    memcpy(&sealing_binding, key->raw_diversifier, sizeof(sealing_binding));
+  }
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_advance(
+      /*sealing_binding=*/&sealing_binding,
+      /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
+      owner_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_attestation_pubkey));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
@@ -469,18 +502,15 @@ static rom_error_t rom_ext_attestation_owner(const manifest_t *owner_manifest) {
   if (launder32(cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
-    uint32_t updated_cert_size = kCdi1MaxCertSizeBytes;
-    // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
+    size_t cdi_1_cert_size = kCdi1MaxCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
-        (hmac_digest_t *)boot_measurements.bl0.data,
-        (hmac_digest_t *)zero_binding_value.data,
+        (hmac_digest_t *)boot_measurements.bl0.data, &owner_measurement,
         owner_manifest->security_version, &cdi_1_key_ids,
-        &curr_attestation_pubkey, cdi_1_cert, &updated_cert_size));
-    // Update the cert page buffer.
+        &curr_attestation_pubkey, cdi_1_cert, &cdi_1_cert_size));
     memcpy(&dice_certs_page[dice_certs_page_offset], cdi_1_cert,
-           updated_cert_size);
+           cdi_1_cert_size);
     dice_certs_page_dirty = kHardenedBoolTrue;
-    rom_ext_attestation_increment_cert_offset(updated_cert_size);
+    rom_ext_attestation_increment_cert_offset(cdi_1_cert_size);
     // If the CDI_1 cert is updated, it could be smaller than the previous CDI_1
     // cert, so we make sure to clear out the rest of the buffer.
     memset(&dice_certs_page[dice_certs_page_offset], UINT8_MAX,
@@ -499,7 +529,7 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data,
                                 const manifest_t *manifest) {
   // Generate CDI_1 attestation keys and certificate.
-  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_owner(manifest));
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_owner(boot_data, manifest));
 
   // Write the DICE certs to flash if they have been updated.
   if (launder32(dice_certs_page_dirty) == kHardenedBoolTrue) {
