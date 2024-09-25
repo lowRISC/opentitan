@@ -13,12 +13,6 @@ typedef enum logic [11:0] {
   NONE_IN = {prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4False}
 } data_type_in_e;
 
-typedef enum logic [2:0] {
-  PT_OUT   = 3'b001,
-  CT_OUT   = 3'b010,
-  TAG_OUT  = 3'b100,
-  NONE_OUT = 3'b000
-} data_type_out_e;
 
 function automatic logic [127:0] swap_endianess_byte(logic [127:0] vector_in);
   logic [127:0] vector_out;

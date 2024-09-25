@@ -268,7 +268,8 @@ module ascon_reg_top (
   logic status_ascon_error_qs;
   logic status_alert_recov_ctrl_update_err_qs;
   logic status_alert_fatal_fault_qs;
-  logic [2:0] output_valid_data_type_qs;
+  logic output_valid_msg_valid_qs;
+  logic output_valid_tag_valid_qs;
   logic [1:0] output_valid_tag_comparison_valid_qs;
   logic fsm_state_re;
   logic [31:0] fsm_state_qs;
@@ -1812,13 +1813,13 @@ module ascon_reg_top (
 
 
   // R[output_valid]: V(False)
-  //   F[data_type]: 2:0
+  //   F[msg_valid]: 0:0
   prim_subreg #(
-    .DW      (3),
+    .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0),
+    .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_output_valid_data_type (
+  ) u_output_valid_msg_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -1827,8 +1828,8 @@ module ascon_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.output_valid.data_type.de),
-    .d      (hw2reg.output_valid.data_type.d),
+    .de     (hw2reg.output_valid.msg_valid.de),
+    .d      (hw2reg.output_valid.msg_valid.d),
 
     // to internal hardware
     .qe     (),
@@ -1836,10 +1837,37 @@ module ascon_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (output_valid_data_type_qs)
+    .qs     (output_valid_msg_valid_qs)
   );
 
-  //   F[tag_comparison_valid]: 4:3
+  //   F[tag_valid]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_output_valid_tag_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.output_valid.tag_valid.de),
+    .d      (hw2reg.output_valid.tag_valid.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (output_valid_tag_valid_qs)
+  );
+
+  //   F[tag_comparison_valid]: 3:2
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2519,8 +2547,9 @@ module ascon_reg_top (
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[2:0] = output_valid_data_type_qs;
-        reg_rdata_next[4:3] = output_valid_tag_comparison_valid_qs;
+        reg_rdata_next[0] = output_valid_msg_valid_qs;
+        reg_rdata_next[1] = output_valid_tag_valid_qs;
+        reg_rdata_next[3:2] = output_valid_tag_comparison_valid_qs;
       end
 
       addr_hit[44]: begin
