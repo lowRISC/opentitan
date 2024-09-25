@@ -363,17 +363,30 @@ rom_error_t dice_chain_attestation_creator(
 }
 
 rom_error_t dice_chain_attestation_owner(
-    keymgr_binding_value_t *owner_measurement,
-    const manifest_t *owner_manifest) {
+    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding) {
   // Generate CDI_1 attestation keys and (potentially) update certificate.
-  keymgr_binding_value_t zero_binding_value = {.data = {0}};
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
-  // TODO(cfrantz): setup sealing binding to value specified in owner
-  // configuration block.
+  static_assert(
+      sizeof(hmac_digest_t) == sizeof(keymgr_binding_value_t),
+      "Expect the keymgr binding value to be the same size as a sha256 digest");
+
+  // Aggregate the owner firmware (BL0) measurement and the ownership
+  // measurement into a single attestation measurment.  The attestation
+  // measurement is used to initialize the keymgr.
+  hmac_digest_t attest_measurement;
+  hmac_sha256_configure(false);
+  hmac_sha256_start();
+  hmac_sha256_update(bl0_measurement, sizeof(*bl0_measurement));
+  hmac_sha256_update(owner_measurement, sizeof(*owner_measurement));
+  hmac_sha256_process();
+  hmac_sha256_final(&attest_measurement);
+
   HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_advance(
-      /*sealing_binding=*/&zero_binding_value,
-      /*attest_binding=*/owner_measurement, owner_manifest->max_key_version));
+      /*sealing_binding=*/sealing_binding,
+      /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
+      owner_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
@@ -392,12 +405,11 @@ rom_error_t dice_chain_attestation_owner(
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
-    HARDENED_RETURN_IF_ERROR(
-        dice_cdi_1_cert_build((hmac_digest_t *)owner_measurement->data,
-                              (hmac_digest_t *)zero_binding_value.data,
-                              owner_manifest->security_version,
-                              &dice_chain.key_ids, &dice_chain.subject_pubkey,
-                              dice_chain.scratch_cert, &updated_cert_size));
+    HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
+        (hmac_digest_t *)bl0_measurement, owner_measurement,
+        owner_manifest->security_version, &dice_chain.key_ids,
+        &dice_chain.subject_pubkey, dice_chain.scratch_cert,
+        &updated_cert_size));
     HARDENED_RETURN_IF_ERROR(dice_chain_push_cert(
         "CDI_1", dice_chain.scratch_cert, updated_cert_size));
   } else {
