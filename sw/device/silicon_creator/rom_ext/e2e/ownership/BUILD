@@ -24,11 +24,11 @@ opentitan_binary(
     name = "boot_test",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
+    },
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
-    rsa_key = {
-        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
     },
     deps = [
         "//sw/device/lib/base:status",
@@ -42,11 +42,11 @@ opentitan_binary(
     name = "flash_regions",
     testonly = True,
     srcs = ["flash_regions.c"],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
+    },
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
-    rsa_key = {
-        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -69,13 +69,10 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
-    rsa_key = {
-        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
-    },
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -98,7 +95,7 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
             --expected-error=OwnershipInvalidSignature
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
@@ -120,7 +117,7 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
             --expected-error=OwnershipInvalidSignature
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
@@ -140,7 +137,7 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
             --config-kind=corrupt
             --dual-owner-boot-check=false
             --expected-error=OwnershipInvalidInfoPage
@@ -164,7 +161,7 @@ ownership_transfer_test(
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
             # NOTE: We use the wrong app key (fake instead of dummy) to test that we cannot boot
             # the test program after completing the transfer.
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub)
             --expected-error=OwnershipKeyNotFound
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
@@ -185,7 +182,7 @@ ownership_transfer_test(
             --next-owner-key-pub=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_pub)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
@@ -206,7 +203,7 @@ ownership_transfer_test(
             --next-owner-key-pub=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key_pub)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
             --dual-owner-boot-check=false
             --expected-error=OwnershipInvalidInfoPage
         """,
@@ -229,7 +226,7 @@ ownership_transfer_test(
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
             # NOTE: We rotate the `fake` test owner's application key to the dummy key to test that
             #       we can execute code with the new key.
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
@@ -239,6 +236,9 @@ ownership_transfer_test(
 # Part 1: Ensure in UnlockedSelf that a new owner key is rejected.
 ownership_transfer_test(
     name = "bad_locked_update_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod",
+    },
     fpga = fpga_params(
         changes_otp = True,
         test_cmd = """
@@ -250,15 +250,12 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub)
             --dual-owner-boot-check=false
             --expected-error=OwnershipInvalidInfoPage
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
-    rsa_key = {
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod": "app_prod",
-    },
 )
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_bad_locked_update_test
@@ -279,7 +276,7 @@ ownership_transfer_test(
             #       uses for signing) to check that owner code execution is denied in the intermediate
             #       dual-owner state.
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
             --expected-error=OwnershipKeyNotFound
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
@@ -303,7 +300,7 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
         """,
         test_harness = "//sw/host/tests/ownership:rescue_limit_test",
     ),
@@ -331,7 +328,7 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
         """,
         test_harness = "//sw/host/tests/ownership:rescue_permission_test",
     ),
@@ -355,7 +352,7 @@ ownership_transfer_test(
             --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
             --config-kind=with-flash-locked
             --rescue-after-activate={flash_regions}
         """,
@@ -373,6 +370,9 @@ ownership_transfer_test(
 # FPGA builds will automatically update from an older owner block.
 ownership_transfer_test(
     name = "fpga_owner_upgrade_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod",
+    },
     fpga = fpga_params(
         changes_otp = True,
         test_cmd = """
@@ -387,11 +387,8 @@ ownership_transfer_test(
             --config-version=0
             # NOTE: Should sku_creator_owner_init fail to upgrade to its built-in owner block, then the
             # dummy key will prevent the test program from executing and we'll get a failure from the test.
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
-    rsa_key = {
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod": "app_prod",
-    },
 )
