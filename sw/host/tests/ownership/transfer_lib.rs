@@ -10,8 +10,7 @@ use opentitanlib::chip::boot_log::BootLog;
 use opentitanlib::chip::boot_svc::{Message, UnlockMode};
 use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
-use opentitanlib::crypto::ecdsa::EcdsaPrivateKey;
-use opentitanlib::crypto::rsa::RsaPublicKey;
+use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey};
 use opentitanlib::ownership::{
     ApplicationKeyDomain, CommandTag, FlashFlags, KeyMaterial, OwnerApplicationKey, OwnerBlock,
     OwnerConfigItem, OwnerFlashConfig, OwnerFlashRegion, OwnerRescueConfig, OwnershipKeyAlg,
@@ -198,15 +197,15 @@ where
     let owner_key = EcdsaPrivateKey::load(owner_key)?;
     let activate_key = EcdsaPrivateKey::load(activate_key)?;
     let unlock_key = EcdsaPrivateKey::load(unlock_key)?;
-    let app_key = RsaPublicKey::from_pkcs1_der_file(app_key)?;
+    let app_key = EcdsaPublicKey::load(app_key)?;
     let mut owner = OwnerBlock {
         owner_key: KeyMaterial::Ecdsa(owner_key.public_key().try_into()?),
         activate_key: KeyMaterial::Ecdsa(activate_key.public_key().try_into()?),
         unlock_key: KeyMaterial::Ecdsa(unlock_key.public_key().try_into()?),
         data: vec![OwnerConfigItem::ApplicationKey(OwnerApplicationKey {
-            key_alg: OwnershipKeyAlg::Rsa,
+            key_alg: OwnershipKeyAlg::EcdsaP256,
             key_domain: ApplicationKeyDomain::Prod,
-            key: KeyMaterial::Rsa(app_key.try_into()?),
+            key: KeyMaterial::Ecdsa(app_key.try_into()?),
             ..Default::default()
         })],
         ..Default::default()
