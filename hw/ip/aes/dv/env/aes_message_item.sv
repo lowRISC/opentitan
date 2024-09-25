@@ -298,53 +298,66 @@ class aes_message_item extends uvm_sequence_item;
   virtual function string convert2string();
     string str;
     str = super.convert2string();
-    str = {str,  $sformatf("\n\t ----| \t\t AES MESSAGE ITEM   \t      |----\t ")
-           };
+    str = {str,  $sformatf("\n\t ----| AES MESSAGE ITEM")};
     str = {str, "\n\t ----| "};
-    str = {str,  $sformatf("\n\t ----| Mode: \t  \t \t %s                         \t ",
-                           aes_mode.name())};
+    str = {str,  $sformatf("\n\t ----| Message Length:       %0d", message_length)};
     str = {str,  $sformatf("\n\t ----| Operation:            %s",
                            aes_operation == AES_ENC ? "AES_ENC" :
                            aes_operation == AES_DEC ? "AES_DEC" : "INVALID")};
-    str = {str,  $sformatf("\n\t ----| has Configuration error:  %s  \t  \t        \t ",
-                           (has_config_error==1) ? "TRUE" : "FALSE")};
-    str = {str,  $sformatf("\n\t ----| Mode error en:  \t %d \n\t ----| Key_len error en: \t %d  \t         \t ",
-                           cfg_error_type.mode, cfg_error_type.key_len)};
-    str = {str,  $sformatf("\n\t ----| Message Length:  \t  \t %d             \t ",
-                           message_length)};
-
-    str = {str,  $sformatf("\n\t ----| Key Length:   \t \t %03b                             \t ",
-                           aes_keylen)};
-    str = {str,  $sformatf("\n\t ----| Key Share 0: \t \t ")};
+    str = {str,  $sformatf("\n\t ----| Mode:                 %s", aes_mode.name())};
+    str = {str,  $sformatf("\n\t ----| Key Length:           %03b", aes_keylen)};
+    str = {str,  $sformatf("\n\t ----| Key Share 0:          ")};
     for (int i=0; i <8; i++) begin
-      str = {str, $sformatf("%h ",aes_key[0][i])};
+      str = {str, $sformatf("%h ", aes_key[0][i])};
     end
-    str = {str,  $sformatf("\n\t ----| Key Share 1: \t \t ")};
+    str = {str,  $sformatf("\n\t ----| Key Share 1:          ")};
     for (int i=0; i <8; i++) begin
-      str = {str, $sformatf("%h ",aes_key[1][i])};
+      str = {str, $sformatf("%h ", aes_key[1][i])};
     end
-    str = {str,  $sformatf("\n\t ----| Key Mask:  \t  \t %0b                             |----\t ",
-                           keymask)};
-     str = {str,  $sformatf("\n\t ----| Initializaion vector:     \t    \t ")};
+    str = {str,  $sformatf("\n\t ----| Key Mask:             %0b", keymask)};
+    str = {str,  $sformatf("\n\t ----| Initializaion vector: ")};
     for (int i=0; i <4; i++) begin
-      str = {str, $sformatf("%h ",aes_iv[i])};
+      str = {str, $sformatf("%h ", aes_iv[i])};
     end
-    str = {str,  $sformatf("\n\t ----| Manual Mode : %b      \t   \t ", manual_operation)};
-    str = {str,  $sformatf("\n\t ----| SideLoad En : %b      \t   \t ", sideload_en)};
-    str = {str,  $sformatf("\n\t ----| errors types enabled: %b      \t   \t ", error_types)};
-    str = {str,  $sformatf("\n\t ----| CFB Weight: %d       \t \t ", cfb_weight)};
-    str = {str,  $sformatf("\n\t ----| OFB Weight: %d       \t \t ", ofb_weight)};
-    str = {str,  $sformatf("\n\t ----| ECB Weight: %d       \t \t ", ecb_weight)};
-    str = {str,  $sformatf("\n\t ----| CBC Weight: %d       \t \t ", cbc_weight)};
-    str = {str,  $sformatf("\n\t ----| CTR Weight: %d       \t \t ", ctr_weight)};
-    str = {str,  $sformatf("\n\t ----| Key Len Distribution: \t \t " ) };
-    str = {str,  $sformatf("\n\t ----| 128 Weight: %d       \t \t ", key_128b_weight)};
-    str = {str,  $sformatf("\n\t ----| 192 Weight: %d       \t \t ", key_192b_weight)};
-    str = {str,  $sformatf("\n\t ----| 256 Weight: %d       \t \t ", key_256b_weight)};
+    str = {str,  $sformatf("\n\t ----| Sideload:             %0b", sideload_en)};
+    str = {str,  $sformatf("\n\t ----| Manual Operation:     %0b", manual_operation)};
     str = {str,  $sformatf("\n\t")};
-
     return str;
   endfunction // conver2string
+
+  function string cfg_error_string();
+    string str;
+    str = {      $sformatf("\n\t ----| error_types:             %03b", error_types)};
+    str = {str,  $sformatf("\n\t ----| has_config_error:        %01b", has_config_error)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.op:       %01b", cfg_error_type.op)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.rsd_rate: %01b", cfg_error_type.rsd_rate)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.mode:     %01b", cfg_error_type.mode)};
+    str = {str,  $sformatf("\n\t ----| cfg_error_type.key_len:  %01b", cfg_error_type.key_len)};
+    str = {str,  $sformatf("\n\t ----| aes_operation:           %02b", aes_operation)};
+    str = {str,  $sformatf("\n\t ----| reseed_rate:             %03b", reseed_rate)};
+    str = {str,  $sformatf("\n\t ----| aes_mode:                %06b", aes_mode)};
+    str = {str,  $sformatf("\n\t ----| aes_keylen:              %03b", aes_keylen)};
+    return str;
+  endfunction
+
+  function string field_distribution_string();
+    string str;
+    str = {      $sformatf("\n\t ----| Mode Distribution:")};
+    str = {str,  $sformatf("\n\t ----| CFB Weight: %0d", cfb_weight)};
+    str = {str,  $sformatf("\n\t ----| OFB Weight: %0d", ofb_weight)};
+    str = {str,  $sformatf("\n\t ----| ECB Weight: %0d", ecb_weight)};
+    str = {str,  $sformatf("\n\t ----| CBC Weight: %0d", cbc_weight)};
+    str = {str,  $sformatf("\n\t ----| CTR Weight: %0d", ctr_weight)};
+    str = {str,  $sformatf("\n\t ----| Key Length Distribution:")};
+    str = {str,  $sformatf("\n\t ----| AES-128 Weight: %0d", key_128b_weight)};
+    str = {str,  $sformatf("\n\t ----| AES-192 Weight: %0d", key_192b_weight)};
+    str = {str,  $sformatf("\n\t ----| AES-256 Weight: %0d", key_256b_weight)};
+    str = {str,  $sformatf("\n\t ----| Reseed Rate Distribution:")};
+    str = {str,  $sformatf("\n\t ----| Per-1  Weight: %0d", per1_weight)};
+    str = {str,  $sformatf("\n\t ----| Per-64 Weight: %0d", per64_weight)};
+    str = {str,  $sformatf("\n\t ----| Per-8K Weight: %0d", per8k_weight)};
+    return str;
+  endfunction
 
    virtual function string print_data();
      string txt="";
