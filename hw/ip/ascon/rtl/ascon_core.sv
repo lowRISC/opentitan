@@ -130,8 +130,19 @@ module ascon_core
   prim_mubi_pkg::mubi4_t tag_match;
   prim_mubi_pkg::mubi4_t tag_calculated;
 
-  // TODO
-  assign unused_keymgr_key_i     = keymgr_key_i;
+  // TODO Add sideload interface
+  logic  unused_sideload_key;
+  assign unused_sideload_key = sideload_key;
+  assign unused_keymgr_key_i = keymgr_key_i;
+
+  // TODO Add logic to provide inputs unmasked.
+  //      Atm both shares must be written.
+  logic  unused_masked_msg_input;
+  logic  unused_masked_ad_input;
+  assign unused_masked_ad_input  = masked_ad_input;
+  assign unused_masked_msg_input = masked_msg_input;
+
+  // TODO Add escalation Input
   assign unused_lc_escalate_en_i = lc_escalate_en_i;
 
   // DATA REGISTERS
@@ -291,8 +302,19 @@ module ascon_core
   assign hw2reg.trigger.start.d  = 1'b0;
   assign hw2reg.trigger.start.de = 1'b1;
 
+  // TODO Add wipe/reset
   assign hw2reg.trigger.wipe.d  = 1'b0;
   assign hw2reg.trigger.wipe.de = 1'b1;
+  logic  unused_wipe;
+  assign unused_wipe = wipe;
+
+  // TODO Add manual mode for SCA
+  logic unused_manual_start_trigger;
+  assign unused_manual_start_trigger = manual_start_trigger;
+
+  // TODO Add output overwrite
+  logic unused_force_data_overwrite;
+  assign unused_force_data_overwrite = force_data_overwrite;
 
   // STATUS
   assign hw2reg.status.idle.d  = prim_mubi_pkg::mubi4_test_true_strict(duplex_idle);
@@ -558,23 +580,6 @@ module ascon_core
   // This also invalidates the tag_calculated.
   // If the tag ist not read, the start of a new AEAD-Enc/Dec also clears the flag.
   assign tag_in_load = tag_out_read | start_ok;
-
-  // TODO: Build a very basic FSM here
-
-  // TODO: We don't use any control signals
-  logic        unused_force_data_overwrite;
-  logic        unused_manual_start_trigger;
-  logic        unused_wipe;
-  logic        unused_masked_msg_input;
-  logic        unused_masked_ad_input;
-  logic        unused_sideload_key;
-
-  assign unused_force_data_overwrite = force_data_overwrite;
-  assign unused_manual_start_trigger = manual_start_trigger;
-  assign unused_wipe                 = wipe;
-  assign unused_masked_ad_input      = masked_ad_input;
-  assign unused_masked_msg_input     = masked_msg_input;
-  assign unused_sideload_key         = sideload_key;
 
 
   // XOR shares for unprotected implementation
