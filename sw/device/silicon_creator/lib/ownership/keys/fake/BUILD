@@ -71,6 +71,11 @@ filegroup(
     srcs = ["app_prod_key_rsa_3072_exp_f4.pub.der"],
 )
 
+filegroup(
+    name = "app_prod_ecdsa_pub",
+    srcs = ["app_prod_ecdsa_p256.pub.der"],
+)
+
 key_ecdsa(
     name = "app_prod_ecdsa",
     config = "EcdsaP256",
