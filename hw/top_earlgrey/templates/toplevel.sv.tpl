@@ -40,7 +40,7 @@ for m in top['memory']:
 %>\
 module top_${top["name"]} #(
   // Manually defined parameters
-% if not lib.is_rom_ctrl(top["module"]):
+% if not lib.num_rom_ctrl(top["module"]):
   parameter BootRomInitFile = "",
 % endif
 
@@ -268,9 +268,13 @@ module top_${top["name"]} #(
 
   ## Not all top levels have a rom controller.
   ## For those that do not, reference the ROM directly.
-% if lib.is_rom_ctrl(top["module"]):
+<% num_rom_ctrl = lib.num_rom_ctrl(top["module"]) %>\
+% if num_rom_ctrl == 1:
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
+% elif num_rom_ctrl > 1:
+  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL0__ROM;
 % else:
+  ## Not all top levels have
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM;
 % endif
 

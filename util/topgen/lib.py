@@ -538,15 +538,15 @@ def make_bit_concatenation(sig_name: str,
     return ''.join(acc)
 
 
-def is_rom_ctrl(modules):
-    '''Return true if rom_ctrl (and thus boot-up rom integrity checking)
-       exists in the design
+def num_rom_ctrl(modules):
+    '''Return number of rom_ctrl's instantiated in the design
     '''
+    num = 0
     for m in modules:
         if m['type'] == 'rom_ctrl':
-            return True
+            num += 1
 
-    return False
+    return num
 
 
 def is_lc_ctrl(modules):
