@@ -108,6 +108,10 @@ const epmp_region_t kOtpRegion = {
     .end = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + 0x1000,
 };
 
+// BL0 measurement.
+// On the ES chip, this was omitted from the static_critical section.
+static hmac_digest_t bl0_measurement;
+
 // Certificate data.
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
@@ -286,19 +290,18 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
   hmac_sha256_update(digest_region.start, digest_region.length);
   // Verify signature
-  hmac_digest_t act_digest;
-  hmac_sha256_final(&act_digest);
+  hmac_sha256_final(&bl0_measurement);
 
   uint32_t flash_exec = 0;
   if (manifest->manifest_version.major == kManifestVersionMajor1) {
     // TODO(cfrantz): Migrate all owner binaries to ECDSA and remove RSA3K.
     return sigverify_rsa_verify_ibex(&manifest->rsa_signature,
                                      &keyring.key[kindex]->data.rsa,
-                                     &act_digest, lc_state, &flash_exec);
+                                     &bl0_measurement, lc_state, &flash_exec);
   } else {
     return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
                                        &keyring.key[kindex]->data.ecdsa,
-                                       &act_digest, &flash_exec);
+                                       &bl0_measurement, &flash_exec);
   }
 }
 
