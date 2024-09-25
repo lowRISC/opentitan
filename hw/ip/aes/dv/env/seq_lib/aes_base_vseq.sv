@@ -1041,8 +1041,12 @@ class aes_base_vseq extends cip_base_vseq #(
       end
       `downcast(cloned_message, aes_message.clone());
       message_queue.push_front(cloned_message);
-      `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE # %d \n %s",i, cloned_message.convert2string())
-               , UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE #%0d\n %s",
+          i, cloned_message.convert2string()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| \n %s",
+          cloned_message.cfg_error_string()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| \n %s",
+          cloned_message.field_distribution_string()), UVM_MEDIUM)
     end
   endfunction // generate_message_queue
 
