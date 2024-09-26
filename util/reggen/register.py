@@ -294,8 +294,6 @@ class Register(RegBase):
         else:
             regwen = check_name(raw_regwen, f'regwen for {name} register')
 
-        tags = check_str_list(rd.get('tags', []), f'tags for {name} register')
-
         raw_resval = rd.get('resval')
         if raw_resval is None:
             resval = None
@@ -304,6 +302,8 @@ class Register(RegBase):
             if not 0 <= resval < (1 << reg_width):
                 raise ValueError(f'resval for {name} register is {resval}, '
                                  f'not an unsigned {reg_width}-bit number.')
+
+        tags = check_str_list(rd.get('tags', []), f'tags for {name} register')
 
         shadowed = check_bool(rd.get('shadowed', False),
                               f'shadowed flag for {name} register')
