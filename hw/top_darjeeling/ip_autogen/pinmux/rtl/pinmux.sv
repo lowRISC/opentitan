@@ -517,4 +517,8 @@ module pinmux
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 
+  // The index of tap_strap0 is known in the hjson-based machinery that renders this template. It
+  // also gets passed in from the call site with the TargetCfg parameter. Make sure they match.
+  initial `ASSERT_I(TapStrap0Idx_A, TargetCfg.tap_strap0_idx == -1)
+
 endmodule : pinmux

@@ -689,4 +689,8 @@ module pinmux
   `ASSUME(PwrMgrStrapSampleOnce0_A, strap_en_i |=> !strap_en_i)
   `ASSUME(PwrMgrStrapSampleOnce1_A, $fell(strap_en_i) |-> always !strap_en_i)
 
+  // The index of tap_strap0 is known in the hjson-based machinery that renders this template. It
+  // also gets passed in from the call site with the TargetCfg parameter. Make sure they match.
+  initial `ASSERT_I(TapStrap0Idx_A, TargetCfg.tap_strap0_idx == 30)
+
 endmodule : pinmux
