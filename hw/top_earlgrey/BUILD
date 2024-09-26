@@ -433,15 +433,23 @@ silicon(
     name = "silicon_owner_proda_rom_ext",
     testonly = True,
     base = ":silicon_owner_sival_rom_ext",
-    ecdsa_key = CLEAR_KEY_SET,
+    # TODO(#24641): Simplify key selection after eliminating RSA keys.
+    ecdsa_key = select({
+        "//signing:owner_key_ecdsa": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "appkey_test_0"},
+        "//signing:owner_key_rsa": CLEAR_KEY_SET,
+        "//signing:test_keys_ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "//signing:test_keys_rsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+    }),
     exec_env = "silicon_owner_proda_rom_ext",
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/proda:rom_ext_fake_prod_signed_slot_a",
         "//conditions:default": "//sw/device/silicon_creator/rom_ext/proda/binaries:rom_ext_real_prod_signed_slot_a",
     }),
     rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/proda/keys:keyset": "earlgrey_z1_proda_1"},
+        "//signing:owner_key_ecdsa": CLEAR_KEY_SET,
+        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:test_keys_ecdsa": CLEAR_KEY_SET,
+        "//signing:test_keys_rsa": CLEAR_KEY_SET,
     }),
 )
 

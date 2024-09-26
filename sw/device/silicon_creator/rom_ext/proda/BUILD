@@ -55,10 +55,10 @@ manifest(d = {
             "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0"},
         }),
         deps = [
+            ":proda_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext",
-            "//sw/device/silicon_creator/rom_ext/proda/keys",
         ],
     )
     for slot in SLOTS
@@ -74,10 +74,10 @@ manifest(d = {
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         deps = [
+            ":proda_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext",
-            "//sw/device/silicon_creator/rom_ext/proda/keys",
         ],
     )
     for slot in SLOTS
@@ -117,4 +117,18 @@ offline_signature_attach(
         "//sw/device/silicon_creator/rom_ext/proda/signatures:rsa_signatures",
     ],
     tags = ["manual"],
+)
+
+cc_library(
+    name = "proda_owner",
+    srcs = ["proda_owner.c"],
+    deps = [
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
+        "//sw/device/silicon_creator/rom_ext/proda/keys:includes",
+    ],
+    alwayslink = True,
 )
