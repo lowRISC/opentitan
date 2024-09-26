@@ -34,6 +34,8 @@ jobs:
         run: ./ci/scripts/python-lint.sh "$GITHUB_BASE_REF"
       - name: Python (mypy)
         run: ./ci/scripts/mypy.sh
+      - name: Validate testplans with schema
+        run: ./ci/scripts/validate_testplans.sh
       - name: C/C++ formatting
         run: ./ci/scripts/clang-format.sh "$GITHUB_BASE_REF"
       - name: Rust formatting

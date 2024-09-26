@@ -91,6 +91,10 @@ jobs:
   - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: clang-format (C/C++ lint)
+    # Validate testplans with schema (json schema)
+  - bash: ci/scripts/validate_testplans.sh
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Validate testplans with schema
     # Use clang-format to check C/C++ coding style
   - bash: ci/scripts/rust-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
