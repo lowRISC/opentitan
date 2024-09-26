@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 r"""Stopgap script to generate some cores for the englishbreakfast toplevel.
 
-All output files are written to $REPO_TOP/build/$TOPNAME-autogen/.
+All output files are written to hw/$TOPNAME/.
 """
 
 import argparse
@@ -27,6 +27,9 @@ def write_core(core_filepath, generated_core):
         # to be used everywhere, which is annoying syntax-wise on Python <3.7,
         # where native dicts are not sorted.
         f.write('CAPI=2:\n')
+        f.write('# Copyright lowRISC contributors (OpenTitan project).\n')
+        f.write('# Licensed under the Apache License, Version 2.0, see LICENSE for details.\n')
+        f.write('# SPDX-License-Identifier: Apache-2.0\n')
         yaml.dump(generated_core,
                   f,
                   encoding="utf-8",
@@ -45,9 +48,8 @@ def main():
 
     # Call topgen.
     files_data = files_root + "/hw/" + topname + "/data/"
-    files_out = os.path.abspath(files_root + "/build/" + topname + "-autogen/")
-    shutil.rmtree(files_out, ignore_errors=True)
-    os.makedirs(files_out, exist_ok=False)
+    files_out = os.path.abspath(files_root + "/hw/" + topname)
+    print("output: ", files_out)
     cmd = [files_root + "/util/topgen.py",  # "--verbose",
            "-t", files_data + topname + ".hjson",
            "-o", files_out]
