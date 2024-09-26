@@ -36,8 +36,8 @@ class RegBase:
     def __init__(self,
                  name: str,
                  offset: int,
-                 async_name: str, async_clk: Optional[ClockingItem],
-                 sync_name: str, sync_clk: Optional[ClockingItem]):
+                 async_name: Optional[str], async_clk: Optional[ClockingItem],
+                 sync_name: Optional[str], sync_clk: Optional[ClockingItem]):
         self.name = name
         self.offset = offset
 
