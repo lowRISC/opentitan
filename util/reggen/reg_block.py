@@ -289,7 +289,7 @@ class RegBlock:
                                  'to a register with name {} (at offset '
                                  '{:#x}), but this already names something at '
                                  'offset {:#x}.'.format(
-                                     mr.reg.name, mr.reg.offset, reg.name,
+                                     mr.name, mr.offset, reg.name,
                                      reg.offset, self.name_to_offset[lname]))
             self._add_flat_reg(reg)
             if mr.dv_compact is False:
