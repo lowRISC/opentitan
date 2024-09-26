@@ -1254,7 +1254,7 @@ e000018a:              900005b7                 lui     a1,0x90000
 e000018e:              cd0c                     sw      a1,24(a0)
 e0000190:              04052623                 sw      zero,76(a0)
 e0000194:              800015b7                 lui     a1,0x80001
-e0000198:              04858593                 addi    a1,a1,72 # 80001048 <fromhost+0x9fff1038>
+e0000198:              f8058593                 addi    a1,a1,-128 # 80000f80 <fromhost+0x9fff0f70>
 e000019c:              c92c                     sw      a1,80(a0)
 abs_mmio_read32():
 /proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
