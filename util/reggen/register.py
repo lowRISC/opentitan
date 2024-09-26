@@ -91,9 +91,9 @@ class Register(RegBase):
                  name: str,
                  alias_target: Optional[str],
                  desc: str,
-                 async_name: str,
+                 async_name: Optional[str],
                  async_clk: Optional[ClockingItem],
-                 sync_name: str,
+                 sync_name: Optional[str],
                  sync_clk: Optional[ClockingItem],
                  hwext: bool,
                  hwqe: bool,
@@ -246,11 +246,13 @@ class Register(RegBase):
 
         desc = check_str(rd['desc'], f'desc for {name} register')
 
-        async_name = check_str(rd.get('async', ''),
-                               f'async clock for {name} register')
-        async_clk = None
+        async_name = None  # type: Optional[str]
+        async_clk = None  # type: Optional[ClockingItem]
 
-        if async_name:
+        async_obj = rd.get('async')
+        if async_obj is not None:
+            async_name = check_str(async_obj,
+                                   f'async clock for {name} register')
             valid_clocks = clocks.clock_signals()
             if async_name not in valid_clocks:
                 raise ValueError(
@@ -259,11 +261,13 @@ class Register(RegBase):
             else:
                 async_clk = clocks.get_by_clock(async_name)
 
-        sync_name = check_str(rd.get('sync', ''),
-                              f'different sync clock for {name} register')
-        sync_clk = None
+        sync_name = None  # type: Optional[str]
+        sync_clk = None  # type: Optional[ClockingItem]
 
-        if sync_name:
+        sync_obj = rd.get('sync')
+        if sync_obj is not None:
+            sync_name = check_str(sync_obj,
+                                  f'different sync clock for {name} register')
             valid_clocks = clocks.clock_signals()
             if sync_name not in valid_clocks:
                 raise ValueError(
