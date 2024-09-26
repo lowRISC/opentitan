@@ -76,21 +76,11 @@ class MultiRegister(RegBase):
 
         name = check_name(rd['name'], 'name of multi-register')
 
-        super().__init__(name, offset,
-                         reg.async_name, reg.async_clk,
-                         reg.sync_name, reg.sync_clk)
-
-        self.reg = reg
-
-        self.cname = check_name(rd['cname'],
-                                'cname field of multireg {}'
-                                .format(self.name))
-
-        self.alias_target = None
+        alias_target = None
         if is_alias:
             if 'alias_target' in rd:
-                self.alias_target = check_name(rd['alias_target'],
-                                               'name of alias target multiregister')
+                alias_target = check_name(rd['alias_target'],
+                                          'name of alias target multiregister')
             else:
                 raise ValueError(f'alias multiregister {name} does not define '
                                  f'the alias_target key.')
@@ -100,6 +90,16 @@ class MultiRegister(RegBase):
                     raise ValueError(f'Illegal alias_target key in '
                                      f'multiregister {name} (this is not an '
                                      f'alias register block).')
+
+        super().__init__(name, offset,
+                         reg.async_name, reg.async_clk,
+                         reg.sync_name, reg.sync_clk, alias_target)
+
+        self.reg = reg
+
+        self.cname = check_name(rd['cname'],
+                                'cname field of multireg {}'
+                                .format(self.name))
 
         self.regwen_multi = check_bool(rd.get('regwen_multi', False),
                                        'regwen_multi field of multireg {}'

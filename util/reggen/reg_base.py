@@ -32,12 +32,18 @@ class RegBase:
                  register.
 
       sync_clk   The clocking item named by sync_name
+
+      alias_target The name of an analogous register/multiregister that we are
+                   going to override. This is used when building closed source
+                   components which override a generic register/multiregister
+                   implementation with extra fields/flags etc.
     '''
     def __init__(self,
                  name: str,
                  offset: int,
                  async_name: Optional[str], async_clk: Optional[ClockingItem],
-                 sync_name: Optional[str], sync_clk: Optional[ClockingItem]):
+                 sync_name: Optional[str], sync_clk: Optional[ClockingItem],
+                 alias_target: Optional[str]):
         self.name = name
         self.offset = offset
 
@@ -45,6 +51,8 @@ class RegBase:
         self.async_clk = async_clk
         self.sync_name = sync_name
         self.sync_clk = sync_clk
+
+        self.alias_target = alias_target
 
     def get_n_bits(self, bittype: List[str]) -> int:
         '''Get the size of this register / these registers in bits
