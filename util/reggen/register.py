@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 from design.mubi import prim_mubi  # type: ignore
 
 from reggen.access import SWAccess, HWAccess
-from reggen.clocking import Clocking
+from reggen.clocking import Clocking, ClockingItem
 from reggen.field import Field
 from reggen.lib import (check_keys, check_str, check_name, check_bool,
                         check_list, check_str_list, check_int)
@@ -110,9 +110,9 @@ class Register(RegBase):
                  alias_target: Optional[str],
                  desc: str,
                  async_name: str,
-                 async_clk: object,
+                 async_clk: Optional[ClockingItem],
                  sync_name: str,
-                 sync_clk: object,
+                 sync_clk: Optional[ClockingItem],
                  hwext: bool,
                  hwqe: bool,
                  hwre: bool,
@@ -124,14 +124,10 @@ class Register(RegBase):
                  update_err_alert: Optional[str],
                  storage_err_alert: Optional[str],
                  writes_ignore_errors: bool):
-        super().__init__(offset)
+        super().__init__(name, offset,
+                         async_name, async_clk, sync_name, sync_clk)
         self.alias_target = alias_target
-        self.name = name
         self.desc = desc
-        self.async_name = async_name
-        self.async_clk = async_clk
-        self.sync_name = sync_name
-        self.sync_clk = sync_clk
         self.hwext = hwext
         self.hwqe = hwqe
         self.hwre = hwre

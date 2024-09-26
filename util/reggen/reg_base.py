@@ -2,8 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List
+from typing import List, Optional
 
+from reggen.clocking import ClockingItem
 from reggen.field import Field
 
 
@@ -12,9 +13,38 @@ class RegBase:
 
     This represents a block of one or more registers with a base address.
 
+    Instance variables:
+
+      name       The name of the register/multiregister
+
+      offset     The offset or address of the register. For a MultiRegister,
+                 this gives the address of the first concrete register in the
+                 expansion.
+
+      async_name The name of an asynchronous clock used for the data backing
+                 the register/multiregister.
+
+      async_clk  The clocking item named by async_name
+
+      sync_name  The name of a synchronous clock used for the data backing the
+                 register/multiregister. Unlike an asynchronous clock, there is
+                 no CDC needed between the main clock and the clock used by the
+                 register.
+
+      sync_clk   The clocking item named by sync_name
     '''
-    def __init__(self, offset: int):
+    def __init__(self,
+                 name: str,
+                 offset: int,
+                 async_name: str, async_clk: Optional[ClockingItem],
+                 sync_name: str, sync_clk: Optional[ClockingItem]):
+        self.name = name
         self.offset = offset
+
+        self.async_name = async_name
+        self.async_clk = async_clk
+        self.sync_name = sync_name
+        self.sync_clk = sync_clk
 
     def get_n_bits(self, bittype: List[str]) -> int:
         '''Get the size of this register / these registers in bits

@@ -58,8 +58,6 @@ class MultiRegister(RegBase):
                  raw: object,
                  clocks: Clocking,
                  is_alias: bool):
-        super().__init__(offset)
-
         rd = check_keys(raw, 'multireg',
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
@@ -73,21 +71,20 @@ class MultiRegister(RegBase):
         reg_rd = {key: value
                   for key, value in rd.items()
                   if key in reg_allowed_keys}
-        self.reg = Register.from_raw(reg_width, offset, params, reg_rd, clocks,
-                                     is_alias)
+        reg = Register.from_raw(reg_width, offset, params, reg_rd, clocks,
+                                is_alias)
 
-        # The entire multi-reg block is always on the same clock
-        # This is guaranteed by design
-        self.async_name = self.reg.async_name
-        self.async_clk = self.reg.async_clk
+        name = check_name(rd['name'], 'name of multi-register')
 
-        self.sync_name = self.reg.sync_name
-        self.sync_clk = self.reg.sync_clk
+        super().__init__(name, offset,
+                         reg.async_name, reg.async_clk,
+                         reg.sync_name, reg.sync_clk)
+
+        self.reg = reg
 
         self.cname = check_name(rd['cname'],
                                 'cname field of multireg {}'
-                                .format(self.reg.name))
-        self.name = self.reg.name
+                                .format(self.name))
 
         self.alias_target = None
         if is_alias:
@@ -95,43 +92,42 @@ class MultiRegister(RegBase):
                 self.alias_target = check_name(rd['alias_target'],
                                                'name of alias target multiregister')
             else:
-                raise ValueError('alias multiregister {} does not define the '
-                                 'alias_target key.'
-                                 .format(self.name))
+                raise ValueError(f'alias multiregister {name} does not define '
+                                 f'the alias_target key.')
         else:
             if 'alias_target' in rd:
                 if rd['alias_target'] is not None:
-                    raise ValueError('Illegal alias_target key in multiregister {} '
-                                     '(this is not an alias register block).'
-                                     .format(self.name))
+                    raise ValueError(f'Illegal alias_target key in '
+                                     f'multiregister {name} (this is not an '
+                                     f'alias register block).')
 
         self.regwen_multi = check_bool(rd.get('regwen_multi', False),
                                        'regwen_multi field of multireg {}'
-                                       .format(self.reg.name))
+                                       .format(self.name))
 
         default_compact = True if len(self.reg.fields) == 1 and not self.regwen_multi else False
         self.compact = check_bool(rd.get('compact', default_compact),
                                   'compact field of multireg {}'
-                                  .format(self.reg.name))
+                                  .format(self.name))
         if self.compact and len(self.reg.fields) > 1:
             raise ValueError('Multireg {} sets the compact flag '
                              'but has multiple fields.'
-                             .format(self.reg.name))
+                             .format(self.name))
 
         if self.regwen_multi and self.compact:
             raise ValueError('Multireg {} sets the compact flag '
                              'but has regwen_multi set.'
-                             .format(self.reg.name))
+                             .format(self.name))
 
         count_str = check_str(rd['count'],
                               'count field of multireg {}'
-                              .format(self.reg.name))
+                              .format(self.name))
         self.count = params.expand(count_str,
-                                   'count field of multireg ' + self.reg.name)
+                                   'count field of multireg ' + self.name)
         if self.count <= 0:
             raise ValueError("Multireg {} has a count of {}, "
                              "which isn't positive."
-                             .format(self.reg.name, self.count))
+                             .format(self.name, self.count))
 
         # Generate the registers that this multireg expands into. Here, a
         # "creg" is a "compacted register", which might contain multiple actual
