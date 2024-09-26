@@ -125,8 +125,8 @@ class Register(RegBase):
                  storage_err_alert: Optional[str],
                  writes_ignore_errors: bool):
         super().__init__(name, offset,
-                         async_name, async_clk, sync_name, sync_clk)
-        self.alias_target = alias_target
+                         async_name, async_clk, sync_name, sync_clk,
+                         alias_target)
         self.desc = desc
         self.hwext = hwext
         self.hwqe = hwqe
