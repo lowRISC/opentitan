@@ -10,6 +10,7 @@ use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
+use std::cmp::Ordering;
 
 use crate::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
@@ -191,6 +192,14 @@ pub fn update_firmware(
             if new_version == current_version {
                 log::warn!(
                     "HyperDebug already running firmware version {}.  Consider --force.",
+                    new_version,
+                );
+                return Ok(None);
+            }
+            if is_older_than(new_version, current_version)? {
+                log::warn!(
+                    "Will not downgrade from {} to {}.  Consider --force.",
+                    current_version,
                     new_version,
                 );
                 return Ok(None);
@@ -476,5 +485,85 @@ fn wait_for_idle(dfu_device: &UsbBackend, dfu_interface: u8) -> Result<u8> {
                 response[4]
             )));
         }
+    }
+}
+
+/// Returns true if the two version strings have the same text prefix, e.g. "hyperdebug_",
+/// differing only in the subsequent numbers, and furthermore that the numbers in `version_a` are
+/// strictly "less than" those in `version_b`.
+fn is_older_than(version_a: &str, version_b: &str) -> Result<bool> {
+    let apos = version_a.find(char::is_numeric).unwrap_or(version_a.len());
+    let bpos = version_b.find(char::is_numeric).unwrap_or(version_b.len());
+    if version_a[..apos] != version_b[..bpos] {
+        return Ok(false);
+    }
+    let version_a = &version_a[apos..];
+    let version_b = &version_b[apos..];
+    if version_a.is_empty() || version_b.is_empty() {
+        return Ok(false);
+    }
+    let apos = version_a
+        .find(|ch: char| !char::is_numeric(ch))
+        .unwrap_or(version_a.len());
+    let bpos = version_b
+        .find(|ch: char| !char::is_numeric(ch))
+        .unwrap_or(version_b.len());
+    let aval = version_a[..apos].parse::<u64>()?;
+    let bval = version_b[..bpos].parse::<u64>()?;
+    match aval.cmp(&bval) {
+        Ordering::Less => Ok(true),
+        Ordering::Greater => Ok(false),
+        // Exact match so far, recursively inspect any further numbers in the string.
+        Ordering::Equal => is_older_than(&version_a[apos..], &version_b[apos..]),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_older_than() {
+        // Ordering of dates, with fallback to sequence suffix.
+        assert_eq!(
+            is_older_than("hyp_20240101_99", "hyp_20240801_01").unwrap(),
+            true
+        );
+        assert_eq!(
+            is_older_than("hyp_20240801_01", "hyp_20240101_99").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_older_than("hyp_20240101_01", "hyp_20240101_02").unwrap(),
+            true
+        );
+        assert_eq!(
+            is_older_than("hyp_20240101_02", "hyp_20240101_01").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_older_than("hyp_20240101_01", "hyp_20240101_01").unwrap(),
+            false
+        );
+
+        // Lexicographical ordering of version string.
+        assert_eq!(is_older_than("fancy_1.2.5", "fancy_1.11.1").unwrap(), true);
+        assert_eq!(is_older_than("fancy_1.11.1", "fancy_1.2.5").unwrap(), false);
+        assert_eq!(is_older_than("fancy_1.2.2", "fancy_1.2.11").unwrap(), true);
+        assert_eq!(is_older_than("fancy_1.2.11", "fancy_1.2.2").unwrap(), false);
+        assert_eq!(
+            is_older_than("fancy_1.2.11", "fancy_1.2.11").unwrap(),
+            false
+        );
+
+        // Not comparable, neither is considered "older" than the other.
+        assert_eq!(
+            is_older_than("fancy_1.2.5", "hyperdebug_20240101_02").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_older_than("hyperdebug_20240101_02", "fancy_1.2.5").unwrap(),
+            false
+        );
     }
 }
