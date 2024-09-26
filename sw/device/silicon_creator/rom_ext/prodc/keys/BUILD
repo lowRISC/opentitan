@@ -7,6 +7,19 @@ load("//rules:signing.bzl", "keyset")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "includes",
+    hdrs = [
+        "appkey_dev_0.h",
+        "appkey_prod_0.h",
+        "appkey_test_0.h",
+        "earlgrey_z1_prodc_1.h",
+        "ownership_activate_key.h",
+        "ownership_owner_key.h",
+        "ownership_unlock_key.h",
+    ],
+)
+
+cc_library(
     name = "keys",
     srcs = [
         "sigverify_rsa_keys_prodc.c",
@@ -50,6 +63,9 @@ keyset(
     build_setting_default = "",
     keys = {
         "earlgrey_z1_prodc_1.der": "earlgrey_z1_prodc_1",
+        "appkey_dev_0.der": "appkey_dev_0",
+        "appkey_prod_0.der": "appkey_prod_0",
+        "appkey_test_0.der": "appkey_test_0",
     },
     profile = "earlgrey_z1_prodc",
     tool = "//signing:token",
