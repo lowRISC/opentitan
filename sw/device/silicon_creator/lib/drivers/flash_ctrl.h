@@ -165,9 +165,10 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  * ```
  */
 enum {
-  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 16,
   kFlashCtrlSecMmioCertInfoPageCreatorCfg = 2,
   kFlashCtrlSecMmioCertInfoPageOwnerRestrict = 1,
+  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 5,
+  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 12,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
@@ -606,7 +607,7 @@ extern const flash_ctrl_perms_t kCertificateInfoPageOwnerAccess;
  * handing over execution to the owner boot stage.
  *
  * The caller is responsible for calling
- * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesCreatorCfg)`
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageCreatorCfg)`
  * when sec_mmio is being used to check expectations.
  */
 void flash_ctrl_cert_info_page_creator_cfg(
