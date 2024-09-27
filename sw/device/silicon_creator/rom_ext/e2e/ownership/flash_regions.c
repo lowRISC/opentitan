@@ -56,17 +56,19 @@ status_t flash_regions_print(dif_flash_ctrl_state_t *f) {
     TRY(dif_flash_ctrl_data_region_is_locked(f, i, &locked));
     flash_data_region_print(i, &p, locked);
   }
-  for (uint32_t i = 0; i < 4; ++i) {
-    dif_flash_ctrl_info_region_t region = {
-        .bank = 0,
-        .partition_id = 0,
-        .page = 6 + i,
-    };
-    bool locked;
-    dif_flash_ctrl_region_properties_t p;
-    TRY(dif_flash_ctrl_get_info_region_properties(f, region, &p));
-    TRY(dif_flash_ctrl_info_region_is_locked(f, region, &locked));
-    flash_info_region_print(region, &p, locked);
+  for (uint32_t bank = 0; bank < 2; ++bank) {
+    for (uint32_t page = 0; page < 10; ++page) {
+      dif_flash_ctrl_info_region_t region = {
+          .bank = bank,
+          .partition_id = 0,
+          .page = page,
+      };
+      bool locked;
+      dif_flash_ctrl_region_properties_t p;
+      TRY(dif_flash_ctrl_get_info_region_properties(f, region, &p));
+      TRY(dif_flash_ctrl_info_region_is_locked(f, region, &locked));
+      flash_info_region_print(region, &p, locked);
+    }
   }
   return OK_STATUS();
 }

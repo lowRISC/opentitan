@@ -152,6 +152,7 @@ cc_library(
     hdrs = ["ownership_unlock.h"],
     deps = [
         ":datatypes",
+        ":owner_block",
         ":ownership_key",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:boot_data",
@@ -219,6 +220,24 @@ cc_library(
     name = "test_owner",
     testonly = True,
     srcs = ["test_owner.c"],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "test_owner_update_mode_newversion",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
+    ],
     deps = [
         ":datatypes",
         ":owner_block",
