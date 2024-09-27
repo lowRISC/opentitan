@@ -124,6 +124,7 @@
     - [Programmer's Guide](./hw/ip/ascon/doc/programmers_guide.md)
     - [Hardware Interfaces](./hw/ip/aon_timer/doc/interfaces.md)
     - [Registers](./hw/ip/ascon/doc/registers.md)
+    - [Checklist](./hw/ip/ascon/doc/checklist.md)
   - [Clock Manager](./hw/top_earlgrey/ip_autogen/clkmgr/README.md)
     - [Theory of Operation](./hw/top_earlgrey/ip_autogen/clkmgr/doc/theory_of_operation.md)
     - [Design Verification](./hw/top_earlgrey/ip_autogen/clkmgr/dv/README.md)
