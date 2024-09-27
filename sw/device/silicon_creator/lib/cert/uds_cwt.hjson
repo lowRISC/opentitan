@@ -1,0 +1,80 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "name": "uds_cwt",
+  "variables": {
+    "cose_key_map_count": {
+      "type": "map",
+      "value": 5
+    },
+    "key_type_label": {
+      "type": "unsigned integer",
+      "value": 1
+    },
+    "algorithm_label": {
+      "type": "unsigned integer",
+      "value": 3
+    },
+    "curve_label": {
+      "type": "negative integer",
+      "value": -1
+    },
+    "cose_ec2_x_label": {
+      "type": "negative integer",
+      "value": -2
+    },
+    "cose_ec2_y_label": {
+      "type": "negative integer",
+      "value": -3
+    },
+    "key_type_value": {
+      "type": "unsigned integer",
+      "value": 2
+    },
+    "algorithm_value": {
+      "type": "negative integer",
+      "value": -7
+    },
+    "curve_value": {
+      "type": "unsigned integer",
+      "value": 1
+    },
+	// Creator public key: this is an EC point on
+	// the prime256v1 curve so it has two components
+	// (x and y) which are 32-bytes integers.
+    "creator_pub_key_ec_x": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "creator_pub_key_ec_y": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "COSE_Key": [
+      "cose_key_map_count",
+      [
+        "key_type_label",
+        "key_type_value"
+      ],
+      [
+        "algorithm_label",
+        "algorithm_value"
+      ],
+      [
+        "curve_label",
+        "curve_value"
+      ],
+      [
+        "cose_ec2_x_label",
+        "creator_pub_key_ec_x"
+      ],
+      [
+        "cose_ec2_y_label",
+        "creator_pub_key_ec_y"
+      ]
+    ]
+  },
+
+  "certificate": "COSE_Key"
+}

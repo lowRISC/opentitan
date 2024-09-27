@@ -1,0 +1,227 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "name": "cdi_cwt",
+  "variables": {
+    "cose_sign1_array_count": {
+      "type": "array",
+      "value": 4
+    },
+	"protected_value_bytes" : {
+	  "type" : "byte-array",
+	  "size" : 3,
+	}
+	"protected_map_count" : {
+	  "type" : "map",
+	  "value" : 1,
+	}
+	"protected_map_label" : {
+	  "type" : "unsigned integer",
+	  "value" : 1,
+	}
+	"protected_map_value" : {
+	  "type" : "negative integer",
+	  "value" : -7
+	}
+    "unprotected_value": {
+      "type": "map",
+      "value": 0
+    },
+    "dc_entry_payld_map_count": {
+      "type": "map",
+      "value": 10
+    },
+    "dc_entry_payld_iss_label": {
+      "type": "unsigned integer",
+      "value": 1
+    },
+    "dc_entry_payld_subj_label": {
+      "type": "unsigned integer",
+      "value": 2
+    },
+    "dc_entry_payld_profile_name_label": {
+      "type": "negative integer",
+      "value": -4670554
+    },
+    "dc_entry_payld_subj_pub_key_label": {
+      "type": "negative integer",
+      "value": -4670552
+    },
+    "dc_entry_payld_key_usage_label": {
+      "type": "negative integer",
+      "value": -4670553
+    },
+    "dc_entry_payld_code_hash_label": {
+      "type": "negative integer",
+      "value": -4670545
+    },
+    "dc_entry_payld_config_hash_label": {
+      "type": "negative integer",
+      "value": -4670547
+    },
+    "dc_entry_payld_config_desc_label": {
+      "type": "negative integer",
+      "value": -4670548
+    },
+    "dc_entry_payld_auth_hash_label": {
+      "type": "negative integer",
+      "value": -4670549
+    },
+    "dc_entry_payld_mode_label": {
+      "type": "negative integer",
+      "value": -4670551
+    },
+    "dc_entry_payld_iss_value": {
+      "type": "string",
+      "size": 10 // TODO: TBD
+    },
+    "dc_entry_payld_subj_value": {
+      "type": "string",
+      "size": 10 // TODO: TBD
+    },
+    "dc_entry_payld_profile_name_value": {
+      "type": "string",
+      "size": 10,
+      "value": "android.15"
+    },
+    "dc_entry_payld_subj_pub_key_value": "cose_key", // TODO: Copy from uds.hjson
+    "dc_entry_payld_key_usage_value": {
+      "type": "byte-array",
+      "size": 10
+    },
+    "dc_entry_payld_code_hash_value": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "dc_entry_payld_config_hash_value": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "dc_entry_payld_config_desc_value": {
+      "type": "map",
+      "value": 0
+    },
+    "dc_entry_payld_auth_hash_value": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "dc_entry_payld_mode_value": {
+      "type": "byte-array",
+      "size": 1,
+      "value": 1
+    },
+	"dc_entry_payld_bytes": {
+	  "type": "byte-array",
+	  "size": 495, // TODO: TBD
+	}
+    "dice_chain_entry_input_context": {
+      "type": "string",
+      "size": 10,
+      "value": "Signature1"
+    },
+    "dice_chain_entry_input_external_aad": {
+      "type": "byte-array",
+      "size": 0
+    },
+	// Certificate signature: the result of signing with ECDSA
+	// are two integers named "r" and "s"
+    "cert_signature_r": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "cert_signature_s": {
+      "type": "byte-array",
+      "size": 32
+    },
+    "signature": {
+      "r": "cert_signature_r",
+      "s": "cert_signature_s"
+    }
+	"signature_bytes" : {
+      "type": "byte-array",
+	  "size": 64,
+	}
+  },
+  "payload": [
+    "dc_entry_map_count",
+    [
+      "dc_entry_payld_iss_label",
+      "dc_entry_payld_iss_value"
+    ],
+    [
+      "dc_entry_payld_subj_label",
+      "dc_entry_payld_subj_value"
+    ],
+    [
+      "dc_entry_payld_profile_name_label",
+      "dc_entry_payld_profile_name_value"
+    ],
+    [
+      "dc_entry_payld_subj_pub_key_label",
+      "dc_entry_payld_subj_pub_key_value"
+    ],
+    [
+      "dc_entry_payld_key_usage_label",
+      "dc_entry_payld_key_usage_value"
+    ],
+    [
+      "dc_entry_payld_code_hash_label",
+      "dc_entry_payld_code_hash_value"
+    ],
+    [
+      "dc_entry_payld_config_hash_label",
+      "dc_entry_payld_config_hash_value"
+    ],
+    [
+      "dc_entry_payld_config_desc_label",
+      "dc_entry_payld_config_desc_value"
+    ],
+    [
+      "dc_entry_payld_auth_hash_label",
+      "dc_entry_payld_auth_hash_value"
+    ],
+    [
+      "dc_entry_payld_mode_label",
+      "dc_entry_payld_mode_value"
+    ]
+  ],
+  // signature: bstr; ECDSA(SigningKey, DiceChainEntryInput(tbs))
+  "tbs": [
+    "cose_sign1_array_count",
+    "dice_chain_entry_input_context",
+    [
+      "protected_value_bytes",
+      "protected_map_count",
+      [
+        "protected_map_label",
+        "protected_map_value"
+      ]
+    ],
+	"dice_chain_entry_input_external_aad",
+    [
+      "dc_entry_payld_bytes",
+      "payload"
+    ]
+  ],
+  "certificate": [
+    "cose_sign1_array_count",
+	[
+      "protected_value_bytes",
+      "protected_map_count",
+      [
+        "protected_map_label",
+        "protected_map_value"
+      ]
+    ]
+    "unprotected_value",
+    [
+      "dc_entry_payld_bytes",
+      "payload"
+    ]
+	[
+	  "signature_bytes",
+	  "signature"
+	]
+  ]
+}
