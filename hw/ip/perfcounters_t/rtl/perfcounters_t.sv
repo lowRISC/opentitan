@@ -15,7 +15,7 @@ module perfcounters_t
 
   // Bus Interface
   input  tlul_ot_pkg::tl_h2d_t tl_i,
-  output tlul_ot_pkg::tl_d2h_t tl_o,
+  output tlul_ot_pkg::tl_d2h_t tl_o
 );
 
   logic [NumAlerts-1:0] alert_test, alerts;
