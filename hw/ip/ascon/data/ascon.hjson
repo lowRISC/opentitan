@@ -14,9 +14,15 @@
   [graz-ascon]: https://ascon.iaik.tugraz.at/
   [nist-ascon]: https://csrc.nist.gov/Presentations/2023/update-on-standardization-of-ascon-family
   '''
-  regwidth:      "32",
-  cip_id:        "40",
-  version:       "0.0.1",
+  regwidth:           "32",
+  cip_id:             "40",
+  design_spec:        "../doc",
+  hw_checklist:       "../doc/checklist",
+  version:            "0.1.0",
+  life_stage:         "L1",
+  design_stage:       "D0",
+  verification_stage: "V0",
+  dif_stage:          "S0",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
     {clock: "clk_edn_i", reset: "rst_edn_ni", idle: "idle_o"}
