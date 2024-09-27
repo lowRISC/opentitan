@@ -41,8 +41,10 @@ For example,
 * to ensure responsible disclosure of vulnerabilities,
 * or to discuss the security impact of new features or proposed changes to an existing feature.
 
-If you believe you have found a security issue or intend to work on potentially security sensitive matters, please first reach out to our experienced security team at security@opentitan.org before starting a public discussion.
+If you intend to work on potentially security sensitive matters, please first reach out to our experienced security team at security@opentitan.org before starting a public discussion.
 That will enable us to engage successfully without creating undue risk to the project or its consumers.
+
+Please refer to https://opentitan.org/cvd-policy for a description of our disclosure process.
 
 ## Contributing code
 
