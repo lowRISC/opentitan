@@ -1,0 +1,2126 @@
+
+bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/tests/opentitan/monitor_counter/monitor_counter_sim_verilator.elf:     file format elf32-littleriscv
+bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/tests/opentitan/monitor_counter/monitor_counter_sim_verilator.elf
+architecture: riscv:rv32, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0xe0000080
+
+Program Header:
+    LOAD off    0x00001000 vaddr 0xe0000000 paddr 0xe0000000 align 2**12
+         filesz 0x00000a54 memsz 0x00000a54 flags rwx
+    LOAD off    0x00000000 vaddr 0xe0008000 paddr 0xe0008000 align 2**12
+         filesz 0x00000000 memsz 0x00002000 flags rw-
+   STACK off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**4
+         filesz 0x00000000 memsz 0x00000000 flags rw-
+
+Sections:
+Idx Name              Size      VMA       LMA       File off  Algn  Flags
+  0 .vectors          00000084  e0000000  e0000000  00001000  2**0  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .text             00000710  e0000084  e0000084  00001084  2**2  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .rodata           000002af  e0000794  e0000794  00001794  2**0  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  3 .data             00000011  e0000a43  e0000a43  00001a43  2**0  CONTENTS, ALLOC, LOAD, DATA
+  4 .bss              00000000  e0000a54  e0000a54  00000000  2**0  ALLOC
+  5 .logs.fields      00000000  e0000a54  e0000a54  00001a54  2**0  CONTENTS
+  6 .stack            00002000  e0008000  e0008000  00002000  2**0  ALLOC
+  7 .debug_loc        00000bce  00000000  00000000  00001a54  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+  8 .debug_abbrev     000003da  00000000  00000000  00002622  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+  9 .debug_info       00001013  00000000  00000000  000029fc  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 10 .debug_str        000002e7  00000000  00000000  00003a0f  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 11 .comment          00000074  00000000  00000000  00003cf6  2**0  CONTENTS, READONLY
+ 12 .riscv.attributes 00000026  00000000  00000000  00003d6a  2**0  CONTENTS, READONLY
+ 13 .debug_frame      00000148  00000000  00000000  00003d90  2**2  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 14 .debug_line       00000f8b  00000000  00000000  00003ed8  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 15 .debug_ranges     00000168  00000000  00000000  00004e63  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 16 .debug_aranges    00000028  00000000  00000000  00004fcb  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+SYMBOL TABLE:
+e0000000 l    d  .vectors       00000000 .vectors
+e0000084 l    d  .text  00000000 .text
+e0000794 l    d  .rodata        00000000 .rodata
+e0000a43 l    d  .data  00000000 .data
+e0000a54 l    d  .bss   00000000 .bss
+e0000a54 l    d  .logs.fields   00000000 .logs.fields
+e0008000 l    d  .stack 00000000 .stack
+00000000 l    d  .debug_loc     00000000 .debug_loc
+00000000 l    d  .debug_abbrev  00000000 .debug_abbrev
+00000000 l    d  .debug_info    00000000 .debug_info
+00000000 l    d  .debug_str     00000000 .debug_str
+00000000 l    d  .comment       00000000 .comment
+00000000 l    d  .riscv.attributes      00000000 .riscv.attributes
+00000000 l    d  .debug_frame   00000000 .debug_frame
+00000000 l    d  .debug_line    00000000 .debug_line
+00000000 l    d  .debug_ranges  00000000 .debug_ranges
+00000000 l    d  .debug_aranges 00000000 .debug_aranges
+00000000 l    df *ABS*  00000000 crt0.o
+e0000084 l       .text  00000000 default_exc_handler
+e0000084 l       .text  00000000 
+e00000fe l       .text  00000000 sleep_loop
+e0000084 l       .text  00000000 
+e0000086 l       .text  00000000 reset_handler
+e0000086 l       .text  00000000 
+e0000086 l       .text  00000000 
+e00000cc l       .text  00000000 
+e00000ea l       .text  00000000 zero_loop_end
+e00000e0 l       .text  00000000 zero_loop
+e00000e0 l       .text  00000000 
+e00000ea l       .text  00000000 
+e00000ea l       .text  00000000 main_entry
+e00000ea l       .text  00000000 
+e00000ee l       .text  00000000 
+e00000f2 l       .text  00000000 
+e00000fe l       .text  00000000 
+e0000102 l       .text  00000000 
+e0000000 l       .vectors       00000000 
+e000002c l       .vectors       00000000 
+e0000030 l       .vectors       00000000 
+e000007c l       .vectors       00000000 
+e0000080 l       .vectors       00000000 
+00000ea7 l       .debug_info    00000000 
+000003bb l       .debug_abbrev  00000000 
+e0000104 l       .text  00000000 
+e0000084 l       .vectors       00000000 
+00000140 l       .debug_ranges  00000000 
+00000000 l    df *ABS*  00000000 monitor_counter.c
+e0000104 l       .text  00000000 
+e0000104 l       .text  00000000 
+e0000104 l       .text  00000000 
+e0000106 l       .text  00000000 
+e0000106 l       .text  00000000 
+e0000114 l       .text  00000000 
+e0000114 l       .text  00000000 
+e0000114 l       .text  00000000 
+e0000118 l       .text  00000000 
+e000011a l       .text  00000000 
+e000011c l       .text  00000000 
+e000011c l       .text  00000000 
+e0000126 l       .text  00000000 
+e0000126 l       .text  00000000 
+e000012e l       .text  00000000 
+e000012e l       .text  00000000 
+e0000130 l       .text  00000000 
+e0000130 l       .text  00000000 
+e000013a l       .text  00000000 
+e000013a l       .text  00000000 
+e0000140 l       .text  00000000 
+e0000140 l       .text  00000000 
+e0000142 l       .text  00000000 
+e0000142 l       .text  00000000 
+e0000144 l       .text  00000000 
+e0000144 l       .text  00000000 
+e0000146 l       .text  00000000 
+e0000146 l       .text  00000000 
+e0000150 l       .text  00000000 
+e0000150 l       .text  00000000 
+e0000158 l       .text  00000000 
+e0000158 l       .text  00000000 
+e000015a l       .text  00000000 
+e000015a l       .text  00000000 
+e0000164 l       .text  00000000 
+e0000164 l       .text  00000000 
+e000016a l       .text  00000000 
+e000016a l       .text  00000000 
+e000016c l       .text  00000000 
+e000016c l       .text  00000000 
+e000016e l       .text  00000000 
+e000016e l       .text  00000000 
+e0000170 l       .text  00000000 
+e0000170 l       .text  00000000 
+e000017a l       .text  00000000 
+e000017a l       .text  00000000 
+e0000184 l       .text  00000000 
+e0000184 l       .text  00000000 
+e0000186 l       .text  00000000 
+e0000186 l       .text  00000000 
+e0000188 l       .text  00000000 
+e0000188 l       .text  00000000 
+e000018a l       .text  00000000 
+e000018a l       .text  00000000 
+e0000194 l       .text  00000000 
+e0000194 l       .text  00000000 
+e0000198 l       .text  00000000 
+e0000198 l       .text  00000000 
+e000019a l       .text  00000000 
+e000019a l       .text  00000000 
+e00001a4 l       .text  00000000 
+e00001a4 l       .text  00000000 
+e00001a6 l       .text  00000000 
+e00001a6 l       .text  00000000 
+e00001b0 l       .text  00000000 
+e00001b0 l       .text  00000000 
+e00001b2 l       .text  00000000 
+e00001b2 l       .text  00000000 
+e00001bc l       .text  00000000 
+e00001bc l       .text  00000000 
+e00001be l       .text  00000000 
+e00001be l       .text  00000000 
+e00001c8 l       .text  00000000 
+e00001c8 l       .text  00000000 
+e00001d2 l       .text  00000000 
+e00001d2 l       .text  00000000 
+e00001d6 l       .text  00000000 
+e00001d6 l       .text  00000000 
+e00001d8 l       .text  00000000 
+e00001d8 l       .text  00000000 
+e00001e2 l       .text  00000000 
+e00001e2 l       .text  00000000 
+e00001e4 l       .text  00000000 
+e00001e4 l       .text  00000000 
+e00001ee l       .text  00000000 
+e00001ee l       .text  00000000 
+e00001f0 l       .text  00000000 
+e00001f0 l       .text  00000000 
+e00001fa l       .text  00000000 
+e00001fa l       .text  00000000 
+e00001fc l       .text  00000000 
+e00001fc l       .text  00000000 
+e0000206 l       .text  00000000 
+e0000206 l       .text  00000000 
+e0000208 l       .text  00000000 
+e0000208 l       .text  00000000 
+e0000212 l       .text  00000000 
+e0000212 l       .text  00000000 
+e000021c l       .text  00000000 
+e000021c l       .text  00000000 
+e0000222 l       .text  00000000 
+e0000222 l       .text  00000000 
+e0000224 l       .text  00000000 
+e0000224 l       .text  00000000 
+e000022e l       .text  00000000 
+e000022e l       .text  00000000 
+e0000236 l       .text  00000000 
+e0000236 l       .text  00000000 
+e0000238 l       .text  00000000 
+e0000238 l       .text  00000000 
+e000023a l       .text  00000000 
+e000023a l       .text  00000000 
+e000023c l       .text  00000000 
+e000023c l       .text  00000000 
+e0000246 l       .text  00000000 
+e0000246 l       .text  00000000 
+e000024e l       .text  00000000 
+e000024e l       .text  00000000 
+e0000250 l       .text  00000000 
+e0000250 l       .text  00000000 
+e000025a l       .text  00000000 
+e000025a l       .text  00000000 
+e0000262 l       .text  00000000 
+e0000262 l       .text  00000000 
+e0000264 l       .text  00000000 
+e0000264 l       .text  00000000 
+e0000266 l       .text  00000000 
+e0000266 l       .text  00000000 
+e0000268 l       .text  00000000 
+e0000268 l       .text  00000000 
+e0000272 l       .text  00000000 
+e0000272 l       .text  00000000 
+e000027c l       .text  00000000 
+e000027c l       .text  00000000 
+e000027e l       .text  00000000 
+e000027e l       .text  00000000 
+e0000280 l       .text  00000000 
+e0000280 l       .text  00000000 
+e0000282 l       .text  00000000 
+e0000282 l       .text  00000000 
+e000028c l       .text  00000000 
+e000028c l       .text  00000000 
+e0000290 l       .text  00000000 
+e0000290 l       .text  00000000 
+e0000292 l       .text  00000000 
+e0000292 l       .text  00000000 
+e000029c l       .text  00000000 
+e000029c l       .text  00000000 
+e000029e l       .text  00000000 
+e000029e l       .text  00000000 
+e00002a8 l       .text  00000000 
+e00002a8 l       .text  00000000 
+e00002aa l       .text  00000000 
+e00002aa l       .text  00000000 
+e00002b4 l       .text  00000000 
+e00002b4 l       .text  00000000 
+e00002b6 l       .text  00000000 
+e00002b6 l       .text  00000000 
+e00002c0 l       .text  00000000 
+e00002c0 l       .text  00000000 
+e00002ca l       .text  00000000 
+e00002ca l       .text  00000000 
+e00002ce l       .text  00000000 
+e00002ce l       .text  00000000 
+e00002d0 l       .text  00000000 
+e00002d0 l       .text  00000000 
+e00002dc l       .text  00000000 
+e00002dc l       .text  00000000 
+e00002de l       .text  00000000 
+e00002de l       .text  00000000 
+e00002ea l       .text  00000000 
+e00002ea l       .text  00000000 
+e00002ec l       .text  00000000 
+e00002ec l       .text  00000000 
+e00002f8 l       .text  00000000 
+e00002f8 l       .text  00000000 
+e00002fa l       .text  00000000 
+e00002fa l       .text  00000000 
+e0000306 l       .text  00000000 
+e0000306 l       .text  00000000 
+e0000308 l       .text  00000000 
+e0000308 l       .text  00000000 
+e0000314 l       .text  00000000 
+e0000314 l       .text  00000000 
+e000031e l       .text  00000000 
+e000031e l       .text  00000000 
+e0000320 l       .text  00000000 
+e0000320 l       .text  00000000 
+e0000322 l       .text  00000000 
+e0000322 l       .text  00000000 
+e0000326 l       .text  00000000 
+e0000326 l       .text  00000000 
+e0000328 l       .text  00000000 
+e0000328 l       .text  00000000 
+e000032c l       .text  00000000 
+e000032c l       .text  00000000 
+e000032e l       .text  00000000 
+e000032e l       .text  00000000 
+e0000332 l       .text  00000000 
+e0000332 l       .text  00000000 
+e0000334 l       .text  00000000 
+e0000334 l       .text  00000000 
+e0000338 l       .text  00000000 
+e0000338 l       .text  00000000 
+e000033a l       .text  00000000 
+e000033a l       .text  00000000 
+e000033e l       .text  00000000 
+e000033e l       .text  00000000 
+e0000348 l       .text  00000000 
+e0000348 l       .text  00000000 
+e000035c l       .text  00000000 
+e000035c l       .text  00000000 
+00000000 l       .debug_loc     00000000 
+00000013 l       .debug_loc     00000000 
+00000026 l       .debug_loc     00000000 
+00000097 l       .debug_loc     00000000 
+0000010f l       .debug_loc     00000000 
+00000142 l       .debug_loc     00000000 
+00000175 l       .debug_loc     00000000 
+000001a6 l       .debug_loc     00000000 
+000001da l       .debug_loc     00000000 
+0000020d l       .debug_loc     00000000 
+00000240 l       .debug_loc     00000000 
+00000000 l       .debug_str     00000000 
+00000074 l       .debug_str     00000000 
+000000a9 l       .debug_str     00000000 
+000000c5 l       .debug_str     00000000 
+000000b8 l       .debug_str     00000000 
+000000ce l       .debug_str     00000000 
+000000df l       .debug_str     00000000 
+000000e4 l       .debug_str     00000000 
+000000ea l       .debug_str     00000000 
+0000011d l       .debug_str     00000000 
+00000122 l       .debug_str     00000000 
+00000127 l       .debug_str     00000000 
+0000012c l       .debug_str     00000000 
+00000136 l       .debug_str     00000000 
+00000140 l       .debug_str     00000000 
+00000259 l       .debug_str     00000000 
+000000fa l       .debug_str     00000000 
+000000c1 l       .debug_str     00000000 
+00000107 l       .debug_str     00000000 
+00000116 l       .debug_str     00000000 
+000002c3 l       .debug_str     00000000 
+00000000 l       .debug_frame   00000000 
+e000035c l       .text  00000000 
+00000000 l    df *ABS*  00000000 utils.c
+e000035c l       .text  00000000 
+e000035c l       .text  00000000 
+e000035c l       .text  00000000 
+e000035e l       .text  00000000 
+e0000378 l       .text  00000000 
+e000037a l       .text  00000000 
+e000038e l       .text  00000000 
+e000038e l       .text  00000000 
+e00003b0 l       .text  00000000 
+e00003b0 l       .text  00000000 
+e00003b4 l       .text  00000000 
+e00003bc l       .text  00000000 
+e00003c0 l       .text  00000000 
+e00003c4 l       .text  00000000 
+e00003c4 l       .text  00000000 
+e00003d0 l       .text  00000000 
+e00003d6 l       .text  00000000 
+e00003d6 l       .text  00000000 
+e00003da l       .text  00000000 
+e00003e0 l       .text  00000000 
+e00003e0 l       .text  00000000 
+e00003e4 l       .text  00000000 
+e00003e4 l       .text  00000000 
+e00003e6 l       .text  00000000 
+e00003e8 l       .text  00000000 
+e00003e8 l       .text  00000000 
+e00003ec l       .text  00000000 
+e00003ee l       .text  00000000 
+e00003f2 l       .text  00000000 
+e00003f6 l       .text  00000000 
+e00003f6 l       .text  00000000 
+e00003fa l       .text  00000000 
+e00003fa l       .text  00000000 
+e00003fc l       .text  00000000 
+e0000400 l       .text  00000000 
+e0000404 l       .text  00000000 
+e0000412 l       .text  00000000 
+e0000414 l       .text  00000000 
+e0000414 l       .text  00000000 
+e000041c l       .text  00000000 
+e0000420 l       .text  00000000 
+e0000422 l       .text  00000000 
+e0000426 l       .text  00000000 
+e0000426 l       .text  00000000 
+e000042e l       .text  00000000 
+e0000432 l       .text  00000000 
+e0000434 l       .text  00000000 
+e0000438 l       .text  00000000 
+e0000438 l       .text  00000000 
+e0000450 l       .text  00000000 
+e0000456 l       .text  00000000 
+e0000460 l       .text  00000000 
+e0000474 l       .text  00000000 
+e0000474 l       .text  00000000 
+e0000478 l       .text  00000000 
+e0000478 l       .text  00000000 
+e000047a l       .text  00000000 
+e000047a l       .text  00000000 
+e0000482 l       .text  00000000 
+e0000484 l       .text  00000000 
+e0000486 l       .text  00000000 
+e0000486 l       .text  00000000 
+e000048c l       .text  00000000 
+e0000494 l       .text  00000000 
+e000049a l       .text  00000000 
+e000049e l       .text  00000000 
+e00004a2 l       .text  00000000 
+e00004a6 l       .text  00000000 
+e0000596 l     F .text  000000c4 qprints
+e00004ac l       .text  00000000 
+e00004ae l       .text  00000000 
+e00004b4 l       .text  00000000 
+e00004b8 l       .text  00000000 
+e00004be l       .text  00000000 
+e00004c0 l       .text  00000000 
+e000065a l     F .text  0000013a qprinti
+e00004c8 l       .text  00000000 
+e00004ca l       .text  00000000 
+e00004ca l       .text  00000000 
+e00004cc l       .text  00000000 
+e00004ce l       .text  00000000 
+e00004ce l       .text  00000000 
+e00004e0 l       .text  00000000 
+e00004ee l       .text  00000000 
+e00004ee l       .text  00000000 
+e00004ee l       .text  00000000 
+e00004ee l       .text  00000000 
+e00004ee l       .text  00000000 
+e00004f2 l       .text  00000000 
+e00004f6 l       .text  00000000 
+e00004f8 l       .text  00000000 
+e00004fc l       .text  00000000 
+e00004fe l       .text  00000000 
+e0000502 l       .text  00000000 
+e0000502 l       .text  00000000 
+e0000508 l       .text  00000000 
+e000050c l       .text  00000000 
+e000050e l       .text  00000000 
+e0000510 l       .text  00000000 
+e0000514 l       .text  00000000 
+e0000518 l       .text  00000000 
+e000051a l       .text  00000000 
+e000051c l       .text  00000000 
+e000051c l       .text  00000000 
+e000051c l       .text  00000000 
+e000051c l       .text  00000000 
+e000051c l       .text  00000000 
+e000051e l       .text  00000000 
+e000051e l       .text  00000000 
+e000052c l       .text  00000000 
+e0000534 l       .text  00000000 
+e0000536 l       .text  00000000 
+e000053a l       .text  00000000 
+e000053e l       .text  00000000 
+e000054a l       .text  00000000 
+e000054c l       .text  00000000 
+e000054e l       .text  00000000 
+e000054e l       .text  00000000 
+e0000550 l       .text  00000000 
+e0000550 l       .text  00000000 
+e0000552 l       .text  00000000 
+e0000552 l       .text  00000000 
+e0000554 l       .text  00000000 
+e0000554 l       .text  00000000 
+e0000558 l       .text  00000000 
+e0000558 l       .text  00000000 
+e0000560 l       .text  00000000 
+e0000562 l       .text  00000000 
+e0000562 l       .text  00000000 
+e0000564 l       .text  00000000 
+e0000564 l       .text  00000000 
+e000057a l       .text  00000000 
+e000057e l       .text  00000000 
+e0000580 l       .text  00000000 
+e0000582 l       .text  00000000 
+e0000582 l       .text  00000000 
+e0000584 l       .text  00000000 
+e0000588 l       .text  00000000 
+e000058a l       .text  00000000 
+e0000596 l       .text  00000000 
+e0000596 l       .text  00000000 
+e0000596 l       .text  00000000 
+e0000596 l       .text  00000000 
+e0000596 l       .text  00000000 
+e0000596 l       .text  00000000 
+e000059a l       .text  00000000 
+e000059a l       .text  00000000 
+e000059e l       .text  00000000 
+e00005a0 l       .text  00000000 
+e00005a2 l       .text  00000000 
+e00005a6 l       .text  00000000 
+e00005a6 l       .text  00000000 
+e00005ae l       .text  00000000 
+e00005b2 l       .text  00000000 
+e00005b2 l       .text  00000000 
+e00005b4 l       .text  00000000 
+e00005b8 l       .text  00000000 
+e00005b8 l       .text  00000000 
+e00005ba l       .text  00000000 
+e00005c0 l       .text  00000000 
+e00005c2 l       .text  00000000 
+e00005c2 l       .text  00000000 
+e00005cc l       .text  00000000 
+e00005ce l       .text  00000000 
+e00005ce l       .text  00000000 
+e00005d6 l       .text  00000000 
+e00005d8 l       .text  00000000 
+e00005d8 l       .text  00000000 
+e00005dc l       .text  00000000 
+e00005dc l       .text  00000000 
+e00005e8 l       .text  00000000 
+e00005e8 l       .text  00000000 
+e00005ec l       .text  00000000 
+e00005f4 l       .text  00000000 
+e00005f6 l       .text  00000000 
+e00005f6 l       .text  00000000 
+e00005f8 l       .text  00000000 
+e00005fc l       .text  00000000 
+e00005fe l       .text  00000000 
+e00005fe l       .text  00000000 
+e0000602 l       .text  00000000 
+e0000602 l       .text  00000000 
+e0000604 l       .text  00000000 
+e0000608 l       .text  00000000 
+e0000608 l       .text  00000000 
+e000060c l       .text  00000000 
+e000060c l       .text  00000000 
+e000060e l       .text  00000000 
+e0000610 l       .text  00000000 
+e0000614 l       .text  00000000 
+e0000614 l       .text  00000000 
+e0000618 l       .text  00000000 
+e000061a l       .text  00000000 
+e000061e l       .text  00000000 
+e000061e l       .text  00000000 
+e0000620 l       .text  00000000 
+e0000626 l       .text  00000000 
+e0000626 l       .text  00000000 
+e000062a l       .text  00000000 
+e000062a l       .text  00000000 
+e000062c l       .text  00000000 
+e000062c l       .text  00000000 
+e0000630 l       .text  00000000 
+e0000632 l       .text  00000000 
+e0000634 l       .text  00000000 
+e0000636 l       .text  00000000 
+e0000636 l       .text  00000000 
+e000063e l       .text  00000000 
+e000063e l       .text  00000000 
+e0000642 l       .text  00000000 
+e0000642 l       .text  00000000 
+e0000644 l       .text  00000000 
+e0000648 l       .text  00000000 
+e000064a l       .text  00000000 
+e000064a l       .text  00000000 
+e000064c l       .text  00000000 
+e000064c l       .text  00000000 
+e0000650 l       .text  00000000 
+e0000650 l       .text  00000000 
+e0000654 l       .text  00000000 
+e0000654 l       .text  00000000 
+e0000656 l       .text  00000000 
+e0000656 l       .text  00000000 
+e000065a l       .text  00000000 
+e000065a l       .text  00000000 
+e000065a l       .text  00000000 
+e000065a l       .text  00000000 
+e000065a l       .text  00000000 
+e000065c l       .text  00000000 
+e000065c l       .text  00000000 
+e0000660 l       .text  00000000 
+e0000660 l       .text  00000000 
+e0000660 l       .text  00000000 
+e0000662 l       .text  00000000 
+e0000666 l       .text  00000000 
+e0000666 l       .text  00000000 
+e000066e l       .text  00000000 
+e000067c l       .text  00000000 
+e0000680 l       .text  00000000 
+e0000680 l       .text  00000000 
+e0000684 l       .text  00000000 
+e0000684 l       .text  00000000 
+e0000686 l       .text  00000000 
+e000068a l       .text  00000000 
+e000068e l       .text  00000000 
+e0000690 l       .text  00000000 
+e0000694 l       .text  00000000 
+e0000698 l       .text  00000000 
+e000069a l       .text  00000000 
+e000069a l       .text  00000000 
+e000069c l       .text  00000000 
+e000069c l       .text  00000000 
+e000069e l       .text  00000000 
+e00006a2 l       .text  00000000 
+e00006a4 l       .text  00000000 
+e00006a6 l       .text  00000000 
+e00006a6 l       .text  00000000 
+e00006aa l       .text  00000000 
+e00006ae l       .text  00000000 
+e00006ae l       .text  00000000 
+e00006b2 l       .text  00000000 
+e00006b6 l       .text  00000000 
+e00006b6 l       .text  00000000 
+e00006b8 l       .text  00000000 
+e00006b8 l       .text  00000000 
+e00006be l       .text  00000000 
+e00006be l       .text  00000000 
+e00006c2 l       .text  00000000 
+e00006c2 l       .text  00000000 
+e00006c6 l       .text  00000000 
+e00006ca l       .text  00000000 
+e00006ce l       .text  00000000 
+e00006d0 l       .text  00000000 
+e00006d2 l       .text  00000000 
+e00006d2 l       .text  00000000 
+e00006d4 l       .text  00000000 
+e00006d4 l       .text  00000000 
+e00006d6 l       .text  00000000 
+e00006da l       .text  00000000 
+e00006de l       .text  00000000 
+e00006e8 l       .text  00000000 
+e00006e8 l       .text  00000000 
+e00006ec l       .text  00000000 
+e00006f0 l       .text  00000000 
+e00006f2 l       .text  00000000 
+e00006f6 l       .text  00000000 
+e00006f8 l       .text  00000000 
+e00006fa l       .text  00000000 
+e00006fa l       .text  00000000 
+e00006fc l       .text  00000000 
+e0000700 l       .text  00000000 
+e0000700 l       .text  00000000 
+e0000704 l       .text  00000000 
+e0000704 l       .text  00000000 
+e0000708 l       .text  00000000 
+e000070a l       .text  00000000 
+e000070a l       .text  00000000 
+e000070e l       .text  00000000 
+e0000710 l       .text  00000000 
+e0000714 l       .text  00000000 
+e0000716 l       .text  00000000 
+e000071a l       .text  00000000 
+e000071c l       .text  00000000 
+e0000720 l       .text  00000000 
+e0000720 l       .text  00000000 
+e0000724 l       .text  00000000 
+e0000726 l       .text  00000000 
+e0000726 l       .text  00000000 
+e000072a l       .text  00000000 
+e000072a l       .text  00000000 
+e000072c l       .text  00000000 
+e000072e l       .text  00000000 
+e0000730 l       .text  00000000 
+e0000730 l       .text  00000000 
+e0000736 l       .text  00000000 
+e0000738 l       .text  00000000 
+e0000738 l       .text  00000000 
+e000073c l       .text  00000000 
+e0000740 l       .text  00000000 
+e0000740 l       .text  00000000 
+e0000748 l       .text  00000000 
+e000074c l       .text  00000000 
+e000074e l       .text  00000000 
+e0000752 l       .text  00000000 
+e0000752 l       .text  00000000 
+e0000756 l       .text  00000000 
+e000075c l       .text  00000000 
+e000075c l       .text  00000000 
+e000075e l       .text  00000000 
+e0000760 l       .text  00000000 
+e0000760 l       .text  00000000 
+e0000764 l       .text  00000000 
+e0000764 l       .text  00000000 
+e0000768 l       .text  00000000 
+e000076c l       .text  00000000 
+e000076c l       .text  00000000 
+e000076e l       .text  00000000 
+e0000772 l       .text  00000000 
+e0000774 l       .text  00000000 
+e0000774 l       .text  00000000 
+e000077c l       .text  00000000 
+e000077e l       .text  00000000 
+e000077e l       .text  00000000 
+e0000780 l       .text  00000000 
+e0000782 l       .text  00000000 
+e0000782 l       .text  00000000 
+e0000784 l       .text  00000000 
+e0000786 l       .text  00000000 
+e0000788 l       .text  00000000 
+e000078a l       .text  00000000 
+e000078a l       .text  00000000 
+e000078c l       .text  00000000 
+e000078c l       .text  00000000 
+e0000794 l       .text  00000000 
+e0000794 l       .text  00000000 
+00000271 l       .debug_loc     00000000 
+00000297 l       .debug_loc     00000000 
+000002bf l       .debug_loc     00000000 
+000002e5 l       .debug_loc     00000000 
+00000342 l       .debug_loc     00000000 
+0000036a l       .debug_loc     00000000 
+00000390 l       .debug_loc     00000000 
+000003c5 l       .debug_loc     00000000 
+00000405 l       .debug_loc     00000000 
+00000420 l       .debug_loc     00000000 
+00000441 l       .debug_loc     00000000 
+0000045c l       .debug_loc     00000000 
+00000477 l       .debug_loc     00000000 
+00000492 l       .debug_loc     00000000 
+000004ad l       .debug_loc     00000000 
+000004d5 l       .debug_loc     00000000 
+00000506 l       .debug_loc     00000000 
+0000053b l       .debug_loc     00000000 
+00000563 l       .debug_loc     00000000 
+0000057f l       .debug_loc     00000000 
+0000059a l       .debug_loc     00000000 
+000005b5 l       .debug_loc     00000000 
+000005d0 l       .debug_loc     00000000 
+000005eb l       .debug_loc     00000000 
+00000606 l       .debug_loc     00000000 
+00000621 l       .debug_loc     00000000 
+0000063c l       .debug_loc     00000000 
+00000699 l       .debug_loc     00000000 
+000006bf l       .debug_loc     00000000 
+000006ff l       .debug_loc     00000000 
+00000727 l       .debug_loc     00000000 
+0000074d l       .debug_loc     00000000 
+0000078d l       .debug_loc     00000000 
+000007bf l       .debug_loc     00000000 
+000007eb l       .debug_loc     00000000 
+00000806 l       .debug_loc     00000000 
+00000821 l       .debug_loc     00000000 
+00000842 l       .debug_loc     00000000 
+0000085d l       .debug_loc     00000000 
+00000883 l       .debug_loc     00000000 
+000008bf l       .debug_loc     00000000 
+000008e5 l       .debug_loc     00000000 
+0000092c l       .debug_loc     00000000 
+00000973 l       .debug_loc     00000000 
+000009af l       .debug_loc     00000000 
+000009d7 l       .debug_loc     00000000 
+00000a34 l       .debug_loc     00000000 
+00000a5e l       .debug_loc     00000000 
+00000aa0 l       .debug_loc     00000000 
+00000b29 l       .debug_loc     00000000 
+00000b44 l       .debug_loc     00000000 
+00000b6a l       .debug_loc     00000000 
+00000b90 l       .debug_loc     00000000 
+00000bad l       .debug_loc     00000000 
+00000000 l       .debug_str     00000000 
+00000147 l       .debug_str     00000000 
+000000a9 l       .debug_str     00000000 
+000000d8 l       .debug_ranges  00000000 
+00000169 l       .debug_str     00000000 
+000002c3 l       .debug_str     00000000 
+00000176 l       .debug_str     00000000 
+000000b8 l       .debug_str     00000000 
+000000c1 l       .debug_str     00000000 
+000001f5 l       .debug_str     00000000 
+00000116 l       .debug_str     00000000 
+00000195 l       .debug_str     00000000 
+0000019c l       .debug_str     00000000 
+000001b5 l       .debug_str     00000000 
+0000018a l       .debug_str     00000000 
+00000191 l       .debug_str     00000000 
+000001b1 l       .debug_str     00000000 
+000001b8 l       .debug_str     00000000 
+000001be l       .debug_str     00000000 
+00000251 l       .debug_str     00000000 
+000001a9 l       .debug_str     00000000 
+0000019f l       .debug_str     00000000 
+000001c2 l       .debug_str     00000000 
+000000a7 l       .debug_str     00000000 
+000001d0 l       .debug_str     00000000 
+000001d8 l       .debug_str     00000000 
+000001e3 l       .debug_str     00000000 
+0000024b l       .debug_str     00000000 
+000002b9 l       .debug_str     00000000 
+000002c0 l       .debug_str     00000000 
+000002c8 l       .debug_str     00000000 
+00000277 l       .debug_str     00000000 
+00000030 l       .debug_ranges  00000000 
+00000048 l       .debug_ranges  00000000 
+00000060 l       .debug_ranges  00000000 
+00000078 l       .debug_ranges  00000000 
+00000090 l       .debug_ranges  00000000 
+000000a8 l       .debug_ranges  00000000 
+00000253 l       .debug_str     00000000 
+00000259 l       .debug_str     00000000 
+00000289 l       .debug_str     00000000 
+000002d6 l       .debug_str     00000000 
+000002d9 l       .debug_str     00000000 
+000002cc l       .debug_str     00000000 
+000002e1 l       .debug_str     00000000 
+000002e3 l       .debug_str     00000000 
+000000cc l       .debug_str     00000000 
+000000c0 l       .debug_ranges  00000000 
+000000fa l       .debug_str     00000000 
+0000025b l       .debug_str     00000000 
+00000262 l       .debug_str     00000000 
+00000208 l       .debug_str     00000000 
+00000212 l       .debug_str     00000000 
+0000021f l       .debug_str     00000000 
+00000231 l       .debug_str     00000000 
+00000000 l       .debug_ranges  00000000 
+00000018 l       .debug_ranges  00000000 
+00000236 l       .debug_str     00000000 
+0000027b l       .debug_str     00000000 
+00000283 l       .debug_str     00000000 
+0000019d l       .debug_str     00000000 
+000001c0 l       .debug_str     00000000 
+00000174 l       .debug_str     00000000 
+0000028b l       .debug_str     00000000 
+00000292 l       .debug_str     00000000 
+0000029d l       .debug_str     00000000 
+000002a4 l       .debug_str     00000000 
+000002ab l       .debug_str     00000000 
+000002b2 l       .debug_str     00000000 
+000001e7 l       .debug_str     00000000 
+00000279 l       .debug_str     00000000 
+000001ee l       .debug_str     00000000 
+0000013e l       .debug_str     00000000 
+000002c6 l       .debug_str     00000000 
+0000026e l       .debug_str     00000000 
+00000107 l       .debug_str     00000000 
+00000038 l       .debug_frame   00000000 
+e00004ee l       .text  00000000 
+e000051c l       .text  00000000 
+e0000596 l       .text  00000000 
+e000065a l       .text  00000000 
+e0000794 l       .text  00000000 
+e000051c g     F .text  0000007a external_irq_handler
+e000035c g     F .text  00000192 printf
+00008000 g       *ABS*  00000000 _stack_len
+e0000a54 g       .bss   00000000 _bss_start
+e000a000 g       .stack 00000000 stack
+e0000080 g       *ABS*  00000000 _entry_point
+e0000a54 g       .bss   00000000 _bss_end
+e00004ee g     F .text  0000002e uart_set_cfg
+e00000cc g       .text  00000000 _start
+e0000a44 g     O .data  00000010 remu10_table
+e0000104 g     F .text  00000258 main
+e0000084 g       .vectors       00000000 _vectors_end
+e0010000 g       .vectors       00000000 _stack_start
+00002000 g       *ABS*  00000000 _min_stack
+e0010010 g       *ABS*  00000000 fromhost
+00020008 g       *ABS*  00000000 tohost
+e000a000 g       .stack 00000000 _stack
+e0000000 g       .vectors       00000000 _vectors_start
+
+
+
+Disassembly of section .vectors:
+
+e0000000 <_vectors_start>:
+e0000000:       0840006f                j       e0000084 <_vectors_end>
+e0000004:       0800006f                j       e0000084 <_vectors_end>
+e0000008:       07c0006f                j       e0000084 <_vectors_end>
+e000000c:       0780006f                j       e0000084 <_vectors_end>
+e0000010:       0740006f                j       e0000084 <_vectors_end>
+e0000014:       0700006f                j       e0000084 <_vectors_end>
+e0000018:       06c0006f                j       e0000084 <_vectors_end>
+e000001c:       0680006f                j       e0000084 <_vectors_end>
+e0000020:       0640006f                j       e0000084 <_vectors_end>
+e0000024:       0600006f                j       e0000084 <_vectors_end>
+e0000028:       05c0006f                j       e0000084 <_vectors_end>
+e000002c:       4f00006f                j       e000051c <external_irq_handler>
+e0000030:       0540006f                j       e0000084 <_vectors_end>
+e0000034:       0500006f                j       e0000084 <_vectors_end>
+e0000038:       04c0006f                j       e0000084 <_vectors_end>
+e000003c:       0480006f                j       e0000084 <_vectors_end>
+e0000040:       0440006f                j       e0000084 <_vectors_end>
+e0000044:       0400006f                j       e0000084 <_vectors_end>
+e0000048:       03c0006f                j       e0000084 <_vectors_end>
+e000004c:       0380006f                j       e0000084 <_vectors_end>
+e0000050:       0340006f                j       e0000084 <_vectors_end>
+e0000054:       0300006f                j       e0000084 <_vectors_end>
+e0000058:       02c0006f                j       e0000084 <_vectors_end>
+e000005c:       0280006f                j       e0000084 <_vectors_end>
+e0000060:       0240006f                j       e0000084 <_vectors_end>
+e0000064:       0200006f                j       e0000084 <_vectors_end>
+e0000068:       01c0006f                j       e0000084 <_vectors_end>
+e000006c:       0180006f                j       e0000084 <_vectors_end>
+e0000070:       0140006f                j       e0000084 <_vectors_end>
+e0000074:       0100006f                j       e0000084 <_vectors_end>
+e0000078:       00c0006f                j       e0000084 <_vectors_end>
+e000007c:       0080006f                j       e0000084 <_vectors_end>
+e0000080:       0060006f                j       e0000086 <reset_handler>
+
+Disassembly of section .text:
+
+e0000084 <default_exc_handler>:
+default_exc_handler():
+e0000084:       a8ad                    j       e00000fe <sleep_loop>
+
+e0000086 <reset_handler>:
+reset_handler():
+e0000086:       4081                    li      ra,0
+e0000088:       8106                    mv      sp,ra
+e000008a:       8186                    mv      gp,ra
+e000008c:       8206                    mv      tp,ra
+e000008e:       8286                    mv      t0,ra
+e0000090:       8306                    mv      t1,ra
+e0000092:       8386                    mv      t2,ra
+e0000094:       8406                    mv      s0,ra
+e0000096:       8486                    mv      s1,ra
+e0000098:       8506                    mv      a0,ra
+e000009a:       8586                    mv      a1,ra
+e000009c:       8606                    mv      a2,ra
+e000009e:       8686                    mv      a3,ra
+e00000a0:       8706                    mv      a4,ra
+e00000a2:       8786                    mv      a5,ra
+e00000a4:       8806                    mv      a6,ra
+e00000a6:       8886                    mv      a7,ra
+e00000a8:       8906                    mv      s2,ra
+e00000aa:       8986                    mv      s3,ra
+e00000ac:       8a06                    mv      s4,ra
+e00000ae:       8a86                    mv      s5,ra
+e00000b0:       8b06                    mv      s6,ra
+e00000b2:       8b86                    mv      s7,ra
+e00000b4:       8c06                    mv      s8,ra
+e00000b6:       8c86                    mv      s9,ra
+e00000b8:       8d06                    mv      s10,ra
+e00000ba:       8d86                    mv      s11,ra
+e00000bc:       8e06                    mv      t3,ra
+e00000be:       8e86                    mv      t4,ra
+e00000c0:       8f06                    mv      t5,ra
+e00000c2:       8f86                    mv      t6,ra
+e00000c4:       00010117                auipc   sp,0x10
+e00000c8:       f3c10113                addi    sp,sp,-196 # e0010000 <_stack_start>
+
+e00000cc <_start>:
+e00000cc:       00001d17                auipc   s10,0x1
+e00000d0:       988d0d13                addi    s10,s10,-1656 # e0000a54 <_bss_end>
+e00000d4:       00001d97                auipc   s11,0x1
+e00000d8:       980d8d93                addi    s11,s11,-1664 # e0000a54 <_bss_end>
+e00000dc:       01bd5763                bge     s10,s11,e00000ea <main_entry>
+
+e00000e0 <zero_loop>:
+zero_loop():
+e00000e0:       /-> 000d2023            sw      zero,0(s10)
+e00000e4:       |   0d11                        addi    s10,s10,4
+e00000e6:       \-- ffaddde3            bge     s11,s10,e00000e0 <zero_loop>
+
+e00000ea <main_entry>:
+zero_loop_end():
+e00000ea:       4501                    li      a0,0
+e00000ec:       4581                    li      a1,0
+e00000ee:       016000ef                jal     ra,e0000104 <main>
+e00000f2:       c11c0537                lui     a0,0xc11c0
+e00000f6:       0561                    addi    a0,a0,24
+e00000f8:       4285                    li      t0,1
+e00000fa:       00552023                sw      t0,0(a0) # c11c0000 <fromhost+0xe11afff0>
+
+e00000fe <sleep_loop>:
+sleep_loop():
+e00000fe:       /-> 10500073            wfi
+e0000102:       \-- bff5                        j       e00000fe <sleep_loop>
+
+e0000104 <main>:
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:27
+#define TIMEOUT (1000 * 1000)
+#define BASE_PERFCOUNTERS_T  0x00020000
+
+
+
+int main(int argc, char **argv) {
+e0000104:           1101                        addi    sp,sp,-32
+e0000106:           ce06                        sw      ra,28(sp)
+e0000108:           cc22                        sw      s0,24(sp)
+e000010a:           ca26                        sw      s1,20(sp)
+e000010c:           c84a                        sw      s2,16(sp)
+e000010e:           c64e                        sw      s3,12(sp)
+e0000110:           c452                        sw      s4,8(sp)
+e0000112:           c256                        sw      s5,4(sp)
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:37
+  #else
+  //set_flls();
+  int baud_rate = 115200;
+  int test_freq = 100000000;
+  #endif
+  uart_set_cfg(0,(test_freq/baud_rate)>>4);
+e0000114:           03600593            li      a1,54
+e0000118:           4501                        li      a0,0
+e000011a:           2ed1                        jal     e00004ee <uart_set_cfg>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:53
+  parameter logic [BlockAw-1:0] PERFCOUNTERS_T_EVENT_CLK_COUNTER3_REG_OFFSET = 6'h 1C;
+  parameter logic [BlockAw-1:0] PERFCOUNTERS_T_EVENT_CLK_COUNTER2_REG_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] PERFCOUNTERS_T_EVENT_CLK_COUNTER1_REG_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] PERFCOUNTERS_T_EVENT_CLK_COUNTER0_REG_OFFSET = 6'h 28;
+*/
+  printf("EVENT1 to COUNTER2 EVENT2 to COUNTER0 MUX\r\n");
+e000011c:           00000517            auipc   a0,0x0
+e0000120:           67850513            addi    a0,a0,1656 # e0000794 <qprinti+0x13a>
+e0000124:           2c25                        jal     e000035c <printf>
+e0000126:           00020437            lui     s0,0x20
+e000012a:           04200513            li      a0,66
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+ *
+ * @param addr the address to write to.
+ * @param value the value to write.
+ */
+inline void abs_mmio_write32(uint32_t addr, uint32_t value) {
+  *((volatile uint32_t *)addr) = value;
+e000012e:           c048                        sw      a0,4(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:56
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x4, 0x42);
+
+  printf("EVENT 2 to write 256 \r\n");
+e0000130:           00000517            auipc   a0,0x0
+e0000134:           69050513            addi    a0,a0,1680 # e00007c0 <qprinti+0x166>
+e0000138:           2415                        jal     e000035c <printf>
+e000013a:           10000513            li      a0,256
+e000013e:           4591                        li      a1,4
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:57
+  for (int i=0;i<256;i++) {
+e0000140:       /-> 157d                        addi    a0,a0,-1
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e0000142:       |   c00c                        sw      a1,0(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:57
+e0000144:       \-- fd75                        bnez    a0,e0000140 <main+0x3c>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:60
+        abs_mmio_write32(BASE_PERFCOUNTERS_T+0x0, 0x4);
+  }
+  printf("EVENT COUNTERS RESET  \r\n");
+e0000146:           00000517            auipc   a0,0x0
+e000014a:           69250513            addi    a0,a0,1682 # e00007d8 <qprinti+0x17e>
+e000014e:           2439                        jal     e000035c <printf>
+e0000150:           00020437            lui     s0,0x20
+e0000154:           0ff00513            li      a0,255
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e0000158:           c408                        sw      a0,8(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:63
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x8, 0xFF);
+  
+  printf("EVENT 2 to write 331 \r\n");
+e000015a:           00000517            auipc   a0,0x0
+e000015e:           69750513            addi    a0,a0,1687 # e00007f1 <qprinti+0x197>
+e0000162:           2aed                        jal     e000035c <printf>
+e0000164:           14b00513            li      a0,331
+e0000168:           4591                        li      a1,4
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:64
+  for (int i=0;i<331;i++) {
+e000016a:       /-> 157d                        addi    a0,a0,-1
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e000016c:       |   c00c                        sw      a1,0(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:64
+e000016e:       \-- fd75                        bnez    a0,e000016a <main+0x66>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:68
+        abs_mmio_write32(BASE_PERFCOUNTERS_T+0x0, 0x4);
+  }
+ 
+  printf("EVENT 1 to write \r\n");
+e0000170:           00000517            auipc   a0,0x0
+e0000174:           69950513            addi    a0,a0,1689 # e0000809 <qprinti+0x1af>
+e0000178:           22d5                        jal     e000035c <printf>
+e000017a:           02300513            li      a0,35
+e000017e:           000205b7            lui     a1,0x20
+e0000182:           4609                        li      a2,2
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:69
+  for (int i=0;i<35;i++) {
+e0000184:       /-> 157d                        addi    a0,a0,-1
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e0000186:       |   c190                        sw      a2,0(a1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:69
+e0000188:       \-- fd75                        bnez    a0,e0000184 <main+0x80>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:73
+        abs_mmio_write32(BASE_PERFCOUNTERS_T+0x0, 0x2);
+  }
+
+  printf("EVENT 2 to READ \r\n");
+e000018a:           00000517            auipc   a0,0x0
+e000018e:           69350513            addi    a0,a0,1683 # e000081d <qprinti+0x1c3>
+e0000192:           22e9                        jal     e000035c <printf>
+e0000194:           00020437            lui     s0,0x20
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+  return *((volatile uint32_t *)addr);
+e0000198:           444c                        lw      a1,12(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:75
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0xC);
+  printf("EVENT COUNTER3_REG  READ %x  \r\n",rd_val);
+e000019a:           00000517            auipc   a0,0x0
+e000019e:           69650513            addi    a0,a0,1686 # e0000830 <qprinti+0x1d6>
+e00001a2:           2a6d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00001a4:           480c                        lw      a1,16(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:77
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x10);
+  printf("EVENT COUNTER2_REG  READ %x  \r\n",rd_val);
+e00001a6:           00000517            auipc   a0,0x0
+e00001aa:           6aa50513            addi    a0,a0,1706 # e0000850 <qprinti+0x1f6>
+e00001ae:           227d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00001b0:           484c                        lw      a1,20(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:79
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x14);
+  printf("EVENT COUNTER1_REG READ %x  \r\n",rd_val);
+e00001b2:           00000517            auipc   a0,0x0
+e00001b6:           6be50513            addi    a0,a0,1726 # e0000870 <qprinti+0x216>
+e00001ba:           224d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00001bc:           4c0c                        lw      a1,24(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:81
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x18);
+  printf("EVENT COUNTER0_REG READ %x  \r\n",rd_val);
+e00001be:           00000517            auipc   a0,0x0
+e00001c2:           6d150513            addi    a0,a0,1745 # e000088f <qprinti+0x235>
+e00001c6:           2a59                        jal     e000035c <printf>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:86
+
+  // *** EVENT CLK COUNTERS ****
+  //
+
+  printf("EVENT CLK COUNTER3-2 RESET  \r\n");
+e00001c8:           00000517            auipc   a0,0x0
+e00001cc:           6e650513            addi    a0,a0,1766 # e00008ae <qprinti+0x254>
+e00001d0:           2271                        jal     e000035c <printf>
+e00001d2:           0a000513            li      a0,160
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+  *((volatile uint32_t *)addr) = value;
+e00001d6:           c408                        sw      a0,8(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:89
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x8, 0xA0);
+
+  printf("EVENT CLK COUNTERS  READ \r\n");
+e00001d8:           00000517            auipc   a0,0x0
+e00001dc:           6f550513            addi    a0,a0,1781 # e00008cd <qprinti+0x273>
+e00001e0:           2ab5                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+  return *((volatile uint32_t *)addr);
+e00001e2:           4c4c                        lw      a1,28(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:91
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x1C);
+  printf("EVENT CLK_COUNTER3_REG  READ %x  \r\n",rd_val);
+e00001e4:           00000517            auipc   a0,0x0
+e00001e8:           70550513            addi    a0,a0,1797 # e00008e9 <qprinti+0x28f>
+e00001ec:           2a85                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00001ee:           500c                        lw      a1,32(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:93
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x20);
+  printf("EVENT CLK_COUNTER2_REG  READ %x  \r\n",rd_val);
+e00001f0:           00000517            auipc   a0,0x0
+e00001f4:           71d50513            addi    a0,a0,1821 # e000090d <qprinti+0x2b3>
+e00001f8:           2295                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00001fa:           504c                        lw      a1,36(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:95
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x24);
+  printf("EVENT CLK_COUNTER1_REG  READ %x  \r\n",rd_val);
+e00001fc:           00000517            auipc   a0,0x0
+e0000200:           73550513            addi    a0,a0,1845 # e0000931 <qprinti+0x2d7>
+e0000204:           2aa1                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e0000206:           540c                        lw      a1,40(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:97
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x28);
+  printf("EVENT CLK_COUNTER0_REG  READ %x  \r\n",rd_val);
+e0000208:           00000517            auipc   a0,0x0
+e000020c:           74d50513            addi    a0,a0,1869 # e0000955 <qprinti+0x2fb>
+e0000210:           22b1                        jal     e000035c <printf>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:101
+
+
+    // *** EVENT COUNTERS ****
+  printf("EVENT7 to COUNTER3 EVENT3 to COUNTER2 MUX \r\n");
+e0000212:           00000517            auipc   a0,0x0
+e0000216:           76750513            addi    a0,a0,1895 # e0000979 <qprinti+0x31f>
+e000021a:           2289                        jal     e000035c <printf>
+e000021c:           6505                        lui     a0,0x1
+e000021e:           ec050513            addi    a0,a0,-320 # ec0 <_min_stack-0x1140>
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+  *((volatile uint32_t *)addr) = value;
+e0000222:           c048                        sw      a0,4(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:105
+  // 111 011 000 000
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x4, 0xEC0);
+
+  printf("EVENT 7 to write \r\n");
+e0000224:           00000517            auipc   a0,0x0
+e0000228:           78250513            addi    a0,a0,1922 # e00009a6 <qprinti+0x34c>
+e000022c:           2a05                        jal     e000035c <printf>
+e000022e:           10000513            li      a0,256
+e0000232:           08000593            li      a1,128
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:106
+  for (int i=0;i<256;i++) {
+e0000236:       /-> 157d                        addi    a0,a0,-1
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e0000238:       |   c00c                        sw      a1,0(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:106
+e000023a:       \-- fd75                        bnez    a0,e0000236 <main+0x132>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:109
+        abs_mmio_write32(BASE_PERFCOUNTERS_T+0x0, 0x80);
+  }
+  printf("EVENT COUNTERS RESET  \r\n");
+e000023c:           00000517            auipc   a0,0x0
+e0000240:           59c50513            addi    a0,a0,1436 # e00007d8 <qprinti+0x17e>
+e0000244:           2a21                        jal     e000035c <printf>
+e0000246:           00020437            lui     s0,0x20
+e000024a:           0ff00513            li      a0,255
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e000024e:           c408                        sw      a0,8(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:112
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x8, 0xFF);
+
+  printf("EVENT 7 to write 332 \r\n");
+e0000250:           00000517            auipc   a0,0x0
+e0000254:           76a50513            addi    a0,a0,1898 # e00009ba <qprinti+0x360>
+e0000258:           2211                        jal     e000035c <printf>
+e000025a:           14b00513            li      a0,331
+e000025e:           08000593            li      a1,128
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:113
+  for (int i=0;i<331;i++) {
+e0000262:       /-> 157d                        addi    a0,a0,-1
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e0000264:       |   c00c                        sw      a1,0(s0)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:113
+e0000266:       \-- fd75                        bnez    a0,e0000262 <main+0x15e>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:117
+        abs_mmio_write32(BASE_PERFCOUNTERS_T+0x0, 0x80);
+  }
+
+  printf("EVENT 3 to write \r\n");
+e0000268:           00000517            auipc   a0,0x0
+e000026c:           76a50513            addi    a0,a0,1898 # e00009d2 <qprinti+0x378>
+e0000270:           20f5                        jal     e000035c <printf>
+e0000272:           03200513            li      a0,50
+e0000276:           000205b7            lui     a1,0x20
+e000027a:           4621                        li      a2,8
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:118
+  for (int i=0;i<50;i++) {
+e000027c:       /-> 157d                        addi    a0,a0,-1
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+e000027e:       |   c190                        sw      a2,0(a1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:118
+e0000280:       \-- fd75                        bnez    a0,e000027c <main+0x178>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:122
+        abs_mmio_write32(BASE_PERFCOUNTERS_T+0x0, 0x8);
+  }
+
+  printf("EVENT 2 to READ \r\n");
+e0000282:           00000517            auipc   a0,0x0
+e0000286:           59b50513            addi    a0,a0,1435 # e000081d <qprinti+0x1c3>
+e000028a:           28c9                        jal     e000035c <printf>
+e000028c:           000204b7            lui     s1,0x20
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+  return *((volatile uint32_t *)addr);
+e0000290:           44cc                        lw      a1,12(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:124
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0xC);
+  printf("EVENT COUNTER3_REG  READ %x  \r\n",rd_val);
+e0000292:           00000517            auipc   a0,0x0
+e0000296:           59e50513            addi    a0,a0,1438 # e0000830 <qprinti+0x1d6>
+e000029a:           20c9                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e000029c:           488c                        lw      a1,16(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:126
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x10);
+  printf("EVENT COUNTER2_REG  READ %x  \r\n",rd_val);
+e000029e:           00000517            auipc   a0,0x0
+e00002a2:           5b250513            addi    a0,a0,1458 # e0000850 <qprinti+0x1f6>
+e00002a6:           285d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00002a8:           48cc                        lw      a1,20(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:128
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x14);
+  printf("EVENT COUNTER1_REG READ %x  \r\n",rd_val);
+e00002aa:           00000517            auipc   a0,0x0
+e00002ae:           5c650513            addi    a0,a0,1478 # e0000870 <qprinti+0x216>
+e00002b2:           206d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00002b4:           4c8c                        lw      a1,24(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:130
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x18);
+  printf("EVENT COUNTER0_REG READ %x  \r\n",rd_val);
+e00002b6:           00000517            auipc   a0,0x0
+e00002ba:           5d950513            addi    a0,a0,1497 # e000088f <qprinti+0x235>
+e00002be:           2879                        jal     e000035c <printf>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:137
+
+
+
+  // *** EVENT CLK COUNTERS ****
+  //
+  printf("EVENT CLK COUNTER2- RESET  \r\n");
+e00002c0:           00000517            auipc   a0,0x0
+e00002c4:           72650513            addi    a0,a0,1830 # e00009e6 <qprinti+0x38c>
+e00002c8:           2851                        jal     e000035c <printf>
+e00002ca:           02000513            li      a0,32
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+  *((volatile uint32_t *)addr) = value;
+e00002ce:           c488                        sw      a0,8(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:139
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x8, 0x20);
+  printf("EVENT CLK COUNTERS  READ \r\n");
+e00002d0:           00000917            auipc   s2,0x0
+e00002d4:           5fd90913            addi    s2,s2,1533 # e00008cd <qprinti+0x273>
+e00002d8:           854a                        mv      a0,s2
+e00002da:           2049                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+  return *((volatile uint32_t *)addr);
+e00002dc:           4ccc                        lw      a1,28(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:142
+
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x1C);
+  printf("EVENT CLK_COUNTER3_REG  READ %x  \r\n",rd_val);
+e00002de:           00000997            auipc   s3,0x0
+e00002e2:           60b98993            addi    s3,s3,1547 # e00008e9 <qprinti+0x28f>
+e00002e6:           854e                        mv      a0,s3
+e00002e8:           2895                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00002ea:           508c                        lw      a1,32(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:144
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x20);
+  printf("EVENT CLK_COUNTER2_REG  READ %x  \r\n",rd_val);
+e00002ec:           00000a17            auipc   s4,0x0
+e00002f0:           621a0a13            addi    s4,s4,1569 # e000090d <qprinti+0x2b3>
+e00002f4:           8552                        mv      a0,s4
+e00002f6:           209d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e00002f8:           50cc                        lw      a1,36(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:146
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x24);
+  printf("EVENT CLK_COUNTER1_REG  READ %x  \r\n",rd_val);
+e00002fa:           00000a97            auipc   s5,0x0
+e00002fe:           637a8a93            addi    s5,s5,1591 # e0000931 <qprinti+0x2d7>
+e0000302:           8556                        mv      a0,s5
+e0000304:           28a1                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e0000306:           548c                        lw      a1,40(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:148
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x28);
+  printf("EVENT CLK_COUNTER0_REG  READ %x  \r\n",rd_val);
+e0000308:           00000417            auipc   s0,0x0
+e000030c:           64d40413            addi    s0,s0,1613 # e0000955 <qprinti+0x2fb>
+e0000310:           8522                        mv      a0,s0
+e0000312:           20a9                        jal     e000035c <printf>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:151
+
+
+  printf("EVENT CLK COUNTER0- RESET  \r\n");
+e0000314:           00000517            auipc   a0,0x0
+e0000318:           6f050513            addi    a0,a0,1776 # e0000a04 <qprinti+0x3aa>
+e000031c:           2081                        jal     e000035c <printf>
+e000031e:           4509                        li      a0,2
+abs_mmio_write32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
+  *((volatile uint32_t *)addr) = value;
+e0000320:           c488                        sw      a0,8(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:153
+  abs_mmio_write32(BASE_PERFCOUNTERS_T+0x8, 0x02);
+  printf("EVENT CLK COUNTERS  READ \r\n");
+e0000322:           854a                        mv      a0,s2
+e0000324:           2825                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+  return *((volatile uint32_t *)addr);
+e0000326:           4ccc                        lw      a1,28(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:156
+
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x1C);
+  printf("EVENT CLK_COUNTER3_REG  READ %x  \r\n",rd_val);
+e0000328:           854e                        mv      a0,s3
+e000032a:           280d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e000032c:           508c                        lw      a1,32(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:158
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x20);
+  printf("EVENT CLK_COUNTER2_REG  READ %x  \r\n",rd_val);
+e000032e:           8552                        mv      a0,s4
+e0000330:           2035                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e0000332:           50cc                        lw      a1,36(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:160
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x24);
+  printf("EVENT CLK_COUNTER1_REG  READ %x  \r\n",rd_val);
+e0000334:           8556                        mv      a0,s5
+e0000336:           201d                        jal     e000035c <printf>
+abs_mmio_read32():
+/proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
+e0000338:           548c                        lw      a1,40(s1)
+main():
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:162
+  rd_val = abs_mmio_read32(BASE_PERFCOUNTERS_T+0x28);
+  printf("EVENT CLK_COUNTER0_REG  READ %x  \r\n",rd_val);
+e000033a:           8522                        mv      a0,s0
+e000033c:           2005                        jal     e000035c <printf>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:164
+
+  printf("Succeed!\r\n");
+e000033e:           00000517            auipc   a0,0x0
+e0000342:           6e450513            addi    a0,a0,1764 # e0000a22 <qprinti+0x3c8>
+e0000346:           2819                        jal     e000035c <printf>
+/proc/self/cwd/sw/tests/opentitan/monitor_counter/monitor_counter.c:165
+  return 1;
+e0000348:           4505                        li      a0,1
+e000034a:           4a92                        lw      s5,4(sp)
+e000034c:           4a22                        lw      s4,8(sp)
+e000034e:           49b2                        lw      s3,12(sp)
+e0000350:           4942                        lw      s2,16(sp)
+e0000352:           44d2                        lw      s1,20(sp)
+e0000354:           4462                        lw      s0,24(sp)
+e0000356:           40f2                        lw      ra,28(sp)
+e0000358:           6105                        addi    sp,sp,32
+e000035a:           8082                        ret
+
+e000035c <printf>:
+printf():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:312
+
+  return pc;
+}
+
+int printf(const char *format, ...)
+{
+e000035c:                                      711d                     addi    sp,sp,-96
+e000035e:                                      de06                     sw      ra,60(sp)
+e0000360:                                      dc22                     sw      s0,56(sp)
+e0000362:                                      da26                     sw      s1,52(sp)
+e0000364:                                      d84a                     sw      s2,48(sp)
+e0000366:                                      d64e                     sw      s3,44(sp)
+e0000368:                                      d452                     sw      s4,40(sp)
+e000036a:                                      d256                     sw      s5,36(sp)
+e000036c:                                      d05a                     sw      s6,32(sp)
+e000036e:                                      ce5e                     sw      s7,28(sp)
+e0000370:                                      cc62                     sw      s8,24(sp)
+e0000372:                                      ca66                     sw      s9,20(sp)
+e0000374:                                      c86a                     sw      s10,16(sp)
+e0000376:                                      c66e                     sw      s11,12(sp)
+e0000378:                                      84aa                     mv      s1,a0
+e000037a:                                      4a01                     li      s4,0
+e000037c:                                      cec6                     sw      a7,92(sp)
+e000037e:                                      ccc2                     sw      a6,88(sp)
+e0000380:                                      cabe                     sw      a5,84(sp)
+e0000382:                                      c8ba                     sw      a4,80(sp)
+e0000384:                                      c6b6                     sw      a3,76(sp)
+e0000386:                                      c4b2                     sw      a2,72(sp)
+e0000388:                                      c2ae                     sw      a1,68(sp)
+e000038a:                                      04410d13                 addi    s10,sp,68
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:316
+  int pc;
+  va_list va;
+
+  va_start(va, format);
+e000038e:                                      c26a                     sw      s10,4(sp)
+e0000390:                                      02500913                 li      s2,37
+e0000394:                                      02d00993                 li      s3,45
+e0000398:                                      03000b13                 li      s6,48
+e000039c:                                      4aa5                     li      s5,9
+e000039e:                                      4429                     li      s0,10
+e00003a0:                                      07200b93                 li      s7,114
+e00003a4:                                      05800c13                 li      s8,88
+e00003a8:                                      07800d93                 li      s11,120
+e00003ac:                                      40000cb7                 lui     s9,0x40000
+qprint():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:249
+  for (; *format != 0; ++format)
+e00003b0:       /----------------------------> 0004c583                 lbu     a1,0(s1)
+e00003b4:       |                          /-- 01258463                 beq     a1,s2,e00003bc <printf+0x60>
+e00003b8:       |                 /--------|-- ed99                     bnez    a1,e00003d6 <printf+0x7a>
+e00003ba:       |  /--------------|--------|-- aa11                     j       e00004ce <printf+0x172>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:255
+      if (*format == '\0') break;
+e00003bc:       |  |              |        \-> 0014c603                 lbu     a2,1(s1)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:253
+      ++format;
+e00003c0:       |  |              |            00148513                 addi    a0,s1,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:255
+      if (*format == '\0') break;
+e00003c4:       |  |              |        /-- 01260863                 beq     a2,s2,e00003d4 <printf+0x78>
+e00003c8:       |  |              |  /-----|-- 03360063                 beq     a2,s3,e00003e8 <printf+0x8c>
+e00003cc:       |  +--------------|--|-----|-- 10060163                 beqz    a2,e00004ce <printf+0x172>
+e00003d0:       |  |              |  |     |   4581                     li      a1,0
+e00003d2:       |  |              |  |  /--|-- a831                     j       e00003ee <printf+0x92>
+e00003d4:       |  |              |  |  |  \-> 84aa                     mv      s1,a0
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:79
+  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
+e00003d6:       |  |              >--|--|----> 014ca503                 lw      a0,20(s9) # 40000014 <tohost+0x3ffe000c>
+e00003da:       |  |              |  |  |      02057513                 andi    a0,a0,32
+e00003de:       |  |              \--|--|----- dd65                     beqz    a0,e00003d6 <printf+0x7a>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:82
+  *(volatile unsigned int*)(UART_REG_THR) = c;
+e00003e0:       |  |                 |  |      00bca023                 sw      a1,0(s9)
+qprint():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:303
+      ++pc;
+e00003e4:       |  |                 |  |      0a05                     addi    s4,s4,1
+e00003e6:       |  |  /--------------|--|----- a0d5                     j       e00004ca <printf+0x16e>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:259
+        ++format;
+e00003e8:       |  |  |              \--|----> 00248513                 addi    a0,s1,2
+e00003ec:       |  |  |                 |      4585                     li      a1,1
+e00003ee:       |  |  |                 \----> 0025e613                 ori     a2,a1,2
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:262
+      while (*format == '0')
+e00003f2:       |  |  |                        fff50493                 addi    s1,a0,-1
+e00003f6:       |  |  |                    /-> 0014c503                 lbu     a0,1(s1)
+e00003fa:       |  |  |                    |   872e                     mv      a4,a1
+e00003fc:       |  |  |                    |   0485                     addi    s1,s1,1
+e00003fe:       |  |  |                    |   85b2                     mv      a1,a2
+e0000400:       |  |  |                    \-- ff650be3                 beq     a0,s6,e00003f6 <printf+0x9a>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:267
+      for ( ; *format >= '0' && *format <= '9'; ++format) {
+e0000404:       |  |  |                        fd050593                 addi    a1,a0,-48
+e0000408:       |  |  |                        4681                     li      a3,0
+e000040a:       |  |  |                        0ff5f593                 andi    a1,a1,255
+e000040e:       |  |  |                 /----- 02bae563                 bltu    s5,a1,e0000438 <printf+0xdc>
+e0000412:       |  |  |                 |      85a6                     mv      a1,s1
+e0000414:       |  |  |                 |  /-> 0ff57613                 andi    a2,a0,255
+e0000418:       |  |  |                 |  |   0015c503                 lbu     a0,1(a1)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:268
+        width *= 10;
+e000041c:       |  |  |                 |  |   028686b3                 mul     a3,a3,s0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:269
+        width += *format - '0';
+e0000420:       |  |  |                 |  |   9636                     add     a2,a2,a3
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:267
+      for ( ; *format >= '0' && *format <= '9'; ++format) {
+e0000422:       |  |  |                 |  |   00158493                 addi    s1,a1,1
+e0000426:       |  |  |                 |  |   fd050593                 addi    a1,a0,-48
+e000042a:       |  |  |                 |  |   0ff5f793                 andi    a5,a1,255
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:269
+        width += *format - '0';
+e000042e:       |  |  |                 |  |   fd060693                 addi    a3,a2,-48
+e0000432:       |  |  |                 |  |   85a6                     mv      a1,s1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:267
+      for ( ; *format >= '0' && *format <= '9'; ++format) {
+e0000434:       |  |  |                 |  \-- fe87e0e3                 bltu    a5,s0,e0000414 <printf+0xb8>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:271
+      if( *format == 's' ) {
+e0000438:       |  |  |                 \--/-X 02abc463                 blt     s7,a0,e0000460 <printf+0x104>
+e000043c:       |  |  |                 /--|-- 05850563                 beq     a0,s8,e0000486 <printf+0x12a>
+e0000440:       |  |  |                 |  |   06300593                 li      a1,99
+e0000444:       |  |  |        /--------|--|-- 04b50863                 beq     a0,a1,e0000494 <printf+0x138>
+e0000448:       |  |  |        |        |  |   06400593                 li      a1,100
+e000044c:       |  |  +--------|--------|--|-- 06b51f63                 bne     a0,a1,e00004ca <printf+0x16e>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:277
+        pc += qprinti (out, va_arg(va, int), 10, 1, width, pad, 'a');
+e0000450:       |  |  |        |        |  |   000d2503                 lw      a0,0(s10)
+e0000454:       |  |  |        |        |  |   0d11                     addi    s10,s10,4
+e0000456:       |  |  |        |        |  |   45a9                     li      a1,10
+e0000458:       |  |  |        |        |  |   4605                     li      a2,1
+e000045a:       |  |  |        |        |  |   06100793                 li      a5,97
+e000045e:       |  |  |  /-----|--------|--|-- a0a5                     j       e00004c6 <printf+0x16a>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:271
+      if( *format == 's' ) {
+e0000460:       |  |  |  |     |  /-----|--\-X 05b50763                 beq     a0,s11,e00004ae <printf+0x152>
+e0000464:       |  |  |  |     |  |     |      07500593                 li      a1,117
+e0000468:       |  |  |  |  /--|--|-----|----- 04b50863                 beq     a0,a1,e00004b8 <printf+0x15c>
+e000046c:       |  |  |  |  |  |  |     |      07300593                 li      a1,115
+e0000470:       |  |  +--|--|--|--|-----|----- 04b51d63                 bne     a0,a1,e00004ca <printf+0x16e>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:272
+        register char *s = va_arg(va, char*);
+e0000474:       |  |  |  |  |  |  |     |      000d2503                 lw      a0,0(s10)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:273
+        pc += qprints (out, s?s:"(null)", width, pad);
+e0000478:       |  |  |  |  |  |  |     |  /-- e509                     bnez    a0,e0000482 <printf+0x126>
+e000047a:       |  |  |  |  |  |  |     |  |   00000517                 auipc   a0,0x0
+e000047e:       |  |  |  |  |  |  |     |  |   5c250513                 addi    a0,a0,1474 # e0000a3c <qprinti+0x3e2>
+e0000482:       |  |  |  |  |  |  |     |  \-> 0d11                     addi    s10,s10,4
+e0000484:       |  |  |  |  |  |  |     |  /-- a00d                     j       e00004a6 <printf+0x14a>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:289
+        pc += qprinti (out, va_arg(va, uint32_t), 16, 0, width, pad, 'A');
+e0000486:       |  |  |  |  |  |  |     \--|-> 000d2503                 lw      a0,0(s10)
+e000048a:       |  |  |  |  |  |  |        |   0d11                     addi    s10,s10,4
+e000048c:       |  |  |  |  |  |  |        |   45c1                     li      a1,16
+e000048e:       |  |  |  |  |  |  |        |   04100793                 li      a5,65
+e0000492:       |  |  |  |  |  |  |  /-----|-- a80d                     j       e00004c4 <printf+0x168>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:293
+        scr[0] = va_arg(va, int);
+e0000494:       |  |  |  |  |  \--|--|-----|-> 000d2503                 lw      a0,0(s10)
+e0000498:       |  |  |  |  |     |  |     |   0d11                     addi    s10,s10,4
+e000049a:       |  |  |  |  |     |  |     |   00a10523                 sb      a0,10(sp)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:294
+        scr[1] = '\0';
+e000049e:       |  |  |  |  |     |  |     |   000105a3                 sb      zero,11(sp)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:295
+        pc += qprints (out, scr, width, pad);
+e00004a2:       |  |  |  |  |     |  |     |   00a10513                 addi    a0,sp,10
+e00004a6:       |  |  |  |  |     |  |     \-> 85b6                     mv      a1,a3
+e00004a8:       |  |  |  |  |     |  |         863a                     mv      a2,a4
+e00004aa:       |  |  |  |  |     |  |         20f5                     jal     e0000596 <qprints>
+e00004ac:       |  |  |  |  |     |  |  /----- a831                     j       e00004c8 <printf+0x16c>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:285
+        pc += qprinti (out, va_arg(va, uint32_t), 16, 0, width, pad, 'a');
+e00004ae:       |  |  |  |  |     \--|--|----> 000d2503                 lw      a0,0(s10)
+e00004b2:       |  |  |  |  |        |  |      0d11                     addi    s10,s10,4
+e00004b4:       |  |  |  |  |        |  |      45c1                     li      a1,16
+e00004b6:       |  |  |  |  |        |  |  /-- a029                     j       e00004c0 <printf+0x164>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:281
+        pc += qprinti (out, va_arg(va, unsigned int), 10, 0, width, pad, 'a');
+e00004b8:       |  |  |  |  \--------|--|--|-> 000d2503                 lw      a0,0(s10)
+e00004bc:       |  |  |  |           |  |  |   0d11                     addi    s10,s10,4
+e00004be:       |  |  |  |           |  |  |   45a9                     li      a1,10
+e00004c0:       |  |  |  |           |  |  \-> 06100793                 li      a5,97
+e00004c4:       |  |  |  |           \--|----> 4601                     li      a2,0
+e00004c6:       |  |  |  \--------------|----> 2a51                     jal     e000065a <qprinti>
+e00004c8:       |  |  |                 \----> 9a2a                     add     s4,s4,a0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:249
+  for (; *format != 0; ++format)
+e00004ca:       |  |  \----------------------> 0485                     addi    s1,s1,1
+e00004cc:       \--|-------------------------- b5d5                     j       e00003b0 <printf+0x54>
+printf():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:322
+
+  pc = qprint(0, format, va);
+
+  va_end(va);
+
+  return pc;
+e00004ce:          \-------------------------> 8552                     mv      a0,s4
+e00004d0:                                      4db2                     lw      s11,12(sp)
+e00004d2:                                      4d42                     lw      s10,16(sp)
+e00004d4:                                      4cd2                     lw      s9,20(sp)
+e00004d6:                                      4c62                     lw      s8,24(sp)
+e00004d8:                                      4bf2                     lw      s7,28(sp)
+e00004da:                                      5b02                     lw      s6,32(sp)
+e00004dc:                                      5a92                     lw      s5,36(sp)
+e00004de:                                      5a22                     lw      s4,40(sp)
+e00004e0:                                      59b2                     lw      s3,44(sp)
+e00004e2:                                      5942                     lw      s2,48(sp)
+e00004e4:                                      54d2                     lw      s1,52(sp)
+e00004e6:                                      5462                     lw      s0,56(sp)
+e00004e8:                                      50f2                     lw      ra,60(sp)
+e00004ea:                                      6125                     addi    sp,sp,96
+e00004ec:                                      8082                     ret
+
+e00004ee <uart_set_cfg>:
+uart_set_cfg():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:42
+void uart_set_cfg(int parity, uint16_t clk_counter) {
+e00004ee:       40000537                lui     a0,0x40000
+e00004f2:       08300613                li      a2,131
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:44
+  *(volatile unsigned int*)(UART_REG_LCR) = 0x83; //sets 8N1 and set DLAB to 1
+e00004f6:       c550                    sw      a2,12(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:45
+  *(volatile unsigned int*)(UART_REG_DLM) = (clk_counter >> 8) & 0xFF;
+e00004f8:       0085d613                srli    a2,a1,0x8
+e00004fc:       c150                    sw      a2,4(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:46
+  *(volatile unsigned int*)(UART_REG_DLL) =  clk_counter       & 0xFF;
+e00004fe:       0ff5f593                andi    a1,a1,255
+e0000502:       c10c                    sw      a1,0(a0)
+e0000504:       0a700593                li      a1,167
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:47
+  *(volatile unsigned int*)(UART_REG_FCR) = 0xA7; //enables 16byte FIFO and clear FIFOs
+e0000508:       c50c                    sw      a1,8(a0)
+e000050a:       458d                    li      a1,3
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:48
+  *(volatile unsigned int*)(UART_REG_LCR) = 0x03; //sets 8N1 and set DLAB to 0
+e000050c:       c54c                    sw      a1,12(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:50
+  *(volatile unsigned int*)(UART_REG_IER) = ((*(volatile unsigned int*)(UART_REG_IER)) & 0xF0) | 0x02; // set IER (interrupt enable register) on UART
+e000050e:       414c                    lw      a1,4(a0)
+e0000510:       0f05f593                andi    a1,a1,240
+e0000514:       0025e593                ori     a1,a1,2
+e0000518:       c14c                    sw      a1,4(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:51
+}
+e000051a:       8082                    ret
+
+e000051c <external_irq_handler>:
+external_irq_handler():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:338
+  putchar('\n');
+
+  return i;
+}
+
+void external_irq_handler(void)  {
+e000051c:           1101                        addi    sp,sp,-32
+e000051e:           ce2a                        sw      a0,28(sp)
+e0000520:           cc2e                        sw      a1,24(sp)
+e0000522:           ca32                        sw      a2,20(sp)
+e0000524:           c836                        sw      a3,16(sp)
+e0000526:           c63a                        sw      a4,12(sp)
+e0000528:           c43e                        sw      a5,8(sp)
+e000052a:           c242                        sw      a6,4(sp)
+e000052c:           c8200537            lui     a0,0xc8200
+e0000530:           09f00593            li      a1,159
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:355
+  p_reg5 = (int *) 0x1040401C;
+
+  // start of """Interrupt Service Routine"""
+  
+  plic_check = (int *) 0xC8200004;
+  while(*plic_check != mbox_id);   //check wether the intr is the correct one
+e0000534:       /-> 4150                        lw      a2,4(a0)
+e0000536:       \-- feb61fe3            bne     a2,a1,e0000534 <external_irq_handler+0x18>
+e000053a:           10404537            lui     a0,0x10404
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:358
+  
+  p_reg = (int *) 0x10404020;
+ *p_reg = 0x00000000;        //clearing the pending interrupt signal
+e000053e:           02052023            sw      zero,32(a0) # 10404020 <tohost+0x103e4018>
+e0000542:           c82005b7            lui     a1,0xc8200
+e0000546:           09f00613            li      a2,159
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:360
+ 
+ *plic_check = mbox_id;      //completing interrupt
+e000054a:           c1d0                        sw      a2,4(a1)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:362
+ 
+  a = *p_reg1;
+e000054c:           450c                        lw      a1,8(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:363
+  b = *p_reg2;
+e000054e:           4910                        lw      a2,16(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:364
+  c = *p_reg3;
+e0000550:           4954                        lw      a3,20(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:365
+  d = *p_reg4;
+e0000552:           4d18                        lw      a4,24(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:366
+  e = *p_reg5;
+e0000554:           01c52803            lw      a6,28(a0)
+e0000558:           baadc7b7            lui     a5,0xbaadc
+e000055c:           0de78793            addi    a5,a5,222 # baadc0de <fromhost+0xdaacc0ce>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:369
+  
+  
+  if( a == 0xBAADC0DE &&  b == 0xBAADC0DE && c == 0xBAADC0DE && d == 0xBAADC0DE && e == 0xBAADC0DE){
+e0000560:           8dbd                        xor     a1,a1,a5
+e0000562:           8e3d                        xor     a2,a2,a5
+e0000564:           8dd1                        or      a1,a1,a2
+e0000566:           00f6c633            xor     a2,a3,a5
+e000056a:           8dd1                        or      a1,a1,a2
+e000056c:           00f74633            xor     a2,a4,a5
+e0000570:           8dd1                        or      a1,a1,a2
+e0000572:           00f84633            xor     a2,a6,a5
+e0000576:           8dd1                        or      a1,a1,a2
+e0000578:       /-- e589                        bnez    a1,e0000582 <external_irq_handler+0x66>
+e000057a:       |   02450513            addi    a0,a0,36
+e000057e:       |   4585                        li      a1,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:371
+      p_reg = (int *) 0x10404024; // completion interrupt to ariane agent
+     *p_reg = 0x00000001;
+e0000580:       |   c10c                        sw      a1,0(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:375
+  }
+  
+  return;
+}
+e0000582:       \-> 4812                        lw      a6,4(sp)
+e0000584:           47a2                        lw      a5,8(sp)
+e0000586:           4732                        lw      a4,12(sp)
+e0000588:           46c2                        lw      a3,16(sp)
+e000058a:           4652                        lw      a2,20(sp)
+e000058c:           45e2                        lw      a1,24(sp)
+e000058e:           4572                        lw      a0,28(sp)
+e0000590:           6105                        addi    sp,sp,32
+e0000592:           30200073            mret
+
+e0000596 <qprints>:
+qprints():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:159
+  if (width > 0) {
+e0000596:             /----- 02b05163           blez    a1,e00005b8 <qprints+0x22>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:162
+    for (ptr = string; *ptr; ++ptr) ++len;
+e000059a:             |      00054683           lbu     a3,0(a0)
+e000059e:          /--|----- c28d                       beqz    a3,e00005c0 <qprints+0x2a>
+e00005a0:          |  |      4781                       li      a5,0
+e00005a2:          |  |      00150813           addi    a6,a0,1
+e00005a6:          |  |  /-> 00f806b3           add     a3,a6,a5
+e00005aa:          |  |  |   0006c703           lbu     a4,0(a3)
+e00005ae:          |  |  |   00178693           addi    a3,a5,1
+e00005b2:          |  |  |   87b6                       mv      a5,a3
+e00005b4:          |  |  \-- fb6d                       bnez    a4,e00005a6 <qprints+0x10>
+e00005b6:          |  |  /-- a031                       j       e00005c2 <qprints+0x2c>
+e00005b8:          |  \--|-> 4601                       li      a2,0
+e00005ba:          |     |   02000893           li      a7,32
+e00005be:       /--|-----|-- a899                       j       e0000614 <qprints+0x7e>
+e00005c0:       |  \-----|-> 4681                       li      a3,0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:163
+    if (len >= width) width = 0;
+e00005c2:       |        \-> 40d587b3           sub     a5,a1,a3
+e00005c6:       |            873e                       mv      a4,a5
+e00005c8:       |        /-- 00b6c363           blt     a3,a1,e00005ce <qprints+0x38>
+e00005cc:       |        |   4701                       li      a4,0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:165
+    if (pad & PAD_ZERO) padchar = '0';
+e00005ce:       |        \-> 00267593           andi    a1,a2,2
+e00005d2:       |            02000893           li      a7,32
+e00005d6:       |        /-- c199                       beqz    a1,e00005dc <qprints+0x46>
+e00005d8:       |        |   03000893           li      a7,48
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:167
+  if (!(pad & PAD_RIGHT)) {
+e00005dc:       |        \-> 00167593           andi    a1,a2,1
+e00005e0:       |            0015b593           seqz    a1,a1
+e00005e4:       |            00e02633           sgtz    a2,a4
+e00005e8:       |            8df1                       and     a1,a1,a2
+e00005ea:       |  /-------- c19d                       beqz    a1,e0000610 <qprints+0x7a>
+e00005ec:       |  |         4601                       li      a2,0
+e00005ee:       |  |         400005b7           lui     a1,0x40000
+e00005f2:       |  |         4805                       li      a6,1
+e00005f4:       |  |  /----> 873e                       mv      a4,a5
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:79
+  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
+e00005f6:       |  |  |  /-> 49dc                       lw      a5,20(a1)
+e00005f8:       |  |  |  |   0207f793           andi    a5,a5,32
+e00005fc:       |  |  |  \-- dfed                       beqz    a5,e00005f6 <qprints+0x60>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:82
+  *(volatile unsigned int*)(UART_REG_THR) = c;
+e00005fe:       |  |  |      0115a023           sw      a7,0(a1) # 40000000 <tohost+0x3ffdfff8>
+qprints():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:170
+      ++pc;
+e0000602:       |  |  |      0605                       addi    a2,a2,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:168
+    for ( ; width > 0; --width) {
+e0000604:       |  |  |      fff70793           addi    a5,a4,-1 # 3fffffff <tohost+0x3ffdfff7>
+e0000608:       |  |  \----- fee846e3           blt     a6,a4,e00005f4 <qprints+0x5e>
+e000060c:       |  |         85be                       mv      a1,a5
+e000060e:       +--|-------- a019                       j       e0000614 <qprints+0x7e>
+e0000610:       |  \-------> 4601                       li      a2,0
+e0000612:       |            85ba                       mv      a1,a4
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:173
+  for ( ; *string ; ++string) {
+e0000614:       \----------> 00054783           lbu     a5,0(a0)
+e0000618:             /----- cf99                       beqz    a5,e0000636 <qprints+0xa0>
+e000061a:             |      40000737           lui     a4,0x40000
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:79
+  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
+e000061e:             |  /-> 4b54                       lw      a3,20(a4)
+e0000620:             |  |   0206f693           andi    a3,a3,32
+e0000624:             |  +-- deed                       beqz    a3,e000061e <qprints+0x88>
+qprints():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:174
+    qprintchar (out, *string);
+e0000626:             |  |   0ff7f693           andi    a3,a5,255
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:82
+  *(volatile unsigned int*)(UART_REG_THR) = c;
+e000062a:             |  |   c314                       sw      a3,0(a4)
+qprints():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:173
+  for ( ; *string ; ++string) {
+e000062c:             |  |   00154783           lbu     a5,1(a0)
+e0000630:             |  |   0505                       addi    a0,a0,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:175
+    ++pc;
+e0000632:             |  |   0605                       addi    a2,a2,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:173
+  for ( ; *string ; ++string) {
+e0000634:             |  \-- f7ed                       bnez    a5,e000061e <qprints+0x88>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:177
+  for ( ; width > 0; --width) {
+e0000636:          /--\----X 02b05063           blez    a1,e0000656 <qprints+0xc0>
+e000063a:          |         00c58533           add     a0,a1,a2
+e000063e:          |         400005b7           lui     a1,0x40000
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:79
+  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
+e0000642:          |     /-> 49d4                       lw      a3,20(a1)
+e0000644:          |     |   0206f693           andi    a3,a3,32
+e0000648:          |     +-- deed                       beqz    a3,e0000642 <qprints+0xac>
+qprints():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:179
+    ++pc;
+e000064a:          |     |   0605                       addi    a2,a2,1
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:82
+  *(volatile unsigned int*)(UART_REG_THR) = c;
+e000064c:          |     |   0115a023           sw      a7,0(a1) # 40000000 <tohost+0x3ffdfff8>
+qprints():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:177
+  for ( ; width > 0; --width) {
+e0000650:          |     \-- fea619e3           bne     a2,a0,e0000642 <qprints+0xac>
+e0000654:          |         862a                       mv      a2,a0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:182
+  return pc;
+e0000656:          \-------> 8532                       mv      a0,a2
+e0000658:                    8082                       ret
+
+e000065a <qprinti>:
+qprinti():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:186
+{
+e000065a:                          7179                 addi    sp,sp,-48
+e000065c:                          d606                 sw      ra,44(sp)
+e000065e:                          d422                 sw      s0,40(sp)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:192
+  if (i == 0)
+e0000660:             /----------- cd39                 beqz    a0,e00006be <qprinti+0x64>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:199
+  if (sg && b == 10 && i < 0)
+e0000662:             |            00c03633             snez    a2,a2
+e0000666:             |            ff658413             addi    s0,a1,-10
+e000066a:             |            00143413             seqz    s0,s0
+e000066e:             |            8e61                 and     a2,a2,s0
+e0000670:             |            00052413             slti    s0,a0,0
+e0000674:             |            00867833             and     a6,a2,s0
+e0000678:             |        /-- 00080463             beqz    a6,e0000680 <qprinti+0x26>
+e000067c:             |        |   40a00533             neg     a0,a0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:205
+  s = print_buf + PRINT_BUF_LEN-1;
+e0000680:             |        \-> 02710613             addi    a2,sp,39
+e0000684:             |            4441                 li      s0,16
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:206
+  *s = '\0';
+e0000686:             |            020103a3             sb      zero,39(sp)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:209
+  if(b == 16) {
+e000068a:             |  /-------- 04859563             bne     a1,s0,e00006d4 <qprinti+0x7a>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:211
+    while (u) {
+e000068e:       /-----|--|-------- c961                 beqz    a0,e000075e <qprinti+0x104>
+e0000690:       |     |  |         0c678793             addi    a5,a5,198
+e0000694:       |     |  |         48a5                 li      a7,9
+e0000696:       |     |  |         42c1                 li      t0,16
+e0000698:       |     |  |  /----> 842a                 mv      s0,a0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:212
+      int t = u & 0xF;
+e000069a:       |     |  |  |      893d                 andi    a0,a0,15
+e000069c:       |     |  |  |      85be                 mv      a1,a5
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:214
+      if (t >= 10)
+e000069e:       |     |  |  |  /-- 00a8e363             bltu    a7,a0,e00006a4 <qprinti+0x4a>
+e00006a2:       |     |  |  |  |   4581                 li      a1,0
+e00006a4:       |     |  |  |  \-> 952e                 add     a0,a0,a1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:217
+      *--s = t + '0';
+e00006a6:       |     |  |  |      03050513             addi    a0,a0,48 # 40000030 <tohost+0x3ffe0028>
+e00006aa:       |     |  |  |      fff60593             addi    a1,a2,-1
+e00006ae:       |     |  |  |      fea60fa3             sb      a0,-1(a2)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:218
+      u >>= 4;
+e00006b2:       |     |  |  |      00445513             srli    a0,s0,0x4
+e00006b6:       |     |  |  |      862e                 mv      a2,a1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:211
+    while (u) {
+e00006b8:       |     |  |  \----- fe5470e3             bgeu    s0,t0,e0000698 <qprinti+0x3e>
+e00006bc:       |     |  |  /----- a8b5                 j       e0000738 <qprinti+0xde>
+e00006be:       |     \--|--|----> 03000513             li      a0,48
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:194
+    print_buf[0] = '0';
+e00006c2:       |        |  |      00a10423             sb      a0,8(sp)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:195
+    print_buf[1] = '\0';
+e00006c6:       |        |  |      000104a3             sb      zero,9(sp)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:196
+    return qprints (out, print_buf, width, pad);
+e00006ca:       |        |  |      0028                 addi    a0,sp,8
+e00006cc:       |        |  |      85b6                 mv      a1,a3
+e00006ce:       |        |  |      863a                 mv      a2,a4
+e00006d0:       |        |  |      35d9                 jal     e0000596 <qprints>
+e00006d2:       |  /-----|--|----- a86d                 j       e000078c <qprinti+0x132>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:222
+    while (u) {
+e00006d4:       +--|-----\--|----X c549                 beqz    a0,e000075e <qprinti+0x104>
+e00006d6:       |  |        |      1999a5b7             lui     a1,0x1999a
+e00006da:       |  |        |      99958893             addi    a7,a1,-1639 # 19999999 <tohost+0x19979991>
+e00006de:       |  |        |      00000317             auipc   t1,0x0
+e00006e2:       |  |        |      36630313             addi    t1,t1,870 # e0000a44 <remu10_table>
+e00006e6:       |  |        |      52d9                 li      t0,-10
+remu10():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:134
+  n = (0x19999999 * n + (n >> 1) + (n >> 3)) >> 28;
+e00006e8:       |  |        |  /-> 031505b3             mul     a1,a0,a7
+e00006ec:       |  |        |  |   00155413             srli    s0,a0,0x1
+e00006f0:       |  |        |  |   95a2                 add     a1,a1,s0
+e00006f2:       |  |        |  |   00355793             srli    a5,a0,0x3
+e00006f6:       |  |        |  |   95be                 add     a1,a1,a5
+e00006f8:       |  |        |  |   81f1                 srli    a1,a1,0x1c
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:135
+  return remu10_table[n];
+e00006fa:       |  |        |  |   959a                 add     a1,a1,t1
+e00006fc:       |  |        |  |   00058583             lb      a1,0(a1)
+qprinti():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:223
+      *--s = remu10(u) + '0';
+e0000700:       |  |        |  |   03058793             addi    a5,a1,48
+divu10():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:118
+  q = (n >> 1) + (n >> 2);
+e0000704:       |  |        |  |   00255593             srli    a1,a0,0x2
+e0000708:       |  |        |  |   95a2                 add     a1,a1,s0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:119
+  q = q + (q >> 4);
+e000070a:       |  |        |  |   0045d413             srli    s0,a1,0x4
+e000070e:       |  |        |  |   95a2                 add     a1,a1,s0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:120
+  q = q + (q >> 8);
+e0000710:       |  |        |  |   0085d413             srli    s0,a1,0x8
+e0000714:       |  |        |  |   95a2                 add     a1,a1,s0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:121
+  q = q + (q >> 16);
+e0000716:       |  |        |  |   0105d413             srli    s0,a1,0x10
+e000071a:       |  |        |  |   95a2                 add     a1,a1,s0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:122
+  q = q >> 3;
+e000071c:       |  |        |  |   0035d413             srli    s0,a1,0x3
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:123
+  r = n - q * 10;
+e0000720:       |  |        |  |   025405b3             mul     a1,s0,t0
+e0000724:       |  |        |  |   952e                 add     a0,a0,a1
+qprinti():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:223
+      *--s = remu10(u) + '0';
+e0000726:       |  |        |  |   fff60593             addi    a1,a2,-1
+divu10():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:125
+  return q + ((r + 6) >> 4);
+e000072a:       |  |        |  |   0519                 addi    a0,a0,6
+e000072c:       |  |        |  |   8111                 srli    a0,a0,0x4
+e000072e:       |  |        |  |   9522                 add     a0,a0,s0
+qprinti():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:223
+      *--s = remu10(u) + '0';
+e0000730:       |  |        |  |   fef60fa3             sb      a5,-1(a2)
+e0000734:       |  |        |  |   862e                 mv      a2,a1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:222
+    while (u) {
+e0000736:       |  |        |  \-- f94d                 bnez    a0,e00006e8 <qprinti+0x8e>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:228
+  if (neg) {
+e0000738:       |  |  /-----\----X 02080663             beqz    a6,e0000764 <qprinti+0x10a>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:229
+    if( width && (pad & PAD_ZERO) )
+e000073c:       |  |  |     /----> 0016b513             seqz    a0,a3
+e0000740:       |  |  |     |      00277613             andi    a2,a4,2
+e0000744:       |  |  |     |      00163613             seqz    a2,a2
+e0000748:       |  |  |     |      8d51                 or      a0,a0,a2
+e000074a:       |  |  |     |  /-- cd19                 beqz    a0,e0000768 <qprinti+0x10e>
+e000074c:       |  |  |     |  |   4401                 li      s0,0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:237
+      *--s = '-';
+e000074e:       |  |  |     |  |   fff58513             addi    a0,a1,-1
+e0000752:       |  |  |     |  |   02d00613             li      a2,45
+e0000756:       |  |  |     |  |   fec58fa3             sb      a2,-1(a1)
+e000075a:       |  |  |     |  |   85aa                 mv      a1,a0
+e000075c:       |  |  |  /--|--|-- a01d                 j       e0000782 <qprinti+0x128>
+e000075e:       \--|--|--|--|--|-> 85b2                 mv      a1,a2
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:228
+  if (neg) {
+e0000760:          |  |  |  \--|-- fc081ee3             bnez    a6,e000073c <qprinti+0xe2>
+e0000764:          |  \--|-----|-> 4401                 li      s0,0
+e0000766:          |     +-----|-- a831                 j       e0000782 <qprinti+0x128>
+e0000768:          |     |     \-> 40000537             lui     a0,0x40000
+uart_sendchar():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:79
+  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
+e000076c:          |     |     /-> 4950                 lw      a2,20(a0)
+e000076e:          |     |     |   02067613             andi    a2,a2,32
+e0000772:          |     |     \-- de6d                 beqz    a2,e000076c <qprinti+0x112>
+e0000774:          |     |         40000537             lui     a0,0x40000
+e0000778:          |     |         02d00613             li      a2,45
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:82
+  *(volatile unsigned int*)(UART_REG_THR) = c;
+e000077c:          |     |         c110                 sw      a2,0(a0)
+qprinti():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:233
+      --width;
+e000077e:          |     |         16fd                 addi    a3,a3,-1
+e0000780:          |     |         4405                 li      s0,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:240
+  return pc + qprints (out, s, width, pad);
+e0000782:          |     \-------> 852e                 mv      a0,a1
+e0000784:          |               85b6                 mv      a1,a3
+e0000786:          |               863a                 mv      a2,a4
+e0000788:          |               3539                 jal     e0000596 <qprints>
+e000078a:          |               9522                 add     a0,a0,s0
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:241
+}
+e000078c:          \-------------> 5422                 lw      s0,40(sp)
+e000078e:                          50b2                 lw      ra,44(sp)
+e0000790:                          6145                 addi    sp,sp,48
+e0000792:                          8082                 ret
