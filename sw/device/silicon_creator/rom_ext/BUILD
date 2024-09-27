@@ -318,6 +318,28 @@ opentitan_binary(
     ],
 )
 
+# This binary is a test-only ROM_EXT that has ownership initialized in
+# the "NewVersion" update mode.  Initializing in this mode makes the
+# test flows for the "NewVersion" style of ownership updates easier.
+opentitan_binary(
+    name = "rom_ext_owner_update_newversion",
+    testonly = True,
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
+    linker_script = ":ld_slot_a",
+    manifest = ":manifest",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    secver_write = secver_write_selection(),
+    deps = [
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner_update_mode_newversion",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
+    ],
+)
+
 manifest(d = {
     "name": "manifest_bad_address_translation",
     "address_translation": "0",
