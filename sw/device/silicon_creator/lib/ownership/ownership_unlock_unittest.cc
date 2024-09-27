@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
@@ -49,6 +50,12 @@ class OwnershipUnlockTest : public rom_test::RomTest {
           },
   };
 
+  void SetUp() override {
+    // Most tests operate with the owner configuration
+    // in the Open mode.
+    owner_page[0].update_mode = kOwnershipUpdateModeOpen;
+  }
+
   rom_test::MockHmac hmac_;
   rom_test::MockRnd rnd_;
   rom_test::MockBootSvcHeader hdr_;
@@ -75,6 +82,10 @@ class OwnershipUnlockAbortValidStateTest
 class OwnershipUnlockAbortInvalidStateTest
     : public OwnershipUnlockTest,
       public testing::WithParamInterface<ownership_state_t> {};
+
+class OwnershipUnlockUpdateModesTest
+    : public OwnershipUnlockTest,
+      public testing::WithParamInterface<ownership_update_mode_t> {};
 
 // Tests that a bad `unlock_mode` returns an Invalid Request.
 TEST_F(OwnershipUnlockTest, BadUnlockMode) {
@@ -358,4 +369,72 @@ TEST_P(OwnershipUnlockAbortInvalidStateTest, UnlockAbort) {
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockAbortInvalidStateTest,
                          testing::Values(kOwnershipStateLockedOwner,
                                          kOwnershipStateRecovery));
+
+// Test that UnlockAny succeeds in Open mode and fails in Self and NewVersion
+// mode.
+TEST_P(OwnershipUnlockUpdateModesTest, UnlockAny) {
+  ownership_update_mode_t mode = GetParam();
+  owner_page[0].update_mode = static_cast<uint32_t>(mode);
+  message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockAny;
+  rom_error_t expect;
+  switch (mode) {
+    case kOwnershipUpdateModeOpen:
+      EXPECT_CALL(ownership_key_,
+                  validate(0,
+                           static_cast<ownership_key_t>(kOwnershipKeyUnlock |
+                                                        kOwnershipKeyRecovery),
+                           _, _, _))
+          .WillOnce(Return(kHardenedBoolTrue));
+      EXPECT_CALL(lifecycle_, DeviceId(_))
+          .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+      EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(5));
+      expect = kErrorWriteBootdataThenReboot;
+      break;
+    case kOwnershipUpdateModeNewVersion:
+      expect = kErrorOwnershipUnlockDenied;
+      break;
+    case kOwnershipUpdateModeSelf:
+      expect = kErrorOwnershipInvalidMode;
+      break;
+  }
+
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+  rom_error_t error = ownership_unlock_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, expect);
+}
+
+// Test that UnlockUpdate succeeds in Open and Self mode and fails in NewVersion
+// mode.
+TEST_P(OwnershipUnlockUpdateModesTest, UnlockUpdate) {
+  ownership_update_mode_t mode = GetParam();
+  owner_page[0].update_mode = static_cast<uint32_t>(mode);
+  message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockUpdate;
+  rom_error_t expect;
+  switch (mode) {
+    case kOwnershipUpdateModeOpen:
+    case kOwnershipUpdateModeSelf:
+      EXPECT_CALL(ownership_key_,
+                  validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock),
+                           _, _, _))
+          .WillOnce(Return(kHardenedBoolTrue));
+      EXPECT_CALL(lifecycle_, DeviceId(_))
+          .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+      EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(5));
+      expect = kErrorWriteBootdataThenReboot;
+      break;
+    case kOwnershipUpdateModeNewVersion:
+      expect = kErrorOwnershipUnlockDenied;
+      break;
+  }
+
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+  rom_error_t error = ownership_unlock_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, expect);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockUpdateModesTest,
+                         testing::Values(kOwnershipUpdateModeOpen,
+                                         kOwnershipUpdateModeSelf,
+                                         kOwnershipUpdateModeNewVersion));
+
 }  // namespace
