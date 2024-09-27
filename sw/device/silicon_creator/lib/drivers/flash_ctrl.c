@@ -715,8 +715,6 @@ static const flash_ctrl_info_page_t *kInfoPagesNoOwnerAccess[] = {
     // Bank 1
     &kFlashCtrlInfoPageBootData0,
     &kFlashCtrlInfoPageBootData1,
-    &kFlashCtrlInfoPageOwnerSlot0,
-    &kFlashCtrlInfoPageOwnerSlot1,
 };
 
 enum {
