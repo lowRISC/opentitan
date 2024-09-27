@@ -58,8 +58,10 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     readback_running = 1;
     if (uvm_re_match("*throughput*", get_type_name()) &&
         uvm_re_match("*sec_cm*", get_type_name()) &&
+        uvm_re_match("*readback_err*", get_type_name()) &&
         uvm_re_match("*throughput*", common_seq_type) &&
-        uvm_re_match("*sec_cm*", common_seq_type)) begin
+        uvm_re_match("*sec_cm*", common_seq_type) &&
+        uvm_re_match("*readback_err*", common_seq_type)) begin
       // Configure the SRAM TLUL agent to wait at least 2 cycles before dropping
       // a request.
       cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_min = 2;
