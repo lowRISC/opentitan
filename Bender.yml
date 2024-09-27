@@ -11,13 +11,13 @@ dependencies:
   pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "94fae1c29d145f6f4eaed9918d893d0dbc7fbb65" } # branch: alsaqr-2.0
 
 export_include_dirs:
-       - hw/ip/prim/rtl
-       - hw/ip/tlul/rtl
-       - hw/ip/rv_core_ibex/rtl
-       - hw/dv/sv/dv_utils
-       - hw/ip/tlul2axi/test
-       - hw/ip/lowrisc_ibex/rtl
-       - hw/include
+      - hw/ip/prim/rtl
+      - hw/ip/tlul/rtl
+      - hw/ip/rv_core_ibex/rtl
+      - hw/dv/sv/dv_utils
+      - hw/ip/tlul2axi/test
+      - hw/ip/lowrisc_ibex/rtl
+      - hw/include
 
 sources:
 
@@ -58,7 +58,7 @@ sources:
       - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_reg_pkg.sv
       - hw/ip/flash_ctrl/rtl/flash_ctrl_pkg.sv
       - hw/ip/flash_ctrl/rtl/flash_phy_pkg.sv
-      - hw/ip/prim/rtl/prim_subreg_pkg.sv      
+      - hw/ip/prim/rtl/prim_subreg_pkg.sv
       - hw/ip/prim/rtl/prim_alert_pkg.sv
       - hw/ip/prim/rtl/prim_alert_receiver.sv
       - hw/ip/prim/rtl/prim_alert_sender.sv
@@ -202,8 +202,7 @@ sources:
       - hw/ip/prim/rtl/prim_util_get_scramble_params.svh
       - hw/ip/prim/rtl/prim_util_memload.svh
       - hw/ip/prim/rtl/prim_xoshiro256pp.sv
-     
-      
+
 ##### tlul
 
       - hw/ip/tlul/rtl/tlul_cmd_intg_chk.sv
@@ -226,7 +225,7 @@ sources:
       - hw/ip/tlul/rtl/tlul_fifo_sync.sv
       - hw/ip/tlul/rtl/tlul_fifo_async.sv
       - hw/ip/tlul/rtl/tlul_adapter_sram.sv
-      
+
 ###### prim_generic
 
       - hw/ip/prim_generic/rtl/prim_generic_and2.sv
@@ -248,7 +247,7 @@ sources:
       - hw/ip/prim_generic/rtl/prim_generic_usb_diff_rx.sv
       - hw/ip/prim_generic/rtl/prim_generic_xnor2.sv
       - hw/ip/prim_generic/rtl/prim_generic_xor2.sv
-      
+
 #### rng
 
       - hw/ip/rng/rtl/ast_pulse_sync.sv
@@ -360,7 +359,7 @@ sources:
 
       - hw/ip/rom_ctrl/rtl/boot_rom.sv
       - hw/ip/rom_ctrl/rtl/rom_ctrl_pkg.sv
-      - hw/ip/rom_ctrl/rtl/rom_ctrl_reg_pkg.sv     
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_reg_pkg.sv
       - hw/ip/rom_ctrl/rtl/rom_ctrl_compare.sv
       - hw/ip/rom_ctrl/rtl/rom_ctrl_counter.sv
       - hw/ip/rom_ctrl/rtl/rom_ctrl_mux.sv
@@ -371,7 +370,7 @@ sources:
       - hw/ip/rom_ctrl/rtl/rom_ctrl.sv
 
 ##### rv_plic
-        
+
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_pkg.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_top.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_gateway.sv
@@ -379,7 +378,7 @@ sources:
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic.sv
 
 ##### alert_handler
-     
+
       - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_reg_top.sv
       - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_pkg.sv
       - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_lpg_ctrl.sv
@@ -398,7 +397,7 @@ sources:
       - hw/ip/pwrmgr/rtl/pwrmgr_slow_fsm.sv
       - hw/ip/pwrmgr/rtl/pwrmgr_wake_info.sv
       - hw/ip/pwrmgr/rtl/pwrmgr.sv
-  
+
 ##### keymgr
 
       - hw/ip/keymgr/rtl/keymgr_reg_top.sv
@@ -413,14 +412,14 @@ sources:
       - hw/ip/keymgr/rtl/keymgr_sideload_key.sv
       - hw/ip/keymgr/rtl/keymgr_sideload_key_ctrl.sv
       - hw/ip/keymgr/rtl/keymgr.sv
-      
+
 ##### vendor otp
-      
+
       #- vendor/eFuse/FB_22FDX_128X32.v
       #- vendor/eFuse/otp_ctrl_driver.sv
       #- vendor/eFuse/otp_ctrl_wrapper.sv
       #- vendor/eFuse/otp_ctrl_wrapper_tb.sv
-     
+
 
 ##### otp_ctrl
 
@@ -555,7 +554,7 @@ sources:
       - hw/ip/adc_ctrl/rtl/adc_ctrl_reg_top.sv
       - hw/ip/adc_ctrl/rtl/adc_ctrl_core.sv
       - hw/ip/adc_ctrl/rtl/adc_ctrl_fsm.sv
-      - hw/ip/adc_ctrl/rtl/adc_ctrl_intr.sv      
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_intr.sv
       - hw/ip/adc_ctrl/rtl/adc_ctrl.sv
 
 ##### clkmgr
@@ -634,7 +633,7 @@ sources:
       - hw/ip/aes/rtl/aes_sub_bytes.sv
       - hw/ip/aes/rtl/aes_core.sv
       - hw/ip/aes/rtl/aes.sv
-      
+
 ##### csrng
 
       - hw/ip/csrng/rtl/csrng_reg_pkg.sv
@@ -754,7 +753,7 @@ sources:
 
 ##### aon_timer
 
-      - hw/ip/aon_timer/rtl/aon_timer_reg_pkg.sv  
+      - hw/ip/aon_timer/rtl/aon_timer_reg_pkg.sv
       - hw/ip/aon_timer/rtl/aon_timer_reg_top.sv
       - hw/ip/aon_timer/rtl/aon_timer_core.sv
       - hw/ip/aon_timer/rtl/aon_timer.sv
@@ -771,21 +770,21 @@ sources:
       - hw/top_earlgrey/ip/pinmux/rtl/autogen/pinmux_reg_pkg.sv
       - hw/top_earlgrey/ip/pinmux/rtl/autogen/pinmux_reg_top.sv
       - hw/ip/pinmux/rtl/pinmux_pkg.sv
-      - hw/ip/pinmux/rtl/pinmux_jtag_breakout.sv 
+      - hw/ip/pinmux/rtl/pinmux_jtag_breakout.sv
       - hw/ip/pinmux/rtl/pinmux_jtag_buf.sv
       - hw/ip/pinmux/rtl/pinmux_strap_sampling.sv
       - hw/ip/pinmux/rtl/pinmux_wkup.sv
       - hw/ip/pinmux/rtl/pinmux.sv
 
 ##### tlul crossbar
-     
+
       - hw/top_earlgrey/ip/crossbar/xbar_peri/rtl/autogen/tl_peri_pkg.sv
       - hw/top_earlgrey/ip/crossbar/xbar_peri/rtl/autogen/xbar_peri.sv
       - hw/top_earlgrey/ip/crossbar/xbar_main/rtl/autogen/tl_main_pkg.sv
       - hw/top_earlgrey/ip/crossbar/xbar_main/rtl/autogen/xbar_main.sv
- 
-##### PERCOUNTERS_T 
-     
+
+##### PERCOUNTERS_T
+
       - hw/ip/perfcounters_t/rtl/perfcounters_t_reg_pkg.sv
       - hw/ip/perfcounters_t/rtl/perfcounters_t_reg_top.sv
       - hw/ip/perfcounters_t/rtl/perfcounters_t_event.sv
