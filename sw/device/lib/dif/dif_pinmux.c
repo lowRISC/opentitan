@@ -304,6 +304,12 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
   uint32_t read_value = mmio_region_read32(pinmux->base_addr, reg_offset);
   *attrs_out = dif_pinmux_reg_to_pad_attr(read_value);
 
+  // Not all pads implement all attributes and not all target platforms support
+  // all attribute values. The underlying hardware registers implement Write-Any
+  // Read-Legal (WARL) semantics. If the specified attribute values are not
+  // supported by the hardware, return `kDifError`. The caller then needs to
+  // decide on how to resolve the situation. Unsupported attribute values can be
+  // identified by comparing `attrs_in` to `attrs_out`.
   if (reg_value != read_value) {
     return kDifError;
   }
