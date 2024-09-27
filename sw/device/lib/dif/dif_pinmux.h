@@ -345,8 +345,13 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
  * Not all pads implement all attributes and some combinations cannot be
  * enabled together. This function returns a `kDifBadArg` error in case of
  * invalid `attrs_in`.
- * Conflicting attributes will be discarded by the hardware, and can be
- * identified by comparing `attrs_in` to `attrs_out`.
+ * Not all target platforms support all attribute values and the underlying
+ * hardware registers implement Write-Any Read-Legal (WARL) semantics. For
+ * example, the maximum supported slew rate and drive strength may vary between
+ * platforms. If the specified attribute values are valid but not supported by
+ * the hardware, this function returns `kDifError` and the caller needs to
+ * decide on how to resolve the situation. Unsupported or conflicting attribute
+ * values can be identified by comparing `attrs_in` to `attrs_out`.
  *
  * IMPORTANT:
  * See `dif_pinmux_pad_attr` for information on which attributes are compulsory
