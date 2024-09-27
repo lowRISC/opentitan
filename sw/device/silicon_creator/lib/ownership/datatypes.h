@@ -61,6 +61,19 @@ typedef enum ownership_key_alg {
   kOwnershipKeyAlgSpxq20 = 0x30327153,
 } ownership_key_alg_t;
 
+typedef enum ownership_update_mode {
+  /** Update mode open: `OPEN` (unlock key has full power) */
+  kOwnershipUpdateModeOpen = 0x4e45504f,
+  /** Update mode self: `SELF` (unlock key only unlocks to UnlockedSelf) */
+  kOwnershipUpdateModeSelf = 0x464c4553,
+  /**
+   * Update mode NewVersion: `NEWV`
+   * (unlock key can't unlock; accept new owner configs from self-same owner
+   * if the config_version is newer)
+   */
+  kOwnershipUpdateModeNewVersion = 0x5657454e,
+} ownership_update_mode_t;
+
 typedef enum tlv_tag {
   /** Owner struct: `OWNR`. */
   kTlvTagOwner = 0x524e574f,
@@ -110,8 +123,10 @@ typedef struct owner_block {
   uint32_t config_version;
   /** Set the minimum security version to this value (UINT32_MAX: no change) */
   uint32_t min_security_version_bl0;
+  /** Ownership update mode (one of OPEN, SELF, NEWV) */
+  uint32_t update_mode;
   /** Reserved space for future use. */
-  uint32_t reserved[25];
+  uint32_t reserved[24];
   /** Owner public key. */
   owner_key_t owner_key;
   /** Owner's Activate public key. */
@@ -132,7 +147,8 @@ OT_ASSERT_MEMBER_OFFSET(owner_block_t, sram_exec_mode, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, ownership_key_alg, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, config_version, 20);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, min_security_version_bl0, 24);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 28);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, update_mode, 28);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 32);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 128);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 224);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 320);
