@@ -106,10 +106,11 @@
       name: sec_cm_mem_readback
       desc: '''Verify the countermeasure(s) MEM.READBACK.
 
-        Test needs to be implemented, see lowRISC/opentitan#23322.
+            Injects bit-flips during memory reads/writes and checks whether
+            an error is triggered.
       '''
       stage: V2S
-      tests: ["{name}_smoke"]
+      tests: ["{name}_readback_err"]
     }
     {
       name: sec_cm_mem_scramble

@@ -120,14 +120,19 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
   function void read_finish(mem_data_t act_data,
                             mem_addr_t addr = 0,
                             mem_mask_t mask = '1,
-                            bit en_check_consistency = 1);
+                            bit en_check_consistency = 1,
+                            bit en_check_exp = 1);
     mem_item_t exp_item;
     `DV_CHECK_NE(read_item_q.size, 0)
     exp_item = read_item_q.pop_front();
     act_data &= expand_bit_mask(mask);
 
     if (en_check_consistency) check_item_consistency(exp_item, addr, mask);
-    `DV_CHECK_EQ(act_data, exp_item.data, $sformatf("addr 0x%0h read out mismatch", exp_item.addr))
+
+    if (en_check_exp) begin
+      `DV_CHECK_EQ(act_data, exp_item.data,
+                   $sformatf("addr 0x%0h read out mismatch", exp_item.addr))
+    end
 
     `uvm_info(`gfn, $sformatf("read_finish: Addr[0x%0h], data[0x%0h], Mask[0x%0h]",
                               exp_item.addr, act_data, exp_item.mask), UVM_MEDIUM)
@@ -148,7 +153,8 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
   // write_item_q
   function void write_finish(mem_addr_t addr = 0,
                              mem_mask_t mask = '1,
-                             bit en_check_consistency = 1);
+                             bit en_check_consistency = 1,
+                             bit en_check_exp = 1);
     mem_data_t act_data, exp_data;
     mem_data_t bit_mask;
     mem_item_t exp_item;
@@ -160,7 +166,11 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
 
     act_data = get_bkdr_val(exp_item.addr) & bit_mask;
     exp_data = exp_item.data & bit_mask;
-    `DV_CHECK_EQ(act_data, exp_data, $sformatf("addr 0x%0h write mismatch", exp_item.addr))
+
+    if (en_check_exp) begin
+      `DV_CHECK_EQ(act_data, exp_data,
+                   $sformatf("addr 0x%0h write mismatch", exp_item.addr))
+    end
 
     `uvm_info(`gfn, $sformatf("write_finish: Addr[0x%0h], data[0x%0h], Mask[0x%0h]",
                               exp_item.addr, act_data, exp_item.mask), UVM_MEDIUM)

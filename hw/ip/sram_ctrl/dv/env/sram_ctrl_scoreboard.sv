@@ -267,7 +267,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       cfg.clk_rst_vif.wait_clks(1);
       #1ps;
 
-      mem_bkdr_scb.write_finish(decrypt_addr, item.mask);
+      mem_bkdr_scb.write_finish(decrypt_addr, item.mask, !cfg.is_fi_test, !cfg.is_fi_test);
       `uvm_info(`gfn, $sformatf("Currently num of pending write items is %0d", write_item_q.size),
                 UVM_MEDIUM)
     end
@@ -442,7 +442,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     `DV_CHECK_EQ(cfg.in_init, 0, "No item is accepted during init")
 
     if (status_lc_esc == EscNone && !item.is_write()) begin
-      mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr), item.a_mask);
+      mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr),
+                               item.a_mask, !cfg.is_fi_test, !cfg.is_fi_test);
     end
   endtask
 

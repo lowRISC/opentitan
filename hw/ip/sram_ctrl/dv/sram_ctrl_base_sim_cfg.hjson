@@ -142,6 +142,10 @@
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+run_mem_partial_access"]
     }
+    {
+      name: "{name}_readback_err"
+      uvm_test_seq: sram_ctrl_readback_err_vseq
+    }
   ]
 
   // List of regressions.
