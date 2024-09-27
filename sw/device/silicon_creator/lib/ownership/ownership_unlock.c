@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 static hardened_bool_t is_locked_none(uint32_t ownership_state) {
@@ -58,6 +59,19 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   size_t len = (uintptr_t)&msg->ownership_unlock_req.signature -
                (uintptr_t)&msg->ownership_unlock_req.unlock_mode;
   if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
+    switch (owner_page[0].update_mode) {
+      case kOwnershipUpdateModeOpen:
+        // The Open mode allows unlock to any unlock state.
+        break;
+      case kOwnershipUpdateModeNewVersion:
+        // The NewVersion mode forbids all unlocks.
+        return kErrorOwnershipUnlockDenied;
+      case kOwnershipUpdateModeSelf:
+      default:
+        // The `unlock` funciton services UnlockAny and UnlockEndorsed requests,
+        // neither of which are valid for the `Self` mode.
+        return kErrorOwnershipInvalidMode;
+    }
     // Check the signature against the unlock key.
     // TODO(cfrantz): Add a mechanism to control whether or not the
     // recovery key is allowed here.
@@ -88,6 +102,17 @@ static rom_error_t unlock_update(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   size_t len = (uintptr_t)&msg->ownership_unlock_req.signature -
                (uintptr_t)&msg->ownership_unlock_req.unlock_mode;
   if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
+    switch (owner_page[0].update_mode) {
+      case kOwnershipUpdateModeNewVersion:
+        // The NewVersion mode forbids all unlocks.
+        return kErrorOwnershipUnlockDenied;
+      case kOwnershipUpdateModeSelf:
+      case kOwnershipUpdateModeOpen:
+      default:
+          // The `unlock_update` funciton services UnlockUpdate update requests,
+          // which are valid for the `Open` and `Self` modes.
+          ;
+    }
     // Check the signature against the unlock key.
     if (ownership_key_validate(/*page=*/0, kOwnershipKeyUnlock,
                                &msg->ownership_unlock_req.signature,

@@ -199,6 +199,7 @@ where
     let unlock_key = EcdsaPrivateKey::load(unlock_key)?;
     let app_key = EcdsaPublicKey::load(app_key)?;
     let mut owner = OwnerBlock {
+        ownership_key_alg: OwnershipKeyAlg::EcdsaP256,
         owner_key: KeyMaterial::Ecdsa(owner_key.public_key().try_into()?),
         activate_key: KeyMaterial::Ecdsa(activate_key.public_key().try_into()?),
         unlock_key: KeyMaterial::Ecdsa(unlock_key.public_key().try_into()?),

@@ -156,6 +156,9 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         // Flash SideA is the previous owner configuration.  The `fake` test owner
         // has no flash configuration at all.
         //
+        // Note: The number of regions and indices of the regions is currently
+        // Earlgrey-specific.
+        //
         // Note: when in an unlocked state, flash lockdown doesn't apply, so neither
         // the `protect_when_primary` nor `lock` bits for individual regions will
         // affect the region config.
@@ -191,6 +194,18 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         assert_eq!(
             region[7],
             FlashRegion("data", 7, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
+        );
+
+        // Bank 1, pages 2-3 are the ownership pages.  In an ownership unlocked
+        // state, OwnerPage0 (bank 1 page 2) should be read-only and OwnerPage1
+        // (bank1 page 3) should be read/write.
+        assert_eq!(
+            region[20],
+            FlashRegion("info", 1, 0, 2, "RD-xx-xx-SC-EC-xx", "LK")
+        );
+        assert_eq!(
+            region[21],
+            FlashRegion("info", 1, 0, 3, "RD-WR-ER-SC-EC-xx", "LK")
         );
     }
 
@@ -270,6 +285,17 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     assert_eq!(
         region[7],
         FlashRegion("data", 7, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
+    );
+
+    // Bank 1, pages 2-3 are the ownership pages.  In an ownership locked
+    // state, both pages should be read-only.
+    assert_eq!(
+        region[20],
+        FlashRegion("info", 1, 0, 2, "RD-xx-xx-SC-EC-xx", "LK")
+    );
+    assert_eq!(
+        region[21],
+        FlashRegion("info", 1, 0, 3, "RD-xx-xx-SC-EC-xx", "LK")
     );
 
     Ok(())
