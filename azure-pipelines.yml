@@ -227,29 +227,6 @@ jobs:
     condition: succeededOrFailed()
     continueOnError: True
 
-- job: chip_englishbreakfast_verilator
-  displayName: Verilated English Breakfast (Build)
-  # Build Verilator simulation of the English Breakfast toplevel design
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      python3 --version
-      fusesoc --version
-      verilator --version
-      verible-verilog-lint --version
-    displayName: Display environment
-  - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
-    displayName: Build simulation with Verilator
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
-
 - job: execute_verilated_tests
   displayName: Fast Verilated Earl Grey tests
   # Build and run fast tests on sim_verilator
@@ -281,44 +258,6 @@ jobs:
     parameters:
       includePatterns:
         - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
-
-# Software targeting the English Breakfast top level is produced by patching
-# the source tree before building. This builds a selected subset of software
-# only.
-# TODO: This is a rather ugly hack, which will go away once we properly support
-# building more than one top-level design with different parametrizations.
-# Work towards this goal is tracked in issue #4669.
-- job: build_and_execute_verilated_tests_englishbreakfast
-  displayName: Verilated English Breakfast (Execute)
-  # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn: chip_englishbreakfast_verilator
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_englishbreakfast_verilator
-  - template: ci/load-bazel-cache-write-creds.yml
-  - bash: |
-      . util/build_consts.sh
-      ci/scripts/run-english-breakfast-verilator-tests.sh
-    displayName: Execute tests
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
-      cp $(ci/scripts/target-location.sh \
-          //sw/device/lib/testing/test_rom:test_rom_fpga_cw305 \
-          --features=-rv32_bitmanip \
-          --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_) \
-        "$BIN_DIR/sw/device/lib/testing/test_rom"
-    displayName: Copy test_rom_fpga_cw305 to $BIN_DIR
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/device/lib/testing/test_rom/test_rom_fpga_cw305.32.vmem"
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
@@ -622,7 +561,6 @@ jobs:
     - sw_build
     - execute_verilated_tests
     - chip_earlgrey_cw310
-    - chip_englishbreakfast_verilator
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   steps:
   - template: ci/checkout-template.yml
@@ -633,7 +571,6 @@ jobs:
         - sw_build
         - execute_verilated_tests
         - chip_earlgrey_cw310
-        - chip_englishbreakfast_verilator
   - bash: |
       . util/build_consts.sh
       ci/scripts/make_distribution.sh
