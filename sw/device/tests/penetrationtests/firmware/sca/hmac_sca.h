@@ -15,7 +15,7 @@
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_hmac_sca_init(ujson_t *uj);
+status_t handle_hmac_pentest_init(ujson_t *uj);
 
 /**
  * hmac.sca.batch_fvsr test

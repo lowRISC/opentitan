@@ -9,7 +9,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/trigger_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -27,7 +27,7 @@ status_t handle_trigger_sca_select_source(ujson_t *uj) {
   cryptotest_trigger_sca_source_t uj_trigger;
   TRY(ujson_deserialize_cryptotest_trigger_sca_source_t(uj, &uj_trigger));
 
-  sca_select_trigger_type(uj_trigger.source);
+  pentest_select_trigger_type(uj_trigger.source);
 
   return OK_STATUS();
 }
