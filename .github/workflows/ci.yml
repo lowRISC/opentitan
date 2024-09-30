@@ -61,6 +61,51 @@ jobs:
       - name: Generated documentation
         run: ./ci/scripts/check-cmdgen.sh
 
+  slow_lint:
+    name: Lint (slow)
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Countermeasures implemented (earlgrey)
+        run: ./ci/scripts/check-countermeasures.sh earlgrey
+        continue-on-error: true
+      - name: Bazel test suite tags
+        run: ./ci/scripts/check_bazel_test_suites.py
+        continue-on-error: true
+      # See #21973: disabled until Verilator tags are fixed.
+      # - name: Check Bazel tags
+      #   run: ./ci/scripts/check-bazel-tags.sh
+      #   continue-on-error: true
+      - name: Banned Bazel rules
+        run: ./ci/scripts/check-bazel-banned-rules.sh
+      - name: Bazel target names
+        run: ./ci/scripts/check_bazel_target_names.py
+        continue-on-error: true
+      - name: DV software images
+        run: ./ci/scripts/check_dv_sw_images.sh
+        continue-on-error: true
+      - name: Build documentation
+        run: ./ci/scripts/build-docs.sh
+      - name: Generated files
+        run: ./ci/scripts/check-generated.sh
+        env:
+          OT_DESTRUCTIVE: 1 # Required by the script to clean up.
+      - name: Buildifier
+        run: ./ci/bazelisk.sh test //quality:buildifier_check
+      - name: Vendored files
+        run: ./ci/scripts/check-vendoring.sh
+      - name: Verible RTL
+        run: ./ci/scripts/verible-lint.sh rtl
+      - name: Verible DV
+        run: ./ci/scripts/verible-lint.sh dv
+      - name: Verible FPV
+        run: ./ci/scripts/verible-lint.sh fpv
+
   airgapped_build:
     name: Airgapped build
     runs-on: ubuntu-20.04
@@ -76,7 +121,7 @@ jobs:
       - name: Build in the airgapped environment
         run: ./ci/scripts/test-airgapped-build.sh
 
-  verible-lint:
+  verible_lint:
     name: Verible lint
     runs-on: ubuntu-24.04
     needs: quick_lint
