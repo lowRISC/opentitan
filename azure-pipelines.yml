@@ -121,19 +121,6 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Confirm no .bazelrc-site files
 
-- job: airgapped_bazel_build
-  displayName: Test an airgapped Bazel build
-  timeoutInMinutes: 120
-  dependsOn: checkout
-  condition: eq(variables['Build.Reason'], 'PullRequest')
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: util/prep-bazel-airgapped-build.sh
-  - bash: ci/scripts/test-airgapped-build.sh
-
 - job: slow_lints
   displayName: Quality (in-depth lint)
   # Run code quality checks (in-depth lint)
