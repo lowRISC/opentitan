@@ -578,11 +578,29 @@ package csr_utils_pkg;
         if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
         fork
           // Repeatedly do reads of the value at path and stop when the value satisfies the supplied
-          // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads.
+          // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads. If we
+          // enter reset, stop immediately (once the current csr_rd call has finished).
           forever begin
-            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
             `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d", lcount),
                       verbosity)
+
+            // Wait spinwait_delay_ns nanoseconds between each read (and before the first one), but
+            // stop waiting immediately if we see a reset. Note that we can't wait for a reset in
+            // parallel with the csr_rd below, because we use disable fork when a process finishes
+            // and csr_rd has internal state that it must clean up without being killed.
+            if (spinwait_delay_ns) begin
+              fork begin : iso_fork
+                fork
+                  #(spinwait_delay_ns * 1ns);
+                  wait (under_reset);
+                join_any
+                disable fork;
+              end : iso_fork join
+            end
+
+            // If we are in reset, stop the wait immediately.
+            if (under_reset) break;
+
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
             `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",
@@ -601,8 +619,6 @@ package csr_utils_pkg;
               end
             endcase
           end
-          // Wait until we enter reset
-          wait (under_reset);
           // Wait for timeout_ns nanoseconds and then fail with an error (because this process
           // should have been killed before then)
           `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
