@@ -66,10 +66,8 @@ def _fusesoc_build_impl(ctx):
         format_each = "--cores-root=%s",
     )
 
-    args.add_all([
-        "run",
-        "--flag=fileset_top",
-    ])
+    args.add("run")
+    args.add_all(["--flag={}".format(f) for f in ctx.attr.use_flags])
     args.add(ctx.attr.target, format = "--target=%s")
     args.add_all([
         "--setup",
@@ -80,8 +78,6 @@ def _fusesoc_build_impl(ctx):
     args.add_all(ctx.attr.systems)
     args.add_all(flags)
 
-    # Note: the `fileset_top` flag used above is specific to the OpenTitan
-    # project to select the correct RTL fileset.
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
@@ -109,6 +105,7 @@ fusesoc_build = rule(
         "data": attr.label_list(allow_files = True, doc = "Files needed at runtime"),
         "target": attr.string(mandatory = True, doc = "Target name (e.g. 'sim')"),
         "systems": attr.string_list(mandatory = True, doc = "Systems to build"),
+        "use_flags": attr.string_list(doc = "Custom fusesoc use flags"),
         "flags": attr.string_list(doc = "Flags controlling the FuseSOC system build"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,

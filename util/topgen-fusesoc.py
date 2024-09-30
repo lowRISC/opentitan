@@ -10,7 +10,6 @@ All output files are written to hw/$TOPNAME/.
 import argparse
 import sys
 import yaml
-import shutil
 import subprocess
 import os
 
