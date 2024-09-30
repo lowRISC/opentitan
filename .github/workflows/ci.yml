@@ -156,6 +156,25 @@ jobs:
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
 
+  verilator_englishbreakfast:
+    name: Verilated English Breakfast
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Build simulator with Verilator
+        run: ./ci/scripts/build-chip-verilator.sh englishbreakfast
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: verilated_englishbreakfast
+          path: build-bin/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator
+          overwrite: true
+      - name: Test
+        run: ./ci/scripts/run-english-breakfast-verilator-tests.sh
+
   build_docker_containers:
     name: Build Docker Containers
     runs-on: ubuntu-20.04
