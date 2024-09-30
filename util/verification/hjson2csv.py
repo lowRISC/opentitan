@@ -2,11 +2,10 @@
 import sys
 import csv
 import hjson
+import argparse
 
-# Check if the file to be converted has been defined
-if len(sys.argv) > 1:
-    # Load data from the HJSON file
-    hjson_file = sys.argv[1]
+# Main function to handle HJSON file parsing and CSV file creation
+def convert_hjson(hjson_file):
     with open(hjson_file, 'r', encoding='utf-8') as file:
         data = hjson.load(file)
 
@@ -15,8 +14,9 @@ if len(sys.argv) > 1:
         # Extract column headers from the keys of the first object
         headers = data[0].keys()
 
-        # Create the CSV file
-        csv_file = 'vplan_example_converted.csv'
+        # Extract HJSON file name and create a CSV file with the same name
+        csv_file = hjson_file.replace('.hjson', '.csv')
+
         with open(csv_file, 'w', newline='', encoding='utf-8') as file:
             writer = csv.DictWriter(file, fieldnames=headers)
 
@@ -29,7 +29,23 @@ if len(sys.argv) > 1:
         print("Conversion successfully completed")
     else:
         print("HJSON data is not in the expected format")
-else:
-    print("Error: please specify the HJSON file path to be converted")
-    print("       eg.: ./hjson2csv.py dv/files/verif/my_vplan.hjson")
-    exit
+
+def main():
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description="Convert HJSON verification plan file format into a CSV file")
+    parser.add_argument(
+        'hjson_file',
+        type=str,
+        help='Specify the HJSON file path to be converted. '
+             '    eg.: dv/files/verif/my_vplan.hjson'
+    )
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Call the compare function with the provided directory, HJSON file, and block name
+    convert_hjson(args.hjson_file)
+
+if __name__ == '__main__':
+    main()
