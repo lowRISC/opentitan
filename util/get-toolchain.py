@@ -100,7 +100,7 @@ def get_installed_toolchain_info(unpack_dir):
 
 def download(url):
     log.info("Downloading toolchain from %s", url)
-    tmpfile = tempfile.mkstemp()[1]
+    tmpfile = tempfile.mkstemp(suffix=".tar.xz")[1]
     urlretrieve(url, tmpfile)
     log.info("Download complete")
     return Path(tmpfile)
@@ -157,6 +157,15 @@ def main():
                         help="""Destination directory if performing a staged
                         installation. This is the staging directory where the
                         toolchain is unpacked.""")
+    parser.add_argument('--download-only',
+                        '-D',
+                        required=False,
+                        default=False,
+                        action='store_true',
+                        help="""Just download the archive, don't
+                        unpack or install it.  Will be stored in
+                        --dest-dir if specified or --install-dir
+                        otherwise""")
     parser.add_argument('--release-version',
                         '-r',
                         required=False,
@@ -184,6 +193,10 @@ def main():
 
     available_toolchain = get_available_toolchain_info(args.release_version,
                                                        args.kind)
+
+    if args.download_only and args.update:
+        print('specify only one of --download-only and --update')
+        sys.exit(1)
 
     if args.latest_available_version:
         print(available_toolchain['version'])
@@ -224,9 +237,9 @@ def main():
 
         log.info(
             "Found installed %s toolchain version %s, updating to %s toolchain "
-            "version %s.",
-            installed_toolchain['kind'], installed_toolchain['version'],
-            available_toolchain['kind'], available_toolchain['version'])
+            "version %s.", installed_toolchain['kind'],
+            installed_toolchain['version'], available_toolchain['kind'],
+            available_toolchain['version'])
     else:
         if unpack_dir.exists():
             sys.exit('Target directory %s already exists. '
@@ -235,6 +248,13 @@ def main():
     archive_file = None
     try:
         archive_file = download(available_toolchain['download_url'])
+        if args.download_only:
+            unpack_dir.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(archive_file), str(unpack_dir))
+            log.info('Downloaded %s toolchain archive version %s to %s.',
+                     available_toolchain['kind'],
+                     available_toolchain['version'], str(unpack_dir))
+            return
 
         if args.update and unpack_dir.exists():
             # We only reach this point if |unpack_dir| contained a toolchain
@@ -245,7 +265,7 @@ def main():
         postinstall_rewrite_configs(unpack_dir.resolve(),
                                     install_dir.resolve())
     finally:
-        if archive_file:
+        if archive_file and not args.download_only:
             archive_file.unlink()
 
     log.info('Installed %s toolchain version %s to %s.',
