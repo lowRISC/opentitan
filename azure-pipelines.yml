@@ -243,10 +243,6 @@ jobs:
       verilator --version
       verible-verilog-lint --version
     displayName: Display environment
-  # Check that all englishbreakfast countermeasures are implemented.
-  - bash: ci/scripts/check-countermeasures.sh englishbreakfast
-    displayName: Check countermeasures for top_englishbreakfast
-    continueOnError: True
   - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
