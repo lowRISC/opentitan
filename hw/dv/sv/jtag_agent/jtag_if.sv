@@ -4,10 +4,10 @@
 
 // TODO(#24580): A JTAG UVM agent should configure the JTAG frequency (and not this interface)
 `ifdef GATE_LEVEL
-  // jtag interface with default 24MHz tck for GLS
+  // JTAG interface with default 24MHz tck for GLS
   interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 41_664) ();
 `else
-  // jtag interface with default 50MHz tck for faster DV simulations
+  // JTAG interface with default 50MHz tck for faster DV simulations
   interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
 `endif
 
