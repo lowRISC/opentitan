@@ -63,3 +63,34 @@ jobs:
         run: ./util/prep-bazel-airgapped-build.sh
       - name: Build in the airgapped environment
         run: ./ci/scripts/test-airgapped-build.sh
+
+  verible-lint:
+    name: Verible lint
+    runs-on: ubuntu-24.04
+    needs: quick_lint
+    env:
+      verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
+      verible_version: v0.0-3430-g060bde0f
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Verible config
+        run: |
+          echo "Concatenating Verible waivers"
+          find . -type f -name '*.vbl' -exec cat {} \; >> verible_waiver
+
+          echo "::group::Verible config"
+          cat "$verible_config"
+          echo "::endgroup::"
+
+          echo "::group::Verible waiver"
+          cat "verible_waiver"
+          echo "::endgroup::"
+      - name: Run Verible linter action
+        uses: chipsalliance/verible-linter-action@v2.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          verible_version: ${{ env.verible_version }}
+          reviewdog_reporter: 'github-pr-check'
+          suggest_fixes: 'false'
+          config_file: ${{ env.verible_config }}
+          extra_args: "--waiver_files=verible_waiver"
