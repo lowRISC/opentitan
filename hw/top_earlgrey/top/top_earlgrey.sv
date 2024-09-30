@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
+`include "axi/typedef.svh"
 `include "register_interface/typedef.svh"
+
+`define USE_IDMA
 
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
@@ -16,7 +19,7 @@
 module top_earlgrey #(
   parameter int unsigned AxiAddrWidth = 64,
   parameter int unsigned AxiDataWidth = 64,
-  parameter int unsigned AxiIdWidth   = 8,
+  parameter int unsigned AxiIdWidth = 8,
   parameter int unsigned AxiUserWidth = 1,
   // Manually defined parameters
   parameter int unsigned HartIdOffs = 0,
@@ -123,6 +126,11 @@ module top_earlgrey #(
   parameter bit          RvCoreIbexPipeLine = 0,
   parameter int          N_LOG_MST = 2,
   parameter int          N_LOG_SLV = 8,
+  parameter              type axi_aw_chan_t = logic,
+  parameter              type axi_w_chan_t = logic,
+  parameter              type axi_b_chan_t = logic,
+  parameter              type axi_ar_chan_t = logic,
+  parameter              type axi_r_chan_t = logic,
   parameter              type axi_req_t = logic,
   parameter              type axi_rsp_t = logic
 ) (
@@ -147,7 +155,8 @@ module top_earlgrey #(
   input  axi_rsp_t                    idma_axi_rsp_i,
   output axi_req_t                    tlul2axi_req_o,
   input  axi_rsp_t                    tlul2axi_rsp_i,
-  input  logic       irq_ibex_i,
+  input  logic                        irq_ibex_i,
+  input  logic                        irq_cfi_req_i,
   input  jtag_ot_pkg::jtag_req_t       jtag_req_i,
   output jtag_ot_pkg::jtag_rsp_t       jtag_rsp_o,
   input  edn_pkg::edn_req_t       ast_edn_req_i,
@@ -211,6 +220,8 @@ module top_earlgrey #(
   //Bootmode
   input logic [1:0] bootmode_i,
   input logic fetch_en_i,
+  output logic cluster_fetch_en_o,
+
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
   output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
@@ -632,7 +643,6 @@ module top_earlgrey #(
   logic       pinmux_aon_usbdev_wake_detect_active;
    
   logic        datapath_o;
-  logic        info_init_o;
   logic        debug_flash_write;
   logic        debug_flash_req;
   logic [15:0] debug_flash_addr;
@@ -2098,6 +2108,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel])
   );
+
+`ifdef USE_IDMA
   tlul_adapter_sram #(
     .SramAw(15),
     .SramDw(32),
@@ -2206,18 +2218,62 @@ module top_earlgrey #(
       .axi_req_tcdm_o ( axi_req_tcdm   ),
       .axi_rsp_tcdm_i ( axi_rsp_tcdm   )
   );
+`else // !`ifdef USE_IDMA
+  assign idma_axi_req_o = '0;
+  assign idma_tl_rsp = '0;
+  assign crypto_sram_tl_rsp = '0;
+`endif
+
+  typedef logic [63:0]               axi32_addr_t;
+  typedef logic [31:0]               axi32_data_t;
+  typedef logic [3:0]                axi32_strb_t;
+  typedef logic                      axi32_user_t;
+  typedef logic [AxiIdWidth-1:0]     axi32_out_id_t;
+
+  `AXI_TYPEDEF_ALL(axi_out32, axi32_addr_t, axi32_out_id_t, axi32_data_t, axi32_strb_t, axi32_user_t)
+
+  axi_out32_req_t  tlul2axi_req32;
+  axi_out32_resp_t tlul2axi_rsp32;
+
+  axi_dw_converter #(
+      .AxiMaxReads         ( 8                  ),
+      .AxiSlvPortDataWidth ( 32                 ),
+      .AxiMstPortDataWidth ( AxiDataWidth       ),
+      .AxiAddrWidth        ( AxiAddrWidth       ),
+      .AxiIdWidth          ( AxiIdWidth         ),
+      .aw_chan_t           ( axi_aw_chan_t      ),
+      .mst_w_chan_t        ( axi_w_chan_t       ),
+      .slv_w_chan_t        ( axi_out32_w_chan_t ),
+      .b_chan_t            ( axi_b_chan_t       ),
+      .ar_chan_t           ( axi_ar_chan_t      ),
+      .mst_r_chan_t        ( axi_r_chan_t       ),
+      .slv_r_chan_t        ( axi_out32_r_chan_t ),
+      .axi_mst_req_t       ( axi_req_t          ),
+      .axi_mst_resp_t      ( axi_rsp_t          ),
+      .axi_slv_req_t       ( axi_out32_req_t    ),
+      .axi_slv_resp_t      ( axi_out32_resp_t   )
+  )  i_axi_dw_converter_tlul2axi (
+      .clk_i (clkmgr_aon_clocks.clk_main_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      // slave port
+      .slv_req_i  ( tlul2axi_req32 ),
+      .slv_resp_o ( tlul2axi_rsp32 ),
+      // master port
+      .mst_req_o  ( tlul2axi_req_o ),
+      .mst_resp_i ( tlul2axi_rsp_i )
+  );
   tlul2axi  #(
-      .axi_req_t(axi_req_t),
-      .axi_rsp_t(axi_rsp_t)
+      .axi_req_t( axi_out32_req_t  ),
+      .axi_rsp_t( axi_out32_resp_t )
   ) u_tlul2axi (
 
       // Interrupt
       .intr_mbox_irq_o (intr_tlul2axi_mbox_irq),
 
       // Inter-module signals
-      .axi_req_o(tlul2axi_req_o),
+      .axi_req_o(tlul2axi_req32),
       .intr_mbox_irq_i(irq_ibex_i),
-      .axi_rsp_i(tlul2axi_rsp_i),
+      .axi_rsp_i(tlul2axi_rsp32),
       .tl_i(tlul2axi_tl_req),
       .tl_o(tlul2axi_tl_rsp),
 
@@ -2269,9 +2325,9 @@ module top_earlgrey #(
     .flash_wmask_o(debug_flash_wmask),
     .bootmode_i,
     .datapath_o,
-    .info_init_o
-  ); 
-  flash_ctrl #(               
+    .cluster_fetch_en_o
+  );
+  flash_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:35]),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
@@ -2345,7 +2401,7 @@ module top_earlgrey #(
       .debug_flash_wdata,
       .debug_flash_wmask,
       .datapath_i(datapath_o),
-      .info_init_i(info_init_o),
+      .info_init_i(1'b0),
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
@@ -2865,7 +2921,7 @@ module top_earlgrey #(
       intr_flash_ctrl_prog_lvl, // IDs [161 +: 1]
       intr_flash_ctrl_prog_empty, // IDs [160 +: 1]
       intr_tlul2axi_mbox_irq, // IDs [159 +: 1]
-      intr_sensor_ctrl_init_status_change, // IDs [158 +: 1]
+      irq_cfi_req_i, // IDs [158 +: 1]
       intr_sensor_ctrl_io_status_change, // IDs [157 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [156 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [155 +: 1]

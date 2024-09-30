@@ -153,11 +153,11 @@ module boot_manager_regs_reg_top (
   logic datapath_datapath_wd;
   logic [30:0] datapath_field1_qs;
   logic [30:0] datapath_field1_wd;
-  logic info_init_we;
-  logic info_init_info_init_qs;
-  logic info_init_info_init_wd;
-  logic [30:0] info_init_field1_qs;
-  logic [30:0] info_init_field1_wd;
+  logic cluster_we;
+  logic cluster_fetch_enable_qs;
+  logic cluster_fetch_enable_wd;
+  logic [30:0] cluster_field1_qs;
+  logic [30:0] cluster_field1_wd;
 
   // Register instances
   // R[payload_1]: V(False)
@@ -484,19 +484,19 @@ module boot_manager_regs_reg_top (
   );
 
 
-  // R[info_init]: V(False)
-  //   F[info_init]: 0:0
+  // R[cluster]: V(False)
+  //   F[fetch_enable]: 0:0
   prim_ot_subreg #(
     .DW      (1),
     .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_info_init_info_init (
+  ) u_cluster_fetch_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (info_init_we),
-    .wd     (info_init_info_init_wd),
+    .we     (cluster_we),
+    .wd     (cluster_fetch_enable_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -504,11 +504,11 @@ module boot_manager_regs_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.info_init.info_init.q),
+    .q      (reg2hw.cluster.fetch_enable.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (info_init_info_init_qs)
+    .qs     (cluster_fetch_enable_qs)
   );
 
   //   F[field1]: 31:1
@@ -516,13 +516,13 @@ module boot_manager_regs_reg_top (
     .DW      (31),
     .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (31'h0)
-  ) u_info_init_field1 (
+  ) u_cluster_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (info_init_we),
-    .wd     (info_init_field1_wd),
+    .we     (cluster_we),
+    .wd     (cluster_field1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -530,11 +530,11 @@ module boot_manager_regs_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.info_init.field1.q),
+    .q      (reg2hw.cluster.field1.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (info_init_field1_qs)
+    .qs     (cluster_field1_qs)
   );
 
 
@@ -550,7 +550,7 @@ module boot_manager_regs_reg_top (
     addr_hit[5] = (reg_addr == BOOT_MANAGER_REGS_PAD_BOOTMODE_OFFSET);
     addr_hit[6] = (reg_addr == BOOT_MANAGER_REGS_SW_BOOTMODE_OFFSET);
     addr_hit[7] = (reg_addr == BOOT_MANAGER_REGS_DATAPATH_OFFSET);
-    addr_hit[8] = (reg_addr == BOOT_MANAGER_REGS_INFO_INIT_OFFSET);
+    addr_hit[8] = (reg_addr == BOOT_MANAGER_REGS_CLUSTER_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -597,11 +597,11 @@ module boot_manager_regs_reg_top (
   assign datapath_datapath_wd = reg_wdata[0];
 
   assign datapath_field1_wd = reg_wdata[31:1];
-  assign info_init_we = addr_hit[8] & reg_we & !reg_error;
+  assign cluster_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign info_init_info_init_wd = reg_wdata[0];
+  assign cluster_fetch_enable_wd = reg_wdata[0];
 
-  assign info_init_field1_wd = reg_wdata[31:1];
+  assign cluster_field1_wd = reg_wdata[31:1];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -614,7 +614,7 @@ module boot_manager_regs_reg_top (
     reg_we_check[5] = 1'b0;
     reg_we_check[6] = sw_bootmode_we;
     reg_we_check[7] = datapath_we;
-    reg_we_check[8] = info_init_we;
+    reg_we_check[8] = cluster_we;
   end
 
   // Read data return
@@ -658,8 +658,8 @@ module boot_manager_regs_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = info_init_info_init_qs;
-        reg_rdata_next[31:1] = info_init_field1_qs;
+        reg_rdata_next[0] = cluster_fetch_enable_qs;
+        reg_rdata_next[31:1] = cluster_field1_qs;
       end
 
       default: begin

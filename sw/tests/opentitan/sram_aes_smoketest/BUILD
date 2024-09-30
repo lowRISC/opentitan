@@ -36,14 +36,15 @@ opentitan_ram_binary(
     testonly = True,
     deps = [
         "//hw/ip/aes:model",
-        "//sw/tests/opentitan/common:common",
-        "//sw/tests/opentitan/common:linker",
-        "//sw/tests/opentitan/common:crt",
+        "//sw/tests/common:common",
+        "//sw/tests/common:linker",
+        "//sw/tests/common:crt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/silicon_creator/lib:rom_print",
 	"//sw/device/silicon_creator/rom:alsaqr_print"
 
     ],

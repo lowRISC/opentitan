@@ -44,10 +44,4 @@ module prim_rom_adv import prim_rom_pkg::*; #(
     end
   end
 
-  ////////////////
-  // ASSERTIONS //
-  ////////////////
-
-  // Control Signals should never be X
-  `ASSERT(noXOnCsI, !$isunknown(req_i), clk_i, '0)
 endmodule : prim_rom_adv

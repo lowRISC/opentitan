@@ -69,7 +69,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0001ffff;
   localparam logic [0:0][31:0] ADDR_MASK_TLUL2AXI             = {
-    32'h 9ffeffff
+    32'h Afffffff
   };
   localparam logic [31:0] ADDR_MASK_CRYPTO_SRAM          = 32'h 0001ffff;
   localparam logic [31:0] ADDR_MASK_IDMA                 = 32'h 0001ffff;

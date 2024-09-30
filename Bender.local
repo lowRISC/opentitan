@@ -1,0 +1,4 @@
+overrides:
+  axi:                { git: "https://github.com/pulp-platform/axi.git", version: 0.39.1                                       }
+  hci:                { git: "https://github.com/pulp-platform/hci.git", rev: b2e6f391aa6c10c03f45b693d80a0aaddecf169b         }
+  hwpe-stream:        { git: "https://github.com/pulp-platform/hwpe-stream.git", rev: ddc154424187dff42a8fcec946c768ceb13f13de }

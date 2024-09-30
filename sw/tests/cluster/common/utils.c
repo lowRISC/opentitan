@@ -23,11 +23,9 @@ unsigned int get_mtval() {
   return result;
   }*/
 
-void __attribute__((weak)) external_irq_handler(void)  {
-}
 
 void simple_exc_handler(void) {
-  printf("EXCEPTION!!!\r\n");
+  //printf("EXCEPTION!!!\r\n");
   /*
   rputs("============\n");
   puts("MEPC:   0x");
@@ -41,7 +39,7 @@ void simple_exc_handler(void) {
 }
 
 
-void uart_set_cfg(int parity, uint16_t clk_counter) {
+void uart_set_cfg_cl(int parity, uint16_t clk_counter) {
   unsigned int i;
   *(volatile unsigned int*)(UART_REG_LCR) = 0x83; //sets 8N1 and set DLAB to 1
   *(volatile unsigned int*)(UART_REG_DLM) = (clk_counter >> 8) & 0xFF;
@@ -52,7 +50,7 @@ void uart_set_cfg(int parity, uint16_t clk_counter) {
   *(volatile unsigned int*)(UART_REG_IER) = ((*(volatile unsigned int*)(UART_REG_IER)) & 0xF0) | 0x02; // set IER (interrupt enable register) on UART
 }
 
-void uart_send(const char* str, unsigned int len) {
+void uart_send_cl(const char* str, unsigned int len) {
   unsigned int i;
 
   while(len > 0) {
@@ -70,13 +68,13 @@ void uart_send(const char* str, unsigned int len) {
   }
 }
 
-char uart_getchar() {
+char uart_getchar_cl() {
   while((*((volatile int*)UART_REG_LSR) & 0x1) != 0x1);
 
   return *(volatile int*)UART_REG_RBR;
 }
 
-void uart_sendchar(const char c) {
+void uart_sendchar_cl(const char c) {
   // wait until there is space in the fifo
   while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
 
@@ -84,7 +82,7 @@ void uart_sendchar(const char c) {
   *(volatile unsigned int*)(UART_REG_THR) = c;
 }
 
-void uart_wait_tx_done(void) {
+void uart_wait_tx_done_cl(void) {
   // wait until there is space in the fifo
   while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x40) == 0);
 }
@@ -137,13 +135,13 @@ static unsigned remu10(unsigned n) {
   return remu10_table[n];
 }
 
-int putchar(int s)
+int putchar_cl(int s)
 {
-  uart_sendchar(s);
+  uart_sendchar_cl(s);
   return s;
 }
 
-static void qprintchar(char **str, int c)
+static void qprintchar_cl(char **str, int c)
 {
   if (str)
   {
@@ -151,10 +149,10 @@ static void qprintchar(char **str, int c)
     ++(*str);
   }
   else
-    putchar((char)c);
+    putchar_cl((char)c);
 }
 
-static int qprints(char **out, const char *string, int width, int pad)
+static int qprints_cl(char **out, const char *string, int width, int pad)
 {
   register int pc = 0, padchar = ' ';
 
@@ -168,23 +166,23 @@ static int qprints(char **out, const char *string, int width, int pad)
   }
   if (!(pad & PAD_RIGHT)) {
     for ( ; width > 0; --width) {
-      qprintchar (out, padchar);
+      qprintchar_cl (out, padchar);
       ++pc;
     }
   }
   for ( ; *string ; ++string) {
-    qprintchar (out, *string);
+    qprintchar_cl (out, *string);
     ++pc;
   }
   for ( ; width > 0; --width) {
-    qprintchar (out, padchar);
+    qprintchar_cl (out, padchar);
     ++pc;
   }
 
   return pc;
 }
 
-static int qprinti(char **out, int i, int b, int sg, int width, int pad, char letbase)
+static int qprinti_cl(char **out, int i, int b, int sg, int width, int pad, char letbase)
 {
   char print_buf[PRINT_BUF_LEN];
   register char *s;
@@ -195,7 +193,7 @@ static int qprinti(char **out, int i, int b, int sg, int width, int pad, char le
   {
     print_buf[0] = '0';
     print_buf[1] = '\0';
-    return qprints (out, print_buf, width, pad);
+    return qprints_cl (out, print_buf, width, pad);
   }
 
   if (sg && b == 10 && i < 0)
@@ -230,7 +228,7 @@ static int qprinti(char **out, int i, int b, int sg, int width, int pad, char le
   if (neg) {
     if( width && (pad & PAD_ZERO) )
     {
-      qprintchar (out, '-');
+      qprintchar_cl (out, '-');
       ++pc;
       --width;
     }
@@ -239,10 +237,10 @@ static int qprinti(char **out, int i, int b, int sg, int width, int pad, char le
       *--s = '-';
     }
   }
-  return pc + qprints (out, s, width, pad);
+  return pc + qprints_cl (out, s, width, pad);
 }
 
-static int qprint(char **out, const char *format, va_list va)
+static int qprint_cl(char **out, const char *format, va_list va)
 {
   register int width, pad;
   register int pc = 0;
@@ -272,36 +270,36 @@ static int qprint(char **out, const char *format, va_list va)
       }
       if( *format == 's' ) {
         register char *s = va_arg(va, char*);
-        pc += qprints (out, s?s:"(null)", width, pad);
+        pc += qprints_cl (out, s?s:"(null)", width, pad);
         continue;
       }
       if( *format == 'd' ) {
-        pc += qprinti (out, va_arg(va, int), 10, 1, width, pad, 'a');
+        pc += qprinti_cl (out, va_arg(va, int), 10, 1, width, pad, 'a');
         continue;
       }
       if( *format == 'u' ) {
-        pc += qprinti (out, va_arg(va, unsigned int), 10, 0, width, pad, 'a');
+        pc += qprinti_cl (out, va_arg(va, unsigned int), 10, 0, width, pad, 'a');
         continue;
       }
       if( *format == 'x' ) {
-        pc += qprinti (out, va_arg(va, uint32_t), 16, 0, width, pad, 'a');
+        pc += qprinti_cl (out, va_arg(va, uint32_t), 16, 0, width, pad, 'a');
         continue;
       }
       if( *format == 'X' ) {
-        pc += qprinti (out, va_arg(va, uint32_t), 16, 0, width, pad, 'A');
+        pc += qprinti_cl (out, va_arg(va, uint32_t), 16, 0, width, pad, 'A');
         continue;
       }
       if( *format == 'c' ) {
         scr[0] = va_arg(va, int);
         scr[1] = '\0';
-        pc += qprints (out, scr, width, pad);
+        pc += qprints_cl (out, scr, width, pad);
         continue;
       }
     }
     else
     {
 out:
-      qprintchar (out, *format);
+      qprintchar_cl (out, *format);
       ++pc;
     }
   }
@@ -310,14 +308,14 @@ out:
   return pc;
 }
 
-int printf(const char *format, ...)
+int printf_cl(const char *format, ...)
 {
   int pc;
   va_list va;
 
   va_start(va, format);
 
-  pc = qprint(0, format, va);
+  pc = qprint_cl(0, format, va);
 
   va_end(va);
 
@@ -325,14 +323,18 @@ int printf(const char *format, ...)
 
 }
 
-int puts(const char *s)
+int puts_cl(const char *s)
 {
   int i=0;
 
   while(s[i] != '\0')
-    putchar(s[i++]);
+    putchar_cl(s[i++]);
 
-  putchar('\n');
+  putchar_cl('\n');
 
   return i;
+}
+
+__attribute__ ((weak)) void external_irq_handler(void) {
+   return;
 }

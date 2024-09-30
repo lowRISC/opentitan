@@ -29,7 +29,7 @@ module boot_manager import tlul_ot_pkg::*; (
    // Debug Mode Signal
    input  logic [1:0]  bootmode_i,
    output logic        datapath_o,
-   output logic        info_init_o
+   output logic        cluster_fetch_en_o
 );
    import boot_manager_regs_reg_pkg::*;
    boot_manager_regs_reg_pkg::boot_manager_regs_reg2hw_t reg2hw;
@@ -100,7 +100,7 @@ module boot_manager import tlul_ot_pkg::*; (
    assign flash_write_o = 1'b1;
    assign flash_wdata_o = {payload_1, payload_2, payload_3[31:20]};
    assign datapath_o    = reg2hw.datapath.datapath.q;
-   assign info_init_o   = reg2hw.info_init.info_init.q;
+   assign cluster_fetch_en_o  = reg2hw.cluster.fetch_enable.q;
 
    assign hw2reg.start.start.d  = 1'b0;
    assign hw2reg.start.field1 = '0;

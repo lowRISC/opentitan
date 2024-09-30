@@ -94,16 +94,16 @@
         }
       ],
     },
-    { name: "Info_init",
-      desc: "If 0 original datapath, 1 jtag datapath",
+    { name: "Cluster",
+      desc: "cluster config regs",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
         { bits: "31:1" },
         { bits: "0",
-          name: "info_init",
+          name: "fetch_enable",
           resval: "0",
-          desc: "if 0: original datapaht, if 1 jtag datapath",
+          desc: "manage cluster's fetch enable",
         }
       ],
     },

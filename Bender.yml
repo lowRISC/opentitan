@@ -6,8 +6,9 @@ dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.0 }
+  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.2 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
+  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "94fae1c29d145f6f4eaed9918d893d0dbc7fbb65" } # branch: alsaqr-2.0
 
 export_include_dirs:
        - hw/ip/prim/rtl
@@ -16,6 +17,7 @@ export_include_dirs:
        - hw/dv/sv/dv_utils
        - hw/ip/tlul2axi/test
        - hw/ip/lowrisc_ibex/rtl
+       - hw/include
 
 sources:
 
@@ -133,8 +135,8 @@ sources:
       - hw/ip/prim/rtl/prim_pulse_sync.sv
       - hw/ip/prim/rtl/prim_ram_2p_pkg.sv
       - hw/ip/prim/rtl/prim_ram_1p_pkg.sv
-      - hw/ip/prim/rtl/prim_ram_2p.sv
-      - hw/ip/prim/rtl/prim_ram_1p.sv
+      #- hw/ip/prim/rtl/prim_ram_2p.sv
+      #- hw/ip/prim/rtl/prim_ram_1p.sv
       - hw/ip/prim/rtl/prim_ram_1p_adv.sv
       - hw/ip/prim/rtl/prim_ram_1p_scr.sv
       - hw/ip/prim/rtl/prim_ram_2p_adv.sv
@@ -466,9 +468,10 @@ sources:
       - hw/ip/sram_ctrl/rtl/sram_ctrl.sv
 
 #### crypto_sram
-
-      - hw/ip/crypto_sram_wrap/rtl/crypto_sram_wrap.sv
-      - hw/ip/crypto_sram_wrap/rtl/idma_wrap.sv
+      - target: use_idma
+        files:
+         - hw/ip/crypto_sram_wrap/rtl/crypto_sram_wrap.sv
+         - hw/ip/crypto_sram_wrap/rtl/idma_wrap.sv
 
 #### flash_ctrl
 
@@ -713,24 +716,24 @@ sources:
 
       - hw/ip/spi_device/rtl/spi_device_reg_pkg.sv
       - hw/ip/spi_device/rtl/spi_device_pkg.sv
-      - hw/ip/spi_device/rtl/spi_device_reg_top.sv
-      - hw/ip/spi_device/rtl/spi_cmdparse.sv
-      - hw/ip/spi_device/rtl/spi_fwm_rxf_ctrl.sv
-      - hw/ip/spi_device/rtl/spi_fwm_txf_ctrl.sv
-      - hw/ip/spi_device/rtl/spi_fwmode.sv
-      - hw/ip/spi_device/rtl/spi_p2s.sv
-      - hw/ip/spi_device/rtl/spi_passthrough.sv
-      - hw/ip/spi_device/rtl/spi_readcmd.sv
-      - hw/ip/spi_device/rtl/spi_s2p.sv
-      - hw/ip/spi_device/rtl/spid_fifo2sram_adapter.sv
-      - hw/ip/spi_device/rtl/spid_jedec.sv
-      - hw/ip/spi_device/rtl/spid_readbuffer.sv
-      - hw/ip/spi_device/rtl/spid_readsram.sv
-      - hw/ip/spi_device/rtl/spid_status.sv
-      - hw/ip/spi_device/rtl/spi_tpm.sv
-      - hw/ip/spi_device/rtl/spid_addr_4b.sv
-      - hw/ip/spi_device/rtl/spid_upload.sv
-#      - hw/ip/spi_device/rtl/spi_device.sv
+      #- hw/ip/spi_device/rtl/spi_device_reg_top.sv
+      #- hw/ip/spi_device/rtl/spi_cmdparse.sv
+      #- hw/ip/spi_device/rtl/spi_fwm_rxf_ctrl.sv
+      #- hw/ip/spi_device/rtl/spi_fwm_txf_ctrl.sv
+      #- hw/ip/spi_device/rtl/spi_fwmode.sv
+      #- hw/ip/spi_device/rtl/spi_p2s.sv
+      #- hw/ip/spi_device/rtl/spi_passthrough.sv
+      #- hw/ip/spi_device/rtl/spi_readcmd.sv
+      #- hw/ip/spi_device/rtl/spi_s2p.sv
+      #- hw/ip/spi_device/rtl/spid_fifo2sram_adapter.sv
+      #- hw/ip/spi_device/rtl/spid_jedec.sv
+      #- hw/ip/spi_device/rtl/spid_readbuffer.sv
+      #- hw/ip/spi_device/rtl/spid_readsram.sv
+      #- hw/ip/spi_device/rtl/spid_status.sv
+      #- hw/ip/spi_device/rtl/spi_tpm.sv
+      #- hw/ip/spi_device/rtl/spid_addr_4b.sv
+      #- hw/ip/spi_device/rtl/spid_upload.sv
+      #- hw/ip/spi_device/rtl/spi_device.sv
       - hw/ip/spi_device/rtl/spi_device_empty.sv
 
 ###### spi_host
@@ -812,17 +815,24 @@ sources:
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
       - hw/top_earlgrey/top/secure_subsystem_synth_astral_pkg.sv
-      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap_astral.sv
       - hw/top_earlgrey/top/top_earlgrey.sv
-      - hw/top_earlgrey/top/secure_subsystem_synth_pkg.sv
-      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap.sv
+      - target: use_idma
+        defines:
+          USE_IDMA: ~
+        files:
+           - hw/top_earlgrey/top/top_earlgrey.sv
+      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap_astral.sv
 
 ##### testbench
 
       -  target: test
          files:
+           - hw/include/pulp_interfaces.sv
+           - hw/include/pulp_soc_defines.sv
+           - hw/include/cluster_bus_defines.sv
            - hw/tb/util/uart.sv
            - hw/tb/util/jtag_intf.sv
+           - hw/tb/util/axi2mem.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/vip_security_island_soc.sv
@@ -833,9 +843,13 @@ sources:
          defines:
            VIPS: ~
          files:
+           - hw/include/pulp_interfaces.sv
+           - hw/include/pulp_soc_defines.sv
+           - hw/include/cluster_bus_defines.sv
            - hw/tb/util/uart.sv
            - hw/tb/vips/s25fs256s.v
            - hw/tb/util/jtag_intf.sv
+           - hw/tb/util/axi2mem.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench_asynch_astral.sv

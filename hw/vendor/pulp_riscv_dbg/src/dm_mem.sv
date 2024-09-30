@@ -477,6 +477,7 @@ module dm_ot_mem #(
     debug_ot_rom i_debug_rom (
       .clk_i,
       .req_i,
+      .rst_ni,
       .addr_i  ( rom_addr  ),
       .rdata_o ( rom_rdata )
     );
@@ -487,6 +488,7 @@ module dm_ot_mem #(
     debug_ot_rom_one_scratch i_debug_rom (
       .clk_i,
       .req_i,
+      .rst_ni,
       .addr_i  ( rom_addr  ),
       .rdata_o ( rom_rdata )
     );

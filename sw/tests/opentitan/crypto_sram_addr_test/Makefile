@@ -14,4 +14,4 @@ utils_dir = $(PROGRAM_DIR)/inc/
 directories = drivers/inc drivers/src string_lib/inc string_lib/src 
 EXTRA_SRCS = $(foreach d, $(directories), -I$(utils_dir)$d)
 
-include ${PROGRAM_DIR}/../common/common.mk
+include ${PROGRAM_DIR}/../../../common/common.mk

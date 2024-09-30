@@ -50,11 +50,11 @@ package boot_manager_regs_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } info_init;
+    } fetch_enable;
     struct packed {
       logic [30:0] q;
     } field1;
-  } boot_manager_regs_reg2hw_info_init_reg_t;
+  } boot_manager_regs_reg2hw_cluster_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -86,7 +86,7 @@ package boot_manager_regs_reg_pkg;
     boot_manager_regs_reg2hw_address_reg_t address; // [127:96]
     boot_manager_regs_reg2hw_start_reg_t start; // [95:64]
     boot_manager_regs_reg2hw_datapath_reg_t datapath; // [63:32]
-    boot_manager_regs_reg2hw_info_init_reg_t info_init; // [31:0]
+    boot_manager_regs_reg2hw_cluster_reg_t cluster; // [31:0]
   } boot_manager_regs_reg2hw_t;
 
   // HW -> register type
@@ -104,7 +104,7 @@ package boot_manager_regs_reg_pkg;
   parameter logic [BlockAw-1:0] BOOT_MANAGER_REGS_PAD_BOOTMODE_OFFSET = 6'h 14;
   parameter logic [BlockAw-1:0] BOOT_MANAGER_REGS_SW_BOOTMODE_OFFSET = 6'h 18;
   parameter logic [BlockAw-1:0] BOOT_MANAGER_REGS_DATAPATH_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] BOOT_MANAGER_REGS_INFO_INIT_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] BOOT_MANAGER_REGS_CLUSTER_OFFSET = 6'h 20;
 
   // Register index
   typedef enum int {
@@ -116,7 +116,7 @@ package boot_manager_regs_reg_pkg;
     BOOT_MANAGER_REGS_PAD_BOOTMODE,
     BOOT_MANAGER_REGS_SW_BOOTMODE,
     BOOT_MANAGER_REGS_DATAPATH,
-    BOOT_MANAGER_REGS_INFO_INIT
+    BOOT_MANAGER_REGS_CLUSTER
   } boot_manager_regs_id_e;
 
   // Register width information to check illegal writes
@@ -129,7 +129,7 @@ package boot_manager_regs_reg_pkg;
     4'b 1111, // index[5] BOOT_MANAGER_REGS_PAD_BOOTMODE
     4'b 1111, // index[6] BOOT_MANAGER_REGS_SW_BOOTMODE
     4'b 1111, // index[7] BOOT_MANAGER_REGS_DATAPATH
-    4'b 1111  // index[8] BOOT_MANAGER_REGS_INFO_INIT
+    4'b 1111  // index[8] BOOT_MANAGER_REGS_CLUSTER
   };
 
 endpackage

@@ -23,13 +23,6 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
-<<<<<<<< HEAD:sw/tests/opentitan/flash_aes_smoketest/BUILD
-opentitan_functest(
-    name = "flash_aes_smoketest",
-    srcs = ["flash_aes_smoketest.c"],
-    deps = [
-        "//hw/ip/aes:model",
-========
 opentitan_ram_binary(
     name = "sram_spi_host_test",
     srcs = [
@@ -41,11 +34,10 @@ opentitan_ram_binary(
     archive_symbol_prefix = "sram_spi_host_test",
     testonly = True,
     deps = [
-        "//sw/tests/opentitan/common:common",
-        "//sw/tests/opentitan/common:linker",
-        "//sw/tests/opentitan/common:crt",
+        "//sw/tests/common:common",
+        "//sw/tests/common:linker",
+        "//sw/tests/common:crt",
        	"//sw/device/silicon_creator/rom:rom_common",
->>>>>>>> 01a67b2fc (Major updates: secure boot, repo organization, automation.):sw/tests/opentitan/sram_spi_host_test/BUILD
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
