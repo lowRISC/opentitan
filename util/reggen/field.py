@@ -363,16 +363,31 @@ class Field:
             n_bits += int(not hwext)
         return n_bits
 
-    def make_multi(self,
-                   idx0: int,
-                   count: int,
-                   desc: Optional[str],
-                   stripped: bool) -> List['Field']:
+    def replicate(self,
+                  idx0: int,
+                  count: int,
+                  desc: Optional[str],
+                  strip_enum: bool) -> List['Field']:
+        '''Return a list of one or more copies of this field
+
+        The copies are indexed from idx0 to idx0+count-1 and their names are
+        constructed by appending the index in the form "field_name_123". If the
+        field is an alias, the target of the alias is renamed in the same way
+        ("target_name_123").
+
+        If desc is not None, this is used as the description for the field
+        copies, overriding self.desc.
+
+        Values of field might be from an enumerated type, with known values in
+        self.enum. If strip_enum is true, the copies of the field have their
+        enum type stripped and just become blocks of bits.
+        '''
+
         assert 0 <= idx0
         assert count > 0
         field_width = self.bits.msb + 1
 
-        enum = None if stripped else self.enum
+        enum = None if strip_enum else self.enum
 
         ret = []
         for idx in range(idx0, idx0 + count):
