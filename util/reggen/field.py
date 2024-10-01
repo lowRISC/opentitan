@@ -388,7 +388,6 @@ class Field:
         return n_bits
 
     def make_multi(self,
-                   reg_width: int,
                    min_reg_idx: int,
                    max_reg_idx: int,
                    cname: str,
@@ -396,18 +395,7 @@ class Field:
                    stripped: bool) -> List['Field']:
         assert 0 <= min_reg_idx <= max_reg_idx
 
-        # Check that we won't overflow reg_width. We assume that the LSB should
-        # be preserved: if msb=5, lsb=2 then the replicated copies will be
-        # [5:2], [11:8] etc.
-        num_copies = 1 + max_reg_idx - min_reg_idx
         field_width = self.bits.msb + 1
-
-        if field_width * num_copies > reg_width:
-            raise ValueError('Cannot replicate field {} {} times: the '
-                             'resulting width would be {}, but the register '
-                             'width is just {}.'
-                             .format(self.name, num_copies,
-                                     field_width * num_copies, reg_width))
 
         desc = ('For {}{}'.format(cname, creg_idx)
                 if stripped else self.desc)
