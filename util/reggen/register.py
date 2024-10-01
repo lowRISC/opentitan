@@ -539,8 +539,8 @@ class Register(RegBase):
                           if creg_idx > 0 else field.desc)
 
             num_copies = max_reg_idx - min_reg_idx + 1
-            new_fields = self.fields[0].make_multi(min_reg_idx, num_copies,
-                                                   field_desc, strip_field)
+            new_fields = self.fields[0].replicate(min_reg_idx, num_copies,
+                                                  field_desc, strip_field)
         else:
             # No compacting going on, but we still choose to rename the fields
             # to match the registers
