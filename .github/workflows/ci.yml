@@ -24,14 +24,17 @@ jobs:
         run: ./ci/scripts/show-env.sh
       - name: Commit metadata
         run: ./ci/scripts/lint-commits.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
       - name: License headers
         run: ./ci/scripts/check-licence-headers.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
       - name: Executable bits
         run: ./ci/scripts/exec-check.sh
       - name: Non-ASCII characters
         run: ./ci/scripts/check-ascii.sh
       - name: Python (flake8)
         run: ./ci/scripts/python-lint.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
       - name: Python (mypy)
         run: ./ci/scripts/mypy.sh
       - name: Validate testplans with schema
@@ -47,6 +50,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
       - name: Trailing whitespace
         run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
       - name: Broken links
         run: ./ci/scripts/check-links.sh
       - name: Generated documentation
@@ -71,6 +75,7 @@ jobs:
     name: Verible lint
     runs-on: ubuntu-24.04
     needs: quick_lint
+    if: ${{ github.event_name == 'pull_request' }}
     env:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
       verible_version: v0.0-3430-g060bde0f
