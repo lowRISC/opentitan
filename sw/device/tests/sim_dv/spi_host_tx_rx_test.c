@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/spi_host_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
@@ -32,14 +33,6 @@ static volatile const uint8_t kSPIHostIdx = 0x0;
 
 static dif_spi_host_t spi_host;
 static dif_pinmux_t pinmux;
-
-static const top_earlgrey_direct_pads_t spi_host0_direct_pads[6] = {
-    kTopEarlgreyDirectPadsSpiHost0Sck,   // sck
-    kTopEarlgreyDirectPadsSpiHost0Csb,   // csb
-    kTopEarlgreyDirectPadsSpiHost0Sd3,   // sio[3]
-    kTopEarlgreyDirectPadsSpiHost0Sd2,   // sio[2]
-    kTopEarlgreyDirectPadsSpiHost0Sd1,   // sio[1]
-    kTopEarlgreyDirectPadsSpiHost0Sd0};  // sio[0]
 
 // pinmap defined in chip_if.sv (spi_device1_if)
 static const top_earlgrey_muxed_pads_t spi_host1_muxed_pads[6] = {
@@ -142,47 +135,6 @@ void init_spi_host(dif_spi_host_t *spi_host,
 }
 
 /**
- * Setup pads for spi_host0
- *
- * This peripheral is 'direct' connected to the pads.
- */
-void setup_pads_spi_host0(void) {
-  // set weak pull-ups, fast slew rate and strong drive strengh for all the pads
-  dif_pinmux_pad_attr_t out_attr;
-  dif_pinmux_pad_attr_t in_attr = {
-      .slew_rate = 1,
-      .drive_strength = 3,
-      .flags = kDifPinmuxPadAttrPullResistorEnable |
-               kDifPinmuxPadAttrPullResistorUp};
-  dif_result_t res;
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host0_direct_pads); ++i) {
-    res = dif_pinmux_pad_write_attrs(&pinmux, spi_host0_direct_pads[i],
-                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
-    if (res == kDifError) {
-      // Some target platforms may not support the specified value for slew rate
-      // and drive strength. If that's the case, use the values actually
-      // supported.
-      if (out_attr.slew_rate != in_attr.slew_rate) {
-        LOG_INFO(
-            "Specified slew rate not supported, trying supported slew rate");
-        in_attr.slew_rate = out_attr.slew_rate;
-      }
-      if (out_attr.drive_strength != in_attr.drive_strength) {
-        LOG_INFO(
-            "Specified drive strength not supported, trying supported drive "
-            "strength");
-        in_attr.drive_strength = out_attr.drive_strength;
-      }
-      CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, spi_host0_direct_pads[i],
-                                              kDifPinmuxPadKindDio, in_attr,
-                                              &out_attr));
-      // Note: fallthrough with the modified `in_attr` so that the same
-      // attributes are used for all pads.
-    }
-  }
-}
-
-/**
  * Setup pads and pinmux for spi_host0
  *
  * This peripheral is 'muxed', so configure the pinmux as well as pads.
@@ -243,9 +195,11 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
-  // Setup pinmux if required, enable weak pull-up on relevant pads
-  setup_pads_spi_host0();         // direct
-  setup_pinmux_pads_spi_host1();  // muxed
+  // Setup pinmux if required, enable weak pull-up on relevant pads, set slew
+  // rate and drive strength.
+  CHECK_STATUS_OK(
+      spi_host_testutils_configure_host0_pad_attrs(&pinmux));  // direct
+  setup_pinmux_pads_spi_host1();                               // muxed
 
   // Setup spi host configuration
   LOG_INFO("Testing spi_host%0d", kSPIHostIdx);
