@@ -133,7 +133,7 @@ class MultiRegister(RegBase):
                                        'regwen_multi field of multireg {}'
                                        .format(self.name))
 
-        default_compact = True if len(self.reg.fields) == 1 and not self.regwen_multi else False
+        default_compact = len(self.reg.fields) == 1 and not self.regwen_multi
         self.compact = check_bool(rd.get('compact', default_compact),
                                   'compact field of multireg {}'
                                   .format(self.name))
@@ -183,10 +183,8 @@ class MultiRegister(RegBase):
 
         # dv_compact is true if the multireg can be equally divided, and we can
         # pack them as an array
-        if self.count < regs_per_creg or (self.count % regs_per_creg) == 0:
-            self.dv_compact = True
-        else:
-            self.dv_compact = False
+        self.dv_compact = (self.count < regs_per_creg or
+                           (self.count % regs_per_creg) == 0)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + len(self.regs) * addrsep
