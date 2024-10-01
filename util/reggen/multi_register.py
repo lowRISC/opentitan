@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from reggen import register
 from reggen.clocking import Clocking
@@ -67,7 +67,7 @@ class MultiRegister(RegBase):
 
       count        The number of copies of the replicated register.
 
-      regs         The concrete registers that make up the multiregister.
+      cregs        The concrete registers that make up the multiregister.
                    These will each contain at least one copy of the replicated
                    register.
 
@@ -79,13 +79,47 @@ class MultiRegister(RegBase):
     """
 
     def __init__(self,
+                 name: str,
                  offset: int,
-                 addrsep: int,
-                 reg_width: int,
-                 params: ReggenParams,
-                 raw: object,
-                 clocks: Clocking,
-                 is_alias: bool):
+                 alias_target: Optional[str],
+                 reg: Register,
+                 cname: str,
+                 regwen_multi: bool,
+                 compact: bool,
+                 dv_compact: bool,
+                 count: int,
+                 cregs: List[Register]):
+        super().__init__(name, offset,
+                         reg.async_name, reg.async_clk,
+                         reg.sync_name, reg.sync_clk, alias_target)
+        self.reg = reg
+        self.cname = cname
+        self.regwen_multi = regwen_multi
+        self.compact = compact
+        self.dv_compact = dv_compact
+        self.count = count
+        self.cregs = cregs
+
+    @staticmethod
+    def from_raw(raw: object, reg_width: int, offset: int, addrsep: int,
+                 params: ReggenParams, clocks: Clocking, is_alias: bool) -> 'MultiRegister':
+        '''Create a MultiRegister object from a dictionary.
+
+        The underlying register block has registers with reg_width bits and the
+        first concrete register in the expanded multi-register should be at the
+        given offset.
+
+        The concrete registers are spaced addrsep bytes apart and the params
+        and clocks values get passed to the constructor for the underlying
+        register that gets replicated.
+
+        If is_alias is true then this is supposed to alias some
+        (multi-)register and we expect the dictionary in raw to define
+        alias_target.
+        '''
+
+        # Check the raw object is a dictionary that has the right keys to
+        # describe a MultiRegister.
         rd = check_keys(raw, 'multireg',
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
@@ -99,8 +133,8 @@ class MultiRegister(RegBase):
         reg_rd = {key: value
                   for key, value in rd.items()
                   if key in reg_allowed_keys}
-        reg = Register.from_raw(reg_width, offset, params, reg_rd, clocks,
-                                is_alias)
+        preg = Register.from_raw(reg_width, offset, params, reg_rd, clocks,
+                                 is_alias)
 
         name = check_name(rd['name'], 'name of multi-register')
 
@@ -119,82 +153,70 @@ class MultiRegister(RegBase):
                                      f'multiregister {name} (this is not an '
                                      f'alias register block).')
 
-        super().__init__(name, offset,
-                         reg.async_name, reg.async_clk,
-                         reg.sync_name, reg.sync_clk, alias_target)
+        cname = check_name(rd['cname'], f'cname field of multireg {name}')
+        regwen_multi = check_bool(rd.get('regwen_multi', False),
+                                  f'regwen_multi field of multireg {name}')
 
-        self.reg = reg
+        default_compact = len(preg.fields) == 1 and not regwen_multi
+        compact = check_bool(rd.get('compact', default_compact),
+                             f'compact field of multireg {name}')
 
-        self.cname = check_name(rd['cname'],
-                                'cname field of multireg {}'
-                                .format(self.name))
+        if compact:
+            if len(preg.fields) > 1:
+                raise ValueError(f'Multireg {name} sets the compact flag '
+                                 'but has multiple fields.')
+            if regwen_multi:
+                raise ValueError(f'Multireg {name} sets the compact flag '
+                                 'but has regwen_multi set.')
 
-        self.regwen_multi = check_bool(rd.get('regwen_multi', False),
-                                       'regwen_multi field of multireg {}'
-                                       .format(self.name))
+        count_str = check_str(rd['count'], f'count field of multireg {name}')
+        count = params.expand(count_str, f'count field of multireg {name}')
 
-        default_compact = len(self.reg.fields) == 1 and not self.regwen_multi
-        self.compact = check_bool(rd.get('compact', default_compact),
-                                  'compact field of multireg {}'
-                                  .format(self.name))
-        if self.compact and len(self.reg.fields) > 1:
-            raise ValueError('Multireg {} sets the compact flag '
-                             'but has multiple fields.'
-                             .format(self.name))
-
-        if self.regwen_multi and self.compact:
-            raise ValueError('Multireg {} sets the compact flag '
-                             'but has regwen_multi set.'
-                             .format(self.name))
-
-        count_str = check_str(rd['count'],
-                              'count field of multireg {}'
-                              .format(self.name))
-        self.count = params.expand(count_str,
-                                   'count field of multireg ' + self.name)
-        if self.count <= 0:
-            raise ValueError("Multireg {} has a count of {}, "
-                             "which isn't positive."
-                             .format(self.name, self.count))
+        if count <= 0:
+            raise ValueError(f"Multireg {name} has a count of {count}, "
+                             "which isn't positive.")
 
         # Generate the registers that this multireg expands into. Here, a
         # "creg" is a "compacted register", which might contain multiple actual
         # registers.
-        if self.compact:
-            assert len(self.reg.fields) == 1
-            width_per_reg = self.reg.fields[0].bits.msb + 1
+        if compact:
+            assert len(preg.fields) == 1
+            width_per_reg = preg.fields[0].bits.msb + 1
             assert width_per_reg <= reg_width
             regs_per_creg = reg_width // width_per_reg
         else:
             regs_per_creg = 1
 
-        self.regs = []
-        creg_count = (self.count + regs_per_creg - 1) // regs_per_creg
+        cregs = []
+        creg_count = (count + regs_per_creg - 1) // regs_per_creg
         for creg_idx in range(creg_count):
             min_reg_idx = regs_per_creg * creg_idx
-            max_reg_idx = min(min_reg_idx + regs_per_creg, self.count) - 1
+            max_reg_idx = min(min_reg_idx + regs_per_creg, count) - 1
             creg_offset = offset + creg_idx * addrsep
 
-            reg = self.reg.make_multi(reg_width,
-                                      creg_offset, creg_idx, creg_count,
-                                      self.regwen_multi, self.compact,
-                                      min_reg_idx, max_reg_idx, self.cname)
-            self.regs.append(reg)
+            creg = preg.make_multi(reg_width,
+                                   creg_offset, creg_idx, creg_count,
+                                   regwen_multi, compact,
+                                   min_reg_idx, max_reg_idx, cname)
+            cregs.append(creg)
 
         # dv_compact is true if the multireg can be equally divided, and we can
         # pack them as an array
-        self.dv_compact = (self.count < regs_per_creg or
-                           (self.count % regs_per_creg) == 0)
+        dv_compact = (count < regs_per_creg or (count % regs_per_creg) == 0)
+
+        return MultiRegister(name, offset, alias_target,
+                             preg, cname, regwen_multi,
+                             compact, dv_compact, count, cregs)
 
     def next_offset(self, addrsep: int) -> int:
-        return self.offset + len(self.regs) * addrsep
+        return self.offset + len(self.cregs) * addrsep
 
     def get_n_bits(self, bittype: List[str] = ["q"]) -> int:
-        return sum(reg.get_n_bits(bittype) for reg in self.regs)
+        return sum(reg.get_n_bits(bittype) for reg in self.cregs)
 
     def get_field_list(self) -> List[Field]:
         ret = []
-        for reg in self.regs:
+        for reg in self.cregs:
             ret += reg.get_field_list()
         return ret
 
@@ -245,9 +267,9 @@ class MultiRegister(RegBase):
 
         # Since the multireg structures must be identical, both generic and
         # alias reg must have the same amount of expanded regs at this point.
-        assert (len(self.regs) == len(alias_reg.regs))
+        assert (len(self.cregs) == len(alias_reg.cregs))
         # Finally, iterate over expanded regs and update them as well.
-        for creg, alias_creg in zip(self.regs, alias_reg.regs):
+        for creg, alias_creg in zip(self.cregs, alias_reg.cregs):
             creg.apply_alias(alias_creg, where)
 
     def scrub_alias(self, where: str) -> None:
@@ -267,5 +289,5 @@ class MultiRegister(RegBase):
         self.reg.scrub_alias(where)
 
         # Finally, iterate over expanded regs and scrub them as well.
-        for creg in self.regs:
+        for creg in self.cregs:
             creg.scrub_alias(where)

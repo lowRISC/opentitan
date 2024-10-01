@@ -249,12 +249,12 @@ def gen_const_multireg(outstr: TextIO,
     if len(multireg.reg.fields) == 1:
         regname = as_define(component + '_' + multireg.reg.name)
         gen_multireg_field_defines(outstr, regname, multireg.reg.fields[0],
-                                   len(multireg.regs), regwidth, existing_defines)
+                                   len(multireg.cregs), regwidth, existing_defines)
     else:
         log.warn("Non-homogeneous multireg " + multireg.reg.name +
                  " skip multireg specific data generation.")
 
-    for subreg in multireg.regs:
+    for subreg in multireg.cregs:
         gen_const_register(outstr, subreg, component, regwidth, rnames,
                            existing_defines)
 
