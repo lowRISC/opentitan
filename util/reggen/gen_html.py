@@ -348,7 +348,7 @@ def gen_html_reg_block(outfile: TextIO, rb: RegBlock, comp: str, width: int,
         obj_list: List[Union[Register, Window]] = []
         for x in rb.entries:
             if isinstance(x, MultiRegister):
-                for reg in x.regs:
+                for reg in x.cregs:
                     obj_list += [reg]
             else:
                 assert isinstance(x, Window) or isinstance(x, Register)
@@ -360,7 +360,7 @@ def gen_html_reg_block(outfile: TextIO, rb: RegBlock, comp: str, width: int,
             if isinstance(x, Register):
                 gen_html_register(outfile, x, comp, width, rnames)
             elif isinstance(x, MultiRegister):
-                for reg in x.regs:
+                for reg in x.cregs:
                     gen_html_register(outfile, reg, comp, width, rnames)
             else:
                 assert isinstance(x, Window)

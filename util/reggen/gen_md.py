@@ -84,7 +84,7 @@ def gen_md_register_summary(output: TextIO,
     for entry in entries:
         if isinstance(entry, MultiRegister):
             is_compact = multireg_is_compact(entry, width)
-            for reg in entry.regs:
+            for reg in entry.cregs:
                 # If multiregisters are compact, each register has it's own section,
                 # so the anchor should link to a section with the individual register name(s).
                 # Otherwise, there is one section for the whole multiregister,
@@ -154,7 +154,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     # the general definition of the first register as an example for all
     # other instances.
     if multireg_is_compact(mreg, width):
-        for reg in mreg.regs:
+        for reg in mreg.cregs:
             gen_md_register(output, reg, comp, width)
         return
 
@@ -169,7 +169,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     output.write(
         table(
             ["Name", "Offset"],
-            [[reg.name, hex(reg.offset)] for reg in mreg.regs],
+            [[reg.name, hex(reg.offset)] for reg in mreg.cregs],
         ))
 
     # Fields
