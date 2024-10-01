@@ -536,7 +536,7 @@ jobs:
     interface: cw310
     board: cw310
     tag_filters: "cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf"
-    timeout: 60
+    timeout: 90
 
 - template: ci/fpga-job.yml
   parameters:
