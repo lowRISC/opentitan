@@ -283,8 +283,10 @@ class RegBlock:
         '''
 
         try:
-            mr = MultiRegister(self.offset, self._addrsep, self._reg_width,
-                               self._params, body, clocks, is_alias)
+            mr = MultiRegister.from_raw(body,
+                                        self._reg_width, self.offset,
+                                        self._addrsep, self._params,
+                                        clocks, is_alias)
         except EmptyMultiRegException:
             return
 
@@ -292,7 +294,7 @@ class RegBlock:
         self._validate_async(mr.async_name, mr.async_clk)
         self._validate_sync(mr.sync_name, mr.sync_clk)
 
-        for reg in mr.regs:
+        for reg in mr.cregs:
             lname = reg.name.lower()
             if lname in self.name_to_offset:
                 raise ValueError('Multiregister {} (at offset {:#x}) expands '
