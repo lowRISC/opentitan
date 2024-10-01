@@ -11,17 +11,17 @@
   # Get a list reg and its instance name
   # For single reg, return Dict[reg_inst:reg]
   # For multireg, if it's dv_compact, return Dict[mr.name[idx]:mr.reg],
-  # if not, return all the mr.regs with their name
+  # if not, return all the items of mr.cregs with their names.
   def get_inst_to_reg_dict(r) -> Dict:
     inst_regs = {} # type: Dict[inst_name:Register]
     if isinstance(r, MultiRegister):
       if r.dv_compact:
         inst_base = r.reg.name.lower()
-        for idx, reg in enumerate(r.regs):
+        for idx, reg in enumerate(r.cregs):
           inst_name = f'{inst_base}[{idx}]'
           inst_regs[inst_name] = reg
       else:
-        for r0 in r.regs:
+        for r0 in r.cregs:
           inst_regs[r0.name] = r0
     else:
       inst_regs[r.name.lower()] = r
@@ -61,7 +61,7 @@ ${make_ral_pkg_fwd_decls(esc_if_name, rb.type_regs, rb.windows)}
       if r.dv_compact:
         regs = [r.reg]
       else:
-        regs = r.regs
+        regs = r.cregs
     else:
       regs = [r]
 %>\
@@ -89,9 +89,9 @@ ${make_ral_pkg_window_class(dv_base_names.mem, esc_if_name, window)}
       if isinstance(r, MultiRegister):
         if r.dv_compact:
           regs = [r.reg]
-          count = len(r.regs)
+          count = len(r.cregs)
         else:
-          regs = r.regs
+          regs = r.cregs
       else:
         regs = [r]
 %>\
@@ -147,7 +147,7 @@ ${make_ral_pkg_window_class(dv_base_names.mem, esc_if_name, window)}
     reg_type = gen_dv.rcname(esc_if_name, r0)
 %>\
     % if isinstance(r, MultiRegister):
-      % for idx, reg in enumerate(r.regs):
+      % for idx, reg in enumerate(r.cregs):
 <%
         if r.dv_compact:
           inst_base = r0.name.lower()
@@ -310,7 +310,7 @@ reg_block_path, reg, mr, reg_idx)">\
     if not mr.compact:
       fields = mr.reg.fields
     else:
-      fields = mr.regs[reg_idx].fields
+      fields = mr.cregs[reg_idx].fields
       compact_field_inst_name = mr.reg.fields[0].name.lower()
       compact_alias_field_inst_name = mr.reg.fields[0].alias_target
       if mr.dv_compact:

@@ -279,12 +279,12 @@ def gen_cdefine_multireg(outstr: TextIO,
     if len(multireg.reg.fields) >= 1:
         regname = as_define(component + '_' + multireg.reg.name)
         gen_multireg_field_defines(outstr, regname, multireg.reg.fields,
-                                   len(multireg.regs), regwidth, existing_defines)
+                                   len(multireg.cregs), regwidth, existing_defines)
     else:
         log.warn("Fieldless multireg " + multireg.reg.name +
                  " skip multireg specific data generation.")
 
-    for subreg in multireg.regs:
+    for subreg in multireg.cregs:
         gen_cdefine_register(outstr, subreg, component, regwidth, rnames,
                              existing_defines)
 
