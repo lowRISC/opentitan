@@ -25,16 +25,14 @@ gen_and_check_clean() {
     thing="$1"
     shift
     "$@" || {
-        echo -n "##vso[task.logissue type=error]"
-        echo "Failed to auto-generate $thing. (command: '$*')"
+        echo "::error::Failed to auto-generate ${thing}. (command: '$*')"
         echo
         destructive_cleanup
         return 1
     }
 
     is_clean || {
-        echo -n "##vso[task.logissue type=error]"
-        echo "Auto-generated $thing not up-to-date. Regenerate with '$*'."
+        echo "::error::Auto-generated ${thing} not up-to-date. Regenerate with '$*'."
         echo
         destructive_cleanup
         return 1
