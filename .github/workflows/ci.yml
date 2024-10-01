@@ -37,13 +37,14 @@ jobs:
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
       - name: C/C++ formatting
-        run: ./ci/scripts/clang-format.sh "$GITHUB_BASE_REF"
+        run: ./ci/bazelisk.sh test //quality:clang_format_check
       - name: Rust formatting
-        run: ./ci/scripts/rust-format.sh "$GITHUB_BASE_REF"
+        run: ./ci/bazelisk.sh test //quality:rustfmt_check
       - name: Shellcheck
         run: ./ci/bazelisk.sh test //quality:shellcheck_check
       - name: Header guards
         run: ./ci/scripts/include-guard.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
       - name: Trailing whitespace
         run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
       - name: Broken links
