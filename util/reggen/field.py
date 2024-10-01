@@ -408,19 +408,6 @@ class Field:
 
         return ret
 
-    def make_suffixed(self, suffix: str, cname: str, creg_idx: int,
-                      stripped: bool) -> 'Field':
-        desc = f'For {cname}{creg_idx}' if stripped else self.desc
-        enum = None if stripped else self.enum
-
-        alias_target = None
-        if self.alias_target is not None:
-            alias_target = self.alias_target + suffix
-
-        return Field(self.name + suffix, alias_target, desc, self.tags,
-                     self.swaccess, self.hwaccess, self.hwqe, self.bits,
-                     self.resval, enum, self.mubi, self.auto_split)
-
     def _asdict(self) -> Dict[str, object]:
         rd = {
             'bits': self.bits.as_str(),
