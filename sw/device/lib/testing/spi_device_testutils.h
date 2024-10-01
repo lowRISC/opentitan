@@ -9,8 +9,11 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/testing/json/spi_passthru.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
  * A set of typical opcodes for named flash commands.
@@ -53,6 +56,17 @@ typedef enum spi_device_flash_opcode {
 enum spi_device_command_slot {
   kSpiDeviceReadCommandSlotBase = 0,
   kSpiDeviceWriteCommandSlotBase = 11,
+};
+
+/*
+ * The SPI device pads for which `spi_device_testutils_configure_pad_attrs()`
+ * configures the pad attributes.
+ */
+static const top_earlgrey_direct_pads_t spi_device_direct_pads[4] = {
+    kTopEarlgreyDirectPadsSpiDeviceSd3,  // sio[3]
+    kTopEarlgreyDirectPadsSpiDeviceSd2,  // sio[2]
+    kTopEarlgreyDirectPadsSpiDeviceSd1,  // sio[1]
+    kTopEarlgreyDirectPadsSpiDeviceSd0   // sio[0]
 };
 
 /**
@@ -111,6 +125,15 @@ status_t spi_device_testutils_configure_read_pipeline(
     dif_spi_device_handle_t *spi_device,
     dif_spi_device_read_pipeline_mode_t dual_mode,
     dif_spi_device_read_pipeline_mode_t quad_mode);
+
+/**
+ * Configure the SPI device pad attributes.
+ *
+ * @return A status_t indicating success or failure configuring the pad
+ * attributes.
+ */
+OT_WARN_UNUSED_RESULT
+status_t spi_device_testutils_configure_pad_attrs(dif_pinmux_t *pinmux);
 
 /**
  * Wait for a spi command upload.

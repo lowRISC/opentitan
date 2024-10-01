@@ -144,13 +144,6 @@ static const top_earlgrey_direct_pads_t spi_host0_direct_pads[5] = {
     kTopEarlgreyDirectPadsSpiHost0Sd0   // sio[0]
 };
 
-static const top_earlgrey_direct_pads_t spi_device_direct_pads[4] = {
-    kTopEarlgreyDirectPadsSpiDeviceSd3,  // sio[3]
-    kTopEarlgreyDirectPadsSpiDeviceSd2,  // sio[2]
-    kTopEarlgreyDirectPadsSpiDeviceSd1,  // sio[1]
-    kTopEarlgreyDirectPadsSpiDeviceSd0   // sio[0]
-};
-
 /**
  * Initialize the provided SPI host. For the most part, the values provided are
  * filler, as spi_host0 will be in passthrough mode and spi_host1 will remain
@@ -427,36 +420,8 @@ bool test_main(void) {
     }
   }
 
-  // Set fast slew rate and strong drive strengh for SPI device pads.
-  in_attr.slew_rate = 1;
-  in_attr.drive_strength = 3;
-  // Don't enable pull-ups for SPI device pads.
-  in_attr.flags = 0;
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_device_direct_pads); ++i) {
-    res = dif_pinmux_pad_write_attrs(&pinmux, spi_device_direct_pads[i],
-                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
-    if (res == kDifError) {
-      // Some target platforms may not support the specified value for slew rate
-      // and drive strength. If that's the case, use the values actually
-      // supported.
-      if (out_attr.slew_rate != in_attr.slew_rate) {
-        LOG_INFO(
-            "Specified slew rate not supported, trying supported slew rate");
-        in_attr.slew_rate = out_attr.slew_rate;
-      }
-      if (out_attr.drive_strength != in_attr.drive_strength) {
-        LOG_INFO(
-            "Specified drive strength not supported, trying supported drive "
-            "strength");
-        in_attr.drive_strength = out_attr.drive_strength;
-      }
-      CHECK_DIF_OK(
-          dif_pinmux_pad_write_attrs(&pinmux, spi_device_direct_pads[i],
-                                     kDifPinmuxPadKindDio, in_attr, &out_attr));
-      // Note: fallthrough with the modified `in_attr` so that the same
-      // attributes are used for all pads.
-    }
-  }
+  // Configure fast slew rate and strong drive strength for SPI device pads.
+  CHECK_STATUS_OK(spi_device_testutils_configure_pad_attrs(&pinmux));
 
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init(
