@@ -51,7 +51,8 @@ runs:
           exit 1
         }
         sudo mkdir -p "${{ inputs.verilator-path }}"
-        sudo tar -C "${{ inputs.verilator-path }}" -xvzf "/tmp/${VERILATOR_TAR}" --strip-components=1
+        sudo chmod 777 "${{ inputs.verilator-path }}"
+        tar -C "${{ inputs.verilator-path }}" -xvzf "/tmp/${VERILATOR_TAR}" --strip-components=1
         echo "${{ inputs.verilator-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
 
@@ -64,6 +65,7 @@ runs:
           exit 1
         }
         sudo mkdir -p "${{ inputs.verible-path }}"
-        sudo tar -C "${{ inputs.verible-path }}" -xvzf "/tmp/${VERIBLE_TAR}" --strip-components=1
+        sudo chmod 777 "${{ inputs.verible-path }}"
+        tar -C "${{ inputs.verible-path }}" -xvzf "/tmp/${VERIBLE_TAR}" --strip-components=1
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
