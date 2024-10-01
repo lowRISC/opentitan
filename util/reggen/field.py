@@ -364,32 +364,32 @@ class Field:
         return n_bits
 
     def make_multi(self,
-                   min_reg_idx: int,
-                   max_reg_idx: int,
+                   idx0: int,
+                   count: int,
                    desc: Optional[str],
                    stripped: bool) -> List['Field']:
-        assert 0 <= min_reg_idx <= max_reg_idx
-
+        assert 0 <= idx0
+        assert count > 0
         field_width = self.bits.msb + 1
 
         enum = None if stripped else self.enum
 
         ret = []
-        for reg_idx in range(min_reg_idx, max_reg_idx + 1):
-            name = f'{self.name}_{reg_idx}'
+        for idx in range(idx0, idx0 + count):
+            name = f'{self.name}_{idx}'
             # In case this is an alias register, we need to make sure that
             # the alias_target name is expanded as well.
             alias_target = None
             if self.alias_target is not None:
-                alias_target = f'{self.alias_target}_{reg_idx}'
+                alias_target = f'{self.alias_target}_{idx}'
 
-            bit_offset = field_width * (reg_idx - min_reg_idx)
-            bits = (self.bits if bit_offset == 0 else
-                    self.bits.make_translated(bit_offset))
+            bit_offset = field_width * (idx - idx0)
+            bits = self.bits.make_translated(bit_offset)
 
             ret.append(Field(name, alias_target, desc or self.desc,
-                             self.tags, self.swaccess, self.hwaccess, self.hwqe,
-                             bits, self.resval, enum, self.mubi, self.auto_split))
+                             self.tags, self.swaccess, self.hwaccess,
+                             self.hwqe, bits, self.resval, enum, self.mubi,
+                             self.auto_split))
 
         return ret
 
