@@ -472,9 +472,9 @@ class Register(RegBase):
             # This is only supported if we have exactly one field (checked at
             # the call-site)
             assert len(self.fields) == 1
-            new_fields = self.fields[0].make_multi(reg_width, min_reg_idx,
-                                                   max_reg_idx, cname,
-                                                   creg_idx, strip_field)
+            new_fields = self.fields[0].make_multi(min_reg_idx, max_reg_idx,
+                                                   cname, creg_idx,
+                                                   strip_field)
         else:
             # No compacting going on, but we still choose to rename the fields
             # to match the registers
@@ -483,6 +483,15 @@ class Register(RegBase):
                 field.make_suffixed(f'_{creg_idx}', cname, creg_idx,
                                     strip_field) for field in self.fields
             ]
+
+        # Check that the replicated field will fit in the target register.
+        # The msb of the last copy should be less than reg_width.
+        if new_fields[-1].bits.msb >= reg_width:
+            raise ValueError(
+                f'Cannot replicate field {self.fields[0].name} to make '
+                f'copies {min_reg_idx}-{max_reg_idx}: the resulting '
+                f'msb is {new_fields[-1].bits.msb}, but the register '
+                f'width is just {reg_width}.')
 
         # Don't specify a reset value for the new register. Any reset value
         # defined for the original register will have propagated to its fields,
