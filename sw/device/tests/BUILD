@@ -4631,6 +4631,7 @@ opentitan_test(
         "//sw/device/lib/testing:otbn_testutils_rsa",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
