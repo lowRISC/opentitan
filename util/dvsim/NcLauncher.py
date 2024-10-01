@@ -159,17 +159,17 @@ class NcLauncher(Launcher):
         job_runtime_secs = elapsed_time.total_seconds()
         if self.process.poll() is None:
             timeout_mins = self.deploy.get_timeout_mins()
-            conditions = [timeout_mins is not None,
-                          job_runtime_secs > (timeout_mins * 60),
-                          not self.deploy.gui]
-            if all(conditions):
-                self._kill()
-                timeout_message = f'Job timed out after {timeout_mins} minutes'
-                self._post_finish('K',
-                                  ErrorMessage(line_number=None,
-                                               message=timeout_message,
-                                               context=[timeout_message]))
-                return 'K'
+            if timeout_mins is not None and not self.deploy.gui:
+                if job_runtime_secs > (timeout_mins * 60):
+                    self._kill()
+                    timeout_message = f'Job timed out after {timeout_mins} mins'
+                    self._post_finish('K',
+                                      ErrorMessage(line_number=None,
+                                                   message=timeout_message,
+                                                   context=[timeout_message]))
+                    return 'K'
+                else:
+                    return 'D'
             else:
                 return 'D'
 
