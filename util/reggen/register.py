@@ -530,9 +530,16 @@ class Register(RegBase):
             # This is only supported if we have exactly one field (checked at
             # the call-site)
             assert len(self.fields) == 1
+
+            # If this is for a compacted register after the first one, we tweak
+            # the field description slightly so that it just says which
+            # register it is used in.
+            field = self.fields[0]
+            field_desc = (f'For {cname}{creg_idx}'
+                          if creg_idx > 0 else field.desc)
+
             new_fields = self.fields[0].make_multi(min_reg_idx, max_reg_idx,
-                                                   cname, creg_idx,
-                                                   strip_field)
+                                                   field_desc, strip_field)
         else:
             # No compacting going on, but we still choose to rename the fields
             # to match the registers
