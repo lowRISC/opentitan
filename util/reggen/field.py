@@ -366,14 +366,12 @@ class Field:
     def make_multi(self,
                    min_reg_idx: int,
                    max_reg_idx: int,
-                   cname: str,
-                   creg_idx: int,
+                   desc: Optional[str],
                    stripped: bool) -> List['Field']:
         assert 0 <= min_reg_idx <= max_reg_idx
 
         field_width = self.bits.msb + 1
 
-        desc = f'For {cname}{creg_idx}' if stripped else self.desc
         enum = None if stripped else self.enum
 
         ret = []
@@ -389,10 +387,9 @@ class Field:
             bits = (self.bits if bit_offset == 0 else
                     self.bits.make_translated(bit_offset))
 
-            ret.append(
-                Field(name, alias_target, desc, self.tags, self.swaccess,
-                      self.hwaccess, self.hwqe, bits, self.resval, enum,
-                      self.mubi, self.auto_split))
+            ret.append(Field(name, alias_target, desc or self.desc,
+                             self.tags, self.swaccess, self.hwaccess, self.hwqe,
+                             bits, self.resval, enum, self.mubi, self.auto_split))
 
         return ret
 
