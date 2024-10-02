@@ -48,6 +48,7 @@ pub enum CertificateCommand {
 #[derive(Clone, Debug, ValueEnum)]
 pub enum CertFormat {
     X509,
+    Cwt,
 }
 
 /// Generate a certificate template.
