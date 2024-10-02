@@ -213,7 +213,7 @@ def main():
         help='The path to the HJSON Verification Plan file.'
     )
 
-    # Optional argument to demote errors to warnings
+    # Optional argument to demote errors into warnings
     parser.add_argument(
         '--demote_error',
         action='store_true',

@@ -6,19 +6,25 @@ import argparse
 
 # Main function to handle CSV file parsing and HJSON file creation
 def convert_csv(csv_file):
+    # Open the CSV file and read its contents
     with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
         csv_reader = csv.DictReader(file)
         data = [row for row in csv_reader]
 
-    # Convert data into HJSON
-    hjson_data = hjson.dumps(data, indent=2)
+    hjson_lines = ["["]  # Start the HJSON list with an opening bracket
+    for i, row in enumerate(data, start=2):  # Start index at 2 to match the CSV rows
+        # Add a comment with the CSV row number before each group
+        hjson_lines.append(f"  # CSV row {i}")
+        hjson_lines.append("  " + hjson.dumps(row, indent=2).replace("\n", "\n  "))  # Indent each item
 
-    # Extract CSV file name and create a HJSON file with the same name
+    hjson_lines.append("]")  # End the HJSON list with a closing bracket
+
+    # Extract CSV file name and create an HJSON file with the same name
     hjson_file = csv_file.replace('.csv', '.hjson')
 
-    # Write the HJSON file
+    # Write the HJSON file with comments and valid HJSON formatting
     with open(hjson_file, mode='w', encoding='utf-8') as file:
-        file.write(hjson_data)
+        file.write("\n".join(hjson_lines))  # Join all HJSON lines into a single string
 
     print("Conversion successfully completed")
 
@@ -36,7 +42,7 @@ def main():
     # Parse arguments
     args = parser.parse_args()
 
-    # Call the compare function with the provided directory, HJSON file, and block name
+    # Call the convert_csv function with the provided CSV file path
     convert_csv(args.csv_file)
 
 if __name__ == '__main__':
