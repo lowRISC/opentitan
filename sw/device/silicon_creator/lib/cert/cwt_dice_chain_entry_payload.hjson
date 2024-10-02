@@ -1,0 +1,107 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "cwt_dice_chain_entry_payload",
+
+    variables: {
+        issuer: {
+            type: "string",
+            max-size: 64,
+        },
+        subject: {
+            type: "string",
+            max-size: 64,
+        },
+        code_hash: {
+            type: "byte-array",
+            exact-size: 32,
+        },
+        config_hash: {
+            type: "byte-array",
+            exact-size: 32,
+        },
+        config_desc: {
+            type: "byte-array",
+            max-size: 64,
+        },
+        auth_hash: {
+            type: "byte-array",
+            exact-size: 32,
+        },
+        mode: {
+            type: "byte-array",
+            exact-size: 1,
+        },
+        subject_pk: {
+            type: "byte-array",
+            exact-size: 77,
+        },
+        profile_name: {
+            type: "string",
+            exact-size: 10,
+        },
+    },
+
+    constants: {
+        issuer_label: {
+            type: "integer",
+            value: 1
+        },
+        subject_label: {
+            type: "integer",
+            value: 2
+        },
+        profile_name_label: {
+            type: "integer",
+            value: -4670554
+        },
+        subject_pk_label: {
+            type: "integer",
+            value: -4670552
+        },
+        key_usage_label: {
+            type: "integer",
+            value: -4670553
+        },
+        key_usage_value: {
+            type: "byte-array",
+            value: "20"
+        },
+        code_hash_label: {
+            type: "integer",
+            value: -4670545
+        },
+        config_hash_label: {
+            type: "integer",
+            value: -4670547
+        },
+        config_desc_label: {
+            type: "integer",
+            value: -4670548
+        },
+        auth_hash_label: {
+            type: "integer",
+            value: -4670549
+        },
+        mode_label: {
+            type: "integer",
+            value: -4670551
+        },
+    },
+
+    // Reference: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/rkp/aidl/android/hardware/security/keymint/generateCertificateRequestV2.cddl
+    // DiceChainEntryPayload
+    structure: {
+        issuer_label: issuer
+        subject_label: subject
+        code_hash_label: code_hash
+        config_hash_label: config_hash
+        config_desc_label: config_desc
+        auth_hash_label: auth_hash
+        mode_label: mode
+        subject_pk_label: subject_pk
+        key_usage_label: key_usage_value
+        profile_name_label: profile_name
+    }
+}
