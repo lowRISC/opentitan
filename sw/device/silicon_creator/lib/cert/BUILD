@@ -35,6 +35,30 @@ certificate_template(
 )
 
 certificate_template(
+    name = "cwt_cose_key_template",
+    cert_format = "cwt",
+    template = "cwt_cose_key.hjson",
+)
+
+certificate_template(
+    name = "cwt_dice_chain_entry_payload_template",
+    cert_format = "cwt",
+    template = "cwt_dice_chain_entry_payload.hjson",
+)
+
+certificate_template(
+    name = "cwt_dice_chain_entry_input_template",
+    cert_format = "cwt",
+    template = "cwt_dice_chain_entry_input.hjson",
+)
+
+certificate_template(
+    name = "cwt_dice_chain_entry_template",
+    cert_format = "cwt",
+    template = "cwt_dice_chain_entry.hjson",
+)
+
+certificate_template(
     name = "tpm_ek_template",
     template = "tpm_ek.hjson",
 )
