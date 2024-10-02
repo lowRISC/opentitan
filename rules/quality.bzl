@@ -472,19 +472,25 @@ modid_check_aspect = aspect(
     },
 )
 
-def _rustfmt_impl(ctx):
+def _rustfmt_impl(ctx, check = False):
     # See rules/ujson.bzl
     rustfmt_files = ctx.attr._rustfmt.data_runfiles.files.to_list()
     rustfmt = [f for f in rustfmt_files if f.basename == "rustfmt"][0]
+
+    rustfmt_args = []
+    if check:
+        rustfmt_args.append("--check")
 
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     exclude_patterns = ["\\! -path {}".format(shell.quote(p)) for p in ctx.attr.exclude_patterns]
     include_patterns = ["-name {}".format(shell.quote(p)) for p in ctx.attr.patterns]
     workspace = ctx.file.workspace.path if ctx.file.workspace else ""
+
     substitutions = {
         "@@EXCLUDE_PATTERNS@@": " ".join(exclude_patterns),
         "@@INCLUDE_PATTERNS@@": " -o ".join(include_patterns),
         "@@RUSTFMT@@": shell.quote(rustfmt.short_path),
+        "@@RUSTFMT_ARGS@@": shell.array_literal(rustfmt_args),
         "@@WORKSPACE@@": workspace,
     }
     ctx.actions.expand_template(
@@ -529,4 +535,11 @@ rustfmt_fix = rule(
     implementation = _rustfmt_impl,
     attrs = rustfmt_attrs,
     executable = True,
+)
+
+rustfmt_test = rule(
+    implementation = lambda ctx: _rustfmt_impl(ctx, check = True),
+    attrs = rustfmt_attrs,
+    executable = True,
+    test = True,
 )

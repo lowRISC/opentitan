@@ -5,14 +5,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 RUSTFMT=@@RUSTFMT@@
+RUSTFMT_ARGS=@@RUSTFMT_ARGS@@
 WORKSPACE="@@WORKSPACE@@"
 rustfmt=$(realpath "$RUSTFMT")
 
-if [[ ! -z "${WORKSPACE}" ]]; then
+if [[ -n "${WORKSPACE}" ]]; then
     REPO="$(dirname "$(realpath ${WORKSPACE})")"
-    cd ${REPO} || exit 1
-elif [[ ! -z "${BUILD_WORKSPACE_DIRECTORY+is_set}" ]]; then
-    cd ${BUILD_WORKSPACE_DIRECTORY} || exit 1
+    cd "${REPO}" || exit 1
+elif [[ -n "${BUILD_WORKSPACE_DIRECTORY+is_set}" ]]; then
+    cd "${BUILD_WORKSPACE_DIRECTORY}" || exit 1
 else
     echo "Neither WORKSPACE nor BUILD_WORKSPACE_DIRECTORY were set."
     echo "If this is a test rule, add 'workspace = \"//:WORKSPACE\"' to your rule."
@@ -29,4 +30,4 @@ else
         -print)
 fi
 
-echo "$FILES" | xargs ${rustfmt}
+echo "$FILES" | xargs "$rustfmt" "${RUSTFMT_ARGS[@]}"
