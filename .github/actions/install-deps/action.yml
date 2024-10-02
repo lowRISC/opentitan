@@ -22,6 +22,9 @@ inputs:
     description: Path at which to install Verible
     required: true
     default: /tools/verible
+  python-version:
+    description: Version of Python to install
+    default: "3.8"
 
 runs:
   using: composite
@@ -33,8 +36,9 @@ runs:
       shell: bash
 
     - uses: actions/setup-python@v5
+      if: inputs.python-version != 'host'
       with:
-        python-version: '3.8'
+        python-version: ${{ inputs.python-version }}
         cache-dependency-path: python-requirements.txt
         cache: pip
 
