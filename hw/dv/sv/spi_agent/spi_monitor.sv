@@ -299,11 +299,7 @@ class spi_monitor extends dv_base_monitor#(
       cfg.wait_sck_edge(SamplingEdge, active_csb);
     end
     item.past_dummies = 1;
-    `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
-                              item.opcode, item.address_q), UVM_DEBUG)
     item.terminated_before_dummy_cycles = 0;
-
-    req_analysis_port.write(item);
 
     if (cfg.if_mode == dv_utils_pkg::Device) begin
       `uvm_info(`gfn, {"spi monitor is configured in Device mode -> don't need to add extra",
@@ -320,6 +316,10 @@ class spi_monitor extends dv_base_monitor#(
                     ,item.dummy_cycles, (item.read_pipeline_mode &&
                     cfg.if_mode != dv_utils_pkg::Device)  ? 2 : 0), UVM_DEBUG)
 
+    // Item sent after opcode, address, dummies and read pipeline delay
+    `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
+                              item.opcode, item.address_q), UVM_DEBUG)
+    req_analysis_port.write(item);
     `uvm_info(`gfn, "Triggering 'dummy_cycles_ev' after dummy_cycles+read_pipeline(if any)",
               UVM_DEBUG)
     -> host_item.dummy_cycles_ev;
