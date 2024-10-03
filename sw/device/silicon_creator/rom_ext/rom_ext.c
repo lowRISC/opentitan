@@ -264,17 +264,9 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
   ownership_key_alg_t key_alg = kOwnershipKeyAlgEcdsaP256;
-  if (manifest->manifest_version.major == kManifestVersionMajor1) {
-    // TODO(cfrantz): Migrate all owner binaries to ECDSA and remove RSA3K.
-    key_alg = kOwnershipKeyAlgRsa;
-    RETURN_IF_ERROR(owner_keyring_find_key(
-        &keyring, key_alg, sigverify_rsa_key_id_get(&manifest->rsa_modulus),
-        &verify_key));
-  } else {
-    RETURN_IF_ERROR(owner_keyring_find_key(
-        &keyring, key_alg,
-        sigverify_ecdsa_key_id_get(&manifest->ecdsa_public_key), &verify_key));
-  }
+  RETURN_IF_ERROR(owner_keyring_find_key(
+      &keyring, key_alg,
+      sigverify_ecdsa_key_id_get(&manifest->ecdsa_public_key), &verify_key));
 
   dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key,
              keyring.key[verify_key]->key_alg,
@@ -296,16 +288,9 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   hmac_sha256_final(&bl0_measurement);
 
   uint32_t flash_exec = 0;
-  if (manifest->manifest_version.major == kManifestVersionMajor1) {
-    // TODO(cfrantz): Migrate all owner binaries to ECDSA and remove RSA3K.
-    return sigverify_rsa_verify_ibex(&manifest->rsa_signature,
-                                     &keyring.key[verify_key]->data.rsa,
-                                     &bl0_measurement, lc_state, &flash_exec);
-  } else {
-    return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
-                                       &keyring.key[verify_key]->data.ecdsa,
-                                       &bl0_measurement, &flash_exec);
-  }
+  return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
+                                     &keyring.key[verify_key]->data.ecdsa,
+                                     &bl0_measurement, &flash_exec);
 }
 
 /**

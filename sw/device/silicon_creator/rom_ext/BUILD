@@ -348,6 +348,7 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a_bad_address_translation",
+    testonly = True,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
