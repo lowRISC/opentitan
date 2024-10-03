@@ -274,14 +274,15 @@ def gen_cdefine_multireg(outstr: TextIO,
                          regwidth: int,
                          rnames: Set[str],
                          existing_defines: Set[str]) -> None:
-    comment = multireg.reg.desc + " (common parameters)"
+    preg = multireg.pregs[0]
+    comment = preg.desc + " (common parameters)"
     genout(outstr, format_comment(first_line(comment)))
-    if len(multireg.reg.fields) >= 1:
-        regname = as_define(component + '_' + multireg.reg.name)
-        gen_multireg_field_defines(outstr, regname, multireg.reg.fields,
+    if len(preg.fields) >= 1:
+        regname = as_define(component + '_' + preg.name)
+        gen_multireg_field_defines(outstr, regname, preg.fields,
                                    len(multireg.cregs), regwidth, existing_defines)
     else:
-        log.warn("Fieldless multireg " + multireg.reg.name +
+        log.warn("Fieldless multireg " + preg.name +
                  " skip multireg specific data generation.")
 
     for subreg in multireg.cregs:
