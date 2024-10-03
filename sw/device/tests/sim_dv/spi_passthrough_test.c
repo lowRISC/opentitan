@@ -32,10 +32,13 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // Bit map of command slots to be filtered. This is supplied by the DV
 // environment.
-const volatile uint32_t kFilteredCommands;
+static const volatile uint32_t kFilteredCommands;
 
 // Whether to upload write commands and have software relay them.
-const volatile uint8_t kUploadWriteCommands;
+static const volatile uint8_t kUploadWriteCommands;
+
+// Which readpipeline_mode should be used for read commands.
+static const volatile uint8_t kReadPipelineMode;
 
 static const uint32_t kPlicTarget = 0;
 static dif_pinmux_t pinmux;
@@ -432,8 +435,12 @@ bool test_main(void) {
   // Initialize spi_device.
   CHECK_DIF_OK(dif_spi_device_init_from_dt(kSpiDeviceDt, &spi_device.dev));
   bool upload_write_commands = (kUploadWriteCommands != 0);
+
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spi_device, kFilteredCommands, upload_write_commands));
+  CHECK_STATUS_OK(spi_device_testutils_configure_read_pipeline(
+      &spi_device, (dif_spi_device_read_pipeline_mode_t)kReadPipelineMode,
+      (dif_spi_device_read_pipeline_mode_t)kReadPipelineMode));
 
   // Enable all spi_device and spi_host interrupts, and check that they do not
   // trigger unless command upload is enabled.
