@@ -12,6 +12,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use ot_certs::cwt;
 use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::template::Template;
 use ot_certs::CertFormat;
@@ -74,12 +75,29 @@ impl CommandDispatch for CodegenCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let template = load_template(&self.template)?;
+        let (template_name, codegen) = match self.cert_format {
+            CertFormat::X509 => {
+                let template = load_template(&self.template)?;
+                (
+                    template.name.clone(),
+                    codegen::generate_cert(&self.template.display().to_string(), &template)?,
+                )
+            }
+
+            CertFormat::Cwt => {
+                let template = cwt::load_cwt_template(&self.template)?;
+                (
+                    template.name.clone(),
+                    cwt::generate_cert(&self.template.display().to_string(), &template)?,
+                )
+            }
+        };
+
         // Generate C and header files.
         let (output_c, output_h) = if let Some(output_dir) = &self.output_dir {
             (
-                output_dir.join(format!("{}.c", &template.name)),
-                output_dir.join(format!("{}.h", &template.name)),
+                output_dir.join(format!("{}.c", &template_name)),
+                output_dir.join(format!("{}.h", &template_name)),
             )
         } else {
             (
@@ -94,7 +112,6 @@ impl CommandDispatch for CodegenCommand {
         let mut output_c = File::create(output_c)?;
         let mut output_h = File::create(output_h)?;
 
-        let codegen = codegen::generate_cert(&self.template.display().to_string(), &template)?;
         writeln!(output_c, "{}", codegen.source_c)?;
         writeln!(output_h, "{}", codegen.source_h)?;
 
