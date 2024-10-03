@@ -10,11 +10,8 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_key_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_key_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_key_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/owner_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -79,38 +76,6 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   // We'll change these to ECDSA keys after the ECDSA changes from
   // master are merged.
   owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
-  app[0] = (owner_application_key_t){
-      .header =
-          {
-              .tag = kTlvTagApplicationKey,
-              .length = sizeof(owner_application_key_t),
-          },
-      .key_alg = kOwnershipKeyAlgRsa,
-      .key_domain = kOwnerAppDomainTest,
-      .key_diversifier = {0},
-      .usage_constraint = 0,
-      .data =
-          {
-              .rsa = APP_TEST_KEY_RSA_3072_EXP_F4,
-          },
-  };
-  app[1] = (owner_application_key_t){
-      .header =
-          {
-              .tag = kTlvTagApplicationKey,
-              .length = sizeof(owner_application_key_t),
-          },
-      .key_alg = kOwnershipKeyAlgRsa,
-      .key_domain = kOwnerAppDomainProd,
-      .key_diversifier = {0},
-      .usage_constraint = 0,
-      .data =
-          {
-              .rsa = APP_PROD_KEY_RSA_3072_EXP_F4,
-          },
-  };
-
-  app = &app[2];
   *app = (owner_application_key_t){
       .header =
           {
