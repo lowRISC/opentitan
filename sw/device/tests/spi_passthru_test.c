@@ -301,7 +301,8 @@ bool test_main(void) {
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spid,
       /*filters=*/0x1F,
-      /*upload_write_commands=*/true));
+      /*upload_write_commands=*/true, kWriteCommands, ARRAYSIZE(kWriteCommands),
+      kReadCommands, ARRAYSIZE(kReadCommands)));
 
   dif_spi_device_passthrough_intercept_config_t passthru_cfg = {
       .status = true,

@@ -11,7 +11,9 @@
 
 status_t spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,
-    bool upload_write_commands) {
+    bool upload_write_commands,
+    const dif_spi_device_flash_command_t *write_cmds, size_t write_cmds_size,
+    const dif_spi_device_flash_command_t *read_cmds, size_t read_cmds_size) {
   dif_spi_device_config_t spi_device_config = {
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
@@ -32,236 +34,25 @@ status_t spi_device_testutils_configure_passthrough(
   TRY(dif_spi_device_set_all_passthrough_command_filters(spi_device,
                                                          kDifToggleDisabled));
 
-  dif_spi_device_flash_command_t read_commands[] = {
-      {
-          // Slot 0: ReadStatus1
-          .opcode = kSpiDeviceFlashOpReadStatus1,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 1: ReadStatus2
-          .opcode = kSpiDeviceFlashOpReadStatus2,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 2: ReadStatus3
-          .opcode = kSpiDeviceFlashOpReadStatus3,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 3: ReadJedecID
-          .opcode = kSpiDeviceFlashOpReadJedec,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 4: ReadSfdp
-          .opcode = kSpiDeviceFlashOpReadSfdp,
-          .address_type = kDifSpiDeviceFlashAddr3Byte,
-          .dummy_cycles = 8,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 5: ReadNormal
-          .opcode = kSpiDeviceFlashOpReadNormal,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .passthrough_swap_address = true,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 6: ReadFast
-          .opcode = kSpiDeviceFlashOpReadFast,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .passthrough_swap_address = true,
-          .dummy_cycles = 8,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 7: ReadDual
-          .opcode = kSpiDeviceFlashOpReadDual,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .passthrough_swap_address = true,
-          .dummy_cycles = 8,
-          .payload_io_type = kDifSpiDevicePayloadIoDual,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 8: ReadQuad
-          .opcode = kSpiDeviceFlashOpReadQuad,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .passthrough_swap_address = true,
-          .dummy_cycles = 8,
-          .payload_io_type = kDifSpiDevicePayloadIoQuad,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 9: Read4b
-          .opcode = kSpiDeviceFlashOpRead4b,
-          .address_type = kDifSpiDeviceFlashAddr4Byte,
-          .passthrough_swap_address = true,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 10: ReadFast4b
-          .opcode = kSpiDeviceFlashOpReadFast4b,
-          .address_type = kDifSpiDeviceFlashAddr4Byte,
-          .passthrough_swap_address = true,
-          .dummy_cycles = 8,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-  };
-  static_assert(ARRAYSIZE(read_commands) <= UINT8_MAX,
-                "Length of read_commands must fit in uint8_t or we must change "
-                "the type of i.");
-  for (uint8_t i = 0; i < ARRAYSIZE(read_commands); ++i) {
+  for (uint8_t i = 0; i < read_cmds_size; ++i) {
     uint8_t slot = i + kSpiDeviceReadCommandSlotBase;
     if (bitfield_bit32_read(filters, slot)) {
       TRY(dif_spi_device_set_passthrough_command_filter(
-          spi_device, read_commands[i].opcode, kDifToggleEnabled));
+          spi_device, read_cmds[i].opcode, kDifToggleEnabled));
     }
-    TRY(dif_spi_device_set_flash_command_slot(
-        spi_device, slot, kDifToggleEnabled, read_commands[i]));
+    TRY(dif_spi_device_set_flash_command_slot(spi_device, slot,
+                                              kDifToggleEnabled, read_cmds[i]));
   }
-  dif_spi_device_flash_command_t write_commands[] = {
-      {
-          // Slot 11: WriteStatus1
-          .opcode = kSpiDeviceFlashOpWriteStatus1,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = false,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 12: WriteStatus2
-          .opcode = kSpiDeviceFlashOpWriteStatus2,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = false,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 13: WriteStatus3
-          .opcode = kSpiDeviceFlashOpWriteStatus3,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = false,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 14: ChipErase
-          .opcode = kSpiDeviceFlashOpChipErase,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 15: SectorErase
-          .opcode = kSpiDeviceFlashOpSectorErase,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 16: BlockErase32k
-          .opcode = kSpiDeviceFlashOpBlockErase32k,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 17: BlockErase64k
-          .opcode = kSpiDeviceFlashOpBlockErase64k,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 18: PageProgram
-          .opcode = kSpiDeviceFlashOpPageProgram,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = false,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 19: SectorErase4b
-          .opcode = kSpiDeviceFlashOpSectorErase4b,
-          .address_type = kDifSpiDeviceFlashAddr4Byte,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 20: BlockErase32k4b
-          .opcode = kSpiDeviceFlashOpBlockErase32k4b,
-          .address_type = kDifSpiDeviceFlashAddr4Byte,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 21: BlockErase64k4b
-          .opcode = kSpiDeviceFlashOpBlockErase64k4b,
-          .address_type = kDifSpiDeviceFlashAddr4Byte,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 22: PageProgram4b
-          .opcode = kSpiDeviceFlashOpPageProgram4b,
-          .address_type = kDifSpiDeviceFlashAddr4Byte,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = false,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-      {
-          // Slot 23: Reset
-          .opcode = kSpiDeviceFlashOpReset,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .payload_io_type = kDifSpiDevicePayloadIoNone,
-          .upload = upload_write_commands,
-          .set_busy_status = upload_write_commands,
-      },
-
-  };
-  static_assert(ARRAYSIZE(write_commands) <= UINT8_MAX,
-                "Length of write_commands must fit into uint8_t");
-  for (uint8_t i = 0; i < ARRAYSIZE(write_commands); ++i) {
+  for (uint8_t i = 0; i < write_cmds_size; ++i) {
+    dif_spi_device_flash_command_t cmd = write_cmds[i];
+    cmd.upload = cmd.set_busy_status = upload_write_commands;
     uint8_t slot = i + (uint8_t)kSpiDeviceWriteCommandSlotBase;
     if (bitfield_bit32_read(filters, slot) || upload_write_commands) {
-      TRY(dif_spi_device_set_passthrough_command_filter(
-          spi_device, write_commands[i].opcode, kDifToggleEnabled));
+      TRY(dif_spi_device_set_passthrough_command_filter(spi_device, cmd.opcode,
+                                                        kDifToggleEnabled));
     }
-    TRY(dif_spi_device_set_flash_command_slot(
-        spi_device, slot, kDifToggleEnabled, write_commands[i]));
+    TRY(dif_spi_device_set_flash_command_slot(spi_device, slot,
+                                              kDifToggleEnabled, cmd));
   }
   // This configuration for these commands does not guard against misbehaved
   // hosts. The timing of any of these commands relative to an uploaded command

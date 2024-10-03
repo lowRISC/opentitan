@@ -1480,7 +1480,9 @@ bool test_main(void) {
   configure_spi_host(&spi_host_1, /*enable=*/false);
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spi_device, /*filters=*/0,
-      /*upload_write_commands=*/false));
+      /*upload_write_commands=*/false, kWriteCommands,
+      ARRAYSIZE(kWriteCommands), kReadCommands, ARRAYSIZE(kReadCommands)));
+
   configure_pattgen();
   configure_pwm();
   LOG_INFO("All IPs configured.");
