@@ -15,6 +15,7 @@ use opentitanlib::app::TransportWrapper;
 use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::template::Template;
 use ot_certs::{codegen, x509};
+use ot_certs::cwt;
 
 fn load_template(path: &PathBuf) -> Result<Template> {
     // Load template.
@@ -80,36 +81,73 @@ impl CommandDispatch for CodegenCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let template = load_template(&self.template)?;
-        // Generate C and header files.
-        let (output_c, output_h) = if let Some(output_dir) = &self.output_dir {
-            (
-                output_dir.join(format!("{}.c", &template.name)),
-                output_dir.join(format!("{}.h", &template.name)),
-            )
-        } else {
-            (
-                self.output_c
-                    .clone()
-                    .expect("--output-c must be specified when --output-dir is not used"),
-                self.output_h
-                    .clone()
-                    .expect("--output-h must be specified when --output-dir is not used"),
-            )
-        };
-        let mut output_c = File::create(output_c)?;
-        let mut output_h = File::create(output_h)?;
+        match self.cert_format {
+            CertFormat::X509 => {
+                let template = load_template(&self.template)?;
+                // Generate C and header files.
+                let (output_c, output_h) = if let Some(output_dir) = &self.output_dir {
+                    (
+                        output_dir.join(format!("{}.c", &template.name)),
+                        output_dir.join(format!("{}.h", &template.name)),
+                    )
+                } else {
+                    (
+                        self.output_c
+                            .clone()
+                            .expect("--output-c must be specified when --output-dir is not used"),
+                        self.output_h
+                            .clone()
+                            .expect("--output-h must be specified when --output-dir is not used"),
+                    )
+                };
+                let mut output_c = File::create(output_c)?;
+                let mut output_h = File::create(output_h)?;
 
-        let codegen = codegen::generate_cert(&self.template.display().to_string(), &template)?;
-        writeln!(output_c, "{}", codegen.source_c)?;
-        writeln!(output_h, "{}", codegen.source_h)?;
+                let codegen = codegen::generate_cert(&self.template.display().to_string(), &template)?;
+                writeln!(output_c, "{}", codegen.source_c)?;
+                writeln!(output_h, "{}", codegen.source_h)?;
 
-        if let Some(output_unittest) = &self.output_unittest {
-            let mut output_unittest = File::create(output_unittest)?;
-            writeln!(output_unittest, "{}", codegen.source_unittest)?;
+                if let Some(output_unittest) = &self.output_unittest {
+                    let mut output_unittest = File::create(output_unittest)?;
+                    writeln!(output_unittest, "{}", codegen.source_unittest)?;
+                }
+
+                Ok(None)
+            }
+
+            CertFormat::Cwt => {
+                let template = cwt::load_cwt_template(&self.template)?;
+                // Generate C and header files.
+                let (output_c, output_h) = if let Some(output_dir) = &self.output_dir {
+                    (
+                        output_dir.join(format!("{}.c", &template.name)),
+                        output_dir.join(format!("{}.h", &template.name)),
+                    )
+                } else {
+                    (
+                        self.output_c
+                            .clone()
+                            .expect("--output-c must be specified when --output-dir is not used"),
+                        self.output_h
+                            .clone()
+                            .expect("--output-h must be specified when --output-dir is not used"),
+                    )
+                };
+                let mut output_c = File::create(output_c)?;
+                let mut output_h = File::create(output_h)?;
+
+                let codegen = cwt::generate_cert(&template)?;
+                writeln!(output_c, "{}", codegen.source_c)?;
+                writeln!(output_h, "{}", codegen.source_h)?;
+
+                if let Some(output_unittest) = &self.output_unittest {
+                    let mut output_unittest = File::create(output_unittest)?;
+                    writeln!(output_unittest, "{}", codegen.source_unittest)?;
+                }
+
+                Ok(None)
+            }
         }
-
-        Ok(None)
     }
 }
 
