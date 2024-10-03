@@ -139,23 +139,6 @@ SILICON_CREATOR_KEYS = struct(
     ),
 )
 
-SILICON_OWNER_KEYS = struct(
-    FAKE = struct(
-        RSA = struct(
-            TEST = [
-                create_test_key("fake_rsa_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
-            ],
-            DEV = [
-                create_dev_key("fake_rsa_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
-            ],
-            PROD = None,
-        ),
-        # We can't expose real private keys publicly.
-        REAL = None,
-        UNAUTHORIZED = None,
-    ),
-)
-
 def flatten(l):
     return [item for ll in l for item in ll]
 
@@ -204,11 +187,6 @@ RSA_SPX_KEY_STRUCTS = [
     create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
     create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
     create_key_struct(None, SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0]),
-]
-
-RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
-    create_key_struct(None, SILICON_OWNER_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(None, SILICON_OWNER_KEYS.FAKE.RSA.DEV[0], None),
 ]
 
 def _obj_transform_impl(ctx):
@@ -1020,7 +998,7 @@ def opentitan_flash_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        signing_key_structs = RSA_ONLY_KEY_STRUCTS + RSA_ONLY_ROM_EXT_KEY_STRUCTS,
+        signing_key_structs = RSA_ONLY_KEY_STRUCTS,
         signed = True,
         sim_otp = None,
         testonly = False,

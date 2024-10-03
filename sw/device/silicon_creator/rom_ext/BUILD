@@ -339,6 +339,7 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
     ],
 )
