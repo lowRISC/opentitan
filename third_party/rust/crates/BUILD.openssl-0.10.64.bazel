@@ -11,18 +11,18 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
-# licenses([
-#     "TODO",  # Apache-2.0
-# ])
-
 rust_library(
     name = "openssl",
-    srcs = glob(["**/*.rs"]),
+    srcs = glob(
+        include = ["**/*.rs"],
+        allow_empty = True,
+    ),
     aliases = {
         "@crate_index__openssl-sys-0.9.102//:openssl_sys": "ffi",
     },
     compile_data = glob(
         include = ["**"],
+        allow_empty = True,
         exclude = [
             "**/* *",
             ".tmp_git_root/**/*",
@@ -40,7 +40,9 @@ rust_library(
     proc_macro_deps = [
         "@crate_index__openssl-macros-0.1.1//:openssl_macros",
     ],
-    rustc_flags = ["--cap-lints=allow"],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
     tags = [
         "cargo-bazel",
         "crate-name=openssl",
@@ -56,6 +58,8 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-linux-android": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:aarch64-unknown-nixos-gnu": [],
+        "@rules_rust//rust/platform:aarch64-unknown-nto-qnx710": [],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [],
         "@rules_rust//rust/platform:armv7-linux-androideabi": [],
         "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [],
@@ -79,6 +83,7 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:x86_64-unknown-nixos-gnu": [],
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
@@ -95,8 +100,11 @@ rust_library(
 )
 
 cargo_build_script(
-    name = "openssl_build_script",
-    srcs = glob(["**/*.rs"]),
+    name = "_bs",
+    srcs = glob(
+        include = ["**/*.rs"],
+        allow_empty = True,
+    ),
     crate_features = [
         "default",
     ],
@@ -104,6 +112,7 @@ cargo_build_script(
     crate_root = "build.rs",
     data = glob(
         include = ["**"],
+        allow_empty = True,
         exclude = [
             "**/* *",
             ".tmp_git_root/**/*",
@@ -117,6 +126,7 @@ cargo_build_script(
     link_deps = [
         "@crate_index__openssl-sys-0.9.102//:openssl_sys",
     ],
+    pkg_name = "openssl",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -133,6 +143,6 @@ cargo_build_script(
 
 alias(
     name = "build_script_build",
-    actual = "openssl_build_script",
+    actual = ":_bs",
     tags = ["manual"],
 )
