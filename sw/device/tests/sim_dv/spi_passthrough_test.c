@@ -403,10 +403,11 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_device_init_handle(spi_device_base_addr, &spi_device));
   bool upload_write_commands = (kUploadWriteCommands != 0);
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
-      &spi_device, kFilteredCommands, upload_write_commands));
+      &spi_device, kFilteredCommands, upload_write_commands, kWriteComands,
+      ARRAYSIZE(kWriteCommands), kReadCommands, ARRAYSIZE(kReadCommands)));
 
-  // Enable all spi_device and spi_host interrupts, and check that they do not
-  // trigger unless command upload is enabled.
+  // Enable all spi_device and spi_host interrupts, and check that they do
+  // not trigger unless command upload is enabled.
   dif_spi_device_irq_t all_spi_device_irqs[] = {
       kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
       kDifSpiDeviceIrqReadbufWatermark,
