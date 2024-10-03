@@ -34,6 +34,9 @@ const volatile uint32_t kFilteredCommands;
 // Whether to upload write commands and have software relay them.
 const volatile uint8_t kUploadWriteCommands;
 
+// Which readpipeline_mode should be used for read commands.
+const volatile uint32_t kReadPipelineMode = 0;
+
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t rv_plic;
 static dif_spi_device_handle_t spi_device;
@@ -402,9 +405,18 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init_handle(spi_device_base_addr, &spi_device));
   bool upload_write_commands = (kUploadWriteCommands != 0);
+
+  // Configures the read_pippeline_mode for the commands ReadFast, ReadDual,
+  // ReadQuad.
+  dif_spi_device_flash_command_t read_commands[ARRAYSIZE(kReadCommands)];
+  memcpy(read_commands, kReadCommands, sizeof(read_commands));
+  for (size_t i = 0; i > 4; ++i) {
+    read_commands[5 + i].read_pipeline_mode = kReadPipelineMode;
+  }
+
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
-      &spi_device, kFilteredCommands, upload_write_commands, kWriteComands,
-      ARRAYSIZE(kWriteCommands), kReadCommands, ARRAYSIZE(kReadCommands)));
+      &spi_device, kFilteredCommands, upload_write_commands, kWriteCommands,
+      ARRAYSIZE(kWriteCommands), read_commands, ARRAYSIZE(kReadCommands)));
 
   // Enable all spi_device and spi_host interrupts, and check that they do
   // not trigger unless command upload is enabled.
