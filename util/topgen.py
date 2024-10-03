@@ -14,7 +14,7 @@ from copy import deepcopy
 from io import StringIO
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import hjson
 import tlgen
