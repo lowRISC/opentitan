@@ -56,29 +56,39 @@ impl FromStr for SignData {
 impl SignData {
     pub const HELP: &'static str = "[allowed values: plain-text, sha256-hash, raw, slice:m..n]";
     /// Prepare `input` data for signing or verification.
-    pub fn prepare(&self, keytype: KeyType, input: &[u8]) -> Result<Vec<u8>> {
+    pub fn prepare(&self, keytype: KeyType, input: &[u8], little_endian: bool) -> Result<Vec<u8>> {
         match keytype {
             KeyType::Rsa => match self {
                 // Data is plaintext: hash, then add PKCSv1.5 padding.
-                SignData::PlainText => Self::pkcs15sign::<Sha256>(&Self::data_plain_text(input)?),
+                SignData::PlainText => {
+                    Self::pkcs15sign::<Sha256>(&Self::data_plain_text(input, false)?)
+                }
                 // Data is already hashed: add PKCSv1.5 padding.
-                SignData::Sha256Hash => Self::pkcs15sign::<Sha256>(input),
+                // If the `little_endian` flag is true, we assume the pre-hashed input came
+                // from opentitantool, which writes out the hash in little endian order,
+                // and therefore, needs to be reversed before the signing operation.
+                SignData::Sha256Hash => {
+                    Self::pkcs15sign::<Sha256>(&Self::data_raw(input, little_endian)?)
+                }
                 // Raw data requires no transformation.
-                SignData::Raw => Self::data_raw(input),
+                SignData::Raw => Self::data_raw(input, false),
                 // Data is a slice of plaintext: hash, then add PKCSv1.5 padding.
                 SignData::Slice(a, b) => {
-                    Self::pkcs15sign::<Sha256>(&Self::data_plain_text(&input[*a..*b])?)
+                    Self::pkcs15sign::<Sha256>(&Self::data_plain_text(&input[*a..*b], false)?)
                 }
             },
             KeyType::Ec => match self {
                 // Data is plaintext: hash.
-                SignData::PlainText => Self::data_plain_text(input),
+                SignData::PlainText => Self::data_plain_text(input, false),
                 // Data is already hashed: no transformation needed.
-                SignData::Sha256Hash => Self::data_raw(input),
+                // If the `little_endian` flag is true, we assume the pre-hashed input came
+                // from opentitantool, which writes out the hash in little endian order,
+                // and therefore, needs to be reversed before the signing operation.
+                SignData::Sha256Hash => Self::data_raw(input, little_endian),
                 // Raw data requires no transformation.
-                SignData::Raw => Self::data_raw(input),
+                SignData::Raw => Self::data_raw(input, false),
                 // Data is a slice of plaintext: hash.
-                SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
+                SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b], false),
             },
             _ => Err(HsmError::Unsupported("SignData prepare for {keytype:?}".into()).into()),
         }
@@ -106,9 +116,12 @@ impl SignData {
         }
     }
 
-    fn data_raw(input: &[u8]) -> Result<Vec<u8>> {
+    fn data_raw(input: &[u8], little_endian: bool) -> Result<Vec<u8>> {
         let mut result = Vec::new();
         result.extend_from_slice(input);
+        if little_endian {
+            result.reverse();
+        }
         Ok(result)
     }
 
@@ -127,8 +140,12 @@ impl SignData {
         Ok(result)
     }
 
-    fn data_plain_text(input: &[u8]) -> Result<Vec<u8>> {
-        Ok(Sha256::digest(input).as_slice().to_vec())
+    fn data_plain_text(input: &[u8], little_endian: bool) -> Result<Vec<u8>> {
+        let mut result = Sha256::digest(input).as_slice().to_vec();
+        if little_endian {
+            result.reverse();
+        }
+        Ok(result)
     }
 }
 
@@ -138,7 +155,7 @@ mod tests {
 
     #[test]
     fn test_raw() -> Result<()> {
-        let result = SignData::Raw.prepare(KeyType::Rsa, b"abc123")?;
+        let result = SignData::Raw.prepare(KeyType::Rsa, b"abc123", false)?;
         assert_eq!(result, b"abc123");
         Ok(())
     }
@@ -148,13 +165,17 @@ mod tests {
         let result = SignData::PlainText.prepare(
             KeyType::Rsa,
             b"The quick brown fox jumped over the lazy dog",
+            false,
         )?;
         assert_eq!(hex::encode(result),
             "3031300d0609608648016503040201050004207d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69"
         );
 
-        let result = SignData::PlainText
-            .prepare(KeyType::Ec, b"The quick brown fox jumped over the lazy dog")?;
+        let result = SignData::PlainText.prepare(
+            KeyType::Ec,
+            b"The quick brown fox jumped over the lazy dog",
+            false,
+        )?;
         assert_eq!(
             hex::encode(result),
             "7d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69",
@@ -166,19 +187,24 @@ mod tests {
     fn test_hashed() -> Result<()> {
         let input =
             hex::decode("7d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69")?;
-        let result = SignData::Sha256Hash.prepare(KeyType::Rsa, &input)?;
+        let result = SignData::Sha256Hash.prepare(KeyType::Rsa, &input, false)?;
         assert_eq!(hex::encode(result),
             "3031300d0609608648016503040201050004207d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69"
         );
 
-        assert!(SignData::Sha256Hash.prepare(KeyType::Rsa, b"").is_err());
+        assert!(SignData::Sha256Hash
+            .prepare(KeyType::Rsa, b"", false)
+            .is_err());
         Ok(())
     }
 
     #[test]
     fn test_slice() -> Result<()> {
-        let result = SignData::Slice(0, 3)
-            .prepare(KeyType::Ec, b"The quick brown fox jumped over the lazy dog")?;
+        let result = SignData::Slice(0, 3).prepare(
+            KeyType::Ec,
+            b"The quick brown fox jumped over the lazy dog",
+            false,
+        )?;
         assert_eq!(
             hex::encode(result),
             // Hash of "The".
