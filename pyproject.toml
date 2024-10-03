@@ -86,7 +86,7 @@ dependencies = [
   "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
 
   # Test
-  "hello @ file:///home/pamaury/project/opentitan/util/hello"
+  "hello @ file://${PROJECT_ROOT}/util/hello"
 ]
 
 [tool.setuptools]
