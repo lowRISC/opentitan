@@ -51,11 +51,10 @@ impl Dispatch for Sign {
         attrs.push(Attribute::Sign(true));
         let object = helper::find_one_object(session, &attrs)?;
 
-        let mut data = helper::read_file(&self.input)?;
-        if self.little_endian {
-            data.reverse();
-        }
-        let data = self.format.prepare(KeyType::Rsa, &data)?;
+        let data = helper::read_file(&self.input)?;
+        let data = self
+            .format
+            .prepare(KeyType::Rsa, &data, self.little_endian)?;
         let mechanism = self.format.mechanism(KeyType::Rsa)?;
         let mut result = session.sign(&mechanism, object, &data)?;
         if self.little_endian {
