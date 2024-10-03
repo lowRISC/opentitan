@@ -21,6 +21,8 @@ class spi_device_flash_seq extends dv_base_seq #(
   task body();
     cfg.spi_func_mode = SpiModeFlash;
     do begin
+      // It takes the sequence item from the monitor after the opcode and address (plus
+      // Dummy cycles+read_pipeline delay if it applies for a given command).
       p_sequencer.req_analysis_fifo.peek(req);
       if (req.csb_sel == csb_sel) begin
         `DV_CHECK(p_sequencer.req_analysis_fifo.try_get(req))
