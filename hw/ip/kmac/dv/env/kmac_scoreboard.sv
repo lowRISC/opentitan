@@ -575,24 +575,30 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 `DV_CHECK_FATAL(in_kmac_app == 1,
                     "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
 
-                // Check app interface errors.
-                if (app_mode == AppKeymgr && cfg.enable_masking && !entropy_ready) begin
-                  app_intf_err = 1;
+                // We expect an app interface error if app_mode is AppKeymgr (meaning that we are
+                // in the mode where we are talking to the keymgr) and either there is no entropy
+                // to perform the masking that is enabled or the key has been invalidated.
+                app_intf_err = (app_mode == AppKeymgr &&
+                                ((cfg.enable_masking && !entropy_ready) || cfg.key_invalidated));
+
+                // Check app interface errors have been reported as expected.
+                `DV_CHECK_FATAL(kmac_app_rsp.rsp_error == app_intf_err)
+
+
+                // Check that digests have been zeroed if there was an interface error. If not,
+                // extract the digests and (if configured) check they are correct.
+                if (app_intf_err) begin
                   `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share0 == 0,
                     "APP interface error, expect output to be all 0s")
                   `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share1 == 0,
                     "APP interface error, expect output to be all 0s")
                 end else begin
-
                   // assign digest values
                   kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
                   kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
                   if (do_check_digest) check_digest();
                 end
-
-                `DV_CHECK_FATAL(kmac_app_rsp.rsp_error == app_intf_err)
-
 
                 in_kmac_app = 0;
                 sha3_squeeze = 0;
