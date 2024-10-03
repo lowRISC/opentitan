@@ -188,8 +188,8 @@ reg_if_width = 2 + addr_width + data_width + data_byte_width
     struct_width = r0.get_n_bits(['q', 'qe', 're'])
 
     if isinstance(r, MultiRegister):
-      struct_type += " [{}:0]".format(r.count - 1)
-      struct_width *= r.count
+      struct_type += " [{}:0]".format(len(r.pregs) - 1)
+      struct_width *= len(r.pregs)
 
     msb = nbits - packbit - 1
     lsb = msb - struct_width + 1
@@ -224,8 +224,8 @@ packbit = 0
     struct_width = r0.get_n_bits(['d', 'de'])
 
     if isinstance(r, MultiRegister):
-      struct_type += " [{}:0]".format(r.count - 1)
-      struct_width *= r.count
+      struct_type += " [{}:0]".format(len(r.pregs) - 1)
+      struct_width *= len(r.pregs)
 
     msb = nbits - packbit - 1
     lsb = msb - struct_width + 1

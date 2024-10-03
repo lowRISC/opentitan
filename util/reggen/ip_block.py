@@ -651,7 +651,7 @@ class IpBlock:
                     if reg.regwen == regwen:
                         regwen_users.append(reg)
                 for multi_reg in rb.multiregs:
-                    for reg in multi_reg.regs:
+                    for reg in multi_reg.pregs:
                         if reg.regwen == regwen:
                             regwen_users.append(reg)
                 if not regwen_users:

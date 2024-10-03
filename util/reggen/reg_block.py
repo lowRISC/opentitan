@@ -299,7 +299,12 @@ class RegBlock:
         self.multiregs.append(mr)
         self.all_regs.append(mr)
         if mr.dv_compact is True:
-            self.type_regs.append(mr.reg)
+            # Because dv_compact is true, all the pseudo-registers in mr.pregs
+            # are compatible for how they are used in self.type_regs. They are
+            # used in uvm_reg_base.sv.tpl to make forward declarations (through
+            # gen_dv.rcname), so the only thing that matters is the "name"
+            # instance variable.
+            self.type_regs.append(mr.pregs[0])
         self.entries.append(mr)
         self.offset = mr.next_offset(self._addrsep)
 
