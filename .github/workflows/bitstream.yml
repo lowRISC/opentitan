@@ -11,7 +11,7 @@ on:
       design_suffix:
         type: string
       vivado_version:
-        default: "2021.1"
+        default: "2021.1-fast"
         type: string
 
 jobs:
