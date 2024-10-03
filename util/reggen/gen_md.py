@@ -125,7 +125,7 @@ def gen_md_window(output: TextIO, win: Window, comp: str,
 
 def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
     # Note that validation guarantees that compacted multiregs only ever have one field.
-    return mreg.compact and (mreg.reg.fields[0].bits.msb + 1) <= width // 2
+    return mreg.compact and (mreg.pregs[0].fields[0].bits.msb + 1) <= width // 2
 
 
 def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
@@ -159,7 +159,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
         return
 
     # The general definition of the registers making up this multiregister block.
-    reg_def = mreg.reg
+    reg_def = mreg.pregs[0]
 
     # Information
     describe_reg_hdr(output, reg_def, False)

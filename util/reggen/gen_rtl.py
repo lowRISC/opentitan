@@ -65,7 +65,7 @@ def get_r0(reg: RegBase) -> Register:
         return reg
     else:
         assert isinstance(reg, MultiRegister)
-        return reg.reg
+        return reg.pregs[0]
 
 
 def get_iface_tx_type(block: IpBlock, iface_name: Optional[str],
@@ -82,7 +82,7 @@ def get_reg_tx_type(block: IpBlock, reg: RegBase, hw2reg: bool) -> str:
         type_suff = 'reg_t'
     else:
         assert isinstance(reg, MultiRegister)
-        r0 = reg.reg
+        r0 = reg.pregs[0]
         type_suff = 'mreg_t'
 
     x2x = 'hw2reg' if hw2reg else 'reg2hw'
