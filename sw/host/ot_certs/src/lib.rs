@@ -16,7 +16,9 @@
 //! in the future.
 
 pub mod asn1;
+pub mod cbor;
 pub mod codegen;
+pub mod cwt;
 pub mod template;
 pub mod x509;
 
