@@ -295,8 +295,8 @@ def aliases(
 _NORMAL_DEPENDENCIES = {
     "third_party/tock": {
         _COMMON_CONDITION: {
-            "ghash": "@tock_index__ghash-0.4.4//:ghash",
-            "libm": "@tock_index__libm-0.2.7//:libm",
+            "ghash": Label("@tock_index__ghash-0.4.4//:ghash"),
+            "libm": Label("@tock_index__libm-0.2.7//:libm"),
         },
     },
 }
@@ -359,22 +359,59 @@ _BUILD_PROC_MACRO_ALIASES = {
 }
 
 _CONDITIONS = {
+    "aarch64-apple-darwin": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
+    "aarch64-apple-ios": ["@rules_rust//rust/platform:aarch64-apple-ios"],
+    "aarch64-apple-ios-sim": ["@rules_rust//rust/platform:aarch64-apple-ios-sim"],
+    "aarch64-fuchsia": ["@rules_rust//rust/platform:aarch64-fuchsia"],
     "aarch64-linux-android": ["@rules_rust//rust/platform:aarch64-linux-android"],
-    "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
+    "aarch64-pc-windows-msvc": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
+    "aarch64-unknown-linux-gnu": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
+    "aarch64-unknown-nixos-gnu": ["@rules_rust//rust/platform:aarch64-unknown-nixos-gnu"],
+    "aarch64-unknown-nto-qnx710": ["@rules_rust//rust/platform:aarch64-unknown-nto-qnx710"],
+    "arm-unknown-linux-gnueabi": ["@rules_rust//rust/platform:arm-unknown-linux-gnueabi"],
+    "armv7-linux-androideabi": ["@rules_rust//rust/platform:armv7-linux-androideabi"],
+    "armv7-unknown-linux-gnueabi": ["@rules_rust//rust/platform:armv7-unknown-linux-gnueabi"],
+    "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:aarch64-unknown-nixos-gnu"],
     "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim"],
-    "cfg(any(target_arch = \"aarch64\", target_arch = \"x86_64\", target_arch = \"x86\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-pc-windows-msvc", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-none"],
+    "cfg(any(target_arch = \"aarch64\", target_arch = \"x86_64\", target_arch = \"x86\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:aarch64-unknown-nixos-gnu", "@rules_rust//rust/platform:aarch64-unknown-nto-qnx710", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-pc-windows-msvc", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-nixos-gnu", "@rules_rust//rust/platform:x86_64-unknown-none"],
+    "i686-apple-darwin": ["@rules_rust//rust/platform:i686-apple-darwin"],
+    "i686-linux-android": ["@rules_rust//rust/platform:i686-linux-android"],
+    "i686-pc-windows-msvc": ["@rules_rust//rust/platform:i686-pc-windows-msvc"],
+    "i686-unknown-freebsd": ["@rules_rust//rust/platform:i686-unknown-freebsd"],
+    "i686-unknown-linux-gnu": ["@rules_rust//rust/platform:i686-unknown-linux-gnu"],
+    "powerpc-unknown-linux-gnu": ["@rules_rust//rust/platform:powerpc-unknown-linux-gnu"],
+    "riscv32imc-unknown-none-elf": ["@rules_rust//rust/platform:riscv32imc-unknown-none-elf"],
+    "riscv64gc-unknown-none-elf": ["@rules_rust//rust/platform:riscv64gc-unknown-none-elf"],
+    "s390x-unknown-linux-gnu": ["@rules_rust//rust/platform:s390x-unknown-linux-gnu"],
+    "thumbv7em-none-eabi": ["@rules_rust//rust/platform:thumbv7em-none-eabi"],
+    "thumbv8m.main-none-eabi": ["@rules_rust//rust/platform:thumbv8m.main-none-eabi"],
+    "wasm32-unknown-unknown": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
+    "wasm32-wasi": ["@rules_rust//rust/platform:wasm32-wasi"],
+    "x86_64-apple-darwin": ["@rules_rust//rust/platform:x86_64-apple-darwin"],
+    "x86_64-apple-ios": ["@rules_rust//rust/platform:x86_64-apple-ios"],
+    "x86_64-fuchsia": ["@rules_rust//rust/platform:x86_64-fuchsia"],
+    "x86_64-linux-android": ["@rules_rust//rust/platform:x86_64-linux-android"],
+    "x86_64-pc-windows-msvc": ["@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
+    "x86_64-unknown-freebsd": ["@rules_rust//rust/platform:x86_64-unknown-freebsd"],
+    "x86_64-unknown-linux-gnu": ["@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
+    "x86_64-unknown-nixos-gnu": ["@rules_rust//rust/platform:x86_64-unknown-nixos-gnu"],
+    "x86_64-unknown-none": ["@rules_rust//rust/platform:x86_64-unknown-none"],
 }
 
 ###############################################################################
 
 def crate_repositories():
-    """A macro for defining repositories for all generated crates"""
+    """A macro for defining repositories for all generated crates.
+
+    Returns:
+      A list of repos visible to the module through the module extension.
+    """
     maybe(
         http_archive,
         name = "tock_index__cfg-if-1.0.0",
         sha256 = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/cfg-if/1.0.0/download"],
+        urls = ["https://static.crates.io/crates/cfg-if/1.0.0/download"],
         strip_prefix = "cfg-if-1.0.0",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.cfg-if-1.0.0.bazel"),
     )
@@ -384,7 +421,7 @@ def crate_repositories():
         name = "tock_index__cpufeatures-0.2.9",
         sha256 = "a17b76ff3a4162b0b27f354a0c87015ddad39d35f9c0c36607a3bdd175dde1f1",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/cpufeatures/0.2.9/download"],
+        urls = ["https://static.crates.io/crates/cpufeatures/0.2.9/download"],
         strip_prefix = "cpufeatures-0.2.9",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.cpufeatures-0.2.9.bazel"),
     )
@@ -394,7 +431,7 @@ def crate_repositories():
         name = "tock_index__generic-array-0.14.7",
         sha256 = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/generic-array/0.14.7/download"],
+        urls = ["https://static.crates.io/crates/generic-array/0.14.7/download"],
         strip_prefix = "generic-array-0.14.7",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.generic-array-0.14.7.bazel"),
     )
@@ -404,7 +441,7 @@ def crate_repositories():
         name = "tock_index__ghash-0.4.4",
         sha256 = "1583cc1656d7839fd3732b80cf4f38850336cdb9b8ded1cd399ca62958de3c99",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/ghash/0.4.4/download"],
+        urls = ["https://static.crates.io/crates/ghash/0.4.4/download"],
         strip_prefix = "ghash-0.4.4",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.ghash-0.4.4.bazel"),
     )
@@ -414,7 +451,7 @@ def crate_repositories():
         name = "tock_index__libc-0.2.147",
         sha256 = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/libc/0.2.147/download"],
+        urls = ["https://static.crates.io/crates/libc/0.2.147/download"],
         strip_prefix = "libc-0.2.147",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.libc-0.2.147.bazel"),
     )
@@ -424,7 +461,7 @@ def crate_repositories():
         name = "tock_index__libm-0.2.7",
         sha256 = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/libm/0.2.7/download"],
+        urls = ["https://static.crates.io/crates/libm/0.2.7/download"],
         strip_prefix = "libm-0.2.7",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.libm-0.2.7.bazel"),
     )
@@ -434,7 +471,7 @@ def crate_repositories():
         name = "tock_index__opaque-debug-0.3.0",
         sha256 = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/opaque-debug/0.3.0/download"],
+        urls = ["https://static.crates.io/crates/opaque-debug/0.3.0/download"],
         strip_prefix = "opaque-debug-0.3.0",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.opaque-debug-0.3.0.bazel"),
     )
@@ -444,7 +481,7 @@ def crate_repositories():
         name = "tock_index__polyval-0.5.3",
         sha256 = "8419d2b623c7c0896ff2d5d96e2cb4ede590fed28fcc34934f4c33c036e620a1",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/polyval/0.5.3/download"],
+        urls = ["https://static.crates.io/crates/polyval/0.5.3/download"],
         strip_prefix = "polyval-0.5.3",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.polyval-0.5.3.bazel"),
     )
@@ -454,7 +491,7 @@ def crate_repositories():
         name = "tock_index__subtle-2.4.1",
         sha256 = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/subtle/2.4.1/download"],
+        urls = ["https://static.crates.io/crates/subtle/2.4.1/download"],
         strip_prefix = "subtle-2.4.1",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.subtle-2.4.1.bazel"),
     )
@@ -464,7 +501,7 @@ def crate_repositories():
         name = "tock_index__typenum-1.16.0",
         sha256 = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/typenum/1.16.0/download"],
+        urls = ["https://static.crates.io/crates/typenum/1.16.0/download"],
         strip_prefix = "typenum-1.16.0",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.typenum-1.16.0.bazel"),
     )
@@ -474,7 +511,7 @@ def crate_repositories():
         name = "tock_index__universal-hash-0.4.1",
         sha256 = "9f214e8f697e925001e66ec2c6e37a4ef93f0f78c2eed7814394e10c62025b05",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/universal-hash/0.4.1/download"],
+        urls = ["https://static.crates.io/crates/universal-hash/0.4.1/download"],
         strip_prefix = "universal-hash-0.4.1",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.universal-hash-0.4.1.bazel"),
     )
@@ -484,7 +521,12 @@ def crate_repositories():
         name = "tock_index__version_check-0.9.4",
         sha256 = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/version_check/0.9.4/download"],
+        urls = ["https://static.crates.io/crates/version_check/0.9.4/download"],
         strip_prefix = "version_check-0.9.4",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.version_check-0.9.4.bazel"),
     )
+
+    return [
+        struct(repo = "tock_index__ghash-0.4.4", is_dev_dep = False),
+        struct(repo = "tock_index__libm-0.2.7", is_dev_dep = False),
+    ]
