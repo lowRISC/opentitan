@@ -82,7 +82,7 @@
 
   for r in rb.all_regs:
     if isinstance(r, MultiRegister):
-      r0 = r.reg
+      r0 = r.pregs[0]
       srs = r.cregs
     else:
       r0 = r
