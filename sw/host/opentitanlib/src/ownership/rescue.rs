@@ -47,7 +47,10 @@ with_unknown! {
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct OwnerRescueConfig {
     /// Header identifying this struct.
-    #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
+    #[serde(
+        skip_serializing_if = "GlobalFlags::not_debug",
+        default = "OwnerRescueConfig::default_header"
+    )]
     pub header: TlvHeader,
     /// The type of rescue protocol to use (ie: Xmodem).
     pub rescue_type: RescueType,
@@ -62,7 +65,7 @@ pub struct OwnerRescueConfig {
 impl Default for OwnerRescueConfig {
     fn default() -> Self {
         Self {
-            header: TlvHeader::new(TlvTag::Rescue, 0),
+            header: Self::default_header(),
             rescue_type: RescueType::default(),
             start: 0u16,
             size: 0u16,
@@ -73,6 +76,9 @@ impl Default for OwnerRescueConfig {
 
 impl OwnerRescueConfig {
     const BASE_SIZE: usize = 16;
+    pub fn default_header() -> TlvHeader {
+        TlvHeader::new(TlvTag::Rescue, 0, "0.0")
+    }
     pub fn read(src: &mut impl Read, header: TlvHeader) -> Result<Self> {
         let rescue_type = RescueType(src.read_u32::<LittleEndian>()?);
         let start = src.read_u16::<LittleEndian>()?;
@@ -94,6 +100,7 @@ impl OwnerRescueConfig {
         let header = TlvHeader::new(
             TlvTag::Rescue,
             Self::BASE_SIZE + self.command_allow.len() * std::mem::size_of::<u32>(),
+            "0.0",
         );
         header.write(dest)?;
         dest.write_u32::<LittleEndian>(u32::from(self.rescue_type))?;
