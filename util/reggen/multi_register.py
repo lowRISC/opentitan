@@ -158,6 +158,15 @@ class MultiRegister(RegBase):
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
+        name = check_name(rd['name'], 'name of multi-register')
+
+        count_str = check_str(rd['count'], f'count field of multireg {name}')
+        count = params.expand(count_str, f'count field of multireg {name}')
+
+        if count <= 0:
+            raise ValueError(f"Multireg {name} has a count of {count}, "
+                             "which isn't positive.")
+
         # Now that we've checked the schema of rd, we make a "reg" version of
         # it that removes any fields that are allowed by MultiRegister but
         # aren't allowed by Register. We'll pass that to the register factory
@@ -167,10 +176,13 @@ class MultiRegister(RegBase):
         reg_rd = {key: value
                   for key, value in rd.items()
                   if key in reg_allowed_keys}
-        preg = Register.from_raw(reg_width, offset, params, reg_rd, clocks,
-                                 is_alias)
 
-        name = check_name(rd['name'], 'name of multi-register')
+        # Parse the dictionary multiple times, passing in a value for
+        # "multireg_idx". Collect up the resulting parsed pseudo-registers into
+        # a pregs list.
+        pregs = [Register.from_raw(reg_width, offset,
+                                   params, reg_rd, clocks, is_alias)
+                 for multireg_idx in range(count)]
 
         alias_target = None
         if is_alias:
@@ -191,40 +203,52 @@ class MultiRegister(RegBase):
         regwen_multi = check_bool(rd.get('regwen_multi', False),
                                   f'regwen_multi field of multireg {name}')
 
-        default_compact = len(preg.fields) == 1 and not regwen_multi
+        # Check whether every preg has just one field, and compute the maximum
+        # preg width. That maximum width only matters if single_field_per_preg
+        # is True, so we just measure the first field each time.
+        single_field_per_preg = True
+        preg_max_width = 0
+        for preg in pregs:
+            preg_max_width = max(preg_max_width, preg.fields[0].bits.msb + 1)
+            if len(preg.fields) != 1:
+                single_field_per_preg = False
+                break
+
+        # Should the multi-register be compact? We expect it to be considered
+        # compact if both of:
+        #
+        #  - Each pseudo-register has just one field.
+        #
+        #  - The regwen_multi flag is false. (If not, we need a different
+        #    regwen and hence concrete register for each pseudo-register)
+        #
+        # The dictionary can override this to stop the multi-register being
+        # compact even though these two properties are both true, but we check
+        # in the other direction.
+
+        default_compact = single_field_per_preg and not regwen_multi
         compact = check_bool(rd.get('compact', default_compact),
                              f'compact field of multireg {name}')
 
-        if compact:
-            if len(preg.fields) > 1:
-                raise ValueError(f'Multireg {name} sets the compact flag '
-                                 'but has multiple fields.')
-            if regwen_multi:
-                raise ValueError(f'Multireg {name} sets the compact flag '
-                                 'but has regwen_multi set.')
+        if compact and not single_field_per_preg:
+            raise ValueError(f'Multireg {name} sets the compact flag '
+                             'but has multiple fields.')
+        if compact and regwen_multi:
+            raise ValueError(f'Multireg {name} sets the compact flag '
+                             'but has regwen_multi set.')
 
-        count_str = check_str(rd['count'], f'count field of multireg {name}')
-        count = params.expand(count_str, f'count field of multireg {name}')
-
-        if count <= 0:
-            raise ValueError(f"Multireg {name} has a count of {count}, "
-                             "which isn't positive.")
+        # The checks above should have checked that we cannot "turn on" being
+        # compact with the config file. Make sure of this explictly.
+        assert default_compact or not compact
 
         # Generate the registers that this multireg expands into. Here, a
         # "creg" is a "compacted register", which might contain multiple actual
         # registers.
         if compact:
-            assert len(preg.fields) == 1
-            width_per_reg = preg.fields[0].bits.msb + 1
-            assert width_per_reg <= reg_width
-            regs_per_creg = reg_width // width_per_reg
+            assert preg_max_width <= reg_width
+            regs_per_creg = reg_width // preg_max_width
         else:
             regs_per_creg = 1
-
-        # This is a temporary construction of the pseudo-registers: eventually
-        # they might differ! But replicating preg here allows us to the code
-        # downstream to handle them being different.
-        pregs = [preg] * count
 
         cregs = []
         creg_count = (count + regs_per_creg - 1) // regs_per_creg
