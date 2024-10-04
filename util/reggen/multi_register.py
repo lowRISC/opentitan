@@ -180,8 +180,8 @@ class MultiRegister(RegBase):
         # Parse the dictionary multiple times, passing in a value for
         # "multireg_idx". Collect up the resulting parsed pseudo-registers into
         # a pregs list.
-        pregs = [Register.from_raw(reg_width, offset,
-                                   params, reg_rd, clocks, is_alias)
+        pregs = [Register.from_raw(reg_width, offset, params, reg_rd, clocks,
+                                   is_alias, multireg_idx)
                  for multireg_idx in range(count)]
 
         alias_target = None

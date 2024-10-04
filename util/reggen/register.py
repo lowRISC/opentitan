@@ -250,7 +250,8 @@ class Register(RegBase):
                  params: ReggenParams,
                  raw: object,
                  clocks: Clocking,
-                 is_alias: bool) -> 'Register':
+                 is_alias: bool,
+                 multireg_idx: Optional[int]) -> 'Register':
         rd = check_keys(raw, 'register',
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
@@ -269,6 +270,13 @@ class Register(RegBase):
             raise ValueError('alias register {} does not define the '
                              'alias_target key.'
                              .format(name))
+
+        # If multireg_idx is not None then we are parsing a pseudo-register for
+        # some multi-register. Set up the bindings that we pass to
+        # Field.from_raw to reflect that.
+        field_bindings = {}
+        if multireg_idx is not None:
+            field_bindings['multireg_idx'] = multireg_idx
 
         desc = check_str(rd['desc'], 'desc for {} register'.format(name))
 
@@ -366,7 +374,8 @@ class Register(RegBase):
                                     hwqe,
                                     shadowed,
                                     is_alias,
-                                    rf))
+                                    rf,
+                                    field_bindings))
 
             overlap_bits = used_bits & field.bits.bitmask()
             if overlap_bits:
