@@ -215,7 +215,8 @@ class Field:
                  default_hwqe: bool,
                  shadowed: bool,
                  is_alias: bool,
-                 raw: object) -> 'Field':
+                 raw: object,
+                 bindings: Dict[str, int]) -> 'Field':
         where = f'field {field_idx} of {reg_name} register'
         rd = check_keys(raw, where, list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
@@ -276,7 +277,7 @@ class Field:
         # Make sense of the reset value of the field. First, try to evaluate
         # any 'resval' that has been defined for the field directly.
         field_resval = Field.resval_from_raw(bits,
-                                             {},  # TODO: Bindings for multiregs
+                                             bindings,
                                              rd.get('resval'),
                                              is_mubi,
                                              where)
