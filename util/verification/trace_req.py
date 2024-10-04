@@ -26,8 +26,9 @@ def find_markdown_files(directory):
 
     return markdown_files
 
-def extract_tags_from_markdown(markdown_file, block_name):
-    """Extract requirement and feature tags from the Markdown file using a regex pattern based on block_name."""
+def extract_tags_from_markdown(markdown_file, block_name, demote_error):
+    """Extract requirement and feature tags from the Markdown file using a regex pattern based on block_name.
+    Ensure that tags with begin/end words are wrapping each blocks."""
     try:
         with open(markdown_file, 'r') as md_file:
             content = md_file.read()
@@ -36,18 +37,77 @@ def extract_tags_from_markdown(markdown_file, block_name):
         return set(), set()
 
     # Regex patterns to find requirement and feature blocks
-    req_pattern = fr"<!--\s*req_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->.*?<!--\s*req_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
-    ftr_pattern = fr"<!--\s*ftr_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->.*?<!--\s*ftr_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
+    req_begin_pattern = fr"<!--\s*req_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->"
+    req_end_pattern = fr"<!--\s*req_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
+    ftr_begin_pattern = fr"<!--\s*ftr_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->"
+    ftr_end_pattern = fr"<!--\s*ftr_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
 
-    # Find all matching tags for requirements and features
-    req_matches = re.findall(req_pattern, content, re.DOTALL)
-    ftr_matches = re.findall(ftr_pattern, content, re.DOTALL)
+    # Ensure all tags have a matching begin and end
+    validate_matching_tags(content, req_begin_pattern, req_end_pattern, markdown_file, demote_error, "req")
+    validate_matching_tags(content, ftr_begin_pattern, ftr_end_pattern, markdown_file, demote_error, "ftr")
 
     # Extract the tags themselves (without the comment wrappers)
-    req_tags = {re.search(fr"req_{block_name}_[0-9a-fA-F]{{4}}", match).group(0) for match in req_matches}
-    ftr_tags = {re.search(fr"ftr_{block_name}_[0-9a-fA-F]{{4}}", match).group(0) for match in ftr_matches}
+    req_tags = set(re.findall(fr"req_{block_name}_[0-9a-fA-F]{{4}}", content))
+    ftr_tags = set(re.findall(fr"ftr_{block_name}_[0-9a-fA-F]{{4}}", content))
 
     return req_tags, ftr_tags
+
+def validate_matching_tags(content, begin_pattern, end_pattern, markdown_file, demote_error, tag_type):
+    """Validate that each begin tag has a corresponding end tag and no nested tags exist."""
+    # Find all positions of begin and end tags
+    begin_tags = [(m.start(), m.group(0)) for m in re.finditer(begin_pattern, content)]
+    end_tags = [(m.start(), m.group(0)) for m in re.finditer(end_pattern, content)]
+
+    # Sort tags by their positions (so we process tags in the order they appear)
+    tags = sorted(begin_tags + end_tags)
+
+    # Stack to track open tags and ensure correct nesting
+    stack = []
+
+    for pos, tag in tags:
+        if 'begin' in tag:
+            if stack:
+                # Nested tag detection: if there's already an open tag, raise an error or warning
+                open_tag_pos, open_tag = stack[-1]
+                error_message = (
+                    f"Nested tag detected in '{markdown_file}': "
+                    f"'{open_tag}' at position {open_tag_pos} is still open when '{tag}' begins at position {pos}"
+                )
+                if demote_error:
+                    print(f"Warning: {error_message}")
+                else:
+                    raise TagMismatchError(error_message)
+
+            stack.append((pos, tag))  # Push the begin tag to the stack
+        elif 'end' in tag:
+            if not stack:
+                error_message = f"Unmatched end tag '{tag}' found in '{markdown_file}'"
+                if demote_error:
+                    print(f"Warning: {error_message}")
+                else:
+                    raise TagMismatchError(error_message)
+            else:
+                begin_pos, begin_tag = stack.pop()  # Pop the corresponding begin tag
+
+                # Clean both tags to compare them properly
+                begin_tag_cleaned = re.sub(r'\s+begin\s*-->', '', begin_tag).strip()
+                end_tag_cleaned = re.sub(r'\s+end\s*-->', '', tag).strip()
+
+                if begin_tag_cleaned != end_tag_cleaned:  # Ensure the tags match
+                    error_message = f"Mismatched tag in '{markdown_file}': '{begin_tag}' does not match '{tag}'"
+                    if demote_error:
+                        print(f"Warning: {error_message}")
+                    else:
+                        raise TagMismatchError(error_message)
+
+    # If stack is not empty, it means some begin tags don't have matching end tags
+    if stack:
+        for begin_pos, unmatched_tag in stack:
+            error_message = f"Unmatched begin tag '{unmatched_tag}' found in '{markdown_file}'"
+            if demote_error:
+                print(f"Warning: {error_message}")
+            else:
+                raise TagMismatchError(error_message)
 
 def extract_tags_from_hjson(hjson_file, block_name):
     """Extract both req and ftr tags from the HJSON file using regex patterns."""
@@ -116,7 +176,7 @@ def compare_tags(directory, hjson_file, demote_error):
     all_ftr_tags = set()
 
     for md_file in markdown_files:
-        req_tags, ftr_tags = extract_tags_from_markdown(md_file, block_name)
+        req_tags, ftr_tags = extract_tags_from_markdown(md_file, block_name, demote_error)
         all_req_tags.update(req_tags)
         all_ftr_tags.update(ftr_tags)
 

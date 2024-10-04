@@ -14,4 +14,4 @@ See that document for integration overview within the broader OpenTitan top leve
   - <!-- req_mem_xyz_3A6A begin -->8<!-- req_mem_xyz_3A6A end -->
   - <!-- req_mem_xyz_3A4E begin -->16<!-- req_mem_xyz_3A4E end -->
   - <!-- req_mem_xyz_3637 begin -->32<!-- req_mem_xyz_3637 end -->
-- <!-- req_mem_xyz_10B7 begin-->Multiple modes are available: mode_a, mode_b and mode_c<!-- req_mem_xyz_10B7 end-->
+- <!-- req_mem_xyz_10B7 begin -->Multiple modes are available: mode_a, mode_b and mode_c<!-- req_mem_xyz_10B7 end -->
