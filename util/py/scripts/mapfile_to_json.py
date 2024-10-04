@@ -107,13 +107,20 @@ const node = svg.selectAll("g")
   .join("g")
     .attr("transform", d => `translate(${d.x0},${d.y0})`);
 
+function maybe_size(sz) {
+  if (sz) return "(0x" + sz.toString(16) + ")";
+  return "";
+}
+
 function symlist(d) {
-  if (d.data.symbols) {
-    return d.data.symbols.map(d => d.name + ": 0x" + d.addr.toString(16)).join("  \n");
-  } else if (d.children) {
-    return d.children.map(d => symlist(d)).join("  \n");
+  if (d.children) {
+      return d.children.map(d => symlist(d)).join("\n");
+  } else if (d.data.symbols.length) {
+    return d.data.symbols.map(
+        d => d.name + ": 0x" + d.addr.toString(16) + maybe_size(d.size)
+    ).join("\n");
   } else {
-    return "";
+    return "(noname): 0x" + d.data.addr.toString(16) + maybe_size(d.data.size);
   }
 }
 
@@ -124,7 +131,7 @@ node.append("title")
 `${d.ancestors().reverse().map(d => d.data.name).join(".")}
 Size: ${format(d.value)}
 Symbols:
-  ${symlist(d)}`);
+${symlist(d)}`);
 
 node.append("rect")
     .attr("id", d => (d.nodeUid = DOM.uid("node")).id)
