@@ -57,6 +57,7 @@ py_library(
 py_library(
     name = "elf",
     srcs = ["elf.py"],
+    imports = ["../"],
     deps = [
         ":mem_layout",
     ],
@@ -116,6 +117,7 @@ py_library(
 py_library(
     name = "insn_yaml",
     srcs = ["insn_yaml.py"],
+    imports = ["../"],
     deps = [
         ":encoding",
         ":encoding_scheme",
@@ -148,6 +150,7 @@ py_library(
 py_library(
     name = "mem_layout",
     srcs = ["mem_layout.py"],
+    imports = ["../../../../../util/"],
     deps = [
         ":otbn_reggen",
         "//util/reggen:reg_block",
@@ -178,6 +181,7 @@ py_library(
 py_library(
     name = "reg_dump",
     srcs = ["reg_dump.py"],
+    imports = ["../"],
 )
 
 py_library(
@@ -200,6 +204,7 @@ py_library(
 py_library(
     name = "testgen",
     srcs = ["testgen.py"],
+    imports = ["../"],
 )
 
 py_library(
