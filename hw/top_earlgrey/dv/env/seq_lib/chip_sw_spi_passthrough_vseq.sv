@@ -24,6 +24,14 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   // A bit map of command slots that will have passthrough filters enabled.
   rand bit [spi_device_pkg::NumTotalCmdInfo-1:0] passthrough_filters;
 
+
+  // Configures the read pipeline when set to non-zero
+  rand bit [1:0]                                      read_pipeline_mode;
+
+  constraint read_pipeline_mode_c {
+    read_pipeline_mode <= 2;
+  }
+
   // Generate a random permutation of the following opcodes, and place them in
   // the test_opcodes queue:
   //   - SpiFlashReadNormal
@@ -130,8 +138,18 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
 
   virtual task cpu_init();
     bit [7:0] sw_filter_config[4];
+    bit [7:0] read_pipeline_mode_data[1] = {read_pipeline_mode};
+//    bit [7:0] read_pipeline_mode_data[4];// = {read_pipeline_mode};
     super.cpu_init();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(passthrough_filters);
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(read_pipeline_mode);
+`ifdef GATE_LEVEL
+    // Two stages full cycle is forced since GLS fails for freqs over 24MHz
+    // TODO: does GLS gets satisfied equally for "two stages half cycle" read pipeline value?
+    read_pipeline_mode = 2;
+`endif
+
+    sw_symbol_backdoor_overwrite("kReadPipelineMode", read_pipeline_mode_data);
     sw_filter_config = {<<byte{passthrough_filters}};
     sw_symbol_backdoor_overwrite("kFilteredCommands", sw_filter_config);
   endtask
@@ -151,8 +169,8 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
     cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
 
-    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
-    spi_agent_configure_flash_cmds(cfg.m_spi_device_agent_cfgs[0]);
+    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg, read_pipeline_mode);
+    spi_agent_configure_flash_cmds(cfg.m_spi_device_agent_cfgs[0], read_pipeline_mode);
     // Enable the spi agents.
     cfg.chip_vif.enable_spi_host = 1;
     cfg.chip_vif.enable_spi_device(.inst_num(0), .enable(1));
