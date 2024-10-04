@@ -191,3 +191,21 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: site/redirector/landing
+
+  obtn_smoketest:
+    name: OTBN tests
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: OTBN ISS tests
+        run: ./ci/bazelisk.sh test //hw/ip/otbn/dv/otbnsim/test/...
+      - name: OTBN smoke test
+        run: ./hw/ip/otbn/dv/smoke/run_smoke.sh
+      - name: Assemble and link OTBN code snippets
+        run: ./ci/bazelisk.sh build //sw/otbn/code-snippets/...
+      - name: OTBN crypto tests
+        run: ./ci/bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
