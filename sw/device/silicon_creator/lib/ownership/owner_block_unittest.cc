@@ -376,23 +376,13 @@ TEST_F(OwnerBlockTest, ParseBlockBadHeaderTag) {
   EXPECT_EQ(error, kErrorOwnershipInvalidTag);
 }
 
-TEST_F(OwnerBlockTest, ParseBlockBadStructVersion) {
-  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
-  // Rewrite the struct_version to a bad value.
-  block.Seek(offsetof(owner_block_t, struct_version)).Write(2);
-  owner_config_t config;
-  owner_application_keyring_t keyring{};
-  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
-  EXPECT_EQ(error, kErrorOwnershipInvalidVersion);
-}
-
 TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Write an unknown header of {tag="AAAA", len=0x40} after the RESQ config.
-  uint32_t len =
-      block.Find(kTlvTagRescueConfig).Seek(sizeof(uint32_t)).Read<uint32_t>() -
-      sizeof(tlv_header_t);
-  block.Seek(len).Write(0x41414141).Write(0x40);
+  tlv_header_t rescue = block.Find(kTlvTagRescueConfig).Read<tlv_header_t>();
+  block.Seek(rescue.length - sizeof(tlv_header_t))
+      .Write(0x41414141)
+      .Write(0x40);
   owner_config_t config;
   owner_application_keyring_t keyring{};
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
@@ -401,11 +391,30 @@ TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
 
 TEST_F(OwnerBlockTest, ParseBlockBadLength) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
-  // Rewrite the RESQ block length to overflow the TLV region.
-  block.Find(kTlvTagRescueConfig).Seek(sizeof(uint32_t)).Write(uint32_t(0x5f1));
   owner_config_t config;
   owner_application_keyring_t keyring{};
+
+  // Rewrite the RESQ block length to overflow the TLV region.
+  block.Find(kTlvTagRescueConfig)
+      .Seek(offsetof(tlv_header_t, length))
+      .Write(uint16_t(0x600));
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, kErrorOwnershipInvalidTagLength);
+
+  // Rewrite the RESQ block length to be too short.
+  block.Reset()
+      .Find(kTlvTagRescueConfig)
+      .Seek(offsetof(tlv_header_t, length))
+      .Write(uint16_t(0x4));
+  error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, kErrorOwnershipInvalidTagLength);
+
+  // Rewrite the RESQ block length to not be a multiple of 4.
+  block.Reset()
+      .Find(kTlvTagRescueConfig)
+      .Seek(offsetof(tlv_header_t, length))
+      .Write(uint16_t(0x21));
+  error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOwnershipInvalidTagLength);
 }
 
@@ -438,4 +447,35 @@ TEST_F(OwnerBlockTest, ParseBlockDupRescue) {
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOwnershipDuplicateItem);
 }
+
+struct TagError {
+  tlv_tag_t tag;
+  rom_error_t expect;
+};
+
+class OwnerBlockPerTagTest : public OwnerBlockTest,
+                             public testing::WithParamInterface<TagError> {};
+
+TEST_P(OwnerBlockPerTagTest, ParseBadVersion) {
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
+  TagError param = GetParam();
+
+  // Rewrite the version to a bad value.
+  block.Find(param.tag)
+      .Seek(offsetof(tlv_header_t, version))
+      .Write((struct_version_t){5, 0});
+  owner_config_t config;
+  owner_application_keyring_t keyring{};
+  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, param.expect);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllCases, OwnerBlockPerTagTest,
+    testing::Values(TagError{kTlvTagOwner, kErrorOwnershipOWNRVersion},
+                    TagError{kTlvTagApplicationKey, kErrorOwnershipAPPKVersion},
+                    TagError{kTlvTagFlashConfig, kErrorOwnershipFLSHVersion},
+                    TagError{kTlvTagInfoConfig, kErrorOwnershipINFOVersion},
+                    TagError{kTlvTagRescueConfig, kErrorOwnershipRESQVersion}));
+
 }  // namespace
