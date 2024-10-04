@@ -26,17 +26,3 @@ $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)
 
 .PHONY: lint
 lint: $(lint-stamps)
-
-# Target that assembles and links each of the code snippets to make
-# sure the toolchain is in a reasonable shape.
-
-otbn-code-snippets-obj-dir := $(cs-build-dir)
-otbn-code-snippets-bin-dir := $(cs-build-dir)
-otbn-code-snippets-util-dir  := .
-
-.PHONY: asm-check
-asm-check: $(otbn-code-snippets-elfs)
-
-.PHONY: clean
-clean:
-	rm -rf $(build-dir)

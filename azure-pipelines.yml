@@ -289,7 +289,7 @@ jobs:
       ./hw/ip/otbn/dv/smoke/run_smoke.sh
     displayName: OTBN Smoke Test
   - bash: |
-      make -C hw/ip/otbn/util asm-check
+      ./ci/bazelisk.sh build //sw/otbn/code-snippets/...
     displayName: Assemble & link code snippets
 
 - job: otbn_crypto_tests
