@@ -134,6 +134,8 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
 
   virtual task cpu_init();
     bit [7:0] sw_filter_config[4];
+    bit [7:0] read_pipeline_mode_data[1] = {read_pipeline_mode};
+//    bit [7:0] read_pipeline_mode_data[4];// = {read_pipeline_mode};
     super.cpu_init();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(passthrough_filters);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(read_pipeline_mode);
@@ -143,9 +145,9 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     read_pipeline_mode = 2;
 `endif
 
+    sw_symbol_backdoor_overwrite("kReadPipelineMode", read_pipeline_mode_data);
     sw_filter_config = {<<byte{passthrough_filters}};
     sw_symbol_backdoor_overwrite("kFilteredCommands", sw_filter_config);
-    sw_symbol_backdoor_overwrite("KReadPipelineMode", read_pipeline_mode);
   endtask
 
   virtual task body();
