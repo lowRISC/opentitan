@@ -76,8 +76,8 @@ rom_error_t owner_block_parse(const owner_block_t *block,
     return kErrorOwnershipInvalidTag;
   if (block->header.length != sizeof(owner_block_t))
     return kErrorOwnershipInvalidTagLength;
-  if (block->struct_version != 0)
-    return kErrorOwnershipInvalidVersion;
+  if (block->header.version.major != 0)
+    return kErrorOwnershipOWNRVersion;
 
   config->sram_exec = block->sram_exec_mode;
 
@@ -85,10 +85,10 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   uint32_t offset = 0;
   while (remain) {
     const tlv_header_t *item = (const tlv_header_t *)(block->data + offset);
-    if (item->tag == kTlvTagNotPresent || item->length == kTlvTagNotPresent) {
+    if (item->tag == kTlvTagNotPresent) {
       break;
     }
-    if (item->length < 8 || item->length > remain) {
+    if (item->length < 8 || item->length > remain || item->length % 4 != 0) {
       return kErrorOwnershipInvalidTagLength;
     }
     remain -= item->length;
@@ -97,6 +97,9 @@ rom_error_t owner_block_parse(const owner_block_t *block,
     switch (launder32(item->tag)) {
       case kTlvTagApplicationKey:
         HARDENED_CHECK_EQ(tag, kTlvTagApplicationKey);
+        if (item->version.major != 0)
+          return kErrorOwnershipAPPKVersion;
+
         if (keyring->length < ARRAYSIZE(keyring->key)) {
           keyring->key[keyring->length++] =
               (const owner_application_key_t *)item;
@@ -104,18 +107,24 @@ rom_error_t owner_block_parse(const owner_block_t *block,
         break;
       case kTlvTagFlashConfig:
         HARDENED_CHECK_EQ(tag, kTlvTagFlashConfig);
+        if (item->version.major != 0)
+          return kErrorOwnershipFLSHVersion;
         if ((hardened_bool_t)config->flash != kHardenedBoolFalse)
           return kErrorOwnershipDuplicateItem;
         config->flash = (const owner_flash_config_t *)item;
         break;
       case kTlvTagInfoConfig:
         HARDENED_CHECK_EQ(tag, kTlvTagInfoConfig);
+        if (item->version.major != 0)
+          return kErrorOwnershipINFOVersion;
         if ((hardened_bool_t)config->info != kHardenedBoolFalse)
           return kErrorOwnershipDuplicateItem;
         config->info = (const owner_flash_info_config_t *)item;
         break;
       case kTlvTagRescueConfig:
         HARDENED_CHECK_EQ(tag, kTlvTagRescueConfig);
+        if (item->version.major != 0)
+          return kErrorOwnershipRESQVersion;
         if ((hardened_bool_t)config->rescue != kHardenedBoolFalse)
           return kErrorOwnershipDuplicateItem;
         config->rescue = (const owner_rescue_config_t *)item;

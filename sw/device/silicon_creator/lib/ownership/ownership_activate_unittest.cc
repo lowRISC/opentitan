@@ -35,7 +35,7 @@ class OwnershipActivateTest : public rom_test::RomTest {
   void MakePage1StructValid() {
     owner_page[1].header.tag = kTlvTagOwner;
     owner_page[1].header.length = sizeof(owner_page[1]);
-    owner_page[1].struct_version = 0;
+    owner_page[1].header.version = (struct_version_t){0, 0};
     owner_page[1].config_version = 0;
     owner_page[1].min_security_version_bl0 = UINT32_MAX;
     memset(owner_page[1].data, 0x5a, sizeof(owner_page[1].data));
@@ -127,12 +127,12 @@ INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateInvalidStateTest,
 TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
   bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
   MakePage1Valid(true);
-  owner_page[1].struct_version = 5;
+  owner_page[1].header.version.major = 5;
 
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
-  EXPECT_EQ(error, kErrorOwnershipInvalidVersion);
+  EXPECT_EQ(error, kErrorOwnershipOWNRVersion);
 }
 
 // Tests that an owner block with an invalid signature fails.
