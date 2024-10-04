@@ -376,16 +376,6 @@ TEST_F(OwnerBlockTest, ParseBlockBadHeaderTag) {
   EXPECT_EQ(error, kErrorOwnershipInvalidTag);
 }
 
-TEST_F(OwnerBlockTest, ParseBlockBadStructVersion) {
-  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
-  // Rewrite the struct_version to a bad value.
-  block.Seek(offsetof(owner_block_t, struct_version)).Write(2);
-  owner_config_t config;
-  owner_application_keyring_t keyring{};
-  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
-  EXPECT_EQ(error, kErrorOwnershipInvalidVersion);
-}
-
 TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Write an unknown header of {tag="AAAA", len=0x40} after the RESQ config.
@@ -438,4 +428,35 @@ TEST_F(OwnerBlockTest, ParseBlockDupRescue) {
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOwnershipDuplicateItem);
 }
+
+struct TagError {
+  tlv_tag_t tag;
+  rom_error_t expect;
+};
+
+class OwnerBlockPerTagTest : public OwnerBlockTest,
+                             public testing::WithParamInterface<TagError> {};
+
+TEST_P(OwnerBlockPerTagTest, ParseBadVersion) {
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
+  TagError param = GetParam();
+
+  // Rewrite the version to a bad value.
+  block.Find(param.tag)
+      .Seek(offsetof(tlv_header_t, version))
+      .Write((struct_version_t){5, 0});
+  owner_config_t config;
+  owner_application_keyring_t keyring{};
+  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, param.expect);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllCases, OwnerBlockPerTagTest,
+    testing::Values(TagError{kTlvTagOwner, kErrorOwnershipOWNRVersion},
+                    TagError{kTlvTagApplicationKey, kErrorOwnershipAPPKVersion},
+                    TagError{kTlvTagFlashConfig, kErrorOwnershipFLSHVersion},
+                    TagError{kTlvTagInfoConfig, kErrorOwnershipINFOVersion},
+                    TagError{kTlvTagRescueConfig, kErrorOwnershipRESQVersion}));
+
 }  // namespace
