@@ -221,6 +221,11 @@ class MultiRegister(RegBase):
         else:
             regs_per_creg = 1
 
+        # This is a temporary construction of the pseudo-registers: eventually
+        # they might differ! But replicating preg here allows us to the code
+        # downstream to handle them being different.
+        pregs = [preg] * count
+
         cregs = []
         creg_count = (count + regs_per_creg - 1) // regs_per_creg
         for creg_idx in range(creg_count):
@@ -228,20 +233,42 @@ class MultiRegister(RegBase):
             max_reg_idx = min(min_reg_idx + regs_per_creg, count) - 1
             creg_offset = offset + creg_idx * addrsep
 
-            creg = preg.make_multi(reg_width,
-                                   creg_offset, creg_idx, creg_count,
-                                   regwen_multi, compact,
-                                   min_reg_idx, max_reg_idx, cname)
+            pregs_for_creg = [(pregs[i], i)
+                              for i in range(min_reg_idx, max_reg_idx + 1)]
+            preg0 = pregs_for_creg[0][0]
+
+            creg_suff = f'_{creg_idx}' if creg_count > 1 else ''
+            alias_target = (alias_target + creg_suff
+                            if alias_target is not None else None)
+
+            if regwen_multi and preg0.regwen is not None and creg_count > 1:
+                merged_regwen = preg0.regwen + creg_suff  # type: Optional[str]
+            else:
+                merged_regwen = preg0.regwen
+
+            field_desc_override = None
+            strip_field = False
+            if creg_idx > 0:
+                field_desc_override = f'For {cname}{creg_idx}'
+                strip_field = True
+
+            creg = Register.collect_registers(creg_offset,
+                                              preg0.name + creg_suff,
+                                              pregs_for_creg,
+                                              alias_target,
+                                              merged_regwen,
+                                              field_desc_override,
+                                              strip_field)
+
+            # Check that we haven't overflowed the register width. This
+            # shouldn't happen (because of how we calculate regs_per_creg).
+            assert creg.fields[-1].bits.msb < reg_width
+
             cregs.append(creg)
 
         # dv_compact is true if the multireg can be equally divided, and we can
         # pack them as an array
         dv_compact = (count < regs_per_creg or (count % regs_per_creg) == 0)
-
-        # This is a temporary construction of the pseudo-registers: eventually
-        # they might differ! But replicating preg here allows us to the code
-        # downstream to handle them being different.
-        pregs = [preg] * count
 
         return MultiRegister(name, offset, alias_target,
                              pregs, cname, regwen_multi,

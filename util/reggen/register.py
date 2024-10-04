@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from design.mubi import prim_mubi
 
@@ -443,65 +443,94 @@ class Register(RegBase):
 
         return False
 
-    def make_multi(self, reg_width: int, offset: int, creg_idx: int,
-                   creg_count: int, regwen_multi: bool, compact: bool,
-                   min_reg_idx: int, max_reg_idx: int,
-                   cname: str) -> 'Register':
-        '''Generate a numbered, packed version of the register'''
-        assert 0 <= creg_idx < creg_count
-        assert 0 <= min_reg_idx <= max_reg_idx
-        assert compact or (min_reg_idx == max_reg_idx)
+    @staticmethod
+    def collect_registers(offset: int,
+                          name: str,
+                          regs: List[Tuple['Register', int]],
+                          alias_target: Optional[str],
+                          regwen: Optional[str],
+                          field_desc_override: Optional[str],
+                          strip_field: bool) -> 'Register':
+        '''Create a register that holds the fields from regs.
 
-        new_name = ('{}_{}'.format(self.name, creg_idx)
-                    if creg_count > 1 else self.name)
+        The merged register will be have address offset and be called name.
 
-        new_alias_target = None
-        if self.alias_target is not None:
-            new_alias_target = ('{}_{}'.format(self.alias_target, creg_idx)
-                                if creg_count > 1 else self.alias_target)
+        The regs argument should be a list of pairs (reg, idx) which means that
+        we want a copy of reg, but renamed by appending "_<idx>". These input
+        registers are concatenated, including gaps before field LSBs.
 
-        if self.regwen is None or not regwen_multi or creg_count == 1:
-            new_regwen = self.regwen
-        else:
-            new_regwen = '{}_{}'.format(self.regwen, creg_idx)
+        If alias_target is not None, the merged register will be an alias
+        register that points at the named register.
 
-        strip_field = creg_idx > 0
-        desc_override = f'For {cname}{creg_idx}' if creg_idx > 0 else None
+        If regwen is not None, this names a regwen register that should be used
+        by the merged register. We check ensures that it has a non-None value
+        if any element of regs has a regwen.
 
-        if compact:
-            # Compacting multiple registers into a single "compacted" register.
-            # This is only supported if we have exactly one field (checked at
-            # the call-site)
-            assert len(self.fields) == 1
+        If field_desc_override is not None, it will be used instead of fields' desc
+        values.
 
-            # If this is for a compacted register after the first one, we tweak
-            # the field description slightly so that it just says which
-            # register it is used in.
-            field = self.fields[0]
+        If strip_field is True, we drop any values from field enum types.
+        '''
+        assert regs
 
-            num_copies = max_reg_idx - min_reg_idx + 1
-            new_fields = self.fields[0].replicate(min_reg_idx, num_copies,
-                                                  desc_override or field.desc,
-                                                  strip_field)
-        else:
-            # No compacting going on, but we still choose to rename the fields
-            # to match the registers
-            assert creg_idx == min_reg_idx
+        fields = []
+        bit_idx = 0
 
-            new_fields = []
-            for field in self.fields:
-                new_fields += field.replicate(creg_idx, 1,
-                                              desc_override or field.desc,
-                                              strip_field)
+        reg0 = regs[0][0]
 
-        # Check that the replicated field will fit in the target register.
-        # The msb of the last copy should be less than reg_width.
-        if new_fields[-1].bits.msb >= reg_width:
-            raise ValueError(
-                f'Cannot replicate field {self.fields[0].name} to make '
-                f'copies {min_reg_idx}-{max_reg_idx}: the resulting '
-                f'msb is {new_fields[-1].bits.msb}, but the register '
-                f'width is just {reg_width}.')
+        # Check that the registers can be collected together (because they have
+        # compatible values for other instance variables). This is done with
+        # "assert" because if it fails then this is probably a programming
+        # error in reggen.
+        for reg, _ in regs[1:]:
+            assert reg.desc == reg0.desc
+            assert reg.async_name == reg0.async_name
+            assert reg.async_clk == reg0.async_clk
+            assert reg.sync_name == reg0.sync_name
+            assert reg.sync_clk == reg0.sync_clk
+            assert reg.hwext == reg0.hwext
+            assert reg.hwqe == reg0.hwqe
+            assert reg.hwre == reg0.hwre
+            assert reg.tags == reg0.tags
+            assert reg.shadowed == reg0.shadowed
+            assert reg.update_err_alert == reg0.update_err_alert
+            assert reg.storage_err_alert == reg0.storage_err_alert
+            assert reg.writes_ignore_errors == reg0.writes_ignore_errors
+
+        for reg, reg_idx in regs:
+            assert reg.regwen is None or regwen is not None
+
+            # We want to collect up all the fields from this input register,
+            # starting with an LSB of bit_idx
+            reg_bit0 = bit_idx
+            bit_idx += reg.fields[-1].bits.msb + 1
+
+            for field in reg.fields:
+                field_name_suff = f'_{reg_idx}'
+
+                # Translate the field to match the copy of the register that
+                # started at reg_bit0
+                field_copy = field.make_translated(reg_bit0)
+
+                # The generated field will need a name based on reg_idx (the
+                # index of the register copy that's being used). Similarly, we
+                # have to redirect any alias_target if there is one.
+                field_copy.name += field_name_suff
+                if field_copy.alias_target is not None:
+                    field_copy.alias_target += field_name_suff
+
+                # Apply field_desc_override (which allows the caller to
+                # simplify documentation for the field when there are lots of
+                # copies).
+                if field_desc_override is not None:
+                    field_copy.desc = field_desc_override
+
+                # Finally, strip out any associated enum type if that was
+                # requested.
+                if strip_field:
+                    field_copy.enum = None
+
+                fields.append(field_copy)
 
         # Don't specify a reset value for the new register. Any reset value
         # defined for the original register will have propagated to its fields,
@@ -510,12 +539,13 @@ class Register(RegBase):
         # we've replicated fields).
         new_resval = None
 
-        return Register(offset, new_name, new_alias_target, self.desc,
-                        self.async_name, self.async_clk, self.sync_name,
-                        self.sync_clk, self.hwext, self.hwqe, self.hwre,
-                        new_regwen, self.tags, new_resval, self.shadowed,
-                        new_fields, self.update_err_alert,
-                        self.storage_err_alert, self.writes_ignore_errors)
+        return Register(offset, name, alias_target, reg0.desc,
+                        reg0.async_name, reg0.async_clk,
+                        reg0.sync_name, reg0.sync_clk,
+                        reg0.hwext, reg0.hwqe, reg0.hwre, regwen,
+                        reg0.tags, new_resval, reg0.shadowed, fields,
+                        reg0.update_err_alert, reg0.storage_err_alert,
+                        reg0.writes_ignore_errors)
 
     def check_valid_regwen(self) -> None:
         '''Check that this register is valid for use as a REGWEN'''
