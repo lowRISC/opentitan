@@ -363,50 +363,12 @@ class Field:
             n_bits += int(not hwext)
         return n_bits
 
-    def replicate(self,
-                  idx0: int,
-                  count: int,
-                  desc: Optional[str],
-                  strip_enum: bool) -> List['Field']:
-        '''Return a list of one or more copies of this field
-
-        The copies are indexed from idx0 to idx0+count-1 and their names are
-        constructed by appending the index in the form "field_name_123". If the
-        field is an alias, the target of the alias is renamed in the same way
-        ("target_name_123").
-
-        If desc is not None, this is used as the description for the field
-        copies, overriding self.desc.
-
-        Values of field might be from an enumerated type, with known values in
-        self.enum. If strip_enum is true, the copies of the field have their
-        enum type stripped and just become blocks of bits.
-        '''
-
-        assert 0 <= idx0
-        assert count > 0
-        field_width = self.bits.msb + 1
-
-        enum = None if strip_enum else self.enum
-
-        ret = []
-        for idx in range(idx0, idx0 + count):
-            name = f'{self.name}_{idx}'
-            # In case this is an alias register, we need to make sure that
-            # the alias_target name is expanded as well.
-            alias_target = None
-            if self.alias_target is not None:
-                alias_target = f'{self.alias_target}_{idx}'
-
-            bit_offset = field_width * (idx - idx0)
-            bits = self.bits.make_translated(bit_offset)
-
-            ret.append(Field(name, alias_target, desc or self.desc,
-                             self.tags, self.swaccess, self.hwaccess,
-                             self.hwqe, bits, self.resval, enum, self.mubi,
-                             self.auto_split))
-
-        return ret
+    def make_translated(self, delta: int) -> 'Field':
+        '''Return a copy of this field, translated by delta bits'''
+        return Field(self.name, self.alias_target, self.desc, self.tags,
+                     self.swaccess, self.hwaccess, self.hwqe,
+                     self.bits.make_translated(delta),
+                     self.resval, self.enum, self.mubi, self.auto_split)
 
     def _asdict(self) -> Dict[str, object]:
         rd = {
