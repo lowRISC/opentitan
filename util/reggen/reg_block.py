@@ -221,7 +221,7 @@ class RegBlock:
     def _handle_register(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
         reg = Register.from_raw(self._reg_width, self.offset, self._params,
-                                body, clocks, is_alias)
+                                body, clocks, is_alias, None)
 
         self._validate_async(reg.async_name, reg.async_clk)
         self._validate_sync(reg.sync_name, reg.sync_clk)
