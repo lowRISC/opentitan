@@ -61,12 +61,12 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
 
   owner_page[0].header.tag = kTlvTagOwner;
   owner_page[0].header.length = 2048;
-  owner_page[0].struct_version = 0;
+  owner_page[0].header.version = (struct_version_t){0, 0};
+  owner_page[0].config_version = TEST_OWNER_CONFIG_VERSION;
   owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
   owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
-  owner_page[0].config_version = TEST_OWNER_CONFIG_VERSION;
-  owner_page[0].min_security_version_bl0 = UINT32_MAX;
   owner_page[0].update_mode = TEST_OWNER_UPDATE_MODE;
+  owner_page[0].min_security_version_bl0 = UINT32_MAX;
   owner_page[0].owner_key = owner;
   owner_page[0].activate_key = (owner_key_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
