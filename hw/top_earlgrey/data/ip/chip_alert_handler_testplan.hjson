@@ -123,7 +123,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_plic_all_irqs"]
+      tests: ["chip_plic_all_irqs_0", "chip_plic_all_irqs_10", "chip_plic_all_irqs_20"]
       bazel: ["//sw/device/tests/autogen:plic_all_irqs_test_0"]
     }
     {
