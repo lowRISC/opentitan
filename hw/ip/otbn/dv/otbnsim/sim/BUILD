@@ -99,6 +99,7 @@ py_library(
 py_library(
     name = "load_elf",
     srcs = ["load_elf.py"],
+    imports = ["../"],
     deps = [
         ":decode",
         ":sim",
@@ -126,6 +127,7 @@ py_library(
 py_library(
     name = "sim",
     srcs = ["sim.py"],
+    imports = ["../"],
     deps = [
         ":constants",
         ":decode",
