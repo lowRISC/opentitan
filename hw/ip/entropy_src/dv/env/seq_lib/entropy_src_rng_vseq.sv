@@ -854,18 +854,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Don't enable here, let the main loop do that explicitly
   endtask
 
-  function void disable_assertions();
+  function void disable_entropy_drop_assertions();
     if (cfg.rng_max_delay) begin
-      // Disable assertions which expect that no entropy is dropped between the esrng,
-      // esbit and postht FIFOs.
-      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsbitFifoPushedIntoPosthtFifo_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsbitFifoPushedIntoPosthtFifo_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.Final_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
-      // TODO(#24085): Remove this assertoff once the issue is solved.
-      $assertoff(0, tb.dut.u_entropy_src_core.FifosEmptyWhenShaProcess_A);
+      cfg.entropy_src_path_vif.disable_entroy_drop_assertions();
     end
   endfunction
 
@@ -875,7 +866,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     continue_sim = 1;
     reset_needed = 0;
 
-    disable_assertions();
+    disable_entropy_drop_assertions();
     // Start sequences in the background
     start_indefinite_seqs();
 
