@@ -114,7 +114,8 @@ class spi_host_base_vseq extends cip_base_vseq #(
       end
       [cfg.seq_cfg.host_spi_middle_clkdiv+1 : 16'hFFF] : cfg.csr_spinwait_timeout_ns *= 5;
       [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : cfg.csr_spinwait_timeout_ns *= 10;
-      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out range"))
+      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out range",
+                                           spi_config_regs.clkdiv[0]))
     endcase
   endfunction
 
