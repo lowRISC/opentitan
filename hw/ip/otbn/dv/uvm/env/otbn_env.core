@@ -26,6 +26,7 @@ filesets:
       - otbn_insn_cnt_if.sv
       - otbn_rnd_if.sv
       - otbn_escalate_if.sv
+      - otbn_ssctrl_if.sv
       - otbn_trace_item.sv: {is_include_file: true}
       - otbn_trace_monitor.sv: {is_include_file: true}
       - otbn_env_cfg.sv: {is_include_file: true}
