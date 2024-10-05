@@ -25,6 +25,7 @@ dependencies = [
   "libcst == 1.1.0", # 1.2.0+ needs Python 3.9+
   "lxml ~= 5.0",
   "mako==1.1.6",
+  "ninja==1.11.1.1",
   "pluralizer==1.2.0",
   "pycryptodome==3.15.0",
   "pyelftools==0.29",
