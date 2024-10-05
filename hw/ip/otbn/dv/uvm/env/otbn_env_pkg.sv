@@ -53,6 +53,7 @@ package otbn_env_pkg;
   parameter int KEY_RSP_DATA_SIZE = $bits(otp_ctrl_pkg::otbn_otp_key_rsp_t);
 
   // typedefs
+  typedef virtual otbn_ssctrl_if   ssctrl_vif;
   typedef virtual otbn_escalate_if escalate_vif;
   typedef logic [TL_AIW-1:0]       tl_source_t;
   typedef key_sideload_agent#(keymgr_pkg::otbn_key_req_t) otbn_sideload_agent;
