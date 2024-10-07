@@ -22,10 +22,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_aes",
-  version:            "1.0.1",
+  version:            "1.1.0",
   life_stage:         "L1",
-  design_stage:       "D2S",
-  verification_stage: "V2S",
+  design_stage:       "D1",
+  verification_stage: "V1",
   dif_stage:          "S2",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
@@ -274,6 +274,10 @@
     {
       name: "AES.MODE.CTR",
       desc: "AES can perform both operations (encryption and decryption) in Counter (CTR) Mode for all three key lengths (128/192/256)."
+    }
+    {
+      name: "AES.MODE.GCM",
+      desc: "AES can perform both operations (encryption and decryption) in Galois/Counter Mode (GCM) for all three key lengths (128/192/256)."
     }
     {
       name: "AES.KEY.SIDELOAD",
