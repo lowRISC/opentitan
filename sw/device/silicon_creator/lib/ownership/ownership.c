@@ -12,6 +12,7 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/ecdsa.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -23,11 +24,29 @@ static owner_page_status_t owner_page_validity_check(size_t page) {
   size_t sig_len =
       (uintptr_t)&owner_page[0].signature - (uintptr_t)&owner_page[0];
 
+  // Any non-constrained words of the owner block device_id field are required
+  // to be `kLockConstraintNone`.  We wipe the field and then fill in the
+  // relevant words from the lifecycle constroller.
+  //
+  // For node-locked owner configurations, this makes the device_id from the
+  // lifecycle controller relevant to the cryptographic verification.
+  memset(owner_page[page].device_id, 0, sizeof(owner_page[page].device_id));
+  lifecycle_device_id_t id;
+  lifecycle_device_id_get(&id);
+  for (uint32_t i = 0; i < ARRAYSIZE(owner_page[0].device_id); ++i) {
+    if (owner_page[page].lock_constraint & (1u << i)) {
+      owner_page[page].device_id[i] = id.device_id[i];
+    } else {
+      owner_page[page].device_id[i] = kLockConstraintNone;
+    }
+  }
+
   rom_error_t sealed = ownership_seal_check(page);
   if (sealed == kErrorOk) {
     HARDENED_CHECK_EQ(sealed, kErrorOk);
     return kOwnerPageStatusSealed;
   }
+
   hardened_bool_t result = ownership_key_validate(page, kOwnershipKeyOwner,
                                                   &owner_page[page].signature,
                                                   &owner_page[page], sig_len);

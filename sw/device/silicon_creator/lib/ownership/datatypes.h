@@ -74,6 +74,11 @@ typedef enum ownership_update_mode {
   kOwnershipUpdateModeNewVersion = 0x5657454e,
 } ownership_update_mode_t;
 
+typedef enum lock_constraint {
+  /** No locking constraint: `~~~~`. */
+  kLockConstraintNone = 0x7e7e7e7e,
+} lock_constraint_t;
+
 typedef enum tlv_tag {
   /** Owner struct: `OWNR`. */
   kTlvTagOwner = 0x524e574f,
@@ -130,8 +135,12 @@ typedef struct owner_block {
   uint32_t update_mode;
   /** Set the minimum security version to this value (UINT32_MAX: no change) */
   uint32_t min_security_version_bl0;
+  /** The device ID locking constraint */
+  uint32_t lock_constraint;
+  /** The device ID to which this config applies */
+  uint32_t device_id[8];
   /** Reserved space for future use. */
-  uint32_t reserved[25];
+  uint32_t reserved[16];
   /** Owner public key. */
   owner_key_t owner_key;
   /** Owner's Activate public key. */
@@ -152,7 +161,9 @@ OT_ASSERT_MEMBER_OFFSET(owner_block_t, sram_exec_mode, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, ownership_key_alg, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, update_mode, 20);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, min_security_version_bl0, 24);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 28);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, lock_constraint, 28);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, device_id, 32);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 64);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 128);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 224);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 320);
