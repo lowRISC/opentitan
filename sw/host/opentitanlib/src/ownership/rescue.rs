@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::misc::{TlvHeader, TlvTag};
+use super::GlobalFlags;
 use crate::chip::boot_svc::BootSvcKind;
 use crate::with_unknown;
 
@@ -46,7 +47,7 @@ with_unknown! {
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct OwnerRescueConfig {
     /// Header identifying this struct.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     pub header: TlvHeader,
     /// The type of rescue protocol to use (ie: Xmodem).
     pub rescue_type: RescueType,
@@ -147,10 +148,6 @@ mod test {
 00000040: 31 47 50 4f 44 49 54 4f 54 49 41 57              1GPODITOTIAW\n\
 ";
     const OWNER_RESCUE_CONFIG_JSON: &str = r#"{
-  header: {
-    identifier: "Rescue",
-    length: 76
-  },
   rescue_type: "Xmodem",
   start: 32,
   size: 100,
