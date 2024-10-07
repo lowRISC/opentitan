@@ -2221,7 +2221,9 @@
     }
     {
       name: xcelium_ci_0
-      tests: ["chip_plic_all_irqs",
+      tests: ["chip_plic_all_irqs_0",
+              "chip_plic_all_irqs_10",
+              "chip_plic_all_irqs_20",
               "chip_sw_kmac_app_rom",
               "chip_sw_rstmgr_sw_rst",
               "chip_sw_hmac_enc",
