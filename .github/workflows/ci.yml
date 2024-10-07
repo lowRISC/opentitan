@@ -204,7 +204,7 @@ jobs:
       - name: OTBN ISS tests
         run: ./ci/bazelisk.sh test //hw/ip/otbn/dv/otbnsim/test/...
       - name: OTBN smoke test
-        run: ./hw/ip/otbn/dv/smoke/run_smoke.sh
+        run: ./ci/bazelisk.sh test //hw/ip/otbn/dv/smoke:smoke_test_sim_verilator
       - name: Assemble and link OTBN code snippets
         run: ./ci/bazelisk.sh build //sw/otbn/code-snippets/...
       - name: OTBN crypto tests

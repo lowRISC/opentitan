@@ -16,3 +16,26 @@ otbn_binary(
         "deterministic=1",
     ],
 )
+
+filegroup(
+    name = "smoke_test_elf",
+    srcs = [":smoke_test"],
+    output_group = "elf",
+)
+
+sh_test(
+    name = "smoke_test_sim_verilator",
+    srcs = [":run_smoke.sh"],
+    data = [
+        ":smoke_expected.txt",
+        ":smoke_test_elf",
+        "//hw/ip/otbn/dv/otbnsim:stepped",
+        "//hw/ip/otbn/dv/verilator:otbn_sim_verilator",
+    ],
+    env = {
+        "VERILATOR_SIM": "$(location //hw/ip/otbn/dv/verilator:otbn_sim_verilator)",
+        "SMOKE_TEST_ELF": "$(location :smoke_test_elf)",
+        "SMOKE_EXPECTED": "$(location :smoke_expected.txt)",
+        "OTBNSIM_STEPPED": "$(location //hw/ip/otbn/dv/otbnsim:stepped)",
+    },
+)

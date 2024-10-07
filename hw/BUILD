@@ -18,6 +18,7 @@ string_list_flag(
         "--threads",
         "4",
     ],
+    visibility = ["//visibility:public"],
 )
 
 # This configuration exposes fusesoc's "make_options" to enable parallel

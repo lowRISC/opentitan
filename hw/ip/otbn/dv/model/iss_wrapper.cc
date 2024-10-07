@@ -191,11 +191,15 @@ static std::string find_repo_top() {
 // Find the otbn Python model. On failure, throw a std::runtime_error with a
 // description of what went wrong.
 static std::string find_otbn_model() {
-  std::string path = find_repo_top() + "/hw/ip/otbn/dv/otbnsim/stepped.py";
-  c_str_ptr abs_path(realpath(path.c_str(), NULL));
+  char const *path_var = std::getenv("OTBNSIM_STEPPED");
+  if (path_var == nullptr) {
+    throw std::runtime_error(
+        "OTBNSIM_STEPPED variable unset, expected path to stepped.py model");
+  }
+  c_str_ptr abs_path(realpath(path_var, NULL));
   if (!abs_path) {
     std::ostringstream oss;
-    oss << "Cannot find otbnsim.py, at '" << path << "'.\n";
+    oss << "Cannot find stepped.py at '" << path_var << "'.\n";
     throw std::runtime_error(oss.str());
   }
 
