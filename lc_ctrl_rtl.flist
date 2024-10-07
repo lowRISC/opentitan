@@ -3,12 +3,6 @@
 
 +incdir+./
 +define+SEC_VOLATILE_RAW_UNLOCK_EN=1
-+define+UVM
-+define+UVM_NO_DEPRECATED
-+define+UVM_REGEX_NO_DPI
-+define+UVM_REG_ADDR_WIDTH=32
-+define+UVM_REG_DATA_WIDTH=64
-+define+UVM_REG_BYTENABLE_WIDTH=8
 +define+SIMULATION
 +define+DUT_HIER=tb.dut
 

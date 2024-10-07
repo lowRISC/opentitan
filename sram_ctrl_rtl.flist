@@ -7,12 +7,6 @@
 +define+SRAM_ADDR_WIDTH=15
 +define+INSTR_EXEC=1
 +define+NUM_PRINCE_ROUNDS_HALF=2
-+define+UVM
-+define+UVM_NO_DEPRECATED
-+define+UVM_REGEX_NO_DPI
-+define+UVM_REG_ADDR_WIDTH=32
-+define+UVM_REG_DATA_WIDTH=32
-+define+UVM_REG_BYTENABLE_WIDTH=4
 +define+SIMULATION
 +define+DUT_HIER=tb.dut
 
