@@ -32,11 +32,8 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
-    ] +
-    select({
-        "//sw/device:is_english_breakfast": ["//hw/top_englishbreakfast:sim_verilator_base"],
-        "//conditions:default": ["//hw/top_earlgrey:sim_verilator_base"],
-    }),
+        "//hw/top:sim_verilator_base",
+    ],
     kind = "rom",
     linker_script = ":linker_script",
     deps = [
@@ -202,7 +199,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top:sim_verilator": None,
     },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",

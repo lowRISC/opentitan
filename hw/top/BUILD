@@ -98,3 +98,19 @@ alias_ip_sw(
     englishbreakfast = "//hw/top_englishbreakfast/ip/pinmux/data/autogen:pinmux",
     earlgrey = "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux",
 )
+
+# FIXME This alias will eventually disappear when we move away from execution environments
+# as they are currently used. For the moment this is necessary.
+EXEC_ENVS = [
+    "sim_verilator_base",
+    "sim_verilator",
+]
+
+[
+    alias_top(
+        name = exec_env,
+        earlgrey = "//hw/top_earlgrey:{}".format(exec_env),
+        englishbreakfast = "//hw/top_englishbreakfast:{}".format(exec_env),
+    )
+    for exec_env in EXEC_ENVS
+]
