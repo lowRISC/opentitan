@@ -11,6 +11,7 @@ module aes_core
   import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
+  parameter bit          AESGCMEnable         = 1,
   parameter bit          SecMasking           = 1,
   parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
   parameter int unsigned SecStartTriggerDelay = 0,
@@ -70,6 +71,12 @@ module aes_core
   logic                                       manual_operation_q;
   logic                                       ctrl_reg_err_update;
   logic                                       ctrl_reg_err_storage;
+  logic                                       ctrl_gcm_qe;
+  logic                                       ctrl_gcm_we;
+  gcm_phase_e                                 gcm_phase_q;
+  logic                                 [4:0] num_valid_bytes_q;
+  logic                                       ctrl_gcm_reg_err_update;
+  logic                                       ctrl_gcm_reg_err_storage;
   logic                                       ctrl_err_update;
   logic                                       ctrl_err_storage;
   logic                                       ctrl_err_storage_d;
@@ -408,7 +415,8 @@ module aes_core
                      (aes_mode_q == AES_CBC && aes_op_q == AES_DEC) ? CIPH_INV :
                      (aes_mode_q == AES_CFB)                        ? CIPH_FWD :
                      (aes_mode_q == AES_OFB)                        ? CIPH_FWD :
-                     (aes_mode_q == AES_CTR)                        ? CIPH_FWD : CIPH_FWD;
+                     (aes_mode_q == AES_CTR)                        ? CIPH_FWD :
+                     (aes_mode_q == AES_GCM)                        ? CIPH_FWD : CIPH_FWD;
 
   // This primitive is used to place a size-only constraint on the
   // buffers to act as a synthesis optimization barrier.
@@ -552,13 +560,21 @@ module aes_core
   // Convert output state to output data format (every column corresponds to one output word).
   assign data_out_d = aes_transpose(state_out ^ add_state_out);
 
-  //////////////////////
-  // Control Register //
-  //////////////////////
+  ///////////
+  // GHASH //
+  ///////////
+  // TODO: Implement and integrate the GHASH block.
+  logic [4:0] unused_num_valid_bytes;
+  assign unused_num_valid_bytes = num_valid_bytes_q;
+
+  ///////////////////////
+  // Control Registers //
+  ///////////////////////
 
   // Shadowed register primitive
   aes_ctrl_reg_shadowed #(
-    .AES192Enable ( AES192Enable )
+    .AES192Enable ( AES192Enable ),
+    .AESGCMEnable ( AESGCMEnable )
   ) u_ctrl_reg_shadowed (
     .clk_i              ( clk_i                ),
     .rst_ni             ( rst_ni               ),
@@ -581,6 +597,23 @@ module aes_core
   // Auxiliary control register signals
   assign key_touch_forces_reseed = reg2hw.ctrl_aux_shadowed.key_touch_forces_reseed.q;
   assign force_masks             = reg2hw.ctrl_aux_shadowed.force_masks.q;
+
+  // GCM control register
+  aes_ctrl_gcm_reg_shadowed #(
+    .AESGCMEnable ( AESGCMEnable )
+  ) u_ctrl_gcm_reg_shadowed (
+    .clk_i              ( clk_i                    ),
+    .rst_ni             ( rst_ni                   ),
+    .rst_shadowed_ni    ( rst_shadowed_ni          ),
+    .qe_o               ( ctrl_gcm_qe              ),
+    .we_i               ( ctrl_gcm_we              ),
+    .gcm_phase_o        ( gcm_phase_q              ),
+    .num_valid_bytes_o  ( num_valid_bytes_q        ),
+    .err_update_o       ( ctrl_gcm_reg_err_update  ),
+    .err_storage_o      ( ctrl_gcm_reg_err_storage ),
+    .reg2hw_ctrl_gcm_i  ( reg2hw.ctrl_gcm_shadowed ),
+    .hw2reg_ctrl_gcm_o  ( hw2reg.ctrl_gcm_shadowed )
+  );
 
   /////////////
   // Control //
@@ -605,6 +638,9 @@ module aes_core
     .prng_reseed_rate_i        ( prng_reseed_rate_q                     ),
     .manual_operation_i        ( manual_operation_q                     ),
     .key_touch_forces_reseed_i ( key_touch_forces_reseed                ),
+    .ctrl_gcm_qe_i             ( ctrl_gcm_qe                            ),
+    .ctrl_gcm_we_o             ( ctrl_gcm_we                            ),
+    .gcm_phase_i               ( gcm_phase_q                            ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
     .data_out_clear_i          ( reg2hw.trigger.data_out_clear.q        ),
@@ -907,7 +943,7 @@ module aes_core
   assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_o : 1'b0;
 
   // Recoverable alert conditions are signaled as a single alert event.
-  assign ctrl_err_update = ctrl_reg_err_update | shadowed_update_err_i;
+  assign ctrl_err_update = ctrl_reg_err_update | shadowed_update_err_i | ctrl_gcm_reg_err_update;
   assign alert_recov_o = ctrl_err_update;
 
   // The recoverable alert is observable via status register until the AES operation is restarted
@@ -916,7 +952,8 @@ module aes_core
   assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | clear_on_fatal;
 
   // Fatal alert conditions need to remain asserted until reset.
-  assign ctrl_err_storage_d = ctrl_reg_err_storage | shadowed_storage_err_i;
+  assign ctrl_err_storage_d =
+      ctrl_reg_err_storage | shadowed_storage_err_i | ctrl_gcm_reg_err_storage;
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
     if (!rst_ni) begin
       ctrl_err_storage_q <= 1'b0;
@@ -959,6 +996,7 @@ module aes_core
       AES_CFB,
       AES_OFB,
       AES_CTR,
+      AES_GCM,
       AES_NONE
       })
   `ASSERT(AesOpValid, !ctrl_err_storage |-> aes_op_q inside {

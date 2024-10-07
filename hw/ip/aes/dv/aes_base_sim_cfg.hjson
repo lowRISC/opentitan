@@ -65,12 +65,14 @@
     {
       name: aes_unmasked
       build_opts: ["+define+EN_MASKING=0",
-                   "+define+SBOX_IMPL=aes_pkg::SBoxImplCanright" ]
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplCanright",
+                   "+define+EN_GCM=1"]
     }
     {
       name: aes_masked
         build_opts: ["+define+EN_MASKING=1",
-                     "+define+SBOX_IMPL=aes_pkg::SBoxImplDom" ]
+                     "+define+SBOX_IMPL=aes_pkg::SBoxImplDom",
+                     "+define+EN_GCM=1"]
     }
   ]
 

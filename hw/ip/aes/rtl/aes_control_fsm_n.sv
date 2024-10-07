@@ -35,6 +35,9 @@ module aes_control_fsm_n
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    key_touch_forces_reseed_i,
+  input  logic                                    ctrl_gcm_qe_i,
+  output logic                                    ctrl_gcm_we_o,
+  input  gcm_phase_e                              gcm_phase_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
   input  logic                                    data_out_clear_i,
@@ -134,6 +137,8 @@ module aes_control_fsm_n
     prng_reseed_rate_i,
     manual_operation_i,
     key_touch_forces_reseed_i,
+    ctrl_gcm_qe_i,
+    gcm_phase_i,
     start_i,
     key_iv_data_in_clear_i,
     data_out_clear_i,
@@ -174,6 +179,8 @@ module aes_control_fsm_n
     prng_reseed_rate_i,
     manual_operation_i,
     key_touch_forces_reseed_i,
+    ctrl_gcm_qe_i,
+    gcm_phase_i,
     start_i,
     key_iv_data_in_clear_i,
     data_out_clear_i,
@@ -221,6 +228,9 @@ module aes_control_fsm_n
   prs_rate_e                               prng_reseed_rate;
   logic                                    manual_operation;
   logic                                    key_touch_forces_reseed;
+  logic                                    ctrl_gcm_qe;
+  gcm_phase_e                              gcm_phase;
+  logic             [$bits(gcm_phase)-1:0] gcm_phase_raw;
   logic                                    start;
   logic                                    key_iv_data_in_clear;
   logic                                    data_out_clear;
@@ -257,6 +267,8 @@ module aes_control_fsm_n
           prng_reseed_rate,
           manual_operation,
           key_touch_forces_reseed,
+          ctrl_gcm_qe,
+          gcm_phase_raw,
           start,
           key_iv_data_in_clear,
           data_out_clear,
@@ -284,9 +296,11 @@ module aes_control_fsm_n
           output_lost_in_buf} = in_buf;
 
   assign cipher_op = ciph_op_e'(cipher_op_raw);
+  assign gcm_phase = gcm_phase_e'(gcm_phase_raw);
 
   // Intermediate output signals
   logic                                    ctrl_we;
+  logic                                    ctrl_gcm_we;
   logic                                    alert;
   logic                                    data_in_we;
   logic                                    data_out_we;
@@ -350,6 +364,9 @@ module aes_control_fsm_n
     .prng_reseed_rate_i        ( prng_reseed_rate              ),
     .manual_operation_i        ( manual_operation              ),
     .key_touch_forces_reseed_i ( key_touch_forces_reseed       ),
+    .ctrl_gcm_qe_i             ( ctrl_gcm_qe                   ),
+    .ctrl_gcm_we_o             ( ctrl_gcm_we                   ),
+    .gcm_phase_i               ( gcm_phase                     ),
     .start_i                   ( start                         ),
     .key_iv_data_in_clear_i    ( key_iv_data_in_clear          ),
     .data_out_clear_i          ( data_out_clear                ),
@@ -430,6 +447,7 @@ module aes_control_fsm_n
 
   localparam int NumOutBufBits = $bits({
     ctrl_we_o,
+    ctrl_gcm_we_o,
     alert_o,
     data_in_we_o,
     data_out_we_no,
@@ -475,6 +493,7 @@ module aes_control_fsm_n
   // inverters back into the regular FSM.
   assign out = {
     ctrl_we,
+    ctrl_gcm_we,
     alert,
     data_in_we,
     ~data_out_we,
@@ -524,6 +543,7 @@ module aes_control_fsm_n
   );
 
   assign {ctrl_we_o,
+          ctrl_gcm_we_o,
           alert_o,
           data_in_we_o,
           data_out_we_no,

@@ -11,6 +11,7 @@ module aes
   import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable          = 1, // Can be 0 (disable), or 1 (enable).
+  parameter bit          AESGCMEnable          = 1, // Can be 0 (disable), or 1 (enable).
   parameter bit          SecMasking            = 1, // Can be 0 (no masking), or
                                                     // 1 (first-order masking) of the cipher
                                                     // core. Masking requires the use of a
@@ -176,6 +177,7 @@ module aes
   // AES core
   aes_core #(
     .AES192Enable             ( AES192Enable             ),
+    .AESGCMEnable             ( AESGCMEnable             ),
     .SecMasking               ( SecMasking               ),
     .SecSBoxImpl              ( SecSBoxImpl              ),
     .SecStartTriggerDelay     ( SecStartTriggerDelay     ),
