@@ -38,6 +38,8 @@ class OwnershipActivateTest : public rom_test::RomTest {
     owner_page[1].header.version = (struct_version_t){0, 0};
     owner_page[1].config_version = 0;
     owner_page[1].min_security_version_bl0 = UINT32_MAX;
+    owner_page[1].lock_constraint = 0;
+    memset(owner_page[1].device_id, 0x7e, sizeof(owner_page[1].device_id));
     memset(owner_page[1].data, 0x5a, sizeof(owner_page[1].data));
   }
 
@@ -123,7 +125,7 @@ INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateInvalidStateTest,
                          testing::Values(kOwnershipStateLockedOwner,
                                          kOwnershipStateRecovery));
 
-// Tests that an owner block with an invalid signature fails.
+// Tests that an owner block with an invalid version fails.
 TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
   bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
   MakePage1Valid(true);
@@ -153,7 +155,7 @@ TEST_P(OwnershipActivateValidStateTest, InvalidSignature) {
   EXPECT_EQ(error, kErrorOwnershipInvalidSignature);
 }
 
-// Tests that an owner block with an invalid nonce fails.
+// Tests that an ownership activate with an invalid nonce fails.
 TEST_P(OwnershipActivateValidStateTest, InvalidNonce) {
   bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
   bootdata_.nonce = {3, 4};
@@ -168,8 +170,8 @@ TEST_P(OwnershipActivateValidStateTest, InvalidNonce) {
   EXPECT_EQ(error, kErrorOwnershipInvalidNonce);
 }
 
-// Tests that an owner block with an invalid DIN fails.
-TEST_P(OwnershipActivateValidStateTest, InvalidDin) {
+// Tests that an ownership activate with an invalid DIN fails.
+TEST_P(OwnershipActivateValidStateTest, InvalidActivateDin) {
   bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
