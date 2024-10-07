@@ -14,7 +14,46 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
-static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
+rom_error_t ownership_activate(boot_data_t *bootdata,
+                               hardened_bool_t write_both_pages) {
+  // Check if page1 parses correctly.
+  owner_config_t config;
+  owner_application_keyring_t keyring;
+  HARDENED_RETURN_IF_ERROR(
+      owner_block_parse(&owner_page[1], &config, &keyring));
+
+  // Seal page one to this chip.
+  ownership_seal_page(/*page=*/1);
+
+  // If requested, reset the mim security version of the application firmware.
+  if (owner_page[1].min_security_version_bl0 != UINT32_MAX) {
+    bootdata->min_security_version_bl0 = owner_page[1].min_security_version_bl0;
+  }
+
+  // TODO(cfrantz): Consider reading back the flash pages to check that the
+  // flash writes succeeded.
+  //
+  // Program the sealed page into slot 1.
+  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
+                                                 kFlashCtrlEraseTypePage));
+  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
+      &kFlashCtrlInfoPageOwnerSlot1, 0,
+      sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
+
+  if (write_both_pages == kHardenedBoolTrue) {
+    // Program the same data into slot 0.
+    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
+        &kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
+        &kFlashCtrlInfoPageOwnerSlot0, 0,
+        sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
+  }
+
+  return kErrorOk;
+}
+
+static rom_error_t activate_handler(boot_svc_msg_t *msg,
+                                    boot_data_t *bootdata) {
   // Check if page1 is in a valid state for a transfer (e.g. signature and owner
   // requirements are met). We do this first (rather than parse) because if the
   // signature requirements are not met, the RAM copy of the owner page will be
@@ -22,12 +61,6 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
   if (owner_block_page1_valid_for_transfer(bootdata) != kHardenedBoolTrue) {
     return kErrorOwnershipInvalidInfoPage;
   }
-
-  // Check if page1 parses correctly.
-  owner_config_t config;
-  owner_application_keyring_t keyring;
-  HARDENED_RETURN_IF_ERROR(
-      owner_block_parse(&owner_page[1], &config, &keyring));
 
   // Check the activation key and the nonce.
   size_t len = (uintptr_t)&msg->ownership_activate_req.signature -
@@ -50,25 +83,8 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
     return kErrorOwnershipInvalidDin;
   }
 
-  // Seal page one to this chip.
-  ownership_seal_page(/*page=*/1);
-
-  // TODO(cfrantz): Consider reading back the flash pages to check that the
-  // flash writes succeeded.
-  //
-  // Program the sealed page into slot 1.
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
-                                                 kFlashCtrlEraseTypePage));
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageOwnerSlot1, 0,
-      sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
-
-  // Program the same data into slot 0.
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
-                                                 kFlashCtrlEraseTypePage));
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageOwnerSlot0, 0,
-      sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
+  HARDENED_RETURN_IF_ERROR(
+      ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolTrue));
 
   // The requested primary_bl0_slot is user input.  Validate and clamp it to
   // legal values.
@@ -76,11 +92,6 @@ static rom_error_t activate(boot_svc_msg_t *msg, boot_data_t *bootdata) {
     bootdata->primary_bl0_slot = kBootSlotB;
   } else {
     bootdata->primary_bl0_slot = kBootSlotA;
-  }
-
-  // If requested, reset the mim security version of the application firmware.
-  if (owner_page[1].min_security_version_bl0 != UINT32_MAX) {
-    bootdata->min_security_version_bl0 = owner_page[1].min_security_version_bl0;
   }
 
   // Set the ownership state to LockedOwner.
@@ -98,7 +109,7 @@ rom_error_t ownership_activate_handler(boot_svc_msg_t *msg,
     case kOwnershipStateUnlockedSelf:
     case kOwnershipStateUnlockedAny:
     case kOwnershipStateUnlockedEndorsed:
-      error = activate(msg, bootdata);
+      error = activate_handler(msg, bootdata);
       break;
     default:
         /* nothing */;
