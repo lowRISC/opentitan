@@ -8,7 +8,6 @@
 // To convert this file to binary form, use opentitantool:
 // $ opentitantool ownership config --input file.json file.bin
 {
-  version: 0,
   sram_exec: "DisabledLocked",
   ownership_key_alg: "EcdsaP256",
   owner_key: {
@@ -198,5 +197,4 @@
       }
     }
   ],
-  seal: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 }

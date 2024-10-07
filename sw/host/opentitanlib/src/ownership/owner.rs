@@ -94,7 +94,7 @@ impl Default for OwnerBlock {
             unlock_key: KeyMaterial::default(),
             data: Vec::new(),
             signature: EcdsaRawSignature::default(),
-            seal: vec![0xffu8; 32],
+            seal: Vec::new(),
         }
     }
 }
@@ -140,7 +140,11 @@ impl OwnerBlock {
         data.resize(Self::DATA_SIZE, Self::NOT_PRESENT);
         dest.write_all(&data)?;
         self.signature.write(dest)?;
-        dest.write_all(&self.seal)?;
+        if self.seal.is_empty() {
+            dest.write_all(&[0u8; 32])?;
+        } else {
+            dest.write_all(&self.seal)?;
+        }
         Ok(())
     }
 
