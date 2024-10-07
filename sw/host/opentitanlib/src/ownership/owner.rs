@@ -200,10 +200,15 @@ impl OwnerBlock {
 
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub enum OwnerConfigItem {
+    #[serde(alias = "application_key")]
     ApplicationKey(OwnerApplicationKey),
+    #[serde(alias = "flash_info_config")]
     FlashInfoConfig(OwnerFlashInfoConfig),
+    #[serde(alias = "flash_config")]
     FlashConfig(OwnerFlashConfig),
+    #[serde(alias = "rescue_config")]
     RescueConfig(OwnerRescueConfig),
+    #[serde(alias = "raw")]
     Raw(
         #[serde(with = "serde_bytes")]
         #[annotate(format = hexdump)]
