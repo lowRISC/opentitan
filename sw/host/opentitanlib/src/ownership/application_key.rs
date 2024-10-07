@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
+use super::GlobalFlags;
 use crate::with_unknown;
 
 with_unknown! {
@@ -25,7 +26,7 @@ with_unknown! {
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct OwnerApplicationKey {
     /// Header identifying this struct.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     pub header: TlvHeader,
     /// The key algorithm for this key (ECDSA, SPX+, etc).
     pub key_alg: OwnershipKeyAlg,
@@ -106,10 +107,6 @@ mod test {
 00000060: c0 00 00 00 d0 00 00 00 e0 00 00 00 f0 00 00 00  ................\n\
 ";
     const OWNER_APPLICATION_KEY_JSON: &str = r#"{
-  header: {
-    identifier: "ApplicationKey",
-    length: 112
-  },
   key_alg: "EcdsaP256",
   key_domain: "Prod",
   key_diversifier: [

@@ -10,6 +10,7 @@ use std::io::{Read, Write};
 
 use super::flash::FlashFlags;
 use super::misc::{TlvHeader, TlvTag};
+use super::GlobalFlags;
 
 /// Describes an INFO page to which a set of flags apply.
 #[derive(Debug, Default, Deserialize, Serialize, Annotate)]
@@ -59,7 +60,7 @@ impl OwnerInfoPage {
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct OwnerFlashInfoConfig {
     /// Header identifying this struct.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     pub header: TlvHeader,
     /// A list of info page configurations.
     pub config: Vec<OwnerInfoPage>,
@@ -125,10 +126,6 @@ r#"00000000: 49 4e 46 4f 2c 00 00 00 00 00 00 00 96 09 00 99  INFO,...........
 "#;
 
     const OWNER_FLASH_INFO_CONFIG_JSON: &str = r#"{
-  header: {
-    identifier: "FlashInfoConfig",
-    length: 44
-  },
   config: [
     {
       bank: 0,

@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
+use super::GlobalFlags;
 use super::{OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerRescueConfig};
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
@@ -36,7 +37,7 @@ with_unknown! {
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct OwnerBlock {
     /// Header identifying this struct.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     pub header: TlvHeader,
     /// Version of this structure (ie: currently, zero).
     #[serde(default)]
@@ -55,7 +56,7 @@ pub struct OwnerBlock {
     /// Ownership update mode.
     #[serde(default)]
     pub update_mode: OwnershipUpdateMode,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     #[annotate(format=hex)]
     pub reserved: [u32; 24],
     /// The owner identity key.
@@ -388,42 +389,12 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 "#;
 
     const OWNER_JSON: &str = r#"{
-  header: {
-    identifier: "Owner",
-    length: 2048
-  },
   struct_version: 0,
   sram_exec: "DisabledLocked",
   ownership_key_alg: "EcdsaP256",
   config_version: 0,
   min_security_version_bl0: "NoChange",
   update_mode: "Open",
-  reserved: [
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0,
-    0x0
-  ],
   owner_key: {
     Ecdsa: {
       x: "1111111111111111111111111111111111111111111111111111111111111111",
@@ -445,10 +416,6 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
   data: [
     {
       ApplicationKey: {
-        header: {
-          identifier: "ApplicationKey",
-          length: 112
-        },
         key_alg: "EcdsaP256",
         key_domain: "Prod",
         key_diversifier: [
@@ -471,10 +438,6 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     },
     {
       FlashConfig: {
-        header: {
-          identifier: "FlashConfig",
-          length: 32
-        },
         config: [
           {
             start: 0,
@@ -505,10 +468,6 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     },
     {
       FlashInfoConfig: {
-        header: {
-          identifier: "FlashInfoConfig",
-          length: 32
-        },
         config: [
           {
             bank: 0,
@@ -541,10 +500,6 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     },
     {
       RescueConfig: {
-        header: {
-          identifier: "Rescue",
-          length: 80
-        },
         rescue_type: "Xmodem",
         start: 32,
         size: 224,
