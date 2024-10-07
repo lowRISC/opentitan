@@ -345,6 +345,12 @@
     { name: "AUX.CONFIG.REGWEN",
       desc: "Auxiliary control register can be locked until reset."
     }
+    { name: "GCM.CONFIG.SHADOW",
+      desc: "GCM control register shadowed."
+    }
+    { name: "GCM.CONFIG.SPARSE",
+      desc: "Critical fields in GCM control register one-hot encoded."
+    }
     { name: "KEY.SIDELOAD",
       desc: "The key can be loaded from a key manager via sideload interface without exposing it to software."
     }
@@ -635,11 +641,11 @@
       }
       { bits: "7:2",
         name: "MODE",
-        resval: "0x20",
+        resval: "0x3f",
         hwaccess: "hrw",
         desc:  '''
           6-bit one-hot field to select AES block cipher mode.
-          Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b10_0000).
+          Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b11_1111).
         '''
         enum: [
           { value: "1",
@@ -673,9 +679,16 @@
             '''
           },
           { value: "32",
+            name: "AES_GCM",
+            desc: '''
+              6'b10_0000: Galois/Counter Mode (GCM).
+              In case support for GCM has been disabled at compile time, setting this value results in configuring AES_NONE (6'b11_1111).
+            '''
+          },
+          { value: "63",
             name: "AES_NONE",
             desc: '''
-              6'b10_0000: Invalid input values, i.e., value with multiple bits set and value 6'b00_0000, are mapped to AES_NONE.
+              6'b11_1111: Invalid input values, i.e., value with multiple bits set, value 6'b00_0000, and value 6'b10_0000 in case GCM is not supported (because disabled at compile time) are mapped to AES_NONE.
             '''
           }
         ]
@@ -969,6 +982,110 @@
         '''
       }
     ]
+  },
+  { name: "CTRL_GCM_SHADOWED",
+    desc: '''
+      Galois/Counter Mode (GCM) Control Register.
+
+      Can only be updated when the AES unit is idle.
+      If the AES unit is non-idle, writes to this register are ignored.
+      This register is shadowed, meaning two subsequent write operations are required to change its content.
+      If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
+      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
+    '''
+    swaccess: "rw",
+    hwaccess: "hrw",
+    hwext:    "true",
+    hwqe:     "true",
+    shadowed: "true",
+    update_err_alert: "recov_ctrl_update_err",
+    storage_err_alert: "fatal_fault",
+    fields: [
+      { bits: "5:0",
+        name: "PHASE",
+        resval: "0x01",
+        hwaccess: "hrw",
+        desc:  '''
+          6-bit one-hot field to select the phase of the Galois/Counter Mode (GCM) of operation.
+          Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to GCM_INIT (6'b00_0001).
+          In case support for GCM has been disabled at compile time, this field is not writable and always reads as GCM_INIT (6'b00_0001).
+        '''
+        enum: [
+          { value: "1",
+            name: "GCM_INIT",
+            desc: '''
+              6'b00_0001: Initialization phase.
+              Software configures the Initial Key and IV Registers.
+              The hardware then performs two encryption operations to 1) generate the hash subkey and 2) encrypt the IV.
+              Both results are loaded into the internal GHASH block.
+              Once the AES unit is idle again, software can advance to the next phase.
+              Possible next phases are GCM_RESTORE, GCM_AAD, GCM_TEXT, and GCM_TAG.
+              Invalid input values, i.e., values with multiple bits set, value 6'b00_0000, and all other values in case GCM is not supported (because disabled at compile time) are mapped to GCM_INIT.
+            '''
+          },
+          { value: "2",
+            name: "GCM_RESTORE",
+            desc: '''
+              6'b00_0010: Optional context restore phase.
+              Software configures the IV and Input Data Registers to restore a previously saved AES-GCM context (IV and GHASH state).
+              Possible next phases are GCM_INIT, GCM_AAD and GCM_TEXT.
+            '''
+          },
+          { value: "4",
+            name: "GCM_AAD",
+            desc: '''
+              6'b00_0100: Optional additional authenticated data phase (AAD).
+              Software inputs the AAD via Input Data Registers block by block via Input Data Registers.
+              Possible next phases are GCM_INIT, GCM_TEXT, GCM_SAVE and GCM_TAG.
+            '''
+          },
+          { value: "8",
+            name: "GCM_TEXT",
+            desc: '''
+              6'b00_1000: Optional plaintext/ciphertext phase.
+              Software inputs the plaintext/ciphertext block by block via Input Data Registers, and retrieves the output ciphertext/plaintext block by block via Output Data Registers.
+              Possible next phases are GCM_INIT, GCM_SAVE and GCM_TAG.
+            '''
+          },
+          { value: "16",
+            name: "GCM_SAVE",
+            desc: '''
+              6'b01_0000: Optional context save phase.
+              The hardware stops accepting inputs.
+              Software reads the current GHASH state and IV via Output Data and IV Registers, respectively.
+              The only possible next phase is GCM_INIT.
+            '''
+          },
+          { value: "32",
+            name: "GCM_TAG",
+            desc: '''
+              6'b10_0000: Tag phase.
+              Software inputs a single data block containing the length of the AAD and the ciphertext via Input Data Registers.
+              The hardware then produces the final integrity tag.
+              Once the AES unit is idle again, software reads the final integrity tag via Data Out Registers.
+              The only possible next phase is GCM_INIT.
+            '''
+          },
+        ]
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_gcm_reg_shadowed.gen_ctrl_gcm_reg_shadowed.u_ctrl_gcm_reg_shadowed_phase"]
+      }
+      { bits: "10:6",
+        name: "NUM_VALID_BYTES",
+        resval: "16",
+        hwaccess: "hrw",
+        desc: '''
+          Number of valid bytes of the current input block.
+          Only the last block in the GCM_AAD and GCM_TEXT phases are expected to have not all bytes marked as valid.
+          For all other blocks, the number of valid bytes should be set to 16.
+          Invalid input values, i.e., the value 5'b0_0000, and all other values different from 5'b1_0000 in case GCM is not supported (because disabled at compile time) are mapped to 5'b1_0000.
+        '''
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_gcm_reg_shadowed.gen_ctrl_gcm_reg_shadowed.u_ctrl_gcm_reg_shadowed_num_valid_bytes"]
+      }
+    ]
+    tags: [// Updated by the HW.
+           // Updates based on writes to this reg (reset test possible).
+           // Exclude from write-read checks.
+           "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   ],
 }

@@ -89,6 +89,7 @@ parameter int AES_OP_WIDTH             = 2;
 parameter int AES_MODE_WIDTH           = 6;
 parameter int AES_KEYLEN_WIDTH         = 3;
 parameter int AES_PRNGRESEEDRATE_WIDTH = 3;
+parameter int AES_GCMPHASE_WIDTH       = 6;
 
 // SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_OP_WIDTH-1:0] {
@@ -103,9 +104,11 @@ typedef enum logic [AES_MODE_WIDTH-1:0] {
   AES_CFB  = 6'b00_0100,
   AES_OFB  = 6'b00_1000,
   AES_CTR  = 6'b01_0000,
-  AES_NONE = 6'b10_0000
+  AES_GCM  = 6'b10_0000,
+  AES_NONE = 6'b11_1111
 } aes_mode_e;
 
+// SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_OP_WIDTH-1:0] {
   CIPH_FWD = 2'b01,
   CIPH_INV = 2'b10
@@ -125,6 +128,16 @@ typedef enum logic [AES_PRNGRESEEDRATE_WIDTH-1:0] {
   PER_8K = 3'b100
 } prs_rate_e;
 parameter int unsigned BlockCtrWidth = 13;
+
+// SEC_CM: GCM.CONFIG.SPARSE
+typedef enum logic [AES_GCMPHASE_WIDTH-1:0] {
+  GCM_INIT    = 6'b00_0001,
+  GCM_RESTORE = 6'b00_0010,
+  GCM_AAD     = 6'b00_0100,
+  GCM_TEXT    = 6'b00_1000,
+  GCM_SAVE    = 6'b01_0000,
+  GCM_TAG     = 6'b10_0000
+} gcm_phase_e;
 
 typedef struct packed {
   logic [31:7] unused;
@@ -452,6 +465,12 @@ parameter ctrl_reg_t CTRL_RESET = '{
   mode:             aes_mode_e'(aes_reg_pkg::AES_CTRL_SHADOWED_MODE_RESVAL),
   operation:        aes_op_e'(aes_reg_pkg::AES_CTRL_SHADOWED_OPERATION_RESVAL)
 };
+
+// GCM control register type
+typedef struct packed {
+  logic [4:0] num_valid_bytes;
+  gcm_phase_e phase;
+} ctrl_gcm_reg_t;
 
 // Multiplication by {02} (i.e. x) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)

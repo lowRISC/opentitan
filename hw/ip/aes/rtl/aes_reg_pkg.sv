@@ -16,7 +16,7 @@ package aes_reg_pkg;
   parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 34;
+  parameter int NumRegs = 35;
 
   // Alert indices
   typedef enum int {
@@ -131,6 +131,19 @@ package aes_reg_pkg;
   } aes_reg2hw_status_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic [4:0]  q;
+      logic        qe;
+      logic        re;
+    } num_valid_bytes;
+    struct packed {
+      logic [5:0]  q;
+      logic        qe;
+      logic        re;
+    } phase;
+  } aes_reg2hw_ctrl_gcm_shadowed_reg_t;
+
+  typedef struct packed {
     logic [31:0] d;
   } aes_hw2reg_key_share0_mreg_t;
 
@@ -222,30 +235,41 @@ package aes_reg_pkg;
     } idle;
   } aes_hw2reg_status_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic [4:0]  d;
+    } num_valid_bytes;
+    struct packed {
+      logic [5:0]  d;
+    } phase;
+  } aes_hw2reg_ctrl_gcm_shadowed_reg_t;
+
   // Register -> HW type
   typedef struct packed {
-    aes_reg2hw_alert_test_reg_t alert_test; // [957:954]
-    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [953:690]
-    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [689:426]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [425:294]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [293:162]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [161:30]
-    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [29:8]
-    aes_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [7:6]
-    aes_reg2hw_trigger_reg_t trigger; // [5:2]
-    aes_reg2hw_status_reg_t status; // [1:0]
+    aes_reg2hw_alert_test_reg_t alert_test; // [970:967]
+    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [966:703]
+    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [702:439]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [438:307]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [306:175]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [174:43]
+    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [42:21]
+    aes_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [20:19]
+    aes_reg2hw_trigger_reg_t trigger; // [18:15]
+    aes_reg2hw_status_reg_t status; // [14:13]
+    aes_reg2hw_ctrl_gcm_shadowed_reg_t ctrl_gcm_shadowed; // [12:0]
   } aes_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [937:682]
-    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [681:426]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [425:298]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [297:166]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [165:38]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [37:22]
-    aes_hw2reg_trigger_reg_t trigger; // [21:14]
-    aes_hw2reg_status_reg_t status; // [13:0]
+    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [948:693]
+    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [692:437]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [436:309]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [308:177]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [176:49]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [48:33]
+    aes_hw2reg_trigger_reg_t trigger; // [32:25]
+    aes_hw2reg_status_reg_t status; // [24:11]
+    aes_hw2reg_ctrl_gcm_shadowed_reg_t ctrl_gcm_shadowed; // [10:0]
   } aes_hw2reg_t;
 
   // Register offsets
@@ -283,6 +307,7 @@ package aes_reg_pkg;
   parameter logic [BlockAw-1:0] AES_CTRL_AUX_REGWEN_OFFSET = 8'h 7c;
   parameter logic [BlockAw-1:0] AES_TRIGGER_OFFSET = 8'h 80;
   parameter logic [BlockAw-1:0] AES_STATUS_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] AES_CTRL_GCM_SHADOWED_OFFSET = 8'h 88;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] AES_ALERT_TEST_RESVAL = 2'h 0;
@@ -336,13 +361,16 @@ package aes_reg_pkg;
   parameter logic [31:0] AES_DATA_OUT_2_DATA_OUT_2_RESVAL = 32'h 0;
   parameter logic [31:0] AES_DATA_OUT_3_RESVAL = 32'h 0;
   parameter logic [31:0] AES_DATA_OUT_3_DATA_OUT_3_RESVAL = 32'h 0;
-  parameter logic [15:0] AES_CTRL_SHADOWED_RESVAL = 16'h 1181;
+  parameter logic [15:0] AES_CTRL_SHADOWED_RESVAL = 16'h 11fd;
   parameter logic [1:0] AES_CTRL_SHADOWED_OPERATION_RESVAL = 2'h 1;
-  parameter logic [5:0] AES_CTRL_SHADOWED_MODE_RESVAL = 6'h 20;
+  parameter logic [5:0] AES_CTRL_SHADOWED_MODE_RESVAL = 6'h 3f;
   parameter logic [2:0] AES_CTRL_SHADOWED_KEY_LEN_RESVAL = 3'h 1;
   parameter logic [0:0] AES_CTRL_SHADOWED_SIDELOAD_RESVAL = 1'h 0;
   parameter logic [2:0] AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL = 3'h 1;
   parameter logic [0:0] AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL = 1'h 0;
+  parameter logic [10:0] AES_CTRL_GCM_SHADOWED_RESVAL = 11'h 401;
+  parameter logic [5:0] AES_CTRL_GCM_SHADOWED_PHASE_RESVAL = 6'h 1;
+  parameter logic [4:0] AES_CTRL_GCM_SHADOWED_NUM_VALID_BYTES_RESVAL = 5'h 10;
 
   // Register index
   typedef enum int {
@@ -379,11 +407,12 @@ package aes_reg_pkg;
     AES_CTRL_AUX_SHADOWED,
     AES_CTRL_AUX_REGWEN,
     AES_TRIGGER,
-    AES_STATUS
+    AES_STATUS,
+    AES_CTRL_GCM_SHADOWED
   } aes_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AES_PERMIT [34] = '{
+  parameter logic [3:0] AES_PERMIT [35] = '{
     4'b 0001, // index[ 0] AES_ALERT_TEST
     4'b 1111, // index[ 1] AES_KEY_SHARE0_0
     4'b 1111, // index[ 2] AES_KEY_SHARE0_1
@@ -417,7 +446,8 @@ package aes_reg_pkg;
     4'b 0001, // index[30] AES_CTRL_AUX_SHADOWED
     4'b 0001, // index[31] AES_CTRL_AUX_REGWEN
     4'b 0001, // index[32] AES_TRIGGER
-    4'b 0001  // index[33] AES_STATUS
+    4'b 0001, // index[33] AES_STATUS
+    4'b 0011  // index[34] AES_CTRL_GCM_SHADOWED
   };
 
 endpackage

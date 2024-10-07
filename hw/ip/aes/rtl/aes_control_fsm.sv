@@ -30,6 +30,9 @@ module aes_control_fsm
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    key_touch_forces_reseed_i,
+  input  logic                                    ctrl_gcm_qe_i,
+  output logic                                    ctrl_gcm_we_o,
+  input  gcm_phase_e                              gcm_phase_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
   input  logic                                    data_out_clear_i,
@@ -176,6 +179,10 @@ module aes_control_fsm
   logic                     block_ctr_expr;
   logic                     block_ctr_decr;
 
+  // TODO: Use this signal to generate the controls for the various GCM phases.
+  gcm_phase_e               unused_gcm_phase;
+  assign unused_gcm_phase = gcm_phase_i;
+
   // Software updates IV in chunks of 32 bits, the counter updates SliceSizeCtr bits at a time.
   // Convert word write enable to internal half-word write enable.
   assign iv_qe = {iv_qe_i[3], iv_qe_i[3], iv_qe_i[2], iv_qe_i[2],
@@ -267,8 +274,9 @@ module aes_control_fsm
     iv_sel_o = IV_INPUT;
     iv_we_o  = {NumSlicesCtr{1'b0}};
 
-    // Control register
-    ctrl_we_o = 1'b0;
+    // Control registers
+    ctrl_we_o     = 1'b0;
+    ctrl_gcm_we_o = 1'b0;
 
     // Alert
     alert_o = 1'b0;
@@ -333,9 +341,11 @@ module aes_control_fsm
           key_init_we_o = sideload_i ? {NumSharesKey * NumRegsKey{key_sideload}} : key_init_qe_i;
           iv_we_o       = iv_qe;
 
-          // Updates to the control register are only allowed if the core is not about to start and
-          // there isn't a storage error. A storage error is unrecoverable and requires a reset.
-          ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i : 1'b0;
+          // Updates to the main and GCM control registers are only allowed if the core is not
+          // about to start and there isn't a storage error. A storage error is unrecoverable and
+          // requires a reset.
+          ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i     : 1'b0;
+          ctrl_gcm_we_o  = !ctrl_err_storage_i ? ctrl_gcm_qe_i : 1'b0;
 
           // Control register updates clear all register status trackers.
           key_init_clear = ctrl_we_o;
@@ -850,6 +860,7 @@ module aes_control_fsm
       AES_CFB,
       AES_OFB,
       AES_CTR,
+      AES_GCM,
       AES_NONE
       })
   `ASSERT(AesOpValid, !ctrl_err_storage_i |-> op_i inside {

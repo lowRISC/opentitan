@@ -45,6 +45,12 @@
       tests: ["aes_shadow_reg_errors"]
     }
     {
+      name: sec_cm_gcm_config_shadow
+      desc: "Verify the countermeasure(s) GCM.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["aes_shadow_reg_errors"]
+    }
+    {
       name: sec_cm_main_config_sparse
       desc: '''
             Verify the countermeasure(s) MAIN.CONFIG.SPARSE.
@@ -53,6 +59,15 @@
             '''
       stage: V2S
       tests: ["aes_stress", "aes_smoke", "aes_alert_reset", "aes_core_fi"]
+    }
+    {
+      name: sec_cm_gcm_config_sparse
+      desc: '''
+            Verify the countermeasure(s) GCM.CONFIG.SPARSE.
+            Illegally encoded values as well as currently disallowed but legal values are written into the GCM control register via register interface and it is ensured that the values are resolved to the correct legal values.
+            '''
+      stage: V2S
+      tests: ["aes_stress", "aes_config_error"]
     }
     {
       name: sec_cm_aux_config_shadow
