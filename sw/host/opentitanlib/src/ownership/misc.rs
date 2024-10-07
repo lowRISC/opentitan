@@ -74,9 +74,13 @@ impl TlvHeader {
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(clippy::len_without_is_empty)]
 pub enum KeyMaterial {
+    #[serde(alias = "unknown")]
     Unknown(Vec<u8>),
+    #[serde(alias = "ecdsa")]
     Ecdsa(#[serde(deserialize_with = "string_or_struct")] EcdsaRawPublicKey),
+    #[serde(alias = "rsa")]
     Rsa(#[serde(deserialize_with = "string_or_struct")] RsaRawPublicKey),
+    #[serde(alias = "spx")]
     Spx(#[serde(deserialize_with = "string_or_struct")] SpxRawPublicKey),
 }
 
