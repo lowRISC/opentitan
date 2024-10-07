@@ -262,7 +262,7 @@ To this end, the processor has to set the SIDELOAD bit in [`CTRL_SHADOWED`](regi
 Any write operations of the processor to the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1) are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
 To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register to start a new message.
-After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization](#de-initialization) below).
+After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization](programmers_guide.md#de-initialization) below).
 
 
 # Security Hardening
