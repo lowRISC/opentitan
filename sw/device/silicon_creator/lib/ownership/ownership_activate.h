@@ -14,12 +14,24 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Activate the owner configuration on owner page 1.
+ *
+ * @param bootdata A pointer to the current boot_data in RAM.
+ * @param write_both_pages Whether to write the activated page to both owner
+ *                         pages.
+ * @return rom_error_t
+ */
+rom_error_t ownership_activate(boot_data_t *bootdata,
+                               hardened_bool_t write_both_pages);
+
+/**
  * Process a boot_svc OwnershipActivate message.
  *
  * @param msg The boot_svc OwnershipActivate message to process.
  * @param bootdata A pointer to the current boot_data in RAM.
  * @return rom_error_t
  */
+
 rom_error_t ownership_activate_handler(boot_svc_msg_t *msg,
                                        boot_data_t *bootdata);
 
