@@ -16,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/ownership/ecdsa.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 static owner_page_status_t owner_page_validity_check(size_t page) {
@@ -50,38 +51,19 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       owner_page_valid[1] == kOwnerPageStatusSigned &&
       owner_page[0].update_mode == kOwnershipUpdateModeNewVersion &&
+      owner_page[1].config_version > owner_page[0].config_version &&
       hardened_memeq(owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
                      ARRAYSIZE(owner_page[0].owner_key.raw)) ==
           kHardenedBoolTrue) {
-    // TODO(cfrantz): Consider refactoring this block along with the body
-    // of the `ownership_activate.c%activate` function into a common
-    // activation function.
-    owner_config_t tmpcfg;
-    owner_application_keyring_t tmpkey;
-    // Trial parse of the new page: it has to be valid to accept the update.
-    rom_error_t error = owner_block_parse(&owner_page[1], &tmpcfg, &tmpkey);
-    if (error == kErrorOk &&
-        owner_page[1].config_version > owner_page[0].config_version) {
-      // Page 1 parses and has a newer version: seal it into flash.
-      ownership_seal_page(/*page=*/1);
-      owner_page_valid[1] = kOwnerPageStatusSealed;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-          &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-          &kFlashCtrlInfoPageOwnerSlot1, 0,
-          sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
-
-      // If the new owner page resets the BL0 min_security_version, perform
-      // the reset now.
-      if (owner_page[1].min_security_version_bl0 != UINT32_MAX) {
-        bootdata->min_security_version_bl0 =
-            owner_page[1].min_security_version_bl0;
-        HARDENED_RETURN_IF_ERROR(boot_data_write(bootdata));
-      }
+    rom_error_t error =
+        ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
+    if (error == kErrorOk) {
+      HARDENED_CHECK_EQ(error, kErrorOk);
       // Thunk the status of page 0 to Invalid so the next set of validity
       // checks will copy the new page 1 content over to page 0 and establish a
       // redundant backup of the new configuration.
       owner_page_valid[0] = kOwnerPageStatusInvalid;
+      owner_page_valid[1] = kOwnerPageStatusSealed;
     } else {
       // If the new page wasn't good, we'll do nothing here and let the next set
       // of validity checks copy page 0 over to page 1 and re-establish a

@@ -129,6 +129,10 @@ TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
   MakePage1Valid(true);
   owner_page[1].header.version.major = 5;
 
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
+      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
