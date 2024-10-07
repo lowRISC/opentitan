@@ -6,7 +6,7 @@ def alias_top(name, earlgrey, englishbreakfast):
     native.alias(
         name = name,
         actual = select({
-            "//sw/device:is_english_breakfast": englishbreakfast,
+            "//hw/top:is_englishbreakfast": englishbreakfast,
             "//conditions:default": earlgrey,
         }),
     )

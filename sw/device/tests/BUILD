@@ -122,7 +122,7 @@ opentitan_test(
 alias(
     name = "aes_smoketest_entropy_testutils",
     actual = select({
-        "//sw/device:is_english_breakfast": "//sw/device:nothing",
+        "//hw/top:is_englishbreakfast": "//sw/device:nothing",
         "//conditions:default": "//sw/device/lib/testing:entropy_testutils",
     }),
     visibility = ["//visibility:private"],

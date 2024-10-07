@@ -237,7 +237,7 @@ rust_library(
         "src/util/vmem/parser.rs",
         "src/util/voltage.rs",
     ] + select({
-        "//sw/device:is_english_breakfast": [],
+        "//hw/top:is_englishbreakfast": [],
         "//conditions:default": [
             "src/chip/autogen/earlgrey.rs",
             "src/dif/clkmgr.rs",
@@ -262,7 +262,7 @@ rust_library(
     crate_features = [
         "include_hyperdebug_firmware",
     ] + select({
-        "//sw/device:is_english_breakfast": ["english_breakfast"],
+        "//hw/top:is_englishbreakfast": ["english_breakfast"],
         "//conditions:default": [],
     }),
     proc_macro_deps = [

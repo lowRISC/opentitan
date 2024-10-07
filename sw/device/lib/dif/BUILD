@@ -131,7 +131,7 @@ cc_test(
     ],
     # This test is not compatible with english_breakfast
     target_compatible_with = select({
-        "//sw/device:is_english_breakfast": ["@platforms//:incompatible"],
+        "//hw/top:is_englishbreakfast": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
 )
@@ -962,7 +962,7 @@ cc_test(
     ],
     # This test is not compatible with english_breakfast
     target_compatible_with = select({
-        "//sw/device:is_english_breakfast": ["@platforms//:incompatible"],
+        "//hw/top:is_englishbreakfast": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
 )

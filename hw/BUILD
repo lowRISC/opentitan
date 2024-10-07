@@ -43,7 +43,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:all_files"],
     make_options = ":make_options",
     output_groups = select({
-        "//sw/device:is_english_breakfast": {
+        "//hw/top:is_englishbreakfast": {
             "binary": ["sim-verilator/Vchip_englishbreakfast_verilator"],
         },
         "//conditions:default": {
@@ -51,13 +51,13 @@ fusesoc_build(
         },
     }),
     systems = select({
-        "//sw/device:is_english_breakfast": ["lowrisc:systems:chip_englishbreakfast_verilator"],
+        "//hw/top:is_englishbreakfast": ["lowrisc:systems:chip_englishbreakfast_verilator"],
         "//conditions:default": ["lowrisc:dv:chip_verilator_sim"],
     }),
     # Note: the `fileset_top(gen)` flags used below are specific to the OpenTitan
     # project to select the correct RTL fileset.
     use_flags = select({
-        "//sw/device:is_english_breakfast": ["fileset_topgen"],
+        "//hw/top:is_englishbreakfast": ["fileset_topgen"],
         "//conditions:default": ["fileset_top"],
     }),
     tags = [
@@ -130,7 +130,7 @@ filegroup(
         "//hw/ip_templates:all_files",
         "//util:check_tool_requirements.py",
     ] + select({
-        "//sw/device:is_english_breakfast": ["//hw/top_englishbreakfast:all_files"],
+        "//hw/top:is_englishbreakfast": ["//hw/top_englishbreakfast:all_files"],
         "//conditions:default": ["//hw/top_earlgrey:all_files"],
     }),
     visibility = ["//visibility:public"],

@@ -107,7 +107,7 @@ cc_library(
 alias(
     name = "target_test_rom_lib",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_lib",
+        "//hw/top:is_englishbreakfast": ":english_breakfast_test_rom_lib",
         "//conditions:default": ":earl_grey_test_rom_lib",
     }),
     visibility = ["//visibility:private"],
@@ -145,7 +145,7 @@ cc_library(
 alias(
     name = "test_rom_manifest",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
+        "//hw/top:is_englishbreakfast": ":english_breakfast_test_rom_manifest",
         "//conditions:default": "//sw/device/silicon_creator/lib:manifest",
     }),
 )
