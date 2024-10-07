@@ -69,6 +69,7 @@ static const bitfield_field32_t kDomainConfigBitfield = {
 static_assert(kDifPwrmgrWakeupRequestSourceOne ==
                   (1u << PWRMGR_WAKEUP_EN_EN_0_BIT),
               "Layout of WAKEUP_EN register changed.");
+#if !OT_IS_ENGLISH_BREAKFAST
 static_assert(kDifPwrmgrWakeupRequestSourceOne ==
                   (1u << PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
@@ -87,6 +88,9 @@ static_assert(kDifPwrmgrWakeupRequestSourceFive ==
 static_assert(kDifPwrmgrWakeupRequestSourceSix ==
                   (1u << PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
+#else
+#warning dif_pwrmgr is incorrect for English Breakfast
+#endif
 
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
@@ -95,9 +99,11 @@ static_assert(kDifPwrmgrWakeupRequestSourceSix ==
 static_assert(kDifPwrmgrResetRequestSourceOne ==
                   (1u << PWRMGR_RESET_EN_EN_0_BIT),
               "Layout of RESET_EN register changed.");
+#if !OT_IS_ENGLISH_BREAKFAST
 static_assert(kDifPwrmgrResetRequestSourceTwo ==
                   (1u << PWRMGR_RESET_EN_EN_1_BIT),
               "Layout of RESET_EN register changed.");
+#endif
 
 /**
  * `dif_pwrmgr_irq_t` constants must match the corresponding generated values.

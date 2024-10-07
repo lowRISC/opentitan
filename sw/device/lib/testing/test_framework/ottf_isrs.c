@@ -13,9 +13,11 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "devicetables.h"
 
 dif_rv_plic_t ottf_plic;
+static const dt_uart_t *kUart0Dt = &kDtUart[0];
+static const dt_sram_ctrl_t *kSramCtrlDt = &kDtSramCtrl[1];
 
 // Fault reasons from
 // https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf
@@ -79,10 +81,11 @@ void ottf_generic_fault_print(uint32_t *exc_info, const char *reason,
     }
     uint32_t *sp = exc_info + kExcWords;
     base_printf("\n");
-    uint32_t *ram_start = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+    uint32_t *ram_start = (uint32_t *)dt_sram_ctrl_reg_block(kSramCtrlDt, kDtSramCtrlRegBlockRam);
+    // FIXME figure out how to handle memory sizes without a bunch of ifdefs: maybe add a DT field?
     uint32_t *ram_end =
-        (uint32_t *)(TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-                     TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES);
+        (uint32_t *)(dt_sram_ctrl_reg_block(kSramCtrlDt, kDtSramCtrlRegBlockRam) +
+                     0x20000);
 
     extern const char _text_start[], _text_end[];
     const uint32_t text_start = (uint32_t)_text_start;
@@ -194,14 +197,13 @@ bool ottf_console_flow_control_isr(uint32_t *exc_info) { return false; }
 
 OT_WEAK
 void ottf_external_isr(uint32_t *exc_info) {
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  const uint32_t kPlicTarget = 0;
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&ottf_plic, kPlicTarget, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  dt_device_id_t peripheral = dt_plic_id_to_device_id(plic_irq_id);
 
-  if (peripheral == kTopEarlgreyPlicPeripheralUart0 &&
+  if (peripheral == dt_uart_device_id(kUart0Dt) &&
       ottf_console_flow_control_isr(exc_info)) {
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(
