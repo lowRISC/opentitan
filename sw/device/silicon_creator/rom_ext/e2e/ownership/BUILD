@@ -499,3 +499,53 @@ ownership_transfer_test(
         test_harness = "//sw/host/tests/ownership:newversion_test",
     ),
 )
+
+ownership_transfer_test(
+    name = "newversion_nodelock_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod",
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_newversion",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub)
+            --config-version=2
+            # A DIN of zero will cause the test program to use the DUT's current DIN.
+            --locked-to-din=0
+            --expect "config_version = 2"
+            --expect "owner_key = 8e3dcb50"
+        """,
+        test_harness = "//sw/host/tests/ownership:newversion_test",
+    ),
+)
+
+ownership_transfer_test(
+    name = "newversion_badlock_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod",
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_newversion",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub)
+            --config-version=2
+            --locked-to-din=12345
+            # We expect to see the version unchanged.
+            --expect "config_version = 1"
+            --expect "owner_key = 8e3dcb50"
+        """,
+        test_harness = "//sw/host/tests/ownership:newversion_test",
+    ),
+)

@@ -63,6 +63,9 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
   owner_page[0].update_mode = kOwnershipUpdateModeOpen;
   owner_page[0].min_security_version_bl0 = UINT32_MAX;
+  owner_page[0].lock_constraint = 0;
+  memset(owner_page[0].device_id, kLockConstraintNone,
+         sizeof(owner_page[0].device_id));
   owner_page[0].owner_key = owner;
   owner_page[0].activate_key = (owner_key_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
