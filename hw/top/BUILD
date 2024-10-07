@@ -5,6 +5,30 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//hw/top:alias_top.bzl", "alias_top", "alias_ip_sw")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+
+# This is the main configuration setting to select the top:
+# set it on the command-line (or .bazelrc) using
+# --//hw/top=<value>
+#
+# TODO: might consider making this a make variable as well (make_variable attr)
+string_flag(
+    name = "top",
+    values = ["earlgrey", "englishbreakfast"],
+    build_setting_default = "earlgrey",
+)
+
+config_setting(
+    name = "is_earlgrey",
+    flag_values = {":top": "earlgrey"},
+)
+
+config_setting(
+    name = "is_englishbreakfast",
+    flag_values = {":top": "englishbreakfast"},
+)
+
+
 
 # This directory (hw/top/) exists only to forward various standard top-specific
 # items to the right top so they can be refered to in a top-agnostic way.
