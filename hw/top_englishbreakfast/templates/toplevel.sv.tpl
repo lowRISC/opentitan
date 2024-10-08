@@ -1,0 +1,1 @@
+../../top_earlgrey/templates/toplevel.sv.tpl

@@ -14,7 +14,7 @@ from copy import deepcopy
 from io import StringIO
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import hjson
 import tlgen
@@ -1214,16 +1214,19 @@ def main():
 //                {seed}
 """.format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
 
+        # Top and chiplevel templates are top-specific
+        top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
+
         # SystemVerilog Top:
         # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
-        render_template(TOPGEN_TEMPLATE_PATH / "toplevel.sv.tpl",
+        render_template(top_template_path / "toplevel.sv.tpl",
                         out_path / "rtl" / "autogen" / f"{top_name}.sv",
                         gencmd=gencmd)
 
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
         for target in topcfg["targets"]:
             target_name = target["name"]
-            render_template(TOPGEN_TEMPLATE_PATH / "chiplevel.sv.tpl",
+            render_template(top_template_path / "chiplevel.sv.tpl",
                             out_path /
                             f"rtl/autogen/chip_{topname}_{target_name}.sv",
                             gencmd=gencmd,
