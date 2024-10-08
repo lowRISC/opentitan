@@ -17,7 +17,7 @@
 
 dif_rv_plic_t ottf_plic;
 static const dt_uart_t *kUart0Dt = &kDtUart[0];
-static const dt_sram_ctrl_t *kSramCtrlDt = &kDtSramCtrl[1];
+static const dt_sram_ctrl_t *kSramCtrlDt = &kDtSramCtrl[kDtIndexSramCtrlMain];
 
 // Fault reasons from
 // https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf
