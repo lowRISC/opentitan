@@ -33,7 +33,8 @@ package tlul_pkg;
   parameter int DataMaxWidth    = 32;
   parameter int DataIntgWidth   = 7;
   parameter int DataFullWidth   = DataMaxWidth + DataIntgWidth;
-  parameter int RsvdWidth       = 10;
+  parameter int RsvdWidth       = top_pkg::TL_AUW - prim_mubi_pkg::MuBi4Width -
+                                  H2DCmdIntgWidth - DataIntgWidth;
 
   // Data that is returned upon an a TL-UL error belonging to an instruction fetch.
   // Note that this data will be returned with the correct bus integrity value.
