@@ -1,12 +1,11 @@
 +incdir+./extra_files
 +incdir+./hw/ip/prim/rtl
 
-+incdir+./
 +define+SIMULATION
 +define+DUT_HIER=tb.dut
 
 ./hw/top_earlgrey/rtl/top_pkg.sv
-./extra_files//prim_pkg.sv
+./extra_files/prim_pkg.sv
 ./hw/ip/prim/rtl/prim_cipher_pkg.sv
 ./hw/ip/prim_generic/rtl/prim_generic_and2.sv
 ./hw/ip/prim_generic/rtl/prim_generic_buf.sv
@@ -88,16 +87,16 @@
 ./hw/ip/prim_xilinx/rtl/prim_xilinx_pad_wrapper.sv
 ./hw/ip/prim_xilinx_ultrascale/rtl/prim_xilinx_ultrascale_pad_wrapper.sv
 ./hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv
-./extra_files//prim_and2.sv
-./extra_files//prim_buf.sv
-./extra_files//prim_clock_mux2.sv
-./extra_files//prim_flop.sv
-./extra_files//prim_pad_wrapper.sv
-./extra_files//prim_xnor2.sv
-./extra_files//prim_xor2.sv
+./extra_files/prim_and2.sv
+./extra_files/prim_buf.sv
+./extra_files/prim_clock_mux2.sv
+./extra_files/prim_flop.sv
+./extra_files/prim_pad_wrapper.sv
+./extra_files/prim_xnor2.sv
+./extra_files/prim_xor2.sv
 ./hw/ip/prim_generic/rtl/prim_generic_flop_en.sv
 ./hw/ip/prim/rtl/prim_onehot_check.sv
-./extra_files//prim_flop_en.sv
+./extra_files/prim_flop_en.sv
 ./hw/ip/prim/rtl/prim_blanker.sv
 ./hw/ip/prim/rtl/prim_double_lfsr.sv
 ./hw/ip/prim_generic/rtl/prim_generic_clock_inv.sv
@@ -128,8 +127,8 @@
 ./hw/ip/prim/rtl/prim_mubi32_sync.sv
 ./hw/ip/prim/rtl/prim_mubi32_dec.sv
 ./hw/ip/prim/rtl/prim_reg_we_check.sv
-./extra_files//prim_clock_inv.sv
-./extra_files//prim_flop_2sync.sv
+./extra_files/prim_clock_inv.sv
+./extra_files/prim_flop_2sync.sv
 ./hw/ip/prim/rtl/prim_subreg_pkg.sv
 ./hw/ip/prim/rtl/prim_reg_cdc.sv
 ./hw/ip/prim/rtl/prim_reg_cdc_arb.sv

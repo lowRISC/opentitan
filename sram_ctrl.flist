@@ -35,7 +35,6 @@
 +incdir+./hw/ip/sram_ctrl/dv/env/seq_lib
 +incdir+./hw/ip/sram_ctrl/dv/tests
 
-+incdir+./
 +define+SRAM_ADDR_WIDTH=15
 +define+INSTR_EXEC=1
 +define+NUM_PRINCE_ROUNDS_HALF=2
@@ -58,7 +57,7 @@
 ./hw/ip/prim/dv/prim_secded/secded_enc.c
 ./hw/ip/entropy_src/rtl/entropy_src_pkg.sv
 ./hw/ip/rv_dm/rtl/jtag_pkg.sv
-./extra_files//prim_pkg.sv
+./extra_files/prim_pkg.sv
 ./hw/ip/prim/rtl/prim_cipher_pkg.sv
 ./hw/ip/prim_generic/rtl/prim_generic_and2.sv
 ./hw/ip/prim_generic/rtl/prim_generic_buf.sv
@@ -159,19 +158,19 @@
 ./hw/dv/sv/mem_model/mem_model_pkg.sv
 ./hw/dv/verilator/cpp/scrambled_ecc32_mem_area.cc
 ./hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv
-./extra_files//prim_and2.sv
-./extra_files//prim_buf.sv
-./extra_files//prim_clock_mux2.sv
-./extra_files//prim_flop.sv
-./extra_files//prim_pad_wrapper.sv
-./extra_files//prim_xnor2.sv
-./extra_files//prim_xor2.sv
+./extra_files/prim_and2.sv
+./extra_files/prim_buf.sv
+./extra_files/prim_clock_mux2.sv
+./extra_files/prim_flop.sv
+./extra_files/prim_pad_wrapper.sv
+./extra_files/prim_xnor2.sv
+./extra_files/prim_xor2.sv
 ./hw/vendor/lowrisc_ibex/dv/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
 ./hw/ip/prim_generic/rtl/prim_generic_flop_en.sv
 ./hw/ip/prim/rtl/prim_onehot_check.sv
 ./hw/dv/sv/dv_utils/dv_utils_pkg.sv
-./extra_files//prim_flop_en.sv
-./extra_files//prim_ram_1p.sv
+./extra_files/prim_flop_en.sv
+./extra_files/prim_ram_1p.sv
 ./hw/ip/prim/rtl/prim_blanker.sv
 ./hw/ip/prim/rtl/prim_double_lfsr.sv
 ./hw/ip/prim_generic/rtl/prim_generic_clock_inv.sv
@@ -203,8 +202,8 @@
 ./hw/ip/prim/rtl/prim_mubi32_dec.sv
 ./hw/ip/prim/rtl/prim_reg_we_check.sv
 ./hw/dv/sv/dv_base_reg/dv_base_reg_pkg.sv
-./extra_files//prim_clock_inv.sv
-./extra_files//prim_flop_2sync.sv
+./extra_files/prim_clock_inv.sv
+./extra_files/prim_flop_2sync.sv
 ./hw/ip/prim/rtl/prim_ram_1p_adv.sv
 ./hw/ip/prim/rtl/prim_subreg_pkg.sv
 ./hw/ip/prim/rtl/prim_reg_cdc.sv
