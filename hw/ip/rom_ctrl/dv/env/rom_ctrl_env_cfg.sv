@@ -51,6 +51,10 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
     m_kmac_agent_cfg.constant_share_means_error = 1'b0;
+    // The checker reads the upper 8 words of ROM which takes 9 cycles. The rsp_delay_max has been
+    // rounded off by 9*2=18 cycles along with adding 2 just to give an extra precision.
+    m_kmac_agent_cfg.rsp_delay_min = 'd0;
+    m_kmac_agent_cfg.rsp_delay_max = 'd20;
 
     sec_cm_alert_name = "fatal";
   endfunction
