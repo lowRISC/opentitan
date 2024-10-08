@@ -641,6 +641,7 @@ reg_field_name, field)">\
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
 %   endif
 % endfor
+      ${reg_inst}.set_reset(${f"32'h{reg.resval:x}"});
 
 %     if reg.shadowed:
       ${reg_inst}.set_is_shadowed();
