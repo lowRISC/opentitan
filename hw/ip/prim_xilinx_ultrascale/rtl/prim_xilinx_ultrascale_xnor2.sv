@@ -4,11 +4,13 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_xnor2 #(
+// Prevent Vivado from performing optimizations on/across this module.
+(* DONT_TOUCH = "yes" *)
+module prim_xilinx_ultrascale_xnor2 #(
   parameter int Width = 1
 ) (
-  input        [Width-1:0] in0_i,
-  input        [Width-1:0] in1_i,
+  input [Width-1:0] in0_i,
+  input [Width-1:0] in1_i,
   output logic [Width-1:0] out_o
 );
 
