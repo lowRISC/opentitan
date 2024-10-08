@@ -44,6 +44,19 @@ enum {
 };
 
 % for module_name in module_types:
+<%
+    modules = [m for m in top["module"] if m["type"] == module_name]
+%>\
+// Instance names for ${module_name}
+enum {
+  % for m in modules:
+  kDtIndex${snake_to_constant_name(m["name"])},
+  % endfor
+};
+
+% endfor
+
+% for module_name in module_types:
 // Device tables for ${module_name}
 extern const dt_${module_name}_t kDt${snake_to_constant_name(module_name)}[kDt${snake_to_constant_name(module_name)}Count];
 % endfor

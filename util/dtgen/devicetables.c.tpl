@@ -86,7 +86,7 @@ _Static_assert(${snake_to_constant_name("dt_" + module_name)}Count == ${len(modu
 const dt_${module_name}_t ${snake_to_constant_name("dt_" + module_name)}[${snake_to_constant_name("dt_" + module_name)}Count] = {
 %   for (dev_index, m) in enumerate(modules):
   // Properties for ${m["name"]}
-  {
+  [${snake_to_constant_name("dt_index_" + m["name"])}] = {
     .__internal = {
       .device_id = ${snake_to_constant_name("dt_device_id_" + m["name"])},
       .base_addrs = {
