@@ -36,36 +36,96 @@ with_unknown! {
     }
 }
 
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Annotate)]
+#[serde(try_from = "String", into = "String")]
+pub struct StructVersion {
+    pub major: u8,
+    pub minor: u8,
+}
+
+impl TryFrom<&str> for StructVersion {
+    type Error = anyhow::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        if let Some((major, minor)) = s.split_once('.') {
+            Ok(StructVersion {
+                major: major.parse()?,
+                minor: minor.parse()?,
+            })
+        } else {
+            Ok(StructVersion {
+                major: s.parse()?,
+                minor: 0,
+            })
+        }
+    }
+}
+
+impl TryFrom<String> for StructVersion {
+    type Error = anyhow::Error;
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        StructVersion::try_from(s.as_str())
+    }
+}
+
+impl From<StructVersion> for String {
+    fn from(sv: StructVersion) -> String {
+        format!("{}.{}", sv.major, sv.minor)
+    }
+}
+
+impl StructVersion {
+    pub fn read(src: &mut impl Read) -> Result<Self> {
+        Ok(Self {
+            major: src.read_u8()?,
+            minor: src.read_u8()?,
+        })
+    }
+    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+        dest.write_u8(self.major)?;
+        dest.write_u8(self.minor)?;
+        Ok(())
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize, Annotate)]
 pub struct TlvHeader {
+    #[serde(default)]
     pub identifier: TlvTag,
+    #[serde(default)]
     pub length: usize,
+    #[serde(default)]
+    pub version: StructVersion,
 }
 
 impl TlvHeader {
-    pub const SIZE: usize = 6;
-    pub fn new(id: TlvTag, len: usize) -> Self {
+    pub const SIZE: usize = 8;
+    pub fn new(id: TlvTag, len: usize, version: &str) -> Self {
         Self {
             identifier: id,
             length: len,
+            version: version.try_into().expect("major.minor version string"),
         }
     }
 
     pub fn read(src: &mut impl Read) -> Result<Self> {
         Ok(Self {
             identifier: TlvTag(src.read_u32::<LittleEndian>()?),
-            length: src.read_u32::<LittleEndian>()? as usize,
+            length: src.read_u16::<LittleEndian>()? as usize,
+            version: StructVersion::read(src)?,
         })
     }
 
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.identifier))?;
-        dest.write_u32::<LittleEndian>(self.length as u32)?;
+        dest.write_u16::<LittleEndian>(self.length as u16)?;
+        self.version.write(dest)?;
         Ok(())
     }
     pub fn write_len(&self, dest: &mut impl Write, length: usize) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.identifier))?;
-        dest.write_u32::<LittleEndian>(length as u32)?;
+        dest.write_u16::<LittleEndian>(length as u16)?;
+        self.version.write(dest)?;
         Ok(())
     }
 }
