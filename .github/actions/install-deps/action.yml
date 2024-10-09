@@ -52,8 +52,8 @@ runs:
         }
         sudo mkdir -p "${{ inputs.verilator-path }}"
         sudo chmod 777 "${{ inputs.verilator-path }}"
-        tar -C "${{ inputs.verilator-path }}" -xvzf "/tmp/${VERILATOR_TAR}" --strip-components=1
-        echo "${{ inputs.verilator-path }}/bin" >> "$GITHUB_PATH"
+        tar -C "${{ inputs.verilator-path }}" -xvzf "/tmp/${VERILATOR_TAR}"
+        echo "${{ inputs.verilator-path }}/v${{ inputs.verilator-version }}/bin" >> "$GITHUB_PATH"
       shell: bash
 
     - name: Install Verible
