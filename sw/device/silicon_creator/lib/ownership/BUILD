@@ -84,6 +84,7 @@ dual_cc_library(
             "//sw/device/lib/base:hardened_memory",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
             "//sw/device/silicon_creator/lib/drivers:kmac",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -93,6 +94,7 @@ dual_cc_library(
         shared = [
             ":datatypes",
             "//sw/device/lib/base:hardened",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib:error",
         ],
     ),
