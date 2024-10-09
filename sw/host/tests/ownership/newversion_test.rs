@@ -43,6 +43,12 @@ struct Opts {
 
     #[arg(
         long,
+        help = "Lock the owner config to the device identification number"
+    )]
+    locked_to_din: Option<u64>,
+
+    #[arg(
+        long,
         value_enum,
         default_value = "basic",
         help = "Style of Owner Config for this test"
@@ -60,6 +66,10 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let rescue = RescueSerial::new(Rc::clone(&uart));
 
+    log::info!("###### Get Device Info ######");
+    rescue.enter(transport, /*reset=*/ true)?;
+    let devid = rescue.get_device_id()?;
+
     log::info!("###### Upload Owner Block ######");
     transfer_lib::create_owner(
         transport,
@@ -72,6 +82,15 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         /*customize=*/
         |owner| {
             owner.config_version = opts.config_version;
+            if let Some(din) = opts.locked_to_din {
+                let din = match din {
+                    0 => devid.din,
+                    x => x,
+                };
+                owner.lock_constraint = 0x6;
+                owner.device_id[1] = din as u32;
+                owner.device_id[2] = (din >> 32) as u32;
+            }
         },
     )?;
 
@@ -88,7 +107,10 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     for exp in opts.expect.iter() {
         let erx = Regex::new(exp)?;
-        ensure!(erx.is_match(&capture[0]), "Did not find expected output {exp:?}");
+        ensure!(
+            erx.is_match(&capture[0]),
+            "Did not find expected output {exp:?}"
+        );
     }
 
     Ok(())
