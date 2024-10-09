@@ -286,6 +286,7 @@ ownership_transfer_test(
             # NOTE: We rotate the `fake` test owner's application key to the dummy key to test that
             #       we can execute code with the new key.
             --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --non-transfer-update=true
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
@@ -447,6 +448,7 @@ ownership_transfer_test(
             # NOTE: Should sku_creator_owner_init fail to upgrade to its built-in owner block, then the
             # dummy key will prevent the test program from executing and we'll get a failure from the test.
             --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --non-transfer-update=true
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
@@ -548,4 +550,73 @@ ownership_transfer_test(
         """,
         test_harness = "//sw/host/tests/ownership:newversion_test",
     ),
+)
+
+opentitan_binary(
+    name = "keymgr_test",
+    testonly = True,
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    defines = [
+        "WITH_OWNERSHIP_INFO=1",
+        "WITH_KEYMGR=1",
+    ],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
+    },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+    ],
+)
+
+# rom_ext_e2e_testplan.hjson%rom_ext_e2e_transfer_any_test
+ownership_transfer_test(
+    name = "transfer_keymgr_test",
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    defines = [
+        "WITH_OWNERSHIP_INFO=1",
+        "WITH_KEYMGR=1",
+    ],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod",
+    },
+    fpga = fpga_params(
+        binaries = {
+            ":keymgr_test": "keymgr_test",
+        },
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --pre-transfer-boot-check=true
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --rescue-after-activate={keymgr_test}
+            --keygen-check=true
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+    ],
 )
