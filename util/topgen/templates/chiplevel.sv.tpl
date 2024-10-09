@@ -79,7 +79,12 @@ module chip_${top["name"]}_${target["name"]} #(
 ) (
 % else:
 module chip_${top["name"]}_${target["name"]} #(
+% if lib.num_rom_ctrl(top["module"]) > 1:
+  parameter bit SecRomCtrl0DisableScrambling = 1'b0,
+  parameter bit SecRomCtrl1DisableScrambling = 1'b0
+% else:
   parameter bit SecRomCtrlDisableScrambling = 1'b0
+% endif
 ) (
 % endif
 <%
@@ -1006,7 +1011,12 @@ module chip_${top["name"]}_${target["name"]} #(
     .I2c1InputDelayCycles(1),
     .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
+  % if lib.num_rom_ctrl(top["module"]) > 1:
+    .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
+    .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
+  % else:
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
+  % endif
 % endif
   ) top_${top["name"]} (
     // ast connections
@@ -1157,6 +1167,16 @@ module chip_${top["name"]}_${target["name"]} #(
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
+  % if lib.num_rom_ctrl(top["module"]) > 1:
+    // TODO(opentitan-integrated/issues/251):
+    // Enable hashing below once the build infrastructure can
+    // load scrambled images on FPGA platforms. The DV can
+    // already partially handle it by initializing the 2nd ROM
+    // with random data via the backdoor loading interface - it
+    // can't load "real" SW images yet since that requires
+    // additional build infrastructure.
+    .SecRomCtrl1DisableScrambling(1),
+  % endif
 % elif target["name"] == "cw305":
     .RvCoreIbexPipeLine(0),
     .SecAesMasking(1'b1),
@@ -1192,7 +1212,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecKmacCmdDelay(0),
     .SecKmacIdleAcceptSwMsg(1'b0),
 % endif
+% if lib.num_rom_ctrl(top["module"]) > 1:
+    .RomCtrl0BootRomInitFile(BootRomInitFile),
+% else:
     .RomCtrlBootRomInitFile(BootRomInitFile),
+% endif
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),

@@ -65,7 +65,7 @@ static_assert(kCertX509Asn1SerialNumberSizeInBytes <= kHmacDigestNumBytes,
 // Declaration for the ROM_EXT manifest start address, populated by the linker
 extern char _rom_ext_start_address[];
 // Declaration for the chip_info structure stored in ROM.
-extern const char _chip_info_start[];
+extern const char _rom_chip_info_start[];
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
@@ -832,7 +832,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_attestation_creator(self));
 
   // Initialize the boot_log in retention RAM.
-  const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
+  const chip_info_t *rom_chip_info = (const chip_info_t *)_rom_chip_info_start;
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
   boot_log->rom_ext_major = self->version_major;
   boot_log->rom_ext_minor = self->version_minor;

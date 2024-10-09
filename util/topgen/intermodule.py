@@ -675,7 +675,9 @@ def find_otherside_modules(topcfg: OrderedDict, m,
     """
     # TODO: handle special cases
     special_inst_names = {
-        ('peri', 'tl_ast'): ('ast', 'tl')
+        ('peri', 'tl_ast'): ('ast', 'tl'),
+        ('dbg', 'tl_dbg'): ('dbg', 'tl'),
+        ('mbx', 'tl_mbx'): ('mbx', 'tl')
     }
     special_result = special_inst_names.get((m, s))
     if special_result is not None:
@@ -1045,6 +1047,7 @@ def get_dangling_im_def(objs: OrderedDict) -> str:
 
     undriven_def = [obj for obj in objs if obj['end_idx'] > 0 and
                     (obj['act'] == 'req' and obj['suffix'] == 'rsp' or
-                     obj['act'] == 'rsp' and obj['suffix'] == 'req')]
+                     obj['act'] == 'rsp' and obj['suffix'] == 'req' or
+                     obj['act'] == 'rcv')]
 
     return unused_def, undriven_def
