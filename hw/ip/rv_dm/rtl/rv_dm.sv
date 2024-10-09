@@ -290,8 +290,6 @@ module rv_dm
   end
   assign debug_req_o = debug_req & debug_req_en;
 
-  // Bound-in DPI module replaces the TAP and TL-UL DMI
-`ifndef DMIDirectTAP
   tlul_pkg::tl_h2d_t dbg_tl_h2d_win;
   tlul_pkg::tl_d2h_t dbg_tl_d2h_win;
   rv_dm_dbg_reg_top u_rv_dm_dbg_reg_top (
@@ -332,11 +330,6 @@ module rv_dm
   // Since the JTAG DTM used in this system can always drain this FIFO,
   // no additional reset request should be needed in order to clear it.
   assign dmi_rst_n = rst_ni;
-`else
-  assign dbg_intg_error = 1'b0;
-  assign dmi_intg_error = 1'b0;
-  assign dbg_tl_d_o = tlul_pkg::TL_D2H_DEFAULT;
-`endif
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
   // SEC_CM: MEM_TL_LC_GATE.FSM.SPARSE
