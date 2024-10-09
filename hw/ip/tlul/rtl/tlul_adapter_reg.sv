@@ -65,7 +65,6 @@ module tlul_adapter_reg
   logic             error_q, error, err_internal, instr_error, intg_error;
 
   logic addr_align_err;     // Size and alignment
-  logic malformed_meta_err; // User signal format error or unsupported
   logic tl_err;             // Common TL-UL error checker
 
   logic [IW-1:0]  reqid_q;
@@ -205,10 +204,7 @@ module tlul_adapter_reg
                        (prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
                         prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i));
 
-  assign err_internal = addr_align_err | malformed_meta_err | tl_err | instr_error | intg_error;
-
-  // Don't allow unsupported values.
-  assign malformed_meta_err = tl_a_user_chk(tl_i.a_user);
+  assign err_internal = addr_align_err | tl_err | instr_error | intg_error;
 
   // addr_align_err
   //    Raised if addr isn't aligned with the size
