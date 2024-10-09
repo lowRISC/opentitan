@@ -199,10 +199,8 @@ module tlul_adapter_reg
   ////////////////////
 
   // An instruction type transaction is only valid if en_ifetch is enabled
-  // If the instruction type is completely invalid, also considered an instruction error
-  assign instr_error = prim_mubi_pkg::mubi4_test_invalid(tl_i.a_user.instr_type) |
-                       (prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
-                        prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i));
+  assign instr_error = prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
+                       prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i);
 
   assign err_internal = addr_align_err | tl_err | instr_error | intg_error;
 
