@@ -26,5 +26,9 @@ rom_error_t ownership_seal_check(size_t page) {
   return MockOwnershipKey::Instance().seal_check(page);
 }
 
+rom_error_t ownership_secret_new() {
+  return MockOwnershipKey::Instance().secret_new();
+}
+
 }  // extern "C"
 }  // namespace rom_test
