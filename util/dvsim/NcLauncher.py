@@ -67,10 +67,11 @@ class NcLauncher(Launcher):
             license_args = ['-r', 'License:VCSRuntime_Net/1']
         else:
             license_args = []
+        license_args.extend(['-r', 'RAM/8192', '-r', 'CORES/2'])
 
         self.create_run_sh(odir, cmd)
 
-        return (['nc', 'run',
+        return (['nc', 'run', '-D',
                  '-e', 'SNAPSHOT',
                  '-nodb', '-forcelog',
                  '-l', log_file,
