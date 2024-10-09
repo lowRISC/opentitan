@@ -47,7 +47,7 @@ module mbx_sramrwarb
   assign arb_write_winner = imbx_sram_write_req_i & ~arb_read_winner;
 
   // Granting logic. Mux it to the request
-  logic sram_gnt, sram_valid, max_outstanding_reqs_reached;
+  logic sram_gnt, sram_valid, sram_err, max_outstanding_reqs_reached;
   assign ombx_sram_read_gnt_o  = arb_read_winner  & (~max_outstanding_reqs_reached & sram_gnt);
   assign imbx_sram_write_gnt_o = arb_write_winner & (~max_outstanding_reqs_reached & sram_gnt);
 
@@ -115,12 +115,15 @@ module mbx_sramrwarb
     .valid_o           ( sram_valid                               ),
     .rdata_o           ( ombx_sram_read_resp_o                    ),
     .rdata_intg_o      (                                          ),
-    .err_o             ( sram_err_o                               ),
+    .err_o             ( sram_err                                 ),
     .intg_err_o        ( intg_err_o                               ),
     // Bus interface
     .tl_o              ( tl_host_o                                ),
     .tl_i              ( tl_host_i                                )
   );
+
+  // The error signal in tl_host_i is only valid if the associated valid signal is set
+  assign sram_err_o = sram_err & sram_valid;
 
   // Mux out response valid signal
   // We cannot differentiate on directly on the response signal of the TLUL adapter. We need
