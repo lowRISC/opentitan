@@ -16,6 +16,12 @@ module chip_sim_tb (
   logic cio_spi_device_sdi_p2d;
   logic cio_spi_device_sdo_d2p, cio_spi_device_sdo_en_d2p;
 
+  logic cio_jtag_tck;
+  logic cio_jtag_tms;
+  logic cio_jtag_trst_n;
+  logic cio_jtag_tdi;
+  logic cio_jtag_tdo;
+
   chip_darjeeling_verilator u_dut (
     .clk_i,
     .rst_ni,
@@ -36,7 +42,14 @@ module chip_sim_tb (
     .cio_spi_device_csb_p2d_i(cio_spi_device_csb_p2d),
     .cio_spi_device_sdi_p2d_i(cio_spi_device_sdi_p2d),
     .cio_spi_device_sdo_d2p_o(cio_spi_device_sdo_d2p),
-    .cio_spi_device_sdo_en_d2p_o(cio_spi_device_sdo_en_d2p)
+    .cio_spi_device_sdo_en_d2p_o(cio_spi_device_sdo_en_d2p),
+
+    // communication with JTAG
+    .cio_jtag_tck_i(cio_jtag_tck),
+    .cio_jtag_tms_i(cio_jtag_tms),
+    .cio_jtag_trst_ni(cio_jtag_trst_n),
+    .cio_jtag_tdi_i(cio_jtag_tdi),
+    .cio_jtag_tdo_o(cio_jtag_tdo)
   );
 
   // GPIO DPI
@@ -64,40 +77,18 @@ module chip_sim_tb (
     .rx_i   (cio_uart_tx_d2p)
   );
 
-`ifdef DMIDirectTAP
-  // OpenOCD direct DMI TAP
-  bind rv_dm dmidpi u_dmidpi (
+  // OpenOCD JTAG DPI (to rv_dm and lc_ctrl)
+  jtagdpi u_jtagdpi (
     .clk_i,
     .rst_ni,
-    .dmi_req_valid,
-    .dmi_req_ready,
-    .dmi_req_addr   (dmi_req.addr),
-    .dmi_req_op     (dmi_req.op),
-    .dmi_req_data   (dmi_req.data),
-    .dmi_rsp_valid,
-    .dmi_rsp_ready,
-    .dmi_rsp_data   (dmi_rsp.data),
-    .dmi_rsp_resp   (dmi_rsp.resp),
-    .dmi_rst_n      (dmi_rst_n)
-  );
-`else
-  // TODO: this is currently not supported.
-  // connect this to the correct pins once pinout is final and once the
-  // verilator testbench supports DFT/Debug strap sampling.
-  // See also #5221.
-  //
-  // jtagdpi u_jtagdpi (
-  //   .clk_i,
-  //   .rst_ni,
 
-  //   .jtag_tck    (cio_jtag_tck),
-  //   .jtag_tms    (cio_jtag_tms),
-  //   .jtag_tdi    (cio_jtag_tdi),
-  //   .jtag_tdo    (cio_jtag_tdo),
-  //   .jtag_trst_n (cio_jtag_trst_n),
-  //   .jtag_srst_n (cio_jtag_srst_n)
-  // );
-`endif
+    .jtag_tck    (cio_jtag_tck),
+    .jtag_tms    (cio_jtag_tms),
+    .jtag_tdi    (cio_jtag_tdi),
+    .jtag_tdo    (cio_jtag_tdo),
+    .jtag_trst_n (cio_jtag_trst_n),
+    .jtag_srst_n ()
+  );
 
   // SPI DPI
   spidpi u_spi (

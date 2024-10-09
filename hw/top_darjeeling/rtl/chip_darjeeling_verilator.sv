@@ -25,12 +25,47 @@ module chip_darjeeling_verilator (
   input cio_spi_device_sdi_p2d_i,
   output logic cio_spi_device_sdo_d2p_o,
   output logic cio_spi_device_sdo_en_d2p_o,
+
+  // communication with JTAG
+  input logic  cio_jtag_tck_i,
+  input logic  cio_jtag_tms_i,
+  input logic  cio_jtag_tdi_i,
+  input logic  cio_jtag_trst_ni,
+  output logic cio_jtag_tdo_o
 );
 
   import top_darjeeling_pkg::*;
 
 
-  logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
+  // JTAG
+  jtag_pkg::jtag_req_t jtag_req;
+  jtag_pkg::jtag_rsp_t jtag_rsp;
+  tlul_pkg::tl_h2d_t   dbg_tl_h2d;
+  tlul_pkg::tl_d2h_t   dbg_tl_d2h;
+  assign jtag_req.tck    = cio_jtag_tck_i;
+  assign jtag_req.tms    = cio_jtag_tms_i;
+  assign jtag_req.trst_n = cio_jtag_trst_ni;
+  assign jtag_req.tdi    = cio_jtag_tdi_i;
+  assign cio_jtag_tdo_o  = jtag_rsp.tdo;
+
+  tlul_jtag_dtm #(
+    .IdcodeValue(jtag_id_pkg::LC_DM_COMBINED_JTAG_IDCODE),
+    // Notes:
+    // - one RV_DM instance uses 9bits
+    // - our crossbar tooling expects individual IPs to be spaced apart by 12bits at the moment
+    // - the DMI address shifted through jtag is a word address and hence 2bits smaller than this
+    // - setting this to 18bits effectively gives us 2^6 = 64 addressable 12bit ranges
+    .NumDmiByteAbits(18)
+  ) u_tlul_jtag_dtm (
+    .clk_i      (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .jtag_i     (jtag_req),
+    .jtag_o     (jtag_rsp),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode),
+    .tl_h2d_o   (dbg_tl_h2d),
+    .tl_d2h_i   (dbg_tl_d2h)
+  );
 
   // TODO: instantiate padring and route these signals through that module
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -610,10 +645,9 @@ module chip_darjeeling_verilator (
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
-    // DMI into rv_dm
-    // TODO: instantiate TAP at this level and connect these ports
-    .dbg_tl_req_i                 ( tlul_pkg::TL_H2D_DEFAULT   ),
-    .dbg_tl_rsp_o                 (                            ),
+    // DMI into rv_dm and lc_ctrl
+    .dbg_tl_req_i                 ( dbg_tl_h2d ),
+    .dbg_tl_rsp_o                 ( dbg_tl_d2h ),
 
     // ingress / egress ports and soc proxy signals
     .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d ),
