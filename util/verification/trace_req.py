@@ -27,7 +27,7 @@ def find_markdown_files(directory):
     return markdown_files
 
 def extract_tags_from_markdown(markdown_file, block_name, demote_error):
-    """Extract requirement and feature tags from the Markdown file using a regex pattern based on block_name.
+    """Extract requirement and implementation tags from the Markdown file using a regex pattern based on block_name.
     Ensure that tags with begin/end words are wrapping each blocks."""
     try:
         with open(markdown_file, 'r') as md_file:
@@ -36,21 +36,21 @@ def extract_tags_from_markdown(markdown_file, block_name, demote_error):
         print(f"Error: The Markdown file '{markdown_file}' was not found.")
         return set(), set()
 
-    # Regex patterns to find requirement and feature blocks
+    # Regex patterns to find requirement and implementation blocks
     req_begin_pattern = fr"<!--\s*req_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->"
     req_end_pattern = fr"<!--\s*req_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
-    ftr_begin_pattern = fr"<!--\s*ftr_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->"
-    ftr_end_pattern = fr"<!--\s*ftr_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
+    imp_begin_pattern = fr"<!--\s*imp_{block_name}_[0-9a-fA-F]{{4}}\s*begin\s*-->"
+    imp_end_pattern = fr"<!--\s*imp_{block_name}_[0-9a-fA-F]{{4}}\s*end\s*-->"
 
     # Ensure all tags have a matching begin and end
     validate_matching_tags(content, req_begin_pattern, req_end_pattern, markdown_file, demote_error, "req")
-    validate_matching_tags(content, ftr_begin_pattern, ftr_end_pattern, markdown_file, demote_error, "ftr")
+    validate_matching_tags(content, imp_begin_pattern, imp_end_pattern, markdown_file, demote_error, "imp")
 
     # Extract the tags themselves (without the comment wrappers)
     req_tags = set(re.findall(fr"req_{block_name}_[0-9a-fA-F]{{4}}", content))
-    ftr_tags = set(re.findall(fr"ftr_{block_name}_[0-9a-fA-F]{{4}}", content))
+    imp_tags = set(re.findall(fr"imp_{block_name}_[0-9a-fA-F]{{4}}", content))
 
-    return req_tags, ftr_tags
+    return req_tags, imp_tags
 
 def validate_matching_tags(content, begin_pattern, end_pattern, markdown_file, demote_error, tag_type):
     """Validate that each begin tag has a corresponding end tag and no nested tags exist."""
@@ -110,7 +110,7 @@ def validate_matching_tags(content, begin_pattern, end_pattern, markdown_file, d
                 raise TagMismatchError(error_message)
 
 def extract_tags_from_hjson(hjson_file, block_name):
-    """Extract both req and ftr tags from the HJSON file using regex patterns."""
+    """Extract both req and imp tags from the HJSON file using regex patterns."""
     try:
         with open(hjson_file, 'r') as hjson_file:
             hjson_content = hjson.load(hjson_file)
@@ -118,17 +118,17 @@ def extract_tags_from_hjson(hjson_file, block_name):
         print(f"Error: The HJSON file '{hjson_file}' was not found.")
         sys.exit(1)
 
-    # Convert the HJSON file to string and search for both req and ftr tags
+    # Convert the HJSON file to string and search for both req and imp tags
     content = str(hjson_content)
 
-    # Regex patterns to find req and ftr tags
+    # Regex patterns to find req and imp tags
     req_pattern = fr"req_{block_name}_[0-9a-fA-F]{{4}}"
-    ftr_pattern = fr"ftr_{block_name}_[0-9a-fA-F]{{4}}"
+    imp_pattern = fr"imp_{block_name}_[0-9a-fA-F]{{4}}"
 
     req_tags = set(re.findall(req_pattern, content))
-    ftr_tags = set(re.findall(ftr_pattern, content))
+    imp_tags = set(re.findall(imp_pattern, content))
 
-    return req_tags, ftr_tags
+    return req_tags, imp_tags
 
 def extract_block_name_from_hjson(hjson_file):
     """Extract the block_name from the HJSON file where Depth is 0."""
@@ -149,7 +149,7 @@ def extract_block_name_from_hjson(hjson_file):
     sys.exit(1)
 
 def compare_tags(directory, hjson_file, demote_error):
-    """Compare req and ftr tags from Markdown files in a directory with those in the HJSON file."""
+    """Compare req and imp tags from Markdown files in a directory with those in the HJSON file."""
 
     # Extract the block name from the HJSON file
     block_name = extract_block_name_from_hjson(hjson_file)
@@ -171,14 +171,14 @@ def compare_tags(directory, hjson_file, demote_error):
 
     # Collect tags from all Markdown files, and map tags to files
     req_tags_in_files = {}  # To store which req tags are in which files
-    ftr_tags_in_files = {}  # To store which ftr tags are in which files
+    imp_tags_in_files = {}  # To store which imp tags are in which files
     all_req_tags = set()
-    all_ftr_tags = set()
+    all_imp_tags = set()
 
     for md_file in markdown_files:
-        req_tags, ftr_tags = extract_tags_from_markdown(md_file, block_name, demote_error)
+        req_tags, imp_tags = extract_tags_from_markdown(md_file, block_name, demote_error)
         all_req_tags.update(req_tags)
-        all_ftr_tags.update(ftr_tags)
+        all_imp_tags.update(imp_tags)
 
         # Map req tags to the file they were found in
         for tag in req_tags:
@@ -186,14 +186,14 @@ def compare_tags(directory, hjson_file, demote_error):
                 req_tags_in_files[tag] = []
             req_tags_in_files[tag].append(md_file)
 
-        # Map ftr tags to the file they were found in
-        for tag in ftr_tags:
-            if tag not in ftr_tags_in_files:
-                ftr_tags_in_files[tag] = []
-            ftr_tags_in_files[tag].append(md_file)
+        # Map imp tags to the file they were found in
+        for tag in imp_tags:
+            if tag not in imp_tags_in_files:
+                imp_tags_in_files[tag] = []
+            imp_tags_in_files[tag].append(md_file)
 
-    # Extract req and ftr tags from the HJSON file
-    hjson_req_tags, hjson_ftr_tags = extract_tags_from_hjson(hjson_file, block_name)
+    # Extract req and imp tags from the HJSON file
+    hjson_req_tags, hjson_imp_tags = extract_tags_from_hjson(hjson_file, block_name)
 
     # Compare req tags
     num_req_tags = len(all_req_tags)
@@ -201,11 +201,11 @@ def compare_tags(directory, hjson_file, demote_error):
     missing_in_hjson_req = all_req_tags - hjson_req_tags
     missing_in_markdown_req = hjson_req_tags - all_req_tags
 
-    # Compare ftr tags
-    num_ftr_tags = len(all_ftr_tags)
-    matching_ftr_tags = all_ftr_tags.intersection(hjson_ftr_tags)
-    missing_in_hjson_ftr = all_ftr_tags - hjson_ftr_tags
-    missing_in_markdown_ftr = hjson_ftr_tags - all_ftr_tags
+    # Compare imp tags
+    num_imp_tags = len(all_imp_tags)
+    matching_imp_tags = all_imp_tags.intersection(hjson_imp_tags)
+    missing_in_hjson_imp = all_imp_tags - hjson_imp_tags
+    missing_in_markdown_imp = hjson_imp_tags - all_imp_tags
 
     # Print summary for requirements
     print(f"--- Requirements ---")
@@ -233,30 +233,30 @@ def compare_tags(directory, hjson_file, demote_error):
             else:
                 raise TagMismatchError(f"Requirement tag '{tag}' found in HJSON but missing in Markdown.")
 
-    # Print summary for features
-    print(f"\n--- Features ---")
-    print(f"  Total number of feature tags found in Markdown files:    {num_ftr_tags}")
-    print(f"  Number of feature tags found in both Markdown and HJSON: {len(matching_ftr_tags)}")
+    # Print summary for implementations
+    print(f"\n--- Implementations ---")
+    print(f"  Total number of implementation tags found in Markdown files:    {num_imp_tags}")
+    print(f"  Number of implementation tags found in both Markdown and HJSON: {len(matching_imp_tags)}")
 
-    if missing_in_hjson_ftr:
-        print("\n  Warning: Feature tags found in Markdown but missing in HJSON, along with the Markdown files they were found in:")
-        for tag in missing_in_hjson_ftr:
-            print(f"    {tag} (found in {', '.join(ftr_tags_in_files[tag])})")
+    if missing_in_hjson_imp:
+        print("\n  Warning: Implementation tags found in Markdown but missing in HJSON, along with the Markdown files they were found in:")
+        for tag in missing_in_hjson_imp:
+            print(f"    {tag} (found in {', '.join(imp_tags_in_files[tag])})")
     else:
-        print("  All feature tags in the Markdown files are present in the HJSON file.")
+        print("  All implementation tags in the Markdown files are present in the HJSON file.")
 
-    print(f"\n  Total number of feature tags found in HJSON file:              {len(hjson_ftr_tags)}")
-    print(f"  Number of feature tags found in HJSON but missing in Markdown: {len(missing_in_markdown_ftr)}")
+    print(f"\n  Total number of implementation tags found in HJSON file:              {len(hjson_imp_tags)}")
+    print(f"  Number of implementation tags found in HJSON but missing in Markdown: {len(missing_in_markdown_imp)}")
 
-    if missing_in_markdown_ftr:
-        print("  Warning: Feature tags found in HJSON but missing in Markdown:")
-        for tag in missing_in_markdown_ftr:
+    if missing_in_markdown_imp:
+        print("  Warning: Implementation tags found in HJSON but missing in Markdown:")
+        for tag in missing_in_markdown_imp:
             print(f"    {tag}")
 
 def main():
     """Main function to parse arguments and call the comparison function."""
     parser = argparse.ArgumentParser(
-                description="Compare 'req/ftr_<block_name>_xxxx' tags between Markdown specifications and the HJSON verification plan.")
+                description="Compare 'req/imp_<block_name>_xxxx' tags between Markdown specifications and the HJSON verification plan.")
 
     # Required arguments
     parser.add_argument(

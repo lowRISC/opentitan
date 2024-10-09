@@ -48,9 +48,9 @@ def validate_reference(reference, dut_name):
         return True, ""  # Rule 9: Can be empty
     references = [r.strip() for r in reference.split(",")]
     for ref in references:
-        if not re.match(r'^(req_|ftr_).+_\w{4}$', ref):
-            return False, "'Reference' must follow the pattern req_/ftr_, followed by the DUT name matching with level 0 and a 4-digit hexadecimal"
-        if not ref.startswith(f"req_{dut_name}_") and not ref.startswith(f"ftr_{dut_name}_"):
+        if not re.match(r'^(req_|imp_).+_\w{4}$', ref):
+            return False, "'Reference' must follow the pattern req_/imp_, followed by the DUT name matching with level 0 and a 4-digit hexadecimal"
+        if not ref.startswith(f"req_{dut_name}_") and not ref.startswith(f"imp_{dut_name}_"):
             return False, f"'Reference' should contain the DUT name {dut_name}"
     return True, ""
 
