@@ -1,0 +1,38 @@
+diff --git python/private/pypi/whl_library.bzl python/private/pypi/whl_library.bzl
+index 77cbd4e2..b633f491 100644
+--- python/private/pypi/whl_library.bzl
++++ python/private/pypi/whl_library.bzl
+@@ -250,6 +250,8 @@ def _whl_library_impl(rctx):
+ 
+     # Manually construct the PYTHONPATH since we cannot use the toolchain here
+     environment = _create_repository_execution_environment(rctx, python_interpreter)
++    # Add a PROJECT_ROOT environment variable
++    environment["PROJECT_ROOT"] = str(rctx.path(Label("@@//:BUILD.bazel")).dirname)
+ 
+     whl_path = None
+     if rctx.attr.whl_file:
+@@ -299,6 +301,16 @@ def _whl_library_impl(rctx):
+             quiet = rctx.attr.quiet,
+             timeout = rctx.attr.timeout,
+         )
++        # If the requirement was a local directory, then we need to watch its content
++        # to recreate the repository when it is modified.
++        # Assume that such packages are imported using a single line requirement
++        # of the form [<name> @] file://<path>
++        # We might have to perform some substitutions in the string before searching.
++        subst_req = envsubst(rctx.attr.requirement, environment.keys(), lambda x, dft: environment[x])
++        if 'file://' in subst_req:
++            _, path = subst_req.split("file://", 1)
++            print("Watching tree {} for wheel library {}".format(path, rctx.name))
++            rctx.watch_tree(path)
+ 
+         whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
+         if not rctx.delete("whl_file.json"):
+@@ -487,6 +499,7 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
+         # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
+         default = [
+             Label("//:BUILD.bazel"),
++            Label("@@//:BUILD.bazel"),
+         ] + [
+             # Includes all the external dependencies from repositories.bzl
+             Label("@" + repo + "//:BUILD.bazel")

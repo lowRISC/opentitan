@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@python3//:defs.bzl", "interpreter")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
@@ -30,17 +29,18 @@ def http_archive_or_local(local = None, **kwargs):
 def _bare_repository_impl(rctx):
     if rctx.attr.local:
         workspace_root = str(rctx.path(rctx.attr.workspace).dirname.realpath)
-        result = rctx.execute(
-            [
-                rctx.path(rctx.attr.python_interpreter),
-                rctx.attr._symlink_tree,
-                paths.join(workspace_root, rctx.attr.local),
-                ".",
-            ],
-            quiet = False,
-        )
-        if result.return_code != 0:
-            fail("Error initializing repo for {}".format(rctx.attr.local))
+        # FIXME use standard bazel symlink
+        # result = rctx.execute(
+        #     [
+        #         rctx.path(rctx.attr.python_interpreter),
+        #         rctx.attr._symlink_tree,
+        #         paths.join(workspace_root, rctx.attr.local),
+        #         ".",
+        #     ],
+        #     quiet = False,
+        # )
+        # if result.return_code != 0:
+        #     fail("Error initializing repo for {}".format(rctx.attr.local))
     elif rctx.attr.url:
         rctx.download_and_extract(
             url = rctx.attr.url,
@@ -67,16 +67,6 @@ bare_repository = repository_rule(
         ),
         "additional_files_content": attr.string_dict(
             doc = "Additional files to place in the repository (mapping repo filename to strings).",
-        ),
-        "python_interpreter": attr.label(
-            default = interpreter,
-            allow_single_file = True,
-            doc = "Python interpreter to use.",
-        ),
-        "_symlink_tree": attr.label(
-            default = Label("//rules/scripts:symlink_tree.py"),
-            allow_files = True,
-            doc = "Script to create symlink trees for the `local` case.",
         ),
         "workspace": attr.label(
             default = Label("//:WORKSPACE"),
