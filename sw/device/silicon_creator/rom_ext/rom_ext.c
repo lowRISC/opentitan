@@ -44,6 +44,7 @@
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_unlock.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
@@ -826,7 +827,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Establish our identity.
   HARDENED_RETURN_IF_ERROR(rom_ext_attestation_silicon());
-  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_creator(self));
 
   const manifest_ext_secver_write_t *secver;
   rom_error_t error;
@@ -871,6 +871,12 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   if (error != kErrorOk) {
     dbg_printf("ownership_init: %x\r\n", error);
   }
+
+  // NOTE: In the ES silicon, the OwnerSecret page perturbs the keymgr at the
+  // OwnerIntermediateKey stage.  As such, we perform ownership init before
+  // reaching that stage so that an ownership transfer wont break the derivation
+  // of the ownership sealing key (derived in `ownership_init`).
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_creator(self));
 
   // Configure SRAM execution as the owner requested.
   rom_ext_sram_exec(owner_config.sram_exec);
