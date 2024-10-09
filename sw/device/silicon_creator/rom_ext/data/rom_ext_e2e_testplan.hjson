@@ -12,7 +12,7 @@
       Component:RomExt/E2e/Test
     ]
     project: OpenTitan
-    milestone: "Earlgrey ES ROM_EXT"
+    milestone: Earlgrey-PROD.ROM_EXT
     priority: P1
   }
   testpoints:
@@ -216,7 +216,6 @@
         url: https://github.com/lowRISC/opentitan/issues/20247
       }
     }
-
     {
       name: rom_ext_e2e_transfer_any_test
       desc:
@@ -236,6 +235,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24465
+      }
     }
     {
       name: rom_ext_e2e_bad_unlock_test
@@ -254,6 +257,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24466
+      }
     }
     {
       name: rom_ext_e2e_bad_activate_test
@@ -274,6 +281,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24467
+      }
     }
     {
       name: rom_ext_e2e_bad_owner_block_test
@@ -294,6 +305,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24468
+      }
     }
     {
       name: rom_ext_e2e_bad_app_key_test
@@ -314,6 +329,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24469
+      }
     }
     {
       name: rom_ext_e2e_transfer_endorsed_test
@@ -334,6 +353,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24470
+      }
     }
     {
       name: rom_ext_e2e_bad_endorsee_test
@@ -354,6 +377,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24471
+      }
     }
     {
       name: rom_ext_e2e_locked_update_test
@@ -374,6 +401,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24472
+      }
     }
     {
       name: rom_ext_e2e_bad_locked_update_test
@@ -395,6 +426,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24473
+      }
     }
     {
       name: rom_ext_e2e_rescue_limit_test
@@ -416,6 +451,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24474
+      }
     }
     {
       name: rom_ext_e2e_rescue_permission_test
@@ -437,6 +476,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24475
+      }
     }
     {
       name: rom_ext_e2e_flash_permission_test
@@ -462,6 +505,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24476
+      }
     }
     {
       name: rom_ext_e2e_info_permission_test
@@ -482,7 +529,10 @@
       ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/24477
+      }
     }
-
   ]
 }
