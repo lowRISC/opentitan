@@ -185,6 +185,9 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+  // Set up the OwnerSecret page for ECC & Scrambling.  We won't
+  // turn on read/write/earse permissions until we need them.
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSecret, cfg);
 
   ownership_seal_init();
   // We don't want to abort ownership setup if we fail to

@@ -94,10 +94,20 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
     bootdata->primary_bl0_slot = kBootSlotA;
   }
 
+  if (bootdata->ownership_state == kOwnershipStateUnlockedSelf) {
+    // An activate from UnlockedSelf is not a transfer and should not
+    // regenerate the OwnerSecret page.
+    HARDENED_CHECK_EQ(bootdata->ownership_state, kOwnershipStateUnlockedSelf);
+  } else {
+    // All other activations are transfers and need to regenerate entropy stored
+    // in the OwnerSecret page.
+    HARDENED_RETURN_IF_ERROR(ownership_secret_new());
+    bootdata->ownership_transfers += 1;
+  }
+
   // Set the ownership state to LockedOwner.
   nonce_new(&bootdata->nonce);
   bootdata->ownership_state = kOwnershipStateLockedOwner;
-  bootdata->ownership_transfers += 1;
   memset(bootdata->next_owner, 0, sizeof(bootdata->next_owner));
   return kErrorWriteBootdataThenReboot;
 }
