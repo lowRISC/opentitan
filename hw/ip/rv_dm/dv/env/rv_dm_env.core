@@ -7,15 +7,13 @@ description: "RV_DM DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:ip:rv_dm
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:jtag_agent
       - lowrisc:dv:jtag_dmi_agent
       - lowrisc:opentitan:bus_params_pkg
-      # Note: This core pulls in an rv_dm implementation. We actually
-      # just need the package (dm_pkg.sv) for DV here.
-      - pulp-platform:riscv-dbg:0.1
     files:
       - rv_dm_env_pkg.sv
       - rv_dm_if.sv
