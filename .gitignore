@@ -64,13 +64,6 @@ hw/foundry/
 # ROM_EXT signer vendored in dependencies
 sw/host/rom_ext_image_signer/vendored_dependencies
 
-# Autogen files for non-Earlgrey tops
-hw/top_englishbreakfast/**/autogen/
-hw/top_englishbreakfast/ip/alert_handler/dv/alert_handler_env_pkg__params.sv
-hw/top_englishbreakfast/ip/sensor_ctrl/rtl/*
-hw/top_englishbreakfast/ip/xbar_main/xbar_main.core
-hw/top_englishbreakfast/ip/xbar_peri/xbar_peri.core
-
 # Rust Cargo build system files.
 sw/host/**/target
 rust-project.json

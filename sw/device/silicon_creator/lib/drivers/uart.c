@@ -7,31 +7,41 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "devicetables.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "uart_regs.h"  // Generated.
 
+static const dt_uart_t *kUartDt = &kDtUart[0];
+
 static void uart_reset(void) {
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_CTRL_REG_OFFSET, 0u);
+  abs_mmio_write32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_CTRL_REG_OFFSET,
+      0u);
 
   // Write to the relevant bits clears the FIFOs.
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_RXRST_BIT, true);
   reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_TXRST_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_FIFO_CTRL_REG_OFFSET,
+  abs_mmio_write32(dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) +
+                       UART_FIFO_CTRL_REG_OFFSET,
                    reg);
 
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_OVRD_REG_OFFSET, 0u);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_TIMEOUT_CTRL_REG_OFFSET,
+  abs_mmio_write32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_OVRD_REG_OFFSET,
+      0u);
+  abs_mmio_write32(dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) +
+                       UART_TIMEOUT_CTRL_REG_OFFSET,
                    0u);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET,
+  abs_mmio_write32(dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) +
+                       UART_INTR_ENABLE_REG_OFFSET,
                    0u);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_STATE_REG_OFFSET,
+  abs_mmio_write32(dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) +
+                       UART_INTR_STATE_REG_OFFSET,
                    UINT32_MAX);
 }
 
@@ -44,37 +54,42 @@ void uart_init(uint32_t precalculated_nco) {
   reg = bitfield_field32_write(reg, UART_CTRL_NCO_FIELD, precalculated_nco);
   reg = bitfield_bit32_write(reg, UART_CTRL_TX_BIT, true);
   reg = bitfield_bit32_write(reg, UART_CTRL_PARITY_EN_BIT, false);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_CTRL_REG_OFFSET, reg);
+  abs_mmio_write32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_CTRL_REG_OFFSET,
+      reg);
 
   // Disable interrupts.
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET,
+  abs_mmio_write32(dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) +
+                       UART_INTR_ENABLE_REG_OFFSET,
                    0u);
 }
 
 void uart_enable_receiver(void) {
-  uint32_t reg =
-      abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_CTRL_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_CTRL_REG_OFFSET);
   reg = bitfield_bit32_write(reg, UART_CTRL_RX_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_CTRL_REG_OFFSET, reg);
+  abs_mmio_write32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_CTRL_REG_OFFSET,
+      reg);
 }
 
 OT_WARN_UNUSED_RESULT
 static bool uart_tx_full(void) {
-  uint32_t reg =
-      abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, UART_STATUS_TXFULL_BIT);
 }
 
 OT_WARN_UNUSED_RESULT
 static bool uart_rx_empty(void) {
-  uint32_t reg =
-      abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, UART_STATUS_RXEMPTY_BIT);
 }
 
 bool uart_tx_idle(void) {
-  uint32_t reg =
-      abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, UART_STATUS_TXIDLE_BIT);
 }
 
@@ -83,7 +98,9 @@ static void putchar_nonblocking(uint8_t byte) {
   while (uart_tx_full()) {
   }
   uint32_t reg = bitfield_field32_write(0, UART_WDATA_WDATA_FIELD, byte);
-  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_WDATA_REG_OFFSET, reg);
+  abs_mmio_write32(
+      dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_WDATA_REG_OFFSET,
+      reg);
 }
 
 void uart_putchar(uint8_t byte) {
@@ -140,7 +157,8 @@ size_t uart_read(uint8_t *data, size_t len, uint32_t timeout_ms) {
         return n;
     }
     uint32_t reg =
-        abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_RDATA_REG_OFFSET);
+        abs_mmio_read32(dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) +
+                        UART_RDATA_REG_OFFSET);
     *data++ = (uint8_t)reg;
   }
   return n;
@@ -150,8 +168,8 @@ hardened_bool_t uart_break_detect(uint32_t timeout_us) {
   uint64_t time = ibex_mcycle();
   uint64_t deadline = time + ibex_time_to_cycles(timeout_us);
   while (time < deadline) {
-    uint32_t val =
-        abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_VAL_REG_OFFSET);
+    uint32_t val = abs_mmio_read32(
+        dt_uart_reg_block(kUartDt, kDtUartRegBlockCore) + UART_VAL_REG_OFFSET);
     if (val)
       return kHardenedBoolFalse;
     time = ibex_mcycle();

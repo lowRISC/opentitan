@@ -87,6 +87,8 @@ typedef uint8_t dif_pwrmgr_domain_config_t;
  * See also: `dif_pwrmgr_request_sources_t`.
  *
  * Note: This needs to be updated once the HW is finalized.
+ *
+ * FIXME: this needs to be renamed to include names and handle multiple tops
  */
 typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceOne = (1u << 0),

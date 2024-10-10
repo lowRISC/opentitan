@@ -120,6 +120,7 @@ class TopGenC:
         self._init_rstmgr_sw_rsts()
         self._init_pwrmgr_reset_requests()
         self._init_clkmgr_clocks()
+        self._init_clocks()
         self._init_mmio_region()
 
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
@@ -503,6 +504,20 @@ class TopGenC:
 
         self.clkmgr_gateable_clocks = gateable_clocks
         self.clkmgr_hintable_clocks = hintable_clocks
+
+    def _init_clocks(self):
+        """
+        Collects the clocks in the design and assigns them IDs.
+        """
+        clocks = self.top['clocks']
+        clock_list = CEnum(self._top_name + Name(["clock", "src"]))
+        clock_list.add_constant(Name(["unknown"]), "ID representing unknown clock")
+        for clock in clocks.all_srcs.keys():
+            clock_name = Name.from_snake_case(clock)
+            docstring = "Clock {}".format(clock)
+            clock_list.add_constant(clock_name, docstring)
+        clock_list.add_constant(Name(["count"]), "Number of clock IDs")
+        self.clocks = clock_list
 
     def _init_mmio_region(self):
         """

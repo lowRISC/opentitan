@@ -87,6 +87,72 @@ autogen_hjson_c_header = rule(
     },
 )
 
+def _hjson_dt_header(ctx):
+    output_stem = (ctx.attr.output_stem if ctx.attr.output_stem else "dt_" + ctx.label.name.replace("_dt", ""))
+    header = ctx.actions.declare_file("{}.h".format(output_stem))
+    node = []
+    if ctx.attr.node:
+        node.append("--default-node={}".format(ctx.attr.node))
+
+    arguments = [
+        "--gen-ip",
+        "--outdir",
+        header.dirname,
+    ] + node
+
+    for f in ctx.files.srcs:
+        arguments.extend(["-i", f.path])
+
+    ctx.actions.run(
+        outputs = [header],
+        inputs = ctx.files.srcs,
+        arguments = arguments,
+        executable = ctx.executable._dttool,
+    )
+
+    cc_infos = [dep[CcInfo] for dep in ctx.attr.deps if CcInfo in dep]
+
+    cc_infos.append(
+        CcInfo(compilation_context = cc_common.create_compilation_context(
+            includes = depset([header.dirname]),
+            headers = depset([header]),
+        ))
+    )
+
+    return [
+        cc_common.merge_cc_infos(cc_infos = cc_infos),
+        DefaultInfo(files = depset([header], transitive=[dep[DefaultInfo].files for dep in ctx.attr.deps])),
+        OutputGroupInfo(
+            header = depset([header]),
+        ),
+    ]
+
+autogen_hjson_dt_header = rule(
+    implementation = _hjson_dt_header,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "node": attr.string(
+            doc = "Register block node to make the default",
+        ),
+        "output_stem": attr.string(
+            doc = """
+                The name of the output file with no suffix.
+                This is optional, and if not given it will be set to the
+                target name without the "_dt" suffix and with the "dt_" prefix.
+                """,
+        ),
+        "deps": attr.label_list(
+            doc = "Dependencies to compile the header.",
+            default = ["//hw/top:dt_api"],
+        ),
+        "_dttool": attr.label(
+            default = "//util:dttool",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
 def _hjson_rust_header(ctx):
     node = []
     if ctx.attr.node:
@@ -139,6 +205,34 @@ autogen_hjson_rust_header = rule(
         ),
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
+
+def autogen_hjson_sw_headers(name_prefix, srcs, **kwargs):
+    """
+    Generate all IP-specific software headers. This macro will
+    create the following targets:
+    - `{name_prefix}_c_regs`: C headers with register definitions.
+    - `{name_prefix}_rust_regs`: Rust register definitions.
+    - `{name_prefix}_dt`: DT definitions.
+
+    The following optional extra arguments are supported:
+    - `node`: select the register block node for which to generate
+              the definitions; for DT selects the default node.
+    """
+    autogen_hjson_c_header(
+        name = "{}_c_regs".format(name_prefix),
+        srcs = srcs,
+        **kwargs
+    )
+    autogen_hjson_rust_header(
+        name = "{}_rust_regs".format(name_prefix),
+        srcs = srcs,
+        **kwargs
+    )
+    autogen_hjson_dt_header(
+        name = "{}_dt".format(name_prefix),
+        srcs = srcs,
+        **kwargs
+    )
 
 def _chip_info_src(ctx):
     stamp_args = []
@@ -311,3 +405,117 @@ autogen_cryptotest_header = rule(
         ),
     },
 )
+
+def _autogen_dttool_impl(ctx):
+    # We output everything in the package directory.
+    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+    outputs = []
+    groups = {}
+    for group, files in ctx.attr.output_groups.items():
+        deps = []
+        for f in files:
+            # Declared files are relative to the package directory.
+            deps.append(ctx.actions.declare_file(f))
+        outputs.extend(deps)
+        groups[group] = depset(deps)
+
+    # Ignore the values since `dtgen` can recover them from the file content.
+    ips = []
+    for iphjson in ctx.files.ip_to_hjson:
+        ips.extend(["-i", iphjson.path])
+
+    ctx.actions.run(
+        inputs = [ctx.file.top_gen_cfg] + ctx.files.ip_to_hjson + ctx.files.data,
+        outputs = outputs,
+        executable = ctx.executable._dttool,
+        arguments = [
+            "-t", ctx.file.top_gen_cfg.path,
+            "--outdir", outdir,
+            "--gen-top",
+        ] + ips + ctx.attr.arguments,
+        mnemonic = "DtGen",
+        progress_message = "Running dttool on {}".format(ctx.file.top_gen_cfg.path),
+    )
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+        ),
+        OutputGroupInfo(**groups),
+    ]
+
+autogen_dttool = rule(
+    implementation = _autogen_dttool_impl,
+    attrs = {
+        "top_gen_cfg": attr.label(mandatory = True, allow_single_file = [".hjson"]),
+        "ip_to_hjson": attr.label_keyed_string_dict(
+            allow_files = True,
+            default = {},
+            doc = "Mapping from hjson files to IP names.",
+        ),
+        "output_groups": attr.string_list_dict(
+            allow_empty = True,
+            doc = "Mapping of group name to lists of files or directories in that named group (use '/' at the to make it a directory)",
+        ),
+        "data": attr.label_list(
+            allow_files = True,
+            # See https://bazel.build/reference/be/common-definitions#typical-attributes.
+            doc = "Files needed by this rule at runtime. May list file or rule targets. Generally allows any target."
+        ),
+        "arguments": attr.string_list(
+            default = [],
+            doc = "Arguments to pass to the tool",
+        ),
+        "_dttool": attr.label(
+            default = "//util:dttool",
+            executable = True,
+            cfg = "exec",
+        ),
+    }
+)
+
+def autogen_top_dt(
+    topname,
+    top_gen_cfg,
+    ip_to_hjson,
+    top_lib,
+    dt_ip_deps,
+    data = []):
+    """
+    TODO document
+    """
+    output_groups = {
+        "dt_api": ["dt_api.h"],
+        "dt_lib_srcs": ["devicetables.c"],
+        "dt_lib_hdrs": ["devicetables.h"],
+    }
+    name = topname + "_dttool"
+    # The output of this rule is a directory that contains everything.
+    autogen_dttool(
+        name = name,
+        output_groups = output_groups,
+        top_gen_cfg = top_gen_cfg,
+        ip_to_hjson = ip_to_hjson,
+        data = data
+    )
+    # Extract groups.
+    for group in output_groups.keys():
+        native.filegroup(
+            name = "{}_{}".format(name, group),
+            srcs = [":{}".format(name)],
+            output_group = group,
+        )
+    # Create software artefacts.
+    native.cc_library(
+        name = "dt_api",
+        hdrs = [":{}_dt_api".format(name)],
+        deps = [top_lib],
+        # Make the dt_api.h header accessible as "dt_api.h".
+        includes = ["."],
+    )
+
+    native.cc_library(
+        name = "devicetables",
+        srcs = [":{}_dt_lib_srcs".format(name)],
+        hdrs = [":{}_dt_lib_hdrs".format(name)],
+        deps = [":dt_api"] + dt_ip_deps,
+    )

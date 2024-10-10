@@ -1,0 +1,298 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson -o hw/top_englishbreakfast/
+
+{
+  name: peri
+  clock_srcs:
+  {
+    clk_peri_i: io_div4
+    clk_spi_host0_i: io
+    clk_usb_i: usb
+  }
+  clock_group: infra
+  reset: rst_peri_ni
+  reset_connections:
+  {
+    rst_peri_ni:
+    {
+      name: sys_io_div4
+      domain: "0"
+    }
+    rst_spi_host0_ni:
+    {
+      name: spi_host0
+      domain: "0"
+    }
+    rst_usb_ni:
+    {
+      name: usb
+      domain: "0"
+    }
+  }
+  clock_connections:
+  {
+    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
+    clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
+  }
+  domain:
+  [
+    "0"
+  ]
+  connections:
+  {
+    main:
+    [
+      uart0
+      uart1
+      gpio
+      spi_device
+      spi_host0
+      rv_timer
+      usbdev
+      pwrmgr_aon
+      rstmgr_aon
+      clkmgr_aon
+      pinmux_aon
+      ast
+    ]
+  }
+  nodes:
+  [
+    {
+      name: main
+      type: host
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      xbar: true
+      pipeline: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: uart0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40000000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40010000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: gpio
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: gpio
+      addr_range:
+      [
+        {
+          base_addr: 0x40040000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: spi_device
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: spi_device
+      addr_range:
+      [
+        {
+          base_addr: 0x40050000
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: spi_host0
+      type: device
+      clock: clk_spi_host0_i
+      reset: rst_spi_host0_ni
+      pipeline: false
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40060000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rv_timer
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: rv_timer
+      addr_range:
+      [
+        {
+          base_addr: 0x40100000
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: usbdev
+      type: device
+      clock: clk_usb_i
+      reset: rst_usb_ni
+      pipeline: false
+      inst_type: usbdev
+      addr_range:
+      [
+        {
+          base_addr: 0x40320000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: pwrmgr_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: pwrmgr
+      addr_range:
+      [
+        {
+          base_addr: 0x40400000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rstmgr_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: rstmgr
+      addr_range:
+      [
+        {
+          base_addr: 0x40410000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: clkmgr_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: clkmgr
+      addr_range:
+      [
+        {
+          base_addr: 0x40420000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: pinmux_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: pinmux
+      addr_range:
+      [
+        {
+          base_addr: 0x40460000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: ast
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: ast
+      addr_range:
+      [
+        {
+          base_addr: 0x40480000
+          size_byte: 0x400
+        }
+      ]
+      xbar: false
+      stub: true
+      req_fifo_pass: true
+    }
+  ]
+  clock: clk_peri_i
+  type: xbar
+}

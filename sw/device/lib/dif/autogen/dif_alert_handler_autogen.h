@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_alert_handler.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -45,36 +46,60 @@ typedef struct dif_alert_handler {
  * @param base_addr The MMIO base address of the alert_handler peripheral.
  * @param[out] alert_handler Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
                                     dif_alert_handler_t *alert_handler);
 
 /**
- * A alert_handler interrupt request type.
+ * Creates a new handle for a(n) alert_handler peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] alert_handler Out param for the initialized handle.
+ * @return The result of the operation.
  */
-typedef enum dif_alert_handler_irq {
-  /**
-   * Interrupt state bit of Class A. Set by HW in case an alert within this
-   * class triggered. Defaults true, write one to clear.
-   */
-  kDifAlertHandlerIrqClassa = 0,
-  /**
-   * Interrupt state bit of Class B. Set by HW in case an alert within this
-   * class triggered. Defaults true, write one to clear.
-   */
-  kDifAlertHandlerIrqClassb = 1,
-  /**
-   * Interrupt state bit of Class C. Set by HW in case an alert within this
-   * class triggered. Defaults true, write one to clear.
-   */
-  kDifAlertHandlerIrqClassc = 2,
-  /**
-   * Interrupt state bit of Class D. Set by HW in case an alert within this
-   * class triggered. Defaults true, write one to clear.
-   */
-  kDifAlertHandlerIrqClassd = 3,
-} dif_alert_handler_irq_t;
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_init_from_dt(const dt_alert_handler_t *dt,
+                                            dif_alert_handler_t *alert_handler);
+
+/**
+ * A alert_handler interrupt request type.
+ *
+ * DEPRECATED Use `dt_alert_handler_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
+ */
+/**
+ * Interrupt state bit of Class A. Set by HW in case an alert within this class
+ * triggered. Defaults true, write one to clear.
+ */
+#define kDifAlertHandlerIrqClassa kDtAlertHandlerIrqClassa
+/**
+ * Interrupt state bit of Class B. Set by HW in case an alert within this class
+ * triggered. Defaults true, write one to clear.
+ */
+#define kDifAlertHandlerIrqClassb kDtAlertHandlerIrqClassb
+/**
+ * Interrupt state bit of Class C. Set by HW in case an alert within this class
+ * triggered. Defaults true, write one to clear.
+ */
+#define kDifAlertHandlerIrqClassc kDtAlertHandlerIrqClassc
+/**
+ * Interrupt state bit of Class D. Set by HW in case an alert within this class
+ * triggered. Defaults true, write one to clear.
+ */
+#define kDifAlertHandlerIrqClassd kDtAlertHandlerIrqClassd
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_alert_handler_irq_t dif_alert_handler_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -95,7 +120,7 @@ typedef uint32_t dif_alert_handler_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_get_type(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t,
     dif_irq_type_t *type);
 
 /**
@@ -120,7 +145,7 @@ dif_result_t dif_alert_handler_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_is_pending(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t,
     bool *is_pending);
 
 /**
@@ -157,7 +182,7 @@ dif_result_t dif_alert_handler_irq_acknowledge_all(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_acknowledge(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq);
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -170,7 +195,7 @@ dif_result_t dif_alert_handler_irq_acknowledge(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_force(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t,
     const bool val);
 
 /**
@@ -192,7 +217,7 @@ typedef uint32_t dif_alert_handler_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_get_enabled(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t,
     dif_toggle_t *state);
 
 /**
@@ -205,7 +230,7 @@ dif_result_t dif_alert_handler_irq_get_enabled(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_set_enabled(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t,
     dif_toggle_t state);
 
 /**

@@ -25,6 +25,19 @@ dif_result_t dif_rv_core_ibex_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_init_from_dt(const dt_rv_core_ibex_t *dt,
+                                           dif_rv_core_ibex_t *rv_core_ibex) {
+  if (rv_core_ibex == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  rv_core_ibex->base_addr = mmio_region_from_addr(
+      dt_rv_core_ibex_reg_block(dt, kDtRvCoreIbexRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_rv_core_ibex_alert_force(
     const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_alert_t alert) {
   if (rv_core_ibex == NULL) {

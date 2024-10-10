@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_spi_device.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -45,10 +46,26 @@ typedef struct dif_spi_device {
  * @param base_addr The MMIO base address of the spi_device peripheral.
  * @param[out] spi_device Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_init(mmio_region_t base_addr,
                                  dif_spi_device_t *spi_device);
+
+/**
+ * Creates a new handle for a(n) spi_device peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] spi_device Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_init_from_dt(const dt_spi_device_t *dt,
+                                         dif_spi_device_t *spi_device);
 
 /**
  * A spi_device alert type.
@@ -75,49 +92,60 @@ dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
 
 /**
  * A spi_device interrupt request type.
+ *
+ * DEPRECATED Use `dt_spi_device_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_spi_device_irq {
-  /**
-   * Upload Command FIFO is not empty
-   */
-  kDifSpiDeviceIrqUploadCmdfifoNotEmpty = 0,
-  /**
-   * Upload payload is not empty.  The event occurs after SPI transaction
-   * completed
-   */
-  kDifSpiDeviceIrqUploadPayloadNotEmpty = 1,
-  /**
-   * Upload payload overflow event.  When a SPI Host system issues a command
-   * with payload more than 256B, this event is reported. When it happens, SW
-   * should read the last written payload index CSR to figure out the starting
-   * address of the last 256B.
-   */
-  kDifSpiDeviceIrqUploadPayloadOverflow = 2,
-  /**
-   * Read Buffer Threshold event.  The host system accesses greater than or
-   * equal to the threshold of a buffer.
-   */
-  kDifSpiDeviceIrqReadbufWatermark = 3,
-  /**
-   * Read buffer flipped event.  The host system accesses other side of buffer.
-   */
-  kDifSpiDeviceIrqReadbufFlip = 4,
-  /**
-   * TPM Header(Command/Address) buffer available
-   */
-  kDifSpiDeviceIrqTpmHeaderNotEmpty = 5,
-  /**
-   * TPM RdFIFO command ended.  The TPM Read command targeting the RdFIFO ended.
-   * Check TPM_STATUS.rdfifo_aborted to see if the transaction completed.
-   */
-  kDifSpiDeviceIrqTpmRdfifoCmdEnd = 6,
-  /**
-   * TPM RdFIFO data dropped.  Data was dropped from the RdFIFO. Data was
-   * written while a read command was not active, and it was not accepted. This
-   * can occur when the host aborts a read command.
-   */
-  kDifSpiDeviceIrqTpmRdfifoDrop = 7,
-} dif_spi_device_irq_t;
+/**
+ * Upload Command FIFO is not empty
+ */
+#define kDifSpiDeviceIrqUploadCmdfifoNotEmpty \
+  kDtSpiDeviceIrqUploadCmdfifoNotEmpty
+/**
+ * Upload payload is not empty.  The event occurs after SPI transaction
+ * completed
+ */
+#define kDifSpiDeviceIrqUploadPayloadNotEmpty \
+  kDtSpiDeviceIrqUploadPayloadNotEmpty
+/**
+ * Upload payload overflow event.  When a SPI Host system issues a command with
+ * payload more than 256B, this event is reported. When it happens, SW should
+ * read the last written payload index CSR to figure out the starting address of
+ * the last 256B.
+ */
+#define kDifSpiDeviceIrqUploadPayloadOverflow \
+  kDtSpiDeviceIrqUploadPayloadOverflow
+/**
+ * Read Buffer Threshold event.  The host system accesses greater than or equal
+ * to the threshold of a buffer.
+ */
+#define kDifSpiDeviceIrqReadbufWatermark kDtSpiDeviceIrqReadbufWatermark
+/**
+ * Read buffer flipped event.  The host system accesses other side of buffer.
+ */
+#define kDifSpiDeviceIrqReadbufFlip kDtSpiDeviceIrqReadbufFlip
+/**
+ * TPM Header(Command/Address) buffer available
+ */
+#define kDifSpiDeviceIrqTpmHeaderNotEmpty kDtSpiDeviceIrqTpmHeaderNotEmpty
+/**
+ * TPM RdFIFO command ended.  The TPM Read command targeting the RdFIFO ended.
+ * Check TPM_STATUS.rdfifo_aborted to see if the transaction completed.
+ */
+#define kDifSpiDeviceIrqTpmRdfifoCmdEnd kDtSpiDeviceIrqTpmRdfifoCmdEnd
+/**
+ * TPM RdFIFO data dropped.  Data was dropped from the RdFIFO. Data was written
+ * while a read command was not active, and it was not accepted. This can occur
+ * when the host aborts a read command.
+ */
+#define kDifSpiDeviceIrqTpmRdfifoDrop kDtSpiDeviceIrqTpmRdfifoDrop
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_spi_device_irq_t dif_spi_device_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -137,7 +165,7 @@ typedef uint32_t dif_spi_device_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_get_type(const dif_spi_device_t *spi_device,
-                                         dif_spi_device_irq_t irq,
+                                         dif_spi_device_irq_t,
                                          dif_irq_type_t *type);
 
 /**
@@ -162,7 +190,7 @@ dif_result_t dif_spi_device_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_is_pending(const dif_spi_device_t *spi_device,
-                                           dif_spi_device_irq_t irq,
+                                           dif_spi_device_irq_t,
                                            bool *is_pending);
 
 /**
@@ -199,7 +227,7 @@ dif_result_t dif_spi_device_irq_acknowledge_all(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_acknowledge(const dif_spi_device_t *spi_device,
-                                            dif_spi_device_irq_t irq);
+                                            dif_spi_device_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -212,7 +240,7 @@ dif_result_t dif_spi_device_irq_acknowledge(const dif_spi_device_t *spi_device,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
-                                      dif_spi_device_irq_t irq, const bool val);
+                                      dif_spi_device_irq_t, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
@@ -233,7 +261,7 @@ typedef uint32_t dif_spi_device_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_get_enabled(const dif_spi_device_t *spi_device,
-                                            dif_spi_device_irq_t irq,
+                                            dif_spi_device_irq_t,
                                             dif_toggle_t *state);
 
 /**
@@ -246,7 +274,7 @@ dif_result_t dif_spi_device_irq_get_enabled(const dif_spi_device_t *spi_device,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_set_enabled(const dif_spi_device_t *spi_device,
-                                            dif_spi_device_irq_t irq,
+                                            dif_spi_device_irq_t,
                                             dif_toggle_t state);
 
 /**

@@ -193,6 +193,24 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
   return kDifOk;
 }
 
+dif_result_t dif_pinmux_mio_select_input(const dif_pinmux_t *pinmux,
+                                         dt_pin_t pin, dt_pad_t pad) {
+  if (dt_pad_type(pad) != kDtPadTypeMio || dt_pin_type(pin) != kDtPinTypeMio) {
+    return kDifBadArg;
+  }
+  return dif_pinmux_input_select(pinmux, dt_pin_mio_periph_input(pin),
+                                 dt_pad_mio_insel(pad));
+}
+
+dif_result_t dif_pinmux_mio_select_output(const dif_pinmux_t *pinmux,
+                                          dt_pad_t pad, dt_pin_t pin) {
+  if (dt_pad_type(pad) != kDtPadTypeMio || dt_pin_type(pin) != kDtPinTypeMio) {
+    return kDifBadArg;
+  }
+  return dif_pinmux_output_select(pinmux, dt_pad_mio_out(pad),
+                                  dt_pin_mio_outsel(pin));
+}
+
 static dif_pinmux_pad_attr_t dif_pinmux_reg_to_pad_attr(uint32_t reg_value) {
   dif_pinmux_pad_attr_t pad_attrs = {0};
   pad_attrs.slew_rate = (dif_pinmux_pad_slew_rate_t)bitfield_field32_read(

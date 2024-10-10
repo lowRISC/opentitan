@@ -11,15 +11,6 @@ ld_library(
     includes = ["info_sections.ld"],
 )
 
-# FIXME(lowRISC/opentitan#12065) This is a hack to work around currently
-# only supporting one top.
-#
-# See //hw/top_englishbreakfast/util/prepare_sw.py for where this is set.
-config_setting(
-    name = "is_english_breakfast",
-    values = {"copt": "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_"},
-)
-
 config_setting(
     name = "measure_coverage_on_target",
     define_values = {

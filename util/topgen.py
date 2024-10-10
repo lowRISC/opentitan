@@ -691,7 +691,7 @@ def _process_top(
     top_name = f"top_{topcfg['name']}"
 
     # Sweep the IP directory and gather the config files
-    ip_dir = Path(__file__).parents[1] / "hw/ip"
+    ip_dir = SRCTREE_TOP / "hw/ip"
     ips = search_ips(ip_dir)
 
     # exclude filtered IPs (to use ${top_name} one) and
@@ -909,6 +909,27 @@ def _check_countermeasures(completecfg: Dict[str, object],
     else:
         log.error("Countermeasure checks failed.")
     return success
+
+
+def path_to_bazel_label(path):
+    """
+    Given a repository path, find the first ancestor that contains a BUILD
+    file and return a bazel path to point to the file, assuming that this
+    BUILD file exports all files.
+
+    Example:
+      Called on hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson
+      The directory hw/top_earlgrey/data/autogen/ does not have a BUILD file.
+      The directory hw/top_earlgrey/data/ does have a BUILD file.
+      Return "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson".
+    """
+    path = path.resolve().relative_to(SRCTREE_TOP)
+    for p in path.parents:
+        if (p / "BUILD").exists():
+            label = "//{}:{}".format(p, path.relative_to(p))
+            return label
+    log.warning("could not find any BUILD file to point to {}".format(path))
+    return "//:{}".format(path)
 
 
 def main():
@@ -1172,6 +1193,8 @@ def main():
 //                --rnd_cnst_seed {seed}
 """.format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
 
+    gencmd_c = warnhdr + GENCMD.format(top_name=top_name)
+
     genhjson_path.write_text(genhdr + gencmd +
                              hjson.dumps(completecfg, for_json=True) + '\n')
 
@@ -1275,7 +1298,8 @@ def main():
             cheader_path = cformat_dir / f"{top_name}.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
                             cheader_path,
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
 
             # Save the relative header path into `c_helper`
             rel_header_path = cheader_path.relative_to(root_paths[idx])
@@ -1284,17 +1308,33 @@ def main():
             # "toplevel.c.tpl" -> "sw/autogen/{top_name}.c"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
                             cformat_dir / f"{top_name}.c",
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
 
             # "toplevel_memory.ld.tpl" -> "sw/autogen/{top_name}_memory.ld"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-                            cformat_dir / f"{top_name}_memory.ld")
+                            cformat_dir / f"{top_name}_memory.ld",
+                            gencmd=gencmd_c)
 
             # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}_memory.h"
             memory_cheader_path = cformat_dir / f"{top_name}_memory.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                             memory_cheader_path,
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
+
+            name_to_hjson_label = {
+                ip: path_to_bazel_label(path)
+                for (ip, path) in name_to_hjson.items()
+            }
+            # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
+            memory_cheader_path = cformat_dir / "BUILD"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
+                            memory_cheader_path,
+                            helper=c_helper,
+                            gencmd=gencmd_c,
+                            topgencfg=path_to_bazel_label(genhjson_path),
+                            name_to_hjson=name_to_hjson_label)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
@@ -1333,10 +1373,10 @@ def main():
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
 
-        # Auto-generate tests in "sw/device/tests/autogen" area.
+        # Auto-generate tests in "sw/device/tests/autogen/top_<top>" area.
         gencmd = warnhdr + GENCMD.format(top_name=top_name)
         for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
+            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / top_name / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
                             outfile,
                             helper=c_helper,

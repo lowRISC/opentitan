@@ -1,0 +1,240 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_clkmgr
+  param_values:
+  {
+    src_clks:
+    {
+      main:
+      {
+        name: main
+        aon: false
+        freq: 100000000
+        ref: false
+      }
+      io:
+      {
+        name: io
+        aon: false
+        freq: 96000000
+        ref: false
+      }
+      usb:
+      {
+        name: usb
+        aon: false
+        freq: 48000000
+        ref: false
+      }
+      aon:
+      {
+        name: aon
+        aon: true
+        freq: 200000
+        ref: false
+      }
+    }
+    derived_clks:
+    {
+      io_div2:
+      {
+        name: io_div2
+        aon: false
+        freq: 48000000
+        ref: false
+        div: 2
+        src:
+        {
+          name: io
+          aon: no
+          freq: "96000000"
+          ref: false
+        }
+      }
+      io_div4:
+      {
+        name: io_div4
+        aon: false
+        freq: 24000000
+        ref: false
+        div: 4
+        src:
+        {
+          name: io
+          aon: no
+          freq: "96000000"
+          ref: false
+        }
+      }
+    }
+    typed_clocks:
+    {
+      ast_clks:
+      {
+        clk_main_i:
+        {
+          src_name: main
+          endpoint_ip: clkmgr_aon
+        }
+        clk_io_i:
+        {
+          src_name: io
+          endpoint_ip: clkmgr_aon
+        }
+        clk_usb_i:
+        {
+          src_name: usb
+          endpoint_ip: clkmgr_aon
+        }
+        clk_aon_i:
+        {
+          src_name: aon
+          endpoint_ip: clkmgr_aon
+        }
+      }
+      ft_clks:
+      {
+        clk_io_div4_powerup:
+        {
+          src_name: io_div4
+          endpoint_ip: pwrmgr_aon
+        }
+        clk_aon_powerup:
+        {
+          src_name: aon
+          endpoint_ip: pwrmgr_aon
+        }
+        clk_main_powerup:
+        {
+          src_name: main
+          endpoint_ip: rstmgr_aon
+        }
+        clk_io_powerup:
+        {
+          src_name: io
+          endpoint_ip: rstmgr_aon
+        }
+        clk_usb_powerup:
+        {
+          src_name: usb
+          endpoint_ip: rstmgr_aon
+        }
+        clk_io_div2_powerup:
+        {
+          src_name: io_div2
+          endpoint_ip: rstmgr_aon
+        }
+        clk_aon_secure:
+        {
+          src_name: aon
+          endpoint_ip: ast
+        }
+        clk_aon_peri:
+        {
+          src_name: aon
+          endpoint_ip: usbdev
+        }
+        clk_aon_timers:
+        {
+          src_name: aon
+          endpoint_ip: aon_timer_aon
+        }
+      }
+      rg_clks:
+      {
+        clk_main_infra:
+        {
+          src_name: main
+          endpoint_ip: flash_ctrl
+        }
+        clk_io_div4_infra:
+        {
+          src_name: io_div4
+          endpoint_ip: flash_ctrl
+        }
+        clk_io_infra:
+        {
+          src_name: io
+          endpoint_ip: peri
+        }
+        clk_usb_infra:
+        {
+          src_name: usb
+          endpoint_ip: peri
+        }
+        clk_io_div4_secure:
+        {
+          src_name: io_div4
+          endpoint_ip: ast
+        }
+        clk_main_secure:
+        {
+          src_name: main
+          endpoint_ip: ast
+        }
+        clk_io_div4_timers:
+        {
+          src_name: io_div4
+          endpoint_ip: rv_timer
+        }
+      }
+      sw_clks:
+      {
+        clk_io_div4_peri:
+        {
+          src_name: io_div4
+          endpoint_ip: uart0
+        }
+        clk_io_div2_peri:
+        {
+          src_name: io_div2
+          endpoint_ip: spi_device
+        }
+        clk_io_peri:
+        {
+          src_name: io
+          endpoint_ip: spi_host0
+        }
+        clk_usb_peri:
+        {
+          src_name: usb
+          endpoint_ip: usbdev
+        }
+      }
+      hint_clks:
+      {
+        clk_main_aes:
+        {
+          src_name: main
+          endpoint_ip: aes
+        }
+      }
+    }
+    hint_names:
+    {
+      clk_main_aes: HintMainAes
+    }
+    parent_child_clks:
+    {
+      main:
+      [
+        main
+      ]
+      io:
+      [
+        io
+        io_div2
+        io_div4
+      ]
+      usb:
+      [
+        usb
+      ]
+    }
+    exported_clks: {}
+    number_of_clock_groups: 8
+    topname: englishbreakfast
+  }
+}

@@ -32,7 +32,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top:sim_verilator_base",
     ],
     kind = "rom",
     linker_script = ":linker_script",
@@ -80,8 +80,8 @@ cc_library(
         "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_englishbreakfast/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:rstmgr_intf",
@@ -104,7 +104,7 @@ cc_library(
 alias(
     name = "target_test_rom_lib",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_lib",
+        "//hw/top:is_englishbreakfast": ":english_breakfast_test_rom_lib",
         "//conditions:default": ":earl_grey_test_rom_lib",
     }),
     visibility = ["//visibility:private"],
@@ -123,8 +123,8 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_englishbreakfast/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:multibits",
@@ -142,7 +142,7 @@ cc_library(
 alias(
     name = "test_rom_manifest",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
+        "//hw/top:is_englishbreakfast": ":english_breakfast_test_rom_manifest",
         "//conditions:default": "//sw/device/silicon_creator/lib:manifest",
     }),
 )
@@ -162,11 +162,11 @@ cc_library(
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:ast_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top:clkmgr_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -199,7 +199,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top:sim_verilator": None,
     },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",

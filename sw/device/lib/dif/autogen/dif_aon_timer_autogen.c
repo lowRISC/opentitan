@@ -33,6 +33,19 @@ dif_result_t dif_aon_timer_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_init_from_dt(const dt_aon_timer_t *dt,
+                                        dif_aon_timer_t *aon_timer) {
+  if (aon_timer == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  aon_timer->base_addr = mmio_region_from_addr(
+      dt_aon_timer_reg_block(dt, kDtAonTimerRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_aon_timer_alert_force(const dif_aon_timer_t *aon_timer,
                                        dif_aon_timer_alert_t alert) {
   if (aon_timer == NULL) {
@@ -62,10 +75,10 @@ dif_result_t dif_aon_timer_alert_force(const dif_aon_timer_t *aon_timer,
 static bool aon_timer_get_irq_bit_index(dif_aon_timer_irq_t irq,
                                         bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifAonTimerIrqWkupTimerExpired:
+    case kDtAonTimerIrqWkupTimerExpired:
       *index_out = AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT;
       break;
-    case kDifAonTimerIrqWdogTimerBark:
+    case kDtAonTimerIrqWdogTimerBark:
       *index_out = AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT;
       break;
     default:
@@ -84,8 +97,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_irq_get_type(const dif_aon_timer_t *aon_timer,
                                         dif_aon_timer_irq_t irq,
                                         dif_irq_type_t *type) {
-  if (aon_timer == NULL || type == NULL ||
-      irq == kDifAonTimerIrqWdogTimerBark + 1) {
+  if (aon_timer == NULL || type == NULL || irq == kDtAonTimerIrqCount) {
     return kDifBadArg;
   }
 

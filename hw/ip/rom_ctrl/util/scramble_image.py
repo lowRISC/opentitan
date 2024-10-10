@@ -110,17 +110,21 @@ class Scrambler:
     subst_perm_rounds = 2
     num_rounds_half = 3
 
-    def __init__(self, nonce: int, key: int, rom_size_words: int):
+    def __init__(self, disable: bool, nonce: int, key: int, rom_size_words: int):
         assert 0 <= nonce < (1 << 64)
         assert 0 <= key < (1 << 128)
         assert 0 < rom_size_words < (1 << 64)
 
+        self.disable = disable
         self.nonce = nonce
         self.key = key
         self.rom_size_words = rom_size_words
         self.config = load_secded_config()
 
         self._addr_width = (rom_size_words - 1).bit_length()
+
+    def is_disabled(self):
+        return self.disable
 
     @staticmethod
     def _get_rom_ctrl(modules: List[object]) -> _UDict:
@@ -140,12 +144,18 @@ class Scrambler:
     def _get_params(module: _UDict) -> Dict[str, _UDict]:
         params = module.get('param_list')
         assert isinstance(params, list)
+        param_decl = module.get('param_decl')
+        assert isinstance(param_decl, dict)
 
         named_params = {}  # type: Dict[str, _UDict]
         for param in params:
             name = param.get('name')
             assert isinstance(name, str)
             assert name not in named_params
+            # If we find a correspond parameter declaration, we add it
+            # to returned dictionary.
+            if name in param_decl:
+                param["param_decl"] = param_decl[name]
             named_params[name] = param
 
         return named_params
@@ -158,7 +168,14 @@ class Scrambler:
 
         default = param.get('default')
         assert isinstance(default, str)
-        int_val = int(default, 0)
+        value = param.get('param_decl', default)
+        # We might need to handle SystemVerilator syntax <width>'b<value>
+        if "'b" in value:
+            val_width, val = value.split("'b")
+            assert int(val_width) == width, "parameter {} has value '{}' of unexpected width (expected {})".format(name, value, width)
+            # Python can parse in base 2 with the '0b' prefix
+            value = '0b' + val
+        int_val = int(value, 0)
         assert 0 <= int_val < (1 << width)
         return int_val
 
@@ -176,10 +193,11 @@ class Scrambler:
         rom_ctrl = Scrambler._get_rom_ctrl(modules)
 
         params = Scrambler._get_params(rom_ctrl)
+        disable = Scrambler._get_param_value(params, 'SecDisableScrambling', 1)
         nonce = Scrambler._get_param_value(params, 'RndCnstScrNonce', 64)
         key = Scrambler._get_param_value(params, 'RndCnstScrKey', 128)
 
-        return Scrambler(nonce, key, rom_size_words)
+        return Scrambler(disable, nonce, key, rom_size_words)
 
     def flatten(self, mem: MemFile) -> MemFile:
         '''Flatten and pad mem up to the correct size
@@ -361,6 +379,14 @@ def main() -> int:
     # Flatten the file, padding with pseudo-random data and ensuring it's
     # exactly scrambler.rom_size_words words long.
     clr_flat = scrambler.flatten(clr_mem)
+
+    # If scrambling is disabled then the memory width is 32 bits, ie no ECC
+    # and the data is not scrambled. There is also no hash added.
+
+    if scrambler.is_disabled():
+        print("scrambling disabled")
+        clr_flat.write_vmem(args.outfile)
+        return 0
 
     # Extend from 32 bits to 39 by adding Hsiao (39,32) ECC bits.
     clr_flat.add_ecc32()

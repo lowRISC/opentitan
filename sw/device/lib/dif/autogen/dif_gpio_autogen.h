@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_gpio.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_gpio {
  * @param base_addr The MMIO base address of the gpio peripheral.
  * @param[out] gpio Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio);
+
+/**
+ * Creates a new handle for a(n) gpio peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] gpio Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_init_from_dt(const dt_gpio_t *dt, dif_gpio_t *gpio);
 
 /**
  * A gpio alert type.
@@ -73,44 +89,52 @@ dif_result_t dif_gpio_alert_force(const dif_gpio_t *gpio,
 
 /**
  * A gpio interrupt request type.
+ *
+ * DEPRECATED Use `dt_gpio_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_gpio_irq {
-  /**
-   * Raised if any of GPIO pin detects configured interrupt mode
-   */
-  kDifGpioIrqGpio0 = 0,
-  kDifGpioIrqGpio1 = 1,
-  kDifGpioIrqGpio2 = 2,
-  kDifGpioIrqGpio3 = 3,
-  kDifGpioIrqGpio4 = 4,
-  kDifGpioIrqGpio5 = 5,
-  kDifGpioIrqGpio6 = 6,
-  kDifGpioIrqGpio7 = 7,
-  kDifGpioIrqGpio8 = 8,
-  kDifGpioIrqGpio9 = 9,
-  kDifGpioIrqGpio10 = 10,
-  kDifGpioIrqGpio11 = 11,
-  kDifGpioIrqGpio12 = 12,
-  kDifGpioIrqGpio13 = 13,
-  kDifGpioIrqGpio14 = 14,
-  kDifGpioIrqGpio15 = 15,
-  kDifGpioIrqGpio16 = 16,
-  kDifGpioIrqGpio17 = 17,
-  kDifGpioIrqGpio18 = 18,
-  kDifGpioIrqGpio19 = 19,
-  kDifGpioIrqGpio20 = 20,
-  kDifGpioIrqGpio21 = 21,
-  kDifGpioIrqGpio22 = 22,
-  kDifGpioIrqGpio23 = 23,
-  kDifGpioIrqGpio24 = 24,
-  kDifGpioIrqGpio25 = 25,
-  kDifGpioIrqGpio26 = 26,
-  kDifGpioIrqGpio27 = 27,
-  kDifGpioIrqGpio28 = 28,
-  kDifGpioIrqGpio29 = 29,
-  kDifGpioIrqGpio30 = 30,
-  kDifGpioIrqGpio31 = 31,
-} dif_gpio_irq_t;
+/**
+ * Raised if any of GPIO pin detects configured interrupt mode
+ */
+#define kDifGpioIrqGpio0 kDtGpioIrqGpio0
+#define kDifGpioIrqGpio1 kDtGpioIrqGpio1
+#define kDifGpioIrqGpio2 kDtGpioIrqGpio2
+#define kDifGpioIrqGpio3 kDtGpioIrqGpio3
+#define kDifGpioIrqGpio4 kDtGpioIrqGpio4
+#define kDifGpioIrqGpio5 kDtGpioIrqGpio5
+#define kDifGpioIrqGpio6 kDtGpioIrqGpio6
+#define kDifGpioIrqGpio7 kDtGpioIrqGpio7
+#define kDifGpioIrqGpio8 kDtGpioIrqGpio8
+#define kDifGpioIrqGpio9 kDtGpioIrqGpio9
+#define kDifGpioIrqGpio10 kDtGpioIrqGpio10
+#define kDifGpioIrqGpio11 kDtGpioIrqGpio11
+#define kDifGpioIrqGpio12 kDtGpioIrqGpio12
+#define kDifGpioIrqGpio13 kDtGpioIrqGpio13
+#define kDifGpioIrqGpio14 kDtGpioIrqGpio14
+#define kDifGpioIrqGpio15 kDtGpioIrqGpio15
+#define kDifGpioIrqGpio16 kDtGpioIrqGpio16
+#define kDifGpioIrqGpio17 kDtGpioIrqGpio17
+#define kDifGpioIrqGpio18 kDtGpioIrqGpio18
+#define kDifGpioIrqGpio19 kDtGpioIrqGpio19
+#define kDifGpioIrqGpio20 kDtGpioIrqGpio20
+#define kDifGpioIrqGpio21 kDtGpioIrqGpio21
+#define kDifGpioIrqGpio22 kDtGpioIrqGpio22
+#define kDifGpioIrqGpio23 kDtGpioIrqGpio23
+#define kDifGpioIrqGpio24 kDtGpioIrqGpio24
+#define kDifGpioIrqGpio25 kDtGpioIrqGpio25
+#define kDifGpioIrqGpio26 kDtGpioIrqGpio26
+#define kDifGpioIrqGpio27 kDtGpioIrqGpio27
+#define kDifGpioIrqGpio28 kDtGpioIrqGpio28
+#define kDifGpioIrqGpio29 kDtGpioIrqGpio29
+#define kDifGpioIrqGpio30 kDtGpioIrqGpio30
+#define kDifGpioIrqGpio31 kDtGpioIrqGpio31
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_gpio_irq_t dif_gpio_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -129,7 +153,7 @@ typedef uint32_t dif_gpio_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_get_type(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
+dif_result_t dif_gpio_irq_get_type(const dif_gpio_t *gpio, dif_gpio_irq_t,
                                    dif_irq_type_t *type);
 
 /**
@@ -152,7 +176,7 @@ dif_result_t dif_gpio_irq_get_state(const dif_gpio_t *gpio,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
+dif_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio, dif_gpio_irq_t,
                                      bool *is_pending);
 
 /**
@@ -186,8 +210,7 @@ dif_result_t dif_gpio_irq_acknowledge_all(const dif_gpio_t *gpio);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
-                                      dif_gpio_irq_t irq);
+dif_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio, dif_gpio_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -199,7 +222,7 @@ dif_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
+dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t,
                                 const bool val);
 
 /**
@@ -220,8 +243,8 @@ typedef uint32_t dif_gpio_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio,
-                                      dif_gpio_irq_t irq, dif_toggle_t *state);
+dif_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio, dif_gpio_irq_t,
+                                      dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -232,8 +255,8 @@ dif_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio,
-                                      dif_gpio_irq_t irq, dif_toggle_t state);
+dif_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio, dif_gpio_irq_t,
+                                      dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

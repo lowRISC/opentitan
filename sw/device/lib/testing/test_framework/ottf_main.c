@@ -28,8 +28,10 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-// TODO: make this toplevel agnostic.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "devicetables.h"
+
+static const dt_rv_core_ibex_t *kRvCoreIbexDt = &kDtRvCoreIbex[0];
+static const dt_rstmgr_t *kRstmgrDt = &kDtRstmgr[0];
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'm')
 
@@ -153,8 +155,7 @@ void _ottf_main(void) {
 
   // Clear reset reason register.
   dif_rstmgr_t rstmgr;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
   if (kOttfTestConfig.clear_reset_reason) {
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
   }
@@ -170,8 +171,8 @@ void _ottf_main(void) {
   // Initialize a global random number generator testutil context to provide
   // tests with a source of entropy for randomizing test behaviors.
   dif_rv_core_ibex_t rv_core_ibex;
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(
+      kRvCoreIbexDt,
       &rv_core_ibex));
   rand_testutils_rng_ctx = rand_testutils_init(&rv_core_ibex);
 

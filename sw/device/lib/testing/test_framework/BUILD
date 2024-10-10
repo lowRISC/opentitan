@@ -165,7 +165,7 @@ cc_library(
 alias(
     name = "test_framework_manifest_def",
     actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_framework_manifest_def",
+        "//hw/top:is_englishbreakfast": ":english_breakfast_test_framework_manifest_def",
         "//conditions:default": "//sw/device/silicon_creator/lib:manifest_def",
     }),
 )
@@ -183,7 +183,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:rv_plic",
@@ -258,6 +258,7 @@ cc_library(
         ":ottf_start",
         ":ottf_test_config",
         ":status",
+        "//hw/top:devicetables",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -320,7 +321,7 @@ dual_cc_library(
             "//sw/device/lib/runtime:ibex",
             "//sw/device/lib/runtime:irq",
             "//sw/device/lib/testing:spi_device_testutils",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:devicetables",
         ],
         shared = [
             "//sw/device/lib/base:status",
@@ -399,7 +400,7 @@ cc_library(
         ":check",
         ":freertos_config",
         ":ottf_start",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",

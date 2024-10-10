@@ -4,8 +4,7 @@
 
 load(
     "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
+    "autogen_hjson_sw_headers",
 )
 load(
     "//rules:otp.bzl",
@@ -66,16 +65,8 @@ filegroup(
 
 exports_files(["otp_ctrl_img.h.tpl"])
 
-autogen_hjson_c_header(
-    name = "otp_ctrl_c_regs",
-    srcs = [
-        "otp_ctrl.hjson",
-    ],
-    node = "core",
-)
-
-autogen_hjson_rust_header(
-    name = "otp_ctrl_rust_regs",
+autogen_hjson_sw_headers(
+    name_prefix = "otp_ctrl",
     srcs = [
         "otp_ctrl.hjson",
     ],

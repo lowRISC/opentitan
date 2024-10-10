@@ -1,0 +1,35 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+filesets:
+  files_rtl:
+    depend:
+    - lowrisc:ibex:ibex_pkg
+    - lowrisc:ip:otbn_pkg
+    - lowrisc:constants:top_pkg
+    - lowrisc:prim:util
+    - lowrisc:ip:lc_ctrl_pkg
+    - lowrisc:ip_interfaces:clkmgr_pkg
+    - lowrisc:ip_interfaces:flash_ctrl_pkg
+    - lowrisc:ip_interfaces:pwrmgr_pkg
+    - lowrisc:ip_interfaces:rstmgr_pkg
+    - lowrisc:prim:clock_mux2
+    - lowrisc:prim:all
+    - lowrisc:prim:clock_gating
+    - lowrisc:prim:clock_buf
+    - lowrisc:prim:clock_div
+    - lowrisc:systems:sensor_ctrl
+    - lowrisc:systems:ast_pkg
+    - lowrisc:systems:clkgen_xil7series
+    file_type: systemVerilogSource
+    files:
+    - rtl/autogen/top_englishbreakfast_rnd_cnst_pkg.sv
+    - rtl/autogen/top_englishbreakfast_pkg.sv
+    - rtl/autogen/top_englishbreakfast.sv
+    - rtl/autogen/chip_englishbreakfast_cw305.sv
+name: lowrisc:systems:generated-topgen
+targets:
+  default:
+    filesets:
+    - files_rtl

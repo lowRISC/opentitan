@@ -20,9 +20,11 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
-// TODO: make this toplevel agnostic.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "devicetables.h"
 #include "spi_device_regs.h"  // Generated.
+
+static const dt_rv_plic_t *kRvPlicDt = &kDtRvPlic[0];
+static const dt_uart_t *kUart0Dt = &kDtUart[0];
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'c')
 
@@ -43,7 +45,7 @@ enum {
   /**
    * HART PLIC Target.
    */
-  kPlicTarget = kTopEarlgreyPlicTargetIbex0,
+  kPlicTarget = 0,
 };
 
 // Potential DIF handles for OTTF console communication.
@@ -129,7 +131,7 @@ void ottf_console_init(void) {
       // configured. The default is to use UART0.
       if (base_addr == 0) {
         CHECK(kOttfTestConfig.console.type == kOttfConsoleUart);
-        base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
+        base_addr = dt_uart_reg_block(kUart0Dt, kDtUartRegBlockCore);
       }
 
       ottf_console_configure_uart(base_addr);
@@ -256,24 +258,16 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
 }
 
 static uint32_t get_flow_control_watermark_plic_id(void) {
-  switch (kOttfTestConfig.console.base_addr) {
-#if !OT_IS_ENGLISH_BREAKFAST
-    case TOP_EARLGREY_UART2_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart2RxWatermark;
-    case TOP_EARLGREY_UART3_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart3RxWatermark;
-#endif
-    case TOP_EARLGREY_UART1_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart1RxWatermark;
-    case TOP_EARLGREY_UART0_BASE_ADDR:
-    default:
-      return kTopEarlgreyPlicIrqIdUart0RxWatermark;
+  for (size_t i = 0; i < kDtUartCount; i++) {
+    if (kOttfTestConfig.console.base_addr == dt_uart_reg_block(&kDtUart[i], kDtUartRegBlockCore)) {
+      return dt_uart_irq_to_plic_id(&kDtUart[i], kDtUartIrqRxWatermark);
+    }
   }
+  return dt_uart_irq_to_plic_id(kUart0Dt, kDtUartIrqRxWatermark);
 }
 
 void ottf_console_flow_control_enable(void) {
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &ottf_plic));
 
   dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));

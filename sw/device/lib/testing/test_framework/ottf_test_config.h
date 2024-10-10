@@ -21,6 +21,8 @@ typedef struct ottf_console {
   ottf_console_type_t type;
   /**
    * Base address of the communication IP interface to use for the OTTF console.
+   *
+   * FIXME We need to change that to use values in an enumeration.
    */
   uintptr_t base_addr;
   /**

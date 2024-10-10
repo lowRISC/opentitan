@@ -25,6 +25,19 @@ dif_result_t dif_spi_device_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_init_from_dt(const dt_spi_device_t *dt,
+                                         dif_spi_device_t *spi_device) {
+  if (spi_device == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  spi_device->base_addr = mmio_region_from_addr(
+      dt_spi_device_reg_block(dt, kDtSpiDeviceRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
                                         dif_spi_device_alert_t alert) {
   if (spi_device == NULL) {
@@ -54,28 +67,28 @@ dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
 static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
                                          bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSpiDeviceIrqUploadCmdfifoNotEmpty:
+    case kDtSpiDeviceIrqUploadCmdfifoNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT;
       break;
-    case kDifSpiDeviceIrqUploadPayloadNotEmpty:
+    case kDtSpiDeviceIrqUploadPayloadNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_NOT_EMPTY_BIT;
       break;
-    case kDifSpiDeviceIrqUploadPayloadOverflow:
+    case kDtSpiDeviceIrqUploadPayloadOverflow:
       *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT;
       break;
-    case kDifSpiDeviceIrqReadbufWatermark:
+    case kDtSpiDeviceIrqReadbufWatermark:
       *index_out = SPI_DEVICE_INTR_COMMON_READBUF_WATERMARK_BIT;
       break;
-    case kDifSpiDeviceIrqReadbufFlip:
+    case kDtSpiDeviceIrqReadbufFlip:
       *index_out = SPI_DEVICE_INTR_COMMON_READBUF_FLIP_BIT;
       break;
-    case kDifSpiDeviceIrqTpmHeaderNotEmpty:
+    case kDtSpiDeviceIrqTpmHeaderNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_TPM_HEADER_NOT_EMPTY_BIT;
       break;
-    case kDifSpiDeviceIrqTpmRdfifoCmdEnd:
+    case kDtSpiDeviceIrqTpmRdfifoCmdEnd:
       *index_out = SPI_DEVICE_INTR_COMMON_TPM_RDFIFO_CMD_END_BIT;
       break;
-    case kDifSpiDeviceIrqTpmRdfifoDrop:
+    case kDtSpiDeviceIrqTpmRdfifoDrop:
       *index_out = SPI_DEVICE_INTR_COMMON_TPM_RDFIFO_DROP_BIT;
       break;
     default:
@@ -94,8 +107,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_get_type(const dif_spi_device_t *spi_device,
                                          dif_spi_device_irq_t irq,
                                          dif_irq_type_t *type) {
-  if (spi_device == NULL || type == NULL ||
-      irq == kDifSpiDeviceIrqTpmRdfifoDrop + 1) {
+  if (spi_device == NULL || type == NULL || irq == kDtSpiDeviceIrqCount) {
     return kDifBadArg;
   }
 

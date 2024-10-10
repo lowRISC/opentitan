@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/bootstrap.h"
 
+#include "devicetables.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -13,8 +14,9 @@
 
 #include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
+
+static const dt_gpio_t *kGpioDt = &kDtGpio[0];
 
 rom_error_t bootstrap_chip_erase(void) {
   flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
@@ -48,9 +50,9 @@ hardened_bool_t bootstrap_requested(void) {
   // enable the internal pull-downs on the strap pins.  As such, an external
   // weak pull-up will not be detected as a logic-high.
   uint32_t res = launder32(kHardenedBoolTrue) ^ SW_STRAP_BOOTSTRAP;
-  res ^=
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &
-      SW_STRAP_MASK;
+  res ^= abs_mmio_read32(dt_gpio_reg_block(kGpioDt, kDtGpioRegBlockCore) +
+                         GPIO_DATA_IN_REG_OFFSET) &
+         SW_STRAP_MASK;
   if (launder32(res) != kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }
