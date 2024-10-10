@@ -101,7 +101,7 @@ status_t execute_test(void) {
 
   CHECK_DIF_OK(dif_aes_load_data(&aes, plain_text[0]));
 
-  LOG_INFO("Started  AES Encrypt with load function");
+  LOG_INFO("Started AES Encrypt with load function");
 
   dif_aes_iv_t iv_encrypt1;
   CHECK_DIF_OK(dif_aes_read_iv(&aes, &iv_encrypt1));
