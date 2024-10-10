@@ -296,6 +296,10 @@
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
                                         when KMAC mode is enabled
             - ErrSwCmdSequence: covers that SW issues commands to the KMAC out of order
+            - Shadow register update alert: covers that the an recoverable alert is triggered on active
+                                            shadow register update error
+            - ErrSwHashingWithoutEntropyReady: covers that starting a hash operation when the entropy is
+                                               not ready triggers an error
 
             Some of the error conditions may be difficult to reproduce in silicon. In such cases,
             update the test description to capture any limitations.
@@ -305,7 +309,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:kmac_error_conditions_test"]
     }
   ]
 }
