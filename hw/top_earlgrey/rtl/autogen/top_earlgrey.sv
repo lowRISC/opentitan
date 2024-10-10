@@ -1265,6 +1265,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_1p_cfg),
+      .lsio_trigger_o(),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
 
@@ -1309,6 +1310,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_1p_cfg),
+      .lsio_trigger_o(),
       .tl_i(i2c1_tl_req),
       .tl_o(i2c1_tl_rsp),
 
@@ -1353,6 +1355,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_1p_cfg),
+      .lsio_trigger_o(),
       .tl_i(i2c2_tl_req),
       .tl_o(i2c2_tl_rsp),
 

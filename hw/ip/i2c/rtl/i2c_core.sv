@@ -20,6 +20,8 @@ module i2c_core import i2c_pkg::*;
   input                            sda_i,
   output logic                     sda_o,
 
+  output logic                     lsio_trigger_o,
+
   output logic                     intr_fmt_threshold_o,
   output logic                     intr_rx_threshold_o,
   output logic                     intr_acq_threshold_o,
@@ -322,6 +324,7 @@ module i2c_core import i2c_pkg::*;
   // ACQ FIFO level above programmed threshold?
   assign acq_gt_threshold = (MaxFifoDepthW'(acq_fifo_depth) > i2c_fifo_acq_thresh);
 
+  assign lsio_trigger_o    = rx_gt_threshold;
   assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
   assign event_acq_stretch = acq_fifo_full || target_ack_ctrl_stretching;
 
