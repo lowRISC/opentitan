@@ -245,6 +245,7 @@
       reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40040000",
       param_decl: {
+        GpioAsHwStrapsEn: "0",
         GpioAsyncOn: "1"
       }
     },
