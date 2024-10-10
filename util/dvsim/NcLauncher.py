@@ -72,7 +72,6 @@ class NcLauncher(Launcher):
         self.create_run_sh(odir, cmd)
 
         return (['nc', 'run', '-D',
-                 '-e', 'SNAPSHOT',
                  '-nodb', '-forcelog',
                  '-l', log_file,
                  '-postcmd', postcmd,
