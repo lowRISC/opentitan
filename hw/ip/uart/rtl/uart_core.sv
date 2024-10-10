@@ -15,6 +15,8 @@ module uart_core (
   input                  rx,
   output logic           tx,
 
+  output logic           lsio_trigger_o,
+
   output logic           intr_tx_watermark_o,
   output logic           intr_tx_empty_o,
   output logic           intr_rx_watermark_o,
@@ -347,7 +349,14 @@ module uart_core (
     event_rx_watermark = rx_fifo_depth >= rx_watermark_thresh;
   end
 
-
+  // Flop trigger signal to avoid glitches on the output
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lsio_trigger_o <= 1'b0;
+    end else begin
+      lsio_trigger_o <= event_tx_watermark | event_rx_watermark;
+    end
+  end
 
   // rx timeout interrupt
   assign uart_rxto_en  = reg2hw.timeout_ctrl.en.q;
