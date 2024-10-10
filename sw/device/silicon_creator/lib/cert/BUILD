@@ -35,6 +35,12 @@ certificate_template(
 )
 
 certificate_template(
+    name = "uds_cwt_template",
+    template = "uds_cwt.hjson",
+    cert_format = "cwt",
+)
+
+certificate_template(
     name = "tpm_ek_template",
     template = "tpm_ek.hjson",
 )
