@@ -4,9 +4,10 @@
 
 import logging as log
 import sys
+from typing import Any, Dict
 
 try:
-    import enlighten
+    import enlighten  # type: ignore
     ENLIGHTEN_EXISTS = True
 except ImportError:
     ENLIGHTEN_EXISTS = False
@@ -20,19 +21,24 @@ class StatusPrinter:
     same.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def print_header(self, msg):
+    def print_header(self, msg: str) -> None:
         pass
 
-    def init_target(self, target, msg):
+    def init_target(self, target: str, msg: str) -> None:
         pass
 
-    def update_target(self, target, hms, msg, perc, running):
+    def update_target(self,
+                      target: str,
+                      hms: str,
+                      msg: str,
+                      perc: float,
+                      running: str) -> None:
         pass
 
-    def exit(self):
+    def exit(self) -> None:
         pass
 
 
@@ -59,15 +65,15 @@ class TtyStatusPrinter(StatusPrinter):
     header_fmt = hms_fmt + u' [{target:^13s}]: [{msg}]'
     status_fmt = header_fmt + u' {perc:3.0f}%  {running}'
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Once a target is complete, we no longer need to update it - we can
         # just skip it. Maintaining this here provides a way to print the status
         # one last time when it reaches 100%. It is much easier to do that here
         # than in the Scheduler class.
         super().__init__()
-        self.target_done = {}
+        self.target_done = {}  # type: Dict[str, bool]
 
-    def print_header(self, msg):
+    def print_header(self, msg: str) -> None:
         '''Initilize / print the header bar.
 
         The header bar contains an introductory message such as the legend of
@@ -75,7 +81,7 @@ class TtyStatusPrinter(StatusPrinter):
 
         log.info(self.header_fmt.format(hms="", target="legend", msg=msg))
 
-    def init_target(self, target, msg):
+    def init_target(self, target: str, msg: str) -> None:
         '''Initialize the status bar for each target.'''
 
         self.target_done[target] = False
@@ -84,7 +90,8 @@ class TtyStatusPrinter(StatusPrinter):
         """Truncates the list of running items to 30 character string."""
         return running[:28] + (running[28:] and "..")
 
-    def update_target(self, target, hms, msg, perc, running):
+    def update_target(self, target: str, hms: str,
+                      msg: str, perc: float, running: str) -> None:
         '''Periodically update the status bar for each target.'''
 
         if self.target_done[target]:
@@ -98,11 +105,6 @@ class TtyStatusPrinter(StatusPrinter):
                                    running=self._trunc_running(running)))
         if perc == 100:
             self.target_done[target] = True
-
-    def exit(self):
-        '''Do cleanup activities before exitting.'''
-
-        pass
 
 
 class EnlightenStatusPrinter(TtyStatusPrinter):
@@ -121,15 +123,15 @@ class EnlightenStatusPrinter(TtyStatusPrinter):
     example - it needs to be attached to a TTY enabled stream.
     '''
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         # Initialize the status_bars for header and the targets .
         self.manager = enlighten.get_manager()
-        self.status_header = None
-        self.status_target = {}
+        self.status_header: Any = None
+        self.status_target: Dict[str, Any] = {}
 
-    def print_header(self, msg):
+    def print_header(self, msg: str) -> None:
         self.status_header = self.manager.status_bar(
             status_format=self.header_fmt,
             hms="",
@@ -138,7 +140,7 @@ class EnlightenStatusPrinter(TtyStatusPrinter):
             "Q: queued, D: dispatched, P: passed, F: failed, K: killed, T: total"
         )
 
-    def init_target(self, target, msg):
+    def init_target(self, target: str, msg: str) -> None:
         super().init_target(target, msg)
         self.status_target[target] = self.manager.status_bar(
             status_format=self.status_fmt,
@@ -148,7 +150,8 @@ class EnlightenStatusPrinter(TtyStatusPrinter):
             perc=0.0,
             running="")
 
-    def update_target(self, target, hms, msg, perc, running):
+    def update_target(self, target: str, hms: str,
+                      msg: str, perc: float, running: str) -> None:
         if self.target_done[target]:
             return
 
@@ -159,13 +162,13 @@ class EnlightenStatusPrinter(TtyStatusPrinter):
         if perc == 100:
             self.target_done[target] = True
 
-    def exit(self):
+    def exit(self) -> None:
         self.status_header.close()
         for target in self.status_target:
             self.status_target[target].close()
 
 
-def get_status_printer(interactive):
+def get_status_printer(interactive: bool) -> StatusPrinter:
     """Factory method that returns a status printer instance.
 
     If ENLIGHTEN_EXISTS (enlighten is installed) and stdout is a TTY, then
