@@ -14,12 +14,15 @@ to the command line or to a script file.
 """
 
 import argparse
+from typing import List, Optional
 
 
 class qsubOptions():
     "A data type meant to collect qsub options. See man qsub for information"
 
-    def __init__(self, optstring='', prog='qsub'):
+    def __init__(self,
+                 optstring: str = '',
+                 prog: str = 'qsub') -> None:
         # Which SGE command are we going to work with?
         self.prog = prog
         sge_program_names = [
@@ -1742,11 +1745,11 @@ class qsubOptions():
         # Initialize with defaults
         self.parse('-cwd -V -j y -terse -pe lammpi 1 echo')
 
-    def parse(self, inputstring=''):
+    def parse(self, inputstring: str = '') -> object:
         """Helper method: parses a string"""
         return self.parse_args(inputstring.split())
 
-    def parse_args(self, args=None):
+    def parse_args(self, args: Optional[List[str]] = None) -> object:
         """Helper method: parses a list"""
         if args is None:
             self.args = self.parser.parse_args()  # default is sys.argv[1:]
@@ -1754,7 +1757,7 @@ class qsubOptions():
             self.args = self.parser.parse_args(args)
         return self.args
 
-    def write_qsub_script(self, filename, echo=False):
+    def write_qsub_script(self, filename: str, echo: bool = False) -> None:
         """
         Writes the entire command line to a qsub script
 
@@ -1788,7 +1791,7 @@ class qsubOptions():
         f.write('\n'.join(buf))
         f.close()
 
-    def execute(self, mode='local', path=''):
+    def execute(self, mode: str = 'local', path: str = '') -> str:
         """
         Executes qsub
 
@@ -1855,7 +1858,10 @@ class qsubOptions():
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell=True)
+            assert p.stdout is not None
             print(p.stdout.read())
+
+        return '(echo disabled)'
 
 
 if __name__ == '__main__':
