@@ -2,27 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/kmac_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
-#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"  // Generated.
-#include "kmac_regs.h"    // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
