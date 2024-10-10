@@ -129,7 +129,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_lc_ctrl"
+      name:   "tl_lc_ctrl__regs"
       act:    "req"
       package: "tlul_pkg"
     }

@@ -64,7 +64,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     )?;
     let mut encoded_lc_state = [0u32];
     jtag.read_memory32(
-        top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
+        top_earlgrey::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
         &mut encoded_lc_state,
     )?;
     assert_eq!(

@@ -82,7 +82,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_lc_base_vseq;
           switch_to_external_clock();
 
           // Check external clock is switched.
-          csr_spinwait(.ptr(ral.lc_ctrl.status.ext_clock_switched), .exp_data(1'b1),
+          csr_spinwait(.ptr(ral.lc_ctrl_regs.status.ext_clock_switched), .exp_data(1'b1),
                        .backdoor(1), .timeout_ns(100_000));
           `DV_CHECK(cfg.ast_ext_clk_vif.is_ext_clk_in_use(),
                     "external clock should be ready before state transition");
@@ -93,7 +93,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_lc_base_vseq;
                                    {<<8{lc_unlock_token}});
 
           // JTAG read out if LC_CTRL is configured to use external clock.
-          jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
+          jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.transition_ctrl.get_offset(),
                                               p_sequencer.jtag_sequencer_h, ext_clock_en);
           `DV_CHECK(ext_clock_en,
                     "jtag read lc_ctrl.transition_ctrl should be 1");
@@ -134,7 +134,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_lc_base_vseq;
           wait_lc_status(LcTransitionSuccessful);
 
           // JTAG read out if LC_CTRL is configured to use external clock.
-          jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
+          jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.transition_ctrl.get_offset(),
                                               p_sequencer.jtag_sequencer_h, ext_clock_en);
           // Check external clock is as expected by software.
           `DV_CHECK(ext_clock_en == ext_clock_en_array[0]);
