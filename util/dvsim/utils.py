@@ -16,10 +16,11 @@ import time
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
-import hjson
+import hjson  # type: ignore
 import mistletoe
-from premailer import transform
+from premailer import transform  # type: ignore
 
 # For verbose logging
 VERBOSE = 15
@@ -32,8 +33,9 @@ TS_FORMAT_LONG = "%A %B %d %Y %H:%M:%S UTC"
 
 
 # Run a command and get the result. Exit with error if the command did not
-# succeed. This is a simpler version of the run_cmd function below.
-def run_cmd(cmd):
+# succeed. This is a simpler version of the run_cmd_with_timeout function
+# below.
+def run_cmd(cmd: str) -> str:
     (status, output) = subprocess.getstatusoutput(cmd)
     if status:
         print(f'cmd {cmd} returned with status {status}', file=sys.stderr)
@@ -44,14 +46,16 @@ def run_cmd(cmd):
 # Run a command with a specified timeout. If the command does not finish before
 # the timeout, then it returns -1. Else it returns the command output. If the
 # command fails, it throws an exception and returns the stderr.
-def run_cmd_with_timeout(cmd, timeout=-1, exit_on_failure=1):
+def run_cmd_with_timeout(cmd: str,
+                         timeout: int = -1,
+                         exit_on_failure: int = 1) -> Tuple[bytes, int]:
     args = shlex.split(cmd)
     p = subprocess.Popen(args,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
 
     # If timeout is set, poll for the process to finish until timeout
-    result = ""
+    result = b""
     status = -1
     if timeout == -1:
         p.wait()
@@ -79,23 +83,23 @@ def run_cmd_with_timeout(cmd, timeout=-1, exit_on_failure=1):
 
 
 # Parse hjson and return a dict
-def parse_hjson(hjson_file):
-    hjson_cfg_dict = None
+def parse_hjson(hjson_file: Path) -> Dict[str, object]:
     try:
         log.debug("Parsing %s", hjson_file)
         f = open(hjson_file, 'r')
         text = f.read()
-        hjson_cfg_dict = hjson.loads(text, use_decimal=True)
+        hjson_cfg_dict = hjson.loads(text,
+                                     use_decimal=True)  # type: Dict[str, object]
         f.close()
+        return hjson_cfg_dict
     except Exception as e:
         log.fatal(
             "Failed to parse \"%s\" possibly due to bad path or syntax error.\n%s",
             hjson_file, e)
         sys.exit(1)
-    return hjson_cfg_dict
 
 
-def _stringify_wildcard_value(value):
+def _stringify_wildcard_value(value: object) -> str:
     '''Make sense of a wildcard value as a string (see subst_wildcards)
 
     Strings are passed through unchanged. Integer or boolean values are printed
@@ -103,20 +107,24 @@ def _stringify_wildcard_value(value):
     separated by spaces.
 
     '''
-    if type(value) is str:
+    if isinstance(value, str):
         return value
-
-    if type(value) in [bool, int]:
+    elif isinstance(value, bool):
         return str(int(value))
-
-    try:
+    elif isinstance(value, int):
+        return str(value)
+    elif isinstance(value, list):
         return ' '.join(_stringify_wildcard_value(x) for x in value)
-    except TypeError:
+    else:
         raise ValueError('Wildcard had value {!r} which is not of a supported '
                          'type.'.format(value))
 
 
-def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
+def _subst_wildcards(var: str,
+                     mdict: Dict[str, str],
+                     ignored: List[str],
+                     ignore_error: bool,
+                     seen: List[str]) -> Tuple[str, bool]:
     '''Worker function for subst_wildcards
 
     seen is a list of wildcards that have been expanded on the way to this call
@@ -219,7 +227,10 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
             idx += match.start() + len(value)
 
 
-def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
+def subst_wildcards(var: str,
+                    mdict: Dict[str, str],
+                    ignored_wildcards: List[str] = [],
+                    ignore_error: bool = False) -> str:
     '''Substitute any "wildcard" variables in the string var.
 
     var is the string to be substituted. mdict is a dictionary mapping
@@ -332,7 +343,7 @@ def find_and_substitute_wildcards(sub_dict,
     return sub_dict
 
 
-def md_results_to_html(title, css_file, md_text):
+def md_results_to_html(title: str, css_file: str, md_text: str) -> str:
     '''Convert results in md format to html. Add a little bit of styling.
     '''
     html_text = "<!DOCTYPE html>\n"
@@ -355,7 +366,7 @@ def md_results_to_html(title, css_file, md_text):
     return html_text
 
 
-def htmc_color_pc_cells(text):
+def htmc_color_pc_cells(text: str) -> str:
     '''This function finds cells in a html table that contain numerical values
     (and a few known strings) followed by a single space and an identifier.
     Depending on the identifier, it shades the cell in a specific way. A set of
@@ -401,7 +412,7 @@ def htmc_color_pc_cells(text):
     # value. "color-classes" are listed in ./style.css as follows: "cna"
     # for NA value, "c0" to "c10" for fp value falling between 0.00-9.99,
     # 10.00-19.99 ... 90.00-99.99, 100.0 respetively.
-    def color_cell(cell, cclass, indicator="%"):
+    def color_cell(cell: str, cclass: str, indicator: str = "%") -> str:
         op = cell.replace("<td", "<td class=\"" + cclass + "\"")
         # Remove the indicator.
         op = re.sub(r"\s*" + indicator + r"\s*", "", op)
@@ -503,7 +514,9 @@ def htmc_color_pc_cells(text):
     return text
 
 
-def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
+def print_msg_list(msg_list_title: str,
+                   msg_list: List[str],
+                   max_msg_count: int = -1) -> str:
     '''This function prints a list of messages to Markdown.
 
     The argument msg_list_title contains a string for the list title, whereas
@@ -531,7 +544,7 @@ def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
     return md_results
 
 
-def rm_path(path, ignore_error=False):
+def rm_path(path: Union[str, Path], ignore_error: bool = False) -> None:
     '''Removes the specified path if it exists.
 
     'path' is a Path-like object. If it does not exist, the function simply
@@ -558,7 +571,7 @@ def rm_path(path, ignore_error=False):
             raise exc
 
 
-def mk_path(path):
+def mk_path(path: Union[str, Path]) -> None:
     '''Create the specified path if it does not exist.
 
     'path' is a Path-like object. If it does exist, the function simply
@@ -572,7 +585,7 @@ def mk_path(path):
         sys.exit(1)
 
 
-def mk_symlink(path, link):
+def mk_symlink(path: str, link: Path) -> None:
     '''Create a symlink from the given path.
 
     'link' is a Path-like object. If it does exist, remove the existing link and
@@ -587,7 +600,9 @@ def mk_symlink(path, link):
             rm_path(link)
 
 
-def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
+def clean_odirs(odir: Union[str, Path],
+                max_odirs: int,
+                ts_format: str = TS_FORMAT) -> List[Path]:
     """Clean previous output directories.
 
     When running jobs, we may want to maintain a limited history of
@@ -616,7 +631,7 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     dirs = sorted([old for old in pdir.iterdir() if (old.is_dir() and
                                                      old.name != 'summary')],
                   key=os.path.getctime,
-                  reverse=True)
+                  reverse=True)  # type: List[Path]
 
     for old in dirs[max(0, max_odirs - 1):]:
         shutil.rmtree(old, ignore_errors=True)
@@ -624,7 +639,7 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     return [] if max_odirs == 0 else dirs[:max_odirs - 1]
 
 
-def check_bool(x):
+def check_bool(x: Union[bool, str]) -> bool:
     """check_bool checks if input 'x' either a bool or
        one of the following strings: ["true", "false"]
         It returns value as Bool type.
@@ -637,12 +652,13 @@ def check_bool(x):
         return (x.lower() == "true")
 
 
-def check_int(x):
+def check_int(x: object) -> int:
     """check_int checks if input 'x' is decimal integer.
         It returns value as an int type.
     """
     if isinstance(x, int):
         return x
-    if not x.isdecimal():
+    elif isinstance(x, str) and x.isdecimal():
+        return int(x)
+    else:
         raise RuntimeError("{} is not a decimal number".format(x))
-    return int(x)
