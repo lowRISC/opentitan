@@ -158,7 +158,9 @@ OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_init_nvm_then_reset(void);
 
 /**
- * Programs flash, restarts, and advances keymgr to CreatorRootKey state.
+ * Programs flash, restarts, and advances keymgr to CreatorRootKey state. Note
+ * that this function assumes that the key manager is in the initial reset state
+ * after ROM execution.
  *
  * This procedure essentially gets the keymgr into the first state where it can
  * be used for tests. Tests should call it before anything else, like below:
