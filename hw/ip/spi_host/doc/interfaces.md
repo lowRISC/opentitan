@@ -17,10 +17,11 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name   | Package::Struct             | Type    | Act   |   Width | Description   |
-|:------------|:----------------------------|:--------|:------|--------:|:--------------|
-| passthrough | spi_device_pkg::passthrough | req_rsp | rsp   |       1 |               |
-| tl          | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
+| Port Name    | Package::Struct             | Type    | Act   |   Width | Description                                                                                                                                    |
+|:-------------|:----------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| passthrough  | spi_device_pkg::passthrough | req_rsp | rsp   |       1 |                                                                                                                                                |
+| lsio_trigger | logic                       | uni     | req   |       1 | Self-clearing status trigger for the DMA. Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour. |
+| tl           | tlul_pkg::tl                | req_rsp | rsp   |       1 |                                                                                                                                                |
 
 ## Interrupts
 
