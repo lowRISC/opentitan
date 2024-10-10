@@ -397,6 +397,11 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   // Keep writing incoming bytes
   msg_fifo_write(data, len - leftover_len);
 
+  // Add random delay to reproduce the bug.
+  for (int i = 0; i < 10000; i = launder32(i + 1)) {
+    ;
+  }
+
   // Time to tell HMAC HWIP to stop, because we do not have enough message
   // bytes for another round.
   uint32_t cmd_reg =
