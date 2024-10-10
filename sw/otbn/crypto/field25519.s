@@ -8,93 +8,6 @@
  * signature scheme.
  */
 
-
-/**
- * Fully reduce a 510-bit number modulo p.
- *
- * Returns c = a mod p.
- *
- * Uses Solinas/pseudo-Mersenne reduction, which is based on the observation
- * that if a large number x is split into two so that the lower 255 bits are x0
- * and all bits above 255 are x1, then:
- *
- *   x = x0 + (2^255 * x1) \equiv (x0 + (19 * x1)) (mod p)
- *
- * If x is large, then x0 + 19 * x1 will be much smaller than x, because 19 <<
- * 2^255. This step can be repeated as necessary until a conditional
- * subtraction is enough to fully reduce.
- *
- * Note about register notations: in this code, [a:b] indicates that the
- * registers are adjacent and their contents can be logically concatenated to
- * get a single larger value. Otherwise, the notation is [a,b].
- *
- * This routine runs in constant time.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  w19: constant, w19 = 19
- * @param[in]  [w21:w20]: a, number to be reduced (a < 2^510)
- * @param[in]  MOD: p, modulus = 2^255 - 19
- * @param[in]  w31: all-zero
- * @param[out] w22: c, result = a mod p
- *
- * clobbered registers: w18, w20 to w22
- * clobbered flag groups: FG0
- */
-fe_reduce:
-  /* First Solinas step (reducing modulo 2p = 2^256-38). */
-
-  /* Multiply the high bits by 38 (fits in 64bx256b multiply). Note that the
-     last multiplication result is zero; it exists only to write back the
-     accumulator from previous multiplies.
-     w18,w22 <= 19 * (2 * w21) = 38 * a[509:256] */
-  bn.add                w18, w21, w21
-  bn.mulqacc.z          w19.0, w18.0, 0
-  bn.mulqacc.so  w22.L, w19.0, w18.1, 64
-  bn.mulqacc            w19.0, w18.2, 0
-  bn.mulqacc.so  w22.U, w19.0, w18.3, 64
-  bn.mulqacc.wo  w18,   w19.0, w31.0, 0
-
-  /* Add to low bits.
-     [w21:w20] <= w20 + [w18,w22] = a[255:0] + (38 * a[509:256]) = r1 */
-  bn.add  w20, w20, w22
-  bn.addc w21, w31, w18
-
-  /* First Solinas step is complete. At this point, the new intermediate result
-     r1 is at most 261 bits, because:
-                        a[509:256] = 254 bits
-                   38 * a[509:256] = 260 bits
-        a[255:0] + 38 * a[509:256] = 261 bits */
-
-  /* Begin second Solinas step (reducing by p = 2^255 - 19 this time). */
-
-  /* Extract the high 6 bits.
-     w21 <= [w21:w20] >> 255 = r1[260:255] */
-  bn.rshi w21, w21, w20 >> 255
-
-  /* Extract the low 255 bits.
-     w20 <= r1[254:0] */
-  bn.rshi w20, w20, w31 >> 255
-  bn.rshi w20, w31, w20 >> 1
-
-  /* Multiply the high bits by 19 (fits in 64bx64b multiply).
-     w21 <= w19 * w21 = 19 * r1[260:255] */
-  bn.mulqacc.wo.z w21, w19.0, w21.0, 0
-
-  /* Add to low bits (guaranteed by bounds not to carry).
-     w20 <= r1[254:0] + (19 * r1[260:255]) = r2 */
-  bn.add  w20, w20, w21
-
-  /* Second Solinas step is complete. At this point, we know r2 < 2 * p,
-     because of bounds implied by bit lengths:
-       r1[254:0] + 19 * r1[260:255] <= 2^255 - 1 + 19 * (2^6 - 1) < 2 * p */
-
-  /* Conditionally subtract modulus if p <= r2.
-     w22 <= r2 mod p = a mod p */
-  bn.addm  w22, w20, w31
-
-  ret
-
 /**
  * Multiply two field elements and reduce modulo p.
  *
@@ -105,11 +18,11 @@ fe_reduce:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w19: constant, w19 = 19
  * @param[in]  w22: a, first operand, a < 2^255
  * @param[in]  w23: b, second operand, b < 2^255
- * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in]  w30: constant, 38
  * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] w22: c, result
  *
  * clobbered registers: w18, w20 to w22
@@ -117,28 +30,85 @@ fe_reduce:
  */
 .globl fe_mul
 fe_mul:
-  /* Compute the raw 510-bit product.
-     [w21:w20] <= a * b */
-  bn.mulqacc.z          w22.0, w23.0,  0
-  bn.mulqacc            w22.1, w23.0, 64
-  bn.mulqacc.so  w20.L, w22.0, w23.1, 64
-  bn.mulqacc            w22.2, w23.0,  0
-  bn.mulqacc            w22.1, w23.1,  0
-  bn.mulqacc            w22.0, w23.2,  0
-  bn.mulqacc            w22.3, w23.0, 64
-  bn.mulqacc            w22.2, w23.1, 64
-  bn.mulqacc            w22.1, w23.2, 64
-  bn.mulqacc.so  w20.U, w22.0, w23.3, 64
-  bn.mulqacc            w22.3, w23.1,  0
-  bn.mulqacc            w22.2, w23.2,  0
-  bn.mulqacc            w22.1, w23.3,  0
-  bn.mulqacc            w22.3, w23.2, 64
-  bn.mulqacc.so  w21.L, w22.2, w23.3, 64
-  bn.mulqacc.so  w21.U, w22.3, w23.3,  0
+  /* Partial products for multiply-reduce:
 
-  /* Reduce modulo p.
-     w22 <= [w21:w20] mod p = (a * b) mod p */
-  jal    x1, fe_reduce
+     | a0b0    | a0b1    | a0b2    | a0b3 |
+     |         | a1b0    | a1b1    | a1b2 |
+     |         |         | a2b0    | a2b1 |
+     |         |         |         | a3b0 |
+     |         |         |         |      |
+     | a1b3*38 | a2b3*38 | a3b3*38 |      |
+     | a2b2*38 | a3b2*38 |         |      |
+     | a3b1*38 |         |         |      |
+
+   We can further optimize by computing the highest-weight partial products
+   as t = (a0b2 + a1b1 + a2b0 + a3b3*38 + (a0b3 + a1b2 + a2b1 + a3b0) << 64)
+   ahead of time and multiplying the upper half by 38 as well:
+
+     | a0b0       | a0b1    | t0 | t1 |
+     |            | a1b0    |    |    |
+     |            |         |    |    |
+     |            |         |    |    |
+     |            |         |    |    |
+     | a1b3*38    | a2b3*38 |    |    |
+     | a2b2*38    | a3b2*38 |    |    |
+     | a3b1*38    | t3*38   |    |    |
+     | t2*38      |         |    |    |
+
+  */
+
+  /* Precompute b3*38 at an offset of 128 and store in w18 (this step also
+     clears the lower part of w18, which is important later).
+       w18.U <= b3*38 */
+  bn.mulqacc.wo.z w18, w23.3, w30.0, 128
+
+  /* Accumulate partial products from the top two limbs first, and store the
+     result in ACC and w21.U such that:
+       ACC <= t2 + t3 << 64
+       w21 <= t0 << 128 + t1 << 192 */
+  bn.mulqacc.z          w22.0, w23.2, 0 /* a0b2 */
+  bn.mulqacc            w22.1, w23.1, 0 /* a1b1 */
+  bn.mulqacc            w22.2, w23.0, 0 /* a2b0 */
+  bn.mulqacc            w22.3, w18.2, 0 /* a3*((b3*38)[63:0]) */
+  bn.mulqacc            w22.0, w23.3, 64 /* a0b3 */
+  bn.mulqacc            w22.1, w23.2, 64 /* a1b2 */
+  bn.mulqacc            w22.2, w23.1, 64 /* a2b1 */
+  bn.mulqacc            w22.3, w23.0, 64 /* a3b0 */
+  bn.mulqacc.so  w18.U, w22.3, w18.3, 64 /* a3*((b3*38) >> 64) */
+
+  /* Reduce the high part modulo p. This guarantees a full reduction because
+     the written-back value is at most (2^128 - 1) * 2^128 < 2 * p.
+       w18 <= (t0 + t1 << 64) mod p */
+  bn.addm    w18, w18, w31
+
+  /* Accumulate partial products that need to be multiplied by 38 and are
+     fully within the first 256 bits of the result. Result max. 194 bits.
+       w20 <= (a1b3 + a2b2 + a3b1 + t2) + (a2b3 + a3b2 + t3) << 64 */
+  bn.mulqacc            w22.1, w23.3, 0  /* a1b3 */
+  bn.mulqacc            w22.2, w23.2, 0  /* a2b2 */
+  bn.mulqacc            w22.3, w23.1, 0  /* a3b1 */
+  bn.mulqacc            w22.2, w23.3, 64 /* a2b3 */
+  bn.mulqacc.wo    w20, w22.3, w23.2, 64 /* a3b2 */
+
+  /* Multiply the accumulator by 38, storing the result in the accumulator.
+     This value is at most 200 bits and so will not overflow the accumulator.
+       ACC <= w20*38 */
+  bn.mulqacc.z          w20.0, w30.0, 0
+  bn.mulqacc            w20.1, w30.0, 64
+  bn.mulqacc            w20.2, w30.0, 128
+  bn.mulqacc            w20.3, w30.0, 192
+
+  /* Continue accumulating partial products for the lower half of the
+     product.
+       w20 <= (a0b0 + a1b3*38 + a2b2*38 + a3b1*38 + t2*38)
+              + (a0b1 + a1b0 + a2b3*38 + a3b2*38 + t3*38) << 64  */
+  bn.mulqacc            w22.0, w23.0, 0   /* a0b0 */
+  bn.mulqacc            w22.0, w23.1, 64  /* a0b1 */
+  bn.mulqacc.wo    w20, w22.1, w23.0, 64  /* a1b0 */
+
+  /* Add the high and low parts of the product.
+      w22 <= (a * b) mod p */
+  bn.addm    w22, w20, w18
 
   ret
 
@@ -149,25 +119,22 @@ fe_mul:
  *
  * The input a must be at most 2^255 bits, although it is not necessary for it
  * to be fully reduced modulo p. This specialized squaring procedure is
- * slightly faster than fe_mul, because duplicated partial products can be
- * multiplied by two instead of being computed separately.  By optimizing for
- * this special case, we can use 10 multiplications and 4 additions instead of
- * 16 multiplications to compute the raw product.
+ * slightly faster than `fe_mul`, because duplicated partial products can be
+ * multiplied by two instead of being computed separately.
  *
- * Note that this is only 2 instructions faster than fe_mul; if we need to cut
- * down on code size, we could try not using a specialized square. However,
- * this routine is called many, many times (especially in the inverse
- * computation) so those two instructions might add up to quite a bit in the
- * end.
+ * Note: to cut down on code size at the expense of performance, we could use
+ * `fe_mul` for all multiplications, but it's unlikely to be worth the tradeoff
+ * given this is a small and frequently called routine.
  *
  * This routine runs in constant time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w19: constant, 19
  * @param[in]  w22: a, operand, a < 2^255
- * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in]  w30: constant, 38
  * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] w22: c, result
  *
  * clobbered registers: w17, w18, w20 to w22
@@ -175,35 +142,96 @@ fe_mul:
  */
 .globl fe_square
 fe_square:
-  /* Compute the partial products that do NOT need to be multiplied by 2.
-     [w21:w20] <= a0^2 + (a1^2 << 128) + (a2^2 << 256) + (a3^2 << 384) */
-  bn.mulqacc.so.z  w20.L, w22.0, w22.0,  0
-  bn.mulqacc.so    w20.U, w22.1, w22.1,  0
-  bn.mulqacc.so    w21.L, w22.2, w22.2,  0
-  bn.mulqacc.so    w21.U, w22.3, w22.3,  0
+  /* Partial products for square:
 
-  /* Compute the partial products that do need to be multiplied by 2.
-     [w18:w17] <= (a0a1 << 64) + (a0a2 << 128) + (a0a3 << 192)
-                               + (a1a2 << 192) + (a1a3 << 256)
-                               + (a2a3 << 320)                    */
-  bn.mulqacc.so.z  w17.L, w22.0, w22.1, 64
-  bn.mulqacc              w22.0, w22.2,  0
+     | a0a0    | a0a1*2  | a0a2*2  | a0a3*2 |
+     |         |         | a1a1    | a1a2*2 |
+     |         |         |         |        |
+     | a1a3*76 | a2a3*76 | a3a3*38 |        |
+     | a2a2*38 |         |         |        |
+
+   Totally separate the ones with *2, so that (a^2 = x + 2y).
+
+   x:
+     | a0a0    |         |         |      |
+     |         |         | a1a1    |      |
+
+   y:
+     |         | a0a1    | a0a2    | a0a3 |
+     |         |         |         | a1a2 |
+     |         |         |         |      |
+     | a1a3*38 | a2a3*38 | a3a3*19 |      |
+     | a2a2*19 |         |         |      |
+
+   We can optimize the computation of y, as in fe_mul, by computing the highest
+   limbs first:
+     t = a0a1 + a3a3*19 + (a0a3 + a1a2) << 64
+
+   y:
+     |         | a0a1    | t0 | t1 |
+     |         |         |    |    |
+     | a1a3*38 | a2a3*38 |    |    |
+     | a2a2*19 |         |    |    |
+     | t2*38   | t3*38   |    |    |
+
+  */
+
+  /* w17 <= a2*19 */
+  bn.mulqacc.wo.z    w17, w22.2, w19.0, 0
+
+  /* w18[255:128] <= a3*19
+     w18[127:0] <= 0 */
+  bn.mulqacc.wo.z    w18, w22.3, w19.0, 128
+
+  /* Compute t, the sum of partial products for highest two limbs of y.
+       w18[255:128] = t0 + t1 << 64
+       ACC = t1 + t2 << 64 */
+  bn.mulqacc.z            w22.0, w22.2, 0
+  bn.mulqacc              w22.3, w18.2, 0
+  bn.mulqacc              w22.3, w18.3, 64
   bn.mulqacc              w22.0, w22.3, 64
-  bn.mulqacc.so    w17.U, w22.1, w22.2, 64
-  bn.mulqacc              w22.1, w22.3,  0
-  bn.mulqacc.wo    w18,   w22.2, w22.3, 64
+  bn.mulqacc.so    w18.U, w22.1, w22.2, 64
 
-  /* Add the partial products.
-     [w21:w20] <= [w21:w20] + [w18:w17] * 2 = a * a */
-  bn.add  w20, w20, w17
-  bn.addc w21, w21, w18
-  bn.add  w20, w20, w17
-  bn.addc w21, w21, w18
+  /* Reduce this high part of y. Since it is at most 2^256 - 2^128 < 2p, one
+     modular addition of zero is enough. */
+  bn.addm   w18, w18, w31
 
-  /* Reduce modulo p.
-     w22 <= [w21:w20] mod p = (a * a) mod p */
-  jal    x1, fe_reduce
+  /* Add remaining elements of y that need to be multiplied by 38. The result
+     is max. 191 bits (a3 is 63 bits and t3 is at most 1 bit).
+       w20 <= t2 + t3 << 64 + a1*a3 + (a2*a3) << 64 */
+  bn.mulqacc              w22.1, w22.3, 0
+  bn.mulqacc.wo      w20, w22.2, w22.3, 64
 
+  /* Multiply the accumulator by 38.
+       ACC <= t2*38 + (t3*38) << 64 + a1*a3*38 + (a2*a3*38) << 64 */
+  bn.mulqacc.z            w20.0, w30.0, 0
+  bn.mulqacc              w20.1, w30.0, 64
+  bn.mulqacc              w20.2, w30.0, 128
+
+  /* Add the remaining elements of y.
+       w20 <= t2*38 + (t3*38) << 64 + a1*a3*38 + (a2*a3*38) << 64
+              + (a2*a2*19) + a0*a1 << 64 */
+  bn.mulqacc              w22.2, w17.0, 0
+  bn.mulqacc              w22.2, w17.1, 64
+  bn.mulqacc.wo      w20, w22.0, w22.1, 64
+
+  /* Add the high and low parts of y.
+       w20 <= y */
+  bn.addm   w20, w20, w18
+
+  /* Compute x.
+       w21 <= a0*a0 + (a1*a1) << 128 */
+  bn.mulqacc.z            w22.0, w22.0, 0
+  bn.mulqacc.wo      w21, w22.1, w22.1, 128
+
+  /* Reduce x modulo p. Its maximum value is (2^64-1)^2 + ((2^64-1)^2 << 128),
+     which is < 2p, so one modular addition of zero is enough. */
+  bn.addm   w21, w21, w31
+
+  /* Return (x + 2y) mod p.
+       w22 <= (w20 + w20 + w21) mod p = (x + 2*y) mod p = (a * a) mod p */
+  bn.addm   w20, w20, w20
+  bn.addm   w22, w20, w21
   ret
 
 /**
@@ -230,9 +258,10 @@ fe_square:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w19: constant, 19
  * @param[in]  w16: a, first operand, a < p
  * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in]  w30: constant, 38
  * @param[in]  w31: all-zero
  * @param[out] w22: c, result
  *
