@@ -25,6 +25,7 @@
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_mbx.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pattgen.h"
@@ -317,6 +318,28 @@ typedef struct kmac_isr_ctx {
    */
   bool is_only_irq;
 } kmac_isr_ctx_t;
+
+/**
+ * A handle to a mbx ISR context struct.
+ */
+typedef struct mbx_isr_ctx {
+  /**
+   * A handle to a mbx.
+   */
+  dif_mbx_t *mbx;
+  /**
+   * The PLIC IRQ ID where this mbx instance's IRQs start.
+   */
+  dif_rv_plic_irq_id_t plic_mbx_start_irq_id;
+  /**
+   * The mbx IRQ that is expected to be encountered in the ISR.
+   */
+  dif_mbx_irq_t expected_irq;
+  /**
+   * Whether or not a single IRQ is expected to be encountered in the ISR.
+   */
+  bool is_only_irq;
+} mbx_isr_ctx_t;
 
 /**
  * A handle to a otbn ISR context struct.
@@ -730,6 +753,19 @@ void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
                             bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_kmac_irq_t *irq_serviced);
+
+/**
+ * Services an mbx IRQ.
+ *
+ * @param plic_ctx A PLIC ISR context handle.
+ * @param mbx_ctx A(n) mbx ISR context handle.
+ * @param[out] peripheral_serviced Out param for the peripheral that was
+ * serviced.
+ * @param[out] irq_serviced Out param for the IRQ that was serviced.
+ */
+void isr_testutils_mbx_isr(plic_isr_ctx_t plic_ctx, mbx_isr_ctx_t mbx_ctx,
+                           top_earlgrey_plic_peripheral_t *peripheral_serviced,
+                           dif_mbx_irq_t *irq_serviced);
 
 /**
  * Services an otbn IRQ.
