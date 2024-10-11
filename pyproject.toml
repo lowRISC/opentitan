@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# If you edit this file, please re-generate the python requirements using
+# util/sh/scripts/gen-python-requirements.sh
+# See doc/contributing/sw/adding_python_depedencies.md for more details.
+
 [project]
 name = "opentitan"
 version = "0.0.0"
@@ -86,12 +90,12 @@ dependencies = [
   "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
 
   # Test
-  "hello @ file://${PROJECT_ROOT}/util/hello"
+  "hello @ file://${PROJECT_ROOT}/util/hello",
+
+  # OpenTitan python package
+  "opentitanlib @ file://${PROJECT_ROOT}/util/python",
 ]
 
 [tool.setuptools]
 # This is actually not a python project, we just use pyproject.toml to manage dependencies.
 py-modules = []
-
-[tool.uv.workspace]
-members = ["util/hello/hello"]

@@ -1,0 +1,7 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This directory is managed as a python package, imported by
+# python-requirements.
+# This file is here just to prevent bazel from looking into this repository.

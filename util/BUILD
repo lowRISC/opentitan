@@ -4,6 +4,7 @@
 
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@ot_python_deps//:requirements.bzl", "all_requirements", "requirement")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -20,17 +21,10 @@ py_binary(
     ],
 )
 
-py_binary(
+py_console_script_binary(
     name = "rom_chip_info",
-    srcs = ["rom_chip_info.py"],
-)
-
-py_test(
-    name = "rom_chip_info_test",
-    srcs = [
-        "rom_chip_info.py",
-        "rom_chip_info_test.py",
-    ],
+    pkg = "@ot_python_deps//opentitanlib",
+    script = "rom_chip_info",
 )
 
 py_binary(
