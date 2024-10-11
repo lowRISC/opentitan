@@ -219,7 +219,6 @@ status_t execute_test(void) {
   }
 
   // "Convert" key share byte arrays to `dif_aes_key_share_t`.
-
   memcpy(key.share0, key_share0, sizeof(key.share0));
   memcpy(key.share1, kKeyShare1, sizeof(key.share1));
 
