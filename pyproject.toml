@@ -85,8 +85,14 @@ dependencies = [
   # and bug fixes. We fix the version for improved stability and manually update
   # if necessary.
   "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
+
+  # Test
+  "hello @ file://${PROJECT_ROOT}/util/hello"
 ]
 
 [tool.setuptools]
 # This is actually not a python project, we just use pyproject.toml to manage dependencies.
 py-modules = []
+
+[tool.uv.workspace]
+members = ["util/hello/hello"]
