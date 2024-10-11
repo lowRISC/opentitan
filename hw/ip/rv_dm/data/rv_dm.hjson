@@ -47,6 +47,13 @@
       local:   "false",
       expose:  "true"
     },
+    { name:    "UseDmiInterface",
+      desc:    "When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.",
+      type:    "bit",
+      default: "0",
+      local:   "false",
+      expose:  "true"
+    }
   ]
   interrupt_list: [
   ],
@@ -88,6 +95,26 @@
                asserted when the hardware debug mechanisms are enabled in the system.
                '''
     },
+    {
+      struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_h2d"
+      act:     "rcv"
+      desc:    '''
+               TLUL-based DMI request input port
+               '''
+    }
+    {
+      struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_d2h"
+      act:     "req"
+      desc:    '''
+               TLUL-based DMI response output port
+               '''
+    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_dft_en"
