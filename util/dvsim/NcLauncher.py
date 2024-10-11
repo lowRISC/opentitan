@@ -6,6 +6,7 @@ import datetime
 import logging as log
 import os
 import subprocess
+import sys
 from Launcher import ErrorMessage
 from Launcher import Launcher
 from Launcher import LauncherError
@@ -45,9 +46,8 @@ class NcLauncher(Launcher):
             f.write('\n'.join(lines))
         os.chmod(run_file, 0o755)
 
-    def get_submit_cmd(self, interactive_flags):
+    def get_submit_cmd(self, extra_flags):
         exetool = self.deploy.sim_cfg.tool
-        log_file = self.deploy.get_log_path()
         job_name = self.deploy.full_name
         cmd = self.deploy.cmd
         odir = self.deploy.odir
@@ -66,11 +66,10 @@ class NcLauncher(Launcher):
 
         return (['nc', 'run', '-D',
                  '-e', 'SNAPSHOT',
-                 '-nodb', '-forcelog',
-                 '-l', log_file,
+                 '-nodb', '-nolog',
                  '-set', job_name] +
                 license_args +
-                interactive_flags +
+                extra_flags +
                 ['--', f'{odir}/run.sh'])
 
     def _do_launch(self):
@@ -90,49 +89,54 @@ class NcLauncher(Launcher):
 
         self._dump_env_vars(exports)
 
+        # using os.open instead of fopen as this allows
+        # sharing of file descriptors across processes
+        fd = os.open(self.deploy.get_log_path(), os.O_WRONLY | os.O_CREAT)
+        fobj = os.fdopen(fd, 'w', encoding='UTF-8')
+        os.set_inheritable(fd, True)
+        message = '[Executing]:\n{}\n\n'.format(self.deploy.cmd)
+        fobj.write(message)
+
         if self.deploy.sim_cfg.interactive:
             # Interactive: Set RUN_INTERACTIVE to 1
             exports['RUN_INTERACTIVE'] = '1'
-            interactive_flags = ['-I']
-            cmd_arr = self.get_submit_cmd(interactive_flags)
-            log.log(VERBOSE, '[Executing]:\n{}\n\n'.format(self.deploy.cmd))
+            cmd_arr = self.get_submit_cmd(['-I'])
+            # Line buffering (buf_size = 1) chosen to enable
+            # near real time updates from the tool
+            buf_size = 1
+            std_out = subprocess.PIPE
+            std_err = subprocess.STDOUT
+        else:
+            cmd_arr = self.get_submit_cmd(['-wl'])
+            # setting buf_size = -1 enables subprocess to choose
+            # the default buffer size which is more efficient
+            buf_size = -1
+            std_out = fd
+            std_err = fd
+
+        log.log(VERBOSE, '[Submitting]:\n{}\n\n'.format(' '.join(cmd_arr)))
+
+        try:
             self.process = subprocess.Popen(cmd_arr,
-                                            stdin=None,
-                                            stdout=None,
-                                            stderr=subprocess.STDOUT,
-                                            # string mode
+                                            bufsize=buf_size,
                                             universal_newlines=True,
+                                            pass_fds = [fd],
+                                            stdout=std_out,
+                                            stderr=std_err,
                                             env=exports,
                                             cwd=self.deploy.odir)
-
-            # Wait until the process exits
-            self.process.wait()
-        else:
-            try:
-                interactive_flags = ['-nolog', '-wl']
-                cmd_arr = self.get_submit_cmd(interactive_flags)
-                # Using file open instead of with open as
-                # it is being using in the subprocess.Popen call
-                # which returns immediately after launching the cmd
-                # and we want the file to remain open throughout the process
-                f = open(self.deploy.get_log_path(),
-                         'w',
-                         encoding='UTF-8',
-                         errors='surrogateescape')
-                f.write('[Executing]:\n{}\n\n'.format(self.deploy.cmd))
-                f.flush()
-                self.process = subprocess.Popen(cmd_arr,
-                                                bufsize=4096,
-                                                universal_newlines=True,
-                                                stdout=f,
-                                                stderr=f,
-                                                env=exports,
-                                                cwd=self.deploy.odir)
-            except subprocess.SubprocessError as e:
-                raise LauncherError(f'IO Error: {e}\n'
-                                    f'See {self.deploy.get_log_path()}')
-            finally:
-                self._close_process()
+            if self.deploy.sim_cfg.interactive:
+                for line in self.process.stdout:
+                    fobj.write(line)
+                    sys.stdout.write(line)
+                # Wait until the process exits in case
+                # the subprocess closes the stdout but still keeps running
+                self.process.wait()
+        except subprocess.SubprocessError as e:
+            raise LauncherError(f'IO Error: {e}\n'
+                                f'See {self.deploy.get_log_path()}')
+        finally:
+            self._close_process()
 
         self._link_odir('D')
 
