@@ -332,6 +332,10 @@ module prim_sha2 import prim_sha2_pkg::*;
           // Wait until it is filled
           fifo_st_d          = FifoLoadFromFifo;
           update_w_from_fifo = 1'b0;
+          if (msg_feed_complete) begin
+            fifo_st_d       = FifoIdle;
+            hash_done_next  = 1'b1;
+          end
         end else if (w_index_q == 4'd 15) begin
           fifo_st_d = FifoWait;
           // To increment w_index and it rolls over to 0
@@ -443,12 +447,27 @@ module prim_sha2 import prim_sha2_pkg::*;
     if (!sha_en_i || hash_go) sha_st_d  = ShaIdle;
   end
 
-  // Determine whether a digest is being computed for a complete block: when `update_digest` is set,
-  // this module is not waiting for more data from the FIFO, and `message_length_i` is zero modulo a
-  // complete block (512 bit for SHA2_256 and 1024 bit for SHA2_384 and SHA2_512).
-  assign digest_on_blk_o = update_digest && (fifo_st_q == FifoIdle) && (
+  logic on_blk, pre_digest_on_blk, pre_digest_on_blk_q;
+
+  // `message_length_i` is zero modulo a complete block (512 bit for SHA2_256 and 1024 bit for
+  // SHA2_384 and SHA2_512).
+  assign on_blk =
       (digest_mode_flag_q == SHA2_256                 && message_length_i[8:0] == '0) ||
-      (digest_mode_flag_q inside {SHA2_384, SHA2_512} && message_length_i[9:0] == '0));
+      (digest_mode_flag_q inside {SHA2_384, SHA2_512} && message_length_i[9:0] == '0);
+
+  // Determine whether a digest is being computed for a complete block: when `update_digest` and
+  // `on_blk` are set. The value is latched up until the FSM goes into `FifoIdle` which means that
+  // message feed is complete.
+  assign pre_digest_on_blk = (update_digest && on_blk) ? 1'b1 :
+                             (fifo_st_q == FifoIdle)   ? 1'b0 :
+                             pre_digest_on_blk_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) pre_digest_on_blk_q <= 1'b0;
+    else         pre_digest_on_blk_q <= pre_digest_on_blk;
+  end
+
+  assign digest_on_blk_o = ~pre_digest_on_blk & pre_digest_on_blk_q;
 
   assign one_chunk_done = ((digest_mode_flag_q == SHA2_256 || ~MultimodeEn)
                           && (round_q == 7'd63)) ? 1'b1 :
