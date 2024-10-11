@@ -68,6 +68,7 @@ module top_earlgrey #(
   parameter int FlashCtrlRdFifoDepth = 16,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
+  parameter bit RvDmUseDmiInterface = 0,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -2188,7 +2189,8 @@ module top_earlgrey #(
   );
   rv_dm #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40]),
-    .IdcodeValue(RvDmIdcodeValue)
+    .IdcodeValue(RvDmIdcodeValue),
+    .UseDmiInterface(RvDmUseDmiInterface)
   ) u_rv_dm (
       // [40]: fatal_fault
       .alert_tx_o  ( alert_tx[40:40] ),
@@ -2199,6 +2201,8 @@ module top_earlgrey #(
       .jtag_i(pinmux_aon_rv_jtag_req),
       .jtag_o(pinmux_aon_rv_jtag_rsp),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .dmi_tl_h2d_i(tlul_pkg::TL_H2D_DEFAULT),
+      .dmi_tl_d2h_o(),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .pinmux_hw_debug_en_i(pinmux_aon_pinmux_hw_debug_en),
       .otp_dis_rv_dm_late_debug_i(rv_dm_otp_dis_rv_dm_late_debug),

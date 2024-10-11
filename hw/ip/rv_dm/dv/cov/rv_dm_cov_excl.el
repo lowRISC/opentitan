@@ -91,7 +91,7 @@ Toggle data_i "net data_i[56:6]"
 // ExclMode: default
 //==================================================
 CHECKSUM: "2345259249 2478537381"
-INSTANCE: tb.dut.dap.i_dmi_jtag_tap
+INSTANCE: tb.dut.gen_jtag_gating.dap.i_dmi_jtag_tap
 ANNOTATION: "VC_COV_UNR"
 Block 69 "637783920" ";"
 CHECKSUM: "1794274355 4209686271"
@@ -301,7 +301,7 @@ Branch 4 "3849421052" "((dmi_req_ready_o && dmi_req_valid_i) && (dtm_op == DTM_W
 ANNOTATION: "VC_COV_UNR"
 Branch 12 "1524828153" "(selected_hart <= 1'((NrHarts - 1)))" (1) "(selected_hart <= 1'((NrHarts - 1))) 0"
 CHECKSUM: "2345259249 3039402680"
-INSTANCE: tb.dut.dap.i_dmi_jtag_tap
+INSTANCE: tb.dut.gen_jtag_gating.dap.i_dmi_jtag_tap
 ANNOTATION: "VC_COV_UNR"
 Branch 11 "1673691078" "tap_state_q" (32) "tap_state_q default,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-"
 CHECKSUM: "4224194069 3219254590"
@@ -315,7 +315,7 @@ INSTANCE: tb.dut.u_tlul_lc_gate_rom
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "1850090820" "state_q" (13) "state_q default,-,-,-,-,-,-,-"
 CHECKSUM: "704952876 424853"
-INSTANCE: tb.dut.dap.i_dmi_cdc.i_cdc_resp.u_prim_sync_reqack
+INSTANCE: tb.dut.gen_jtag_gating.dap.i_dmi_cdc.i_cdc_resp.u_prim_sync_reqack
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "3560579867" "gen_rz_hs_protocol.dst_fsm_q" (1) "gen_rz_hs_protocol.dst_fsm_q LoSt ,1,0,-"
 CHECKSUM: "2709971803 2063590459"
