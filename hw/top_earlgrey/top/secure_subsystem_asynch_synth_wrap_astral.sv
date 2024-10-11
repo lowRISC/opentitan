@@ -64,6 +64,7 @@ module security_island
    parameter int unsigned SyncStages            = 3
 )  (
    input logic                           clk_i,
+   input logic                           clk_cluster_i,
    input logic                           clk_ref_i,
    input logic                           rst_ni,
    input logic                           pwr_on_rst_ni,
@@ -80,18 +81,18 @@ module security_island
    // Asynch AXI tlul2axi port
    output logic [AsyncAxiOutAwWidth-1:0] async_axi_out_aw_data_o,
    output logic [LogDepth:0]             async_axi_out_aw_wptr_o,
-   input logic  [LogDepth:0]             async_axi_out_aw_rptr_i,
+   input logic [LogDepth:0]              async_axi_out_aw_rptr_i,
    output logic [AsyncAxiOutWWidth-1:0]  async_axi_out_w_data_o,
    output logic [LogDepth:0]             async_axi_out_w_wptr_o,
-   input logic  [LogDepth:0]             async_axi_out_w_rptr_i,
-   input logic  [AsyncAxiOutBWidth-1:0]  async_axi_out_b_data_i,
-   input logic  [LogDepth:0]             async_axi_out_b_wptr_i,
+   input logic [LogDepth:0]              async_axi_out_w_rptr_i,
+   input logic [AsyncAxiOutBWidth-1:0]   async_axi_out_b_data_i,
+   input logic [LogDepth:0]              async_axi_out_b_wptr_i,
    output logic [LogDepth:0]             async_axi_out_b_rptr_o,
    output logic [AsyncAxiOutArWidth-1:0] async_axi_out_ar_data_o,
    output logic [LogDepth:0]             async_axi_out_ar_wptr_o,
-   input logic  [LogDepth:0]             async_axi_out_ar_rptr_i,
-   input logic  [AsyncAxiOutRWidth-1:0]  async_axi_out_r_data_i,
-   input logic  [LogDepth:0]             async_axi_out_r_wptr_i,
+   input logic [LogDepth:0]              async_axi_out_ar_rptr_i,
+   input logic [AsyncAxiOutRWidth-1:0]   async_axi_out_r_data_i,
+   input logic [LogDepth:0]              async_axi_out_r_wptr_i,
    output logic [LogDepth:0]             async_axi_out_r_rptr_o,
    // Interrupt signal
    input logic                           irq_ibex_i,
@@ -104,18 +105,18 @@ module security_island
    output logic                          gpio_0_oe_o,
    output logic                          gpio_1_o,
    output logic                          gpio_1_oe_o,
-   input  logic                          gpio_0_i,
-   input  logic                          gpio_1_i,
+   input logic                           gpio_0_i,
+   input logic                           gpio_1_i,
    // SPI Host
    output logic                          spi_host_SCK_o,
    output logic                          spi_host_SCK_en_o,
    output logic                          spi_host_CSB_o,
    output logic                          spi_host_CSB_en_o,
    output logic [3:0]                    spi_host_SD_o,
-   input logic  [3:0]                    spi_host_SD_i,
+   input logic [3:0]                     spi_host_SD_i,
    output logic [3:0]                    spi_host_SD_en_o,
    // Logic locking key for PULP Cluster
-   input logic  [127:0]                  cluster_lock_xor_key_i
+   input logic [127:0]                   cluster_lock_xor_key_i
 );
 
 //////////////////////////
@@ -577,7 +578,7 @@ module security_island
    )
    cluster_i
    (
-      .clk_i                           ( clk_i                                ),
+      .clk_i                           ( clk_cluster_i                        ),
       .rst_ni                          ( rst_ni                               ),
       .ref_clk_i                       ( clk_ref_i                            ),
 
