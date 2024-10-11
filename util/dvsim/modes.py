@@ -4,7 +4,7 @@
 
 import logging as log
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional
 
 
 class Mode:
@@ -14,7 +14,13 @@ class Mode:
     or a regression.
     """
 
-    def __init__(self, type_name: str, mdict):
+    # This class variable should be set by any class that derives from Mode and
+    # is used when reporting errors in the constructor.
+    type_name = None  # type: Optional[str]
+
+    def __init__(self, mdict: Mapping[str, object]):
+        assert isinstance(self.type_name, str)
+
         keys = mdict.keys()
         attrs = self.__dict__.keys()
 
@@ -25,7 +31,7 @@ class Mode:
         for key in keys:
             if key not in attrs:
                 log.error(f"Key {key} in {mdict} is invalid. Supported "
-                          f"attributes for a {type_name} are {attrs}")
+                          f"attributes for a {self.type_name} are {attrs}")
                 sys.exit(1)
             setattr(self, key, mdict[key])
 
@@ -251,6 +257,8 @@ class BuildMode(Mode):
     Build modes.
     """
 
+    type_name = 'build mode'
+
     # Maintain a list of build_modes str
     item_names = []
 
@@ -268,7 +276,7 @@ class BuildMode(Mode):
         self.sw_images = []
         self.sw_build_opts = []
 
-        super().__init__("build mode", bdict)
+        super().__init__(bdict)
         self.en_build_modes = list(set(self.en_build_modes))
 
     def get_sub_modes(self) -> List[str]:
@@ -284,6 +292,8 @@ class BuildMode(Mode):
 
 class RunMode(Mode):
     """A collection of options for running a test."""
+
+    type_name = 'run mode'
 
     # Maintain a list of run_modes str
     item_names = []
@@ -304,7 +314,7 @@ class RunMode(Mode):
         self.sw_build_device = ""
         self.sw_build_opts = []
 
-        super().__init__("run mode", rdict)
+        super().__init__(rdict)
         self.en_run_modes = list(set(self.en_run_modes))
 
     def get_sub_modes(self) -> List[str]:

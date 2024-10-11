@@ -15,6 +15,8 @@ class Regression(Mode):
     Abstraction for test sets / regression sets.
     """
 
+    type_name = 'regression'
+
     # Maintain a list of tests str
     item_names = []
 
@@ -41,7 +43,7 @@ class Regression(Mode):
         self.post_run_cmds = []
         self.build_opts = []
         self.run_opts = []
-        super().__init__("regression", regdict)
+        super().__init__(regdict)
 
     @staticmethod
     def create_regressions(regdicts, sim_cfg, tests):
