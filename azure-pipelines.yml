@@ -159,8 +159,9 @@ jobs:
   - bash: ci/scripts/check_dv_sw_images.sh
     displayName: Check DV software images (Experimental)
     continueOnError: True
-  - bash: ci/scripts/build-docs.sh
-    displayName: Render documentation
+  # #24772 - Disabled documentation rendering.
+  #- bash: ci/scripts/build-docs.sh
+  #  displayName: Render documentation
   # Define OT_DESTRUCTIVE=1 to enable ci/scripts/check-generated.sh to delete
   # uncommitted changes.
   - bash: OT_DESTRUCTIVE=1 ci/scripts/check-generated.sh
