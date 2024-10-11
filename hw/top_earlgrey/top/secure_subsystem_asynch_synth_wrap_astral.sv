@@ -113,8 +113,9 @@ module security_island
    output logic                          spi_host_CSB_en_o,
    output logic [3:0]                    spi_host_SD_o,
    input logic  [3:0]                    spi_host_SD_i,
-   output logic [3:0]                    spi_host_SD_en_o
-
+   output logic [3:0]                    spi_host_SD_en_o,
+   // Logic locking key for PULP Cluster
+   input logic  [127:0]                  cluster_lock_xor_key_i
 );
 
 //////////////////////////
