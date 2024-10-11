@@ -4,27 +4,28 @@
 r"""Testpoint and Testplan classes for maintaining the testplan
 """
 
-import os
 import re
 import sys
-from typing import TextIO
+from typing import Dict, List, Mapping, Optional, Set, TextIO, Union
 from collections import defaultdict
 from pathlib import Path
 
-import hjson
+import hjson  # type: ignore
 import mistletoe
 from tabulate import tabulate
+
+from JobTime import JobTime
 
 
 class Result:
     '''The results for a single test'''
 
     def __init__(self,
-                 name,
-                 passing=0,
-                 total=0,
-                 job_runtime=None,
-                 simulated_time=None):
+                 name: str,
+                 passing: int = 0,
+                 total: int = 0,
+                 job_runtime: Optional[JobTime] = None,
+                 simulated_time: Optional[JobTime] = None):
         self.name = name
         self.passing = passing
         self.total = total
@@ -33,7 +34,7 @@ class Result:
         self.mapped = False
 
 
-class Element():
+class Element:
     """An element of the testplan.
 
     This is either a testpoint or a covergroup.
@@ -44,37 +45,40 @@ class Element():
     # Mandatory fields in a testplan element.
     fields = ["name", "desc"]
 
-    def __init__(self, raw_dict):
+    def __init__(self, raw_dict: Mapping[str, object]) -> None:
         """Initialize the testplan element.
 
         raw_dict is the dictionary parsed from the HJSon file.
         """
         # 'tags' is an optional field in addition to the mandatory self.fields.
-        self.tags = []
+        self.tags = []  # type: List[str]
+
+        # These fields will be overridden with items in raw_dict but setting
+        # them here tells mypy about the types involved.
+        self.name = ''
+        self.desc = ''
 
         for field in self.fields:
-            try:
-                setattr(self, field, raw_dict.pop(field))
-            except KeyError as e:
+            if field not in raw_dict:
                 raise KeyError(f"Error: {self.kind} does not contain all of "
                                f"the required fields:\n{raw_dict}\nRequired:\n"
-                               f"{self.fields}\n{e}")
+                               f"{self.fields}")
 
-        # Set the remaining k-v pairs in raw_dict as instance attributes.
+        # Set the k-v pairs in raw_dict as instance attributes.
         for k, v in raw_dict.items():
             setattr(self, k, v)
 
         # Verify things are in order.
         self._validate()
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Reindent the multiline desc with 4 spaces.
         desc = "\n".join(
             ["    " + line.lstrip() for line in self.desc.split("\n")])
         return (f"  {self.kind.capitalize()}: {self.name}\n"
                 f"  Description:\n{desc}\n")
 
-    def _validate(self):
+    def _validate(self) -> None:
         """Runs some basic consistency checks."""
         if not self.name:
             raise ValueError(f"Error: {self.kind.capitalize()} name cannot "
@@ -84,7 +88,7 @@ class Element():
         if not isinstance(self.tags, list):
             raise ValueError(f"'tags' key in {self} is not a list.")
 
-    def has_tags(self, tags: set) -> bool:
+    def has_tags(self, tags: Set[str]) -> bool:
         """Checks if the provided tags match the tags originally set.
 
         tags is a list of tags that are we are filtering this testpoints with.
@@ -117,7 +121,7 @@ class Covergroup(Element):
     """
     kind = "covergroup"
 
-    def _validate(self):
+    def _validate(self) -> None:
         super()._validate()
         if not self.name.endswith("_cg"):
             raise ValueError(f"Error: Covergroup name {self.name} needs to "
@@ -140,12 +144,17 @@ class Testpoint(Element):
     # Verification stages.
     stages = ("N.A.", "V1", "V2", "V2S", "V3")
 
-    def __init__(self, raw_dict):
+    def __init__(self, raw_dict: Mapping[str, object]):
+        # These will be overridden by the base class constructor (because their
+        # names are in fields)
+        self.stage = ""
+        self.tests = []  # type: List[str]
+
         super().__init__(raw_dict)
 
         # List of Result objects indicating test results mapped to this
         # testpoint.
-        self.test_results = []
+        self.test_results = []  # type: List[Result]
 
         # If tests key is set to ["N/A"], then don't map this testpoint to the
         # simulation results.
@@ -153,11 +162,11 @@ class Testpoint(Element):
         if self.tests == ["N/A"]:
             self.not_mapped = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         return super().__str__() + (f"  Stage: {self.stage}\n"
                                     f"  Tests: {self.tests}\n")
 
-    def _validate(self):
+    def _validate(self) -> None:
         super()._validate()
         if self.stage not in Testpoint.stages:
             raise ValueError(f"Testpoint stage {self.stage} is "
@@ -168,7 +177,7 @@ class Testpoint(Element):
         if not isinstance(self.tests, list):
             raise ValueError(f"'tests' key in {self} is not a list.")
 
-    def do_substitutions(self, substitutions):
+    def do_substitutions(self, substitutions: Mapping[str, str]) -> None:
         '''Substitute {wildcards} in tests
 
         If tests have {wildcards}, they are substituted with the 'correct'
@@ -199,7 +208,7 @@ class Testpoint(Element):
 
         self.tests = resolved_tests
 
-    def map_test_results(self, test_results):
+    def map_test_results(self, test_results: List[Result]) -> None:
         """Map test results to tests against this testpoint.
 
         Given a list of test results find the ones that match the tests listed
@@ -242,10 +251,10 @@ class Testplan:
     element_cls = {'testpoint': Testpoint, 'covergroup': Covergroup}
 
     @staticmethod
-    def _parse_hjson(filename):
+    def _parse_hjson(filename: Path) -> Dict[str, object]:
         """Parses an input file with HJson and returns a dict."""
         try:
-            return hjson.load(open(filename, 'r'))
+            return hjson.load(open(filename, 'r'))  # type: ignore
         except IOError as e:
             print(f"IO Error when opening file {filename}\n{e}")
         except hjson.scanner.HjsonDecodeError as e:
@@ -253,7 +262,9 @@ class Testplan:
         sys.exit(1)
 
     @staticmethod
-    def _create_testplan_elements(kind: str, raw_dicts_list: list, tags: set):
+    def _create_testplan_elements(kind: str,
+                                  raw_dicts_list: List[Mapping[str, object]],
+                                  tags: Set[str]) -> List[Element]:
         """Creates testplan elements from the list of raw dicts.
 
         kind is either 'testpoint' or 'covergroup'.
@@ -283,7 +294,7 @@ class Testplan:
         return items
 
     @staticmethod
-    def _get_percentage(value, total):
+    def _get_percentage(value: int, total: int) -> str:
         """Returns a string representing percentage upto 2 decimal places."""
         if total == 0:
             return "-- %"
@@ -291,7 +302,7 @@ class Testplan:
         return "{0:.2f} %".format(round(perc, 2))
 
     @staticmethod
-    def get_dv_style_css():
+    def get_dv_style_css() -> str:
         """Returns text with HTML CSS style for a table."""
         return ("<style>\n"
                 "table.dv {\n"
@@ -308,7 +319,7 @@ class Testplan:
                 "}\n"
                 "</style>\n")
 
-    def __str__(self):
+    def __str__(self) -> str:
         lines = [f"Name: {self.name}\n"]
         lines += ["Testpoints:"]
         lines += [f"{t}" for t in self.testpoints]
@@ -316,7 +327,10 @@ class Testplan:
         lines += [f"{c}" for c in self.covergroups]
         return "\n".join(lines)
 
-    def __init__(self, filename, repo_top=None, name=None):
+    def __init__(self,
+                 filename: Union[str, Path],
+                 repo_top: Optional[Path] = None,
+                 name: Optional[str] = None):
         """Initialize the testplan.
 
         filename is the HJson file that captures the testplan. It may be
@@ -327,9 +341,9 @@ class Testplan:
         name is an optional argument indicating the name of the testplan / DUT.
         It overrides the name set in the testplan HJson.
         """
-        self.name = None
-        self.testpoints = []
-        self.covergroups = []
+        self.name = ''
+        self.testpoints = []  # type: List[Testpoint]
+        self.covergroups = []  # type: List[Element]
         self.test_results_mapped = False
 
         # Split the filename into filename and tags, if provided.
@@ -340,7 +354,7 @@ class Testplan:
         if filename.exists():
             self._parse_testplan(filename, tags, repo_top)
 
-        if name:
+        if name is not None:
             self.name = name
 
         if not self.name:
@@ -349,6 +363,15 @@ class Testplan:
 
         # Represents current progress towards each stage. Stage = N.A.
         # is used to indicate the unmapped tests.
+        #
+        # Note: This really needs to be turned into something a little more
+        # heterogeneous than a nested dict. At the moment, each progress[stage]
+        # is a dictionary with four string fields (total, written, passing,
+        # progress). The associated values have types int, int, int, float,
+        # except that the last field gets turned into a str in map_test_results
+        # and map_covergroups. To silence errors from mypy, we have to use type
+        # ignore in several places when interacting with this rather-ill-typed
+        # dictionary.
         self.progress = {}
         for key in Testpoint.stages:
             self.progress[key] = {
@@ -360,8 +383,8 @@ class Testplan:
 
     @staticmethod
     def _get_imported_testplan_paths(parent_testplan: Path,
-                                     imported_testplans: list,
-                                     repo_top: Path) -> list:
+                                     imported_testplans: List[Path],
+                                     repo_top: Path) -> List[Path]:
         '''Parse imported testplans with correctly set paths.
 
         Paths of the imported testplans can be set relative to repo_top
@@ -404,7 +427,75 @@ class Testplan:
 
         return result
 
-    def _parse_testplan(self, filename: Path, tags: set, repo_top=None):
+    @staticmethod
+    def as_string(raw: object, what: str) -> str:
+        '''Return raw, cast to a string'''
+        if not isinstance(raw, str):
+            raise TypeError(f'{what} was {raw!r}, not a string.')
+        return raw
+
+    @staticmethod
+    def as_int(raw: object, what: str) -> int:
+        '''Return raw, cast to an int'''
+        if isinstance(raw, int):
+            return raw
+        elif isinstance(raw, str):
+            try:
+                return int(raw)
+            except ValueError:
+                raise TypeError(f'{what} was {raw!r}, not denoting an integer')
+        else:
+            raise TypeError(f'{what} was {raw!r}, not an integer.')
+
+    @staticmethod
+    def as_string_map(raw: object, what: str) -> Mapping[str, object]:
+        '''Return raw, cast into a dict from strings'''
+        if not isinstance(raw, dict):
+            raise TypeError(f'{what} was {raw!r}, not a dict.')
+        cast = {}  # type: Dict[str, str]
+        for k, v in raw.items():
+            if not isinstance(k, str):
+                raise TypeError(f'One key of {what} was {k!r}, not a str.')
+            cast[k] = v
+        return cast
+
+    @staticmethod
+    def as_list(raw: object, what: str) -> List[object]:
+        '''Return raw, cast into a list'''
+        if not isinstance(raw, list):
+            raise TypeError(f'{what} was {raw!r}, not a list.')
+        return raw
+
+    @staticmethod
+    def as_path_list(raw: object, what: str) -> List[Path]:
+        '''Return raw, cast to a list of Path objects'''
+        if not isinstance(raw, list):
+            raise TypeError(f'{what} was {raw!r}, not a list.')
+        paths = []  # type: List[Path]
+        for idx, elt in enumerate(raw):
+            try:
+                paths.append(Path(elt))
+            except TypeError:
+                raise TypeError(f'Element {idx} of {what} was {elt!r}, '
+                                'which cannot be read as a Path.') from None
+        return paths
+
+    @staticmethod
+    def as_string_list(raw: object, what: str) -> List[str]:
+        '''Return raw cast into a list of strings'''
+        return [Testplan.as_string(elt, f'Item with index {idx} of {what}')
+                for idx, elt in enumerate(Testplan.as_list(raw, what))]
+
+    @staticmethod
+    def as_string_map_list(raw: object, what: str) -> List[Mapping[str, object]]:
+        '''Return raw cast into a list dicts keyed by strings.'''
+        return [Testplan.as_string_map(elt, f'Item with index {idx} of {what}')
+                for idx, elt in enumerate(Testplan.as_list(raw, what))]
+
+    def _parse_testplan(self,
+                        filename: Path,
+                        tags: Set[str],
+                        repo_top: Optional[Path] = None) -> None:
         '''Parse testplan Hjson file and create the testplan elements.
 
         It creates the list of testpoints and covergroups extracted from the
@@ -421,30 +512,44 @@ class Testplan:
 
         parsed = set()
         parent_testplan = Path(filename)
-        imported_testplans = self._get_imported_testplan_paths(
-            parent_testplan, obj.get("import_testplans", []), repo_top)
+
+        imported_paths = \
+            Testplan.as_path_list(obj.get("import_testplans", []),
+                                  f'import_testplans field at {filename}')
+        imported_testplans = self._get_imported_testplan_paths(parent_testplan,
+                                                               imported_paths,
+                                                               repo_top)
 
         while imported_testplans:
-            testplan = imported_testplans.pop(0)
+            testplan = repo_top / imported_testplans.pop(0)
             if testplan in parsed:
                 print(f"Error: encountered the testplan {testplan} again, "
                       "which was already parsed. Please check for circular "
                       "dependencies.")
                 sys.exit(1)
             parsed.add(testplan)
-            data = self._parse_hjson(os.path.join(repo_top, testplan))
+            data = self._parse_hjson(testplan)
+            further_imports = \
+                Testplan.as_path_list(data.get("import_testplans", []),
+                                      f'import_testplans field at {testplan}')
+
             imported_testplans.extend(
-                self._get_imported_testplan_paths(
-                    testplan, data.get("import_testplans", []), repo_top))
+                self._get_imported_testplan_paths(testplan,
+                                                  further_imports, repo_top))
             obj = _merge_dicts(obj, data)
 
-        self.name = obj.get("name")
+        self.name = Testplan.as_string(obj.get("name"),
+                                       f'name field at {testplan}')
 
-        testpoints = obj.get("testpoints", [])
+        testpoints = \
+            Testplan.as_string_map_list(obj.get("testpoints", []),
+                                        f'testpoints field at {testplan}')
         self.testpoints = self._create_testplan_elements(
-            'testpoint', testpoints, tags)
+            'testpoint', testpoints, tags)  # type: ignore
 
-        covergroups = obj.get("covergroups", [])
+        covergroups = \
+            Testplan.as_string_map_list(obj.get("covergroups", []),
+                                        f'covergroups field at {testplan}')
         self.covergroups = self._create_testplan_elements(
             'covergroup', covergroups, set())
 
@@ -456,19 +561,20 @@ class Testplan:
         # be used as a substitution variable.
         substitutions = {
             k: v
-            for k, v in obj.items() if k not in self.rsvd_keywords
+            for k, v in obj.items()
+            if k not in self.rsvd_keywords and isinstance(v, str)
         }
         for tp in self.testpoints:
             tp.do_substitutions(substitutions)
 
         self._sort()
 
-    def _sort(self):
+    def _sort(self) -> None:
         """Sort testpoints by stage and covergroups by name."""
         self.testpoints.sort(key=lambda x: x.stage)
         self.covergroups.sort(key=lambda x: x.name)
 
-    def get_stage_regressions(self):
+    def get_stage_regressions(self) -> List[Dict[str, object]]:
         regressions = defaultdict(set)
         for tp in self.testpoints:
             if tp.not_mapped:
@@ -485,7 +591,7 @@ class Testplan:
     def write_testplan_doc(self, output: TextIO) -> None:
         """Write testplan documentation in markdown from the hjson testplan."""
 
-        stages = {}
+        stages = {}  # type: Dict[str, List[Testpoint]]
         for tp in self.testpoints:
             stages.setdefault(tp.stage, list()).append(tp)
 
@@ -509,12 +615,13 @@ class Testplan:
             for covergroup in self.covergroups:
                 output.write(f"### {covergroup.name}\n\n{covergroup.desc.strip()}\n\n")
 
-    def map_test_results(self, test_results):
+    def map_test_results(self, test_results: List[Result]) -> None:
         """Map test results to testpoints."""
         # Maintain a list of tests we already counted.
         tests_seen = set()
+        totals = {}  # type: Dict[str, Testpoint]
 
-        def _process_testpoint(testpoint, totals):
+        def _process_testpoint(testpoint: Testpoint) -> None:
             """Computes the testplan progress and the sim footprint.
 
             totals is a list of Testpoint items that represent the total number
@@ -545,7 +652,6 @@ class Testplan:
                     totals["N.A."].test_results[0].passing += tr.passing
                     totals["N.A."].test_results[0].total += tr.total
 
-        totals = {}
         # Create testpoints to represent the total for each stage & the
         # grand total.
         for ms in Testpoint.stages:
@@ -571,11 +677,11 @@ class Testplan:
         # Now, map the simulation results to each testpoint.
         for tp in self.testpoints:
             tp.map_test_results(test_results)
-            _process_testpoint(tp, totals)
+            _process_testpoint(tp)
 
         # If we do have unmapped tests, then count that too.
         unmapped.test_results = [tr for tr in test_results if not tr.mapped]
-        _process_testpoint(unmapped, totals)
+        _process_testpoint(unmapped)
 
         # Add stage totals back into 'testpoints' and sort.
         for ms in Testpoint.stages[1:]:
@@ -596,12 +702,12 @@ class Testplan:
                 self.progress.pop(ms)
                 continue
 
-            stat["progress"] = self._get_percentage(stat["passing"],
-                                                    stat["total"])
+            stat["progress"] = self._get_percentage(stat["passing"],  # type: ignore
+                                                    stat["total"])  # type: ignore
 
         self.test_results_mapped = True
 
-    def map_covergroups(self, cgs_found):
+    def map_covergroups(self, cgs_found: List[str]) -> None:
         """Map the covergroups found from simulation to the testplan.
 
         For now, this does nothing more than 'check off' the covergroup
@@ -626,10 +732,10 @@ class Testplan:
             "total": total,
             "written": written,
             "passing": written,
-            "progress": self._get_percentage(written, total),
+            "progress": self._get_percentage(written, total)  # type: ignore
         }
 
-    def get_test_results_table(self, map_full_testplan=True):
+    def get_test_results_table(self, map_full_testplan: bool = True) -> str:
         """Return the mapped test results into a markdown table."""
 
         assert self.test_results_mapped, "Have you invoked map_test_results()?"
@@ -667,18 +773,19 @@ class Testplan:
         text += "\n"
         return text
 
-    def get_progress_table(self):
+    def get_progress_table(self) -> str:
         """Returns the current progress of the effort towards the testplan."""
 
         assert self.test_results_mapped, "Have you invoked map_test_results()?"
-        header = []
+        header = []  # type: List[str]
         table = []
         for key in self.progress:
             stat = self.progress[key]
-            values = [v for v in stat.values()]
+            values = [v for v in stat.values()]  # type: List[object]
             if not header:
                 header = ["Items"] + [k.capitalize() for k in stat]
-            table.append([key] + values)
+            col1 = [key]  # type: List[object]
+            table.append(col1 + values)
 
         text = "\n### Testplan Progress\n"
         colalign = (("center", ) * len(header))
@@ -689,7 +796,8 @@ class Testplan:
         text += "\n"
         return text
 
-    def get_cov_results_table(self, cov_results):
+    def get_cov_results_table(self,
+                              cov_results: List[Mapping[str, object]]) -> str:
         """Returns the coverage in a table format.
 
         cov_results is a list of dicts with name and result keys, representing
@@ -699,12 +807,29 @@ class Testplan:
         if not cov_results:
             return ""
 
-        try:
-            cov_header = [c["name"].capitalize() for c in cov_results]
-            cov_values = [c["result"] for c in cov_results]
-        except KeyError as e:
-            print(f"Malformed cov_results:\n{cov_results}\n{e}")
-            sys.exit(1)
+        cov_header: List[str] = []
+        cov_values: List[object] = []
+
+        for c in cov_results:
+            if 'name' not in c:
+                print(f"Item of coverage results with no name: {c}",
+                      file=sys.stderr)
+                sys.exit(1)
+            if 'result' not in c:
+                print(f"Item of coverage results with no result: {c}",
+                      file=sys.stderr)
+                sys.exit(1)
+
+            name = c['name']
+            result = c['result']
+
+            if not isinstance(name, str):
+                print(f"Item of coverage results with non-string name: {name}",
+                      file=sys.stderr)
+                sys.exit(1)
+
+            cov_header.append(name.capitalize())
+            cov_values.append(result)
 
         colalign = (("center", ) * len(cov_header))
         text = "\n### Coverage Results\n"
@@ -715,7 +840,7 @@ class Testplan:
         text += "\n"
         return text
 
-    def get_test_results_summary(self):
+    def get_test_results_summary(self) -> Dict[str, object]:
         """Returns the final total as a summary."""
         assert self.test_results_mapped, "Have you invoked map_test_results()?"
 
@@ -727,14 +852,14 @@ class Testplan:
 
         tr = total.test_results[0]
 
-        result = {}
+        result = {}  # type: Dict[str, object]
         result["Name"] = self.name.upper()
         result["Passing"] = tr.passing
         result["Total"] = tr.total
         result["Pass Rate"] = self._get_percentage(tr.passing, tr.total)
         return result
 
-    def get_sim_results(self, sim_results_file, fmt="md"):
+    def get_sim_results(self, sim_results_file: Path, fmt: str = "md") -> str:
         """Returns the mapped sim result tables in HTML formatted text.
 
         The data extracted from the sim_results table HJson file is mapped into
@@ -744,26 +869,42 @@ class Testplan:
         """
         assert fmt in ["md", "html"]
         sim_results = Testplan._parse_hjson(sim_results_file)
-        test_results_ = sim_results.get("test_results", None)
 
         test_results = []
-        for item in test_results_:
+
+        test_results_what = f'test_results in {sim_results_file}'
+        raw_test_results = \
+            Testplan.as_list(sim_results.get("test_results", []),
+                             test_results_what)
+        for idx, item in enumerate(raw_test_results):
+            item_what = f'Item {idx} of {test_results_what}'
+            if not isinstance(item, dict):
+                raise TypeError(f'{item_what} is {item!r}, not a dict')
+            name = Testplan.as_string(item.get('name'), f'name of {item_what}')
+            passing = Testplan.as_int(item.get('passing', 0),
+                                      f'passing of {item_what}')
+
             try:
-                tr = Result(item["name"], item["passing"], item["total"])
+                tr = Result(name, passing, item["total"])
                 test_results.append(tr)
             except KeyError as e:
                 print(f"Error: data in {sim_results_file} is malformed!\n{e}")
                 sys.exit(1)
 
         self.map_test_results(test_results)
-        self.map_covergroups(sim_results.get("covergroups", []))
+        covergroups = \
+            Testplan.as_string_list(sim_results.get("covergroups", []),
+                                    f'covergroups in {sim_results_file}')
+        self.map_covergroups(covergroups)
 
         text = "# Simulation Results\n"
         text += "## Run on {}\n".format(sim_results["timestamp"])
         text += self.get_test_results_table()
         text += self.get_progress_table()
 
-        cov_results = sim_results.get("cov_results", [])
+        cov_results = \
+            Testplan.as_string_map_list(sim_results.get("cov_results", []),
+                                        f'cov_results in {sim_results_file}')
         text += self.get_cov_results_table(cov_results)
 
         if fmt == "html":
@@ -772,7 +913,9 @@ class Testplan:
         return text
 
 
-def _merge_dicts(list1, list2, use_list1_for_defaults=True):
+def _merge_dicts(list1: Dict[str, object],
+                 list2: Dict[str, object],
+                 use_list1_for_defaults: bool = True) -> Dict[str, object]:
     '''Merge 2 dicts into one
 
     This function takes 2 dicts as args list1 and list2. It recursively merges
