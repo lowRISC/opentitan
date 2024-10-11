@@ -67,7 +67,7 @@ class rv_dm_halt_resume_whereto_vseq extends rv_dm_base_vseq;
     bit [3:0]       regno;
     bit             write, transfer;
 
-    regno = $urandom_range(0, 16'h3fff);
+    regno = $urandom_range(0, 32'h3fff);
 
     // We want to generate writes with or without the transfer flag. We also want to generate reads
     // (and occasionally set the transfer flag, even though it won't actually do anything)

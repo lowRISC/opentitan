@@ -5,8 +5,8 @@
 
 module prim_esc_rxtx_bind_fpv;
 
-  bind prim_esc_rxtx_fpv
-    prim_esc_rxtx_assert_fpv #(TimeoutCntDw(TimeoutCntDw))
+  bind prim_esc_rxtx_tb
+    prim_esc_rxtx_assert_fpv #(.TimeoutCntDw(6))
     prim_esc_rxtx_assert_fpv (
       .clk_i       ,
       .rst_ni      ,

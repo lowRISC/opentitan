@@ -185,6 +185,24 @@
       tests: ["{name}_key_error"]
     }
     {
+      name: sideload_invalid
+      desc: ''' Test kmac responses correctly sideloaded key is invalidated.
+            **Stimulus**:
+            - Configure kmac and send keymgr request.
+            - Wait until random FSM app state is entered.
+            - Invalidate the sideloaded key by forcing the .valid signal to 0.
+            - Repeat the above sequence a few times to try different configurations.
+
+            **Check**:
+            - Check error related registers including `err_code`.
+            - Check keymgr interface have responses where all digests are zero and the error
+              bit is set.
+            - Check kmac can resume normal functionalities after processing this error case.
+            '''
+      stage: V2
+      tests: ["{name}_sideload_invalid"]
+    }
+    {
       name: edn_timeout_error
       desc: ''' Test kmac responses correctly when EDN response timeout.
             Based on kmac app sequence, this sequence configures kmac to ensure an EDN timeout

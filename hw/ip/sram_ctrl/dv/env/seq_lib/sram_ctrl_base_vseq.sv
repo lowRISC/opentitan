@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends cip_base_vseq #(
+class sram_ctrl_base_vseq #(
+    parameter int AddrWidth = `SRAM_WORD_ADDR_WIDTH
+  ) extends cip_base_vseq #(
     .RAL_T               (sram_ctrl_regs_reg_block),
     .CFG_T               (sram_ctrl_env_cfg#(AddrWidth)),
     .COV_T               (sram_ctrl_env_cov#(AddrWidth)),
@@ -58,8 +60,10 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     readback_running = 1;
     if (uvm_re_match("*throughput*", get_type_name()) &&
         uvm_re_match("*sec_cm*", get_type_name()) &&
+        uvm_re_match("*readback_err*", get_type_name()) &&
         uvm_re_match("*throughput*", common_seq_type) &&
-        uvm_re_match("*sec_cm*", common_seq_type)) begin
+        uvm_re_match("*sec_cm*", common_seq_type) &&
+        uvm_re_match("*readback_err*", common_seq_type)) begin
       // Configure the SRAM TLUL agent to wait at least 2 cycles before dropping
       // a request.
       cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_min = 2;

@@ -18,7 +18,10 @@ class aes_config_error_test extends aes_base_test;
 
     cfg.error_types              = 4'b0001;
     cfg.config_error_pct         = 75;
-    cfg.config_error_type        = 3'b111;
+    cfg.config_error_type_en     = '{key_len:  1'b1,
+                                     mode:     1'b1,
+                                     rsd_rate: 1'b1,
+                                     op:       1'b1};
     cfg.num_messages_min         = 3;
     cfg.num_messages_max         = 10;
     // message related knobs
@@ -37,7 +40,7 @@ class aes_config_error_test extends aes_base_test;
     cfg.fixed_key_en             = 0;
 
     cfg.fixed_operation_en       = 0;
-    cfg.fixed_operation          = 0;
+    cfg.fixed_operation          = aes_pkg::AES_ENC;
 
     cfg.fixed_keylen_en          = 0;
     cfg.fixed_keylen             = 3'b001;

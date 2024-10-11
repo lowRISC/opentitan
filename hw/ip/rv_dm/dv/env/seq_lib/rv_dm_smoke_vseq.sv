@@ -59,6 +59,33 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     end
   endtask
 
+  // Send an TL access with an integrity error, checking that it causes a fatal alert. Because the
+  // alert is fatal, we have to finish by issuing a reset to tidy up after ourselves. This allows a
+  // subsequent item to run (and means we don't have to set expect_fatal_alerts from cip_base_vseq).
+  task check_tl_integrity_error();
+    // Pick a random RAL model to operate on
+    int ral_model_idx = $urandom_range(0, cfg.ral_model_names.size()-1);
+    string ral_model_name = cfg.ral_model_names[ral_model_idx];
+
+    // This task will finish by applying a reset. If do_apply_reset is false, we're probably running
+    // inside stress_all_with_rand_reset and applying a reset ourselves will confuse things. Fail
+    // instantly to make this easier to debug.
+    `DV_CHECK_FATAL(do_apply_reset)
+
+    // Disable TL assertions while we send the bad access (one will definitely fail)
+    set_tl_assert_en(.enable(0));
+
+    // Issue a TL access on the selected RAL that contains an integrity error
+    issue_tl_access_w_intg_err(ral_model_name);
+
+    // Check that a fatal alert comes out
+    check_tl_intg_error_response();
+
+    // Clean up after ourselves
+    dut_init("HARD");
+    set_tl_assert_en(.enable(1));
+  endtask
+
   // Verify that writing to dmactive causes dmactive output to be set.
   //
   // If a reset is asserted somewhere in the middle, the DMI write to dmcontrol will have been
@@ -93,10 +120,11 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
 
     repeat ($urandom_range(20, 50)) begin
       randcase
-        1: check_idcode();
-        1: check_haltreq();
-        1: check_ndmreset();
-        1: check_unavailable();
+        10: check_idcode();
+        10: check_haltreq();
+        10: check_ndmreset();
+        10: check_unavailable();
+        do_apply_reset * 1: check_tl_integrity_error();
       endcase
 
       spot_resets(should_stop);

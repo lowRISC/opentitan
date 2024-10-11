@@ -54,7 +54,8 @@ static status_t peripheral_handles_init(void) {
 
 /**
  * Initializes flash info page 0 fields required to complete the
- * individualization step.
+ * individualization step, which include:
+ *   - AST configuration data
  */
 static status_t init_flash_info_page0(void) {
   uint32_t byte_address = 0;
@@ -85,9 +86,9 @@ static status_t init_flash_info_page0(void) {
  * Check the AST configuration data was programmed correctly.
  */
 static status_t check_otp_ast_cfg(void) {
+  // Check OTP fields were programmed correctly.
   uint32_t data;
   uint32_t relative_addr;
-
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
     TRY(dif_otp_ctrl_relative_address(
         kDifOtpCtrlPartitionCreatorSwCfg,
@@ -96,6 +97,15 @@ static status_t check_otp_ast_cfg(void) {
     TRY(otp_ctrl_testutils_dai_read32(
         &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data));
     TRY_CHECK(data == i);
+  }
+
+  // Check that the AST configuration data was erased from flash info page 0.
+  uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {0};
+  TRY(manuf_flash_info_field_read(
+      &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    TRY_CHECK(ast_cfg_data[i] == UINT32_MAX);
   }
 
   return OK_STATUS();

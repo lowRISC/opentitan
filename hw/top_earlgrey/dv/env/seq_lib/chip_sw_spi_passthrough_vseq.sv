@@ -14,7 +14,11 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   // Frequencies to use for testing the sequences.
   time sck_periods_ps[] = '{
     41_000, // 24 MHz
+`ifndef GATE_LEVEL
+    //TODO return 30MHz for GLS simulation when issue #24597 is fixed
+    // 30Mhz SCK is not supported when CMD_INFO.read_pipeline_mode is set to 0x0 or 0x1
     33_000, // 30 MHz
+`endif
     167_000 // 6 MHz
   };
   // A bit map of command slots that will have passthrough filters enabled.

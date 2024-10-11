@@ -147,12 +147,13 @@
     {
       name: regwen
       desc: '''
-            This test is intended to test `exec_regwen` and `ctrl_regwen` as well as their related
-            CSRs.
+            This test is intended to test `exec_regwen`, `ctrl_regwen`, and `readback_regwen` as
+            well as their related CSRs.
 
-            `ctrl_regwen` related CSRs (renew_scr_key and init) are excluded from CSRs test as they
+            `ctrl_regwen` related CSRs (renew_scr_key and init) are excluded from CSR tests as they
             affects other CSRs.
-            `exec_regwen` and its related CSRs are tested in CSRs tests, but this `exec` relates to
+            `readback_regwen` related CSRs are excluded from CSR tests as they affect other CSRs.
+            `exec_regwen` and its related CSRs are tested in CSR tests, but this `exec` relates to
             other sram inputs (en_sram_ifetch and hw_debug_en), so also test it in this test.
 
             Both `exec_regwen` and `ctrl_regwen` as well as their related CSRs will be programmed

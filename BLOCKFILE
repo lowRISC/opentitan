@@ -21,8 +21,6 @@ BLOCKFILE
 ci/scripts/check-pr-changes-allowed.py
 
 # Earlgrey related RTL
-hw/ip/*/rtl/*
-hw/ip_templates/*/rtl/*
 hw/top_earlgrey/ip/*/rtl/*
 hw/top_earlgrey/ip_autogen/*/rtl/*
 hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
@@ -32,6 +30,44 @@ hw/top_earlgrey/rtl/autogen/chip_earlgrey_asic.sv
 hw/vendor/lowrisc_ibex/rtl/*
 hw/vendor/pulp_riscv_dbg/src/*
 hw/vendor/pulp_riscv_dbg/debug_rom/*
+
+# IP block RTL for blocks that require a higher scrutiny on changes to maintain
+# stability (Ascon, DMA and Key Manager DPE are not blocked). Note that nothing
+# under ip_templates is listed here. It's important for the rendered versions of
+# those to remain stable for the tops that use them but the templates themselves
+# can change.
+hw/ip/adc_ctrl/rtl/*
+hw/ip/aes/rtl/*
+hw/ip/aon_timer/rtl/*
+hw/ip/csrng/rtl/*
+hw/ip/edn/rtl/*
+hw/ip/entropy_src/rtl/*
+hw/ip/gpio/rtl/*
+hw/ip/hmac/rtl/*
+hw/ip/i2c/rtl/*
+hw/ip/keymgr/rtl/*
+hw/ip/kmac/rtl/*
+hw/ip/lc_ctrl/rtl/*
+hw/ip/otbn/rtl/*
+hw/ip/otp_ctrl/rtl/*
+hw/ip/pattgen/rtl/*
+hw/ip/pinmux/rtl/*
+hw/ip/prim/rtl/*
+hw/ip/prim_generic/rtl/*
+hw/ip/prim_xilinx/rtl/*
+hw/ip/prim_xilinx_ultrascale/rtl/*
+hw/ip/pwm/rtl/*
+hw/ip/rom_ctrl/rtl/*
+hw/ip/rv_core_ibex/rtl/*
+hw/ip/rv_dm/rtl/*
+hw/ip/rv_timer/rtl/*
+hw/ip/spi_device/rtl/*
+hw/ip/spi_host/rtl/*
+hw/ip/sram_ctrl/rtl/*
+hw/ip/sysrst_ctrl/rtl/*
+hw/ip/tlul/rtl/*
+hw/ip/uart/rtl/*
+hw/ip/usbdev/rtl/*
 
 # Individual HJSON files that effect RTL generation (no wildcard as it's
 # too broad and will also block DV-only files)
@@ -74,13 +110,6 @@ hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked2.hjson
 hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
 hw/ip/pwm/data/pwm.hjson
 hw/ip/aon_timer/data/aon_timer.hjson
-
-hw/ip_templates/alert_handler/data/alert_handler.hjson.tpl
-hw/ip_templates/clkmgr/data/clkmgr.hjson.tpl
-hw/ip_templates/flash_ctrl/data/flash_ctrl.hjson
-hw/ip_templates/pwrmgr/data/pwrmgr.hjson.tpl
-hw/ip_templates/rstmgr/data/rstmgr.hjson.tpl
-hw/ip_templates/rv_plic/data/rv_plic.hjson.tpl
 
 hw/top_earlgrey/ip/ast/data/ast.hjson
 hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson

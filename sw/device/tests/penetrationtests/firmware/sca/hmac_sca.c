@@ -15,7 +15,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -94,11 +94,11 @@ status_t handle_hmac_sca_init(ujson_t *uj) {
                                       kScaPeripheralEdn | kScaPeripheralHmac);
 
   // Disable the instruction cache and dummy instructions for SCA.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();

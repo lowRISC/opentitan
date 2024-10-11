@@ -14,9 +14,15 @@
   [graz-ascon]: https://ascon.iaik.tugraz.at/
   [nist-ascon]: https://csrc.nist.gov/Presentations/2023/update-on-standardization-of-ascon-family
   '''
-  regwidth:      "32",
-  cip_id:        "40",
-  version:       "0.0.1",
+  regwidth:           "32",
+  cip_id:             "40",
+  design_spec:        "../doc",
+  hw_checklist:       "../doc/checklist",
+  version:            "0.1.0",
+  life_stage:         "L1",
+  design_stage:       "D0",
+  verification_stage: "V0",
+  dif_stage:          "S0",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
     {clock: "clk_edn_i", reset: "rst_edn_ni", idle: "idle_o"}
@@ -226,6 +232,7 @@
         For Ascon 128 the upper 64 bit can be set to any value
         For partial blocks the unused bytes can be set to any value.
         The order in which the registers are updated does not matter.
+        Writing to this register will invalidate previous values in the !!MSG_OUT register.
       '''
       count: "NumRegsData",
       cname: "MSG_IN_SHARE0",
@@ -254,6 +261,7 @@
         For Ascon 128 the upper 64 bit can be set to any value.
         For partial blocks the unused bytes can be set to any value.
         The order in which the registers are updated does not matter.
+        Writing to this register will invalidate previous values in the !!MSG_OUT register.
       '''
       count: "NumRegsData",
       cname: "MSG_IN_SHARE1",
@@ -436,18 +444,22 @@
             Once all registers of Share 0 have been written, Ascon starts to process the data depending on the !!CTRL_AUX_SHADOWED.manual_start_trigger.
           '''
         }
-        { bits: "8",
+        { bits: "11:8",
           name: "NO_MSG",
+          resval: "0x6",
           desc:  '''
-            There is no (1) message (plaintext/ciphertext) to be processed.
-            There is (0) a message.
+            This field is mubi4 encoded.
+            Mubi4True:  There is no message (plaintext/ciphertext) to be processed.
+            Mubi4False: There is a message.
           '''
         }
-        { bits: "9",
+        { bits: "15:12",
           name: "NO_AD",
+          resval: "0x9",
           desc:  '''
-            There is no (1) associated data to be processed.
-            There is (0) associated data.
+            This field is mubi4 encoded.
+            Mubi4True:  There are no associated data to be processed.
+            Mubi4False: There are associated data.
           '''
         }
       ]
@@ -616,27 +628,11 @@
           name: "ALERT_RECOV_CTRL_UPDATE_ERR",
           resval: "0",
           desc:  '''
-            An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
-            Ascon operation needs to be restarted by re-writing the Control Register.
+            An update error has not occurred (0) or has occurred (1) in one of the shadowed Control
+            Registers. Ascon operation needs to be restarted by re-writing the Control Registers.
           '''
         }
         { bits: "5",
-          name: "ALERT_RECOV_CTRL_AUX_UPDATE_ERR",
-          resval: "0",
-          desc:  '''
-            An update error has not occurred (0) or has occurred (1) in the shadowed Auxiliary Control Register.
-            The register has to be rewritten.
-          '''
-        }
-        { bits: "6",
-          name: "ALERT_RECOV_BLOCK_CTRL_UPDATE_ERR",
-          resval: "0",
-          desc:  '''
-            An update error has not occurred (0) or has occurred (1) in the shadowed block Control Register.
-            The register has to be rewritten.
-          '''
-        }
-        { bits: "7",
           name: "ALERT_FATAL_FAULT",
           resval: "0",
           desc:  '''
@@ -656,21 +652,28 @@
     { name: "OUTPUT_VALID",
       desc: '''
         Output Valid Register
-        This register specifies which output register contains valid data and should be read next.
+        This register specifies which output register contains valid data.
         It also contains the status information whether the TAG comparison was valid or not.
       ''',
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "2:0",
-          name: "DATA_TYPE",
+        { bits: "0",
+          name: "MSG_VALID",
           desc:  '''
-            Specifies which output type/register is valid.
-            There are:
-            PT_OUT, CT_OUT, TAG_OUT, NONE
+            Indicates if there is (1) or if there is not (0) valid data in the !!MSG_OUT register.
+            If !!OUTPUT_VALID.MSG_VALID and !!OUTPUT_VALID.TAG_VALID are both set, !!MSG_OUT should be read before !TAG_OUT.
           '''
         }
-        { bits: "4:3",
+        { bits: "1",
+          name: "TAG_VALID",
+          desc:  '''
+            Indicates if there is (1) or if there is not (0) valid data in the !!TAG_OUT register.
+            If !!OUTPUT_VALID.MSG_VALID and !!OUTPUT_VALID.TAG_VALID are both set,
+            !!MSG_OUT should be read before !TAG_OUT.
+          '''
+        }
+        { bits: "3:2",
           name: "TAG_COMPARISON_VALID",
           desc:  '''
             Indicates if the tag could be successfully compared 2'b01, or not 2'b10

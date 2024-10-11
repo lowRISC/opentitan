@@ -585,61 +585,30 @@ module spi_host_fsm
 
   assign csb_o = csb_q;
 
-  logic [3:0] sd_en_ff_d, sd_en_ff_q;
-  assign sd_en_ff_d = sd_en_o;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sd_en_ff_q <= 0;
-    end
-    //TODO: do we need an enable signal?
-    else begin
-      sd_en_ff_q <= sd_en_ff_d;
-    end
-  end
-  logic drive_posedge;
-  // CPOL / CPHASE truth table
-  // ---------------------------------------------
-  // CPHA | CPOL | Drive/sample                  |
-  // ---------------------------------------------
-  // 0    | 0    | drive negedge, sample posedge |
-  // 0    | 1    | drive posedge, sample negedge |
-  // 1    | 0    | drive posedge, sample negedge |
-  // 1    | 1    | drive negedge, sample posedge |
-  // ---------------------------------------------
-  assign drive_posedge = (cpol != cpha);
-
   always_comb begin
     if (&csb_o) begin
       sd_en_o[3:0] = 4'h0;
     end else begin
-      // Only update the sd_en_o on the right clock transition. Since sck_o
-      // is generated from the sys clock we ensure we only drive the data on the
-      // right clock edge
-      if( (drive_posedge && sck_o) ||
-          (!drive_posedge && !sck_o) ) begin
-        unique case (speed_o)
-          Standard: begin
-            sd_en_o[0]   = cmd_wr_en_q | cmd_wr_en_last_bit;
-            sd_en_o[1]   = 1'b0;
-            sd_en_o[3:2] = 2'b00;
-          end
-          Dual:     begin
-            sd_en_o[1:0] = {2{cmd_wr_en_q}};
-            sd_en_o[3:2] = 2'b00;
-          end
-          Quad:     begin
-            sd_en_o[3:0] = {4{cmd_wr_en_q}};
-          end
-          default: begin
-            // invalid speed
-            sd_en_o[3:0] = 4'h0;
-          end
-        endcase
-      end
-      else begin
-        sd_en_o  = sd_en_ff_q;
-      end
-    end // else: !if(&csb_o)
+      unique case (speed_o)
+        Standard: begin
+          // Observing 'last_bit' ensures we do not deassert the enable too early
+          sd_en_o[0]   = cmd_wr_en_q | cmd_wr_en_last_bit;
+          sd_en_o[1]   = 1'b0;
+          sd_en_o[3:2] = 2'b00;
+        end
+        Dual:     begin
+          sd_en_o[1:0] = {2{cmd_wr_en_q}};
+          sd_en_o[3:2] = 2'b00;
+        end
+        Quad:     begin
+          sd_en_o[3:0] = {4{cmd_wr_en_q}};
+        end
+        default: begin
+          // invalid speed
+          sd_en_o[3:0] = 4'h0;
+        end
+      endcase
+    end
   end
 
   //

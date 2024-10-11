@@ -5,6 +5,7 @@
 load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_dependencies")
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_repository_set")
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
+load("@rules_rust//util/import:deps.bzl", "import_deps")
 
 def rust_deps():
     rules_rust_dependencies()
@@ -25,3 +26,9 @@ def rust_deps():
     )
 
     rust_analyzer_dependencies()
+
+    # We're not using this feature, but have to load the deps in Bazel 7 due to
+    # https://github.com/bazelbuild/rules_rust/issues/1166#issuecomment-1060888166
+    #
+    # This is no longer needed for `rules_rust>=0.38.0`.
+    import_deps()

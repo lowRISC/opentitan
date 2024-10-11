@@ -103,6 +103,11 @@
       run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
     {
+      name: "{name}_sideload_invalid"
+      uvm_test_seq: kmac_sideload_invalid_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
+    }
+    {
       name: "{name}_burst_write"
       uvm_test_seq: kmac_burst_write_vseq
       run_opts: ["+test_timeout_ns=500_000_000"]

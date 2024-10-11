@@ -12,12 +12,36 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 typedef enum spi_pinmux_platform_id {
   kSpiPinmuxPlatformIdCw310 = 0,
   kSpiPinmuxPlatformIdCw340,
   kSpiPinmuxPlatformIdTeacup,
   kSpiPinmuxPlatformIdCount,
 } spi_pinmux_platform_id_t;
+
+/*
+ * The SPI host pads for which `spi_host_testutils_configure_host0_pad_attrs()`
+ * configures the pad attributes.
+ */
+static const top_earlgrey_direct_pads_t spi_host0_direct_pads[6] = {
+    kTopEarlgreyDirectPadsSpiHost0Sck,  // sck
+    kTopEarlgreyDirectPadsSpiHost0Csb,  // csb
+    kTopEarlgreyDirectPadsSpiHost0Sd3,  // sio[3]
+    kTopEarlgreyDirectPadsSpiHost0Sd2,  // sio[2]
+    kTopEarlgreyDirectPadsSpiHost0Sd1,  // sio[1]
+    kTopEarlgreyDirectPadsSpiHost0Sd0   // sio[0]
+};
+
+/**
+ * Configure the pad attributes of SPI Host 0.
+ *
+ * @return A status_t indicating success or failure configuring the pad
+ * attributes.
+ */
+OT_WARN_UNUSED_RESULT
+status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux);
 
 /**
  * Return True if spi host is active.

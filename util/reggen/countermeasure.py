@@ -40,6 +40,7 @@ CM_TYPES = [
     'DIFF',
     'REDUN',
     'REGWEN',
+    'REGWEN_MUBI',
     'REGREN',
     'SHADOW',
     'SCRAMBLE',

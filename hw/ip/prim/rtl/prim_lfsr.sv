@@ -419,7 +419,6 @@ module prim_lfsr #(
       // Check that the permutation is indeed a permutation.
       logic [LfsrDw-1:0] sbox_perm_test;
       always_comb begin : p_perm_check
-        sbox_perm_test = '0;
         for (int k = 0; k < LfsrDw; k++) begin
           sbox_perm_test[sbox_in_indices[k]] = 1'b1;
         end

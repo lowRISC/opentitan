@@ -258,13 +258,13 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
 static uint32_t get_flow_control_watermark_plic_id(void) {
   switch (kOttfTestConfig.console.base_addr) {
 #if !OT_IS_ENGLISH_BREAKFAST
-    case TOP_EARLGREY_UART1_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart1RxWatermark;
     case TOP_EARLGREY_UART2_BASE_ADDR:
       return kTopEarlgreyPlicIrqIdUart2RxWatermark;
     case TOP_EARLGREY_UART3_BASE_ADDR:
       return kTopEarlgreyPlicIrqIdUart3RxWatermark;
 #endif
+    case TOP_EARLGREY_UART1_BASE_ADDR:
+      return kTopEarlgreyPlicIrqIdUart1RxWatermark;
     case TOP_EARLGREY_UART0_BASE_ADDR:
     default:
       return kTopEarlgreyPlicIrqIdUart0RxWatermark;

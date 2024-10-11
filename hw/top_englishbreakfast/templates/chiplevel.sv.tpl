@@ -1,0 +1,1 @@
+../../top_earlgrey/templates/chiplevel.sv.tpl

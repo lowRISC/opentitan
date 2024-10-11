@@ -23,6 +23,12 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
+    { name:      "uart1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
     { name:      "gpio",
       type:      "device",
       clock:     "clk_peri_i",
@@ -86,7 +92,7 @@
   ],
   connections: {
     main:  [
-      "uart0",
+      "uart0", "uart1",
       "gpio", "spi_device", "spi_host0", "rv_timer", "usbdev",
       "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
       "ast"

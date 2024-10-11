@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{ensure, Context, Result};
 use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -51,7 +51,8 @@ impl BootstrapCommand {
             image.parse(&self.filename)?;
             image.assemble()
         } else {
-            Ok(std::fs::read(&self.filename[0])?)
+            Ok(std::fs::read(&self.filename[0])
+                .with_context(|| format!("Failed to read {}", self.filename[0]))?)
         }
     }
 }

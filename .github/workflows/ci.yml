@@ -1,0 +1,157 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: CI
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - "backport-*"
+    tags:
+      - "*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quick_lint:
+    name: Lint (quick)
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required so we can lint commit messages.
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Environment
+        run: ./ci/scripts/show-env.sh
+      - name: Commit metadata
+        run: ./ci/scripts/lint-commits.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
+      - name: License headers
+        run: ./ci/scripts/check-licence-headers.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
+      - name: Executable bits
+        run: ./ci/scripts/exec-check.sh
+      - name: Non-ASCII characters
+        run: ./ci/scripts/check-ascii.sh
+      - name: Python (flake8)
+        run: ./ci/scripts/python-lint.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
+      - name: Python (mypy)
+        run: ./ci/scripts/mypy.sh
+      - name: Validate testplans with schema
+        run: ./ci/scripts/validate_testplans.sh
+      - name: C/C++ formatting
+        run: ./ci/bazelisk.sh test //quality:clang_format_check
+      - name: Rust formatting
+        run: ./ci/bazelisk.sh test //quality:rustfmt_check
+      - name: Shellcheck
+        run: ./ci/bazelisk.sh test //quality:shellcheck_check
+      - name: Header guards
+        run: ./ci/scripts/include-guard.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
+      - name: Trailing whitespace
+        run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
+        if: ${{ github.event_name == 'pull_request' }}
+      - name: Broken links
+        run: ./ci/scripts/check-links.sh
+      - name: Generated documentation
+        run: ./ci/scripts/check-cmdgen.sh
+
+  slow_lint:
+    name: Lint (slow)
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Countermeasures implemented (earlgrey)
+        run: ./ci/scripts/check-countermeasures.sh earlgrey
+        continue-on-error: true
+      - name: Countermeasures implemented (englishbreakfast)
+        run: ./ci/scripts/check-countermeasures.sh englishbreakfast
+        continue-on-error: true
+      - name: Bazel test suite tags
+        run: ./ci/scripts/check_bazel_test_suites.py
+        continue-on-error: true
+      # See #21973: disabled until Verilator tags are fixed.
+      # - name: Check Bazel tags
+      #   run: ./ci/scripts/check-bazel-tags.sh
+      #   continue-on-error: true
+      - name: Banned Bazel rules
+        run: ./ci/scripts/check-bazel-banned-rules.sh
+      - name: Bazel target names
+        run: ./ci/scripts/check_bazel_target_names.py
+        continue-on-error: true
+      - name: DV software images
+        run: ./ci/scripts/check_dv_sw_images.sh
+        continue-on-error: true
+      - name: Build documentation
+        run: ./ci/scripts/build-docs.sh
+      - name: Generated files
+        run: ./ci/scripts/check-generated.sh
+        env:
+          OT_DESTRUCTIVE: 1 # Required by the script to clean up.
+      - name: Buildifier
+        run: ./ci/bazelisk.sh test //quality:buildifier_check
+      - name: Vendored files
+        run: ./ci/scripts/check-vendoring.sh
+      - name: Verible RTL
+        run: ./ci/scripts/verible-lint.sh rtl
+      - name: Verible DV
+        run: ./ci/scripts/verible-lint.sh dv
+      - name: Verible FPV
+        run: ./ci/scripts/verible-lint.sh fpv
+
+  airgapped_build:
+    name: Airgapped build
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Prepare airgapped environment
+        run: ./util/prep-bazel-airgapped-build.sh
+      - name: Build in the airgapped environment
+        run: ./ci/scripts/test-airgapped-build.sh
+
+  verible_lint:
+    name: Verible lint
+    runs-on: ubuntu-24.04
+    needs: quick_lint
+    if: ${{ github.event_name == 'pull_request' }}
+    env:
+      verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
+      verible_version: v0.0-3430-g060bde0f
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Verible config
+        run: |
+          echo "Concatenating Verible waivers"
+          find . -type f -name '*.vbl' -exec cat {} \; >> verible_waiver
+
+          echo "::group::Verible config"
+          cat "$verible_config"
+          echo "::endgroup::"
+
+          echo "::group::Verible waiver"
+          cat "verible_waiver"
+          echo "::endgroup::"
+      - name: Run Verible linter action
+        uses: chipsalliance/verible-linter-action@v2.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          verible_version: ${{ env.verible_version }}
+          reviewdog_reporter: 'github-pr-check'
+          suggest_fixes: 'false'
+          config_file: ${{ env.verible_config }}
+          extra_args: "--waiver_files=verible_waiver"

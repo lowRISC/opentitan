@@ -296,6 +296,7 @@ The following standardised countermeasures are defined:
 | DIFF           | A signal is differentially encoded | CTRL, CTR |
 | REDUN          | There are redundant versions of the asset | ADDR, CTRL, CONFIG, CTR
 | REGWEN         | A register write enable is used to protect the asset from write access | CONFIG, MEM
+| REGWEN_MUBI    | A multi-bit encoded register write enable is used to protect the asset from write access | CONFIG, MEM
 | SHADOW         | The asset has a shadow replica to cross-check against | CONFIG
 | REGREN         | A register write enable is used to protect the asset from read access | CONFIG, MEM
 | SCRAMBLE       | The asset is scrambled | CONFIG, MEM

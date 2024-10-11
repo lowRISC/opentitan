@@ -43,6 +43,9 @@ involved.
   first.
 * If a relevant bug or tracking issue exists, reference it in the pull request
   and commits.
+* Do not report security vulnerabilities through public GitHub issues or pull
+  requests. For instructions on how to report vulnerabilities, please consult
+  SECURITY.md.
 
 Please see [Contributing to OpenTitan](https://opentitan.org/book/doc/contributing)
 for more general guidance.

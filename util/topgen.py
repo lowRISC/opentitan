@@ -14,12 +14,11 @@ from copy import deepcopy
 from io import StringIO
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import hjson
 import tlgen
 import version_file
-from design.lib.common import expand_seed
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from mako import exceptions
@@ -1081,7 +1080,8 @@ def main():
     elif "rnd_cnst_seed" not in topcfg:
         log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
         exit(1)
-    secure_prng.reseed(expand_seed(topcfg["rnd_cnst_seed"]))
+
+    secure_prng.reseed(topcfg["rnd_cnst_seed"])
 
     # TODO, long term, the levels of dependency should be automatically
     # determined instead of hardcoded.  The following are a few examples:
@@ -1214,16 +1214,19 @@ def main():
 //                {seed}
 """.format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
 
+        # Top and chiplevel templates are top-specific
+        top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
+
         # SystemVerilog Top:
         # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
-        render_template(TOPGEN_TEMPLATE_PATH / "toplevel.sv.tpl",
+        render_template(top_template_path / "toplevel.sv.tpl",
                         out_path / "rtl" / "autogen" / f"{top_name}.sv",
                         gencmd=gencmd)
 
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
         for target in topcfg["targets"]:
             target_name = target["name"]
-            render_template(TOPGEN_TEMPLATE_PATH / "chiplevel.sv.tpl",
+            render_template(top_template_path / "chiplevel.sv.tpl",
                             out_path /
                             f"rtl/autogen/chip_{topname}_{target_name}.sv",
                             gencmd=gencmd,

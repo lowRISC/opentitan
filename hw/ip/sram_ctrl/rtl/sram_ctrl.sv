@@ -110,6 +110,7 @@ module sram_ctrl
 
   // SEC_CM: CTRL.CONFIG.REGWEN
   // SEC_CM: EXEC.CONFIG.REGWEN
+  // SEC_CM: READBACK.CONFIG.REGWEN
   sram_ctrl_regs_reg_top u_reg_regs (
     .clk_i,
     .rst_ni,

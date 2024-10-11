@@ -11,12 +11,14 @@ cc_library(
     deps = [
         ":aes_sca_commands",
         ":crypto_fi_commands",
+        ":edn_sca_commands",
         ":extclk_sca_fi_commands",
         ":hmac_sca_commands",
         ":ibex_fi_commands",
         ":kmac_sca_commands",
         ":lc_ctrl_fi_commands",
         ":otbn_fi_commands",
+        ":otbn_sca_commands",
         ":otp_fi_commands",
         ":prng_sca_commands",
         ":rom_fi_commands",
@@ -37,6 +39,13 @@ cc_library(
     name = "crypto_fi_commands",
     srcs = ["crypto_fi_commands.c"],
     hdrs = ["crypto_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "edn_sca_commands",
+    srcs = ["edn_sca_commands.c"],
+    hdrs = ["edn_sca_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -90,6 +99,13 @@ cc_library(
 )
 
 cc_library(
+    name = "otbn_sca_commands",
+    srcs = ["otbn_sca_commands.c"],
+    hdrs = ["otbn_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "otp_fi_commands",
     srcs = ["otp_fi_commands.c"],
     hdrs = ["otp_fi_commands.h"],
@@ -118,9 +134,9 @@ cc_library(
 )
 
 cc_library(
-    name = "sca_lib_commands",
-    srcs = ["sca_lib_commands.c"],
-    hdrs = ["sca_lib_commands.h"],
+    name = "pentest_lib_commands",
+    srcs = ["pentest_lib_commands.c"],
+    hdrs = ["pentest_lib_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

@@ -274,4 +274,20 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
+  virtual function void phase_ready_to_end(uvm_phase phase);
+    if (phase.get_name() != "run") return;
+
+      // Raising an objection and waiting for the pwrmgr_complete to set. This will add an extra
+      // delay after the test finishes and rom_ctrl_fsm would be in a done state which will set
+      // pwrmgr_data_o.done.
+      phase.raise_objection(this, {`gfn, " objection raised"});
+      fork
+        begin
+          if (cfg.en_scb)
+            wait (pwrmgr_complete);
+          phase.drop_objection(this, {`gfn, " objection dropped"});
+        end
+      join_none
+  endfunction
+
 endclass

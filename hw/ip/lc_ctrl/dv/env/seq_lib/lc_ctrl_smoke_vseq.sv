@@ -8,19 +8,11 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   `uvm_object_new
 
-  rand bit clk_byp_error_rsp, flash_rma_error_rsp;
-  rand bit otp_prog_err, token_mismatch_err;
+  rand bit otp_prog_err;
   dec_lc_state_e next_lc_state;
   rand lc_token_t token_scramble;
 
-  constraint no_err_rsps_c {
-    clk_byp_error_rsp == 0;
-    flash_rma_error_rsp == 0;
-  }
-
   constraint otp_prog_err_c {otp_prog_err == 0;}
-
-  constraint token_mismatch_err_c {token_mismatch_err == 0;}
 
   virtual task pre_start();
     super.pre_start();
@@ -39,8 +31,8 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   task body();
 
     fork
-      run_clk_byp_rsp(clk_byp_error_rsp);
-      run_flash_rma_rsp(flash_rma_error_rsp);
+      run_clk_byp_rsp(1'b0);
+      run_flash_rma_rsp(1'b0);
     join_none
 
     //

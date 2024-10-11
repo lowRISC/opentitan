@@ -22,13 +22,15 @@ module prim_ascon_duplex
   input duplex_variant_e ascon_variant,
   input duplex_op_e ascon_operation,
 
-  input  logic   start_i,
+  input  logic start_i,
+  output logic done_o,
+
   output prim_mubi_pkg::mubi4_t idle_o,
 
   // It is assumed that no_ad, no_msg, key, and nonce are always
   // valid and constant, when the cipher is triggered by the start command
-  input logic no_ad,
-  input logic no_msg,
+  input prim_mubi_pkg::mubi4_t no_ad_i,
+  input prim_mubi_pkg::mubi4_t no_msg_i,
 
   input logic [127:0] key_i,
   input logic [127:0] nonce_i,
@@ -48,6 +50,8 @@ module prim_ascon_duplex
 
   output logic [127:0] tag_out_o,
   output logic         tag_out_valid_o,
+
+  output duplex_fsm_state_e fsm_state_o,
 
   output logic err_o
 );
@@ -79,8 +83,10 @@ logic [319:0] state_from_round;
 logic [4:0][63:0] round_to_mux;
 assign round_to_mux = state_from_round;
 
-fsm_state_e fsm_state_d, fsm_state_q;
+duplex_fsm_state_e fsm_state_d, fsm_state_q;
 perm_offset_e perm_offset;
+
+assign fsm_state_o = fsm_state_q;
 
 logic  [63:0] iv;
 assign iv = (ascon_variant == ASCON_128) ? IV_128 : IV_128A;
@@ -324,6 +330,7 @@ always_comb begin : p_fsm
   set_round_counter = 1'b0;
   inc_round_counter = 1'b0;
   perm_offset = P12;
+  done_o = 1'b0;
   idle_o = prim_mubi_pkg::MuBi4False;
 
   // Default: Don't update state
@@ -376,7 +383,7 @@ always_comb begin : p_fsm
       sel_mux_word3 = ABSORB;
       sel_mux_key_word3 = KEY_HI;
       sel_mux_word4 = ABSORB;
-      if (no_ad) begin
+      if (prim_mubi_pkg::mubi4_test_true_strict(no_ad_i)) begin
         fsm_state_d = XorDomSep;
       end else begin
         fsm_state_d = AbsorbAD;
@@ -467,7 +474,7 @@ always_comb begin : p_fsm
     XorDomSep: begin
       set_dom_sep = 1'b1;
       sel_mux_word4 = KEEP;
-      if (no_msg) begin
+      if (prim_mubi_pkg::mubi4_test_true_strict(no_msg_i)) begin
         fsm_state_d = AbsorbMSGEmpty;
       end else begin
         fsm_state_d = AbsorbMSG;
@@ -580,6 +587,7 @@ always_comb begin : p_fsm
     SqueezeTagXorKey: begin
       tag_out_valid_o = 1'b1;
       fsm_state_d = Idle;
+      done_o = 1'b1;
     end
     Error: begin
       fsm_state_d = Error;
@@ -592,9 +600,16 @@ always_comb begin : p_fsm
   endcase
 end
 
-`PRIM_FLOP_SPARSE_FSM(u_state_regs, fsm_state_d, fsm_state_q, fsm_state_e, Idle)
+`PRIM_FLOP_SPARSE_FSM(u_state_regs, fsm_state_d, fsm_state_q, duplex_fsm_state_e, Idle)
 
-assign err_o = round_count_error | sparse_fsm_error;
+logic mubi_error;
+assign mubi_error = prim_mubi_pkg::mubi4_test_invalid(no_ad_i)
+                  | prim_mubi_pkg::mubi4_test_invalid(no_msg_i)
+                  | prim_mubi_pkg::mubi4_test_invalid(complete_block)
+                  | prim_mubi_pkg::mubi4_test_invalid(last_block_ad_i)
+                  | prim_mubi_pkg::mubi4_test_invalid(last_block_msg_i);
+
+assign err_o = round_count_error | sparse_fsm_error | mubi_error;
 
 prim_ascon_round u_prim_ascon_round (
   .state_o(state_from_round),

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class sram_ctrl_base_test extends cip_base_test #(
-    .CFG_T(sram_ctrl_env_cfg#(`SRAM_ADDR_WIDTH)),
-    .ENV_T(sram_ctrl_env#(`SRAM_ADDR_WIDTH))
+    .CFG_T(sram_ctrl_env_cfg#(`SRAM_WORD_ADDR_WIDTH)),
+    .ENV_T(sram_ctrl_env#(`SRAM_WORD_ADDR_WIDTH))
   );
 
   `uvm_component_utils(sram_ctrl_base_test)

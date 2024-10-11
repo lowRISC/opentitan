@@ -96,8 +96,6 @@ tock_repos(
     #tock = "../tock",
     #libtock = "../libtock-rs",
 )
-load("@tockloader_deps//:requirements.bzl", install_tockloader_python_deps="install_deps")
-install_tockloader_python_deps()
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
@@ -148,6 +146,10 @@ sphincsplus_repos()
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
+
+# CBOR reader & writer from open-dice
+load("//third_party/open-dice:repos.bzl", "open_dice_repos")
+open_dice_repos()
 
 # Setup for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.

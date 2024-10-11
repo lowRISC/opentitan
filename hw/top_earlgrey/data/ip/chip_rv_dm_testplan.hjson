@@ -24,7 +24,7 @@
       tests: ["chip_jtag_csr_rw"]
       bazel: ["//sw/device/tests:rv_dm_csr_rw"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM"
@@ -55,7 +55,7 @@
       tests: ["chip_jtag_mem_access"]
       bazel: ["//sw/device/tests:rv_dm_mem_access"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM",
@@ -95,7 +95,7 @@
               "rom_e2e_jtag_debug_rma"]
       bazel: ["//sw/device/silicon_creator/rom/e2e/jtag_inject:rom_e2e_openocd_debug_test"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM",
@@ -119,7 +119,7 @@
       tests: ["chip_rv_dm_ndm_reset_req"]
       bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM",
@@ -151,7 +151,7 @@
       tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
       bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM",
@@ -172,7 +172,7 @@
       tests: ["chip_sw_rv_dm_access_after_wakeup"]
       bazel: ["//sw/device/tests:rv_dm_access_after_wakeup"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM"
@@ -209,7 +209,7 @@
       tests: ["chip_tap_straps_rma"]
       bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM"
@@ -255,7 +255,7 @@
       ],
       lc_states: ["RAW", "TEST_LOCKED", "TEST_UNLOCKED", "DEV", "RMA", "PROD",
         "PROD_END", "SCRAP"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM"
@@ -275,7 +275,7 @@
       tests: []
       bazel: ["//sw/device/tests:rv_dm_jtag"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
       ]
@@ -294,7 +294,7 @@
       tests: []
       bazel: ["//sw/device/tests:rv_dm_dtm"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM",
@@ -323,7 +323,7 @@
       tests: []
       bazel: ["//sw/device/tests:rv_dm_control_status"],
       lc_states: ["DEV"]
-      host_support: "true"
+      host_support: true
       features: [
         "RV_DM.JTAG.FSM",
         "RV_DM.JTAG.DTM",

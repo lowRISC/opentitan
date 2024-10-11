@@ -439,6 +439,7 @@
                             Muxed pad attributes.
                             This register has WARL behavior since not each pad type may support
                             all attributes.
+                            The muxed pad that is used for TAP strap 0 has a different reset value, with `pull_en` set to 1.
                             ''',
                   count:        "NMioPads",
                   compact:      "false",
@@ -509,7 +510,8 @@
                   // read back the same value that was written to them.
                   // further, they have hardware side effects since they drive the
                   // pad attributes, and hence no random data should be written to them.
-                  tags: ["excl:CsrAllTests:CsrExclWrite"]
+                  // Additionally, their reset value is defined by the RTL implementation and may not equal `resval` for all instances (#24621).
+                  tags: ["excl:CsrAllTests:CsrExclAll"]
                 }
     },
 

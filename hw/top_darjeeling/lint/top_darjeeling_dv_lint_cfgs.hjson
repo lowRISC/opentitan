@@ -1,0 +1,220 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the primary cfg hjson for DV linting. It imports ALL individual lint
+  // cfgs of the IPs DV environments and the full chip DV environment for top_darjeeling.
+  // This enables to run them all as a regression in one shot.
+  name: top_darjeeling_dv_batch
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"
+                     // tool-specific configuration
+                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
+
+  flow: "lint"
+
+  // Different dashboard output path for each tool
+  rel_path: "hw/top_darjeeling/dv/lint/{tool}/summary"
+
+  use_cfgs: [{    name: dma
+                  fusesoc_core: lowrisc:ip:dma_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/dma/lint/{tool}"
+             },
+             {    name: mbx
+                  fusesoc_core: lowrisc:ip:mbx_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/mbx/lint/{tool}"
+             },
+             {    name: aes
+                  fusesoc_core: lowrisc:dv:aes_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/aes/dv/lint/{tool}"
+             },
+          //    {    name: alert_handler
+          //         fusesoc_core: lowrisc:opentitan:top_darjeeling_alert_handler_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip_autogen/alert_handler/dv/lint/{tool}"
+          //    },
+          //    {    name: aon_timer
+          //         fusesoc_core: lowrisc:dv:aon_timer_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip/aon_timer/dv/lint/{tool}"
+          //    },
+          //    {    name: clkmgr
+          //         fusesoc_core: lowrisc:dv:clkmgr_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip_autogen/clkmgr/dv/lint/{tool}"
+          //    },
+             {    name: csrng
+                  fusesoc_core: lowrisc:dv:csrng_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/csrng/dv/lint/{tool}"
+             },
+             {    name: adc_ctrl
+                  fusesoc_core: lowrisc:dv:adc_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/adc_ctrl/dv/lint/{tool}"
+             },
+             {    name: entropy_src
+                  fusesoc_core: lowrisc:dv:entropy_src_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/entropy_src/dv/lint/{tool}"
+             },
+             {    name: edn
+                  fusesoc_core: lowrisc:dv:edn_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/edn/dv/lint/{tool}"
+             },
+          //    {    name: flash_ctrl
+          //         fusesoc_core: lowrisc:dv:flash_ctrl_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip_autogen/flash_ctrl/dv/lint/{tool}"
+          //    },
+             {    name: gpio
+                  fusesoc_core: lowrisc:dv:gpio_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/gpio/dv/lint/{tool}"
+             },
+             {    name: hmac
+                  fusesoc_core: lowrisc:dv:hmac_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/hmac/dv/lint/{tool}"
+             },
+             {    name: i2c
+                  fusesoc_core: lowrisc:dv:i2c_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/i2c/dv/lint/{tool}"
+             },
+             {    name: keymgr
+                  fusesoc_core: lowrisc:dv:keymgr_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/keymgr/dv/lint/{tool}"
+             },
+             {    name: keymgr_dpe
+                  fusesoc_core: lowrisc:dv:keymgr_dpe_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/keymgr_dpe/dv/lint/{tool}"
+             },
+             {
+                  name: kmac
+                  fusesoc_core: lowrisc:dv:kmac_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/kmac/dv/lint/{tool}"
+             },
+             {
+                  name: lc_ctrl
+                  fusesoc_core: lowrisc:dv:lc_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/lc_ctrl/dv/lint/{tool}"
+             },
+             {    name: otp_ctrl
+                  fusesoc_core: lowrisc:dv:otp_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/otp_ctrl/dv/lint/{tool}"
+             },
+             {    name: pattgen
+                  fusesoc_core: lowrisc:,dv:pattgen_sim,
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
+             },
+             {    name: prim_alert
+                  fusesoc_core: lowrisc:dv:prim_alert_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/prim/dv/prim_alert/lint/{tool}"
+             },
+             {    name: prim_esc
+                  fusesoc_core: lowrisc:dv:prim_esc_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/prim/dv/prim_esc/lint/{tool}"
+             },
+             {    name: prim_lfsr
+                  fusesoc_core: lowrisc:dv:prim_lfsr_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/prim/dv/prim_lfsr/lint/{tool}"
+             },
+             {    name: prim_present
+                  fusesoc_core: lowrisc:dv:prim_present_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/prim/dv/prim_present/lint/{tool}"
+             },
+             {    name: prim_prince
+                  fusesoc_core: lowrisc:dv:prim_prince_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/prim/dv/prim_prince/lint/{tool}"
+             },
+          //    {    name: pwrmgr
+          //         fusesoc_core: lowrisc:dv:pwrmgr_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip_autogen/pwrmgr/dv/lint/{tool}"
+          //    },
+             {    name: rom_ctrl
+                  fusesoc_core: lowrisc:dv:rom_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
+             },
+          //    {    name: rstmgr
+          //         fusesoc_core: lowrisc:dv:rstmgr_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip_autogen/rstmgr/dv/lint/{tool}"
+          //    },
+             {    name: rv_dm
+                  fusesoc_core: lowrisc:dv:rv_dm_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_dm/dv/lint/{tool}"
+             },
+             {    name: rv_timer
+                  fusesoc_core: lowrisc:dv:rv_timer_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_timer/dv/lint/{tool}"
+             },
+             {    name: spi_device
+                  fusesoc_core: lowrisc:dv:spi_device_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/spi_device/dv/lint/{tool}"
+             },
+             {    name: spi_host
+                  fusesoc_core: lowrisc:dv:spi_host_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/spi_host/dv/lint/{tool}"
+             },
+             {    name: sram_ctrl
+                  fusesoc_core: lowrisc:dv:sram_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/sram_ctrl/dv/lint/{tool}"
+             },
+             {    name: uart
+                  fusesoc_core: lowrisc:dv:uart_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/uart/dv/lint/{tool}"
+             },
+          //    {    name: xbar_main
+          //         fusesoc_core: lowrisc:dv:top_darjeeling_xbar_main_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip/xbar_main/dv/lint/{tool}"
+          //    },
+          //    {    name: xbar_peri
+          //         fusesoc_core: lowrisc:dv:top_darjeeling_xbar_peri_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip/xbar_peri/dv/lint/{tool}"
+          //    },
+          //    {    name: xbar_mbx
+          //         fusesoc_core: lowrisc:dv:top_darjeeling_xbar_mbx_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/ip/xbar_mbx/dv/lint/{tool}"
+          //    },
+          //    {    name: chip
+          //         fusesoc_core: lowrisc:dv:chip_sim
+          //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+          //         rel_path: "hw/top_darjeeling/dv/lint/{tool}"
+          //         overrides: [
+          //           {
+          //             name: design_level
+          //             value: "top"
+          //           }
+          //         ]
+          //    },
+            ]
+}

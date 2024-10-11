@@ -18,6 +18,9 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
   // This tracks when the ram is undergoing initialization in the scoreboard.
   bit in_init = 1'b0;
 
+  // Disables certain checks for FI tests.
+  bit is_fi_test = 1'b0;
+
   // ext component cfgs
   rand push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE)) m_kdi_cfg;
 

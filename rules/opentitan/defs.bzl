@@ -46,6 +46,11 @@ load(
     _spx_key_by_name = "spx_key_by_name",
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
+load(
+    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
+    "ci_orchestrator",
+)
+load("@bazel_skylib//lib:sets.bzl", "sets")
 
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
@@ -143,6 +148,8 @@ def _hacky_tags(env):
     (_, suffix) = env.split(":")
     tags = []
     if suffix.startswith("fpga"):
+        tags.append("fpga")
+
         # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the
@@ -185,6 +192,7 @@ def opentitan_test(
         silicon = _silicon_params(),
         verilator = _verilator_params(),
         data = [],
+        run_in_ci = None,
         **kwargs):
     """Instantiate a test per execution environment.
 
@@ -212,6 +220,7 @@ def opentitan_test(
       dv: Execution overrides for a DV-based test.
       silicon: Execution overrides for a silicon-based test.
       verilator: Execution overrides for a verilator-based test.
+      run_in_ci: Override the automatic selection of execution environments to run in CI and run exactly those environments.
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
@@ -224,7 +233,8 @@ def opentitan_test(
     test_parameters.update(kwargs)
     kwargs_unused = kwargs.keys()
 
-    all_tests = []
+    # Precompute parameters.
+    all_test_params = []
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
 
@@ -237,6 +247,28 @@ def opentitan_test(
         tparam = test_parameters[pname]
         if pname in kwargs_unused:
             kwargs_unused.remove(pname)
+        all_test_params.append((env, pname, tparam, extra_tags))
+
+    # Find all exec_envs which are not marked as broken.
+    non_broken_exec_env = []
+    for (env, pname, tparam, extra_tags) in all_test_params:
+        if not ("broken" in tparam.tags + extra_tags):
+            non_broken_exec_env.append(env)
+
+    if run_in_ci == None:
+        skip_in_ci = sets.make(ci_orchestrator(name, non_broken_exec_env))
+        all_envs = sets.make([env for (env, _, _, _) in all_test_params])
+        run_in_ci = sets.difference(all_envs, skip_in_ci)
+    else:
+        run_in_ci = sets.make(run_in_ci)
+
+    all_tests = []
+    for (env, pname, tparam, extra_tags) in all_test_params:
+        # Tag test if it must not run in CI.
+        skip_in_ci = []
+        if not sets.contains(run_in_ci, env):
+            skip_in_ci.append("skip_in_ci")
+
         (_, suffix) = env.split(":")
         test_name = "{}_{}".format(name, suffix)
         all_tests.append(":" + test_name)
@@ -254,7 +286,7 @@ def opentitan_test(
             exec_env = env,
             naming_convention = "{name}",
             # Tagging and timeout info always comes from a param block.
-            tags = tparam.tags + extra_tags,
+            tags = tparam.tags + extra_tags + skip_in_ci,
             timeout = tparam.timeout,
             local = tparam.local,
             # Override parameters in the test rule.

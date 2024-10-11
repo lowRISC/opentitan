@@ -13,7 +13,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -416,11 +416,13 @@ sha3_sca_error_t sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
     // configured to start operation 320 cycles after receiving the START and
     // PROC commands. This allows Ibex to go to sleep in order to not disturb
     // the capture.
-    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, true);
+    pentest_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, true,
+                           false);
   } else {
     // On the chip, issue a PROCESS command to start operation and put Ibex
     // into sleep.
-    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles, true);
+    pentest_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles,
+                           true, false);
   }
 
   return sha3ScaOk;
@@ -603,11 +605,11 @@ status_t handle_sha3_sca_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();

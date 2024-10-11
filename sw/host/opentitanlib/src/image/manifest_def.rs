@@ -8,7 +8,7 @@ use crate::util::bigint::fixed_size_bigint;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
@@ -96,7 +96,9 @@ macro_rules! manifest_def {
 
 impl ManifestSpec {
     pub fn read_from_file(path: &Path) -> Result<ManifestSpec> {
-        Ok(deser_hjson::from_str(&std::fs::read_to_string(path)?)?)
+        Ok(deser_hjson::from_str(
+            &std::fs::read_to_string(path).with_context(|| format!("Failed to open {path:?}"))?,
+        )?)
     }
 
     pub fn overwrite_fields(&mut self, other: ManifestSpec) {
@@ -177,8 +179,23 @@ impl ManifestPacked<[ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT]>
 
     fn overwrite(&mut self, o: Self) {
         for i in 0..self.len() {
-            if !matches!(o[i].0, ManifestExtEntryVar::None) {
-                self[i].0 = o[i].0.clone();
+            match o[i].0 {
+                ManifestExtEntryVar::Name(other_id) => match self[i].0 {
+                    ManifestExtEntryVar::IdOffset {
+                        identifier: self_id,
+                        offset: _,
+                    } => {
+                        if self_id == other_id {
+                            // Do not overwrite existing entries with matching IDs.
+                            continue;
+                        } else {
+                            self[i].0 = o[i].0.clone()
+                        }
+                    }
+                    _ => self[i].0 = o[i].0.clone(),
+                },
+                ManifestExtEntryVar::None => (),
+                _ => self[i].0 = o[i].0.clone(),
             }
         }
     }

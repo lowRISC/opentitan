@@ -17,6 +17,7 @@ IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
        csrng         \
+       dma           \
        edn           \
        entropy_src   \
        flash_ctrl    \
@@ -24,8 +25,10 @@ IPS ?= aes           \
        hmac          \
        i2c           \
        keymgr        \
+       keymgr_dpe    \
        kmac          \
        lc_ctrl       \
+       mbx           \
        otbn          \
        otp_ctrl      \
        pattgen       \

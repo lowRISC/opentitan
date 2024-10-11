@@ -22,7 +22,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:crypto_fi_commands",
     ],
 )
@@ -52,7 +52,7 @@ cc_library(
         "//sw/device/sca/lib:sca",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:ibex_fi_commands",
     ],
 )
@@ -71,7 +71,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:lc_ctrl_fi_commands",
     ],
 )
@@ -99,7 +99,7 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_unrolled_reg_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_key_sideload",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_load_integrity",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:otbn_fi_commands",
     ],
 )
@@ -124,7 +124,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:rng_fi_commands",
     ],
 )
@@ -142,7 +142,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:otp_fi_commands",
     ],
 )
@@ -162,7 +162,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",
-        "//sw/device/tests/penetrationtests/firmware/lib:sca_lib",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:rom_fi_commands",
     ],
 )

@@ -36,6 +36,7 @@ filesets:
       - seq_lib/sram_ctrl_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_ram_cfg_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/sram_ctrl_readback_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

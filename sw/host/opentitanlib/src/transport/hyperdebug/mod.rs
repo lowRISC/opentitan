@@ -808,12 +808,16 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
+            let usb_vid = self.inner.usb_device.borrow().get_vendor_id();
+            let usb_pid = self.inner.usb_device.borrow().get_product_id();
             dfu::update_firmware(
                 &mut self.inner.usb_device.borrow_mut(),
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
+                usb_vid,
+                usb_pid,
             )
         } else if let Some(jtag_set_pins) = action.downcast_ref::<SetJtagPins>() {
             match (

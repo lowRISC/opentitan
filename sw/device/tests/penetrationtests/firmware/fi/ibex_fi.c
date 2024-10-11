@@ -22,7 +22,7 @@
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -239,7 +239,7 @@ static inline void read_all_regs(uint32_t buffer[]) {
 
 static status_t read_otp_partitions(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t
       otp_data_read_res_vendor_test[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
@@ -276,7 +276,7 @@ static status_t read_otp_partitions(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Detect potential mismatch caused by faults.
   uint32_t res = 0;
@@ -342,7 +342,7 @@ void not_increment_counter(void) __attribute__((optnone)) {
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Create translation descriptions.
   dif_rv_core_ibex_addr_translation_mapping_t increment_100x10_mapping = {
@@ -394,7 +394,7 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   result_expected = increment_100x10_remapped(0);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result_target = increment_100x1_remapped(0);
   // Compare values
@@ -422,7 +422,7 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
 
 status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1 = {
@@ -452,7 +452,7 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   asm volatile(NOP1000);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read back address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1_read_back;
@@ -495,7 +495,7 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
 status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -547,7 +547,7 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   asm volatile("endfitestbeq:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -566,7 +566,7 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -618,7 +618,7 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   asm volatile("endfitestbge:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -637,7 +637,7 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -689,7 +689,7 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   asm volatile("endfitestbgeu:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -708,7 +708,7 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -760,7 +760,7 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   asm volatile("endfitestblt:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -779,7 +779,7 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -831,7 +831,7 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   asm volatile("endfitestbltu:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -850,7 +850,7 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
 status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -902,7 +902,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   asm volatile("endfitestbne:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -920,7 +920,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
 
 status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
@@ -947,7 +947,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   read_temp_regs(res_values);
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Compare against reference values.
   uint32_t res = 0;
@@ -973,7 +973,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
 status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Init x5 with reference value.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
@@ -1014,7 +1014,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   asm volatile("mv %0, x5" : "=r"(res_value));
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Compare against reference values.
   uj_output.result = 0;
@@ -1035,7 +1035,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!flash_init) {
     // Configure the data flash.
@@ -1103,7 +1103,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   read_temp_regs(res_values);
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Compare against reference values.
   ibex_fi_faulty_addresses_data_t uj_output;
@@ -1133,7 +1133,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   if (!flash_init) {
     // Configure the data flash.
@@ -1176,7 +1176,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[32];
@@ -1205,7 +1205,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
 status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1228,7 +1228,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1247,7 +1247,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1267,7 +1267,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1286,7 +1286,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1306,7 +1306,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1325,7 +1325,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1345,7 +1345,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1364,7 +1364,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1384,7 +1384,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1403,7 +1403,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Values are intentially not equal.
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
@@ -1420,7 +1420,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1438,7 +1438,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
 
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -1451,7 +1451,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   }
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1469,7 +1469,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t res_values[7];
   // Initialize temporary registers with reference values.
@@ -1486,7 +1486,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   asm volatile(NOP1000);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -1521,7 +1521,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t res_values[6];
   // Initialize temporary registers with reference values.
@@ -1567,7 +1567,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   asm volatile("or x30, x30, x30");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -1602,7 +1602,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -1619,7 +1619,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   asm volatile("mv %0, x6" : "=r"(loop_counter2));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1637,7 +1637,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Init t0...t6 with 0.
   init_temp_regs(0);
@@ -1665,7 +1665,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   read_temp_regs(res_values);
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   ibex_fi_faulty_addresses_data_t uj_output;
   memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
@@ -1705,7 +1705,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
       (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(uint32_t)) - 1;
 
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Get address of the ret. SRAM at the beginning of the owner section.
   uintptr_t sram_ret_buffer_addr =
@@ -1725,7 +1725,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   asm volatile(NOP1000);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Compare against reference values.
   ibex_fi_faulty_addresses_data_t uj_output;
@@ -1760,7 +1760,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -1782,7 +1782,7 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   }
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[32];
@@ -1811,7 +1811,7 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
 status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Initialize SRAM region with inverse reference value.
   sram_main_buffer[0] = ~ref_values[0];
@@ -1922,7 +1922,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t res_values[3];
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -1954,7 +1954,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
 
 status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -2101,7 +2101,7 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
                       ref_values[0]);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[64];
@@ -2129,7 +2129,7 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t result = 0;
@@ -2172,7 +2172,7 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   asm volatile("mv %0, x5" : "=r"(result));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2191,7 +2191,7 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   uint32_t registers[32] = {0};
   read_all_regs(registers);
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t result = 0;
@@ -2235,7 +2235,7 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   asm volatile("mv %0, x5" : "=r"(result));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2253,7 +2253,7 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -2271,7 +2271,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2288,7 +2288,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -2308,7 +2308,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   asm volatile("mv %0, x5" : "=r"(loop_counter));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2325,7 +2325,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint32_t addresses[8] = {0};
   uint32_t data[8] = {0};
@@ -2353,7 +2353,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   sca_set_trigger_low();
 
   // Get registered alerts from alert handler.
-  reg_alerts = sca_get_triggered_alerts();
+  reg_alerts = pentest_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2380,10 +2380,10 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  sca_configure_alert_handler();
+  pentest_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
@@ -2402,7 +2402,7 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   // Initialize flash for the flash test and write reference values into page.
@@ -2435,7 +2435,7 @@ status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) {
 
 status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
   uint64_t faulty_token[kSecret0TestUnlockTokenSizeIn64BitWords];
   for (size_t i = 0; i < kSecret0TestUnlockTokenSizeIn64BitWords; i++) {

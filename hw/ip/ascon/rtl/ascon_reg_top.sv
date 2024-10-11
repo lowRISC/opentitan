@@ -222,12 +222,12 @@ module ascon_reg_top (
   logic ctrl_shadowed_masked_msg_input_wd;
   logic ctrl_shadowed_masked_msg_input_storage_err;
   logic ctrl_shadowed_masked_msg_input_update_err;
-  logic ctrl_shadowed_no_msg_qs;
-  logic ctrl_shadowed_no_msg_wd;
+  logic [3:0] ctrl_shadowed_no_msg_qs;
+  logic [3:0] ctrl_shadowed_no_msg_wd;
   logic ctrl_shadowed_no_msg_storage_err;
   logic ctrl_shadowed_no_msg_update_err;
-  logic ctrl_shadowed_no_ad_qs;
-  logic ctrl_shadowed_no_ad_wd;
+  logic [3:0] ctrl_shadowed_no_ad_qs;
+  logic [3:0] ctrl_shadowed_no_ad_wd;
   logic ctrl_shadowed_no_ad_storage_err;
   logic ctrl_shadowed_no_ad_update_err;
   logic ctrl_aux_shadowed_re;
@@ -267,10 +267,9 @@ module ascon_reg_top (
   logic status_wait_edn_qs;
   logic status_ascon_error_qs;
   logic status_alert_recov_ctrl_update_err_qs;
-  logic status_alert_recov_ctrl_aux_update_err_qs;
-  logic status_alert_recov_block_ctrl_update_err_qs;
   logic status_alert_fatal_fault_qs;
-  logic [2:0] output_valid_data_type_qs;
+  logic output_valid_msg_valid_qs;
+  logic output_valid_tag_valid_qs;
   logic [1:0] output_valid_tag_comparison_valid_qs;
   logic fsm_state_re;
   logic [31:0] fsm_state_qs;
@@ -1305,11 +1304,11 @@ module ascon_reg_top (
     .err_storage (ctrl_shadowed_masked_msg_input_storage_err)
   );
 
-  //   F[no_msg]: 8:8
+  //   F[no_msg]: 11:8
   prim_subreg_shadow #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (4'h6),
     .Mubi    (1'b0)
   ) u_ctrl_shadowed_no_msg (
     .clk_i   (clk_i),
@@ -1341,11 +1340,11 @@ module ascon_reg_top (
     .err_storage (ctrl_shadowed_no_msg_storage_err)
   );
 
-  //   F[no_ad]: 9:9
+  //   F[no_ad]: 15:12
   prim_subreg_shadow #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (4'h9),
     .Mubi    (1'b0)
   ) u_ctrl_shadowed_no_ad (
     .clk_i   (clk_i),
@@ -1785,61 +1784,7 @@ module ascon_reg_top (
     .qs     (status_alert_recov_ctrl_update_err_qs)
   );
 
-  //   F[alert_recov_ctrl_aux_update_err]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_status_alert_recov_ctrl_aux_update_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.status.alert_recov_ctrl_aux_update_err.de),
-    .d      (hw2reg.status.alert_recov_ctrl_aux_update_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (status_alert_recov_ctrl_aux_update_err_qs)
-  );
-
-  //   F[alert_recov_block_ctrl_update_err]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_status_alert_recov_block_ctrl_update_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.status.alert_recov_block_ctrl_update_err.de),
-    .d      (hw2reg.status.alert_recov_block_ctrl_update_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (status_alert_recov_block_ctrl_update_err_qs)
-  );
-
-  //   F[alert_fatal_fault]: 7:7
+  //   F[alert_fatal_fault]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -1868,13 +1813,13 @@ module ascon_reg_top (
 
 
   // R[output_valid]: V(False)
-  //   F[data_type]: 2:0
+  //   F[msg_valid]: 0:0
   prim_subreg #(
-    .DW      (3),
+    .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0),
+    .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_output_valid_data_type (
+  ) u_output_valid_msg_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -1883,8 +1828,8 @@ module ascon_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.output_valid.data_type.de),
-    .d      (hw2reg.output_valid.data_type.d),
+    .de     (hw2reg.output_valid.msg_valid.de),
+    .d      (hw2reg.output_valid.msg_valid.d),
 
     // to internal hardware
     .qe     (),
@@ -1892,10 +1837,37 @@ module ascon_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (output_valid_data_type_qs)
+    .qs     (output_valid_msg_valid_qs)
   );
 
-  //   F[tag_comparison_valid]: 4:3
+  //   F[tag_valid]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_output_valid_tag_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.output_valid.tag_valid.de),
+    .d      (hw2reg.output_valid.tag_valid.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (output_valid_tag_valid_qs)
+  );
+
+  //   F[tag_comparison_valid]: 3:2
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2300,9 +2272,9 @@ module ascon_reg_top (
 
   assign ctrl_shadowed_masked_msg_input_wd = reg_wdata[7];
 
-  assign ctrl_shadowed_no_msg_wd = reg_wdata[8];
+  assign ctrl_shadowed_no_msg_wd = reg_wdata[11:8];
 
-  assign ctrl_shadowed_no_ad_wd = reg_wdata[9];
+  assign ctrl_shadowed_no_ad_wd = reg_wdata[15:12];
   assign ctrl_aux_shadowed_re = addr_hit[38] & reg_re & !reg_error;
   assign ctrl_aux_shadowed_we = addr_hit[38] & reg_we & !reg_error;
 
@@ -2541,8 +2513,8 @@ module ascon_reg_top (
         reg_rdata_next[5] = ctrl_shadowed_sideload_key_qs;
         reg_rdata_next[6] = ctrl_shadowed_masked_ad_input_qs;
         reg_rdata_next[7] = ctrl_shadowed_masked_msg_input_qs;
-        reg_rdata_next[8] = ctrl_shadowed_no_msg_qs;
-        reg_rdata_next[9] = ctrl_shadowed_no_ad_qs;
+        reg_rdata_next[11:8] = ctrl_shadowed_no_msg_qs;
+        reg_rdata_next[15:12] = ctrl_shadowed_no_ad_qs;
       end
 
       addr_hit[38]: begin
@@ -2571,14 +2543,13 @@ module ascon_reg_top (
         reg_rdata_next[2] = status_wait_edn_qs;
         reg_rdata_next[3] = status_ascon_error_qs;
         reg_rdata_next[4] = status_alert_recov_ctrl_update_err_qs;
-        reg_rdata_next[5] = status_alert_recov_ctrl_aux_update_err_qs;
-        reg_rdata_next[6] = status_alert_recov_block_ctrl_update_err_qs;
-        reg_rdata_next[7] = status_alert_fatal_fault_qs;
+        reg_rdata_next[5] = status_alert_fatal_fault_qs;
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[2:0] = output_valid_data_type_qs;
-        reg_rdata_next[4:3] = output_valid_tag_comparison_valid_qs;
+        reg_rdata_next[0] = output_valid_msg_valid_qs;
+        reg_rdata_next[1] = output_valid_tag_valid_qs;
+        reg_rdata_next[3:2] = output_valid_tag_comparison_valid_qs;
       end
 
       addr_hit[44]: begin

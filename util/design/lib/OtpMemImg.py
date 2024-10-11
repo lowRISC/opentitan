@@ -224,7 +224,7 @@ class OtpMemImg(OtpMemMap):
         log.info('')
 
         # Re-initialize with seed to make results reproducible.
-        sp.reseed(common.expand_seed(OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed'])))
+        sp.reseed(OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed']))
 
         if 'partitions' not in img_config:
             raise RuntimeError('Missing partitions key in configuration.')

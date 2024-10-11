@@ -5,8 +5,11 @@
 
 set -ex
 
-# Prefetch bazel airgapped dependencies.
-util/prep-bazel-airgapped-build.sh -f
+# Prefetch bazel airgapped dependencies if not already done.
+if [ ! -d bazel-airgapped ]; then
+  echo "Airgapped environment not found, preparing..." >&2
+  util/prep-bazel-airgapped-build.sh -f
+fi
 
 # Remove the airgapped network namespace.
 remove_airgapped_netns() {

@@ -530,7 +530,20 @@ package csr_utils_pkg;
     end
    endtask
 
-  // poll a csr or csr field continuously until it reads the expected value.
+  // Poll a csr or csr field continuously until its value is as expected.
+  //
+  // The CSR or field is polled by performing reads at the given ptr and its current value is
+  // compared with exp_data using the comparison in compare_op. The task exits when the comparison
+  // becomes true.
+  //
+  // To avoid this task waiting forever, there is an upper bound given with timeout_ns. If the task
+  // does not finish for another reason in that time, the test will fail.
+  //
+  // CSR reads are performed using frontdoor access. If the backdoor argument is true, then they
+  // will be performed with a backdoor access instead.
+  //
+  // Successive CSR reads are back-to-back unless spinwait_delay_ns is positive. If backdoor is
+  // true, the delay between successive reads is made to be at least 1ns.
   task automatic csr_spinwait(input uvm_object          ptr,
                               input uvm_reg_data_t      exp_data,
                               input uvm_check_e         check = default_csr_check,
@@ -542,25 +555,52 @@ package csr_utils_pkg;
                               input compare_op_e        compare_op = CompareOpEq,
                               input bit                 backdoor = 0,
                               input uvm_verbosity       verbosity = UVM_HIGH);
-    static int                      count;
+    static int count;
+    automatic int lcount;
+
+    // Increment count so that each call to csr_spinwait has a different index (to help debugging)
     count++;
+
+    // Take an (automatic) copy of lcount. This will act as a snapshot of the value that the count
+    // had when this task started, giving the index of *this* call.
+    lcount = count;
+
     `uvm_info($sformatf("%m()"), $sformatf(
                 "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
-                count,backdoor,exp_data, ptr.get_name()), verbosity)
+                lcount, backdoor, exp_data, ptr.get_name()), verbosity)
     fork
       begin : isolation_fork
         csr_field_t     csr_or_fld;
         uvm_reg_data_t  read_data;
         string          msg_id = {csr_utils_pkg::msg_id, "::csr_spinwait"};
-        automatic int lcount = count;
 
         csr_or_fld = decode_csr_or_field(ptr);
         if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
         fork
-          while (!under_reset) begin
-            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
-            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d",lcount),
+          // Repeatedly do reads of the value at path and stop when the value satisfies the supplied
+          // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads. If we
+          // enter reset, stop immediately (once the current csr_rd call has finished).
+          forever begin
+            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d", lcount),
                       verbosity)
+
+            // Wait spinwait_delay_ns nanoseconds between each read (and before the first one), but
+            // stop waiting immediately if we see a reset. Note that we can't wait for a reset in
+            // parallel with the csr_rd below, because we use disable fork when a process finishes
+            // and csr_rd has internal state that it must clean up without being killed.
+            if (spinwait_delay_ns) begin
+              fork begin : iso_fork
+                fork
+                  #(spinwait_delay_ns * 1ns);
+                  wait (under_reset);
+                join_any
+                disable fork;
+              end : iso_fork join
+            end
+
+            // If we are in reset, stop the wait immediately.
+            if (under_reset) break;
+
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
             `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",
@@ -579,13 +619,12 @@ package csr_utils_pkg;
               end
             endcase
           end
-          begin
-            automatic int lcount = count;
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
-                             "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
-                             ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
-                             exp_data,lcount)})
-          end
+          // Wait for timeout_ns nanoseconds and then fail with an error (because this process
+          // should have been killed before then)
+          `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
+                           "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
+                           ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
+                           exp_data, lcount)})
         join_any
         disable fork;
       end : isolation_fork

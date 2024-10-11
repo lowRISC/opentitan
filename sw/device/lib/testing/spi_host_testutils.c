@@ -112,6 +112,44 @@ static const spi_host1_pinmux_pins_t kSpiHost1PinmuxMap[] = {
         },
 };
 
+status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
+  // Set fast slew rate and strong drive strengh for SPI host0 pads.
+  dif_pinmux_pad_attr_t out_attr;
+  dif_pinmux_pad_attr_t in_attr = {
+      .slew_rate = 1,
+      .drive_strength = 3,
+      // Set weak pull-ups for all the pads.
+      .flags = kDifPinmuxPadAttrPullResistorEnable |
+               kDifPinmuxPadAttrPullResistorUp};
+  dif_result_t res;
+  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host0_direct_pads); ++i) {
+    res = dif_pinmux_pad_write_attrs(pinmux, spi_host0_direct_pads[i],
+                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
+    if (res == kDifError) {
+      // Some target platforms may not support the specified value for slew rate
+      // and drive strength. If that's the case, use the values actually
+      // supported.
+      if (out_attr.slew_rate != in_attr.slew_rate) {
+        LOG_INFO(
+            "Specified slew rate not supported, trying supported slew rate");
+        in_attr.slew_rate = out_attr.slew_rate;
+      }
+      if (out_attr.drive_strength != in_attr.drive_strength) {
+        LOG_INFO(
+            "Specified drive strength not supported, trying supported drive "
+            "strength");
+        in_attr.drive_strength = out_attr.drive_strength;
+      }
+      CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, spi_host0_direct_pads[i],
+                                              kDifPinmuxPadKindDio, in_attr,
+                                              &out_attr));
+      // Note: fallthrough with the modified `in_attr` so that the same
+      // attributes are used for all pads.
+    }
+  }
+  return OK_STATUS();
+}
+
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 extern status_t spi_host_testutils_is_active(dif_spi_host_t *spi_host);

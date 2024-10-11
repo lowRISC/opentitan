@@ -9,21 +9,21 @@
 // the originally written data is returned. This sequence runs forever, i.e.
 // it needs to be forked off as a separate thread. It can be stopped gracefully
 // by invoking the seq_stop() method.
-class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
+class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) extends dv_base_seq #(
     .REQ        (REQ),
     .CFG_T      (tl_agent_cfg),
     .SEQUENCER_T(tl_sequencer));
 
   // if enabled, rsp will be aborted if it's not accepted after given valid length
-  rand bit                 rsp_abort_after_d_valid_len;
+  rand bit                                         rsp_abort_after_d_valid_len;
   // chance to abort rsp
-  int                      rsp_abort_pct = 0;
+  int                                              rsp_abort_pct = 0;
 
-  int                      min_rsp_delay = 0;
-  int                      max_rsp_delay = 10;
-  mem_model_pkg::mem_model mem;
-  REQ                      req_q[$];
-  bit                      out_of_order_rsp = 0;
+  int                                              min_rsp_delay = 0;
+  int                                              max_rsp_delay = 10;
+  mem_model_pkg::mem_model#(.AddrWidth(AddrWidth)) mem;
+  REQ                                              req_q[$];
+  bit                                              out_of_order_rsp = 0;
 
   // Stops running this sequence.
   protected bit stop;

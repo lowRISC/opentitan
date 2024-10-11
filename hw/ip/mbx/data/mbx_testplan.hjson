@@ -1,0 +1,44 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "mbx"
+  import_testplans: [
+    hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson
+    hw/dv/tools/dvsim/testplans/csr_testplan.hjson
+    hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson
+    hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson
+    hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson
+    mbx_sec_cm_testplan.hjson
+  ]
+  testpoints: [
+    { name: mbx_smoke
+      desc: '''
+            Smoke test
+            '''
+      stage: V1
+      tests: ["mbx_smoke"]
+    }
+    { name: mbx_stress
+      desc: '''
+            Stress test
+            '''
+      stage: V2
+      tests: ["mbx_stress", "mbx_stress_zero_delays"]
+    }
+    { name: mbx_stress_all
+      desc: '''
+            Run the other tests in random order while injecting TL errors and running automated CSR tests in parallel.
+            '''
+      stage: V2
+      tests: ["mbx_stress_all"]
+    }
+    { name: mbx_imbx_oob
+      desc: '''
+            Test accesses that are out of bounds for the inbound mailbox.
+            '''
+      stage: V2
+      tests: ["mbx_imbx_oob"]
+    }
+  ]
+}

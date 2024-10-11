@@ -77,8 +77,12 @@ class otbn_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get otbn_escalate_if handle from uvm_config_db")
     end
     if (!uvm_config_db#(virtual otbn_rnd_if)::get(this, "", "rnd_vif",
-                                                       cfg.rnd_vif)) begin
+                                                  cfg.rnd_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_rnd_if handle from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual otbn_ssctrl_if)::get(this, "", "ssctrl_vif",
+                                                     cfg.ssctrl_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otbn_ssctrl_if handle from uvm_config_db")
     end
     if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "imem_util", cfg.imem_util)) begin
       `uvm_fatal(`gfn, "failed to get imem_util from uvm_config_db")

@@ -18,5 +18,5 @@ crates_vendor(
 
 py_console_script_binary(
     name = "tockloader",
-    pkg = "@tockloader_deps//tockloader",
+    pkg = "@ot_python_deps//tockloader",
 )

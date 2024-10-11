@@ -32,6 +32,7 @@
 #include "sw/device/lib/testing/otbn_testutils_rsa.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
+#include "sw/device/lib/testing/spi_host_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -684,6 +685,13 @@ static void configure_pinmux_sim(void) {
   //    Channel 0 on IOR11
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm0));
+
+  // Configure fast slew rate, strong drive strength, and weak pull-ups for SPI
+  // Host 0 pads.
+  CHECK_STATUS_OK(spi_host_testutils_configure_host0_pad_attrs(&pinmux));
+
+  // Configure fast slew rate and strong drive strength for SPI device pads.
+  CHECK_STATUS_OK(spi_device_testutils_configure_pad_attrs(&pinmux));
 }
 
 /**
