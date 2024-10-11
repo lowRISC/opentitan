@@ -610,6 +610,8 @@ module security_island
       .busy_o                          (                                      ),
       .cluster_id_i                    ( 6'b000000                            ),
 
+      .cluster_lock_xor_key_i          ( cluster_lock_xor_key_i               ),
+
       .async_data_master_aw_wptr_o     ( async_cluster_to_soc_axi_bus.aw_wptr ),
       .async_data_master_aw_rptr_i     ( async_cluster_to_soc_axi_bus.aw_rptr ),
       .async_data_master_aw_data_o     ( async_cluster_to_soc_axi_bus.aw_data ),
