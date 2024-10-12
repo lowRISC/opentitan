@@ -5,7 +5,6 @@
 import datetime
 import logging as log
 import os
-import shutil
 import subprocess
 from Launcher import ErrorMessage
 from Launcher import Launcher
@@ -26,9 +25,6 @@ class NcLauncher(Launcher):
         self.process = None
 
     def create_run_sh(self, full_path, cmd):
-        source_file = os.path.join(os.path.dirname(__file__), 'nc_post_cmd.sh')
-        destination_file = os.path.join(full_path, 'nc_post_cmd.sh')
-        shutil.copy2(source_file, destination_file)
         run_file = os.path.join(full_path, 'run.sh')
         rm_path(run_file)
         lines = ['#!/bin/sh',
@@ -56,11 +52,6 @@ class NcLauncher(Launcher):
         cmd = self.deploy.cmd
         odir = self.deploy.odir
 
-        postcmd = (
-            f'{odir}/nc_post_cmd.sh >post.log; '
-            f'cat post.log >>{log_file}'
-        )
-
         # TODO: These tool-specific names need moving into an hjson config
         # file.
         if (exetool == 'xcelium'):
@@ -77,7 +68,6 @@ class NcLauncher(Launcher):
                  '-e', 'SNAPSHOT',
                  '-nodb', '-forcelog',
                  '-l', log_file,
-                 '-postcmd', postcmd,
                  '-set', job_name] +
                 license_args +
                 interactive_flags +
