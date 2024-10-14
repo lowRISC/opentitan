@@ -10,7 +10,7 @@ set -e
 # This assumption enables us to infer that we're running in the sandbox when we
 # see a symlink named "WORKSPACE".
 if [[ -L WORKSPACE ]]; then
-    SHELLCHECK="$(realpath external/shellcheck/shellcheck)"
+    SHELLCHECK="$(realpath "${SHELLCHECK}")"
     REPO_TOP="$(dirname "$(realpath WORKSPACE)")"
     cd "${REPO_TOP}"
 else
