@@ -208,7 +208,7 @@ const owner_flash_info_config_t info_config = {
             {
                 // Disallowed page
                 .bank = 0,
-                .page = 5,
+                .page = 4,
                 .access = FLASH_ACCESS(
                     /*index=*/1,
                     /*read=*/true,
@@ -330,6 +330,7 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
 }
 
 TEST_F(OwnerBlockTest, FlashInfoApply) {
+  // TODO: make this test more strict.
   EXPECT_CALL(flash_ctrl_,
               InfoCfgSet(_, FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
                                      kMultiBitBool4True)));
