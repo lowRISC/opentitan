@@ -91,8 +91,7 @@ module aes_control_fsm
   output logic                 [NumSlicesCtr-1:0] iv_we_o,                 // Sparsify
 
   // Pseudo-random number generator interface
-  output logic                                    prng_data_req_o,
-  input  logic                                    prng_data_ack_i,
+  output logic                                    prng_update_o,
   output logic                                    prng_reseed_req_o,
   input  logic                                    prng_reseed_ack_i,
 
@@ -282,7 +281,7 @@ module aes_control_fsm
     alert_o = 1'b0;
 
     // Pseudo-random number generator control
-    prng_data_req_o   = 1'b0;
+    prng_update_o     = 1'b0;
     prng_reseed_req_o = 1'b0;
 
     // Trigger register control
@@ -450,33 +449,31 @@ module aes_control_fsm
         iv_sel_o = doing_ctr ? IV_CTR   : IV_INPUT;
         iv_we_o  = doing_ctr ? ctr_we_i : {NumSlicesCtr{1'b0}};
 
-        // Request fresh pseudo-random data, perform handshake.
-        prng_data_req_o = 1'b1;
-        if (prng_data_ack_i) begin
+        // Request fresh pseudo-random data.
+        prng_update_o = !cipher_dec_key_gen_i;
 
-          // Ongoing encryption/decryption operations have the highest priority. The clear triggers
-          // might have become asserted after the handshake with the cipher core.
-          if (cipher_crypt_i) begin
-            aes_ctrl_ns = CTRL_FINISH;
+        // Ongoing encryption/decryption operations have the highest priority. The clear triggers
+        // might have become asserted after the handshake with the cipher core.
+        if (cipher_crypt_i) begin
+          aes_ctrl_ns = CTRL_FINISH;
 
-          end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
-            // To clear the output data registers, we re-use the muxing resources of the cipher
-            // core. To clear all key material, some key registers inside the cipher core need to
-            // be cleared.
-            cipher_key_clear_o      = key_iv_data_in_clear_i;
-            cipher_data_out_clear_o = data_out_clear_i;
+        end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
+          // To clear the output data registers, we re-use the muxing resources of the cipher
+          // core. To clear all key material, some key registers inside the cipher core need to
+          // be cleared.
+          cipher_key_clear_o      = key_iv_data_in_clear_i;
+          cipher_data_out_clear_o = data_out_clear_i;
 
-            // We have work for the cipher core, perform handshake.
-            cipher_in_valid_o = 1'b1;
-            if (cipher_in_ready_i) begin
-              aes_ctrl_ns = CTRL_CLEAR_I;
-            end
-          end else begin
-            // Another write to the trigger register must have overwritten the trigger bits that
-            // actually caused us to enter this state. Just return.
-            aes_ctrl_ns = CTRL_IDLE;
-          end // cipher_crypt_i
-        end // prng_data_ack_i
+          // We have work for the cipher core, perform handshake.
+          cipher_in_valid_o = 1'b1;
+          if (cipher_in_ready_i) begin
+            aes_ctrl_ns = CTRL_CLEAR_I;
+          end
+        end else begin
+          // Another write to the trigger register must have overwritten the trigger bits that
+          // actually caused us to enter this state. Just return.
+          aes_ctrl_ns = CTRL_IDLE;
+        end // cipher_crypt_i
       end
 
       CTRL_PRNG_RESEED: begin

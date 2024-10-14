@@ -92,8 +92,7 @@ module aes_control_fsm_p
   output logic                 [NumSlicesCtr-1:0] iv_we_o,                 // Sparsify
 
   // Pseudo-random number generator interface
-  output logic                                    prng_data_req_o,
-  input  logic                                    prng_data_ack_i,
+  output logic                                    prng_update_o,
   output logic                                    prng_reseed_req_o,
   input  logic                                    prng_reseed_ack_i,
 
@@ -157,7 +156,6 @@ module aes_control_fsm_p
     cipher_prng_reseed_i,
     cipher_key_clear_i,
     cipher_data_out_clear_i,
-    prng_data_ack_i,
     prng_reseed_ack_i,
     output_lost_i
   });
@@ -199,7 +197,6 @@ module aes_control_fsm_p
     cipher_prng_reseed_i,
     cipher_key_clear_i,
     cipher_data_out_clear_i,
-    prng_data_ack_i,
     prng_reseed_ack_i,
     output_lost_i
   };
@@ -249,7 +246,6 @@ module aes_control_fsm_p
   logic                                    cipher_prng_reseed_in_buf;
   logic                                    cipher_key_clear_in_buf;
   logic                                    cipher_data_out_clear_in_buf;
-  logic                                    prng_data_ack;
   logic                                    prng_reseed_ack;
   logic                                    output_lost_in_buf;
 
@@ -287,7 +283,6 @@ module aes_control_fsm_p
           cipher_prng_reseed_in_buf,
           cipher_key_clear_in_buf,
           cipher_data_out_clear_in_buf,
-          prng_data_ack,
           prng_reseed_ack,
           output_lost_in_buf} = in_buf;
 
@@ -317,7 +312,7 @@ module aes_control_fsm_p
   logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we;
   iv_sel_e                                 iv_sel;
   logic                 [NumSlicesCtr-1:0] iv_we;
-  logic                                    prng_data_req;
+  logic                                    prng_update;
   logic                                    prng_reseed_req;
   logic                                    start_we;
   logic                                    key_iv_data_in_clear_we;
@@ -409,8 +404,7 @@ module aes_control_fsm_p
     .iv_sel_o                  ( iv_sel                        ),
     .iv_we_o                   ( iv_we                         ),
 
-    .prng_data_req_o           ( prng_data_req                 ),
-    .prng_data_ack_i           ( prng_data_ack                 ),
+    .prng_update_o             ( prng_update                   ),
     .prng_reseed_req_o         ( prng_reseed_req               ),
     .prng_reseed_ack_i         ( prng_reseed_ack               ),
 
@@ -460,7 +454,7 @@ module aes_control_fsm_p
     key_init_we_o,
     iv_sel_o,
     iv_we_o,
-    prng_data_req_o,
+    prng_update_o,
     prng_reseed_req_o,
     start_we_o,
     key_iv_data_in_clear_we_o,
@@ -504,7 +498,7 @@ module aes_control_fsm_p
     key_init_we,
     iv_sel,
     iv_we,
-    prng_data_req,
+    prng_update,
     prng_reseed_req,
     start_we,
     key_iv_data_in_clear_we,
@@ -554,7 +548,7 @@ module aes_control_fsm_p
           key_init_we_o,
           iv_sel_o,
           iv_we_o,
-          prng_data_req_o,
+          prng_update_o,
           prng_reseed_req_o,
           start_we_o,
           key_iv_data_in_clear_we_o,

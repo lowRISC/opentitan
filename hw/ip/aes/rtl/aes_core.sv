@@ -181,8 +181,7 @@ module aes_core
 
   // Pseudo-random data for clearing purposes
   logic                [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
-  logic                                       prd_clearing_upd_req;
-  logic                                       prd_clearing_upd_ack;
+  logic                                       prd_clearing_update;
   logic                                       prd_clearing_rsd_req;
   logic                                       prd_clearing_rsd_ack;
   logic                               [127:0] prd_clearing_128 [NumShares];
@@ -207,8 +206,7 @@ module aes_core
     .clk_i         ( clk_i                  ),
     .rst_ni        ( rst_ni                 ),
 
-    .data_req_i    ( prd_clearing_upd_req   ),
-    .data_ack_o    ( prd_clearing_upd_ack   ),
+    .data_update_i ( prd_clearing_update    ),
     .data_o        ( prd_clearing           ),
     .reseed_req_i  ( prd_clearing_rsd_req   ),
     .reseed_ack_o  ( prd_clearing_rsd_ack   ),
@@ -690,8 +688,7 @@ module aes_core
     .iv_sel_o                  ( iv_sel_ctrl                            ),
     .iv_we_o                   ( iv_we_ctrl                             ),
 
-    .prng_data_req_o           ( prd_clearing_upd_req                   ),
-    .prng_data_ack_i           ( prd_clearing_upd_ack                   ),
+    .prng_update_o             ( prd_clearing_update                    ),
     .prng_reseed_req_o         ( prd_clearing_rsd_req                   ),
     .prng_reseed_ack_i         ( prd_clearing_rsd_ack                   ),
 

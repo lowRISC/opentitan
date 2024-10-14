@@ -91,8 +91,7 @@ module aes_control
   output sp2v_e  [NumSlicesCtr-1:0] iv_we_o,
 
   // Pseudo-random number generator interface
-  output logic                      prng_data_req_o,
-  input  logic                      prng_data_ack_i,
+  output logic                      prng_update_o,
   output logic                      prng_reseed_req_o,
   input  logic                      prng_reseed_ack_i,
 
@@ -189,7 +188,7 @@ module aes_control
   logic          [Sp2VWidth-1:0] mr_cipher_data_out_clear;
   key_init_sel_e [Sp2VWidth-1:0] mr_key_init_sel;
   iv_sel_e       [Sp2VWidth-1:0] mr_iv_sel;
-  logic          [Sp2VWidth-1:0] mr_prng_data_req;
+  logic          [Sp2VWidth-1:0] mr_prng_update;
   logic          [Sp2VWidth-1:0] mr_prng_reseed_req;
   logic          [Sp2VWidth-1:0] mr_start_we;
   logic          [Sp2VWidth-1:0] mr_key_iv_data_in_clear_we;
@@ -320,8 +319,7 @@ module aes_control
         .iv_sel_o                  ( mr_iv_sel[i]                  ), // OR-combine
         .iv_we_o                   ( int_iv_we[i]                  ), // Sparsified
 
-        .prng_data_req_o           ( mr_prng_data_req[i]           ), // OR-combine
-        .prng_data_ack_i           ( prng_data_ack_i               ),
+        .prng_update_o             ( mr_prng_update[i]             ), // OR-combine
         .prng_reseed_req_o         ( mr_prng_reseed_req[i]         ), // OR-combine
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
@@ -414,8 +412,7 @@ module aes_control
         .iv_sel_o                  ( mr_iv_sel[i]                  ), // OR-combine
         .iv_we_no                  ( int_iv_we[i]                  ), // Sparsified
 
-        .prng_data_req_o           ( mr_prng_data_req[i]           ), // OR-combine
-        .prng_data_ack_i           ( prng_data_ack_i               ),
+        .prng_update_o             ( mr_prng_update[i]             ), // OR-combine
         .prng_reseed_req_o         ( mr_prng_reseed_req[i]         ), // OR-combine
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
@@ -455,7 +452,7 @@ module aes_control
   assign cipher_prng_reseed_o      = |mr_cipher_prng_reseed;
   assign cipher_key_clear_o        = |mr_cipher_key_clear;
   assign cipher_data_out_clear_o   = |mr_cipher_data_out_clear;
-  assign prng_data_req_o           = |mr_prng_data_req;
+  assign prng_update_o             = |mr_prng_update;
   assign prng_reseed_req_o         = |mr_prng_reseed_req;
   assign start_we_o                = |mr_start_we;
   assign prng_reseed_o             = |mr_prng_reseed;
