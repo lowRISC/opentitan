@@ -682,10 +682,11 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
-  std::array<const flash_ctrl_info_page_t *, 6> no_owner_access = {
-      &kFlashCtrlInfoPageFactoryId,   &kFlashCtrlInfoPageCreatorSecret,
-      &kFlashCtrlInfoPageOwnerSecret, &kFlashCtrlInfoPageWaferAuthSecret,
-      &kFlashCtrlInfoPageBootData0,   &kFlashCtrlInfoPageBootData1,
+  std::array<const flash_ctrl_info_page_t *, 8> no_owner_access = {
+      &kFlashCtrlInfoPageFactoryId,        &kFlashCtrlInfoPageCreatorSecret,
+      &kFlashCtrlInfoPageOwnerSecret,      &kFlashCtrlInfoPageWaferAuthSecret,
+      &kFlashCtrlInfoPageBootData0,        &kFlashCtrlInfoPageBootData1,
+      &kFlashCtrlInfoPageCreatorReserved0, &kFlashCtrlInfoPageCreatorReserved1,
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
@@ -742,6 +743,7 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
     auto info_page = InfoPages().at(page);
     EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0x9666666);
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669966);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
   flash_ctrl_cert_info_pages_owner_restrict();

@@ -195,8 +195,8 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
 
 static inline hardened_bool_t is_owner_page(const owner_info_page_t *config) {
   if (config->bank == 0) {
-    if (config->page >= 6 && config->page <= 9) {
-      // Currently, bank0, pages 6-9 (inclusive) are the pages reserved
+    if (config->page >= 5 && config->page <= 9) {
+      // On the ES chip: bank0, pages 5-9 (inclusive) are the pages reserved
       // for the owner's use.
       return kHardenedBoolTrue;
     }

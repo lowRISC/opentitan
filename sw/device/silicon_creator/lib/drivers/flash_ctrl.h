@@ -75,24 +75,24 @@ typedef enum flash_ctrl_partition {
   X(kFlashCtrlInfoPageOwnerSecret,         0, 2) \
   X(kFlashCtrlInfoPageWaferAuthSecret,     0, 3) \
   X(kFlashCtrlInfoPageAttestationKeySeeds, 0, 4) \
-  X(kFlashCtrlInfoPageBank0Type0Page5,     0, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved0,      0, 6) \
-  X(kFlashCtrlInfoPageOwnerReserved1,      0, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved2,      0, 8) \
-  X(kFlashCtrlInfoPageOwnerReserved3,      0, 9) \
+  X(kFlashCtrlInfoPageOwnerReserved0,      0, 5) \
+  X(kFlashCtrlInfoPageOwnerReserved1,      0, 6) \
+  X(kFlashCtrlInfoPageOwnerReserved2,      0, 7) \
+  X(kFlashCtrlInfoPageOwnerReserved3,      0, 8) \
+  X(kFlashCtrlInfoPageOwnerReserved4,      0, 9) \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageBootData0,       1, 0) \
-  X(kFlashCtrlInfoPageBootData1,       1, 1) \
-  X(kFlashCtrlInfoPageOwnerSlot0,      1, 2) \
-  X(kFlashCtrlInfoPageOwnerSlot1,      1, 3) \
-  X(kFlashCtrlInfoPageTpmCerts,        1, 4) \
-  X(kFlashCtrlInfoPageBank1Type0Page5, 1, 5) \
-  X(kFlashCtrlInfoPageUdsCertificate,  1, 6) \
-  X(kFlashCtrlInfoPageBootServices,    1, 7) \
-  X(kFlashCtrlInfoPageCdi0Certificate, 1, 8) \
-  X(kFlashCtrlInfoPageCdi1Certificate, 1, 9) \
+  X(kFlashCtrlInfoPageBootData0,           1, 0) \
+  X(kFlashCtrlInfoPageBootData1,           1, 1) \
+  X(kFlashCtrlInfoPageOwnerSlot0,          1, 2) \
+  X(kFlashCtrlInfoPageOwnerSlot1,          1, 3) \
+  X(kFlashCtrlInfoPageTpmCerts,            1, 4) \
+  X(kFlashCtrlInfoPageCreatorReserved0,    1, 5) \
+  X(kFlashCtrlInfoPageUdsCertificate,      1, 6) \
+  X(kFlashCtrlInfoPageCreatorReserved1,    1, 7) \
+  X(kFlashCtrlInfoPageCdi0Certificate,     1, 8) \
+  X(kFlashCtrlInfoPageCdi1Certificate,     1, 9) \
 // clang-format on
 
 /**
@@ -165,9 +165,9 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  * ```
  */
 enum {
-  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 12,
+  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 16,
   kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 10,
-  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 5,
+  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 10,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
