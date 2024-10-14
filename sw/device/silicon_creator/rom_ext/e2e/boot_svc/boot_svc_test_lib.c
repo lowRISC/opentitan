@@ -32,6 +32,9 @@ status_t boot_svc_test_init(retention_sram_t *retram, boot_svc_test_t test) {
   state->current_side = (boot_log->bl0_slot == kBootSlotA)   ? 'A'
                         : (boot_log->bl0_slot == kBootSlotB) ? 'B'
                                                              : 'x';
+  state->primary_side = (boot_log->primary_bl0_slot == kBootSlotA)   ? 'A'
+                        : (boot_log->primary_bl0_slot == kBootSlotB) ? 'B'
+                                                                     : 'x';
   state->partition[state->boots] = state->current_side;
   state->boots += 1;
   return OK_STATUS();

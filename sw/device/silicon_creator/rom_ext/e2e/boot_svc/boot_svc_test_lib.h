@@ -36,6 +36,8 @@ typedef struct boot_svc_retram {
   int boots;
   // The side we're currently booted to.
   char current_side;
+  // The primary side.
+  char primary_side;
   // The owner partition that was booted on each boot.
   char partition[10];
 } boot_svc_retram_t;
