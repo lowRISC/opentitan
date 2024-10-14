@@ -30,6 +30,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
@@ -44,6 +45,28 @@
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false, );
+
+enum {
+  /**
+   * Size of the largest OTP partition to be measured.
+   */
+  kDiceMeasuredOtpPartitionMaxSizeIn32bitWords =
+      (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+      sizeof(uint32_t),
+};
+
+static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
+
+// clang-format off
+static_assert(
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
+    "The largest DICE measured OTP partition is no longer the "
+    "OwnerSwCfg partition. Update the "
+    "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
+// clang-format on
 
 /**
  * Peripheral handles.
@@ -62,6 +85,10 @@ static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 /**
  * Certificate data.
  */
+static hmac_digest_t otp_creator_sw_cfg_measurement;
+static hmac_digest_t otp_owner_sw_cfg_measurement;
+static hmac_digest_t otp_rot_creator_auth_codesign_measurement;
+static hmac_digest_t otp_rot_creator_auth_state_measurement;
 static manuf_certgen_inputs_t certgen_inputs;
 static hmac_digest_t uds_endorsement_key_id;
 static hmac_digest_t uds_pubkey_id;
@@ -159,6 +186,32 @@ static status_t config_and_erase_certificate_flash_pages(void) {
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
                             kFlashCtrlEraseTypePage));
+  return OK_STATUS();
+}
+
+/**
+ * Helper function to compute measurements of various OTP partitions that are to
+ * be included in attestation certificates.
+ */
+static status_t measure_otp_partition(otp_partition_t partition,
+                                      hmac_digest_t *measurement) {
+  // Compute the digest.
+  otp_dai_read(partition, /*address=*/0, otp_state,
+               kOtpPartitions[partition].size / sizeof(uint32_t));
+
+  hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
+
+  // Check the digest matches what is stored in OTP.
+  // TODO(#21554): remove this conditional once the root keys and key policies
+  // have been provisioned. Until then, these partitions have not been locked.
+  if (partition == kOtpPartitionCreatorSwCfg ||
+      partition == kOtpPartitionOwnerSwCfg) {
+    uint64_t expected_digest = otp_partition_digest_read(partition);
+    uint32_t digest_hi = expected_digest >> 32;
+    uint32_t digest_lo = expected_digest & UINT32_MAX;
+    HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
+    HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
+  }
   return OK_STATUS();
 }
 
@@ -353,6 +406,19 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
   sc_keymgr_advance_state();
 
+  // Measure OTP partitions.
+  //
+  // Note: we do not measure HwCfg0 as this is the Device ID, which is already
+  // mixed into the keyladder directly via hardware channels.
+  TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
+                            &otp_creator_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
+                            &otp_owner_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
+                            &otp_rot_creator_auth_codesign_measurement));
+  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
+                            &otp_rot_creator_auth_state_measurement));
+
   /*****************************************************************************
    * DICE certificates.
    ****************************************************************************/
@@ -367,8 +433,11 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                      *kDiceKeyUds.keymgr_diversifier));
 
   // Build the certificate in a temp buffer, use all_certs for that.
-  TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey, all_certs,
-                              &curr_cert_size));
+  TRY(dice_uds_tbs_cert_build(
+      &otp_creator_sw_cfg_measurement, &otp_owner_sw_cfg_measurement,
+      &otp_rot_creator_auth_codesign_measurement,
+      &otp_rot_creator_auth_state_measurement, &uds_key_ids, &curr_pubkey,
+      all_certs, &curr_cert_size));
   TRY(perso_tlv_prepare_cert_for_shipping("UDS", true, all_certs,
                                           curr_cert_size, &perso_blob_to_host));
 
