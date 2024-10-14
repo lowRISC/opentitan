@@ -101,13 +101,13 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
     {
         .used = false,
         .group_name = "Ext0",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved7,
+        .info_page = &kFlashCtrlInfoPageOwnerReserved6,
         .num_certs = 0,
     },
     {
         .used = false,
         .group_name = "Ext1",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved8,
+        .info_page = &kFlashCtrlInfoPageOwnerReserved7,
         .num_certs = 0,
     },
 };
