@@ -32,15 +32,29 @@ runs:
         grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
       shell: bash
 
-    - uses: actions/setup-python@v5
+    - uses: astral-sh/setup-uv@v3
       with:
-        python-version: '3.8'
-        cache-dependency-path: python-requirements.txt
-        cache: pip
+        version: '0.4.20'
+        enable-cache: true
+        cache-dependency-glob: |
+          pyproject.toml
+          python-requirements.txt
+
+    - name: Install Python
+      shell: bash
+      run: |
+        uv python install 3.8
+        # Create a virtual environment for UV
+        uv venv ~/.local/share/venv
+        echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
+        echo "VIRTUAL_ENV=$HOME/.local/share/venv" >> "$GITHUB_ENV"
 
     - name: Install Python dependencies
-      run: python3 -m pip install -r python-requirements.txt --require-hashes
       shell: bash
+      run: |
+        uv pip install -r python-requirements.txt --require-hashes
+        # We installed uv from setup-uv action, so uninstall from venv to prevent conflict
+        uv pip uninstall uv
 
     - name: Install Verilator
       run: |
