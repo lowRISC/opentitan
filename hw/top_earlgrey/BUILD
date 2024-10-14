@@ -431,7 +431,7 @@ silicon(
     }),
     rsa_key = select({
         "//signing:owner_key_ecdsa": CLEAR_KEY_SET,
-        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "earlgrey_z1_prodc_1"},
         "//signing:test_keys_ecdsa": CLEAR_KEY_SET,
         "//signing:test_keys_rsa": CLEAR_KEY_SET,
     }),
@@ -455,7 +455,7 @@ silicon(
     }),
     rsa_key = select({
         "//signing:owner_key_ecdsa": CLEAR_KEY_SET,
-        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/proda/keys:keyset": "earlgrey_z0_sival_1"},
+        "//signing:owner_key_rsa": {"//sw/device/silicon_creator/rom_ext/proda/keys:keyset": "earlgrey_z1_proda_1"},
         "//signing:test_keys_ecdsa": CLEAR_KEY_SET,
         "//signing:test_keys_rsa": CLEAR_KEY_SET,
     }),
