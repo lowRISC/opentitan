@@ -32,6 +32,13 @@ extern const sc_keymgr_ecc_key_t kDiceKeyCdi1;
 /**
  * Generates the UDS attestation keypair and (unendorsed) X.509 TBS certificate.
  *
+ * @param otp_creator_sw_cfg_measurement Pointer to the CreatorSwCfg
+ * measurement.
+ * @param otp_owner_sw_cfg_measurement Pointer to the OwnerSwCfg measurement.
+ * @param otp_rot_creator_auth_codesign_measurement Pointer to the
+ * RotCreatorAuthCodesign measurement.
+ * @param otp_rot_creator_auth_state_measurement Pointer to the
+ * RotCreatorAuthState measurement.
  * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param uds_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated UDS certificate.
@@ -41,9 +48,13 @@ extern const sc_keymgr_ecc_key_t kDiceKeyCdi1;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_uds_tbs_cert_build(cert_key_id_pair_t *key_ids,
-                                    ecdsa_p256_public_key_t *uds_pubkey,
-                                    uint8_t *tbs_cert, size_t *tbs_cert_size);
+rom_error_t dice_uds_tbs_cert_build(
+    hmac_digest_t *otp_creator_sw_cfg_measurement,
+    hmac_digest_t *otp_owner_sw_cfg_measurement,
+    hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
+    hmac_digest_t *otp_rot_creator_auth_state_measurement,
+    cert_key_id_pair_t *key_ids, ecdsa_p256_public_key_t *uds_pubkey,
+    uint8_t *tbs_cert, size_t *tbs_cert_size);
 
 /**
  * Generates the CDI_0 attestation keypair and X.509 certificate.
