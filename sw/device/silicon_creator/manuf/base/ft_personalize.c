@@ -199,19 +199,18 @@ static status_t measure_otp_partition(otp_partition_t partition,
   otp_dai_read(partition, /*address=*/0, otp_state,
                kOtpPartitions[partition].size / sizeof(uint32_t));
 
+  // Sets the expected values for fields in the OTP that are not provisioned
+  // until the final stages of personalization.
+  if (partition == kOtpPartitionOwnerSwCfg) {
+    manuf_individualize_device_partition_expected_read(
+        kDifOtpCtrlPartitionOwnerSwCfg, (uint8_t *)otp_state);
+  } else if (partition == kOtpPartitionCreatorSwCfg) {
+    manuf_individualize_device_partition_expected_read(
+        kDifOtpCtrlPartitionCreatorSwCfg, (uint8_t *)otp_state);
+  }
+
   hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
 
-  // Check the digest matches what is stored in OTP.
-  // TODO(#21554): remove this conditional once the root keys and key policies
-  // have been provisioned. Until then, these partitions have not been locked.
-  if (partition == kOtpPartitionCreatorSwCfg ||
-      partition == kOtpPartitionOwnerSwCfg) {
-    uint64_t expected_digest = otp_partition_digest_read(partition);
-    uint32_t digest_hi = expected_digest >> 32;
-    uint32_t digest_lo = expected_digest & UINT32_MAX;
-    HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
-    HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
-  }
   return OK_STATUS();
 }
 
@@ -225,18 +224,11 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
     TRY(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
   }
-  if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
+  if (!status_ok(
+          manuf_individualize_device_flash_data_default_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
-    TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
     LOG_INFO("Bootstrap requested.");
     wait_for_interrupt();
-  }
-
-  // The last bootstrap process in the perso flow is done.
-  // Complete the provisioning of OTP OwnerSwCfg partition.
-  if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
-    TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
-    TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
   }
 
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
@@ -664,6 +656,42 @@ static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
   return RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, hash);
 }
 
+/**
+ * Compare the OTP measurement used during certificate generation with the value
+ * stored in the OTP. Ensure that the UDS certificate was generated using the
+ * correct OTP values.
+ */
+static status_t check_otp_measurement(hmac_digest_t *measurement,
+                                      uint32_t offset) {
+  uint64_t expected_digest = otp_read64(offset);
+  uint32_t digest_hi = expected_digest >> 32;
+  uint32_t digest_lo = expected_digest & UINT32_MAX;
+  HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
+  HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
+  return OK_STATUS();
+}
+
+static status_t finalize_otp_partitions(void) {
+  // TODO(#21554): Complete the provisioning of the root keys and key policies.
+
+  // Complete the provisioning of OTP OwnerSwCfg partition.
+  if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
+  }
+  TRY(check_otp_measurement(&otp_owner_sw_cfg_measurement,
+                            OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET));
+
+  // Complete the provisioning of OTP CreatorSwCfg partition.
+  if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
+  }
+  TRY(check_otp_measurement(&otp_creator_sw_cfg_measurement,
+                            OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET));
+
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   ujson_t uj = ujson_ottf_console();
@@ -698,6 +726,7 @@ bool test_main(void) {
            hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
            hash.data[2], hash.data[1], hash.data[0]);
 
+  CHECK_STATUS_OK(finalize_otp_partitions());
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Personalization done.");
