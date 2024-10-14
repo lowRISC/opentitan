@@ -26,6 +26,13 @@ otp_json(
             },
             lock = True,
         ),
+        otp_partition(
+            name = "HW_CFG",
+            items = {
+                "DEVICE_ID": "0000000011111111222222223333333344444444555555556666666600010001",
+            },
+            lock = True,
+        ),
     ],
     visibility = ["//visibility:private"],
 )
