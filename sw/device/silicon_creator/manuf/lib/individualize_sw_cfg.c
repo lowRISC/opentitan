@@ -41,7 +41,7 @@ static uint32_t
  * @param kv OTP Array of OTP key values. See `otp_kv_t` documentation for more
  * details.
  * @param len Length of the `kv` array.
- * @return OT_WARN_UNUSED_RESULT
+ * @return OK_STATUS if the OTP values were written into the target partition.
  */
 OT_WARN_UNUSED_RESULT
 static status_t otp_img_write(const dif_otp_ctrl_t *otp,
@@ -92,6 +92,44 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
 }
 
 /**
+ * Reads out the expected values of the fields that are not provisioned until
+ * the end of personalization process.
+ *
+ * @param partition Target OTP partition.
+ * @param kv OTP Array of OTP key values. See `otp_kv_t` documentation for more
+ * details.
+ * @param len Length of the `kv` array.
+ * @param buffer A buffer containing the entire target OTP partition.
+ * @return OK_STATUS if the expected OTP values are successfully written to the
+ * `buffer`.
+ */
+static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
+                                            const otp_kv_t *kv, size_t len,
+                                            uint8_t *buffer) {
+  for (size_t i = 0; i < len; ++i) {
+    if (kv[i].offset != OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET) {
+      continue;
+    }
+    uint32_t offset;
+    TRY(dif_otp_ctrl_relative_address(partition, kv[i].offset, &offset));
+    switch (kv[i].type) {
+      case kOptValTypeUint32Buff:
+        // Overwrites fields in the provided OTP buffer with their expected
+        // values.
+        memcpy(buffer + offset, kv[i].value32,
+               sizeof(uint32_t) * kv[i].num_values);
+        break;
+      case kOptValTypeUint64Buff:
+      case kOptValTypeUint64Rnd:
+        return UNIMPLEMENTED();
+      default:
+        return INTERNAL();
+    }
+  }
+  return OK_STATUS();
+}
+
+/**
  * Computes a SHA256 digest of an OTP partition and uses the least significant
  * 64-bits of the digest to additionally lock the partition.
  *
@@ -100,7 +138,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
  *
  * @param otp OTP Controller instance.
  * @param partition Target OTP partition.
- * @return OT_WARN_UNUSED_RESULT
+ * @return OK_STATUS if the target partition was locked.
  */
 OT_WARN_UNUSED_RESULT
 static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
@@ -210,6 +248,27 @@ status_t manuf_individualize_device_flash_data_default_cfg(
   return OK_STATUS();
 }
 
+status_t manuf_individualize_device_flash_data_default_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  uint32_t offset;
+  TRY(dif_otp_ctrl_relative_address(
+      kDifOtpCtrlPartitionCreatorSwCfg,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET, &offset));
+  uint32_t val = 0;
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+                                    offset, &val));
+  bool is_provisioned = (val == kCreatorSwCfgFlashDataDefaultCfgValue);
+  return is_provisioned ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_creator_sw_cfg_expected_read(
+    uint8_t *buffer) {
+  TRY(otp_img_expected_value_read(kDifOtpCtrlPartitionCreatorSwCfg,
+                                  kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize,
+                                  buffer));
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_creator_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
@@ -240,6 +299,14 @@ status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
                                      offset, &kOwnerSwCfgRomBootstrapDisValue,
                                      /*len=*/1));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_owner_sw_cfg_expected_read(
+    uint8_t *buffer) {
+  TRY(otp_img_expected_value_read(kDifOtpCtrlPartitionOwnerSwCfg,
+                                  kOtpKvOwnerSwCfg, kOtpKvOwnerSwCfgSize,
+                                  buffer));
   return OK_STATUS();
 }
 
