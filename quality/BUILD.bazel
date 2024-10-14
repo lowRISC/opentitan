@@ -213,4 +213,7 @@ sh_test(
         "//:WORKSPACE",
         "@shellcheck",
     ],
+    env = {
+        "SHELLCHECK": "$(location @shellcheck//:shellcheck)",
+    },
 )
