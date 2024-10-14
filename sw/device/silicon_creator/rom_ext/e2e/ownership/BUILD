@@ -12,6 +12,8 @@ load(
     "//sw/device/silicon_creator/rom_ext/e2e/ownership:defs.bzl",
     "ownership_transfer_test",
 )
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -59,6 +61,20 @@ opentitan_binary(
     ],
 )
 
+# This manifest is node-locked to the DEVICE_ID provided by the ROM_EXT E2E OTP
+# configuration //sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma,
+# and required by the exec_env `fpga_hyper310_rom_ext`.
+manifest({
+    "name": "nodelocked_manifest",
+    "identifier": hex(CONST.OWNER),
+    "device_id": [
+        hex(CONST.DEFAULT_USAGE_CONSTRAINTS),
+        hex(0x66666666),
+        hex(0x55555555),
+    ],
+    "visibility": ["//visibility:public"],
+})
+
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_transfer_any_test
 ownership_transfer_test(
     name = "transfer_any_test",
@@ -82,6 +98,46 @@ ownership_transfer_test(
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
+)
+
+ownership_transfer_test(
+    name = "bad_appkey_constraint_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --config-kind=with-app-constraint
+            --expected-error=SigverifyBadEcdsaSignature
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+)
+
+ownership_transfer_test(
+    name = "good_appkey_constraint_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --config-kind=with-app-constraint
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    manifest = ":nodelocked_manifest",
 )
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_bad_unlock_test

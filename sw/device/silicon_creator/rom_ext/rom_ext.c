@@ -275,9 +275,8 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   hmac_sha256_init();
   // Hash usage constraints.
   manifest_usage_constraints_t usage_constraints_from_hw;
-  // TODO(cfrantz): Combine key's usage constraints with manifest's
-  // usage_constraints.
-  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
+  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits |
+                                      keyring.key[verify_key]->usage_constraint,
                                   &usage_constraints_from_hw);
   hmac_sha256_update(&usage_constraints_from_hw,
                      sizeof(usage_constraints_from_hw));

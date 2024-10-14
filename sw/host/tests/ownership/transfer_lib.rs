@@ -120,6 +120,8 @@ const CFG_RESCUE1: u32 = 0x0000_0008;
 // Request a rescue configuration that restricts the set of allowed commands
 // (e.g. this one removes "SetNextBl0Slot" from the set of allowed commands).
 const CFG_RESCUE_RESTRICT: u32 = 0x0000_0010;
+// Request a configuration where the application key has a usage constraint.
+const CFG_APP_CONSTRAINT: u32 = 0x0000_0020;
 
 #[repr(u32)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -131,6 +133,7 @@ pub enum OwnerConfigKind {
     WithFlashLocked = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK,
     WithRescue = CFG_RESCUE1,
     WithRescueRestricted = CFG_FLASH1 | CFG_RESCUE1 | CFG_RESCUE_RESTRICT,
+    WithAppConstraint = CFG_APP_CONSTRAINT,
 }
 
 impl OwnerConfigKind {
@@ -198,6 +201,12 @@ where
     let activate_key = EcdsaPrivateKey::load(activate_key)?;
     let unlock_key = EcdsaPrivateKey::load(unlock_key)?;
     let app_key = EcdsaPublicKey::load(app_key)?;
+    let constraint = if config & CFG_APP_CONSTRAINT == 0 {
+        0
+    } else {
+        // Constrain to the DIN field of device_id.
+        0x6
+    };
     let mut owner = OwnerBlock {
         ownership_key_alg: OwnershipKeyAlg::EcdsaP256,
         owner_key: KeyMaterial::Ecdsa(owner_key.public_key().try_into()?),
@@ -205,6 +214,7 @@ where
         unlock_key: KeyMaterial::Ecdsa(unlock_key.public_key().try_into()?),
         data: vec![OwnerConfigItem::ApplicationKey(OwnerApplicationKey {
             key_alg: OwnershipKeyAlg::EcdsaP256,
+            usage_constraint: constraint,
             key_domain: ApplicationKeyDomain::Prod,
             key: KeyMaterial::Ecdsa(app_key.try_into()?),
             ..Default::default()

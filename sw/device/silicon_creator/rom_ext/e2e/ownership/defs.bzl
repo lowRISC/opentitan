@@ -16,6 +16,7 @@ def ownership_transfer_test(
         ecdsa_key = {
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
         },
+        manifest = None,
         data = [
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key",
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub",
@@ -43,6 +44,7 @@ def ownership_transfer_test(
         srcs = srcs,
         exec_env = exec_env,
         ecdsa_key = ecdsa_key,
+        manifest = manifest,
         data = data,
         defines = defines,
         deps = deps,
