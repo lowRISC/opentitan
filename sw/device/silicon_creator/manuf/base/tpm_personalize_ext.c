@@ -55,8 +55,8 @@ enum {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_tpm_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageOwnerReserved7);
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerReserved7,
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageOwnerReserved6);
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerReserved6,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }

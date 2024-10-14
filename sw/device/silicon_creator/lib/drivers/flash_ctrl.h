@@ -79,20 +79,20 @@ typedef enum flash_ctrl_partition {
   X(kFlashCtrlInfoPageOwnerReserved1,      0, 6) \
   X(kFlashCtrlInfoPageOwnerReserved2,      0, 7) \
   X(kFlashCtrlInfoPageOwnerReserved3,      0, 8) \
-  X(kFlashCtrlInfoPageOwnerReserved4,      0, 9) \
+  X(kFlashCtrlInfoPageCreatorReserved0,    0, 9) \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageBootData0,       1, 0) \
-  X(kFlashCtrlInfoPageBootData1,       1, 1) \
-  X(kFlashCtrlInfoPageOwnerSlot0,      1, 2) \
-  X(kFlashCtrlInfoPageOwnerSlot1,      1, 3) \
-  X(kFlashCtrlInfoPageOwnerReserved5,  1, 4) \
-  X(kFlashCtrlInfoPageOwnerReserved6,  1, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved7,  1, 6) \
-  X(kFlashCtrlInfoPageBootServices,    1, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved8,  1, 8) \
-  X(kFlashCtrlInfoPageDiceCerts,       1, 9) \
+  X(kFlashCtrlInfoPageBootData0,           1, 0) \
+  X(kFlashCtrlInfoPageBootData1,           1, 1) \
+  X(kFlashCtrlInfoPageOwnerSlot0,          1, 2) \
+  X(kFlashCtrlInfoPageOwnerSlot1,          1, 3) \
+  X(kFlashCtrlInfoPageCreatorReserved1,    1, 4) \
+  X(kFlashCtrlInfoPageOwnerReserved4,      1, 5) \
+  X(kFlashCtrlInfoPageOwnerReserved5,      1, 6) \
+  X(kFlashCtrlInfoPageOwnerReserved6,      1, 7) \
+  X(kFlashCtrlInfoPageOwnerReserved7,      1, 8) \
+  X(kFlashCtrlInfoPageDiceCerts,           1, 9) \
 // clang-format on
 
 /**
