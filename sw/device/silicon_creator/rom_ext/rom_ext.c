@@ -893,12 +893,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log->rom_ext_major = self->version_major;
   boot_log->rom_ext_minor = self->version_minor;
   boot_log->rom_ext_size = CHIP_ROM_EXT_SIZE_MAX;
-  boot_log->rom_ext_nonce = boot_data->nonce;
-  boot_log->ownership_state = boot_data->ownership_state;
-  boot_log->ownership_transfers = boot_data->ownership_transfers;
-  boot_log->rom_ext_min_sec_ver = boot_data->min_security_version_rom_ext;
-  boot_log->bl0_min_sec_ver = boot_data->min_security_version_bl0;
-  boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
 
   // Initialize the chip ownership state.
   rom_error_t error;
@@ -929,9 +923,13 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
     }
   }
 
-  // Re-sync the boot_log entries that could be changed by boot services.
+  // Synchronize the boot_log entries that could be changed by boot services.
   boot_log->rom_ext_nonce = boot_data->nonce;
   boot_log->ownership_state = boot_data->ownership_state;
+  boot_log->ownership_transfers = boot_data->ownership_transfers;
+  boot_log->rom_ext_min_sec_ver = boot_data->min_security_version_rom_ext;
+  boot_log->bl0_min_sec_ver = boot_data->min_security_version_bl0;
+  boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
   boot_log_digest_update(boot_log);
 
   if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
