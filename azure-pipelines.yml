@@ -413,19 +413,30 @@ jobs:
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
-  dependsOn: build_and_execute_verilated_tests_englishbreakfast
+  dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public-eda
   timeoutInMinutes: 120 # 2 hours
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - build_and_execute_verilated_tests_englishbreakfast
   - bash: |
       set -e
+      . util/build_consts.sh
+
+      # Build CW305 test rom required by `build-bitstream-vivado.sh`
+      rom_path="sw/device/lib/testing/test_rom"
+      ci/bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
+        --features=-rv32_bitmanip \
+        --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+      vmem="$(ci/bazelisk.sh cquery --output=files "//${rom_path}:test_rom_fpga_cw305" \
+        --features=-rv32_bitmanip \
+        --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+      )"
+      mkdir -p "${BUILD_ROOT}/build-bin/${rom_path}"
+      cp "$vmem" "${BUILD_ROOT}/build-bin/${rom_path}"
+      realpath "${BUILD_ROOT}/build-bin/${rom_path}"
+
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
     displayName: Build bitstream
