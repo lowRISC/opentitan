@@ -368,8 +368,8 @@ module usbdev
   logic [3:0]            in_endpoint;
   logic                  in_endpoint_val;
   logic [NEndpoints-1:0] in_rdy;
-  logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend, set_sending;
-  logic                  setup_received, in_ep_xact_end;
+  logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend, set_sending, clear_sending;
+  logic                  setup_received, in_ep_xact_end, in_ep_collected;
   logic [NEndpoints-1:0] ep_out_iso, ep_in_iso;
   logic [NEndpoints-1:0] enable_out, enable_setup, in_ep_stall, out_ep_stall;
   logic [NEndpoints-1:0] ep_set_nak_on_out;
@@ -462,7 +462,7 @@ module usbdev
 
   always_comb begin
     set_sentbit = '0;
-    if (in_ep_xact_end && in_endpoint_val) begin
+    if (in_ep_collected && in_endpoint_val) begin
       set_sentbit[in_endpoint] = 1'b1;
     end
   end
@@ -513,7 +513,7 @@ module usbdev
         // Clear pending when a SETUP is received
         clear_rdybit[out_endpoint]   = 1'b1;
         update_pend[out_endpoint]    = 1'b1;
-      end else if (in_ep_xact_end & in_endpoint_val) begin
+      end else if (in_ep_collected & in_endpoint_val) begin
         // Clear rdy and sending when an IN transmission was successful
         clear_rdybit[in_endpoint]   = 1'b1;
       end
@@ -524,6 +524,11 @@ module usbdev
   always_comb begin
     set_sending = '0;
     if (in_xact_starting) set_sending[in_xact_start_ep] = 1'b1;
+  end
+  // IN transaction ending on any endpoint?
+  always_comb begin
+    clear_sending = '0;
+    if (in_ep_xact_end & in_endpoint_val) clear_sending[in_endpoint] = 1'b1;
   end
 
   // Clearing of rdy bit in response to successful IN packet transmission or packet cancellation
@@ -547,8 +552,8 @@ module usbdev
   // attempted and FW shall not attempt retraction of the packet.
   always_comb begin : proc_map_sending
     for (int i = 0; i < NEndpoints; i++) begin
-      hw2reg.configin[i].sending.de = set_sending[i] | set_sentbit[i] | update_pend[i];
-      hw2reg.configin[i].sending.d  = ~set_sentbit[i] & ~update_pend[i];
+      hw2reg.configin[i].sending.de = set_sending[i] | clear_sending[i] | update_pend[i];
+      hw2reg.configin[i].sending.d  = ~clear_sending[i] & ~update_pend[i];
     end
   end
 
@@ -611,6 +616,7 @@ module usbdev
     .in_stall_i           (in_ep_stall),
     .in_rdy_i             (in_rdy),
     .in_ep_xact_end_o     (in_ep_xact_end),
+    .in_ep_collected_o    (in_ep_collected),
     .in_endpoint_o        (in_endpoint),
     .in_endpoint_val_o    (in_endpoint_val),
 
