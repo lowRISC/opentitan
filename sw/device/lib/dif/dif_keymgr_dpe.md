@@ -19,7 +19,7 @@ All checklist items refer to the content in the [Checklist](/doc/project_governa
 
 Type           | Item                   | Resolution  | Note/Collaterals
 ---------------|------------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]         | Not Started |
+Implementation | [DIF_EXISTS][]         | Done        |
 Implementation | [DIF_USED_IN_TREE][]   | Not Started |
 Tests          | [DIF_TEST_ON_DEVICE][] | Not Started |
 
@@ -31,7 +31,7 @@ Tests          | [DIF_TEST_ON_DEVICE][] | Not Started |
 
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
-Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Not Started | [HW Dashboard](/hw/README.md)
+Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard](/hw/README.md)
 Implementation | [DIF_FEATURES][]            | Not Started |
 
 [DIF_HW_FEATURE_COMPLETE]: /doc/project_governance/checklist/README.md#dif_hw_feature_complete
