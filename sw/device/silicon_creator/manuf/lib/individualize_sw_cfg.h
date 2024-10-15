@@ -16,6 +16,7 @@
 extern const size_t kOtpKvCreatorSwCfgSize;
 extern const otp_kv_t kOtpKvCreatorSwCfg[];
 extern const uint32_t kCreatorSwCfgFlashDataDefaultCfgValue;
+extern const uint32_t kCreatorSwCfgManufStateValue;
 
 /**
  * OTP Owner Software Configuration Partition.
@@ -37,11 +38,12 @@ extern const uint32_t kOwnerSwCfgRomBootstrapDisValue;
  * - The operation will fail if there are any pre-programmed words not equal
  *   to the expected test values.
  * - This operation will explicitly NOT provision the FLASH_DATA_DEFAULT_CFG
- *   field in the CREATOR_SW_CFG partition. This field must be explicitly
- *   configured after all other provisioning operations are done, but before the
- *   partition is locked, and the final transport image is loaded.
+ *   and MANUF_STATE fields in the CREATOR_SW_CFG partition. These fields must
+ * be explicitly configured after all other provisioning operations are done,
+ * but before the partition is locked, and the final transport image is loaded.
  * - This function will NOT lock the partition either. This must be done after
- *   provisioning the final FLASH_DATA_DEFAULT_CFG filed mentioned above.
+ *   provisioning the final FLASH_DATA_DEFAULT_CFG and MANUF_STATE fields
+ * mentioned above.
  * - The partition must be configured and the chip reset, before the ROM can be
  *   booted, thus enabling bootstrap.
  *
@@ -69,6 +71,21 @@ status_t manuf_individualize_device_flash_data_default_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
+ * Configures the MANUF_STATE field in the CREATOR_SW_CFG OTP
+ * partition.
+ *
+ * This must be called before `manuf_individualize_device_creator_sw_cfg_lock()`
+ * is called. The operation will fail if there are any pre-programmed words not
+ * equal to the expected test values.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the MANUF_STATE field was provisioned.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_creator_manuf_state_cfg(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
  * Checks the FLASH_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
  * partition.
  *
@@ -83,7 +100,8 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
  * Locks the CREATOR_SW_CFG OTP partition.
  *
  * This must be called after both `manuf_individualize_device_creator_sw_cfg()`
- * and `manuf_individualize_device_flash_data_default_cfg()` have been called.
+ * , `manuf_individualize_device_flash_data_default_cfg()` and
+ * `manuf_individualize_device_creator_manuf_state_cfg()` have been called.
  *
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the CREATOR_SW_CFG partition was locked.
@@ -107,12 +125,15 @@ status_t manuf_individualize_device_creator_sw_cfg_check(
  * The OWNER_SW_CFG partition contains additional settings for the ROM and
  * ROM_EXT, for example:
  * - Alert handler configuration
- * - ROM bootstrap disablement
  * - ROM_EXT bootstrap enablement
  *
  * Note:
- *  - The operation will fail if there are any pre-programmed words not equal to
- *    the expected test values.
+ * - The operation will fail if there are any pre-programmed words not equal to
+ *   the expected test values.
+ * - This operation will explicitly NOT provision the ROM_BOOTSTRAP_DIS
+ *   field in the OWNER_SW_CFG partition. This field must be explicitly
+ *   configured after all other provisioning operations are done, but before the
+ *   partition is locked, and the final transport image is loaded.
  *
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the HW_CFG0 partition is locked.
