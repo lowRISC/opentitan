@@ -11,15 +11,17 @@ filesets:
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:lc_or_hardened
+      - lowrisc:prim:lc_sender
       - lowrisc:prim:lc_sync
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
       - pulp-platform:riscv-dbg:0.1
-      - lowrisc:prim:lc_sync
     files:
       - rtl/rv_dm_reg_pkg.sv
       - rtl/rv_dm_regs_reg_top.sv
+      - rtl/rv_dm_dmi_gate.sv
       - rtl/rv_dm_pkg.sv
       - rtl/rv_dm.sv
     file_type: systemVerilogSource
