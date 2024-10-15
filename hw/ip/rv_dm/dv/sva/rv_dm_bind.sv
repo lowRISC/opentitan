@@ -9,8 +9,8 @@ module rv_dm_bind;
   ) tlul_assert_device_dmi (
     .clk_i,
     .rst_ni,
-    .h2d  (dmi_tl_h2d_i),
-    .d2h  (dmi_tl_d2h_o)
+    .h2d  (dbg_tl_d_i),
+    .d2h  (dbg_tl_d_o)
   );
 
   bind rv_dm tlul_assert #(

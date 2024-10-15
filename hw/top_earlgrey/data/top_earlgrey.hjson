@@ -757,7 +757,8 @@
       // Note that this module also contains a bus host.
       base_addrs: {
         mem:  {hart: "0x00010000"},
-        regs: {hart: "0x41200000"}
+        regs: {hart: "0x41200000"},
+        dbg:  {hart: "0x00001000"},  // Not used in Earlgrey
       },
       generate_dif: "False"
     },

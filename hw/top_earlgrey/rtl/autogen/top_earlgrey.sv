@@ -2203,8 +2203,6 @@ module top_earlgrey #(
       .jtag_i(pinmux_aon_rv_jtag_req),
       .jtag_o(pinmux_aon_rv_jtag_rsp),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .dmi_tl_h2d_i(tlul_pkg::TL_H2D_DEFAULT),
-      .dmi_tl_d2h_o(),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .pinmux_hw_debug_en_i(pinmux_aon_pinmux_hw_debug_en),
       .otp_dis_rv_dm_late_debug_i(rv_dm_otp_dis_rv_dm_late_debug),
@@ -2222,6 +2220,8 @@ module top_earlgrey #(
       .regs_tl_d_o(rv_dm_regs_tl_d_rsp),
       .mem_tl_d_i(rv_dm_mem_tl_d_req),
       .mem_tl_d_o(rv_dm_mem_tl_d_rsp),
+      .dbg_tl_d_i(tlul_pkg::TL_H2D_DEFAULT),
+      .dbg_tl_d_o(),
       .scanmode_i,
       .scan_rst_ni,
 

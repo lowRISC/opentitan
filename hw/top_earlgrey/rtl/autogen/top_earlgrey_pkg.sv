@@ -372,6 +372,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for dbg device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_DBG_BASE_ADDR = 32'h1000;
+
+  /**
+   * Peripheral size in bytes for dbg device on rv_dm in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_RV_DM_DBG_SIZE_BYTES = 32'h200;
+
+  /**
    * Peripheral base address for rv_plic in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h48000000;

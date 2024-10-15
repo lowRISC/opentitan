@@ -426,6 +426,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 |                   |               | 0x20000000 (mem)  |
 | rv_dm             | rv_dm         | 0x00010000 (mem)  |
 |                   |               | 0x41200000 (regs) |
+|                   |               | 0x00001000 (dbg)  |
 | rv_plic           | rv_plic       | 0x48000000 (regs) |
 | aes               | aes           | 0x41100000 (regs) |
 | hmac              | hmac          | 0x41110000 (regs) |
