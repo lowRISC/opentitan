@@ -863,5 +863,19 @@ Access window into the debug ROM.
 - Access: `ro`
 - Byte writes are *not* supported.
 
+## Summary of the **`dbg`** interface's registers
+
+| Name                | Offset   |   Length | Description               |
+|:--------------------|:---------|---------:|:--------------------------|
+| rv_dm.[`dbg`](#dbg) | 0x0      |      512 | Access window to DM CSRs. |
+
+## dbg
+Access window to DM CSRs.
+
+- Word Aligned Offset Range: `0x0`to`0x1fc`
+- Size (words): `128`
+- Access: `rw`
+- Byte writes are *not* supported.
+
 
 <!-- END CMDGEN -->
