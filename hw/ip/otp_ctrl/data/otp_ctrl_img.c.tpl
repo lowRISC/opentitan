@@ -64,7 +64,11 @@ ${fileheader}
       raise f"Invalid alignment: {alignment}"
 
     base_declaration = f"const {type_str} {ToConstLabelValue(item['name'])}"
-    if item["name"] not in ["CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG", "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS"]:
+    if item['name'] not in [
+        'CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG',
+        'CREATOR_SW_CFG_MANUF_STATE',
+        'OWNER_SW_CFG_ROM_BOOTSTRAP_DIS',
+    ]:
       base_declaration = "static " + base_declaration
 
     if item["num_items"] == 1:
