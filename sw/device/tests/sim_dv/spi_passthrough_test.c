@@ -19,6 +19,7 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
+#include "sw/device/lib/testing/spi_host_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -28,13 +29,13 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // Bit map of command slots to be filtered. This is supplied by the DV
 // environment.
-const volatile uint32_t kFilteredCommands;
+static const volatile uint32_t kFilteredCommands;
 
 // Whether to upload write commands and have software relay them.
-const volatile uint8_t kUploadWriteCommands;
+static const volatile uint8_t kUploadWriteCommands;
 
 // Which readpipeline_mode should be used for read commands.
-const volatile uint32_t kReadPipelineMode = 0;
+static const volatile uint8_t kReadPipelineMode;
 
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t rv_plic;
@@ -380,6 +381,13 @@ bool test_main(void) {
         dif_pinmux_output_select(&pinmux, setting.pad, setting.peripheral));
   }
 
+  // Configure fast slew rate, strong drive strength, and weak pull-ups for SPI
+  // Host 0 pads.
+  CHECK_STATUS_OK(spi_host_testutils_configure_host0_pad_attrs(&pinmux));
+
+  // Configure fast slew rate and strong drive strength for SPI device pads.
+  CHECK_STATUS_OK(spi_device_testutils_configure_pad_attrs(&pinmux));
+
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
@@ -402,7 +410,7 @@ bool test_main(void) {
   // ReadQuad.
   dif_spi_device_flash_command_t read_commands[ARRAYSIZE(kReadCommands)];
   memcpy(read_commands, kReadCommands, sizeof(read_commands));
-  for (size_t i = 0; i > 4; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     read_commands[5 + i].read_pipeline_mode = kReadPipelineMode;
   }
 
