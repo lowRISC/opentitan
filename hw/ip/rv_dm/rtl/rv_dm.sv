@@ -72,8 +72,8 @@ module rv_dm
   input  jtag_pkg::jtag_req_t jtag_i,
   output jtag_pkg::jtag_rsp_t jtag_o,
   // TL-UL-based DMI
-  input  tlul_pkg::tl_h2d_t dmi_tl_h2d_i,
-  output tlul_pkg::tl_d2h_t dmi_tl_d2h_o
+  input  tlul_pkg::tl_h2d_t dbg_tl_d_i,
+  output tlul_pkg::tl_d2h_t dbg_tl_d_o
 );
 
   ///////////////////////////
@@ -115,7 +115,7 @@ module rv_dm
   tlul_pkg::tl_h2d_t mem_tl_win_h2d;
   tlul_pkg::tl_d2h_t mem_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
-  logic regs_intg_error, rom_intg_error, dmi_intg_error;
+  logic regs_intg_error, rom_intg_error, dmi_intg_error, dbg_intg_error;
   logic sba_gate_intg_error, rom_gate_intg_error, dmi_gate_intg_error;
 
   rv_dm_regs_reg_top u_reg_regs (
@@ -136,7 +136,7 @@ module rv_dm
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error |
+  assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error | dbg_intg_error |
                      sba_gate_intg_error | rom_gate_intg_error | dmi_gate_intg_error;
 
   assign alert_test = {
@@ -441,6 +441,19 @@ module rv_dm
 
     // Bound-in DPI module replaces the TAP and TL-UL DMI
 `ifndef DMIDirectTAP
+    tlul_pkg::tl_h2d_t dbg_tl_h2d_win;
+    tlul_pkg::tl_d2h_t dbg_tl_d2h_win;
+
+    rv_dm_dbg_reg_top u_rv_dm_dbg_reg_top (
+      .clk_i,
+      .rst_ni,
+      .tl_i      (dbg_tl_d_i),
+      .tl_o      (dbg_tl_d_o),
+      .tl_win_o  (dbg_tl_h2d_win),
+      .tl_win_i  (dbg_tl_d2h_win),
+      .intg_err_o(dbg_intg_error)
+    );
+
     rv_dm_dmi_gate #(
       .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
     ) u_rv_dm_dmi_gate (
@@ -451,8 +464,8 @@ module rv_dm
       .lc_hw_debug_en_i,
       .lc_check_byp_en_i,
       .lc_escalate_en_i,
-      .dbg_tl_h2d_win_i(               dmi_tl_h2d_i),
-      .dbg_tl_d2h_win_o(               dmi_tl_d2h_o),
+      .dbg_tl_h2d_win_i(               dbg_tl_h2d_win),
+      .dbg_tl_d2h_win_o(               dbg_tl_d2h_win),
       .dmi_req_valid_o(                dmi_req_valid),
       .dmi_req_ready_i(                dmi_req_ready),
       .dmi_req_o(                      dmi_req),
@@ -564,11 +577,12 @@ module rv_dm
 
     // Tied-off and ignore signals from the DMI interface
     assign dmi_intg_error      = 1'b0;
+    assign dbg_intg_error      = 1'b0;
     assign dmi_gate_intg_error = 1'b0;
-    assign dmi_tl_d2h_o        = tlul_pkg::TL_D2H_DEFAULT;
+    assign dbg_tl_d_o          = tlul_pkg::TL_D2H_DEFAULT;
 
     logic unused_signals;
-    assign unused_signals = ^{dmi_tl_h2d_i,
+    assign unused_signals = ^{dbg_tl_d_i,
                               lc_check_byp_en_i,
                               lc_escalate_en_i,
                               strap_en_i,
@@ -691,8 +705,8 @@ module rv_dm
   `ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
   `ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)
 
-  `ASSERT_KNOWN(TlDmiDValidKnown_A, dmi_tl_d2h_o.d_valid)
-  `ASSERT_KNOWN(TlDmiAReadyKnown_A, dmi_tl_d2h_o.a_ready)
+  `ASSERT_KNOWN(TlDmiDValidKnown_A, dbg_tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlDmiAReadyKnown_A, dbg_tl_d_o.a_ready)
 
   `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)

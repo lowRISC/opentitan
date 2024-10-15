@@ -627,7 +627,11 @@
         IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
       },
       // Note that this module also contains a bus host.
-      base_addrs: {mem: "0x00010000", regs: "0x41200000"}
+      base_addrs: {
+        dbg: "0x0",           // Not used in Earlgrey
+        mem: "0x00010000",
+        regs: "0x41200000"
+      }
     },
     { name: "rv_plic",
       type: "rv_plic",

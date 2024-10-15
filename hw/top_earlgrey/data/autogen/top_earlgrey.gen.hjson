@@ -5326,6 +5326,7 @@
       }
       base_addrs:
       {
+        dbg: 0x0
         mem: 0x00010000
         regs: 0x41200000
       }
@@ -5419,28 +5420,6 @@
           default: lc_ctrl_pkg::Off
           inst_name: rv_dm
           top_signame: lc_ctrl_lc_hw_debug_en
-          index: -1
-        }
-        {
-          name: dmi_tl_h2d
-          desc: TLUL-based DMI request input port
-          struct: tl_h2d
-          package: tlul_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rv_dm
-          index: -1
-        }
-        {
-          name: dmi_tl_d2h
-          desc: TLUL-based DMI response output port
-          struct: tl_d2h
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: rv_dm
           index: -1
         }
         {
@@ -5649,6 +5628,16 @@
           default: ""
           end_idx: -1
           top_signame: rv_dm_mem_tl_d
+          index: -1
+        }
+        {
+          name: dbg_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: rv_dm
           index: -1
         }
       ]
@@ -19110,28 +19099,6 @@
         index: -1
       }
       {
-        name: dmi_tl_h2d
-        desc: TLUL-based DMI request input port
-        struct: tl_h2d
-        package: tlul_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rv_dm
-        index: -1
-      }
-      {
-        name: dmi_tl_d2h
-        desc: TLUL-based DMI response output port
-        struct: tl_d2h
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: rv_dm
-        index: -1
-      }
-      {
         name: lc_dft_en
         desc:
           '''
@@ -19337,6 +19304,16 @@
         default: ""
         end_idx: -1
         top_signame: rv_dm_mem_tl_d
+        index: -1
+      }
+      {
+        name: dbg_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: rv_dm
         index: -1
       }
       {
