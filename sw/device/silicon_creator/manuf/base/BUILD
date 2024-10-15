@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
 load(
     "//rules/opentitan:defs.bzl",
     "fpga_params",
@@ -18,6 +20,10 @@ load(
     "FT_PERSONALIZE_KEYS",
     "FT_PROVISIONING_INPUTS",
     "LOCAL_CERT_ENDORSEMENT_PARAMS",
+)
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VERSION",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -323,6 +329,16 @@ _FT_PERSO_EXTS = [
     },
 ]
 
+manifest(d = {
+    "name": "manifest_perso",
+    "identifier": hex(CONST.ROM_EXT),
+    "manuf_state_creator": hex(CONST.MANUF_STATE.PERSO_INITIAL),
+    "visibility": ["//visibility:private"],
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
+})
+
 [
     opentitan_binary(
         name = "ft_personalize{}".format(ext["suffix"] + dice["suffix"]),
@@ -335,6 +351,7 @@ _FT_PERSO_EXTS = [
             "//hw/top_earlgrey:silicon_creator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        manifest = ":manifest_perso",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [":ft_personalize_base{}".format(dice["suffix"])] + ext["ext_libs"],
     )
