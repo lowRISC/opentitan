@@ -30,6 +30,7 @@
     { protocol: "tlul", direction: "host",   name: "sba" }
     { protocol: "tlul", direction: "device", name: "regs" }
     { protocol: "tlul", direction: "device", name: "mem" }
+    { protocol: "tlul", direction: "device", name: "dbg"  }
   ],
   scan: "true", // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
@@ -108,26 +109,6 @@
                asserted when the hardware debug mechanisms are enabled in the system.
                '''
     },
-    {
-      struct:  "tl_h2d"
-      package: "tlul_pkg"
-      type:    "uni"
-      name:    "dmi_tl_h2d"
-      act:     "rcv"
-      desc:    '''
-               TLUL-based DMI request input port
-               '''
-    }
-    {
-      struct:  "tl_d2h"
-      package: "tlul_pkg"
-      type:    "uni"
-      name:    "dmi_tl_d2h"
-      act:     "req"
-      desc:    '''
-               TLUL-based DMI response output port
-               '''
-    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_dft_en"
@@ -655,6 +636,19 @@
           items: "512"
           swaccess: "ro",
           desc: '''Access window into the debug ROM.'''
+        }
+      },
+    ]
+    // Debug bus attachment
+    dbg: [
+      { window: {
+          name: "dbg"
+          // 0x0 ... 0x40 word addresses are allocated here.
+          items: "128"
+          swaccess: "rw",
+          data-intg-passthru: "true",
+          byte-write: "false",
+          desc: '''Access window to DM CSRs.'''
         }
       },
     ]
