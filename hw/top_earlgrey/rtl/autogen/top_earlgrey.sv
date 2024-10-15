@@ -69,6 +69,7 @@ module top_earlgrey #(
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
+  parameter bit SecRvDmVolatileRawUnlockEn = 1'b0,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -2190,7 +2191,8 @@ module top_earlgrey #(
   rv_dm #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40]),
     .IdcodeValue(RvDmIdcodeValue),
-    .UseDmiInterface(RvDmUseDmiInterface)
+    .UseDmiInterface(RvDmUseDmiInterface),
+    .SecVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn)
   ) u_rv_dm (
       // [40]: fatal_fault
       .alert_tx_o  ( alert_tx[40:40] ),
@@ -2210,6 +2212,10 @@ module top_earlgrey #(
       .ndmreset_req_o(rv_dm_ndmreset_req),
       .dmactive_o(),
       .debug_req_o(rv_dm_debug_req),
+      .lc_escalate_en_i(lc_ctrl_pkg::Off),
+      .lc_check_byp_en_i(lc_ctrl_pkg::Off),
+      .strap_en_i(1'b0),
+      .strap_en_override_i(1'b0),
       .sba_tl_h_o(main_tl_rv_dm__sba_req),
       .sba_tl_h_i(main_tl_rv_dm__sba_rsp),
       .regs_tl_d_i(rv_dm_regs_tl_d_req),
