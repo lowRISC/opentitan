@@ -5,6 +5,7 @@
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
+    "opentitan_ip_rust_header",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -13,3 +14,25 @@ alias(
     name = "top",
     actual = "//hw/top_earlgrey",
 )
+
+# List of IPs for which to generate headers.
+IPS = [
+]
+
+[
+    opentitan_ip_c_header(
+        name = "{}_c_regs".format(ip),
+        ip = ip,
+        top = ":top",
+    )
+    for ip in IPS
+]
+
+[
+    opentitan_ip_rust_header(
+        name = "{}_rust_regs".format(ip),
+        ip = ip,
+        top = ":top",
+    )
+    for ip in IPS
+]
