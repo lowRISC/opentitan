@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo")
 
 """Autogeneration rules for OpenTitan.
 
@@ -85,6 +86,99 @@ autogen_hjson_c_header = rule(
             cfg = "exec",
         ),
     },
+)
+
+def _opentitan_ip_c_header_impl(ctx):
+    header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
+    top = ctx.attr.top[OpenTitanTopInfo]
+    if ctx.attr.ip not in top.ip_hjson:
+        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
+    hjson = top.ip_hjson[ctx.attr.ip]
+
+    arguments = [
+        "-D",
+        "-q",
+        "-o",
+        header.path,
+        hjson.path,
+    ]
+
+    ctx.actions.run(
+        outputs = [header],
+        inputs = [hjson],
+        arguments = arguments,
+        executable = ctx.executable._regtool,
+    )
+
+    return [
+        CcInfo(compilation_context = cc_common.create_compilation_context(
+            includes = depset([header.dirname]),
+            headers = depset([header]),
+        )),
+        DefaultInfo(files = depset([header])),
+        OutputGroupInfo(
+            header = depset([header]),
+        ),
+    ]
+
+opentitan_ip_c_header = rule(
+    implementation = _opentitan_ip_c_header_impl,
+    doc = "Generate the C headers for an IP block as used in a top",
+    attrs = {
+        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "ip": attr.string(doc = "Name of the IP block"),
+        "_regtool": attr.label(
+            default = "//util:regtool",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+def _opentitan_ip_rust_header_impl(ctx):
+    tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
+    top = ctx.attr.top[OpenTitanTopInfo]
+    if ctx.attr.ip not in top.ip_hjson:
+        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
+    hjson = top.ip_hjson[ctx.attr.ip]
+
+    stamp_args = []
+    stamp_files = []
+    if stamping_enabled(ctx):
+        stamp_files = [ctx.version_file]
+        stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
+
+    ctx.actions.run(
+        outputs = [tock],
+        inputs = [hjson] + stamp_files,
+        arguments = [
+            "--tock",
+            "-q",
+            "-o",
+            tock.path,
+        ] + stamp_args + [hjson.path],
+        executable = ctx.executable._regtool,
+    )
+
+    return [
+        DefaultInfo(files = depset([tock])),
+        OutputGroupInfo(
+            tock = depset([tock]),
+        ),
+    ]
+
+opentitan_ip_rust_header = rule(
+    implementation = _opentitan_ip_rust_header_impl,
+    doc = "Generate the Rust headers for an IP block as used in a top",
+    attrs = {
+        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "ip": attr.string(doc = "Name of the IP block"),
+        "_regtool": attr.label(
+            default = "//util:regtool",
+            executable = True,
+            cfg = "exec",
+        ),
+    } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
 def _hjson_rust_header(ctx):
