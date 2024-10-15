@@ -19,8 +19,17 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+load("//rules/opentitan:hw.bzl", "opentitan_top")
 
 package(default_visibility = ["//visibility:public"])
+
+opentitan_top(
+    name = "top_earlgrey",
+    files = glob(["**"]),
+    hjson = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    ips = [
+    ],
+)
 
 autogen_hjson_c_header(
     name = "rv_plic_c_regs",
