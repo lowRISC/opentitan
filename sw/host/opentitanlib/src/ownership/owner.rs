@@ -99,9 +99,9 @@ impl Default for OwnerBlock {
 }
 
 impl OwnerBlock {
-    const SIZE: usize = 2048;
-    const DATA_SIZE: usize = 1536;
-    const SIGNATURE_OFFSET: usize = 1952;
+    pub const SIZE: usize = 2048;
+    pub const DATA_SIZE: usize = 1536;
+    pub const SIGNATURE_OFFSET: usize = 1952;
     // The not present value must be reflected in the TlvTag::NotPresent value.
     const NOT_PRESENT: u8 = 0x5a;
 
