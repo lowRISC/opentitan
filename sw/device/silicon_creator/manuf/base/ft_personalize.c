@@ -684,6 +684,7 @@ static status_t finalize_otp_partitions(void) {
 
   // Complete the provisioning of OTP CreatorSwCfg partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_creator_manuf_state_cfg(&otp_ctrl));
     TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
   }
   TRY(check_otp_measurement(&otp_creator_sw_cfg_measurement,
