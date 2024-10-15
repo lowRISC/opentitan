@@ -17,6 +17,7 @@ aes = "0.8.2"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
 asn1 = "0.20"
+base64ct = "1.6.0"
 bitflags = { version = "2.1", features = ["serde"] }
 byteorder = "1.4.3"
 chrono = "0.4"
@@ -105,5 +106,4 @@ pest = "2.2"
 pest_derive = "2.2"
 
 [dev-dependencies]
-base64ct = "1.6.0"
 indoc = "2.0.4"
