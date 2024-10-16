@@ -194,6 +194,7 @@ TEST_F(ProcessRequestTests, Success) {
   dif_mbx_transaction_t request;
   uint32_t data[4];
   request.data_dwords = data;
+  request.nr_dwords = 4;
 
   EXPECT_READ32(MBX_INBOUND_BASE_ADDRESS_REG_OFFSET, 0x1000);
   EXPECT_READ32(MBX_INBOUND_WRITE_PTR_REG_OFFSET, 0x1010);
@@ -210,6 +211,40 @@ TEST_F(ProcessRequestTests, Success) {
   EXPECT_EQ(request.data_dwords[1], 0x456789);
   EXPECT_EQ(request.data_dwords[2], 0xDEADBEEF);
   EXPECT_EQ(request.data_dwords[3], 0xCAFEDEAD);
+}
+
+TEST_F(ProcessRequestTests, GetOutOfRangeSuccess) {
+  dif_mbx_transaction_t request;
+  uint32_t data[3];
+  request.data_dwords = data;
+  request.nr_dwords = 3;
+
+  EXPECT_READ32(MBX_INBOUND_BASE_ADDRESS_REG_OFFSET, 0x1000);
+  EXPECT_READ32(MBX_INBOUND_WRITE_PTR_REG_OFFSET, 0x1010);
+
+  EXPECT_ABS_READ32(0x1000, 0x123456);
+  EXPECT_ABS_READ32(0x1004, 0x456789);
+  EXPECT_ABS_READ32(0x1008, 0xDEADBEEF);
+
+  EXPECT_DIF_OUTOFRANGE(dif_mbx_process_request(&mbx_, &request));
+
+  EXPECT_EQ(request.nr_dwords, 3);
+  EXPECT_EQ(request.data_dwords[0], 0x123456);
+  EXPECT_EQ(request.data_dwords[1], 0x456789);
+  EXPECT_EQ(request.data_dwords[2], 0xDEADBEEF);
+
+  request.data_dwords = data;
+  request.nr_dwords = 1;
+
+  EXPECT_READ32(MBX_INBOUND_BASE_ADDRESS_REG_OFFSET, 0x100C);
+  EXPECT_READ32(MBX_INBOUND_WRITE_PTR_REG_OFFSET, 0x1010);
+
+  EXPECT_ABS_READ32(0x100C, 0xCAFEDEAD);
+
+  EXPECT_DIF_OK(dif_mbx_process_request(&mbx_, &request));
+
+  EXPECT_EQ(request.nr_dwords, 1);
+  EXPECT_EQ(request.data_dwords[0], 0xCAFEDEAD);
 }
 
 TEST_F(ProcessRequestTests, BadArg) {

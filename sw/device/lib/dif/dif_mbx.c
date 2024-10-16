@@ -98,12 +98,23 @@ dif_result_t dif_mbx_process_request(const dif_mbx_t *mbx,
   uint32_t imbx_wr_ptr =
       mmio_region_read32(mbx->base_addr, MBX_INBOUND_WRITE_PTR_REG_OFFSET);
 
-  // Read from base until the write pointer.
-  request->nr_dwords = 0;
-  while (curr_ptr < imbx_wr_ptr) {
-    request->data_dwords[request->nr_dwords++] = abs_mmio_read32(curr_ptr);
+  // Read from base until the write pointer or we hit the limit of maximum
+  // dwords.
+  uint32_t read_dwords = 0;
+  while (curr_ptr < imbx_wr_ptr && read_dwords < request->nr_dwords) {
+    request->data_dwords[read_dwords++] = abs_mmio_read32(curr_ptr);
     curr_ptr += sizeof(uint32_t);
   }
+
+  // Pass back the actual number of read words
+  request->nr_dwords = read_dwords;
+
+  // If the read pointer didn't hit the write pointer, it means we hit the limit
+  // of maximum dwords supported by the destination
+  if (curr_ptr < imbx_wr_ptr) {
+    return kDifOutOfRange;
+  }
+
   return kDifOk;
 }
 
