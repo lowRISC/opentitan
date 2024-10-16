@@ -423,7 +423,8 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | flash_ctrl        | flash_ctrl    | 0x41000000 (core) |
 |                   |               | 0x41008000 (prim) |
 |                   |               | 0x20000000 (mem)  |
-| rv_dm             | rv_dm         | 0x00010000 (mem)  |
+| rv_dm             | rv_dm         | 0x0 (dbg)         |
+|                   |               | 0x00010000 (mem)  |
 |                   |               | 0x41200000 (regs) |
 | rv_plic           | rv_plic       | 0x48000000 (regs) |
 | aes               | aes           | 0x41100000 (regs) |
