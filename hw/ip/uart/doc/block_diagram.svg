@@ -8,7 +8,7 @@
    stroke-miterlimit="10"
    id="svg852"
    sodipodi:docname="block_diagram.svg"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -2212,14 +2212,14 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
-     inkscape:zoom="2"
-     inkscape:cx="266.5"
-     inkscape:cy="230.25"
-     inkscape:window-width="2631"
-     inkscape:window-height="1136"
-     inkscape:window-x="475"
-     inkscape:window-y="136"
-     inkscape:window-maximized="0"
+     inkscape:zoom="4.28"
+     inkscape:cx="266.23832"
+     inkscape:cy="430.14019"
+     inkscape:window-width="5120"
+     inkscape:window-height="2037"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
      inkscape:current-layer="svg852" />
   <path
      fill="#000000"
@@ -2227,7 +2227,8 @@
      d="M 0,0 H 674.53284 V 465.0656 H 0 Z"
      fill-rule="evenodd"
      id="path456"
-     clip-path="url(#clipPath3070)" />
+     clip-path="url(#clipPath3070)"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2235,7 +2236,8 @@
      fill-rule="evenodd"
      id="path458"
      clip-path="url(#clipPath3064)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2243,7 +2245,8 @@
      fill-rule="evenodd"
      id="path462"
      clip-path="url(#clipPath3052)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2251,7 +2254,8 @@
      fill-rule="evenodd"
      id="path468"
      clip-path="url(#clipPath3034)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2259,7 +2263,8 @@
      fill-rule="evenodd"
      id="path476"
      clip-path="url(#clipPath3010)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2267,7 +2272,8 @@
      fill-rule="evenodd"
      id="path482"
      clip-path="url(#clipPath2992)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2275,7 +2281,8 @@
      fill-rule="evenodd"
      id="path490"
      clip-path="url(#clipPath2968)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2283,7 +2290,8 @@
      fill-rule="evenodd"
      id="path494"
      clip-path="url(#clipPath2956)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2291,7 +2299,8 @@
      fill-rule="evenodd"
      id="path498"
      clip-path="url(#clipPath2944)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2299,7 +2308,8 @@
      fill-rule="evenodd"
      id="path502"
      clip-path="url(#clipPath2932)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2307,7 +2317,8 @@
      fill-rule="evenodd"
      id="path506"
      clip-path="url(#clipPath2920)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2315,9 +2326,11 @@
      fill-rule="evenodd"
      id="path510"
      clip-path="url(#clipPath2908)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <g
-     id="g23820">
+     id="g23820"
+     transform="translate(60.264154)">
     <path
        style="font-variation-settings:normal;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000"
        d="m 196.25039,148.55822 v 5.1059 l 34.83706,6.87468 0.98289,119.63691"
@@ -2359,7 +2372,8 @@
      fill-rule="evenodd"
      id="path514"
      clip-path="url(#clipPath2896)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2367,7 +2381,8 @@
      fill-rule="evenodd"
      id="path520"
      clip-path="url(#clipPath2878)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2375,7 +2390,8 @@
      fill-rule="evenodd"
      id="path544"
      clip-path="url(#clipPath2806)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2383,7 +2399,8 @@
      fill-rule="evenodd"
      id="path550"
      clip-path="url(#clipPath2788)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2391,7 +2408,8 @@
      fill-rule="evenodd"
      id="path554"
      clip-path="url(#clipPath2776)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2399,7 +2417,8 @@
      fill-rule="evenodd"
      id="path560"
      clip-path="url(#clipPath2758)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2407,7 +2426,8 @@
      fill-rule="evenodd"
      id="path574"
      clip-path="url(#clipPath2716)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2415,7 +2435,8 @@
      fill-rule="evenodd"
      id="path580"
      clip-path="url(#clipPath2698)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2423,7 +2444,8 @@
      fill-rule="evenodd"
      id="path588"
      clip-path="url(#clipPath2674)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2431,7 +2453,8 @@
      fill-rule="evenodd"
      id="path592"
      clip-path="url(#clipPath2662)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2439,7 +2462,8 @@
      fill-rule="evenodd"
      id="path596"
      clip-path="url(#clipPath2650)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2447,7 +2471,8 @@
      fill-rule="evenodd"
      id="path610"
      clip-path="url(#clipPath2608)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2455,7 +2480,8 @@
      fill-rule="evenodd"
      id="path622"
      clip-path="url(#clipPath2572)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2463,7 +2489,8 @@
      fill-rule="evenodd"
      id="path628"
      clip-path="url(#clipPath2554)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2471,7 +2498,8 @@
      fill-rule="evenodd"
      id="path634"
      clip-path="url(#clipPath2536)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2479,7 +2507,8 @@
      fill-rule="evenodd"
      id="path644"
      clip-path="url(#clipPath2506)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2487,7 +2516,8 @@
      fill-rule="evenodd"
      id="path650"
      clip-path="url(#clipPath2488)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2495,7 +2525,8 @@
      fill-rule="evenodd"
      id="path662"
      clip-path="url(#clipPath2452)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2503,7 +2534,8 @@
      fill-rule="evenodd"
      id="path668"
      clip-path="url(#clipPath2434)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2511,7 +2543,8 @@
      fill-rule="evenodd"
      id="path676"
      clip-path="url(#clipPath2410)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2519,7 +2552,8 @@
      fill-rule="evenodd"
      id="path682"
      clip-path="url(#clipPath2392)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2527,7 +2561,8 @@
      fill-rule="evenodd"
      id="path694"
      clip-path="url(#clipPath2356)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2535,7 +2570,8 @@
      fill-rule="evenodd"
      id="path700"
      clip-path="url(#clipPath2338)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2543,7 +2579,8 @@
      fill-rule="evenodd"
      id="path730"
      clip-path="url(#clipPath2248)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      stroke="#000000"
      stroke-width="1"
@@ -2553,7 +2590,8 @@
      fill-rule="evenodd"
      id="path732"
      clip-path="url(#clipPath2242)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      stroke="#000000"
@@ -2563,7 +2601,8 @@
      fill-rule="evenodd"
      id="path734"
      clip-path="url(#clipPath2236)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      stroke="#000000"
@@ -2573,14 +2612,16 @@
      fill-rule="evenodd"
      id="path736"
      clip-path="url(#clipPath2230)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#ffffff"
      d="m 424,224 v 32 l -16,-8 v -16 z"
      fill-rule="evenodd"
      id="path738"
      clip-path="url(#clipPath2224)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2588,7 +2629,8 @@
      fill-rule="evenodd"
      id="path742"
      clip-path="url(#clipPath2212)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2596,14 +2638,16 @@
      fill-rule="evenodd"
      id="path748"
      clip-path="url(#clipPath2194)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#ffffff"
      d="m 456,128 v 32 l 16,-8 v -16 z"
      fill-rule="evenodd"
      id="path752"
      clip-path="url(#clipPath2182)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2611,7 +2655,8 @@
      fill-rule="evenodd"
      id="path756"
      clip-path="url(#clipPath2170)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2619,7 +2664,8 @@
      fill-rule="evenodd"
      id="path768"
      clip-path="url(#clipPath2134)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2627,7 +2673,8 @@
      fill-rule="evenodd"
      id="path776"
      clip-path="url(#clipPath2110)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2635,7 +2682,8 @@
      fill-rule="evenodd"
      id="path784"
      clip-path="url(#clipPath2086)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2643,7 +2691,8 @@
      fill-rule="evenodd"
      id="path790"
      clip-path="url(#clipPath2068)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2651,21 +2700,24 @@
      fill-rule="evenodd"
      id="path796"
      clip-path="url(#clipPath2050)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#ffffff"
      d="m 451.79102,240 h 64 v 16 h -64 z"
      fill-rule="evenodd"
      id="path802"
      clip-path="url(#clipPath2032)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#ffffff"
      d="m 512,248 v 0 c 0,-4.41827 1.79083,-8 4,-8 v 0 c 1.06085,0 2.07831,0.84285 2.82843,2.34314 C 519.57855,243.84343 520,245.87827 520,248 v 0 c 0,4.41827 -1.79083,8 -4,8 v 0 c -2.20917,0 -4,-3.58173 -4,-8 z"
      fill-rule="evenodd"
      id="path810"
      clip-path="url(#clipPath2008)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      stroke="#ffffff"
      stroke-width="1"
@@ -2675,7 +2727,8 @@
      fill-rule="evenodd"
      id="path816"
      clip-path="url(#clipPath1990)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2683,7 +2736,8 @@
      fill-rule="evenodd"
      id="path840"
      clip-path="url(#clipPath1918)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <path
      fill="#000000"
      fill-opacity="0"
@@ -2691,136 +2745,138 @@
      fill-rule="evenodd"
      id="path844"
      clip-path="url(#clipPath1906)"
-     style="opacity:0.24561071" />
+     style="opacity:0.245611"
+     transform="translate(60.264154)" />
   <rect
-     style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:0.49999949,1;stroke-opacity:1;stop-color:#000000;stroke-dashoffset:0"
+     style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:0.499999, 1;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
      id="rect3180"
      width="88"
      height="320"
-     x="56"
+     x="116.26415"
      y="16" />
   <text
      xml:space="preserve"
      style="font-size:10px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="100.17582"
+     x="160.43997"
      y="32.758121"
      id="text3184"><tspan
        sodipodi:role="line"
        id="tspan3182"
-       x="100.17582"
+       x="160.43997"
        y="32.758121">register file</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="112.12"
+     x="172.38416"
      y="57.881317"
      id="text3914"><tspan
        sodipodi:role="line"
        id="tspan3912"
-       x="112.12"
+       x="172.38416"
        y="57.881317">CTRL.NCO.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="117.644"
+     x="177.90816"
      y="129.908"
      id="text3968"><tspan
        sodipodi:role="line"
        id="tspan3966"
-       x="117.644"
+       x="177.90816"
        y="129.908">WDATA.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="108.884"
+     x="169.14816"
      y="169.936"
      id="text3972"><tspan
        sodipodi:role="line"
        id="tspan3970"
-       x="108.884"
+       x="169.14816"
        y="169.936">CTRL.LLPBK.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="115.696"
+     x="175.96016"
      y="186.08363"
      id="text3976"><tspan
        sodipodi:role="line"
        id="tspan3974"
-       x="115.696"
+       x="175.96016"
        y="186.08363">CTRL.NF.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="108.784"
+     x="169.04816"
      y="201.936"
      id="text3980"><tspan
        sodipodi:role="line"
        id="tspan3978"
-       x="108.784"
+       x="169.04816"
        y="201.936">CTRL.SLPBK.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="118.876"
+     x="179.14015"
      y="234.98399"
      id="text3984"><tspan
        sodipodi:role="line"
        id="tspan3982"
-       x="118.876"
+       x="179.14015"
        y="234.98399">RDATA.d</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="118.368"
+     x="178.63216"
      y="285.23715"
      id="text3988"><tspan
        sodipodi:role="line"
        id="tspan3986"
-       x="118.368"
+       x="178.63216"
        y="285.23715">CTRL.*.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="105.356"
+     x="165.62016"
      y="296.63867"
      id="text3992"><tspan
        sodipodi:role="line"
        id="tspan3990"
-       x="105.356"
+       x="165.62016"
        y="296.63867">INTR_ENABLE.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="109.23199"
+     x="169.49614"
      y="308.04016"
      id="text3996"><tspan
        sodipodi:role="line"
        id="tspan3994"
-       x="109.23199"
+       x="169.49614"
        y="308.04016">INTR_STATE.q</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="109.23199"
+     x="169.49614"
      y="319.44165"
      id="text4000"><tspan
        sodipodi:role="line"
        id="tspan3998"
-       x="109.23199"
+       x="169.49614"
        y="319.44165">INTR_STATE.d</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:8px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000"
-     x="131.192"
+     x="191.45616"
      y="330.84317"
      id="text4004"><tspan
        sodipodi:role="line"
        id="tspan4002"
-       x="131.192"
+       x="191.45616"
        y="330.84317">...</tspan></text>
   <g
-     id="g41110">
+     id="g41110"
+     transform="translate(60.264154)">
     <rect
        style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
        id="rect4908"
@@ -2849,7 +2905,7 @@
      x="416"
      y="350.07196"
      id="text10833"
-     transform="translate(-317.50958,5.3817459)"><tspan
+     transform="translate(-256.7256,5.3817459)"><tspan
        sodipodi:role="line"
        id="tspan10831"
        x="416"
@@ -2860,7 +2916,7 @@
      x="393.71356"
      y="366.21396"
      id="text10837"
-     transform="translate(-295.43114,2.7353769)"><tspan
+     transform="translate(-234.57002,2.7250268)"><tspan
        sodipodi:role="line"
        id="tspan10835"
        x="393.71356"
@@ -2871,7 +2927,7 @@
      x="376.5"
      y="379.85568"
      id="text10841"
-     transform="translate(-273.66956,2.6292826)"><tspan
+     transform="translate(-212.58107,2.5685824)"><tspan
        sodipodi:role="line"
        id="tspan10839"
        x="376.5"
@@ -2882,7 +2938,7 @@
      x="376.5"
      y="390.08612"
      id="text10845"
-     transform="translate(-273.87756,5.9344737)"><tspan
+     transform="translate(-212.71193,5.8234234)"><tspan
        sodipodi:role="line"
        id="tspan10843"
        x="376.5"
@@ -2893,7 +2949,7 @@
      x="362.37891"
      y="405.29755"
      id="text10849"
-     transform="translate(-262.10848,4.2586771)"><tspan
+     transform="translate(-201.62404,4.0972769)"><tspan
        sodipodi:role="line"
        id="tspan10847"
        x="362.37891"
@@ -2904,7 +2960,7 @@
      x="352.05078"
      y="421.12216"
      id="text10853"
-     transform="translate(-251.26035,1.9296909)"><tspan
+     transform="translate(-190.92873,1.7579407)"><tspan
        sodipodi:role="line"
        id="tspan10851"
        x="352.05078"
@@ -2915,7 +2971,7 @@
      x="346.43048"
      y="431.84247"
      id="text10857"
-     transform="translate(-242.44405,4.5210139)"><tspan
+     transform="translate(-181.09944,4.5229135)"><tspan
        sodipodi:role="line"
        id="tspan10855"
        x="346.43048"
@@ -2926,13 +2982,26 @@
      x="327.5"
      y="444.29337"
      id="text10861"
-     transform="translate(-226.91358,5.3817459)"><tspan
+     transform="translate(-166.64943,5.1197955)"><tspan
        sodipodi:role="line"
        id="tspan10859"
        x="327.5"
        y="444.29337">intr_rx_parity_err_o</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
+     x="367.95703"
+     y="444.29337"
+     id="text10861-8"
+     transform="translate(-166.1006,18.562106)"><tspan
+       sodipodi:role="line"
+       id="tspan10859-0"
+       x="367.95703"
+       y="444.29337"
+       style="text-align:end;text-anchor:end">lsio_trigger_o</tspan></text>
   <g
-     id="g12623">
+     id="g12623"
+     transform="translate(60.264154)">
     <path
        fill="#000000"
        fill-opacity="0"
@@ -2940,7 +3009,7 @@
        fill-rule="evenodd"
        id="path606"
        clip-path="url(#clipPath2620)"
-       style="opacity:0.24561071" />
+       style="opacity:0.245611" />
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 16,176 8,-8 v 4 h 16 v -4 l 8,8 -8,8 v -4 H 24 v 4 z"
@@ -2959,21 +3028,22 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 144,56 25.50003,-0.06209"
+     d="m 204.26415,56 25.50003,-0.06209"
      id="path13480"
      sodipodi:nodetypes="cc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 144,128.05869 25.50003,-0.0621"
+     d="m 204.26415,128.05869 25.50003,-0.0621"
      id="path14573"
      sodipodi:nodetypes="cc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="M 216.00079,128.0621 233.45365,128"
+     d="M 276.26494,128.0621 293.7178,128"
      id="path15413"
      sodipodi:nodetypes="cc" />
   <g
-     id="g16293">
+     id="g16293"
+     transform="translate(60.264154)">
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 176,112 h 40.00079 v 32 H 176"
@@ -3002,13 +3072,14 @@
      x="157.88194"
      y="92.961044"
      id="text17116"
-     transform="translate(38.432453,17.717086)"><tspan
+     transform="translate(98.696607,17.717086)"><tspan
        sodipodi:role="line"
        id="tspan17114"
        x="157.88194"
        y="92.961044">32x8 TX FIFO</tspan></text>
   <g
-     id="g41098">
+     id="g41098"
+     transform="translate(60.264154)">
     <rect
        style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
        id="rect19647"
@@ -3038,21 +3109,22 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 175.79879,232.05869 -25.50003,-0.0621"
+     d="m 236.06294,232.05869 -25.50003,-0.0621"
      id="path22961"
      sodipodi:nodetypes="cc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 240,232 -18.64287,-0.003"
+     d="m 300.26415,232 -18.64287,-0.003"
      id="path24637"
      sodipodi:nodetypes="cc" />
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="m 196,257.11449 v 23.06122"
+     d="m 256.26415,257.11449 v 23.06122"
      id="path26289"
      sodipodi:nodetypes="cc" />
   <g
-     id="g46399">
+     id="g46399"
+     transform="translate(60.264154)">
     <g
        id="g21246"
        transform="matrix(-1,0,0,1,392.50079,104)">
@@ -3091,11 +3163,12 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="m 312,152 h 16"
+     d="m 372.26415,152 h 16"
      id="path31581"
      sodipodi:nodetypes="cc" />
   <g
-     id="g41267">
+     id="g41267"
+     transform="translate(60.264154)">
     <g
        id="g41123">
       <text
@@ -3134,7 +3207,7 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="M 296.00079,128.0621 320.8716,128"
+     d="M 356.26494,128.0621 381.13575,128"
      id="path30747"
      sodipodi:nodetypes="cc" />
   <rect
@@ -3142,29 +3215,30 @@
      id="rect28229-8"
      width="6.8219213"
      height="8.8728905"
-     x="308.61713"
+     x="368.88129"
      y="163.38535" />
   <rect
      style="font-variation-settings:normal;vector-effect:none;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
      id="rect29098"
      width="6.8219213"
      height="8.8728905"
-     x="308.61713"
+     x="368.88129"
      y="179.38535" />
   <rect
      style="font-variation-settings:normal;vector-effect:none;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
      id="rect29100"
      width="6.8219213"
      height="8.8728905"
-     x="308.61713"
+     x="368.88129"
      y="195.38535" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="m 144,200 h 272 v 28"
+     d="m 204.26415,200 h 272 v 28"
      id="path36919"
      sodipodi:nodetypes="ccc" />
   <g
-     id="g40264">
+     id="g40264"
+     transform="translate(60.264154)">
     <rect
        style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
        id="rect40236"
@@ -3190,12 +3264,12 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 328,232 -22.64287,-0.003"
+     d="m 388.26415,232 -22.64287,-0.003"
      id="path41275"
      sodipodi:nodetypes="cc" />
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="m 268,248 v 32.17571"
+     d="m 328.26415,248 v 32.17571"
      id="path42109"
      sodipodi:nodetypes="cc" />
   <rect
@@ -3203,7 +3277,7 @@
      id="rect42935"
      width="200"
      height="48"
-     x="176"
+     x="236.26416"
      y="288" />
   <text
      xml:space="preserve"
@@ -3211,29 +3285,30 @@
      x="302.04758"
      y="370.18134"
      id="text43763"
-     transform="translate(-26.087577,-56.101335)"><tspan
+     transform="translate(34.176577,-56.101335)"><tspan
        sodipodi:role="line"
        id="tspan43761"
        x="302.04758"
        y="370.18134">error checking, status</tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow2);marker-end:url(#Arrow2)"
-     d="m 169.4473,312.05869 -19.14854,-0.0621"
+     d="m 229.71145,312.05869 -19.14854,-0.0621"
      id="path44590"
      sodipodi:nodetypes="cc" />
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="m 272,336 v 24 H 150.29876"
+     d="m 332.26415,336 v 24 H 210.56291"
      id="path45444"
      sodipodi:nodetypes="ccc" />
   <g
      id="g47298"
-     style="stroke-width:1;stroke-dasharray:none">
+     style="stroke-width:1;stroke-dasharray:none"
+     transform="translate(60.264154)">
     <g
        id="g47260"
        style="stroke-width:1;stroke-dasharray:none">
       <path
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
          d="m 328,147.66412 8,4 -8,4"
          id="path47238" />
       <rect
@@ -3262,7 +3337,7 @@
   </g>
   <g
      id="g47318"
-     transform="translate(0,103.5)">
+     transform="translate(60.264154,103.5)">
     <g
        id="g47310">
       <path
@@ -3295,17 +3370,17 @@
   </g>
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="m 352,264 v 16.17571"
+     d="m 412.26415,264 v 16.17571"
      id="path48149"
      sodipodi:nodetypes="cc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 408.18496,240.00281 -24.26371,-0.003"
+     d="m 468.44911,240.00281 -24.26371,-0.003"
      id="path48985"
      sodipodi:nodetypes="cc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="m 424,224 -16,8 v 16 l 16,8 v -32"
+     d="m 484.26415,224 -16,8 v 16 l 16,8 v -32"
      id="path49820" />
   <text
      xml:space="preserve"
@@ -3313,7 +3388,7 @@
      x="401.95599"
      y="264"
      id="text50651"
-     transform="translate(17.766943,-28.32942)"><tspan
+     transform="translate(78.031097,-28.32942)"><tspan
        sodipodi:role="line"
        id="tspan50649"
        x="401.95599"
@@ -3324,13 +3399,14 @@
      x="399.1001"
      y="275.23785"
      id="text50661"
-     transform="translate(20.103029,-25.547654)"><tspan
+     transform="translate(80.367183,-25.547654)"><tspan
        sodipodi:role="line"
        id="tspan50659"
        x="399.1001"
        y="275.23785">0</tspan></text>
   <g
-     id="g56811">
+     id="g56811"
+     transform="translate(60.264154)">
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 456,152 h -16 v 96.0024"
@@ -3352,7 +3428,7 @@
   </g>
   <g
      id="g51569"
-     transform="translate(40.35148,44)">
+     transform="translate(100.61563,44)">
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 415.64852,84 16,8 v 16 l -16,8 V 84"
@@ -3382,12 +3458,12 @@
   </g>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2)"
-     d="m 472,144 12.5694,-0.004"
+     d="m 532.26415,144 12.5694,-0.004"
      id="path51595"
      sodipodi:nodetypes="cc" />
   <g
      id="g52468"
-     transform="translate(-30.819743,40.941735)">
+     transform="translate(29.444411,40.941735)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
@@ -3412,7 +3488,8 @@
          y="84.528412">cio_tx_en_o</tspan></text>
   </g>
   <g
-     id="g54184">
+     id="g54184"
+     transform="translate(60.264154)">
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 432,136 v 96 h -8"
@@ -3434,25 +3511,26 @@
   </g>
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="M 144,184.14764 464.008,184.25 V 232"
+     d="m 204.26415,184.14764 320.008,0.10236 V 232"
      id="path36911"
      sodipodi:nodetypes="ccc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 144,168 H 464.008 L 464,156"
+     d="m 204.26415,168 h 320.008 l -0.008,-12"
      id="path36903"
      sodipodi:nodetypes="ccc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="m 376,136 h 80"
+     d="m 436.26415,136 h 80"
      id="path55083" />
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="M 448,248 H 431.4271"
+     d="m 508.26415,248 h -16.5729"
      id="path57665"
      sodipodi:nodetypes="cc" />
   <g
-     id="g62626">
+     id="g62626"
+     transform="translate(60.264154)">
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 451.79102,240 h 64 c 5.50278,0 5.43043,16 0.20898,16 h -64"
@@ -3472,14 +3550,14 @@
      x="443.09167"
      y="190.45619"
      id="text63493"
-     transform="translate(26.228005,24.347028)"><tspan
+     transform="translate(86.492159,24.347028)"><tspan
        sodipodi:role="line"
        id="tspan63491"
        x="443.09167"
        y="190.45619">cfg input filter</tspan></text>
   <g
      id="g66057"
-     transform="translate(6)">
+     transform="translate(66.264154)">
     <g
        id="g64433">
       <rect
@@ -3527,12 +3605,12 @@
   </g>
   <path
      style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;marker-end:url(#Arrow2);stop-color:#000000;stop-opacity:1"
-     d="M 542,248 H 529.4271"
+     d="m 602.26415,248 h -12.5729"
      id="path66071"
      sodipodi:nodetypes="cc" />
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="m 583,248 h 17"
+     d="m 643.26415,248 h 17"
      id="path66079" />
   <text
      xml:space="preserve"
@@ -3540,7 +3618,7 @@
      x="600"
      y="283.05487"
      id="text66101"
-     transform="translate(16.547078,-32.123476)"><tspan
+     transform="translate(76.811232,-32.123476)"><tspan
        sodipodi:role="line"
        id="tspan66099"
        x="600"
