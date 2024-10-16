@@ -122,7 +122,7 @@ opentitan_test(
 alias(
     name = "aes_smoketest_entropy_testutils",
     actual = select({
-        "//sw/device:is_english_breakfast": "//sw/device:nothing",
+        "//hw/top:is_englishbreakfast": "//sw/device:nothing",
         "//conditions:default": "//sw/device/lib/testing:entropy_testutils",
     }),
     visibility = ["//visibility:private"],
@@ -413,7 +413,7 @@ opentitan_test(
         {"//hw/top_earlgrey:silicon_creator": None},
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -5563,7 +5563,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_outputs",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",

@@ -1,0 +1,108 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../rstmgr/data/rstmgr.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../rstmgr/data/rstmgr_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
+            This entry is covered by tl_access_test.
+            '''
+      stage: V2S
+      tests: ["rstmgr_tl_intg_err"]
+    }
+    {
+      name: sec_cm_scan_intersig_mubi
+      desc: '''Verify the countermeasure(s) SCAN.INTERSIG.MUBI.
+
+            **Stimulus**:
+            Same as smoke test but drive scanmode_i with a constant invalid
+            value during the test.
+
+            **Check**:
+            If dut accepts any of invalid values, test will fail by turning dut to scanmode.
+            '''
+      stage: V2S
+      tests: ["rstmgr_sec_cm_scan_intersig_mubi"]
+    }
+    {
+      name: sec_cm_leaf_rst_bkgn_chk
+      desc: '''Verify the countermeasure(s) LEAF.RST.BKGN_CHK.
+
+            ** Stimulus**:
+            Execute a series of reset event - lowpower, hwreq, and
+            sw reset -. And at the beginning of these events, create
+            reset consistency error to one of 25 leaf modules.
+            (exclude u_daon_por_io_div4 and u_daon_por_io_div4_shadowed,
+            see #11858, #12729 for details)
+            Do the same test for all 25 modules.
+
+            **Check**:
+            Upon asserting each reset consistency error,
+            check alert_fatal_cnsty_fault is asserted.
+            '''
+      stage: V2S
+      tests: ["rstmgr_leaf_rst_cnsty"]
+    }
+    {
+      name: sec_cm_leaf_rst_shadow
+      desc: '''Verify the countermeasure(s) LEAF.RST.SHADOW.
+            After power up, create glitch to a shadow leaf reset module.
+            Check if normal leaf reset module is not triggerred.
+            Do over all {shadow, normal} leaf reset module pairs
+            '''
+      stage: V2S
+      tests: ["rstmgr_leaf_rst_shadow_attack"]
+    }
+    {
+      name: sec_cm_leaf_fsm_sparse
+      desc: '''Verify the countermeasure(s) LEAF.FSM.SPARSE.
+
+            Force leaf rst check state to illegal value.
+            This is triggered by common cm primitives
+            '''
+      stage: V2S
+      tests: ["rstmgr_sec_cm"]
+    }
+    {
+      name: sec_cm_sw_rst_config_regwen
+      desc: '''Verify the countermeasure(s) SW_RST.CONFIG.REGWEN.
+
+            RSTMGR.SW_RST_CTRL_N.
+            This is covered by auto csr test.
+            '''
+      stage: V2S
+      tests: ["rstmgr_csr_rw"]
+    }
+    {
+      name: sec_cm_dump_ctrl_config_regwen
+      desc: '''Verify the countermeasure(s) DUMP_CTRL.CONFIG.REGWEN.
+
+            RSTMGR.ALERT_INFO_CTRL and RSTMGR.CPU_INFO_CTRL
+            This is covered by auto csr test.
+            '''
+      stage: V2S
+      tests: ["rstmgr_csr_rw"]
+    }
+  ]
+}

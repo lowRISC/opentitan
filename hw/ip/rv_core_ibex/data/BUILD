@@ -6,19 +6,11 @@ package(default_visibility = ["//visibility:public"])
 
 load(
     "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
+    "autogen_hjson_sw_headers",
 )
 
-autogen_hjson_c_header(
-    name = "rv_core_ibex_c_regs",
-    srcs = [
-        "rv_core_ibex.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "rv_core_ibex_rust_regs",
+autogen_hjson_sw_headers(
+    name_prefix = "rv_core_ibex",
     srcs = [
         "rv_core_ibex.hjson",
     ],

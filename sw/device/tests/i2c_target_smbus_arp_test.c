@@ -225,6 +225,8 @@ void i2c_isr(dif_i2c_irq_t irq) {
     case kDifI2cIrqAcqStretch:
       i2c_event = true;
       break;
+    default:
+      CHECK(false, "invalid interrupt %d", irq);
   }
   dif_i2c_irq_enable_snapshot_t enables;
   CHECK_DIF_OK(dif_i2c_irq_disable_all(&i2c, &enables));

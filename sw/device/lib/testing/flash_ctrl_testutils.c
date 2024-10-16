@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "devicetables.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -15,8 +16,9 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "flash_ctrl_regs.h"  // Generated
+
+static const dt_flash_ctrl_t *kFlashCtrlDt = &kDtFlashCtrl[0];
 
 #define MODULE_ID MAKE_MODULE_ID('f', 'c', 't')
 
@@ -298,9 +300,9 @@ status_t flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
 
 status_t flash_ctrl_testutils_backdoor_init(
     dif_flash_ctrl_state_t *flash_state) {
-  TRY(dif_flash_ctrl_init_state(
-      flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_flash_ctrl_init_state(flash_state,
+                                mmio_region_from_addr(dt_flash_ctrl_reg_block(
+                                    kFlashCtrlDt, kDtFlashCtrlRegBlockCore))));
 
   return flash_ctrl_testutils_default_region_access(flash_state,
                                                     /*rd_en*/ true,

@@ -24,6 +24,18 @@ dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_init_from_dt(const dt_gpio_t *dt, dif_gpio_t *gpio) {
+  if (gpio == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  gpio->base_addr =
+      mmio_region_from_addr(dt_gpio_reg_block(dt, kDtGpioRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_gpio_alert_force(const dif_gpio_t *gpio,
                                   dif_gpio_alert_t alert) {
   if (gpio == NULL) {
@@ -52,100 +64,100 @@ dif_result_t dif_gpio_alert_force(const dif_gpio_t *gpio,
 static bool gpio_get_irq_bit_index(dif_gpio_irq_t irq,
                                    bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifGpioIrqGpio0:
+    case kDtGpioIrqGpio0:
       *index_out = 0;
       break;
-    case kDifGpioIrqGpio1:
+    case kDtGpioIrqGpio1:
       *index_out = 1;
       break;
-    case kDifGpioIrqGpio2:
+    case kDtGpioIrqGpio2:
       *index_out = 2;
       break;
-    case kDifGpioIrqGpio3:
+    case kDtGpioIrqGpio3:
       *index_out = 3;
       break;
-    case kDifGpioIrqGpio4:
+    case kDtGpioIrqGpio4:
       *index_out = 4;
       break;
-    case kDifGpioIrqGpio5:
+    case kDtGpioIrqGpio5:
       *index_out = 5;
       break;
-    case kDifGpioIrqGpio6:
+    case kDtGpioIrqGpio6:
       *index_out = 6;
       break;
-    case kDifGpioIrqGpio7:
+    case kDtGpioIrqGpio7:
       *index_out = 7;
       break;
-    case kDifGpioIrqGpio8:
+    case kDtGpioIrqGpio8:
       *index_out = 8;
       break;
-    case kDifGpioIrqGpio9:
+    case kDtGpioIrqGpio9:
       *index_out = 9;
       break;
-    case kDifGpioIrqGpio10:
+    case kDtGpioIrqGpio10:
       *index_out = 10;
       break;
-    case kDifGpioIrqGpio11:
+    case kDtGpioIrqGpio11:
       *index_out = 11;
       break;
-    case kDifGpioIrqGpio12:
+    case kDtGpioIrqGpio12:
       *index_out = 12;
       break;
-    case kDifGpioIrqGpio13:
+    case kDtGpioIrqGpio13:
       *index_out = 13;
       break;
-    case kDifGpioIrqGpio14:
+    case kDtGpioIrqGpio14:
       *index_out = 14;
       break;
-    case kDifGpioIrqGpio15:
+    case kDtGpioIrqGpio15:
       *index_out = 15;
       break;
-    case kDifGpioIrqGpio16:
+    case kDtGpioIrqGpio16:
       *index_out = 16;
       break;
-    case kDifGpioIrqGpio17:
+    case kDtGpioIrqGpio17:
       *index_out = 17;
       break;
-    case kDifGpioIrqGpio18:
+    case kDtGpioIrqGpio18:
       *index_out = 18;
       break;
-    case kDifGpioIrqGpio19:
+    case kDtGpioIrqGpio19:
       *index_out = 19;
       break;
-    case kDifGpioIrqGpio20:
+    case kDtGpioIrqGpio20:
       *index_out = 20;
       break;
-    case kDifGpioIrqGpio21:
+    case kDtGpioIrqGpio21:
       *index_out = 21;
       break;
-    case kDifGpioIrqGpio22:
+    case kDtGpioIrqGpio22:
       *index_out = 22;
       break;
-    case kDifGpioIrqGpio23:
+    case kDtGpioIrqGpio23:
       *index_out = 23;
       break;
-    case kDifGpioIrqGpio24:
+    case kDtGpioIrqGpio24:
       *index_out = 24;
       break;
-    case kDifGpioIrqGpio25:
+    case kDtGpioIrqGpio25:
       *index_out = 25;
       break;
-    case kDifGpioIrqGpio26:
+    case kDtGpioIrqGpio26:
       *index_out = 26;
       break;
-    case kDifGpioIrqGpio27:
+    case kDtGpioIrqGpio27:
       *index_out = 27;
       break;
-    case kDifGpioIrqGpio28:
+    case kDtGpioIrqGpio28:
       *index_out = 28;
       break;
-    case kDifGpioIrqGpio29:
+    case kDtGpioIrqGpio29:
       *index_out = 29;
       break;
-    case kDifGpioIrqGpio30:
+    case kDtGpioIrqGpio30:
       *index_out = 30;
       break;
-    case kDifGpioIrqGpio31:
+    case kDtGpioIrqGpio31:
       *index_out = 31;
       break;
     default:

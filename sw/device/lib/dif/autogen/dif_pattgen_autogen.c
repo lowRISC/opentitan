@@ -24,6 +24,19 @@ dif_result_t dif_pattgen_init(mmio_region_t base_addr, dif_pattgen_t *pattgen) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pattgen_init_from_dt(const dt_pattgen_t *dt,
+                                      dif_pattgen_t *pattgen) {
+  if (pattgen == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  pattgen->base_addr = mmio_region_from_addr(
+      dt_pattgen_reg_block(dt, kDtPattgenRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_pattgen_alert_force(const dif_pattgen_t *pattgen,
                                      dif_pattgen_alert_t alert) {
   if (pattgen == NULL) {
@@ -52,10 +65,10 @@ dif_result_t dif_pattgen_alert_force(const dif_pattgen_t *pattgen,
 static bool pattgen_get_irq_bit_index(dif_pattgen_irq_t irq,
                                       bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifPattgenIrqDoneCh0:
+    case kDtPattgenIrqDoneCh0:
       *index_out = PATTGEN_INTR_COMMON_DONE_CH0_BIT;
       break;
-    case kDifPattgenIrqDoneCh1:
+    case kDtPattgenIrqDoneCh1:
       *index_out = PATTGEN_INTR_COMMON_DONE_CH1_BIT;
       break;
     default:
@@ -74,7 +87,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_get_type(const dif_pattgen_t *pattgen,
                                       dif_pattgen_irq_t irq,
                                       dif_irq_type_t *type) {
-  if (pattgen == NULL || type == NULL || irq == kDifPattgenIrqDoneCh1 + 1) {
+  if (pattgen == NULL || type == NULL || irq == kDtPattgenIrqCount) {
     return kDifBadArg;
   }
 

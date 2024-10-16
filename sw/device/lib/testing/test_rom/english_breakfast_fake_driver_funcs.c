@@ -29,6 +29,11 @@ dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr) {
   return kDifOk;
 }
 
+dif_result_t dif_rstmgr_init_from_dt(const dt_rstmgr_t *dt,
+                                     dif_rstmgr_t *rstmgr) {
+  return kDifOk;
+}
+
 dif_result_t dif_rstmgr_reset_info_get(const dif_rstmgr_t *handle,
                                        dif_rstmgr_reset_info_bitfield_t *info) {
   *info = 1 << kRstmgrReasonPowerOn;

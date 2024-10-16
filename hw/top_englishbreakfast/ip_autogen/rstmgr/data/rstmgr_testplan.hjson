@@ -1,0 +1,247 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "rstmgr"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
+                     "rstmgr_sec_cm_testplan.hjson"]
+
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Smoke test accessing a major datapath within the rstmgr.
+
+            Checks the behavior of rstmgr when receiving various reset requests.
+
+            **Stimulus**:
+            - Send a scan reset.
+            - Send a low power entry reset.
+            - Send a peripheral reset request.
+            - Send a debug reset.
+            - Configure a software request for peripheral reset.
+            - Set alert and cpu dump inputs to random values.
+
+            **Checks**:
+            - Checks the reset_info matches expected values.
+            - Checks the `alert_info` CSR correctly captures the input info.
+            - Checks the `cpu_info` CSR correctly captures the input info.
+            - Checks the output reset pins corresponding to sw resettable
+              units match `sw_rst_ctrl_n` CSR.
+            '''
+      stage: V1
+      tests: ["rstmgr_smoke"]
+    }
+    {
+      name: reset_stretcher
+      desc: '''Test the POR reset signal must be stable for multiple cycles.
+
+            The POR reset signal must remain active for at least 32 consecutive
+            cycles before going inactive for the rest of the reset tree to go
+            inactive.
+
+            **Stimulus**:
+            - Activate POR, and de-activate it at a random width less than 32
+              cycles between de-activations for N de-activations.
+
+            **Checks**:
+            - With SVA check the output reset is only set if the input reset
+              has had at least 32 cycles of steady input reset active.
+            '''
+      stage: V2
+      tests: ["rstmgr_por_stretcher"]
+    }
+    {
+      name: sw_rst
+      desc: '''Test the sw_rst functionality.
+
+            The `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs control the specific
+            reset outputs to peripherals in the following sequence:
+            - Test all `sw_rst_ctrl_n` bits when `sw_rst_regwen` is all 1's.
+            - Clear each `sw_rst_regwen` bit to verify the corresponding resets
+              are masked.
+
+            **Stimulus**:
+            - Write `sw_rst_ctrl_n` CSR with random values when regwen is all 1's.
+            - Clear each `sw_rst_regwen` bit and write `sw_rst_ctrl_n` CSR with
+              all 0's.
+            - After each regwen bit check set `sw_rst_ctrl_n` to all 1's.
+
+            **Checks**:
+            - Check that the zero bits in `sw_rst_ctrl_n` enabled by
+              `sw_rst_regwen` cause the respective resets to become active.
+            - Check that the zero bits in `sw_rst_ctrl_n` disabled by
+              `sw_rst_regwen` have no effect on resets.
+            - Check the `reset_info`, `cpu_info`, and `alert_info` CSRs are not modified.
+            '''
+      stage: V2
+      tests: ["rstmgr_sw_rst"]
+    }
+    {
+      name: sw_rst_reset_race
+      desc: '''Test sw_rst and reset close in time.
+
+            Sends sw_rst and regular resets in close temporal proximity.
+
+            **Stimulus**:
+            - Write `sw_rst_ctrl_n` CSR with random values when regwen is all 1's.
+            - Send a hardware reset.
+            - Release resets.
+
+            **Checks**:
+            - Check the `reset_info` CSR.
+            - Reset behavior is checked by SVA.
+            '''
+      stage: V2
+      tests: ["rstmgr_sw_rst_reset_race"]
+    }
+    {
+      name: reset_info
+      desc: '''Test the reporting of reset reason.
+
+            **Stimulus**:
+            - Generate the different resets recorded in `reset_info` CSR.
+            - Randomly clear `reset_info` (it is rw1c).
+
+            **Checks**:
+            - The resulting setting of `reset_info` is as expected.
+            - Each bit was set at least once.
+            - Each bit was cleared at least once.
+            '''
+      stage: V2
+      tests: ["rstmgr_reset"]
+    }
+    {
+      name: cpu_info
+      desc: '''Test the cpu_info recording.
+
+            The `cpu_info` CSR register(s) can capture the contents of the
+            `cpu_dump_i` input when resets happen and it is enabled.
+
+            **Stimulus**:
+            - Regularly modify the `cpu_dump_i` input.
+            - With `cpu_regwen` on, randomly set `cpu_info_ctrl.en` to control
+              whether the dump should be captured.
+            - Generate reset(s) as in `smoke` testpoint.
+
+            **Checks**:
+            - Verify the `cpu_info` is only captured when enabled.
+            - Verify the `cpu_info` contents at each `cpu_info_ctrl.index`
+              matches the expected value.
+            '''
+      stage: V2
+      tests: ["rstmgr_reset"]
+    }
+    {
+      name: alert_info
+      desc: '''Test the alert_info recording.
+
+            The `alert_info` CSR register(s) can capture the contents of the
+            `alert_dump_i` input when resets happen and it is enabled.
+
+            **Stimulus**:
+            - Regularly modify the `alert_dump_i` input.
+            - With `alert_regwen` on, randomly set `alert_info_ctrl.en` to
+              control whether the dump should be captured.
+            - Generate reset(s) as in `smoke` testpoint.
+
+            **Checks**:
+            - Verify the `alert_info` is only captured when enabled.
+            - Verify the `alert_info` contents at each `alert_info_ctrl.index`
+              matches the expected value.
+            '''
+      stage: V2
+      tests: ["rstmgr_reset"]
+    }
+    {
+      name: reset_info_capture
+      desc: '''Test the capture blocking effect of rst_cpu_n input.
+
+            After an AON reset reset capture is blocked until the input
+            rst_cpu_n goes inactive.
+
+            **Stimulus**:
+            - Wait for a random number of resets before setting rst_cpu_n
+              inactive.
+
+            **Checks**:
+            - Non-AON resets prior to this event don't capture.
+            '''
+      stage: V2
+      tests: ["rstmgr_reset"]
+    }
+    {
+      name: stress_all
+      desc: '''This runs random tests sequentially.
+
+            Stress with the following sequences:
+            - rstmgr_reset_vseq
+            - rstmgr_smoke_vseq
+            - rstmgr_sw_rst_vseq
+            '''
+      stage: V2
+      tests: ["rstmgr_stress_all"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: reset_stretcher_cg
+      desc: '''Collects coverage on the reset_stretcher functionality.
+
+            The stretcher counter is reset when por_n_i is not stable.
+            Collect both the count at the point of instability, and the
+            number of times the counter was reset.
+            '''
+    }
+    {
+      name: alert_info_capture_cg
+      desc: '''Collects coverage on reset type and enable when reset occurs.
+
+            Uses `reset_cp` that records the reset encoded as in `reset_info`
+            CSR, and `ctrl_en_cp` capturing `alert_info_ctrl.en` CSR, and
+            creates the per-reset_cp bit cross.
+            '''
+    }
+    {
+      name: alert_info_access_cg
+      desc: '''Collects coverage on the reads of alert_info.
+
+            This captures `alert_info_ctrl.index` CSR to verify all fields
+            of alert_info have been read.
+            '''
+    }
+    {
+      name: cpu_info_capture_cg
+      desc: '''Collects coverage on the reset and enable when reset occurs.
+
+            Uses `reset_cp` that records the reset encoded as in `reset_info`
+            CSR, and `ctrl_en_cp` capturing `cpu_info_ctrl.en` CSR, and creates
+            the per-reset_cp bit cross.
+            '''
+    }
+    {
+      name: cpu_info_access_cg
+      desc: '''Collects coverage on the reads of cpu_info.
+
+            This captures `cpu_info_ctrl.index` CSR to verify all fields
+            of cpu_info have been read.
+            '''
+    }
+    {
+      name: sw_rst_cg
+      desc: '''Collects coverage on the software reset functionality.
+
+            Each bit of the pair `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs
+            independently control if the corresponding output reset is
+            activated.
+            This collects one coverpoint for each, and their cross.
+            '''
+    }
+  ]
+}

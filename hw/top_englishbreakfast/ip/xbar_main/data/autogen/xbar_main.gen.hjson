@@ -1,0 +1,293 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson -o hw/top_englishbreakfast/
+
+{
+  name: main
+  clock_srcs:
+  {
+    clk_main_i: main
+    clk_fixed_i: io_div4
+  }
+  clock_group: infra
+  reset: rst_main_ni
+  reset_connections:
+  {
+    rst_main_ni:
+    {
+      name: sys
+      domain: "0"
+    }
+    rst_fixed_ni:
+    {
+      name: sys_io_div4
+      domain: "0"
+    }
+  }
+  clock_connections:
+  {
+    clk_main_i: clkmgr_aon_clocks.clk_main_infra
+    clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+  }
+  domain:
+  [
+    "0"
+  ]
+  connections:
+  {
+    rv_core_ibex.corei:
+    [
+      rom_ctrl.rom
+      sram_ctrl_main.ram
+      flash_ctrl.mem
+    ]
+    rv_core_ibex.cored:
+    [
+      rom_ctrl.rom
+      rom_ctrl.regs
+      sram_ctrl_main.ram
+      flash_ctrl.mem
+      peri
+      flash_ctrl.core
+      flash_ctrl.prim
+      aes
+      rv_plic
+      sram_ctrl_main.ram
+      sram_ctrl_main.regs
+      rv_core_ibex.cfg
+    ]
+  }
+  nodes:
+  [
+    {
+      name: rv_core_ibex.corei
+      type: host
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rv_core_ibex.cored
+      type: host
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rom_ctrl.rom
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x8000
+          size_byte: 0x8000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rom_ctrl.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x411e0000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: peri
+      type: device
+      clock: clk_fixed_i
+      reset: rst_fixed_ni
+      pipeline: false
+      xbar: true
+      stub: false
+      req_fifo_pass: true
+      addr_range:
+      [
+        {
+          base_addr: 0x40000000
+          size_byte: 0x800000
+        }
+      ]
+    }
+    {
+      name: flash_ctrl.core
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: true
+      rsp_fifo_pass: false
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x41000000
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: flash_ctrl.prim
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: true
+      rsp_fifo_pass: false
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x41008000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: flash_ctrl.mem
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: true
+      rsp_fifo_pass: false
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x20000000
+          size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: aes
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: aes
+      addr_range:
+      [
+        {
+          base_addr: 0x41100000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rv_plic
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: rv_plic
+      pipeline: false
+      addr_range:
+      [
+        {
+          base_addr: 0x48000000
+          size_byte: 0x8000000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rv_core_ibex.cfg
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: rv_core_ibex
+      addr_range:
+      [
+        {
+          base_addr: 0x411f0000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_main.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x411c0000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_main.ram
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x10000000
+          size_byte: 0x20000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+  ]
+  clock: clk_main_i
+  type: xbar
+}

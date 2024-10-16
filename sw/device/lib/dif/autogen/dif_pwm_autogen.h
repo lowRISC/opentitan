@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_pwm.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_pwm {
  * @param base_addr The MMIO base address of the pwm peripheral.
  * @param[out] pwm Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwm_init(mmio_region_t base_addr, dif_pwm_t *pwm);
+
+/**
+ * Creates a new handle for a(n) pwm peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] pwm Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwm_init_from_dt(const dt_pwm_t *dt, dif_pwm_t *pwm);
 
 /**
  * A pwm alert type.

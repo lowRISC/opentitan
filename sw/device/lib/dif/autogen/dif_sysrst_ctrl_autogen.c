@@ -25,6 +25,19 @@ dif_result_t dif_sysrst_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_init_from_dt(const dt_sysrst_ctrl_t *dt,
+                                          dif_sysrst_ctrl_t *sysrst_ctrl) {
+  if (sysrst_ctrl == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  sysrst_ctrl->base_addr = mmio_region_from_addr(
+      dt_sysrst_ctrl_reg_block(dt, kDtSysrstCtrlRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_sysrst_ctrl_alert_force(const dif_sysrst_ctrl_t *sysrst_ctrl,
                                          dif_sysrst_ctrl_alert_t alert) {
   if (sysrst_ctrl == NULL) {
@@ -54,7 +67,7 @@ dif_result_t dif_sysrst_ctrl_alert_force(const dif_sysrst_ctrl_t *sysrst_ctrl,
 static bool sysrst_ctrl_get_irq_bit_index(dif_sysrst_ctrl_irq_t irq,
                                           bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSysrstCtrlIrqEventDetected:
+    case kDtSysrstCtrlIrqEventDetected:
       *index_out = SYSRST_CTRL_INTR_COMMON_EVENT_DETECTED_BIT;
       break;
     default:
@@ -72,8 +85,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_irq_get_type(const dif_sysrst_ctrl_t *sysrst_ctrl,
                                           dif_sysrst_ctrl_irq_t irq,
                                           dif_irq_type_t *type) {
-  if (sysrst_ctrl == NULL || type == NULL ||
-      irq == kDifSysrstCtrlIrqEventDetected + 1) {
+  if (sysrst_ctrl == NULL || type == NULL || irq == kDtSysrstCtrlIrqCount) {
     return kDifBadArg;
   }
 

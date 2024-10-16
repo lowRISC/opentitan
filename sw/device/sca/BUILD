@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 alias(
     name = "aes_serial_aes_testutils",
     actual = select({
-        "//sw/device:is_english_breakfast": "//sw/device:nothing",
+        "//hw/top:is_englishbreakfast": "//sw/device:nothing",
         "//conditions:default": "//sw/device/lib/testing:aes_testutils",
     }),
     visibility = ["//visibility:private"],

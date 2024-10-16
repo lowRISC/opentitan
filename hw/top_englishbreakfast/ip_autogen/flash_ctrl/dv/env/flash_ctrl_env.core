@@ -1,0 +1,113 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:flash_ctrl_env:0.1"
+description: "FLASH_CTRL DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:dv_base_reg
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:flash_phy_prim_agent
+      - lowrisc:ip_interfaces:flash_ctrl_pkg
+      - lowrisc:constants:top_pkg
+    files:
+      - flash_ctrl_eflash_ral_pkg.sv
+      - flash_ctrl_env_pkg.sv
+      - flash_ctrl_if.sv
+      - flash_ctrl_mem_if.sv
+      - flash_mem_bkdr_util.sv: {is_include_file: true}
+      - flash_mem_addr_attrs.sv: {is_include_file: true}
+      - flash_otf_item.sv: {is_include_file: true}
+      - flash_otf_read_entry.sv: {is_include_file: true}
+      - flash_otf_mem_entry.sv: {is_include_file: true}
+      - flash_ctrl_seq_cfg.sv: {is_include_file: true}
+      - flash_ctrl_env_cfg.sv: {is_include_file: true}
+      - flash_ctrl_env_cov.sv: {is_include_file: true}
+      - flash_ctrl_virtual_sequencer.sv: {is_include_file: true}
+      - flash_ctrl_scoreboard.sv: {is_include_file: true}
+      - flash_ctrl_otf_scoreboard.sv: {is_include_file: true}
+      - flash_ctrl_env.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_callback_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_base_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_common_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rand_ops_base_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_smoke_hw_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rand_ops_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_sw_op_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_host_dir_rd_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rd_buff_evict_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_phy_arb_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_hw_sec_otp_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_erase_suspend_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_hw_rma_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_host_ctrl_arb_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_mp_regions_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_fetch_code_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_full_mem_access_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_error_prog_type_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_error_prog_win_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_error_mp_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_invalid_op_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_mid_op_rst_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_otf_base_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_wo_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_ro_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rw_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_write_word_sweep_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_write_rnd_wd_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_read_word_sweep_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_read_rnd_wd_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rw_rnd_wd_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_serr_counter_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_serr_address_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_derr_detect_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_hw_rma_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_otp_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_intr_rd_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_intr_wr_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_prog_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_legacy_base_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rw_evict_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_re_evict_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_oversize_error_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_connect_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_disable_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_host_addr_infection_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rd_path_intg_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_wr_path_intg_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_info_part_access_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_filesystem_support_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_access_after_disable_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_err_base_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_phy_arb_redun_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_phy_host_grant_err_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_phy_ack_consistency_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_config_regwen_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_hw_rma_err_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_lcmgr_intg_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_hw_read_seed_err_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_hw_prog_rma_wipe_err_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_rd_ooo_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: flash_ctrl
+      ip_hjson: ../../data/flash_ctrl.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

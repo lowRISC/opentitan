@@ -1,0 +1,136 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: clkmgr
+
+  // Top level dut name (sv module).
+  dut: clkmgr
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:clkmgr_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{self_dir}/../data/clkmgr_testplan.hjson"
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{self_dir}/../data/clkmgr.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson"
+                ]
+
+  // Add additional tops for simulation.
+  sim_tops: ["clkmgr_bind",
+             "clkmgr_cov_bind",
+             "sec_cm_prim_count_bind",
+             "sec_cm_prim_onehot_check_bind"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // CLKMGR exclusion files.
+  vcs_cov_excl_files: ["{self_dir}/cov/clkmgr_cov_manual_excl.el",
+                       "{self_dir}/cov/clkmgr_cov_unr_excl.el"]
+
+  // Handle generated coverage exclusion.
+  overrides: [
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/clkmgr_tgl_excl.cfg"
+    }
+  ]
+  // Default UVM test and seq class name.
+  uvm_test: clkmgr_base_test
+  uvm_test_seq: clkmgr_base_vseq
+
+  // Disable clearing interrupts since clkmgr doesn't have any.
+  run_opts: ["+do_clear_all_interrupts=0",
+             // Enable cdc instrumentation.
+             "+cdc_instrumentation_enabled=1"]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: clkmgr_smoke
+      uvm_test_seq: clkmgr_smoke_vseq
+    }
+    {
+      name: clkmgr_extclk
+      uvm_test_seq: clkmgr_extclk_vseq
+    }
+    {
+      name: clkmgr_frequency
+      uvm_test_seq: clkmgr_frequency_vseq
+    }
+    {
+      name: clkmgr_frequency_timeout
+      uvm_test_seq: clkmgr_frequency_timeout_vseq
+    }
+    {
+      name: clkmgr_peri
+      uvm_test_seq: clkmgr_peri_vseq
+    }
+    {
+      name: clkmgr_trans
+      uvm_test_seq: clkmgr_trans_vseq
+    }
+    {
+      name: clkmgr_clk_status
+      uvm_test_seq: clkmgr_clk_status_vseq
+    }
+    {
+      name: clkmgr_idle_intersig_mubi
+      uvm_test_seq: clkmgr_trans_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiIdle"]
+    }
+    {
+      name: clkmgr_lc_ctrl_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiLcCtrl"]
+    }
+    {
+      name: clkmgr_lc_clk_byp_req_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiLcHand"]
+    }
+    {
+      name: clkmgr_clk_handshake_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiHand"]
+    }
+    {
+      name: clkmgr_div_intersig_mubi
+      uvm_test_seq: clkmgr_extclk_vseq
+      run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiDiv"]
+    }
+    {
+      name: clkmgr_regwen
+      uvm_test_seq: clkmgr_regwen_vseq
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["clkmgr_smoke"]
+    }
+  ]
+}

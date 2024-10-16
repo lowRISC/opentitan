@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_pattgen.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,25 @@ typedef struct dif_pattgen {
  * @param base_addr The MMIO base address of the pattgen peripheral.
  * @param[out] pattgen Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_init(mmio_region_t base_addr, dif_pattgen_t *pattgen);
+
+/**
+ * Creates a new handle for a(n) pattgen peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] pattgen Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pattgen_init_from_dt(const dt_pattgen_t *dt,
+                                      dif_pattgen_t *pattgen);
 
 /**
  * A pattgen alert type.
@@ -73,17 +90,25 @@ dif_result_t dif_pattgen_alert_force(const dif_pattgen_t *pattgen,
 
 /**
  * A pattgen interrupt request type.
+ *
+ * DEPRECATED Use `dt_pattgen_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_pattgen_irq {
-  /**
-   * Raise if pattern generation on Channel 0 is complete
-   */
-  kDifPattgenIrqDoneCh0 = 0,
-  /**
-   * Raise if pattern generation on Channel 1 is complete
-   */
-  kDifPattgenIrqDoneCh1 = 1,
-} dif_pattgen_irq_t;
+/**
+ * Raise if pattern generation on Channel 0 is complete
+ */
+#define kDifPattgenIrqDoneCh0 kDtPattgenIrqDoneCh0
+/**
+ * Raise if pattern generation on Channel 1 is complete
+ */
+#define kDifPattgenIrqDoneCh1 kDtPattgenIrqDoneCh1
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_pattgen_irq_t dif_pattgen_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -103,8 +128,7 @@ typedef uint32_t dif_pattgen_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_get_type(const dif_pattgen_t *pattgen,
-                                      dif_pattgen_irq_t irq,
-                                      dif_irq_type_t *type);
+                                      dif_pattgen_irq_t, dif_irq_type_t *type);
 
 /**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
@@ -127,8 +151,7 @@ dif_result_t dif_pattgen_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_is_pending(const dif_pattgen_t *pattgen,
-                                        dif_pattgen_irq_t irq,
-                                        bool *is_pending);
+                                        dif_pattgen_irq_t, bool *is_pending);
 
 /**
  * Acknowledges all interrupts that were pending at the time of the state
@@ -162,7 +185,7 @@ dif_result_t dif_pattgen_irq_acknowledge_all(const dif_pattgen_t *pattgen);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_acknowledge(const dif_pattgen_t *pattgen,
-                                         dif_pattgen_irq_t irq);
+                                         dif_pattgen_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -175,7 +198,7 @@ dif_result_t dif_pattgen_irq_acknowledge(const dif_pattgen_t *pattgen,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_force(const dif_pattgen_t *pattgen,
-                                   dif_pattgen_irq_t irq, const bool val);
+                                   dif_pattgen_irq_t, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
@@ -196,7 +219,7 @@ typedef uint32_t dif_pattgen_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_get_enabled(const dif_pattgen_t *pattgen,
-                                         dif_pattgen_irq_t irq,
+                                         dif_pattgen_irq_t,
                                          dif_toggle_t *state);
 
 /**
@@ -209,8 +232,7 @@ dif_result_t dif_pattgen_irq_get_enabled(const dif_pattgen_t *pattgen,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_set_enabled(const dif_pattgen_t *pattgen,
-                                         dif_pattgen_irq_t irq,
-                                         dif_toggle_t state);
+                                         dif_pattgen_irq_t, dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

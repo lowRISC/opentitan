@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_flash_ctrl.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -45,10 +46,26 @@ typedef struct dif_flash_ctrl {
  * @param base_addr The MMIO base address of the flash_ctrl peripheral.
  * @param[out] flash_ctrl Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_init(mmio_region_t base_addr,
                                  dif_flash_ctrl_t *flash_ctrl);
+
+/**
+ * Creates a new handle for a(n) flash_ctrl peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] flash_ctrl Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_flash_ctrl_init_from_dt(const dt_flash_ctrl_t *dt,
+                                         dif_flash_ctrl_t *flash_ctrl);
 
 /**
  * A flash_ctrl alert type.
@@ -99,33 +116,41 @@ dif_result_t dif_flash_ctrl_alert_force(const dif_flash_ctrl_t *flash_ctrl,
 
 /**
  * A flash_ctrl interrupt request type.
+ *
+ * DEPRECATED Use `dt_flash_ctrl_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_flash_ctrl_irq {
-  /**
-   * Program FIFO empty
-   */
-  kDifFlashCtrlIrqProgEmpty = 0,
-  /**
-   * Program FIFO drained to level
-   */
-  kDifFlashCtrlIrqProgLvl = 1,
-  /**
-   * Read FIFO full
-   */
-  kDifFlashCtrlIrqRdFull = 2,
-  /**
-   * Read FIFO filled to level
-   */
-  kDifFlashCtrlIrqRdLvl = 3,
-  /**
-   * Operation complete
-   */
-  kDifFlashCtrlIrqOpDone = 4,
-  /**
-   * Correctable error encountered
-   */
-  kDifFlashCtrlIrqCorrErr = 5,
-} dif_flash_ctrl_irq_t;
+/**
+ * Program FIFO empty
+ */
+#define kDifFlashCtrlIrqProgEmpty kDtFlashCtrlIrqProgEmpty
+/**
+ * Program FIFO drained to level
+ */
+#define kDifFlashCtrlIrqProgLvl kDtFlashCtrlIrqProgLvl
+/**
+ * Read FIFO full
+ */
+#define kDifFlashCtrlIrqRdFull kDtFlashCtrlIrqRdFull
+/**
+ * Read FIFO filled to level
+ */
+#define kDifFlashCtrlIrqRdLvl kDtFlashCtrlIrqRdLvl
+/**
+ * Operation complete
+ */
+#define kDifFlashCtrlIrqOpDone kDtFlashCtrlIrqOpDone
+/**
+ * Correctable error encountered
+ */
+#define kDifFlashCtrlIrqCorrErr kDtFlashCtrlIrqCorrErr
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_flash_ctrl_irq_t dif_flash_ctrl_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -145,7 +170,7 @@ typedef uint32_t dif_flash_ctrl_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_get_type(const dif_flash_ctrl_t *flash_ctrl,
-                                         dif_flash_ctrl_irq_t irq,
+                                         dif_flash_ctrl_irq_t,
                                          dif_irq_type_t *type);
 
 /**
@@ -170,7 +195,7 @@ dif_result_t dif_flash_ctrl_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_is_pending(const dif_flash_ctrl_t *flash_ctrl,
-                                           dif_flash_ctrl_irq_t irq,
+                                           dif_flash_ctrl_irq_t,
                                            bool *is_pending);
 
 /**
@@ -207,7 +232,7 @@ dif_result_t dif_flash_ctrl_irq_acknowledge_all(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_acknowledge(const dif_flash_ctrl_t *flash_ctrl,
-                                            dif_flash_ctrl_irq_t irq);
+                                            dif_flash_ctrl_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -220,7 +245,7 @@ dif_result_t dif_flash_ctrl_irq_acknowledge(const dif_flash_ctrl_t *flash_ctrl,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_force(const dif_flash_ctrl_t *flash_ctrl,
-                                      dif_flash_ctrl_irq_t irq, const bool val);
+                                      dif_flash_ctrl_irq_t, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
@@ -241,7 +266,7 @@ typedef uint32_t dif_flash_ctrl_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_get_enabled(const dif_flash_ctrl_t *flash_ctrl,
-                                            dif_flash_ctrl_irq_t irq,
+                                            dif_flash_ctrl_irq_t,
                                             dif_toggle_t *state);
 
 /**
@@ -254,7 +279,7 @@ dif_result_t dif_flash_ctrl_irq_get_enabled(const dif_flash_ctrl_t *flash_ctrl,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_set_enabled(const dif_flash_ctrl_t *flash_ctrl,
-                                            dif_flash_ctrl_irq_t irq,
+                                            dif_flash_ctrl_irq_t,
                                             dif_toggle_t state);
 
 /**

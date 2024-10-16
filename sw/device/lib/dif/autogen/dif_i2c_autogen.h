@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_i2c.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_i2c {
  * @param base_addr The MMIO base address of the i2c peripheral.
  * @param[out] i2c Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c);
+
+/**
+ * Creates a new handle for a(n) i2c peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] i2c Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_init_from_dt(const dt_i2c_t *dt, dif_i2c_t *i2c);
 
 /**
  * A i2c alert type.
@@ -72,87 +88,95 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert);
 
 /**
  * A i2c interrupt request type.
+ *
+ * DEPRECATED Use `dt_i2c_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_i2c_irq {
-  /**
-   * Host mode interrupt: asserted whilst the FMT FIFO level is below the low
-   * threshold. This is a level status interrupt.
-   */
-  kDifI2cIrqFmtThreshold = 0,
-  /**
-   * Host mode interrupt: asserted whilst the RX FIFO level is above the high
-   * threshold. This is a level status interrupt.
-   */
-  kDifI2cIrqRxThreshold = 1,
-  /**
-   * Target mode interrupt: asserted whilst the ACQ FIFO level is above the high
-   * threshold. This is a level status interrupt.
-   */
-  kDifI2cIrqAcqThreshold = 2,
-  /**
-   * Host mode interrupt: raised if the RX FIFO has overflowed.
-   */
-  kDifI2cIrqRxOverflow = 3,
-  /**
-   * Host mode interrupt: raised if the controller FSM is halted, such as on an
-   * unexpected NACK or lost arbitration. Check !!CONTROLLER_EVENTS for the
-   * reason. The interrupt will be released when the bits in !!CONTROLLER_EVENTS
-   * are cleared.
-   */
-  kDifI2cIrqControllerHalt = 4,
-  /**
-   * Host mode interrupt: raised if the SCL line drops early (not supported
-   * without clock synchronization).
-   */
-  kDifI2cIrqSclInterference = 5,
-  /**
-   * Host mode interrupt: raised if the SDA line goes low when host is trying to
-   * assert high
-   */
-  kDifI2cIrqSdaInterference = 6,
-  /**
-   * Host mode interrupt: raised if target stretches the clock beyond the
-   * allowed timeout period
-   */
-  kDifI2cIrqStretchTimeout = 7,
-  /**
-   * Host mode interrupt: raised if the target does not assert a constant value
-   * of SDA during transmission.
-   */
-  kDifI2cIrqSdaUnstable = 8,
-  /**
-   * Host and target mode interrupt. In host mode, raised if the host issues a
-   * repeated START or terminates the transaction by issuing STOP. In target
-   * mode, raised if the external host issues a STOP or repeated START.
-   */
-  kDifI2cIrqCmdComplete = 9,
-  /**
-   * Target mode interrupt: raised if the target is stretching clocks for a read
-   * command. This is a level status interrupt.
-   */
-  kDifI2cIrqTxStretch = 10,
-  /**
-   * Target mode interrupt: asserted whilst the TX FIFO level is below the low
-   * threshold. This is a level status interrupt.
-   */
-  kDifI2cIrqTxThreshold = 11,
-  /**
-   * Target mode interrupt: raised if the target is stretching clocks due to
-   * full ACQ FIFO or zero count in !!TARGET_ACK_CTRL.NBYTES (if enabled). This
-   * is a level status interrupt.
-   */
-  kDifI2cIrqAcqStretch = 12,
-  /**
-   * Target mode interrupt: raised if STOP is received without a preceding NACK
-   * during an external host read.
-   */
-  kDifI2cIrqUnexpStop = 13,
-  /**
-   * Target mode interrupt: raised if the host stops sending the clock during an
-   * ongoing transaction.
-   */
-  kDifI2cIrqHostTimeout = 14,
-} dif_i2c_irq_t;
+/**
+ * Host mode interrupt: asserted whilst the FMT FIFO level is below the low
+ * threshold. This is a level status interrupt.
+ */
+#define kDifI2cIrqFmtThreshold kDtI2cIrqFmtThreshold
+/**
+ * Host mode interrupt: asserted whilst the RX FIFO level is above the high
+ * threshold. This is a level status interrupt.
+ */
+#define kDifI2cIrqRxThreshold kDtI2cIrqRxThreshold
+/**
+ * Target mode interrupt: asserted whilst the ACQ FIFO level is above the high
+ * threshold. This is a level status interrupt.
+ */
+#define kDifI2cIrqAcqThreshold kDtI2cIrqAcqThreshold
+/**
+ * Host mode interrupt: raised if the RX FIFO has overflowed.
+ */
+#define kDifI2cIrqRxOverflow kDtI2cIrqRxOverflow
+/**
+ * Host mode interrupt: raised if the controller FSM is halted, such as on an
+ * unexpected NACK or lost arbitration. Check !!CONTROLLER_EVENTS for the
+ * reason. The interrupt will be released when the bits in !!CONTROLLER_EVENTS
+ * are cleared.
+ */
+#define kDifI2cIrqControllerHalt kDtI2cIrqControllerHalt
+/**
+ * Host mode interrupt: raised if the SCL line drops early (not supported
+ * without clock synchronization).
+ */
+#define kDifI2cIrqSclInterference kDtI2cIrqSclInterference
+/**
+ * Host mode interrupt: raised if the SDA line goes low when host is trying to
+ * assert high
+ */
+#define kDifI2cIrqSdaInterference kDtI2cIrqSdaInterference
+/**
+ * Host mode interrupt: raised if target stretches the clock beyond the allowed
+ * timeout period
+ */
+#define kDifI2cIrqStretchTimeout kDtI2cIrqStretchTimeout
+/**
+ * Host mode interrupt: raised if the target does not assert a constant value of
+ * SDA during transmission.
+ */
+#define kDifI2cIrqSdaUnstable kDtI2cIrqSdaUnstable
+/**
+ * Host and target mode interrupt. In host mode, raised if the host issues a
+ * repeated START or terminates the transaction by issuing STOP. In target mode,
+ * raised if the external host issues a STOP or repeated START.
+ */
+#define kDifI2cIrqCmdComplete kDtI2cIrqCmdComplete
+/**
+ * Target mode interrupt: raised if the target is stretching clocks for a read
+ * command. This is a level status interrupt.
+ */
+#define kDifI2cIrqTxStretch kDtI2cIrqTxStretch
+/**
+ * Target mode interrupt: asserted whilst the TX FIFO level is below the low
+ * threshold. This is a level status interrupt.
+ */
+#define kDifI2cIrqTxThreshold kDtI2cIrqTxThreshold
+/**
+ * Target mode interrupt: raised if the target is stretching clocks due to full
+ * ACQ FIFO or zero count in !!TARGET_ACK_CTRL.NBYTES (if enabled). This is a
+ * level status interrupt.
+ */
+#define kDifI2cIrqAcqStretch kDtI2cIrqAcqStretch
+/**
+ * Target mode interrupt: raised if STOP is received without a preceding NACK
+ * during an external host read.
+ */
+#define kDifI2cIrqUnexpStop kDtI2cIrqUnexpStop
+/**
+ * Target mode interrupt: raised if the host stops sending the clock during an
+ * ongoing transaction.
+ */
+#define kDifI2cIrqHostTimeout kDtI2cIrqHostTimeout
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_i2c_irq_t dif_i2c_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -171,7 +195,7 @@ typedef uint32_t dif_i2c_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_get_type(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+dif_result_t dif_i2c_irq_get_type(const dif_i2c_t *i2c, dif_i2c_irq_t,
                                   dif_irq_type_t *type);
 
 /**
@@ -194,7 +218,7 @@ dif_result_t dif_i2c_irq_get_state(const dif_i2c_t *i2c,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+dif_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t,
                                     bool *is_pending);
 
 /**
@@ -228,7 +252,7 @@ dif_result_t dif_i2c_irq_acknowledge_all(const dif_i2c_t *i2c);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c, dif_i2c_irq_t irq);
+dif_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c, dif_i2c_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -240,7 +264,7 @@ dif_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c, dif_i2c_irq_t irq);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+dif_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t,
                                const bool val);
 
 /**
@@ -261,7 +285,7 @@ typedef uint32_t dif_i2c_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+dif_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t,
                                      dif_toggle_t *state);
 
 /**
@@ -273,7 +297,7 @@ dif_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+dif_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t,
                                      dif_toggle_t state);
 
 /**
