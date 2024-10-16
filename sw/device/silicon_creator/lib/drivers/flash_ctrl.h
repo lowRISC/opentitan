@@ -176,6 +176,8 @@ enum {
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
+  kFlashCtrlSecMmioDataRegionProtect = 1,
+  kFlashCtrlSecMmioDataRegionProtectLock = 1,
 };
 
 /**
