@@ -156,7 +156,8 @@ static void lock_otp_secret2_partition(void) {
 bool test_main(void) {
   LOG_INFO("Start LC walkthrough %d test.", kDestState);
 
-  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t lc_reg =
+      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
   mmio_region_t otp_reg =

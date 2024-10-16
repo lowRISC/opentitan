@@ -116,7 +116,7 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
     // Check that LC state is `TEST_UNLOCKED0` over the RV TAP.
     let mut state = [0u32];
     jtag.read_memory32(
-        top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
+        top_earlgrey::LC_CTRL_REGS_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
         &mut state,
     )?;
     assert_eq!(

@@ -105,7 +105,7 @@ static void peripherals_init(void) {
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(dif_otp_ctrl_init(

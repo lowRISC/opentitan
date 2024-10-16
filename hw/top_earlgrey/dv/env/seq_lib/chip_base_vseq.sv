@@ -193,7 +193,7 @@ class chip_base_vseq #(
     csr_spinwait(.ptr(ral.rom_ctrl_regs.digest[0]), .exp_data(0), .compare_op(CompareOpNe),
                  .backdoor(1), .spinwait_delay_ns(1000));
     `uvm_info(`gfn, "rom_ctrl check done after reset", UVM_HIGH)
-    csr_spinwait(.ptr(ral.lc_ctrl.status.ready), .exp_data(1), .backdoor(1),
+    csr_spinwait(.ptr(ral.lc_ctrl_regs.status.ready), .exp_data(1), .backdoor(1),
                  .spinwait_delay_ns(1000));
     `uvm_info(`gfn, "lc_ctrl has been initialized", UVM_HIGH)
   endtask
