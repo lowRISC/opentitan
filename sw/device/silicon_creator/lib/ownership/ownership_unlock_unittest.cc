@@ -394,6 +394,7 @@ TEST_P(OwnershipUnlockUpdateModesTest, UnlockAny) {
       expect = kErrorOwnershipUnlockDenied;
       break;
     case kOwnershipUpdateModeSelf:
+    case kOwnershipUpdateModeSelfVersion:
       expect = kErrorOwnershipInvalidMode;
       break;
   }
@@ -413,6 +414,7 @@ TEST_P(OwnershipUnlockUpdateModesTest, UnlockUpdate) {
   switch (mode) {
     case kOwnershipUpdateModeOpen:
     case kOwnershipUpdateModeSelf:
+    case kOwnershipUpdateModeSelfVersion:
       EXPECT_CALL(ownership_key_,
                   validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock),
                            _, _, _))
@@ -435,6 +437,7 @@ TEST_P(OwnershipUnlockUpdateModesTest, UnlockUpdate) {
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockUpdateModesTest,
                          testing::Values(kOwnershipUpdateModeOpen,
                                          kOwnershipUpdateModeSelf,
+                                         kOwnershipUpdateModeSelfVersion,
                                          kOwnershipUpdateModeNewVersion));
 
 }  // namespace
