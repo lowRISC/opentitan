@@ -133,6 +133,7 @@ rom_error_t ownership_secret_new(void) {
     default:;
   }
   hmac_sha256_update(&owner_page[0].owner_key, keysz);
+  hmac_sha256_process();
   hmac_sha256_final(&secret.owner_history);
   // TODO(cfrantz): when merging to master, use the big-endian form of
   // the sha256 function to avoid the reversal operation at the end.
@@ -146,6 +147,7 @@ rom_error_t ownership_secret_new(void) {
   hmac_sha256_init();
   hmac_sha256_update(&secret.owner_secret, sizeof(secret.owner_secret));
   hmac_sha256_update(&owner_page[0].owner_key, keysz);
+  hmac_sha256_process();
   hmac_sha256_final(&secret.owner_secret);
 
   error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
