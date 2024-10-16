@@ -88,11 +88,19 @@ dif_result_t dif_mbx_ipi_configuration_get(const dif_mbx_t *mbx,
                                            uint32_t *doe_intr_data);
 
 /**
- * Host reads the DoE Mailbox request from internal SRAM.
+ * Reads the DoE Mailbox request from internal SRAM.
+ * The `request->nr_words` field specifies the maximum number of words
+ * that can be stored in the internal request array. After reading,
+ * this function updates `request->nr_words` to indicate the actual
+ * number of words read.
  *
- * @param mbx A DOE Mailbox handle.
- * @param[out] request DOE object read from the internal SRAM.
- * @return The result of the operation.
+ * @param mbx           A handle to the DoE Mailbox.
+ * @param[out] request  A pointer to the DoE object where the request data
+ *                      from internal SRAM will be stored.
+ * @return The result of the operation:
+ *         - kDifBadArg:     One or more input arguments are invalid.
+ *         - kDifOutOfRange: The response exceeds the buffer size.
+ *         - kDifOk:         The operation was successful.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_mbx_process_request(const dif_mbx_t *mbx,
