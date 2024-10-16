@@ -121,14 +121,16 @@ offline_signature_attach(
 
 cc_library(
     name = "prodc_owner",
-    srcs = ["prodc_owner.c"],
+    srcs = [
+        "prodc_owner.c",
+        "prodc_owner.h",
+    ],
     deps = [
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/ownership:owner_block",
-        "//sw/device/silicon_creator/rom_ext/prodc/keys:includes",
     ],
     alwayslink = True,
 )
