@@ -280,6 +280,18 @@ rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
 }
 
 void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
+#ifdef ROM_EXT_KLOBBER_ALLOWED
+  if (rescue == kHardenedBoolTrue) {
+    // If ROM_EXT_KLOBBER_ALLOWED and we're in rescue mode, we skip
+    // lockdown because the rescue protcol is permitted, on DEV chips
+    // only, to erase the ownership pages.  This exists to simulate
+    // disaster scenarios and test the disaster recovery mechanisms.
+    //
+    // Under normal circumstances, the ROM_EXT is not built with this
+    // capability.
+    return;
+  }
+#endif
   flash_ctrl_perms_t perm = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4False,
