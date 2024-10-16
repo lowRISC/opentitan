@@ -67,6 +67,7 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
         // The NewVersion mode forbids all unlocks.
         return kErrorOwnershipUnlockDenied;
       case kOwnershipUpdateModeSelf:
+      case kOwnershipUpdateModeSelfVersion:
       default:
         // The `unlock` funciton services UnlockAny and UnlockEndorsed requests,
         // neither of which are valid for the `Self` mode.
@@ -107,6 +108,7 @@ static rom_error_t unlock_update(boot_svc_msg_t *msg, boot_data_t *bootdata) {
         // The NewVersion mode forbids all unlocks.
         return kErrorOwnershipUnlockDenied;
       case kOwnershipUpdateModeSelf:
+      case kOwnershipUpdateModeSelfVersion:
       case kOwnershipUpdateModeOpen:
       default:
           // The `unlock_update` funciton services UnlockUpdate update requests,
