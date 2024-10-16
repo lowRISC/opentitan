@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -294,6 +295,10 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
       }
       flash_ctrl_data_region_protect(kRomExtRegions + i, config->start,
                                      config->size, perm, cfg, lock);
+      SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect + lock ==
+                                       kHardenedBoolTrue
+                                   ? kFlashCtrlSecMmioDataRegionProtectLock
+                                   : 0);
     }
   }
   return kErrorOk;
