@@ -69,7 +69,7 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
                                      owner_application_keyring_t *keyring) {
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       owner_page_valid[1] == kOwnerPageStatusSigned &&
-      owner_page[0].update_mode == kOwnershipUpdateModeNewVersion &&
+      owner_block_newversion_mode() == kHardenedBoolTrue &&
       owner_page[1].config_version > owner_page[0].config_version &&
       hardened_memeq(owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
                      ARRAYSIZE(owner_page[0].owner_key.raw)) ==
@@ -309,9 +309,7 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
     return;
   }
   if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
-    if (owner_page[0].update_mode == kOwnershipUpdateModeNewVersion) {
-      HARDENED_CHECK_EQ(owner_page[0].update_mode,
-                        kOwnershipUpdateModeNewVersion);
+    if (owner_block_newversion_mode() == kHardenedBoolTrue) {
       // Leave page 1 unlocked if we're in "NewVersion" update mode.
     } else {
       // Otherwise, make the page read-only.

@@ -72,6 +72,12 @@ typedef enum ownership_update_mode {
    * if the config_version is newer)
    */
   kOwnershipUpdateModeNewVersion = 0x5657454e,
+  /**
+   * Update mode SelfVersion: `SELV`
+   * (unlock key only unlocks to UnlockedSelf; accept new owner configs from
+   * self-same owner if the config_version is newer)
+   */
+  kOwnershipUpdateModeSelfVersion = 0x564c4553,
 } ownership_update_mode_t;
 
 typedef enum lock_constraint {
