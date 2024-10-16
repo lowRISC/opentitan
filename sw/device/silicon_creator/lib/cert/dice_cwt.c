@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
@@ -96,6 +97,14 @@ const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
 
+#define CBOR_RETURN_IF_OVERFLOWED(p)    \
+  do {                                  \
+    if (CborOutOverflowed(p)) {         \
+      LOG_ERROR("CborOutOverflowed!!"); \
+      return kErrorCertInvalidSize;     \
+    }                                   \
+  } while (0)
+
 // PubKeyECDSA256 = {               ; COSE_Key [RFC9052 s7]
 //     1 : 2,                       ; Key type : EC2
 //     3 : AlgorithmES256,          ; Algorithm : ECDSA w/ SHA-256
@@ -103,30 +112,55 @@ const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
 //     -2 : bstr,                   ; X coordinate, big-endian
 //     -3 : bstr                    ; Y coordinate, big-endian
 // }
-rom_error_t dice_uds_tbs_cert_build(cert_key_id_pair_t *key_ids,
-                                    ecdsa_p256_public_key_t *uds_pubkey,
+static rom_error_t cose_key_builder(const ecdsa_p256_public_key_t *uds_pubkey,
                                     uint8_t *tbs_cert, size_t *tbs_cert_size) {
   struct CborOut kCborOutHandle;
 
   struct CborOut *pCborOut = &kCborOutHandle;
 
-  HARDENED_RETURN_IF_ERROR(
-      cbor_write_out_init(pCborOut, tbs_cert, *tbs_cert_size));
-  HARDENED_RETURN_IF_ERROR(cbor_map_init(pCborOut, 5));
-  HARDENED_RETURN_IF_ERROR(
-      cbor_write_pair_uint_uint(pCborOut, kCoseKeyKtyLabel, kCoseKeyKtyEc2));
-  HARDENED_RETURN_IF_ERROR(cbor_write_pair_uint_int(pCborOut, kCoseKeyAlgLabel,
-                                                    kCoseKeyAlgEcdsa256));
-  HARDENED_RETURN_IF_ERROR(
-      cbor_write_pair_int_uint(pCborOut, kCoseEc2CrvLabel, kCoseEc2CrvP256));
-  HARDENED_RETURN_IF_ERROR(cbor_write_pair_int_bytes(pCborOut, kCoseEc2XLabel,
-                                                     (uint8_t *)uds_pubkey->x,
-                                                     sizeof(uds_pubkey->x)));
-  HARDENED_RETURN_IF_ERROR(cbor_write_pair_int_bytes(pCborOut, kCoseEc2YLabel,
-                                                     (uint8_t *)uds_pubkey->y,
-                                                     sizeof(uds_pubkey->y)));
+  CborOutInit(tbs_cert, *tbs_cert_size, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
+  CborWriteMap(5, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
+  CborWriteUint(kCoseKeyKtyLabel, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+  CborWriteUint(kCoseKeyKtyEc2, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
+  CborWriteUint(kCoseKeyAlgLabel, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+  CborWriteInt(kCoseKeyAlgEcdsa256, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
+  CborWriteInt(kCoseEc2CrvLabel, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+  CborWriteUint(kCoseEc2CrvP256, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
+  CborWriteInt(kCoseEc2XLabel, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+  CborWriteBstr(sizeof(uds_pubkey->x), (uint8_t *)uds_pubkey->x, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
+  CborWriteInt(kCoseEc2YLabel, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+  CborWriteBstr(sizeof(uds_pubkey->y), (uint8_t *)uds_pubkey->y, pCborOut);
+  CBOR_RETURN_IF_OVERFLOWED(pCborOut);
+
   *tbs_cert_size = CborOutSize(pCborOut);
 
+  return kErrorOk;
+}
+
+rom_error_t dice_uds_tbs_cert_build(cert_key_id_pair_t *key_ids,
+                                    ecdsa_p256_public_key_t *uds_pubkey,
+                                    uint8_t *tbs_cert, size_t *tbs_cert_size) {
+  HARDENED_RETURN_IF_ERROR(
+      cose_key_builder(uds_pubkey, tbs_cert, tbs_cert_size));
+
+  base_hexdump((const char *)tbs_cert, *tbs_cert_size);
   return kErrorOk;
 }
 
@@ -148,3 +182,5 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   // TODO(lowRISC/opentitan:#24281): implement body
   return kErrorOk;
 }
+
+#undef CBOR_RETURN_IF_OVERFLOWED
