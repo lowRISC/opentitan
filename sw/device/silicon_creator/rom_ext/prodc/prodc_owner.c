@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/silicon_creator/rom_ext/prodc/prodc_owner.h"
+
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -11,12 +13,6 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
-#include "sw/device/silicon_creator/rom_ext/prodc/keys/appkey_dev_0.h"
-#include "sw/device/silicon_creator/rom_ext/prodc/keys/appkey_prod_0.h"
-#include "sw/device/silicon_creator/rom_ext/prodc/keys/appkey_test_0.h"
-#include "sw/device/silicon_creator/rom_ext/prodc/keys/ownership_activate_key.h"
-#include "sw/device/silicon_creator/rom_ext/prodc/keys/ownership_owner_key.h"
-#include "sw/device/silicon_creator/rom_ext/prodc/keys/ownership_unlock_key.h"
 
 /*
  * This module overrides the weak `sku_creator_owner_init` symbol in
@@ -24,16 +20,12 @@
  * configuration to receive their ownership config simply installing the latest
  * ROM_EXT.
  */
-
-#define PRODC_OWNER_CONFIG_VERSION 1
-
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                                    owner_config_t *config,
                                    owner_application_keyring_t *keyring) {
-  owner_key_t owner = (owner_key_t){
-      // Although this is an ECDSA key, we initialize the `raw` member of the
-      // union to zero-initialize the unused space.
-      .raw = OWNERSHIP_OWNER_KEY};
+  const owner_key_t *owner = &((const owner_block_t *)prodc_owner)->owner_key;
+  uint32_t config_version =
+      ((const owner_block_t *)prodc_owner)->config_version;
   ownership_state_t state = bootdata->ownership_state;
 
   if (state == kOwnershipStateUnlockedSelf ||
@@ -42,9 +34,9 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
     // Nothing to do when in an unlocked state.
     return kErrorOk;
   } else if (state == kOwnershipStateLockedOwner) {
-    if (hardened_memeq(owner.raw, owner_page[0].owner_key.raw,
-                       ARRAYSIZE(owner.raw)) != kHardenedBoolTrue ||
-        PRODC_OWNER_CONFIG_VERSION <= owner_page[0].config_version) {
+    if (hardened_memeq(owner->raw, owner_page[0].owner_key.raw,
+                       ARRAYSIZE(owner->raw)) != kHardenedBoolTrue ||
+        config_version <= owner_page[0].config_version) {
       // Different owner or already newest config version; nothing to do.
       return kErrorOk;
     }
@@ -54,87 +46,10 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
     // into flash.
   }
 
-  memset(&owner_page[0], 0, sizeof(owner_page[0]));
-  owner_page[0].header.tag = kTlvTagOwner;
-  owner_page[0].header.length = 2048;
-  owner_page[0].header.version = (struct_version_t){0, 0};
-  owner_page[0].config_version = PRODC_OWNER_CONFIG_VERSION;
-  owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
-  owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
-  owner_page[0].update_mode = kOwnershipUpdateModeOpen;
-  owner_page[0].min_security_version_bl0 = UINT32_MAX;
-  owner_page[0].lock_constraint = 0;
-  memset(owner_page[0].device_id, kLockConstraintNone,
-         sizeof(owner_page[0].device_id));
-  owner_page[0].owner_key = owner;
-  owner_page[0].activate_key = (owner_key_t){
-      // Although this is an ECDSA key, we initialize the `raw` member of the
-      // union to zero-initialize the unused space.
-      .raw = OWNERSHIP_ACTIVATE_KEY};
-  owner_page[0].unlock_key = (owner_key_t){
-      // Although this is an ECDSA key, we initialize the `raw` member of the
-      // union to zero-initialize the unused space.
-      .raw = OWNERSHIP_UNLOCK_KEY};
-
-  owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
-  *app = (owner_application_key_t){
-      .header =
-          {
-              .tag = kTlvTagApplicationKey,
-              .length = kTlvLenApplicationKeyEcdsa,
-          },
-      .key_alg = kOwnershipKeyAlgEcdsaP256,
-      .key_domain = kOwnerAppDomainTest,
-      .key_diversifier = {0},
-      .usage_constraint = 0,
-      .data =
-          {
-              .ecdsa = APPKEY_TEST_0,
-          },
-  };
-
-  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
-  *app = (owner_application_key_t){
-      .header =
-          {
-              .tag = kTlvTagApplicationKey,
-              .length = kTlvLenApplicationKeyEcdsa,
-          },
-      .key_alg = kOwnershipKeyAlgEcdsaP256,
-      .key_domain = kOwnerAppDomainProd,
-      .key_diversifier = {0},
-      .usage_constraint = 0,
-      .data =
-          {
-              .ecdsa = APPKEY_PROD_0,
-          },
-  };
-
-  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
-  *app = (owner_application_key_t){
-      .header =
-          {
-              .tag = kTlvTagApplicationKey,
-              .length = kTlvLenApplicationKeyEcdsa,
-          },
-      .key_alg = kOwnershipKeyAlgEcdsaP256,
-      .key_domain = kOwnerAppDomainDev,
-      .key_diversifier = {0},
-      .usage_constraint = 0,
-      .data =
-          {
-              .ecdsa = APPKEY_DEV_0,
-          },
-  };
-
-  // Fill the remainder of the data segment with the end tag (0x5a5a5a5a).
-  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
-  size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -
-               (uintptr_t)app;
-  memset(app, 0x5a, len);
+  memset(&owner_page[0], 0x5a, sizeof(owner_page[0]));
+  memcpy(&owner_page[0], prodc_owner, sizeof(prodc_owner));
 
   ownership_seal_page(/*page=*/0);
-  memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
 
   // Since this code should only execute when the ownership state is unknown, we
   // can thunk the ownership state to LockedOwner.
