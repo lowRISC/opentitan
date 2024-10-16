@@ -29,6 +29,7 @@ with_unknown! {
     pub enum OwnershipUpdateMode: u32 [default = Self::Open] {
         Open = u32::from_le_bytes(*b"OPEN"),
         UnlockSelf = u32::from_le_bytes(*b"SELF"),
+        SelfVersion = u32::from_le_bytes(*b"SELV"),
         NewVersion = u32::from_le_bytes(*b"NEWV"),
     }
 }

@@ -59,6 +59,13 @@ typedef struct owner_application_keyring {
 } owner_application_keyring_t;
 
 /**
+ * Determine if the ownership update mode is one of the "newversion" modes.
+ *
+ * @return kHardenedBoolTrue if it is a newversion mode.
+ */
+hardened_bool_t owner_block_newversion_mode(void);
+
+/**
  * Check if owner page 1 is valid for ownership transfer.
  *
  * @param bootdata The current bootdata.

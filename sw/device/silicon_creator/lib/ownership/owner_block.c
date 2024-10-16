@@ -23,6 +23,15 @@ enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
 };
 
+hardened_bool_t owner_block_newversion_mode(void) {
+  if (owner_page_valid[0] == kOwnerPageStatusSealed &&
+      (owner_page[0].update_mode == kOwnershipUpdateModeNewVersion ||
+       owner_page[0].update_mode == kOwnershipUpdateModeSelfVersion)) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
 hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
   if (bootdata->ownership_state == kOwnershipStateLockedOwner &&
       owner_page_valid[1] == kOwnerPageStatusSealed) {
