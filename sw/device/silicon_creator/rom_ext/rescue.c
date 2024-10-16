@@ -136,18 +136,33 @@ static void ownership_erase(void) {
 static void validate_mode(uint32_t mode, rescue_state_t *state,
                           boot_data_t *bootdata) {
   dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
-  hardened_bool_t allow = owner_rescue_command_allowed(state->config, mode);
+
+  // The following commands are always allowed and are not subject to
+  // the "command allowed" check.
+  switch (mode) {
+    case kRescueModeBaud:
+      change_speed();
+      goto exitproc;
+    case kRescueModeReboot:
+      dbg_printf("ok: reboot\r\n");
+      state->mode = (rescue_mode_t)mode;
+      goto exitproc;
+    case kRescueModeWait:
+      dbg_printf("ok: wait after upload\r\n");
+      state->reboot = false;
+      goto exitproc;
 #ifdef ROM_EXT_KLOBBER_ALLOWED
-  if (mode == kRescueModeKlobber) {
-    ownership_erase();
-    return;
-  }
+    case kRescueModeKlobber:
+      ownership_erase();
+      goto exitproc;
 #endif
+    default:
+        /* do nothing */;
+  }
+
+  hardened_bool_t allow = owner_rescue_command_allowed(state->config, mode);
   if (allow == kHardenedBoolTrue) {
     switch (mode) {
-      case kRescueModeBaud:
-        change_speed();
-        return;
       case kRescueModeBootLog:
         dbg_printf("ok: receive boot_log via xmodem-crc\r\n");
         break;
@@ -180,9 +195,6 @@ static void validate_mode(uint32_t mode, rescue_state_t *state,
       case kRescueModeOpenTitanID:
         dbg_printf("ok: receive device ID via xmodem-crc\r\n");
         break;
-      case kRescueModeReboot:
-        dbg_printf("ok: reboot\r\n");
-        break;
       default:
         // User input error.  Do not change modes.
         dbg_printf("error: unrecognized mode\r\n");
@@ -192,6 +204,7 @@ static void validate_mode(uint32_t mode, rescue_state_t *state,
   } else {
     dbg_printf("error: mode not allowed\r\n");
   }
+exitproc:
   state->frame = 1;
   state->offset = 0;
   state->flash_offset = 0;
