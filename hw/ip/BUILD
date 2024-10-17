@@ -17,7 +17,7 @@ filegroup(
         "//hw/ip/hmac",
         "//hw/ip/i2c",
         "//hw/ip/keymgr",
-        "//hw/ip/kmac:all_files",
+        "//hw/ip/kmac",
         "//hw/ip/lc_ctrl:all_files",
         "//hw/ip/otbn:all_files",
         "//hw/ip/otp_ctrl:all_files",
