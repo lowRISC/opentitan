@@ -35,6 +35,7 @@ IPS = [
     "pattgen",
     "prim",
     "pwm",
+    "rom_ctrl",
 ]
 
 [
