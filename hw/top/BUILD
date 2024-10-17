@@ -26,6 +26,7 @@ IPS = [
     "entropy_src",
     "gpio",
     "hmac",
+    "i2c",
 ]
 
 [
