@@ -22,11 +22,7 @@ class pwm_smoke_vseq extends pwm_base_vseq;
     // disable channel 0
     set_ch_enables(32'h0);
     //setup general config
-    cfg.pwm_cfg.DcResn       = 10;
-    cfg.pwm_cfg.ClkDiv       = 1;
-    cfg.pwm_cfg.CntrEn       = 1;
-
-    set_cfg_reg(cfg.pwm_cfg);
+    set_cfg_reg(10, 1, 1);
 
     cfg.duty_cycle[0].A      = 13000;
     cfg.duty_cycle[0].B      = 6500;
