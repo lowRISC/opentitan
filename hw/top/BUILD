@@ -49,6 +49,7 @@ IPS = [
     "ast",
     "sensor_ctrl",
     "xbar",
+    "xbar_main",
 ]
 
 [
