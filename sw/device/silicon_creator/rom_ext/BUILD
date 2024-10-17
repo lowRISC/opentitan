@@ -220,7 +220,7 @@ cc_library(
         ":rom_ext_boot_policy_ptrs",
         ":rom_ext_epmp",
         ":sigverify_keys",
-        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+        "//hw/top:sram_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",

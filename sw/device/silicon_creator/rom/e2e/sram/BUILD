@@ -62,8 +62,8 @@ _TESTS = {
             otp = param["otp"],
         ),
         deps = [
-            "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
+            "//hw/top:sram_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
