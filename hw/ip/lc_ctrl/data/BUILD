@@ -25,8 +25,8 @@ autogen_hjson_rust_header(
 )
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["lc_ctrl.hjson"],
 )
 
 exports_files(glob(["**"]))
