@@ -2190,6 +2190,27 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "kmac_endianess_test",
+    srcs = ["kmac_endianess_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "kmac_entropy_test",
     srcs = ["kmac_entropy_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
