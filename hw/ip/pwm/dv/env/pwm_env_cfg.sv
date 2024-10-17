@@ -16,7 +16,6 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   int                   core_clk_freq_mhz;
 
   // variables
-  cfg_reg_t             pwm_cfg;
   dc_blink_t            duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t            blink[PWM_NUM_CHANNELS];
   param_reg_t           pwm_param[PWM_NUM_CHANNELS];

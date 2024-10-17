@@ -24,21 +24,21 @@ class pwm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task set_cfg_reg(cfg_reg_t cfg_reg);
-    ral.cfg.clk_div.set(cfg_reg.ClkDiv);
-    ral.cfg.dc_resn.set(cfg_reg.DcResn);
-    ral.cfg.cntr_en.set(cfg_reg.CntrEn);
+  virtual task set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn);
+    ral.cfg.clk_div.set(ClkDiv);
+    ral.cfg.dc_resn.set(DcResn);
+    ral.cfg.cntr_en.set(CntrEn);
     csr_update(ral.cfg);
     foreach(cfg.m_pwm_monitor_cfg[i]) begin
-      cfg.m_pwm_monitor_cfg[i].resolution = cfg_reg.DcResn;
+      cfg.m_pwm_monitor_cfg[i].resolution = DcResn;
     end
   endtask
 
   virtual task automatic rand_pwm_cfg_reg();
-    cfg.pwm_cfg.ClkDiv = $urandom_range(0, int'(MAX_CLK_DIV));
-    cfg.pwm_cfg.DcResn = $urandom_range(0, 14);
-    cfg.pwm_cfg.CntrEn = 1;
-    set_cfg_reg(cfg.pwm_cfg);
+    bit [26:0] ClkDiv = $urandom_range(0, int'(MAX_CLK_DIV));
+    bit [3:0]  DcResn = $urandom_range(0, 14);
+    bit        CntrEn = 1'b1;
+    set_cfg_reg(ClkDiv, DcResn, CntrEn);
   endtask
 
   virtual task set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] enables);
