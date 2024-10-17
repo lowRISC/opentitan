@@ -77,7 +77,7 @@ TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
   EXPECT_DIF_OK(dif_dma_irq_get_type(&dma_, kDifDmaIrqDmaDone, &type));
-  EXPECT_EQ(type, kDifIrqTypeEvent);
+  EXPECT_EQ(type, kDifIrqTypeStatus);
 }
 
 class IrqGetStateTest : public DmaTest {};

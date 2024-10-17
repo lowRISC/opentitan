@@ -226,6 +226,8 @@ typedef enum dif_dma_status_code {
   kDifDmaStatusError = 0x01 << DMA_STATUS_ERROR_BIT,
   // Set once the SHA2 digest is valid after finishing a transfer
   kDifDmaStatusSha2DigestValid = 0x01 << DMA_STATUS_SHA2_DIGEST_VALID_BIT,
+  // Transfer of a single chunk is complete.
+  kDifDmaStatusChunkDone = 0x01 << DMA_STATUS_CHUNK_DONE_BIT,
 } dif_dma_status_code_t;
 
 /**
