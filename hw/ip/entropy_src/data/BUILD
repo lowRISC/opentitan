@@ -4,27 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "entropy_src_c_regs",
-    srcs = [
-        "entropy_src.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "entropy_src_rust_regs",
-    srcs = [
-        "entropy_src.hjson",
-    ],
-)
-
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["entropy_src.hjson"],
 )

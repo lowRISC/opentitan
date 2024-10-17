@@ -1,0 +1,73 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load(
+    "//rules:autogen.bzl",
+    "opentitan_ip_c_header",
+    "opentitan_ip_rust_header",
+)
+
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "top",
+    actual = "//hw/top_earlgrey",
+)
+
+# List of IPs for which to generate headers.
+IPS = [
+    "adc_ctrl",
+    "aes",
+    "aon_timer",
+    "csrng",
+    "dma",
+    "edn",
+    "entropy_src",
+    "gpio",
+    "hmac",
+    "i2c",
+    "keymgr",
+    "keymgr_dpe",
+    "kmac",
+    "lc_ctrl",
+    "otp_ctrl",
+    "pattgen",
+    "prim",
+    "pwm",
+    "rom_ctrl",
+    "rv_core_ibex",
+    "rv_dm",
+    "rv_timer",
+    "spi_device",
+    "spi_host",
+    "sram_ctrl",
+    "sysrst_ctrl",
+    "tlul",
+    "uart",
+    "usbdev",
+    "ast",
+    "sensor_ctrl",
+    "xbar",
+    "xbar_main",
+    "xbar_peri",
+    "pinmux",
+]
+
+[
+    opentitan_ip_c_header(
+        name = "{}_c_regs".format(ip),
+        ip = ip,
+        top = ":top",
+    )
+    for ip in IPS
+]
+
+[
+    opentitan_ip_rust_header(
+        name = "{}_rust_regs".format(ip),
+        ip = ip,
+        top = ":top",
+    )
+    for ip in IPS
+]

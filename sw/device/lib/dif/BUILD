@@ -37,7 +37,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/adc_ctrl/data:adc_ctrl_c_regs",
+        "//hw/top:adc_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -72,7 +72,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/aes/data:aes_c_regs",
+        "//hw/top:aes_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -140,7 +140,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -206,8 +206,8 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/csrng/data:csrng_c_regs",
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -229,7 +229,7 @@ cc_library(
     deps = [
         ":base",
         ":csrng_shared",
-        "//hw/ip/csrng/data:csrng_c_regs",
+        "//hw/top:csrng_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -298,7 +298,7 @@ cc_library(
     deps = [
         ":base",
         ":csrng_shared",
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -332,7 +332,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -398,7 +398,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/gpio/data:gpio_c_regs",
+        "//hw/top:gpio_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -432,7 +432,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top:hmac_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -466,7 +466,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/i2c/data:i2c_c_regs",
+        "//hw/top:i2c_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -500,7 +500,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/keymgr/data:keymgr_c_regs",
+        "//hw/top:keymgr_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -567,7 +567,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/kmac/data:kmac_c_regs",
+        "//hw/top:kmac_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -601,7 +601,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
+        "//hw/top:lc_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -669,7 +669,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -703,7 +703,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/pattgen/data:pattgen_c_regs",
+        "//hw/top:pattgen_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -737,7 +737,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
+        "//hw/top:pinmux_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -772,7 +772,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/pwm/data:pwm_c_regs",
+        "//hw/top:pwm_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -839,7 +839,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rom_ctrl/data:rom_ctrl_c_regs",
+        "//hw/top:rom_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -910,7 +910,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:hart",
@@ -942,7 +942,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rv_dm/data:rv_dm_c_regs",
+        "//hw/top:rv_dm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
@@ -1008,7 +1008,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top:rv_timer_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
@@ -1043,7 +1043,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/spi_device/data:spi_device_c_regs",
+        "//hw/top:spi_device_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1077,7 +1077,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
+        "//hw/top:spi_host_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1112,7 +1112,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+        "//hw/top:sram_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1146,7 +1146,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -1178,7 +1178,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
+        "//hw/top:sysrst_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1210,7 +1210,7 @@ cc_library(
     hdrs = ["dif_uart.h"],
     deps = [
         ":base",
-        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:uart_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
@@ -1245,7 +1245,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/usbdev/data:usbdev_c_regs",
+        "//hw/top:usbdev_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

@@ -19,8 +19,56 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+load("//rules/opentitan:hw.bzl", "opentitan_top")
 
 package(default_visibility = ["//visibility:public"])
+
+opentitan_top(
+    name = "top_earlgrey",
+    doc = glob(["doc/**"]),
+    hjson = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    ips = [
+        "//hw/top_earlgrey/ip/pinmux",
+        "//hw/top_earlgrey/ip/xbar_peri",
+        "//hw/top_earlgrey/ip/xbar_main",
+        "//hw/top_earlgrey/ip/xbar",
+        "//hw/top_earlgrey/ip/sensor_ctrl",
+        "//hw/top_earlgrey/ip/ast",
+        "//hw/ip/usbdev",
+        "//hw/ip/uart",
+        "//hw/ip/tlul",
+        "//hw/ip/sysrst_ctrl",
+        "//hw/ip/sram_ctrl",
+        "//hw/ip/spi_host",
+        "//hw/ip/spi_device",
+        "//hw/ip/rv_timer",
+        "//hw/ip/rv_dm",
+        "//hw/ip/rv_core_ibex",
+        "//hw/ip/rom_ctrl",
+        "//hw/ip/pwm",
+        "//hw/ip/prim",
+        "//hw/ip/pattgen",
+        "//hw/ip/otp_ctrl",
+        "//hw/ip/lc_ctrl",
+        "//hw/ip/kmac",
+        "//hw/ip/keymgr",
+        "//hw/ip/i2c",
+        "//hw/ip/hmac",
+        "//hw/ip/gpio",
+        "//hw/ip/entropy_src",
+        "//hw/ip/edn",
+        "//hw/ip/csrng",
+        "//hw/ip/aon_timer",
+        "//hw/ip/aes",
+        "//hw/ip/adc_ctrl",
+    ],
+    rtl = glob([
+        "*.core",
+        "dv/**",
+        "rtl/**",
+        "lint/**",
+    ]),
+)
 
 autogen_hjson_c_header(
     name = "rv_plic_c_regs",

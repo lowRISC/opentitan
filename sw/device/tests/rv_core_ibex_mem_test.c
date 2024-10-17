@@ -34,8 +34,8 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/ip/pwm/data/pwm_regs.h"
-#include "hw/ip/rv_timer/data/rv_timer_regs.h"
+#include "pwm_regs.h"
+#include "rv_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();

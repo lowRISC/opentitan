@@ -2,11 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:hw.bzl", "opentitan_ip")
+
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]) + [
-        "//hw/ip/i2c/data:all_files",
-    ],
+opentitan_ip(
+    name = "i2c",
+    doc = glob(["doc/**"]),
+    hjson = "//hw/ip/i2c/data:hjson",
+    rtl = glob([
+        "dv/**",
+        "rtl/**",
+        "lint/**",
+        "*.core",
+    ]),
 )
