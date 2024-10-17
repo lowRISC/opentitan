@@ -1079,7 +1079,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
