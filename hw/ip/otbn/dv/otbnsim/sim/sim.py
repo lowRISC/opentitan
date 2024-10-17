@@ -25,11 +25,11 @@ StepRes = Tuple[Optional[OTBNInsn], List[Trace]]
 class OTBNSim:
     def __init__(self) -> None:
         self.state = OTBNState()
-        self.program = []  # type: List[OTBNInsn]
-        self.loop_warps = {}  # type: LoopWarps
-        self.stats = None  # type: Optional[ExecutionStats]
-        self._execute_generator = None  # type: Optional[Iterator[None]]
-        self._next_insn = None  # type: Optional[OTBNInsn]
+        self.program: List[OTBNInsn] = []
+        self.loop_warps: LoopWarps = {}
+        self.stats: Optional[ExecutionStats] = None
+        self._execute_generator: Optional[Iterator[None]] = None
+        self._next_insn: Optional[OTBNInsn] = None
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
@@ -226,7 +226,7 @@ class OTBNSim:
         # If we are IDLE and get an RMA request, we want to start a secure
         # wipe, which will eventually put us into the LOCKED state.
         if self.state.rma_req == LcTx.ON and not is_locked:
-            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
+            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
             self.state.set_fsm_state(FsmState.PRE_WIPE)
             self.state.lock_after_wipe = True
             self.state.wipe_rounds_done = 0
@@ -373,6 +373,20 @@ class OTBNSim:
 
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation when waiting for a URND seed for wipe'''
+
+        # This is a bit of a hack to model a bug in the design where the STATUS
+        # register has a value of 0xff for a single cycle before it becomes
+        # BUSY_SEC_WIPE_INT.
+        #
+        # This happens when responding to an RMA request in _step_idle. If we
+        # update the register to be BUSY_SEC_WIPE_INT on each cycle (and the
+        # first one we are here in particular!), we will get analogous
+        # behaviour.
+        #
+        # TODO(#23903): Fix the bug in the design then drop this code (and
+        # change the STATUS value in _step_idle from LOCKED to
+        # BUSY_SEC_WIPE_INT).
+        self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
 
         # If we get an RMA request before we've managed to run any rounds of
         # wiping then we are waiting for our first URND seed. The entropy
