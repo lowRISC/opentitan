@@ -25,11 +25,11 @@ StepRes = Tuple[Optional[OTBNInsn], List[Trace]]
 class OTBNSim:
     def __init__(self) -> None:
         self.state = OTBNState()
-        self.program = []  # type: List[OTBNInsn]
-        self.loop_warps = {}  # type: LoopWarps
-        self.stats = None  # type: Optional[ExecutionStats]
-        self._execute_generator = None  # type: Optional[Iterator[None]]
-        self._next_insn = None  # type: Optional[OTBNInsn]
+        self.program: List[OTBNInsn] = []
+        self.loop_warps: LoopWarps = {}
+        self.stats: Optional[ExecutionStats] = None
+        self._execute_generator: Optional[Iterator[None]] = None
+        self._next_insn: Optional[OTBNInsn] = None
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
