@@ -25,6 +25,6 @@ autogen_hjson_rust_header(
 )
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["rv_core_ibex.hjson"],
 )
