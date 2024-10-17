@@ -27,6 +27,7 @@ IPS = [
     "gpio",
     "hmac",
     "i2c",
+    "keymgr",
 ]
 
 [
