@@ -17,6 +17,7 @@ alias(
 
 # List of IPs for which to generate headers.
 IPS = [
+    "adc_ctrl",
 ]
 
 [
