@@ -38,6 +38,8 @@ class NcLauncher(Launcher):
                  'MY_FILEPATH=$(realpath "${BASH_SOURCE[0]}")',
                  'MY_DIR=$( dirname "${MY_FILEPATH}" )',
                  'cd $MY_DIR',
+                 'export TMPDIR=$PWD/tmp',
+                 'mkdir -p $TMPDIR',
                  'echo Launch start : `date`',
                  'SECONDS=0',
                  cmd,
