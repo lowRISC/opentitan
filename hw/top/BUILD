@@ -29,6 +29,7 @@ IPS = [
     "i2c",
     "keymgr",
     "keymgr_dpe",
+    "kmac",
 ]
 
 [

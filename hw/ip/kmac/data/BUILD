@@ -4,26 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "kmac_c_regs",
-    srcs = [
-        "kmac.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "kmac_rust_regs",
-    srcs = [
-        "kmac.hjson",
-    ],
-)
-
 filegroup(
     name = "hjson",
     srcs = ["kmac.hjson"],
