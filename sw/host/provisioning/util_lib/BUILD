@@ -13,5 +13,6 @@ rust_library(
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:hex",
+        "@crate_index//:tiny-keccak",
     ],
 )

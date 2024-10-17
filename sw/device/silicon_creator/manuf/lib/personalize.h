@@ -70,18 +70,13 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * @param flash_state Flash controller instance.
  * @param lc_ctrl Lifecycle controller instance.
  * @param otp_ctrl OTP controller instance.
- * @param host_ecc_pk UJSON struct containing host ECC public key (for RMA token
- *                    encryption key generation using ECDH).
- * @param[out] wrapped_rma_token UJSON struct of containing the wrapped
- *                               (encrypted) RMA unlock token, and the device
- *                               ECC public key used to generate the AES
- *                               wrapping key.
+ * @param rma_unlock_token_hash Pointer to the hashed RMA unlock token.
  * @return OK_STATUS on success.
  */
 status_t manuf_personalize_device_secrets(
     dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
-    const dif_otp_ctrl_t *otp_ctrl, ecc_p256_public_key_t *host_ecc_pk,
-    wrapped_rma_unlock_token_t *wrapped_rma_token);
+    const dif_otp_ctrl_t *otp_ctrl,
+    const lc_token_hash_t *rma_unlock_token_hash);
 
 /**
  * Personalize device with an asymmetric keygen seed.
