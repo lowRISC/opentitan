@@ -8,7 +8,7 @@ filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
         "//hw/top_earlgrey/ip/ast",
-        "//hw/top_earlgrey/ip/pinmux:all_files",
+        "//hw/top_earlgrey/ip/pinmux",
         "//hw/top_earlgrey/ip/sensor_ctrl",
         "//hw/top_earlgrey/ip/xbar",
         "//hw/top_earlgrey/ip/xbar_main",
