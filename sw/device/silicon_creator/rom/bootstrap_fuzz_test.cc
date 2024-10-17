@@ -12,8 +12,8 @@
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 
 #include "gpio_regs.h"
-#include "hw/ip/otp_ctrl/data/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 namespace {
 using bootstrap_fuzzer::AbstractBootstrapMockGroup;
