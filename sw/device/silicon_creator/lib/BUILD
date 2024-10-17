@@ -198,7 +198,7 @@ cc_library(
     srcs = ["irq_asm.S"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
