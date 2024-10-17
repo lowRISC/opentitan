@@ -1343,7 +1343,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4576,7 +4576,6 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/hmac/data:hmac_c_regs",
         "//hw/ip/i2c/data:i2c_c_regs",
@@ -4588,6 +4587,7 @@ opentitan_test(
         "//hw/top:adc_ctrl_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:csrng_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
@@ -6190,7 +6190,7 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

@@ -23,6 +23,7 @@ IPS = [
     "csrng",
     "dma",
     "edn",
+    "entropy_src",
 ]
 
 [
