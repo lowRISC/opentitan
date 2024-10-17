@@ -31,6 +31,7 @@ rust_library(
         "src/asn1/mod.rs",
         "src/asn1/x509.rs",
         "src/codegen.rs",
+        "src/cwt.rs",
         "src/lib.rs",
         "src/template/mod.rs",
         "src/template/subst.rs",

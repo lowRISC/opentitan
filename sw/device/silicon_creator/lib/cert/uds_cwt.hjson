@@ -1,0 +1,63 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "uds_cwt",
+
+    variables: {
+        // Creator public key: this is an EC point on
+        // the prime256v1 curve so it has two components
+        // (x and y) which are 32-bytes integers.
+        creator_pub_key_ec_x: {
+            type: "byte-array",
+            size: 32
+        },
+        creator_pub_key_ec_y: {
+            type: "byte-array",
+            size: 32
+        },
+    },
+
+    constants: {
+        key_type_label: {
+            type: "integer",
+            value: 1
+        },
+        key_type_value: {
+            type: "integer",
+            value: 2
+        },
+        alg_type_label: {
+            type: "integer",
+            value: 3
+        },
+        alg_type_value: {
+            type: "integer",
+            value: -7
+        },
+        curve_type_label: {
+            type: "integer",
+            value: -1
+        },
+        curve_type_value: {
+            type: "integer",
+            value: 1
+        },
+        key_x_label: {
+            type: "integer",
+            value: -2
+        },
+        key_y_label: {
+            type: "integer",
+            value: -3
+        },
+    },
+
+    certificate: {
+        key_type_label: key_type_value
+        alg_type_label: alg_type_value
+        curve_type_label: curve_type_value
+        key_x_label: creator_pub_key_ec_x
+        key_y_label: creator_pub_key_ec_y
+    }
+}
