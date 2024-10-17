@@ -300,6 +300,7 @@ _NORMAL_DEPENDENCIES = {
             "anyhow": "@crate_index__anyhow-1.0.75//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.4//:arrayvec",
             "asn1": "@crate_index__asn1-0.15.5//:asn1",
+            "base64ct": "@crate_index__base64ct-1.6.0//:base64ct",
             "bitflags": "@crate_index__bitflags-2.4.0//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
             "byteorder": "@crate_index__byteorder-1.5.0//:byteorder",
@@ -387,16 +388,11 @@ _NORMAL_ALIASES = {
 
 _NORMAL_DEV_DEPENDENCIES = {
     "third_party/rust": {
-        _COMMON_CONDITION: {
-            "base64ct": "@crate_index__base64ct-1.6.0//:base64ct",
-        },
     },
 }
 
 _NORMAL_DEV_ALIASES = {
     "third_party/rust": {
-        _COMMON_CONDITION: {
-        },
     },
 }
 
@@ -425,8 +421,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 
 _PROC_MACRO_DEV_ALIASES = {
     "third_party/rust": {
-        _COMMON_CONDITION: {
-        },
     },
 }
 

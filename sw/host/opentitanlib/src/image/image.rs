@@ -512,6 +512,22 @@ impl Image {
     }
 }
 
+impl SubImage<'_> {
+    /// Operates on the signed region of the image.
+    pub fn map_signed_region<F, R>(&self, f: F) -> Result<R>
+    where
+        F: FnOnce(&[u8]) -> R,
+    {
+        Ok(f(&self.data[offset_of!(Manifest, usage_constraints)
+            ..self.manifest.signed_region_end as usize]))
+    }
+
+    /// Compute the SHA256 digest for the signed portion of the `Image`.
+    pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
+        self.map_signed_region(|v| sha256::sha256(v))
+    }
+}
+
 impl ImageAssembler {
     /// Creates an `ImageAssembler` with a given `size` and mirroring parameters.
     pub fn with_params(size: usize, mirrored: bool) -> Self {
