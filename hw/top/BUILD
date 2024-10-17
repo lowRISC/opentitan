@@ -21,6 +21,7 @@ IPS = [
     "aes",
     "aon_timer",
     "csrng",
+    "dma",
 ]
 
 [
