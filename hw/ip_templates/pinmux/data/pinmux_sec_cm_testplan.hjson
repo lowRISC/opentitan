@@ -29,5 +29,41 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_lc_dft_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_DFT_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_hw_debug_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_check_byp_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_CHECK_BYP_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_escalate_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_pinmux_hw_debug_en_intersig_mubi
+      desc: "Verify the countermeasure(s) PINMUX_HW_DEBUG_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_tap_mux_lc_gated
+      desc: "Verify the countermeasure(s) TAP.MUX.LC_GATED."
+      stage: V2S
+      tests: []
+    }
   ]
 }
