@@ -20,6 +20,7 @@ IPS = [
     "adc_ctrl",
     "aes",
     "aon_timer",
+    "csrng",
 ]
 
 [

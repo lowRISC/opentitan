@@ -4,26 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "csrng_c_regs",
-    srcs = [
-        "csrng.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "csrng_rust_regs",
-    srcs = [
-        "csrng.hjson",
-    ],
-)
-
 filegroup(
     name = "hjson",
     srcs = ["csrng.hjson"],
