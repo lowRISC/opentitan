@@ -4,26 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "pwm_c_regs",
-    srcs = [
-        "pwm.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "pwm_rust_regs",
-    srcs = [
-        "pwm.hjson",
-    ],
-)
-
 filegroup(
     name = "hjson",
     srcs = ["pwm.hjson"],

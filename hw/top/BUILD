@@ -34,6 +34,7 @@ IPS = [
     "otp_ctrl",
     "pattgen",
     "prim",
+    "pwm",
 ]
 
 [
