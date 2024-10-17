@@ -198,11 +198,20 @@ def _otp_alert_digest_impl(ctx):
     args.add_all(("--rcfile=", "otp", "alert-digest", ctx.file.otp_img))
     args.add("--output", file)
 
+    # By default, no environment variables are available to the action
+    # during bazel builds. This can not be changed with action_env.
+    # However, the opentitantool binary used in building the json target
+    # needs access to LD_LIBRARY_PATH to load shared libraries
+    # outside standard system paths.
+    # Setting use_default_shell_env to True allows passing LD_LIBRARY_PATH
+    # to the sandbox using --action_env switch
+
     ctx.actions.run(
         outputs = outputs,
         inputs = inputs,
         arguments = [args],
         executable = tc.tools.opentitantool,
+        use_default_shell_env = True,
     )
     return [DefaultInfo(files = depset([file]))]
 
