@@ -301,15 +301,11 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
                   pinmux["io_counts"]["dedicated"]["inputs"] +
                   pinmux["io_counts"]["dedicated"]["outputs"])
 
-    # TODO: derive this value
-    attr_dw = 13
-
     # Generation with zero MIO/DIO pads is currently not supported.
     assert (n_mio_pads > 0)
     assert (n_dio_pads > 0)
 
     log.info("Generating pinmux with following info from hjson:")
-    log.info("attr_dw:         %d" % attr_dw)
     log.info("num_wkup_detect: %d" % num_wkup_detect)
     log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
     log.info("n_mio_periph_in:  %d" % n_mio_periph_in)
@@ -354,7 +350,6 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
                 n_dio_periph_in=n_dio_pads,
                 n_dio_periph_out=n_dio_pads,
                 n_dio_pads=n_dio_pads,
-                attr_dw=attr_dw,
                 n_wkup_detect=num_wkup_detect,
                 wkup_cnt_width=wkup_cnt_width)
         except:  # noqa: E722
