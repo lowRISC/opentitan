@@ -24,6 +24,7 @@ IPS = [
     "dma",
     "edn",
     "entropy_src",
+    "gpio",
 ]
 
 [

@@ -445,8 +445,8 @@ cc_library(
     hdrs = ["bootstrap_unittest_util.h"],
     deps = [
         ":bootstrap",
-        "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:gpio_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:chip",
