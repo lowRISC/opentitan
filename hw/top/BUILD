@@ -31,6 +31,7 @@ IPS = [
     "keymgr_dpe",
     "kmac",
     "lc_ctrl",
+    "otp_ctrl",
 ]
 
 [

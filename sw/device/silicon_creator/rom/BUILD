@@ -95,7 +95,6 @@ cc_library(
         ":linker_script",
         ":rom_common",
         ":rom_epmp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top:aon_timer_c_regs",
@@ -104,6 +103,7 @@ cc_library(
         "//hw/top:entropy_src_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:lc_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
@@ -298,8 +298,8 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -318,8 +318,8 @@ cc_test(
     srcs = ["bootstrap_unittest.cc"],
     deps = [
         ":bootstrap",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
@@ -348,7 +348,7 @@ cc_library(
     hdrs = ["sigverify_otp_keys.h"],
     deps = [
         ":sigverify_key_types",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -398,7 +398,7 @@ cc_library(
     deps = [
         ":sigverify_key_types",
         ":sigverify_otp_keys",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",

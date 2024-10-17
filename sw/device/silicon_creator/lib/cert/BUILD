@@ -93,7 +93,7 @@ cc_library(
     hdrs = ["dice.h"],
     deps = [
         ":cert",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
@@ -129,7 +129,7 @@ cc_library(
     deps = [
         ":cbor",
         ":cert",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",

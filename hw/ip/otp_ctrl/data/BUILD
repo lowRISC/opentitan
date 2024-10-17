@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
     "STD_OTP_OVERLAYS",
@@ -68,22 +63,6 @@ exports_files([
     "otp_ctrl_img.h.tpl",
     "otp_ctrl_img.c.tpl",
 ])
-
-autogen_hjson_c_header(
-    name = "otp_ctrl_c_regs",
-    srcs = [
-        "otp_ctrl.hjson",
-    ],
-    node = "core",
-)
-
-autogen_hjson_rust_header(
-    name = "otp_ctrl_rust_regs",
-    srcs = [
-        "otp_ctrl.hjson",
-    ],
-    node = "core",
-)
 
 exports_files(["otp_ctrl_mmap.hjson"])
 
