@@ -24,7 +24,6 @@ filegroup(
         "//hw/ip/otbn/data:otbn_rust_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_rust_regs",
         "//hw/ip/pattgen/data:pattgen_rust_regs",
-        "//hw/ip/pinmux/data:pinmux_rust_regs",
         "//hw/ip/pwm/data:pwm_rust_regs",
         "//hw/ip/rom_ctrl/data:rom_ctrl_rust_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_rust_regs",

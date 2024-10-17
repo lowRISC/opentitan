@@ -171,7 +171,7 @@
     },
     "pinmux-padctrl": {
         "name": "PINMUX/PADCTRL",
-        "data_file": "hw/ip/pinmux/data/pinmux.hjson",
+        "data_file": "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
         "report": null
     },
     "adc-controller": {
