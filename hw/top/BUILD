@@ -50,6 +50,7 @@ IPS = [
     "sensor_ctrl",
     "xbar",
     "xbar_main",
+    "xbar_peri",
 ]
 
 [
