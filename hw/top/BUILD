@@ -51,6 +51,7 @@ IPS = [
     "xbar",
     "xbar_main",
     "xbar_peri",
+    "pinmux",
 ]
 
 [

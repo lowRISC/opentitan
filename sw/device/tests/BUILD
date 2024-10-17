@@ -5032,8 +5032,8 @@ test_suite(
             "//hw/top:adc_ctrl_c_regs",
             "//hw/top:keymgr_c_regs",
             "//hw/top:otp_ctrl_c_regs",
+            "//hw/top:pinmux_c_regs",
             "//hw/top:sysrst_ctrl_c_regs",
-            "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
@@ -5964,7 +5964,7 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:lc_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
+        "//hw/top:pinmux_c_regs",
         "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
