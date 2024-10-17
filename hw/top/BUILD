@@ -44,6 +44,7 @@ IPS = [
     "sram_ctrl",
     "sysrst_ctrl",
     "tlul",
+    "uart",
 ]
 
 [

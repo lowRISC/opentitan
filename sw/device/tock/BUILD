@@ -11,7 +11,6 @@ filegroup(
     srcs = [
         "//hw/ip/otbn/data:otbn_rust_regs",
         "//hw/ip/pinmux/data:pinmux_rust_regs",
-        "//hw/ip/uart/data:uart_rust_regs",
         "//hw/ip/usbdev/data:usbdev_rust_regs",
         "//hw/top:adc_ctrl_rust_regs",
         "//hw/top:aes_rust_regs",
@@ -35,6 +34,7 @@ filegroup(
         "//hw/top:spi_host_rust_regs",
         "//hw/top:sram_ctrl_rust_regs",
         "//hw/top:sysrst_ctrl_rust_regs",
+        "//hw/top:uart_rust_regs",
     ],
     output_group = "tock",
 )
