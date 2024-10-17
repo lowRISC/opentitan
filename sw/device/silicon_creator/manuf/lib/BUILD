@@ -287,8 +287,8 @@ opentitan_test(
     deps = [
         ":flash_info_fields",
         ":personalize",
-        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:lc_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",

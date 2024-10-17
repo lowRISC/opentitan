@@ -366,7 +366,7 @@ dual_cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//hw/top:keymgr_c_regs",
-            "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
+            "//hw/top:lc_ctrl_c_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
