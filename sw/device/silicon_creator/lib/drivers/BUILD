@@ -199,7 +199,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/hmac/data:hmac_c_regs",
+            "//hw/top:hmac_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -222,7 +222,7 @@ cc_test(
     srcs = ["hmac_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":hmac"),
-        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top:hmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",

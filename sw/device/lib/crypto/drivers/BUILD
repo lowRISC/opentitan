@@ -175,7 +175,7 @@ cc_library(
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
     deps = [
-        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top:hmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
