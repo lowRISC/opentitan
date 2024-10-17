@@ -60,8 +60,8 @@ string_flag(
 # this BUILD file.
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["otp_ctrl.hjson"],
 )
 
 exports_files([
