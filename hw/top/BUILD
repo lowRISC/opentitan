@@ -48,6 +48,7 @@ IPS = [
     "usbdev",
     "ast",
     "sensor_ctrl",
+    "xbar",
 ]
 
 [
