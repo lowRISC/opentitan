@@ -10,7 +10,6 @@ filegroup(
     name = "lowrisc_defs",
     srcs = [
         "//hw/ip/otbn/data:otbn_rust_regs",
-        "//hw/ip/pattgen/data:pattgen_rust_regs",
         "//hw/ip/pinmux/data:pinmux_rust_regs",
         "//hw/ip/pwm/data:pwm_rust_regs",
         "//hw/ip/rom_ctrl/data:rom_ctrl_rust_regs",
@@ -35,6 +34,7 @@ filegroup(
         "//hw/top:kmac_rust_regs",
         "//hw/top:lc_ctrl_rust_regs",
         "//hw/top:otp_ctrl_rust_regs",
+        "//hw/top:pattgen_rust_regs",
     ],
     output_group = "tock",
 )

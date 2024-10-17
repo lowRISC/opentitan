@@ -32,6 +32,7 @@ IPS = [
     "kmac",
     "lc_ctrl",
     "otp_ctrl",
+    "pattgen",
 ]
 
 [
