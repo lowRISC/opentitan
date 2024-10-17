@@ -9,7 +9,7 @@
 #include "sw/device/silicon_creator/lib/bootstrap_fuzzer_util.h"
 #include "sw/device/silicon_creator/rom_ext/bootstrap.h"
 
-#include "hw/ip/otp_ctrl/data/otp_ctrl_regs.h"
+#include "otp_ctrl_regs.h"
 
 namespace {
 using bootstrap_fuzzer::AbstractBootstrapMockGroup;
