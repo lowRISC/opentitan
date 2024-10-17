@@ -30,6 +30,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
@@ -44,6 +45,28 @@
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false, );
+
+enum {
+  /**
+   * Size of the largest OTP partition to be measured.
+   */
+  kDiceMeasuredOtpPartitionMaxSizeIn32bitWords =
+      (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+      sizeof(uint32_t),
+};
+
+static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
+
+// clang-format off
+static_assert(
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
+    "The largest DICE measured OTP partition is no longer the "
+    "OwnerSwCfg partition. Update the "
+    "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
+// clang-format on
 
 /**
  * Peripheral handles.
@@ -62,6 +85,10 @@ static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 /**
  * Certificate data.
  */
+static hmac_digest_t otp_creator_sw_cfg_measurement;
+static hmac_digest_t otp_owner_sw_cfg_measurement;
+static hmac_digest_t otp_rot_creator_auth_codesign_measurement;
+static hmac_digest_t otp_rot_creator_auth_state_measurement;
 static manuf_certgen_inputs_t certgen_inputs;
 static hmac_digest_t uds_endorsement_key_id;
 static hmac_digest_t uds_pubkey_id;
@@ -163,6 +190,30 @@ static status_t config_and_erase_certificate_flash_pages(void) {
 }
 
 /**
+ * Helper function to compute measurements of various OTP partitions that are to
+ * be included in attestation certificates.
+ */
+static status_t measure_otp_partition(otp_partition_t partition,
+                                      hmac_digest_t *measurement) {
+  // Compute the digest.
+  otp_dai_read(partition, /*address=*/0, otp_state,
+               kOtpPartitions[partition].size / sizeof(uint32_t));
+
+  // Sets the expected values for fields in the OTP that are not provisioned
+  // until the final stages of personalization.
+  if (partition == kOtpPartitionOwnerSwCfg) {
+    manuf_individualize_device_owner_sw_cfg_expected_read((uint8_t *)otp_state);
+  } else if (partition == kOtpPartitionCreatorSwCfg) {
+    manuf_individualize_device_creator_sw_cfg_expected_read(
+        (uint8_t *)otp_state);
+  }
+
+  hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
+
+  return OK_STATUS();
+}
+
+/**
  * Provision OTP SECRET{1,2} partitions, keymgr flash info pages, enable flash
  * scrambling, and reboot.
  */
@@ -172,18 +223,11 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
     TRY(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
   }
-  if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
+  if (!status_ok(
+          manuf_individualize_device_flash_data_default_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
-    TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
     LOG_INFO("Bootstrap requested.");
     wait_for_interrupt();
-  }
-
-  // The last bootstrap process in the perso flow is done.
-  // Complete the provisioning of OTP OwnerSwCfg partition.
-  if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
-    TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
-    TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
   }
 
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
@@ -353,6 +397,19 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
   sc_keymgr_advance_state();
 
+  // Measure OTP partitions.
+  //
+  // Note: we do not measure HwCfg0 as this is the Device ID, which is already
+  // mixed into the keyladder directly via hardware channels.
+  TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
+                            &otp_creator_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
+                            &otp_owner_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
+                            &otp_rot_creator_auth_codesign_measurement));
+  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
+                            &otp_rot_creator_auth_state_measurement));
+
   /*****************************************************************************
    * DICE certificates.
    ****************************************************************************/
@@ -367,8 +424,11 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                      *kDiceKeyUds.keymgr_diversifier));
 
   // Build the certificate in a temp buffer, use all_certs for that.
-  TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey, all_certs,
-                              &curr_cert_size));
+  TRY(dice_uds_tbs_cert_build(
+      &otp_creator_sw_cfg_measurement, &otp_owner_sw_cfg_measurement,
+      &otp_rot_creator_auth_codesign_measurement,
+      &otp_rot_creator_auth_state_measurement, &uds_key_ids, &curr_pubkey,
+      all_certs, &curr_cert_size));
   TRY(perso_tlv_prepare_cert_for_shipping("UDS", true, all_certs,
                                           curr_cert_size, &perso_blob_to_host));
 
@@ -595,6 +655,43 @@ static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
   return RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, hash);
 }
 
+/**
+ * Compare the OTP measurement used during certificate generation with the value
+ * stored in the OTP. Ensure that the UDS certificate was generated using the
+ * correct OTP values.
+ */
+static status_t check_otp_measurement(hmac_digest_t *measurement,
+                                      uint32_t offset) {
+  uint64_t expected_digest = otp_read64(offset);
+  uint32_t digest_hi = expected_digest >> 32;
+  uint32_t digest_lo = expected_digest & UINT32_MAX;
+  HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
+  HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
+  return OK_STATUS();
+}
+
+static status_t finalize_otp_partitions(void) {
+  // TODO(#21554): Complete the provisioning of the root keys and key policies.
+
+  // Complete the provisioning of OTP OwnerSwCfg partition.
+  if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
+  }
+  TRY(check_otp_measurement(&otp_owner_sw_cfg_measurement,
+                            OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET));
+
+  // Complete the provisioning of OTP CreatorSwCfg partition.
+  if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_creator_manuf_state_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
+  }
+  TRY(check_otp_measurement(&otp_creator_sw_cfg_measurement,
+                            OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET));
+
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   ujson_t uj = ujson_ottf_console();
@@ -629,6 +726,7 @@ bool test_main(void) {
            hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
            hash.data[2], hash.data[1], hash.data[0]);
 
+  CHECK_STATUS_OK(finalize_otp_partitions());
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Personalization done.");
