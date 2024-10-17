@@ -155,6 +155,9 @@ module xbar_${xbar.name} (
 <%
   addr_sig = "tl_" + block.name + "_us_h2d.a_address"
   sel_len = len(block.ds).bit_length()
+  assert len(block.addr_spaces) == 1
+  asid = list(block.addr_spaces)[0]
+  asid_name = asid.upper()
 %>\
   always_comb begin
     // default steering to generate error response if address is not within the range
@@ -164,12 +167,15 @@ module xbar_${xbar.name} (
   leaf = xbar.get_leaf_from_s1n(block, loop.index);
   leaf_name = leaf.name.upper().replace('.', '__')
 
+  assert asid in leaf.addr_spaces
+  # TODO: Add support for xbars with multiple ASIDs
+  # name_space = "ADDR_SPACE_" + asid_name + "__" + leaf_name;
   name_space = "ADDR_SPACE_" + leaf_name;
   name_mask  = "ADDR_MASK_" + leaf_name;
   prefix = "if (" if loop.first else "end else if ("
 %>\
-  % if len(leaf.addr_range) == 1:
-      % if lib.is_pow2((leaf.addr_range[0][1]-leaf.addr_range[0][0])+1):
+  % if len(leaf.addr_ranges[asid]) == 1:
+      % if lib.is_pow2((leaf.addr_ranges[asid][0][1]-leaf.addr_ranges[asid][0][0])+1):
     ${prefix}(${addr_sig} &
     ${" " * len(prefix)} ~(${name_mask})) == ${name_space}) begin
       % else:
@@ -181,11 +187,11 @@ ${"end" if loop.last else ""}
   % else:
     ## Xbar device port
 <%
-  num_range = len(leaf.addr_range)
+  num_range = len(leaf.addr_ranges[asid])
 %>\
     ${prefix}
     % for i in range(num_range):
-      % if lib.is_pow2(leaf.addr_range[i][1]-leaf.addr_range[0][0]+1):
+      % if lib.is_pow2(leaf.addr_ranges[asid][i][1]-leaf.addr_ranges[asid][0][0]+1):
       ((${addr_sig} & ~(${name_mask}[${i}])) == ${name_space}[${i}])${" ||" if not loop.last else ""}
       % else:
       ((${addr_sig} <= (${name_mask}[${i}] + ${name_space}[${i}])) &&

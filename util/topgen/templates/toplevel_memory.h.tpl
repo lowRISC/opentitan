@@ -1,6 +1,9 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+import textwrap
+%>\
 
 #ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
 #define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
@@ -27,7 +30,7 @@
 /**
  * Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key]}
+#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key][helper.addr_space]}
 
 /**
  * Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
@@ -42,7 +45,7 @@
 /**
  * Memory base address for ${m["name"]} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}
+#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][helper.addr_space]}
 
 /**
  * Memory size for ${m["name"]} in top ${top["name"]}.
@@ -79,15 +82,17 @@
 #define ${size_bytes_name} ${hex_size_bytes}
 % endfor
 
+% for (subspace_name, description, subspace_range) in helper.subranges:
 /**
- * MMIO Region
+ * ${subspace_name.upper()} Region
  *
- * MMIO region excludes any memory that is separate from the module
- * configuration space, i.e. ROM, main SRAM, and flash are excluded but
- * retention SRAM, spi_device memory, or usbdev memory are included.
+% for l in textwrap.wrap(description, 77, break_long_words=False):
+ * ${l}
+% endfor
  */
-#define ${helper.mmio.base_addr_name().as_c_define()} ${"0x{:X}".format(helper.mmio.base_addr)}
-#define ${helper.mmio.size_bytes_name().as_c_define()} ${"0x{:X}".format(helper.mmio.size_bytes)}
+#define ${subspace_range.base_addr_name().as_c_define()} ${"0x{:X}".format(subspace_range.base_addr)}
+#define ${subspace_range.size_bytes_name().as_c_define()} ${"0x{:X}".format(subspace_range.size_bytes)}
+% endfor
 
 #endif  // __ASSEMBLER__
 
