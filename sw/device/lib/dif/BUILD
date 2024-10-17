@@ -624,6 +624,41 @@ cc_test(
 )
 
 cc_library(
+    name = "mbx",
+    srcs = [
+        "autogen/dif_mbx_autogen.c",
+        "autogen/dif_mbx_autogen.h",
+        "dif_mbx.c",
+    ],
+    hdrs = [
+        "dif_mbx.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/mbx/data:mbx_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "mbx_unittest",
+    srcs = [
+        "autogen/dif_mbx_autogen_unittest.cc",
+        "dif_mbx_unittest.cc",
+    ],
+    deps = [
+        ":mbx",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "otbn",
     srcs = [
         "autogen/dif_otbn_autogen.c",
