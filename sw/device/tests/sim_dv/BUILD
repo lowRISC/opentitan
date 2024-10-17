@@ -777,7 +777,7 @@ opentitan_test(
     srcs = ["ast_usb_clk_calib.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
+        "//hw/top:ast_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

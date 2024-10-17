@@ -46,6 +46,7 @@ IPS = [
     "tlul",
     "uart",
     "usbdev",
+    "ast",
 ]
 
 [
