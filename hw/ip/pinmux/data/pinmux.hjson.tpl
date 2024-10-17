@@ -13,7 +13,6 @@
 ##  - n_dio_pads:          Number of dedicated IO pads
 ##  - n_wkup_detect:       Number of wakeup condition detectors
 ##  - wkup_cnt_width:      Width of wakeup counters
-##  - attr_dw:             Width of wakeup counters
 {
   name:               "pinmux",
   human_name:         "Pin Multiplexer",
@@ -347,12 +346,6 @@
       '''
       local:   "false",
       expose:  "true"
-    },
-    { name: "AttrDw",
-      desc: "Pad attribute data width",
-      type: "int",
-      default: "${attr_dw}",
-      local: "true"
     },
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",

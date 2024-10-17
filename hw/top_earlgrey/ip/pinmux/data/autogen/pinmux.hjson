@@ -344,12 +344,6 @@
       local:   "false",
       expose:  "true"
     },
-    { name: "AttrDw",
-      desc: "Pad attribute data width",
-      type: "int",
-      default: "13",
-      local: "true"
-    },
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
