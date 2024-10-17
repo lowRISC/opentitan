@@ -45,6 +45,7 @@ IPS = [
     "sysrst_ctrl",
     "tlul",
     "uart",
+    "usbdev",
 ]
 
 [

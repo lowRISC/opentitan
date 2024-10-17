@@ -299,10 +299,10 @@ opentitan_test(
         timeout = "moderate",
     ),
     deps = [
-        "//hw/ip/usbdev/data:usbdev_c_regs",
         "//hw/top:i2c_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:spi_host_c_regs",
+        "//hw/top:usbdev_c_regs",
         "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -3229,10 +3229,10 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/usbdev/data:usbdev_c_regs",
         "//hw/top:i2c_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:spi_host_c_regs",
+        "//hw/top:usbdev_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
