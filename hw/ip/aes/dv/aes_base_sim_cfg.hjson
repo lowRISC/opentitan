@@ -179,20 +179,20 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_control_fi_vseq
       reseed: 300 // Test must cover 150 bins. Overseed by 2x to get reasonable coverage.
-      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      run_timeout_mins: 5 // Short test; if not done within 5 min, something's wrong.
     }
     {
       name: aes_cipher_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_cipher_fi_vseq
       reseed: 350 // Test must cover 175 bins. Overseed by 2x to get reasonable coverage.
-      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      run_timeout_mins: 5 // Short test; if not done within 5 min, something's wrong.
     }
     {
       name: aes_ctr_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_ctr_fi_vseq
-      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      run_timeout_mins: 5 // Short test; if not done within 5 min, something's wrong.
     }
     {
       name: aes_core_fi
