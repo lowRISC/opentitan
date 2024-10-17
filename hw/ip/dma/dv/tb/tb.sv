@@ -29,10 +29,6 @@ module tb;
   wire [NUM_MAX_INTERRUPTS - 1 : 0] interrupts;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
 
-  // CIP Interface
-  wire devmode;
-  pins_if #(1) devmode_if (devmode);
-
   // TL Interface
   tl_if tl_if (.clk(clk), .rst_n(rst_n)); // Ingress Port from System Fabric *Primary*
   tl_if tl_host_if(.clk(clk), .rst_n(rst_n)); // Egress Port to System Fabric (DMA Registers)
@@ -99,7 +95,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual dma_if)::set(null, "*.env", "dma_vif", dma_intf);
     uvm_config_db#(virtual dma_sys_tl_if)::set(null, "*.env", "dma_sys_tl_vif", sys_tl_adapter_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
 
     $timeformat(-12, 0, "ps", 12);
