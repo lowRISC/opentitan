@@ -4,26 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "rv_core_ibex_c_regs",
-    srcs = [
-        "rv_core_ibex.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "rv_core_ibex_rust_regs",
-    srcs = [
-        "rv_core_ibex.hjson",
-    ],
-)
-
 filegroup(
     name = "hjson",
     srcs = ["rv_core_ibex.hjson"],

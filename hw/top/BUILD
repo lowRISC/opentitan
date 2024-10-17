@@ -36,6 +36,7 @@ IPS = [
     "prim",
     "pwm",
     "rom_ctrl",
+    "rv_core_ibex",
 ]
 
 [
