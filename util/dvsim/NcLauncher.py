@@ -46,7 +46,7 @@ class NcLauncher(Launcher):
             f.write('\n'.join(lines))
         os.chmod(run_file, 0o755)
 
-    def get_submit_cmd(self, extra_flags):
+    def get_submit_cmd(self):
         exetool = self.deploy.sim_cfg.tool
         job_name = self.deploy.full_name
         cmd = self.deploy.cmd
@@ -66,10 +66,9 @@ class NcLauncher(Launcher):
 
         return (['nc', 'run', '-D',
                  '-e', 'SNAPSHOT',
-                 '-nodb', '-nolog',
+                 '-nodb', '-nolog', '-wl',
                  '-set', job_name] +
                 license_args +
-                extra_flags +
                 ['--', f'{odir}/run.sh'])
 
     def _do_launch(self):
@@ -100,20 +99,19 @@ class NcLauncher(Launcher):
         if self.deploy.sim_cfg.interactive:
             # Interactive: Set RUN_INTERACTIVE to 1
             exports['RUN_INTERACTIVE'] = '1'
-            cmd_arr = self.get_submit_cmd(['-I'])
             # Line buffering (buf_size = 1) chosen to enable
             # near real time updates from the tool
             buf_size = 1
             std_out = subprocess.PIPE
             std_err = subprocess.STDOUT
         else:
-            cmd_arr = self.get_submit_cmd(['-wl'])
             # setting buf_size = -1 enables subprocess to choose
             # the default buffer size which is more efficient
             buf_size = -1
             std_out = fd
             std_err = fd
 
+        cmd_arr = self.get_submit_cmd()
         log.log(VERBOSE, '[Submitting]:\n{}\n\n'.format(' '.join(cmd_arr)))
 
         try:
@@ -182,6 +180,7 @@ class NcLauncher(Launcher):
         and SIGKILL.
         """
         try:
+            log.log(VERBOSE, f'[Stopping] : {self.deploy.full_name}')
             subprocess.run(['nc', 'stop', '-set', self.deploy.full_name,
                             '-sig', 'TERM,KILL'],
                            check=True,
