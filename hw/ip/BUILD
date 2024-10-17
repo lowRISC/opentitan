@@ -8,7 +8,7 @@ filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
         "//hw/ip/adc_ctrl",
-        "//hw/ip/aes:all_files",
+        "//hw/ip/aes",
         "//hw/ip/aon_timer:all_files",
         "//hw/ip/csrng:all_files",
         "//hw/ip/edn:all_files",
