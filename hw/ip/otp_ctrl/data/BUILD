@@ -63,7 +63,10 @@ filegroup(
     srcs = glob(["**"]),
 )
 
-exports_files(["otp_ctrl_img.h.tpl"])
+exports_files([
+    "otp_ctrl_img.h.tpl",
+    "otp_ctrl_img.c.tpl",
+])
 
 autogen_hjson_c_header(
     name = "otp_ctrl_c_regs",
