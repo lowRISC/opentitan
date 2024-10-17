@@ -1,0 +1,286 @@
+{
+  "config_version": 1,
+  "update_mode": "SelfVersion",
+  "sram_exec": "DisabledLocked",
+  "min_security_version_bl0": "NoChange",
+
+  // We'll use ECDSA for now; this should be "HybridEcdsaSpx" in the future.
+  "ownership_key_alg": "EcdsaP256",
+  "owner_key": {
+    "Ecdsa": {
+      // sw/device/silicon_creator/rom_ext/prodc/keys/ownership_owner_key.der
+      x: "688268b1a393aee892ae522f69567dea5c37e6ba8aa04bc4a8fb2dc5ed467841",
+      y: "747ea4e626fe0ed1280d4b53203e34792bfc02a024d032c28baace454392b820"
+    }
+  },
+  "activate_key": {
+    "Ecdsa": {
+      // sw/device/silicon_creator/rom_ext/prodc/keys/ownership_activate_key.der
+      x: "beb6c5d2e0761ba1d1db934092216aab2c452c3ec4a198b90cdd795b37ee7c5e",
+      y: "8a4b6441d5cb56ecf6234a147458d7697e3fb405fb84bdcd3f21c670bfe2cc92"
+    }
+  },
+  "unlock_key": {
+    "Ecdsa": {
+      // sw/device/silicon_creator/rom_ext/prodc/keys/ownership_unlock_key.der
+      x: "a4c8d8c736233c0ad574e578da322d85ba10940a81db975e0520c7bd3a828084",
+      y: "178d37ac7007863a85a1fddae104b304fdfb3524e661706c09069a17ebf5beba"
+    }
+  },
+  "data": [
+    {
+      // Application keys validate owner firmware.
+      "ApplicationKey": {
+        "key_alg": "EcdsaP256",
+        "key_domain": "Prod",
+        "usage_constraint": "0x0",
+        "key": {
+          "Ecdsa": {
+            // sw/device/silicon_creator/rom_ext/prodc/keys/appkey_prod_0.der
+            x: "5fa175c091b98f99bbde1290ff8639fea01748e03cf5c938237e2e3314d4127b",
+            y: "80de46cd41fa0a0c2345b29d22b564d9f1afbadd4253a655b767370e17562aa2"
+          }
+        }
+      },
+    },
+    {
+      "ApplicationKey": {
+        "key_alg": "EcdsaP256",
+        "key_domain": "Dev",
+        // Dev key must be node locked to devid0 (0x02) and devid1 (0x04)
+        "usage_constraint": "0x6",
+        "key": {
+          "Ecdsa": {
+            // sw/device/silicon_creator/rom_ext/prodc/keys/appkey_dev_0.der
+            x: "4b4e4e248ba6014855641fc3ec22b22826f49d15a268dc00106a6b18c37448df",
+            y: "841793f43bbe69092d898b719966bbce2ea68595a15578da4f1d054c7265f332"
+          }
+        }
+      },
+    },
+    {
+      "FlashConfig": {
+        "config": [
+          {
+            // Slot A ROM_EXT region: 0 to 64 KiB.
+            "start": 0,
+            "size": 32,
+            // Permissions: read, erase and program. But override by protect_when_primary
+            "read": true,
+            "program": true,
+            "erase": true,
+            // Region properties: scrambling, ecc and high_endurance.
+            // Must match how ROM_EXT was original written
+            // On the ES chip, the default flash config has ECC and Scrambling turned off.
+            "scramble": false,
+            "ecc": false,
+            "high_endurance": false,
+            "protect_when_primary": true,
+            "lock": true
+          },
+          {
+            // Slot B ROM_EXT region
+            "start": 256,
+            "size": 32,
+            // Permissions: read, erase and program. But override by protect_when_primary
+            "read": true,
+            "program": true,
+            "erase": true,
+            // Region properties: scrambling, ecc and high_endurance.
+            // Must match how ROM_EXT was original written
+            // On the ES chip, the default flash config has ECC and Scrambling turned off.
+            "scramble": false,
+            "ecc": false,
+            "high_endurance": false,
+            "protect_when_primary": true,
+            "lock": true
+          },
+          {
+            // Slot A App Firmware region: 64 to 476 KiB.
+            "start": 32,
+            "size": 206,
+            // Permissions: read, erase and program.
+            "read": true,
+            "program": true,
+            "erase": true,
+            // Region properties.
+            // On the ES chip, the default flash config has ECC and Scrambling turned off.
+            "scramble": false,
+            "ecc": false,
+            "high_endurance": false,
+            "protect_when_primary": true,
+            "lock": true
+          },
+          {
+            // Slot B App Firmware region
+            "start": 288,
+            "size": 206,
+            // Permissions: read, erase and program.
+            "read": true,
+            "program": true,
+            "erase": true,
+            // Region properties.
+            // On the ES chip, the default flash config has ECC and Scrambling turned off.
+            "scramble": false,
+            "ecc": false,
+            "high_endurance": false,
+            "protect_when_primary": true,
+            "lock": true
+          },
+          {
+            // Slot A App storage region: 476 to 512 KiB.
+            "start": 238,
+            "size": 18,
+            // Permissions: read, erase and program.
+            "read": true,
+            "program": true,
+            "erase": true,
+            // Region properties. Must disable scramble so we have following
+            // write patterh: 0xFF -> 0x?? -> 0x00
+            "scramble": false,
+            "ecc": true,
+            "high_endurance": true,
+            "protect_when_primary": false,
+            "lock": false
+          },
+          {
+            // Slot B App storage region (excludes Identity seed region)
+            "start": 494,
+            "size": 17,
+            // Permissions: read, erase and program.
+            "read": true,
+            "program": true,
+            "erase": true,
+            // Region properties. Must disable scramble so we have following
+            // write patterh: 0xFF -> 0x?? -> 0x00
+            "scramble": false,
+            "ecc": true,
+            "high_endurance": true,
+            "protect_when_primary": false,
+            "lock": false
+          },
+          {
+            // Slot B Identity page. RW can read but not write.
+            "start": 255,
+            "size": 1,
+            // Permissions: read, erase and program.
+            "read": true,
+            "program": false,
+            "erase": false,
+            // Scramble setting must match was was used when writting page
+            // On the ES chip, the default flash config has ECC and Scrambling turned off.
+            "scramble": false,
+            "ecc": false,
+            "high_endurance": false,
+            "protect_when_primary": false,
+            "lock": true
+          }
+        ]
+      },
+    },
+    {
+      // The Flash INFO Config defines how the INFO pages reserved for the
+      // owner will be configured.  The configuration properties are the
+      // same as the flash region config properties, however the
+      // `protect_when_primary` flag is meaningless.
+      //
+      // On the Earlgrey_ES chip, INFO pages 6 to 9 (inclusive) in bank 0
+      // are reserved for owner use.
+      "FlashInfoConfig": {
+        "config": [
+          {
+            // BOARD_INFO_PAGE (write once unless image manifest has bit set)
+            "bank": 0,
+            "page": 5,
+            "read": true,
+            "program": true,
+            "erase": false,
+            "scramble": false,
+            "ecc": true,
+            "high_endurance": false,
+            "lock": true
+          },
+          {
+            // ERASABLE_INFO_PAGE (erasable)
+            "bank": 0,
+            "page": 6,
+            "read": true,
+            "program": true,
+            "erase": true,
+            "scramble": false,
+            "ecc": true,
+            "high_endurance": false,
+            "lock": false
+          },
+          {
+            // TEST_INFO_PAGE (erasable)
+            "bank": 0,
+            "page": 9,
+            "read": true,
+            "program": true,
+            "erase": true,
+            "scramble": false,
+            "ecc": true,
+            "high_endurance": false,
+            "lock": false
+          }
+          // This config is not needed on ES, but will be on PROD.
+          // {
+          //   // PERSO_CERTS_INFO_PAGE (read only)
+          //   "bank": 1,
+          //   "page": 4,
+          //   "read": true,
+          //   "program": false,
+          //   "erase": false,
+          //   "scramble": true,
+          //   "ecc": true,
+          //   "high_endurance": false,
+          //   "lock": true
+          // }
+        ]
+      },
+    },
+    {
+      // The Rescue Config determines whether the ROM_EXT rescue protocol
+      // is enabled and what rescue and boot service commands are permitted.
+      "RescueConfig": {
+        // The Xmodem rescue type operates over the serial port.
+        "rescue_type": "Xmodem",
+        // The rescue region in Flash pages.  The rescue protocol will never
+        // touch flash pages outside of this region.
+        "start": 32,
+        "size": 206,
+        // List of rescue and boot service commands permitted by the rescue
+        // protocol.  There is no preferred ordering of this list.  Rescue
+        // commands and boot service commands have distinct identifiers.
+        "command_allow": [
+          // Rescue commands:
+          "Rescue",             // Rescue firmware upload.
+          "GetBootLog",         // Boot log download.
+          "BootSvcReq",         // Boot service request upload.
+          "BootSvcRsp",         // Boot service response download.
+          "OwnerBlock",         // Owner Block (config) upload.
+          "GetDeviceId",        // Get the OpenTitan device ID.
+
+          // "RescueB",         // Rescue SlotB of the flash.
+          // "GetOwnerPage0",   // Get the content of owner page 0.
+          // "GetOwnerPage1",   // Get the content of owner page 1.
+
+          // The following commands are always allowed regardless of the
+          // allow-list:
+          // "Baud",            // Change the rescue baud rate.
+          // "Reboot",          // Reboot.
+          // "Wait",            // Don't automatically reboot after data upload.
+
+          // Boot service commands allowed.  These commands can only be sent
+          // if the rescue command "BootSvcReq" is allowed.
+          "Empty",
+          "MinBl0SecVerRequest",
+          "NextBl0SlotRequest",
+          "OwnershipUnlockRequest",
+          "OwnershipActivateRequest"
+        ]
+      }
+    }
+  ]
+}
