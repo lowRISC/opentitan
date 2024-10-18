@@ -1,6 +1,6 @@
 # Hardware Interfaces
 
-<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/pinmux/data/pinmux.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`pinmux`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_aon_i`**
@@ -9,7 +9,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+${"##"} [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
 | Port Name                 | Package::Struct                | Type    | Act   |   Width | Description                                                                                                                                                                                                                                                                                                                                                                                          |
 |:--------------------------|:-------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -40,13 +40,13 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | usbdev_wake_detect_active | logic                          | uni     | req   |       1 | State debug information.                                                                                                                                                                                                                                                                                                                                                                             |
 | tl                        | tlul_pkg::tl                   | req_rsp | rsp   |       1 |                                                                                                                                                                                                                                                                                                                                                                                                      |
 
-## Security Alerts
+${"##"} Security Alerts
 
 | Alert Name   | Description                                                                       |
 |:-------------|:----------------------------------------------------------------------------------|
 | fatal_fault  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected. |
 
-## Security Countermeasures
+${"##"} Security Countermeasures
 
 | Countermeasure ID                       | Description                                                                                                                                                                                                                                    |
 |:----------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -61,7 +61,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 <!-- END CMDGEN -->
 
-## Parameters
+${"##"} Parameters
 
 The following table lists the main parameters used throughout the `pinmux` design.
 Note that the `pinmux` is generated based on the system configuration, and hence these parameters are placed into a package.
@@ -74,7 +74,7 @@ Parameter      | Description
 `NMioPads`     | Number of muxed bidirectional pads.
 `NDioPads`     | Number of dedicated pads.
 
-## Primary IO Signals
+${"##"} Primary IO Signals
 
 The table below lists the primary `pinmux` IO signals to/from the pad ring.
 The number of dedicated and muxed IOs is parametric, and hence the signals are stacked in packed arrays.

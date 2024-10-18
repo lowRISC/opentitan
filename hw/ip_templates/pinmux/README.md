@@ -4,7 +4,7 @@
 # Overview
 
 This document specifies the functionality of the pin multiplexer (`pinmux`) peripheral.
-This module conforms to the [OpenTitan guideline for peripheral device functionality](../../../doc/contributing/hw/comportability/README.md).
+This module conforms to the [OpenTitan guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability).
 See that document for integration overview within the broader OpenTitan top level system.
 The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
 In addition to that, the `pinmux` also allows the user to control pad attributes (such as pull-up, pull-down, open-drain, drive-strength, keeper and inversion), and it contains features that facilitate low-power modes of the system.
