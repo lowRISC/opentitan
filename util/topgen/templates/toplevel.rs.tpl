@@ -1,6 +1,9 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+import textwrap
+%>\
 ${helper.file_header.render()}
 // This file was generated automatically.
 // Please do not modify content of this file directly.
@@ -152,10 +155,12 @@ ${helper.clkmgr_gateable_clocks.render()}
 /// but the clock manager is in control of whether the clock actually is stopped.
 ${helper.clkmgr_hintable_clocks.render()}
 
-/// MMIO Region
+% for (subspace_name, description, subspace_range) in helper.subranges:
+/// ${subspace_name.upper()} Region
 ///
-/// MMIO region excludes any memory that is separate from the module
-/// configuration space, i.e. ROM, main SRAM, and flash are excluded but
-/// retention SRAM, spi_device memory, or usbdev memory are included.
-pub const ${helper.mmio.base_addr_name(short=True).as_rust_const()}: usize = ${"0x{:X}".format(helper.mmio.base_addr)};
-pub const ${helper.mmio.size_bytes_name(short=True).as_rust_const()}: usize = ${"0x{:X}".format(helper.mmio.size_bytes)};
+% for l in textwrap.wrap(description, 76, break_long_words=False):
+/// ${l}
+% endfor
+pub const ${subspace_range.base_addr_name().as_rust_const()}: usize = ${"0x{:X}".format(subspace_range.base_addr)};
+pub const ${subspace_range.size_bytes_name().as_rust_const()}: usize = ${"0x{:X}".format(subspace_range.size_bytes)};
+% endfor

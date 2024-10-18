@@ -85,6 +85,40 @@ class Name:
         return Name([p for p in self.parts if p != part_to_remove])
 
 
+class MemoryRegion(object):
+    def __init__(self, top_name: Name, name: Name, base_addr: int, size_bytes: int):
+        assert isinstance(base_addr, int)
+        self.name = top_name + name
+        self.short_name = name
+        self.base_addr = base_addr
+        self.size_bytes = size_bytes
+        self.size_words = (size_bytes + 3) // 4
+
+    def base_addr_name(self, short=False):
+        if short:
+            return self.short_name + Name(["base", "addr"])
+        else:
+            return self.name + Name(["base", "addr"])
+
+    def offset_name(self, short=False):
+        if short:
+            return self.short_name + Name(["offset"])
+        else:
+            return self.name + Name(["offset"])
+
+    def size_bytes_name(self, short=False):
+        if short:
+            return self.short_name + Name(["size", "bytes"])
+        else:
+            return self.name + Name(["size", "bytes"])
+
+    def size_words_name(self, short=False):
+        if short:
+            return self.short_name + Name(["size", "words"])
+        else:
+            return self.name + Name(["size", "words"])
+
+
 def is_ipcfg(ip: Path) -> bool:  # return bool
     log.info("IP Path: %s" % repr(ip))
     ip_name = ip.parents[1].name
@@ -242,6 +276,14 @@ def get_pad_list(padstr):
         pads.append(OrderedDict([("name", pad), ("index", p)]))
 
     return pads
+
+
+def idx_of_last_module_with_params(top):
+    last = -1
+    for idx, module in enumerate(top["module"]):
+        if len(module["param_list"]):
+            last = idx
+    return last
 
 
 # Template functions
@@ -420,7 +462,7 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
         # Memories don't have multiple or named interfaces, so this will only
         # work if ifname is None.
         assert ifname is None
-        base_addr = inst['base_addr']
+        base_addrs = deepcopy(inst['base_addr'])
 
     else:
         # If inst is the instantiation of some block, find the register block
@@ -435,7 +477,7 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
         else:
             bytes_used = 1 << rb.get_addr_width()
 
-        base_addr = inst['base_addrs'][ifname]
+        base_addrs = deepcopy(inst['base_addrs'][ifname])
 
         # If an instance has a nonempty "memory" field, take the memory
         # size configuration from there.
@@ -455,12 +497,13 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
     # Round up to next power of 2.
     size_byte = 1 << (bytes_used - 1).bit_length()
 
-    if isinstance(base_addr, str):
-        base_addr = int(base_addr, 0)
-    else:
-        assert isinstance(base_addr, int)
+    for (asid, base_addr) in base_addrs.items():
+        if isinstance(base_addr, str):
+            base_addrs[asid] = int(base_addr, 0)
+        else:
+            assert isinstance(base_addrs[asid], int)
 
-    return (base_addr, size_byte)
+    return (base_addrs, size_byte)
 
 
 def get_io_enum_literal(sig: Dict, prefix: str) -> str:
@@ -538,15 +581,15 @@ def make_bit_concatenation(sig_name: str,
     return ''.join(acc)
 
 
-def is_rom_ctrl(modules):
-    '''Return true if rom_ctrl (and thus boot-up rom integrity checking)
-       exists in the design
+def num_rom_ctrl(modules):
+    '''Return number of rom_ctrl's instantiated in the design
     '''
+    num = 0
     for m in modules:
         if m['type'] == 'rom_ctrl':
-            return True
+            num += 1
 
-    return False
+    return num
 
 
 def is_lc_ctrl(modules):
@@ -557,3 +600,52 @@ def is_lc_ctrl(modules):
             return True
 
     return False
+
+
+def get_addr_space(top, addr_space_name):
+    """Returns the address dict for a given address space name"""
+    for addr_space in top['addr_spaces']:
+        if addr_space['name'] == addr_space_name:
+            return addr_space
+    assert False, "Address space not found"
+
+
+def get_device_ranges(devices, device_name):
+    ranges = {}
+    for (dev_name, if_name), range in devices:
+        if dev_name == device_name:
+            ranges[if_name] = range
+    return ranges
+
+
+def init_subranges(top, top_name, devices, addr_space_name):
+    """
+    Computes the bounds of all subspace regions of a given address space.
+    """
+    subspace_regions = []
+    addr_space = get_addr_space(top, addr_space_name)
+    for subspace in addr_space.get('subspaces', []):
+        regions = []
+        for node in subspace['nodes']:
+            # Get the dot-delimited interface name. If no interface name is given, all device
+            # interfaces are considered for this subspace range.
+            split_dev = node.rsplit('.', 1)
+            dev_name = split_dev[0]
+            if_name = None
+            if len(split_dev) > 1:
+                if_name = split_dev[1]
+
+            ranges = get_device_ranges(devices, dev_name)
+            if if_name:
+                # Only a single interface, if name contained an interface name
+                regions.append(ranges[if_name])
+            else:
+                # All interfaces
+                regions += list(ranges.values())
+
+        subspace_range = range(min([r.base_addr for r in regions]),
+                               max([r.base_addr + r.size_bytes for r in regions]))
+        subspace_region = MemoryRegion(top_name, Name([subspace['name']]), subspace_range.start,
+                                       subspace_range.stop - subspace_range.start)
+        subspace_regions.append((subspace['name'], subspace['desc'], subspace_region))
+    return subspace_regions
