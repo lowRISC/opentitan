@@ -55,7 +55,9 @@ class pwm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value);
+  virtual task set_duty_cycle(int unsigned channel, dc_blink_t value);
+    `DV_CHECK_FATAL(channel < NOutputs)
+
     ral.duty_cycle[channel].set({value.B,value.A});
     csr_update(ral.duty_cycle[channel]);
   endtask
@@ -68,7 +70,9 @@ class pwm_base_vseq extends cip_base_vseq #(
     return value;
   endfunction
 
-  virtual task set_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value);
+  virtual task set_blink(int unsigned channel, dc_blink_t value);
+    `DV_CHECK_FATAL(channel < NOutputs)
+
     ral.blink_param[channel].set(value);
     csr_update(ral.blink_param[channel]);
   endtask // set_blink
@@ -76,15 +80,20 @@ class pwm_base_vseq extends cip_base_vseq #(
   // Summation of PARAM.X and PARAM.Y shouldn't go beyond MAX_16
   // Summation of PARAM.y and DUTY_CYLE.A shouldn't go beyond MAX_16
   // This is to prevent counter overflow
-  virtual task automatic rand_pwm_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    dc_blink_t duty_cycle = `gmv(ral.duty_cycle[channel]);
+  virtual task automatic rand_pwm_blink(int unsigned channel);
+    dc_blink_t duty_cycle;
+
+    `DV_CHECK_FATAL(channel < NOutputs)
+    duty_cycle = `gmv(ral.duty_cycle[channel]);
 
     cfg.blink[channel].B = $urandom_range(1, int'(MAX_16) - duty_cycle.A);
     cfg.blink[channel].A = $urandom_range(1, int'(MAX_16) - cfg.blink[channel].B);
     set_blink(channel, cfg.blink[channel]);
   endtask
 
-  virtual task set_param(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, param_reg_t value);
+  virtual task set_param(int unsigned channel, param_reg_t value);
+    `DV_CHECK_FATAL(channel < NOutputs)
+
     ral.pwm_param[channel].set(value);
     csr_update(ral.pwm_param[channel]);
   endtask // set_param
