@@ -15,7 +15,7 @@ load(
     "hex_digits",
 )
 load(
-    "//rules:opentitan.bzl",
+    "//rules/opentitan:keyutils.bzl",
     "ECDSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
 )
