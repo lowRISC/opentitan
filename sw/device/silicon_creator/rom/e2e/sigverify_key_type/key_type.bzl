@@ -4,24 +4,14 @@
 
 """Helper functions for generating expected test signatures for sigverify_key_type tests."""
 
-load(
-    "//rules/opentitan:defs.bzl",
-    "DEFAULT_TEST_FAILURE_MSG",
-)
-load(
-    "//rules:const.bzl",
-    "CONST",
-    "hex_digits",
-)
+load("//rules/opentitan:defs.bzl", "DEFAULT_TEST_FAILURE_MSG")
+load("//rules:const.bzl", "CONST", "hex_digits")
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV_LCV",
 )
-load(
-    "//rules:opentitan.bzl",
-    "key_allowed_in_lc_state",
-)
+load("//rules/opentitan:keyutils.bzl", "key_allowed_in_lc_state")
 
 # SPHINCS+ is disabled uncoditionally in these lifecycle states.
 SPX_DISABLED_LC_STATES = [
