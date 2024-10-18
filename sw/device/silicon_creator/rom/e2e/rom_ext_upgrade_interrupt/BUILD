@@ -9,20 +9,14 @@ load(
     "fpga_params",
     "opentitan_test",
 )
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
-)
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
     "hex",
 )
-load(
-    "//rules:manifest.bzl",
-    "manifest",
-)
+load("//rules:manifest.bzl", "manifest")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -31,10 +25,7 @@ load(
     "otp_json",
     "otp_partition",
 )
-load(
-    "//rules:rom_e2e.bzl",
-    "maybe_skip_in_ci",
-)
+load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 
 package(default_visibility = ["//visibility:public"])
 
