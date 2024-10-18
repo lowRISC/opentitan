@@ -46,41 +46,6 @@ PER_DEVICE_DEPS = {
 def flatten(l):
     return [item for ll in l for item in ll]
 
-def _obj_transform_impl(ctx):
-    cc_toolchain = find_cc_toolchain(ctx)
-    outputs = []
-    for src in ctx.files.srcs:
-        binary = ctx.actions.declare_file(
-            "{}.{}".format(
-                src.basename.replace("." + src.extension, ""),
-                ctx.attr.suffix,
-            ),
-        )
-        outputs.append(binary)
-        ctx.actions.run(
-            outputs = [binary],
-            inputs = [src] + cc_toolchain.all_files.to_list(),
-            arguments = [
-                "--output-target",
-                ctx.attr.format,
-                src.path,
-                binary.path,
-            ],
-            executable = cc_toolchain.objcopy_executable,
-        )
-    return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
-
-obj_transform = rv_rule(
-    implementation = _obj_transform_impl,
-    attrs = {
-        "srcs": attr.label_list(allow_files = True),
-        "suffix": attr.string(default = "bin"),
-        "format": attr.string(default = "binary"),
-        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
-    },
-    toolchains = ["@rules_cc//cc:toolchain_type"],
-)
-
 # A provider for device-specific archive files that hold binaries of SRAM programs.
 ArchiveInfo = provider(fields = ["archive_infos"])
 
@@ -557,7 +522,6 @@ def opentitan_binary(
     Emits rules:
       cc_binary             named: <name>.elf
       cc_binary+transition  named: <name>_elf_transition
-      obj_transform         named: <name>_bin
       elf_to_dissassembly   named: <name>_dis
       Optionally:
         gen_sim_dv_logs_db  named: <name>_logs_db
@@ -597,12 +561,6 @@ def opentitan_binary(
 
     bin_name = "{}_{}".format(name, "bin")
     targets.append(":" + bin_name)
-    obj_transform(
-        name = bin_name,
-        srcs = [native_binary_name],
-        platform = platform,
-        testonly = testonly,
-    )
 
     dis_name = "{}_{}".format(name, "dis")
     targets.append(":" + dis_name)
