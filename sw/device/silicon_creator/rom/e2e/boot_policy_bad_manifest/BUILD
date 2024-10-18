@@ -14,11 +14,6 @@ load(
     "manifest",
 )
 load(
-    "//rules:opentitan_test.bzl",
-    "OTTF_SUCCESS_MSG",
-    "ROM_BOOT_FAILURE_MSG",
-)
-load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
@@ -31,6 +26,8 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "OTTF_SUCCESS_MSG",
+    "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
