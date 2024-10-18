@@ -41,7 +41,7 @@ static uint32_t
  * @param kv OTP Array of OTP key values. See `otp_kv_t` documentation for more
  * details.
  * @param len Length of the `kv` array.
- * @return OT_WARN_UNUSED_RESULT
+ * @return OK_STATUS if the OTP values were written into the target partition.
  */
 OT_WARN_UNUSED_RESULT
 static status_t otp_img_write(const dif_otp_ctrl_t *otp,
@@ -57,6 +57,12 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // immediately before the transport image is loaded, after all other
     // provisioning is complete.
     //
+    // We skip the provisioning of the creator manufacturing status as it must
+    // be provisioned only at the end of the personalization flow. The
+    // personalization firmware is bound with the INITIAL (empty) manufacturing
+    // state, so once the manufacturing state is provisioned, the
+    // personalization firmware can't be re-entrant.
+    //
     // We also skip the provisioning of the ROM bootstrap disablement
     // configuration. This should only be disabled after all bootstrap
     // operations in the personalization flow have been completed.
@@ -66,6 +72,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // data directly from there.
     if (kv[i].offset ==
             OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
+        kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET ||
         kv[i].offset == OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET ||
         (kv[i].offset >= kValidAstCfgOtpAddrLow &&
          kv[i].offset < kInvalidAstCfgOtpAddrHigh)) {
@@ -92,6 +99,36 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
 }
 
 /**
+ * Overwrites the target field with its expected final value in a buffer
+ * representing the provided partition.
+ *
+ * @param partition Target OTP partition.
+ * @param field_offset An offest of the target OTP field.
+ * @param buffer A buffer containing the entire target OTP partition.
+ * @return OK_STATUS if the expected OTP values are successfully written to the
+ * `buffer`.
+ */
+static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
+                                            uint32_t field_offset,
+                                            uint8_t *buffer) {
+  uint32_t relative_addr;
+  TRY(dif_otp_ctrl_relative_address(partition, field_offset, &relative_addr));
+  switch (field_offset) {
+    case OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET:
+      memcpy(buffer + relative_addr, &kOwnerSwCfgRomBootstrapDisValue,
+             sizeof(uint32_t));
+      break;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET:
+      memcpy(buffer + relative_addr, &kCreatorSwCfgManufStateValue,
+             sizeof(uint32_t));
+      break;
+    default:
+      return INTERNAL();
+  }
+  return OK_STATUS();
+}
+
+/**
  * Computes a SHA256 digest of an OTP partition and uses the least significant
  * 64-bits of the digest to additionally lock the partition.
  *
@@ -100,7 +137,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
  *
  * @param otp OTP Controller instance.
  * @param partition Target OTP partition.
- * @return OT_WARN_UNUSED_RESULT
+ * @return OK_STATUS if the target partition was locked.
  */
 OT_WARN_UNUSED_RESULT
 static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
@@ -210,6 +247,31 @@ status_t manuf_individualize_device_flash_data_default_cfg(
   return OK_STATUS();
 }
 
+status_t manuf_individualize_device_flash_data_default_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  uint32_t offset;
+  TRY(dif_otp_ctrl_relative_address(
+      kDifOtpCtrlPartitionCreatorSwCfg,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET, &offset));
+  uint32_t val = 0;
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+                                    offset, &val));
+  bool is_provisioned = (val == kCreatorSwCfgFlashDataDefaultCfgValue);
+  return is_provisioned ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_creator_manuf_state_cfg(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  uint32_t offset;
+  TRY(dif_otp_ctrl_relative_address(
+      kDifOtpCtrlPartitionCreatorSwCfg,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, &offset));
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+                                     offset, &kCreatorSwCfgManufStateValue,
+                                     /*len=*/1));
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_creator_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
@@ -240,6 +302,25 @@ status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
                                      offset, &kOwnerSwCfgRomBootstrapDisValue,
                                      /*len=*/1));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_partition_expected_read(
+    dif_otp_ctrl_partition_t partition, uint8_t *buffer) {
+  switch (partition) {
+    case kDifOtpCtrlPartitionOwnerSwCfg:
+      TRY(otp_img_expected_value_read(
+          partition, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET,
+          buffer));
+      break;
+    case kDifOtpCtrlPartitionCreatorSwCfg:
+      TRY(otp_img_expected_value_read(
+          partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, buffer));
+      break;
+    default:
+      return INTERNAL();
+  }
+
   return OK_STATUS();
 }
 
