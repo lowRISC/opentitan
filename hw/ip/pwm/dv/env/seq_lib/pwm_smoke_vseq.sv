@@ -24,12 +24,10 @@ class pwm_smoke_vseq extends pwm_base_vseq;
     //setup general config
     set_cfg_reg(10, 1, 1);
 
-    cfg.blink[0].A           = 0;
-    cfg.blink[0].B           = 0;
     cfg.pwm_param[0].BlinkEn = 1;
 
     set_duty_cycle(.channel(0), .A(13000), .B(6500));
-    set_blink(.channel(0), .A(cfg.blink[0].A), .B(cfg.blink[0].B));
+    set_blink(.channel(0), .A(0), .B(0));
     set_param(0, cfg.pwm_param[0]);
 
     // enable channel 0
