@@ -55,10 +55,10 @@ class pwm_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task set_duty_cycle(int unsigned channel, dc_blink_t value);
+  virtual task set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0] B);
     `DV_CHECK_FATAL(channel < NOutputs)
 
-    ral.duty_cycle[channel].set({value.B,value.A});
+    ral.duty_cycle[channel].set({B, A});
     csr_update(ral.duty_cycle[channel]);
   endtask
 
