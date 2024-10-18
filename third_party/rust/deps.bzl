@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_dependencies")
-load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_repository_set")
+load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 
 def rust_deps():
@@ -29,7 +29,7 @@ def rust_deps():
 
     rust_bindgen_dependencies()
     native.register_toolchains(
-        "//third_party/rust:bindgen_toolchain",
+        "@lowrisc_opentitan//third_party/rust:bindgen_toolchain",
     )
 
     rust_analyzer_dependencies()
