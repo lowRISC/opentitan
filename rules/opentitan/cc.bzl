@@ -10,7 +10,7 @@ load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_overri
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "obj_disassemble",
-    "obj_transform",
+    _obj_transform = "obj_transform",
 )
 
 def _expand(ctx, name, items):
@@ -170,7 +170,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
         deps = deps,
         linker_script = linker_script,
     )
-    binary = obj_transform(
+    binary = _obj_transform(
         ctx,
         name = name,
         suffix = "bin",
@@ -439,4 +439,24 @@ opentitan_test = rv_rule(
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     test = True,
+)
+
+def _obj_transform_impl(ctx):
+    outputs = [_obj_transform(ctx)]
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs),
+        ),
+    ]
+
+obj_transform = rv_rule(
+    implementation = _obj_transform_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True),
+        "suffix": attr.string(default = "bin"),
+        "format": attr.string(default = "binary"),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+    },
+    toolchains = ["@rules_cc//cc:toolchain_type"],
 )
