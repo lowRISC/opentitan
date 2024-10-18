@@ -383,7 +383,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/uart/data:uart_c_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",

@@ -22,7 +22,6 @@ filegroup(
         "//hw/ip/otbn:all_files",
         "//hw/ip/otp_ctrl:all_files",
         "//hw/ip/pattgen:all_files",
-        "//hw/ip/pinmux:all_files",
         "//hw/ip/prim:all_files",
         "//hw/ip/prim_generic:all_files",
         "//hw/ip/prim_xilinx:all_files",
