@@ -2,20 +2,21 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pinmux:0.1"
+name: ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
 description: "Pin Multiplexer"
+virtual:
+  - lowrisc:ip_interfaces:pinmux
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:pinmux_reg
+      - ${instance_vlnv("lowrisc:ip:pinmux_reg")}
       - lowrisc:ip:pinmux_component
 
 parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
-
 
 targets:
   default: &default_target

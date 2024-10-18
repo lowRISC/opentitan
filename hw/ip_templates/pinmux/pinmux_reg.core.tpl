@@ -2,17 +2,22 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pinmux_reg:0.1"
+name: ${instance_vlnv("lowrisc:ip:pinmux_reg:0.1")}
 description: "Auto-generated pinmux register sources with default parameters."
+virtual:
+  - lowrisc:ip_interfaces:pinmux_reg
+
 filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
-      - "fileset_top ? (lowrisc:systems:pinmux_reg)"
-      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
+#      - "fileset_top ? (lowrisc:systems:pinmux_reg)"
+#      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
-      - "fileset_ip ? (rtl/pinmux_reg_pkg.sv)"
-      - "fileset_ip ? (rtl/pinmux_reg_top.sv)"
+#      - "fileset_ip ? (rtl/pinmux_reg_pkg.sv)"
+      - rtl/pinmux_reg_pkg.sv
+#      - "fileset_ip ? (rtl/pinmux_reg_top.sv)"
+      - rtl/pinmux_reg_top.sv
     file_type: systemVerilogSource
 
 
