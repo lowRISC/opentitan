@@ -367,6 +367,81 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
     generate_regfile_from_path(hjson_gen_path, rtl_path, original_rtl_path)
 
 
+def generate_ipgen_pinmux(top: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating pinmux with ipgen")
+    topname = top["name"]
+
+    # Generation without pinmux and pinout configuration is not supported.
+    assert "pinmux" in top
+    assert "pinout" in top
+
+    pinmux = top["pinmux"]
+
+    # Get number of wakeup detectors
+    if "num_wkup_detect" in pinmux:
+        num_wkup_detect = pinmux["num_wkup_detect"]
+    else:
+        num_wkup_detect = 1
+
+    if num_wkup_detect <= 0:
+        # TODO: add support for no wakeup counter case
+        log.error("Topgen does currently not support generation of a top " +
+                  "without DIOs.")
+        return
+
+    if "wkup_cnt_width" in pinmux:
+        wkup_cnt_width = pinmux["wkup_cnt_width"]
+    else:
+        wkup_cnt_width = 8
+
+    if wkup_cnt_width <= 1:
+        log.error("Wakeup counter width must be greater equal 2.")
+        return
+
+    # MIO Pads
+    n_mio_pads = pinmux["io_counts"]["muxed"]["pads"]
+
+    # Total inputs/outputs
+    # Reuse the counts from the merge phase
+    n_mio_periph_in = (pinmux["io_counts"]["muxed"]["inouts"] +
+                       pinmux["io_counts"]["muxed"]["inputs"])
+    n_mio_periph_out = (pinmux["io_counts"]["muxed"]["inouts"] +
+                        pinmux["io_counts"]["muxed"]["outputs"])
+    n_dio_periph_in = (pinmux["io_counts"]["dedicated"]["inouts"] +
+                       pinmux["io_counts"]["dedicated"]["inputs"])
+    n_dio_periph_out = (pinmux["io_counts"]["dedicated"]["inouts"] +
+                        pinmux["io_counts"]["dedicated"]["outputs"])
+    n_dio_pads = (pinmux["io_counts"]["dedicated"]["inouts"] +
+                  pinmux["io_counts"]["dedicated"]["inputs"] +
+                  pinmux["io_counts"]["dedicated"]["outputs"])
+
+    # Generation with zero MIO/DIO pads is currently not supported.
+    assert (n_mio_pads > 0)
+    assert (n_dio_pads > 0)
+
+    log.info("Generating pinmux with following info from hjson:")
+    log.info("num_wkup_detect: %d" % num_wkup_detect)
+    log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
+    log.info("n_mio_periph_in:  %d" % n_mio_periph_in)
+    log.info("n_mio_periph_out: %d" % n_mio_periph_out)
+    log.info("n_dio_periph_in:  %d" % n_dio_periph_in)
+    log.info("n_dio_periph_out: %d" % n_dio_periph_out)
+    log.info("n_dio_pads:       %d" % n_dio_pads)
+
+    params = {
+        "n_wkup_detect": num_wkup_detect,
+        "wkup_cnt_width": wkup_cnt_width,
+        "n_mio_pads": n_mio_pads,
+        "n_mio_periph_in": n_mio_periph_in,
+        "n_mio_periph_out": n_mio_periph_out,
+        "n_dio_pads": n_dio_pads,
+        "n_dio_periph_in": n_dio_periph_in,
+        "n_dio_periph_out": n_dio_periph_out
+    }
+
+    ipgen_render("pinmux", topname, params, out_path)
+
+
 # generate clkmgr with ipgen
 def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     log.info("Generating clkmgr with ipgen")
@@ -861,6 +936,7 @@ def _process_top(
 
     # Generate Pinmux
     generate_pinmux(completecfg, out_path)
+    generate_ipgen_pinmux(completecfg, out_path)
 
     # Generate Pwrmgr
     generate_pwrmgr(completecfg, out_path)
