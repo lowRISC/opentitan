@@ -9,5 +9,5 @@ def pip_deps():
     pip_parse(
         name = "ot_python_deps",
         python_interpreter_target = interpreter,
-        requirements_lock = "//:python-requirements.txt",
+        requirements_lock = "@lowrisc_opentitan//:python-requirements.txt",
     )

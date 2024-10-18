@@ -41,17 +41,17 @@ crates_vendor(
     annotations = {
         "libudev-sys": [crate.annotation(
             patch_args = ["-p1"],
-            patches = ["@//third_party/rust/patches:libudev-sys-0.1.4.patch"],
+            patches = ["@lowrisc_opentitan//third_party/rust/patches:libudev-sys-0.1.4.patch"],
         )],
         "mdbook": [crate.annotation(
             gen_binaries = True,
             patch_args = ["-p1"],
-            patches = ["@//third_party/rust/patches:mdbook-landing-page-links.patch"],
+            patches = ["@lowrisc_opentitan//third_party/rust/patches:mdbook-landing-page-links.patch"],
         )],
         "cryptoki": [crate.annotation(
             patch_args = ["-p2"],
             patches = [
-                "@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
+                "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
             ],
         )],
         "cryptoki-sys": [crate.annotation(
@@ -73,11 +73,11 @@ crates_vendor(
                 "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
                 "OPENSSL_STATIC": "1",
             },
-            build_script_toolchains = ["@//third_party/rust:openssl_pkg_config_path"],
+            build_script_toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
         )],
     },
-    cargo_lockfile = "//third_party/rust:Cargo.lock",
-    manifests = ["//third_party/rust:Cargo.toml"],
+    cargo_lockfile = "@lowrisc_opentitan//third_party/rust:Cargo.lock",
+    manifests = ["@lowrisc_opentitan//third_party/rust:Cargo.toml"],
     mode = "remote",
     tags = ["manual"],
     vendor_path = "crates",
