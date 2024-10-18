@@ -61,7 +61,7 @@ tl_device_t xbar_devices[$] = '{
     '{"otp_ctrl__prim", '{
         '{32'h40138000, 32'h4013801f}
     }},
-    '{"lc_ctrl", '{
+    '{"lc_ctrl__regs", '{
         '{32'h40140000, 32'h401400ff}
     }},
     '{"sensor_ctrl_aon", '{
@@ -109,7 +109,7 @@ tl_host_t xbar_hosts[$] = '{
         "pinmux_aon",
         "otp_ctrl__core",
         "otp_ctrl__prim",
-        "lc_ctrl",
+        "lc_ctrl__regs",
         "sensor_ctrl_aon",
         "alert_handler",
         "ast",
