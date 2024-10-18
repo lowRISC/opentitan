@@ -326,7 +326,7 @@ cc_library(
     name = "otp_sw_cfg",
     srcs = [":otp_sw_cfg_c_file"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
     ],
 )
