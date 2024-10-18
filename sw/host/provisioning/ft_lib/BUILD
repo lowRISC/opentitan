@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@provisioning_exts//:cfg.bzl", "HOST_FT_EXTS")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -26,5 +27,5 @@ rust_library(
         "@crate_index//:serde_json",
         "@crate_index//:sha2",
         "@crate_index//:zerocopy",
-    ],
+    ] + HOST_FT_EXTS,
 )

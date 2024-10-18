@@ -133,14 +133,20 @@ static status_t personalize_gen_tpm_certificates(
   return OK_STATUS();
 }
 
-status_t personalize_extension(ujson_t *uj,
-                               manuf_certgen_inputs_t *certgen_inputs,
-                               manuf_certs_t *tbs_certs,
-                               cert_flash_info_layout_t *cert_flash_layout) {
+status_t personalize_extension_pre_cert_endorse(
+    ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
+    manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout) {
   LOG_INFO("Running TPM perso extension ...");
   TRY(peripheral_handles_init());
   TRY(config_and_erase_tpm_certificate_flash_pages());
   TRY(personalize_gen_tpm_certificates(uj, certgen_inputs, tbs_certs,
                                        cert_flash_layout));
+  return OK_STATUS();
+}
+
+status_t personalize_extension_post_cert_endorse(
+    ujson_t *uj, manuf_certs_t *endorsed_certs,
+    cert_flash_info_layout_t *cert_flash_layout) {
+  /* Empty because it is unused but we still need to link to something. */
   return OK_STATUS();
 }

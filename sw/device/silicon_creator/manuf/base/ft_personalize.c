@@ -515,12 +515,27 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 }
 
 /**
- * A custom extension to the personalization flow to enable various SKU owners
- * to customize the provisioning of their devices.
+ * A custom extension to the personalization flow.
+ *
+ * This extension runs *BEFORE* TBS certificates are sent to the host to be
+ * endorsed. Implementing this extension enables SKU owners to add more TBS
+ * certificates to the list of certificates to be endorsed by the host.
  */
-extern status_t personalize_extension(
+extern status_t personalize_extension_pre_cert_endorse(
     ujson_t *uj, manuf_certgen_inputs_t *certgen_inputs,
     manuf_certs_t *tbs_certs, cert_flash_info_layout_t *cert_flash_layout);
+
+/**
+ * A custom extension to the personalization flow.
+ *
+ * This extension runs *AFTER* (endorsed) certificates are sent back to the
+ * device from the host. Implementing this extension enables SKU owners to
+ * provision additional data into flash, in addition to the endorsed
+ * certificates in the `endorsed_certs` struct.
+ */
+extern status_t personalize_extension_post_cert_endorse(
+    ujson_t *uj, manuf_certs_t *endorsed_certs,
+    cert_flash_info_layout_t *cert_flash_layout);
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
@@ -529,9 +544,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
-  CHECK_STATUS_OK(personalize_extension(&uj, &certgen_inputs, &tbs_certs,
-                                        cert_flash_layout));
+  CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(
+      &uj, &certgen_inputs, &tbs_certs, cert_flash_layout));
   CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
+  CHECK_STATUS_OK(personalize_extension_post_cert_endorse(&uj, &endorsed_certs,
+                                                          cert_flash_layout));
   CHECK_STATUS_OK(log_hash_of_all_certs(&uj));
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in

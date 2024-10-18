@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -41,12 +42,33 @@ cc_library(
     ],
 )
 
-_PERSO_EXTS = select({
+_DEVICE_PERSO_EXTS = select({
     "example_perso_ext_cfg": [":example_perso_fw_ext"],
     "//conditions:default": [":default_perso_fw_ext"],
 })
 
 cc_library(
     name = "perso_fw_ext",
-    deps = _PERSO_EXTS,
+    deps = _DEVICE_PERSO_EXTS,
+)
+
+rust_library(
+    name = "default_ft_ext_lib",
+    srcs = ["default_ft_ext_lib.rs"],
+    crate_name = "ft_ext_lib",
+    deps = [
+        "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
+    ],
+)
+
+rust_library(
+    name = "example_ft_ext_lib",
+    srcs = ["example_ft_ext_lib.rs"],
+    crate_name = "ft_ext_lib",
+    deps = [
+        "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
+        "@crate_index//:log",
+    ],
 )
