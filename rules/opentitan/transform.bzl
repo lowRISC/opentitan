@@ -100,7 +100,7 @@ def convert_to_vmem(ctx, **kwargs):
         output = "{}.{}.vmem".format(name, word_size)
 
     output = ctx.actions.declare_file(output)
-    src = get_override(ctx, "attr.src", kwargs)
+    src = get_override(ctx, "file.src", kwargs)
 
     ctx.actions.run(
         outputs = [output],

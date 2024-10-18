@@ -4,11 +4,8 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:const.bzl", "CONST", "hex_digits")
-load(
-    "//rules:opentitan.bzl",
-    "bin_to_vmem",
-    "scramble_flash_vmem",
-)
+load("//rules:opentitan.bzl", "scramble_flash_vmem")
+load("//rules/opentitan:legacy.bzl", "vmem_file")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
@@ -235,13 +232,13 @@ opentitan_test(
     ]
 ]
 
-# The below three rule sets (bin_to_vmem, scramble_flash_vmem, and filegroup)
+# The below three rule sets (vmem_file, scramble_flash_vmem, and filegroup)
 # are needed to run `sigverify_always` tests in DV.
 [
-    bin_to_vmem(
+    vmem_file(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
         testonly = True,
-        bin = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
+        src = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
     for slot in SLOTS
