@@ -227,7 +227,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: [
+        "//sw/device/tests:kmac_kmac_key_sideload_test",
+      ]
     }
     {
       name: chip_sw_kmac_endianess
