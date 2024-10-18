@@ -4,6 +4,7 @@
 
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_vmem",
     _obj_transform = "obj_transform",
 )
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
@@ -52,4 +53,29 @@ obj_transform = rv_rule(
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
+)
+
+def _vmem_file_impl(ctx):
+    outputs = [convert_to_vmem(ctx)]
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs),
+        ),
+    ]
+
+vmem_file = rv_rule(
+    implementation = _vmem_file_impl,
+    attrs = {
+        "src": attr.label(
+            allow_single_file = True,
+            doc = "Binary file to convert to vmem format",
+        ),
+        "word_size": attr.int(
+            default = 64,
+            doc = "Word size of VMEM file",
+            mandatory = True,
+            values = [32, 64],
+        ),
+    },
 )
