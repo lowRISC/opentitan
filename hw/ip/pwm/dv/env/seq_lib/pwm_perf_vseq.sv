@@ -49,10 +49,7 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
     rand_pwm_cfg_reg();
 
     for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
-      dc_blink_t duty_cycle;
-      duty_cycle.A = rand_dc[i];
-      duty_cycle.B = rand_dc[i];
-      set_duty_cycle(i, duty_cycle);
+      set_duty_cycle(i, .A(rand_dc[i]), .B(rand_dc[i]));
       cfg.blink[i].A = rand_blink[i];
       cfg.blink[i].B = rand_blink[i];
       set_blink(i, cfg.blink[i]);

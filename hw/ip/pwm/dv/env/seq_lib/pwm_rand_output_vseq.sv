@@ -39,7 +39,8 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
 
     // set random dc and params for all channels
     for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
-      set_duty_cycle(i, rand_pwm_duty_cycle());
+      dc_blink_t duty_cycle = rand_pwm_duty_cycle();
+      set_duty_cycle(i, .A(duty_cycle.A), .B(duty_cycle.B));
       rand_pwm_blink(i);
       // phase delay of the PWM rising edge, in units of 2^(-16) PWM cycles
       cfg.pwm_param[i].PhaseDelay = (rand_reg_param.PhaseDelay * (2**(-16)));
