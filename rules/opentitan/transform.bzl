@@ -160,7 +160,7 @@ def scramble_flash(ctx, **kwargs):
         output = "{}.{}".format(name, suffix)
 
     output = ctx.actions.declare_file(output)
-    src = get_override(ctx, "attr.src", kwargs)
+    src = get_override(ctx, "file.src", kwargs)
     otp = get_override(ctx, "file.otp", kwargs)
 
     inputs = [src]
