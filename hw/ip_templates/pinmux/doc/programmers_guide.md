@@ -98,7 +98,7 @@ A typical programming sequence for the wakeup detectors looks as follows:
 3. During sleep, the wakeup detectors will trigger a wakeup request if a matching pattern has been observed.
    A bit corresponding to the wakeup detector that has observed the pattern will be set in the [`WKUP_CAUSE`](registers.md#wkup_cause) register.
 
-4. When exiting sleep, SW should read the wake info register in the [power manager](../../../top_earlgrey/ip_autogen/pwrmgr/README.md) to determine the reason(s) for the wakeup request.
+4. When exiting sleep, SW should read the wake info register in the [power manager](../../pwrmgr/README.md) to determine the reason(s) for the wakeup request.
 
 5. If the wakeup request was due to a pin wakeup pattern detector, SW should inspect the [`WKUP_CAUSE`](registers.md#wkup_cause) registers in order to determine the exact cause.
 
@@ -108,8 +108,8 @@ A typical programming sequence for the wakeup detectors looks as follows:
 
 ## Pinout and Pinmux Mapping
 
-Please see the top-level specific documentation for detailed pinout and pinmux mapping tables (e.g. for [Top Earlgrey](https://opentitan.org/book/hw/top_earlgrey/ip/pinmux/doc/autogen/targets.html)).
+Please see the specific documentation for detailed pinout and pinmux mapping tables for [this top](../doc/targets.html).
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_pinmux.h)
+- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_pinmux.h)

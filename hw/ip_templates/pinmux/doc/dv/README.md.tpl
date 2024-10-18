@@ -9,22 +9,22 @@
   * Verify TileLink device protocol compliance with a FPV based testbench
 
 ## Current status
-* [Design & verification stage](../../../../README.md)
-  * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [FPV dashboard](https://reports.opentitan.org/hw/top_earlgrey/formal/summary.html)
+* [Design & verification stage](../../../../../README.md)
+  * [HW development stages](../../../../../../doc/project_governance/development_stages.md)
+* [FPV dashboard](https://reports.opentitan.org/hw/top_${topname}/formal/summary.html)
 
 ## Design features
 For detailed information on PINMUX design features, please see the
 [PINMUX design specification](../../README.md).
 
 ## Testbench architecture
-PINMUX FPV testbench has been constructed based on the [formal architecture](../../../../formal/README.md).
+PINMUX FPV testbench has been constructed based on the [formal architecture](../../../../../formal/README.md).
 
 ### Block diagram
 ![Block diagram](fpv.svg)
 
 #### TLUL assertions
-* The `../fpv/tb/pinmux_bind.sv` binds the `tlul_assert` [assertions](../../../tlul/doc/TlulProtocolChecker.md) with pinmux to ensure TileLink interface protocol compliance.
+* The `../fpv/tb/pinmux_bind.sv` binds the `tlul_assert` [assertions](../../../../../ip/tlul/doc/TlulProtocolChecker.md) with pinmux to ensure TileLink interface protocol compliance.
 * The `../fpv/tb/pinmux_bind.sv` also binds the `pinmux_csr_assert_fpv` to assert the TileLink writes and reads correctly.
 
 #### PINMUX assertions
@@ -38,7 +38,7 @@ All functional checks will be implemented in the usbdev testbench.
 ##### Symbolic variables
 Due to the large number of peripheral, muxed, dedicated IOs, and wakeup causes, symbolic variables are used to reduce the number of repeated assertions code.
 In the pinmux_assert_fpv module, we declared four symbolic variables (`mio_sel_i`, `periph_sel_i`, `dio_sel_i`, `wkup_sel_i`) to represent the index for muxed IOs, peripheral IOs, dedicated IOs, and wakeup causes.
-Detailed explanation is listed in the [Symbolic Variables](../../../../formal/README.md#symbolic-variables) section.
+Detailed explanation is listed in the [Symbolic Variables](../../../../../formal/README.md#symbolic-variables) section.
 
 ## Testplan
 [Testplan](../../data/pinmux_fpv_testplan.hjson)

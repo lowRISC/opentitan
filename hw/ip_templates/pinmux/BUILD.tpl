@@ -13,14 +13,14 @@ load(
 autogen_hjson_c_header(
     name = "pinmux_c_regs",
     srcs = [
-        "pinmux.hjson",
+        "data/pinmux.hjson",
     ],
 )
 
 autogen_hjson_rust_header(
     name = "pinmux_rust_regs",
     srcs = [
-        "pinmux.hjson",
+        "data/pinmux.hjson",
     ],
 )
 
