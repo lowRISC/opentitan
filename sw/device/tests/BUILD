@@ -2221,6 +2221,32 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "kmac_error_conditions_test",
+    srcs = ["kmac_error_conditions_test.c"],
+    # TODO(#15530): EDN doesn't timeout on FPGA
+    broken = fpga_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # FIXME broken on FPGA as masking is off. See #15530.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:kmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "kmac_idle_test",
     srcs = ["kmac_idle_test.c"],
     exec_env = dicts.add(
