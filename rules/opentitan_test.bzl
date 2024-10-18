@@ -4,10 +4,10 @@
 
 load(
     "@//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
     "opentitan_flash_binary",
     "opentitan_rom_binary",
 )
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 
