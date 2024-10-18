@@ -70,12 +70,12 @@ class pwm_base_vseq extends cip_base_vseq #(
     return value;
   endfunction
 
-  virtual task set_blink(int unsigned channel, dc_blink_t value);
+  virtual task set_blink(int unsigned channel, bit [15:0] A, bit [15:0] B);
     `DV_CHECK_FATAL(channel < NOutputs)
 
-    ral.blink_param[channel].set(value);
+    ral.blink_param[channel].set({B, A});
     csr_update(ral.blink_param[channel]);
-  endtask // set_blink
+  endtask
 
   // Summation of PARAM.X and PARAM.Y shouldn't go beyond MAX_16
   // Summation of PARAM.y and DUTY_CYLE.A shouldn't go beyond MAX_16
@@ -88,7 +88,7 @@ class pwm_base_vseq extends cip_base_vseq #(
 
     cfg.blink[channel].B = $urandom_range(1, int'(MAX_16) - duty_cycle.A);
     cfg.blink[channel].A = $urandom_range(1, int'(MAX_16) - cfg.blink[channel].B);
-    set_blink(channel, cfg.blink[channel]);
+    set_blink(channel, .A(cfg.blink[channel].A), .B(cfg.blink[channel].B));
   endtask
 
   virtual task set_param(int unsigned channel, param_reg_t value);
