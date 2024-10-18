@@ -2,10 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
-)
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -33,10 +30,7 @@ load(
     "otp_per_class_ints",
     "otp_per_class_lists",
 )
-load(
-    "//rules:rom_e2e.bzl",
-    "maybe_skip_in_ci",
-)
+load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 
 package(default_visibility = ["//visibility:public"])
 
