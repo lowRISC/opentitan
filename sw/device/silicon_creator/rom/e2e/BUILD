@@ -4,8 +4,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:const.bzl", "CONST", "hex_digits")
-load("//rules:opentitan.bzl", "scramble_flash_vmem")
-load("//rules/opentitan:legacy.bzl", "vmem_file")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
@@ -249,7 +248,7 @@ opentitan_test(
     scramble_flash_vmem(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
-        vmem = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
+        src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
