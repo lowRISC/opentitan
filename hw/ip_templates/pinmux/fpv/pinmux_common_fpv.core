@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip:pinmux
+      - lowrisc:ip_interfaces:pinmux
     files:
       - vip/pinmux_assert_fpv.sv
       - tb/pinmux_bind_fpv.sv
