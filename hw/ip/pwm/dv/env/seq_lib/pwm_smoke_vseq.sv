@@ -16,6 +16,8 @@ class pwm_smoke_vseq extends pwm_base_vseq;
 
 
   virtual task body();
+    dc_blink_t duty_cycle;
+
     //make sure write to regs are enabled
     set_reg_en(Enable);
 
@@ -24,14 +26,13 @@ class pwm_smoke_vseq extends pwm_base_vseq;
     //setup general config
     set_cfg_reg(10, 1, 1);
 
-    cfg.duty_cycle[0].A      = 13000;
-    cfg.duty_cycle[0].B      = 6500;
+    duty_cycle.A             = 13000;
+    duty_cycle.B             = 6500;
     cfg.blink[0].A           = 0;
     cfg.blink[0].B           = 0;
     cfg.pwm_param[0].BlinkEn = 1;
 
-
-    set_duty_cycle(0, cfg.duty_cycle[0]);
+    set_duty_cycle(0, duty_cycle);
     set_blink(0, cfg.blink[0]);
     set_param(0, cfg.pwm_param[0]);
 
