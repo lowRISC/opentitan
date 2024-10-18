@@ -9,6 +9,7 @@ filegroup(
     srcs = glob(["**"]) + [
         "//hw/ip_templates/clkmgr:all_files",
         "//hw/ip_templates/flash_ctrl:all_files",
+        "//hw/ip_templates/pinmux:all_files",
         "//hw/ip_templates/pwrmgr:all_files",
         "//hw/ip_templates/rstmgr:all_files",
     ],
