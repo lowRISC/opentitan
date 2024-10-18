@@ -2,6 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    _obj_transform = "obj_transform",
+)
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+
 def legacy_rom_targets(target, suffixes, testonly = False):
     """Create filegroups for legacy ROM rule target names.
 
@@ -27,3 +33,23 @@ def legacy_rom_targets(target, suffixes, testonly = False):
             actual = ":{}_{}".format(target, suffix),
             testonly = testonly,
         )
+
+def _obj_transform_impl(ctx):
+    outputs = [_obj_transform(ctx)]
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs),
+        ),
+    ]
+
+obj_transform = rv_rule(
+    implementation = _obj_transform_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True),
+        "suffix": attr.string(default = "bin"),
+        "format": attr.string(default = "binary"),
+        "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+    },
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+)

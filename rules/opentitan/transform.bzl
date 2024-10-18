@@ -28,7 +28,7 @@ def obj_transform(ctx, **kwargs):
         output = "{}.{}".format(name, suffix)
 
     output = ctx.actions.declare_file(output)
-    src = get_override(ctx, "attr.src", kwargs)
+    src = get_override(ctx, "file.src", kwargs)
     out_format = get_override(ctx, "attr.format", kwargs)
 
     ctx.actions.run(
