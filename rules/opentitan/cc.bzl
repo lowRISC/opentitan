@@ -3,13 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load(
-    "@lowrisc_opentitan//rules:rv.bzl",
-    "rv_rule",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
-    _opentitan_transition = "opentitan_transition",
-)
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
@@ -18,12 +12,6 @@ load(
     "obj_disassemble",
     "obj_transform",
 )
-
-# Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
-# to get to them.
-OPENTITAN_CPU = _OPENTITAN_CPU
-OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
-opentitan_transition = _opentitan_transition
 
 def _expand(ctx, name, items):
     """Perform location and make_variable expansion on a list of items.
