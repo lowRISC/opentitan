@@ -71,6 +71,12 @@ class NcLauncher(Launcher):
                 license_args +
                 ['--', f'{odir}/run.sh'])
 
+    def _pre_launch(self):
+        # store the start_time (correspoinding to job wait time counter)
+        super()._pre_launch()
+        # set the nc_job_state to the initial state - waiting for resource
+        self.nc_job_state = 'waiting'
+
     def _do_launch(self):
         # Compute the environment for the subprocess by overriding environment
         # variables of this process with matching ones from self.deploy.exports
@@ -87,6 +93,10 @@ class NcLauncher(Launcher):
 
         self._dump_env_vars(exports)
 
+        # For reruns, delete the log file of the past run to avoid any race
+        # condition between the log file getting updated for the new run
+        # versus the logic that distinguishes the job wait versus run times.
+        rm_path(self.deploy.get_log_path())
         # using os.open instead of fopen as this allows
         # sharing of file descriptors across processes
         fd = os.open(self.deploy.get_log_path(), os.O_WRONLY | os.O_CREAT)
@@ -94,7 +104,7 @@ class NcLauncher(Launcher):
         os.set_inheritable(fd, True)
         message = '[Executing]:\n{}\n\n'.format(self.deploy.cmd)
         fobj.write(message)
-
+        fobj.flush()
         if self.deploy.sim_cfg.interactive:
             # Interactive: Set RUN_INTERACTIVE to 1
             exports['RUN_INTERACTIVE'] = '1'
@@ -137,6 +147,9 @@ class NcLauncher(Launcher):
 
         self._link_odir('D')
 
+    def minutes_since_start(self):
+        return (datetime.datetime.now() - self.start_time).total_seconds() / 60
+
     def poll(self):
         """Check status of the running process.
 
@@ -149,14 +162,44 @@ class NcLauncher(Launcher):
         """
 
         assert self.process is not None
-        elapsed_time = datetime.datetime.now() - self.start_time
-        job_runtime_secs = elapsed_time.total_seconds()
         if self.process.poll() is None:
-            timeout_mins = self.deploy.get_timeout_mins()
-            if timeout_mins is not None and not self.deploy.gui:
-                if job_runtime_secs > (timeout_mins * 60):
+            run_timeout_mins = self.deploy.get_timeout_mins()
+            if run_timeout_mins is not None and not self.deploy.gui:
+                wait_timeout_mins = 180  # max wait time in job / license queue
+                # We consider the job to have started once its log file contains
+                # something. file_size_thresh_bytes is a threshold: once the log
+                # file is bigger than this many bytes, the job must have started
+                file_size_thresh_bytes = 5120  # log file size threshold
+
+                # query the log file size
+                f_size = os.path.getsize(self.deploy.get_log_path())
+
+                if f_size >= file_size_thresh_bytes:
+                    if (self.nc_job_state == 'waiting'):
+                        # If the job log size is more than the threshold,
+                        # declare the job to have started running
+                        # capture the run start time
+                        self.start_time = datetime.datetime.now()
+                        self.nc_job_state = 'running'
+
+                if self.nc_job_state == 'waiting':
+                    # If we get here, we know the log size is less than the threshold.
+                    # check if wait_timeout_mins has elapsed.
+                    if self.minutes_since_start() > wait_timeout_mins:
+                        self.nc_job_state = 'wait_timeout'
+
+                if self.nc_job_state == 'running':
+                    if self.minutes_since_start() > run_timeout_mins:
+                        self.nc_job_state = 'run_timeout'
+
+                if self.nc_job_state in {'wait_timeout', 'run_timeout'}:
                     self._kill()
-                    timeout_message = f'Job timed out after {timeout_mins} mins'
+                    if self.nc_job_state == 'run_timeout':
+                        timeout_message = f'Job timed out after running ' \
+                                          f'{run_timeout_mins} mins'
+                    elif self.nc_job_state == 'wait_timeout':
+                        timeout_message = f'Job timed out after waiting ' \
+                                          f'{wait_timeout_mins} mins'
                     self._post_finish('K',
                                       ErrorMessage(line_number=None,
                                                    message=timeout_message,
