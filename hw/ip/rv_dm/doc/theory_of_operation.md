@@ -38,4 +38,4 @@ DEV                          | not kMuBi8True                  | kMuBi32True    
 The life cycle gating mechanism explained in the previous section severs the connection between the RV_DM and a JTAG attached debugger whenever the device is reset.
 In order to prevent this from happening during a non-debug-module (NDM) reset request, the TAP/JTAG-side gating logic is modulated using a separate hardware debug enable signal that comes from the strap sampling module inside the pinmux.
 The pinmux basically ensures that that signal is latched and kept stable while an NDM reset is taking place.
-See also [pinmux documentation](../../pinmux/doc/theory_of_operation.md#non-debug-module-reset).
+See also [pinmux documentation](../../../ip_templates/pinmux/doc/theory_of_operation.md#non-debug-module-reset).
