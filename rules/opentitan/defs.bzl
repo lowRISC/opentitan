@@ -47,6 +47,10 @@ load(
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:manual.bzl",
+    _opentitan_manual_test = "opentitan_manual_test",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:ci.bzl",
     "ci_orchestrator",
 )
@@ -88,6 +92,8 @@ rsa_key_by_name = _rsa_key_by_name
 
 spx_key_for_lc_state = _spx_key_for_lc_state
 spx_key_by_name = _spx_key_by_name
+
+opentitan_manual_test = _opentitan_manual_test
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
