@@ -2,8 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "scramble_flash_vmem")
-load("//rules/opentitan:legacy.bzl", "vmem_file")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,8 +22,8 @@ vmem_file(
 
 scramble_flash_vmem(
     name = "rom_e2e_self_hash_sim_dv_scr_vmem64",
+    src = ":rom_e2e_self_hash_sim_dv_vmem64",
     otp = "//hw/ip/otp_ctrl/data:img_test_unlocked0",
-    vmem = ":rom_e2e_self_hash_sim_dv_vmem64",
 )
 
 [
