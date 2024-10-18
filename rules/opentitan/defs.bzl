@@ -57,8 +57,7 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 # and opentitan_binary rules.
 CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
-# Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
-# to get to them.
+# Re-exports of names from transition.bzl
 OPENTITAN_CPU = _OPENTITAN_CPU
 OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
 opentitan_transition = _opentitan_transition
