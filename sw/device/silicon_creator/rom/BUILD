@@ -7,8 +7,14 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
-load("//rules:opentitan_test.bzl", "manual_test")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "fpga_params", "opentitan_binary", "opentitan_test")
+load(
+    "//rules/opentitan:defs.bzl",
+    "OPENTITAN_CPU",
+    "fpga_params",
+    "opentitan_binary",
+    "opentitan_manual_test",
+    "opentitan_test",
+)
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
@@ -460,7 +466,7 @@ pkg_files(
     prefix = "earlgrey/rom",
 )
 
-manual_test(
+opentitan_manual_test(
     name = "manual_test",
     tags = [
         "manual",
