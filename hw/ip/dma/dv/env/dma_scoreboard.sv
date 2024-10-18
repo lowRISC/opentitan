@@ -1066,7 +1066,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1;
       end
       "status": begin
-        bit busy, done, aborted, error, sha2_digest_valid;
+        bit busy, done, chunk_done, aborted, error, sha2_digest_valid;
         bit exp_aborted = abort_via_reg_write;
 
         do_read_check = 1'b0;
@@ -1074,13 +1074,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
         done = get_field_val(ral.status.done, item.d_data);
         aborted = get_field_val(ral.status.aborted, item.d_data);
         error = get_field_val(ral.status.error, item.d_data);
+        chunk_done = get_field_val(ral.status.chunk_done, item.d_data);
         sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
 
-        if (done || aborted || error) begin
+        if (done || aborted || error || chunk_done ) begin
           string reasons;
-          if (done)    reasons = "Done ";
-          if (aborted) reasons = {reasons, "Aborted "};
-          if (error)   reasons = {reasons, "Error" };
+          if (done)       reasons = "Done ";
+          if (aborted)    reasons = {reasons, "Aborted "};
+          if (error)      reasons = {reasons, "Error" };
+          if (chunk_done) reasons = {reasons, "ChunkDone "};
           operation_in_progress = 1'b0;
           `uvm_info(`gfn, $sformatf("Detected end of DMA operation (%s)", reasons), UVM_MEDIUM)
           // Clear variables
@@ -1109,13 +1111,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
           // Sample dma status and error code
           cov.status_cg.sample(.busy (busy),
                                .done (done),
+                               .chunk_done (chunk_done),
                                .aborted (aborted),
                                .error (error),
                                .sha2_digest_valid (sha2_digest_valid));
         end
         // Check results after each chunk of the transfer (memory-to-memory) or after the complete
         // transfer (handshaking mode).
-        if (dma_config.is_valid_config && done) begin
+        if (dma_config.is_valid_config && (done || chunk_done)) begin
           if (num_bytes_transferred >= dma_config.total_data_size) begin
             // SHA digest (expecting zeros if unused)
             // When using inline hashing, sha2_digest_valid must be raised at the end

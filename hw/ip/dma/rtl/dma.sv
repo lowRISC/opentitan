@@ -75,7 +75,7 @@ module dma
 
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
-  logic set_error_code, clear_go, clear_status, clear_sha_status;
+  logic set_error_code, clear_go, clear_status, clear_sha_status, chunk_done;
 
   logic [INTR_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                                clear_index_en, intr_clear_tlul_rsp_valid;
@@ -603,6 +603,7 @@ module dma
     clear_index_en = '0;
 
     clear_go       = 1'b0;
+    chunk_done     = 1'b0;
 
     // Mux the TLUL grant and response signals depending on the selected bus interface
     intr_clear_tlul_gnt       = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_gnt :
@@ -962,8 +963,9 @@ module dma
               end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
                 // Conditionally clear the go bit when not being in hardware handshake mode.
                 // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
-                // and done bit, and release the go bit for the next FW-controlled chunk.
+                // and chunk done bit, and release the go bit for the next FW-controlled chunk.
                 clear_go     = !control_q.cfg_handshake_en;
+                chunk_done   = !control_q.cfg_handshake_en;
                 ctrl_state_d = DmaIdle;
               end else begin
                 ctrl_state_d = DmaAddrSetup;
@@ -1077,17 +1079,39 @@ module dma
   assign sha2_data.mask = {<<1{req_dst_be_q}};
 
   // Interrupt logic
-  logic test_done_interrupt;
-  logic test_error_interrupt;
+  prim_intr_hw #(
+    .IntrT ( "Status" )
+  ) u_intr_dma_done (
+    .clk_i                  ( clk_i                         ),
+    .rst_ni                 ( rst_ni                        ),
+    .event_intr_i           ( reg2hw.intr_state.dma_done.q  ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.dma_done.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.dma_done.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.dma_done.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.dma_done.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.dma_done.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.dma_done.d  ),
+    .intr_o                 ( intr_dma_done_o               )
+  );
+
+  prim_intr_hw #(
+    .IntrT ( "Status" )
+  ) u_intr_error (
+    .clk_i                  ( clk_i                          ),
+    .rst_ni                 ( rst_ni                         ),
+    .event_intr_i           ( reg2hw.intr_state.dma_error.q  ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.dma_error.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.dma_error.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.dma_error.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.dma_error.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.dma_error.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.dma_error.d  ),
+    .intr_o                 ( intr_dma_error_o               )
+  );
+
   logic data_move_state;
   logic update_dst_addr_reg, update_src_addr_reg;
 
-  assign test_done_interrupt  = reg2hw.intr_test.dma_done.q  && reg2hw.intr_test.dma_done.qe;
-  assign test_error_interrupt = reg2hw.intr_test.dma_error.q && reg2hw.intr_test.dma_error.qe;
-
-  // Signal interrupt controller whenever an enabled interrupt info bit is set
-  assign intr_dma_done_o  = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
-  assign intr_dma_error_o = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
 
   assign data_move_state = (ctrl_state_q == DmaSendWrite)         ||
                            (ctrl_state_q == DmaWaitWriteResponse) ||
@@ -1112,8 +1136,6 @@ module dma
                             transfer_remaining_bytes : chunk_remaining_bytes;
 
   always_comb begin
-    hw2reg = '0;
-
     // Clear the go bit if we are in a single transfer and finished the DMA operation,
     // hardware handshake mode when we finished all transfers, or when aborting the transfer.
     hw2reg.control.go.de = clear_go || cfg_abort_en;
@@ -1171,10 +1193,14 @@ module dma
     clear_sha_status = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
                        reg2hw.control.initial_transfer.q;
 
-    // Set done bit and raise interrupt when we either finished a single transfer or all transfers
-    // in hardware handshake mode. Automatically clear the done bit when starting a new transfer
-    hw2reg.status.done.de = ((!cfg_abort_en) && data_move_state && clear_go) | clear_status;
+    // Set the done bit only when finishing all chunks. Automatically clear the done bit when
+    // starting a new transfer
+    hw2reg.status.done.de = ((!cfg_abort_en) && data_move_state && clear_go && ~chunk_done) |
+                            clear_status;
     hw2reg.status.done.d  = clear_status? 1'b0 : 1'b1;
+
+    hw2reg.status.chunk_done.de = ((!cfg_abort_en) && chunk_done) | clear_status;
+    hw2reg.status.chunk_done.d  = clear_status? 1'b0 : 1'b1;
 
     hw2reg.status.error.de = (ctrl_state_d == DmaError) | clear_status;
     hw2reg.status.error.d  = clear_status? 1'b0 : 1'b1;
@@ -1244,13 +1270,6 @@ module dma
     // Clear the control.abort bit once we have handled the abort request
     hw2reg.control.abort.de = hw2reg.status.aborted.de;
     hw2reg.control.abort.d  = 1'b0;
-
-    // interrupt management
-    hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | test_done_interrupt;
-    hw2reg.intr_state.dma_done.d  = 1'b1;
-
-    hw2reg.intr_state.dma_error.de = reg2hw.status.error.q | test_error_interrupt;
-    hw2reg.intr_state.dma_error.d  = 1'b1;
 
     // Clear the SHA2 digests if the SHA2 valid flag is cleared (RW1C)
     if (reg2hw.status.sha2_digest_valid.qe & reg2hw.status.sha2_digest_valid.q) begin

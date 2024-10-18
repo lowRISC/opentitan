@@ -137,6 +137,9 @@ package dma_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } chunk_done;
+    struct packed {
+      logic        q;
       logic        qe;
     } sha2_digest_valid;
     struct packed {
@@ -242,6 +245,10 @@ package dma_reg_pkg;
       logic        d;
       logic        de;
     } sha2_digest_valid;
+    struct packed {
+      logic        d;
+      logic        de;
+    } chunk_done;
   } dma_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -286,24 +293,24 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [1037:1036]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [1035:1034]
-    dma_reg2hw_intr_test_reg_t intr_test; // [1033:1030]
-    dma_reg2hw_alert_test_reg_t alert_test; // [1029:1028]
-    dma_reg2hw_src_addr_lo_reg_t src_addr_lo; // [1027:996]
-    dma_reg2hw_src_addr_hi_reg_t src_addr_hi; // [995:964]
-    dma_reg2hw_dst_addr_lo_reg_t dst_addr_lo; // [963:932]
-    dma_reg2hw_dst_addr_hi_reg_t dst_addr_hi; // [931:900]
-    dma_reg2hw_addr_space_id_reg_t addr_space_id; // [899:892]
-    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [891:859]
-    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [858:826]
-    dma_reg2hw_range_valid_reg_t range_valid; // [825:825]
-    dma_reg2hw_range_regwen_reg_t range_regwen; // [824:821]
-    dma_reg2hw_total_data_size_reg_t total_data_size; // [820:789]
-    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [788:757]
-    dma_reg2hw_transfer_width_reg_t transfer_width; // [756:755]
-    dma_reg2hw_control_reg_t control; // [754:743]
-    dma_reg2hw_status_reg_t status; // [742:737]
+    dma_reg2hw_intr_state_reg_t intr_state; // [1038:1037]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [1036:1035]
+    dma_reg2hw_intr_test_reg_t intr_test; // [1034:1031]
+    dma_reg2hw_alert_test_reg_t alert_test; // [1030:1029]
+    dma_reg2hw_src_addr_lo_reg_t src_addr_lo; // [1028:997]
+    dma_reg2hw_src_addr_hi_reg_t src_addr_hi; // [996:965]
+    dma_reg2hw_dst_addr_lo_reg_t dst_addr_lo; // [964:933]
+    dma_reg2hw_dst_addr_hi_reg_t dst_addr_hi; // [932:901]
+    dma_reg2hw_addr_space_id_reg_t addr_space_id; // [900:893]
+    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [892:860]
+    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [859:827]
+    dma_reg2hw_range_valid_reg_t range_valid; // [826:826]
+    dma_reg2hw_range_regwen_reg_t range_regwen; // [825:822]
+    dma_reg2hw_total_data_size_reg_t total_data_size; // [821:790]
+    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [789:758]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [757:756]
+    dma_reg2hw_control_reg_t control; // [755:744]
+    dma_reg2hw_status_reg_t status; // [743:737]
     dma_reg2hw_handshake_intr_enable_reg_t handshake_intr_enable; // [736:726]
     dma_reg2hw_clear_intr_src_reg_t clear_intr_src; // [725:715]
     dma_reg2hw_clear_intr_bus_reg_t clear_intr_bus; // [714:704]
@@ -313,14 +320,14 @@ package dma_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    dma_hw2reg_intr_state_reg_t intr_state; // [699:696]
-    dma_hw2reg_src_addr_lo_reg_t src_addr_lo; // [695:663]
-    dma_hw2reg_src_addr_hi_reg_t src_addr_hi; // [662:630]
-    dma_hw2reg_dst_addr_lo_reg_t dst_addr_lo; // [629:597]
-    dma_hw2reg_dst_addr_hi_reg_t dst_addr_hi; // [596:564]
-    dma_hw2reg_cfg_regwen_reg_t cfg_regwen; // [563:560]
-    dma_hw2reg_control_reg_t control; // [559:554]
-    dma_hw2reg_status_reg_t status; // [553:544]
+    dma_hw2reg_intr_state_reg_t intr_state; // [701:698]
+    dma_hw2reg_src_addr_lo_reg_t src_addr_lo; // [697:665]
+    dma_hw2reg_src_addr_hi_reg_t src_addr_hi; // [664:632]
+    dma_hw2reg_dst_addr_lo_reg_t dst_addr_lo; // [631:599]
+    dma_hw2reg_dst_addr_hi_reg_t dst_addr_hi; // [598:566]
+    dma_hw2reg_cfg_regwen_reg_t cfg_regwen; // [565:562]
+    dma_hw2reg_control_reg_t control; // [561:556]
+    dma_hw2reg_status_reg_t status; // [555:544]
     dma_hw2reg_error_code_reg_t error_code; // [543:528]
     dma_hw2reg_sha2_digest_mreg_t [15:0] sha2_digest; // [527:0]
   } dma_hw2reg_t;
