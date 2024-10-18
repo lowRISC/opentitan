@@ -2,8 +2,10 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pinmux_component:0.1"
-description: "Pin Multiplexer component without the CSRs"
+name: ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
+description: "Pin Multiplexer"
+virtual:
+  - lowrisc:ip_interfaces:pinmux
 
 filesets:
   files_rtl:
@@ -20,10 +22,9 @@ filesets:
       - lowrisc:prim:pad_attr
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:usbdev
-      # pinmux_wkup.sv depends on pinmux_reg_pkg.sv
-      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
+      - ${instance_vlnv("lowrisc:ip:pinmux_reg:0.1")}
+      - lowrisc:ip_interfaces:pinmux_pkg
     files:
-      - rtl/pinmux_pkg.sv
       - rtl/pinmux_wkup.sv
       - rtl/pinmux_jtag_buf.sv
       - rtl/pinmux_jtag_breakout.sv
@@ -55,6 +56,11 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
 
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
 targets:
   default: &default_target
     filesets:
@@ -62,3 +68,29 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
+    toplevel: pinmux
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: pinmux_tb
