@@ -112,7 +112,7 @@ cargo_build_script(
         "noclippy",
         "norustfmt",
     ],
-    toolchains = ["@//third_party/rust:openssl_pkg_config_path"],
+    toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
     version = "0.9.102",
     visibility = ["//visibility:private"],
     deps = [
