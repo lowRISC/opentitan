@@ -4,10 +4,7 @@
 
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_SPX_KEY_STRUCTS",
-)
+load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",

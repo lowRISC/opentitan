@@ -3,10 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@//rules:const.bzl", "CONST")
-load(
-    "@//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
-)
+load("@//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "@//rules/opentitan:defs.bzl",
     "dv_params",

@@ -2,21 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
-)
-load(
-    "//rules:const.bzl",
-    "CONST",
-    "hex_digits",
-)
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//rules:const.bzl", "CONST", "hex_digits")
 load(
     "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
     "bin_to_vmem",
     "scramble_flash_vmem",
 )
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
@@ -24,14 +17,8 @@ load(
     "otp_json",
     "otp_partition",
 )
-load(
-    "//rules:rom_e2e.bzl",
-    "maybe_skip_in_ci",
-)
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
+load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
+load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
