@@ -69,6 +69,17 @@ status_t manuf_individualize_device_flash_data_default_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
+ * Checks the FLASH_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
+ * partition.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the FLASH_DATA_DEFAULT_CFG field is provisioned.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_flash_data_default_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
  * Locks the CREATOR_SW_CFG OTP partition.
  *
  * This must be called after both `manuf_individualize_device_creator_sw_cfg()`
@@ -146,5 +157,17 @@ status_t manuf_individualize_device_owner_sw_cfg_lock(
  */
 status_t manuf_individualize_device_owner_sw_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Overwrites unprovisioned fields with their expected final values in a buffer
+ * representing the provided partition.
+ *
+ * @param partition Target OTP partition.
+ * @param[out] buffer A buffer containing the entire target OTP partition.
+ * @return OK_STATUS if the expected partition values are successfully written
+ * to the `buffer`.
+ */
+status_t manuf_individualize_device_partition_expected_read(
+    dif_otp_ctrl_partition_t partition, uint8_t *buffer);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_SW_CFG_H_
