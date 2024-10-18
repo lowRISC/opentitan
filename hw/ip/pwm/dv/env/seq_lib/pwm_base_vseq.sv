@@ -35,8 +35,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task automatic rand_pwm_cfg_reg();
-    cfg.pwm_cfg.ClkDiv = $urandom_range(0, MAX_CLK_DIV);
-    cfg.pwm_cfg.DcResn = $urandom_range(4'h0, 4'hE);
+    cfg.pwm_cfg.ClkDiv = $urandom_range(0, int'(MAX_CLK_DIV));
+    cfg.pwm_cfg.DcResn = $urandom_range(0, 14);
     cfg.pwm_cfg.CntrEn = 1;
     set_cfg_reg(cfg.pwm_cfg);
   endtask
@@ -61,8 +61,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task automatic rand_pwm_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    cfg.duty_cycle[channel].A = $urandom_range(16'h1, MAX_16);
-    cfg.duty_cycle[channel].B = $urandom_range(16'h1, MAX_16);
+    cfg.duty_cycle[channel].A = $urandom_range(1, int'(MAX_16));
+    cfg.duty_cycle[channel].B = $urandom_range(1, int'(MAX_16));
     set_duty_cycle(channel, cfg.duty_cycle[channel]);
   endtask
 
@@ -75,8 +75,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   // Summation of PARAM.y and DUTY_CYLE.A shouldn't go beyond MAX_16
   // This is to prevent counter overflow
   virtual task automatic rand_pwm_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel);
-    cfg.blink[channel].B = $urandom_range(16'h1, (MAX_16-cfg.duty_cycle[channel].A));
-    cfg.blink[channel].A = $urandom_range(16'h1, (MAX_16-cfg.blink[channel].B));
+    cfg.blink[channel].B = $urandom_range(1, int'(MAX_16) - cfg.duty_cycle[channel].A);
+    cfg.blink[channel].A = $urandom_range(1, int'(MAX_16) - cfg.blink[channel].B);
     set_blink(channel, cfg.blink[channel]);
   endtask
 
