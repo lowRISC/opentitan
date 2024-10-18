@@ -14,7 +14,6 @@ load(
 load(
     "//rules:opentitan.bzl",
     "ECDSA_ONLY_KEY_STRUCTS",
-    "OPENTITAN_CPU",
 )
 load(
     "//rules:otp.bzl",
@@ -28,6 +27,7 @@ load(
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "OPENTITAN_CPU",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
