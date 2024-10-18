@@ -69,6 +69,27 @@ status_t manuf_individualize_device_flash_data_default_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
+ * Checks the FLASH_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
+ * partition.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the FLASH_DATA_DEFAULT_CFG field is provisioned.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_flash_data_default_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Reads the expected CREATOR_SW_CFG partition values from the OTP image.
+ *
+ * @param[out] buffer A buffer containing the entire CREATOR_SW_CFG partition.
+ * @return OK_STATUS if the expected CREATOR_SW_CFG partition values are
+ * successfully written to the `buffer`.
+ */
+status_t manuf_individualize_device_creator_sw_cfg_expected_read(
+    uint8_t *buffer);
+
+/**
  * Locks the CREATOR_SW_CFG OTP partition.
  *
  * This must be called after both `manuf_individualize_device_creator_sw_cfg()`
@@ -124,6 +145,16 @@ status_t manuf_individualize_device_owner_sw_cfg(
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Reads the expected OWNER_SW_CFG partition values from the OTP image.
+ *
+ * @param[out] buffer A buffer containing the entire OWNER_SW_CFG partition.
+ *
+ * @return OK_STATUS if the expected OWNER_SW_CFG partition values are
+ * successfully written to the `buffer`.
+ */
+status_t manuf_individualize_device_owner_sw_cfg_expected_read(uint8_t *buffer);
 
 /**
  * Locks the OWNER_SW_CFG OTP partition.
