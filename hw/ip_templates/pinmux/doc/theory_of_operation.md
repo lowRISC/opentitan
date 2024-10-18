@@ -45,7 +45,7 @@ See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detec
 
 The USB device in the Earlgrey top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
 The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
-See [USB device documentation](../../usbdev/README.md) for more information on the USB wakeup mechanism.
+See [USB device documentation](../../../../ip/usbdev/README.md) for more information on the USB wakeup mechanism.
 
 ### Test and Debug Access
 
@@ -144,7 +144,7 @@ continuously sample the straps. As a result, pad attributes can interfere or eve
 Also, it should be noted that the pad attributes of all JTAG IOs will be gated to all-zero temporarily, while the JTAG is enabled (this does not affect the values in the CSRs).
 This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
 
-For more information about the life cycle states, see [Life Cycle Controller Specification](../../lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+For more information about the life cycle states, see [Life Cycle Controller Specification](../../../../ip/lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
 
 ### Non-debug Module Reset
 
@@ -160,7 +160,7 @@ This ensures that the sampled `lc_hw_debug_en` value does not survive a life cyc
 
 Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is always consuming live `lc_hw_debug_en` and `lc_dft_en` signals for added protection.
 
-See also [rv_dm documentation](../../rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support).
+See also [rv_dm documentation](../../../../ip/rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support).
 
 ## Generic Pad Wrapper
 
