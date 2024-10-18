@@ -1,12 +1,12 @@
-# Registers
+${"#"} Registers
 
-The register description below matches the instance in the [Earl Grey top level
-design](../../../top_earlgrey/doc/datasheet.md).
+The register description below matches the instance in the
+[${topname.capitalize()} top level design](../../../doc/datasheet.md).
 
 Similar register descriptions can be generated with different parameterizations.
 
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson -->
-## Summary
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_${topname}/ip_autogen/pinmux/data/pinmux.hjson -->
+${"##"} Summary
 
 | Name                                                            | Offset   |   Length | Description                                                         |
 |:----------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------|
@@ -579,13 +579,13 @@ Similar register descriptions can be generated with different parameterizations.
 | pinmux.[`WKUP_DETECTOR_PADSEL_7`](#wkup_detector_padsel)        | 0x8d8    |        4 | Pad selects for pad wakeup condition detectors.                     |
 | pinmux.[`WKUP_CAUSE`](#WKUP_CAUSE)                              | 0x8dc    |        4 | Cause registers for wakeup detectors.                               |
 
-## ALERT_TEST
+${"##"} ALERT_TEST
 Alert Test Register
 - Offset: `0x0`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -596,12 +596,12 @@ Alert Test Register
 |  31:1  |        |         |             | Reserved                                         |
 |   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
 
-## MIO_PERIPH_INSEL_REGWEN
+${"##"} MIO_PERIPH_INSEL_REGWEN
 Register write enable for MIO peripheral input selects.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                       | Offset   |
 |:---------------------------|:---------|
@@ -664,7 +664,7 @@ Register write enable for MIO peripheral input selects.
 | MIO_PERIPH_INSEL_REGWEN_56 | 0xe4     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -675,12 +675,12 @@ Register write enable for MIO peripheral input selects.
 |  31:1  |        |         |        | Reserved                                                                                                        |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding MIO_PERIPH_INSEL is not writable anymore. |
 
-## MIO_PERIPH_INSEL
+${"##"} MIO_PERIPH_INSEL
 For each peripheral input, this selects the muxable pad input.
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
-### Instances
+${"###"} Instances
 
 | Name                | Offset   |
 |:--------------------|:---------|
@@ -743,7 +743,7 @@ For each peripheral input, this selects the muxable pad input.
 | MIO_PERIPH_INSEL_56 | 0x1c8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "IN", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -754,12 +754,12 @@ For each peripheral input, this selects the muxable pad input.
 |  31:6  |        |         |        | Reserved                                                                                                    |
 |  5:0   |   rw   |   0x0   | IN     | 0: tie constantly to zero, 1: tie constantly to 1, >=2: MIO pads (i.e., add 2 to the native MIO pad index). |
 
-## MIO_OUTSEL_REGWEN
+${"##"} MIO_OUTSEL_REGWEN
 Register write enable for MIO output selects.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
@@ -812,7 +812,7 @@ Register write enable for MIO output selects.
 | MIO_OUTSEL_REGWEN_46 | 0x284    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -823,12 +823,12 @@ Register write enable for MIO output selects.
 |  31:1  |        |         |        | Reserved                                                                                                  |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding MIO_OUTSEL is not writable anymore. |
 
-## MIO_OUTSEL
+${"##"} MIO_OUTSEL
 For each muxable pad, this selects the peripheral output.
 - Reset default: `0x2`
 - Reset mask: `0x7f`
 
-### Instances
+${"###"} Instances
 
 | Name          | Offset   |
 |:--------------|:---------|
@@ -881,7 +881,7 @@ For each muxable pad, this selects the peripheral output.
 | MIO_OUTSEL_46 | 0x340    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "OUT", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -892,12 +892,12 @@ For each muxable pad, this selects the peripheral output.
 |  31:7  |        |         |        | Reserved                                                                                                                                |
 |  6:0   |   rw   |   0x2   | OUT    | 0: tie constantly to zero, 1: tie constantly to 1, 2: high-Z, >=3: peripheral outputs (i.e., add 3 to the native peripheral pad index). |
 
-## MIO_PAD_ATTR_REGWEN
+${"##"} MIO_PAD_ATTR_REGWEN
 Register write enable for MIO PAD attributes.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -950,7 +950,7 @@ Register write enable for MIO PAD attributes.
 | MIO_PAD_ATTR_REGWEN_46 | 0x3fc    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -961,7 +961,7 @@ Register write enable for MIO PAD attributes.
 |  31:1  |        |         |        | Reserved                                                                                                                       |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding [`MIO_PAD_ATTR`](#mio_pad_attr) is not writable anymore. |
 
-## MIO_PAD_ATTR
+${"##"} MIO_PAD_ATTR
 Muxed pad attributes.
 This register has WARL behavior since not each pad type may support
 all attributes.
@@ -969,7 +969,7 @@ The muxed pad that is used for TAP strap 0 has a different reset value, with `pu
 - Reset default: `0x0`
 - Reset mask: `0xf300ff`
 
-### Instances
+${"###"} Instances
 
 | Name            | Offset   |
 |:----------------|:---------|
@@ -1022,7 +1022,7 @@ The muxed pad that is used for TAP strap 0 has a different reset value, with `pu
 | MIO_PAD_ATTR_46 | 0x4b8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
@@ -1044,26 +1044,26 @@ The muxed pad that is used for TAP strap 0 has a different reset value, with `pu
 |   1    |   rw   |   0x0   | [virtual_od_en](#mio_pad_attr--virtual_od_en)   |
 |   0    |   rw   |   0x0   | [invert](#mio_pad_attr--invert)                 |
 
-### MIO_PAD_ATTR . drive_strength
+${"###"} MIO_PAD_ATTR . drive_strength
 Drive strength (0x0: weakest, 0xf: strongest)
 
-### MIO_PAD_ATTR . slew_rate
+${"###"} MIO_PAD_ATTR . slew_rate
 Slew rate (0x0: slowest, 0x3: fastest).
 
-### MIO_PAD_ATTR . input_disable
+${"###"} MIO_PAD_ATTR . input_disable
 Disable input drivers.
 Setting this to 1 for pads that are not used as input can reduce their leakage current.
 
-### MIO_PAD_ATTR . od_en
+${"###"} MIO_PAD_ATTR . od_en
 Enable open drain.
 
-### MIO_PAD_ATTR . schmitt_en
+${"###"} MIO_PAD_ATTR . schmitt_en
 Enable the schmitt trigger.
 
-### MIO_PAD_ATTR . keeper_en
+${"###"} MIO_PAD_ATTR . keeper_en
 Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`.
 
-### MIO_PAD_ATTR . pull_select
+${"###"} MIO_PAD_ATTR . pull_select
 Pull select (0: pull-down, 1: pull-up).
 
 | Value   | Name      | Description                    |
@@ -1072,21 +1072,21 @@ Pull select (0: pull-down, 1: pull-up).
 | 0x1     | pull_up   | Select the pull-up resistor.   |
 
 
-### MIO_PAD_ATTR . pull_en
+${"###"} MIO_PAD_ATTR . pull_en
 Enable pull-up or pull-down resistor.
 
-### MIO_PAD_ATTR . virtual_od_en
+${"###"} MIO_PAD_ATTR . virtual_od_en
 Enable virtual open drain.
 
-### MIO_PAD_ATTR . invert
+${"###"} MIO_PAD_ATTR . invert
 Invert input and output levels.
 
-## DIO_PAD_ATTR_REGWEN
+${"##"} DIO_PAD_ATTR_REGWEN
 Register write enable for DIO PAD attributes.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -1108,7 +1108,7 @@ Register write enable for DIO PAD attributes.
 | DIO_PAD_ATTR_REGWEN_15 | 0x4f8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1119,14 +1119,14 @@ Register write enable for DIO PAD attributes.
 |  31:1  |        |         |        | Reserved                                                                                                                       |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding [`DIO_PAD_ATTR`](#dio_pad_attr) is not writable anymore. |
 
-## DIO_PAD_ATTR
+${"##"} DIO_PAD_ATTR
 Dedicated pad attributes.
 This register has WARL behavior since not each pad type may support
 all attributes.
 - Reset default: `0x0`
 - Reset mask: `0xf300ff`
 
-### Instances
+${"###"} Instances
 
 | Name            | Offset   |
 |:----------------|:---------|
@@ -1148,7 +1148,7 @@ all attributes.
 | DIO_PAD_ATTR_15 | 0x538    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
@@ -1170,26 +1170,26 @@ all attributes.
 |   1    |   rw   |   0x0   | [virtual_od_en](#dio_pad_attr--virtual_od_en)   |
 |   0    |   rw   |   0x0   | [invert](#dio_pad_attr--invert)                 |
 
-### DIO_PAD_ATTR . drive_strength
+${"###"} DIO_PAD_ATTR . drive_strength
 Drive strength (0x0: weakest, 0xf: strongest)
 
-### DIO_PAD_ATTR . slew_rate
+${"###"} DIO_PAD_ATTR . slew_rate
 Slew rate (0x0: slowest, 0x3: fastest).
 
-### DIO_PAD_ATTR . input_disable
+${"###"} DIO_PAD_ATTR . input_disable
 Disable input drivers.
 Setting this to 1 for pads that are not used as input can reduce their leakage current.
 
-### DIO_PAD_ATTR . od_en
+${"###"} DIO_PAD_ATTR . od_en
 Enable open drain.
 
-### DIO_PAD_ATTR . schmitt_en
+${"###"} DIO_PAD_ATTR . schmitt_en
 Enable the schmitt trigger.
 
-### DIO_PAD_ATTR . keeper_en
+${"###"} DIO_PAD_ATTR . keeper_en
 Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`.
 
-### DIO_PAD_ATTR . pull_select
+${"###"} DIO_PAD_ATTR . pull_select
 Pull select (0: pull-down, 1: pull-up).
 
 | Value   | Name      | Description                    |
@@ -1198,22 +1198,22 @@ Pull select (0: pull-down, 1: pull-up).
 | 0x1     | pull_up   | Select the pull-up resistor.   |
 
 
-### DIO_PAD_ATTR . pull_en
+${"###"} DIO_PAD_ATTR . pull_en
 Enable pull-up or pull-down resistor.
 
-### DIO_PAD_ATTR . virtual_od_en
+${"###"} DIO_PAD_ATTR . virtual_od_en
 Enable virtual open drain.
 
-### DIO_PAD_ATTR . invert
+${"###"} DIO_PAD_ATTR . invert
 Invert input and output levels.
 
-## MIO_PAD_SLEEP_STATUS_0
+${"##"} MIO_PAD_SLEEP_STATUS_0
 Register indicating whether the corresponding pad is in sleep mode.
 - Offset: `0x53c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_1", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_2", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_3", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_4", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_5", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_6", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_7", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_8", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_9", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_10", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_11", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_12", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_13", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_14", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_15", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_16", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_17", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_18", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_19", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_20", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_21", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_22", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_23", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_24", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_25", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_26", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_27", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_28", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_29", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_30", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_31", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1254,13 +1254,13 @@ Register indicating whether the corresponding pad is in sleep mode.
 |   1    |  rw0c  |   0x0   | EN_1   | This register is set to 1 if the deep sleep mode of the corresponding pad has been enabled ([`MIO_PAD_SLEEP_EN`](#mio_pad_sleep_en)) upon deep sleep entry. The sleep mode of the corresponding pad will remain active until SW clears this bit. |
 |   0    |  rw0c  |   0x0   | EN_0   | This register is set to 1 if the deep sleep mode of the corresponding pad has been enabled ([`MIO_PAD_SLEEP_EN`](#mio_pad_sleep_en)) upon deep sleep entry. The sleep mode of the corresponding pad will remain active until SW clears this bit. |
 
-## MIO_PAD_SLEEP_STATUS_1
+${"##"} MIO_PAD_SLEEP_STATUS_1
 Register indicating whether the corresponding pad is in sleep mode.
 - Offset: `0x540`
 - Reset default: `0x0`
 - Reset mask: `0x7fff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN_32", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_33", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_34", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_35", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_36", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_37", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_38", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_39", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_40", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_41", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_42", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_43", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_44", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_45", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_46", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1285,12 +1285,12 @@ Register indicating whether the corresponding pad is in sleep mode.
 |   1    |  rw0c  |   0x0   | EN_33  | For MIO_PAD1  |
 |   0    |  rw0c  |   0x0   | EN_32  | For MIO_PAD1  |
 
-## MIO_PAD_SLEEP_REGWEN
+${"##"} MIO_PAD_SLEEP_REGWEN
 Register write enable for MIO sleep value configuration.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                    | Offset   |
 |:------------------------|:---------|
@@ -1343,7 +1343,7 @@ Register write enable for MIO sleep value configuration.
 | MIO_PAD_SLEEP_REGWEN_46 | 0x5fc    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1354,12 +1354,12 @@ Register write enable for MIO sleep value configuration.
 |  31:1  |        |         |        | Reserved                                                                                                                                   |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding [`MIO_PAD_SLEEP_MODE`](#mio_pad_sleep_mode) is not writable anymore. |
 
-## MIO_PAD_SLEEP_EN
+${"##"} MIO_PAD_SLEEP_EN
 Enables the sleep mode of the corresponding muxed pad.
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                | Offset   |
 |:--------------------|:---------|
@@ -1412,7 +1412,7 @@ Enables the sleep mode of the corresponding muxed pad.
 | MIO_PAD_SLEEP_EN_46 | 0x6b8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1423,7 +1423,7 @@ Enables the sleep mode of the corresponding muxed pad.
 |  31:1  |        |         | Reserved                    |
 |   0    |   rw   |   0x0   | [EN](#mio_pad_sleep_en--en) |
 
-### MIO_PAD_SLEEP_EN . EN
+${"###"} MIO_PAD_SLEEP_EN . EN
 Deep sleep mode enable.
 If this bit is set to 1 the corresponding pad will enable the sleep behavior
 specified in [`MIO_PAD_SLEEP_MODE`](#mio_pad_sleep_mode) upon deep sleep entry, and the corresponding bit
@@ -1433,12 +1433,12 @@ The pad remains in deep sleep mode until the corresponding bit in
 Note that if an always on peripheral is connected to a specific MIO pad,
 the corresponding [`MIO_PAD_SLEEP_EN`](#mio_pad_sleep_en) bit should be set to 0.
 
-## MIO_PAD_SLEEP_MODE
+${"##"} MIO_PAD_SLEEP_MODE
 Defines sleep behavior of the corresponding muxed pad.
 - Reset default: `0x2`
 - Reset mask: `0x3`
 
-### Instances
+${"###"} Instances
 
 | Name                  | Offset   |
 |:----------------------|:---------|
@@ -1491,7 +1491,7 @@ Defines sleep behavior of the corresponding muxed pad.
 | MIO_PAD_SLEEP_MODE_46 | 0x774    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "OUT", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1502,7 +1502,7 @@ Defines sleep behavior of the corresponding muxed pad.
 |  31:2  |        |         | Reserved                        |
 |  1:0   |   rw   |   0x2   | [OUT](#mio_pad_sleep_mode--out) |
 
-### MIO_PAD_SLEEP_MODE . OUT
+${"###"} MIO_PAD_SLEEP_MODE . OUT
 Value to drive in deep sleep.
 
 | Value   | Name     | Description                                                                                                                                                                    |
@@ -1513,13 +1513,13 @@ Value to drive in deep sleep.
 | 0x3     | Keep     | Keep last driven value (including high-Z).                                                                                                                                     |
 
 
-## DIO_PAD_SLEEP_STATUS
+${"##"} DIO_PAD_SLEEP_STATUS
 Register indicating whether the corresponding pad is in sleep mode.
 - Offset: `0x778`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_1", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_2", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_3", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_4", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_5", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_6", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_7", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_8", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_9", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_10", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_11", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_12", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_13", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_14", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "EN_15", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1545,12 +1545,12 @@ Register indicating whether the corresponding pad is in sleep mode.
 |   1    |  rw0c  |   0x0   | EN_1   | This register is set to 1 if the deep sleep mode of the corresponding pad has been enabled ([`DIO_PAD_SLEEP_MODE`](#dio_pad_sleep_mode)) upon deep sleep entry. The sleep mode of the corresponding pad will remain active until SW clears this bit. |
 |   0    |  rw0c  |   0x0   | EN_0   | This register is set to 1 if the deep sleep mode of the corresponding pad has been enabled ([`DIO_PAD_SLEEP_MODE`](#dio_pad_sleep_mode)) upon deep sleep entry. The sleep mode of the corresponding pad will remain active until SW clears this bit. |
 
-## DIO_PAD_SLEEP_REGWEN
+${"##"} DIO_PAD_SLEEP_REGWEN
 Register write enable for DIO sleep value configuration.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                    | Offset   |
 |:------------------------|:---------|
@@ -1572,7 +1572,7 @@ Register write enable for DIO sleep value configuration.
 | DIO_PAD_SLEEP_REGWEN_15 | 0x7b8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1583,12 +1583,12 @@ Register write enable for DIO sleep value configuration.
 |  31:1  |        |         |        | Reserved                                                                                                                                   |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding [`DIO_PAD_SLEEP_MODE`](#dio_pad_sleep_mode) is not writable anymore. |
 
-## DIO_PAD_SLEEP_EN
+${"##"} DIO_PAD_SLEEP_EN
 Enables the sleep mode of the corresponding dedicated pad.
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                | Offset   |
 |:--------------------|:---------|
@@ -1610,7 +1610,7 @@ Enables the sleep mode of the corresponding dedicated pad.
 | DIO_PAD_SLEEP_EN_15 | 0x7f8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1621,7 +1621,7 @@ Enables the sleep mode of the corresponding dedicated pad.
 |  31:1  |        |         | Reserved                    |
 |   0    |   rw   |   0x0   | [EN](#dio_pad_sleep_en--en) |
 
-### DIO_PAD_SLEEP_EN . EN
+${"###"} DIO_PAD_SLEEP_EN . EN
 Deep sleep mode enable.
 If this bit is set to 1 the corresponding pad will enable the sleep behavior
 specified in [`DIO_PAD_SLEEP_MODE`](#dio_pad_sleep_mode) upon deep sleep entry, and the corresponding bit
@@ -1631,12 +1631,12 @@ The pad remains in deep sleep mode until the corresponding bit in
 Note that if an always on peripheral is connected to a specific DIO pad,
 the corresponding [`DIO_PAD_SLEEP_EN`](#dio_pad_sleep_en) bit should be set to 0.
 
-## DIO_PAD_SLEEP_MODE
+${"##"} DIO_PAD_SLEEP_MODE
 Defines sleep behavior of the corresponding dedicated pad.
 - Reset default: `0x2`
 - Reset mask: `0x3`
 
-### Instances
+${"###"} Instances
 
 | Name                  | Offset   |
 |:----------------------|:---------|
@@ -1658,7 +1658,7 @@ Defines sleep behavior of the corresponding dedicated pad.
 | DIO_PAD_SLEEP_MODE_15 | 0x838    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "OUT", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1669,7 +1669,7 @@ Defines sleep behavior of the corresponding dedicated pad.
 |  31:2  |        |         | Reserved                        |
 |  1:0   |   rw   |   0x2   | [OUT](#dio_pad_sleep_mode--out) |
 
-### DIO_PAD_SLEEP_MODE . OUT
+${"###"} DIO_PAD_SLEEP_MODE . OUT
 Value to drive in deep sleep.
 
 | Value   | Name     | Description                                                                                                                                                                    |
@@ -1680,12 +1680,12 @@ Value to drive in deep sleep.
 | 0x3     | Keep     | Keep last driven value (including high-Z).                                                                                                                                     |
 
 
-## WKUP_DETECTOR_REGWEN
+${"##"} WKUP_DETECTOR_REGWEN
 Register write enable for wakeup detectors.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -1699,7 +1699,7 @@ Register write enable for wakeup detectors.
 | WKUP_DETECTOR_REGWEN_7 | 0x858    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1710,7 +1710,7 @@ Register write enable for wakeup detectors.
 |  31:1  |        |         |        | Reserved                                                                                                                   |
 |   0    |  rw0c  |   0x1   | EN     | Register write enable bit. If this is cleared to 0, the corresponding WKUP_DETECTOR configuration is not writable anymore. |
 
-## WKUP_DETECTOR_EN
+${"##"} WKUP_DETECTOR_EN
 Enables for the wakeup detectors.
 Note that these registers are synced to the always-on clock.
 The first write access always completes immediately.
@@ -1718,7 +1718,7 @@ However, read/write accesses following a write will block until that write has c
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name               | Offset   |
 |:-------------------|:---------|
@@ -1732,7 +1732,7 @@ However, read/write accesses following a write will block until that write has c
 | WKUP_DETECTOR_EN_7 | 0x878    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1743,7 +1743,7 @@ However, read/write accesses following a write will block until that write has c
 |  31:1  |        |         |        | Reserved                                                                                                                                                                                                                              |
 |   0    |   rw   |   0x0   | EN     | Setting this bit activates the corresponding wakeup detector. The behavior is as specified in [`WKUP_DETECTOR`](#wkup_detector), [`WKUP_DETECTOR_CNT_TH`](#wkup_detector_cnt_th) and [`WKUP_DETECTOR_PADSEL.`](#wkup_detector_padsel) |
 
-## WKUP_DETECTOR
+${"##"} WKUP_DETECTOR
 Configuration of wakeup condition detectors.
 Note that these registers are synced to the always-on clock.
 The first write access always completes immediately.
@@ -1754,7 +1754,7 @@ The reason for that is that the pulse width counter is NOT cleared upon a mode c
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 
-### Instances
+${"###"} Instances
 
 | Name            | Offset   |
 |:----------------|:---------|
@@ -1768,7 +1768,7 @@ The reason for that is that the pulse width counter is NOT cleared upon a mode c
 | WKUP_DETECTOR_7 | 0x898    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "MODE", "bits": 3, "attr": ["rw"], "rotate": 0}, {"name": "FILTER", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MIODIO", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1781,16 +1781,16 @@ The reason for that is that the pulse width counter is NOT cleared upon a mode c
 |   3    |   rw   |   0x0   | [FILTER](#wkup_detector--filter) |
 |  2:0   |   rw   |   0x0   | [MODE](#wkup_detector--mode)     |
 
-### WKUP_DETECTOR . MIODIO
+${"###"} WKUP_DETECTOR . MIODIO
 0: select index [`WKUP_DETECTOR_PADSEL`](#wkup_detector_padsel) from MIO pads,
 1: select index [`WKUP_DETECTOR_PADSEL`](#wkup_detector_padsel) from DIO pads.
 
-### WKUP_DETECTOR . FILTER
+${"###"} WKUP_DETECTOR . FILTER
 0: signal filter disabled, 1: signal filter enabled. the signal must
 be stable for 4 always-on clock cycles before the value is being forwarded.
 can be used for debouncing.
 
-### WKUP_DETECTOR . MODE
+${"###"} WKUP_DETECTOR . MODE
 Wakeup detection mode. Out of range values default to Posedge.
 
 | Value   | Name      | Description                                                                                                                              |
@@ -1803,7 +1803,7 @@ Wakeup detection mode. Out of range values default to Posedge.
 
 Other values are reserved.
 
-## WKUP_DETECTOR_CNT_TH
+${"##"} WKUP_DETECTOR_CNT_TH
 Counter thresholds for wakeup condition detectors.
 Note that these registers are synced to the always-on clock.
 The first write access always completes immediately.
@@ -1811,7 +1811,7 @@ However, read/write accesses following a write will block until that write has c
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -1825,7 +1825,7 @@ However, read/write accesses following a write will block until that write has c
 | WKUP_DETECTOR_CNT_TH_7 | 0x8b8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "TH", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1836,13 +1836,13 @@ However, read/write accesses following a write will block until that write has c
 |  31:8  |        |         |        | Reserved                                                                                                                                                         |
 |  7:0   |   rw   |   0x0   | TH     | Counter threshold for TimedLow and TimedHigh wakeup detector modes (see [`WKUP_DETECTOR`](#wkup_detector)). The threshold is in terms of always-on clock cycles. |
 
-## WKUP_DETECTOR_PADSEL
+${"##"} WKUP_DETECTOR_PADSEL
 Pad selects for pad wakeup condition detectors.
 This register is NOT synced to the AON domain since the muxing mechanism is implemented in the same way as the pinmux muxing matrix.
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -1856,7 +1856,7 @@ This register is NOT synced to the AON domain since the muxing mechanism is impl
 | WKUP_DETECTOR_PADSEL_7 | 0x8d8    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "SEL", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1867,13 +1867,13 @@ This register is NOT synced to the AON domain since the muxing mechanism is impl
 |  31:6  |        |         | Reserved                          |
 |  5:0   |   rw   |   0x0   | [SEL](#wkup_detector_padsel--sel) |
 
-### WKUP_DETECTOR_PADSEL . SEL
+${"###"} WKUP_DETECTOR_PADSEL . SEL
 Selects a specific MIO or DIO pad (depending on [`WKUP_DETECTOR`](#wkup_detector) configuration).
 In case of MIO, the pad select index is the same as used for [`MIO_PERIPH_INSEL`](#mio_periph_insel), meaning that index
 0 and 1 just select constants 0 and 1, and the MIO pads live at indices >= 2. In case of DIO pads,
 the pad select index corresponds 1:1 to the DIO pad to be selected.
 
-## WKUP_CAUSE
+${"##"} WKUP_CAUSE
 Cause registers for wakeup detectors.
 Note that these registers are synced to the always-on clock.
 The first write access always completes immediately.
@@ -1882,7 +1882,7 @@ However, read/write accesses following a write will block until that write has c
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "CAUSE_0", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_1", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_2", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_3", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_4", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_5", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_6", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CAUSE_7", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}

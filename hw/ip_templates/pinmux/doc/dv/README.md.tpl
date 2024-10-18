@@ -9,22 +9,22 @@
   * Verify TileLink device protocol compliance with a FPV based testbench
 
 ## Current status
-* [Design & verification stage](../../../../README.md)
-  * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [FPV dashboard](https://reports.opentitan.org/hw/top_earlgrey/formal/summary.html)
+* [Design & verification stage](../../../../../README.md)
+  * [HW development stages](../../../../../../doc/project_governance/development_stages.md)
+* [FPV dashboard](https://reports.opentitan.org/hw/top_${topname}/formal/summary.html)
 
 ## Design features
 For detailed information on PINMUX design features, please see the
 [PINMUX design specification](../../README.md).
 
 ## Testbench architecture
-PINMUX FPV testbench has been constructed based on the [formal architecture](../../../../formal/README.md).
+PINMUX FPV testbench has been constructed based on the [formal architecture](../../../../../formal/README.md).
 
 ### Block diagram
 ![Block diagram](fpv.svg)
 
 #### TLUL assertions
-* The `../fpv/tb/pinmux_bind.sv` binds the `tlul_assert` [assertions](../../../tlul/doc/TlulProtocolChecker.md) with pinmux to ensure TileLink interface protocol compliance.
+* The `../fpv/tb/pinmux_bind.sv` binds the `tlul_assert` [assertions](../../../../tlul/doc/TlulProtocolChecker.md) with pinmux to ensure TileLink interface protocol compliance.
 * The `../fpv/tb/pinmux_bind.sv` also binds the `pinmux_csr_assert_fpv` to assert the TileLink writes and reads correctly.
 
 #### PINMUX assertions
