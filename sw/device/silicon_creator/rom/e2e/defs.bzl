@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:const.bzl", "CONST", "hex_digits")
-load("//rules:opentitan.bzl", "SILICON_CREATOR_KEYS")
+load("//rules/opentitan:keyutils.bzl", "SILICON_CREATOR_KEYS")
 
 MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
     CONST.SHUTDOWN.PREFIX.BFV,
