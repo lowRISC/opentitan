@@ -158,9 +158,9 @@
                   ]
              },
              {    name: pinmux
-                  fusesoc_core: lowrisc:ip:pinmux
+                  fusesoc_core: lowrisc:ip_interfaces:pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pinmux/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/pinmux/lint/{tool}"
                   overrides: [
                     {
                       name: design_level

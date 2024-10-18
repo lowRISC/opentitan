@@ -388,7 +388,7 @@
       base_addr: {
         hart: "0x40460000",
       },
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "aon_timer_aon",
       type: "aon_timer",
