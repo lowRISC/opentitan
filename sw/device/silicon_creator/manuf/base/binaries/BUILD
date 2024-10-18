@@ -2,9 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "scramble_flash_vmem")
 load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
-load("//rules/opentitan:legacy.bzl", "vmem_file")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 load("//rules:files.bzl", "copy_files")
 
 package(default_visibility = ["//visibility:public"])
@@ -49,7 +48,7 @@ vmem_file(
 scramble_flash_vmem(
     name = "ft_personalize_sival_silicon_creator_scr_vmem64_signed",
     testonly = True,
-    vmem = ":ft_personalize_sival_silicon_creator_vmem64_signed",
+    src = ":ft_personalize_sival_silicon_creator_vmem64_signed",
 )
 
 filegroup(

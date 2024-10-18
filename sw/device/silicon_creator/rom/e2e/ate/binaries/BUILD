@@ -2,9 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "scramble_flash_vmem")
 load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
-load("//rules/opentitan:legacy.bzl", "vmem_file")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -44,7 +43,7 @@ _DV_EXEC_ENVS = [
     scramble_flash_vmem(
         name = "ate_gpio_toggle_test_{}_scr_vmem64_signed".format(env),
         testonly = True,
-        vmem = ":ate_gpio_toggle_test_{}_vmem64_signed".format(env),
+        src = ":ate_gpio_toggle_test_{}_vmem64_signed".format(env),
     )
     for env in _DV_EXEC_ENVS
 ]
